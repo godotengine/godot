@@ -35,7 +35,6 @@
 #include "scene/gui/label.h"
 
 FileDialog::GetIconFunc FileDialog::get_icon_func = nullptr;
-FileDialog::GetIconFunc FileDialog::get_large_icon_func = nullptr;
 
 FileDialog::RegisterFunc FileDialog::register_func = nullptr;
 FileDialog::RegisterFunc FileDialog::unregister_func = nullptr;
@@ -347,14 +346,15 @@ void FileDialog::_action_pressed() {
 			}
 		}
 
-		if (!valid) {
+		String file_name = file_text.strip_edges().get_file();
+		if (!valid || file_name.is_empty()) {
 			exterr->popup_centered(Size2(250, 80));
 			return;
 		}
 
 		if (dir_access->file_exists(f)) {
-			confirm_save->set_text(RTR("File exists, overwrite?"));
-			confirm_save->popup_centered(Size2(200, 80));
+			confirm_save->set_text(vformat(RTR("File \"%s\" already exists.\nDo you want to overwrite it?"), f));
+			confirm_save->popup_centered(Size2(250, 80));
 		} else {
 			emit_signal(SNAME("file_selected"), f);
 			hide();
@@ -1136,7 +1136,7 @@ FileDialog::FileDialog() {
 	add_child(mkdirerr, false, INTERNAL_MODE_FRONT);
 
 	exterr = memnew(AcceptDialog);
-	exterr->set_text(RTR("Must use a valid extension."));
+	exterr->set_text(RTR("Invalid extension, or empty filename."));
 	add_child(exterr, false, INTERNAL_MODE_FRONT);
 
 	update_filters();

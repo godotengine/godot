@@ -161,17 +161,11 @@ void prepare_depths_and_mips(vec4 p_samples, uvec2 p_output_coord, uvec2 p_gtid)
 	still_alive = p_gtid.x % 16 == depth_array_offset.x && depth_array_offset.y % 16 == depth_array_offset.y;
 
 	p_output_coord /= 2;
-	groupMemoryBarrier();
-	barrier();
 
 	if (still_alive) {
+		// Use the previous average, not ideal, but still not bad.
 		float sample_00 = depth_buffer[depth_array_index][buffer_coord.x + 0][buffer_coord.y + 0];
-		float sample_01 = depth_buffer[depth_array_index][buffer_coord.x + 0][buffer_coord.y + 8];
-		float sample_10 = depth_buffer[depth_array_index][buffer_coord.x + 8][buffer_coord.y + 0];
-		float sample_11 = depth_buffer[depth_array_index][buffer_coord.x + 8][buffer_coord.y + 8];
-
-		float avg = mip_smart_average(vec4(sample_00, sample_01, sample_10, sample_11));
-		imageStore(dest_image4, ivec3(p_output_coord.x, p_output_coord.y, depth_array_index), vec4(avg));
+		imageStore(dest_image4, ivec3(p_output_coord.x, p_output_coord.y, depth_array_index), vec4(sample_00));
 	}
 #endif
 }
@@ -190,6 +184,7 @@ void prepare_depths(vec4 p_samples, uvec2 p_tid) {
 
 void main() {
 #ifdef USE_HALF_BUFFERS
+// Half buffers means that we divide depth into two half res buffers (we only capture 1/4 of pixels).
 #ifdef USE_HALF_SIZE
 	float sample_00 = texelFetch(source_depth, ivec2(4 * gl_GlobalInvocationID.x + 0, 4 * gl_GlobalInvocationID.y + 0), 0).x;
 	float sample_11 = texelFetch(source_depth, ivec2(4 * gl_GlobalInvocationID.x + 2, 4 * gl_GlobalInvocationID.y + 2), 0).x;
@@ -219,11 +214,11 @@ void main() {
 
 	vec2 uv = (vec2(depth_buffer_coord) + 0.5f) * params.pixel_size;
 	vec4 samples = textureGather(source_depth, uv);
-#endif
+#endif //USE_HALF_SIZE
 #ifdef GENERATE_MIPS
 	prepare_depths_and_mips(samples, output_coord, gl_LocalInvocationID.xy);
 #else
 	prepare_depths(samples, gl_GlobalInvocationID.xy);
 #endif
-#endif
+#endif //USE_HALF_BUFFERS
 }

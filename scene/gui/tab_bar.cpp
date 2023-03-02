@@ -342,6 +342,8 @@ void TabBar::_notification(int p_what) {
 				_shape(i);
 			}
 
+			queue_redraw();
+
 			[[fallthrough]];
 		}
 		case NOTIFICATION_RESIZED: {

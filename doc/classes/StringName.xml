@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StringName" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="StringName" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		An optimized string type for unique names.
 	</brief_description>
 	<description>
 		[StringName]s are immutable strings designed for general-purpose representation of unique names (also called "string interning"). [StringName] ensures that only one instance of a given name exists (so two [StringName]s with the same value are the same object). Comparing them is much faster than with regular [String]s, because only the pointers are compared, not the whole strings.
-		You will usually just pass a [String] to methods expecting a [StringName] and it will be automatically converted, but you may occasionally want to construct a [StringName] ahead of time with [StringName] or, in GDScript, the literal syntax [code]&amp;"example"[/code].
+		You will usually just pass a [String] to methods expecting a [StringName] and it will be automatically converted, but you may occasionally want to construct a [StringName] ahead of time with the [StringName] constructor or, in GDScript, the literal syntax [code]&amp;"example"[/code].
 		See also [NodePath], which is a similar concept specifically designed to store pre-parsed node paths.
 		Some string methods have corresponding variations. Variations suffixed with [code]n[/code] ([method countn], [method findn], [method replacen], etc.) are [b]case-insensitive[/b] (they make no distinction between uppercase and lowercase letters). Method variations prefixed with [code]r[/code] ([method rfind], [method rsplit], etc.) are reversed, and start from the end of the string, instead of the beginning.
 		[b]Note:[/b] In a boolean context, a [StringName] will evaluate to [code]false[/code] if it is empty ([code]StringName("")[/code]). Otherwise, a [StringName] will always evaluate to [code]true[/code].
@@ -176,8 +176,8 @@
 				GD.Print("Team".Find("I")); // Prints -1
 
 				GD.Print("Potato".Find("t"));    // Prints 2
-				GD.print("Potato".Find("t", 3)); // Prints 4
-				GD.print("Potato".Find("t", 5)); // Prints -1
+				GD.Print("Potato".Find("t", 3)); // Prints 4
+				GD.Print("Potato".Find("t", 5)); // Prints -1
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] If you just want to know whether the string contains [param what], use [method contains]. In GDScript, you may also use the [code]in[/code] operator.
@@ -213,6 +213,7 @@
 				print("User {id} is {name}.".format([["id", 42], ["name", "Godot"]]))
 				[/codeblock]
 				See also the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format string[/url] tutorial.
+				[b]Note:[/b] In C#, it's recommended to [url=https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated]interpolate strings with "$"[/url], instead.
 			</description>
 		</method>
 		<method name="get_base_dir" qualifiers="const">
@@ -455,7 +456,7 @@
 				var fruits = new string[] {"Apple", "Orange", "Pear", "Kiwi"};
 
 				// In C#, this method is static.
-				GD.Print(string.Join(", ", fruits);   // Prints "Apple, Orange, Pear, Kiwi"
+				GD.Print(string.Join(", ", fruits));  // Prints "Apple, Orange, Pear, Kiwi"
 				GD.Print(string.Join("---", fruits)); // Prints "Apple---Orange---Pear---Kiwi"
 				[/csharp]
 				[/codeblocks]
@@ -504,7 +505,7 @@
 			<return type="bool" />
 			<param index="0" name="expr" type="String" />
 			<description>
-				Does a simple expression match, where [code]*[/code] matches zero or more arbitrary characters and [code]?[/code] matches any single character except a period ([code].[/code]). An empty string or empty expression always evaluates to [code]false[/code].
+				Does a simple expression match (also called "glob" or "globbing"), where [code]*[/code] matches zero or more arbitrary characters and [code]?[/code] matches any single character except a period ([code].[/code]). An empty string or empty expression always evaluates to [code]false[/code].
 			</description>
 		</method>
 		<method name="matchn" qualifiers="const">
@@ -954,18 +955,23 @@
 			<return type="String" />
 			<param index="0" name="right" type="Variant" />
 			<description>
+				Formats the [StringName], replacing the placeholders with one or more parameters, returning a [String]. To pass multiple parameters, [param right] needs to be an [Array].
+				For more information, see the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format strings[/url] tutorial.
+				[b]Note:[/b] In C#, this operator is not available. Instead, see [url=https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated]how to interpolate strings with "$"[/url].
 			</description>
 		</operator>
 		<operator name="operator +">
 			<return type="String" />
 			<param index="0" name="right" type="String" />
 			<description>
+				Appends [param right] at the end of this [StringName], returning a [String]. This is also known as a string concatenation.
 			</description>
 		</operator>
 		<operator name="operator +">
 			<return type="String" />
 			<param index="0" name="right" type="StringName" />
 			<description>
+				Appends [param right] at the end of this [StringName], returning a [String]. This is also known as a string concatenation.
 			</description>
 		</operator>
 		<operator name="operator &lt;">

@@ -384,9 +384,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 			if (score > 0 && score >= best_score) {
 				best = locale;
 				best_score = score;
-				if (score == 10) {
-					break; // Exact match, skip the rest.
-				}
 			}
 		}
 		if (best_score == 0) {
@@ -453,7 +450,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Theme
 	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "interface/theme/preset", "Default", "Default,Breeze Dark,Godot 2,Gray,Light,Solarized (Dark),Solarized (Light),Black (OLED),Custom")
-	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/theme/enable_touchscreen_touch_area", DisplayServer::get_singleton()->is_touchscreen_available(), "")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/theme/icon_and_font_color", 0, "Auto,Dark,Light")
 	EDITOR_SETTING(Variant::COLOR, PROPERTY_HINT_NONE, "interface/theme/base_color", Color(0.2, 0.23, 0.31), "")
 	EDITOR_SETTING(Variant::COLOR, PROPERTY_HINT_NONE, "interface/theme/accent_color", Color(0.41, 0.61, 0.91), "")
@@ -465,6 +461,14 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/theme/corner_radius", 3, "0,6,1")
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/theme/additional_spacing", 0.0, "0,5,0.1")
 	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/theme/custom_theme", "", "*.res,*.tres,*.theme", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+
+	// Touchscreen
+	bool has_touchscreen_ui = DisplayServer::get_singleton()->is_touchscreen_available();
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/increase_scrollbar_touch_area", has_touchscreen_ui, "")
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/enable_long_press_as_right_click", has_touchscreen_ui, "")
+	set_restart_if_changed("interface/touchscreen/enable_long_press_as_right_click", true);
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/enable_pan_and_scale_gestures", has_touchscreen_ui, "")
+	set_restart_if_changed("interface/touchscreen/enable_pan_and_scale_gestures", true);
 
 	// Scene tabs
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/scene_tabs/display_close_button", 1, "Never,If Tab Active,Always"); // TabBar::CloseButtonDisplayPolicy
@@ -742,7 +746,16 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "project_manager/sorting_order", 0, "Last Edited,Name,Path")
+
+#if defined(WEB_ENABLED)
+	// Web platform only supports `gl_compatibility`.
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_NONE, "project_manager/default_renderer", "gl_compatibility", "forward_plus,mobile,gl_compatibility")
+#elif defined(ANDROID_ENABLED)
+	// Use more suitable rendering method by default.
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_NONE, "project_manager/default_renderer", "mobile", "forward_plus,mobile,gl_compatibility")
+#else
 	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_NONE, "project_manager/default_renderer", "forward_plus", "forward_plus,mobile,gl_compatibility")
+#endif
 
 	if (p_extra_config.is_valid()) {
 		if (p_extra_config->has_section("init_projects") && p_extra_config->has_section_key("init_projects", "list")) {
@@ -1387,8 +1400,13 @@ float EditorSettings::get_auto_display_scale() const {
 
 // Shortcuts
 
+void EditorSettings::_add_shortcut_default(const String &p_name, const Ref<Shortcut> &p_shortcut) {
+	shortcuts[p_name] = p_shortcut;
+}
+
 void EditorSettings::add_shortcut(const String &p_name, const Ref<Shortcut> &p_shortcut) {
 	shortcuts[p_name] = p_shortcut;
+	shortcuts[p_name]->set_meta("customized", true);
 }
 
 bool EditorSettings::is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const {
@@ -1492,8 +1510,8 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 		}
 	}
 
-	// Override the existing shortcut only if it wasn't customized by the user (i.e. still "original").
-	if (Shortcut::is_event_array_equal(sc->get_events(), sc->get_meta("original"))) {
+	// Override the existing shortcut only if it wasn't customized by the user.
+	if (!sc->has_meta("customized")) {
 		sc->set_events(events);
 	}
 
@@ -1546,7 +1564,7 @@ Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, cons
 	sc->set_name(p_name);
 	sc->set_events(events);
 	sc->set_meta("original", events.duplicate(true)); //to compare against changes
-	EditorSettings::get_singleton()->add_shortcut(p_path, sc);
+	EditorSettings::get_singleton()->_add_shortcut_default(p_path, sc);
 
 	return sc;
 }

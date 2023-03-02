@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationAgent3D" inherits="Node" is_experimental="true" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationAgent3D" inherits="Node" is_experimental="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		3D Agent used in navigation for collision avoidance.
 	</brief_description>
@@ -144,13 +144,13 @@
 		<member name="path_desired_distance" type="float" setter="set_path_desired_distance" getter="get_path_desired_distance" default="1.0">
 			The distance threshold before a path point is considered to be reached. This will allow an agent to not have to hit a path point on the path exactly, but in the area. If this value is set to high the NavigationAgent will skip points on the path which can lead to leaving the navigation mesh. If this value is set to low the NavigationAgent will be stuck in a repath loop cause it will constantly overshoot or undershoot the distance to the next point on each physics frame update.
 		</member>
-		<member name="path_max_distance" type="float" setter="set_path_max_distance" getter="get_path_max_distance" default="3.0">
+		<member name="path_max_distance" type="float" setter="set_path_max_distance" getter="get_path_max_distance" default="5.0">
 			The maximum distance the agent is allowed away from the ideal path to the final position. This can happen due to trying to avoid collisions. When the maximum distance is exceeded, it recalculates the ideal path.
 		</member>
 		<member name="path_metadata_flags" type="int" setter="set_path_metadata_flags" getter="get_path_metadata_flags" enum="NavigationPathQueryParameters3D.PathMetadataFlags" default="7">
 			Additional information to return with the navigation path.
 		</member>
-		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="1.0">
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
 			The radius of the avoidance agent. This is the "body" of the avoidance agent and not the avoidance maneuver starting radius (which is controlled by [member neighbor_distance]).
 			Does not affect normal pathfinding. To change an actor's pathfinding radius bake [NavigationMesh] resources with a different [member NavigationMesh.agent_radius] property and use different navigation maps for each actor size.
 		</member>
@@ -160,7 +160,7 @@
 		<member name="target_position" type="Vector3" setter="set_target_position" getter="get_target_position" default="Vector3(0, 0, 0)">
 			The user-defined target position. Setting this property will clear the current navigation path.
 		</member>
-		<member name="time_horizon" type="float" setter="set_time_horizon" getter="get_time_horizon" default="5.0">
+		<member name="time_horizon" type="float" setter="set_time_horizon" getter="get_time_horizon" default="1.0">
 			The minimal amount of time for which this agent's velocities, that are computed with the collision avoidance algorithm, are safe with respect to other agents. The larger the number, the sooner the agent will respond to other agents, but less freedom in choosing its velocities. Must be positive.
 		</member>
 	</members>
@@ -174,6 +174,8 @@
 				- [code]type[/code]: Always [constant NavigationPathQueryResult3D.PATH_SEGMENT_TYPE_LINK].
 				- [code]rid[/code]: The [RID] of the link.
 				- [code]owner[/code]: The object which manages the link (usually [NavigationLink3D]).
+				- [code]link_entry_position[/code]: If [code]owner[/code] is available and the owner is a [NavigationLink2D], it will contain the global position of the link's point the agent is entering.
+				- [code]link_exit_position[/code]: If [code]owner[/code] is available and the owner is a [NavigationLink2D], it will contain the global position of the link's point which the agent is exiting.
 			</description>
 		</signal>
 		<signal name="navigation_finished">

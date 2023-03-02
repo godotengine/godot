@@ -807,13 +807,17 @@ void SpriteFramesEditor::_animation_name_edited() {
 		return;
 	}
 
+	if (new_name.is_empty()) {
+		new_name = "new_animation";
+	}
+
 	new_name = new_name.replace("/", "_").replace(",", " ");
 
 	String name = new_name;
 	int counter = 0;
 	while (frames->has_animation(name)) {
 		counter++;
-		name = new_name + " " + itos(counter);
+		name = new_name + "_" + itos(counter);
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();

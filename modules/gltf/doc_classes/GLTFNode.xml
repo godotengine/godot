@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GLTFNode" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="GLTFNode" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		GLTF node class.
 	</brief_description>
@@ -34,8 +34,6 @@
 		<member name="children" type="PackedInt32Array" setter="set_children" getter="get_children" default="PackedInt32Array()">
 		</member>
 		<member name="height" type="int" setter="set_height" getter="get_height" default="-1">
-		</member>
-		<member name="joint" type="bool" setter="set_joint" getter="get_joint" default="false">
 		</member>
 		<member name="light" type="int" setter="set_light" getter="get_light" default="-1">
 		</member>

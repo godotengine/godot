@@ -1522,6 +1522,8 @@ void AnimationTimelineEdit::set_animation(const Ref<Animation> &p_animation, boo
 	animation = p_animation;
 	read_only = p_read_only;
 
+	length->set_read_only(read_only);
+
 	if (animation.is_valid()) {
 		len_hb->show();
 		if (read_only) {
@@ -6621,7 +6623,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	optimize_dialog = memnew(ConfirmationDialog);
 	add_child(optimize_dialog);
-	optimize_dialog->set_title(TTR("Anim. Optimizer"));
+	optimize_dialog->set_title(TTR("Animation Optimizer"));
 	VBoxContainer *optimize_vb = memnew(VBoxContainer);
 	optimize_dialog->add_child(optimize_vb);
 
@@ -6630,19 +6632,19 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	optimize_velocity_error->set_min(0.001);
 	optimize_velocity_error->set_step(0.001);
 	optimize_velocity_error->set_value(0.01);
-	optimize_vb->add_margin_child(TTR("Max. Velocity Error:"), optimize_velocity_error);
+	optimize_vb->add_margin_child(TTR("Max Velocity Error:"), optimize_velocity_error);
 	optimize_angular_error = memnew(SpinBox);
 	optimize_angular_error->set_max(1.0);
 	optimize_angular_error->set_min(0.001);
 	optimize_angular_error->set_step(0.001);
 	optimize_angular_error->set_value(0.01);
-	optimize_vb->add_margin_child(TTR("Max. Angular Error:"), optimize_angular_error);
+	optimize_vb->add_margin_child(TTR("Max Angular Error:"), optimize_angular_error);
 	optimize_precision_error = memnew(SpinBox);
 	optimize_precision_error->set_max(6);
 	optimize_precision_error->set_min(1);
 	optimize_precision_error->set_step(1);
 	optimize_precision_error->set_value(3);
-	optimize_vb->add_margin_child(TTR("Max. Precision Error:"), optimize_precision_error);
+	optimize_vb->add_margin_child(TTR("Max Precision Error:"), optimize_precision_error);
 
 	optimize_dialog->set_ok_button_text(TTR("Optimize"));
 	optimize_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_OPTIMIZE_ANIMATION_CONFIRM));
@@ -6733,7 +6735,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	//
 	bake_dialog = memnew(ConfirmationDialog);
-	bake_dialog->set_title(TTR("Anim. Baker"));
+	bake_dialog->set_title(TTR("Animation Baker"));
 	bake_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_BAKE_ANIMATION_CONFIRM));
 	add_child(bake_dialog);
 	GridContainer *bake_grid = memnew(GridContainer);

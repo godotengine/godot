@@ -179,6 +179,8 @@ public:
 	void pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path = NodePath());
 	bool is_point_pinned(int p_point_index) const;
 
+	void _pin_point_deferred(int p_point_index, bool pin, const NodePath p_spatial_attachment_path);
+
 	void set_ray_pickable(bool p_ray_pickable);
 	bool is_ray_pickable() const;
 

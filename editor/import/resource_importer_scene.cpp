@@ -353,13 +353,12 @@ static String _fixstr(const String &p_what, const String &p_str) {
 
 static void _pre_gen_shape_list(Ref<ImporterMesh> &mesh, Vector<Ref<Shape3D>> &r_shape_list, bool p_convex) {
 	ERR_FAIL_NULL_MSG(mesh, "Cannot generate shape list with null mesh value");
-	ERR_FAIL_NULL_MSG(mesh->get_mesh(), "Cannot generate shape list with null mesh value");
 	if (!p_convex) {
 		Ref<ConcavePolygonShape3D> shape = mesh->create_trimesh_shape();
 		r_shape_list.push_back(shape);
 	} else {
 		Vector<Ref<Shape3D>> cd;
-		cd.push_back(mesh->get_mesh()->create_convex_shape(true, /*Passing false, otherwise VHACD will be used to simplify (Decompose) the Mesh.*/ false));
+		cd.push_back(mesh->create_convex_shape(true, /*Passing false, otherwise VHACD will be used to simplify (Decompose) the Mesh.*/ false));
 		if (cd.size()) {
 			for (int i = 0; i < cd.size(); i++) {
 				r_shape_list.push_back(cd[i]);
@@ -562,6 +561,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 	bool isroot = p_node == p_root;
 
 	if (!isroot && _teststr(name, "noimp")) {
+		p_node->set_owner(nullptr);
 		memdelete(p_node);
 		return nullptr;
 	}
@@ -691,6 +691,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 					col->set_transform(mi->get_transform());
 					col->set_name(fixed_name);
 					p_node->replace_by(col);
+					p_node->set_owner(nullptr);
 					memdelete(p_node);
 					p_node = col;
 
@@ -704,6 +705,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 			sb->set_name(fixed_name);
 			Object::cast_to<Node3D>(sb)->set_transform(Object::cast_to<Node3D>(p_node)->get_transform());
 			p_node->replace_by(sb);
+			p_node->set_owner(nullptr);
 			memdelete(p_node);
 			p_node = sb;
 			CollisionShape3D *colshape = memnew(CollisionShape3D);
@@ -811,6 +813,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		nmi->set_navigation_mesh(nmesh);
 		Object::cast_to<Node3D>(nmi)->set_transform(mi->get_transform());
 		p_node->replace_by(nmi);
+		p_node->set_owner(nullptr);
 		memdelete(p_node);
 		p_node = nmi;
 	} else if (_teststr(name, "occ") || _teststr(name, "occonly")) {
@@ -833,6 +836,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 						}
 					}
 				} else {
+					p_node->set_owner(nullptr);
 					memdelete(p_node);
 					p_node = nullptr;
 				}
@@ -1104,6 +1108,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 	}
 
 	if (!isroot && (node_settings.has("import/skip_import") && bool(node_settings["import/skip_import"]))) {
+		p_node->set_owner(nullptr);
 		memdelete(p_node);
 		return nullptr;
 	}
@@ -1230,7 +1235,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 						shapes = collision_map[m];
 					} else {
 						shapes = get_collision_shapes(
-								m->get_mesh(),
+								m,
 								node_settings,
 								p_applied_root_scale);
 					}
@@ -1264,6 +1269,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 								col->set_position(p_applied_root_scale * col->get_position());
 								col->set_name(p_node->get_name());
 								p_node->replace_by(col);
+								p_node->set_owner(nullptr);
 								memdelete(p_node);
 								p_node = col;
 								base = col;
@@ -1274,6 +1280,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 								area->set_position(p_applied_root_scale * area->get_position());
 								area->set_name(p_node->get_name());
 								p_node->replace_by(area);
+								p_node->set_owner(nullptr);
 								memdelete(p_node);
 								p_node = area;
 								base = area;
@@ -1313,6 +1320,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 					if (navmesh_mode == NAVMESH_NAVMESH_ONLY) {
 						nmi->set_transform(mi->get_transform());
 						p_node->replace_by(nmi);
+						p_node->set_owner(nullptr);
 						memdelete(p_node);
 						p_node = nmi;
 					} else {
@@ -1342,6 +1350,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 					OccluderInstance3D::bake_single_node(mi, simplification_dist, r_occluder_arrays.first, r_occluder_arrays.second);
 
 					if (occluder_mode == OCCLUDER_OCCLUDER_ONLY) {
+						p_node->set_owner(nullptr);
 						memdelete(p_node);
 						p_node = nullptr;
 					}
@@ -1613,7 +1622,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "decomposition/normalize_mesh", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.normalize_mesh));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/mode", PROPERTY_HINT_ENUM, "Voxel,Tetrahedron", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), static_cast<int>(decomposition_default.mode)));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "decomposition/convexhull_approximation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.convexhull_approximation));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/max_convex_hulls", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.max_convex_hulls));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/max_convex_hulls", PROPERTY_HINT_RANGE, "1,100,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.max_convex_hulls));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "decomposition/project_hull_vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.project_hull_vertices));
 
 			// Primitives: Box, Sphere, Cylinder, Capsule.
@@ -2093,6 +2102,7 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 		}
 
 		p_node->replace_by(mesh_node);
+		p_node->set_owner(nullptr);
 		memdelete(p_node);
 		p_node = mesh_node;
 	}
@@ -2267,6 +2277,7 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashM
 	Ref<EditorSceneFormatImporter> importer;
 	String ext = p_source_file.get_extension().to_lower();
 
+	// TRANSLATORS: This is an editor progress label.
 	EditorProgress progress("pre-import", TTR("Pre-Import Scene"), 0);
 	progress.step(TTR("Importing Scene..."), 0);
 
@@ -2427,6 +2438,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 
 		if (base_node) {
 			scene->replace_by(base_node);
+			scene->set_owner(nullptr);
 			memdelete(scene);
 			scene = base_node;
 		}

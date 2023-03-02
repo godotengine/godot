@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TileSet" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TileSet" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Tile library for tilemaps.
 	</brief_description>
@@ -300,7 +300,7 @@
 			<param index="1" name="coords_from" type="Vector2i" />
 			<param index="2" name="alternative_from" type="int" />
 			<description>
-				Returns if there is and alternative-level proxy for the given identifiers.
+				Returns if there is an alternative-level proxy for the given identifiers.
 			</description>
 		</method>
 		<method name="has_coords_level_tile_proxy">

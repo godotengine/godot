@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ProjectSettings" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ProjectSettings" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Contains global variables accessible from everywhere.
 	</brief_description>
@@ -667,7 +667,7 @@
 			Main window initial position.
 			[code]0[/code] - "Absolute", [member display/window/size/initial_position] is used to set window position.
 			[code]1[/code] - "Primary Screen Center".
-			[code]2[/code] - "Other Screen Center", [member display/window/size/initial_screen] is used to set window position.
+			[code]2[/code] - "Other Screen Center", [member display/window/size/initial_screen] is used to set the screen.
 		</member>
 		<member name="display/window/size/initial_screen" type="int" setter="" getter="" default="0">
 			Main window initial screen, this settings is used only if [member display/window/size/initial_position_type] is set to "Other Screen Center" ([code]2[/code]).
@@ -704,7 +704,8 @@
 		<member name="display/window/vsync/vsync_mode" type="int" setter="" getter="" default="1">
 			Sets the V-Sync mode for the main game window.
 			See [enum DisplayServer.VSyncMode] for possible values and how they affect the behavior of your application.
-			Depending on the platform and used renderer, the engine will fall back to [code]Enabled[/code] if the desired mode is not supported.
+			Depending on the platform and used renderer, the engine will fall back to [b]Enabled[/b] if the desired mode is not supported.
+			[b]Note:[/b] V-Sync modes other than [b]Enabled[/b] are only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 			[b]Note:[/b] This property is only read when the project starts. To change the V-Sync mode at runtime, call [method DisplayServer.window_set_vsync_mode] instead.
 		</member>
 		<member name="dotnet/project/assembly_name" type="String" setter="" getter="" default="&quot;&quot;">
@@ -1111,6 +1112,9 @@
 			If no selection is currently active, selects the word currently under the caret in text fields. If a selection is currently active, deselects the current selection.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
+		<member name="input/ui_text_select_word_under_caret.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to select the word currently under the caret.
+		</member>
 		<member name="input/ui_text_submit" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to submit a text field.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
@@ -1145,9 +1149,6 @@
 		</member>
 		<member name="input_devices/pointing/emulate_touch_from_mouse" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], sends touch input events when clicking or dragging the mouse.
-		</member>
-		<member name="input_devices/pointing/ios/touch_delay" type="float" setter="" getter="" default="0.15">
-			Default delay for touch events. This only affects iOS devices.
 		</member>
 		<member name="internationalization/locale/fallback" type="String" setter="" getter="" default="&quot;en&quot;">
 			The locale to fall back to if a translation isn't available in a given language. If left empty, [code]en[/code] (English) will be used.
@@ -1931,13 +1932,16 @@
 		</member>
 		<member name="rendering/anti_aliasing/quality/msaa_2d" type="int" setter="" getter="" default="0">
 			Sets the number of MSAA samples to use for 2D/Canvas rendering (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware. This has no effect on shader-induced aliasing or texture aliasing.
+			[b]Note:[/b] MSAA is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 		</member>
 		<member name="rendering/anti_aliasing/quality/msaa_3d" type="int" setter="" getter="" default="0">
 			Sets the number of MSAA samples to use for 3D rendering (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware. See also bilinear scaling 3d [member rendering/scaling_3d/mode] for supersampling, which provides higher quality but is much more expensive. This has no effect on shader-induced aliasing or texture aliasing.
+			[b]Note:[/b] MSAA is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 		</member>
 		<member name="rendering/anti_aliasing/quality/screen_space_aa" type="int" setter="" getter="" default="0">
 			Sets the screen-space antialiasing mode for the default screen [Viewport]. Screen-space antialiasing works by selectively blurring edges in a post-process shader. It differs from MSAA which takes multiple coverage samples while rendering objects. Screen-space AA methods are typically faster than MSAA and will smooth out specular aliasing, but tend to make scenes appear blurry. The blurriness is partially counteracted by automatically using a negative mipmap LOD bias (see [member rendering/textures/default_filters/texture_mipmap_bias]).
 			Another way to combat specular aliasing is to enable [member rendering/anti_aliasing/screen_space_roughness_limiter/enabled].
+			[b]Note:[/b] Screen-space antialiasing is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 		</member>
 		<member name="rendering/anti_aliasing/quality/use_debanding" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible in 3D. 2D rendering is [i]not[/i] affected by debanding unless the [member Environment.background_mode] is [constant Environment.BG_CANVAS].
@@ -1946,11 +1950,14 @@
 		</member>
 		<member name="rendering/anti_aliasing/quality/use_taa" type="bool" setter="" getter="" default="false">
 			Enables Temporal Anti-Aliasing for the default screen [Viewport]. TAA works by jittering the camera and accumulating the images of the last rendered frames, motion vector rendering is used to account for camera and object motion. Enabling TAA can make the image blurrier, which is partially counteracted by automatically using a negative mipmap LOD bias (see [member rendering/textures/default_filters/texture_mipmap_bias]).
-			[b]Note:[/b] The implementation is not complete yet, some visual instances such as particles and skinned meshes may show artifacts.
+			[b]Note:[/b] The implementation is not complete yet. Some visual instances such as particles and skinned meshes may show ghosting artifacts in motion.
+			[b]Note:[/b] TAA is only supported in the Forward+ rendering method, not Mobile or Compatibility.
 		</member>
 		<member name="rendering/anti_aliasing/screen_space_roughness_limiter/amount" type="float" setter="" getter="" default="0.25">
 		</member>
 		<member name="rendering/anti_aliasing/screen_space_roughness_limiter/enabled" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], enables a spatial filter to limit roughness in areas with high-frequency detail. This can help reduce specular aliasing to an extent, though not as much as enabling [member rendering/anti_aliasing/quality/use_taa]. This filter has a small performance cost, so consider disabling it if it doesn't benefit your scene noticeably.
+			[b]Note:[/b] TAA is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 		</member>
 		<member name="rendering/anti_aliasing/screen_space_roughness_limiter/limit" type="float" setter="" getter="" default="0.18">
 		</member>
@@ -1968,7 +1975,7 @@
 		</member>
 		<member name="rendering/driver/depth_prepass/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], performs a previous depth pass before rendering 3D materials. This increases performance significantly in scenes with high overdraw, when complex materials and lighting are used. However, in scenes with few occluded surfaces, the depth prepass may reduce performance. If your game is viewed from a fixed angle that makes it easy to avoid overdraw (such as top-down or side-scrolling perspective), consider disabling the depth prepass to improve performance. This setting can be changed at run-time to optimize performance depending on the scene currently being viewed.
-			[b]Note:[/b] Only supported when using the Vulkan Clustered backend or the OpenGL backend. When using Vulkan Mobile there is no depth prepass performed.
+			[b]Note:[/b] Depth prepass is only supported when using the Forward+ or Compatibility rendering method. When using the Mobile rendering method, there is no depth prepass performed.
 		</member>
 		<member name="rendering/driver/threads/thread_model" type="int" setter="" getter="" default="1">
 			Thread model for rendering. Rendering on a thread can vastly improve performance, but synchronizing to the main thread can cause a bit more jitter.
@@ -2167,6 +2174,9 @@
 			Enables the use of physically based units for light sources. Physically based units tend to be much larger than the arbitrary units used by Godot, but they can be used to match lighting within Godot to real-world lighting. Due to the large dynamic range of lighting conditions present in nature, Godot bakes exposure into the various lighting quantities before rendering. Most light sources bake exposure automatically at run time based on the active [CameraAttributes] resource, but [LightmapGI] and [VoxelGI] require a [CameraAttributes] resource to be set at bake time to reduce the dynamic range. At run time, Godot will automatically reconcile the baked exposure with the active exposure to ensure lighting remains consistent.
 		</member>
 		<member name="rendering/limits/cluster_builder/max_clustered_elements" type="float" setter="" getter="" default="512">
+			The maximum number of clustered elements ([OmniLight3D] + [SpotLight3D] + [Decal] + [ReflectionProbe]) that can be rendered at once in the camera view. If there are more clustered elements present in the camera view, some of them will not be rendered (leading to pop-in during camera movement). Enabling distance fade on lights and decals ([member Light3D.distance_fade_enabled], [member Decal.distance_fade_enabled]) can help avoid reaching this limit.
+			Decreasing this value may improve GPU performance on certain setups, even if the maximum number of clustered elements is never reached in the project.
+			[b]Note:[/b] This setting is only effective when using the Forward+ rendering method, not Mobile and Compatibility.
 		</member>
 		<member name="rendering/limits/forward_renderer/threaded_render_minimum_instances" type="int" setter="" getter="" default="500">
 		</member>
@@ -2174,12 +2184,15 @@
 		</member>
 		<member name="rendering/limits/opengl/max_lights_per_object" type="int" setter="" getter="" default="8">
 			Max number of omnilights and spotlights renderable per object. At the default value of 8, this means that each surface can be affected by up to 8 omnilights and 8 spotlights. This is further limited by hardware support and [member rendering/limits/opengl/max_renderable_lights]. Setting this low will slightly reduce memory usage, may decrease shader compile times, and may result in faster rendering on low-end, mobile, or web devices.
+			[b]Note:[/b] This setting is only effective when using the Compatibility rendering method, not Forward+ and Mobile.
 		</member>
 		<member name="rendering/limits/opengl/max_renderable_elements" type="int" setter="" getter="" default="65536">
 			Max number of elements renderable in a frame. If more elements than this are visible per frame, they will not be drawn. Keep in mind elements refer to mesh surfaces and not meshes themselves. Setting this low will slightly reduce memory usage and may decrease shader compile times, particularly on web. For most uses, the default value is suitable, but consider lowering as much as possible on web export.
+			[b]Note:[/b] This setting is only effective when using the Compatibility rendering method, not Forward+ and Mobile.
 		</member>
 		<member name="rendering/limits/opengl/max_renderable_lights" type="int" setter="" getter="" default="32">
 			Max number of positional lights renderable in a frame. If more lights than this number are used, they will be ignored. Setting this low will slightly reduce memory usage and may decrease shader compile times, particularly on web. For most uses, the default value is suitable, but consider lowering as much as possible on web export.
+			[b]Note:[/b] This setting is only effective when using the Compatibility rendering method, not Forward+ and Mobile.
 		</member>
 		<member name="rendering/limits/spatial_indexer/threaded_cull_minimum_instances" type="int" setter="" getter="" default="1000">
 		</member>
@@ -2271,7 +2284,8 @@
 			Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from 0.0 (sharpest) to 2.0. Values above 2.0 won't make a visible difference.
 		</member>
 		<member name="rendering/scaling_3d/mode" type="int" setter="" getter="" default="0">
-			Sets the scaling 3D mode. Bilinear scaling renders at different resolution to either undersample or supersample the viewport. FidelityFX Super Resolution 1.0, abbreviated to FSR, is an upscaling technology that produces high quality images at fast framerates by using a spatially aware upscaling algorithm. FSR is slightly more expensive than bilinear, but it produces significantly higher image quality. FSR should be used where possible.
+			Sets the scaling 3D mode. Bilinear scaling renders at different resolution to either undersample or supersample the viewport. FidelityFX Super Resolution 1.0, abbreviated to FSR, is an upscaling technology that produces high quality images at fast framerates by using a spatially-aware upscaling algorithm. FSR is slightly more expensive than bilinear, but it produces significantly higher image quality. On particularly low-end GPUs, the added cost of FSR may not be worth it (compared to using bilinear scaling with a slightly higher resolution scale to match performance).
+			[b]Note:[/b] FSR is only effective when using the Forward+ rendering method, not Mobile or Compatibility. If using an incompatible rendering method, FSR will fall back to bilinear scaling.
 		</member>
 		<member name="rendering/scaling_3d/scale" type="float" setter="" getter="" default="1.0">
 			Scales the 3D render buffer based on the viewport size uses an image filter specified in [member rendering/scaling_3d/mode] to scale the output image to the full viewport size. Values lower than [code]1.0[/code] can be used to speed up 3D rendering at the cost of quality (undersampling). Values greater than [code]1.0[/code] are only valid for bilinear mode and can be used to improve 3D rendering quality at a high performance cost (supersampling). See also [member rendering/anti_aliasing/quality/msaa_3d] for multi-sample antialiasing, which is significantly cheaper but only smooths the edges of polygons.
@@ -2295,9 +2309,11 @@
 		</member>
 		<member name="rendering/shading/overrides/force_vertex_shading" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], forces vertex shading for all rendering. This can increase performance a lot, but also reduces quality immensely. Can be used to optimize performance on low-end mobile devices.
+			[b]Note:[/b] This setting currently has no effect, as vertex shading is not implemented yet.
 		</member>
 		<member name="rendering/shading/overrides/force_vertex_shading.mobile" type="bool" setter="" getter="" default="true">
 			Lower-end override for [member rendering/shading/overrides/force_vertex_shading] on mobile devices, due to performance concerns or driver support.
+			[b]Note:[/b] This setting currently has no effect, as vertex shading is not implemented yet.
 		</member>
 		<member name="rendering/textures/decals/filter" type="int" setter="" getter="" default="3">
 			The filtering quality to use for [Decal] nodes. When using one of the anisotropic filtering modes, the anisotropic filtering level is controlled by [member rendering/textures/default_filters/anisotropic_filtering_level].
@@ -2324,11 +2340,11 @@
 		<member name="rendering/textures/lossless_compression/force_png" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import lossless textures using the PNG format. Otherwise, it will default to using WebP.
 		</member>
-		<member name="rendering/textures/vram_compression/import_etc2_astc" type="bool" setter="" getter="" default="false">
+		<member name="rendering/textures/vram_compression/import_etc2_astc" type="bool" setter="" getter="">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression 2 algorithm for lower quality textures and normalmaps and Adaptable Scalable Texture Compression algorithm for high quality textures (in 4x4 block size).
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
 		</member>
-		<member name="rendering/textures/vram_compression/import_s3tc_bptc" type="bool" setter="" getter="" default="true">
+		<member name="rendering/textures/vram_compression/import_s3tc_bptc" type="bool" setter="" getter="">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm (DXT1-5) for lower quality textures and the the BPTC algorithm (BC6H and BC7) for high quality textures. This algorithm is only supported on PC desktop platforms and consoles.
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
 		</member>

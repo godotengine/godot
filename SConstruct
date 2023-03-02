@@ -200,6 +200,7 @@ opts.Add(EnumVariable("warnings", "Level of compilation warnings", "all", ("extr
 opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", False))
 opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all generated binary files", "")
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
+opts.Add("vsproj_name", "Name of the Visual Studio solution", "godot")
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
 opts.Add("build_profile", "Path to a file containing a feature build profile", "")
@@ -217,7 +218,7 @@ opts.Add(BoolVariable("builtin_msdfgen", "Use the built-in MSDFgen library", Tru
 opts.Add(BoolVariable("builtin_glslang", "Use the built-in glslang library", True))
 opts.Add(BoolVariable("builtin_graphite", "Use the built-in Graphite library", True))
 opts.Add(BoolVariable("builtin_harfbuzz", "Use the built-in HarfBuzz library", True))
-opts.Add(BoolVariable("builtin_icu", "Use the built-in ICU library", True))
+opts.Add(BoolVariable("builtin_icu4c", "Use the built-in ICU library", True))
 opts.Add(BoolVariable("builtin_libogg", "Use the built-in libogg library", True))
 opts.Add(BoolVariable("builtin_libpng", "Use the built-in libpng library", True))
 opts.Add(BoolVariable("builtin_libtheora", "Use the built-in libtheora library", True))
@@ -228,7 +229,7 @@ opts.Add(BoolVariable("builtin_mbedtls", "Use the built-in mbedTLS library", Tru
 opts.Add(BoolVariable("builtin_miniupnpc", "Use the built-in miniupnpc library", True))
 opts.Add(BoolVariable("builtin_pcre2", "Use the built-in PCRE2 library", True))
 opts.Add(BoolVariable("builtin_pcre2_with_jit", "Use JIT compiler for the built-in PCRE2 library", True))
-opts.Add(BoolVariable("builtin_recast", "Use the built-in Recast library", True))
+opts.Add(BoolVariable("builtin_recastnavigation", "Use the built-in Recast navigation library", True))
 opts.Add(BoolVariable("builtin_rvo2", "Use the built-in RVO2 library", True))
 opts.Add(BoolVariable("builtin_squish", "Use the built-in squish library", True))
 opts.Add(BoolVariable("builtin_xatlas", "Use the built-in xatlas library", True))
@@ -923,7 +924,7 @@ if selected_platform in platform_list:
             print("Error: The `vsproj` option is only usable on Windows with Visual Studio.")
             Exit(255)
         env["CPPPATH"] = [Dir(path) for path in env["CPPPATH"]]
-        methods.generate_vs_project(env, GetOption("num_jobs"))
+        methods.generate_vs_project(env, GetOption("num_jobs"), env["vsproj_name"])
         methods.generate_cpp_hint_file("cpp.hint")
 
     # Check for the existence of headers

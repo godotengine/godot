@@ -90,13 +90,18 @@
 # alpdenthedev <ekrem_ekrem_45@hotmail.com>, 2022.
 # Muhammed Said Gülberk <msgulberk@gmail.com>, 2022.
 # Cave Johnson <aperturelabs123@proton.me>, 2023.
+# Atilla Yiğit Şimşekoğlu <yigitsimsekoglu@gmail.com>, 2023.
+# Muhammed Mustafa Özbay <muhammed.ozby@outlook.com>, 2023.
+# Tolunay Mutlu <tlnymtlu@gmail.com>, 2023.
+# atahanacar <atahanacar@gmx.com>, 2023.
+# efella <furkanefe911@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-09 09:37+0000\n"
-"Last-Translator: Cave Johnson <aperturelabs123@proton.me>\n"
+"PO-Revision-Date: 2023-02-25 10:57+0000\n"
+"Last-Translator: efella <furkanefe911@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -125,7 +130,7 @@ msgid "Mouse Wheel Up"
 msgstr "Fare Tekerleği Yukarı"
 
 msgid "Mouse Wheel Down"
-msgstr "Fare Tekerleği Aşağı."
+msgstr "Fare Tekerleği Aşağı"
 
 msgid "Mouse Wheel Left"
 msgstr "Sol Fare Tekerlek Düğmesi"
@@ -133,8 +138,110 @@ msgstr "Sol Fare Tekerlek Düğmesi"
 msgid "Mouse Wheel Right"
 msgstr "Sağ Fare Tekerlek Düğmesi"
 
+msgid "Mouse Thumb Button 1"
+msgstr "Yan Fare Düğmesi 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "Yan Fare Düğmesi 2"
+
 msgid "Button"
 msgstr "Düğme"
+
+msgid "Double Click"
+msgstr "Çift Tıklama"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "Fare hareketi (%s) hızıyla (%s) pozisyonunda"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Sol Çubuk X-Ekseni, Oyun Çubuğu 0 X-Ekseni"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "Sol Çubuk Y-Ekseni, Joystick 0 Y-Ekseni"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "Sağ Çubuk X-Ekseni, Joystick 1 X-Ekseni"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "Sağ Çubuk Y-Ekseni, Joystick 1 Y-Ekseni"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "Oyun Çubuğu 2 X-Ekseni, Sol Tetik, Sony L2, Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "Oyun Çubuğu 2 Y-Ekseni, Sağ Tetik, Sony R2, Xbox RT"
+
+msgid "Joystick 3 X-Axis"
+msgstr "Joystick 3 X-Ekseni"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "Joystick 3 Y-Ekseni"
+
+msgid "Joystick 4 X-Axis"
+msgstr "Oyun Çubuğu 4 X-Ekseni"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "Oyun Çubuğu 4 Y-Ekseni"
+
+msgid "Unknown Joypad Axis"
+msgstr "Bilinmeyen Oyun Kolu Ekseni"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "%.2f Değerinde %d (%s) Ekseninde Oyun Kolu Hareketi"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "Alt Aksiyon, Sony Çarpı, Xbox A, Nintendo B"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "Sağ Aksiyon, Sony Daire, Xbox B, Nintendo A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "Sol Aksiyon, Sony Kare, Xbox X, Nintendo Y"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "Üst Aksiyon, Sony Üçgen, Xbox Y, Nintendo X"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "Geri, Sony Select, Xbox Back, Nintendo -"
+
+msgid "Left Stick, Sony L3, Xbox L/LS"
+msgstr "Sol Çubuk, Sony L3, Xbox L/LS"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "Sağ Çubuk, Sony R3, Xbox R/RS"
+
+msgid "Left Shoulder, Sony L1, Xbox LB"
+msgstr "Sol Tetik tuşu, Sony L1, Xbox LB"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "Sağ Tetik tuşu, Sony R1, Xbox RB"
+
+msgid "D-pad Up"
+msgstr "D-pad Yukarı"
+
+msgid "D-pad Down"
+msgstr "D-pad Aşağı"
+
+msgid "D-pad Left"
+msgstr "D-pad Sol"
+
+msgid "D-pad Right"
+msgstr "D-pad Sağ"
+
+msgid "Joypad Button %d"
+msgstr "Oyun Kolu Düğmesi %d"
+
+msgid "Pressure:"
+msgstr "Basınç:"
+
+msgid "touched"
+msgstr "dokunuldu"
+
+msgid "released"
+msgstr "bırakıldı"
+
+msgid "Accept"
+msgstr "Kabul Et"
 
 msgid "Select"
 msgstr "Seç"
@@ -142,11 +249,32 @@ msgstr "Seç"
 msgid "Cancel"
 msgstr "Vazgeç"
 
+msgid "Focus Next"
+msgstr "Sonrakine Odaklan"
+
+msgid "Focus Prev"
+msgstr "Öncekine Odaklan"
+
+msgid "Left"
+msgstr "Sol"
+
+msgid "Right"
+msgstr "Sağ"
+
 msgid "Up"
 msgstr "Yukarı"
 
 msgid "Down"
 msgstr "Aşağı"
+
+msgid "Page Up"
+msgstr "Sayfa Yukarı"
+
+msgid "Page Down"
+msgstr "Sayfa Aşağı"
+
+msgid "Home"
+msgstr "Başlangıç"
 
 msgid "End"
 msgstr "Bitiş"
@@ -164,7 +292,16 @@ msgid "Undo"
 msgstr "Geri al"
 
 msgid "Redo"
-msgstr "Yeniden yap"
+msgstr "Yinele"
+
+msgid "New Line"
+msgstr "Yeni Satır"
+
+msgid "New Blank Line"
+msgstr "Yeni Boş Satır"
+
+msgid "New Line Above"
+msgstr "Yukarıya Yeni Satır"
 
 msgid "Indent"
 msgstr "Girintile"
@@ -568,12 +705,6 @@ msgstr "Bezier Eğrileri Kullan"
 msgid "Create RESET Track(s)"
 msgstr "RESET İz(ler)i oluşturun"
 
-msgid "Anim. Optimizer"
-msgstr "Anim. Eniyileştirici"
-
-msgid "Max. Angular Error:"
-msgstr "Maks. Açısal Hata:"
-
 msgid "Optimize"
 msgstr "En İyileştir"
 
@@ -618,6 +749,11 @@ msgstr "Satır Numarası:"
 
 msgid "%d replaced."
 msgstr "%d değiştirildi."
+
+msgid "%d match"
+msgid_plural "%d matches"
+msgstr[0] "% d eşleşme"
+msgstr[1] "% d eşleşme"
 
 msgid "Match Case"
 msgstr "Büyük/Küçük Harf Eşleştir"
@@ -1370,6 +1506,12 @@ msgstr "3B Fizik"
 msgid "Navigation"
 msgstr "Gezinim"
 
+msgid "OpenGL"
+msgstr "OpenGL"
+
+msgid "Vulkan"
+msgstr "Vulkan"
+
 msgid "Nodes and Classes:"
 msgstr "Düğümler ve Sınıflar:"
 
@@ -1577,9 +1719,6 @@ msgstr "Aç"
 msgid "Select Current Folder"
 msgstr "Geçerli Klasörü Seç"
 
-msgid "File exists, overwrite?"
-msgstr "Dosya var. Üzerine Yazılsın mı?"
-
 msgid "Select This Folder"
 msgstr "Bu Klasörü Seç"
 
@@ -1722,6 +1861,9 @@ msgstr "%s'yi geçersiz kılar:"
 msgid "default:"
 msgstr "varsayılan:"
 
+msgid "Operators"
+msgstr "Operatörler"
+
 msgid "Theme Properties"
 msgstr "Tema Özellikleri"
 
@@ -1755,6 +1897,9 @@ msgid ""
 msgstr ""
 "Bu özellik için henüz bir açıklama yok. Bize [color=$color][url=$url]katkıda "
 "bulunarak[/url][/color] yardım edebilirsiniz!"
+
+msgid "Constructor Descriptions"
+msgstr "Yapıcı metot açıklaması"
 
 msgid "Method Descriptions"
 msgstr "Yöntem Açıklamaları"
@@ -2593,6 +2738,9 @@ msgstr ""
 msgid "Quick Load"
 msgstr "Hızlı yükleme"
 
+msgid "Inspect"
+msgstr "İncele"
+
 msgid "Make Unique"
 msgstr "Benzersiz Yap"
 
@@ -2608,6 +2756,9 @@ msgstr "Yeni Betik"
 msgid "Extend Script"
 msgstr "Betik Aç"
 
+msgid "Remote Debug"
+msgstr "Uzaktan Hata Ayıklama"
+
 msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the Export menu or define an existing preset "
@@ -2618,7 +2769,7 @@ msgstr ""
 "bir ön ayarı çalıştırılabilir olarak tanımlayın."
 
 msgid "Project Run"
-msgstr "Proje Koşusu"
+msgstr "Projeyi Çalıştır"
 
 msgid "Write your logic in the _run() method."
 msgstr "Mantığınızı _run() metoduna yazın."
@@ -3449,6 +3600,9 @@ msgstr "Yerele Göre Atamalar:"
 
 msgid "Locale"
 msgstr "Yerel"
+
+msgid "Set %s on %d nodes"
+msgstr "%d düğüme %s ayarla"
 
 msgid "Select a single node to edit its signals and groups."
 msgstr "Sinyallerini ve Gruplarını düzenlemek için bir Düğüm seçin."
@@ -4598,6 +4752,15 @@ msgstr ""
 "Bir cihazda uzaktan kullanıldığında, bu, ağ dosya sistemi seçeneği "
 "etkinleştirildiğinde daha etkilidir."
 
+msgid "No supported features"
+msgstr "Desteklenen özellik yok"
+
+msgid "Add Feature"
+msgstr "Özellik Ekle"
+
+msgid " - Variation"
+msgstr " Varyasyon"
+
 msgid "Convert to CPUParticles2D"
 msgstr "2BİşlemciPartikül'e dönüştür"
 
@@ -5005,6 +5168,9 @@ msgstr "Anahtar ekleme devre dışı (eklenmiş anahtar yok)."
 
 msgid "Animation Key Inserted."
 msgstr "Animasyon Anahtarı Eklendi."
+
+msgid "Objects: %d\n"
+msgstr "Nesneler: %d\n"
 
 msgid "Top View."
 msgstr "Üstten Görünüm."
@@ -5976,6 +6142,9 @@ msgstr "(boş)"
 msgid "Animations:"
 msgstr "Animasyonlar:"
 
+msgid "Delete Animation"
+msgstr "Animasyonu Sil"
+
 msgid "Animation Frames:"
 msgstr "Animasyon Çerçeveleri:"
 
@@ -6027,14 +6196,29 @@ msgstr "Adım:"
 msgid "Styleboxes"
 msgstr "StilKutusu"
 
+msgid "1 color"
+msgid_plural "{num} colors"
+msgstr[0] "1 renk"
+msgstr[1] "{num} renk"
+
 msgid "No colors found."
 msgstr "Renk bulunamadı."
+
+msgid "1 constant"
+msgid_plural "{num} constants"
+msgstr[0] "1 sabit"
+msgstr[1] "{num} sabit"
 
 msgid "No constants found."
 msgstr "Sabitler bulunamadı."
 
 msgid "No fonts found."
 msgstr "Yazı tipi bulunamadı."
+
+msgid "1 font size"
+msgid_plural "{num} font sizes"
+msgstr[0] "1 yazı boyutu"
+msgstr[1] "{num} yazı boyutu"
 
 msgid "No icons found."
 msgstr "Simge bulunamadı."
@@ -7344,9 +7528,6 @@ msgstr "Eylem Değiştir ölübölgesi"
 msgid "Erase Input Action"
 msgstr "Girdi Eylemini Sil"
 
-msgid "Rename Input Action Event"
-msgstr "Girdi Eylem Olayını Yeniden Adlandır"
-
 msgid "Project Settings (project.godot)"
 msgstr "Proje Ayarları (proje.godot)"
 
@@ -7983,6 +8164,9 @@ msgstr "Boyut"
 msgid "Network Profiler"
 msgstr "Ağ Profilcisi"
 
+msgid "Delete Property?"
+msgstr "Özellik Silinsin Mi?"
+
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
 "Bu düğümün çalışması için bir NavigationMesh kaynağı ayarlanmış veya "
@@ -8519,9 +8703,6 @@ msgstr ""
 msgid "The AnimationPlayer root node is not a valid node."
 msgstr "AnimationOynatıcı kök düğümü geçerli bir düğüm değil."
 
-msgid "Pick a color from the editor window."
-msgstr "Düzenleme penceresinden renk seç."
-
 msgid "Switch between hexadecimal and code values."
 msgstr "Hex ve kod değerleri arasında geçiş yap."
 
@@ -8551,9 +8732,6 @@ msgstr "Uyarı!"
 
 msgid "Please Confirm..."
 msgstr "Lütfen Doğrulayın..."
-
-msgid "Must use a valid extension."
-msgstr "Geçerli bir uzantı kullanılmalı."
 
 msgid "Enable grid minimap."
 msgstr "Izgara haritasını etkinleştir."

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationNodeOneShot" inherits="AnimationNodeSync" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AnimationNodeOneShot" inherits="AnimationNodeSync" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Plays an animation once in [AnimationNodeBlendTree].
 	</brief_description>
@@ -17,6 +17,11 @@
 		animation_tree.set("parameters/OneShot/request", AnimationNodeOneShot.ONE_SHOT_REQUEST_ABORT)
 		# Alternative syntax (same result as above).
 		animation_tree["parameters/OneShot/request"] = AnimationNodeOneShot.ONE_SHOT_REQUEST_ABORT
+
+		# Get current state (read-only).
+		animation_tree.get("parameters/OneShot/active"))
+		# Alternative syntax (same result as above).
+		animation_tree["parameters/OneShot/active"]
 		[/gdscript]
 		[csharp]
 		// Play child animation connected to "shot" port.
@@ -24,6 +29,9 @@
 
 		// Abort child animation connected to "shot" port.
 		animationTree.Set("parameters/OneShot/request", AnimationNodeOneShot.ONE_SHOT_REQUEST_ABORT);
+
+		// Get current state (read-only).
+		animationTree.Get("parameters/OneShot/active");
 		[/csharp]
 		[/codeblocks]
 	</description>

@@ -31,10 +31,12 @@
 #include "color_picker.h"
 
 #include "core/input/input.h"
+#include "core/io/image.h"
 #include "core/math/color.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "scene/gui/color_mode.h"
+#include "servers/display_server.h"
 #include "thirdparty/misc/ok_color.h"
 #include "thirdparty/misc/ok_color_shader.h"
 
@@ -90,8 +92,8 @@ void ColorPicker::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
-			if (screen != nullptr && screen->is_visible()) {
-				screen->hide();
+			if (picker_window != nullptr && picker_window->is_visible()) {
+				picker_window->hide();
 			}
 		} break;
 	}
@@ -1197,11 +1199,11 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 				}
 
 				if (!spinning) {
-					real_t x = CLAMP(bev->get_position().x, corner_x, c->get_size().x - corner_x);
-					real_t y = CLAMP(bev->get_position().y, corner_x, c->get_size().y - corner_y);
+					real_t x = CLAMP(bev->get_position().x - corner_x, 0, real_size.x);
+					real_t y = CLAMP(bev->get_position().y - corner_y, 0, real_size.y);
 
-					s = (x - c->get_position().x - corner_x) / real_size.x;
-					v = 1.0 - (y - c->get_position().y - corner_y) / real_size.y;
+					s = x / real_size.x;
+					v = 1.0 - y / real_size.y;
 				}
 			}
 
@@ -1250,11 +1252,11 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 				real_t corner_y = (c == wheel_uv) ? center.y - Math_SQRT12 * c->get_size().height * 0.42 : 0;
 				Size2 real_size(c->get_size().x - corner_x * 2, c->get_size().y - corner_y * 2);
 
-				real_t x = CLAMP(mev->get_position().x, corner_x, c->get_size().x - corner_x);
-				real_t y = CLAMP(mev->get_position().y, corner_x, c->get_size().y - corner_y);
+				real_t x = CLAMP(mev->get_position().x - corner_x, 0, real_size.x);
+				real_t y = CLAMP(mev->get_position().y - corner_y, 0, real_size.y);
 
-				s = (x - corner_x) / real_size.x;
-				v = 1.0 - (y - corner_y) / real_size.y;
+				s = x / real_size.x;
+				v = 1.0 - y / real_size.y;
 			}
 		}
 
@@ -1372,30 +1374,26 @@ void ColorPicker::_recent_preset_pressed(const bool p_pressed, ColorPresetButton
 	emit_signal(SNAME("color_changed"), p_preset->get_preset_color());
 }
 
-void ColorPicker::_screen_input(const Ref<InputEvent> &p_event) {
+void ColorPicker::_picker_texture_input(const Ref<InputEvent> &p_event) {
 	if (!is_inside_tree()) {
 		return;
 	}
 
 	Ref<InputEventMouseButton> bev = p_event;
 	if (bev.is_valid() && bev->get_button_index() == MouseButton::LEFT && !bev->is_pressed()) {
+		set_pick_color(picker_color);
 		emit_signal(SNAME("color_changed"), color);
-		screen->hide();
+		picker_window->hide();
 	}
 
 	Ref<InputEventMouseMotion> mev = p_event;
 	if (mev.is_valid()) {
-		Viewport *r = get_tree()->get_root();
-		if (!r->get_visible_rect().has_point(mev->get_global_position())) {
-			return;
-		}
-
-		Ref<Image> img = r->get_texture()->get_image();
+		Ref<Image> img = picker_texture_rect->get_texture()->get_image();
 		if (img.is_valid() && !img->is_empty()) {
-			Vector2 ofs = mev->get_global_position();
-			Color c = img->get_pixel(ofs.x, ofs.y);
-
-			set_pick_color(c);
+			Vector2 ofs = mev->get_position();
+			picker_color = img->get_pixel(ofs.x, ofs.y);
+			picker_preview_style_box->set_bg_color(picker_color);
+			picker_preview_label->set_self_modulate(picker_color.get_luminance() < 0.5 ? Color(1.0f, 1.0f, 1.0f) : Color(0.0f, 0.0f, 0.0f));
 		}
 	}
 }
@@ -1409,27 +1407,79 @@ void ColorPicker::_add_preset_pressed() {
 	emit_signal(SNAME("preset_added"), color);
 }
 
-void ColorPicker::_screen_pick_pressed() {
+void ColorPicker::_pick_button_pressed() {
 	if (!is_inside_tree()) {
 		return;
 	}
 
-	Viewport *r = get_tree()->get_root();
-	if (!screen) {
-		screen = memnew(Control);
-		r->add_child(screen);
-		screen->set_as_top_level(true);
-		screen->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-		screen->set_default_cursor_shape(CURSOR_POINTING_HAND);
-		screen->connect("gui_input", callable_mp(this, &ColorPicker::_screen_input));
-		// It immediately toggles off in the first press otherwise.
-		screen->call_deferred(SNAME("connect"), "hidden", Callable(btn_pick, "set_pressed").bind(false));
-	} else {
-		screen->show();
+	if (!picker_window) {
+		picker_window = memnew(Popup);
+		picker_window->hide();
+		picker_window->set_transient(true);
+		add_child(picker_window);
+
+		picker_texture_rect = memnew(TextureRect);
+		picker_texture_rect->set_anchors_preset(Control::PRESET_FULL_RECT);
+		picker_window->add_child(picker_texture_rect);
+		picker_texture_rect->set_default_cursor_shape(CURSOR_POINTING_HAND);
+		picker_texture_rect->connect(SNAME("gui_input"), callable_mp(this, &ColorPicker::_picker_texture_input));
+
+		picker_preview = memnew(Panel);
+		picker_preview->set_anchors_preset(Control::PRESET_CENTER_TOP);
+		picker_preview->set_mouse_filter(MOUSE_FILTER_IGNORE);
+		picker_window->add_child(picker_preview);
+
+		picker_preview_label = memnew(Label);
+		picker_preview->set_anchors_preset(Control::PRESET_CENTER_TOP);
+		picker_preview_label->set_text("Color Picking active");
+		picker_preview->add_child(picker_preview_label);
+
+		picker_preview_style_box = (Ref<StyleBoxFlat>)memnew(StyleBoxFlat);
+		picker_preview_style_box->set_bg_color(Color(1.0, 1.0, 1.0));
+		picker_preview->add_theme_style_override("panel", picker_preview_style_box);
 	}
-	screen->move_to_front();
-	// TODO: show modal no longer works, needs to be converted to a popup.
-	//screen->show_modal();
+
+	Rect2i screen_rect;
+	if (picker_window->is_embedded()) {
+		screen_rect = picker_window->get_embedder()->get_visible_rect();
+		picker_window->set_position(Point2i());
+		picker_texture_rect->set_texture(ImageTexture::create_from_image(picker_window->get_embedder()->get_texture()->get_image()));
+	} else {
+		screen_rect = picker_window->get_parent_rect();
+		picker_window->set_position(screen_rect.position);
+
+		Ref<Image> target_image = Image::create_empty(screen_rect.size.x, screen_rect.size.y, false, Image::FORMAT_RGB8);
+		DisplayServer *ds = DisplayServer::get_singleton();
+
+		// Add the Texture of each Window to the Image.
+		Vector<DisplayServer::WindowID> wl = ds->get_window_list();
+		// FIXME: sort windows by visibility.
+		for (int index = 0; index < wl.size(); index++) {
+			DisplayServer::WindowID wid = wl[index];
+			if (wid == DisplayServer::INVALID_WINDOW_ID) {
+				continue;
+			}
+
+			ObjectID woid = DisplayServer::get_singleton()->window_get_attached_instance_id(wid);
+			if (woid == ObjectID()) {
+				continue;
+			}
+
+			Window *w = Object::cast_to<Window>(ObjectDB::get_instance(woid));
+			Ref<Image> img = w->get_texture()->get_image();
+			if (!img.is_valid() || img->is_empty()) {
+				continue;
+			}
+			img->convert(Image::FORMAT_RGB8);
+			target_image->blit_rect(img, Rect2i(Point2i(0, 0), img->get_size()), w->get_position());
+		}
+
+		picker_texture_rect->set_texture(ImageTexture::create_from_image(target_image));
+	}
+
+	picker_window->set_size(screen_rect.size);
+	picker_preview->set_size(screen_rect.size / 10.0); // 10% of size in each axis.
+	picker_window->popup();
 }
 
 void ColorPicker::_html_focus_exit() {
@@ -1595,9 +1645,8 @@ ColorPicker::ColorPicker() {
 
 	btn_pick = memnew(Button);
 	sample_hbc->add_child(btn_pick);
-	btn_pick->set_toggle_mode(true);
-	btn_pick->set_tooltip_text(RTR("Pick a color from the editor window."));
-	btn_pick->connect("pressed", callable_mp(this, &ColorPicker::_screen_pick_pressed));
+	btn_pick->set_tooltip_text(RTR("Pick a color from the application window."));
+	btn_pick->connect(SNAME("pressed"), callable_mp(this, &ColorPicker::_pick_button_pressed));
 
 	sample = memnew(TextureRect);
 	sample_hbc->add_child(sample);

@@ -211,6 +211,8 @@ private:
 		HashMap<Vector2i, TileMapCell> tile_map;
 		HashMap<Vector2i, TileMapQuadrant> quadrant_map;
 		SelfList<TileMapQuadrant>::List dirty_quadrant_list;
+		RID navigation_map;
+		bool uses_world_navigation_map = false;
 	};
 	LocalVector<TileMapLayer> layers;
 	int selected_layer = -1;
@@ -259,6 +261,8 @@ private:
 	void _physics_draw_quadrant_debug(TileMapQuadrant *p_quadrant);
 
 	void _navigation_notification(int p_what);
+	void _navigation_update_layer(int p_layer);
+	void _navigation_cleanup_layer(int p_layer);
 	void _navigation_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list);
 	void _navigation_cleanup_quadrant(TileMapQuadrant *p_quadrant);
 	void _navigation_draw_quadrant_debug(TileMapQuadrant *p_quadrant);
@@ -338,6 +342,9 @@ public:
 
 	void set_navigation_visibility_mode(VisibilityMode p_show_navigation);
 	VisibilityMode get_navigation_visibility_mode();
+
+	void set_navigation_map(int p_layer, RID p_map);
+	RID get_navigation_map(int p_layer) const;
 
 	// Cells accessors.
 	void set_cell(int p_layer, const Vector2i &p_coords, int p_source_id = TileSet::INVALID_SOURCE, const Vector2i p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = 0);

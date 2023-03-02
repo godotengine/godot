@@ -93,14 +93,21 @@ Node *EditorSceneFormatImporterFBX::import_scene(const String &p_path, uint32_t 
 	Ref<GLTFState> state;
 	state.instantiate();
 	print_verbose(vformat("glTF path: %s", sink));
-	Error err = gltf->append_from_file(sink, state, p_flags);
+	Error err = gltf->append_from_file(sink, state, p_flags, p_path.get_base_dir());
 	if (err != OK) {
 		if (r_err) {
 			*r_err = FAILED;
 		}
 		return nullptr;
 	}
+
+#ifndef DISABLE_DEPRECATED
+	bool trimming = p_options.has("animation/trimming") ? (bool)p_options["animation/trimming"] : false;
+	bool remove_immutable = p_options.has("animation/remove_immutable_tracks") ? (bool)p_options["animation/remove_immutable_tracks"] : true;
+	return gltf->generate_scene(state, (float)p_options["animation/fps"], trimming, remove_immutable);
+#else
 	return gltf->generate_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"], (bool)p_options["animation/remove_immutable_tracks"]);
+#endif
 }
 
 Variant EditorSceneFormatImporterFBX::get_option_visibility(const String &p_path, bool p_for_animation,

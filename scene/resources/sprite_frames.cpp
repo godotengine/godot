@@ -201,6 +201,7 @@ void SpriteFrames::_set_animations(const Array &p_animations) {
 		anim.loop = d["loop"];
 		Array frames = d["frames"];
 		for (int j = 0; j < frames.size(); j++) {
+#ifndef DISABLE_DEPRECATED
 			// For compatibility.
 			Ref<Resource> res = frames[j];
 			if (res.is_valid()) {
@@ -208,6 +209,7 @@ void SpriteFrames::_set_animations(const Array &p_animations) {
 				anim.frames.push_back(frame);
 				continue;
 			}
+#endif
 
 			Dictionary f = frames[j];
 

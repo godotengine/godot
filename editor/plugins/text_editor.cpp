@@ -30,6 +30,7 @@
 
 #include "text_editor.h"
 
+#include "core/io/json.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
@@ -67,12 +68,12 @@ void TextEditor::_load_theme_settings() {
 String TextEditor::get_name() {
 	String name;
 
-	name = text_file->get_path().get_file();
+	name = edited_res->get_path().get_file();
 	if (name.is_empty()) {
 		// This appears for newly created built-in text_files before saving the scene.
 		name = TTR("[unsaved]");
-	} else if (text_file->is_built_in()) {
-		const String &text_file_name = text_file->get_name();
+	} else if (edited_res->is_built_in()) {
+		const String &text_file_name = edited_res->get_name();
 		if (!text_file_name.is_empty()) {
 			// If the built-in text_file has a custom resource name defined,
 			// display the built-in text_file name as follows: `ResourceName (scene_file.tscn)`
@@ -88,20 +89,29 @@ String TextEditor::get_name() {
 }
 
 Ref<Texture2D> TextEditor::get_theme_icon() {
-	return EditorNode::get_singleton()->get_object_icon(text_file.ptr(), "");
+	return EditorNode::get_singleton()->get_object_icon(edited_res.ptr(), "TextFile");
 }
 
 Ref<Resource> TextEditor::get_edited_resource() const {
-	return text_file;
+	return edited_res;
 }
 
 void TextEditor::set_edited_resource(const Ref<Resource> &p_res) {
-	ERR_FAIL_COND(text_file.is_valid());
+	ERR_FAIL_COND(edited_res.is_valid());
 	ERR_FAIL_COND(p_res.is_null());
 
-	text_file = p_res;
+	edited_res = p_res;
 
-	code_editor->get_text_editor()->set_text(text_file->get_text());
+	Ref<TextFile> text_file = edited_res;
+	if (text_file != nullptr) {
+		code_editor->get_text_editor()->set_text(text_file->get_text());
+	}
+
+	Ref<JSON> json_file = edited_res;
+	if (json_file != nullptr) {
+		code_editor->get_text_editor()->set_text(json_file->get_parsed_text());
+	}
+
 	code_editor->get_text_editor()->clear_undo_history();
 	code_editor->get_text_editor()->tag_saved_version();
 
@@ -117,6 +127,8 @@ void TextEditor::enable_editor(Control *p_shortcut_context) {
 	editor_enabled = true;
 
 	_load_theme_settings();
+
+	_validate_script();
 
 	if (p_shortcut_context) {
 		for (int i = 0; i < edit_hb->get_child_count(); ++i) {
@@ -143,7 +155,7 @@ PackedInt32Array TextEditor::get_breakpoints() {
 }
 
 void TextEditor::reload_text() {
-	ERR_FAIL_COND(text_file.is_null());
+	ERR_FAIL_COND(edited_res.is_null());
 
 	CodeEdit *te = code_editor->get_text_editor();
 	int column = te->get_caret_column();
@@ -151,7 +163,16 @@ void TextEditor::reload_text() {
 	int h = te->get_h_scroll();
 	int v = te->get_v_scroll();
 
-	te->set_text(text_file->get_text());
+	Ref<TextFile> text_file = edited_res;
+	if (text_file != nullptr) {
+		te->set_text(text_file->get_text());
+	}
+
+	Ref<JSON> json_file = edited_res;
+	if (json_file != nullptr) {
+		te->set_text(json_file->get_parsed_text());
+	}
+
 	te->set_caret_line(row);
 	te->set_caret_column(column);
 	te->set_h_scroll(h);
@@ -166,6 +187,20 @@ void TextEditor::reload_text() {
 void TextEditor::_validate_script() {
 	emit_signal(SNAME("name_changed"));
 	emit_signal(SNAME("edited_script_changed"));
+
+	Ref<JSON> json_file = edited_res;
+	if (json_file != nullptr) {
+		CodeEdit *te = code_editor->get_text_editor();
+
+		te->set_line_background_color(code_editor->get_error_pos().x, Color(0, 0, 0, 0));
+		code_editor->set_error("");
+
+		if (json_file->parse(te->get_text(), true) != OK) {
+			code_editor->set_error(json_file->get_error_message());
+			code_editor->set_error_pos(json_file->get_error_line(), 0);
+			te->set_line_background_color(code_editor->get_error_pos().x, EDITOR_GET("text_editor/theme/highlighting/mark_color"));
+		}
+	}
 }
 
 void TextEditor::_update_bookmark_list() {
@@ -204,13 +239,22 @@ void TextEditor::_bookmark_item_pressed(int p_idx) {
 }
 
 void TextEditor::apply_code() {
-	text_file->set_text(code_editor->get_text_editor()->get_text());
+	Ref<TextFile> text_file = edited_res;
+	if (text_file != nullptr) {
+		text_file->set_text(code_editor->get_text_editor()->get_text());
+	}
+
+	Ref<JSON> json_file = edited_res;
+	if (json_file != nullptr) {
+		json_file->parse(code_editor->get_text_editor()->get_text(), true);
+	}
+	code_editor->get_text_editor()->get_syntax_highlighter()->update_cache();
 }
 
 bool TextEditor::is_unsaved() {
 	const bool unsaved =
 			code_editor->get_text_editor()->get_version() != code_editor->get_text_editor()->get_saved_version() ||
-			text_file->get_path().is_empty(); // In memory.
+			edited_res->get_path().is_empty(); // In memory.
 	return unsaved;
 }
 
@@ -353,8 +397,13 @@ void TextEditor::_edit_option(int p_op) {
 			code_editor->duplicate_selection();
 		} break;
 		case EDIT_TOGGLE_FOLD_LINE: {
-			for (int caret_idx = 0; caret_idx < tx->get_caret_count(); caret_idx++) {
-				tx->toggle_foldable_line(tx->get_caret_line(caret_idx));
+			int previous_line = -1;
+			for (int caret_idx : tx->get_caret_index_edit_order()) {
+				int line_idx = tx->get_caret_line(caret_idx);
+				if (line_idx != previous_line) {
+					tx->toggle_foldable_line(line_idx);
+					previous_line = line_idx;
+				}
 			}
 			tx->queue_redraw();
 		} break;
@@ -431,7 +480,7 @@ void TextEditor::_convert_case(CodeTextEditor::CaseStyle p_case) {
 }
 
 static ScriptEditorBase *create_editor(const Ref<Resource> &p_resource) {
-	if (Object::cast_to<TextFile>(*p_resource)) {
+	if (Object::cast_to<TextFile>(*p_resource) || Object::cast_to<JSON>(*p_resource)) {
 		return memnew(TextEditor);
 	}
 	return nullptr;
@@ -656,4 +705,5 @@ TextEditor::~TextEditor() {
 }
 
 void TextEditor::validate() {
+	this->code_editor->validate_script();
 }

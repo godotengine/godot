@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Mesh" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Mesh" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A [Resource] that contains vertex array-based geometry.
 	</brief_description>
@@ -16,22 +16,26 @@
 		<method name="_get_aabb" qualifiers="virtual const">
 			<return type="AABB" />
 			<description>
+				Virtual method to override the [AABB] for a custom class extending [Mesh].
 			</description>
 		</method>
 		<method name="_get_blend_shape_count" qualifiers="virtual const">
 			<return type="int" />
 			<description>
+				Virtual method to override the number of blend shapes for a custom class extending [Mesh].
 			</description>
 		</method>
 		<method name="_get_blend_shape_name" qualifiers="virtual const">
 			<return type="StringName" />
 			<param index="0" name="index" type="int" />
 			<description>
+				Virtual method to override the retrieval of blend shape names for a custom class extending [Mesh].
 			</description>
 		</method>
 		<method name="_get_surface_count" qualifiers="virtual const">
 			<return type="int" />
 			<description>
+				Virtual method to override the surface count for a custom class extending [Mesh].
 			</description>
 		</method>
 		<method name="_set_blend_shape_name" qualifiers="virtual">
@@ -39,54 +43,63 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="name" type="StringName" />
 			<description>
+				Virtual method to override the names of blend shapes for a custom class extending [Mesh].
 			</description>
 		</method>
 		<method name="_surface_get_array_index_len" qualifiers="virtual const">
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
+				Virtual method to override the surface array index length for a custom class extending [Mesh].
 			</description>
 		</method>
 		<method name="_surface_get_array_len" qualifiers="virtual const">
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
+				Virtual method to override the surface array length for a custom class extending [Mesh].
 			</description>
 		</method>
 		<method name="_surface_get_arrays" qualifiers="virtual const">
 			<return type="Array" />
 			<param index="0" name="index" type="int" />
 			<description>
+				Virtual method to override the surface arrays for a custom class extending [Mesh].
 			</description>
 		</method>
 		<method name="_surface_get_blend_shape_arrays" qualifiers="virtual const">
 			<return type="Array[]" />
 			<param index="0" name="index" type="int" />
 			<description>
+				Virtual method to override the blend shape arrays for a custom class extending [Mesh].
 			</description>
 		</method>
 		<method name="_surface_get_format" qualifiers="virtual const">
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
+				Virtual method to override the surface format for a custom class extending [Mesh].
 			</description>
 		</method>
 		<method name="_surface_get_lods" qualifiers="virtual const">
 			<return type="Dictionary" />
 			<param index="0" name="index" type="int" />
 			<description>
+				Virtual method to override the surface LODs for a custom class extending [Mesh].
 			</description>
 		</method>
 		<method name="_surface_get_material" qualifiers="virtual const">
 			<return type="Material" />
 			<param index="0" name="index" type="int" />
 			<description>
+				Virtual method to override the surface material for a custom class extending [Mesh].
 			</description>
 		</method>
 		<method name="_surface_get_primitive_type" qualifiers="virtual const">
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
+				Virtual method to override the surface primitive type for a custom class extending [Mesh].
 			</description>
 		</method>
 		<method name="_surface_set_material" qualifiers="virtual">
@@ -94,6 +107,7 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="material" type="Material" />
 			<description>
+				Virtual method to override the setting of a [param material] at the given [param index] for a custom class extending [Mesh].
 			</description>
 		</method>
 		<method name="create_convex_shape" qualifiers="const">
@@ -258,7 +272,7 @@
 			Indicates this custom channel contains half precision float colors, encoded as [PackedByteArray].
 		</constant>
 		<constant name="ARRAY_CUSTOM_R_FLOAT" value="4" enum="ArrayCustomFormat">
-			Indicates this custom channel contains full float colors, in a [PackedFloat32Array]. Only the red green channel is used.
+			Indicates this custom channel contains full float colors, in a [PackedFloat32Array]. Only the red channel is used.
 		</constant>
 		<constant name="ARRAY_CUSTOM_RG_FLOAT" value="5" enum="ArrayCustomFormat">
 			Indicates this custom channel contains full float colors, in a [PackedFloat32Array]. Only red and green channels are used.

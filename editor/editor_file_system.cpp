@@ -1237,10 +1237,23 @@ void EditorFileSystem::_notification(int p_what) {
 
 		case NOTIFICATION_PROCESS: {
 			if (use_threads) {
+				/** This hack exists because of the EditorProgress nature
+				 *  of processing events recursively. This needs to be rewritten
+				 *  at some point entirely, but in the meantime the following
+				 *  hack prevents deadlock on import.
+				 */
+
+				static bool prevent_recursive_process_hack = false;
+				if (prevent_recursive_process_hack) {
+					break;
+				}
+
+				prevent_recursive_process_hack = true;
+
+				bool done_importing = false;
+
 				if (scanning_changes) {
 					if (scanning_changes_done) {
-						scanning_changes = false;
-
 						set_process(false);
 
 						thread_sources.wait_to_finish();
@@ -1251,6 +1264,8 @@ void EditorFileSystem::_notification(int p_what) {
 						}
 						emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 						first_scan = false;
+						scanning_changes = false; // Changed to false here to prevent recursive triggering of scan thread.
+						done_importing = true;
 					}
 				} else if (!scanning && thread.is_started()) {
 					set_process(false);
@@ -1268,10 +1283,12 @@ void EditorFileSystem::_notification(int p_what) {
 					first_scan = false;
 				}
 
-				if (!is_processing() && scan_changes_pending) {
+				if (done_importing && scan_changes_pending) {
 					scan_changes_pending = false;
 					scan_changes();
 				}
+
+				prevent_recursive_process_hack = false;
 			}
 		} break;
 	}
@@ -1543,7 +1560,7 @@ void EditorFileSystem::_update_script_classes() {
 
 			ScriptServer::add_global_class(efd->files[index]->script_class_name, efd->files[index]->script_class_extends, lang, path);
 			EditorNode::get_editor_data().script_class_set_icon_path(efd->files[index]->script_class_name, efd->files[index]->script_class_icon_path);
-			EditorNode::get_editor_data().script_class_set_name(efd->files[index]->file, efd->files[index]->script_class_name);
+			EditorNode::get_editor_data().script_class_set_name(path, efd->files[index]->script_class_name);
 		}
 	}
 
@@ -2180,6 +2197,7 @@ void EditorFileSystem::_reimport_thread(uint32_t p_index, ImportThreadData *p_im
 }
 
 void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
+	ERR_FAIL_COND_MSG(importing, "Attempted to call reimport_files() recursively, this is not allowed.");
 	importing = true;
 
 	Vector<String> reloads;

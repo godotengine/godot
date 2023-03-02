@@ -40,14 +40,26 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+#ifdef SOWRAP_ENABLED
 #include "dynwrappers/wayland-client-core-so_wrap.h"
 #include "dynwrappers/wayland-cursor-so_wrap.h"
 #include "dynwrappers/wayland-egl-core-so_wrap.h"
 
 #include "../xkbcommon-so_wrap.h"
+#else
+#include <wayland-client-core.h>
+#include <wayland-cursor.h>
+#include <wayland-egl-core.h>
+
+#include <xkbcommon/xkbcommon.h>
+#endif // SOWRAP_ENABLED
 
 #ifdef LIBDECOR_ENABLED
+#ifdef SOWRAP_ENABLED
 #include "dynwrappers/libdecor-so_wrap.h"
+#else
+#include <libdecor-0/libdecor.h>
+#endif // SOWRAP_ENABLED
 #endif // LIBDECOR_ENABLED
 
 #include "key_mapping_xkb.h"

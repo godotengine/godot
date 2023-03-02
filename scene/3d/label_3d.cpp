@@ -442,6 +442,18 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 }
 
 void Label3D::_shape() {
+	// When a shaped text is invalidated by an external source, we want to reshape it.
+	if (!TS->shaped_text_is_ready(text_rid)) {
+		dirty_text = true;
+	}
+
+	for (const RID &line_rid : lines_rid) {
+		if (!TS->shaped_text_is_ready(line_rid)) {
+			dirty_lines = true;
+			break;
+		}
+	}
+
 	// Clear mesh.
 	RS::get_singleton()->mesh_clear(mesh);
 	aabb = AABB();

@@ -2024,7 +2024,7 @@ void DisplayServerMacOS::warp_mouse(const Point2i &p_position) {
 		// Local point in window coords.
 		const NSRect contentRect = [wd.window_view frame];
 		const float scale = screen_get_max_scale();
-		NSRect pointInWindowRect = NSMakeRect(p_position.x / scale, contentRect.size.height - (p_position.y / scale - 1), 0, 0);
+		NSRect pointInWindowRect = NSMakeRect(p_position.x / scale, contentRect.size.height - (p_position.y / scale), scale, scale);
 		NSPoint pointOnScreen = [[wd.window_view window] convertRectToScreen:pointInWindowRect].origin;
 
 		// Point in scren coords.
@@ -3283,6 +3283,8 @@ DisplayServerMacOS::CursorShape DisplayServerMacOS::cursor_get_shape() const {
 
 void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 
 	if (p_cursor.is_valid()) {
 		HashMap<CursorShape, Vector<Variant>>::Iterator cursor_c = cursors_cache.find(p_shape);

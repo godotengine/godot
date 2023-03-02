@@ -490,6 +490,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 		return FAILED;
 	}
 #else
+	int id_type = 1;
 	if (p_preset->get("codesign/identity") != "") {
 		args.push_back("-pkcs12");
 		args.push_back(p_preset->get("codesign/identity"));
@@ -500,7 +501,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 #endif
 
 	//password
-	if (p_preset->get("codesign/password") != "") {
+	if ((id_type == 1) && (p_preset->get("codesign/password") != "")) {
 #ifdef WINDOWS_ENABLED
 		args.push_back("/p");
 #else
@@ -574,7 +575,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 	String str;
 	Error err = OS::get_singleton()->execute(signtool_path, args, &str, nullptr, true);
 	if (err != OK || (str.find("not found") != -1) || (str.find("not recognized") != -1)) {
-#ifndef WINDOWS_ENABLED
+#ifdef WINDOWS_ENABLED
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start signtool executable. Configure signtool path in the Editor Settings (Export > Windows > signtool), or disable \"Codesign\" in the export preset."));
 #else
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start osslsigncode executable. Configure signtool path in the Editor Settings (Export > Windows > osslsigncode), or disable \"Codesign\" in the export preset."));

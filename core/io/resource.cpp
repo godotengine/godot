@@ -542,9 +542,26 @@ Ref<Resource> ResourceCache::get_ref(const String &p_path) {
 
 void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
 	lock.lock();
+
+	LocalVector<String> to_remove;
+
 	for (KeyValue<String, Resource *> &E : resources) {
-		p_resources->push_back(Ref<Resource>(E.value));
+		Ref<Resource> ref = Ref<Resource>(E.value);
+
+		if (!ref.is_valid()) {
+			// This resource is in the process of being deleted, ignore its existence
+			E.value->path_cache = String();
+			to_remove.push_back(E.key);
+			continue;
+		}
+
+		p_resources->push_back(ref);
 	}
+
+	for (const String &E : to_remove) {
+		resources.erase(E);
+	}
+
 	lock.unlock();
 }
 

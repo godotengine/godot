@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RichTextLabel" inherits="Control" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="RichTextLabel" inherits="Control" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Label that displays rich text.
 	</brief_description>
@@ -373,7 +373,7 @@
 			<return type="void" />
 			<param index="0" name="data" type="Variant" />
 			<description>
-				Adds a [code][meta][/code] tag to the tag stack. Similar to the BBCode [code][url=something]{text}[/url][/code], but supports non-[String] metadata types.
+				Adds a meta tag to the tag stack. Similar to the BBCode [code][url=something]{text}[/url][/code], but supports non-[String] metadata types.
 			</description>
 		</method>
 		<method name="push_mono">
@@ -624,60 +624,6 @@
 		</constant>
 		<constant name="LIST_DOTS" value="3" enum="ListType">
 			Each list item has a filled circle marker.
-		</constant>
-		<constant name="ITEM_FRAME" value="0" enum="ItemType">
-		</constant>
-		<constant name="ITEM_TEXT" value="1" enum="ItemType">
-		</constant>
-		<constant name="ITEM_IMAGE" value="2" enum="ItemType">
-		</constant>
-		<constant name="ITEM_NEWLINE" value="3" enum="ItemType">
-		</constant>
-		<constant name="ITEM_FONT" value="4" enum="ItemType">
-		</constant>
-		<constant name="ITEM_FONT_SIZE" value="5" enum="ItemType">
-		</constant>
-		<constant name="ITEM_FONT_FEATURES" value="6" enum="ItemType">
-		</constant>
-		<constant name="ITEM_COLOR" value="7" enum="ItemType">
-		</constant>
-		<constant name="ITEM_OUTLINE_SIZE" value="8" enum="ItemType">
-		</constant>
-		<constant name="ITEM_OUTLINE_COLOR" value="9" enum="ItemType">
-		</constant>
-		<constant name="ITEM_UNDERLINE" value="10" enum="ItemType">
-		</constant>
-		<constant name="ITEM_STRIKETHROUGH" value="11" enum="ItemType">
-		</constant>
-		<constant name="ITEM_PARAGRAPH" value="12" enum="ItemType">
-		</constant>
-		<constant name="ITEM_INDENT" value="13" enum="ItemType">
-		</constant>
-		<constant name="ITEM_LIST" value="14" enum="ItemType">
-		</constant>
-		<constant name="ITEM_TABLE" value="15" enum="ItemType">
-		</constant>
-		<constant name="ITEM_FADE" value="16" enum="ItemType">
-		</constant>
-		<constant name="ITEM_SHAKE" value="17" enum="ItemType">
-		</constant>
-		<constant name="ITEM_WAVE" value="18" enum="ItemType">
-		</constant>
-		<constant name="ITEM_TORNADO" value="19" enum="ItemType">
-		</constant>
-		<constant name="ITEM_RAINBOW" value="20" enum="ItemType">
-		</constant>
-		<constant name="ITEM_BGCOLOR" value="21" enum="ItemType">
-		</constant>
-		<constant name="ITEM_FGCOLOR" value="22" enum="ItemType">
-		</constant>
-		<constant name="ITEM_META" value="23" enum="ItemType">
-		</constant>
-		<constant name="ITEM_HINT" value="24" enum="ItemType">
-		</constant>
-		<constant name="ITEM_DROPCAP" value="25" enum="ItemType">
-		</constant>
-		<constant name="ITEM_CUSTOMFX" value="26" enum="ItemType">
 		</constant>
 		<constant name="MENU_COPY" value="0" enum="MenuItems">
 			Copies the selected text.

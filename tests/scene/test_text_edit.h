@@ -1779,6 +1779,50 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 		}
 
+		SUBCASE("[TextEdit] ui_text_backspace_word same line") {
+			text_edit->set_text("test test test");
+			text_edit->set_caret_column(4);
+			text_edit->add_caret(0, 9);
+			text_edit->add_caret(0, 15);
+
+			// For the second caret.
+			Array args2;
+			args2.push_back(0);
+			lines_edited_args.push_front(args2);
+
+			// For the third caret.
+			Array args3;
+			args2.push_back(0);
+			lines_edited_args.push_front(args2);
+
+			CHECK(text_edit->get_caret_count() == 3);
+			MessageQueue::get_singleton()->flush();
+
+			SIGNAL_DISCARD("text_set");
+			SIGNAL_DISCARD("text_changed");
+			SIGNAL_DISCARD("lines_edited_from");
+			SIGNAL_DISCARD("caret_changed");
+
+			SEND_GUI_ACTION("ui_text_backspace_word");
+			CHECK(text_edit->get_viewport()->is_input_handled());
+			CHECK(text_edit->get_text() == "  ");
+			CHECK(text_edit->get_caret_line() == 0);
+			CHECK(text_edit->get_caret_column() == 0);
+			CHECK_FALSE(text_edit->has_selection(0));
+
+			CHECK(text_edit->get_caret_line(1) == 0);
+			CHECK(text_edit->get_caret_column(1) == 1);
+			CHECK_FALSE(text_edit->has_selection(1));
+
+			CHECK(text_edit->get_caret_line(2) == 0);
+			CHECK(text_edit->get_caret_column(2) == 2);
+			CHECK_FALSE(text_edit->has_selection(1));
+
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
+			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
+		}
+
 		SUBCASE("[TextEdit] ui_text_backspace") {
 			text_edit->set_text("\nthis is some test text.\n\nthis is some test text.");
 			text_edit->select(1, 0, 1, 4);

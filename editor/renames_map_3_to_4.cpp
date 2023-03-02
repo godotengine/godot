@@ -33,7 +33,27 @@
 #ifndef DISABLE_DEPRECATED
 
 const char *RenamesMap3To4::enum_renames[][2] = {
-	//// constants
+	// Constants
+	// @GlobalScope
+	{ "BUTTON_LEFT", "MOUSE_BUTTON_LEFT" },
+	{ "BUTTON_MASK_LEFT", "MOUSE_BUTTON_MASK_LEFT" },
+	{ "BUTTON_MASK_MIDDLE", "MOUSE_BUTTON_MASK_MIDDLE" },
+	{ "BUTTON_MASK_RIGHT", "MOUSE_BUTTON_MASK_RIGHT" },
+	{ "BUTTON_MASK_XBUTTON1", "MOUSE_BUTTON_MASK_XBUTTON1" },
+	{ "BUTTON_MASK_XBUTTON2", "MOUSE_BUTTON_MASK_XBUTTON2" },
+	{ "BUTTON_MIDDLE", "MOUSE_BUTTON_MIDDLE" },
+	{ "BUTTON_RIGHT", "MOUSE_BUTTON_RIGHT" },
+	{ "BUTTON_WHEEL_DOWN", "MOUSE_BUTTON_WHEEL_DOWN" },
+	{ "BUTTON_WHEEL_LEFT", "MOUSE_BUTTON_WHEEL_LEFT" },
+	{ "BUTTON_WHEEL_RIGHT", "MOUSE_BUTTON_WHEEL_RIGHT" },
+	{ "BUTTON_WHEEL_UP", "MOUSE_BUTTON_WHEEL_UP" },
+	{ "BUTTON_XBUTTON1", "MOUSE_BUTTON_XBUTTON1" },
+	{ "BUTTON_XBUTTON2", "MOUSE_BUTTON_XBUTTON2" },
+	{ "KEY_CONTROL", "KEY_CTRL" },
+	{ "SIDE_BOTTOM", "MARGIN_BOTTOM" },
+	{ "SIDE_LEFT", "MARGIN_LEFT" },
+	{ "SIDE_RIGHT", "MARGIN_RIGHT" },
+	{ "SIDE_TOP", "MARGIN_TOP" },
 	{ "TYPE_COLOR_ARRAY", "TYPE_PACKED_COLOR_ARRAY" },
 	{ "TYPE_FLOAT64_ARRAY", "TYPE_PACKED_FLOAT64_ARRAY" },
 	{ "TYPE_INT64_ARRAY", "TYPE_PACKED_INT64_ARRAY" },
@@ -47,10 +67,10 @@ const char *RenamesMap3To4::enum_renames[][2] = {
 	{ "TYPE_VECTOR2_ARRAY", "TYPE_PACKED_VECTOR2_ARRAY" },
 	{ "TYPE_VECTOR3_ARRAY", "TYPE_PACKED_VECTOR3_ARRAY" },
 
-	// {"FLAG_MAX", "PARTICLE_FLAG_MAX"}, // CPUParticles2D - used in more classes
-	{ "ALIGN_BEGIN", "ALIGNMENT_BEGIN" }, //AspectRatioContainer
-	{ "ALIGN_CENTER", "ALIGNMENT_CENTER" }, //AspectRatioContainer
-	{ "ALIGN_END", "ALIGNMENT_END" }, //AspectRatioContainer
+	// { "FLAG_MAX", "PARTICLE_FLAG_MAX" }, // CPUParticles2D -- Used in more classes.
+	{ "ALIGN_BEGIN", "ALIGNMENT_BEGIN" }, // AspectRatioContainer
+	{ "ALIGN_CENTER", "ALIGNMENT_CENTER" }, // AspectRatioContainer
+	{ "ALIGN_END", "ALIGNMENT_END" }, // AspectRatioContainer
 	{ "ARRAY_COMPRESS_BASE", "ARRAY_COMPRESS_FLAGS_BASE" }, // Mesh
 	{ "ARVR_AR", "XR_AR" }, // XRInterface
 	{ "ARVR_EXCESSIVE_MOTION", "XR_EXCESSIVE_MOTION" }, // XRInterface
@@ -64,20 +84,6 @@ const char *RenamesMap3To4::enum_renames[][2] = {
 	{ "ARVR_UNKNOWN_TRACKING", "XR_UNKNOWN_TRACKING" }, // XRInterface
 	{ "BAKE_ERROR_INVALID_MESH", "BAKE_ERROR_MESHES_INVALID" }, // LightmapGI
 	{ "BODY_MODE_CHARACTER", "BODY_MODE_RIGID_LINEAR" }, // PhysicsServer
-	{ "BUTTON_LEFT", "MOUSE_BUTTON_LEFT" }, // Globals
-	{ "BUTTON_MASK_LEFT", "MOUSE_BUTTON_MASK_LEFT" }, // Globals
-	{ "BUTTON_MASK_MIDDLE", "MOUSE_BUTTON_MASK_MIDDLE" }, // Globals
-	{ "BUTTON_MASK_RIGHT", "MOUSE_BUTTON_MASK_RIGHT" }, // Globals
-	{ "BUTTON_MASK_XBUTTON1", "MOUSE_BUTTON_MASK_XBUTTON1" }, // Globals
-	{ "BUTTON_MASK_XBUTTON2", "MOUSE_BUTTON_MASK_XBUTTON2" }, // Globals
-	{ "BUTTON_MIDDLE", "MOUSE_BUTTON_MIDDLE" }, // Globals
-	{ "BUTTON_RIGHT", "MOUSE_BUTTON_RIGHT" }, // Globals
-	{ "BUTTON_WHEEL_DOWN", "MOUSE_BUTTON_WHEEL_DOWN" }, // Globals
-	{ "BUTTON_WHEEL_LEFT", "MOUSE_BUTTON_WHEEL_LEFT" }, // Globals
-	{ "BUTTON_WHEEL_RIGHT", "MOUSE_BUTTON_WHEEL_RIGHT" }, // Globals
-	{ "BUTTON_WHEEL_UP", "MOUSE_BUTTON_WHEEL_UP" }, // Globals
-	{ "BUTTON_XBUTTON1", "MOUSE_BUTTON_XBUTTON1" }, // Globals
-	{ "BUTTON_XBUTTON2", "MOUSE_BUTTON_XBUTTON2" }, // Globals
 	{ "CLEAR_MODE_ONLY_NEXT_FRAME", "CLEAR_MODE_ONCE" }, // SubViewport
 	{ "COMPRESS_PVRTC4", "COMPRESS_PVRTC1_4" }, // Image
 	{ "CONNECT_ONESHOT", "CONNECT_ONE_SHOT" }, // Object
@@ -108,7 +114,6 @@ const char *RenamesMap3To4::enum_renames[][2] = {
 	{ "JOINT_HINGE", "JOINT_TYPE_HINGE" }, // PhysicsServer3D
 	{ "JOINT_PIN", "JOINT_TYPE_PIN" }, // PhysicsServer2D
 	{ "JOINT_SLIDER", "JOINT_TYPE_SLIDER" }, // PhysicsServer3D
-	{ "KEY_CONTROL", "KEY_CTRL" }, // Globals
 	{ "LOOP_PING_PONG", "LOOP_PINGPONG" }, // AudioStreamWAV
 	{ "MODE_KINEMATIC", "FREEZE_MODE_KINEMATIC" }, // RigidBody
 	{ "MODE_OPEN_ANY", "FILE_MODE_OPEN_ANY" }, // FileDialog
@@ -129,23 +134,19 @@ const char *RenamesMap3To4::enum_renames[][2] = {
 	{ "PAUSE_MODE_STOP", "PROCESS_MODE_PAUSABLE" }, // Node
 	{ "RENDER_DRAW_CALLS_IN_FRAME", "RENDER_TOTAL_DRAW_CALLS_IN_FRAME" }, // Performance
 	{ "RENDER_OBJECTS_IN_FRAME", "RENDER_TOTAL_OBJECTS_IN_FRAME" }, // Performance
-	{ "SIDE_BOTTOM", "MARGIN_BOTTOM" }, // Globals
-	{ "SIDE_LEFT", "MARGIN_LEFT" }, // Globals
-	{ "SIDE_RIGHT", "MARGIN_RIGHT" }, // Globals
-	{ "SIDE_TOP", "MARGIN_TOP" }, // Globals
 	{ "TEXTURE_TYPE_2D_ARRAY", "TEXTURE_LAYERED_2D_ARRAY" }, // RenderingServer
 	{ "TEXTURE_TYPE_CUBEMAP", "TEXTURE_LAYERED_CUBEMAP_ARRAY" }, // RenderingServer
 	{ "TRACKER_LEFT_HAND", "TRACKER_HAND_LEFT" }, // XRPositionalTracker
 	{ "TRACKER_RIGHT_HAND", "TRACKER_HAND_RIGHT" }, // XRPositionalTracker
 	{ "TYPE_NORMALMAP", "TYPE_NORMAL_MAP" }, // VisualShaderNodeCubemap
 
-	/// enums
-	{ "AlignMode", "AlignmentMode" }, //AspectRatioContainer
+	// Enums
+	{ "AlignMode", "AlignmentMode" }, // AspectRatioContainer
 	{ "AnimationProcessMode", "AnimationProcessCallback" }, // AnimationTree, AnimationPlayer
 	{ "Camera2DProcessMode", "Camera2DProcessCallback" }, // Camera2D
 	{ "CubeMapSide", "CubeMapLayer" }, // RenderingServer
 	{ "DampedStringParam", "DampedSpringParam" }, // PhysicsServer2D
-	{ "FFT_Size", "FFTSize" }, // AudioEffectPitchShift,AudioEffectSpectrumAnalyzer
+	{ "FFT_Size", "FFTSize" }, // AudioEffectPitchShift, AudioEffectSpectrumAnalyzer
 	{ "PauseMode", "ProcessMode" }, // Node
 	{ "TimerProcessMode", "TimerProcessCallback" }, // Timer
 	{ "Tracking_status", "TrackingStatus" }, // XRInterface
@@ -153,52 +154,60 @@ const char *RenamesMap3To4::enum_renames[][2] = {
 };
 
 const char *RenamesMap3To4::gdscript_function_renames[][2] = {
-	// { "_set_name", "get_tracker_name"}, // XRPositionalTracker - CameraFeed use this
-	// { "_unhandled_input", "_unhandled_key_input"}, // BaseButton, ViewportContainer broke Node, FileDialog,SubViewportContainer
-	// { "create_gizmo", "_create_gizmo"}, // EditorNode3DGizmoPlugin - may be used
-	// { "get_dependencies", "_get_dependencies" }, // ResourceFormatLoader broke ResourceLoader
-	// { "get_extents", "get_size" }, // BoxShape, RectangleShape broke Decal, VoxelGI, GPUParticlesCollisionBox, GPUParticlesCollisionSDF, GPUParticlesCollisionHeightField, GPUParticlesAttractorBox, GPUParticlesAttractorVectorField, FogVolume
-	// { "get_h_offset", "get_drag_horizontal_offset"}, // Camera2D, broke PathFollow, Camera
-	// { "get_mode", "get_file_mode"}, // FileDialog broke Panel, Shader, CSGPolygon, Tilemap
-	// { "get_motion", "get_travel"}, // PhysicsTestMotionResult2D broke ParalaxLayer
-	// { "get_name", "get_tracker_name"}, // XRPositionalTracker broke OS, Node
-	// { "get_network_connected_peers", "get_peers"}, // MultiplayerAPI broke SceneTree
-	// { "get_network_peer", "has_multiplayer_peer"}, // MultiplayerAPI broke SceneTree
-	// { "get_network_unique_id", "get_unique_id"}, // MultiplayerAPI broke SceneTree
-	// { "get_offset", "get_position_offset" }, // GraphNode broke Gradient
-	// { "get_peer_port", "get_peer" }, // ENetMultiplayerPeer broke WebSocketServer
-	// { "get_process_mode", "get_process_callback" }, // ClippedCamera3D broke Node, Sky
-	// { "get_render_info", "get_rendering_info" }, // RenderingServer broke Viewport
-	// { "get_type", "get_tracker_type"}, // XRPositionalTracker broke GLTFAccessor, GLTFLight
-	// { "get_v_offset", "get_drag_vertical_offset"}, // Camera2D, broke PathFollow, Camera
-	// { "has_network_peer", "has_multiplayer_peer"}, // MultiplayerAPI broke SceneTree
-	// { "instance", "instantiate" }, // PackedScene, ClassDB - Broke FileSystemDock signal and also tscn files - [instance=ExtResource( 17 )] - this is implemented as custom rule
-	// { "is_listening", "is_bound"}, // PacketPeerUDP broke TCPServer, UDPServer
-	// { "is_refusing_new_network_connections", "is_refusing_new_connections"}, // MultiplayerAPI broke SceneTree
-	// { "is_valid", "has_valid_event" }, // Shortcut broke e.g. Callable
-	// { "listen", "bound"}, // PacketPeerUDP broke TCPServer, UDPServer
-	// { "load", "_load"}, // ResourceFormatLoader broke ConfigFile, Image, StreamTexture2D
-	// { "make_current", "set_current" }, // Camera2D broke Camera3D, Listener2D
-	// { "process", "_process" }, // AnimationNode - This word is commonly used
-	// { "save", "_save"}, // ResourceFormatLoader broke ConfigFile, Image, StreamTexture2D
-	// { "set_autowrap", "set_autowrap_mode" }, // AcceptDialog broke Label - Cyclic Rename
-	// { "set_color", "surface_set_color"}, // ImmediateMesh broke Light2D, Theme, SurfaceTool
-	// { "set_event", "set_shortcut" }, // BaseButton - Cyclic Rename
-	// { "set_extents", "set_size"}, // BoxShape, RectangleShape broke ReflectionProbe
-	// { "set_flag", "set_particle_flag"}, // ParticleProcessMaterial broke Window, HingeJoint3D
-	// { "set_h_offset", "set_drag_horizontal_offset" }, // Camera2D broke Camera3D, PathFollow3D, PathFollow2D
-	// { "set_margin", "set_offset" }, // Control broke Shape3D, AtlasTexture
-	// { "set_mode", "set_mode_file_mode" }, // FileDialog broke Panel, Shader, CSGPolygon, Tilemap
-	// { "set_normal", "surface_set_normal"}, // ImmediateGeometry broke SurfaceTool, WorldMarginShape2D
-	// { "set_offset", "set_progress" }, // PathFollow2D, PathFollow3D - Too common
-	// { "set_process_mode", "set_process_callback" }, // AnimationTree broke Node, Tween, Sky
-	// { "set_refuse_new_network_connections", "set_refuse_new_connections"}, // MultiplayerAPI broke SceneTree
-	// { "set_tooltip", "set_tooltip_text" }, // Control, breaks TreeItem, at least for now.
-	// { "set_uv", "surface_set_uv" }, // ImmediateMesh broke Polygon2D
-	// { "set_v_offset", "set_drag_vertical_offset" }, // Camera2D broke Camera3D, PathFollow3D, PathFollow2D
-	// {"get_points","get_points_id"},// Astar, broke Line2D, Convexpolygonshape
-	// {"get_v_scroll","get_v_scroll_bar"},//ItemList, broke TextView
-	// { "get_stylebox", "get_theme_stylebox" }, // Control - Will rename the method in Theme as well, skipping
+	// NOTE: Commented out renames are disabled because deemed not suitable for
+	// the current way the regex-based converter works.
+	// When uncommenting any of those as suitable for conversion, please move it
+	// to the block with other enabled conversions, ordered alphabetically, and
+	// make sure to add it to the C# rename map too.
+
+	// { "_set_name", "get_tracker_name" }, // XRPositionalTracker -- CameraFeed uses this.
+	// { "_unhandled_input", "_unhandled_key_input" }, // BaseButton, ViewportContainer -- Breaks Node, FileDialog, SubViewportContainer.
+	// { "create_gizmo", "_create_gizmo" }, // EditorNode3DGizmoPlugin -- May be used.
+	// { "get_dependencies", "_get_dependencies" }, // ResourceFormatLoader -- Breaks ResourceLoader.
+	// { "get_extents", "get_size" }, // BoxShape, RectangleShape -- Breaks Decal, VoxelGI, GPUParticlesCollisionBox, GPUParticlesCollisionSDF, GPUParticlesCollisionHeightField, GPUParticlesAttractorBox, GPUParticlesAttractorVectorField, FogVolume
+	// { "get_h_offset", "get_drag_horizontal_offset" }, // Camera2D -- Breaks PathFollow, Camera.
+	// { "get_mode", "get_file_mode" }, // FileDialog -- Breaks Panel, Shader, CSGPolygon, TileMap.
+	// { "get_motion", "get_travel" }, // PhysicsTestMotionResult2D -- Breaks ParallaxLayer.
+	// { "get_name", "get_tracker_name" }, // XRPositionalTracker -- Breaks OS, Node
+	// { "get_network_connected_peers", "get_peers" }, // MultiplayerAPI -- Breaks SceneTree.
+	// { "get_network_peer", "has_multiplayer_peer" }, // MultiplayerAPI -- Breaks SceneTree.
+	// { "get_network_unique_id", "get_unique_id"}, // MultiplayerAPI -- Breaks SceneTree.
+	// { "get_offset", "get_position_offset" }, // GraphNode -- Breaks Gradient.
+	// { "get_peer_port", "get_peer" }, // ENetMultiplayerPeer -- Breaks WebSocketServer.
+	// { "get_points", "get_points_id" }, // AStar -- Breaks Line2D, ConvexPolygonShape.
+	// { "get_process_mode", "get_process_callback" }, // ClippedCamera3D -- Breaks Node, Sky.
+	// { "get_render_info", "get_rendering_info" }, // RenderingServer -- Breaks Viewport.
+	// { "get_stylebox", "get_theme_stylebox" }, // Control -- Would rename the method in Theme as well, skipping.
+	// { "get_type", "get_tracker_type" }, // XRPositionalTracker -- Breaks GLTFAccessor, GLTFLight.
+	// { "get_v_offset", "get_drag_vertical_offset" }, // Camera2D -- Breaks PathFollow, Camera.
+	// { "get_v_scroll", "get_v_scroll_bar" }, // ItemList -- Breaks TextView.
+	// { "has_network_peer", "has_multiplayer_peer" }, // MultiplayerAPI -- Breaks SceneTree.
+	// { "instance", "instantiate" }, // PackedScene, ClassDB -- Breaks FileSystemDock signal, and also .tscn files ("[instance=ExtResource( 17 )]"). This is implemented as custom rule.
+	// { "is_listening", "is_bound"}, // PacketPeerUDP -- Breaks TCPServer, UDPServer.
+	// { "is_refusing_new_network_connections", "is_refusing_new_connections"}, // MultiplayerAPI -- Breaks SceneTree.
+	// { "is_valid", "has_valid_event" }, // Shortcut -- Breaks Callable, and more.
+	// { "listen", "bound"}, // PacketPeerUDP -- Breaks TCPServer, UDPServer.
+	// { "load", "_load"}, // ResourceFormatLoader -- Breaks ConfigFile, Image, StreamTexture2D.
+	// { "make_current", "set_current" }, // Camera2D -- Breaks Camera3D, Listener2D.
+	// { "process", "_process" }, // AnimationNode -- This word is too commonly used.
+	// { "raise", "move_to_front" }, // CanvasItem -- Too common.
+	// { "save", "_save"}, // ResourceFormatLoader -- Breaks ConfigFile, Image, StreamTexture2D.
+	// { "set_autowrap", "set_autowrap_mode" }, // AcceptDialog -- Breaks Label, also a cyclic rename.
+	// { "set_color", "surface_set_color"}, // ImmediateMesh -- Breaks Light2D, Theme, SurfaceTool.
+	// { "set_event", "set_shortcut" }, // BaseButton -- Cyclic rename.
+	// { "set_extents", "set_size"}, // BoxShape, RectangleShape -- Breaks ReflectionProbe.
+	// { "set_flag", "set_particle_flag"}, // ParticleProcessMaterial -- Breaks Window, HingeJoint3D.
+	// { "set_h_offset", "set_drag_horizontal_offset" }, // Camera2D -- Breaks Camera3D, PathFollow3D, PathFollow2D.
+	// { "set_margin", "set_offset" }, // Control -- Breaks Shape3D, AtlasTexture.
+	// { "set_mode", "set_mode_file_mode" }, // FileDialog -- Breaks Panel, Shader, CSGPolygon, TileMap.
+	// { "set_normal", "surface_set_normal"}, // ImmediateGeometry -- Breaks SurfaceTool, WorldMarginShape2D.
+	// { "set_offset", "set_progress" }, // PathFollow2D, PathFollow3D -- Too common.
+	// { "set_process_mode", "set_process_callback" }, // AnimationTree -- Breaks Node, Tween, Sky.
+	// { "set_refuse_new_network_connections", "set_refuse_new_connections"}, // MultiplayerAPI -- Breaks SceneTree.
+	// { "set_tooltip", "set_tooltip_text" }, // Control -- Breaks TreeItem, at least for now.
+	// { "set_uv", "surface_set_uv" }, // ImmediateMesh -- Breaks Polygon2D.
+	// { "set_v_offset", "set_drag_vertical_offset" }, // Camera2D -- Breaks Camera3D, PathFollow3D, PathFollow2D.
+
 	{ "_about_to_show", "_about_to_popup" }, // ColorPickerButton
 	{ "_get_configuration_warning", "_get_configuration_warnings" }, // Node
 	{ "_set_current", "set_current" }, // Camera2D
@@ -272,7 +281,7 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "get_applied_torque", "get_constant_torque" }, //RigidBody2D
 	{ "get_audio_bus", "get_audio_bus_name" }, // Area3D
 	{ "get_bound_child_nodes_to_bone", "get_bone_children" }, // Skeleton3D
-	{ "get_camera", "get_camera_3d" }, // Viewport -> this is also convertible to get_camera_2d, broke GLTFNode
+	{ "get_camera", "get_camera_3d" }, // Viewport -- This is also convertible to get_camera_2d. Breaks GLTFNode.
 	{ "get_cancel", "get_cancel_button" }, // ConfirmationDialog
 	{ "get_caption", "_get_caption" }, // AnimationNode
 	{ "get_cast_to", "get_target_position" }, // RayCast2D, RayCast3D
@@ -281,8 +290,8 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "get_closest_point_to_segment_2d", "get_closest_point_to_segment" }, // Geometry2D
 	{ "get_closest_point_to_segment_uncapped_2d", "get_closest_point_to_segment_uncapped" }, // Geometry2D
 	{ "get_closest_points_between_segments_2d", "get_closest_point_to_segment" }, // Geometry2D
-	{ "get_collision_layer_bit", "get_collision_layer_value" }, // CSGShape3D and a lot of others like GridMap
-	{ "get_collision_mask_bit", "get_collision_mask_value" }, // CSGShape3D and a lot of others like GridMap
+	{ "get_collision_layer_bit", "get_collision_layer_value" }, // CSGShape3D, and a lot of others like GridMap.
+	{ "get_collision_mask_bit", "get_collision_mask_value" }, // CSGShape3D, and a lot of others like GridMap.
 	{ "get_color_types", "get_color_type_list" }, // Theme
 	{ "get_command", "is_command_or_control_pressed" }, // InputEventWithModifiers
 	{ "get_constant_types", "get_constant_type_list" }, // Theme
@@ -290,6 +299,7 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "get_cull_mask_bit", "get_cull_mask_value" }, // Camera3D
 	{ "get_cursor_position", "get_caret_column" }, // LineEdit
 	{ "get_d", "get_distance" }, // LineShape2D
+	{ "get_default_length", "get_length" }, // Bone2D
 	{ "get_depth_bias_enable", "get_depth_bias_enabled" }, // RDPipelineRasterizationState
 	{ "get_device", "get_output_device" }, // AudioServer
 	{ "get_device_list", "get_output_device_list" }, // AudioServer
@@ -298,13 +308,13 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "get_enabled_focus_mode", "get_focus_mode" }, // BaseButton
 	{ "get_endian_swap", "is_big_endian" }, // File
 	{ "get_error_string", "get_error_message" }, // JSON
-	{ "get_filename", "get_scene_file_path" }, // Node, WARNING, this may be used in a lot of other places
+	{ "get_filename", "get_scene_file_path" }, // Node -- WARNING: This may be used in a lot of other places.
 	{ "get_focus_neighbour", "get_focus_neighbor" }, // Control
 	{ "get_follow_smoothing", "get_position_smoothing_speed" }, // Camera2D
 	{ "get_font_types", "get_font_type_list" }, // Theme
 	{ "get_frame_color", "get_color" }, // ColorRect
 	{ "get_global_rate_scale", "get_playback_speed_scale" }, // AudioServer
-	{ "get_gravity_distance_scale", "get_gravity_point_unit_distance" }, // Area(2D/3D)
+	{ "get_gravity_distance_scale", "get_gravity_point_unit_distance" }, // Area2D, Area3D
 	{ "get_gravity_vector", "get_gravity_direction" }, // Area(2D/3D)
 	{ "get_h_scrollbar", "get_h_scroll_bar" }, //ScrollContainer
 	{ "get_hand", "get_tracker_hand" }, // XRPositionalTracker
@@ -344,11 +354,11 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "get_plugin_name", "_get_plugin_name" }, // EditorPlugin
 	{ "get_preset_count", "_get_preset_count" }, // EditorImportPlugin
 	{ "get_preset_name", "_get_preset_name" }, // EditorImportPlugin
-	{ "get_recognized_extensions", "_get_recognized_extensions" }, // ResourceFormatLoader, EditorImportPlugin broke ResourceSaver
+	{ "get_recognized_extensions", "_get_recognized_extensions" }, // ResourceFormatLoader, EditorImportPlugin -- Breaks ResourceSaver.
 	{ "get_render_info", "get_rendering_info" }, // RenderingServer
 	{ "get_render_targetsize", "get_render_target_size" }, // XRInterface
 	{ "get_resource_type", "_get_resource_type" }, // ResourceFormatLoader
-	{ "get_result", "get_data" }, //JSON
+	{ "get_result", "get_data" }, // JSON
 	{ "get_reverb_bus", "set_reverb_bus_name" }, // Area3D
 	{ "get_rpc_sender_id", "get_remote_sender_id" }, // Multiplayer API
 	{ "get_save_extension", "_get_save_extension" }, // EditorImportPlugin
@@ -356,6 +366,7 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "get_scancode_string", "get_keycode_string" }, // OS
 	{ "get_scancode_with_modifiers", "get_keycode_with_modifiers" }, // InputEventKey
 	{ "get_selected_path", "get_current_directory" }, // EditorInterface
+	{ "get_shader_param", "get_shader_parameter" }, // ShaderMaterial
 	{ "get_shift", "is_shift_pressed" }, // InputEventWithModifiers
 	{ "get_size_override", "get_size_2d_override" }, // SubViewport
 	{ "get_slide_count", "get_slide_collision_count" }, // CharacterBody2D, CharacterBody3D
@@ -364,44 +375,45 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "get_spatial_node", "get_node_3d" }, // EditorNode3DGizmo
 	{ "get_speed", "get_velocity" }, // InputEventMouseMotion
 	{ "get_stylebox_types", "get_stylebox_type_list" }, // Theme
-	{ "get_surface_material", "get_surface_override_material" }, // MeshInstance3D broke ImporterMesh
+	{ "get_surface_material", "get_surface_override_material" }, // MeshInstance3D -- Breaks ImporterMesh.
 	{ "get_surface_material_count", "get_surface_override_material_count" }, // MeshInstance3D
 	{ "get_tab_disabled", "is_tab_disabled" }, // Tab
 	{ "get_tab_hidden", "is_tab_hidden" }, // Tab
 	{ "get_text_align", "get_text_alignment" }, // Button
 	{ "get_theme_item_types", "get_theme_item_type_list" }, // Theme
 	{ "get_timer_process_mode", "get_timer_process_callback" }, // Timer
-	{ "get_translation", "get_position" }, // Node3D broke GLTFNode which is used rarely
+	{ "get_translation", "get_position" }, // Node3D -- Breaks GLTFNode, but it is used rarely.
+	{ "get_uniform_name", "get_parameter_name" }, // ParameterRef
 	{ "get_unit_db", "get_volume_db" }, // AudioStreamPlayer3D
 	{ "get_unit_offset", "get_progress_ratio" }, // PathFollow2D, PathFollow3D
 	{ "get_use_in_baked_light", "is_baking_navigation" }, // GridMap
 	{ "get_used_cells_by_id", "get_used_cells" }, // TileMap
-	{ "get_v_scrollbar", "get_v_scroll_bar" }, //ScrollContainer
+	{ "get_v_scrollbar", "get_v_scroll_bar" }, // ScrollContainer
 	{ "get_visible_name", "_get_visible_name" }, // EditorImportPlugin
 	{ "get_window_layout", "_get_window_layout" }, // EditorPlugin
 	{ "get_word_under_cursor", "get_word_under_caret" }, // TextEdit
-	{ "get_world", "get_world_3d" }, // Viewport, Spatial
-	{ "get_zfar", "get_far" }, // Camera3D broke GLTFCamera
-	{ "get_znear", "get_near" }, // Camera3D broke GLTFCamera
+	{ "get_world", "get_world_3d" }, // Viewport, Node3D
+	{ "get_zfar", "get_far" }, // Camera3D -- Breaks GLTFCamera
+	{ "get_znear", "get_near" }, // Camera3D -- Breaks GLTFCamera
 	{ "groove_joint_create", "joint_make_groove" }, // PhysicsServer2D
 	{ "handle_menu_selected", "_handle_menu_selected" }, // EditorResourcePicker
 	{ "handles_type", "_handles_type" }, // ResourceFormatLoader
-	{ "has_color", "has_theme_color" }, //  Control broke Theme
-	{ "has_color_override", "has_theme_color_override" }, // Control broke Theme
+	{ "has_color", "has_theme_color" }, // Control -- Breaks Theme
+	{ "has_color_override", "has_theme_color_override" }, // Control -- Breaks Theme
 	{ "has_constant", "has_theme_constant" }, // Control
 	{ "has_constant_override", "has_theme_constant_override" }, // Control
 	{ "has_filter", "_has_filter" }, // AnimationNode
-	{ "has_font", "has_theme_font" }, // Control broke Theme
+	{ "has_font", "has_theme_font" }, // Control -- Breaks Theme
 	{ "has_font_override", "has_theme_font_override" }, // Control
-	{ "has_icon", "has_theme_icon" }, // Control broke Theme
+	{ "has_icon", "has_theme_icon" }, // Control -- Breaks Theme
 	{ "has_icon_override", "has_theme_icon_override" }, // Control
 	{ "has_main_screen", "_has_main_screen" }, // EditorPlugin
 	{ "has_network_peer", "has_multiplayer_peer" }, // Multiplayer API
-	{ "has_stylebox", "has_theme_stylebox" }, // Control broke Theme
+	{ "has_stylebox", "has_theme_stylebox" }, // Control -- Breaks Theme
 	{ "has_stylebox_override", "has_theme_stylebox_override" }, // Control
 	{ "http_escape", "uri_encode" }, // String
 	{ "http_unescape", "uri_decode" }, // String
-	{ "import_scene_from_other_importer", "_import_scene" }, //EditorSceneFormatImporter
+	{ "import_scene_from_other_importer", "_import_scene" }, // EditorSceneFormatImporter
 	{ "instance_set_surface_material", "instance_set_surface_override_material" }, // RenderingServer
 	{ "interpolate", "sample" }, // Curve, Curve2D, Curve3D, Gradient
 	{ "intersect_polygons_2d", "intersect_polygons" }, // Geometry2D
@@ -426,7 +438,7 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "is_shortcut", "matches_event" }, // Shortcut
 	{ "is_size_override_stretch_enabled", "is_size_2d_override_stretch_enabled" }, // SubViewport
 	{ "is_sort_enabled", "is_y_sort_enabled" }, // Node2D
-	{ "is_static_body", "is_able_to_sleep" }, // PhysicalBone3D - TODO - not sure
+	{ "is_static_body", "is_able_to_sleep" }, // PhysicalBone3D -- Not sure.
 	{ "is_v_drag_enabled", "is_drag_vertical_enabled" }, // Camera2D
 	{ "joint_create_cone_twist", "joint_make_cone_twist" }, // PhysicsServer3D
 	{ "joint_create_generic_6dof", "joint_make_generic_6dof" }, // PhysicsServer3D
@@ -435,7 +447,7 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "joint_create_slider", "joint_make_slider" }, // PhysicsServer3D
 	{ "line_intersects_line_2d", "line_intersects_line" }, // Geometry2D
 	{ "load_from_globals", "load_from_project_settings" }, // InputMap
-	{ "load_interactive", "load_threaded_request" }, // ResourceLoader - load_threaded_request is alternative, but is used differently
+	{ "load_interactive", "load_threaded_request" }, // ResourceLoader -- "load_threaded_request" could be an alternative, but it is used differently.
 	{ "make_convex_from_brothers", "make_convex_from_siblings" }, // CollisionShape3D
 	{ "make_visible", "_make_visible" }, // EditorPlugin
 	{ "merge_polygons_2d", "merge_polygons" }, // Geometry2D
@@ -454,10 +466,8 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "post_import", "_post_import" }, // EditorScenePostImport
 	{ "print_stray_nodes", "print_orphan_nodes" }, // Node
 	{ "property_list_changed_notify", "notify_property_list_changed" }, // Object
-	{ "raise", "move_to_front" }, // CanvasItem
 	{ "recognize", "_recognize" }, // ResourceFormatLoader
 	{ "regen_normalmaps", "regen_normal_maps" }, // ArrayMesh
-	{ "remove", "remove_at" }, // Array, broke Directory
 	{ "remove_animation", "remove_animation_library" }, // AnimationPlayer
 	{ "remove_color_override", "remove_theme_color_override" }, // Control
 	{ "remove_constant_override", "remove_theme_constant_override" }, // Control
@@ -479,10 +489,10 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "set_as_normalmap", "set_as_normal_map" }, // NoiseTexture
 	{ "set_as_toplevel", "set_as_top_level" }, // CanvasItem
 	{ "set_audio_bus", "set_audio_bus_name" }, // Area3D
-	{ "set_autowrap", "set_autowrap_mode" }, // Label broke AcceptDialog
+	{ "set_autowrap", "set_autowrap_mode" }, // Label -- Breaks AcceptDialog.
 	{ "set_cast_to", "set_target_position" }, // RayCast2D, RayCast3D
-	{ "set_collision_layer_bit", "set_collision_layer_value" }, // CSGShape3D and a lot of others like GridMap
-	{ "set_collision_mask_bit", "set_collision_mask_value" }, // CSGShape3D and a lot of others like GridMap
+	{ "set_collision_layer_bit", "set_collision_layer_value" }, // CSGShape3D, and a lot of others like GridMap.
+	{ "set_collision_mask_bit", "set_collision_mask_value" }, // CSGShape3D, and a lot of others like GridMap.
 	{ "set_column_min_width", "set_column_custom_minimum_width" }, // Tree
 	{ "set_command", "set_meta_pressed" }, // InputEventWithModifiers
 	{ "set_control", "set_ctrl_pressed" }, // InputEventWithModifiers
@@ -490,6 +500,7 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "set_cull_mask_bit", "set_cull_mask_value" }, // Camera3D
 	{ "set_cursor_position", "set_caret_column" }, // LineEdit
 	{ "set_d", "set_distance" }, // WorldMarginShape2D
+	{ "set_default_length", "set_length" }, // Bone2D
 	{ "set_depth_bias_enable", "set_depth_bias_enabled" }, // RDPipelineRasterizationState
 	{ "set_device", "set_output_device" }, // AudioServer
 	{ "set_doubleclick", "set_double_click" }, // InputEventMouseButton
@@ -498,13 +509,13 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "set_enabled_focus_mode", "set_focus_mode" }, // BaseButton
 	{ "set_endian_swap", "set_big_endian" }, // File
 	{ "set_expand_to_text_length", "set_expand_to_text_length_enabled" }, // LineEdit
-	{ "set_filename", "set_scene_file_path" }, // Node, WARNING, this may be used in a lot of other places
+	{ "set_filename", "set_scene_file_path" }, // Node -- WARNING: This may be used in a lot of other places.
 	{ "set_focus_neighbour", "set_focus_neighbor" }, // Control
 	{ "set_follow_smoothing", "set_position_smoothing_speed" }, // Camera2D
 	{ "set_frame_color", "set_color" }, // ColorRect
 	{ "set_global_rate_scale", "set_playback_speed_scale" }, // AudioServer
-	{ "set_gravity_distance_scale", "set_gravity_point_unit_distance" }, // Area(2D/3D)
-	{ "set_gravity_vector", "set_gravity_direction" }, // Area(2D/3D)
+	{ "set_gravity_distance_scale", "set_gravity_point_unit_distance" }, // Area2D, Area3D
+	{ "set_gravity_vector", "set_gravity_direction" }, // Area2D, Area3D
 	{ "set_h_drag_enabled", "set_drag_horizontal_enabled" }, // Camera2D
 	{ "set_icon_align", "set_icon_alignment" }, // Button
 	{ "set_interior_ambient", "set_ambient_color" }, // ReflectionProbe
@@ -526,13 +537,14 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "set_physical_scancode", "set_physical_keycode" }, // InputEventKey
 	{ "set_proximity_fade", "set_proximity_fade_enabled" }, // Material
 	{ "set_refuse_new_network_connections", "set_refuse_new_connections" }, // Multiplayer API
-	{ "set_region", "set_region_enabled" }, // Sprite2D, Sprite broke AtlasTexture
+	{ "set_region", "set_region_enabled" }, // Sprite2D -- Sprite breaks AtlasTexture.
 	{ "set_region_filter_clip", "set_region_filter_clip_enabled" }, // Sprite2D
 	{ "set_reverb_bus", "set_reverb_bus_name" }, // Area3D
 	{ "set_rotate", "set_rotates" }, // PathFollow2D
 	{ "set_scancode", "set_keycode" }, // InputEventKey
+	{ "set_shader_param", "set_shader_parameter" }, // ShaderMaterial
 	{ "set_shift", "set_shift_pressed" }, // InputEventWithModifiers
-	{ "set_size_override", "set_size_2d_override" }, // SubViewport broke ImageTexture
+	{ "set_size_override", "set_size_2d_override" }, // SubViewport -- Breaks ImageTexture.
 	{ "set_size_override_stretch", "set_size_2d_override_stretch" }, // SubViewport
 	{ "set_slips_on_slope", "set_slide_on_slope" }, // SeparationRayShape2D, SeparationRayShape3D
 	{ "set_sort_enabled", "set_y_sort_enabled" }, // Node2D
@@ -540,20 +552,21 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "set_spatial_node", "set_node_3d" }, // EditorNode3DGizmo
 	{ "set_speed", "set_velocity" }, // InputEventMouseMotion
 	{ "set_ssao_edge_sharpness", "set_ssao_sharpness" }, // Environment
-	{ "set_surface_material", "set_surface_override_material" }, // MeshInstance3D broke ImporterMesh
-	{ "set_tab_align", "set_tab_alignment" }, //TabContainer
-	{ "set_tangent", "surface_set_tangent" }, // ImmediateGeometry broke SurfaceTool
+	{ "set_surface_material", "set_surface_override_material" }, // MeshInstance3D -- Breaks ImporterMesh.
+	{ "set_tab_align", "set_tab_alignment" }, // TabContainer
+	{ "set_tangent", "surface_set_tangent" }, // ImmediateGeometry -- Breaks SurfaceTool.
 	{ "set_text_align", "set_text_alignment" }, // Button
 	{ "set_timer_process_mode", "set_timer_process_callback" }, // Timer
-	{ "set_translation", "set_position" }, // Node3D - this broke GLTFNode which is used rarely
+	{ "set_translation", "set_position" }, // Node3D -- This breaks GLTFNode, but it is used rarely.
+	{ "set_uniform_name", "set_parameter_name" }, // ParameterRef
 	{ "set_unit_db", "set_volume_db" }, // AudioStreamPlayer3D
 	{ "set_unit_offset", "set_progress_ratio" }, // PathFollow2D, PathFollow3D
-	{ "set_uv2", "surface_set_uv2" }, // ImmediateMesh broke Surffacetool
+	{ "set_uv2", "surface_set_uv2" }, // ImmediateMesh -- Breaks SurfaceTool.
 	{ "set_v_drag_enabled", "set_drag_vertical_enabled" }, // Camera2D
 	{ "set_valign", "set_vertical_alignment" }, // Label
 	{ "set_window_layout", "_set_window_layout" }, // EditorPlugin
-	{ "set_zfar", "set_far" }, // Camera3D broke GLTFCamera
-	{ "set_znear", "set_near" }, // Camera3D broke GLTFCamera
+	{ "set_zfar", "set_far" }, // Camera3D -- Breaks GLTFCamera.
+	{ "set_znear", "set_near" }, // Camera3D -- Breaks GLTFCamera.
 	{ "shortcut_match", "is_match" }, // InputEvent
 	{ "skeleton_allocate", "skeleton_allocate_data" }, // RenderingServer
 	{ "surface_update_region", "surface_update_attribute_region" }, // ArrayMesh
@@ -568,28 +581,24 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "viewport_set_use_arvr", "viewport_set_use_xr" }, // RenderingServer
 	{ "warp_mouse_position", "warp_mouse" }, // Input
 	{ "world_to_map", "local_to_map" }, // TileMap, GridMap
-	{ "set_shader_param", "set_shader_parameter" }, // ShaderMaterial
-	{ "get_shader_param", "get_shader_parameter" }, // ShaderMaterial
-	{ "set_uniform_name", "set_parameter_name" }, // ParameterRef
-	{ "get_uniform_name", "get_parameter_name" }, // ParameterRef
 
 	// Builtin types
-	// Remember to add them to builtin_types_excluded_functions variable, because for now this functions cannot be listed
-	//	{ "empty", "is_empty" }, // Array - Used as custom rule  // Be careful, this will be used everywhere
-	{ "clamped", "clamp" }, // Vector2  // Be careful, this will be used everywhere
+	// Remember to add them to the builtin_types_excluded_functions variable, because for now these functions cannot be listed.
+	// { "empty", "is_empty" }, // Array -- Used as custom rule. Be careful, this will be used everywhere.
+	// { "invert", "reverse" }, // Array -- Give it a check. Be careful, this will be used everywhere.
+	// { "remove", "remove_at" }, // Array -- Breaks Directory and several more.
+	{ "clamped", "limit_length" }, // Vector2
 	{ "get_rotation_quat", "get_rotation_quaternion" }, // Basis
 	{ "grow_margin", "grow_side" }, // Rect2
-	{ "invert", "reverse" }, // Array - TODO check  // Be careful, this will be used everywhere
 	{ "is_abs_path", "is_absolute_path" }, // String
 	{ "is_valid_integer", "is_valid_int" }, // String
 	{ "linear_interpolate", "lerp" }, // Color
 	{ "find_last", "rfind" }, // Array, String
 	{ "to_ascii", "to_ascii_buffer" }, // String
 	{ "to_utf8", "to_utf8_buffer" }, // String
-	{ "to_wchar", "to_utf32_buffer" }, // String // TODO - utf32 or utf16?
 
 	// @GlobalScope
-	// Remember to add them to builtin_types_excluded_functions variable, because for now this functions cannot be listed
+	// Remember to add them to the builtin_types_excluded_functions variable, because for now these functions cannot be listed.
 	{ "bytes2var", "bytes_to_var" },
 	{ "bytes2var_with_objects", "bytes_to_var_with_objects" },
 	{ "db2linear", "db_to_linear" },
@@ -605,7 +614,7 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "var2bytes_with_objects", "var_to_bytes_with_objects" },
 
 	// @GDScript
-	// Remember to add them to builtin_types_excluded_functions variable, because for now this functions cannot be listed
+	// Remember to add them to the builtin_types_excluded_functions variable, because for now these functions cannot be listed.
 	{ "dict2inst", "dict_to_inst" },
 	{ "inst2dict", "inst_to_dict" },
 
@@ -614,54 +623,6 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 
 // gdscript_function_renames clone with CamelCase
 const char *RenamesMap3To4::csharp_function_renames[][2] = {
-	// { "_SetName", "GetTrackerName"}, // XRPositionalTracker - CameraFeed use this
-	// { "_UnhandledInput", "_UnhandledKeyInput"}, // BaseButton, ViewportContainer broke Node, FileDialog,SubViewportContainer
-	// { "CreateGizmo", "_CreateGizmo"}, // EditorNode3DGizmoPlugin - may be used
-	// { "GetDependencies", "_GetDependencies" }, // ResourceFormatLoader broke ResourceLoader
-	// { "GetExtents", "GetSize" }, // BoxShape, RectangleShape broke Decal, VoxelGI, GPUParticlesCollisionBox, GPUParticlesCollisionSDF, GPUParticlesCollisionHeightField, GPUParticlesAttractorBox, GPUParticlesAttractorVectorField, FogVolume
-	// { "GetHOffset", "GetDragHorizontalOffset"}, // Camera2D, broke PathFollow, Camera
-	// { "GetMode", "GetFileMode"}, // FileDialog broke Panel, Shader, CSGPolygon, Tilemap
-	// { "GetMotion", "GetTravel"}, // PhysicsTestMotionResult2D broke ParalaxLayer
-	// { "GetName", "GetTrackerName"}, // XRPositionalTracker broke OS, Node
-	// { "GetNetworkConnectedPeers", "GetPeers"}, // MultiplayerAPI broke SceneTree
-	// { "GetNetworkPeer", "HasMultiplayerPeer"}, // MultiplayerAPI broke SceneTree
-	// { "GetNetworkUniqueId", "GetUniqueId"}, // MultiplayerAPI broke SceneTree
-	// { "GetOffset", "GetPositionOffset" }, // GraphNode broke Gradient
-	// { "GetPeerPort", "GetPeer" }, // ENetMultiplayerPeer broke WebSocketServer
-	// { "GetProcessMode", "GetProcessCallback" }, // ClippedCamera3D broke Node, Sky
-	// { "GetRenderInfo", "GetRenderingInfo" }, // RenderingServer broke Viewport
-	// { "GetType", "GetTrackerType"}, // XRPositionalTracker broke GLTFAccessor, GLTFLight
-	// { "GetVOffset", "GetDragVerticalOffset"}, // Camera2D, broke PathFollow, Camera
-	// { "HasNetworkPeer", "HasMultiplayerPeer"}, // MultiplayerAPI broke SceneTree
-	// { "Instance", "Instantiate" }, // PackedScene, ClassDB - Broke FileSystemDock signal and also tscn files - [instance=ExtResource( 17 )] - this is implemented as custom rule
-	// { "IsListening", "IsBound"}, // PacketPeerUDP broke TCPServer, UDPServer
-	// { "IsRefusingNewNetworkConnections", "IsRefusingNewConnections"}, // MultiplayerAPI broke SceneTree
-	// { "IsValid", "HasValidEvent" }, // Shortcut broke e.g. Callable
-	// { "Listen", "Bound"}, // PacketPeerUDP broke TCPServer, UDPServer
-	// { "Load", "_Load"}, // ResourceFormatLoader broke ConfigFile, Image, StreamTexture2D
-	// { "MakeCurrent", "SetCurrent" }, // Camera2D broke Camera3D, Listener2D
-	// { "Process", "_Process" }, // AnimationNode - This word is commonly used
-	// { "Save", "_Save"}, // ResourceFormatLoader broke ConfigFile, Image, StreamTexture2D
-	// { "SetAutowrap", "SetAutowrapMode" }, // AcceptDialog broke Label - Cyclic Rename
-	// { "SetColor", "SurfaceSetColor"}, // ImmediateMesh broke Light2D, Theme, SurfaceTool
-	// { "SetEvent", "SetShortcut" }, // BaseButton - Cyclic Rename
-	// { "SetExtents", "SetSize"}, // BoxShape, RectangleShape broke ReflectionProbe
-	// { "SetFlag", "SetParticleFlag"}, // ParticleProcessMaterial broke Window, HingeJoint3D
-	// { "SetHOffset", "SetDragHorizontalOffset" }, // Camera2D broke Camera3D, PathFollow3D, PathFollow2D
-	// { "SetMargin", "SetOffset" }, // Control broke Shape3D, AtlasTexture
-	// { "SetMode", "SetModeFileMode" }, // FileDialog broke Panel, Shader, CSGPolygon, Tilemap
-	// { "SetNormal", "SurfaceSetNormal"}, // ImmediateGeometry broke SurfaceTool, WorldMarginShape2D
-	// { "SetOffset", "SetProgress" }, // PathFollow2D, PathFollow3D - Too common
-	// { "SetProcessMode", "SetProcessCallback" }, // AnimationTree broke Node, Tween, Sky
-	// { "SetRefuseNewNetworkConnections", "SetRefuseNewConnections"}, // MultiplayerAPI broke SceneTree
-	// { "SetTooltip", "SetTooltipText" }, // Control, breaks TreeItem, at least for now.
-	// { "SetUv", "SurfaceSetUv" }, // ImmediateMesh broke Polygon2D
-	// { "SetVOffset", "SetDragVerticalOffset" }, // Camera2D broke Camera3D, PathFollow3D, PathFollow2D
-	// {"GetPoints","GetPointsId"},// Astar, broke Line2D, Convexpolygonshape
-	// {"GetVScroll","GetVScrollBar"},//ItemList, broke TextView
-	// { "GetStylebox", "GetThemeStylebox" }, // Control - Will rename the method in Theme as well, skipping
-	{ "AddSpatialGizmoPlugin", "AddNode3dGizmoPlugin" }, // EditorPlugin
-	{ "RenderingServer", "GetTabAlignment" }, // Tab
 	{ "_AboutToShow", "_AboutToPopup" }, // ColorPickerButton
 	{ "_GetConfigurationWarning", "_GetConfigurationWarnings" }, // Node
 	{ "_SetCurrent", "SetCurrent" }, // Camera2D
@@ -679,6 +640,7 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "AddForce", "AddConstantForce" }, //RigidBody2D
 	{ "AddIconOverride", "AddThemeIconOverride" }, // Control
 	{ "AddSceneImportPlugin", "AddSceneFormatImporterPlugin" }, //EditorPlugin
+	{ "AddSpatialGizmoPlugin", "AddNode3dGizmoPlugin" }, // EditorPlugin
 	{ "AddStyleboxOverride", "AddThemeStyleboxOverride" }, // Control
 	{ "AddTorque", "AddConstantTorque" }, //RigidBody2D
 	{ "AgentSetNeighborDist", "AgentSetNeighborDistance" }, // NavigationServer2D, NavigationServer3D
@@ -731,7 +693,7 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "GetAppliedTorque", "GetConstantTorque" }, //RigidBody2D
 	{ "GetAudioBus", "GetAudioBusName" }, // Area3D
 	{ "GetBoundChildNodesToBone", "GetBoneChildren" }, // Skeleton3D
-	{ "GetCamera", "GetCamera3d" }, // Viewport -> this is also convertible to getCamera2d, broke GLTFNode
+	{ "GetCamera", "GetCamera3d" }, // Viewport -- This is also convertible to GetCamera2d. Breaks GLTFNode.
 	{ "GetCancel", "GetCancelButton" }, // ConfirmationDialog
 	{ "GetCaption", "_GetCaption" }, // AnimationNode
 	{ "GetCastTo", "GetTargetPosition" }, // RayCast2D, RayCast3D
@@ -740,8 +702,8 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "GetClosestPointToSegment2d", "GetClosestPointToSegment" }, // Geometry2D
 	{ "GetClosestPointToSegmentUncapped2d", "GetClosestPointToSegmentUncapped" }, // Geometry2D
 	{ "GetClosestPointsBetweenSegments2d", "GetClosestPointToSegment" }, // Geometry2D
-	{ "GetCollisionLayerBit", "GetCollisionLayerValue" }, // CSGShape3D and a lot of others like GridMap
-	{ "GetCollisionMaskBit", "GetCollisionMaskValue" }, // CSGShape3D and a lot of others like GridMap
+	{ "GetCollisionLayerBit", "GetCollisionLayerValue" }, // CSGShape3D, and a lot of others like GridMap.
+	{ "GetCollisionMaskBit", "GetCollisionMaskValue" }, // CSGShape3D, and a lot of others like GridMap.
 	{ "GetColorTypes", "GetColorTypeList" }, // Theme
 	{ "GetCommand", "IsCommandPressed" }, // InputEventWithModifiers
 	{ "GetConstantTypes", "GetConstantTypeList" }, // Theme
@@ -749,6 +711,7 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "GetCullMaskBit", "GetCullMaskValue" }, // Camera3D
 	{ "GetCursorPosition", "GetCaretColumn" }, // LineEdit
 	{ "GetD", "GetDistance" }, // LineShape2D
+	{ "GetDefaultLength", "GetLength" }, // Bone2D
 	{ "GetDepthBiasEnable", "GetDepthBiasEnabled" }, // RDPipelineRasterizationState
 	{ "GetDevice", "GetOutputDevice" }, // AudioServer
 	{ "GetDeviceList", "GetOutputDeviceList" }, // AudioServer
@@ -762,9 +725,9 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "GetFontTypes", "GetFontTypeList" }, // Theme
 	{ "GetFrameColor", "GetColor" }, // ColorRect
 	{ "GetGlobalRateScale", "GetPlaybackSpeedScale" }, // AudioServer
-	{ "GetGravityDistanceScale", "GetGravityPointDistanceScale" }, //Area2D
-	{ "GetGravityVector", "GetGravityDirection" }, //Area2D
-	{ "GetHScrollbar", "GetHScrollBar" }, //ScrollContainer
+	{ "GetGravityDistanceScale", "GetGravityPointDistanceScale" }, // Area2D
+	{ "GetGravityVector", "GetGravityDirection" }, // Area2D
+	{ "GetHScrollbar", "GetHScrollBar" }, // ScrollContainer
 	{ "GetHand", "GetTrackerHand" }, // XRPositionalTracker
 	{ "GetHandleName", "_GetHandleName" }, // EditorNode3DGizmo
 	{ "GetHandleValue", "_GetHandleValue" }, // EditorNode3DGizmo
@@ -801,17 +764,18 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "GetPluginName", "_GetPluginName" }, // EditorPlugin
 	{ "GetPresetCount", "_GetPresetCount" }, // EditorImportPlugin
 	{ "GetPresetName", "_GetPresetName" }, // EditorImportPlugin
-	{ "GetRecognizedExtensions", "_GetRecognizedExtensions" }, // ResourceFormatLoader, EditorImportPlugin broke ResourceSaver
+	{ "GetRecognizedExtensions", "_GetRecognizedExtensions" }, // ResourceFormatLoader, EditorImportPlugin -- Breaks ResourceSaver.
 	{ "GetRenderInfo", "GetRenderingInfo" }, // RenderingServer
 	{ "GetRenderTargetsize", "GetRenderTargetSize" }, // XRInterface
 	{ "GetResourceType", "_GetResourceType" }, // ResourceFormatLoader
-	{ "GetResult", "GetData" }, //JSON
+	{ "GetResult", "GetData" }, // JSON
 	{ "GetReverbBus", "GetReverbBusName" }, // Area3D
 	{ "GetRpcSenderId", "GetRemoteSenderId" }, // Multiplayer API
 	{ "GetSaveExtension", "_GetSaveExtension" }, // EditorImportPlugin
 	{ "GetScancode", "GetKeycode" }, // InputEventKey
 	{ "GetScancodeString", "GetKeycodeString" }, // OS
 	{ "GetScancodeWithModifiers", "GetKeycodeWithModifiers" }, // InputEventKey
+	{ "GetShaderParam", "GetShaderParameter" }, // ShaderMaterial
 	{ "GetShift", "IsShiftPressed" }, // InputEventWithModifiers
 	{ "GetSizeOverride", "GetSize2dOverride" }, // SubViewport
 	{ "GetSlipsOnSlope", "GetSlideOnSlope" }, // SeparationRayShape2D, SeparationRayShape3D
@@ -819,45 +783,46 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "GetSpatialNode", "GetNode3d" }, // EditorNode3DGizmo
 	{ "GetSpeed", "GetVelocity" }, // InputEventMouseMotion
 	{ "GetStyleboxTypes", "GetStyleboxTypeList" }, // Theme
-	{ "GetSurfaceMaterial", "GetSurfaceOverrideMaterial" }, // MeshInstance3D broke ImporterMesh
+	{ "GetSurfaceMaterial", "GetSurfaceOverrideMaterial" }, // MeshInstance3D -- Breaks ImporterMesh.
 	{ "GetSurfaceMaterialCount", "GetSurfaceOverrideMaterialCount" }, // MeshInstance3D
 	{ "GetTabDisabled", "IsTabDisabled" }, // Tab
 	{ "GetTabHidden", "IsTabHidden" }, // Tab
 	{ "GetTextAlign", "GetTextAlignment" }, // Button
 	{ "GetThemeItemTypes", "GetThemeItemTypeList" }, // Theme
 	{ "GetTimerProcessMode", "GetTimerProcessCallback" }, // Timer
-	{ "GetTranslation", "GetPosition" }, // Node3D broke GLTFNode which is used rarely
+	{ "GetTranslation", "GetPosition" }, // Node3D -- Breaks GLTFNode, but it is used rarely.
+	{ "GetUniformName", "GetParameterName" }, // ParameterRef
 	{ "GetUnitDb", "GetVolumeDb" }, // AudioStreamPlayer3D
 	{ "GetUnitOffset", "GetProgressRatio" }, // PathFollow2D, PathFollow3D
 	{ "GetUseInBakedLight", "IsBakingNavigation" }, // GridMap
 	{ "GetUsedCellsById", "GetUsedCells" }, // TileMap
-	{ "GetVScrollbar", "GetVScrollBar" }, //ScrollContainer
+	{ "GetVScrollbar", "GetVScrollBar" }, // ScrollContainer
 	{ "GetVisibleName", "_GetVisibleName" }, // EditorImportPlugin
 	{ "GetWindowLayout", "_GetWindowLayout" }, // EditorPlugin
 	{ "GetWordUnderCursor", "GetWordUnderCaret" }, // TextEdit
-	{ "GetWorld", "GetWorld3d" }, // Viewport, Spatial
-	{ "GetZfar", "GetFar" }, // Camera3D broke GLTFCamera
-	{ "GetZnear", "GetNear" }, // Camera3D broke GLTFCamera
+	{ "GetWorld", "GetWorld3d" }, // Viewport, Node3D
+	{ "GetZfar", "GetFar" }, // Camera3D -- Breaks GLTFCamera
+	{ "GetZnear", "GetNear" }, // Camera3D -- Breaks GLTFCamera
 	{ "GrooveJointCreate", "JointMakeGroove" }, // PhysicsServer2D
 	{ "HandleMenuSelected", "_HandleMenuSelected" }, // EditorResourcePicker
 	{ "HandlesType", "_HandlesType" }, // ResourceFormatLoader
-	{ "HasColor", "HasThemeColor" }, //  Control broke Theme
-	{ "HasColorOverride", "HasThemeColorOverride" }, // Control broke Theme
+	{ "HasColor", "HasThemeColor" }, // Control -- Breaks Theme
+	{ "HasColorOverride", "HasThemeColorOverride" }, // Control -- Breaks Theme
 	{ "HasConstant", "HasThemeConstant" }, // Control
 	{ "HasConstantOverride", "HasThemeConstantOverride" }, // Control
 	{ "HasFilter", "_HasFilter" }, // AnimationNode
-	{ "HasFont", "HasThemeFont" }, // Control broke Theme
+	{ "HasFont", "HasThemeFont" }, // Control -- Breaks Theme
 	{ "HasFontOverride", "HasThemeFontOverride" }, // Control
-	{ "HasIcon", "HasThemeIcon" }, // Control broke Theme
+	{ "HasIcon", "HasThemeIcon" }, // Control -- Breaks Theme
 	{ "HasIconOverride", "HasThemeIconOverride" }, // Control
 	{ "HasMainScreen", "_HasMainScreen" }, // EditorPlugin
 	{ "HasNetworkPeer", "HasMultiplayerPeer" }, // Multiplayer API
-	{ "HasStylebox", "HasThemeStylebox" }, // Control broke Theme
+	{ "HasStylebox", "HasThemeStylebox" }, // Control -- Breaks Theme
 	{ "HasStyleboxOverride", "HasThemeStyleboxOverride" }, // Control
 	{ "HttpEscape", "UriEncode" }, // String
 	{ "HttpUnescape", "UriDecode" }, // String
-	{ "ImportAnimationFromOtherImporter", "_ImportAnimation" }, //EditorSceneFormatImporter
-	{ "ImportSceneFromOtherImporter", "_ImportScene" }, //EditorSceneFormatImporter
+	{ "ImportAnimationFromOtherImporter", "_ImportAnimation" }, // EditorSceneFormatImporter
+	{ "ImportSceneFromOtherImporter", "_ImportScene" }, // EditorSceneFormatImporter
 	{ "InstanceSetSurfaceMaterial", "InstanceSetSurfaceOverrideMaterial" }, // RenderingServer
 	{ "IntersectPolygons2d", "IntersectPolygons" }, // Geometry2D
 	{ "IntersectPolylineWithPolygon2d", "IntersectPolylineWithPolygon" }, // Geometry2D
@@ -879,7 +844,7 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "IsShortcut", "MatchesEvent" }, // Shortcut
 	{ "IsSizeOverrideStretchEnabled", "IsSize2dOverrideStretchEnabled" }, // SubViewport
 	{ "IsSortEnabled", "IsYSortEnabled" }, // Node2D
-	{ "IsStaticBody", "IsAbleToSleep" }, // PhysicalBone3D - TODO - not sure
+	{ "IsStaticBody", "IsAbleToSleep" }, // PhysicalBone3D -- Not sure.
 	{ "IsVDragEnabled", "IsDragVerticalEnabled" }, // Camera2D
 	{ "JointCreateConeTwist", "JointMakeConeTwist" }, // PhysicsServer3D
 	{ "JointCreateGeneric6dof", "JointMakeGeneric6dof" }, // PhysicsServer3D
@@ -907,7 +872,6 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "PropertyListChangedNotify", "NotifyPropertyListChanged" }, // Object
 	{ "Recognize", "_Recognize" }, // ResourceFormatLoader
 	{ "RegenNormalmaps", "RegenNormalMaps" }, // ArrayMesh
-	{ "Remove", "RemoveAt" }, // Array, broke Directory
 	{ "RemoveAnimation", "RemoveAnimationLibrary" }, // AnimationPlayer
 	{ "RemoveColorOverride", "RemoveThemeColorOverride" }, // Control
 	{ "RemoveConstantOverride", "RemoveThemeConstantOverride" }, // Control
@@ -928,10 +892,10 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "SetAsNormalmap", "SetAsNormalMap" }, // NoiseTexture
 	{ "SetAsToplevel", "SetAsTopLevel" }, // CanvasItem
 	{ "SetAudioBus", "SetAudioBusName" }, // Area3D
-	{ "SetAutowrap", "SetAutowrapMode" }, // Label broke AcceptDialog
+	{ "SetAutowrap", "SetAutowrapMode" }, // Label -- Breaks AcceptDialog.
 	{ "SetCastTo", "SetTargetPosition" }, // RayCast2D, RayCast3D
-	{ "SetCollisionLayerBit", "SetCollisionLayerValue" }, // CSGShape3D and a lot of others like GridMap
-	{ "SetCollisionMaskBit", "SetCollisionMaskValue" }, // CSGShape3D and a lot of others like GridMap
+	{ "SetCollisionLayerBit", "SetCollisionLayerValue" }, // CSGShape3D, and a lot of others like GridMap.
+	{ "SetCollisionMaskBit", "SetCollisionMaskValue" }, // CSGShape3D, and a lot of others like GridMap.
 	{ "SetColumnMinWidth", "SetColumnCustomMinimumWidth" }, // Tree
 	{ "SetCommand", "SetCommandPressed" }, // InputEventWithModifiers
 	{ "SetControl", "SetCtrlPressed" }, // InputEventWithModifiers
@@ -939,6 +903,7 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "SetCullMaskBit", "SetCullMaskValue" }, // Camera3D
 	{ "SetCursorPosition", "SetCaretColumn" }, // LineEdit
 	{ "SetD", "SetDistance" }, // WorldMarginShape2D
+	{ "SetDefaultLength", "SetLength" }, // Bone2D
 	{ "SetDepthBiasEnable", "SetDepthBiasEnabled" }, // RDPipelineRasterizationState
 	{ "SetDevice", "SetOutputDevice" }, // AudioServer
 	{ "SetDoubleclick", "SetDoubleClick" }, // InputEventMouseButton
@@ -960,7 +925,7 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "SetIsPrimary", "SetPrimary" }, // XRInterface
 	{ "SetIterationsPerSecond", "SetPhysicsTicksPerSecond" }, // Engine
 	{ "SetLayerMaskBit", "SetLayerMaskValue" }, // VisualInstance3D
-	{ "SetMarginsPreset", "SetOffsetsPreset" }, //  Control
+	{ "SetMarginsPreset", "SetOffsetsPreset" }, // Control
 	{ "SetMaxAtlasSize", "SetMaxTextureSize" }, // LightmapGI
 	{ "SetMetakey", "SetMetaPressed" }, // InputEventWithModifiers
 	{ "SetMidHeight", "SetHeight" }, // CapsuleMesh
@@ -971,13 +936,14 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "SetPhysicalScancode", "SetPhysicalKeycode" }, // InputEventKey
 	{ "SetProximityFade", "SetProximityFadeEnabled" }, // Material
 	{ "SetRefuseNewNetworkConnections", "SetRefuseNewConnections" }, // Multiplayer API
-	{ "SetRegion", "SetRegionEnabled" }, // Sprite2D, Sprite broke AtlasTexture
+	{ "SetRegion", "SetRegionEnabled" }, // Sprite2D -- Sprite breaks AtlasTexture.
 	{ "SetRegionFilterClip", "SetRegionFilterClipEnabled" }, // Sprite2D
 	{ "SetReverbBus", "SetReverbBusName" }, // Area3D
 	{ "SetRotate", "SetRotates" }, // PathFollow2D
 	{ "SetScancode", "SetKeycode" }, // InputEventKey
+	{ "SetShaderParam", "SetShaderParameter" }, // ShaderMaterial
 	{ "SetShift", "SetShiftPressed" }, // InputEventWithModifiers
-	{ "SetSizeOverride", "SetSize2dOverride" }, // SubViewport broke ImageTexture
+	{ "SetSizeOverride", "SetSize2dOverride" }, // SubViewport -- Breaks ImageTexture.
 	{ "SetSizeOverrideStretch", "SetSize2dOverrideStretch" }, // SubViewport
 	{ "SetSlipsOnSlope", "SetSlideOnSlope" }, // SeparationRayShape2D, SeparationRayShape3D
 	{ "SetSortEnabled", "SetYSortEnabled" }, // Node2D
@@ -985,21 +951,22 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "SetSpatialNode", "SetNode3d" }, // EditorNode3DGizmo
 	{ "SetSpeed", "SetVelocity" }, // InputEventMouseMotion
 	{ "SetSsaoEdgeSharpness", "SetSsaoSharpness" }, // Environment
-	{ "SetSurfaceMaterial", "SetSurfaceOverrideMaterial" }, // MeshInstance3D broke ImporterMesh
-	{ "SetTabAlign", "SetTabAlignment" }, //TabContainer
-	{ "SetTangent", "SurfaceSetTangent" }, // ImmediateGeometry broke SurfaceTool
+	{ "SetSurfaceMaterial", "SetSurfaceOverrideMaterial" }, // MeshInstance3D -- Breaks ImporterMesh.
+	{ "SetTabAlign", "SetTabAlignment" }, // TabContainer
+	{ "SetTangent", "SurfaceSetTangent" }, // ImmediateGeometry -- Breaks SurfaceTool.
 	{ "SetTextAlign", "SetTextAlignment" }, // Button
 	{ "SetTimerProcessMode", "SetTimerProcessCallback" }, // Timer
 	{ "SetTonemapAutoExposure", "SetTonemapAutoExposureEnabled" }, // Environment
-	{ "SetTranslation", "SetPosition" }, // Node3D - this broke GLTFNode which is used rarely
+	{ "SetTranslation", "SetPosition" }, // Node3D -- This breaks GLTFNode, but it is used rarely.
+	{ "SetUniformName", "SetParameterName" }, // ParameterRef
 	{ "SetUnitDb", "SetVolumeDb" }, // AudioStreamPlayer3D
 	{ "SetUnitOffset", "SetProgressRatio" }, // PathFollow2D, PathFollow3D
-	{ "SetUv2", "SurfaceSetUv2" }, // ImmediateMesh broke Surffacetool
+	{ "SetUv2", "SurfaceSetUv2" }, // ImmediateMesh -- Breaks SurfaceTool.
 	{ "SetVDragEnabled", "SetDragVerticalEnabled" }, // Camera2D
 	{ "SetValign", "SetVerticalAlignment" }, // Label
 	{ "SetWindowLayout", "_SetWindowLayout" }, // EditorPlugin
-	{ "SetZfar", "SetFar" }, // Camera3D broke GLTFCamera
-	{ "SetZnear", "SetNear" }, // Camera3D broke GLTFCamera
+	{ "SetZfar", "SetFar" }, // Camera3D -- Breaks GLTFCamera.
+	{ "SetZnear", "SetNear" }, // Camera3D -- Breaks GLTFCamera.
 	{ "ShortcutMatch", "IsMatch" }, // InputEvent
 	{ "SkeletonAllocate", "SkeletonAllocateData" }, // RenderingServer
 	{ "SurfaceUpdateRegion", "SurfaceUpdateAttributeRegion" }, // ArrayMesh
@@ -1015,23 +982,16 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "ViewportSetUseArvr", "ViewportSetUseXr" }, // RenderingServer
 	{ "WarpMousePosition", "WarpMouse" }, // Input
 	{ "WorldToMap", "LocalToMap" }, // TileMap, GridMap
-	{ "SetShaderParam", "SetShaderParameter" }, // ShaderMaterial
-	{ "GetShaderParam", "GetShaderParameter" }, // ShaderMaterial
-	{ "SetUniformName", "SetParameterName" }, // ParameterRef
-	{ "GetUniformName", "GetParameterName" }, // ParameterRef
 
 	// Builtin types
-	//	{ "Empty", "IsEmpty" }, // Array - Used as custom rule  // Be careful, this will be used everywhere
-	{ "Clamped", "Clamp" }, // Vector2  // Be careful, this will be used everywhere
+	{ "Clamped", "LimitLength" }, // Vector2
 	{ "GetRotationQuat", "GetRotationQuaternion" }, // Basis
 	{ "GrowMargin", "GrowSide" }, // Rect2
-	{ "Invert", "Reverse" }, // Array - TODO check  // Be careful, this will be used everywhere
 	{ "IsAbsPath", "IsAbsolutePath" }, // String
 	{ "IsValidInteger", "IsValidInt" }, // String
 	{ "LinearInterpolate", "Lerp" }, // Color
 	{ "ToAscii", "ToAsciiBuffer" }, // String
 	{ "ToUtf8", "ToUtf8Buffer" }, // String
-	{ "ToWchar", "ToUtf32Buffer" }, // String // TODO - utf32 or utf16?
 
 	// @GlobalScope
 	{ "Bytes2Var", "BytesToVar" },
@@ -1055,40 +1015,50 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ nullptr, nullptr },
 };
 
-// Some needs to be disabled, because users can use this names as variables
 const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
-	//	// { "d", "distance" }, //WorldMarginShape2D - TODO, looks that polish letters ą ę are treaten as space, not as letter, so `będą` are renamed to `będistanceą`
-	//	// {"alt","alt_pressed"}, // This may broke a lot of comments and user variables
-	//	// {"command","command_pressed"},// This may broke a lot of comments and user variables
-	//	// {"control","ctrl_pressed"},// This may broke a lot of comments and user variables
-	//	// {"extends","size"}, // BoxShape3D, LightmapGI broke ReflectionProbe
-	//	// {"meta","meta_pressed"},// This may broke a lot of comments and user variables
-	//	// {"pause_mode","process_mode"}, // Node - Cyclic rename, look for others
-	//	// {"rotate","rotates"}, // PathFollow2D - probably function exists with same name
-	// 	// {"offset","progress"}, // PathFollow2D, PathFollow3D - Name is way too vague
-	//	// {"shift","shift_pressed"},// This may broke a lot of comments and user variables
-	//	{ "autowrap", "autowrap_mode" }, // Label
-	//	{ "cast_to", "target_position" }, // RayCast2D, RayCast3D
-	//	{ "device", "output_device"}, // AudioServer - Too vague, most likely breaks comments & variables
-	//	{ "doubleclick", "double_click" }, // InputEventMouseButton
-	//	{ "group", "button_group" }, // BaseButton
-	//	{ "process_mode", "process_callback" }, // AnimationTree, Camera2D
-	//	{ "scancode", "keycode" }, // InputEventKey
-	//	{ "toplevel", "top_level" }, // Node
-	//	{ "window_title", "title" }, // Window
-	//	{ "wrap_enabled", "wrap_mode" }, // TextEdit
-	//	{ "zfar", "far" }, // Camera3D
-	//	{ "znear", "near" }, // Camera3D
-	//	{ "filename", "scene_file_path" }, // Node
-	//	{ "pressed", "button_pressed" }, // BaseButton - Will also rename the signal, skipping for now
+	// NOTE: Commented out renames are disabled because deemed not suitable for
+	// the current way the regex-based converter works.
+	// When uncommenting any of those as suitable for conversion, please move it
+	// to the block with other enabled conversions, ordered alphabetically, and
+	// make sure to add it to the C# rename map too.
+
+	// Too common words, users may use these names for variables or in comments.
+	// { "bg", "panel" }, // Theme
+	// { "alt", "alt_pressed" }, // InputEventWithModifiers
+	// { "command", "command_pressed" }, // InputEventWithModifiers
+	// { "control", "ctrl_pressed" }, // InputEventWithModifiers
+	// { "d", "distance" }, // WorldMarginShape2D
+	// { "device", "output_device" }, // AudioServer
+	// { "doubleclick", "double_click" }, // InputEventMouseButton
+	// { "filename", "scene_file_path" }, // Node
+	// { "group", "button_group" }, // BaseButton
+	// { "meta", "meta_pressed" }, // InputEventWithModifiers
+	// { "rotate", "rotates" }, // PathFollow2D
+	// { "off", "unchecked" }, // Theme
+	// { "ofs", "offset" }, // Theme
+	// { "offset", "progress" }, // PathFollow2D, PathFollow3D
+	// { "on", "checked" }, // Theme
+	// { "shift", "shift_pressed" }, // InputEventWithModifiers
+	// { "window_title", "title" }, // Window
+	// { "zfar", "far" }, // Camera3D
+	// { "znear", "near" }, // Camera3D
+
+	// Would need bespoke solution.
+	// { "autowrap", "autowrap_mode" }, // Label -- Changed from bool to enum.
+	// { "frames", "sprite_frames" }, // AnimatedSprite2D, AnimatedSprite3D -- GH-73696
+	// { "percent_visible, "show_percentage }, // ProgressBar -- Breaks Label and RichTextLabel.
+	// { "pressed", "button_pressed" }, // BaseButton -- Would also rename the signal.
+	// { "process_mode", "process_callback" }, // AnimationTree, Camera2D -- conflicts with Node.
+	// { "wrap_enabled", "wrap_mode" }, // TextEdit -- Changed from bool to enum.
+
 	{ "as_normalmap", "as_normal_map" }, // NoiseTexture
 	{ "bbcode_text", "text" }, // RichTextLabel
-	{ "bg", "panel" }, // Theme
 	{ "bg_focus", "focus" }, // Theme
 	{ "capture_device", "input_device" }, // AudioServer
 	{ "caret_blink_speed", "caret_blink_interval" }, // TextEdit, LineEdit
 	{ "caret_moving_by_right_click", "caret_move_on_right_click" }, // TextEdit
 	{ "caret_position", "caret_column" }, // LineEdit
+	{ "cast_to", "target_position" }, // RayCast2D, RayCast3D
 	{ "check_vadjust", "check_v_offset" }, // Theme
 	{ "close_h_ofs", "close_h_offset" }, // Theme
 	{ "close_v_ofs", "close_v_offset" }, // Theme
@@ -1102,6 +1072,7 @@ const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
 	{ "drag_margin_top", "drag_top_margin" }, // Camera2D
 	{ "drag_margin_v_enabled", "drag_vertical_enabled" }, // Camera2D
 	{ "enabled_focus_mode", "focus_mode" }, // BaseButton - Removed
+	{ "extents", "size" }, // BoxShape3D, LightmapGI, ReflectionProbe
 	{ "extra_spacing_bottom", "spacing_bottom" }, // Font
 	{ "extra_spacing_top", "spacing_top" }, // Font
 	{ "focus_neighbour_bottom", "focus_neighbor_bottom" }, // Control
@@ -1120,18 +1091,15 @@ const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
 	{ "icon_align", "icon_alignment" }, // Button
 	{ "iterations_per_second", "physics_ticks_per_second" }, // Engine
 	{ "invert_enable", "invert_enabled" }, // Polygon2D
-	{ "margin_bottom", "offset_bottom" }, // Control broke NinePatchRect, StyleBox
-	{ "margin_left", "offset_left" }, // Control broke NinePatchRect, StyleBox
-	{ "margin_right", "offset_right" }, // Control broke NinePatchRect, StyleBox
-	{ "margin_top", "offset_top" }, // Control broke NinePatchRect, StyleBox
+	{ "margin_bottom", "offset_bottom" }, // Control -- Breaks NinePatchRect, StyleBox.
+	{ "margin_left", "offset_left" }, // Control -- Breaks NinePatchRect, StyleBox.
+	{ "margin_right", "offset_right" }, // Control -- Breaks NinePatchRect, StyleBox.
+	{ "margin_top", "offset_top" }, // Control -- Breaks NinePatchRect, StyleBox.
 	{ "mid_height", "height" }, // CapsuleMesh
 	{ "neighbor_dist", "neighbor_distance" }, // NavigationAgent2D, NavigationAgent3D
 	{ "offset_h", "drag_horizontal_offset" }, // Camera2D
 	{ "offset_v", "drag_vertical_offset" }, // Camera2D
-	{ "off", "unchecked" }, // Theme
 	{ "off_disabled", "unchecked_disabled" }, // Theme
-	{ "ofs", "offset" }, // Theme
-	{ "on", "checked" }, // Theme
 	{ "on_disabled", "checked_disabled" }, // Theme
 	{ "oneshot", "one_shot" }, // AnimatedTexture
 	{ "out_of_range_mode", "max_polyphony" }, // AudioStreamPlayer3D
@@ -1150,6 +1118,7 @@ const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
 	{ "refuse_new_network_connections", "refuse_new_connections" }, // MultiplayerAPI
 	{ "region_filter_clip", "region_filter_clip_enabled" }, // Sprite2D
 	{ "reverb_bus_enable", "reverb_bus_enabled" }, // Area3D
+	{ "scancode", "keycode" }, // InputEventKey
 	{ "selectedframe", "selected_frame" }, // Theme
 	{ "size_override_stretch", "size_2d_override_stretch" }, // SubViewport
 	{ "slips_on_slope", "slide_on_slope" }, // SeparationRayShape2D
@@ -1165,49 +1134,29 @@ const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
 	{ "tab_align", "tab_alignment" }, // TabContainer
 	{ "table_hseparation", "table_h_separation" }, // Theme
 	{ "table_vseparation", "table_v_separation" }, // Theme
-	{ "translation", "position" }, // Node3D - broke GLTFNode
+	{ "toplevel", "top_level" }, // Node
+	{ "translation", "position" }, // Node3D
 	{ "unit_db", "volume_db" }, // AudioStreamPlayer3D
 	{ "unit_offset", "progress_ratio" }, // PathFollow2D, PathFollow3D
 	{ "vseparation", "v_separation" }, // Theme
-	{ "frames", "sprite_frames" }, // AnimatedSprite2D, AnimatedSprite3D
 
 	{ nullptr, nullptr },
 };
 
-// Some needs to be disabled, because users can use this names as variables
 const char *RenamesMap3To4::csharp_properties_renames[][2] = {
-	//	// { "D", "Distance" }, //WorldMarginShape2D - TODO, looks that polish letters ą ę are treaten as space, not as letter, so `będą` are renamed to `będistanceą`
-	//	// {"Alt","AltPressed"}, // This may broke a lot of comments and user variables
-	//	// {"Command","CommandPressed"},// This may broke a lot of comments and user variables
-	//	// {"Control","CtrlPressed"},// This may broke a lot of comments and user variables
-	//	// {"Extends","Size"}, // BoxShape3D, LightmapGI broke ReflectionProbe
-	//	// {"Meta","MetaPressed"},// This may broke a lot of comments and user variables
-	//	// {"PauseMode","ProcessMode"}, // Node - Cyclic rename, look for others
-	//	// {"Rotate","Rotates"}, // PathFollow2D - probably function exists with same name
-	// 	// {"Offset","Progress"}, // PathFollow2D, PathFollow3D - Name is way too vague
-	//	// {"Shift","ShiftPressed"},// This may broke a lot of comments and user variables
-	//	{ "Autowrap", "AutowrapMode" }, // Label
-	//	{ "CastTo", "TargetPosition" }, // RayCast2D, RayCast3D
-	//	{ "Doubleclick", "DoubleClick" }, // InputEventMouseButton
-	//	{ "Group", "ButtonGroup" }, // BaseButton
-	//  { "PercentVisible, "ShowPercentage}, // ProgressBar, conflicts with Label and RichTextLabel, but may be a worth it.
-	//	{ "ProcessMode", "ProcessCallback" }, // AnimationTree, Camera2D
-	//	{ "Scancode", "Keycode" }, // InputEventKey
-	//	{ "Toplevel", "TopLevel" }, // Node
-	//	{ "WindowTitle", "Title" }, // Window
-	//	{ "WrapEnabled", "WrapMode" }, // TextEdit
-	//	{ "Zfar", "Far" }, // Camera3D
-	//	{ "Znear", "Near" }, // Camera3D
-	//	{ "Pressed", "ButtonPressed" }, // BaseButton - Will also rename the signal, skipping for now
 	{ "AsNormalmap", "AsNormalMap" }, // NoiseTexture
 	{ "BbcodeText", "Text" }, // RichTextLabel
+	{ "BgFocus", "Focus" }, // Theme
+	{ "CaptureDevice", "InputDevice" }, // AudioServer
 	{ "CaretBlinkSpeed", "CaretBlinkInterval" }, // TextEdit, LineEdit
 	{ "CaretMovingByRightClick", "CaretMoveOnRightClick" }, // TextEdit
 	{ "CaretPosition", "CaretColumn" }, // LineEdit
+	{ "CastTo", "TargetPosition" }, // RayCast2D, RayCast3D
 	{ "CheckVadjust", "CheckVAdjust" }, // Theme
 	{ "CloseHOfs", "CloseHOffset" }, // Theme
 	{ "CloseVOfs", "CloseVOffset" }, // Theme
 	{ "Commentfocus", "CommentFocus" }, // Theme
+	{ "ContactsReported", "MaxContactsReported" }, // RigidBody
 	{ "DepthBiasEnable", "DepthBiasEnabled" }, // RDPipelineRasterizationState
 	{ "DragMarginBottom", "DragBottomMargin" }, // Camera2D
 	{ "DragMarginHEnabled", "DragHorizontalEnabled" }, // Camera2D
@@ -1216,6 +1165,7 @@ const char *RenamesMap3To4::csharp_properties_renames[][2] = {
 	{ "DragMarginTop", "DragTopMargin" }, // Camera2D
 	{ "DragMarginVEnabled", "DragVerticalEnabled" }, // Camera2D
 	{ "EnabledFocusMode", "FocusMode" }, // BaseButton - Removed
+	{ "Extents", "Size" }, // BoxShape3D, LightmapGI, ReflectionProbe
 	{ "ExtraSpacingBottom", "SpacingBottom" }, // Font
 	{ "ExtraSpacingTop", "SpacingTop" }, // Font
 	{ "FocusNeighbourBottom", "FocusNeighborBottom" }, // Control
@@ -1223,6 +1173,9 @@ const char *RenamesMap3To4::csharp_properties_renames[][2] = {
 	{ "FocusNeighbourRight", "FocusNeighborRight" }, // Control
 	{ "FocusNeighbourTop", "FocusNeighborTop" }, // Control
 	{ "FollowViewportEnable", "FollowViewportEnabled" }, // CanvasItem
+	{ "FileIconModulate", "FileIconColor" }, // Theme
+	{ "FilesDisabled", "FileDisabledColor" }, // Theme
+	{ "FolderIconModulate", "FolderIconColor" }, // Theme
 	{ "GlobalRateScale", "PlaybackSpeedScale" }, // AudioServer
 	{ "GravityDistanceScale", "GravityPointDistanceScale" }, // Area2D
 	{ "GravityVec", "GravityDirection" }, // Area2D
@@ -1231,15 +1184,16 @@ const char *RenamesMap3To4::csharp_properties_renames[][2] = {
 	{ "IconAlign", "IconAlignment" }, // Button
 	{ "IterationsPerSecond", "PhysicsTicksPerSecond" }, // Engine
 	{ "InvertEnable", "InvertEnabled" }, // Polygon2D
-	{ "MarginBottom", "OffsetBottom" }, // Control broke NinePatchRect, StyleBox
-	{ "MarginLeft", "OffsetLeft" }, // Control broke NinePatchRect, StyleBox
-	{ "MarginRight", "OffsetRight" }, // Control broke NinePatchRect, StyleBox
-	{ "MarginTop", "OffsetTop" }, // Control broke NinePatchRect, StyleBox
+	{ "MarginBottom", "OffsetBottom" }, // Control -- Breaks NinePatchRect, StyleBox.
+	{ "MarginLeft", "OffsetLeft" }, // Control -- Breaks NinePatchRect, StyleBox.
+	{ "MarginRight", "OffsetRight" }, // Control -- Breaks NinePatchRect, StyleBox.
+	{ "MarginTop", "OffsetTop" }, // Control -- Breaks NinePatchRect, StyleBox.
 	{ "MidHeight", "Height" }, // CapsuleMesh
 	{ "NeighborDist", "NeighborDistance" }, // NavigationAgent2D, NavigationAgent3D
 	{ "OffsetH", "DragHorizontalOffset" }, // Camera2D
 	{ "OffsetV", "DragVerticalOffset" }, // Camera2D
-	{ "Ofs", "Offset" }, // Theme
+	{ "OffDisabled", "UncheckedDisabled" }, // Theme
+	{ "OnDisabled", "CheckedDisabled" }, // Theme
 	{ "Oneshot", "OneShot" }, // AnimatedTexture
 	{ "OutOfRangeMode", "MaxPolyphony" }, // AudioStreamPlayer3D
 	{ "PauseMode", "ProcessMode" }, // Node
@@ -1257,6 +1211,7 @@ const char *RenamesMap3To4::csharp_properties_renames[][2] = {
 	{ "RefuseNewNetworkConnections", "RefuseNewConnections" }, // MultiplayerAPI
 	{ "RegionFilterClip", "RegionFilterClipEnabled" }, // Sprite2D
 	{ "ReverbBusEnable", "ReverbBusEnabled" }, // Area3D
+	{ "Scancode", "Keycode" }, // InputEventKey
 	{ "Selectedframe", "SelectedFrame" }, // Theme
 	{ "SizeOverrideStretch", "Size2dOverrideStretch" }, // SubViewport
 	{ "SlipsOnSlope", "SlideOnSlope" }, // SeparationRayShape2D
@@ -1272,7 +1227,8 @@ const char *RenamesMap3To4::csharp_properties_renames[][2] = {
 	{ "TabAlign", "TabAlignment" }, // TabContainer
 	{ "TableHseparation", "TableHSeparation" }, // Theme
 	{ "TableVseparation", "TableVSeparation" }, // Theme
-	{ "Translation", "Position" }, // Node3D - broke GLTFNode
+	{ "Toplevel", "TopLevel" }, // Node
+	{ "Translation", "Position" }, // Node3D
 	{ "UnitDb", "VolumeDb" }, // AudioStreamPlayer3D
 	{ "UnitOffset", "ProgressRatio" }, // PathFollow2D, PathFollow3D
 	{ "Vseparation", "VSeparation" }, // Theme
@@ -1281,10 +1237,16 @@ const char *RenamesMap3To4::csharp_properties_renames[][2] = {
 };
 
 const char *RenamesMap3To4::gdscript_signals_renames[][2] = {
-	//  {"instantiate","instance"}, // FileSystemDock
-	// { "hide", "hidden" }, // CanvasItem - function with same name exists
-	// { "tween_all_completed","loop_finished"}, // Tween - TODO, not sure
-	// {"changed","settings_changed"}, // EditorSettings
+	// NOTE: Commented out renames are disabled because deemed not suitable for
+	// the current way the regex-based converter works.
+	// When uncommenting any of those as suitable for conversion, please move it
+	// to the block with other enabled conversions, ordered alphabetically, and
+	// make sure to add it to the C# rename map too.
+
+	// Too common words, users may use these names for variables or in comments.
+	// { "hide", "hidden" }, // CanvasItem
+	// { "changed", "settings_changed" }, // EditorSettings
+
 	{ "about_to_show", "about_to_popup" }, // Popup
 	{ "button_release", "button_released" }, // XRController3D
 	{ "cancelled", "canceled" }, // AcceptDialog
@@ -1294,8 +1256,8 @@ const char *RenamesMap3To4::gdscript_signals_renames[][2] = {
 	{ "network_peer_packet", "peer_packet" }, // MultiplayerAPI
 	{ "node_unselected", "node_deselected" }, // GraphEdit
 	{ "offset_changed", "position_offset_changed" }, // GraphNode
-	{ "settings_changed", "changed" }, // TileMap broke EditorSettings
-	{ "skeleton_updated", "pose_updated" }, //
+	{ "settings_changed", "changed" }, // TileMap -- Breaks EditorSettings
+	{ "skeleton_updated", "pose_updated" }, // Skeleton3D
 	{ "tab_close", "tab_closed" }, // TextEdit
 	{ "tab_hover", "tab_hovered" }, // TextEdit
 	{ "text_entered", "text_submitted" }, // LineEdit
@@ -1306,18 +1268,16 @@ const char *RenamesMap3To4::gdscript_signals_renames[][2] = {
 };
 
 const char *RenamesMap3To4::csharp_signals_renames[][2] = {
-	//  {"Instantiate","Instance"}, // FileSystemDock
-	// { "Hide", "Hidden" }, // CanvasItem - function with same name exists
-	// { "TweenAllCompleted","LoopFinished"}, // Tween - TODO, not sure
-	// {"Changed","SettingsChanged"}, // EditorSettings
 	{ "AboutToShow", "AboutToPopup" }, // Popup
 	{ "ButtonRelease", "ButtonReleased" }, // XRController3D
+	{ "Cancelled", "Canceled" }, // AcceptDialog
+	{ "ItemDoubleClicked", "ItemIconDoubleClicked" }, // Tree
 	{ "NetworkPeerConnected", "PeerConnected" }, // MultiplayerAPI
 	{ "NetworkPeerDisconnected", "PeerDisconnected" }, // MultiplayerAPI
 	{ "NetworkPeerPacket", "PeerPacket" }, // MultiplayerAPI
 	{ "NodeUnselected", "NodeDeselected" }, // GraphEdit
 	{ "OffsetChanged", "PositionOffsetChanged" }, // GraphNode
-	{ "SettingsChanged", "Changed" }, // TileMap broke EditorSettings
+	{ "SettingsChanged", "Changed" }, // TileMap -- Breaks EditorSettings
 	{ "SkeletonUpdated", "PoseUpdated" }, //
 	{ "TabClose", "TabClosed" }, // TextEdit
 	{ "TabHover", "TabHovered" }, // TextEdit
@@ -1326,10 +1286,12 @@ const char *RenamesMap3To4::csharp_signals_renames[][2] = {
 	{ "TweenStep", "StepFinished" }, // Tween
 
 	{ nullptr, nullptr },
-
 };
 
 const char *RenamesMap3To4::project_settings_renames[][2] = {
+	// Project setting paths in scripts include the category, but in project.godot,
+	// the category is the section delimiter, so we need to support the paths without it.
+	// The project.godot remaps are defined in the project_godot_renames, keep them in sync!
 	{ "audio/channel_disable_threshold_db", "audio/buses/channel_disable_threshold_db" },
 	{ "audio/channel_disable_time", "audio/buses/channel_disable_time" },
 	{ "audio/default_bus_layout", "audio/buses/default_bus_layout" },
@@ -1339,6 +1301,10 @@ const char *RenamesMap3To4::project_settings_renames[][2] = {
 	{ "audio/output_latency", "audio/driver/output_latency" },
 	{ "audio/output_latency.web", "audio/driver/output_latency.web" },
 	{ "audio/video_delay_compensation_ms", "audio/video/video_delay_compensation_ms" },
+	{ "display/window/size/width", "display/window/size/viewport_width" },
+	{ "display/window/size/height", "display/window/size/viewport_height" },
+	{ "display/window/size/test_width", "display/window/size/window_width_override" },
+	{ "display/window/size/test_height", "display/window/size/window_height_override" },
 	{ "display/window/vsync/use_vsync", "display/window/vsync/vsync_mode" },
 	{ "editor/main_run_args", "editor/run/main_run_args" },
 	{ "gui/common/swap_ok_cancel", "gui/common/swap_cancel_ok" },
@@ -1347,7 +1313,7 @@ const char *RenamesMap3To4::project_settings_renames[][2] = {
 	{ "network/limits/debugger_stdout/max_messages_per_frame", "network/limits/debugger/max_queued_messages" },
 	{ "network/limits/debugger_stdout/max_warnings_per_second", "network/limits/debugger/max_warnings_per_second" },
 	{ "network/ssl/certificates", "network/tls/certificate_bundle_override" },
-	{ "physics/2d/thread_model", "physics/2d/run_on_thread" }, // TODO not sure
+	{ "physics/2d/thread_model", "physics/2d/run_on_thread" }, // TODO: Not sure.
 	{ "rendering/environment/default_clear_color", "rendering/environment/defaults/default_clear_color" },
 	{ "rendering/environment/default_environment", "rendering/environment/defaults/default_environment" },
 	{ "rendering/quality/depth_prepass/disable_for_vendors", "rendering/driver/depth_prepass/disable_for_vendors" },
@@ -1366,10 +1332,52 @@ const char *RenamesMap3To4::project_settings_renames[][2] = {
 	{ "rendering/quality/shadow_atlas/size.mobile", "rendering/lights_and_shadows/shadow_atlas/size.mobile" },
 	{ "rendering/vram_compression/import_etc2", "rendering/textures/vram_compression/import_etc2_astc" },
 	{ "rendering/vram_compression/import_s3tc", "rendering/textures/vram_compression/import_s3tc_bptc" },
+
+	{ nullptr, nullptr },
+};
+
+const char *RenamesMap3To4::project_godot_renames[][2] = {
+	// Should be kept in sync with project_settings_renames.
+	{ "channel_disable_threshold_db", "buses/channel_disable_threshold_db" },
+	{ "channel_disable_time", "buses/channel_disable_time" },
+	{ "default_bus_layout", "buses/default_bus_layout" },
+	// { "driver", "driver/driver" }, -- Risk of conflicts.
+	{ "enable_audio_input", "driver/enable_input" },
+	// { "mix_rate", "driver/mix_rate" }, -- Risk of conflicts.
+	{ "output_latency", "driver/output_latency" },
+	{ "output_latency.web", "driver/output_latency.web" },
+	{ "video_delay_compensation_ms", "video/video_delay_compensation_ms" },
 	{ "window/size/width", "window/size/viewport_width" },
 	{ "window/size/height", "window/size/viewport_height" },
 	{ "window/size/test_width", "window/size/window_width_override" },
 	{ "window/size/test_height", "window/size/window_height_override" },
+	{ "window/vsync/use_vsync", "window/vsync/vsync_mode" },
+	{ "main_run_args", "run/main_run_args" },
+	{ "common/swap_ok_cancel", "common/swap_cancel_ok" },
+	{ "limits/debugger_stdout/max_chars_per_second", "limits/debugger/max_chars_per_second" },
+	{ "limits/debugger_stdout/max_errors_per_second", "limits/debugger/max_errors_per_second" },
+	{ "limits/debugger_stdout/max_messages_per_frame", "limits/debugger/max_queued_messages" },
+	{ "limits/debugger_stdout/max_warnings_per_second", "limits/debugger/max_warnings_per_second" },
+	{ "ssl/certificates", "tls/certificate_bundle_override" },
+	{ "2d/thread_model", "2d/run_on_thread" }, // TODO: Not sure.
+	{ "environment/default_clear_color", "environment/defaults/default_clear_color" },
+	{ "environment/default_environment", "environment/defaults/default_environment" },
+	{ "quality/depth_prepass/disable_for_vendors", "driver/depth_prepass/disable_for_vendors" },
+	{ "quality/depth_prepass/enable", "driver/depth_prepass/enable" },
+	{ "quality/shading/force_blinn_over_ggx", "shading/overrides/force_blinn_over_ggx" },
+	{ "quality/shading/force_blinn_over_ggx.mobile", "shading/overrides/force_blinn_over_ggx.mobile" },
+	{ "quality/shading/force_lambert_over_burley", "shading/overrides/force_lambert_over_burley" },
+	{ "quality/shading/force_lambert_over_burley.mobile", "shading/overrides/force_lambert_over_burley.mobile" },
+	{ "quality/shading/force_vertex_shading", "shading/overrides/force_vertex_shading" },
+	{ "quality/shading/force_vertex_shading.mobile", "shading/overrides/force_vertex_shading.mobile" },
+	{ "quality/shadow_atlas/quadrant_0_subdiv", "lights_and_shadows/shadow_atlas/quadrant_0_subdiv" },
+	{ "quality/shadow_atlas/quadrant_1_subdiv", "lights_and_shadows/shadow_atlas/quadrant_1_subdiv" },
+	{ "quality/shadow_atlas/quadrant_2_subdiv", "lights_and_shadows/shadow_atlas/quadrant_2_subdiv" },
+	{ "quality/shadow_atlas/quadrant_3_subdiv", "lights_and_shadows/shadow_atlas/quadrant_3_subdiv" },
+	{ "quality/shadow_atlas/size", "lights_and_shadows/shadow_atlas/size" },
+	{ "quality/shadow_atlas/size.mobile", "lights_and_shadows/shadow_atlas/size.mobile" },
+	{ "vram_compression/import_etc2", "textures/vram_compression/import_etc2_astc" },
+	{ "vram_compression/import_s3tc", "textures/vram_compression/import_s3tc_bptc" },
 
 	{ nullptr, nullptr },
 };
@@ -1419,15 +1427,17 @@ const char *RenamesMap3To4::shaders_renames[][2] = {
 };
 
 const char *RenamesMap3To4::class_renames[][2] = {
-	// { "BulletPhysicsDirectBodyState", "BulletPhysicsDirectBodyState3D" }, // Class is not visible in ClassDB
-	// { "BulletPhysicsServer", "BulletPhysicsServer3D" }, // Class is not visible in ClassDB
-	// { "GDScriptFunctionState", "Node3D" }, // TODO - not sure to which should be changed
-	// { "GDScriptNativeClass", "Node3D" }, // TODO - not sure to which should be changed
-	// { "InputDefault",""}, // TODO ?
-	// { "Physics2DDirectBodyStateSW", "GodotPhysicsDirectBodyState2D" }, // Class is not visible in ClassDB
-	// { "Physics2DShapeQueryResult", "PhysicsShapeQueryResult2D" }, // Class is not visible in ClassDB
-	// { "PhysicsShapeQueryResult", "PhysicsShapeQueryResult3D" }, // Class is not visible in ClassDB
-	// { "NativeScript","GDExtension"}, ??
+	// { "Particles", "GPUParticles3D" }, // Common word, and incompatible class.
+	// { "World", "World3D" }, // Too common.
+
+	// Risky as fairly common words, but worth it given how ubiquitous they are.
+	{ "Area", "Area3D" },
+	{ "Camera", "Camera3D" },
+	{ "Path", "Path3D" },
+	{ "Reference", "RefCounted" },
+	{ "Shape", "Shape3D" },
+	{ "Tabs", "TabBar" },
+
 	{ "ARVRAnchor", "XRAnchor3D" },
 	{ "ARVRCamera", "XRCamera3D" },
 	{ "ARVRController", "XRController3D" },
@@ -1438,8 +1448,6 @@ const char *RenamesMap3To4::class_renames[][2] = {
 	{ "ARVRServer", "XRServer" },
 	{ "AStar", "AStar3D" },
 	{ "AnimatedSprite", "AnimatedSprite2D" },
-	{ "AnimationTreePlayer", "AnimationTree" },
-	{ "Area", "Area3D" }, // Be careful, this will be used everywhere
 	{ "AudioStreamOGGVorbis", "AudioStreamOggVorbis" },
 	{ "AudioStreamRandomPitch", "AudioStreamRandomizer" },
 	{ "AudioStreamSample", "AudioStreamWAV" },
@@ -1458,7 +1466,6 @@ const char *RenamesMap3To4::class_renames[][2] = {
 	{ "CSGShape", "CSGShape3D" },
 	{ "CSGSphere", "CSGSphere3D" },
 	{ "CSGTorus", "CSGTorus3D" },
-	{ "Camera", "Camera3D" }, // Be careful, this will be used everywhere
 	{ "CapsuleShape", "CapsuleShape3D" },
 	{ "ClippedCamera", "Camera3D" },
 	{ "CollisionObject", "CollisionObject3D" },
@@ -1480,11 +1487,9 @@ const char *RenamesMap3To4::class_renames[][2] = {
 	{ "EditorSpatialGizmo", "EditorNode3DGizmo" },
 	{ "EditorSpatialGizmoPlugin", "EditorNode3DGizmoPlugin" },
 	{ "ExternalTexture", "ImageTexture" },
-	{ "FuncRef", "Callable" },
 	{ "GIProbe", "VoxelGI" },
 	{ "GIProbeData", "VoxelGIData" },
 	{ "Generic6DOFJoint", "Generic6DOFJoint3D" },
-	{ "Geometry", "Geometry2D" }, // Geometry class is split between Geometry2D and Geometry3D so we need to choose one
 	{ "GeometryInstance", "GeometryInstance3D" },
 	{ "GradientTexture", "GradientTexture2D" },
 	{ "HeightMapShape", "HeightMapShape3D" },
@@ -1508,10 +1513,7 @@ const char *RenamesMap3To4::class_renames[][2] = {
 	{ "MeshInstance", "MeshInstance3D" },
 	{ "MultiMeshInstance", "MultiMeshInstance3D" },
 	{ "MultiplayerPeerGDNative", "MultiplayerPeerExtension" },
-	{ "Navigation", "Node3D" },
-	{ "Navigation2D", "Node2D" },
 	{ "Navigation2DServer", "NavigationServer2D" },
-	{ "Navigation3D", "Node3D" },
 	{ "NavigationAgent", "NavigationAgent3D" },
 	{ "NavigationMeshInstance", "NavigationRegion3D" },
 	{ "NavigationObstacle", "NavigationObstacle3D" },
@@ -1525,10 +1527,8 @@ const char *RenamesMap3To4::class_renames[][2] = {
 	{ "PHashTranslation", "OptimizedTranslation" },
 	{ "PacketPeerGDNative", "PacketPeerExtension" },
 	{ "PanoramaSky", "Sky" },
-	{ "Particles", "GPUParticles3D" }, // Be careful, this will be used everywhere
 	{ "Particles2D", "GPUParticles2D" },
 	{ "ParticlesMaterial", "ParticleProcessMaterial" },
-	{ "Path", "Path3D" }, // Be careful, this will be used everywhere
 	{ "PathFollow", "PathFollow3D" },
 	{ "PhysicalBone", "PhysicalBone3D" },
 	{ "Physics2DDirectBodyState", "PhysicsDirectBodyState2D" },
@@ -1552,12 +1552,10 @@ const char *RenamesMap3To4::class_renames[][2] = {
 	{ "RayCast", "RayCast3D" },
 	{ "RayShape", "SeparationRayShape3D" },
 	{ "RayShape2D", "SeparationRayShape2D" },
-	{ "Reference", "RefCounted" }, // Be careful, this will be used everywhere
 	{ "RemoteTransform", "RemoteTransform3D" },
 	{ "ResourceInteractiveLoader", "ResourceLoader" },
 	{ "RigidBody", "RigidBody3D" },
 	{ "SceneTreeTween", "Tween" },
-	{ "Shape", "Shape3D" }, // Be careful, this will be used everywhere
 	{ "ShortCut", "Shortcut" },
 	{ "Skeleton", "Skeleton3D" },
 	{ "SkeletonIK", "SkeletonIK3D" },
@@ -1580,9 +1578,8 @@ const char *RenamesMap3To4::class_renames[][2] = {
 	{ "StreamTexture2DArray", "CompressedTexture2DArray" },
 	{ "StreamTextureLayered", "CompressedTextureLayered" },
 	{ "TCP_Server", "TCPServer" },
-	{ "Tabs", "TabBar" }, // Be careful, this will be used everywhere
 	{ "TextFile", "Node3D" },
-	{ "Texture", "Texture2D" }, // May broke TextureRect
+	{ "Texture", "Texture2D" }, // May break TextureRect.
 	{ "TextureArray", "Texture2DArray" },
 	{ "TextureProgress", "TextureProgressBar" },
 	{ "ToolButton", "Button" },
@@ -1628,17 +1625,10 @@ const char *RenamesMap3To4::class_renames[][2] = {
 	{ "WebRTCMultiplayer", "WebRTCMultiplayerPeer" },
 	{ "WebRTCPeerConnectionGDNative", "WebRTCPeerConnectionExtension" },
 	{ "WindowDialog", "Window" },
-	{ "World", "World3D" }, // Be careful, this will be used everywhere
 	{ "XRAnchor", "XRAnchor3D" },
 	{ "XRController", "XRController3D" },
 	{ "XROrigin", "XROrigin3D" },
-	{ "YSort", "Node2D" },
-
-	{ "CullInstance", "Node3D" }, // Probably this type needs to be added to Godot 4.0, since it is for now only available only in Godot 3.x
-	{ "RoomGroup", "Node3D" }, // Probably this type needs to be added to Godot 4.0, since it is for now only available only in Godot 3.x
-	{ "Room", "Node3D" }, // Probably this type needs to be added to Godot 4.0, since it is for now only available only in Godot 3.x
-	{ "RoomManager", "Node3D" }, // Probably this type needs to be added to Godot 4.0, since it is for now only available only in Godot 3.x
-	{ "Portal", "Node3D" }, // Probably this type needs to be added to Godot 4.0, since it is for now only available only in Godot 3.x
+	{ "YSort", "Node2D" }, // CanvasItem has a new "y_sort_enabled" property.
 
 	{ nullptr, nullptr },
 };

@@ -207,7 +207,11 @@ void RasterizerGLES3::finalize() {
 	memdelete(config);
 }
 
+RasterizerGLES3 *RasterizerGLES3::singleton = nullptr;
+
 RasterizerGLES3::RasterizerGLES3() {
+	singleton = this;
+
 #ifdef GLAD_ENABLED
 	bool glad_loaded = false;
 #ifdef EGL_ENABLED
@@ -301,7 +305,7 @@ void RasterizerGLES3::prepare_for_blitting_render_targets() {
 	utils->capture_timestamps_end();
 }
 
-void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect, uint32_t p_layer) {
+void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect, uint32_t p_layer, bool p_first) {
 	GLES3::RenderTarget *rt = GLES3::TextureStorage::get_singleton()->get_render_target(p_render_target);
 
 	ERR_FAIL_COND(!rt);
@@ -326,6 +330,17 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+
+	if (p_first) {
+		Size2i win_size = DisplayServer::get_singleton()->window_get_size();
+		if (p_screen_rect.position != Vector2() || p_screen_rect.size != rt->size) {
+			// Viewport doesn't cover entire window so clear window to black before blitting.
+			glViewport(0, 0, win_size.width, win_size.height);
+			glClearColor(0.0, 0.0, 0.0, 1.0);
+			glClear(GL_COLOR_BUFFER_BIT);
+		}
+	}
+
 	Vector2i screen_rect_end = p_screen_rect.get_end();
 	glBlitFramebuffer(0, 0, rt->size.x, rt->size.y,
 			p_screen_rect.position.x, flip_y ? screen_rect_end.y : p_screen_rect.position.y, screen_rect_end.x, flip_y ? p_screen_rect.position.y : screen_rect_end.y,
@@ -345,7 +360,7 @@ void RasterizerGLES3::blit_render_targets_to_screen(DisplayServer::WindowID p_sc
 		RID rid_rt = blit.render_target;
 
 		Rect2 dst_rect = blit.dst_rect;
-		_blit_render_target_to_screen(rid_rt, p_screen, dst_rect, blit.multi_view.use_layer ? blit.multi_view.layer : 0);
+		_blit_render_target_to_screen(rid_rt, p_screen, dst_rect, blit.multi_view.use_layer ? blit.multi_view.layer : 0, i == 0);
 	}
 }
 

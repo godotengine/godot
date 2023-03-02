@@ -37,6 +37,8 @@
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 
+class ConditionVariable;
+
 class ResourceFormatLoader : public RefCounted {
 	GDCLASS(ResourceFormatLoader, RefCounted);
 
@@ -105,6 +107,8 @@ public:
 		THREAD_LOAD_LOADED
 	};
 
+	static const int BINARY_MUTEX_TAG = 1;
+
 private:
 	static Ref<ResourceFormatLoader> loader[MAX_LOADERS];
 	static int loader_count;
@@ -136,7 +140,7 @@ private:
 	struct ThreadLoadTask {
 		Thread *thread = nullptr;
 		Thread::ID loader_id = 0;
-		Semaphore *semaphore = nullptr;
+		ConditionVariable *cond_var = nullptr;
 		String local_path;
 		String remapped_path;
 		String type_hint;
@@ -149,12 +153,11 @@ private:
 		bool use_sub_threads = false;
 		bool start_next = true;
 		int requests = 0;
-		int poll_requests = 0;
 		HashSet<String> sub_tasks;
 	};
 
 	static void _thread_load_function(void *p_userdata);
-	static Mutex *thread_load_mutex;
+	static SafeBinaryMutex<BINARY_MUTEX_TAG> *thread_load_mutex;
 	static HashMap<String, ThreadLoadTask> thread_load_tasks;
 	static Semaphore *thread_load_semaphore;
 	static int thread_waiting_count;

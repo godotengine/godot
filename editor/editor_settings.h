@@ -170,6 +170,7 @@ public:
 	String get_editor_layouts_config() const;
 	float get_auto_display_scale() const;
 
+	void _add_shortcut_default(const String &p_name, const Ref<Shortcut> &p_shortcut);
 	void add_shortcut(const String &p_name, const Ref<Shortcut> &p_shortcut);
 	bool is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const;
 	Ref<Shortcut> get_shortcut(const String &p_name) const;

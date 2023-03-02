@@ -71,13 +71,15 @@
 # أحمد النور <ahmed2699@gmail.com>, 2022.
 # Commander Gordon <gordoncommander@gmail.com>, 2022.
 # Abdulrahman <abdelrahman.ramadan686@gmail.com>, 2022.
+# "Ali F. Abbas" <alifuadabbas@gmail.com>, 2023.
+# Youssef Mohamed <starmod300@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-09 09:37+0000\n"
-"Last-Translator: Nabeel20 <nabeelandnizam@gmail.com>\n"
+"PO-Revision-Date: 2023-02-26 13:09+0000\n"
+"Last-Translator: Youssef Mohamed <starmod300@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -146,17 +148,159 @@ msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
 msgstr ""
 "المحور الأفقي لمركز التحكم Joystick الثاني، المُطلق الأيسر، Sony L2، Xbox LT"
 
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "عصا التحكم 2 المحور Y, الزر الأيمن, زر R2 على Sony, زر RT على Xbox"
+
+msgid "Joystick 3 X-Axis"
+msgstr "المحور X لعصا التحكم 3"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "المحور Y لعصا التحكم 3"
+
+msgid "Joystick 4 X-Axis"
+msgstr "المحور X لعصا التحكم 4"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "المحور Y لعصا التحكم 4"
+
+msgid "Unknown Joypad Axis"
+msgstr "محور ذراع تحكم غير معروف"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "حركةذراع التحكم على المحور d% (s%) مع قيمة 2f.%"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "مفتاح الحركة الأسفل, زر X على سوني, زر A على Xbox, زر B على Nintendo"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "مفتاح الحركة الأيمن, زر O على سوني, زر B على Xbox, زر A على Nintendo"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr ""
+"مفتاح الحركة الأيسر, زر المربع على سوني, زر X على Xbox, زر Y على Nintendo"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr ""
+"مفتاح الحركة الأعلى, زر المثلث على سوني, زر Y على Xbox, زر X على Nintendo"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr ""
+"مفتاح الرجوع, زر الإختيار على سوني, زر الرجوع على Xbox, زر - على Nintendo"
+
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "الدليل, Sony PS, زر الرئيسية على Xbox"
+
+msgid "Start, Nintendo +"
+msgstr "البداية, زر + على Nintendo"
+
+msgid "Left Stick, Sony L3, Xbox L/LS"
+msgstr "الإتجاه الأيسر على عصا التحكم, زر L3 على Sony, زر L/LS على Xbox"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "الإتجاه الأيمن على عصا التحكم, زر R3 على Sony, زر R/RS على Xbox"
+
+msgid "Left Shoulder, Sony L1, Xbox LB"
+msgstr "زر الكتف الأيسر, زر L1 على Sony, زر LB على Xbox"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "زر الكتف الأيمن, زر R1 على Sony, زر RB على Xbox"
+
+msgid "D-pad Up"
+msgstr "زر ذراع التحكم الأعلى"
+
+msgid "D-pad Down"
+msgstr "زر ذراع التحكم الأسفل"
+
+msgid "D-pad Left"
+msgstr "زر ذراع التحكم الأيسر"
+
+msgid "D-pad Right"
+msgstr "زر ذراع التحكم الأيمن"
+
+msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "Xbox مشاركة, PS5 ميكروفون, Nintendo إلتقاط"
+
+msgid "Xbox Paddle 1"
+msgstr "Xbox المجداف 1"
+
+msgid "Xbox Paddle 2"
+msgstr "Xbox المجداف 2"
+
+msgid "Xbox Paddle 3"
+msgstr "Xbox المجداف 3"
+
+msgid "Xbox Paddle 4"
+msgstr "Xbox المجداف 4"
+
+msgid "PS4/5 Touchpad"
+msgstr "PS4/5 لوحة اللمس"
+
+msgid "Joypad Button %d"
+msgstr "ذراع التحكم d%"
+
+msgid "Pressure:"
+msgstr "الضغط:"
+
+msgid "touched"
+msgstr "لُمست"
+
+msgid "released"
+msgstr "تُركت"
+
+msgid "Screen %s at (%s) with %s touch points"
+msgstr "الشاشة s% في (s%) مع s% نقاط لمس"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr "الشاشة سُحبت مع s% نقاط لمس في الموقع (s%) مع سرعة (s%)"
+
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "إيماءة تكبير في (s%) مع العامل s%"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "إيماءة حركة في (s%) مع معامل دلتا (s%)"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "إدخال MIDI على القناة=s% الرسالة=s%"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "حدث إدخال مع إختصار=s%"
+
+msgid "Accept"
+msgstr "قبول"
+
 msgid "Select"
 msgstr "حدد"
 
 msgid "Cancel"
 msgstr "إلغاء"
 
+msgid "Focus Next"
+msgstr "حدد التالي"
+
+msgid "Focus Prev"
+msgstr "حدد السابق"
+
+msgid "Left"
+msgstr "يساراً"
+
+msgid "Right"
+msgstr "يميناً"
+
 msgid "Up"
 msgstr "أعلى"
 
 msgid "Down"
 msgstr "أسفل"
+
+msgid "Page Up"
+msgstr "الصفحة السابقة"
+
+msgid "Page Down"
+msgstr "الصفحة التالية"
+
+msgid "Home"
+msgstr "الرئيسية"
 
 msgid "End"
 msgstr "النهاية"
@@ -176,11 +320,107 @@ msgstr "تراجع"
 msgid "Redo"
 msgstr "إعادة تراجع"
 
+msgid "Completion Query"
+msgstr "إستعلام إكمال"
+
+msgid "New Line"
+msgstr "سطر جديد"
+
+msgid "New Blank Line"
+msgstr "سطر فارغ جديد"
+
+msgid "New Line Above"
+msgstr "سطر جديد في الأعلى"
+
+msgid "Indent"
+msgstr "المسافة البادئة"
+
+msgid "Dedent"
+msgstr "إنعدام المسافة البادئة"
+
+msgid "Backspace"
+msgstr "مفتاح التراجع"
+
+msgid "Backspace Word"
+msgstr "تراجع عن كلمة"
+
+msgid "Backspace all to Left"
+msgstr "أرجع الكل إلى اليسار"
+
 msgid "Delete"
 msgstr "حذف"
 
+msgid "Delete Word"
+msgstr "حذف كلمة"
+
+msgid "Delete all to Right"
+msgstr "حذف الكل إلى اليمين"
+
+msgid "Caret Left"
+msgstr "علامة إقحام على اليسار"
+
+msgid "Caret Word Left"
+msgstr "علامة إقحام الكلمة على اليسار"
+
+msgid "Caret Right"
+msgstr "علامة إقحام على اليمين"
+
+msgid "Caret Word Right"
+msgstr "علامة إقحام الكلمة على اليمين"
+
+msgid "Caret Up"
+msgstr "علامة الإقحام العليا"
+
+msgid "Caret Down"
+msgstr "عالمة الإقحام السفلى"
+
+msgid "Caret Line Start"
+msgstr "علامة إقحام بداية السطر"
+
+msgid "Caret Line End"
+msgstr "علامة إقحام نهاية السطر"
+
+msgid "Caret Page Up"
+msgstr "علامة إقحام الصفحة السابقة"
+
+msgid "Caret Page Down"
+msgstr "علامة إقحام الصفحة التالية"
+
+msgid "Caret Document Start"
+msgstr "علامة إقحام بداية المستند"
+
+msgid "Caret Document End"
+msgstr "علامة إقحام نهاية المستند"
+
+msgid "Caret Add Below"
+msgstr "علامة إقحام إضافة للأسفل"
+
+msgid "Caret Add Above"
+msgstr "علامة إقحام إضافة للأعلى"
+
+msgid "Scroll Up"
+msgstr "مرر لأعلى"
+
+msgid "Scroll Down"
+msgstr "مرر لأسفل"
+
 msgid "Select All"
 msgstr "تحديد الكل"
+
+msgid "Select Word Under Caret"
+msgstr "حدد كلمة تحت علامة الإقحام"
+
+msgid "Add Selection for Next Occurrence"
+msgstr "أضف التحديد للتكرار التالي"
+
+msgid "Clear Carets and Selection"
+msgstr "مسح التحديد و علامات الإقحام"
+
+msgid "Toggle Insert Mode"
+msgstr "التبديل إلى وضع الإدخال"
+
+msgid "Submit Text"
+msgstr "ارسال النص"
 
 msgid "Duplicate Nodes"
 msgstr "مضاعفة العُقد"
@@ -188,8 +428,17 @@ msgstr "مضاعفة العُقد"
 msgid "Delete Nodes"
 msgstr "حذف العُقد"
 
+msgid "Go Up One Level"
+msgstr "إذهب مرحلة للأعلى"
+
 msgid "Refresh"
 msgstr "تحديث"
+
+msgid "Show Hidden"
+msgstr "أظهر الملفات المخفية"
+
+msgid "Swap Input Direction"
+msgstr "تبديل جهة الإدخال"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "مدخلات خاطئة %d (لم يتم تمريرها) في التعبير"
@@ -212,6 +461,12 @@ msgstr "معامل غير صالح لإنشاء '%s'"
 msgid "On call to '%s':"
 msgstr "عند استدعاء '%s':"
 
+msgid "Built-in script"
+msgstr "النص المُدمج:"
+
+msgid "Built-in"
+msgstr "مُدمج:"
+
 msgid "B"
 msgstr "بايت"
 
@@ -233,6 +488,18 @@ msgstr "بيبي بايت (PiB)"
 msgid "EiB"
 msgstr "إكسي بايت (EiB)"
 
+msgid "Example: %s"
+msgstr "مثال: s%"
+
+msgid "%d item"
+msgid_plural "%d items"
+msgstr[0] "العنصر: d%"
+msgstr[1] "العنصر: d%"
+msgstr[2] "العنصران: d%"
+msgstr[3] "العناصر: d%"
+msgstr[4] "العناصر: d%"
+msgstr[5] "العناصر: d%"
+
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
@@ -243,11 +510,41 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "فعالية action بهذا الاسم '%s' موجودة سلفاً."
 
+msgid "Cannot Revert - Action is same as initial"
+msgstr "لا يمكن التراجع - الإجراء هو نفس الإجراء الأولي"
+
+msgid "Revert Action"
+msgstr "التراجع عن الإجراء"
+
 msgid "Add Event"
 msgstr "إضافة حَدث"
 
+msgid "Remove Action"
+msgstr "مسح الإجراء"
+
+msgid "Cannot Remove Action"
+msgstr "لا يمكن مسح الاجراء"
+
+msgid "Edit Event"
+msgstr "تعديل الحدث"
+
+msgid "Remove Event"
+msgstr "حذف الحدث"
+
+msgid "Filter by name..."
+msgstr "فلتر بواسطة الاسم..."
+
+msgid "Clear All"
+msgstr "مسح الكل"
+
+msgid "Add New Action"
+msgstr "إضافة إجراء جديد"
+
 msgid "Add"
 msgstr "أضف"
+
+msgid "Show Built-in Actions"
+msgstr "عرض الاجراءات الداخلية"
 
 msgid "Action"
 msgstr "إجراء"
@@ -261,6 +558,9 @@ msgstr "الوقت:"
 msgid "Value:"
 msgstr "القيمة:"
 
+msgid "Update Selected Key Handles"
+msgstr "تحديث المفاتيح المحددة"
+
 msgid "Insert Key Here"
 msgstr "أدخل المفتاح هنا"
 
@@ -270,11 +570,62 @@ msgstr "تكرار المفتاح(المفاتيح) المحدد(ة)"
 msgid "Delete Selected Key(s)"
 msgstr "إمسح المفتاح(المفاتيح) المحدد(ة)"
 
+msgid "Make Handles Free"
+msgstr "اجعل المقابض مجانية"
+
+msgid "Make Handles Linear"
+msgstr "اجعل المقابض خطية"
+
+msgid "Make Handles Balanced"
+msgstr "اجعل المقابض متوازنة"
+
+msgid "Make Handles Mirrored"
+msgstr "اجعل المقابض معكوسة"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "جعل المقابض متوازنة (ظل تلقائي)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "جعل المقابض معكوسة (الظل التلقائي)"
+
 msgid "Add Bezier Point"
 msgstr "إضافة نقطة بيزية"
 
 msgid "Move Bezier Points"
 msgstr "تحريك نقاط بيزية"
+
+msgid "Animation Duplicate Keys"
+msgstr "تكرار مفاتيح الرسوم المتحركة"
+
+msgid "Animation Delete Keys"
+msgstr "حذف مفاتيح الرسوم المتحركة"
+
+msgid "Focus"
+msgstr "التركيز"
+
+msgid "Select All Keys"
+msgstr "تحديد كل المفاتيح"
+
+msgid "Deselect All Keys"
+msgstr "إلغاء تحديد كل المفاتيح"
+
+msgid "Animation Change Transition"
+msgstr "تغير انتقالية الرسوم المتحركة"
+
+msgid "Animation Change %s"
+msgstr "تغيير الرسوم المتحركة s%"
+
+msgid "Animation Change Keyframe Value"
+msgstr "الرسوم المتحركة تغيير قيمة Keyframe"
+
+msgid "Animation Change Call"
+msgstr "تغيير الرسوم المتحركة (Call)"
+
+msgid "Animation Multi Change Transition"
+msgstr "الرسوم المتحركه تغييرات متعددة للمراحل الانتقالية"
+
+msgid "Animation Multi Change %s"
+msgstr "تغيرات متعددة للرسوم المتحركة s%"
 
 msgid "Change Animation Length"
 msgstr "تعديل مدة الرسم المتحرك"
@@ -282,8 +633,17 @@ msgstr "تعديل مدة الرسم المتحرك"
 msgid "Change Animation Loop"
 msgstr "تعديل رباط (Loop) الرسم المتحرك"
 
+msgid "Can't change loop mode on animation instanced from imported scene."
+msgstr "لا يمكن تغيير وضع الحلقة التكرارية في الرسم المتحرك من مشهد مستورد."
+
+msgid "Can't change loop mode on animation embedded in another scene."
+msgstr "لا يمكن تغيير وضع التكرار على الرسوم المتحركة المضمنة في مشهد آخر."
+
 msgid "Property Track"
 msgstr "مسار خاصية"
+
+msgid "Blend Shape Track"
+msgstr "مزيج الشكل و المسار"
 
 msgid "Call Method Track"
 msgstr "مسار لاستدعاء دالة"
@@ -342,8 +702,23 @@ msgstr "تغيير الأبعاد:"
 msgid "Type:"
 msgstr "نوع:"
 
+msgid "Handle mode: Free\n"
+msgstr "وضع المقبض: حر\n"
+
+msgid "Handle mode: Linear\n"
+msgstr "وضع المقبض: خطي\n"
+
+msgid "Handle mode: Balanced\n"
+msgstr "وضع المقبض: متوازن\n"
+
+msgid "Handle mode: Mirrored\n"
+msgstr "وضع المقبض: معكوس\n"
+
 msgid "Toggle Track Enabled"
 msgstr "ترجيح المسار المُفعل"
+
+msgid "Don't Use Blend"
+msgstr "لا تستخدم المزيج"
 
 msgid "Continuous"
 msgstr "متواصل"
@@ -389,6 +764,13 @@ msgstr "تغيير وضع التفسير (Interpolation) للرسم المتحر
 
 msgid "Change Animation Loop Mode"
 msgstr "تغيير وضع عقدة الرسم المتحرك"
+
+msgid ""
+"Compressed tracks can't be edited or removed. Re-import the animation with "
+"compression disabled in order to edit."
+msgstr ""
+"لا يمكن تحرير المسارات المضغوطة أو إزالتها. أعد استيراد الرسوم المتحركة مع "
+"تعطيل الضغط من أجل التحرير."
 
 msgid "Remove Anim Track"
 msgstr "إزالة مسار التحريك"
@@ -459,6 +841,9 @@ msgstr "موقع"
 msgid "Scale"
 msgstr "المقياس"
 
+msgid "BlendShape"
+msgstr "‏‮شكل ممزوج"
+
 msgid "Methods"
 msgstr "دوال"
 
@@ -474,6 +859,9 @@ msgstr "الحافظة فارغة!"
 msgid "Paste Tracks"
 msgstr "لصق المقاطع"
 
+msgid "Make Easing Keys"
+msgstr "جعل مفاتيح التيسير"
+
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr "هذا الخيار لا يعمل لتعديل منحنى بيزر (Bezier), لأنه فقط مقطع واحد."
@@ -483,6 +871,9 @@ msgstr "تحذير: تعديل رسوم متحركة مستوردة"
 
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "اختر مشغل الرسم المتحرك من شجرة المشهد لكي تنشئ أو تعدل الحركة."
+
+msgid "Toggle between the bezier curve editor and track editor."
+msgstr "‌قم بالتبديل بين محرر منحنى بيزير ومحرر المسار."
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "فقط قم بتبين المقاطع من العقد (Nodes) المحددة في الشجرة."
@@ -541,12 +932,6 @@ msgstr "إستعمل منحنيات بيزر"
 msgid "Create RESET Track(s)"
 msgstr "إنشاء مسار(ات) إعادة التعيين (RESET)"
 
-msgid "Anim. Optimizer"
-msgstr "مُحسن الحركة"
-
-msgid "Max. Angular Error:"
-msgstr "أقصي أخطاء زواية:"
-
 msgid "Optimize"
 msgstr "تحسين"
 
@@ -567,6 +952,9 @@ msgstr "تنظيف"
 
 msgid "Scale Ratio:"
 msgstr "نسبة التكبير:"
+
+msgid "Select Transition and Easing"
+msgstr "حدد الانتقال والتيسير"
 
 msgid "Select Tracks to Copy"
 msgstr "إختر المقاطع المراد نسخها"
@@ -656,6 +1044,9 @@ msgstr "لا يحتوي المشهد علي اي برنامج نصي."
 msgid "Select Method"
 msgstr "إختر طريقة"
 
+msgid "No method found matching given filters."
+msgstr "لم يتم العثور على طريقة تطابق المرشحات المعطاة."
+
 msgid "Remove"
 msgstr "إمسح"
 
@@ -664,6 +1055,9 @@ msgstr "إضافة وسيطة إستدعاء إضافية:"
 
 msgid "Extra Call Arguments:"
 msgstr "وسائط إستدعاء إضافية :"
+
+msgid "Allows to drop arguments sent by signal emitter."
+msgstr "يسمح بإسقاط الحجج المرسلة بواسطة باعث الإشارة."
 
 msgid "Receiver Method:"
 msgstr "الدالة المُتلقية:"
@@ -738,6 +1132,12 @@ msgstr "إنشاء %s جديد"
 msgid "No results for \"%s\"."
 msgstr "لا نتائج من أجل \"%s\"."
 
+msgid "This class is marked as deprecated."
+msgstr "تم وضع علامة على هذه الفئة على أنها مهملة."
+
+msgid "This class is marked as experimental."
+msgstr "تم وضع علامة على هذه الفئة على أنها تجريبية."
+
 msgid "No description available for %s."
 msgstr "ليس هناك وصف مناسب لأجل %s."
 
@@ -774,8 +1174,20 @@ msgstr "نسخ مسار العُقدة"
 msgid "Instance:"
 msgstr "نمذجة:"
 
+msgid ""
+"This node has been instantiated from a PackedScene file:\n"
+"%s\n"
+"Click to open the original file in the Editor."
+msgstr ""
+"تم إنشاء هذه العقدة من ملف PackedScene: \n"
+"s%\n"
+" انقر لفتح الملف الأصلي في المحرر."
+
 msgid "Toggle Visibility"
 msgstr "تشغيل/إطفاء الوضوحية Visibility"
+
+msgid "ms"
+msgstr "ms"
 
 msgid "Monitors"
 msgstr "المراقبون Monitors"
@@ -846,6 +1258,9 @@ msgstr "الوقت"
 msgid "Calls"
 msgstr "إستدعاءات"
 
+msgid "Execution resumed."
+msgstr "استئناف التنفيذ."
+
 msgid "Bytes:"
 msgstr "Bytes:"
 
@@ -860,6 +1275,9 @@ msgstr "٪s خطأ"
 
 msgid "Stack Trace"
 msgstr "تتبع المُكدس Stack Trace"
+
+msgid "Debug session closed."
+msgstr "تم إغلاق جلسة التصحيح."
 
 msgid "Copy Error"
 msgstr "خطأ في نسخ"
@@ -991,6 +1409,9 @@ msgstr "فتح المَشاهِد"
 
 msgid "Owners of: %s (Total: %d)"
 msgstr "مالكو: %s (المجموع: %d)"
+
+msgid "Localization remap for path '%s' and locale '%s'."
+msgstr "إعادة تعيين الترجمة للمسار 's%' والإعدادات المحلية 's%'."
 
 msgid ""
 "Remove the selected files from the project? (Cannot be undone.)\n"
@@ -1321,6 +1742,9 @@ msgstr "المسار %s غير صالح. غير موجود في مسار الم�
 msgid "Path:"
 msgstr "المسار:"
 
+msgid "Set path or press \"%s\" to create a script."
+msgstr "حدد المسار أو اضغط على \"s%\" لإنشاء برنامج نصي."
+
 msgid "Node Name:"
 msgstr "إسم العقدة:"
 
@@ -1335,6 +1759,52 @@ msgstr "فيزياء 3D"
 
 msgid "Navigation"
 msgstr "تنقل"
+
+msgid "XR"
+msgstr "XR"
+
+msgid "Text Server: Advanced"
+msgstr "خادم النص: متقدم"
+
+msgid "TTF, OTF, Type 1, WOFF1 Fonts"
+msgstr "TTF, OTF, Type 1, WOFF1 خطوط"
+
+msgid "SIL Graphite Fonts"
+msgstr "خطوط الجرافيت SIL"
+
+msgid "Multi-channel Signed Distance Field Font Rendering"
+msgstr "عرض خط حقل مسافة متعدد القنوات"
+
+msgid "3D Nodes as well as RenderingServer access to 3D features."
+msgstr ""
+"العقد ثلاثية الأبعاد بالإضافة إلى وصول RenderingServer إلى الميزات ثلاثية "
+"الأبعاد."
+
+msgid "2D Physics nodes and PhysicsServer2D."
+msgstr "عُقد الفيزياء ثنائية الأبعاد و PhysicsServer2D."
+
+msgid "3D Physics nodes and PhysicsServer3D."
+msgstr "عقد 3D Physics و PhysicsServer3D."
+
+msgid ""
+"RenderingDevice based rendering (if disabled, the OpenGL back-end is "
+"required)."
+msgstr ""
+"العرض المستند إلى RenderingDevice (إذا تم تعطيله ، يلزم وجود نهاية OpenGL "
+"الخلفية)."
+
+msgid ""
+"OpenGL back-end (if disabled, the RenderingDevice back-end is required)."
+msgstr ""
+"OpenGL الخلفي (إذا تم تعطيله ، فإن النهاية الخلفية RenderingDevice مطلوبة)."
+
+msgid "Vulkan back-end of RenderingDevice."
+msgstr "Vulkan الخلفية من RenderingDevice."
+
+msgid ""
+"Fallback implementation of Text Server\n"
+"Supports basic text layouts."
+msgstr "التنفيذ الاحتياطي لخادم النص يدعم تخطيطات النص الأساسية."
 
 msgid "Nodes and Classes:"
 msgstr "العُقد (Nodes) والفئات (Classes):"
@@ -1536,9 +2006,6 @@ msgstr "إفتح"
 msgid "Select Current Folder"
 msgstr "تحديد المجلد الحالي"
 
-msgid "File exists, overwrite?"
-msgstr "الملف موجود، إستبدال؟"
-
 msgid "Select This Folder"
 msgstr "حدد هذا المجلد"
 
@@ -1679,6 +2146,9 @@ msgstr "يتجاوز %s:"
 msgid "default:"
 msgstr "الافتراضي:"
 
+msgid "Operators"
+msgstr "العمليات"
+
 msgid "Theme Properties"
 msgstr "خصائص الثِمة"
 
@@ -1713,8 +2183,14 @@ msgstr ""
 "لا يوجد حاليا وصف لهذه الخاصية. الرجاء مساعدتنا عن طريق [color=$color]"
 "[url=$url]المساهمة فيها [/url][/color]!"
 
+msgid "Constructor Descriptions"
+msgstr "أوصاف المنشئ"
+
 msgid "Method Descriptions"
 msgstr "أوصاف الدوال"
+
+msgid "Operator Descriptions"
+msgstr "أوصاف العمليات"
 
 msgid "%d match."
 msgstr "تطابق %d."
@@ -2559,9 +3035,6 @@ msgstr "شائع"
 msgid "Editor Settings"
 msgstr "إعدادات المُعدل"
 
-msgid "General"
-msgstr "عام"
-
 msgid "The editor must be restarted for changes to take effect."
 msgstr "لكي يظهر تأثير التغييرات ينبغي إعادة تشغيل المُحرر."
 
@@ -3176,7 +3649,7 @@ msgid "Import As:"
 msgstr "إستيراد ك:"
 
 msgid "Preset"
-msgstr "إعداد مُسبق"
+msgstr "المعد مسبقا"
 
 msgid "Save Scenes, Re-Import, and Restart"
 msgstr "احفظ المشاهد، إعادة-الإستيراد، وإعادة التشغيل"
@@ -7053,9 +7526,6 @@ msgstr "تغيير المنطقة الميتة للفعالية Action deadzone"
 msgid "Erase Input Action"
 msgstr "مسح إجراء الإدخال"
 
-msgid "Rename Input Action Event"
-msgstr "إعادة تسمية حدث فعالية الإدخال"
-
 msgid "Project Settings (project.godot)"
 msgstr "إعدادات المشروع (project.godot)"
 
@@ -8124,9 +8594,6 @@ msgstr ""
 msgid "The AnimationPlayer root node is not a valid node."
 msgstr "العُقدة الرئيسة لمُشغل الرسومات المتحركة ليست عُقدة صالحة."
 
-msgid "Pick a color from the editor window."
-msgstr "اختر لوناً من نافذة المُحرر."
-
 msgid "Switch between hexadecimal and code values."
 msgstr "بدّل بين القيم البرمجية والسداسية العشرية."
 
@@ -8155,9 +8622,6 @@ msgstr "تنبيه!"
 
 msgid "Please Confirm..."
 msgstr "يُرجى التأكيد..."
-
-msgid "Must use a valid extension."
-msgstr "يجب أن يستخدم صيغة صحيحة."
 
 msgid "Enable grid minimap."
 msgstr "تفعيل الخريطة المصغرة للشبكة."

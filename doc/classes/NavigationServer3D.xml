@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationServer3D" inherits="Object" is_experimental="true" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationServer3D" inherits="Object" is_experimental="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Server interface for low-level 3D navigation access.
 	</brief_description>
@@ -126,6 +126,12 @@
 				Destroys the given RID.
 			</description>
 		</method>
+		<method name="get_debug_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] when the NavigationServer has debug enabled.
+			</description>
+		</method>
 		<method name="get_maps" qualifiers="const">
 			<return type="RID[]" />
 			<description>
@@ -156,7 +162,7 @@
 			<return type="float" />
 			<param index="0" name="link" type="RID" />
 			<description>
-				Returns the [code]enter_cost[/code] of this [code]link[/code].
+				Returns the enter cost of this [param link].
 			</description>
 		</method>
 		<method name="link_get_map" qualifiers="const">
@@ -191,7 +197,7 @@
 			<return type="float" />
 			<param index="0" name="link" type="RID" />
 			<description>
-				Returns the [code]travel_cost[/code] of this [code]link[/code].
+				Returns the travel cost of this [param link].
 			</description>
 		</method>
 		<method name="link_is_bidirectional" qualifiers="const">
@@ -422,15 +428,6 @@
 				Sets the map up direction.
 			</description>
 		</method>
-		<method name="process">
-			<return type="void" />
-			<param index="0" name="delta_time" type="float" />
-			<description>
-				Process the collision avoidance agents.
-				The result of this process is needed by the physics server, so this must be called in the main thread.
-				[b]Note:[/b] This function is not thread safe.
-			</description>
-		</method>
 		<method name="query_path" qualifiers="const">
 			<return type="void" />
 			<param index="0" name="parameters" type="NavigationPathQueryParameters3D" />
@@ -480,7 +477,7 @@
 			<return type="float" />
 			<param index="0" name="region" type="RID" />
 			<description>
-				Returns the [code]enter_cost[/code] of this [param region].
+				Returns the enter cost of this [param region].
 			</description>
 		</method>
 		<method name="region_get_map" qualifiers="const">
@@ -508,7 +505,7 @@
 			<return type="float" />
 			<param index="0" name="region" type="RID" />
 			<description>
-				Returns the [code]travel_cost[/code] of this [param region].
+				Returns the travel cost of this [param region].
 			</description>
 		</method>
 		<method name="region_owns_point" qualifiers="const">
@@ -582,6 +579,13 @@
 			<param index="0" name="active" type="bool" />
 			<description>
 				Control activation of this server.
+			</description>
+		</method>
+		<method name="set_debug_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				If [code]true[/code] enables debug mode on the NavigationServer.
 			</description>
 		</method>
 	</methods>

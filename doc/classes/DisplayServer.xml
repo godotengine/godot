@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="DisplayServer" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="DisplayServer" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Singleton for window management functions.
 	</brief_description>
@@ -190,6 +190,7 @@
 			<description>
 				Adds a new checkable item with text [param label] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
@@ -212,6 +213,7 @@
 			<description>
 				Adds a new checkable item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
@@ -234,6 +236,7 @@
 			<description>
 				Adds a new item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
@@ -256,6 +259,7 @@
 			<description>
 				Adds a new radio-checkable item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] Radio-checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method global_menu_set_item_checked] for more info on how to control it.
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
@@ -278,6 +282,7 @@
 			<description>
 				Adds a new item with text [param label] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
@@ -302,6 +307,7 @@
 				Adds a new item with text [param label] to the global menu with ID [param menu_root].
 				Contrarily to normal binary items, multistate items can have more than two states, as defined by [param max_states]. Each press or activate of the item will increase the state by one. The default value is defined by [param default_state].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] By default, there's no indication of the current item state, it should be changed manually.
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
@@ -324,6 +330,7 @@
 			<description>
 				Adds a new radio-checkable item with text [param label] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] Radio-checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method global_menu_set_item_checked] for more info on how to control it.
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
@@ -558,7 +565,7 @@
 			<param index="1" name="idx" type="int" />
 			<param index="2" name="keycode" type="int" enum="Key" />
 			<description>
-				Sets the accelerator of the item at index [param idx].
+				Sets the accelerator of the item at index [param idx]. [param keycode] can be a single [enum Key], or a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -984,6 +991,7 @@
 				- [code]name[/code] is voice name.
 				- [code]id[/code] is voice identifier.
 				- [code]language[/code] is language code in [code]lang_Variant[/code] format. [code]lang[/code] part is a 2 or 3-letter code based on the ISO-639 standard, in lowercase. And [code]Variant[/code] part is an engine dependent string describing country, region or/and dialect.
+				Note that Godot depends on system libraries for text-to-speech functionality. These libraries are installed by default on Windows and MacOS, but not on all Linux distributions. If they are not present, this method will return an empty list. This applies to both Godot users on Linux, as well as end-users on Linux running Godot games that use text-to-speech.
 				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
 			</description>
 		</method>
@@ -1453,6 +1461,7 @@
 				Sets the V-Sync mode of the given window. See also [member ProjectSettings.display/window/vsync/vsync_mode].
 				See [enum DisplayServer.VSyncMode] for possible values and how they affect the behavior of your application.
 				Depending on the platform and used renderer, the engine will fall back to [constant VSYNC_ENABLED] if the desired mode is not supported.
+				[b]Note:[/b] V-Sync modes other than [constant VSYNC_ENABLED] are only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 			</description>
 		</method>
 		<method name="window_set_window_buttons_offset">
@@ -1669,7 +1678,7 @@
 			Minimized window mode, i.e. [Window] is not visible and available on window manager's window list. Normally happens when the minimize button is pressed.
 		</constant>
 		<constant name="WINDOW_MODE_MAXIMIZED" value="2" enum="WindowMode">
-			Maximized window mode, i.e. [Window] will occupy whole screen area except task bar and still display its borders. Normally happens when the minimize button is pressed.
+			Maximized window mode, i.e. [Window] will occupy whole screen area except task bar and still display its borders. Normally happens when the maximize button is pressed.
 		</constant>
 		<constant name="WINDOW_MODE_FULLSCREEN" value="3" enum="WindowMode">
 			Full screen mode with full multi-window support.
@@ -1750,11 +1759,11 @@
 			Default vertical synchronization mode, the image is displayed only on vertical blanking intervals (no tearing is visible). Framerate is limited by the monitor refresh rate (nonwithstanding [member Engine.max_fps]).
 		</constant>
 		<constant name="VSYNC_ADAPTIVE" value="2" enum="VSyncMode">
-			Behaves like [constant VSYNC_DISABLED] when the framerate drops below the screen's refresh rate to reduce stuttering (tearing may be visible). Otherwise, vertical synchronization is enabled to avoid tearing. Framerate is limited by the monitor refresh rate (nonwithstanding [member Engine.max_fps]).
+			Behaves like [constant VSYNC_DISABLED] when the framerate drops below the screen's refresh rate to reduce stuttering (tearing may be visible). Otherwise, vertical synchronization is enabled to avoid tearing. Framerate is limited by the monitor refresh rate (nonwithstanding [member Engine.max_fps]). Behaves like [constant VSYNC_ENABLED] when using the Compatibility rendering method.
 		</constant>
 		<constant name="VSYNC_MAILBOX" value="3" enum="VSyncMode">
 			Displays the most recent image in the queue on vertical blanking intervals, while rendering to the other images (no tearing is visible). Framerate is unlimited (nonwithstanding [member Engine.max_fps]).
-			Although not guaranteed, the images can be rendered as fast as possible, which may reduce input lag (also called "Fast" V-Sync mode). [constant VSYNC_MAILBOX] works best when at least twice as many frames as the display refresh rate are rendered.
+			Although not guaranteed, the images can be rendered as fast as possible, which may reduce input lag (also called "Fast" V-Sync mode). [constant VSYNC_MAILBOX] works best when at least twice as many frames as the display refresh rate are rendered. Behaves like [constant VSYNC_ENABLED] when using the Compatibility rendering method.
 		</constant>
 		<constant name="DISPLAY_HANDLE" value="0" enum="HandleType">
 			Display handle:

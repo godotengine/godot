@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VehicleBody3D" inherits="RigidBody3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="VehicleBody3D" inherits="RigidBody3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Physics body that simulates the behavior of a car.
 	</brief_description>
@@ -23,7 +23,8 @@
 		</member>
 		<member name="mass" type="float" setter="set_mass" getter="get_mass" overrides="RigidBody3D" default="40.0" />
 		<member name="steering" type="float" setter="set_steering" getter="get_steering" default="0.0">
-			The steering angle for the vehicle, in radians. Setting this to a non-zero value will result in the vehicle turning when it's moving. Wheels that have [member VehicleWheel3D.use_as_steering] set to [code]true[/code] will automatically be rotated.
+			The steering angle for the vehicle. Setting this to a non-zero value will result in the vehicle turning when it's moving. Wheels that have [member VehicleWheel3D.use_as_steering] set to [code]true[/code] will automatically be rotated.
+			[b]Note:[/b] This property is edited in the inspector in degrees. In code the property is set in radians.
 		</member>
 	</members>
 </class>

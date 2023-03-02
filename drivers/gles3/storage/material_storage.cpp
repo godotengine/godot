@@ -38,6 +38,7 @@
 #include "texture_storage.h"
 
 #include "drivers/gles3/rasterizer_canvas_gles3.h"
+#include "drivers/gles3/rasterizer_gles3.h"
 
 using namespace GLES3;
 
@@ -1721,7 +1722,7 @@ MaterialStorage::MaterialStorage() {
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
 
-		actions.check_multiview_samplers = true;
+		actions.check_multiview_samplers = RasterizerGLES3::get_singleton()->is_xr_enabled();
 		actions.global_buffer_array_variable = "global_shader_uniforms";
 
 		shaders.compiler_scene.initialize(actions);
@@ -2881,6 +2882,7 @@ void MaterialStorage::material_set_render_priority(RID p_material, int priority)
 	if (material->data) {
 		material->data->set_render_priority(priority);
 	}
+	material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 }
 
 bool MaterialStorage::material_is_animated(RID p_material) {
@@ -3370,6 +3372,32 @@ void SceneShaderData::set_code(const String &p_code) {
 	uses_normal_texture = gen_code.uses_normal_roughness_texture;
 	uses_vertex_time = gen_code.uses_vertex_time;
 	uses_fragment_time = gen_code.uses_fragment_time;
+
+#ifdef DEBUG_ENABLED
+	if (uses_particle_trails) {
+		WARN_PRINT_ONCE_ED("Particle trails are only available when using the Forward+ or Mobile rendering backends.");
+	}
+
+	if (uses_sss) {
+		WARN_PRINT_ONCE_ED("Sub-surface scattering is only available when using the Forward+ rendering backend.");
+	}
+
+	if (uses_transmittance) {
+		WARN_PRINT_ONCE_ED("Transmittance is only available when using the Forward+ rendering backend.");
+	}
+
+	if (uses_screen_texture) {
+		WARN_PRINT_ONCE_ED("Reading from the screen texture is not supported when using the GL Compatibility backend yet. Support will be added in a future release.");
+	}
+
+	if (uses_depth_texture) {
+		WARN_PRINT_ONCE_ED("Reading from the depth texture is not supported when using the GL Compatibility backend yet. Support will be added in a future release.");
+	}
+
+	if (uses_normal_texture) {
+		WARN_PRINT_ONCE_ED("Reading from the normal-roughness texture is only available when using the Forward+ or Mobile rendering backends.");
+	}
+#endif
 
 #if 0
 	print_line("**compiling shader:");

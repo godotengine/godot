@@ -78,11 +78,11 @@ public:
 	RegEx reg_image_unlock = RegEx("([a-zA-Z0-9_\\.]+)\\.unlock\\(\\)");
 	RegEx reg_instantiate = RegEx("\\.instance\\(([^\\)]*)\\)");
 	// Simple OS properties with getters/setters.
-	RegEx reg_os_current_screen = RegEx("\\bOS\\.(set_|get_)?current_screen\\b");
-	RegEx reg_os_min_window_size = RegEx("\\bOS\\.(set_|get_)?min_window_size\\b");
-	RegEx reg_os_max_window_size = RegEx("\\bOS\\.(set_|get_)?max_window_size\\b");
-	RegEx reg_os_window_position = RegEx("\\bOS\\.(set_|get_)?window_position\\b");
-	RegEx reg_os_window_size = RegEx("\\bOS\\.(set_|get_)?window_size\\b");
+	RegEx reg_os_current_screen = RegEx("\\bOS\\.((set_|get_)?)current_screen\\b");
+	RegEx reg_os_min_window_size = RegEx("\\bOS\\.((set_|get_)?)min_window_size\\b");
+	RegEx reg_os_max_window_size = RegEx("\\bOS\\.((set_|get_)?)max_window_size\\b");
+	RegEx reg_os_window_position = RegEx("\\bOS\\.((set_|get_)?)window_position\\b");
+	RegEx reg_os_window_size = RegEx("\\bOS\\.((set_|get_)?)window_size\\b");
 	RegEx reg_os_getset_screen_orient = RegEx("\\bOS\\.(s|g)et_screen_orientation\\b");
 	// OS property getters/setters for non trivial replacements.
 	RegEx reg_os_set_window_resizable = RegEx(make_regex_gds_os_property_set("set_window_resizable"));
@@ -153,6 +153,7 @@ public:
 	LocalVector<RegEx *> enum_regexes;
 	LocalVector<RegEx *> gdscript_function_regexes;
 	LocalVector<RegEx *> project_settings_regexes;
+	LocalVector<RegEx *> project_godot_regexes;
 	LocalVector<RegEx *> input_map_regexes;
 	LocalVector<RegEx *> gdscript_properties_regexes;
 	LocalVector<RegEx *> gdscript_signals_regexes;
@@ -173,9 +174,13 @@ public:
 			for (unsigned int current_index = 0; RenamesMap3To4::gdscript_function_renames[current_index][0]; current_index++) {
 				gdscript_function_regexes.push_back(memnew(RegEx(String("\\b") + RenamesMap3To4::gdscript_function_renames[current_index][0] + "\\b")));
 			}
-			// Project Settings.
+			// Project Settings in scripts.
 			for (unsigned int current_index = 0; RenamesMap3To4::project_settings_renames[current_index][0]; current_index++) {
 				project_settings_regexes.push_back(memnew(RegEx(String("\\b") + RenamesMap3To4::project_settings_renames[current_index][0] + "\\b")));
+			}
+			// Project Settings in project.godot.
+			for (unsigned int current_index = 0; RenamesMap3To4::project_godot_renames[current_index][0]; current_index++) {
+				project_godot_regexes.push_back(memnew(RegEx(String("\\b") + RenamesMap3To4::project_godot_renames[current_index][0] + "\\b")));
 			}
 			// Input Map.
 			for (unsigned int current_index = 0; RenamesMap3To4::input_map_renames[current_index][0]; current_index++) {
@@ -251,6 +256,9 @@ public:
 			memdelete(regex);
 		}
 		for (RegEx *regex : project_settings_regexes) {
+			memdelete(regex);
+		}
+		for (RegEx *regex : project_godot_regexes) {
 			memdelete(regex);
 		}
 		for (RegEx *regex : input_map_regexes) {
@@ -405,11 +413,17 @@ bool ProjectConverter3To4::convert() {
 
 				custom_rename(lines, "\\.shader", ".gdshader");
 			} else if (file_name.ends_with("project.godot")) {
-				rename_common(RenamesMap3To4::project_settings_renames, reg_container.project_settings_regexes, lines);
+				rename_common(RenamesMap3To4::project_godot_renames, reg_container.project_godot_regexes, lines);
 				rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, lines);
 				rename_common(RenamesMap3To4::input_map_renames, reg_container.input_map_regexes, lines);
 			} else if (file_name.ends_with(".csproj")) {
 				// TODO
+			} else if (file_name.ends_with(".import")) {
+				for (int x = 0; x < lines.size(); x++) {
+					if (lines[x].contains("nodes/root_type=\"Spatial\"")) {
+						lines.set(x, "nodes/root_type=\"Node3D\"");
+					}
+				}
 			} else {
 				ERR_PRINT(file_name + " is not supported!");
 				continue;
@@ -571,7 +585,7 @@ bool ProjectConverter3To4::validate_conversion() {
 
 				changed_elements.append_array(check_for_custom_rename(lines, "\\.shader", ".gdshader"));
 			} else if (file_name.ends_with("project.godot")) {
-				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::project_settings_renames, reg_container.project_settings_regexes, lines));
+				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::project_godot_renames, reg_container.project_godot_regexes, lines));
 				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, lines));
 				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::input_map_renames, reg_container.input_map_regexes, lines));
 			} else if (file_name.ends_with(".csproj")) {
@@ -636,7 +650,7 @@ Vector<String> ProjectConverter3To4::check_for_files() {
 			String file_name = dir->_get_next();
 
 			while (file_name != "") {
-				if (file_name == ".git" || file_name == ".import" || file_name == ".godot") {
+				if (file_name == ".git" || file_name == ".godot") {
 					file_name = dir->_get_next();
 					continue;
 				}
@@ -644,7 +658,7 @@ Vector<String> ProjectConverter3To4::check_for_files() {
 					directories_to_check.append(current_dir.path_join(file_name) + "/");
 				} else {
 					bool proper_extension = false;
-					if (file_name.ends_with(".gd") || file_name.ends_with(".shader") || file_name.ends_with(".gdshader") || file_name.ends_with(".tscn") || file_name.ends_with(".tres") || file_name.ends_with(".godot") || file_name.ends_with(".cs") || file_name.ends_with(".csproj"))
+					if (file_name.ends_with(".gd") || file_name.ends_with(".shader") || file_name.ends_with(".gdshader") || file_name.ends_with(".tscn") || file_name.ends_with(".tres") || file_name.ends_with(".godot") || file_name.ends_with(".cs") || file_name.ends_with(".csproj") || file_name.ends_with(".import"))
 						proper_extension = true;
 
 					if (proper_extension) {
@@ -1049,20 +1063,20 @@ bool ProjectConverter3To4::test_array_names() {
 
 		// List of excluded functions from builtin types and global namespace, because currently it is not possible to get list of functions from them.
 		// This will be available when https://github.com/godotengine/godot/pull/49053 or similar will be included into Godot.
-		static const char *builtin_types_excluded_functions[] = { "dict_to_inst", "inst_to_dict", "bytes_to_var", "bytes_to_var_with_objects", "db_to_linear", "deg_to_rad", "linear_to_db", "rad_to_deg", "randf_range", "snapped", "str_to_var", "var_to_str", "var_to_bytes", "var_to_bytes_with_objects", "move_toward", "uri_encode", "uri_decode", "remove_at", "get_rotation_quaternion", "clamp", "grow_side", "is_absolute_path", "is_valid_int", "lerp", "to_ascii_buffer", "to_utf8_buffer", "to_utf32_buffer", "snapped", "remap", "rfind", nullptr };
+		static const char *builtin_types_excluded_functions[] = { "dict_to_inst", "inst_to_dict", "bytes_to_var", "bytes_to_var_with_objects", "db_to_linear", "deg_to_rad", "linear_to_db", "rad_to_deg", "randf_range", "snapped", "str_to_var", "var_to_str", "var_to_bytes", "var_to_bytes_with_objects", "move_toward", "uri_encode", "uri_decode", "remove_at", "get_rotation_quaternion", "limit_length", "grow_side", "is_absolute_path", "is_valid_int", "lerp", "to_ascii_buffer", "to_utf8_buffer", "to_utf32_buffer", "snapped", "remap", "rfind", nullptr };
 		for (int current_index = 0; builtin_types_excluded_functions[current_index]; current_index++) {
 			all_functions.insert(builtin_types_excluded_functions[current_index]);
 		}
 
-		//			for (int type = Variant::Type::NIL + 1; type < Variant::Type::VARIANT_MAX; type++) {
-		//				List<MethodInfo> method_list;
-		//				Variant::get_method_list_by_type(&method_list, Variant::Type(type));
-		//				for (MethodInfo &function_data : method_list) {
-		//					if (!all_functions.has(function_data.name)) {
-		//						all_functions.insert(function_data.name);
-		//					}
-		//				}
-		//			}
+		//for (int type = Variant::Type::NIL + 1; type < Variant::Type::VARIANT_MAX; type++) {
+		//	List<MethodInfo> method_list;
+		//	Variant::get_method_list_by_type(&method_list, Variant::Type(type));
+		//	for (MethodInfo &function_data : method_list) {
+		//		if (!all_functions.has(function_data.name)) {
+		//			all_functions.insert(function_data.name);
+		//		}
+		//	}
+		//}
 
 		List<StringName> classes_list;
 		ClassDB::get_class_list(&classes_list);
@@ -1100,6 +1114,7 @@ bool ProjectConverter3To4::test_array_names() {
 	valid = valid && test_single_array(RenamesMap3To4::shaders_renames, true);
 	valid = valid && test_single_array(RenamesMap3To4::gdscript_signals_renames);
 	valid = valid && test_single_array(RenamesMap3To4::project_settings_renames);
+	valid = valid && test_single_array(RenamesMap3To4::project_godot_renames);
 	valid = valid && test_single_array(RenamesMap3To4::input_map_renames);
 	valid = valid && test_single_array(RenamesMap3To4::builtin_types_renames);
 	valid = valid && test_single_array(RenamesMap3To4::color_renames);

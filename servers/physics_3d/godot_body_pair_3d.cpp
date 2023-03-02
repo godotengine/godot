@@ -167,6 +167,9 @@ void GodotBodyPair3D::validate_contacts() {
 // cast forward along motion vector to see if A is going to enter/pass B's collider next frame, only proceed if it does.
 // adjust the velocity of A down so that it will just slightly intersect the collider instead of blowing right past it.
 bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, const Transform3D &p_xform_A, GodotBody3D *p_B, int p_shape_B, const Transform3D &p_xform_B) {
+	GodotShape3D *shape_A_ptr = p_A->get_shape(p_shape_A);
+	GodotShape3D *shape_B_ptr = p_B->get_shape(p_shape_B);
+
 	Vector3 motion = p_A->get_linear_velocity() * p_step;
 	real_t mlen = motion.length();
 	if (mlen < CMP_EPSILON) {
@@ -176,7 +179,7 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 	Vector3 mnormal = motion / mlen;
 
 	real_t min = 0.0, max = 0.0;
-	p_A->get_shape(p_shape_A)->project_range(mnormal, p_xform_A, min, max);
+	shape_A_ptr->project_range(mnormal, p_xform_A, min, max);
 
 	// Did it move enough in this direction to even attempt raycast?
 	// Let's say it should move more than 1/3 the size of the object in that axis.
@@ -187,33 +190,64 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 
 	// A is moving fast enough that tunneling might occur. See if it's really about to collide.
 
-	// Cast a segment from support in motion normal, in the same direction of motion by motion length.
-	// Support point will the farthest forward collision point along the movement vector.
-	// i.e. the point that should hit B first if any collision does occur.
+	// Support points are the farthest forward points on A in the direction of the motion vector.
+	// i.e. the candidate points of which one should hit B first if any collision does occur.
+	static const int max_supports = 16;
+	Vector3 supports_A[max_supports];
+	int support_count_A;
+	GodotShape3D::FeatureType support_type_A;
+	// Convert mnormal into body A's local xform because get_supports requires (and returns) local coordinates.
+	shape_A_ptr->get_supports(p_xform_A.basis.xform_inv(mnormal).normalized(), max_supports, supports_A, support_count_A, support_type_A);
 
-	// convert mnormal into body A's local xform because get_support requires (and returns) local coordinates.
-	Vector3 s = p_A->get_shape(p_shape_A)->get_support(p_xform_A.basis.xform_inv(mnormal).normalized());
-	Vector3 from = p_xform_A.xform(s);
-	Vector3 to = from + motion;
+	// Cast a segment from each support point of A in the motion direction.
+	int segment_support_idx = -1;
+	float segment_hit_length = FLT_MAX;
+	Vector3 segment_hit_local;
+	for (int i = 0; i < support_count_A; i++) {
+		supports_A[i] = p_xform_A.xform(supports_A[i]);
 
-	Transform3D from_inv = p_xform_B.affine_inverse();
+		Vector3 from = supports_A[i];
+		Vector3 to = from + motion;
 
-	// Back up 10% of the per-frame motion behind the support point and use that as the beginning of our cast.
-	// At high speeds, this may mean we're actually casting from well behind the body instead of inside it, which is odd. But it still works out.
-	Vector3 local_from = from_inv.xform(from - motion * 0.1);
-	Vector3 local_to = from_inv.xform(to);
+		Transform3D from_inv = p_xform_B.affine_inverse();
 
-	Vector3 rpos, rnorm;
-	if (!p_B->get_shape(p_shape_B)->intersect_segment(local_from, local_to, rpos, rnorm, true)) {
-		// there was no hit. Since the segment is the length of per-frame motion, this means the bodies will not
+		// Back up 10% of the per-frame motion behind the support point and use that as the beginning of our cast.
+		// At high speeds, this may mean we're actually casting from well behind the body instead of inside it, which is odd.
+		// But it still works out.
+		Vector3 local_from = from_inv.xform(from - motion * 0.1);
+		Vector3 local_to = from_inv.xform(to);
+
+		Vector3 rpos, rnorm;
+		if (shape_B_ptr->intersect_segment(local_from, local_to, rpos, rnorm, true)) {
+			float hit_length = local_from.distance_to(rpos);
+			if (hit_length < segment_hit_length) {
+				segment_support_idx = i;
+				segment_hit_length = hit_length;
+				segment_hit_local = rpos;
+			}
+		}
+	}
+
+	if (segment_support_idx == -1) {
+		// There was no hit. Since the segment is the length of per-frame motion, this means the bodies will not
 		// actually collide yet on next frame. We'll probably check again next frame once they're closer.
 		return false;
 	}
 
-	// Shorten the linear velocity so it will collide next frame.
-	Vector3 hitpos = p_xform_B.xform(rpos);
+	Vector3 hitpos = p_xform_B.xform(segment_hit_local);
 
-	real_t newlen = hitpos.distance_to(from) + (max - min) * 0.01; // adding 1% of body length to the distance between collision and support point should cause body A's support point to arrive just within B's collider next frame.
+	real_t newlen = hitpos.distance_to(supports_A[segment_support_idx]);
+	if (shape_B_ptr->is_concave()) {
+		// Subtracting 5% of body length from the distance between collision and support point
+		// should cause body A's support point to arrive just before a face of B next frame.
+		newlen = MAX(newlen - (max - min) * 0.05, 0.0);
+		// NOTE: This may stop body A completely, without a proper collision response.
+		// We consider this preferable to tunneling.
+	} else {
+		// Adding 1% of body length to the distance between collision and support point
+		// should cause body A's support point to arrive just within B's collider next frame.
+		newlen += (max - min) * 0.01;
+	}
 
 	p_A->set_linear_velocity((mnormal * newlen) / p_step);
 

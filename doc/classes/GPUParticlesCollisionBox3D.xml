@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GPUParticlesCollisionBox3D" inherits="GPUParticlesCollision3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="GPUParticlesCollisionBox3D" inherits="GPUParticlesCollision3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Box-shaped 3D particle collision shape affecting [GPUParticles3D] nodes.
 	</brief_description>

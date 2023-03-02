@@ -1131,6 +1131,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			cmdline_tool = true;
 			main_args.push_back(I->get());
 #ifndef DISABLE_DEPRECATED
+		} else if (I->get() == "--export") { // For users used to 3.x syntax.
+			OS::get_singleton()->print("The Godot 3 --export option was changed to more explicit --export-release / --export-debug / --export-pack options.\nSee the --help output for details.\n");
+			goto error;
 		} else if (I->get() == "--convert-3to4") {
 			// Actually handling is done in start().
 			cmdline_tool = true;
@@ -1813,7 +1816,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		window_orientation = DisplayServer::ScreenOrientation(int(GLOBAL_DEF_BASIC("display/window/handheld/orientation", DisplayServer::ScreenOrientation::SCREEN_LANDSCAPE)));
 	}
 	{
-		window_vsync_mode = DisplayServer::VSyncMode(int(GLOBAL_DEF("display/window/vsync/vsync_mode", DisplayServer::VSyncMode::VSYNC_ENABLED)));
+		window_vsync_mode = DisplayServer::VSyncMode(int(GLOBAL_DEF_BASIC("display/window/vsync/vsync_mode", DisplayServer::VSyncMode::VSYNC_ENABLED)));
 		if (disable_vsync) {
 			window_vsync_mode = DisplayServer::VSyncMode::VSYNC_DISABLED;
 		}
@@ -1843,7 +1846,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("display/window/ios/hide_home_indicator", true);
 	GLOBAL_DEF("display/window/ios/hide_status_bar", true);
 	GLOBAL_DEF("display/window/ios/suppress_ui_gesture", true);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "input_devices/pointing/ios/touch_delay", PROPERTY_HINT_RANGE, "0,1,0.001"), 0.15);
 
 	// XR project settings.
 	GLOBAL_DEF_RST_BASIC("xr/openxr/enabled", false);
@@ -2195,7 +2197,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	RenderingServer::get_singleton()->set_default_clear_color(
 			GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
 
-	GLOBAL_DEF(PropertyInfo(Variant::STRING, "application/config/icon", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), String());
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/icon", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), String());
 	GLOBAL_DEF(PropertyInfo(Variant::STRING, "application/config/macos_native_icon", PROPERTY_HINT_FILE, "*.icns"), String());
 	GLOBAL_DEF(PropertyInfo(Variant::STRING, "application/config/windows_native_icon", PROPERTY_HINT_FILE, "*.ico"), String());
 

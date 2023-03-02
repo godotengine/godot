@@ -32,7 +32,8 @@
 
 #include "core/io/file_access.h"
 #include "core/variant/typed_array.h"
-#include "thirdparty/libogg/ogg/ogg.h"
+
+#include <ogg/ogg.h>
 
 int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	ERR_FAIL_COND_V(!ready, 0);

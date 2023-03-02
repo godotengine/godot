@@ -108,11 +108,19 @@ void DisplayServerWeb::request_quit_callback() {
 
 // Keys
 
-void DisplayServerWeb::dom2godot_mod(Ref<InputEventWithModifiers> ev, int p_mod) {
-	ev->set_shift_pressed(p_mod & 1);
-	ev->set_alt_pressed(p_mod & 2);
-	ev->set_ctrl_pressed(p_mod & 4);
-	ev->set_meta_pressed(p_mod & 8);
+void DisplayServerWeb::dom2godot_mod(Ref<InputEventWithModifiers> ev, int p_mod, Key p_keycode) {
+	if (p_keycode != Key::SHIFT) {
+		ev->set_shift_pressed(p_mod & 1);
+	}
+	if (p_keycode != Key::ALT) {
+		ev->set_alt_pressed(p_mod & 2);
+	}
+	if (p_keycode != Key::CTRL) {
+		ev->set_ctrl_pressed(p_mod & 4);
+	}
+	if (p_keycode != Key::META) {
+		ev->set_meta_pressed(p_mod & 8);
+	}
 }
 
 void DisplayServerWeb::key_callback(int p_pressed, int p_repeat, int p_modifiers) {
@@ -138,7 +146,7 @@ void DisplayServerWeb::key_callback(int p_pressed, int p_repeat, int p_modifiers
 	ev->set_key_label(fix_key_label(c, keycode));
 	ev->set_unicode(fix_unicode(c));
 	ev->set_pressed(p_pressed);
-	dom2godot_mod(ev, p_modifiers);
+	dom2godot_mod(ev, p_modifiers, fix_keycode(c, keycode));
 
 	Input::get_singleton()->parse_input_event(ev);
 
@@ -157,7 +165,7 @@ int DisplayServerWeb::mouse_button_callback(int p_pressed, int p_button, double 
 	ev->set_position(pos);
 	ev->set_global_position(pos);
 	ev->set_pressed(p_pressed);
-	dom2godot_mod(ev, p_modifiers);
+	dom2godot_mod(ev, p_modifiers, Key::NONE);
 
 	switch (p_button) {
 		case DOM_BUTTON_LEFT:
@@ -235,7 +243,7 @@ void DisplayServerWeb::mouse_move_callback(double p_x, double p_y, double p_rel_
 	Point2 pos(p_x, p_y);
 	Ref<InputEventMouseMotion> ev;
 	ev.instantiate();
-	dom2godot_mod(ev, p_modifiers);
+	dom2godot_mod(ev, p_modifiers, Key::NONE);
 	ev->set_button_mask(input_mask);
 
 	ev->set_position(pos);
@@ -387,6 +395,7 @@ DisplayServer::CursorShape DisplayServerWeb::cursor_get_shape() const {
 }
 
 void DisplayServerWeb::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 	if (p_cursor.is_valid()) {
 		Ref<Texture2D> texture = p_cursor;
 		Ref<AtlasTexture> atlas_texture = p_cursor;

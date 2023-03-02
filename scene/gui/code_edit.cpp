@@ -896,6 +896,7 @@ void CodeEdit::indent_lines() {
 		set_caret_column(get_caret_column(c) + selection_offset, false, c);
 	}
 	end_complex_operation();
+	queue_redraw();
 }
 
 void CodeEdit::unindent_lines() {
@@ -973,6 +974,7 @@ void CodeEdit::unindent_lines() {
 		set_caret_column(initial_cursor_column - removed_characters, false, c);
 	}
 	end_complex_operation();
+	queue_redraw();
 }
 
 int CodeEdit::_calculate_spaces_till_next_left_indent(int p_column) const {
@@ -2856,7 +2858,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	const int caret_line = get_caret_line();
 	const int caret_column = get_caret_column();
 	const String line = get_line(caret_line);
-	ERR_FAIL_INDEX_MSG(caret_column - 1, line.length(), "Caret column exceeds line length.");
+	ERR_FAIL_INDEX_MSG(caret_column, line.length() + 1, "Caret column exceeds line length.");
 
 	if (caret_column > 0 && line[caret_column - 1] == '(' && !code_completion_forced) {
 		cancel_code_completion();

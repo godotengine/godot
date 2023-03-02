@@ -133,8 +133,8 @@ Ref<FileAccess> FileAccess::open_encrypted(const String &p_path, ModeFlags p_mod
 	Ref<FileAccessEncrypted> fae;
 	fae.instantiate();
 	Error err = fae->open_and_parse(fa, p_key, (p_mode_flags == WRITE) ? FileAccessEncrypted::MODE_WRITE_AES256 : FileAccessEncrypted::MODE_READ);
+	last_file_open_error = err;
 	if (err) {
-		last_file_open_error = err;
 		return Ref<FileAccess>();
 	}
 	return fae;
@@ -149,8 +149,8 @@ Ref<FileAccess> FileAccess::open_encrypted_pass(const String &p_path, ModeFlags 
 	Ref<FileAccessEncrypted> fae;
 	fae.instantiate();
 	Error err = fae->open_and_parse_password(fa, p_pass, (p_mode_flags == WRITE) ? FileAccessEncrypted::MODE_WRITE_AES256 : FileAccessEncrypted::MODE_READ);
+	last_file_open_error = err;
 	if (err) {
-		last_file_open_error = err;
 		return Ref<FileAccess>();
 	}
 	return fae;
@@ -161,9 +161,8 @@ Ref<FileAccess> FileAccess::open_compressed(const String &p_path, ModeFlags p_mo
 	fac.instantiate();
 	fac->configure("GCPF", (Compression::Mode)p_compress_mode);
 	Error err = fac->open_internal(p_path, p_mode_flags);
-
+	last_file_open_error = err;
 	if (err) {
-		last_file_open_error = err;
 		return Ref<FileAccess>();
 	}
 
@@ -855,6 +854,8 @@ void FileAccess::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("store_pascal_string", "string"), &FileAccess::store_pascal_string);
 	ClassDB::bind_method(D_METHOD("get_pascal_string"), &FileAccess::get_pascal_string);
+
+	ClassDB::bind_method(D_METHOD("close"), &FileAccess::close);
 
 	ClassDB::bind_static_method("FileAccess", D_METHOD("file_exists", "path"), &FileAccess::exists);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_modified_time", "file"), &FileAccess::get_modified_time);

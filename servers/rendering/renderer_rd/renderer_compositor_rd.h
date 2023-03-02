@@ -101,6 +101,7 @@ protected:
 	double delta = 0.0;
 
 	static uint64_t frame;
+	static RendererCompositorRD *singleton;
 
 public:
 	RendererUtilities *get_utilities() { return utilities; };
@@ -145,7 +146,7 @@ public:
 		low_end = false;
 	}
 
-	static RendererCompositorRD *singleton;
+	static RendererCompositorRD *get_singleton() { return singleton; }
 	RendererCompositorRD();
 	~RendererCompositorRD();
 };

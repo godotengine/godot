@@ -92,11 +92,6 @@ String CSharpLanguage::get_extension() const {
 	return "cs";
 }
 
-Error CSharpLanguage::execute_file(const String &p_path) {
-	// ??
-	return OK;
-}
-
 void CSharpLanguage::init() {
 #ifdef DEBUG_METHODS_ENABLED
 	if (OS::get_singleton()->get_cmdline_args().find("--class-db-json")) {
@@ -1147,6 +1142,7 @@ void CSharpLanguage::_editor_init_callback() {
 	// Add plugin to EditorNode and enable it
 	EditorNode::add_editor_plugin(godotsharp_editor);
 	ED_SHORTCUT("mono/build_solution", TTR("Build Solution"), KeyModifierMask::ALT | Key::B);
+	ED_SHORTCUT_OVERRIDE("mono/build_solution", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::B);
 	godotsharp_editor->enable_plugin();
 
 	get_singleton()->godotsharp_editor = godotsharp_editor;

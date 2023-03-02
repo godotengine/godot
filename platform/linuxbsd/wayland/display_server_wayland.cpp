@@ -3535,11 +3535,12 @@ DisplayServer *DisplayServerWayland::create_func(const String &p_rendering_drive
 DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	r_error = ERR_UNAVAILABLE;
 
+#ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
 	int dylibloader_verbose = 1;
 #else
 	int dylibloader_verbose = 0;
-#endif
+#endif // DEBUG_ENABLED
 
 	if (initialize_wayland_client(dylibloader_verbose) != 0) {
 		WARN_PRINT("Can't load the Wayland client library.");
@@ -3555,6 +3556,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 		WARN_PRINT("Can't load the XKBcommon library.");
 		return;
 	}
+#endif // SOWRAP_ENABLED
 
 	KeyMappingXKB::initialize();
 
@@ -3585,7 +3587,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 		WARN_PRINT("Can't obtain the XDG decoration manager. Libdecor will be used for drawing CSDs, if available.");
 #else
 		WARN_PRINT("Can't obtain the XDG decoration manager. Decorations won't show up.");
-#endif
+#endif // LIBDECOR_ENABLED
 	}
 
 	if (!wls.globals.xdg_activation) {
@@ -3596,14 +3598,23 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	if (!wls.globals.wp_idle_inhibit_manager) {
 		WARN_PRINT("Can't obtain the idle inhibition manager. The screen might turn off even after calling screen_set_keep_on()!");
 	}
-#endif
+#endif // DBUS_ENABLED
 
 #ifdef LIBDECOR_ENABLED
-	if (initialize_libdecor(dylibloader_verbose) == 0) {
+	bool libdecor_found = true;
+
+#ifdef SOWRAP_ENABLED
+	if (initialize_libdecor(dylibloader_verbose) != 0) {
+		libdecor_found = false;
+	}
+#endif // SOWRAP_ENABLED
+
+	if (libdecor_found) {
 		wls.libdecor_context = libdecor_new(wls.wl_display, (struct libdecor_interface *)&libdecor_interface);
 	} else {
 		print_verbose("libdecor not found. Client-side decorations disabled.");
 	}
+
 #endif // LIBDECOR_ENABLED
 
 	// Input.
@@ -3636,10 +3647,12 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	if (p_rendering_driver == "opengl3") {
 		egl_manager = memnew(EGLManagerWayland);
 
+#ifdef SOWRAP_ENABLED
 		if (initialize_wayland_egl(dylibloader_verbose) != 0) {
 			WARN_PRINT("Can't load the Wayland EGL library.");
 			return;
 		}
+#endif // SOWRAP_ENABLED
 
 		if (egl_manager->initialize() != OK) {
 			memdelete(egl_manager);
@@ -3650,7 +3663,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 		RasterizerGLES3::make_current();
 	}
-#endif
+#endif // GLES3_ENABLED
 	const char *cursor_theme = OS::get_singleton()->get_environment("XCURSOR_THEME").utf8().ptr();
 
 	int64_t cursor_size = OS::get_singleton()->get_environment("XCURSOR_SIZE").to_int();

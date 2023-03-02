@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CharacterBody2D" inherits="PhysicsBody2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="CharacterBody2D" inherits="PhysicsBody2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Specialized 2D physics body node for characters moved by script.
 	</brief_description>
@@ -71,10 +71,10 @@
 				print("Collided with: ", collision.collider.name)
 				[/gdscript]
 				[csharp]
-				for (int i = 0; i &lt; GetSlideCount(); i++)
+				for (int i = 0; i &lt; GetSlideCollisionCount(); i++)
 				{
 				    KinematicCollision2D collision = GetSlideCollision(i);
-				    GD.Print("Collided with: ", (collision.Collider as Node).Name);
+				    GD.Print("Collided with: ", (collision.GetCollider() as Node).Name);
 				}
 				[/csharp]
 				[/codeblocks]

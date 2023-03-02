@@ -105,9 +105,10 @@ public:
 					return false;
 				}
 
-				Object *obj = p_variant.get_validated_object();
+				bool was_freed = false;
+				Object *obj = p_variant.get_validated_object_with_check(was_freed);
 				if (!obj) {
-					return false;
+					return !was_freed;
 				}
 
 				if (!ClassDB::is_parent_class(obj->get_class_name(), native_type)) {
@@ -124,9 +125,10 @@ public:
 					return false;
 				}
 
-				Object *obj = p_variant.get_validated_object();
+				bool was_freed = false;
+				Object *obj = p_variant.get_validated_object_with_check(was_freed);
 				if (!obj) {
-					return false;
+					return !was_freed;
 				}
 
 				Ref<Script> base = obj && obj->get_script_instance() ? obj->get_script_instance()->get_script() : nullptr;
@@ -219,8 +221,10 @@ public:
 	enum Opcode {
 		OPCODE_OPERATOR,
 		OPCODE_OPERATOR_VALIDATED,
-		OPCODE_EXTENDS_TEST,
-		OPCODE_IS_BUILTIN,
+		OPCODE_TYPE_TEST_BUILTIN,
+		OPCODE_TYPE_TEST_ARRAY,
+		OPCODE_TYPE_TEST_NATIVE,
+		OPCODE_TYPE_TEST_SCRIPT,
 		OPCODE_SET_KEYED,
 		OPCODE_SET_KEYED_VALIDATED,
 		OPCODE_SET_INDEXED_VALIDATED,
@@ -544,6 +548,8 @@ private:
 #endif
 
 public:
+	static constexpr int MAX_CALL_DEPTH = 2048; // Limit to try to avoid crash because of a stack overflow.
+
 	struct CallState {
 		GDScript *script = nullptr;
 		GDScriptInstance *instance = nullptr;

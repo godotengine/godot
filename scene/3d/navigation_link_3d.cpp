@@ -163,6 +163,12 @@ void NavigationLink3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_end_position", "position"), &NavigationLink3D::set_end_position);
 	ClassDB::bind_method(D_METHOD("get_end_position"), &NavigationLink3D::get_end_position);
 
+	ClassDB::bind_method(D_METHOD("set_global_start_position", "position"), &NavigationLink3D::set_global_start_position);
+	ClassDB::bind_method(D_METHOD("get_global_start_position"), &NavigationLink3D::get_global_start_position);
+
+	ClassDB::bind_method(D_METHOD("set_global_end_position", "position"), &NavigationLink3D::set_global_end_position);
+	ClassDB::bind_method(D_METHOD("get_global_end_position"), &NavigationLink3D::get_global_end_position);
+
 	ClassDB::bind_method(D_METHOD("set_enter_cost", "enter_cost"), &NavigationLink3D::set_enter_cost);
 	ClassDB::bind_method(D_METHOD("get_enter_cost"), &NavigationLink3D::get_enter_cost);
 
@@ -384,6 +390,38 @@ void NavigationLink3D::set_end_position(Vector3 p_position) {
 
 	update_gizmos();
 	update_configuration_warnings();
+}
+
+void NavigationLink3D::set_global_start_position(Vector3 p_position) {
+	if (is_inside_tree()) {
+		set_start_position(to_local(p_position));
+	} else {
+		set_start_position(p_position);
+	}
+}
+
+Vector3 NavigationLink3D::get_global_start_position() const {
+	if (is_inside_tree()) {
+		return to_global(start_position);
+	} else {
+		return start_position;
+	}
+}
+
+void NavigationLink3D::set_global_end_position(Vector3 p_position) {
+	if (is_inside_tree()) {
+		set_end_position(to_local(p_position));
+	} else {
+		set_end_position(p_position);
+	}
+}
+
+Vector3 NavigationLink3D::get_global_end_position() const {
+	if (is_inside_tree()) {
+		return to_global(end_position);
+	} else {
+		return end_position;
+	}
 }
 
 void NavigationLink3D::set_enter_cost(real_t p_enter_cost) {

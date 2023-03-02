@@ -305,6 +305,25 @@ void JoypadIOS::start_processing() {
 				float value = gamepad.rightTrigger.value;
 				Input::get_singleton()->joy_axis(joy_id, JoyAxis::TRIGGER_RIGHT, value);
 			}
+
+			if (@available(iOS 13, *)) {
+				// iOS uses 'buttonOptions' and 'buttonMenu' names for BACK and START joy buttons.
+				if (element == gamepad.buttonOptions) {
+					Input::get_singleton()->joy_button(joy_id, JoyButton::BACK,
+							gamepad.buttonOptions.isPressed);
+				} else if (element == gamepad.buttonMenu) {
+					Input::get_singleton()->joy_button(joy_id, JoyButton::START,
+							gamepad.buttonMenu.isPressed);
+				}
+			}
+
+			if (@available(iOS 14, *)) {
+				// iOS uses 'buttonHome' for the GUIDE joy button.
+				if (element == gamepad.buttonHome) {
+					Input::get_singleton()->joy_button(joy_id, JoyButton::GUIDE,
+							gamepad.buttonHome.isPressed);
+				}
+			}
 		};
 	} else if (controller.microGamepad != nil) {
 		// micro gamepads were added in OS 9 and feature just 2 buttons and a d-pad

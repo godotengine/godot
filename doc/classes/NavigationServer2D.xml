@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationServer2D" inherits="Object" is_experimental="true" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationServer2D" inherits="Object" is_experimental="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Server interface for low-level 2D navigation access.
 	</brief_description>
@@ -126,6 +126,12 @@
 				Destroys the given RID.
 			</description>
 		</method>
+		<method name="get_debug_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] when the NavigationServer has debug enabled.
+			</description>
+		</method>
 		<method name="get_maps" qualifiers="const">
 			<return type="RID[]" />
 			<description>
@@ -149,7 +155,7 @@
 			<return type="float" />
 			<param index="0" name="link" type="RID" />
 			<description>
-				Returns the [code]enter_cost[/code] of this [code]link[/code].
+				Returns the enter cost of this [param link].
 			</description>
 		</method>
 		<method name="link_get_map" qualifiers="const">
@@ -184,7 +190,7 @@
 			<return type="float" />
 			<param index="0" name="link" type="RID" />
 			<description>
-				Returns the [code]travel_cost[/code] of this [code]link[/code].
+				Returns the travel cost of this [param link].
 			</description>
 		</method>
 		<method name="link_is_bidirectional" qualifiers="const">
@@ -423,7 +429,7 @@
 			<return type="float" />
 			<param index="0" name="region" type="RID" />
 			<description>
-				Returns the [code]enter_cost[/code] of this [param region].
+				Returns the enter cost of this [param region].
 			</description>
 		</method>
 		<method name="region_get_map" qualifiers="const">
@@ -451,7 +457,7 @@
 			<return type="float" />
 			<param index="0" name="region" type="RID" />
 			<description>
-				Returns the [code]travel_cost[/code] of this [param region].
+				Returns the travel cost of this [param region].
 			</description>
 		</method>
 		<method name="region_owns_point" qualifiers="const">
@@ -518,6 +524,13 @@
 			<param index="1" name="travel_cost" type="float" />
 			<description>
 				Sets the [param travel_cost] for this [param region].
+			</description>
+		</method>
+		<method name="set_debug_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				If [code]true[/code] enables debug mode on the NavigationServer.
 			</description>
 		</method>
 	</methods>

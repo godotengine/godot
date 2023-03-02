@@ -752,6 +752,21 @@ TileMap::VisibilityMode TileMap::get_navigation_visibility_mode() {
 	return navigation_visibility_mode;
 }
 
+void TileMap::set_navigation_map(int p_layer, RID p_map) {
+	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+	ERR_FAIL_COND_MSG(!is_inside_tree(), "A TileMap navigation map can only be changed while inside the SceneTree.");
+	layers[p_layer].navigation_map = p_map;
+	layers[p_layer].uses_world_navigation_map = p_map == get_world_2d()->get_navigation_map();
+}
+
+RID TileMap::get_navigation_map(int p_layer) const {
+	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), RID());
+	if (layers[p_layer].navigation_map.is_valid()) {
+		return layers[p_layer].navigation_map;
+	}
+	return RID();
+}
+
 void TileMap::set_y_sort_enabled(bool p_enable) {
 	Node2D::set_y_sort_enabled(p_enable);
 	_clear_internals();
@@ -897,6 +912,9 @@ void TileMap::_recreate_layer_internals(int p_layer) {
 	// Update the layer internals.
 	_rendering_update_layer(p_layer);
 
+	// Update the layer internal navigation maps.
+	_navigation_update_layer(p_layer);
+
 	// Recreate the quadrants.
 	const HashMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
 	for (const KeyValue<Vector2i, TileMapCell> &E : tile_map) {
@@ -958,6 +976,9 @@ void TileMap::_clear_layer_internals(int p_layer) {
 
 	// Clear the layers internals.
 	_rendering_cleanup_layer(p_layer);
+
+	// Clear the layers internal navigation maps.
+	_navigation_cleanup_layer(p_layer);
 
 	// Clear the dirty quadrants list.
 	while (layers[p_layer].dirty_quadrant_list.first()) {
@@ -1080,6 +1101,38 @@ void TileMap::_rendering_notification(int p_what) {
 				}
 			}
 		} break;
+	}
+}
+
+void TileMap::_navigation_update_layer(int p_layer) {
+	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
+
+	if (!layers[p_layer].navigation_map.is_valid()) {
+		if (p_layer == 0 && is_inside_tree()) {
+			// Use the default World2D navigation map for the first layer when empty.
+			layers[p_layer].navigation_map = get_world_2d()->get_navigation_map();
+			layers[p_layer].uses_world_navigation_map = true;
+		} else {
+			RID new_layer_map = NavigationServer2D::get_singleton()->map_create();
+			NavigationServer2D::get_singleton()->map_set_active(new_layer_map, true);
+			layers[p_layer].navigation_map = new_layer_map;
+			layers[p_layer].uses_world_navigation_map = false;
+		}
+	}
+}
+
+void TileMap::_navigation_cleanup_layer(int p_layer) {
+	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
+
+	if (layers[p_layer].navigation_map.is_valid()) {
+		if (layers[p_layer].uses_world_navigation_map) {
+			// Do not delete the World2D default navigation map.
+			return;
+		}
+		NavigationServer2D::get_singleton()->free(layers[p_layer].navigation_map);
+		layers[p_layer].navigation_map = RID();
 	}
 }
 
@@ -1732,6 +1785,9 @@ void TileMap::_navigation_update_dirty_quadrants(SelfList<TileMapQuadrant>::List
 					q.navigation_regions[E_cell].resize(tile_set->get_navigation_layers_count());
 
 					for (int layer_index = 0; layer_index < tile_set->get_navigation_layers_count(); layer_index++) {
+						if (layer_index >= (int)layers.size() || !layers[layer_index].navigation_map.is_valid()) {
+							continue;
+						}
 						Ref<NavigationPolygon> navigation_polygon;
 						navigation_polygon = tile_data->get_navigation_polygon(layer_index);
 
@@ -1741,7 +1797,7 @@ void TileMap::_navigation_update_dirty_quadrants(SelfList<TileMapQuadrant>::List
 
 							RID region = NavigationServer2D::get_singleton()->region_create();
 							NavigationServer2D::get_singleton()->region_set_owner_id(region, get_instance_id());
-							NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
+							NavigationServer2D::get_singleton()->region_set_map(region, layers[layer_index].navigation_map);
 							NavigationServer2D::get_singleton()->region_set_transform(region, tilemap_xform * tile_transform);
 							NavigationServer2D::get_singleton()->region_set_navigation_layers(region, tile_set->get_navigation_layer_layers(layer_index));
 							NavigationServer2D::get_singleton()->region_set_navigation_polygon(region, navigation_polygon);
@@ -1795,12 +1851,16 @@ void TileMap::_navigation_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 		return;
 	}
 
-	RenderingServer *rs = RenderingServer::get_singleton();
-
-	Color color = Color(0.5, 1.0, 1.0, 1.0);
 #ifdef DEBUG_ENABLED
-	color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
-#endif // DEBUG_ENABLED
+	RenderingServer *rs = RenderingServer::get_singleton();
+	const NavigationServer2D *ns2d = NavigationServer2D::get_singleton();
+
+	bool enabled_geometry_face_random_color = ns2d->get_debug_navigation_enable_geometry_face_random_color();
+	bool enabled_edge_lines = ns2d->get_debug_navigation_enable_edge_lines();
+
+	Color debug_face_color = ns2d->get_debug_navigation_geometry_face_color();
+	Color debug_edge_color = ns2d->get_debug_navigation_geometry_edge_color();
+
 	RandomPCG rand;
 
 	Vector2 quadrant_pos = map_to_local(p_quadrant->coords * get_effective_quadrant_size(p_quadrant->layer));
@@ -1830,34 +1890,50 @@ void TileMap::_navigation_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 				rs->canvas_item_add_set_transform(p_quadrant->debug_canvas_item, cell_to_quadrant);
 
 				for (int layer_index = 0; layer_index < tile_set->get_navigation_layers_count(); layer_index++) {
-					Ref<NavigationPolygon> navpoly = tile_data->get_navigation_polygon(layer_index);
-					if (navpoly.is_valid()) {
-						PackedVector2Array navigation_polygon_vertices = navpoly->get_vertices();
+					Ref<NavigationPolygon> navigation_polygon = tile_data->get_navigation_polygon(layer_index);
+					if (navigation_polygon.is_valid()) {
+						Vector<Vector2> navigation_polygon_vertices = navigation_polygon->get_vertices();
+						if (navigation_polygon_vertices.size() < 3) {
+							continue;
+						}
 
-						for (int i = 0; i < navpoly->get_polygon_count(); i++) {
+						for (int i = 0; i < navigation_polygon->get_polygon_count(); i++) {
 							// An array of vertices for this polygon.
-							Vector<int> polygon = navpoly->get_polygon(i);
-							Vector<Vector2> vertices;
-							vertices.resize(polygon.size());
+							Vector<int> polygon = navigation_polygon->get_polygon(i);
+							Vector<Vector2> debug_polygon_vertices;
+							debug_polygon_vertices.resize(polygon.size());
 							for (int j = 0; j < polygon.size(); j++) {
 								ERR_FAIL_INDEX(polygon[j], navigation_polygon_vertices.size());
-								vertices.write[j] = navigation_polygon_vertices[polygon[j]];
+								debug_polygon_vertices.write[j] = navigation_polygon_vertices[polygon[j]];
 							}
 
 							// Generate the polygon color, slightly randomly modified from the settings one.
-							Color random_variation_color;
-							random_variation_color.set_hsv(color.get_h() + rand.random(-1.0, 1.0) * 0.05, color.get_s(), color.get_v() + rand.random(-1.0, 1.0) * 0.1);
-							random_variation_color.a = color.a;
-							Vector<Color> colors;
-							colors.push_back(random_variation_color);
+							Color random_variation_color = debug_face_color;
+							if (enabled_geometry_face_random_color) {
+								random_variation_color.set_hsv(
+										debug_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1,
+										debug_face_color.get_s(),
+										debug_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
+							}
+							random_variation_color.a = debug_face_color.a;
 
-							rs->canvas_item_add_polygon(p_quadrant->debug_canvas_item, vertices, colors);
+							Vector<Color> debug_face_colors;
+							debug_face_colors.push_back(random_variation_color);
+							rs->canvas_item_add_polygon(p_quadrant->debug_canvas_item, debug_polygon_vertices, debug_face_colors);
+
+							if (enabled_edge_lines) {
+								Vector<Color> debug_edge_colors;
+								debug_edge_colors.push_back(debug_edge_color);
+								debug_polygon_vertices.push_back(debug_polygon_vertices[0]); // Add first again for closing polyline.
+								rs->canvas_item_add_polyline(p_quadrant->debug_canvas_item, debug_polygon_vertices, debug_edge_colors);
+							}
 						}
 					}
 				}
 			}
 		}
 	}
+#endif // DEBUG_ENABLED
 }
 
 /////////////////////////////// Scenes //////////////////////////////////////
@@ -4030,6 +4106,9 @@ void TileMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_navigation_visibility_mode", "navigation_visibility_mode"), &TileMap::set_navigation_visibility_mode);
 	ClassDB::bind_method(D_METHOD("get_navigation_visibility_mode"), &TileMap::get_navigation_visibility_mode);
+
+	ClassDB::bind_method(D_METHOD("set_navigation_map", "layer", "map"), &TileMap::set_navigation_map);
+	ClassDB::bind_method(D_METHOD("get_navigation_map", "layer"), &TileMap::get_navigation_map);
 
 	ClassDB::bind_method(D_METHOD("set_cell", "layer", "coords", "source_id", "atlas_coords", "alternative_tile"), &TileMap::set_cell, DEFVAL(TileSet::INVALID_SOURCE), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("erase_cell", "layer", "coords"), &TileMap::erase_cell);

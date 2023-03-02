@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Tween" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Tween" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Lightweight object used for general-purpose animation via script, using [Tweener]s.
 	</brief_description>
@@ -214,6 +214,7 @@
 			<param index="0" name="ease" type="int" enum="Tween.EaseType" />
 			<description>
 				Sets the default ease type for [PropertyTweener]s and [MethodTweener]s animated by this [Tween].
+				If not specified, the default value is [constant EASE_IN_OUT].
 			</description>
 		</method>
 		<method name="set_loops">
@@ -260,6 +261,7 @@
 			<param index="0" name="trans" type="int" enum="Tween.TransitionType" />
 			<description>
 				Sets the default transition type for [PropertyTweener]s and [MethodTweener]s animated by this [Tween].
+				If not specified, the default value is [constant TRANS_LINEAR].
 			</description>
 		</method>
 		<method name="stop">

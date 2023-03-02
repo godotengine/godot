@@ -70,6 +70,11 @@ Files extracted from upstream source:
 
 - all .cpp, .h, and .txt files except the folders MakeTables and etc2packer.
 
+Changes related to BC6H packing and unpacking made upstream in
+https://github.com/elasota/cvtt/commit/2e4b6b2747aec11f4cc6dd09ef43fa8ce769f6e2
+have been removed as they caused massive quality regressions. Apply the patches
+in the `patches/` folder when syncing on newer upstream commits.
+
 
 ## doctest
 

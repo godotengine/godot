@@ -1543,6 +1543,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 			selection_menu->set_item_tooltip(i, String(spat->get_name()) + "\nType: " + spat->get_class() + "\nPath: " + node_path);
 		}
 
+		selection_results_menu = selection_results;
 		selection_menu->set_position(get_screen_position() + b->get_position());
 		selection_menu->reset_size();
 		selection_menu->popup();
@@ -1666,6 +1667,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						} break;
 						case TRANSFORM_Z_AXIS: {
 							_edit.plane = TRANSFORM_VIEW;
+							// TRANSLATORS: This refers to the transform of the view plane.
 							set_message(TTR("View Plane Transform."), 2);
 
 						} break;
@@ -3392,7 +3394,6 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				VIEW_DISPLAY_SHADELESS,
 				VIEW_DISPLAY_LIGHTING,
 				VIEW_DISPLAY_NORMAL_BUFFER,
-				VIEW_DISPLAY_WIREFRAME,
 				VIEW_DISPLAY_DEBUG_SHADOW_ATLAS,
 				VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS,
 				VIEW_DISPLAY_DEBUG_VOXEL_GI_ALBEDO,
@@ -3422,7 +3423,6 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				Viewport::DEBUG_DRAW_UNSHADED,
 				Viewport::DEBUG_DRAW_LIGHTING,
 				Viewport::DEBUG_DRAW_NORMAL_BUFFER,
-				Viewport::DEBUG_DRAW_WIREFRAME,
 				Viewport::DEBUG_DRAW_SHADOW_ATLAS,
 				Viewport::DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS,
 				Viewport::DEBUG_DRAW_VOXEL_GI_ALBEDO,
@@ -3445,9 +3445,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				Viewport::DEBUG_DRAW_MOTION_VECTORS,
 			};
 
-			int idx = 0;
-
-			while (display_options[idx] != VIEW_MAX) {
+			for (int idx = 0; display_options[idx] != VIEW_MAX; idx++) {
 				int id = display_options[idx];
 				int item_idx = view_menu->get_popup()->get_item_index(id);
 				if (item_idx != -1) {
@@ -3461,7 +3459,6 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				if (id == p_option) {
 					viewport->set_debug_draw(debug_draw_modes[idx]);
 				}
-				idx++;
 			}
 		} break;
 	}
@@ -3613,15 +3610,17 @@ void Node3DEditorViewport::_toggle_cinema_preview(bool p_activate) {
 }
 
 void Node3DEditorViewport::_selection_result_pressed(int p_result) {
-	if (selection_results.size() <= p_result) {
+	if (selection_results_menu.size() <= p_result) {
 		return;
 	}
 
-	clicked = selection_results[p_result].item->get_instance_id();
+	clicked = selection_results_menu[p_result].item->get_instance_id();
 
 	if (clicked.is_valid()) {
 		_select_clicked(spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT);
 	}
+
+	selection_results_menu.clear();
 }
 
 void Node3DEditorViewport::_selection_menu_hide() {
@@ -4961,6 +4960,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_lock_rotation", TTR("Lock View Rotation")), VIEW_LOCK_ROTATION);
 	view_menu->get_popup()->add_separator();
+	// TRANSLATORS: "Normal" as in "normal life", not "normal vector".
 	view_menu->get_popup()->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_normal", TTR("Display Normal")), VIEW_DISPLAY_NORMAL);
 	view_menu->get_popup()->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_wireframe", TTR("Display Wireframe")), VIEW_DISPLAY_WIREFRAME);
 	view_menu->get_popup()->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_overdraw", TTR("Display Overdraw")), VIEW_DISPLAY_OVERDRAW);
@@ -7922,7 +7922,9 @@ void Node3DEditor::_load_default_preview_settings() {
 	environ_sky_color->set_pick_color(Color(0.385, 0.454, 0.55));
 	environ_ground_color->set_pick_color(Color(0.2, 0.169, 0.133));
 	environ_energy->set_value(1.0);
-	environ_glow_button->set_pressed(true);
+	if (OS::get_singleton()->get_current_rendering_method() != "gl_compatibility") {
+		environ_glow_button->set_pressed(true);
+	}
 	environ_tonemap_button->set_pressed(true);
 	environ_ao_button->set_pressed(false);
 	environ_gi_button->set_pressed(false);

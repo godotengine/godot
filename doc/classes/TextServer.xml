@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextServer" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TextServer" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Interface for the fonts and complex text layouts.
 	</brief_description>
@@ -12,7 +12,7 @@
 		<method name="create_font">
 			<return type="RID" />
 			<description>
-				Creates new, empty font cache entry resource. To free the resulting resourec, use [method free_rid] method.
+				Creates new, empty font cache entry resource. To free the resulting resource, use [method free_rid] method.
 			</description>
 		</method>
 		<method name="create_shaped_text">

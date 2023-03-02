@@ -31,6 +31,7 @@
 #include "renderer_viewport.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/worker_thread_pool.h"
 #include "renderer_canvas_cull.h"
 #include "renderer_scene_cull.h"
 #include "rendering_server_globals.h"
@@ -348,7 +349,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 						Transform2D scale;
 						scale.scale(cl->rect_cache.size);
 						scale.columns[2] = cl->rect_cache.position;
-						cl->light_shader_xform = cl->xform * scale;
+						cl->light_shader_xform = xf * cl->xform * scale;
 						if (cl->use_shadow) {
 							cl->shadows_next_ptr = lights_with_shadow;
 							if (lights_with_shadow == nullptr) {

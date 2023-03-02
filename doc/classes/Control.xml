@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Control" inherits="CanvasItem" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Control" inherits="CanvasItem" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		All user interface nodes inherit from Control. A control's anchors and offsets adapt its position and size relative to its parent.
 	</brief_description>
@@ -558,7 +558,7 @@
 			<return type="void" />
 			<description>
 				Steal the focus from another control and become the focused control (see [member focus_mode]).
-				[b]Note[/b]: Using this method together with [method Callable.call_deferred] makes it more reliable, especially when called inside [method Node._ready].
+				[b]Note:[/b] Using this method together with [method Callable.call_deferred] makes it more reliable, especially when called inside [method Node._ready].
 			</description>
 		</method>
 		<method name="has_focus" qualifiers="const">
@@ -801,7 +801,7 @@
 				Shows the given control at the mouse pointer. A good time to call this method is in [method _get_drag_data]. The control must not be in the scene tree. You should not free the control, and you should not keep a reference to the control beyond the duration of the drag. It will be deleted automatically after the drag has ended.
 				[codeblocks]
 				[gdscript]
-				export (Color, RGBA) var color = Color(1, 0, 0, 1)
+				@export var color = Color(1, 0, 0, 1)
 
 				func _get_drag_data(position):
 				    # Use a control that is not in the tree
@@ -1001,6 +1001,7 @@
 		</member>
 		<member name="rotation" type="float" setter="set_rotation" getter="get_rotation" default="0.0">
 			The node's rotation around its pivot, in radians. See [member pivot_offset] to change the pivot's position.
+			[b]Note:[/b] This property is edited in the inspector in degrees. If you want to use degrees in a script, use [member rotation_degrees].
 		</member>
 		<member name="rotation_degrees" type="float" setter="set_rotation_degrees" getter="get_rotation_degrees">
 			Helper property to access [member rotation] in degrees instead of radians.

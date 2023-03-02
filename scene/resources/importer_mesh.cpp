@@ -31,6 +31,7 @@
 #include "importer_mesh.h"
 
 #include "core/io/marshalls.h"
+#include "core/math/convex_hull.h"
 #include "core/math/random_pcg.h"
 #include "core/math/static_raycaster.h"
 #include "scene/resources/surface_tool.h"
@@ -982,6 +983,43 @@ Vector<Ref<Shape3D>> ImporterMesh::convex_decompose(const Mesh::ConvexDecomposit
 	}
 
 	return ret;
+}
+
+Ref<ConvexPolygonShape3D> ImporterMesh::create_convex_shape(bool p_clean, bool p_simplify) const {
+	if (p_simplify) {
+		Mesh::ConvexDecompositionSettings settings;
+		settings.max_convex_hulls = 1;
+		Vector<Ref<Shape3D>> decomposed = convex_decompose(settings);
+		if (decomposed.size() == 1) {
+			return decomposed[0];
+		} else {
+			ERR_PRINT("Convex shape simplification failed, falling back to simpler process.");
+		}
+	}
+
+	Vector<Vector3> vertices;
+	for (int i = 0; i < get_surface_count(); i++) {
+		Array a = get_surface_arrays(i);
+		ERR_FAIL_COND_V(a.is_empty(), Ref<ConvexPolygonShape3D>());
+		Vector<Vector3> v = a[Mesh::ARRAY_VERTEX];
+		vertices.append_array(v);
+	}
+
+	Ref<ConvexPolygonShape3D> shape = memnew(ConvexPolygonShape3D);
+
+	if (p_clean) {
+		Geometry3D::MeshData md;
+		Error err = ConvexHullComputer::convex_hull(vertices, md);
+		if (err == OK) {
+			shape->set_points(md.vertices);
+			return shape;
+		} else {
+			ERR_PRINT("Convex shape cleaning failed, falling back to simpler process.");
+		}
+	}
+
+	shape->set_points(vertices);
+	return shape;
 }
 
 Ref<ConcavePolygonShape3D> ImporterMesh::create_trimesh_shape() const {

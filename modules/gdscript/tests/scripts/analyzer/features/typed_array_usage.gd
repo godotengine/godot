@@ -86,7 +86,8 @@ func test():
 
 	var typed_int := 556
 	var converted_floats: Array[float] = [typed_int]
-	assert(str(converted_floats) == '[556]')
+	converted_floats.push_back(498)
+	assert(str(converted_floats) == '[556, 498]')
 	assert(converted_floats.get_typed_builtin() == TYPE_FLOAT)
 
 
@@ -199,6 +200,10 @@ func test():
 	typed_enums[0] = E.E0
 	assert(str(typed_enums) == '[391]')
 	assert(typed_enums.get_typed_builtin() == TYPE_INT)
+
+	const const_enums: Array[E] = []
+	assert(const_enums.get_typed_builtin() == TYPE_INT)
+	assert(const_enums.get_typed_class_name() == &'')
 
 
 	var a := A.new()

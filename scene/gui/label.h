@@ -49,8 +49,6 @@ private:
 	bool uppercase = false;
 
 	bool lines_dirty = true;
-	int lines_shaped_last_width = -1;
-
 	bool dirty = true;
 	bool font_dirty = true;
 	RID text_rid;

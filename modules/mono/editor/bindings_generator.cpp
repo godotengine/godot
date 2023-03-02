@@ -2831,7 +2831,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		TypeInterface itype = TypeInterface::create_object_type(type_cname, pascal_to_pascal_case(type_cname), api_type);
 
 		itype.base_name = ClassDB::get_parent_class(type_cname);
-		itype.is_singleton = Engine::get_singleton()->has_singleton(itype.proxy_name);
+		itype.is_singleton = Engine::get_singleton()->has_singleton(type_cname);
 		itype.is_instantiable = class_info->creation_func && !itype.is_singleton;
 		itype.is_ref_counted = ClassDB::is_parent_class(type_cname, name_cache.type_RefCounted);
 		itype.memory_own = itype.is_ref_counted;

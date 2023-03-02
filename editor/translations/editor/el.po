@@ -497,12 +497,6 @@ msgstr "Προηγούμενο Βήμα"
 msgid "Use Bezier Curves"
 msgstr "Χρήση καμπυλών Bezier"
 
-msgid "Anim. Optimizer"
-msgstr "Anim. Μηχανή βελτιστοποίησης"
-
-msgid "Max. Angular Error:"
-msgstr "Μέγιστο γωνιώδες σφάλμα:"
-
 msgid "Optimize"
 msgstr "Βελτιστοποίησε"
 
@@ -6078,9 +6072,6 @@ msgstr "Αλλαγή Νεκρής Ζώνης Ενέργειας"
 msgid "Erase Input Action"
 msgstr "Διαγραφή ενέργειας εισόδου"
 
-msgid "Rename Input Action Event"
-msgstr "Μετονομασία συμβάντος εισόδου"
-
 msgid "Project Settings (project.godot)"
 msgstr "Ρυθμίσεις έργου (project.godot)"
 
@@ -6977,9 +6968,6 @@ msgstr ""
 msgid "The AnimationPlayer root node is not a valid node."
 msgstr "Ο ριζικός κόμβος AnimationPlayer δεν είναι έγκυρος."
 
-msgid "Pick a color from the editor window."
-msgstr "Επιλέξτε ένα χρώμα από το παράθυρο επεξεργασίας."
-
 msgid "Switch between hexadecimal and code values."
 msgstr "Εναλλαγή δεκαεξαδικών και κωδικοποιημένων τιμών."
 
@@ -7009,9 +6997,6 @@ msgstr "Ειδοποίηση!"
 
 msgid "Please Confirm..."
 msgstr "Παρακαλώ επιβεβαιώστε..."
-
-msgid "Must use a valid extension."
-msgstr "Απαιτείται η χρήση έγκυρης επέκτασης."
 
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr ""

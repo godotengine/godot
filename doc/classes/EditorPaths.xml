@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorPaths" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorPaths" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Editor-only singleton that returns paths to various OS-specific data folders and files.
 	</brief_description>
@@ -9,7 +9,7 @@
 		[b]Note:[/b] On the Linux/BSD platform, Godot complies with the [url=https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html]XDG Base Directory Specification[/url]. You can override environment variables following the specification to change the editor and project data paths.
 	</description>
 	<tutorials>
-		<link title="File paths in Godot projects">https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html</link>
+		<link title="File paths in Godot projects">$DOCS_URL/tutorials/io/data_paths.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_cache_dir" qualifiers="const">

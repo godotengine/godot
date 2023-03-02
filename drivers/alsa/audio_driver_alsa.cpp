@@ -37,7 +37,7 @@
 
 #include <errno.h>
 
-#ifdef PULSEAUDIO_ENABLED
+#if defined(PULSEAUDIO_ENABLED) && defined(SOWRAP_ENABLED)
 extern "C" {
 extern int initialize_pulse(int verbose);
 }
@@ -153,6 +153,7 @@ Error AudioDriverALSA::init_output_device() {
 }
 
 Error AudioDriverALSA::init() {
+#ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
 	int dylibloader_verbose = 1;
 #else
@@ -167,7 +168,7 @@ Error AudioDriverALSA::init() {
 	if (initialize_asound(dylibloader_verbose)) {
 		return ERR_CANT_OPEN;
 	}
-
+#endif
 	active.clear();
 	exit_thread.clear();
 

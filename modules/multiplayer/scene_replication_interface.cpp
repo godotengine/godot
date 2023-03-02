@@ -311,7 +311,7 @@ bool SceneReplicationInterface::is_rpc_visible(const ObjectID &p_oid, int p_peer
 	if (tnode.remote_peer && uint32_t(p_peer) == tnode.remote_peer) {
 		return true; // RPCs on spawned nodes are always visible to spawner.
 	} else if (spawned_nodes.has(p_oid)) {
-		// It's a spwaned node we control, this can be fast
+		// It's a spawned node we control, this can be fast.
 		if (p_peer) {
 			return peers_info.has(p_peer) && peers_info[p_peer].spawn_nodes.has(p_oid);
 		} else {
@@ -742,6 +742,7 @@ Error SceneReplicationInterface::on_sync_receive(int p_from, const uint8_t *p_bu
 		ofs += 4;
 		uint32_t size = decode_uint32(&p_buffer[ofs]);
 		ofs += 4;
+		ERR_FAIL_COND_V(size > uint32_t(p_buffer_len - ofs), ERR_INVALID_DATA);
 		MultiplayerSynchronizer *sync = nullptr;
 		if (net_id & 0x80000000) {
 			sync = Object::cast_to<MultiplayerSynchronizer>(multiplayer->get_path_cache()->get_cached_object(p_from, net_id & 0x7FFFFFFF));
@@ -756,14 +757,15 @@ Error SceneReplicationInterface::on_sync_receive(int p_from, const uint8_t *p_bu
 		}
 		Node *node = sync->get_root_node();
 		if (sync->get_multiplayer_authority() != p_from || !node) {
-			ERR_CONTINUE(true);
+			// Not valid for me.
+			ofs += size;
+			ERR_CONTINUE_MSG(true, "Ignoring sync data from non-authority or for missing node.");
 		}
 		if (!sync->update_inbound_sync_time(time)) {
 			// State is too old.
 			ofs += size;
 			continue;
 		}
-		ERR_FAIL_COND_V(size > uint32_t(p_buffer_len - ofs), ERR_BUG);
 		const List<NodePath> props = sync->get_replication_config()->get_sync_properties();
 		Vector<Variant> vars;
 		vars.resize(props.size());
@@ -773,6 +775,7 @@ Error SceneReplicationInterface::on_sync_receive(int p_from, const uint8_t *p_bu
 		err = MultiplayerSynchronizer::set_state(props, node, vars);
 		ERR_FAIL_COND_V(err, err);
 		ofs += size;
+		sync->emit_signal(SNAME("synchronized"));
 #ifdef DEBUG_ENABLED
 		_profile_node_data("sync_in", sync->get_instance_id(), size);
 #endif

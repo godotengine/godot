@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorSettings" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorSettings" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Object that holds the project-independent editor settings.
 	</brief_description>
@@ -196,7 +196,7 @@
 			The thumbnail size to use in the FileSystem dock (in pixels). See also [member filesystem/file_dialog/thumbnail_size].
 		</member>
 		<member name="docks/property_editor/auto_refresh_interval" type="float" setter="" getter="">
-			The refresh interval to use for the Inspector dock's properties. The effect of this setting is mainly noticeable when adjusting gizmos in the 2D/3D editor and looking at the inspector at the same time. Lower values make the inspector more often, but take up more CPU time.
+			The refresh interval to use for the Inspector dock's properties. The effect of this setting is mainly noticeable when adjusting gizmos in the 2D/3D editor and looking at the inspector at the same time. Lower values make the inspector refresh more often, but take up more CPU time.
 		</member>
 		<member name="docks/property_editor/subresource_hue_tint" type="float" setter="" getter="">
 			The tint intensity to use for the subresources background in the Inspector dock. The tint is used to distinguish between different subresources in the inspector. Higher values result in a more noticeable background color difference.
@@ -607,10 +607,6 @@
 		<member name="interface/theme/draw_extra_borders" type="bool" setter="" getter="">
 			If [code]true[/code], draws additional borders around interactive UI elements in the editor. This is automatically enabled when using the [b]Black (OLED)[/b] theme preset, as this theme preset uses a fully black background.
 		</member>
-		<member name="interface/theme/enable_touchscreen_touch_area" type="bool" setter="" getter="">
-			If [code]true[/code], increases the touch area for the UI elements to improve usability on touchscreen devices.
-			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
-		</member>
 		<member name="interface/theme/icon_and_font_color" type="int" setter="" getter="">
 			The icon and font color scheme to use in the editor.
 			- [b]Auto[/b] determines the color scheme to use automatically based on [member interface/theme/base_color].
@@ -626,6 +622,18 @@
 		</member>
 		<member name="interface/theme/relationship_line_opacity" type="float" setter="" getter="">
 			The opacity to use when drawing relationship lines in the editor's [Tree]-based GUIs (such as the Scene tree dock).
+		</member>
+		<member name="interface/touchscreen/enable_long_press_as_right_click" type="bool" setter="" getter="">
+			If [code]true[/code], long press on touchscreen is treated as right click.
+			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
+		</member>
+		<member name="interface/touchscreen/enable_pan_and_scale_gestures" type="bool" setter="" getter="">
+			If [code]true[/code], enable two finger pan and scale gestures on touchscreen devices.
+			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
+		</member>
+		<member name="interface/touchscreen/increase_scrollbar_touch_area" type="bool" setter="" getter="">
+			If [code]true[/code], increases the scrollbar touch area to improve usability on touchscreen devices.
+			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
 		</member>
 		<member name="network/debug/remote_host" type="String" setter="" getter="">
 			The address to listen to when starting the remote debugger. This can be set to [code]0.0.0.0[/code] to allow external clients to connect to the remote debugger (instead of restricting the remote debugger to connections from [code]localhost[/code]).
@@ -757,7 +765,7 @@
 		</member>
 		<member name="text_editor/behavior/indent/type" type="int" setter="" getter="">
 			The indentation style to use (tabs or spaces).
-			[b]Note:[/b] The [url=$DOCS_URL/getting_started/scripting/gdscript/gdscript_styleguide.html]GDScript style guide[/url] recommends using tabs for indentation. It is advised to change this setting only if you need to work on a project that currently uses spaces for indentation.
+			[b]Note:[/b] The [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_styleguide.html]GDScript style guide[/url] recommends using tabs for indentation. It is advised to change this setting only if you need to work on a project that currently uses spaces for indentation.
 		</member>
 		<member name="text_editor/behavior/navigation/drag_and_drop_selection" type="bool" setter="" getter="">
 			If [code]true[/code], allows drag-and-dropping text in the script editor to move text. Disable this if you find yourself accidentally drag-and-dropping text in the script editor.

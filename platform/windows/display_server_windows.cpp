@@ -1719,6 +1719,8 @@ DisplayServer::CursorShape DisplayServerWindows::cursor_get_shape() const {
 void DisplayServerWindows::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	_THREAD_SAFE_METHOD_
 
+	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
+
 	if (p_cursor.is_valid()) {
 		RBMap<CursorShape, Vector<Variant>>::Element *cursor_c = cursors_cache.find(p_shape);
 
@@ -3668,10 +3670,18 @@ void DisplayServerWindows::_process_key_events() {
 					}
 
 					k->set_window_id(ke.window_id);
-					k->set_shift_pressed(ke.shift);
-					k->set_alt_pressed(ke.alt);
-					k->set_ctrl_pressed(ke.control);
-					k->set_meta_pressed(ke.meta);
+					if (keycode != Key::SHIFT) {
+						k->set_shift_pressed(ke.shift);
+					}
+					if (keycode != Key::ALT) {
+						k->set_alt_pressed(ke.alt);
+					}
+					if (keycode != Key::CTRL) {
+						k->set_ctrl_pressed(ke.control);
+					}
+					if (keycode != Key::META) {
+						k->set_meta_pressed(ke.meta);
+					}
 					k->set_pressed(true);
 					k->set_keycode(keycode);
 					k->set_physical_keycode(physical_keycode);
@@ -3693,11 +3703,6 @@ void DisplayServerWindows::_process_key_events() {
 				k.instantiate();
 
 				k->set_window_id(ke.window_id);
-				k->set_shift_pressed(ke.shift);
-				k->set_alt_pressed(ke.alt);
-				k->set_ctrl_pressed(ke.control);
-				k->set_meta_pressed(ke.meta);
-
 				k->set_pressed(ke.uMsg == WM_KEYDOWN);
 
 				Key keycode = KeyMappingWindows::get_keysym(ke.wParam);
@@ -3719,6 +3724,18 @@ void DisplayServerWindows::_process_key_events() {
 					}
 				}
 
+				if (keycode != Key::SHIFT) {
+					k->set_shift_pressed(ke.shift);
+				}
+				if (keycode != Key::ALT) {
+					k->set_alt_pressed(ke.alt);
+				}
+				if (keycode != Key::CTRL) {
+					k->set_ctrl_pressed(ke.control);
+				}
+				if (keycode != Key::META) {
+					k->set_meta_pressed(ke.meta);
+				}
 				k->set_keycode(keycode);
 				k->set_physical_keycode(physical_keycode);
 				k->set_key_label(key_label);
@@ -4220,7 +4237,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		window_position = screen_get_position(p_screen) + (screen_get_size(p_screen) - p_resolution) / 2;
 	}
 
-	WindowID main_window = _create_window(p_mode, p_vsync_mode, 0, Rect2i(window_position, p_resolution));
+	WindowID main_window = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(window_position, p_resolution));
 	ERR_FAIL_COND_MSG(main_window == INVALID_WINDOW_ID, "Failed to create main window.");
 
 	joypad = new JoypadWindows(&windows[MAIN_WINDOW_ID].hWnd);

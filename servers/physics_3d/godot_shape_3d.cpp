@@ -1092,6 +1092,8 @@ void GodotConvexPolygonShape3D::_setup(const Vector<Vector3> &p_vertices) {
 	if (err != OK) {
 		ERR_PRINT("Failed to build convex hull");
 	}
+	extreme_vertices.resize(0);
+	vertex_neighbors.resize(0);
 
 	AABB _aabb;
 

@@ -1548,7 +1548,7 @@ void TextEdit::_notification(int p_what) {
 				ime_text = DisplayServer::get_singleton()->ime_get_text();
 				ime_selection = DisplayServer::get_singleton()->ime_get_selection();
 
-				if (!ime_text.is_empty()) {
+				if (!ime_text.is_empty() && has_selection()) {
 					delete_selection();
 				}
 
@@ -2681,6 +2681,7 @@ void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
 
 			set_caret_line(get_caret_line(caret_idx), false, true, 0, caret_idx);
 			set_caret_column(column, caret_idx == 0, caret_idx);
+			adjust_carets_after_edit(caret_idx, get_caret_line(caret_idx), column, get_caret_line(caret_idx), from_column);
 
 			// Now we can clean up the overlapping caret.
 			if (overlapping_caret_index != -1) {
@@ -4362,7 +4363,9 @@ int TextEdit::get_minimap_line_at_pos(const Point2i &p_pos) const {
 	if (first_vis_line > 0 && minimap_line >= 0) {
 		minimap_line -= get_next_visible_line_index_offset_from(first_vis_line, 0, -num_lines_before).x;
 		minimap_line -= (minimap_line > 0 && smooth_scroll_enabled ? 1 : 0);
-	} else {
+	}
+
+	if (minimap_line < 0) {
 		minimap_line = 0;
 	}
 

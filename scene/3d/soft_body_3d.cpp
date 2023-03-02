@@ -217,8 +217,7 @@ bool SoftBody3D::_set_property_pinned_points_attachment(int p_item, const String
 
 	if ("spatial_attachment_path" == p_what) {
 		PinnedPoint *w = pinned_points.ptrw();
-		pin_point(w[p_item].point_index, true, p_value);
-		_make_cache_dirty();
+		callable_mp(this, &SoftBody3D::_pin_point_deferred).call_deferred(Variant(w[p_item].point_index), true, p_value);
 	} else if ("offset" == p_what) {
 		PinnedPoint *w = pinned_points.ptrw();
 		w[p_item].offset = p_value;
@@ -670,6 +669,11 @@ void SoftBody3D::pin_point(int p_point_index, bool pin, const NodePath &p_spatia
 	}
 }
 
+void SoftBody3D::_pin_point_deferred(int p_point_index, bool pin, const NodePath p_spatial_attachment_path) {
+	pin_point(p_point_index, pin, p_spatial_attachment_path);
+	_make_cache_dirty();
+}
+
 bool SoftBody3D::is_point_pinned(int p_point_index) const {
 	return -1 != _has_pinned_point(p_point_index);
 }
@@ -741,7 +745,11 @@ void SoftBody3D::_add_pinned_point(int p_point_index, const NodePath &p_spatial_
 		pinned_point->spatial_attachment_path = p_spatial_attachment_path;
 
 		if (!p_spatial_attachment_path.is_empty() && has_node(p_spatial_attachment_path)) {
-			pinned_point->spatial_attachment = Object::cast_to<Node3D>(get_node(p_spatial_attachment_path));
+			Node3D *attachment_node = Object::cast_to<Node3D>(get_node(p_spatial_attachment_path));
+
+			ERR_FAIL_NULL_MSG(attachment_node, "Attachment node path is invalid.");
+
+			pinned_point->spatial_attachment = attachment_node;
 			pinned_point->offset = (pinned_point->spatial_attachment->get_global_transform().affine_inverse() * get_global_transform()).xform(PhysicsServer3D::get_singleton()->soft_body_get_point_global_position(physics_rid, pinned_point->point_index));
 		}
 	}

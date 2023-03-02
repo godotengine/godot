@@ -7,7 +7,6 @@ env_text_server_adv = env_modules.Clone()
 
 
 def make_icu_data(target, source, env):
-
     dst = target[0].srcnode().abspath
 
     g = open(dst, "w", encoding="utf-8")
@@ -126,7 +125,7 @@ if env["builtin_harfbuzz"]:
     env_harfbuzz.Prepend(CPPPATH=["#thirdparty/harfbuzz/src"])
 
     env_harfbuzz.Append(CCFLAGS=["-DHAVE_ICU"])
-    if env["builtin_icu"]:
+    if env["builtin_icu4c"]:
         env_harfbuzz.Prepend(CPPPATH=["#thirdparty/icu4c/common/", "#thirdparty/icu4c/i18n/"])
         env_harfbuzz.Append(CCFLAGS=["-DU_HAVE_LIB_SUFFIX=1", "-DU_LIB_SUFFIX_C_NAME=_godot", "-DHAVE_ICU_BUILTIN"])
 
@@ -240,7 +239,7 @@ if env["builtin_graphite"] and freetype_enabled and env["graphite"]:
         env.Append(LIBS=[lib])
 
 
-if env["builtin_icu"]:
+if env["builtin_icu4c"]:
     env_icu = env_modules.Clone()
     env_icu.disable_warnings()
 

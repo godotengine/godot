@@ -222,7 +222,6 @@ void Label::_shape() {
 			}
 		}
 		lines_dirty = false;
-		lines_shaped_last_width = get_size().width;
 	}
 
 	_update_visible();
@@ -343,6 +342,18 @@ void Label::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			if (clip) {
 				RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), true);
+			}
+
+			// When a shaped text is invalidated by an external source, we want to reshape it.
+			if (!TS->shaped_text_is_ready(text_rid)) {
+				dirty = true;
+			}
+
+			for (const RID &line_rid : lines_rid) {
+				if (!TS->shaped_text_is_ready(line_rid)) {
+					lines_dirty = true;
+					break;
+				}
 			}
 
 			if (dirty || font_dirty || lines_dirty) {
@@ -597,13 +608,7 @@ void Label::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_RESIZED: {
-			// It may happen that the reshaping due to this size change triggers a cascade of re-layout
-			// across the hierarchy where this label belongs to in a way that its size changes multiple
-			// times, but ending up with the original size it was already shaped for.
-			// This check prevents the catastrophic, freezing infinite cascade of re-layout.
-			if (lines_shaped_last_width != get_size().width) {
-				lines_dirty = true;
-			}
+			lines_dirty = true;
 		} break;
 	}
 }
