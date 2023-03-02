@@ -932,7 +932,7 @@ See the [release announcement](https://godotengine.org/article/godot-3-4-is-rele
 - Fix and clean disabled shapes handling in Godot physics servers ([GH-49845](https://github.com/godotengine/godot/pull/49845)).
 - Fix `KinematicBody` axis lock ([GH-45176](https://github.com/godotengine/godot/pull/45176)).
 - Don't override `KinematicCollision` reference when still in use in script ([GH-52955](https://github.com/godotengine/godot/pull/52955)).
-- Fix ragdoll simulation when parent was readded to scene ([GH-48823](https://github.com/godotengine/godot/pull/48823)).
+- Fix ragdoll simulation when parent was re-added to scene ([GH-48823](https://github.com/godotengine/godot/pull/48823)).
 - Ignore disabled shapes for mass property calculations ([GH-49699](https://github.com/godotengine/godot/pull/49699)).
 
 #### Porting

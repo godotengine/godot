@@ -2974,7 +2974,7 @@ ProjectManager::ProjectManager() {
 		ask_update_settings = memnew(ConfirmationDialog);
 		ask_update_settings->set_autowrap(true);
 		ask_update_settings->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_confirm_update_settings));
-		full_convert_button = ask_update_settings->add_button("Convert Full Project", !GLOBAL_GET("gui/common/swap_cancel_ok"));
+		full_convert_button = ask_update_settings->add_button(TTR("Convert Full Project"), !GLOBAL_GET("gui/common/swap_cancel_ok"));
 		full_convert_button->connect("pressed", callable_mp(this, &ProjectManager::_full_convert_button_pressed));
 		add_child(ask_update_settings);
 
