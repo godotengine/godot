@@ -2206,6 +2206,9 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 		}
 
 		RS::PrimitiveType primitive = surf->primitive;
+		if (shader->uses_point_size) {
+			primitive = RS::PRIMITIVE_POINTS;
+		}
 		static const GLenum prim[5] = { GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP };
 		GLenum primitive_gl = prim[int(primitive)];
 
