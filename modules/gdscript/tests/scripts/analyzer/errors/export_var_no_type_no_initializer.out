@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Cannot use annotation "@export_multiline" with variable without a specified type or initializer.

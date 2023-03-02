@@ -3719,6 +3719,11 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 
 	variable->exported = true;
 
+	if (variable->datatype_specifier == nullptr && variable->initializer == nullptr) {
+		push_error(vformat(R"(Cannot use annotation "%s" with variable without a specified type or initializer.)", p_annotation->name), p_annotation);
+		return false;
+	}
+
 	variable->export_info.type = t_type;
 	variable->export_info.hint = t_hint;
 
@@ -3809,11 +3814,6 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 	}
 
 	if (p_annotation->name == SNAME("@export")) {
-		if (variable->datatype_specifier == nullptr && variable->initializer == nullptr) {
-			push_error(R"(Cannot use simple "@export" annotation with variable without type or initializer, since type can't be inferred.)", p_annotation);
-			return false;
-		}
-
 		bool is_array = false;
 
 		if (export_type.builtin_type == Variant::ARRAY && export_type.has_container_element_type()) {

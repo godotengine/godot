@@ -1,5 +1,4 @@
 GDTEST_OK
-untyped 2 Red,Green,Blue
 weak_int 2 Red,Green,Blue
 weak_string 4 Red,Green,Blue
 hard_int 2 Red,Green,Blue

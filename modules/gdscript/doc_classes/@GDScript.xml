@@ -352,9 +352,9 @@
 				Export a floating-point property with an easing editor widget. Additional hints can be provided to adjust the behavior of the widget. [code]"attenuation"[/code] flips the curve, which makes it more intuitive for editing attenuation properties. [code]"positive_only"[/code] limits values to only be greater than or equal to zero.
 				See also [constant PROPERTY_HINT_EXP_EASING].
 				[codeblock]
-				@export_exp_easing var transition_speed
-				@export_exp_easing("attenuation") var fading_attenuation
-				@export_exp_easing("positive_only") var effect_power
+				@export_exp_easing var transition_speed: float
+				@export_exp_easing("attenuation") var fading_attenuation: float
+				@export_exp_easing("positive_only") var effect_power: float
 				[/codeblock]
 			</description>
 		</annotation>
@@ -392,7 +392,7 @@
 				[b]Note:[/b] A flag value must be at least [code]1[/code] and at most [code]2 ** 32 - 1[/code].
 				[b]Note:[/b] Unlike [annotation @export_enum], the previous explicit value is not taken into account. In the following example, A is 16, B is 2, C is 4.
 				[codeblock]
-				@export_flags("A:16", "B", "C") var x
+				@export_flags("A:16", "B", "C") var x = 0
 				[/codeblock]
 			</description>
 		</annotation>
@@ -508,7 +508,7 @@
 				Export a [String] property with a large [TextEdit] widget instead of a [LineEdit]. This adds support for multiline content and makes it easier to edit large amount of text stored in the property.
 				See also [constant PROPERTY_HINT_MULTILINE_TEXT].
 				[codeblock]
-				@export_multiline var character_biography
+				@export_multiline var character_biography = ""
 				[/codeblock]
 			</description>
 		</annotation>
@@ -519,7 +519,7 @@
 				Export a [NodePath] property with a filter for allowed node types.
 				See also [constant PROPERTY_HINT_NODE_PATH_VALID_TYPES].
 				[codeblock]
-				@export_node_path("Button", "TouchScreenButton") var some_button
+				@export_node_path("Button", "TouchScreenButton") var some_button: NodePath
 				[/codeblock]
 			</description>
 		</annotation>
@@ -546,16 +546,16 @@
 				Hints also allow to indicate the units for the edited value. Using [code]"radians"[/code] you can specify that the actual value is in radians, but should be displayed in degrees in the Inspector dock. [code]"degrees"[/code] allows to add a degree sign as a unit suffix. Finally, a custom suffix can be provided using [code]"suffix:unit"[/code], where "unit" can be any string.
 				See also [constant PROPERTY_HINT_RANGE].
 				[codeblock]
-				@export_range(0, 20) var number
-				@export_range(-10, 20) var number
+				@export_range(0, 20) var number = 0
+				@export_range(-10, 20) var number: int
 				@export_range(-10, 20, 0.2) var number: float
 
-				@export_range(0, 100, 1, "or_greater") var power_percent
-				@export_range(0, 100, 1, "or_greater", "or_less") var health_delta
+				@export_range(0, 100, 1, "or_greater") var power_percent = 0
+				@export_range(0, 100, 1, "or_greater", "or_less") var health_delta = 0
 
-				@export_range(-3.14, 3.14, 0.001, "radians") var angle_radians
-				@export_range(0, 360, 1, "degrees") var angle_degrees
-				@export_range(-8, 8, 2, "suffix:px") var target_offset
+				@export_range(-3.14, 3.14, 0.001, "radians") var angle_radians = 0.0
+				@export_range(0, 360, 1, "degrees") var angle_degrees = 0.0
+				@export_range(-8, 8, 2, "suffix:px") var target_offset = 0
 				[/codeblock]
 			</description>
 		</annotation>
