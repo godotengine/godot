@@ -145,7 +145,10 @@ void TilesEditorPlugin::_tile_map_changed() {
 
 void TilesEditorPlugin::_update_editors() {
 	// If tile_map is not edited, we change the edited only if we are not editing a tile_set.
-	tileset_editor->edit(tile_set);
+	if (tile_set.is_valid()) {
+		tileset_editor->edit(tile_set);
+	}
+
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (tile_map) {
 		tilemap_editor->edit(tile_map);
@@ -158,6 +161,7 @@ void TilesEditorPlugin::_update_editors() {
 
 	// Make sure the tile set editor is visible if we have one assigned.
 	tileset_editor_button->set_visible(is_visible && tile_set.is_valid());
+	tilemap_editor_button->set_visible(is_visible && tile_map);
 
 	// Update visibility of bottom panel buttons.
 	if (tileset_editor_button->is_pressed() && !tile_set.is_valid()) {
