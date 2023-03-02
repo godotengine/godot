@@ -310,12 +310,6 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 			thread_load_mutex->unlock();
 			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "There is no thread loading source resource '" + p_source_resource + "'.");
 		}
-		//must be loading from this thread
-		if (thread_load_tasks[p_source_resource].loader_id != Thread::get_caller_id()) {
-			thread_load_mutex->unlock();
-			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Threading loading resource'" + local_path + " failed: Source specified: '" + p_source_resource + "' but was not called by it.");
-		}
-
 		//must not be already added as s sub tasks
 		if (thread_load_tasks[p_source_resource].sub_tasks.has(local_path)) {
 			thread_load_mutex->unlock();
