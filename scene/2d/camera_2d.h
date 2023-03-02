@@ -67,7 +67,7 @@ protected:
 	bool ignore_rotation = true;
 	bool enabled = true;
 	real_t position_smoothing_speed = 5.0;
-	bool follow_smoothing_enabled = false;
+	bool position_smoothing_enabled = false;
 
 	real_t camera_angle = 0.0;
 	real_t rotation_smoothing_speed = 5.0;
