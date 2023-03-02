@@ -228,9 +228,8 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array) {
 	var.deserialize(p_array);
 	String n = var.name;
 	Variant v = var.value;
-
-	PropertyHint h = PROPERTY_HINT_NONE;
-	String hs;
+	PropertyHint h = var.hint;
+	String hs = var.hint_string;
 
 	if (v.get_type() == Variant::OBJECT) {
 		v = Object::cast_to<EncodedObjectAsID>(v)->get_object_id();
