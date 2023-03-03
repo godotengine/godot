@@ -86,6 +86,9 @@ class ProjectConverter3To4 {
 	void rename_gdscript_keywords(Vector<String> &lines, const RegExContainer &reg_container);
 	Vector<String> check_for_rename_gdscript_keywords(Vector<String> &lines, const RegExContainer &reg_container);
 
+	void rename_input_map_scancode(Vector<String> &lines, const RegExContainer &reg_container);
+	Vector<String> check_for_rename_input_map_scancode(Vector<String> &lines, const RegExContainer &reg_container);
+
 	void custom_rename(Vector<String> &lines, String from, String to);
 	Vector<String> check_for_custom_rename(Vector<String> &lines, String from, String to);
 
