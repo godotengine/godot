@@ -1,4 +1,4 @@
-var Value:int = 8 :
+var Value:int = 8:
 	get:
 		return Value
 	set(v):
