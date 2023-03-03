@@ -496,6 +496,7 @@ private:
 		int font_size = 0;
 		int tb_font_size = 0;
 
+		Ref<StyleBox> item;
 		Ref<StyleBox> selected;
 		Ref<StyleBox> selected_focus;
 		Ref<StyleBox> cursor;

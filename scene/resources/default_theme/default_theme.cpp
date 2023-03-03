@@ -727,6 +727,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("panel", "Tree", make_flat_stylebox(style_normal_color, 4, 4, 4, 5));
 	theme->set_stylebox("focus", "Tree", focus);
+	theme->set_stylebox("item", "Tree", make_empty_stylebox(-1, -1, -1, -1));
 	theme->set_stylebox("selected", "Tree", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("selected_focus", "Tree", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("cursor", "Tree", focus);
