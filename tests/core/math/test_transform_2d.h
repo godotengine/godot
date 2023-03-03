@@ -45,6 +45,117 @@ Transform2D identity() {
 	return Transform2D();
 }
 
+TEST_CASE("[Transform2D] Default constructor") {
+	Transform2D default_constructor = Transform2D();
+	CHECK(default_constructor == Transform2D(Vector2(1, 0), Vector2(0, 1), Vector2(0, 0)));
+}
+
+TEST_CASE("[Transform2D] Copy constructor") {
+	Transform2D T = create_dummy_transform();
+	Transform2D copy_constructor = Transform2D(T);
+	CHECK(T == copy_constructor);
+}
+
+TEST_CASE("[Transform2D] Constructor from angle and position") {
+	const float ROTATATION = Math_PI / 4;
+	const Vector2 TRANSLATION = Vector2(20, -20);
+
+	Transform2D test = Transform2D(ROTATATION, TRANSLATION);
+	Transform2D expected = Transform2D().rotated(ROTATATION).translated(TRANSLATION);
+	CHECK(test == expected);
+}
+
+TEST_CASE("[transform2d] Constructor from angle, scale, skew and position") {
+	const float ROTATATION = Math_PI / 2;
+	const Vector2 SCALE = Vector2(2, 0.5);
+	const float SKEW = Math_PI / 4;
+	const Vector2 TRANSLATION = Vector2(30, 0);
+
+	Transform2D test = Transform2D(ROTATATION, SCALE, SKEW, TRANSLATION);
+	Transform2D expected = Transform2D().scaled(SCALE).rotated(ROTATATION).translated(TRANSLATION);
+	expected.set_skew(SKEW);
+
+	CHECK(test.is_equal_approx(expected));
+}
+
+TEST_CASE("[Transform2D] Constructor from raw values") {
+	Transform2D test = Transform2D(1, 2, 3, 4, 5, 6);
+	Transform2D expected = Transform2D(Vector2(1, 2), Vector2(3, 4), Vector2(5, 6));
+	CHECK(test == expected);
+}
+
+TEST_CASE("[Transform2D] xform") {
+	Vector2 v = Vector2(2, 3);
+	Transform2D T = Transform2D(Vector2(1, 2), Vector2(3, 4), Vector2(5, 6));
+	Vector2 expected = Vector2(1 * 2 + 3 * 3 + 5 * 1, 2 * 2 + 4 * 3 + 6 * 1);
+	CHECK(T.xform(v) == expected);
+}
+
+TEST_CASE("[Transform2D] Basis xform") {
+	Vector2 v = Vector2(2,2);
+	Transform2D T1 = Transform2D(Vector2(1, 2), Vector2(3, 4), Vector2(0, 0));
+
+	// Both versions should be the same when the origin is (0,0)
+	CHECK(T1.basis_xform(v) == T1.xform(v));
+
+	Transform2D T2 = Transform2D(Vector2(1, 2), Vector2(3, 4), Vector2(5, 6));
+
+	// Each version should be different when the origin is not (0,0)
+	CHECK_FALSE(T2.basis_xform(v) == T2.xform(v));
+}
+
+TEST_CASE("[Transform2D] Affine inverse") {
+	Transform2D orig = create_dummy_transform();
+	Transform2D affine_inverted = orig.affine_inverse();
+	Transform2D affine_inverted_again = affine_inverted.affine_inverse();
+	CHECK(affine_inverted_again == orig);
+}
+
+TEST_CASE("[Transform2D] Looking at") {
+	Transform2D T = Transform2D(Vector2(1, 2), Vector2(3, 4), Vector2(5, 6));
+
+	Vector2 target = Vector2(0, 0);
+	Transform2D T_looking_target = T.looking_at(target);
+	// check that the inverse maps target to the x-axis
+	CHECK(Math::is_equal_approx(T_looking_target.affine_inverse().xform(target).y, 0));
+
+	target = Vector2(1, 0);
+	T_looking_target = T.looking_at(target);
+	CHECK(Math::is_equal_approx(T_looking_target.affine_inverse().xform(target).y, 0));
+
+	target = Vector2(0, 1);
+	T_looking_target = T.looking_at(target);
+	CHECK(Math::is_equal_approx(T_looking_target.affine_inverse().xform(target).y, 0));
+
+	target = Vector2(3, 9);
+	T_looking_target = T.looking_at(target);
+	CHECK(Math::is_equal_approx(T_looking_target.affine_inverse().xform(target).y, 0));
+
+	// check scale, skew and origin is preserved
+	CHECK(T_looking_target.get_scale().is_equal_approx(T.get_scale()));
+	CHECK(Math::is_equal_approx(T_looking_target.get_skew(), T.get_skew()));
+	CHECK(T_looking_target.get_origin().is_equal_approx(T.get_origin()));
+}
+
+TEST_CASE("[Transform2D] Orthonormalized") {
+	Transform2D T = create_dummy_transform();
+	Transform2D orthonormalized_T = T.orthonormalized();
+
+	// check each basis has norm 1
+	CHECK(Math::is_equal_approx(orthonormalized_T[0].length_squared(), 1));
+	CHECK(Math::is_equal_approx(orthonormalized_T[1].length_squared(), 1));
+
+	Vector2 vx = Vector2(orthonormalized_T[0].x, orthonormalized_T[1].x);
+	Vector2 vy = Vector2(orthonormalized_T[0].y, orthonormalized_T[1].y);
+
+	// check the basis are orthogonal
+	CHECK(Math::is_equal_approx(orthonormalized_T.tdotx(vx), 1));
+	CHECK(Math::is_equal_approx(orthonormalized_T.tdotx(vy), 0));
+	CHECK(Math::is_equal_approx(orthonormalized_T.tdoty(vx), 0));
+	CHECK(Math::is_equal_approx(orthonormalized_T.tdoty(vy), 1));
+
+}
+
 TEST_CASE("[Transform2D] translation") {
 	Vector2 offset = Vector2(1, 2);
 
