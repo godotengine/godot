@@ -2041,8 +2041,19 @@ void DisplayServerWayland::_wp_tablet_tool_on_frame(void *data, struct zwp_table
 		mm->set_position(td.position);
 		mm->set_global_position(td.position);
 
-		mm->set_tilt(td.tilt);
+		// NOTE: The Godot API expects normalized values and we store them raw,
+		// straight from the compositor, so we have to normalize them here.
+
+		// According to the tablet proto spec, tilt is expressed in degrees relative
+		// to the Z axis of the tablet, so it shouldn't go over 90 degrees, I think.
+		// TODO: Investigate whether the tilt can go over 90 degrees (it shouldn't).
+		mm->set_tilt(td.tilt / 90);
+
+		// The tablet proto spec explicitly says that pressure is defined as a value
+		// between 0 to 65535.
 		mm->set_pressure(td.pressure / (float)65535);
+
+		// FIXME: Tool handling is broken.
 		mm->set_pen_inverted(td.is_eraser);
 
 		mm->set_relative(td.position - old_td.position);
