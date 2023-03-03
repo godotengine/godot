@@ -1075,7 +1075,8 @@ TextureRegionEditor::TextureRegionEditor() {
 
 	preview_tex = Ref<CanvasTexture>(memnew(CanvasTexture));
 
-	snap_step = Vector2(10, 10);
+	// A power-of-two value works better as a default grid size.
+	snap_step = Vector2(8, 8);
 	snap_separation = Vector2(0, 0);
 	snap_mode = SNAP_NONE;
 	edited_margin = -1;
