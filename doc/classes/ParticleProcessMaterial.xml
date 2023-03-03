@@ -285,11 +285,11 @@
 			Enables and disables Turbulence for the particle system.
 		</member>
 		<member name="turbulence_influence_max" type="float" setter="set_param_max" getter="get_param_max" default="0.1">
-			Minimum turbulence influence on each particle.
-			 The actual amount of turbulence influence on each particle is calculated as a random value between [member turbulence_influence_min] and [member turbulence_influence_max] and multiplied by the amount of turbulence influence from [member turbulence_influence_over_life].
+			Maximum turbulence influence on each particle.
+			The actual amount of turbulence influence on each particle is calculated as a random value between [member turbulence_influence_min] and [member turbulence_influence_max] and multiplied by the amount of turbulence influence from [member turbulence_influence_over_life].
 		</member>
 		<member name="turbulence_influence_min" type="float" setter="set_param_min" getter="get_param_min" default="0.1">
-			Maximum turbulence influence on each particle.
+			Minimum turbulence influence on each particle.
 			The actual amount of turbulence influence on each particle is calculated as a random value between [member turbulence_influence_min] and [member turbulence_influence_max] and multiplied by the amount of turbulence influence from [member turbulence_influence_over_life].
 		</member>
 		<member name="turbulence_influence_over_life" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
