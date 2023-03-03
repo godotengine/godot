@@ -486,13 +486,21 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 			print_lt("GET: load count: " + itos(thread_loading_count) + " / wait count: " + itos(thread_waiting_count) + " / suspended count: " + itos(thread_suspended_count) + " / active: " + itos(thread_loading_count - thread_suspended_count));
 		}
 
+		bool still_valid = true;
+		bool was_thread = load_task.thread;
 		do {
 			load_task.cond_var->wait(thread_load_lock);
+			if (!thread_load_tasks.has(local_path)) { //may have been erased during unlock and this was always an invalid call
+				still_valid = false;
+				break;
+			}
 		} while (load_task.cond_var); // In case of spurious wakeup.
 
-		thread_suspended_count--;
+		if (was_thread) {
+			thread_suspended_count--;
+		}
 
-		if (!thread_load_tasks.has(local_path)) { //may have been erased during unlock and this was always an invalid call
+		if (!still_valid) {
 			if (r_error) {
 				*r_error = ERR_INVALID_PARAMETER;
 			}
