@@ -22,10 +22,17 @@ namespace Godot.SourceGenerators
 
             // NOTE: NotNullWhen diagnostics don't work on projects targeting .NET Standard 2.0
             // ReSharper disable once ReplaceWithStringIsNullOrEmpty
-            if (!context.TryGetGlobalAnalyzerProperty("GodotProjectDir", out string? godotProjectDir)
-                || godotProjectDir!.Length == 0)
+            if (!context.TryGetGlobalAnalyzerProperty("GodotProjectDirBase64", out string? godotProjectDir) || godotProjectDir!.Length == 0)
             {
-                throw new InvalidOperationException("Property 'GodotProjectDir' is null or empty.");
+                if (!context.TryGetGlobalAnalyzerProperty("GodotProjectDir", out godotProjectDir) || godotProjectDir!.Length == 0)
+                {
+                    throw new InvalidOperationException("Property 'GodotProjectDir' is null or empty.");
+                }
+            }
+            else
+            {
+                // Workaround for https://github.com/dotnet/roslyn/issues/51692
+                godotProjectDir = Encoding.UTF8.GetString(Convert.FromBase64String(godotProjectDir));
             }
 
             Dictionary<INamedTypeSymbol, IEnumerable<ClassDeclarationSyntax>> godotClasses = context
