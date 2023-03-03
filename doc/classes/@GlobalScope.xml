@@ -2773,6 +2773,7 @@
 			The property is shown in the [EditorInspector] (default).
 		</constant>
 		<constant name="PROPERTY_USAGE_INTERNAL" value="8" enum="PropertyUsageFlags" is_bitfield="true">
+			The property is excluded from the class reference.
 		</constant>
 		<constant name="PROPERTY_USAGE_CHECKABLE" value="16" enum="PropertyUsageFlags" is_bitfield="true">
 			The property can be checked in the [EditorInspector].
