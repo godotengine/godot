@@ -38,10 +38,15 @@
 
 #include <stdlib.h>
 
-#include <GL/glcorearb.h>
-
+#ifdef GLAD_ENABLED
+#include "thirdparty/glad/glad/egl.h"
+#include "thirdparty/glad/glad/gl.h"
+#else
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
+
+#include <GL/glcorearb.h>
+#endif // GLAD_ENABLED
 
 #include <cstring>
 
