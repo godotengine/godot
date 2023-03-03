@@ -27,6 +27,13 @@ Patches in the `patches` directory should be re-applied after updates.
 - License: fontconfig
 
 
+## libdecor
+
+- Upstream: https://gitlab.freedesktop.org/libdecor/libdecor/
+- Version: 0.1.1
+- License: MIT
+
+
 ## pulse
 
 - Upstream: http://pulseaudio.org/
