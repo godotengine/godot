@@ -768,7 +768,7 @@ Error EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pre
 
 			String certificate_file = p_preset->get("codesign/certificate_file");
 			String certificate_pass = p_preset->get("codesign/certificate_password");
-			if (!certificate_file.is_empty() && !certificate_file.is_empty()) {
+			if (!certificate_file.is_empty() && !certificate_pass.is_empty()) {
 				args.push_back("--p12-file");
 				args.push_back(certificate_file);
 				args.push_back("--p12-password");
