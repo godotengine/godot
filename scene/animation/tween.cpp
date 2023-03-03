@@ -489,6 +489,11 @@ Tween::Tween(bool p_valid) {
 }
 
 Ref<PropertyTweener> PropertyTweener::from(Variant p_value) {
+	ERR_FAIL_COND_V(tween.is_null(), nullptr);
+	if (!tween->_validate_type_match(p_value, final_val)) {
+		return nullptr;
+	}
+
 	initial_val = p_value;
 	do_continue = false;
 	return this;
