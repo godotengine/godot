@@ -32,6 +32,8 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 
+#include "godot_tracy/profiler.h"
+
 void VisualServerWrapMT::thread_exit() {
 	exit.set();
 }
@@ -83,6 +85,7 @@ void VisualServerWrapMT::sync() {
 }
 
 void VisualServerWrapMT::draw(bool p_swap_buffers, double frame_step) {
+	ZoneScopedN("VisualServerWrapMT::draw");
 	if (create_thread) {
 		draw_pending.increment();
 		command_queue.push(this, &VisualServerWrapMT::thread_draw, p_swap_buffers, frame_step);

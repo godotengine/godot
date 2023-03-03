@@ -35,6 +35,8 @@
 #include "visual_server_globals.h"
 #include "visual_server_scene.h"
 
+#include "godot_tracy/profiler.h"
+
 static Transform2D _canvas_get_transform(VisualServerViewport::Viewport *p_viewport, VisualServerCanvas::Canvas *p_canvas, VisualServerViewport::Viewport::CanvasData *p_canvas_data, const Vector2 &p_vp_size) {
 	Transform2D xf = p_viewport->global_transform;
 
@@ -254,6 +256,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 }
 
 void VisualServerViewport::draw_viewports() {
+	ZoneScopedN("VisualServerViewport::draw_viewports");
 	// get our arvr interface in case we need it
 	Ref<ARVRInterface> arvr_interface;
 

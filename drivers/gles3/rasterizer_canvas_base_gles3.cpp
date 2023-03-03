@@ -40,6 +40,8 @@
 #define glClearDepth glClearDepthf
 #endif
 
+#include "godot_tracy/profiler.h"
+
 static _FORCE_INLINE_ void store_transform2d(const Transform2D &p_mtx, float *p_array) {
 	p_array[0] = p_mtx.elements[0][0];
 	p_array[1] = p_mtx.elements[0][1];
@@ -1032,6 +1034,7 @@ void RasterizerCanvasBaseGLES3::draw_lens_distortion_rect(const Rect2 &p_rect, f
 }
 
 void RasterizerCanvasBaseGLES3::draw_window_margins(int *black_margin, RID *black_image) {
+	ZoneScopedN("RasterizerCanvasBaseGLES3::draw_window_margins");
 	Vector2 window_size = OS::get_singleton()->get_window_size();
 	int window_h = window_size.height;
 	int window_w = window_size.width;

@@ -37,6 +37,8 @@
 #include "core/os/os.h"
 #endif
 
+#include "godot_tracy/profiler.h"
+
 _FORCE_INLINE_ bool _should_call_local(MultiplayerAPI::RPCMode mode, bool is_master, bool &r_skip_rpc) {
 	switch (mode) {
 		case MultiplayerAPI::RPC_MODE_DISABLED: {
@@ -172,6 +174,8 @@ Ref<NetworkedMultiplayerPeer> MultiplayerAPI::get_network_peer() const {
 }
 
 void MultiplayerAPI::_process_packet(int p_from, const uint8_t *p_packet, int p_packet_len) {
+	ZoneScopedN("MultiplayerAPI::_process_packet");
+	ZoneColor(Color(1, 1, 0).to_rgba32());
 	ERR_FAIL_COND_MSG(root_node == nullptr, "Multiplayer root node was not initialized. If you are using custom multiplayer, remember to set the root node via MultiplayerAPI.set_root_node before using it.");
 	ERR_FAIL_COND_MSG(p_packet_len < 1, "Invalid packet received. Size too small.");
 
@@ -270,6 +274,8 @@ Node *MultiplayerAPI::_process_get_node(int p_from, const uint8_t *p_packet, int
 }
 
 void MultiplayerAPI::_process_rpc(Node *p_node, const StringName &p_name, int p_from, const uint8_t *p_packet, int p_packet_len, int p_offset) {
+	ZoneScopedN("MultiplayerAPI::_process_rpc");
+	ZoneColor(Color(1, 1, 0).to_rgba32());
 	ERR_FAIL_COND_MSG(p_offset >= p_packet_len, "Invalid packet received. Size too small.");
 
 	// Check that remote can call the RPC on this node.
@@ -459,6 +465,8 @@ bool MultiplayerAPI::_send_confirm_path(NodePath p_path, PathSentCache *psc, int
 }
 
 void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p_set, const StringName &p_name, const Variant **p_arg, int p_argcount) {
+	ZoneScopedN("MultiplayerAPI::_send_rpc");
+	ZoneColor(Color(1, 1, 0).to_rgba32());
 	ERR_FAIL_COND_MSG(network_peer.is_null(), "Attempt to remote call/set when networking is not active in SceneTree.");
 
 	ERR_FAIL_COND_MSG(network_peer->get_connection_status() == NetworkedMultiplayerPeer::CONNECTION_CONNECTING, "Attempt to remote call/set when networking is not connected yet in SceneTree.");
@@ -524,6 +532,8 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 		packet_cache.write[ofs] = p_argcount;
 		ofs += 1;
 		for (int i = 0; i < p_argcount; i++) {
+			ZoneScopedN("MultiplayerAPI::_send_rpc::encode_variant");
+			ZoneColor(Color(1, 1, 0).to_rgba32());
 			Error err = encode_variant(*p_arg[i], nullptr, len, allow_object_decoding || network_peer->is_object_decoding_allowed());
 			ERR_FAIL_COND_MSG(err != OK, "Unable to encode RPC argument. THIS IS LIKELY A BUG IN THE ENGINE!");
 			MAKE_ROOM(ofs + len);
@@ -620,6 +630,8 @@ void MultiplayerAPI::_server_disconnected() {
 }
 
 void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount) {
+	ZoneScopedN("MultiplayerAPI::rpcp");
+	ZoneColor(Color(1, 1, 0).to_rgba32());
 	ERR_FAIL_COND_MSG(!network_peer.is_valid(), "Trying to call an RPC while no network peer is active.");
 	ERR_FAIL_COND_MSG(!p_node->is_inside_tree(), "Trying to call an RPC on a node which is not inside SceneTree.");
 	ERR_FAIL_COND_MSG(network_peer->get_connection_status() != NetworkedMultiplayerPeer::CONNECTION_CONNECTED, "Trying to call an RPC via a network peer which is not connected.");
@@ -762,6 +774,8 @@ void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const
 }
 
 Error MultiplayerAPI::send_bytes(PoolVector<uint8_t> p_data, int p_to, NetworkedMultiplayerPeer::TransferMode p_mode) {
+	ZoneScopedN("MultiplayerAPI::send_bytes");
+	ZoneColor(Color(1, 1, 0).to_rgba32());
 	ERR_FAIL_COND_V_MSG(p_data.size() < 1, ERR_INVALID_DATA, "Trying to send an empty raw packet.");
 	ERR_FAIL_COND_V_MSG(!network_peer.is_valid(), ERR_UNCONFIGURED, "Trying to send a raw packet while no network peer is active.");
 	ERR_FAIL_COND_V_MSG(network_peer->get_connection_status() != NetworkedMultiplayerPeer::CONNECTION_CONNECTED, ERR_UNCONFIGURED, "Trying to send a raw packet via a network peer which is not connected.");
@@ -778,6 +792,8 @@ Error MultiplayerAPI::send_bytes(PoolVector<uint8_t> p_data, int p_to, Networked
 }
 
 void MultiplayerAPI::_process_raw(int p_from, const uint8_t *p_packet, int p_packet_len) {
+	ZoneScopedN("MultiplayerAPI::_process_raw");
+	ZoneColor(Color(1, 1, 0).to_rgba32());
 	ERR_FAIL_COND_MSG(p_packet_len < 2, "Invalid packet received. Size too small.");
 
 	PoolVector<uint8_t> out;

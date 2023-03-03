@@ -2329,6 +2329,7 @@ bool Main::iteration() {
 	OS::get_singleton()->get_main_loop()->poll_net();
 
 	if (OS::get_singleton()->can_draw() && VisualServer::get_singleton()->is_render_loop_enabled()) {
+		ZoneScopedN("Main::iteration::VisualServer");
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
 			// We can choose whether to redraw as a result of any redraw request, or redraw only for vital requests.
 			VisualServer::ChangedPriority priority = (OS::get_singleton()->is_update_pending() ? VisualServer::CHANGED_PRIORITY_ANY : VisualServer::CHANGED_PRIORITY_HIGH);

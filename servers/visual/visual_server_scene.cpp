@@ -37,6 +37,8 @@
 
 #include <new>
 
+#include "godot_tracy/profiler.h"
+
 /* CAMERA API */
 
 Transform VisualServerScene::Camera::get_transform_interpolated() const {
@@ -2010,6 +2012,7 @@ void VisualServerScene::instance_geometry_set_as_instance_lod(RID p_instance, RI
 }
 
 void VisualServerScene::_update_instance(Instance *p_instance) {
+	ZoneScopedN("VisualServerScene::_update_instance");
 	p_instance->version++;
 
 	// when not using interpolation the transform is used straight
@@ -4239,6 +4242,7 @@ bool VisualServerScene::_check_gi_probe(Instance *p_gi_probe) {
 }
 
 void VisualServerScene::render_probes() {
+	ZoneScopedN("VisualServerScene::render_probes");
 	/* REFLECTION PROBES */
 
 	SelfList<InstanceReflectionProbeData> *ref_probe = reflection_probe_render_list.first();
@@ -4348,6 +4352,7 @@ void VisualServerScene::render_probes() {
 }
 
 void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
+	ZoneScopedN("VisualServerScene::_update_dirty_instance");
 	if (p_instance->update_aabb) {
 		_update_instance_aabb(p_instance);
 	}
@@ -4509,6 +4514,7 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 }
 
 void VisualServerScene::update_dirty_instances() {
+	ZoneScopedN("VisualServerScene::update_dirty_instances");
 	VSG::storage->update_dirty_resources();
 
 	// this is just to get access to scenario so we can update the spatial partitioning scheme
