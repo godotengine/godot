@@ -285,7 +285,7 @@
 				@export var string = ""
 				@export var int_number = 5
 				@export var float_number: float = 5
-				@export var image : Image
+				@export var image: Image
 				[/codeblock]
 			</description>
 		</annotation>
@@ -309,7 +309,7 @@
 				Export a [Color] property without allowing its transparency ([member Color.a]) to be edited.
 				See also [constant PROPERTY_HINT_COLOR_NO_ALPHA].
 				[codeblock]
-				@export_color_no_alpha var dye_color : Color
+				@export_color_no_alpha var dye_color: Color
 				[/codeblock]
 			</description>
 		</annotation>
