@@ -233,13 +233,13 @@ void Button::_notification(int p_what) {
 			}
 
 			Rect2 icon_region;
-			HorizontalAlignment icon_align_rtl_checked = icon_alignment;
+			HorizontalAlignment icon_align_rtl_checked = horizontal_icon_alignment;
 			HorizontalAlignment align_rtl_checked = alignment;
 			// Swap icon and text alignment sides if right-to-left layout is set.
 			if (rtl) {
-				if (icon_alignment == HORIZONTAL_ALIGNMENT_RIGHT) {
+				if (horizontal_icon_alignment == HORIZONTAL_ALIGNMENT_RIGHT) {
 					icon_align_rtl_checked = HORIZONTAL_ALIGNMENT_LEFT;
-				} else if (icon_alignment == HORIZONTAL_ALIGNMENT_LEFT) {
+				} else if (horizontal_icon_alignment == HORIZONTAL_ALIGNMENT_LEFT) {
 					icon_align_rtl_checked = HORIZONTAL_ALIGNMENT_RIGHT;
 				}
 				if (alignment == HORIZONTAL_ALIGNMENT_RIGHT) {
@@ -250,6 +250,14 @@ void Button::_notification(int p_what) {
 			}
 			if (!_icon.is_null()) {
 				int valign = size.height - style->get_minimum_size().y;
+
+				int voffset = 0;
+				Size2 icon_size = _icon->get_size();
+
+				// Fix vertical size.
+				if (vertical_icon_alignment != VERTICAL_ALIGNMENT_CENTER) {
+					valign -= text_buf->get_size().height;
+				}
 
 				float icon_ofs_region = 0.0;
 				Point2 style_offset;
@@ -268,13 +276,15 @@ void Button::_notification(int p_what) {
 				}
 				style_offset.y = style->get_margin(SIDE_TOP);
 
-				Size2 icon_size = _icon->get_size();
 				if (expand_icon) {
 					Size2 _size = get_size() - style->get_offset() * 2;
 					int icon_text_separation = text.is_empty() ? 0 : theme_cache.h_separation;
 					_size.width -= icon_text_separation + icon_ofs_region;
 					if (!clip_text && icon_align_rtl_checked != HORIZONTAL_ALIGNMENT_CENTER) {
 						_size.width -= text_buf->get_size().width;
+					}
+					if (vertical_icon_alignment != VERTICAL_ALIGNMENT_CENTER) {
+						_size.height -= text_buf->get_size().height;
 					}
 					float icon_width = _icon->get_width() * _size.height / _icon->get_height();
 					float icon_height = _size.height;
@@ -288,12 +298,19 @@ void Button::_notification(int p_what) {
 				}
 				icon_size = _fit_icon_size(icon_size);
 
+				if (vertical_icon_alignment == VERTICAL_ALIGNMENT_TOP) {
+					voffset = -(valign - icon_size.y) / 2;
+				}
+				if (vertical_icon_alignment == VERTICAL_ALIGNMENT_BOTTOM) {
+					voffset = (valign - icon_size.y) / 2 + text_buf->get_size().y;
+				}
+
 				if (icon_align_rtl_checked == HORIZONTAL_ALIGNMENT_LEFT) {
-					icon_region = Rect2(style_offset + Point2(icon_ofs_region, Math::floor((valign - icon_size.y) * 0.5)), icon_size);
+					icon_region = Rect2(style_offset + Point2(icon_ofs_region, voffset + Math::floor((valign - icon_size.y) * 0.5)), icon_size);
 				} else if (icon_align_rtl_checked == HORIZONTAL_ALIGNMENT_CENTER) {
-					icon_region = Rect2(style_offset + Point2(icon_ofs_region + Math::floor((size.x - icon_size.x) * 0.5), Math::floor((valign - icon_size.y) * 0.5)), icon_size);
+					icon_region = Rect2(style_offset + Point2(icon_ofs_region + Math::floor((size.x - icon_size.x) * 0.5), voffset + Math::floor((valign - icon_size.y) * 0.5)), icon_size);
 				} else {
-					icon_region = Rect2(style_offset + Point2(icon_ofs_region + size.x - icon_size.x, Math::floor((valign - icon_size.y) * 0.5)), icon_size);
+					icon_region = Rect2(style_offset + Point2(icon_ofs_region + size.x - icon_size.x, voffset + Math::floor((valign - icon_size.y) * 0.5)), icon_size);
 				}
 
 				if (icon_region.size.width > 0) {
@@ -319,6 +336,13 @@ void Button::_notification(int p_what) {
 			}
 
 			Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - text_buf->get_size() - Point2(_internal_margin[SIDE_RIGHT] - _internal_margin[SIDE_LEFT], 0)) / 2.0;
+
+			if (vertical_icon_alignment == VERTICAL_ALIGNMENT_TOP) {
+				text_ofs.y += icon_region.size.height / 2;
+			}
+			if (vertical_icon_alignment == VERTICAL_ALIGNMENT_BOTTOM) {
+				text_ofs.y -= icon_region.size.height / 2;
+			}
 
 			text_buf->set_alignment(align_rtl_checked);
 			text_buf->set_width(text_width);
@@ -395,9 +419,13 @@ Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Textu
 
 	if (!expand_icon && p_icon.is_valid()) {
 		Size2 icon_size = _fit_icon_size(p_icon->get_size());
-		minsize.height = MAX(minsize.height, icon_size.height);
+		if (vertical_icon_alignment == VERTICAL_ALIGNMENT_CENTER) {
+			minsize.height = MAX(minsize.height, icon_size.height);
+		} else {
+			minsize.height += icon_size.height;
+		}
 
-		if (icon_alignment != HORIZONTAL_ALIGNMENT_CENTER) {
+		if (horizontal_icon_alignment != HORIZONTAL_ALIGNMENT_CENTER) {
 			minsize.width += icon_size.width;
 			if (!xl_text.is_empty() || !p_text.is_empty()) {
 				minsize.width += MAX(0, theme_cache.h_separation);
@@ -410,7 +438,11 @@ Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Textu
 	if (!xl_text.is_empty() || !p_text.is_empty()) {
 		Ref<Font> font = theme_cache.font;
 		float font_height = font->get_height(theme_cache.font_size);
-		minsize.height = MAX(font_height, minsize.height);
+		if (vertical_icon_alignment == VERTICAL_ALIGNMENT_CENTER) {
+			minsize.height = MAX(font_height, minsize.height);
+		} else {
+			minsize.height += font_height;
+		}
 	}
 
 	return theme_cache.normal->get_minimum_size() + minsize;
@@ -556,13 +588,23 @@ HorizontalAlignment Button::get_text_alignment() const {
 }
 
 void Button::set_icon_alignment(HorizontalAlignment p_alignment) {
-	icon_alignment = p_alignment;
+	horizontal_icon_alignment = p_alignment;
+	update_minimum_size();
+	queue_redraw();
+}
+
+void Button::set_vertical_icon_alignment(VerticalAlignment p_alignment) {
+	vertical_icon_alignment = p_alignment;
 	update_minimum_size();
 	queue_redraw();
 }
 
 HorizontalAlignment Button::get_icon_alignment() const {
-	return icon_alignment;
+	return horizontal_icon_alignment;
+}
+
+VerticalAlignment Button::get_vertical_icon_alignment() const {
+	return vertical_icon_alignment;
 }
 
 void Button::_bind_methods() {
@@ -584,6 +626,8 @@ void Button::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text_alignment"), &Button::get_text_alignment);
 	ClassDB::bind_method(D_METHOD("set_icon_alignment", "icon_alignment"), &Button::set_icon_alignment);
 	ClassDB::bind_method(D_METHOD("get_icon_alignment"), &Button::get_icon_alignment);
+	ClassDB::bind_method(D_METHOD("set_vertical_icon_alignment", "vertical_icon_alignment"), &Button::set_vertical_icon_alignment);
+	ClassDB::bind_method(D_METHOD("get_vertical_icon_alignment"), &Button::get_vertical_icon_alignment);
 	ClassDB::bind_method(D_METHOD("set_expand_icon", "enabled"), &Button::set_expand_icon);
 	ClassDB::bind_method(D_METHOD("is_expand_icon"), &Button::is_expand_icon);
 
@@ -598,6 +642,7 @@ void Button::_bind_methods() {
 
 	ADD_GROUP("Icon Behavior", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "icon_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_icon_alignment", "get_icon_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_icon_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom"), "set_vertical_icon_alignment", "get_vertical_icon_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand_icon"), "set_expand_icon", "is_expand_icon");
 
 	ADD_GROUP("BiDi", "");
