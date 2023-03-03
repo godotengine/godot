@@ -1601,6 +1601,7 @@ void Tree::_update_theme_item_cache() {
 	theme_cache.tb_font = get_theme_font(SNAME("title_button_font"));
 	theme_cache.tb_font_size = get_theme_font_size(SNAME("title_button_font_size"));
 
+	theme_cache.item = get_theme_stylebox(SNAME("item"));
 	theme_cache.selected = get_theme_stylebox(SNAME("selected"));
 	theme_cache.selected_focus = get_theme_stylebox(SNAME("selected_focus"));
 	theme_cache.cursor = get_theme_stylebox(SNAME("cursor"));
@@ -1743,9 +1744,22 @@ void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Co
 	Size2 ts = p_cell.text_buf->get_size();
 	bool rtl = is_layout_rtl();
 
-	int w = 0;
+	RID ci = get_canvas_item();
+
+	theme_cache.item->draw(ci, rect);
+
+	int right_side_content_margin = MAX(theme_cache.item->get_content_margin(SIDE_RIGHT), 0);
+	int bottom_side_content_margin = MAX(theme_cache.item->get_content_margin(SIDE_BOTTOM), 0);
+	int left_side_content_margin = MAX(theme_cache.item->get_content_margin(SIDE_LEFT), 0);
+	int top_side_content_margin = MAX(theme_cache.item->get_content_margin(SIDE_TOP), 0);
+
+	rect.set_size(rect.get_size() - Size2i(right_side_content_margin, bottom_side_content_margin));
+	rect.set_position(rect.get_position() + Size2i(left_side_content_margin, top_side_content_margin));
+
+	Size2i bmsize = Size2i();
+	int w = rtl ? right_side_content_margin : left_side_content_margin;
 	if (!p_cell.icon.is_null()) {
-		Size2i bmsize = p_cell.get_icon_size();
+		bmsize = p_cell.get_icon_size();
 		if (p_cell.icon_max_w > 0 && bmsize.width > p_cell.icon_max_w) {
 			bmsize.width = p_cell.icon_max_w;
 		}
@@ -1773,12 +1787,12 @@ void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Co
 			break;
 	}
 
-	RID ci = get_canvas_item();
-
 	if (rtl && rect.size.width > 0) {
 		Point2 draw_pos = rect.position;
 		draw_pos.y += Math::floor((rect.size.y - p_cell.text_buf->get_size().y) / 2.0);
-		p_cell.text_buf->set_width(rect.size.width);
+
+		p_cell.text_buf->set_width(rect.size.width - theme_cache.item->get_content_margin(SIDE_LEFT) - bmsize.x);
+
 		if (p_ol_size > 0 && p_ol_color.a > 0) {
 			p_cell.text_buf->draw_outline(ci, draw_pos, p_ol_size, p_ol_color);
 		}
@@ -1788,11 +1802,8 @@ void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Co
 	}
 
 	if (!p_cell.icon.is_null()) {
-		Size2i bmsize = p_cell.get_icon_size();
-
 		if (p_cell.icon_max_w > 0 && bmsize.width > p_cell.icon_max_w) {
 			bmsize.height = bmsize.height * p_cell.icon_max_w / bmsize.width;
-			bmsize.width = p_cell.icon_max_w;
 		}
 
 		p_cell.draw_icon(ci, rect.position + Size2i(0, Math::floor((real_t)(rect.size.y - bmsize.y) / 2)), bmsize, p_icon_color);
@@ -1803,7 +1814,7 @@ void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Co
 	if (!rtl && rect.size.width > 0) {
 		Point2 draw_pos = rect.position;
 		draw_pos.y += Math::floor((rect.size.y - p_cell.text_buf->get_size().y) / 2.0);
-		p_cell.text_buf->set_width(rect.size.width);
+		p_cell.text_buf->set_width(rect.size.width - theme_cache.item->get_content_margin(SIDE_RIGHT));
 		if (p_ol_size > 0 && p_ol_color.a > 0) {
 			p_cell.text_buf->draw_outline(ci, draw_pos, p_ol_size, p_ol_color);
 		}
@@ -4039,6 +4050,7 @@ void Tree::_notification(int p_what) {
 					if (cache.rtl) {
 						tbrect.position.x = get_size().width - tbrect.size.x - tbrect.position.x;
 					}
+
 					sb->draw(ci, tbrect);
 					ofs2 += tbrect.size.width;
 					//text

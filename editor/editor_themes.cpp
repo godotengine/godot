@@ -1239,6 +1239,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tree_focus->set_border_width_all(0);
 	theme->set_stylebox("selected_focus", "Tree", style_tree_focus);
 
+	Ref<StyleBoxEmpty> style_tree_item = make_empty_stylebox();
+	style_tree_item->set_content_margin_individual(widget_default_margin.x, -1, widget_default_margin.x, -1);
+	theme->set_stylebox("item", "Tree", style_tree_item);
+
 	Ref<StyleBoxFlat> style_tree_selected = style_tree_focus->duplicate();
 	theme->set_stylebox("selected", "Tree", style_tree_selected);
 
