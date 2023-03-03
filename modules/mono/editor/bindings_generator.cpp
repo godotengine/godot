@@ -1483,9 +1483,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		output << MEMBER_BEGIN "public static GodotObject " CS_PROPERTY_SINGLETON "\n" INDENT1 "{\n"
 			   << INDENT2 "get\n" INDENT2 "{\n" INDENT3 "if (singleton == null)\n"
-			   << INDENT4 "singleton = " C_METHOD_ENGINE_GET_SINGLETON "(typeof("
-			   << itype.proxy_name
-			   << ").Name);\n" INDENT3 "return singleton;\n" INDENT2 "}\n" INDENT1 "}\n";
+			   << INDENT4 "singleton = " C_METHOD_ENGINE_GET_SINGLETON "(\""
+			   << itype.name
+			   << "\");\n" INDENT3 "return singleton;\n" INDENT2 "}\n" INDENT1 "}\n";
 
 		output.append(MEMBER_BEGIN "private static readonly StringName " BINDINGS_NATIVE_NAME_FIELD " = \"");
 		output.append(itype.name);
