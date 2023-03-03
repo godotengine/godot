@@ -2078,7 +2078,7 @@ bool TextEdit::handle_gui_key(const Ref<InputEventKey> &p_key) {
 			return true;
 		}
 
-		// Don't know why I have to do this yet.
+		// Don't know why I have to do this part this way but it won't work otherwise.
 		keep_going = false;
 		if(p_key->is_action("ui_text_toggle_insert_mode", true)) set_overtype_mode_enabled(!overtype_mode);
 		else if(p_key->is_action("ui_swap_input_direction", true))    _swap_current_input_direction();
@@ -2124,7 +2124,9 @@ bool TextEdit::handle_gui_key(const Ref<InputEventKey> &p_key) {
 			if(editable) insert_text_at_caret("\t");
 		}
 
+		// Handle Unicode (if no modifiers active).
 		else if(editable && duplicated_key->get_unicode() >= 32) {
+			// allow it only if no modifiers are pressed (except shift)
 			bool allow_unicode_handling = !(duplicated_key->is_command_or_control_pressed() || duplicated_key->is_ctrl_pressed() || duplicated_key->is_alt_pressed() || duplicated_key->is_meta_pressed());
 			if (allow_unicode_handling) handle_unicode_input(duplicated_key->get_unicode());
 			else keep_going = true;
