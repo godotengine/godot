@@ -277,11 +277,10 @@ def configure(env: "Environment"):
         env.Prepend(CPPPATH=["/usr/include/recastnavigation"])
         env.Append(LIBS=["Recast"])
 
-    if not env["builtin_embree"]:
+    if not env["builtin_embree"] and env["arch"] in ["x86_64", "arm64"]:
         # No pkgconfig file so far, hardcode expected lib name.
         env.Append(LIBS=["embree3"])
 
-    ## Flags
     if env["fontconfig"]:
         if not env["use_sowrap"]:
             if os.system("pkg-config --exists fontconfig") == 0:  # 0 means found
