@@ -970,7 +970,7 @@
 		<method name="uri_decode" qualifiers="const">
 			<return type="String" />
 			<description>
-				Decodes the string from its URL-encoded format. This method is meant to properly decode the parameters in a URL when receiving an HTTP request.
+				Decodes the string from its URL-encoded format. This method is meant to properly decode the parameters in a URL when receiving an HTTP request. See also [method uri_encode].
 				[codeblocks]
 				[gdscript]
 				var url = "$DOCS_URL/?highlight=Godot%20Engine%3%docs"
@@ -986,7 +986,7 @@
 		<method name="uri_encode" qualifiers="const">
 			<return type="String" />
 			<description>
-				Encodes the string to URL-friendly format. This method is meant to properly encode the parameters in a URL when sending an HTTP request.
+				Encodes the string to URL-friendly format. This method is meant to properly encode the parameters in a URL when sending an HTTP request. See also [method uri_decode].
 				[codeblocks]
 				[gdscript]
 				var prefix = "$DOCS_URL/?highlight="
