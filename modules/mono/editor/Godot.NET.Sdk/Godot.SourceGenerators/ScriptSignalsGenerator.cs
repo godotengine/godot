@@ -1,8 +1,8 @@
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
 // TODO:
@@ -15,48 +15,55 @@ using Microsoft.CodeAnalysis.Text;
 namespace Godot.SourceGenerators
 {
     [Generator]
-    public class ScriptSignalsGenerator : ISourceGenerator
+    public class ScriptSignalsGenerator : IIncrementalGenerator
     {
-        public void Initialize(GeneratorInitializationContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
+            var areGodotSourceGeneratorsDisabled = context.AnalyzerConfigOptionsProvider.Select(static (provider, _) => provider.AreGodotSourceGeneratorsDisabled());
+
+            var godotClasses = context.SyntaxProvider.CreateValuesProviderForGodotClasses();
+
+            var values = areGodotSourceGeneratorsDisabled
+                .Combine(context.CompilationProvider)
+                .Combine(godotClasses.Collect());
+
+            context.RegisterSourceOutput(values, static (spc, source) =>
+            {
+                (bool areGodotSourceGeneratorsDisabled, Compilation compilation) = source.Left;
+                var godotClasses = source.Right;
+
+                if (areGodotSourceGeneratorsDisabled)
+                    return;
+
+                Execute(spc, compilation, godotClasses);
+            });
         }
 
-        public void Execute(GeneratorExecutionContext context)
+        private static void Execute(SourceProductionContext context, Compilation compilation, ImmutableArray<GodotClassData> godotClassDatas)
         {
-            if (context.AreGodotSourceGeneratorsDisabled())
-                return;
+            INamedTypeSymbol[] godotClasses = godotClassDatas.Where(x =>
+            {
+                // Report and skip non-partial classes
+                if (x.DeclarationSyntax.IsPartial())
+                {
+                    if (x.DeclarationSyntax.IsNested() && !x.DeclarationSyntax.AreAllOuterTypesPartial(out var typeMissingPartial))
+                    {
+                        Common.ReportNonPartialGodotScriptOuterClass(context, compilation, typeMissingPartial);
+                        return false;
+                    }
 
-            INamedTypeSymbol[] godotClasses = context
-                .Compilation.SyntaxTrees
-                .SelectMany(tree =>
-                    tree.GetRoot().DescendantNodes()
-                        .OfType<ClassDeclarationSyntax>()
-                        .SelectGodotScriptClasses(context.Compilation)
-                        // Report and skip non-partial classes
-                        .Where(x =>
-                        {
-                            if (x.cds.IsPartial())
-                            {
-                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out var typeMissingPartial))
-                                {
-                                    Common.ReportNonPartialGodotScriptOuterClass(context, typeMissingPartial!);
-                                    return false;
-                                }
+                    return true;
+                }
 
-                                return true;
-                            }
-
-                            Common.ReportNonPartialGodotScriptClass(context, x.cds, x.symbol);
-                            return false;
-                        })
-                        .Select(x => x.symbol)
-                )
+                Common.ReportNonPartialGodotScriptClass(context, x.DeclarationSyntax, x.Symbol);
+                return false;
+            }).Select(x => x.Symbol)
                 .Distinct<INamedTypeSymbol>(SymbolEqualityComparer.Default)
                 .ToArray();
 
             if (godotClasses.Length > 0)
             {
-                var typeCache = new MarshalUtils.TypeCache(context.Compilation);
+                var typeCache = new MarshalUtils.TypeCache(compilation);
 
                 foreach (var godotClass in godotClasses)
                 {
@@ -68,7 +75,7 @@ namespace Godot.SourceGenerators
         internal static string SignalDelegateSuffix = "EventHandler";
 
         private static void VisitGodotScriptClass(
-            GeneratorExecutionContext context,
+            SourceProductionContext context,
             MarshalUtils.TypeCache typeCache,
             INamedTypeSymbol symbol
         )

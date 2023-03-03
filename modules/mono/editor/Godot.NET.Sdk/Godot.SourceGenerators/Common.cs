@@ -8,7 +8,7 @@ namespace Godot.SourceGenerators
     public static class Common
     {
         public static void ReportNonPartialGodotScriptClass(
-            GeneratorExecutionContext context,
+            SourceProductionContext context,
             ClassDeclarationSyntax cds, INamedTypeSymbol symbol
         )
         {
@@ -32,11 +32,12 @@ namespace Godot.SourceGenerators
         }
 
         public static void ReportNonPartialGodotScriptOuterClass(
-            GeneratorExecutionContext context,
+            SourceProductionContext context,
+            Compilation compilation,
             TypeDeclarationSyntax outerTypeDeclSyntax
         )
         {
-            var outerSymbol = context.Compilation
+            var outerSymbol = compilation
                 .GetSemanticModel(outerTypeDeclSyntax.SyntaxTree)
                 .GetDeclaredSymbol(outerTypeDeclSyntax);
 
@@ -64,7 +65,7 @@ namespace Godot.SourceGenerators
         }
 
         public static void ReportExportedMemberIsStatic(
-            GeneratorExecutionContext context,
+            SourceProductionContext context,
             ISymbol exportedMemberSymbol
         )
         {
@@ -91,7 +92,7 @@ namespace Godot.SourceGenerators
         }
 
         public static void ReportExportedMemberTypeNotSupported(
-            GeneratorExecutionContext context,
+            SourceProductionContext context,
             ISymbol exportedMemberSymbol
         )
         {
@@ -117,7 +118,7 @@ namespace Godot.SourceGenerators
         }
 
         public static void ReportExportedMemberIsReadOnly(
-            GeneratorExecutionContext context,
+            SourceProductionContext context,
             ISymbol exportedMemberSymbol
         )
         {
@@ -145,7 +146,7 @@ namespace Godot.SourceGenerators
         }
 
         public static void ReportExportedMemberIsWriteOnly(
-            GeneratorExecutionContext context,
+            SourceProductionContext context,
             ISymbol exportedMemberSymbol
         )
         {
@@ -169,7 +170,7 @@ namespace Godot.SourceGenerators
         }
 
         public static void ReportExportedMemberIsIndexer(
-            GeneratorExecutionContext context,
+            SourceProductionContext context,
             ISymbol exportedMemberSymbol
         )
         {
@@ -195,7 +196,7 @@ namespace Godot.SourceGenerators
         }
 
         public static void ReportSignalDelegateMissingSuffix(
-            GeneratorExecutionContext context,
+            SourceProductionContext context,
             INamedTypeSymbol delegateSymbol)
         {
             var locations = delegateSymbol.Locations;
@@ -220,7 +221,7 @@ namespace Godot.SourceGenerators
         }
 
         public static void ReportSignalParameterTypeNotSupported(
-            GeneratorExecutionContext context,
+            SourceProductionContext context,
             IParameterSymbol parameterSymbol)
         {
             var locations = parameterSymbol.Locations;
@@ -244,7 +245,7 @@ namespace Godot.SourceGenerators
         }
 
         public static void ReportSignalDelegateSignatureMustReturnVoid(
-            GeneratorExecutionContext context,
+            SourceProductionContext context,
             INamedTypeSymbol delegateSymbol)
         {
             var locations = delegateSymbol.Locations;
