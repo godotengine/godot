@@ -58,6 +58,7 @@
 #include "godotsharp_dirs.h"
 #include "managed_callable.h"
 #include "mono_gd/gd_mono_cache.h"
+#include "servers/text_server.h"
 #include "signal_awaiter_utils.h"
 #include "utils/macros.h"
 #include "utils/naming_utils.h"
@@ -374,6 +375,10 @@ String CSharpLanguage::validate_path(const String &p_path) const {
 	if (keywords.find(class_name)) {
 		return RTR("Class name can't be a reserved keyword");
 	}
+	if (!TS->is_valid_identifier(class_name)) {
+		return RTR("Class name must be a valid identifier");
+	}
+
 	return "";
 }
 
