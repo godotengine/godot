@@ -194,6 +194,32 @@ namespace Godot.SourceGenerators
                 location?.SourceTree?.FilePath));
         }
 
+        public static void ReportExportedMemberIsExplicitInterfaceImplementation(
+            GeneratorExecutionContext context,
+            ISymbol exportedMemberSymbol
+        )
+        {
+            var locations = exportedMemberSymbol.Locations;
+            var location = locations.FirstOrDefault(l => l.SourceTree != null) ?? locations.FirstOrDefault();
+
+            string message = $"Attempted to export explicit interface property implementation: " +
+                             $"'{exportedMemberSymbol.ToDisplayString()}'";
+
+            string description = $"{message}. Explicit interface implementations can't be exported." +
+                                 " Remove the '[Export]' attribute.";
+
+            context.ReportDiagnostic(Diagnostic.Create(
+                new DiagnosticDescriptor(id: "GD0106",
+                    title: message,
+                    messageFormat: message,
+                    category: "Usage",
+                    DiagnosticSeverity.Error,
+                    isEnabledByDefault: true,
+                    description),
+                location,
+                location?.SourceTree?.FilePath));
+        }
+
         public static void ReportSignalDelegateMissingSuffix(
             GeneratorExecutionContext context,
             INamedTypeSymbol delegateSymbol)
