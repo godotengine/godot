@@ -6154,6 +6154,8 @@ bool RenderingDeviceDriverVulkan::has_feature(Features p_feature) {
 			return true;
 		case SUPPORTS_BUFFER_DEVICE_ADDRESS:
 			return buffer_device_address_support;
+		case SUPPORTS_WIDE_LINES:
+			return physical_device_features.wideLines;
 		default:
 			return false;
 	}
