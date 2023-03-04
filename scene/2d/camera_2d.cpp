@@ -700,10 +700,12 @@ bool Camera2D::is_margin_drawing_enabled() const {
 
 void Camera2D::_validate_property(PropertyInfo &p_property) const {
 	if (!position_smoothing_enabled && p_property.name == "position_smoothing_speed") {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		p_property.usage |= PROPERTY_USAGE_INACTIVE;
+		p_property.property_dependency = RTR("[i]position_smoothing_enabled[/i] to be true");
 	}
 	if (!rotation_smoothing_enabled && p_property.name == "rotation_smoothing_speed") {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		p_property.usage |= PROPERTY_USAGE_INACTIVE;
+		p_property.property_dependency = RTR("[i]rotation_smoothing_enabled[/i] to be true");
 	}
 }
 

@@ -76,6 +76,7 @@ private:
 	int property_usage;
 
 	bool read_only = false;
+	bool inactive = false;
 	bool checkable = false;
 	bool checked = false;
 	bool draw_warning = false;
@@ -145,6 +146,9 @@ public:
 
 	void set_read_only(bool p_read_only);
 	bool is_read_only() const;
+
+	void set_inactive(bool p_inactive);
+	bool is_inactive() const;
 
 	Object *get_edited_object();
 	StringName get_edited_property() const;
