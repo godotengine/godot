@@ -468,7 +468,28 @@ void EditorNode::_update_from_settings() {
 	if (current_filter != scene_root->get_default_canvas_item_texture_filter()) {
 		Viewport::DefaultCanvasItemTextureFilter tf = (Viewport::DefaultCanvasItemTextureFilter)current_filter;
 		scene_root->set_default_canvas_item_texture_filter(tf);
+
+        CanvasItem::TextureFilter citf = CanvasItem::TEXTURE_FILTER_LINEAR;
+        switch (current_filter) {
+            case Viewport::DefaultCanvasItemTextureFilter::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST:
+                citf = CanvasItem::TEXTURE_FILTER_NEAREST;
+                break;
+            case Viewport::DefaultCanvasItemTextureFilter::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR:
+                citf = CanvasItem::TEXTURE_FILTER_LINEAR;
+                break;
+            case Viewport::DefaultCanvasItemTextureFilter::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS:
+                citf = CanvasItem::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
+                break;
+            case Viewport::DefaultCanvasItemTextureFilter::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS:
+                citf = CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS;
+                break;
+            case Viewport::DefaultCanvasItemTextureFilter::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_MAX:
+                citf = CanvasItem::TEXTURE_FILTER_MAX;
+                break;
+        }
+        main_screen_vbox->set_texture_filter(citf);
 	}
+    
 	int current_repeat = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_repeat");
 	if (current_repeat != scene_root->get_default_canvas_item_texture_repeat()) {
 		Viewport::DefaultCanvasItemTextureRepeat tr = (Viewport::DefaultCanvasItemTextureRepeat)current_repeat;
