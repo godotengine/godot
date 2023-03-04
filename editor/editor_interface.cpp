@@ -31,6 +31,7 @@
 #include "editor_interface.h"
 
 #include "editor/editor_command_palette.h"
+#include "editor/editor_feature_profile.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_resource_preview.h"
@@ -239,6 +240,14 @@ void EditorInterface::popup_dialog_centered_clamped(Window *p_dialog, const Size
 	p_dialog->popup_exclusive_centered_clamped(EditorNode::get_singleton(), p_size, p_fallback_ratio);
 }
 
+String EditorInterface::get_current_feature_profile() const {
+	return EditorFeatureProfileManager::get_singleton()->get_current_profile_name();
+}
+
+void EditorInterface::set_current_feature_profile(const String &p_profile_name) {
+	EditorFeatureProfileManager::get_singleton()->set_current_profile(p_profile_name, true);
+}
+
 // Editor docks.
 
 FileSystemDock *EditorInterface::get_file_system_dock() const {
@@ -406,6 +415,9 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("popup_dialog_centered", "dialog", "minsize"), &EditorInterface::popup_dialog_centered, DEFVAL(Size2i()));
 	ClassDB::bind_method(D_METHOD("popup_dialog_centered_ratio", "dialog", "ratio"), &EditorInterface::popup_dialog_centered_ratio, DEFVAL(0.8));
 	ClassDB::bind_method(D_METHOD("popup_dialog_centered_clamped", "dialog", "minsize", "fallback_ratio"), &EditorInterface::popup_dialog_centered_clamped, DEFVAL(Size2i()), DEFVAL(0.75));
+
+	ClassDB::bind_method(D_METHOD("get_current_feature_profile"), &EditorInterface::get_current_feature_profile);
+	ClassDB::bind_method(D_METHOD("set_current_feature_profile", "profile_name"), &EditorInterface::set_current_feature_profile);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distraction_free_mode"), "set_distraction_free_mode", "is_distraction_free_mode_enabled");
 
