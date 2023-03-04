@@ -647,7 +647,6 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 				geom->geometry_instance->set_transform(instance->transform, instance->aabb, instance->transformed_aabb);
 				geom->geometry_instance->set_layer_mask(instance->layer_mask);
 				geom->geometry_instance->set_pivot_data(instance->sorting_offset, instance->use_aabb_center);
-				geom->geometry_instance->set_lod_bias(instance->lod_bias);
 				geom->geometry_instance->set_transparency(instance->transparency);
 				geom->geometry_instance->set_use_baked_light(instance->baked_light);
 				geom->geometry_instance->set_use_dynamic_gi(instance->dynamic_gi);
@@ -1459,12 +1458,6 @@ void RendererSceneCull::instance_geometry_set_lod_bias(RID p_instance, float p_l
 	ERR_FAIL_COND(!instance);
 
 	instance->lod_bias = p_lod_bias;
-
-	if ((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK && instance->base_data) {
-		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
-		ERR_FAIL_NULL(geom->geometry_instance);
-		geom->geometry_instance->set_lod_bias(p_lod_bias);
-	}
 }
 
 void RendererSceneCull::instance_geometry_set_shader_parameter(RID p_instance, const StringName &p_parameter, const Variant &p_value) {
@@ -2713,10 +2706,11 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 #define VIS_RANGE_CHECK ((idata.visibility_index == -1) || _visibility_range_check<false>(cull_data.scenario->instance_visibility[idata.visibility_index], cull_data.cam_transform.origin, cull_data.visibility_viewport_mask) == 0)
 #define VIS_PARENT_CHECK (_visibility_parent_check(cull_data, idata))
 #define VIS_CHECK (visibility_check < 0 ? (visibility_check = (visibility_flags != InstanceData::FLAG_VISIBILITY_DEPENDENCY_NEEDS_CHECK || (VIS_RANGE_CHECK && VIS_PARENT_CHECK))) : visibility_check)
-#define OCCLUSION_CULLED (cull_data.occlusion_buffer != nullptr && (cull_data.scenario->instance_data[i].flags & InstanceData::FLAG_IGNORE_OCCLUSION_CULLING) == 0 && cull_data.occlusion_buffer->is_occluded(cull_data.scenario->instance_aabbs[i].bounds, cull_data.cam_transform.origin, inv_cam_transform, *cull_data.camera_matrix, z_near))
+#define OCCLUSION_CULLED (cull_data.occlusion_buffer != nullptr && (cull_data.scenario->instance_data[i].flags & InstanceData::FLAG_IGNORE_OCCLUSION_CULLING) == 0 && cull_data.occlusion_buffer->is_occluded(cull_data.scenario->instance_aabbs[i].bounds, occlusion_bounds_scale, cull_data.cam_transform.origin, inv_cam_transform, *cull_data.camera_matrix, z_near))
 
 	struct KeepInstance {
 		bool obj_visible = false;
+		bool occlusion_culled = false;
 		uint64_t shadows_visible = 0;
 		uint64_t sdfgi_visible = 0;
 		InstanceData *data = nullptr;
@@ -2736,9 +2730,12 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 		int32_t visibility_check = -1;
 
 		if (!HIDDEN_BY_VISIBILITY_CHECKS) {
-			if ((LAYER_CHECK && IN_FRUSTUM(cull_data.cull->frustum) && VIS_CHECK && !OCCLUSION_CULLED) || (cull_data.scenario->instance_data[i].flags & InstanceData::FLAG_IGNORE_ALL_CULLING)) {
-				keep_instance.obj_visible = true;
-				keep_instance.data = &idata;
+			if ((LAYER_CHECK && IN_FRUSTUM(cull_data.cull->frustum) && VIS_CHECK) || (cull_data.scenario->instance_data[i].flags & InstanceData::FLAG_IGNORE_ALL_CULLING)) {
+				keep_instance.occlusion_culled = OCCLUSION_CULLED;
+				if (!(keep_instance.occlusion_culled && soft_cull_bias <= 0.0f)) {
+					keep_instance.obj_visible = true;
+					keep_instance.data = &idata;
+				}
 			}
 
 			for (uint32_t j = 0; j < cull_data.cull->shadow_count; j++) {
@@ -2866,6 +2863,19 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 							fade = cull_data.scenario->instance_visibility[parent_idx].children_fade_alpha;
 						}
 						idata.instance_geometry->set_parent_fade_alpha(fade);
+					}
+
+					// TODO: Temporary fixture to avoid shadowing the `geom` declarations below
+					if (true) {
+						InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(idata.instance->base_data);
+						ERR_FAIL_NULL(geom->geometry_instance);
+
+						float base_bias = idata.instance->lod_bias;
+						float geom_bias = base_bias;
+						if (kept_instance.occlusion_culled) {
+							geom_bias *= soft_cull_bias;
+						}
+						geom->geometry_instance->set_lod_bias(geom_bias, base_bias * shadow_lod_bias);
 					}
 
 					if (geometry_instance_pair_mask & (1 << RS::INSTANCE_LIGHT) && (idata.flags & InstanceData::FLAG_GEOM_LIGHTING_DIRTY)) {
@@ -4189,6 +4199,9 @@ RendererSceneCull::RendererSceneCull() {
 		thread.init(&rid_cull_page_pool, &geometry_instance_cull_page_pool, &instance_cull_page_pool);
 	}
 
+	shadow_lod_bias = GLOBAL_GET("rendering/mesh_lod/lod_change/shadow_lod_bias");
+	occlusion_bounds_scale = GLOBAL_GET("rendering/occlusion_culling/bounds_scale");
+	soft_cull_bias = GLOBAL_GET("rendering/occlusion_culling/soft_cull_lod_bias");
 	indexer_update_iterations = GLOBAL_GET("rendering/limits/spatial_indexer/update_iterations_per_frame");
 	thread_cull_threshold = GLOBAL_GET("rendering/limits/spatial_indexer/threaded_cull_minimum_instances");
 	thread_cull_threshold = MAX(thread_cull_threshold, (uint32_t)WorkerThreadPool::get_singleton()->get_thread_count()); //make sure there is at least one thread per CPU

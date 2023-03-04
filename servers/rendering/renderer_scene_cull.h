@@ -342,6 +342,9 @@ public:
 		}
 	};
 
+	float occlusion_bounds_scale;
+	float shadow_lod_bias;
+	float soft_cull_bias;
 	int indexer_update_iterations = 0;
 
 	mutable RID_Owner<Scenario, true> scenario_owner;

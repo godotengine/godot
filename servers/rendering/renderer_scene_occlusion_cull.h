@@ -60,12 +60,22 @@ public:
 
 		void update_mips();
 
-		_FORCE_INLINE_ bool is_occluded(const real_t p_bounds[6], const Vector3 &p_cam_position, const Transform3D &p_cam_inv_transform, const Projection &p_cam_projection, real_t p_near) const {
+		_FORCE_INLINE_ bool is_occluded(const real_t p_bounds[6], const real_t bounds_scale, const Vector3 &p_cam_position, const Transform3D &p_cam_inv_transform, const Projection &p_cam_projection, real_t p_near) const {
 			if (is_empty()) {
 				return false;
 			}
 
-			Vector3 closest_point = Vector3(CLAMP(p_cam_position.x, p_bounds[0], p_bounds[3]), CLAMP(p_cam_position.y, p_bounds[1], p_bounds[4]), CLAMP(p_cam_position.z, p_bounds[2], p_bounds[5]));
+			Vector3 min_bound = Vector3(p_bounds[0], p_bounds[1], p_bounds[2]);
+			Vector3 max_bound = Vector3(p_bounds[3], p_bounds[4], p_bounds[5]);
+
+			{
+				Vector3 pos = (max_bound + min_bound) * 0.5;
+				Vector3 size = (max_bound - min_bound) * bounds_scale;
+				min_bound = pos - (size * 0.5);
+				max_bound = pos + (size * 0.5);
+			}
+
+			Vector3 closest_point = p_cam_position.clamp(min_bound, max_bound);
 
 			if (closest_point == p_cam_position) {
 				return false;
@@ -84,7 +94,7 @@ public:
 			for (int j = 0; j < 8; j++) {
 				const Vector3 &c = RendererSceneOcclusionCull::HZBuffer::corners[j];
 				Vector3 nc = Vector3(1, 1, 1) - c;
-				Vector3 corner = Vector3(p_bounds[0] * c.x + p_bounds[3] * nc.x, p_bounds[1] * c.y + p_bounds[4] * nc.y, p_bounds[2] * c.z + p_bounds[5] * nc.z);
+				Vector3 corner = (min_bound * c) + (max_bound * nc);
 				Vector3 view = p_cam_inv_transform.xform(corner);
 
 				Plane vp = Plane(view, 1.0);

@@ -2961,7 +2961,11 @@ void RenderingServer::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/decals/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Linear (Fast),Nearest Mipmap (Fast),Linear Mipmap (Fast),Nearest Mipmap Anisotropic (Average),Linear Mipmap Anisotropic (Average)"), DECAL_FILTER_LINEAR_MIPMAPS);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/light_projectors/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Linear (Fast),Nearest Mipmap (Fast),Linear Mipmap (Fast),Nearest Mipmap Anisotropic (Average),Linear Mipmap Anisotropic (Average)"), LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS);
 
+	GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "rendering/mesh_lod/lod_change/shadow_lod_bias", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), 0.3);
+
 	GLOBAL_DEF_RST("rendering/occlusion_culling/occlusion_rays_per_thread", 512);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "rendering/occlusion_culling/bounds_scale", PROPERTY_HINT_RANGE, "0.0,2.0,0.01"), 1.0);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "rendering/occlusion_culling/soft_cull_lod_bias", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), 0.0);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/environment/glow/upscale_mode", PROPERTY_HINT_ENUM, "Linear (Fast),Bicubic (Slow)"), 1);
 	GLOBAL_DEF("rendering/environment/glow/upscale_mode.mobile", 0);

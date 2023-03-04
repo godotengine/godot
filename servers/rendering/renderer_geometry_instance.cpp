@@ -85,8 +85,9 @@ void RenderGeometryInstanceBase::set_pivot_data(float p_sorting_offset, bool p_u
 	use_aabb_center = p_use_aabb_center;
 }
 
-void RenderGeometryInstanceBase::set_lod_bias(float p_lod_bias) {
-	lod_bias = p_lod_bias;
+void RenderGeometryInstanceBase::set_lod_bias(float p_geom_lod_bias, float p_shadow_lod_bias) {
+	geom_lod_bias = p_geom_lod_bias;
+	shadow_lod_bias = p_shadow_lod_bias;
 }
 
 void RenderGeometryInstanceBase::set_layer_mask(uint32_t p_layer_mask) {
