@@ -79,8 +79,12 @@ import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.ViewTreeObserver;
 import android.view.Window;
+import android.view.WindowInsets;
+import android.view.WindowInsetsAnimation;
 import android.view.WindowManager;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
@@ -91,6 +95,9 @@ import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+import androidx.core.view.OnApplyWindowInsetsListener;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.vending.expansion.downloader.DownloadProgressInfo;
@@ -370,14 +377,63 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		edittext.setView(mView);
 		io.setEdit(edittext);
 
-		mView.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
-			Point fullSize = new Point();
-			activity.getWindowManager().getDefaultDisplay().getSize(fullSize);
-			Rect gameSize = new Rect();
-			mView.getWindowVisibleDisplayFrame(gameSize);
-			final int keyboardHeight = fullSize.y - gameSize.bottom;
-			GodotLib.setVirtualKeyboardHeight(keyboardHeight);
-		});
+		// Listeners for keyboard height.
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+			// Report the height of virtual keyboard as it changes during the animation.
+			final View decorView = activity.getWindow().getDecorView();
+			decorView.setWindowInsetsAnimationCallback(new WindowInsetsAnimation.Callback(WindowInsetsAnimation.Callback.DISPATCH_MODE_STOP) {
+				int startBottom, endBottom;
+				@Override
+				public void onPrepare(@NonNull WindowInsetsAnimation animation) {
+					startBottom = decorView.getRootWindowInsets().getInsets(WindowInsets.Type.ime()).bottom;
+				}
+
+				@NonNull
+				@Override
+				public WindowInsetsAnimation.Bounds onStart(@NonNull WindowInsetsAnimation animation, @NonNull WindowInsetsAnimation.Bounds bounds) {
+					endBottom = decorView.getRootWindowInsets().getInsets(WindowInsets.Type.ime()).bottom;
+					return bounds;
+				}
+
+				@NonNull
+				@Override
+				public WindowInsets onProgress(@NonNull WindowInsets windowInsets, @NonNull List<WindowInsetsAnimation> list) {
+					// Find the IME animation.
+					WindowInsetsAnimation imeAnimation = null;
+					for (WindowInsetsAnimation animation : list) {
+						if ((animation.getTypeMask() & WindowInsets.Type.ime()) != 0) {
+							imeAnimation = animation;
+							break;
+						}
+					}
+					// Update keyboard height based on IME animation.
+					if (imeAnimation != null) {
+						float interpolatedFraction = imeAnimation.getInterpolatedFraction();
+						// Linear interpolation between start and end values.
+						float keyboardHeight = startBottom * (1.0f - interpolatedFraction) + endBottom * interpolatedFraction;
+						GodotLib.setVirtualKeyboardHeight((int)keyboardHeight);
+					}
+					return windowInsets;
+				}
+
+				@Override
+				public void onEnd(@NonNull WindowInsetsAnimation animation) {
+				}
+			});
+		} else {
+			// Infer the virtual keyboard height using visible area.
+			mView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+				// Don't allocate a new Rect every time the callback is called.
+				final Rect visibleSize = new Rect();
+
+				@Override
+				public void onGlobalLayout() {
+					mView.getWindowVisibleDisplayFrame(visibleSize);
+					final int keyboardHeight = mView.getHeight() - visibleSize.bottom;
+					GodotLib.setVirtualKeyboardHeight(keyboardHeight);
+				}
+			});
+		}
 
 		final String[] current_command_line = command_line;
 		mView.queueEvent(() -> {
