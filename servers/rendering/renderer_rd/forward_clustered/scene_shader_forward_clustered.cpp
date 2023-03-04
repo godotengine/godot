@@ -40,6 +40,9 @@ using namespace RendererSceneRenderImplementation;
 void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	//compile
 
+	bool depth_pre_pass_enabled = bool(GLOBAL_GET("rendering/driver/depth_prepass/enable"));
+	float wireframe_width = float(GLOBAL_GET("rendering/driver/wireframe/width"));
+
 	code = p_code;
 	valid = false;
 	ubo_size = 0;
@@ -253,7 +256,6 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 		depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_LESS_OR_EQUAL;
 		depth_stencil_state.enable_depth_write = depth_draw != DEPTH_DRAW_DISABLED ? true : false;
 	}
-	bool depth_pre_pass_enabled = bool(GLOBAL_GET("rendering/driver/depth_prepass/enable"));
 
 	for (int i = 0; i < CULL_VARIANT_MAX; i++) {
 		RD::PolygonCullMode cull_mode_rd_table[CULL_VARIANT_MAX][3] = {
@@ -298,6 +300,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 				RD::PipelineRasterizationState raster_state;
 				raster_state.cull_mode = cull_mode_rd;
 				raster_state.wireframe = wireframe;
+				raster_state.line_width = wireframe_width;
 
 				if (k == PIPELINE_VERSION_COLOR_PASS) {
 					for (int l = 0; l < PIPELINE_COLOR_PASS_FLAG_COUNT; l++) {
