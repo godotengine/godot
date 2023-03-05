@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CollisionPolygon2D" inherits="Node2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Defines a 2D collision polygon.
+		Node that represents a 2D collision polygon.
 	</brief_description>
 	<description>
-		Provides a concave or convex 2D collision polygon to a [CollisionObject2D] parent. Polygons can be drawn in the editor or specified by a list of vertices. See also [ConvexPolygonShape2D].
+		Provides a 2D collision polygon to a [CollisionObject2D] parent. Polygons can be drawn in the editor or specified by a list of vertices.
+		Depending on the build mode, this node effectively provides several convex shapes (by convex decomposition of the polygon) or a single concave shape made of the polygon's segments.
 		In the editor, a [CollisionPolygon2D] can be generated from a [Sprite2D]'s outline by selecting a [Sprite2D] node, going to the [b]Sprite2D[/b] menu at the top of the 2D editor viewport then choosing [b]Create CollisionPolygon2D Sibling[/b].
 	</description>
 	<tutorials>
@@ -24,15 +25,16 @@
 			The margin used for one-way collision (in pixels). Higher values will make the shape thicker, and work better for colliders that enter the polygon at a high velocity.
 		</member>
 		<member name="polygon" type="PackedVector2Array" setter="set_polygon" getter="get_polygon" default="PackedVector2Array()">
-			The polygon's list of vertices. The final point will be connected to the first. The returned value is a clone of the [PackedVector2Array], not a reference.
+			The polygon's list of vertices. Each point will be connected to the next, and the final point will be connected to the first.
+			[b]Warning:[/b] The returned value is a clone of the [PackedVector2Array], not a reference.
 		</member>
 	</members>
 	<constants>
 		<constant name="BUILD_SOLIDS" value="0" enum="BuildMode">
-			Collisions will include the polygon and its contained area.
+			Collisions will include the polygon and its contained area. In this mode the node has the same effect as several [ConvexPolygonShape2D] nodes, one for each convex shape in the convex decomposition of the polygon (but without the overhead of multiple nodes).
 		</constant>
 		<constant name="BUILD_SEGMENTS" value="1" enum="BuildMode">
-			Collisions will only include the polygon edges.
+			Collisions will only include the polygon edges. In this mode the node has the same effect as a single [ConcavePolygonShape2D] made of segments, with the restriction that each segment (after the first one) starts where the previous one ends, and the last one ends where the first one starts (forming a closed but hollow polygon).
 		</constant>
 	</constants>
 </class>
