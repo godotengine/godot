@@ -71,6 +71,8 @@ class ProjectConverter3To4 {
 	uint64_t maximum_file_size;
 	uint64_t maximum_line_length;
 
+	void fix_tool_declaration(Vector<SourceLine> &source_lines, const RegExContainer &reg_container);
+
 	void rename_colors(Vector<SourceLine> &source_lines, const RegExContainer &reg_container);
 	Vector<String> check_for_rename_colors(Vector<String> &lines, const RegExContainer &reg_container);
 
