@@ -276,7 +276,30 @@ static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 		}
 		return false;
 	}
+	String flags = EDITOR_GET("filesystem/import/blender/blender3_flags");
+	
 	List<String> args;
+	if (flags.size()) {
+		int from = 0;
+		int num_chars = 0;
+		bool inside_quotes = false;
+
+		for (int i = 0; i < flags.size(); i++) {
+			if (flags[i] == '"' && (!i || flags[i - 1] != '\\')) {
+				if (!inside_quotes) {
+					from++;
+				}
+				inside_quotes = !inside_quotes;
+			} else if (flags[i] == '\0' || (!inside_quotes && flags[i] == ' ')) {
+				String arg = flags.substr(from, num_chars);
+				args.push_back(arg);
+				from = i + 1;
+				num_chars = 0;
+			} else {
+				num_chars++;
+			}
+		}
+	}
 	args.push_back("--version");
 	String pipe;
 	Error err = OS::get_singleton()->execute(path, args, &pipe);

@@ -64,6 +64,9 @@ static void _editor_init() {
 	String blender3_path = EDITOR_DEF_RST("filesystem/import/blender/blender3_path", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,
 			"filesystem/import/blender/blender3_path", PROPERTY_HINT_GLOBAL_FILE));
+	String blender3_flags = EDITOR_DEF_RST("filesystem/import/blender/blender3_flags", "");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,
+			"filesystem/import/blender/blender3_flags", PROPERTY_HINT_PLACEHOLDER_TEXT));
 	if (blend_enabled) {
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (blender3_path.is_empty()) {
