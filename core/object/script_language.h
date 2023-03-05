@@ -384,10 +384,12 @@ public:
 		uint64_t call_count;
 		uint64_t total_time;
 		uint64_t self_time;
+		uint64_t internal_time;
 	};
 
 	virtual void profiling_start() = 0;
 	virtual void profiling_stop() = 0;
+	virtual void profiling_set_save_native_calls(bool p_enable) = 0;
 
 	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) = 0;
 	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) = 0;

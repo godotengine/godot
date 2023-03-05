@@ -758,6 +758,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 			int calls = frame.script_functions[i].call_count;
 			float total = frame.script_functions[i].total_time;
 			float self = frame.script_functions[i].self_time;
+			float internal = frame.script_functions[i].internal_time;
 
 			EditorProfiler::Metric::Category::Item item;
 			if (profiler_signature.has(signature)) {
@@ -782,6 +783,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 			item.calls = calls;
 			item.self = self;
 			item.total = total;
+			item.internal = internal;
 			funcs.items.write[i] = item;
 		}
 
@@ -1097,7 +1099,9 @@ void ScriptEditorDebugger::_profiler_activate(bool p_enable, int p_type) {
 				// Add max funcs options to request.
 				Array opts;
 				int max_funcs = EDITOR_GET("debugger/profiler_frame_max_functions");
+				bool include_native = EDITOR_GET("debugger/profile_native_calls");
 				opts.push_back(CLAMP(max_funcs, 16, 512));
+				opts.push_back(include_native);
 				msg_data.push_back(opts);
 			}
 			_put_msg("profiler:servers", msg_data);
