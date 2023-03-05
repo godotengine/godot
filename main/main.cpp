@@ -3446,6 +3446,8 @@ void Main::cleanup(bool p_force) {
 		movie_writer->end();
 	}
 
+	ResourceLoader::clear_thread_load_tasks();
+
 	ResourceLoader::remove_custom_loaders();
 	ResourceSaver::remove_custom_savers();
 
@@ -3461,8 +3463,6 @@ void Main::cleanup(bool p_force) {
 
 	ResourceLoader::clear_translation_remaps();
 	ResourceLoader::clear_path_remaps();
-
-	ResourceLoader::clear_thread_load_tasks();
 
 	ScriptServer::finish_languages();
 

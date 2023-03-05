@@ -107,9 +107,30 @@ public:
 		THREAD_LOAD_LOADED
 	};
 
+	enum LoadThreadMode {
+		LOAD_THREAD_FROM_CURRENT,
+		LOAD_THREAD_SPAWN_SINGLE,
+		LOAD_THREAD_DISTRIBUTE,
+	};
+
+	struct LoadToken : public RefCounted {
+		String local_path;
+		String user_path;
+		Ref<Resource> res_if_unregistered;
+
+		void clear();
+
+		virtual ~LoadToken();
+	};
+
 	static const int BINARY_MUTEX_TAG = 1;
 
+	static Ref<LoadToken> _load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, ResourceFormatLoader::CacheMode p_cache_mode);
+	static Ref<Resource> _load_complete(LoadToken &p_load_token, Error *r_error);
+
 private:
+	static Ref<Resource> _load_complete_inner(LoadToken &p_load_token, Error *r_error, MutexLock<SafeBinaryMutex<BINARY_MUTEX_TAG>> &p_thread_load_lock);
+
 	static Ref<ResourceFormatLoader> loader[MAX_LOADERS];
 	static int loader_count;
 	static bool timestamp_on_load;
@@ -129,8 +150,7 @@ private:
 	static SelfList<Resource>::List remapped_list;
 
 	friend class ResourceFormatImporter;
-	friend class ResourceInteractiveLoader;
-	// Internal load function.
+
 	static Ref<Resource> _load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress);
 
 	static ResourceLoadedCallback _loaded_callback;
@@ -140,9 +160,12 @@ private:
 	struct ThreadLoadTask {
 		Thread *thread = nullptr;
 		Thread::ID loader_id = 0;
+		bool first_in_stack = false;
 		ConditionVariable *cond_var = nullptr;
+		LoadToken *load_token = nullptr;
 		String local_path;
 		String remapped_path;
+		String dependent_path;
 		String type_hint;
 		float progress = 0.0;
 		ThreadLoadStatus status = THREAD_LOAD_IN_PROGRESS;
@@ -151,24 +174,28 @@ private:
 		Ref<Resource> resource;
 		bool xl_remapped = false;
 		bool use_sub_threads = false;
-		bool start_next = true;
-		int requests = 0;
 		HashSet<String> sub_tasks;
 	};
 
 	static void _thread_load_function(void *p_userdata);
-	static SafeBinaryMutex<BINARY_MUTEX_TAG> *thread_load_mutex;
+
+	static thread_local int load_nesting;
+	static thread_local Vector<String> load_paths_stack;
+	static SafeBinaryMutex<BINARY_MUTEX_TAG> thread_load_mutex;
 	static HashMap<String, ThreadLoadTask> thread_load_tasks;
-	static Semaphore *thread_load_semaphore;
+	static ConditionVariable thread_active_cond_var;
+	static int thread_active_count;
 	static int thread_waiting_count;
-	static int thread_loading_count;
 	static int thread_suspended_count;
-	static int thread_load_max;
+	static int thread_active_max;
+	static bool cleaning_tasks;
+
+	static HashMap<String, LoadToken *> user_load_tokens;
 
 	static float _dependency_get_progress(const String &p_path);
 
 public:
-	static Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE, const String &p_source_resource = String());
+	static Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE);
 	static ThreadLoadStatus load_threaded_get_status(const String &p_path, float *r_progress = nullptr);
 	static Ref<Resource> load_threaded_get(const String &p_path, Error *r_error = nullptr);
 
@@ -236,6 +263,8 @@ public:
 
 	static void set_create_missing_resources_if_class_unavailable(bool p_enable);
 	_FORCE_INLINE_ static bool is_creating_missing_resources_if_class_unavailable_enabled() { return create_missing_resources_if_class_unavailable; }
+
+	static bool is_cleaning_tasks();
 
 	static void initialize();
 	static void finalize();

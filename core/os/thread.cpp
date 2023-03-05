@@ -66,11 +66,12 @@ void Thread::callback(ID p_caller_id, const Settings &p_settings, Callback p_cal
 	}
 }
 
-void Thread::start(Thread::Callback p_callback, void *p_user, const Settings &p_settings) {
-	ERR_FAIL_COND_MSG(id != UNASSIGNED_ID, "A Thread object has been re-started without wait_to_finish() having been called on it.");
+Thread::ID Thread::start(Thread::Callback p_callback, void *p_user, const Settings &p_settings) {
+	ERR_FAIL_COND_V_MSG(id != UNASSIGNED_ID, UNASSIGNED_ID, "A Thread object has been re-started without wait_to_finish() having been called on it.");
 	id = id_counter.increment();
 	std::thread new_thread(&Thread::callback, id, p_settings, p_callback, p_user);
 	thread.swap(new_thread);
+	return id;
 }
 
 bool Thread::is_started() const {
