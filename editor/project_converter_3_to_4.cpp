@@ -371,6 +371,8 @@ bool ProjectConverter3To4::convert() {
 		if (file_size < uint64_t(maximum_file_size)) {
 			// ".tscn" must work exactly the same as ".gd" files because they may contain built-in Scripts.
 			if (file_name.ends_with(".gd")) {
+				fix_tool_declaration(source_lines, reg_container);
+
 				rename_classes(source_lines, reg_container); // Using only specialized function.
 
 				rename_common(RenamesMap3To4::enum_renames, reg_container.enum_regexes, source_lines);
@@ -740,6 +742,10 @@ bool ProjectConverter3To4::test_conversion_basic(String name, String expected, c
 bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 	bool valid = true;
 
+	valid = valid && test_conversion_with_regex("tool", "@tool", &ProjectConverter3To4::fix_tool_declaration, "gdscript keyword", reg_container);
+	valid = valid && test_conversion_with_regex("\n    tool", "\n    tool", &ProjectConverter3To4::fix_tool_declaration, "gdscript keyword", reg_container);
+	valid = valid && test_conversion_with_regex("\n\ntool", "@tool\n\n", &ProjectConverter3To4::fix_tool_declaration, "gdscript keyword", reg_container);
+
 	valid = valid && test_conversion_basic("TYPE_REAL", "TYPE_FLOAT", RenamesMap3To4::enum_renames, reg_container.enum_regexes, "enum");
 
 	valid = valid && test_conversion_basic("can_instance", "can_instantiate", RenamesMap3To4::gdscript_function_renames, reg_container.gdscript_function_regexes, "gdscript function");
@@ -850,9 +856,6 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 	valid = valid && test_conversion_with_regex("\texport_dialog", "\texport_dialog", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
 	valid = valid && test_conversion_with_regex("export", "@export", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
 	valid = valid && test_conversion_with_regex(" export", " export", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
-	valid = valid && test_conversion_with_regex("tool", "@tool", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
-	valid = valid && test_conversion_with_regex("\n    tool", "\n    tool", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
-	valid = valid && test_conversion_with_regex("\n\ntool", "\n\n@tool", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
 	valid = valid && test_conversion_with_regex("\n\nremote func", "\n\n@rpc(\"any_peer\") func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
 	valid = valid && test_conversion_with_regex("\n\nremotesync func", "\n\n@rpc(\"any_peer\", \"call_local\") func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
 	valid = valid && test_conversion_with_regex("\n\nsync func", "\n\n@rpc(\"any_peer\", \"call_local\") func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
@@ -1421,6 +1424,17 @@ Vector<String> ProjectConverter3To4::check_for_rename_colors(Vector<String> &lin
 	}
 
 	return found_renames;
+}
+
+void ProjectConverter3To4::fix_tool_declaration(Vector<SourceLine> &source_lines, const RegExContainer &reg_container) {
+	// In godot4, "tool" became "@tool" and must be located at the top of the file
+	for (int i = 0; i < source_lines.size(); ++i) {
+		if (source_lines[i].line == "tool") {
+			source_lines.remove_at(i);
+			source_lines.insert(0, { "@tool", false });
+			return; // assuming there's at most 1 tool declaration
+		}
+	}
 }
 
 void ProjectConverter3To4::rename_classes(Vector<SourceLine> &source_lines, const RegExContainer &reg_container) {
@@ -2419,9 +2433,6 @@ void ProjectConverter3To4::rename_gdscript_keywords(Vector<SourceLine> &source_l
 
 		String &line = source_line.line;
 		if (uint64_t(line.length()) <= maximum_line_length) {
-			if (line.contains("tool")) {
-				line = reg_container.keyword_gdscript_tool.sub(line, "@tool", true);
-			}
 			if (line.contains("export")) {
 				line = reg_container.keyword_gdscript_export_single.sub(line, "@export", true);
 			}
