@@ -168,7 +168,6 @@ void GodotBodyPair3D::validate_contacts() {
 // adjust the velocity of A down so that it will just slightly intersect the collider instead of blowing right past it.
 bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, const Transform3D &p_xform_A, GodotBody3D *p_B, int p_shape_B, const Transform3D &p_xform_B) {
 	GodotShape3D *shape_A_ptr = p_A->get_shape(p_shape_A);
-	GodotShape3D *shape_B_ptr = p_B->get_shape(p_shape_B);
 
 	Vector3 motion = p_A->get_linear_velocity() * p_step;
 	real_t mlen = motion.length();
@@ -221,7 +220,8 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 		Vector3 local_to = from_inv.xform(to);
 
 		Vector3 rpos, rnorm;
-		if (shape_B_ptr->intersect_segment(local_from, local_to, rpos, rnorm, true)) {
+		int fi = -1;
+		if (p_B->get_shape(p_shape_B)->intersect_segment(local_from, local_to, rpos, rnorm, fi, true)) {
 			float hit_length = local_from.distance_to(rpos);
 			if (hit_length < segment_hit_length) {
 				segment_support_idx = i;
