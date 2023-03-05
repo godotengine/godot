@@ -327,6 +327,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 	} else {
 		mesh->aabb.merge_with(p_surface.aabb);
 	}
+	mesh->skeleton_aabb_version = 0;
 
 	s->material = p_surface.material;
 
@@ -541,12 +542,12 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 
 					Transform3D mtx;
 
-					mtx.basis.rows[0].x = dataptr[0];
-					mtx.basis.rows[1].x = dataptr[1];
+					mtx.basis.rows[0][0] = dataptr[0];
+					mtx.basis.rows[0][1] = dataptr[1];
 					mtx.origin.x = dataptr[3];
 
-					mtx.basis.rows[0].y = dataptr[4];
-					mtx.basis.rows[1].y = dataptr[5];
+					mtx.basis.rows[1][0] = dataptr[4];
+					mtx.basis.rows[1][1] = dataptr[5];
 					mtx.origin.y = dataptr[7];
 
 					AABB baabb = mtx.xform(skbones[j]);
@@ -1438,12 +1439,12 @@ void MeshStorage::_multimesh_re_create_aabb(MultiMesh *multimesh, const float *p
 			t.origin.z = data[11];
 
 		} else {
-			t.basis.rows[0].x = data[0];
-			t.basis.rows[1].x = data[1];
+			t.basis.rows[0][0] = data[0];
+			t.basis.rows[0][1] = data[1];
 			t.origin.x = data[3];
 
-			t.basis.rows[0].y = data[4];
-			t.basis.rows[1].y = data[5];
+			t.basis.rows[1][0] = data[4];
+			t.basis.rows[1][1] = data[5];
 			t.origin.y = data[7];
 		}
 
