@@ -4322,7 +4322,7 @@ double TextServerAdvanced::_shaped_text_fit_to_width(const RID &p_shaped, double
 					elongation_count++;
 				}
 			}
-			if ((gl.flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE) {
+			if ((gl.flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE && (gl.flags & GRAPHEME_IS_PUNCTUATION) != GRAPHEME_IS_PUNCTUATION) {
 				space_count++;
 			}
 		}
@@ -4339,9 +4339,9 @@ double TextServerAdvanced::_shaped_text_fit_to_width(const RID &p_shaped, double
 						int count = delta_width_per_kashida / gl.advance;
 						int prev_count = gl.repeat;
 						if ((gl.flags & GRAPHEME_IS_VIRTUAL) == GRAPHEME_IS_VIRTUAL) {
-							gl.repeat = MAX(count, 0);
+							gl.repeat = CLAMP(count, 0, 255);
 						} else {
-							gl.repeat = MAX(count + 1, 1);
+							gl.repeat = CLAMP(count + 1, 1, 255);
 						}
 						justification_width += (gl.repeat - prev_count) * gl.advance;
 					}
@@ -4355,7 +4355,7 @@ double TextServerAdvanced::_shaped_text_fit_to_width(const RID &p_shaped, double
 		for (int i = start_pos; i <= end_pos; i++) {
 			Glyph &gl = sd->glyphs.write[i];
 			if (gl.count > 0) {
-				if ((gl.flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE) {
+				if ((gl.flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE && (gl.flags & GRAPHEME_IS_PUNCTUATION) != GRAPHEME_IS_PUNCTUATION) {
 					double old_adv = gl.advance;
 					double new_advance;
 					if ((gl.flags & GRAPHEME_IS_VIRTUAL) == GRAPHEME_IS_VIRTUAL) {
@@ -4791,6 +4791,19 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 					gl.font_rid = sd_glyphs[i].font_rid;
 					gl.font_size = sd_glyphs[i].font_size;
 					gl.flags = GRAPHEME_IS_BREAK_SOFT | GRAPHEME_IS_VIRTUAL | GRAPHEME_IS_SPACE;
+					// Mark virtual space after punctuation as punctuation to avoid justification at this point.
+					if (c_punct_size == 0) {
+						if (u_ispunct(c) && c != 0x005f) {
+							gl.flags |= GRAPHEME_IS_PUNCTUATION;
+						}
+					} else {
+						for (int j = 0; j < c_punct_size; j++) {
+							if (c_punct[j] == c) {
+								gl.flags |= GRAPHEME_IS_PUNCTUATION;
+								break;
+							}
+						}
+					}
 					if (sd_glyphs[i].flags & GRAPHEME_IS_RTL) {
 						gl.flags |= GRAPHEME_IS_RTL;
 						for (int j = sd_glyphs[i].count - 1; j >= 0; j--) {
@@ -5002,7 +5015,7 @@ bool TextServerAdvanced::_shaped_text_update_justification_ops(const RID &p_shap
 								}
 							}
 						}
-					} else if ((sd_glyphs[i].flags & GRAPHEME_IS_SPACE) != GRAPHEME_IS_SPACE) {
+					} else if ((sd_glyphs[i].flags & GRAPHEME_IS_SPACE) != GRAPHEME_IS_SPACE && (sd_glyphs[i].flags & GRAPHEME_IS_PUNCTUATION) != GRAPHEME_IS_PUNCTUATION) {
 						int count = sd_glyphs[i].count;
 						// Do not add extra spaces at the end of the line.
 						if (sd_glyphs[i].end == sd->end) {
