@@ -3404,16 +3404,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		} break;
 		case WM_SYSKEYUP:
 		case WM_KEYUP:
-			if (windows[window_id].ime_suppress_next_keyup) {
-				windows[window_id].ime_suppress_next_keyup = false;
-				break;
-			}
-			[[fallthrough]];
 		case WM_SYSKEYDOWN:
 		case WM_KEYDOWN: {
-			if (windows[window_id].ime_in_progress) {
-				break;
-			}
 			if (wParam == VK_SHIFT) {
 				shift_mem = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
 			}
@@ -3425,6 +3417,17 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				if (lParam & (1 << 24)) {
 					gr_mem = alt_mem;
 				}
+			}
+			if (wParam == VK_LWIN || wParam == VK_RWIN) {
+				meta_mem = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
+			}
+
+			if (windows[window_id].ime_suppress_next_keyup && (uMsg == WM_KEYUP || uMsg == WM_SYSKEYUP)) {
+				windows[window_id].ime_suppress_next_keyup = false;
+				break;
+			}
+			if (windows[window_id].ime_in_progress) {
+				break;
 			}
 
 			if (mouse_mode == MOUSE_MODE_CAPTURED) {
