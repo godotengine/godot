@@ -23,5 +23,5 @@ runs:
       shell: bash
       run: |
         python -c "import sys; print(sys.version)"
-        python -m pip install scons
+        python -m pip install scons==4.4.0
         scons --version
