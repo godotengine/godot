@@ -124,7 +124,7 @@ void PropertySelector::_update_search() {
 
 		bool found = false;
 
-		Ref<Texture2D> type_icons[Variant::VARIANT_MAX] = {
+		Ref<Texture2D> type_icons[] = {
 			search_options->get_theme_icon(SNAME("Variant"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("bool"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("int"), SNAME("EditorIcons")),
@@ -137,11 +137,14 @@ void PropertySelector::_update_search() {
 			search_options->get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Vector3i"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Transform2D"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("Vector4"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("Vector4"), SNAME("EditorIcons")), // Vector4i, needs icon.
 			search_options->get_theme_icon(SNAME("Plane"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Quaternion"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("AABB"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Basis"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("Variant"), SNAME("EditorIcons")), // Projection, needs icon.
 			search_options->get_theme_icon(SNAME("Color"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("StringName"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("NodePath"), SNAME("EditorIcons")),
@@ -161,6 +164,7 @@ void PropertySelector::_update_search() {
 			search_options->get_theme_icon(SNAME("PackedVector3Array"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("PackedColorArray"), SNAME("EditorIcons"))
 		};
+		static_assert((sizeof(type_icons) / sizeof(type_icons[0])) == Variant::VARIANT_MAX, "Number of type icons doesn't match the number of Variant types.");
 
 		for (const PropertyInfo &E : props) {
 			if (E.usage == PROPERTY_USAGE_CATEGORY) {
