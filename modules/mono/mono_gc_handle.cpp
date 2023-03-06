@@ -61,7 +61,7 @@ void MonoGCHandle::release() {
 	CRASH_COND(!released && GDMono::get_singleton() == NULL);
 #endif
 
-	if (!released && GDMono::get_singleton()->is_runtime_initialized()) {
+	if (!released && GDMono::get_singleton() && GDMono::get_singleton()->is_runtime_initialized()) {
 		free_handle(handle);
 		released = true;
 	}

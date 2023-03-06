@@ -563,7 +563,7 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info()
 	_TLS_RECURSION_GUARD_V_(Vector<StackInfo>());
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
-	if (!gdmono->is_runtime_initialized() || !GDMono::get_singleton()->get_core_api_assembly() || !GDMonoCache::cached_data.corlib_cache_updated)
+	if (!gdmono || !gdmono->is_runtime_initialized() || !GDMono::get_singleton()->get_core_api_assembly() || !GDMonoCache::cached_data.corlib_cache_updated)
 		return Vector<StackInfo>();
 
 	MonoObject *stack_trace = mono_object_new(mono_domain_get(), CACHED_CLASS(System_Diagnostics_StackTrace)->get_mono_ptr());
@@ -716,7 +716,7 @@ void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft
 
 #ifdef GD_MONO_HOT_RELOAD
 bool CSharpLanguage::is_assembly_reloading_needed() {
-	if (!gdmono->is_runtime_initialized())
+	if (!gdmono || !gdmono->is_runtime_initialized())
 		return false;
 
 	GDMonoAssembly *proj_assembly = gdmono->get_project_assembly();
@@ -755,7 +755,7 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 }
 
 void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
-	if (!gdmono->is_runtime_initialized())
+	if (!gdmono || !gdmono->is_runtime_initialized())
 		return;
 
 	// There is no soft reloading with Mono. It's always hard reloading.
@@ -1116,7 +1116,7 @@ bool CSharpLanguage::overrides_external_editor() {
 
 void CSharpLanguage::thread_enter() {
 #if 0
-	if (gdmono->is_runtime_initialized()) {
+	if (gdmono && gdmono->is_runtime_initialized()) {
 		GDMonoUtils::attach_current_thread();
 	}
 #endif
@@ -1124,7 +1124,7 @@ void CSharpLanguage::thread_enter() {
 
 void CSharpLanguage::thread_exit() {
 #if 0
-	if (gdmono->is_runtime_initialized()) {
+	if (gdmono && gdmono->is_runtime_initialized()) {
 		GDMonoUtils::detach_current_thread();
 	}
 #endif

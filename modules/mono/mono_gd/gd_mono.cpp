@@ -1342,7 +1342,7 @@ int32_t _GodotSharp::get_scripts_domain_id() {
 }
 
 bool _GodotSharp::is_scripts_domain_loaded() {
-	return GDMono::get_singleton()->is_runtime_initialized() && GDMono::get_singleton()->get_scripts_domain() != NULL;
+	return GDMono::get_singleton() && GDMono::get_singleton()->is_runtime_initialized() && GDMono::get_singleton()->get_scripts_domain() != NULL;
 }
 
 bool _GodotSharp::_is_domain_finalizing_for_unload(int32_t p_domain_id) {
@@ -1370,7 +1370,7 @@ bool _GodotSharp::is_runtime_shutting_down() {
 }
 
 bool _GodotSharp::is_runtime_initialized() {
-	return GDMono::get_singleton()->is_runtime_initialized();
+	return GDMono::get_singleton() && GDMono::get_singleton()->is_runtime_initialized();
 }
 
 void _GodotSharp::_reload_assemblies(bool p_soft_reload) {

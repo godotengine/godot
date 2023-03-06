@@ -125,7 +125,7 @@ void set_main_thread(MonoThread *p_thread) {
 }
 
 MonoThread *attach_current_thread() {
-	ERR_FAIL_COND_V(!GDMono::get_singleton()->is_runtime_initialized(), NULL);
+	ERR_FAIL_COND_V(!GDMono::get_singleton() || !GDMono::get_singleton()->is_runtime_initialized(), NULL);
 	MonoDomain *scripts_domain = GDMono::get_singleton()->get_scripts_domain();
 #ifndef GD_MONO_SINGLE_APPDOMAIN
 	MonoThread *mono_thread = mono_thread_attach(scripts_domain ? scripts_domain : mono_get_root_domain());
@@ -138,14 +138,14 @@ MonoThread *attach_current_thread() {
 }
 
 void detach_current_thread() {
-	ERR_FAIL_COND(!GDMono::get_singleton()->is_runtime_initialized());
+	ERR_FAIL_COND(!GDMono::get_singleton() || !GDMono::get_singleton()->is_runtime_initialized());
 	MonoThread *mono_thread = mono_thread_current();
 	ERR_FAIL_NULL(mono_thread);
 	mono_thread_detach(mono_thread);
 }
 
 void detach_current_thread(MonoThread *p_mono_thread) {
-	ERR_FAIL_COND(!GDMono::get_singleton()->is_runtime_initialized());
+	ERR_FAIL_COND(!GDMono::get_singleton() || !GDMono::get_singleton()->is_runtime_initialized());
 	ERR_FAIL_NULL(p_mono_thread);
 	mono_thread_detach(p_mono_thread);
 }
@@ -633,7 +633,7 @@ GDMonoClass *make_generic_dictionary_type(MonoReflectionType *p_key_reftype, Mon
 
 ScopeThreadAttach::ScopeThreadAttach() :
 		mono_thread(NULL) {
-	if (likely(GDMono::get_singleton()->is_runtime_initialized()) && unlikely(!mono_domain_get())) {
+	if (likely(GDMono::get_singleton()) && likely(GDMono::get_singleton()->is_runtime_initialized()) && unlikely(!mono_domain_get())) {
 		mono_thread = GDMonoUtils::attach_current_thread();
 	}
 }
