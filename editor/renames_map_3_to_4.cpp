@@ -1082,6 +1082,7 @@ const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
 	{ "files_disabled", "file_disabled_color" }, // Theme
 	{ "folder_icon_modulate", "folder_icon_color" }, // Theme
 	{ "global_rate_scale", "playback_speed_scale" }, // AudioServer
+	{ "global_translation", "global_position" }, // Node3D
 	{ "gravity_distance_scale", "gravity_point_unit_distance" }, // Area(2D/3D)
 	{ "gravity_vec", "gravity_direction" }, // Area(2D/3D)
 	{ "hint_tooltip", "tooltip_text" }, // Control
@@ -1481,6 +1482,7 @@ const char *RenamesMap3To4::class_renames[][2] = {
 	{ "CubeMesh", "BoxMesh" },
 	{ "CylinderShape", "CylinderShape3D" },
 	{ "DirectionalLight", "DirectionalLight3D" },
+	{ "Directory", "DirAccess" },
 	{ "DynamicFont", "FontFile" },
 	{ "DynamicFontData", "FontFile" },
 	{ "EditorNavigationMeshGenerator", "NavigationMeshGenerator" },
@@ -1523,6 +1525,7 @@ const char *RenamesMap3To4::class_renames[][2] = {
 	{ "NavigationPolygonInstance", "NavigationRegion2D" },
 	{ "NavigationRegion", "NavigationRegion3D" },
 	{ "NavigationServer", "NavigationServer3D" },
+	{ "NetworkedMultiplayerCustom", "MultiplayerPeerExtension" },
 	{ "NetworkedMultiplayerENet", "ENetMultiplayerPeer" },
 	{ "NetworkedMultiplayerPeer", "MultiplayerPeer" },
 	{ "Occluder", "OccluderInstance3D" },
