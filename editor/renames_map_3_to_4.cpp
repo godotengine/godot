@@ -1095,6 +1095,7 @@ const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
 	{ "margin_top", "offset_top" }, // Control -- Breaks NinePatchRect, StyleBox.
 	{ "mid_height", "height" }, // CapsuleMesh
 	{ "neighbor_dist", "neighbor_distance" }, // NavigationAgent2D, NavigationAgent3D
+	{ "octaves", "fractal_octaves" }, // OpenSimplexNoise -> FastNoiseLite
 	{ "offset_h", "drag_horizontal_offset" }, // Camera2D
 	{ "offset_v", "drag_vertical_offset" }, // Camera2D
 	{ "off_disabled", "unchecked_disabled" }, // Theme
@@ -1188,6 +1189,7 @@ const char *RenamesMap3To4::csharp_properties_renames[][2] = {
 	{ "MarginTop", "OffsetTop" }, // Control -- Breaks NinePatchRect, StyleBox.
 	{ "MidHeight", "Height" }, // CapsuleMesh
 	{ "NeighborDist", "NeighborDistance" }, // NavigationAgent2D, NavigationAgent3D
+	{ "Octaves", "FractalOctaves" }, // OpenSimplexNoise -> FastNoiseLite
 	{ "OffsetH", "DragHorizontalOffset" }, // Camera2D
 	{ "OffsetV", "DragVerticalOffset" }, // Camera2D
 	{ "OffDisabled", "UncheckedDisabled" }, // Theme
@@ -1522,6 +1524,7 @@ const char *RenamesMap3To4::class_renames[][2] = {
 	{ "NetworkedMultiplayerPeer", "MultiplayerPeer" },
 	{ "Occluder", "OccluderInstance3D" },
 	{ "OmniLight", "OmniLight3D" },
+	{ "OpenSimplexNoise", "FastNoiseLite" },
 	{ "PHashTranslation", "OptimizedTranslation" },
 	{ "PacketPeerGDNative", "PacketPeerExtension" },
 	{ "PanoramaSky", "Sky" },
