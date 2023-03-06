@@ -527,6 +527,10 @@ protected:
 		scroll_to_item(Object::cast_to<TreeItem>(p_item));
 	}
 
+	void _set_selected(Object *p_item, int p_column) {
+		set_selected(Object::cast_to<TreeItem>(p_item), p_column);
+	}
+
 public:
 	virtual String get_tooltip(const Point2 &p_pos) const;
 
@@ -549,6 +553,7 @@ public:
 	bool is_root_hidden() const;
 	TreeItem *get_next_selected(TreeItem *p_item);
 	TreeItem *get_selected() const;
+	void set_selected(TreeItem *p_item, int p_column = 0);
 	int get_selected_column() const;
 	int get_pressed_button() const;
 	void set_select_mode(SelectMode p_mode);

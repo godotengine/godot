@@ -202,6 +202,14 @@
 				Sets the title of a column.
 			</description>
 		</method>
+		<method name="set_selected">
+			<return type="void" />
+			<argument index="0" name="item" type="Object" />
+			<argument index="1" name="column" type="int" />
+			<description>
+				Selects the specified [TreeItem] and column.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="allow_reselect" type="bool" setter="set_allow_reselect" getter="get_allow_reselect" default="false">
