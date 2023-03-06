@@ -3586,7 +3586,72 @@ void ScriptEditor::_on_find_in_files_result_selected(String fpath, int line_numb
 			shader_editor->get_shader_editor(res)->goto_line_selection(line_number - 1, begin, end);
 			return;
 		} else if (fpath.get_extension() == "tscn") {
+			Ref<FileAccess> f = FileAccess::open(fpath, FileAccess::READ);
+			bool is_script_found = false;
+
+			// Starting from top of the tscn file.
+			int scr_start_line = 1;
+
+			String scr_header = "[sub_resource type=\"GDScript\" id=\"";
+			String scr_id = "";
+			String line = "";
+
+			int l = 0;
+
+			while (!f->eof_reached()) {
+				line = f->get_line();
+				l++;
+
+				if (!line.begins_with(scr_header)) {
+					continue;
+				}
+
+				// Found the end of the script.
+				scr_id = line.get_slice(scr_header, 1);
+				scr_id = scr_id.get_slice("\"", 0);
+
+				scr_start_line = l + 1;
+				int scr_line_count = 0;
+
+				do {
+					line = f->get_line();
+					l++;
+					String strline = line.strip_edges();
+
+					if (strline.ends_with("\"") && !strline.ends_with("\\\"")) {
+						// Found the end of script.
+						break;
+					}
+					scr_line_count++;
+
+				} while (!f->eof_reached());
+
+				if (line_number > scr_start_line + scr_line_count) {
+					// Find in another built-in GDScript.
+					continue;
+				}
+
+				// Real line number of the built-in script.
+				line_number = line_number - scr_start_line;
+
+				is_script_found = true;
+				break;
+			}
+
 			EditorNode::get_singleton()->load_scene(fpath);
+
+			if (is_script_found && !scr_id.is_empty()) {
+				Ref<Script> scr = ResourceLoader::load(fpath + "::" + scr_id, "Script");
+				if (scr.is_valid()) {
+					edit(scr);
+					ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(_get_current_editor());
+
+					if (ste) {
+						ste->goto_line_selection(line_number, begin, end);
+					}
+				}
+			}
+
 			return;
 		} else {
 			Ref<Script> scr = res;
