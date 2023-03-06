@@ -42,7 +42,7 @@
 
 #import <CoreMotion/CoreMotion.h>
 
-static const int max_touches = 8;
+static const int max_touches = 32;
 
 @interface GodotView () {
 	UITouch *godot_touches[max_touches];

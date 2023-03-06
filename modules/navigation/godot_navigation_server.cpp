@@ -605,7 +605,7 @@ COMMAND_1(free, RID, p_object) {
 		memdelete(agent);
 
 	} else {
-		ERR_FAIL_COND("RID not found by NavigationServer.");
+		ERR_PRINT("Attempted to free a NavigationServer RID that did not exist (or was already freed).");
 	}
 }
 
