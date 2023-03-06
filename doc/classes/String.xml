@@ -559,14 +559,14 @@
 			<return type="bool" />
 			<argument index="0" name="expr" type="String" />
 			<description>
-				Does a simple case-sensitive expression match, where [code]"*"[/code] matches zero or more arbitrary characters and [code]"?"[/code] matches any single character except a period ([code]"."[/code]). An empty string or empty expression always evaluates to [code]false[/code].
+				Does a simple expression match (also called "glob" or "globbing"), where [code]*[/code] matches zero or more arbitrary characters and [code]?[/code] matches any single character except a period ([code].[/code]). An empty string or empty expression always evaluates to [code]false[/code].
 			</description>
 		</method>
 		<method name="matchn">
 			<return type="bool" />
 			<argument index="0" name="expr" type="String" />
 			<description>
-				Does a simple case-insensitive expression match, where [code]"*"[/code] matches zero or more arbitrary characters and [code]"?"[/code] matches any single character except a period ([code]"."[/code]). An empty string or empty expression always evaluates to [code]false[/code].
+				Does a simple [b]case-insensitive[/b] expression match, where [code]*[/code] matches zero or more arbitrary characters and [code]?[/code] matches any single character except a period ([code].[/code]). An empty string or empty expression always evaluates to [code]false[/code].
 			</description>
 		</method>
 		<method name="md5_buffer">
@@ -626,13 +626,13 @@
 		<method name="percent_decode">
 			<return type="String" />
 			<description>
-				Decode a percent-encoded string. See [method percent_encode].
+				Decode a percent-encoded string (also called URI-encoded string). See also [method percent_encode].
 			</description>
 		</method>
 		<method name="percent_encode">
 			<return type="String" />
 			<description>
-				Percent-encodes a string. Encodes parameters in a URL when sending a HTTP GET request (and bodies of form-urlencoded POST requests).
+				Percent-encodes a string (also called URI-encoded string). Encodes parameters in a URL when sending a HTTP GET request (and bodies of form-urlencoded POST requests). See also [method percent_decode].
 			</description>
 		</method>
 		<method name="plus_file">

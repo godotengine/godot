@@ -226,6 +226,7 @@ public:
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
 
+	void update_clipboard();
 	void set_window(Windows::UI::Core::CoreWindow ^ p_window);
 	void screen_size_changed();
 

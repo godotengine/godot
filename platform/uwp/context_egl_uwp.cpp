@@ -118,10 +118,12 @@ Error ContextEGL_UWP::initialize() {
 			EGL_PLATFORM_ANGLE_TYPE_ANGLE,
 			EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
 
+#ifdef EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER
 			// EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER is an optimization that can have large performance benefits on mobile devices.
 			// Its syntax is subject to change, though. Please update your Visual Studio templates if you experience compilation issues with it.
 			EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER,
 			EGL_TRUE,
+#endif
 
 			// EGL_PLATFORM_ANGLE_ENABLE_AUTOMATIC_TRIM_ANGLE is an option that enables ANGLE to automatically call
 			// the IDXGIDevice3::Trim method on behalf of the application when it gets suspended.

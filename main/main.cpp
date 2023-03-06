@@ -2395,9 +2395,11 @@ bool Main::iteration() {
 		auto_build_solutions = false;
 		// Only relevant when running the editor.
 		if (!editor) {
+			OS::get_singleton()->set_exit_code(EXIT_FAILURE);
 			ERR_FAIL_V_MSG(true, "Command line option --build-solutions was passed, but no project is being edited. Aborting.");
 		}
 		if (!EditorNode::get_singleton()->call_build()) {
+			OS::get_singleton()->set_exit_code(EXIT_FAILURE);
 			ERR_FAIL_V_MSG(true, "Command line option --build-solutions was passed, but the build callback failed. Aborting.");
 		}
 	}
@@ -2485,9 +2487,9 @@ void Main::cleanup(bool p_force) {
 		memdelete(camera_server);
 	}
 
+	finalize_navigation_server();
 	OS::get_singleton()->finalize();
 	finalize_physics();
-	finalize_navigation_server();
 
 	if (packed_data) {
 		memdelete(packed_data);

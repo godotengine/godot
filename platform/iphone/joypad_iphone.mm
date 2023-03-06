@@ -309,6 +309,23 @@ void JoypadIPhone::start_processing() {
 				float value = gamepad.rightTrigger.value;
 				OSIPhone::get_singleton()->joy_axis(joy_id, JOY_ANALOG_R2, value);
 			}
+
+			if (@available(iOS 13, *)) {
+				if (element == gamepad.buttonOptions) {
+					OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_10,
+							gamepad.buttonOptions.isPressed);
+				} else if (element == gamepad.buttonMenu) {
+					OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_11,
+							gamepad.buttonMenu.isPressed);
+				}
+			}
+
+			if (@available(iOS 14, *)) {
+				if (element == gamepad.buttonHome) {
+					OSIPhone::get_singleton()->joy_button(joy_id, JOY_GUIDE,
+							gamepad.buttonHome.isPressed);
+				}
+			}
 		};
 	} else if (controller.microGamepad != nil) {
 		// micro gamepads were added in OS 9 and feature just 2 buttons and a d-pad

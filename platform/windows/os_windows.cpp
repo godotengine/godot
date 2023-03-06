@@ -321,6 +321,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				alt_mem = false;
 				control_mem = false;
 				shift_mem = false;
+				gr_mem = false;
 			} else { // WM_INACTIVE
 				input->release_pressed_events();
 				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
@@ -3057,7 +3058,7 @@ void OS_Windows::set_native_icon(const String &p_filename) {
 	pos += sizeof(WORD);
 	f->seek(pos);
 
-	icon_dir = (ICONDIR *)memrealloc(icon_dir, 3 * sizeof(WORD) + icon_dir->idCount * sizeof(ICONDIRENTRY));
+	icon_dir = (ICONDIR *)memrealloc(icon_dir, sizeof(ICONDIR) + (icon_dir->idCount * sizeof(ICONDIRENTRY)));
 	f->get_buffer((uint8_t *)&icon_dir->idEntries[0], icon_dir->idCount * sizeof(ICONDIRENTRY));
 
 	int small_icon_index = -1; // Select 16x16 with largest color count
