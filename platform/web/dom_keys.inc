@@ -51,6 +51,7 @@ Key dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], b
 	DOM2GODOT("Numpad9", KP_9);
 	DOM2GODOT("NumpadAdd", KP_ADD);
 	DOM2GODOT("NumpadBackspace", BACKSPACE);
+	DOM2GODOT("Clear", CLEAR); // NumLock on macOS.
 	DOM2GODOT("NumpadClear", CLEAR);
 	DOM2GODOT("NumpadClearEntry", CLEAR);
 	//DOM2GODOT("NumpadComma", UNKNOWN);
@@ -125,16 +126,22 @@ Key dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], b
 	DOM2GODOT("Slash", SLASH);
 
 	// Functional keys in the Alphanumeric section.
+	DOM2GODOT("Alt", ALT);
 	DOM2GODOT("AltLeft", ALT);
 	DOM2GODOT("AltRight", ALT);
 	DOM2GODOT("Backspace", BACKSPACE);
 	DOM2GODOT("CapsLock", CAPSLOCK);
 	DOM2GODOT("ContextMenu", MENU);
+	DOM2GODOT("Control", CTRL);
 	DOM2GODOT("ControlLeft", CTRL);
 	DOM2GODOT("ControlRight", CTRL);
 	DOM2GODOT("Enter", ENTER);
+	DOM2GODOT("Meta", META);
 	DOM2GODOT("MetaLeft", META);
 	DOM2GODOT("MetaRight", META);
+	DOM2GODOT("OSLeft", META); // Command on macOS.
+	DOM2GODOT("OSRight", META); // Command on macOS.
+	DOM2GODOT("Shift", SHIFT);
 	DOM2GODOT("ShiftLeft", SHIFT);
 	DOM2GODOT("ShiftRight", SHIFT);
 	DOM2GODOT("Space", SPACE);
