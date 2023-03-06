@@ -219,8 +219,6 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		exceptions.insert("ProceduralSky");
 		exceptions.insert("EditorControlAnchor");
 		exceptions.insert("DefaultProjectIcon");
-		exceptions.insert("GuiChecked");
-		exceptions.insert("GuiRadioChecked");
 		exceptions.insert("GuiCloseCustomizable");
 		exceptions.insert("GuiGraphNodePort");
 		exceptions.insert("GuiResizer");
@@ -244,9 +242,11 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	}
 
 	// These ones should be converted even if we are using a dark theme.
+	const Color accent_color = EDITOR_GET("interface/theme/accent_color");
 	const Color error_color = p_theme->get_color("error_color", "Editor");
 	const Color success_color = p_theme->get_color("success_color", "Editor");
 	const Color warning_color = p_theme->get_color("warning_color", "Editor");
+	dark_icon_color_dictionary[Color::html("#699ce8")] = accent_color;
 	dark_icon_color_dictionary[Color::html("#ff0000")] = error_color;
 	dark_icon_color_dictionary[Color::html("#45ff8b")] = success_color;
 	dark_icon_color_dictionary[Color::html("#dbab09")] = warning_color;
@@ -682,7 +682,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_color_hover", "CheckButton", icon_color_hover);
 
 	theme->set_constant("hseparation", "CheckButton", 4 * EDSCALE);
-	theme->set_constant("check_vadjust", "CheckButton", 0 * EDSCALE);
+	theme->set_constant("check_vadjust", "CheckButton", 0);
 
 	// Checkbox
 	Ref<StyleBoxFlat> sb_checkbox = style_menu->duplicate();
@@ -712,7 +712,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_color_hover", "CheckBox", icon_color_hover);
 
 	theme->set_constant("hseparation", "CheckBox", 4 * EDSCALE);
-	theme->set_constant("check_vadjust", "CheckBox", 0 * EDSCALE);
+	theme->set_constant("check_vadjust", "CheckBox", 0);
 
 	// PopupDialog
 	theme->set_stylebox("panel", "PopupDialog", style_popup);
@@ -1104,7 +1104,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color_shadow", "RichTextLabel", Color(0, 0, 0, 0));
 	theme->set_constant("shadow_offset_x", "RichTextLabel", 1 * EDSCALE);
 	theme->set_constant("shadow_offset_y", "RichTextLabel", 1 * EDSCALE);
-	theme->set_constant("shadow_as_outline", "RichTextLabel", 0 * EDSCALE);
+	theme->set_constant("shadow_as_outline", "RichTextLabel", 0);
 	theme->set_stylebox("focus", "RichTextLabel", make_empty_stylebox());
 	theme->set_stylebox("normal", "RichTextLabel", style_tree_bg);
 
@@ -1119,7 +1119,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color_shadow", "Label", Color(0, 0, 0, 0));
 	theme->set_constant("shadow_offset_x", "Label", 1 * EDSCALE);
 	theme->set_constant("shadow_offset_y", "Label", 1 * EDSCALE);
-	theme->set_constant("shadow_as_outline", "Label", 0 * EDSCALE);
+	theme->set_constant("shadow_as_outline", "Label", 0);
 	theme->set_constant("line_spacing", "Label", 3 * EDSCALE);
 
 	// LinkButton
