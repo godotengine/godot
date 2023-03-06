@@ -44,6 +44,7 @@
 #endif
 
 #include "mono_gd/gd_mono.h"
+#include "utils/path_utils.h"
 
 namespace GodotSharpDirs {
 
@@ -139,8 +140,7 @@ private:
 		api_assemblies_dir = api_assemblies_base_dir.path_join(GDMono::get_expected_api_build_config());
 #else // TOOLS_ENABLED
 		String arch = Engine::get_singleton()->get_architecture_name();
-		String appname = GLOBAL_GET("application/config/name");
-		String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
+		String appname_safe = path::get_csharp_project_name();
 		String data_dir_root = exe_dir.path_join("data_" + appname_safe + "_" + arch);
 		if (!DirAccess::exists(data_dir_root)) {
 			data_dir_root = exe_dir.path_join("data_Godot_" + arch);
