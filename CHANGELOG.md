@@ -57,7 +57,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - stb_vorbis updated to version 1.22.
 - zlib/minizip updated to version 1.2.13.
 - CA root certificates updated to 2022-10-21 bundle from Mozilla.
-- SDL GameControllerDB updated to 2022-12-07 git snapshot.
+- SDL GameControllerDB updated to 2023-02-27 git snapshot.
 
 ### Fixed
 
@@ -84,6 +84,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Fix hashing bug for PoolArrays comparisons ([GH-71103](https://github.com/godotengine/godot/pull/71103)).
 - Fix `File.get_path()` not working for compressed files ([GH-70726](https://github.com/godotengine/godot/pull/70726)).
 - Revert "RID: Change comparison operators to use RID_Data id instead of address" ([GH-69946](https://github.com/godotengine/godot/pull/69946)).
+- Prevent division by zero in posmod ([GH-73119](https://github.com/godotengine/godot/pull/73119)).
 
 #### Editor
 
@@ -136,32 +137,45 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Fix emitting `target_reached` signal before updating state ([GH-68072](https://github.com/godotengine/godot/pull/68072)).
 - Fix crash conditions in Navigation system ([GH-68988](https://github.com/godotengine/godot/pull/68988)).
 - Fix Recast crash in NavigationMesh baking ([GH-69189](https://github.com/godotengine/godot/pull/69189)).
+- Move navigation server finalize before physics server ([GH-70343](https://github.com/godotengine/godot/pull/70343)).
 
 #### Physics
 
 - Fix computation of RigidBody2D `inverse_mass` when inertia is defined by the user ([GH-68659](https://github.com/godotengine/godot/pull/68659)).
 - Fix typo bug in heightmap shape ([GH-69852](https://github.com/godotengine/godot/pull/69852)).
 - Fix pairing crash in physics Octree ([GH-70365](https://github.com/godotengine/godot/pull/70365)).
+- Fix BVH lockguards for multithread mode ([GH-73629](https://github.com/godotengine/godot/pull/73629)).
 
 #### Porting
 
 - Android: Fix potential null in keyboard handling ([GH-66942](https://github.com/godotengine/godot/pull/66942)).
 - Android: Fix exporting custom `APPLICATION_ATTRIBS` ([GH-69024](https://github.com/godotengine/godot/pull/69024)).
+- Android: Fix writing value for XR hand tracking V2.0 in manifest ([GH-71231](https://github.com/godotengine/godot/pull/71231)).
 - HTML5: Add missing `OS::get_cursor_shape()` implementation ([GH-66871](https://github.com/godotengine/godot/pull/66871)).
 - HTML5: Fix bug in setting custom cursor ([GH-67044](https://github.com/godotengine/godot/pull/67044)).
 - iOS: Add new model identifiers for DPI metrics ([GH-70022](https://github.com/godotengine/godot/pull/70022)).
+- iOS: Implement missing `gamepad.buttonOptions`, `buttonMenu`, and `buttonHome` joy buttons ([GH-73781](https://github.com/godotengine/godot/pull/73781)).
+- iOS: Increase max simultaneous touches to 32 ([GH-74367](https://github.com/godotengine/godot/pull/74367)).
 - Linux: Fix burning CPU with udev disabled on Flatpak ([GH-69563](https://github.com/godotengine/godot/pull/69563)).
 - macOS: Update activation hack to work on Ventura ([GH-68777](https://github.com/godotengine/godot/pull/68777)).
-- macoS: Fix stylus tilt Y direction ([GH-70498](https://github.com/godotengine/godot/pull/70498)).
+- macOS: Fix stylus tilt Y direction ([GH-70498](https://github.com/godotengine/godot/pull/70498)).
+- UWP: Fix app crash when updating clipboard ([GH-73126](https://github.com/godotengine/godot/pull/73126)).
+- UWP: Fix build with Google ANGLE not supporting `EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER` ([GH-73127](https://github.com/godotengine/godot/pull/73127)).
+- Web: Add PS3 controller guide button mapping ([GH-73163](https://github.com/godotengine/godot/pull/73163)).
+- Web: Fix Standard Gamepad Mapping triggers for Chromium-based browsers ([GH-73254](https://github.com/godotengine/godot/pull/73254)).
 - Windows: Fix handling of some dead key combinations using Unicode char instead of Virtual key ([GH-66314](https://github.com/godotengine/godot/pull/66314)).
 - Windows: Fix Directory `make_dir()` choking on ".." ([GH-66467](https://github.com/godotengine/godot/pull/66467)).
 - Windows: Fix newlines not honored in Windows console subsystem ([GH-67236](https://github.com/godotengine/godot/pull/67236)).
+- Windows: Fix heap overflow setting native icon ([GH-71699](https://github.com/godotengine/godot/pull/71699)).
+- Windows: Fix Alt Gr getting stuck after Right Alt-Tab ([GH-71730](https://github.com/godotengine/godot/pull/71730)).
+- Windows: Fix Xbox Series controller detected as 2 devices ([GH-71784](https://github.com/godotengine/godot/pull/71784)).
 
 #### Rendering
 
 - Fix debanding strength being affected by environment adjustments ([GH-66327](https://github.com/godotengine/godot/pull/66327)).
 - Fix potential shader compiler out of bounds read ([GH-68813](https://github.com/godotengine/godot/pull/68813)).
 - Fix GLES 2 SpotLight bug with shadow filter mode ([GH-69826](https://github.com/godotengine/godot/pull/69826)).
+- Fix GLES 2 octahedral half float unpacking ([GH-71510](https://github.com/godotengine/godot/pull/71510)).
 
 
 ## [3.5.1] - 2022-09-28
