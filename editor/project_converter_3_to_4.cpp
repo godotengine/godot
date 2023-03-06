@@ -2268,6 +2268,10 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	if (line.contains("_unhandled_key_input(event: InputEventKey)")) {
 		line = line.replace("_unhandled_key_input(event: InputEventKey)", "_unhandled_key_input(event: InputEvent)");
 	}
+
+	if (line.contains("Engine.editor_hint")) {
+		line = line.replace("Engine.editor_hint", "Engine.is_editor_hint()");
+	}
 }
 
 void ProjectConverter3To4::process_csharp_line(String &line, const RegExContainer &reg_container) {
