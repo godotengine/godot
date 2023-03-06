@@ -1232,6 +1232,12 @@ Error ImageTexture3D::create(Image::Format p_format, int p_width, int p_height, 
 		texture = tex;
 	}
 
+	format = p_format;
+	width = p_width;
+	height = p_height;
+	depth = p_depth;
+	mipmaps = p_mipmaps;
+
 	return OK;
 }
 
