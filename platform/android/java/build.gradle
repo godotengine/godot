@@ -20,6 +20,13 @@ plugins {
 apply from: 'app/config.gradle'
 apply from: 'scripts/publish-root.gradle'
 
+ext {
+    PUBLISH_VERSION = getGodotPublishVersion()
+}
+
+group = ossrhGroupId
+version = PUBLISH_VERSION
+
 allprojects {
     repositories {
         google()
