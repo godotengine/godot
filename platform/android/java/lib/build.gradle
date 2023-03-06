@@ -4,7 +4,6 @@ plugins {
 }
 
 ext {
-    PUBLISH_VERSION = getGodotPublishVersion()
     PUBLISH_ARTIFACT_ID = 'godot'
 }
 
