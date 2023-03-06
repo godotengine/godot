@@ -323,9 +323,7 @@ void ShapeCast2D::add_exception_rid(const RID &p_rid) {
 void ShapeCast2D::add_exception(const Object *p_object) {
 	ERR_FAIL_NULL(p_object);
 	const CollisionObject2D *co = Object::cast_to<CollisionObject2D>(p_object);
-	if (!co) {
-		return;
-	}
+	ERR_FAIL_COND_MSG(!co, "The passed Node must be an instance of CollisionObject2D.");
 	add_exception_rid(co->get_rid());
 }
 
@@ -336,9 +334,7 @@ void ShapeCast2D::remove_exception_rid(const RID &p_rid) {
 void ShapeCast2D::remove_exception(const Object *p_object) {
 	ERR_FAIL_NULL(p_object);
 	const CollisionObject2D *co = Object::cast_to<CollisionObject2D>(p_object);
-	if (!co) {
-		return;
-	}
+	ERR_FAIL_COND_MSG(!co, "The passed Node must be an instance of CollisionObject2D.");
 	remove_exception_rid(co->get_rid());
 }
 
