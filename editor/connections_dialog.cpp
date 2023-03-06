@@ -343,6 +343,9 @@ void ConnectDialog::_update_method_tree() {
 		si_item->set_icon(0, get_theme_icon(SNAME("Script"), SNAME("EditorIcons")));
 		si_item->set_selectable(0, false);
 
+		if (si->get_script()->is_built_in()) {
+			si->get_script()->reload();
+		}
 		List<MethodInfo> methods;
 		si->get_method_list(&methods);
 		methods = _filter_method_list(methods, signal_info, search_string);
