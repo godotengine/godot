@@ -122,6 +122,9 @@ public:
 	RegEx keyword_gdscript_master = RegEx("^master func");
 	RegEx keyword_gdscript_mastersync = RegEx("^mastersync func");
 
+	RegEx gdscript_comment = RegEx("^\\s*#");
+	RegEx csharp_comment = RegEx("^\\s*\\/\\/");
+
 	// CSharp keywords.
 	RegEx keyword_csharp_remote = RegEx("\\[Remote(Attribute)?(\\(\\))?\\]");
 	RegEx keyword_csharp_remotesync = RegEx("\\[(Remote)?Sync(Attribute)?(\\(\\))?\\]");
@@ -337,17 +340,21 @@ bool ProjectConverter3To4::convert() {
 	// Check file by file.
 	for (int i = 0; i < collected_files.size(); i++) {
 		String file_name = collected_files[i];
-		Vector<String> lines;
+		Vector<SourceLine> source_lines;
 		uint32_t ignored_lines = 0;
 		{
 			Ref<FileAccess> file = FileAccess::open(file_name, FileAccess::READ);
 			ERR_CONTINUE_MSG(file.is_null(), vformat("Unable to read content of \"%s\".", file_name));
 			while (!file->eof_reached()) {
 				String line = file->get_line();
-				lines.append(line);
+
+				SourceLine source_line;
+				source_line.line = line;
+				source_line.is_comment = reg_container.gdscript_comment.search_all(line).size() > 0 || reg_container.csharp_comment.search_all(line).size() > 0;
+				source_lines.append(source_line);
 			}
 		}
-		String file_content_before = collect_string_from_vector(lines);
+		String file_content_before = collect_string_from_vector(source_lines);
 		uint64_t hash_before = file_content_before.hash();
 		uint64_t file_size = file_content_before.size();
 		print_line(vformat("Trying to convert\t%d/%d file - \"%s\" with size - %d KB", i + 1, collected_files.size(), file_name.trim_prefix("res://"), file_size / 1024));
@@ -364,68 +371,69 @@ bool ProjectConverter3To4::convert() {
 		if (file_size < uint64_t(maximum_file_size)) {
 			// ".tscn" must work exactly the same as ".gd" files because they may contain built-in Scripts.
 			if (file_name.ends_with(".gd")) {
-				rename_classes(lines, reg_container); // Using only specialized function.
+				rename_classes(source_lines, reg_container); // Using only specialized function.
 
-				rename_common(RenamesMap3To4::enum_renames, reg_container.enum_regexes, lines);
-				rename_colors(lines, reg_container); // Require to additional rename.
+				rename_common(RenamesMap3To4::enum_renames, reg_container.enum_regexes, source_lines);
+				rename_colors(source_lines, reg_container); // Require to additional rename.
 
-				rename_common(RenamesMap3To4::gdscript_function_renames, reg_container.gdscript_function_regexes, lines);
-				rename_gdscript_functions(lines, reg_container, false); // Require to additional rename.
+				rename_common(RenamesMap3To4::gdscript_function_renames, reg_container.gdscript_function_regexes, source_lines);
+				rename_gdscript_functions(source_lines, reg_container, false); // Require to additional rename.
 
-				rename_common(RenamesMap3To4::project_settings_renames, reg_container.project_settings_regexes, lines);
-				rename_gdscript_keywords(lines, reg_container);
-				rename_common(RenamesMap3To4::gdscript_properties_renames, reg_container.gdscript_properties_regexes, lines);
-				rename_common(RenamesMap3To4::gdscript_signals_renames, reg_container.gdscript_signals_regexes, lines);
-				rename_common(RenamesMap3To4::shaders_renames, reg_container.shaders_regexes, lines);
-				rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, lines);
+				rename_common(RenamesMap3To4::project_settings_renames, reg_container.project_settings_regexes, source_lines);
+				rename_gdscript_keywords(source_lines, reg_container);
+				rename_common(RenamesMap3To4::gdscript_properties_renames, reg_container.gdscript_properties_regexes, source_lines);
+				rename_common(RenamesMap3To4::gdscript_signals_renames, reg_container.gdscript_signals_regexes, source_lines);
+				rename_common(RenamesMap3To4::shaders_renames, reg_container.shaders_regexes, source_lines);
+				rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, source_lines);
 
-				custom_rename(lines, "\\.shader", ".gdshader");
+				custom_rename(source_lines, "\\.shader", ".gdshader");
 			} else if (file_name.ends_with(".tscn")) {
-				rename_classes(lines, reg_container); // Using only specialized function.
+				rename_classes(source_lines, reg_container); // Using only specialized function.
 
-				rename_common(RenamesMap3To4::enum_renames, reg_container.enum_regexes, lines);
-				rename_colors(lines, reg_container); // Require to do additional renames.
+				rename_common(RenamesMap3To4::enum_renames, reg_container.enum_regexes, source_lines);
+				rename_colors(source_lines, reg_container); // Require to do additional renames.
 
-				rename_common(RenamesMap3To4::gdscript_function_renames, reg_container.gdscript_function_regexes, lines);
-				rename_gdscript_functions(lines, reg_container, true); // Require to do additional renames.
+				rename_common(RenamesMap3To4::gdscript_function_renames, reg_container.gdscript_function_regexes, source_lines);
+				rename_gdscript_functions(source_lines, reg_container, true); // Require to do additional renames.
 
-				rename_common(RenamesMap3To4::project_settings_renames, reg_container.project_settings_regexes, lines);
-				rename_gdscript_keywords(lines, reg_container);
-				rename_common(RenamesMap3To4::gdscript_properties_renames, reg_container.gdscript_properties_regexes, lines);
-				rename_common(RenamesMap3To4::gdscript_signals_renames, reg_container.gdscript_signals_regexes, lines);
-				rename_common(RenamesMap3To4::shaders_renames, reg_container.shaders_regexes, lines);
-				rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, lines);
+				rename_common(RenamesMap3To4::project_settings_renames, reg_container.project_settings_regexes, source_lines);
+				rename_gdscript_keywords(source_lines, reg_container);
+				rename_common(RenamesMap3To4::gdscript_properties_renames, reg_container.gdscript_properties_regexes, source_lines);
+				rename_common(RenamesMap3To4::gdscript_signals_renames, reg_container.gdscript_signals_regexes, source_lines);
+				rename_common(RenamesMap3To4::shaders_renames, reg_container.shaders_regexes, source_lines);
+				rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, source_lines);
 
-				custom_rename(lines, "\\.shader", ".gdshader");
+				custom_rename(source_lines, "\\.shader", ".gdshader");
 			} else if (file_name.ends_with(".cs")) { // TODO, C# should use different methods.
-				rename_classes(lines, reg_container); // Using only specialized function.
-				rename_common(RenamesMap3To4::csharp_function_renames, reg_container.csharp_function_regexes, lines);
-				rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, lines);
-				rename_common(RenamesMap3To4::csharp_properties_renames, reg_container.csharp_properties_regexes, lines);
-				rename_common(RenamesMap3To4::csharp_signals_renames, reg_container.csharp_signal_regexes, lines);
-				rename_csharp_functions(lines, reg_container);
-				rename_csharp_attributes(lines, reg_container);
-				custom_rename(lines, "public class ", "public partial class ");
+				rename_classes(source_lines, reg_container); // Using only specialized function.
+				rename_common(RenamesMap3To4::csharp_function_renames, reg_container.csharp_function_regexes, source_lines);
+				rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, source_lines);
+				rename_common(RenamesMap3To4::csharp_properties_renames, reg_container.csharp_properties_regexes, source_lines);
+				rename_common(RenamesMap3To4::csharp_signals_renames, reg_container.csharp_signal_regexes, source_lines);
+				rename_csharp_functions(source_lines, reg_container);
+				rename_csharp_attributes(source_lines, reg_container);
+				custom_rename(source_lines, "public class ", "public partial class ");
 			} else if (file_name.ends_with(".gdshader") || file_name.ends_with(".shader")) {
-				rename_common(RenamesMap3To4::shaders_renames, reg_container.shaders_regexes, lines);
+				rename_common(RenamesMap3To4::shaders_renames, reg_container.shaders_regexes, source_lines);
 			} else if (file_name.ends_with("tres")) {
-				rename_classes(lines, reg_container); // Using only specialized function.
+				rename_classes(source_lines, reg_container); // Using only specialized function.
 
-				rename_common(RenamesMap3To4::shaders_renames, reg_container.shaders_regexes, lines);
-				rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, lines);
+				rename_common(RenamesMap3To4::shaders_renames, reg_container.shaders_regexes, source_lines);
+				rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, source_lines);
 
-				custom_rename(lines, "\\.shader", ".gdshader");
+				custom_rename(source_lines, "\\.shader", ".gdshader");
 			} else if (file_name.ends_with("project.godot")) {
-				rename_common(RenamesMap3To4::project_godot_renames, reg_container.project_godot_regexes, lines);
-				rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, lines);
-				rename_input_map_scancode(lines, reg_container);
-				rename_common(RenamesMap3To4::input_map_renames, reg_container.input_map_regexes, lines);
+				rename_common(RenamesMap3To4::project_godot_renames, reg_container.project_godot_regexes, source_lines);
+				rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, source_lines);
+				rename_input_map_scancode(source_lines, reg_container);
+				rename_common(RenamesMap3To4::input_map_renames, reg_container.input_map_regexes, source_lines);
 			} else if (file_name.ends_with(".csproj")) {
 				// TODO
 			} else if (file_name.ends_with(".import")) {
-				for (int x = 0; x < lines.size(); x++) {
-					if (lines[x].contains("nodes/root_type=\"Spatial\"")) {
-						lines.set(x, "nodes/root_type=\"Node3D\"");
+				for (SourceLine &source_line : source_lines) {
+					String &line = source_line.line;
+					if (line.contains("nodes/root_type=\"Spatial\"")) {
+						line = "nodes/root_type=\"Node3D\"";
 					}
 				}
 			} else {
@@ -433,7 +441,12 @@ bool ProjectConverter3To4::convert() {
 				continue;
 			}
 
-			for (String &line : lines) {
+			for (SourceLine &source_line : source_lines) {
+				if (source_line.is_comment) {
+					continue;
+				}
+
+				String &line = source_line.line;
 				if (uint64_t(line.length()) > maximum_line_length) {
 					ignored_lines += 1;
 				}
@@ -448,7 +461,7 @@ bool ProjectConverter3To4::convert() {
 			String end_message = vformat("    Checking file took %d ms.", end_time - start_time);
 			print_line(end_message);
 		} else {
-			String file_content_after = collect_string_from_vector(lines);
+			String file_content_after = collect_string_from_vector(source_lines);
 			uint64_t hash_after = file_content_after.hash64();
 			// Don't need to save file without any changes.
 			// Save if this is a shader, because it was renamed.
@@ -679,9 +692,23 @@ Vector<String> ProjectConverter3To4::check_for_files() {
 	return collected_files;
 }
 
+Vector<SourceLine> ProjectConverter3To4::split_lines(const String &text) {
+	Vector<String> lines = text.split("\n");
+	Vector<SourceLine> source_lines;
+	for (String &line : lines) {
+		SourceLine source_line;
+		source_line.line = line;
+		source_line.is_comment = false;
+
+		source_lines.append(source_line);
+	}
+	return source_lines;
+}
+
 // Test expected results of gdscript
-bool ProjectConverter3To4::test_conversion_gdscript_builtin(String name, String expected, void (ProjectConverter3To4::*func)(Vector<String> &, const RegExContainer &, bool), String what, const RegExContainer &reg_container, bool builtin_script) {
-	Vector<String> got = name.split("\n");
+bool ProjectConverter3To4::test_conversion_gdscript_builtin(String name, String expected, void (ProjectConverter3To4::*func)(Vector<SourceLine> &, const RegExContainer &, bool), String what, const RegExContainer &reg_container, bool builtin_script) {
+	Vector<SourceLine> got = split_lines(name);
+
 	(this->*func)(got, reg_container, builtin_script);
 	String got_str = collect_string_from_vector(got);
 	ERR_FAIL_COND_V_MSG(expected != got_str, false, vformat("Failed to convert %s \"%s\" to \"%s\", got instead \"%s\"", what, name, expected, got_str));
@@ -689,8 +716,9 @@ bool ProjectConverter3To4::test_conversion_gdscript_builtin(String name, String 
 	return true;
 }
 
-bool ProjectConverter3To4::test_conversion_with_regex(String name, String expected, void (ProjectConverter3To4::*func)(Vector<String> &, const RegExContainer &), String what, const RegExContainer &reg_container) {
-	Vector<String> got = name.split("\n");
+bool ProjectConverter3To4::test_conversion_with_regex(String name, String expected, void (ProjectConverter3To4::*func)(Vector<SourceLine> &, const RegExContainer &), String what, const RegExContainer &reg_container) {
+	Vector<SourceLine> got = split_lines(name);
+
 	(this->*func)(got, reg_container);
 	String got_str = collect_string_from_vector(got);
 	ERR_FAIL_COND_V_MSG(expected != got_str, false, vformat("Failed to convert %s \"%s\" to \"%s\", got instead \"%s\"", what, name, expected, got_str));
@@ -699,7 +727,8 @@ bool ProjectConverter3To4::test_conversion_with_regex(String name, String expect
 }
 
 bool ProjectConverter3To4::test_conversion_basic(String name, String expected, const char *array[][2], LocalVector<RegEx *> &regex_cache, String what) {
-	Vector<String> got = name.split("\n");
+	Vector<SourceLine> got = split_lines(name);
+
 	rename_common(array, regex_cache, got);
 	String got_str = collect_string_from_vector(got);
 	ERR_FAIL_COND_V_MSG(expected != got_str, false, vformat("Failed to convert %s \"%s\" to \"%s\", got instead \"%s\"", what, name, expected, got_str));
@@ -930,7 +959,9 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 		String from = "instance";
 		String to = "instantiate";
 		String name = "AA.instance()";
-		Vector<String> got = String("AA.instance()").split("\n");
+
+		Vector<SourceLine> got = split_lines(name);
+
 		String expected = "AA.instantiate()";
 		custom_rename(got, from, to);
 		String got_str = collect_string_from_vector(got);
@@ -1354,8 +1385,13 @@ String ProjectConverter3To4::get_object_of_execution(const String &line) const {
 	return line.substr(variable_start, (end - variable_start));
 }
 
-void ProjectConverter3To4::rename_colors(Vector<String> &lines, const RegExContainer &reg_container) {
-	for (String &line : lines) {
+void ProjectConverter3To4::rename_colors(Vector<SourceLine> &source_lines, const RegExContainer &reg_container) {
+	for (SourceLine &source_line : source_lines) {
+		if (source_line.is_comment) {
+			continue;
+		}
+
+		String &line = source_line.line;
 		if (uint64_t(line.length()) <= maximum_line_length) {
 			if (line.contains("Color.")) {
 				for (unsigned int current_index = 0; RenamesMap3To4::color_renames[current_index][0]; current_index++) {
@@ -1387,8 +1423,13 @@ Vector<String> ProjectConverter3To4::check_for_rename_colors(Vector<String> &lin
 	return found_renames;
 }
 
-void ProjectConverter3To4::rename_classes(Vector<String> &lines, const RegExContainer &reg_container) {
-	for (String &line : lines) {
+void ProjectConverter3To4::rename_classes(Vector<SourceLine> &source_lines, const RegExContainer &reg_container) {
+	for (SourceLine &source_line : source_lines) {
+		if (source_line.is_comment) {
+			continue;
+		}
+
+		String &line = source_line.line;
 		if (uint64_t(line.length()) <= maximum_line_length) {
 			for (unsigned int current_index = 0; RenamesMap3To4::class_renames[current_index][0]; current_index++) {
 				if (line.contains(RenamesMap3To4::class_renames[current_index][0])) {
@@ -1455,8 +1496,13 @@ Vector<String> ProjectConverter3To4::check_for_rename_classes(Vector<String> &li
 	return found_renames;
 }
 
-void ProjectConverter3To4::rename_gdscript_functions(Vector<String> &lines, const RegExContainer &reg_container, bool builtin) {
-	for (String &line : lines) {
+void ProjectConverter3To4::rename_gdscript_functions(Vector<SourceLine> &source_lines, const RegExContainer &reg_container, bool builtin) {
+	for (SourceLine &source_line : source_lines) {
+		if (source_line.is_comment) {
+			continue;
+		}
+
+		String &line = source_line.line;
 		if (uint64_t(line.length()) <= maximum_line_length) {
 			process_gdscript_line(line, reg_container, builtin);
 		}
@@ -2262,8 +2308,13 @@ void ProjectConverter3To4::process_csharp_line(String &line, const RegExContaine
 	}
 }
 
-void ProjectConverter3To4::rename_csharp_functions(Vector<String> &lines, const RegExContainer &reg_container) {
-	for (String &line : lines) {
+void ProjectConverter3To4::rename_csharp_functions(Vector<SourceLine> &source_lines, const RegExContainer &reg_container) {
+	for (SourceLine &source_line : source_lines) {
+		if (source_line.is_comment) {
+			continue;
+		}
+
+		String &line = source_line.line;
 		if (uint64_t(line.length()) <= maximum_line_length) {
 			process_csharp_line(line, reg_container);
 		}
@@ -2288,10 +2339,15 @@ Vector<String> ProjectConverter3To4::check_for_rename_csharp_functions(Vector<St
 	return found_renames;
 }
 
-void ProjectConverter3To4::rename_csharp_attributes(Vector<String> &lines, const RegExContainer &reg_container) {
+void ProjectConverter3To4::rename_csharp_attributes(Vector<SourceLine> &source_lines, const RegExContainer &reg_container) {
 	static String error_message = "The master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using Multiplayer.GetRemoteSenderId()\n";
 
-	for (String &line : lines) {
+	for (SourceLine &source_line : source_lines) {
+		if (source_line.is_comment) {
+			continue;
+		}
+
+		String &line = source_line.line;
 		if (uint64_t(line.length()) <= maximum_line_length) {
 			line = reg_container.keyword_csharp_remote.sub(line, "[RPC(MultiplayerAPI.RPCMode.AnyPeer)]", true);
 			line = reg_container.keyword_csharp_remotesync.sub(line, "[RPC(MultiplayerAPI.RPCMode.AnyPeer, CallLocal = true)]", true);
@@ -2353,10 +2409,15 @@ Vector<String> ProjectConverter3To4::check_for_rename_csharp_attributes(Vector<S
 	return found_renames;
 }
 
-void ProjectConverter3To4::rename_gdscript_keywords(Vector<String> &lines, const RegExContainer &reg_container) {
+void ProjectConverter3To4::rename_gdscript_keywords(Vector<SourceLine> &source_lines, const RegExContainer &reg_container) {
 	static String error_message = "The master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using get_multiplayer().get_remote_sender_id()\n";
 
-	for (String &line : lines) {
+	for (SourceLine &source_line : source_lines) {
+		if (source_line.is_comment) {
+			continue;
+		}
+
+		String &line = source_line.line;
 		if (uint64_t(line.length()) <= maximum_line_length) {
 			if (line.contains("tool")) {
 				line = reg_container.keyword_gdscript_tool.sub(line, "@tool", true);
@@ -2508,11 +2569,16 @@ Vector<String> ProjectConverter3To4::check_for_rename_gdscript_keywords(Vector<S
 	return found_renames;
 }
 
-void ProjectConverter3To4::rename_input_map_scancode(Vector<String> &lines, const RegExContainer &reg_container) {
+void ProjectConverter3To4::rename_input_map_scancode(Vector<SourceLine> &source_lines, const RegExContainer &reg_container) {
 	// The old Special Key, now colliding with CMD_OR_CTRL.
 	const int old_spkey = (1 << 24);
 
-	for (String &line : lines) {
+	for (SourceLine &source_line : source_lines) {
+		if (source_line.is_comment) {
+			continue;
+		}
+
+		String &line = source_line.line;
 		if (uint64_t(line.length()) <= maximum_line_length) {
 			TypedArray<RegExMatch> reg_match = reg_container.input_map_keycode.search_all(line);
 
@@ -2561,10 +2627,15 @@ Vector<String> ProjectConverter3To4::check_for_rename_input_map_scancode(Vector<
 	return found_renames;
 }
 
-void ProjectConverter3To4::custom_rename(Vector<String> &lines, String from, String to) {
+void ProjectConverter3To4::custom_rename(Vector<SourceLine> &source_lines, String from, String to) {
 	RegEx reg = RegEx(String("\\b") + from + "\\b");
 	CRASH_COND(!reg.is_valid());
-	for (String &line : lines) {
+	for (SourceLine &source_line : source_lines) {
+		if (source_line.is_comment) {
+			continue;
+		}
+
+		String &line = source_line.line;
 		if (uint64_t(line.length()) <= maximum_line_length) {
 			line = reg.sub(line, to, true);
 		}
@@ -2590,8 +2661,13 @@ Vector<String> ProjectConverter3To4::check_for_custom_rename(Vector<String> &lin
 	return found_renames;
 }
 
-void ProjectConverter3To4::rename_common(const char *array[][2], LocalVector<RegEx *> &cached_regexes, Vector<String> &lines) {
-	for (String &line : lines) {
+void ProjectConverter3To4::rename_common(const char *array[][2], LocalVector<RegEx *> &cached_regexes, Vector<SourceLine> &source_lines) {
+	for (SourceLine &source_line : source_lines) {
+		if (source_line.is_comment) {
+			continue;
+		}
+
+		String &line = source_line.line;
 		if (uint64_t(line.length()) <= maximum_line_length) {
 			for (unsigned int current_index = 0; current_index < cached_regexes.size(); current_index++) {
 				if (line.contains(array[current_index][0])) {
@@ -2661,10 +2737,10 @@ String ProjectConverter3To4::simple_line_formatter(int current_line, String old_
 }
 
 // Collects string from vector strings
-String ProjectConverter3To4::collect_string_from_vector(Vector<String> &vector) {
+String ProjectConverter3To4::collect_string_from_vector(Vector<SourceLine> &vector) {
 	String string = "";
 	for (int i = 0; i < vector.size(); i++) {
-		string += vector[i];
+		string += vector[i].line;
 
 		if (i != vector.size() - 1) {
 			string += "\n";
