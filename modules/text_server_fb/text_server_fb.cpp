@@ -3271,7 +3271,7 @@ double TextServerFallback::_shaped_text_fit_to_width(const RID &p_shaped, double
 	for (int i = start_pos; i <= end_pos; i++) {
 		const Glyph &gl = sd->glyphs[i];
 		if (gl.count > 0) {
-			if ((gl.flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE) {
+			if ((gl.flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE && (gl.flags & GRAPHEME_IS_PUNCTUATION) != GRAPHEME_IS_PUNCTUATION) {
 				space_count++;
 			}
 		}
@@ -3282,7 +3282,7 @@ double TextServerFallback::_shaped_text_fit_to_width(const RID &p_shaped, double
 		for (int i = start_pos; i <= end_pos; i++) {
 			Glyph &gl = sd->glyphs.write[i];
 			if (gl.count > 0) {
-				if ((gl.flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE) {
+				if ((gl.flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE && (gl.flags & GRAPHEME_IS_PUNCTUATION) != GRAPHEME_IS_PUNCTUATION) {
 					double old_adv = gl.advance;
 					gl.advance = MAX(gl.advance + delta_width_per_space, Math::round(0.1 * gl.font_size));
 					justification_width += (gl.advance - old_adv);
@@ -3381,7 +3381,7 @@ bool TextServerFallback::_shaped_text_update_breaks(const RID &p_shaped) {
 		if (sd_glyphs[i].count > 0) {
 			char32_t c = sd->text[sd_glyphs[i].start - sd->start];
 			if (c_punct_size == 0) {
-				if (is_punct(c) && c != 0x005F) {
+				if (is_punct(c) && c != 0x005F && c != ' ') {
 					sd_glyphs[i].flags |= GRAPHEME_IS_PUNCTUATION;
 				}
 			} else {
