@@ -1239,8 +1239,8 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			asset_items = memnew(GridContainer);
 			_update_asset_items_columns();
-			asset_items->add_theme_constant_override("h_separation", 10 * EDSCALE);
-			asset_items->add_theme_constant_override("v_separation", 10 * EDSCALE);
+			asset_items->add_theme_constant_override("h_separation", 8 * EDSCALE);
+			asset_items->add_theme_constant_override("v_separation", 8 * EDSCALE);
 
 			library_vb->add_child(asset_items);
 
@@ -1443,9 +1443,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	add_child(library_main);
 
 	HBoxContainer *search_hb = memnew(HBoxContainer);
-
 	library_main->add_child(search_hb);
-	library_main->add_theme_constant_override("separation", 10 * EDSCALE);
 
 	filter = memnew(LineEdit);
 	if (templates_only) {
@@ -1488,45 +1486,33 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	HBoxContainer *search_hb2 = memnew(HBoxContainer);
 	library_main->add_child(search_hb2);
 
-	search_hb2->add_child(memnew(Label(TTR("Sort:") + " ")));
 	sort = memnew(OptionButton);
 	for (int i = 0; i < SORT_MAX; i++) {
 		sort->add_item(TTRGET(sort_text[i]));
 	}
-
-	search_hb2->add_child(sort);
-
 	sort->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	sort->set_clip_text(true);
 	sort->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_rerun_search));
+	search_hb2->add_child(sort);
 
-	search_hb2->add_child(memnew(VSeparator));
-
-	search_hb2->add_child(memnew(Label(TTR("Category:") + " ")));
 	categories = memnew(OptionButton);
 	categories->add_item(TTR("All"));
-	search_hb2->add_child(categories);
 	categories->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	categories->set_clip_text(true);
 	categories->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_rerun_search));
+	search_hb2->add_child(categories);
 
-	search_hb2->add_child(memnew(VSeparator));
-
-	search_hb2->add_child(memnew(Label(TTR("Site:") + " ")));
 	repository = memnew(OptionButton);
-
 	_update_repository_options();
-
 	repository->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_repository_changed));
-
-	search_hb2->add_child(repository);
 	repository->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	repository->set_clip_text(true);
+	search_hb2->add_child(repository);
 
 	search_hb2->add_child(memnew(VSeparator));
 
 	support = memnew(MenuButton);
-	search_hb2->add_child(support);
+	support->set_flat(false);
 	support->set_text(TTR("Support"));
 	support->get_popup()->set_hide_on_checkable_item_selection(false);
 	support->get_popup()->add_check_item(TTRGET(support_text[SUPPORT_OFFICIAL]), SUPPORT_OFFICIAL);
@@ -1535,12 +1521,13 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	support->get_popup()->set_item_checked(SUPPORT_OFFICIAL, true);
 	support->get_popup()->set_item_checked(SUPPORT_COMMUNITY, true);
 	support->get_popup()->connect("id_pressed", callable_mp(this, &EditorAssetLibrary::_support_toggled));
+	search_hb2->add_child(support);
 
 	/////////
 
 	library_scroll_bg = memnew(PanelContainer);
-	library_main->add_child(library_scroll_bg);
 	library_scroll_bg->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	library_main->add_child(library_scroll_bg);
 
 	library_scroll = memnew(ScrollContainer);
 	library_scroll->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
@@ -1583,8 +1570,8 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	asset_items = memnew(GridContainer);
 	_update_asset_items_columns();
-	asset_items->add_theme_constant_override("h_separation", 10 * EDSCALE);
-	asset_items->add_theme_constant_override("v_separation", 10 * EDSCALE);
+	asset_items->add_theme_constant_override("h_separation", 8 * EDSCALE);
+	asset_items->add_theme_constant_override("v_separation", 8 * EDSCALE);
 
 	library_vb->add_child(asset_items);
 
@@ -1598,12 +1585,14 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	last_queue_id = 0;
 
-	library_vb->add_theme_constant_override("separation", 20 * EDSCALE);
+	library_vb->add_theme_constant_override("separation", 8 * EDSCALE);
 
 	error_hb = memnew(HBoxContainer);
 	library_main->add_child(error_hb);
+
 	error_label = memnew(Label);
 	error_hb->add_child(error_label);
+
 	error_tr = memnew(TextureRect);
 	error_tr->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	error_hb->add_child(error_tr);
@@ -1616,6 +1605,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	downloads_scroll = memnew(ScrollContainer);
 	downloads_scroll->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	library_main->add_child(downloads_scroll);
+
 	downloads_hb = memnew(HBoxContainer);
 	downloads_scroll->add_child(downloads_hb);
 
