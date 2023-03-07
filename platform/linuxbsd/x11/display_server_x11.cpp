@@ -4873,7 +4873,9 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 
 #ifdef GLES3_ENABLED
 	if (gl_manager) {
-		visualInfo = gl_manager->get_vi(x11_display);
+		Error err;
+		visualInfo = gl_manager->get_vi(x11_display, err);
+		ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't acquire visual info from display.");
 		vi_selected = true;
 	}
 #endif
