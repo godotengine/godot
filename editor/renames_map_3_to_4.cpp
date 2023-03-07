@@ -1133,6 +1133,7 @@ const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
 	{ "tab_align", "tab_alignment" }, // TabContainer
 	{ "table_hseparation", "table_h_separation" }, // Theme
 	{ "table_vseparation", "table_v_separation" }, // Theme
+	{ "tangent", "orthogonal" }, // Vector2
 	{ "toplevel", "top_level" }, // Node
 	{ "translation", "position" }, // Node3D
 	{ "unit_db", "volume_db" }, // AudioStreamPlayer3D
@@ -1197,6 +1198,7 @@ const char *RenamesMap3To4::csharp_properties_renames[][2] = {
 	{ "Oneshot", "OneShot" }, // AnimatedTexture
 	{ "OutOfRangeMode", "MaxPolyphony" }, // AudioStreamPlayer3D
 	{ "PauseMode", "ProcessMode" }, // Node
+	{ "Perpendicular", "Orthogonal" }, // Vector2 - Only exists in C#
 	{ "PhysicalScancode", "PhysicalKeycode" }, // InputEventKey
 	{ "PopupExclusive", "Exclusive" }, // Window
 	{ "ProximityFadeEnable", "ProximityFadeEnabled" }, // Material
@@ -1227,6 +1229,7 @@ const char *RenamesMap3To4::csharp_properties_renames[][2] = {
 	{ "TabAlign", "TabAlignment" }, // TabContainer
 	{ "TableHseparation", "TableHSeparation" }, // Theme
 	{ "TableVseparation", "TableVSeparation" }, // Theme
+	{ "Tangent", "Orthogonal" }, // Vector2
 	{ "Toplevel", "TopLevel" }, // Node
 	{ "Translation", "Position" }, // Node3D
 	{ "UnitDb", "VolumeDb" }, // AudioStreamPlayer3D
