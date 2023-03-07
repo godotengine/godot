@@ -127,7 +127,7 @@ public:
 	Variant get_var(bool p_allow_objects = false) const;
 
 	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const; ///< get an array of bytes
-	Vector<uint8_t> get_buffer(int64_t p_length) const;
+	Vector<uint8_t> get_buffer(int64_t p_length = -1) const;
 	virtual String get_line() const;
 	virtual String get_token() const;
 	virtual Vector<String> get_csv_line(const String &p_delim = ",") const;

@@ -128,9 +128,10 @@
 		</method>
 		<method name="get_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
-			<param index="0" name="length" type="int" />
+			<param index="0" name="length" type="int" default="-1" />
 			<description>
 				Returns next [param length] bytes of the file as a [PackedByteArray].
+				If [param length] is negative, the method will return the remaining file from the current position.
 			</description>
 		</method>
 		<method name="get_csv_line" qualifiers="const">
