@@ -2887,7 +2887,7 @@ msgid "Names starting with _ are reserved for editor-only metadata."
 msgstr "Nazwy zaczynające się od _ są zarezerwowane dla metadanych edytora."
 
 msgid "Metadata name is valid."
-msgstr "Nazwa metadanej jest nieprawidłowa."
+msgstr "Nazwa metadanej jest prawidłowa."
 
 msgid "Add Metadata Property for \"%s\""
 msgstr "Dodaj właściwość metadanych dla \"%s\""
