@@ -2941,7 +2941,7 @@ BitField<MouseButtonMask> DisplayServerX11::_get_mouse_button_state(MouseButton 
 }
 
 void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo) {
-	WindowData wd = windows[p_window];
+	WindowData &wd = windows[p_window];
 	// X11 functions don't know what const is
 	XKeyEvent *xkeyevent = p_event;
 
