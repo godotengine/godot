@@ -108,7 +108,7 @@ private:
 
 	/* Line numbers */
 	int line_number_gutter = -1;
-	int line_number_digits = 0;
+	int line_number_digits = 1;
 	String line_number_padding = " ";
 	Color line_number_color = Color(1, 1, 1);
 	void _line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region);
