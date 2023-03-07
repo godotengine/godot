@@ -820,7 +820,7 @@ void BaseMaterial3D::_update_shader() {
 		code += "uniform sampler2D texture_orm : hint_roughness_g," + texfilter_str + ";\n";
 	}
 
-	if (billboard_mode == BILLBOARD_PARTICLES) {
+	if (features[FEATURE_PARTICLE_ANIMATION] || billboard_mode == BILLBOARD_PARTICLES) {
 		code += "uniform int particles_anim_h_frames;\n";
 		code += "uniform int particles_anim_v_frames;\n";
 		code += "uniform bool particles_anim_loop;\n";
@@ -974,23 +974,24 @@ void BaseMaterial3D::_update_shader() {
 			//set modelview normal
 			code += "	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);\n";
 
-			//handle animation
-			code += "	float h_frames = float(particles_anim_h_frames);\n";
-			code += "	float v_frames = float(particles_anim_v_frames);\n";
-			code += "	float particle_total_frames = float(particles_anim_h_frames * particles_anim_v_frames);\n";
-			code += "	float particle_frame = floor(INSTANCE_CUSTOM.z * float(particle_total_frames));\n";
-			code += "	if (!particles_anim_loop) {\n";
-			code += "		particle_frame = clamp(particle_frame, 0.0, particle_total_frames - 1.0);\n";
-			code += "	} else {\n";
-			code += "		particle_frame = mod(particle_frame, particle_total_frames);\n";
-			code += "	}\n";
-			code += "	UV /= vec2(h_frames, v_frames);\n";
-			code += "	UV += vec2(mod(particle_frame, h_frames) / h_frames, floor((particle_frame + 0.5) / h_frames) / v_frames);\n";
 		} break;
 		case BILLBOARD_MAX:
 			break; // Internal value, skip.
 	}
-
+	if (features[FEATURE_PARTICLE_ANIMATION] || billboard_mode == BILLBOARD_PARTICLES) {
+		//handle animation
+		code += "	float h_frames = float(particles_anim_h_frames);\n";
+		code += "	float v_frames = float(particles_anim_v_frames);\n";
+		code += "	float particle_total_frames = float(particles_anim_h_frames * particles_anim_v_frames);\n";
+		code += "	float particle_frame = floor(INSTANCE_CUSTOM.z * float(particle_total_frames));\n";
+		code += "	if (!particles_anim_loop) {\n";
+		code += "		particle_frame = clamp(particle_frame, 0.0, particle_total_frames - 1.0);\n";
+		code += "	} else {\n";
+		code += "		particle_frame = mod(particle_frame, particle_total_frames);\n";
+		code += "	}\n";
+		code += "	UV /= vec2(h_frames, v_frames);\n";
+		code += "	UV += vec2(mod(particle_frame, h_frames) / h_frames, floor((particle_frame + 0.5) / h_frames) / v_frames);\n";
+	}
 	if (flags[FLAG_FIXED_SIZE]) {
 		code += "	if (PROJECTION_MATRIX[3][3] != 0.0) {\n";
 		//orthogonal matrix, try to do about the same
@@ -1931,10 +1932,6 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (p_property.name.begins_with("particles_anim_") && billboard_mode != BILLBOARD_PARTICLES) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
 	if (p_property.name == "billboard_keep_scale" && billboard_mode == BILLBOARD_DISABLED) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
@@ -1969,6 +1966,9 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 
 	if ((p_property.name == "uv2_triplanar_sharpness" || p_property.name == "uv2_world_triplanar") && !flags[FLAG_UV2_USE_TRIPLANAR]) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+	if ((p_property.name == "particles_anim_h_frames" || p_property.name == "particles_anim_v_frames" || p_property.name == "particles_anim_loop") && !features[FEATURE_PARTICLE_ANIMATION] && billboard_mode != BILLBOARD_PARTICLES) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
 	// you can only enable anti-aliasing (in materials) on alpha scissor and alpha hash
@@ -2817,6 +2817,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "billboard_keep_scale"), "set_flag", "get_flag", FLAG_BILLBOARD_KEEP_SCALE);
 
 	ADD_GROUP("Particles Anim", "particles_anim_");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particles_anim_enabled"), "set_feature", "get_feature", FEATURE_PARTICLE_ANIMATION);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_h_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_h_frames", "get_particles_anim_h_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_v_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_v_frames", "get_particles_anim_v_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "particles_anim_loop"), "set_particles_anim_loop", "get_particles_anim_loop");
@@ -2895,6 +2896,7 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_BACKLIGHT);
 	BIND_ENUM_CONSTANT(FEATURE_REFRACTION);
 	BIND_ENUM_CONSTANT(FEATURE_DETAIL);
+	BIND_ENUM_CONSTANT(FEATURE_PARTICLE_ANIMATION);
 	BIND_ENUM_CONSTANT(FEATURE_MAX);
 
 	BIND_ENUM_CONSTANT(BLEND_MODE_MIX);
@@ -3115,6 +3117,7 @@ bool StandardMaterial3D::_set(const StringName &p_name, const Variant &p_value) 
 			{ "params_point_size", "point_size" },
 			{ "params_billboard_mode", "billboard_mode" },
 			{ "params_billboard_keep_scale", "billboard_keep_scale" },
+			{ "params_particles_anim_enabled", "particles_anim_enabled" },
 			{ "params_grow", "grow" },
 			{ "params_grow_amount", "grow_amount" },
 			{ "params_alpha_scissor_threshold", "alpha_scissor_threshold" },

@@ -292,6 +292,10 @@
 		<member name="orm_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			The Occlusion/Roughness/Metallic texture to use. This is a more efficient replacement of [member ao_texture], [member roughness_texture] and [member metallic_texture] in [ORMMaterial3D]. Ambient occlusion is stored in the red channel. Roughness map is stored in the green channel. Metallic map is stored in the blue channel. The alpha channel is ignored.
 		</member>
+		<member name="particles_anim_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			Enables particle animation using [member albedo_texture] as an animated flipbook.
+			The [member ParticleProcessMaterial.anim_speed_min] or [member CPUParticles3D.anim_speed_min] should also be set to a value bigger than zero for the animation to play.
+		</member>
 		<member name="particles_anim_h_frames" type="int" setter="set_particles_anim_h_frames" getter="get_particles_anim_h_frames">
 			The number of horizontal frames in the particle sprite sheet. Only enabled when using [constant BILLBOARD_PARTICLES]. See [member billboard_mode].
 		</member>
@@ -590,7 +594,10 @@
 		<constant name="FEATURE_DETAIL" value="11" enum="Feature">
 			Constant for setting [member detail_enabled].
 		</constant>
-		<constant name="FEATURE_MAX" value="12" enum="Feature">
+		<constant name="FEATURE_PARTICLE_ANIMATION" value="12" enum="Feature">
+			Enables particle animation for this material.
+		</constant>
+		<constant name="FEATURE_MAX" value="13" enum="Feature">
 			Represents the size of the [enum Feature] enum.
 		</constant>
 		<constant name="BLEND_MODE_MIX" value="0" enum="BlendMode">
@@ -731,8 +738,7 @@
 			The object's X axis will always face the camera.
 		</constant>
 		<constant name="BILLBOARD_PARTICLES" value="3" enum="BillboardMode">
-			Used for particle systems when assigned to [GPUParticles3D] and [CPUParticles3D] nodes. Enables [code]particles_anim_*[/code] properties.
-			The [member ParticleProcessMaterial.anim_speed_min] or [member CPUParticles3D.anim_speed_min] should also be set to a value bigger than zero for the animation to play.
+			Used for particle systems when assigned to [GPUParticles3D] and [CPUParticles3D] nodes.
 		</constant>
 		<constant name="TEXTURE_CHANNEL_RED" value="0" enum="TextureChannel">
 			Used to read from the red channel of a texture.
