@@ -73,7 +73,9 @@ using namespace godot;
 #endif
 
 #ifdef MODULE_SVG_ENABLED
+#ifdef MODULE_FREETYPE_ENABLED
 #include "thorvg_svg_in_ot.h"
+#endif
 #endif
 
 /*************************************************************************/

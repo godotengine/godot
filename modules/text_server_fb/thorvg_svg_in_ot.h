@@ -47,10 +47,11 @@ using namespace godot;
 #include "core/templates/hash_map.h"
 #include "core/typedefs.h"
 
-#include "modules/modules_enabled.gen.h" // For svg.
+#include "modules/modules_enabled.gen.h" // For svg, freetype.
 #endif
 
 #ifdef MODULE_SVG_ENABLED
+#ifdef MODULE_FREETYPE_ENABLED
 
 #include <freetype/freetype.h>
 #include <freetype/otsvg.h>
@@ -81,6 +82,7 @@ FT_Error tvg_svg_in_ot_render(FT_GlyphSlot p_slot, FT_Pointer *p_state);
 
 SVG_RendererHooks *get_tvg_svg_in_ot_hooks();
 
+#endif // MODULE_FREETYPE_ENABLED
 #endif // MODULE_SVG_ENABLED
 
 #endif // THORVG_SVG_IN_OT_H
