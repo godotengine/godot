@@ -85,8 +85,8 @@ void KeyMappingX11::initialize() {
 	xkeysym_map[XK_Begin] = Key::CLEAR;
 	xkeysym_map[XK_Insert] = Key::INSERT;
 	xkeysym_map[XK_Delete] = Key::KEY_DELETE;
-	//xkeysym_map[XK_KP_Equal]
-	//xkeysym_map[XK_KP_Separator]
+	xkeysym_map[XK_KP_Equal] = Key::EQUAL;
+	xkeysym_map[XK_KP_Separator] = Key::COMMA;
 	xkeysym_map[XK_KP_Decimal] = Key::KP_PERIOD;
 	xkeysym_map[XK_KP_Delete] = Key::KP_PERIOD;
 	xkeysym_map[XK_KP_Multiply] = Key::KP_MULTIPLY;
@@ -220,7 +220,7 @@ void KeyMappingX11::initialize() {
 	scancode_map[0x22] = Key::BRACKETLEFT;
 	scancode_map[0x23] = Key::BRACKETRIGHT;
 	scancode_map[0x24] = Key::ENTER;
-	scancode_map[0x25] = Key::CTRL;
+	scancode_map[0x25] = Key::CTRL; // Left
 	scancode_map[0x26] = Key::A;
 	scancode_map[0x27] = Key::S;
 	scancode_map[0x28] = Key::D;
@@ -233,7 +233,7 @@ void KeyMappingX11::initialize() {
 	scancode_map[0x2F] = Key::SEMICOLON;
 	scancode_map[0x30] = Key::APOSTROPHE;
 	scancode_map[0x31] = Key::QUOTELEFT;
-	scancode_map[0x32] = Key::SHIFT;
+	scancode_map[0x32] = Key::SHIFT; // Left
 	scancode_map[0x33] = Key::BACKSLASH;
 	scancode_map[0x34] = Key::Z;
 	scancode_map[0x35] = Key::X;
@@ -245,9 +245,9 @@ void KeyMappingX11::initialize() {
 	scancode_map[0x3B] = Key::COMMA;
 	scancode_map[0x3C] = Key::PERIOD;
 	scancode_map[0x3D] = Key::SLASH;
-	scancode_map[0x3E] = Key::SHIFT;
+	scancode_map[0x3E] = Key::SHIFT; // Right
 	scancode_map[0x3F] = Key::KP_MULTIPLY;
-	scancode_map[0x40] = Key::ALT;
+	scancode_map[0x40] = Key::ALT; // Left
 	scancode_map[0x41] = Key::SPACE;
 	scancode_map[0x42] = Key::CAPSLOCK;
 	scancode_map[0x43] = Key::F1;
@@ -275,14 +275,23 @@ void KeyMappingX11::initialize() {
 	scancode_map[0x59] = Key::KP_3;
 	scancode_map[0x5A] = Key::KP_0;
 	scancode_map[0x5B] = Key::KP_PERIOD;
+	//scancode_map[0x5C]
+	//scancode_map[0x5D] // Zenkaku Hankaku
 	scancode_map[0x5E] = Key::SECTION;
 	scancode_map[0x5F] = Key::F11;
 	scancode_map[0x60] = Key::F12;
+	//scancode_map[0x61] // Romaji
+	//scancode_map[0x62] // Katakana
+	//scancode_map[0x63] // Hiragana
+	//scancode_map[0x64] // Henkan
+	//scancode_map[0x65] // Hiragana Katakana
+	//scancode_map[0x66] // Muhenkan
+	scancode_map[0x67] = Key::COMMA; // KP_Separator
 	scancode_map[0x68] = Key::KP_ENTER;
-	scancode_map[0x69] = Key::CTRL;
+	scancode_map[0x69] = Key::CTRL; // Right
 	scancode_map[0x6A] = Key::KP_DIVIDE;
 	scancode_map[0x6B] = Key::PRINT;
-	scancode_map[0x6C] = Key::ALT;
+	scancode_map[0x6C] = Key::ALT; // Right
 	scancode_map[0x6D] = Key::ENTER;
 	scancode_map[0x6E] = Key::HOME;
 	scancode_map[0x6F] = Key::UP;
@@ -294,13 +303,28 @@ void KeyMappingX11::initialize() {
 	scancode_map[0x75] = Key::PAGEDOWN;
 	scancode_map[0x76] = Key::INSERT;
 	scancode_map[0x77] = Key::KEY_DELETE;
+	//scancode_map[0x78] // Macro
 	scancode_map[0x79] = Key::VOLUMEMUTE;
 	scancode_map[0x7A] = Key::VOLUMEDOWN;
 	scancode_map[0x7B] = Key::VOLUMEUP;
+	//scancode_map[0x7C] // Power
+	scancode_map[0x7D] = Key::EQUAL; // KP_Equal
+	//scancode_map[0x7E] // KP_PlusMinus
 	scancode_map[0x7F] = Key::PAUSE;
-	scancode_map[0x85] = Key::META;
-	scancode_map[0x86] = Key::META;
+	scancode_map[0x80] = Key::LAUNCH0;
+	scancode_map[0x81] = Key::COMMA; // KP_Comma
+	//scancode_map[0x82] // Hangul
+	//scancode_map[0x83] // Hangul_Hanja
+	scancode_map[0x84] = Key::YEN;
+	scancode_map[0x85] = Key::META; // Left
+	scancode_map[0x86] = Key::META; // Right
 	scancode_map[0x87] = Key::MENU;
+
+	scancode_map[0xA6] = Key::BACK; // On Chromebooks
+	scancode_map[0xA7] = Key::FORWARD; // On Chromebooks
+
+	scancode_map[0xB5] = Key::REFRESH; // On Chromebooks
+
 	scancode_map[0xBF] = Key::F13;
 	scancode_map[0xC0] = Key::F14;
 	scancode_map[0xC1] = Key::F15;
