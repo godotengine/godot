@@ -485,6 +485,7 @@ private:
 	Object *current = nullptr;
 
 	Ref<Resource> saving_resource;
+	HashSet<Ref<Resource>> saving_resources_in_path;
 
 	uint64_t update_spinner_step_msec = 0;
 	uint64_t update_spinner_step_frame = 0;
