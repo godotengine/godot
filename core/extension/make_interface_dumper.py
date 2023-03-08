@@ -27,6 +27,7 @@ class GDExtensionInterfaceDump {
     public:
         static void generate_gdextension_interface_file(const String &p_path) {
             Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
+            ERR_FAIL_COND_MSG(fa.is_null(), vformat("Cannot open file '%s' for writing.", p_path));
             CharString cs(gdextension_interface_dump);
             fa->store_buffer((const uint8_t *)cs.ptr(), cs.length());
         };
