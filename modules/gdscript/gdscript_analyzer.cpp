@@ -4778,7 +4778,7 @@ void GDScriptAnalyzer::validate_call_arg(const List<GDScriptParser::DataType> &p
 }
 
 #ifdef DEBUG_ENABLED
-bool GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_local, const String &p_context) {
+void GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_local, const String &p_context) {
 	const StringName &name = p_local->name;
 	GDScriptParser::DataType base = parser->current_class->get_datatype();
 	GDScriptParser::ClassNode *base_class = base.class_type;
@@ -4790,50 +4790,52 @@ bool GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_local, con
 		for (MethodInfo &info : gdscript_funcs) {
 			if (info.name == name) {
 				parser->push_warning(p_local, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "built-in function");
-				return true;
+				return;
 			}
 		}
+
 		if (Variant::has_utility_function(name)) {
 			parser->push_warning(p_local, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "built-in function");
-			return true;
+			return;
 		} else if (ClassDB::class_exists(name)) {
 			parser->push_warning(p_local, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "global class");
-			return true;
+			return;
+		} else if (GDScriptParser::get_builtin_type(name) != Variant::VARIANT_MAX) {
+			parser->push_warning(p_local, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "built-in type");
+			return;
 		}
 	}
 
 	while (base_class != nullptr) {
 		if (base_class->has_member(name)) {
 			parser->push_warning(p_local, GDScriptWarning::SHADOWED_VARIABLE, p_context, p_local->name, base_class->get_member(name).get_type_name(), itos(base_class->get_member(name).get_line()));
-			return true;
+			return;
 		}
 		base_class = base_class->base_type.class_type;
 	}
 
 	StringName parent = base.native_type;
 	while (parent != StringName()) {
-		ERR_FAIL_COND_V_MSG(!class_exists(parent), false, "Non-existent native base class.");
+		ERR_FAIL_COND_MSG(!class_exists(parent), "Non-existent native base class.");
 
 		if (ClassDB::has_method(parent, name, true)) {
 			parser->push_warning(p_local, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_local->name, "method", parent);
-			return true;
+			return;
 		} else if (ClassDB::has_signal(parent, name, true)) {
 			parser->push_warning(p_local, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_local->name, "signal", parent);
-			return true;
+			return;
 		} else if (ClassDB::has_property(parent, name, true)) {
 			parser->push_warning(p_local, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_local->name, "property", parent);
-			return true;
+			return;
 		} else if (ClassDB::has_integer_constant(parent, name, true)) {
 			parser->push_warning(p_local, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_local->name, "constant", parent);
-			return true;
+			return;
 		} else if (ClassDB::has_enum(parent, name, true)) {
 			parser->push_warning(p_local, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_local->name, "enum", parent);
-			return true;
+			return;
 		}
 		parent = ClassDB::get_parent_class(parent);
 	}
-
-	return false;
 }
 #endif
 
