@@ -12,7 +12,7 @@
 		state_machine.travel("some_state")
 		[/gdscript]
 		[csharp]
-		var stateMachine = GetNode&lt;AnimationTree&gt;("AnimationTree").Get("parameters/playback") as AnimationNodeStateMachinePlayback;
+		var stateMachine = GetNode&lt;AnimationTree&gt;("AnimationTree").Get("parameters/playback").As&lt;AnimationNodeStateMachinePlayback&gt;();
 		stateMachine.Travel("some_state");
 		[/csharp]
 		[/codeblocks]
