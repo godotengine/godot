@@ -48,6 +48,7 @@ struct RenamesMap3To4 {
 	static const char *shaders_renames[][2];
 	static const char *class_renames[][2];
 	static const char *color_renames[][2];
+	static const char *theme_override_renames[][2];
 };
 
 #endif // DISABLE_DEPRECATED
