@@ -1110,7 +1110,6 @@ void Node3DEditorViewport::_compute_edit(const Point2 &p_point) {
 	_edit.click_ray = _get_ray(p_point);
 	_edit.click_ray_pos = _get_ray_pos(p_point);
 	_edit.plane = TRANSFORM_VIEW;
-	spatial_editor->set_local_coords_enabled(false);
 	spatial_editor->update_transform_gizmo();
 	_edit.center = spatial_editor->get_gizmo_transform().origin;
 
@@ -4866,9 +4865,9 @@ void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
 
 void Node3DEditorViewport::finish_transform() {
 	spatial_editor->set_local_coords_enabled(_edit.original_local);
-	spatial_editor->update_transform_gizmo();
 	_edit.mode = TRANSFORM_NONE;
 	_edit.instant = false;
+	spatial_editor->update_transform_gizmo();
 	surface->queue_redraw();
 }
 
