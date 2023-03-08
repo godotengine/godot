@@ -3368,10 +3368,10 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 
 	if (context.current_class && context.current_class->extends.size() > 0) {
 		bool success = false;
-		ClassDB::get_integer_constant(context.current_class->extends[0], p_symbol, &success);
+		ClassDB::get_integer_constant(context.current_class->extends[0]->name, p_symbol, &success);
 		if (success) {
 			r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
-			r_result.class_name = context.current_class->extends[0];
+			r_result.class_name = context.current_class->extends[0]->name;
 			r_result.class_member = p_symbol;
 			return OK;
 		}

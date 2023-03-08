@@ -2483,7 +2483,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 						subclass = nullptr;
 						break;
 					} else {
-						Vector<StringName> extend_classes = subclass->extends;
+						Vector<GDScriptParser::IdentifierNode *> extend_classes = subclass->extends;
 
 						Ref<FileAccess> subfile = FileAccess::open(subclass->extends_path, FileAccess::READ);
 						if (subfile.is_null()) {
@@ -2513,7 +2513,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 								}
 
 								const GDScriptParser::ClassNode *inner_class = subclass->members[i].m_class;
-								if (inner_class->identifier->name == extend_classes[0]) {
+								if (inner_class->identifier->name == extend_classes[0]->name) {
 									extend_classes.remove_at(0);
 									found = true;
 									subclass = inner_class;
@@ -2527,7 +2527,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 						}
 					}
 				} else if (subclass->extends.size() == 1) {
-					*r_base_type = subclass->extends[0];
+					*r_base_type = subclass->extends[0]->name;
 					subclass = nullptr;
 				} else {
 					break;

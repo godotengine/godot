@@ -712,14 +712,14 @@ void GDScriptParser::parse_extends() {
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected superclass name after "extends".)")) {
 		return;
 	}
-	current_class->extends.push_back(previous.literal);
+	current_class->extends.push_back(parse_identifier());
 
 	while (match(GDScriptTokenizer::Token::PERIOD)) {
 		make_completion_context(COMPLETION_INHERIT_TYPE, current_class, chain_index++);
 		if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected superclass name after ".".)")) {
 			return;
 		}
-		current_class->extends.push_back(previous.literal);
+		current_class->extends.push_back(parse_identifier());
 	}
 }
 
@@ -4479,7 +4479,7 @@ void GDScriptParser::TreePrinter::print_class(ClassNode *p_class) {
 			} else {
 				first = false;
 			}
-			push_text(p_class->extends[i]);
+			push_text(p_class->extends[i]->name);
 		}
 	}
 
