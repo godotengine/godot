@@ -6482,13 +6482,15 @@ void EditorNode::_bottom_panel_raise_toggled(bool p_pressed) {
 }
 
 void EditorNode::_update_renderer_color() {
-	if (renderer->get_text() == "Forward+") {
+	String rendering_method = renderer->get_selected_metadata();
+
+	if (rendering_method == "forward_plus") {
 		renderer->add_theme_color_override("font_color", Color::hex(0x5d8c3fff));
 	}
-	if (renderer->get_text() == "Mobile") {
+	if (rendering_method == "mobile") {
 		renderer->add_theme_color_override("font_color", Color::hex(0xa5557dff));
 	}
-	if (renderer->get_text() == "Compatibility") {
+	if (rendering_method == "gl_compatibility") {
 		renderer->add_theme_color_override("font_color", Color::hex(0x5586a4ff));
 	}
 }
