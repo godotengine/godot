@@ -3647,15 +3647,15 @@ DisplayServer *DisplayServerMacOS::create_func(const String &p_rendering_driver,
 		if (p_rendering_driver == "vulkan") {
 			String executable_command;
 			if (OS::get_singleton()->get_bundle_resource_dir() == OS::get_singleton()->get_executable_path().get_base_dir()) {
-				executable_command = vformat("%s --rendering-driver opengl3", OS::get_singleton()->get_executable_path());
+				executable_command = vformat("\"%s\" --rendering-driver opengl3", OS::get_singleton()->get_executable_path());
 			} else {
-				executable_command = vformat("open %s --args --rendering-driver opengl3", OS::get_singleton()->get_bundle_resource_dir().path_join("../..").simplify_path());
+				executable_command = vformat("open \"%s\" --args --rendering-driver opengl3", OS::get_singleton()->get_bundle_resource_dir().path_join("../..").simplify_path());
 			}
 			OS::get_singleton()->alert(
 					vformat("Your video card drivers seem not to support the required Vulkan version.\n\n"
 							"If possible, consider updating your macOS version or using the OpenGL 3 driver.\n\n"
 							"You can enable the OpenGL 3 driver by starting the engine from the\n"
-							"command line with the command:\n'%s'",
+							"command line with the command:\n\n    %s",
 							executable_command),
 					"Unable to initialize Vulkan video driver");
 		} else {
