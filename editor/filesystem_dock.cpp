@@ -1286,6 +1286,7 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 		EditorNode::get_singleton()->add_io_error(TTR("Cannot move a folder into itself.") + "\n" + old_path + "\n");
 		return;
 	}
+	const_cast<FileSystemDock *>(this)->path = new_path;
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 
