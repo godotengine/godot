@@ -1791,4 +1791,49 @@ const char *RenamesMap3To4::color_renames[][2] = {
 	{ nullptr, nullptr },
 };
 
+const char *RenamesMap3To4::theme_override_renames[][2] = {
+	// First rename the generic prefixes.
+	{ "custom_colors/", "theme_override_colors/" },
+	{ "custom_constants/", "theme_override_constants/" },
+	{ "custom_fonts/", "theme_override_fonts/" },
+	{ "custom_icons/", "theme_override_icons/" },
+	{ "custom_styles/", "theme_override_styles/" },
+
+	// MarginContainer
+	// The margin_* properties are renamed to offset_* in a previous conversion step.
+	// This is fine everywhere except for the MarginContainer theme_override_constants.
+	{ "theme_override_constants/offset_right", "theme_override_constants/margin_right" },
+	{ "theme_override_constants/offset_top", "theme_override_constants/margin_top" },
+	{ "theme_override_constants/offset_left", "theme_override_constants/margin_left" },
+	{ "theme_override_constants/offset_bottom", "theme_override_constants/margin_bottom" },
+
+	// Panel/PanelContainer/TabContainer/PopupPanel/PopupMenu
+	{ "theme_override_styles/panel", "theme_override_styles/panel" },
+
+	// TabContainer/Tabs(TabBar)
+	{ "theme_override_styles/tab_bg", "theme_override_styles/tab_unselected" },
+	{ "theme_override_styles/tab_fg", "theme_override_styles/tab_selected" },
+
+	// { "theme_override_styles/bg", "theme_override_styles/bg" }, // GraphEdit
+	// { "theme_override_styles/bg", "theme_override_styles/panel" }, // ScrollContainer
+	// { "theme_override_styles/bg", "theme_override_styles/background" }, // ProgressBar
+	// { "theme_override_styles/fg", "theme_override_styles/fill" }, // ProgressBar
+
+	{ "theme_override_colors/font_color_hover", "theme_override_colors/font_hover_color" },
+	{ "theme_override_colors/font_color_pressed", "theme_override_colors/font_pressed_color" },
+	{ "theme_override_colors/font_color_disabled", "theme_override_colors/font_disabled_color" },
+	{ "theme_override_colors/font_color_focus", "theme_override_colors/font_focus_color" },
+	{ "theme_override_colors/font_color_hover_pressed", "theme_override_colors/font_hover_pressed_color" },
+
+	{ "theme_override_colors/font_outline_modulate", "theme_override_colors/font_outline_color" },
+	{ "theme_override_colors/font_color_shadow", "theme_override_colors/font_shadow_color" },
+
+	{ "theme_override_constants/shadow_as_outline", "theme_override_constants/shadow_outline_size" }, // 0 or 1
+
+	{ "theme_override_constants/table_vseparation", "theme_override_constants/table_v_separation" },
+	{ "theme_override_constants/table_hseparation", "theme_override_constants/table_h_separation" },
+
+	{ nullptr, nullptr },
+};
+
 #endif // DISABLE_DEPRECATED
