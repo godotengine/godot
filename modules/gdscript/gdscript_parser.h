@@ -710,7 +710,7 @@ public:
 		bool extends_used = false;
 		bool onready_used = false;
 		String extends_path;
-		Vector<StringName> extends; // List for indexing: extends A.B.C
+		Vector<IdentifierNode *> extends; // List for indexing: extends A.B.C
 		DataType base_type;
 		String fqcn; // Fully-qualified class name. Identifies uniquely any class in the project.
 #ifdef TOOLS_ENABLED

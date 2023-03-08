@@ -329,6 +329,10 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				}
 			}
 
+			if (identifier == SNAME("Self")) {
+				return codegen.add_constant(codegen.script);
+			}
+
 			// Try globals.
 			if (GDScriptLanguage::get_singleton()->get_global_map().has(identifier)) {
 				// If it's an autoload singleton, we postpone to load it at runtime.

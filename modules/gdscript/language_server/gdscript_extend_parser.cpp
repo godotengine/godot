@@ -717,7 +717,7 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 	class_api["path"] = path;
 	Array extends_class;
 	for (int i = 0; i < p_class->extends.size(); i++) {
-		extends_class.append(String(p_class->extends[i]));
+		extends_class.append(String(p_class->extends[i]->name));
 	}
 	class_api["extends_class"] = extends_class;
 	class_api["extends_file"] = String(p_class->extends_path);
