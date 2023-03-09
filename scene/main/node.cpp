@@ -2617,7 +2617,9 @@ void Node::_set_tree(SceneTree *p_tree) {
 }
 
 #ifdef DEBUG_ENABLED
-static void _Node_debug_sn(Object *p_obj) {
+static HashMap<ObjectID, List<String>> _print_orphan_nodes_map;
+
+static void _print_orphan_nodes_routine(Object *p_obj) {
 	Node *n = Object::cast_to<Node>(p_obj);
 	if (!n) {
 		return;
@@ -2638,13 +2640,29 @@ static void _Node_debug_sn(Object *p_obj) {
 	} else {
 		path = String(p->get_name()) + "/" + p->get_path_to(n);
 	}
-	print_line(itos(p_obj->get_instance_id()) + " - Stray Node: " + path + " (Type: " + n->get_class() + ")");
+
+	List<String> info_strings;
+	info_strings.push_back(path);
+	info_strings.push_back(n->get_class());
+
+	_print_orphan_nodes_map[p_obj->get_instance_id()] = info_strings;
 }
 #endif // DEBUG_ENABLED
 
 void Node::print_orphan_nodes() {
 #ifdef DEBUG_ENABLED
-	ObjectDB::debug_objects(_Node_debug_sn);
+	// Make sure it's empty.
+	_print_orphan_nodes_map.clear();
+
+	// Collect and print information about orphan nodes.
+	ObjectDB::debug_objects(_print_orphan_nodes_routine);
+
+	for (const KeyValue<ObjectID, List<String>> &E : _print_orphan_nodes_map) {
+		print_line(itos(E.key) + " - Stray Node: " + E.value[0] + " (Type: " + E.value[1] + ")");
+	}
+
+	// Flush it after use.
+	_print_orphan_nodes_map.clear();
 #endif
 }
 
