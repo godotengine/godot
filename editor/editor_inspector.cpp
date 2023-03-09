@@ -259,7 +259,7 @@ void EditorProperty::_notification(int p_what) {
 			}
 
 			Color color;
-			if (draw_warning) {
+			if (draw_warning || draw_prop_warning) {
 				color = get_theme_color(is_read_only() ? SNAME("readonly_warning_color") : SNAME("warning_color"));
 			} else {
 				color = get_theme_color(is_read_only() ? SNAME("readonly_color") : SNAME("property_color"));
@@ -486,6 +486,11 @@ void EditorProperty::update_editor_property_status() {
 		new_pinned = node->is_property_pinned(property);
 	}
 
+	bool new_warning = false;
+	if (object->has_method("_get_property_warning")) {
+		new_warning = !String(object->call("_get_property_warning", property)).is_empty();
+	}
+
 	Variant current = object->get(_get_revert_property());
 	bool new_can_revert = EditorPropertyRevert::can_property_revert(object, property, &current) && !is_read_only();
 
@@ -498,10 +503,11 @@ void EditorProperty::update_editor_property_status() {
 		}
 	}
 
-	if (new_can_revert != can_revert || new_pinned != pinned || new_checked != checked) {
+	if (new_can_revert != can_revert || new_pinned != pinned || new_checked != checked || new_warning != draw_prop_warning) {
 		if (new_can_revert != can_revert) {
 			emit_signal(SNAME("property_can_revert_changed"), property, new_can_revert);
 		}
+		draw_prop_warning = new_warning;
 		can_revert = new_can_revert;
 		pinned = new_pinned;
 		checked = new_checked;
@@ -897,7 +903,7 @@ void EditorProperty::_update_pin_flags() {
 	}
 }
 
-static Control *make_help_bit(const String &p_text, bool p_property) {
+static Control *make_help_bit(const String &p_text, const String &p_warning, const Color &p_warn_color, bool p_property) {
 	EditorHelpBit *help_bit = memnew(EditorHelpBit);
 	help_bit->get_rich_text()->set_custom_minimum_size(Size2(360 * EDSCALE, 1));
 
@@ -923,13 +929,23 @@ static Control *make_help_bit(const String &p_text, bool p_property) {
 	} else {
 		text += "\n[i]" + TTR("No description.") + "[/i]";
 	}
+
+	if (!p_warning.is_empty()) {
+		text += "\n[b][color=" + p_warn_color.to_html(false) + "]" + p_warning + "[/color][/b]";
+	}
 	help_bit->set_text(text);
 
 	return help_bit;
 }
 
 Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
-	return make_help_bit(p_text, true);
+	String warn;
+	Color warn_color;
+	if (object->has_method("_get_property_warning")) {
+		warn = object->call("_get_property_warning", property);
+		warn_color = get_theme_color(SNAME("warning_color"));
+	}
+	return make_help_bit(p_text, warn, warn_color, true);
 }
 
 void EditorProperty::menu_option(int p_option) {
@@ -1158,7 +1174,7 @@ void EditorInspectorCategory::_notification(int p_what) {
 }
 
 Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) const {
-	return make_help_bit(p_text, false);
+	return make_help_bit(p_text, String(), Color(), false);
 }
 
 Size2 EditorInspectorCategory::get_minimum_size() const {

@@ -72,10 +72,10 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		EditorProgress *ep = nullptr;
 	};
 
-	Vector<PluginConfigAndroid> plugins;
+	mutable Vector<PluginConfigAndroid> plugins;
 	String last_plugin_names;
 	uint64_t last_gradle_build_time = 0;
-	SafeFlag plugins_changed;
+	mutable SafeFlag plugins_changed;
 	Mutex plugins_lock;
 	Vector<Device> devices;
 	SafeFlag devices_changed;
@@ -180,7 +180,9 @@ public:
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
 
-	virtual void get_export_options(List<ExportOption> *r_options) override;
+	virtual void get_export_options(List<ExportOption> *r_options) const override;
+
+	virtual String get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const override;
 
 	virtual String get_name() const override;
 

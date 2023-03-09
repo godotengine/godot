@@ -35,6 +35,10 @@
 #include "editor/export/editor_export.h"
 #include "export_plugin.h"
 
+void register_android_exporter_types() {
+	GDREGISTER_VIRTUAL_CLASS(EditorExportPlatformAndroid);
+}
+
 void register_android_exporter() {
 #ifndef ANDROID_ENABLED
 	EDITOR_DEF("export/android/android_sdk_path", "");

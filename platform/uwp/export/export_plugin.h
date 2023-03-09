@@ -427,7 +427,7 @@ public:
 
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
 
-	virtual void get_export_options(List<ExportOption> *r_options) override;
+	virtual void get_export_options(List<ExportOption> *r_options) const override;
 
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;

@@ -44,6 +44,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/export/editor_export_platform_pc.h"
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_spin_slider.h"
@@ -108,6 +109,7 @@
 #include "editor/plugins/version_control_editor_plugin.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
 #include "editor/plugins/voxel_gi_editor_plugin.h"
+#include "editor/register_exporters.h"
 
 void register_editor_types() {
 	ResourceLoader::set_timestamp_on_load(true);
@@ -134,6 +136,8 @@ void register_editor_types() {
 	GDREGISTER_ABSTRACT_CLASS(EditorInterface);
 	GDREGISTER_CLASS(EditorExportPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatform);
+	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatformPC);
+	register_exporter_types();
 	GDREGISTER_CLASS(EditorResourceConversionPlugin);
 	GDREGISTER_CLASS(EditorSceneFormatImporter);
 	GDREGISTER_CLASS(EditorScenePostImportPlugin);
