@@ -1026,13 +1026,13 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		String type = ResourceLoader::get_resource_type(path);
 
 		if (FileAccess::exists(path + ".import")) {
-			// Before doing this, try to see if it can be customized
+			// Before doing this, try to see if it can be customized.
 
 			String export_path = _export_customize(path, customize_resources_plugins, customize_scenes_plugins, export_cache, export_base_path, false);
 
 			if (export_path != path) {
-				// It was actually customized..
-				// Since the original file is likely not recognized, just use the import system
+				// It was actually customized.
+				// Since the original file is likely not recognized, just use the import system.
 
 				Ref<ConfigFile> config;
 				config.instantiate();
@@ -1043,18 +1043,18 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				}
 				config->set_value("remap", "type", ResourceLoader::get_resource_type(export_path));
 
-				// Erase all PAths
+				// Erase all Paths.
 				List<String> keys;
 				config->get_section_keys("remap", &keys);
 				for (const String &K : keys) {
-					if (E.begins_with("path")) {
+					if (K.begins_with("path")) {
 						config->erase_section_key("remap", K);
 					}
 				}
 				// Set actual converted path.
 				config->set_value("remap", "path", export_path);
 
-				// erase useless sections
+				// Erase useless sections.
 				config->erase_section("deps");
 				config->erase_section("params");
 
@@ -1075,7 +1075,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 					return err;
 				}
 			} else {
-				// file is imported and not customized, replace by what it imports
+				// File is imported and not customized, replace by what it imports.
 				Ref<ConfigFile> config;
 				config.instantiate();
 				err = config->load(path + ".import");
@@ -1087,7 +1087,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				String importer_type = config->get_value("remap", "importer");
 
 				if (importer_type == "keep") {
-					//just keep file as-is
+					// Just keep file as-is.
 					Vector<uint8_t> array = FileAccess::get_file_as_bytes(path);
 					err = p_func(p_udata, path, array, idx, total, enc_in_filters, enc_ex_filters, key);
 
@@ -1130,6 +1130,9 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 							String remapped_path = config->get_value("remap", remap);
 							Vector<uint8_t> array = FileAccess::get_file_as_bytes(remapped_path);
 							err = p_func(p_udata, remapped_path, array, idx, total, enc_in_filters, enc_ex_filters, key);
+						} else {
+							// Remove paths if feature not enabled.
+							config->erase_section_key("remap", remap);
 						}
 					}
 				}
@@ -1138,9 +1141,17 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 					return err;
 				}
 
-				//also save the .import file
-				Vector<uint8_t> array = FileAccess::get_file_as_bytes(path + ".import");
-				err = p_func(p_udata, path + ".import", array, idx, total, enc_in_filters, enc_ex_filters, key);
+				// Erase useless sections.
+				config->erase_section("deps");
+				config->erase_section("params");
+
+				String import_text = config->encode_to_text();
+				CharString cs = import_text.utf8();
+				Vector<uint8_t> sarr;
+				sarr.resize(cs.size());
+				memcpy(sarr.ptrw(), cs.ptr(), sarr.size());
+
+				err = p_func(p_udata, path + ".import", sarr, idx, total, enc_in_filters, enc_ex_filters, key);
 
 				if (err != OK) {
 					return err;
@@ -1148,7 +1159,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			}
 
 		} else {
-			// Customize
+			// Customize.
 
 			bool do_export = true;
 			for (int i = 0; i < export_plugins.size(); i++) {
