@@ -267,18 +267,26 @@ void ShaderEditorPlugin::_menu_item_pressed(int p_index) {
 		case FILE_SAVE: {
 			int index = shader_tabs->get_current_tab();
 			ERR_FAIL_INDEX(index, shader_tabs->get_tab_count());
+			TextShaderEditor *editor = edited_shaders[index].shader_editor;
+			if (editor && editor->get_trim_trailing_whitespace_on_save()) {
+				editor->trim_trailing_whitespace();
+			}
 			if (edited_shaders[index].shader.is_valid()) {
 				EditorNode::get_singleton()->save_resource(edited_shaders[index].shader);
 			} else {
 				EditorNode::get_singleton()->save_resource(edited_shaders[index].shader_inc);
 			}
-			if (edited_shaders[index].shader_editor) {
-				edited_shaders[index].shader_editor->tag_saved_version();
+			if (editor) {
+				editor->tag_saved_version();
 			}
 		} break;
 		case FILE_SAVE_AS: {
 			int index = shader_tabs->get_current_tab();
 			ERR_FAIL_INDEX(index, shader_tabs->get_tab_count());
+			TextShaderEditor *editor = edited_shaders[index].shader_editor;
+			if (editor && editor->get_trim_trailing_whitespace_on_save()) {
+				editor->trim_trailing_whitespace();
+			}
 			String path;
 			if (edited_shaders[index].shader.is_valid()) {
 				path = edited_shaders[index].shader->get_path();
@@ -293,8 +301,8 @@ void ShaderEditorPlugin::_menu_item_pressed(int p_index) {
 				}
 				EditorNode::get_singleton()->save_resource_as(edited_shaders[index].shader_inc, path);
 			}
-			if (edited_shaders[index].shader_editor) {
-				edited_shaders[index].shader_editor->tag_saved_version();
+			if (editor) {
+				editor->tag_saved_version();
 			}
 		} break;
 		case FILE_INSPECT: {
