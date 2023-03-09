@@ -307,11 +307,12 @@ def configure(env: "Environment"):
         if not env["use_sowrap"]:
             if os.system("pkg-config --exists libpulse") == 0:  # 0 means found
                 env.ParseConfig("pkg-config libpulse --cflags --libs")
-                env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED", "_REENTRANT"])
+                env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED"])
             else:
                 print("Warning: PulseAudio development libraries not found. Disabling the PulseAudio audio driver.")
                 env["pulseaudio"] = False
-        env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED", "_REENTRANT"])
+        else:
+            env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED", "_REENTRANT"])
 
     if env["dbus"]:
         if not env["use_sowrap"]:
