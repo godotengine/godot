@@ -211,6 +211,7 @@ private:
 	bool code_completion_active = false;
 	bool is_code_completion_scroll_hovered = false;
 	bool is_code_completion_scroll_pressed = false;
+	bool is_code_completion_drag_started = false;
 	Vector<ScriptLanguage::CodeCompletionOption> code_completion_options;
 	int code_completion_line_ofs = 0;
 	int code_completion_current_selected = 0;
