@@ -2561,7 +2561,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tools_settings_erase_button = memnew(Button);
 	tools_settings_erase_button->set_flat(true);
 	tools_settings_erase_button->set_toggle_mode(true);
-	tools_settings_erase_button->set_shortcut(ED_SHORTCUT("tiles_editor/eraser", "Eraser", Key::E));
+	tools_settings_erase_button->set_shortcut(ED_SHORTCUT("tiles_editor/eraser", TTR("Eraser"), Key::E));
 	tools_settings_erase_button->set_shortcut_context(this);
 	tool_settings->add_child(tools_settings_erase_button);
 
