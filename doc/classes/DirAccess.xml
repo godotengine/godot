@@ -290,7 +290,7 @@
 	</methods>
 	<members>
 		<member name="include_hidden" type="bool" setter="set_include_hidden" getter="get_include_hidden">
-			If [code]true[/code], hidden files are included when the navigating directory.
+			If [code]true[/code], hidden files are included when navigating the directory.
 			Affects [method list_dir_begin], [method get_directories] and [method get_files].
 		</member>
 		<member name="include_navigational" type="bool" setter="set_include_navigational" getter="get_include_navigational">
