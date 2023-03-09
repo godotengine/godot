@@ -764,7 +764,7 @@
 			The content can be expanded horizontally. Scaling vertically will result in keeping the height ratio and then black bars on top and bottom sides.
 		</constant>
 		<constant name="CONTENT_SCALE_ASPECT_EXPAND" value="4" enum="ContentScaleAspect">
-			The content's aspect will be preserved. If the target size has different aspect from the base one, the content will stay in the to-left corner and add an extra visible area in the stretched space.
+			The content's aspect will be preserved. If the target size has different aspect from the base one, the content will stay in the top-left corner and add an extra visible area in the stretched space.
 		</constant>
 		<constant name="LAYOUT_DIRECTION_INHERITED" value="0" enum="LayoutDirection">
 			Automatic layout direction, determined from the parent window layout direction.

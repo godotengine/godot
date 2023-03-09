@@ -87,7 +87,7 @@
 		<method name="get_changed_settings" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
-				Gets an array of the settings which have been changed since the last save. Note that internally [code]changed_settings[/code] is cleared after a successful save, so generally the most appropriate place to use this method is when processing [constant NOTIFICATION_EDITOR_SETTINGS_CHANGED]
+				Gets an array of the settings which have been changed since the last save. Note that internally [code]changed_settings[/code] is cleared after a successful save, so generally the most appropriate place to use this method is when processing [constant NOTIFICATION_EDITOR_SETTINGS_CHANGED].
 			</description>
 		</method>
 		<method name="get_favorites" qualifiers="const">

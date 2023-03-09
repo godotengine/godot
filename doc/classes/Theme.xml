@@ -240,7 +240,7 @@
 			<param index="2" name="theme_type" type="StringName" />
 			<description>
 				Returns the theme property of [param data_type] defined by [param name] and [param theme_type], if it exists.
-				Returns the engine fallback icon value if the property doesn't exist (see [ThemeDB]). Use [method has_theme_item] to check for existence.
+				Returns the engine fallback value if the property doesn't exist (see [ThemeDB]). Use [method has_theme_item] to check for existence.
 				[b]Note:[/b] This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.
 			</description>
 		</method>
