@@ -150,6 +150,7 @@ void TabContainer::_update_theme_item_cache() {
 	theme_cache.outline_size = get_theme_constant(SNAME("outline_size"));
 
 	theme_cache.tab_unselected_style = get_theme_stylebox(SNAME("tab_unselected"));
+	theme_cache.tab_hovered_style = get_theme_stylebox(SNAME("tab_hovered"));
 	theme_cache.tab_selected_style = get_theme_stylebox(SNAME("tab_selected"));
 	theme_cache.tab_disabled_style = get_theme_stylebox(SNAME("tab_disabled"));
 
@@ -227,6 +228,7 @@ void TabContainer::_on_theme_changed() {
 	}
 
 	tab_bar->add_theme_style_override(SNAME("tab_unselected"), theme_cache.tab_unselected_style);
+	tab_bar->add_theme_style_override(SNAME("tab_hovered"), theme_cache.tab_hovered_style);
 	tab_bar->add_theme_style_override(SNAME("tab_selected"), theme_cache.tab_selected_style);
 	tab_bar->add_theme_style_override(SNAME("tab_disabled"), theme_cache.tab_disabled_style);
 

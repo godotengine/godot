@@ -63,6 +63,7 @@ class TabContainer : public Container {
 		int outline_size = 0;
 
 		Ref<StyleBox> tab_unselected_style;
+		Ref<StyleBox> tab_hovered_style;
 		Ref<StyleBox> tab_selected_style;
 		Ref<StyleBox> tab_disabled_style;
 
