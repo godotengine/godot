@@ -1287,6 +1287,7 @@ CanvasItem::CanvasItem() :
 	light_mask = 1;
 
 	C = nullptr;
+	_set_observe_notification_moved_in_parent(true);
 }
 
 CanvasItem::~CanvasItem() {

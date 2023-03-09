@@ -686,6 +686,7 @@ bool SceneTree::idle(float p_time) {
 
 	process_tweens(p_time, false);
 
+	flush_children_moved(); // flush again any notifications issued in the idle before the draw occurs
 	flush_transform_notifications(); //additional transforms after timers update
 
 	_call_idle_callbacks();
@@ -2234,6 +2235,80 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 			}
 		}
 	}
+}
+
+void SceneTree::notify_child_count_reduced(Node &p_parent) {
+	// Uncomment the line below to use a passthrough rather than deferred.
+// #define GODOT_SCENE_TREE_MOVED_IN_PARENT_PASSTHROUGH
+#ifndef GODOT_SCENE_TREE_MOVED_IN_PARENT_PASSTHROUGH
+	Node::Data &d = p_parent.data;
+
+	// no pending children moved
+	if (!d.last_child_moved_plus_one) {
+		return;
+	}
+
+	uint32_t num_children = p_parent.get_child_count();
+	if (num_children < d.last_child_moved_plus_one) {
+		d.last_child_moved_plus_one = num_children;
+	}
+#endif
+}
+
+void SceneTree::notify_children_moved(Node &p_parent, uint32_t p_first_child, uint32_t p_last_child_plus_one) {
+#ifdef GODOT_SCENE_TREE_MOVED_IN_PARENT_PASSTHROUGH
+	for (uint32_t n = p_first_child; n < p_last_child_plus_one; n++) {
+		Node *child = p_parent->get_child(n);
+		if (child->data.observe_notification_moved_in_parent) {
+			child->notification(Node::NOTIFICATION_MOVED_IN_PARENT);
+		}
+	}
+#else
+	Node::Data &d = p_parent.data;
+
+	// Should we add? (i.e. first occurrence this tick / frame)
+	if (!d.last_child_moved_plus_one) {
+		_pending_children_moved_parents.push_back(p_parent.get_instance_id());
+	}
+
+	d.first_child_moved = MIN(p_first_child, d.first_child_moved);
+	d.last_child_moved_plus_one = MAX(p_last_child_plus_one, d.last_child_moved_plus_one);
+#endif
+}
+
+void SceneTree::flush_children_moved() {
+	for (uint32_t n = 0; n < _pending_children_moved_parents.size(); n++) {
+		ObjectID id = _pending_children_moved_parents[n];
+		Object *obj = ObjectDB::get_instance(id);
+		if (obj) {
+			// Should always be a node by definition
+			// (only nodes get sent deferred notifications currently).
+			// Check this in DEV_ENABLED?
+			Node *node = (Node *)obj;
+
+			Node::Data &d = node->data;
+
+			// This should be very rare, as the last_child_moved_plus_one is usually kept up
+			// to date when within the scene tree. But it may become out of date outside the scene tree.
+			// This will cause no problems, just a very small possibility of more notifications being sent than
+			// necessary in that very rare situation.
+			if (d.last_child_moved_plus_one > (uint32_t)node->get_child_count()) {
+				d.last_child_moved_plus_one = node->get_child_count();
+			}
+
+			for (uint32_t c = d.first_child_moved; c < d.last_child_moved_plus_one; c++) {
+				Node *child = node->get_child(c);
+				if (child->data.observe_notification_moved_in_parent) {
+					node->get_child(c)->notification(Node::NOTIFICATION_MOVED_IN_PARENT);
+				}
+			}
+
+			d.first_child_moved = UINT32_MAX;
+			d.last_child_moved_plus_one = 0;
+		}
+	}
+
+	_pending_children_moved_parents.clear();
 }
 
 SceneTree::SceneTree() {

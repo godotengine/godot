@@ -426,8 +426,16 @@ void Node::move_child(Node *p_child, int p_pos) {
 	}
 	// notification second
 	move_child_notify(p_child);
-	for (int i = motion_from; i <= motion_to; i++) {
-		data.children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
+	if (is_inside_tree()) {
+		SceneTree *tree = get_tree();
+		tree->notify_children_moved(*this, motion_from, motion_to + 1);
+	} else {
+		for (int i = motion_from; i <= motion_to; i++) {
+			Node *child = data.children[i];
+			if (child->data.observe_notification_moved_in_parent) {
+				child->notification(NOTIFICATION_MOVED_IN_PARENT);
+			}
+		}
 	}
 	p_child->_propagate_groups_dirty();
 
@@ -1352,9 +1360,21 @@ void Node::remove_child(Node *p_child) {
 	child_count = data.children.size();
 	children = data.children.ptrw();
 
-	for (int i = idx; i < child_count; i++) {
-		children[i]->data.pos = i;
-		children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
+	if (is_inside_tree()) {
+		SceneTree *tree = get_tree();
+		tree->notify_children_moved(*this, idx, child_count);
+		for (int i = idx; i < child_count; i++) {
+			children[i]->data.pos = i;
+		}
+		tree->notify_child_count_reduced(*this);
+	} else {
+		for (int i = idx; i < child_count; i++) {
+			Node *child = children[i];
+			child->data.pos = i;
+			if (child->data.observe_notification_moved_in_parent) {
+				child->notification(NOTIFICATION_MOVED_IN_PARENT);
+			}
+		}
 	}
 
 	p_child->data.parent = nullptr;
@@ -3251,6 +3271,7 @@ Node::Node() {
 	data.physics_interpolation_reset_requested = false;
 	data.physics_interpolated_client_side = false;
 	data.use_identity_transform = false;
+	data.observe_notification_moved_in_parent = false;
 
 	data.owner = nullptr;
 	data.OW = nullptr;
@@ -3269,6 +3290,9 @@ Node::Node() {
 	data.display_folded = false;
 	data.ready_first = true;
 	data.editable_instance = false;
+
+	data.first_child_moved = UINT32_MAX;
+	data.last_child_moved_plus_one = 0;
 
 	orphan_node_count++;
 }

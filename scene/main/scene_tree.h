@@ -280,7 +280,15 @@ private:
 	static int idle_callback_count;
 	void _call_idle_callbacks();
 
+	// List of parent nodes that have children moved within,
+	// that are in need of a deferred NOTIFICATION_MOVED_IN_PARENT.
+	LocalVector<ObjectID> _pending_children_moved_parents;
+	void notify_children_moved(Node &p_parent, uint32_t p_first_child, uint32_t p_last_child_plus_one);
+	void notify_child_count_reduced(Node &p_parent);
+
 protected:
+	void flush_children_moved();
+
 	void _notification(int p_notification);
 	static void _bind_methods();
 

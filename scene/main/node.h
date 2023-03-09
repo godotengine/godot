@@ -134,6 +134,13 @@ private:
 
 		int process_priority;
 
+		// In order to prevent sending NOTIFICATION_MOVED_IN_PARENT multiple
+		// times per tick / frame, we defer this to once per tick, and maintain a range of moved
+		// children to send the notification.
+		// If "last_child_moved_plus_one" is set to zero, no children were moved this tick.
+		uint32_t first_child_moved;
+		uint32_t last_child_moved_plus_one;
+
 		// Keep bitpacked values together to get better packing
 		PauseMode pause_mode : 2;
 		PhysicsInterpolationMode physics_interpolation_mode : 2;
@@ -180,6 +187,8 @@ private:
 		bool inside_tree : 1;
 		bool ready_notified : 1; //this is a small hack, so if a node is added during _ready() to the tree, it correctly gets the _ready() notification
 		bool ready_first : 1;
+
+		bool observe_notification_moved_in_parent : 1;
 
 		mutable NodePath *path_cache;
 
@@ -257,6 +266,7 @@ protected:
 	bool _is_physics_interpolation_reset_requested() const { return data.physics_interpolation_reset_requested; }
 	void _set_use_identity_transform(bool p_enable);
 	bool _is_using_identity_transform() const { return data.use_identity_transform; }
+	void _set_observe_notification_moved_in_parent(bool p_enable) { data.observe_notification_moved_in_parent = p_enable; }
 
 public:
 	enum {
