@@ -1493,7 +1493,6 @@ Variant::operator ObjectID() const {
 	}
 }
 
-#ifdef NEED_LONG_INT
 Variant::operator signed long() const {
 	switch (type) {
 		case NIL:
@@ -1533,7 +1532,6 @@ Variant::operator unsigned long() const {
 
 	return 0;
 }
-#endif
 
 Variant::operator signed short() const {
 	switch (type) {
@@ -2428,8 +2426,6 @@ Variant::Variant(unsigned int p_int) {
 	_data._int = p_int;
 }
 
-#ifdef NEED_LONG_INT
-
 Variant::Variant(signed long p_int) {
 	type = INT;
 	_data._int = p_int;
@@ -2439,7 +2435,6 @@ Variant::Variant(unsigned long p_int) {
 	type = INT;
 	_data._int = p_int;
 }
-#endif
 
 Variant::Variant(int64_t p_int) {
 	type = INT;

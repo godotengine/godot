@@ -131,7 +131,6 @@ def configure(env: "Environment"):
             )
         )
         env.Append(ASFLAGS=["-arch", "arm64"])
-        env.Append(CPPDEFINES=["NEED_LONG_INT"])
 
     if env["ios_exceptions"]:
         env.Append(CCFLAGS=["-fexceptions"])
