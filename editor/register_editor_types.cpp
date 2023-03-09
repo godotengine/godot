@@ -212,6 +212,15 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<Skeleton2DEditorPlugin>();
 	EditorPlugins::add_by_type<Sprite2DEditorPlugin>();
 	EditorPlugins::add_by_type<TilesEditorPlugin>();
+
+	// For correct doc generation.
+	GLOBAL_DEF("editor/run/main_run_args", "");
+
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, "editor/script/templates_search_path", PROPERTY_HINT_DIR), "res://script_templates");
+
+	GLOBAL_DEF("editor/naming/default_signal_callback_name", "_on_{node_name}_{signal_name}");
+	GLOBAL_DEF("editor/naming/default_signal_callback_to_self_name", "_on_{signal_name}");
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/scene_name_casing", PROPERTY_HINT_ENUM, "Auto,PascalCase,snake_case"), EditorNode::SCENE_NAME_CASING_SNAKE_CASE);
 }
 
 void unregister_editor_types() {
