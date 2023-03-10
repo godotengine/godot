@@ -606,7 +606,8 @@
 			<param index="3" name="margin" type="float" />
 			<param index="4" name="max_collisions" type="int" />
 			<param index="5" name="collide_separation_ray" type="bool" />
-			<param index="6" name="result" type="PhysicsServer3DExtensionMotionResult*" />
+			<param index="6" name="recovery_as_collision" type="bool" />
+			<param index="7" name="result" type="PhysicsServer3DExtensionMotionResult*" />
 			<description>
 			</description>
 		</method>
