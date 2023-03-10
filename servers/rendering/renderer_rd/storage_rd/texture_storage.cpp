@@ -1429,9 +1429,15 @@ Size2 TextureStorage::texture_size_with_proxy(RID p_proxy) {
 	return texture_2d_get_size(p_proxy);
 }
 
-RID TextureStorage::texture_get_rd_texture_rid(RID p_texture, bool p_srgb) const {
+RID TextureStorage::texture_get_rd_texture(RID p_texture, bool p_srgb) const {
+	if (p_texture.is_null()) {
+		return RID();
+	}
+
 	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND_V(!tex, RID());
+	if (!tex) {
+		return RID();
+	}
 
 	return (p_srgb && tex->rd_texture_srgb.is_valid()) ? tex->rd_texture_srgb : tex->rd_texture;
 }

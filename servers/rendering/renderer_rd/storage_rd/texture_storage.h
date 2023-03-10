@@ -498,7 +498,7 @@ public:
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) override;
 
-	virtual RID texture_get_rd_texture_rid(RID p_texture, bool p_srgb = false) const override;
+	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const override;
 
 	//internal usage
 	_FORCE_INLINE_ TextureType texture_get_type(RID p_texture) {
@@ -517,18 +517,6 @@ public:
 		}
 
 		return tex->layers;
-	}
-
-	_FORCE_INLINE_ RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) {
-		if (p_texture.is_null()) {
-			return RID();
-		}
-		RendererRD::TextureStorage::Texture *tex = texture_owner.get_or_null(p_texture);
-
-		if (!tex) {
-			return RID();
-		}
-		return (p_srgb && tex->rd_texture_srgb.is_valid()) ? tex->rd_texture_srgb : tex->rd_texture;
 	}
 
 	_FORCE_INLINE_ Size2i texture_2d_get_size(RID p_texture) {
