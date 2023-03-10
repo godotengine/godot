@@ -209,12 +209,26 @@ void GodotBody3D::set_param(PhysicsServer3D::BodyParameter p_param, const Varian
 		} break;
 		case PhysicsServer3D::BODY_PARAM_INERTIA: {
 			if (p_value.get_type() == Variant::Type::BASIS) {
-				calculate_inertia = false;
 				Basis inertia_tensor = p_value;
+				if (!inertia_tensor.is_symmetric()) {
+					ERR_PRINT("Invalid inertia tensor. Tensor must be symmetric");
+					inertia = Vector3();
+					calculate_inertia = true;
+					_mass_properties_changed();
+					return;
+				}
 				if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
+					calculate_inertia = false;
 					inertia_tensor_local = inertia_tensor;
 					principal_inertia_axes_local = inertia_tensor.diagonalize().transposed();
 					inertia = inertia_tensor.get_main_diagonal();
+					if ((inertia.x <= 0.0) || (inertia.y <= 0.0) || (inertia.z <= 0.0)) {
+						ERR_PRINT("Invalid inertia tensor. Principal values of the tensor must be greater than zero");
+						inertia = Vector3();
+						calculate_inertia = true;
+						_mass_properties_changed();
+						return;
+					}
 					_inv_inertia = inertia.inverse();
 					_update_transform_dependent();
 				}
