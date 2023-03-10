@@ -499,6 +499,7 @@ public:
 	virtual Size2 texture_size_with_proxy(RID p_proxy) override;
 
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const override;
+	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const override;
 
 	//internal usage
 	_FORCE_INLINE_ TextureType texture_get_type(RID p_texture) {
