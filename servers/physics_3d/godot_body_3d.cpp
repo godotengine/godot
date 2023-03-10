@@ -137,7 +137,7 @@ void GodotBody3D::update_mass_properties() {
 					inertia_tensor[2][2] = inertia.z;
 				}
 
-				inertia_tensor_local = inertia_tensor;
+				_update_inertia_tensor_local(inertia_tensor);
 
 				// Compute the principal axes of inertia.
 				principal_inertia_axes_local = inertia_tensor.diagonalize().transposed();
@@ -164,6 +164,11 @@ void GodotBody3D::update_mass_properties() {
 	}
 
 	_update_transform_dependent();
+}
+
+void GodotBody3D::_update_inertia_tensor_local(const Basis &inertia) {
+	inertia_tensor_local = inertia;
+	inv_inertia_tensor_local = inertia_tensor_local.inverse();
 }
 
 void GodotBody3D::reset_mass_properties() {
@@ -219,7 +224,7 @@ void GodotBody3D::set_param(PhysicsServer3D::BodyParameter p_param, const Varian
 				}
 				if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
 					calculate_inertia = false;
-					inertia_tensor_local = inertia_tensor;
+					_update_inertia_tensor_local(inertia_tensor);
 					principal_inertia_axes_local = inertia_tensor.diagonalize().transposed();
 					inertia = inertia_tensor.get_main_diagonal();
 					if ((inertia.x <= 0.0) || (inertia.y <= 0.0) || (inertia.z <= 0.0)) {
@@ -244,8 +249,7 @@ void GodotBody3D::set_param(PhysicsServer3D::BodyParameter p_param, const Varian
 					if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
 						principal_inertia_axes_local = Basis();
 						_inv_inertia = inertia.inverse();
-						inertia_tensor_local = Basis();
-						inertia_tensor_local.scale(inertia);
+						_update_inertia_tensor_local(Basis().scaled(inertia));
 						_update_transform_dependent();
 					}
 				}
@@ -708,9 +712,9 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 	contact_count = 0;
 }
 
-Vector3 GodotBody3D::_local_angular_acceleration(Vector3 local_torque, Vector3 local_ang_vel) {
+Vector3 GodotBody3D::_local_angular_acceleration(const Vector3 &local_torque, const Vector3 &local_ang_vel) {
 	Vector3 local_ang_mom = inertia_tensor_local.xform(local_ang_vel);
-	return inertia_tensor_local.inverse().xform(local_torque - local_ang_vel.cross(local_ang_mom));
+	return inv_inertia_tensor_local.xform(local_torque - local_ang_vel.cross(local_ang_mom));
 }
 
 void GodotBody3D::integrate_velocities(real_t p_step) {

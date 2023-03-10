@@ -78,6 +78,7 @@ class GodotBody3D : public GodotCollisionObject3D {
 	Basis principal_inertia_axes_local;
 	Vector3 center_of_mass_local;
 	Basis inertia_tensor_local;
+	Basis inv_inertia_tensor_local;
 
 	// In world orientation with local origin
 	Basis _inv_inertia_tensor;
@@ -147,7 +148,8 @@ class GodotBody3D : public GodotCollisionObject3D {
 	uint64_t island_step = 0;
 
 	void _update_transform_dependent();
-	Vector3 _local_angular_acceleration(Vector3 local_torque, Vector3 local_ang_vel);
+	Vector3 _local_angular_acceleration(const Vector3 &local_torque, const Vector3 &local_ang_vel);
+	void _update_inertia_tensor_local(const Basis &inertia);
 
 	friend class GodotPhysicsDirectBodyState3D; // i give up, too many functions to expose
 
