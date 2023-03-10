@@ -212,6 +212,7 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"HINT_RANGE",
 	"HINT_INSTANCE_INDEX",
 	"HINT_SCREEN_TEXTURE",
+	"HINT_MASK_TEXTURE",
 	"HINT_NORMAL_ROUGHNESS_TEXTURE",
 	"HINT_DEPTH_TEXTURE",
 	"FILTER_NEAREST",
@@ -379,6 +380,7 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_HINT_ROUGHNESS_NORMAL_TEXTURE, "hint_roughness_normal", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_ROUGHNESS_GRAY, "hint_roughness_gray", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_SCREEN_TEXTURE, "hint_screen_texture", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_MASK_TEXTURE, "hint_mask_texture", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_NORMAL_ROUGHNESS_TEXTURE, "hint_normal_roughness_texture", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_DEPTH_TEXTURE, "hint_depth_texture", CF_UNSPECIFIED, {}, {} },
 
@@ -1156,6 +1158,9 @@ String ShaderLanguage::get_uniform_hint_name(ShaderNode::Uniform::Hint p_hint) {
 		} break;
 		case ShaderNode::Uniform::HINT_SCREEN_TEXTURE: {
 			result = "hint_screen_texture";
+		} break;
+		case ShaderNode::Uniform::HINT_MASK_TEXTURE: {
+			result = "hint_mask_texture";
 		} break;
 		case ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE: {
 			result = "hint_normal_roughness_texture";
@@ -5558,7 +5563,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 											if (RendererCompositor::get_singleton()->is_xr_enabled() && is_custom_func) {
 												ShaderNode::Uniform::Hint hint = u->hint;
 
-												if (hint == ShaderNode::Uniform::HINT_DEPTH_TEXTURE || hint == ShaderNode::Uniform::HINT_SCREEN_TEXTURE || hint == ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE) {
+												if (hint == ShaderNode::Uniform::HINT_DEPTH_TEXTURE || hint == ShaderNode::Uniform::HINT_SCREEN_TEXTURE || hint == ShaderNode::Uniform::HINT_MASK_TEXTURE || hint == ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE) {
 													_set_error(vformat(RTR("Unable to pass a multiview texture sampler as a parameter to custom function. Consider to sample it in the main function and then pass the vector result to it."), get_uniform_hint_name(hint)));
 													return nullptr;
 												}
@@ -8979,6 +8984,15 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 									--texture_uniforms;
 									--texture_binding;
 								} break;
+								case TK_HINT_MASK_TEXTURE: {
+									new_hint = ShaderNode::Uniform::HINT_MASK_TEXTURE;
+									--texture_uniforms;
+									--texture_binding;
+									if (String(shader_type_identifier) != "canvas_item") {
+										_set_error(vformat(RTR("'hint_mask_texture' is not supported in '%s' shaders."), shader_type_identifier));
+										return ERR_PARSE_ERROR;
+									}
+								} break;
 								case TK_HINT_NORMAL_ROUGHNESS_TEXTURE: {
 									new_hint = ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE;
 									--texture_uniforms;
@@ -10770,6 +10784,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 						options.push_back("hint_roughness_normal");
 						options.push_back("hint_roughness_r");
 						options.push_back("hint_screen_texture");
+						options.push_back("hint_mask_texture");
 						options.push_back("hint_normal_roughness_texture");
 						options.push_back("hint_depth_texture");
 						options.push_back("source_color");

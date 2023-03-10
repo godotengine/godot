@@ -2140,58 +2140,58 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 }
 
 void TextureStorage::_create_render_target_backbuffer(RenderTarget *rt) {
-	ERR_FAIL_COND_MSG(rt->backbuffer_fbo != 0, "Cannot allocate RenderTarget backbuffer: already initialized.");
-	ERR_FAIL_COND(rt->direct_to_screen);
+	// Caller should already check both of these, and assume there's a valid backbuffer on return
+	DEV_ASSERT(rt->backbuffer_fbo == 0);
+	DEV_ASSERT(!rt->direct_to_screen);
 	// Allocate mipmap chains for full screen blur
 	// Limit mipmaps so smallest is 32x32 to avoid unnecessary framebuffer switches
 	int count = MAX(1, Image::get_image_required_mipmaps(rt->size.x, rt->size.y, Image::FORMAT_RGBA8) - 4);
-	if (rt->size.x > 40 && rt->size.y > 40) {
-		GLsizei width = rt->size.x;
-		GLsizei height = rt->size.y;
 
-		rt->mipmap_count = count;
+	GLsizei width = rt->size.x;
+	GLsizei height = rt->size.y;
 
-		glGenTextures(1, &rt->backbuffer);
-		glBindTexture(GL_TEXTURE_2D, rt->backbuffer);
-		uint32_t texture_size_bytes = 0;
+	rt->mipmap_count = count;
 
-		for (int l = 0; l < count; l++) {
-			texture_size_bytes += width * height * 4;
-			glTexImage2D(GL_TEXTURE_2D, l, rt->color_internal_format, width, height, 0, rt->color_format, rt->color_type, nullptr);
-			width = MAX(1, (width / 2));
-			height = MAX(1, (height / 2));
-		}
+	glGenTextures(1, &rt->backbuffer);
+	glBindTexture(GL_TEXTURE_2D, rt->backbuffer);
+	uint32_t texture_size_bytes = 0;
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, count - 1);
-
-		glGenFramebuffers(1, &rt->backbuffer_fbo);
-		glBindFramebuffer(GL_FRAMEBUFFER, rt->backbuffer_fbo);
-
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->backbuffer, 0);
-
-		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		if (status != GL_FRAMEBUFFER_COMPLETE) {
-			WARN_PRINT_ONCE("Cannot allocate mipmaps for canvas screen blur. Status: " + get_framebuffer_error(status));
-			glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
-			return;
-		}
-		GLES3::Utilities::get_singleton()->texture_allocated_data(rt->backbuffer, texture_size_bytes, "Render target backbuffer color texture");
-
-		// Initialize all levels to clear black.
-		for (int j = 0; j < count; j++) {
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->backbuffer, j);
-			glClearColor(0.0, 0.0, 0.0, 0.0);
-			glClear(GL_COLOR_BUFFER_BIT);
-		}
-
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->backbuffer, 0);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	for (int l = 0; l < count; l++) {
+		texture_size_bytes += width * height * 4;
+		glTexImage2D(GL_TEXTURE_2D, l, rt->color_internal_format, width, height, 0, rt->color_format, rt->color_type, nullptr);
+		width = MAX(1, (width / 2));
+		height = MAX(1, (height / 2));
 	}
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, count - 1);
+
+	glGenFramebuffers(1, &rt->backbuffer_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, rt->backbuffer_fbo);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->backbuffer, 0);
+
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		WARN_PRINT_ONCE("Cannot allocate mipmaps for canvas screen blur. Status: " + get_framebuffer_error(status));
+		glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
+		return;
+	}
+	GLES3::Utilities::get_singleton()->texture_allocated_data(rt->backbuffer, texture_size_bytes, "Render target backbuffer color texture");
+
+	// Initialize all levels to clear black.
+	for (int j = 0; j < count; j++) {
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->backbuffer, j);
+		glClearColor(0.0, 0.0, 0.0, 0.0);
+		glClear(GL_COLOR_BUFFER_BIT);
+	}
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->backbuffer, 0);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 void GLES3::TextureStorage::check_backbuffer(RenderTarget *rt, const bool uses_screen_texture, const bool uses_depth_texture) {
 	if (rt->backbuffer != 0 && rt->backbuffer_depth != 0) {
@@ -2253,6 +2253,65 @@ void GLES3::TextureStorage::check_backbuffer(RenderTarget *rt, const bool uses_s
 		}
 	}
 }
+
+bool TextureStorage::_create_render_target_canvas_group(RenderTarget *rt) {
+	ERR_FAIL_COND_V(rt->direct_to_screen, false);
+	RenderTarget::CanvasGroupLevel canvas_group_level;
+	// Allocate mipmap chains for full screen blur
+	// Limit mipmaps so smallest is 32x32 to avoid unnecessary framebuffer switches
+	int count = MAX(1, Image::get_image_required_mipmaps(rt->size.x, rt->size.y, Image::FORMAT_RGBA8) - 4);
+
+	GLsizei width = rt->size.x;
+	GLsizei height = rt->size.y;
+
+	canvas_group_level.mipmap_count = count;
+
+	glGenTextures(1, &canvas_group_level.texture);
+	glBindTexture(GL_TEXTURE_2D, canvas_group_level.texture);
+	uint32_t texture_size_bytes = 0;
+
+	for (int l = 0; l < count; l++) {
+		texture_size_bytes += width * height * 4;
+		glTexImage2D(GL_TEXTURE_2D, l, rt->color_internal_format, width, height, 0, rt->color_format, rt->color_type, nullptr);
+		width = MAX(1, (width / 2));
+		height = MAX(1, (height / 2));
+	}
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, count - 1);
+
+	glGenFramebuffers(1, &canvas_group_level.framebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, canvas_group_level.framebuffer);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, canvas_group_level.texture, 0);
+
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		WARN_PRINT_ONCE("Cannot allocate mipmaps for canvas screen blur. Status: " + get_framebuffer_error(status));
+		glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
+		return false;
+	}
+	GLES3::Utilities::get_singleton()->texture_allocated_data(canvas_group_level.texture, texture_size_bytes, "Render target backbuffer color texture");
+
+	// Initialize all levels to transparent
+	for (int j = 0; j < count; j++) {
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, canvas_group_level.texture, j);
+		glClearColor(0.0, 0.0, 0.0, 0.0);
+		glClear(GL_COLOR_BUFFER_BIT);
+	}
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, canvas_group_level.texture, 0);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	rt->canvas_group_levels.push_back(canvas_group_level);
+
+	return true;
+}
+
 void TextureStorage::_clear_render_target(RenderTarget *rt) {
 	// there is nothing else to clear when DIRECT_TO_SCREEN is used
 	if (rt->direct_to_screen) {
@@ -2326,6 +2385,11 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 		GLES3::Utilities::get_singleton()->texture_free_data(rt->backbuffer_depth);
 		rt->backbuffer_depth = 0;
 	}
+	for (uint32_t i = 0; i < rt->canvas_group_levels.size(); i++) {
+		glDeleteFramebuffers(1, &rt->canvas_group_levels[i].framebuffer);
+		GLES3::Utilities::get_singleton()->texture_free_data(rt->canvas_group_levels[i].texture);
+	}
+	rt->canvas_group_levels.clear();
 	_render_target_clear_sdf(rt);
 }
 
@@ -3028,6 +3092,43 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 	glEnable(GL_BLEND); // 2D starts with blend enabled.
 }
 
+void TextureStorage::render_target_copy_to_back_buffer_from_canvas_group(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps, uint32_t p_canvas_group_level) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+	ERR_FAIL_COND(rt->direct_to_screen);
+
+	if (rt->backbuffer_fbo == 0) {
+		_create_render_target_backbuffer(rt);
+	}
+
+	ERR_FAIL_COND(p_canvas_group_level >= rt->canvas_group_levels.size());
+	const RenderTarget::CanvasGroupLevel &canvas_group_level = rt->canvas_group_levels[p_canvas_group_level];
+
+	Rect2i region;
+	if (p_region == Rect2i()) {
+		region.size = rt->size;
+	} else {
+		region = Rect2i(Size2i(), rt->size).intersection(p_region);
+		if (region.size == Size2i()) {
+			return; //nothing to do
+		}
+	}
+
+	glDisable(GL_BLEND);
+	//single texture copy for backbuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, rt->backbuffer_fbo);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, canvas_group_level.texture);
+	GLES3::CopyEffects::get_singleton()->copy_screen();
+
+	if (p_gen_mipmaps) {
+		GLES3::CopyEffects::get_singleton()->bilinear_blur(rt->backbuffer, rt->mipmap_count, region);
+		glBindFramebuffer(GL_FRAMEBUFFER, rt->backbuffer_fbo);
+	}
+
+	glEnable(GL_BLEND); // 2D almost always uses blend.
+}
+
 void TextureStorage::render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
@@ -3056,6 +3157,7 @@ void TextureStorage::render_target_clear_back_buffer(RID p_render_target, const 
 void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, const Rect2i &p_region) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
+	ERR_FAIL_COND(rt->direct_to_screen);
 
 	if (rt->backbuffer_fbo == 0) {
 		_create_render_target_backbuffer(rt);
@@ -3075,6 +3177,107 @@ void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, 
 	glEnable(GL_BLEND); // 2D starts with blend enabled.
 
 	glBindFramebuffer(GL_FRAMEBUFFER, rt->backbuffer_fbo);
+}
+
+void TextureStorage::render_target_clear_canvas_group(RID p_render_target, uint32_t p_canvas_group_level, bool p_allow_create) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+	ERR_FAIL_COND(rt->direct_to_screen);
+
+	if (!p_allow_create && p_canvas_group_level >= rt->canvas_group_levels.size()) {
+		// This is not an error state.
+		// This simply indicates that a blank transparent texture should be used instead.
+		return;
+	}
+
+	while (p_canvas_group_level >= rt->canvas_group_levels.size()) {
+		if (!_create_render_target_canvas_group(rt)) {
+			return;
+		}
+	}
+	RenderTarget::CanvasGroupLevel &canvas_group_level = rt->canvas_group_levels[p_canvas_group_level];
+
+	if (!canvas_group_level.clear_needed) {
+		// Previously cleared, and no new items drawn
+		return;
+	}
+	canvas_group_level.clear_needed = false;
+	canvas_group_level.mipmaps_generated = false;
+
+	// Just do a full screen clear;
+	glBindFramebuffer(GL_FRAMEBUFFER, canvas_group_level.framebuffer);
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void TextureStorage::render_target_gen_canvas_group_mipmaps(RID p_render_target, const Rect2i &p_region, uint32_t p_canvas_group_level) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+	ERR_FAIL_COND(rt->direct_to_screen);
+
+	if (p_canvas_group_level >= rt->canvas_group_levels.size()) {
+		// Let the caller use the default transparent. It doesn't need mipmaps
+		return;
+	}
+	RenderTarget::CanvasGroupLevel &canvas_group_level = rt->canvas_group_levels[p_canvas_group_level];
+
+	if (canvas_group_level.mipmaps_generated) {
+		// Cached mipmaps exist
+		return;
+	}
+	canvas_group_level.mipmaps_generated = true;
+
+	Rect2i region;
+	if (p_region == Rect2i()) {
+		region.size = rt->size;
+	} else {
+		region = Rect2i(Size2i(), rt->size).intersection(p_region);
+		if (region.size == Size2i()) {
+			return; //nothing to do
+		}
+	}
+
+	GLES3::CopyEffects::get_singleton()->bilinear_blur(canvas_group_level.texture, canvas_group_level.mipmap_count, region);
+	glBindFramebuffer(GL_FRAMEBUFFER, canvas_group_level.framebuffer);
+}
+
+void TextureStorage::render_target_set_canvas_group_needs_clear(RID p_render_target, uint32_t p_canvas_group_level) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+
+	if (p_canvas_group_level >= rt->canvas_group_levels.size()) {
+		// Transparent default doesn't need to be any more clear
+		return;
+	}
+	RenderTarget::CanvasGroupLevel &canvas_group_level = rt->canvas_group_levels[p_canvas_group_level];
+
+	canvas_group_level.clear_needed = true;
+}
+
+void TextureStorage::render_target_set_canvas_groups_used(RID p_render_target, uint32_t p_canvas_group_level) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+
+	uint64_t last_used = OS::get_singleton()->get_ticks_usec();
+
+	uint32_t i;
+	for (i = 0; i < p_canvas_group_level; i++) {
+		rt->canvas_group_levels[i].last_used = last_used;
+	}
+	for (; i < rt->canvas_group_levels.size(); i++) {
+		if (last_used - rt->canvas_group_levels[i].last_used > 2000000L) {
+			// Release levels that haven't been used for more than 2 seconds
+			break;
+		}
+	}
+	uint32_t trunc = i;
+	for (; i < rt->canvas_group_levels.size(); i++) {
+		glDeleteFramebuffers(1, &rt->canvas_group_levels[i].framebuffer);
+		glDeleteTextures(1, &rt->canvas_group_levels[i].texture);
+	}
+	if (trunc < rt->canvas_group_levels.size()) {
+		rt->canvas_group_levels.resize(trunc);
+	}
 }
 
 #endif // GLES3_ENABLED

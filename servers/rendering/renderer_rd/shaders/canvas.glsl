@@ -564,7 +564,7 @@ void main() {
 		specular_shininess = vec4(1.0);
 	}
 
-#if defined(SCREEN_UV_USED)
+#if defined(SCREEN_UV_USED) || defined(USE_MASK)
 	vec2 screen_uv = gl_FragCoord.xy * canvas_data.screen_pixel_size;
 #else
 	vec2 screen_uv = vec2(0.0);
@@ -738,6 +738,31 @@ void main() {
 
 #ifdef MODE_LIGHT_ONLY
 	color.a *= light_only_alpha;
+#endif
+
+#if defined(USE_MASK)
+	{
+		uint mask_mode = (draw_data.flags >> FLAGS_MASK_MODE_SHIFT) & 3;
+		vec4 mask = textureLod(sampler2D(mask_buffer, SAMPLER_LINEAR_CLAMP), screen_uv, 0.0);
+
+		if (mask_mode == 0) {
+			if (mask.a > 0.0001) {
+				mask.rgb /= mask.a;
+			}
+			color *= mask;
+		} else if (mask_mode == 1) {
+			if (mask.a > 0.0001) {
+				mask.rgb /= mask.a;
+			}
+			mask.a *= color.a;
+			color = mask;
+		} else if (mask_mode == 2) {
+			color.rgb *= 1.0 - mask.a;
+			color.rgb += mask.rgb;
+		} else if (mask_mode == 3) {
+			color.a *= 1.0 - mask.a;
+		}
+	}
 #endif
 
 	frag_color = color;

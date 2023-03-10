@@ -509,6 +509,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			for (const KeyValue<StringName, SL::ShaderNode::Uniform> &E : pnode->uniforms) {
 				if (SL::is_sampler_type(E.value.type)) {
 					if (E.value.hint == SL::ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
+							E.value.hint == SL::ShaderNode::Uniform::HINT_MASK_TEXTURE ||
 							E.value.hint == SL::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
 							E.value.hint == SL::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
 						continue; // Don't create uniforms in the generated code for these.
@@ -554,6 +555,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				}
 
 				if (uniform.hint == SL::ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
+						uniform.hint == SL::ShaderNode::Uniform::HINT_MASK_TEXTURE ||
 						uniform.hint == SL::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
 						uniform.hint == SL::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
 					continue; // Don't create uniforms in the generated code for these.
@@ -930,6 +932,12 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 								r_gen_code.uses_screen_texture_mipmaps = true;
 							}
 							r_gen_code.uses_screen_texture = true;
+						} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_MASK_TEXTURE) {
+							name = "mask_buffer";
+							if (u.filter >= ShaderLanguage::FILTER_NEAREST_MIPMAP) {
+								r_gen_code.uses_mask_texture_mipmaps = true;
+							}
+							r_gen_code.uses_mask_texture = true;
 						} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE) {
 							name = "normal_roughness_buffer";
 							r_gen_code.uses_normal_roughness_texture = true;
@@ -1160,6 +1168,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 					bool is_texture_func = false;
 					bool is_screen_texture = false;
+					bool is_mask_texture = false;
 					bool texture_func_no_uv = false;
 					bool texture_func_returns_data = false;
 
@@ -1268,6 +1277,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 										const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[texture_uniform];
 										if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE) {
 											is_screen_texture = true;
+										} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_MASK_TEXTURE) {
+											is_mask_texture = true;
 										} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
 											is_depth_texture = true;
 										} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE) {
@@ -1300,7 +1311,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 								}
 
 								String data_type_name = "";
-								if (actions.check_multiview_samplers && (is_screen_texture || is_depth_texture || is_normal_roughness_texture)) {
+								if (actions.check_multiview_samplers && (is_screen_texture || is_mask_texture || is_depth_texture || is_normal_roughness_texture)) {
 									data_type_name = "multiviewSampler";
 									multiview_uv_needed = true;
 								} else {
@@ -1315,6 +1326,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 								if (shader->uniforms.has(texture_uniform)) {
 									const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[texture_uniform];
 									if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE) {
+										multiview_uv_needed = true;
+									} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_MASK_TEXTURE) {
 										multiview_uv_needed = true;
 									} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
 										multiview_uv_needed = true;
@@ -1548,6 +1561,8 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 	r_gen_code.uses_global_textures = false;
 	r_gen_code.uses_screen_texture_mipmaps = false;
 	r_gen_code.uses_screen_texture = false;
+	r_gen_code.uses_mask_texture_mipmaps = false;
+	r_gen_code.uses_mask_texture = false;
 	r_gen_code.uses_depth_texture = false;
 	r_gen_code.uses_normal_roughness_texture = false;
 

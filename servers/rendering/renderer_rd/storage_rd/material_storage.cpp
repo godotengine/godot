@@ -654,6 +654,7 @@ void MaterialStorage::MaterialData::update_uniform_buffer(const HashMap<StringNa
 		}
 
 		if (E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
+				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_MASK_TEXTURE ||
 				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
 				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
 			continue;
@@ -773,6 +774,7 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 		Vector<RID> textures;
 
 		if (p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
+				p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_MASK_TEXTURE ||
 				p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
 				p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
 			continue;

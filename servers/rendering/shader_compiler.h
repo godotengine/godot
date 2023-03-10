@@ -82,6 +82,8 @@ public:
 		bool uses_vertex_time = false;
 		bool uses_screen_texture_mipmaps = false;
 		bool uses_screen_texture = false;
+		bool uses_mask_texture_mipmaps = false;
+		bool uses_mask_texture = false;
 		bool uses_depth_texture = false;
 		bool uses_normal_roughness_texture = false;
 	};

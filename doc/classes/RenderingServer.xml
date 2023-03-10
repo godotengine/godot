@@ -5440,6 +5440,10 @@
 			Parent is used for clipping child, but parent is also drawn underneath child as normal before clipping child to its visible area.
 		</constant>
 		<constant name="CANVAS_GROUP_MODE_TRANSPARENT" value="3" enum="CanvasGroupMode">
+			The parent's color and alpha are multiplied with that of the child. An parent with no draw commands is interpreted as a fullscreen rectangle drawn in the self-modulation color.
+		</constant>
+		<constant name="CANVAS_GROUP_MODE_SUBTRACT" value="4" enum="CanvasGroupMode">
+			Child cuts hole into the parent, causing it to be transparent where the child is opaque. Child is not drawn.
 		</constant>
 		<constant name="CANVAS_LIGHT_MODE_POINT" value="0" enum="CanvasLightMode">
 			2D point light (see [PointLight2D]).

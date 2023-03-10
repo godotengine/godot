@@ -347,6 +347,16 @@ struct RenderTarget {
 	GLuint backbuffer = 0;
 	GLuint backbuffer_depth = 0;
 
+	struct CanvasGroupLevel {
+		GLuint texture;
+		GLuint framebuffer;
+		int mipmap_count;
+		bool clear_needed = false;
+		bool mipmaps_generated = true;
+		uint64_t last_used = 0;
+	};
+	LocalVector<CanvasGroupLevel> canvas_group_levels;
+
 	bool hdr = false; // For Compatibility this effects both 2D and 3D rendering!
 	GLuint color_internal_format = GL_RGBA8;
 	GLuint color_format = GL_RGBA;
@@ -450,6 +460,7 @@ private:
 	void _clear_render_target(RenderTarget *rt);
 	void _update_render_target(RenderTarget *rt);
 	void _create_render_target_backbuffer(RenderTarget *rt);
+	bool _create_render_target_canvas_group(RenderTarget *rt);
 	void _render_target_allocate_sdf(RenderTarget *rt);
 	void _render_target_clear_sdf(RenderTarget *rt);
 	Rect2i _render_target_get_sdf_rect(const RenderTarget *rt) const;
@@ -667,8 +678,14 @@ public:
 	bool render_target_is_sdf_enabled(RID p_render_target) const;
 
 	void render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps);
+	void render_target_copy_to_back_buffer_from_canvas_group(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps, uint32_t p_canvas_group_level);
 	void render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color);
 	void render_target_gen_back_buffer_mipmaps(RID p_render_target, const Rect2i &p_region);
+
+	void render_target_clear_canvas_group(RID p_render_target, uint32_t p_canvas_group_level, bool p_allow_create = true);
+	void render_target_gen_canvas_group_mipmaps(RID p_render_target, const Rect2i &p_region, uint32_t p_canvas_group_level);
+	void render_target_set_canvas_group_needs_clear(RID p_render_target, uint32_t p_canvas_group_level);
+	void render_target_set_canvas_groups_used(RID p_render_target, uint32_t p_canvas_group_level);
 
 	virtual void render_target_set_vrs_mode(RID p_render_target, RS::ViewportVRSMode p_mode) override {}
 	virtual RS::ViewportVRSMode render_target_get_vrs_mode(RID p_render_target) const override { return RS::VIEWPORT_VRS_DISABLED; }

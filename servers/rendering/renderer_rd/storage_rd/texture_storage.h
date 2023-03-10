@@ -352,8 +352,22 @@ private:
 
 		Vector<RID> backbuffer_mipmaps;
 
+		struct CanvasGroupLevel {
+			RID texture;
+			RID multisample;
+			RID framebuffer;
+			RID mipmap0;
+			Vector<RID> mipmaps;
+			bool clear_needed = false;
+			bool mipmaps_generated = true;
+			uint64_t last_used = 0;
+		};
+		LocalVector<CanvasGroupLevel> canvas_group_levels;
+
 		RID framebuffer_uniform_set;
-		RID backbuffer_uniform_set;
+		RID framebuffer_uniform_set_alias_screen_to_mask;
+		RID canvas_group_uniform_set;
+		RID canvas_group_uniform_set_alias_screen_to_mask;
 
 		RID sdf_buffer_write;
 		RID sdf_buffer_write_fb;
@@ -423,6 +437,7 @@ private:
 	void _clear_render_target(RenderTarget *rt);
 	void _update_render_target(RenderTarget *rt);
 	void _create_render_target_backbuffer(RenderTarget *rt);
+	void _create_render_target_canvas_group(RenderTarget *rt);
 	void _render_target_allocate_sdf(RenderTarget *rt);
 	void _render_target_clear_sdf(RenderTarget *rt);
 	Rect2i _render_target_get_sdf_rect(const RenderTarget *rt) const;
@@ -727,9 +742,14 @@ public:
 	virtual bool render_target_is_using_hdr(RID p_render_target) const override;
 
 	void render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps);
+	void render_target_copy_to_back_buffer_from_canvas_group(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps, uint32_t p_canvas_group_level);
 	void render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color);
 	void render_target_gen_back_buffer_mipmaps(RID p_render_target, const Rect2i &p_region);
-	RID render_target_get_back_buffer_uniform_set(RID p_render_target, RID p_base_shader);
+
+	void render_target_clear_canvas_group(RID p_render_target, uint32_t p_canvas_group_level, bool p_allow_create = true);
+	void render_target_gen_canvas_group_mipmaps(RID p_render_target, const Rect2i &p_region, uint32_t p_canvas_group_level);
+	void render_target_set_canvas_group_needs_clear(RID p_render_target, uint32_t p_canvas_group_level);
+	void render_target_set_canvas_groups_used(RID p_render_target, uint32_t p_canvas_group_level);
 
 	virtual void render_target_request_clear(RID p_render_target, const Color &p_clear_color) override;
 	virtual bool render_target_is_clear_requested(RID p_render_target) override;
@@ -766,13 +786,15 @@ public:
 	RID render_target_get_rd_texture_slice(RID p_render_target, uint32_t p_layer);
 	RID render_target_get_rd_texture_msaa(RID p_render_target);
 	RID render_target_get_rd_backbuffer(RID p_render_target);
-	RID render_target_get_rd_backbuffer_framebuffer(RID p_render_target);
+	RID render_target_get_rd_canvas_group(RID p_render_target, uint32_t p_canvas_group_level);
+	RID render_target_get_rd_canvas_group_framebuffer(RID p_render_target, uint32_t p_canvas_group_level);
 
-	RID render_target_get_framebuffer_uniform_set(RID p_render_target);
-	RID render_target_get_backbuffer_uniform_set(RID p_render_target);
+	RID render_target_get_framebuffer_uniform_set(RID p_render_target, bool p_alias_screen_to_mask);
+	RID render_target_get_canvas_group_uniform_set(RID p_render_target, bool p_alias_screen_to_mask);
 
-	void render_target_set_framebuffer_uniform_set(RID p_render_target, RID p_uniform_set);
-	void render_target_set_backbuffer_uniform_set(RID p_render_target, RID p_uniform_set);
+	void render_target_set_framebuffer_uniform_set(RID p_render_target, RID p_uniform_set, bool p_alias_screen_to_mask);
+	void render_target_set_canvas_group_uniform_set(RID p_render_target, RID p_uniform_set, bool p_alias_screen_to_mask);
+	void render_target_clear_canvas_group_uniform_set(RID p_render_target);
 };
 
 } // namespace RendererRD

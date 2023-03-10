@@ -1504,10 +1504,12 @@ public:
 	virtual void canvas_item_set_visibility_notifier(RID p_item, bool p_enable, const Rect2 &p_area, const Callable &p_enter_callbable, const Callable &p_exit_callable) = 0;
 
 	enum CanvasGroupMode {
+		// Note: The following need to match the order of CanvasItem::ClipChildrenMode
 		CANVAS_GROUP_MODE_DISABLED,
 		CANVAS_GROUP_MODE_CLIP_ONLY,
 		CANVAS_GROUP_MODE_CLIP_AND_DRAW,
 		CANVAS_GROUP_MODE_TRANSPARENT,
+		CANVAS_GROUP_MODE_SUBTRACT,
 	};
 
 	virtual void canvas_item_set_canvas_group_mode(RID p_item, CanvasGroupMode p_mode, float p_clear_margin = 5.0, bool p_fit_empty = false, float p_fit_margin = 0.0, bool p_blur_mipmaps = false) = 0;

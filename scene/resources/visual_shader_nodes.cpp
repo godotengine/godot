@@ -763,6 +763,11 @@ String VisualShaderNodeTexture::generate_global(Shader::Mode p_mode, VisualShade
 				code += "uniform sampler2D " + make_unique_id(p_type, p_id, "screen_tex") + " : hint_screen_texture;\n";
 			}
 		} break;
+		case SOURCE_MASK: {
+			if (p_mode == Shader::MODE_CANVAS_ITEM && p_type == VisualShader::TYPE_FRAGMENT) {
+				code += "uniform sampler2D " + make_unique_id(p_type, p_id, "mask_tex") + " : hint_mask_texture;\n";
+			}
+		} break;
 		case SOURCE_DEPTH:
 		case SOURCE_3D_NORMAL:
 		case SOURCE_ROUGHNESS: {
@@ -789,7 +794,7 @@ String VisualShaderNodeTexture::generate_global(Shader::Mode p_mode, VisualShade
 String VisualShaderNodeTexture::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String default_uv;
 	if (p_mode == Shader::MODE_CANVAS_ITEM || p_mode == Shader::MODE_SPATIAL) {
-		if (source == SOURCE_SCREEN) {
+		if (source == SOURCE_SCREEN || source == SOURCE_MASK) {
 			default_uv = "SCREEN_UV";
 		} else {
 			default_uv = "UV";
@@ -823,6 +828,17 @@ String VisualShaderNodeTexture::generate_code(Shader::Mode p_mode, VisualShader:
 		case SOURCE_SCREEN: {
 			if ((p_mode == Shader::MODE_SPATIAL || p_mode == Shader::MODE_CANVAS_ITEM) && p_type == VisualShader::TYPE_FRAGMENT) {
 				String id = make_unique_id(p_type, p_id, "screen_tex");
+				if (p_input_vars[1].is_empty()) {
+					code += "	" + p_output_vars[0] + " = texture(" + id + ", " + uv + ");\n";
+				} else {
+					code += "	" + p_output_vars[0] + " = textureLod(" + id + ", " + uv + ", " + p_input_vars[1] + ");\n";
+				}
+				return code;
+			}
+		} break;
+		case SOURCE_MASK: {
+			if (p_mode == Shader::MODE_CANVAS_ITEM && p_type == VisualShader::TYPE_FRAGMENT) {
+				String id = make_unique_id(p_type, p_id, "mask_tex");
 				if (p_input_vars[1].is_empty()) {
 					code += "	" + p_output_vars[0] + " = texture(" + id + ", " + uv + ");\n";
 				} else {
@@ -908,6 +924,9 @@ void VisualShaderNodeTexture::set_source(Source p_source) {
 		case SOURCE_SCREEN:
 			simple_decl = false;
 			break;
+		case SOURCE_MASK:
+			simple_decl = false;
+			break;
 		case SOURCE_2D_TEXTURE:
 			simple_decl = false;
 			break;
@@ -984,6 +1003,11 @@ String VisualShaderNodeTexture::get_warning(Shader::Mode p_mode, VisualShader::T
 				return String(); // All good.
 			}
 		} break;
+		case SOURCE_MASK: {
+			if (p_mode == Shader::MODE_CANVAS_ITEM && p_type == VisualShader::TYPE_FRAGMENT) {
+				return String(); // All good.
+			}
+		} break;
 		case SOURCE_2D_NORMAL:
 		case SOURCE_2D_TEXTURE: {
 			if (p_mode == Shader::MODE_CANVAS_ITEM && p_type == VisualShader::TYPE_FRAGMENT) {
@@ -1017,7 +1041,7 @@ void VisualShaderNodeTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_type", "value"), &VisualShaderNodeTexture::set_texture_type);
 	ClassDB::bind_method(D_METHOD("get_texture_type"), &VisualShaderNodeTexture::get_texture_type);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "source", PROPERTY_HINT_ENUM, "Texture,Screen,Texture2D,NormalMap2D,Depth,SamplerPort,Normal3D,Roughness"), "set_source", "get_source");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "source", PROPERTY_HINT_ENUM, "Texture:0,Screen:1,Mask:8,Texture2D:2,NormalMap2D:3,Depth:4,SamplerPort:5,Normal3D:6,Roughness:7"), "set_source", "get_source");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_type", PROPERTY_HINT_ENUM, "Data,Color,Normal Map"), "set_texture_type", "get_texture_type");
 
@@ -1029,6 +1053,7 @@ void VisualShaderNodeTexture::_bind_methods() {
 	BIND_ENUM_CONSTANT(SOURCE_PORT);
 	BIND_ENUM_CONSTANT(SOURCE_3D_NORMAL);
 	BIND_ENUM_CONSTANT(SOURCE_ROUGHNESS);
+	BIND_ENUM_CONSTANT(SOURCE_MASK);
 	BIND_ENUM_CONSTANT(SOURCE_MAX);
 
 	BIND_ENUM_CONSTANT(TYPE_DATA);
@@ -6362,6 +6387,9 @@ String get_sampler_hint(VisualShaderNodeTextureParameter::TextureType p_texture_
 			case VisualShaderNodeTextureParameter::SOURCE_SCREEN:
 				source_code = "hint_screen_texture";
 				break;
+			case VisualShaderNodeTextureParameter::SOURCE_MASK:
+				source_code = "hint_mask_texture";
+				break;
 			case VisualShaderNodeTextureParameter::SOURCE_DEPTH:
 				source_code = "hint_depth_texture";
 				break;
@@ -6579,7 +6607,7 @@ void VisualShaderNodeTextureParameter::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "color_default", PROPERTY_HINT_ENUM, "White,Black,Transparent"), "set_color_default", "get_color_default");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Default,Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_repeat", PROPERTY_HINT_ENUM, "Default,Enabled,Disabled"), "set_texture_repeat", "get_texture_repeat");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_source", PROPERTY_HINT_ENUM, "None,Screen,Depth,NormalRoughness"), "set_texture_source", "get_texture_source");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_source", PROPERTY_HINT_ENUM, "None:0,Screen:1,Mask:4,Depth:2,NormalRoughness:3"), "set_texture_source", "get_texture_source");
 
 	BIND_ENUM_CONSTANT(TYPE_DATA);
 	BIND_ENUM_CONSTANT(TYPE_COLOR);
@@ -6610,6 +6638,7 @@ void VisualShaderNodeTextureParameter::_bind_methods() {
 	BIND_ENUM_CONSTANT(SOURCE_SCREEN);
 	BIND_ENUM_CONSTANT(SOURCE_DEPTH);
 	BIND_ENUM_CONSTANT(SOURCE_NORMAL_ROUGHNESS);
+	BIND_ENUM_CONSTANT(SOURCE_MASK);
 	BIND_ENUM_CONSTANT(SOURCE_MAX);
 }
 
