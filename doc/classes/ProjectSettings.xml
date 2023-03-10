@@ -241,6 +241,9 @@
 		<member name="application/boot_splash/use_filter" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], applies linear filtering when scaling the image (recommended for high-resolution artwork). If [code]false[/code], uses nearest-neighbor interpolation (recommended for pixel art).
 		</member>
+		<member name="application/config/auto_accept_quit" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the application automatically accepts quitting requests.
+		</member>
 		<member name="application/config/custom_user_dir_name" type="String" setter="" getter="" default="&quot;&quot;">
 			This user directory is used for storing persistent data ([code]user://[/code] filesystem). If a custom directory name is defined, this name will be appended to the system-specific user data directory (same parent folder as the Godot configuration folder documented in [method OS.get_user_data_dir]).
 			The [member application/config/use_custom_user_dir] setting must be enabled for this to take effect.
@@ -264,6 +267,9 @@
 		<member name="application/config/project_settings_override" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies a file to override project settings. For example: [code]user://custom_settings.cfg[/code]. See "Overriding" in the [ProjectSettings] class description at the top for more information.
 			[b]Note:[/b] Regardless of this setting's value, [code]res://override.cfg[/code] will still be read to override the project settings.
+		</member>
+		<member name="application/config/quit_on_go_back" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the application quits automatically when navigating back (e.g. using the system "Back" button on Android).
 		</member>
 		<member name="application/config/use_custom_user_dir" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the project will save user data to its own user directory. If [member application/config/custom_user_dir_name] is empty, [code]&lt;OS user data directory&gt;/&lt;project name&gt;[/code] directory will be used. If [code]false[/code], the project will save user data to [code]&lt;OS user data directory&gt;/Godot/app_userdata/&lt;project name&gt;[/code].
@@ -304,6 +310,9 @@
 		</member>
 		<member name="application/run/low_processor_mode_sleep_usec" type="int" setter="" getter="" default="6900">
 			Amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage.
+		</member>
+		<member name="application/run/main_loop_type" type="String" setter="" getter="" default="&quot;SceneTree&quot;">
+			The name of the type implementing the engine's main loop.
 		</member>
 		<member name="application/run/main_scene" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to the main scene file that will be loaded when the project runs.
@@ -698,6 +707,15 @@
 			On desktop platforms, overrides the game's initial window width. See also [member display/window/size/window_height_override], [member display/window/size/viewport_width] and [member display/window/size/viewport_height].
 			[b]Note:[/b] By default, or when set to [code]0[/code], the initial window width is the viewport [member display/window/size/viewport_width]. This setting is ignored on iOS, Android, and Web.
 		</member>
+		<member name="display/window/stretch/aspect" type="String" setter="" getter="" default="&quot;keep&quot;">
+		</member>
+		<member name="display/window/stretch/mode" type="String" setter="" getter="" default="&quot;disabled&quot;">
+		</member>
+		<member name="display/window/stretch/scale" type="float" setter="" getter="" default="1.0">
+		</member>
+		<member name="display/window/subwindows/embed_subwindows" type="bool" setter="" getter="" default="true">
+			If [code]true[/code] subwindows are embedded in the main window.
+		</member>
 		<member name="display/window/vsync/vsync_mode" type="int" setter="" getter="" default="1">
 			Sets the V-Sync mode for the main game window.
 			See [enum DisplayServer.VSyncMode] for possible values and how they affect the behavior of your application.
@@ -711,6 +729,14 @@
 		<member name="dotnet/project/solution_directory" type="String" setter="" getter="" default="&quot;&quot;">
 			Directory that contains the [code].sln[/code] file. By default, the [code].sln[/code] files is in the root of the project directory, next to the [code]project.godot[/code] and [code].csproj[/code] files.
 			Changing this value allows setting up a multi-project scenario where there are multiple [code].csproj[/code]. Keep in mind that the Godot project is considered one of the C# projects in the workspace and it's root directory should contain the [code]project.godot[/code] and [code].csproj[/code] next to each other.
+		</member>
+		<member name="editor/export/convert_text_resources_to_binary" type="bool" setter="" getter="" default="true">
+			If [code]true[/code] text resources are converted to binary format on export.
+		</member>
+		<member name="editor/import/reimport_missing_imported_files" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="editor/import/use_multiple_threads" type="bool" setter="" getter="" default="true">
+			If [code]true[/code] importing of resources is run on multiple threads.
 		</member>
 		<member name="editor/movie_writer/disable_vsync" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], requests V-Sync to be disabled when writing a movie (similar to setting [member display/window/vsync/vsync_mode] to [b]Disabled[/b]). This can speed up video writing if the hardware is fast enough to render, encode and save the video at a framerate higher than the monitor's refresh rate.
@@ -767,6 +793,10 @@
 		<member name="editor/script/templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
 			Search path for project-specific script templates. Godot will search for script templates both in the editor-specific path and in this project-specific path.
 		</member>
+		<member name="editor/version_control/autoload_on_startup" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="editor/version_control/plugin_name" type="String" setter="" getter="" default="&quot;&quot;">
+		</member>
 		<member name="filesystem/import/blender/enabled" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], Blender 3D scene files with the [code].blend[/code] extension will be imported by converting them to glTF 2.0.
 			This requires configuring a path to a Blender executable in the editor settings at [code]filesystem/import/blender/blender3_path[/code]. Blender 3.0 or later is required.
@@ -790,12 +820,16 @@
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
 		</member>
+		<member name="gui/common/snap_controls_to_pixels" type="bool" setter="" getter="" default="true">
+		</member>
 		<member name="gui/common/swap_cancel_ok" type="bool" setter="" getter="">
 			If [code]true[/code], swaps [b]Cancel[/b] and [b]OK[/b] buttons in dialogs on Windows and UWP to follow interface conventions. [method DisplayServer.get_swap_cancel_ok] can be used to query whether buttons are swapped at run-time.
 			[b]Note:[/b] This doesn't affect native dialogs such as the ones spawned by [method DisplayServer.dialog_show].
 		</member>
 		<member name="gui/common/text_edit_undo_stack_max_size" type="int" setter="" getter="" default="1024">
 			Maximum undo/redo history size for [TextEdit] fields.
+		</member>
+		<member name="gui/fonts/dynamic_fonts/use_oversampling" type="bool" setter="" getter="" default="true">
 		</member>
 		<member name="gui/theme/custom" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to a custom [Theme] resource file to use for the project ([code].theme[/code] or generic [code].tres[/code]/[code].res[/code] extension).
@@ -2311,6 +2345,12 @@
 		<member name="rendering/shading/overrides/force_vertex_shading.mobile" type="bool" setter="" getter="" default="true">
 			Lower-end override for [member rendering/shading/overrides/force_vertex_shading] on mobile devices, due to performance concerns or driver support.
 			[b]Note:[/b] This setting currently has no effect, as vertex shading is not implemented yet.
+		</member>
+		<member name="rendering/textures/canvas_textures/default_texture_filter" type="int" setter="" getter="" default="1">
+			The default texture filtering mode to use on [CanvasItem]s.
+		</member>
+		<member name="rendering/textures/canvas_textures/default_texture_repeat" type="int" setter="" getter="" default="0">
+			The default texture repeating mode to use on [CanvasItem]s.
 		</member>
 		<member name="rendering/textures/decals/filter" type="int" setter="" getter="" default="3">
 			The filtering quality to use for [Decal] nodes. When using one of the anisotropic filtering modes, the anisotropic filtering level is controlled by [member rendering/textures/default_filters/anisotropic_filtering_level].

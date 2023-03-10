@@ -218,7 +218,7 @@
 	</methods>
 	<members>
 		<member name="auto_accept_quit" type="bool" setter="set_auto_accept_quit" getter="is_auto_accept_quit" default="true">
-			If [code]true[/code], the application automatically accepts quitting.
+			If [code]true[/code], the application automatically accepts quitting requests.
 			For mobile platforms, see [member quit_on_go_back].
 		</member>
 		<member name="current_scene" type="Node" setter="set_current_scene" getter="get_current_scene">
@@ -249,7 +249,7 @@
 			- [method Node._process], [method Node._physics_process] and [method Node._input] will not be called anymore in nodes.
 		</member>
 		<member name="quit_on_go_back" type="bool" setter="set_quit_on_go_back" getter="is_quit_on_go_back" default="true">
-			If [code]true[/code], the application quits automatically on going back (e.g. on Android).
+			If [code]true[/code], the application quits automatically when navigating back (e.g. using the system "Back" button on Android).
 			To handle 'Go Back' button when this option is disabled, use [constant DisplayServer.WINDOW_EVENT_GO_BACK_REQUEST].
 		</member>
 		<member name="root" type="Window" setter="" getter="get_root">
