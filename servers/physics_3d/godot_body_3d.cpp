@@ -137,6 +137,8 @@ void GodotBody3D::update_mass_properties() {
 					inertia_tensor[2][2] = inertia.z;
 				}
 
+				inertia_tensor_local = inertia_tensor;
+
 				// Compute the principal axes of inertia.
 				principal_inertia_axes_local = inertia_tensor.diagonalize().transposed();
 				_inv_inertia = inertia_tensor.get_main_diagonal().inverse();
@@ -206,18 +208,32 @@ void GodotBody3D::set_param(PhysicsServer3D::BodyParameter p_param, const Varian
 			}
 		} break;
 		case PhysicsServer3D::BODY_PARAM_INERTIA: {
-			inertia = p_value;
-			if ((inertia.x <= 0.0) || (inertia.y <= 0.0) || (inertia.z <= 0.0)) {
-				calculate_inertia = true;
-				if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
-					_mass_properties_changed();
-				}
-			} else {
+			if (p_value.get_type() == Variant::Type::BASIS) {
 				calculate_inertia = false;
+				Basis inertia_tensor = p_value;
 				if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
-					principal_inertia_axes_local = Basis();
+					inertia_tensor_local = inertia_tensor;
+					principal_inertia_axes_local = inertia_tensor.diagonalize().transposed();
+					inertia = inertia_tensor.get_main_diagonal();
 					_inv_inertia = inertia.inverse();
 					_update_transform_dependent();
+				}
+			} else {
+				inertia = p_value;
+				if (((inertia.x <= 0.0) || (inertia.y <= 0.0) || (inertia.z <= 0.0))) {
+					calculate_inertia = true;
+					if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
+						_mass_properties_changed();
+					}
+				} else {
+					calculate_inertia = false;
+					if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
+						principal_inertia_axes_local = Basis();
+						_inv_inertia = inertia.inverse();
+						inertia_tensor_local = Basis();
+						inertia_tensor_local.scale(inertia);
+						_update_transform_dependent();
+					}
 				}
 			}
 		} break;
@@ -647,7 +663,16 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 			angular_velocity *= angular_damp_new;
 
 			linear_velocity += _inv_mass * force * p_step;
-			angular_velocity += _inv_inertia_tensor.xform(torque) * p_step;
+
+			//convert into local coordinates
+			Vector3 ang_vel_local = get_inv_transform().basis.xform(angular_velocity);
+			Vector3 torque_local = get_inv_transform().basis.xform(torque);
+			//integrate using RK4 as forward euler is unstable.
+			Vector3 k1 = _local_angular_acceleration(torque_local, ang_vel_local);
+			Vector3 k2 = _local_angular_acceleration(torque_local, ang_vel_local + p_step / 2.0 * k1);
+			Vector3 k3 = _local_angular_acceleration(torque_local, ang_vel_local + p_step / 2.0 * k2);
+			Vector3 k4 = _local_angular_acceleration(torque_local, ang_vel_local + p_step * k3);
+			angular_velocity += get_transform().basis.xform((k1 + 2.0 * k2 + 2.0 * k3 + k4) * p_step / 6.0);
 		}
 
 		if (continuous_cd) {
@@ -667,6 +692,11 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 	}
 
 	contact_count = 0;
+}
+
+Vector3 GodotBody3D::_local_angular_acceleration(Vector3 local_torque, Vector3 local_ang_vel) {
+	Vector3 local_ang_mom = inertia_tensor_local.xform(local_ang_vel);
+	return inertia_tensor_local.inverse().xform(local_torque - local_ang_vel.cross(local_ang_mom));
 }
 
 void GodotBody3D::integrate_velocities(real_t p_step) {

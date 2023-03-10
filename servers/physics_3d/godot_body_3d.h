@@ -56,7 +56,7 @@ class GodotBody3D : public GodotCollisionObject3D {
 	real_t mass = 1.0;
 	real_t bounce = 0.0;
 	real_t friction = 1.0;
-	Vector3 inertia;
+	Vector3 inertia; // Relative to the principal axes of inertia
 
 	PhysicsServer3D::BodyDampMode linear_damp_mode = PhysicsServer3D::BODY_DAMP_MODE_COMBINE;
 	PhysicsServer3D::BodyDampMode angular_damp_mode = PhysicsServer3D::BODY_DAMP_MODE_COMBINE;
@@ -77,6 +77,7 @@ class GodotBody3D : public GodotCollisionObject3D {
 	// Relative to the local frame of reference
 	Basis principal_inertia_axes_local;
 	Vector3 center_of_mass_local;
+	Basis inertia_tensor_local;
 
 	// In world orientation with local origin
 	Basis _inv_inertia_tensor;
@@ -146,6 +147,7 @@ class GodotBody3D : public GodotCollisionObject3D {
 	uint64_t island_step = 0;
 
 	void _update_transform_dependent();
+	Vector3 _local_angular_acceleration(Vector3 local_torque, Vector3 local_ang_vel);
 
 	friend class GodotPhysicsDirectBodyState3D; // i give up, too many functions to expose
 
