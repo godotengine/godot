@@ -523,6 +523,9 @@ Key DisplayServer::keyboard_get_keycode_from_physical(Key p_keycode) const {
 void DisplayServer::force_process_and_drop_events() {
 }
 
+void DisplayServer::release_rendering_resources() {
+}
+
 void DisplayServer::release_rendering_thread() {
 	WARN_PRINT("Rendering thread not supported by this display server.");
 }
