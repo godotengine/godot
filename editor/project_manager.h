@@ -40,6 +40,7 @@
 class CheckBox;
 class EditorAssetLibrary;
 class EditorFileDialog;
+class PanelContainer;
 
 class ProjectDialog : public ConfirmationDialog {
 	GDCLASS(ProjectDialog, ConfirmationDialog);
@@ -289,13 +290,14 @@ class ProjectManager : public Control {
 
 	static ProjectManager *singleton;
 
+	Panel *background_panel = nullptr;
 	TabContainer *tabs = nullptr;
-
 	ProjectList *_project_list = nullptr;
 
 	LineEdit *search_box = nullptr;
 	Label *loading_label = nullptr;
 	OptionButton *filter_option = nullptr;
+	PanelContainer *search_panel = nullptr;
 
 	Button *create_btn = nullptr;
 	Button *import_btn = nullptr;
