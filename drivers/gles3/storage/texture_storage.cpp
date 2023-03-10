@@ -1136,7 +1136,7 @@ Size2 TextureStorage::texture_size_with_proxy(RID p_texture) {
 	}
 }
 
-RID TextureStorage::texture_get_rd_texture_rid(RID p_texture, bool p_srgb) const {
+RID TextureStorage::texture_get_rd_texture(RID p_texture, bool p_srgb) const {
 	return RID();
 }
 
