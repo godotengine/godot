@@ -250,6 +250,7 @@ public:
 	virtual real_t get_inverse_mass() const override { return 1.0 / mass; }
 
 	void set_inertia(const Vector3 &p_inertia);
+	void set_inertia_tensor(const Basis &p_inertia);
 	const Vector3 &get_inertia() const;
 
 	void set_center_of_mass_mode(CenterOfMassMode p_mode);

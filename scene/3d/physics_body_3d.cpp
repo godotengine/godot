@@ -682,6 +682,12 @@ void RigidBody3D::set_inertia(const Vector3 &p_inertia) {
 	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_INERTIA, inertia);
 }
 
+void RigidBody3D::set_inertia_tensor(const Basis &p_inertia) {
+	PhysicsServer3D* singleton = PhysicsServer3D::get_singleton();
+	singleton->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_INERTIA, p_inertia);
+	inertia = singleton->body_get_param(get_rid(), PhysicsServer3D::BODY_PARAM_INERTIA);
+}
+
 const Vector3 &RigidBody3D::get_inertia() const {
 	return inertia;
 }
@@ -997,6 +1003,7 @@ void RigidBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_mass"), &RigidBody3D::get_mass);
 
 	ClassDB::bind_method(D_METHOD("set_inertia", "inertia"), &RigidBody3D::set_inertia);
+	ClassDB::bind_method(D_METHOD("set_inertia_tensor", "inertia_tensor"), &RigidBody3D::set_inertia_tensor);
 	ClassDB::bind_method(D_METHOD("get_inertia"), &RigidBody3D::get_inertia);
 
 	ClassDB::bind_method(D_METHOD("set_center_of_mass_mode", "mode"), &RigidBody3D::set_center_of_mass_mode);
