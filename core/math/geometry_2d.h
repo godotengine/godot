@@ -185,7 +185,7 @@ public:
 		D = Vector2(D.x * Bn.x + D.y * Bn.y, D.y * Bn.x - D.x * Bn.y);
 
 		// Fail if C x B and D x B have the same sign (segments don't intersect).
-		if ((C.y < (real_t)-CMP_EPSILON && D.y < (real_t)-CMP_EPSILON) || (C.y > (real_t)CMP_EPSILON && D.y > (real_t)CMP_EPSILON)) {
+		if ((C.y * D.y) > 0) {
 			return false;
 		}
 
