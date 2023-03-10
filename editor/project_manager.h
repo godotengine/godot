@@ -82,7 +82,6 @@ class ProjectManager : public Control {
 
 	ConfirmationDialog *erase_ask = nullptr;
 	Label *erase_ask_label = nullptr;
-	CheckBox *delete_project_contents = nullptr;
 
 	ConfirmationDialog *erase_missing_ask = nullptr;
 	ConfirmationDialog *multi_open_ask = nullptr;

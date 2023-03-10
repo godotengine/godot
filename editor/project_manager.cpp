@@ -2466,7 +2466,7 @@ void ProjectManager::_rename_project() {
 }
 
 void ProjectManager::_erase_project_confirm() {
-	_project_list->erase_selected_projects(delete_project_contents->is_pressed());
+	_project_list->erase_selected_projects(false);
 	_update_project_buttons();
 }
 
@@ -2484,13 +2484,12 @@ void ProjectManager::_erase_project() {
 
 	String confirm_message;
 	if (selected_list.size() >= 2) {
-		confirm_message = vformat(TTR("Remove %d projects from the list?"), selected_list.size());
+		confirm_message = vformat(TTR("Remove %d projects from the list?\nThe project folders' contents won't be modified."), selected_list.size());
 	} else {
-		confirm_message = TTR("Remove this project from the list?");
+		confirm_message = TTR("Remove this project from the list?\nThe project folders' contents won't be modified.");
 	}
 
 	erase_ask_label->set_text(confirm_message);
-	delete_project_contents->set_pressed(false);
 	erase_ask->popup_centered();
 }
 
@@ -2952,10 +2951,6 @@ ProjectManager::ProjectManager() {
 
 		erase_ask_label = memnew(Label);
 		erase_ask_vb->add_child(erase_ask_label);
-
-		delete_project_contents = memnew(CheckBox);
-		delete_project_contents->set_text(TTR("Also delete project contents (no undo!)"));
-		erase_ask_vb->add_child(delete_project_contents);
 
 		multi_open_ask = memnew(ConfirmationDialog);
 		multi_open_ask->set_ok_button_text(TTR("Edit"));
