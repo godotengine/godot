@@ -84,6 +84,7 @@ private:
 	};
 
 	int current = -1;
+	int hovered = -1;
 
 	bool shape_changed = true;
 
@@ -130,12 +131,14 @@ private:
 		Ref<Font> font;
 		int font_size = 0;
 		Color font_color;
+		Color font_hovered_color;
 		Color font_selected_color;
 		int font_outline_size = 0;
 		Color font_outline_color;
 
 		int line_separation = 0;
 		int icon_margin = 0;
+		Ref<StyleBox> hovered_style;
 		Ref<StyleBox> selected_style;
 		Ref<StyleBox> selected_focus_style;
 		Ref<StyleBox> cursor_style;
@@ -146,6 +149,7 @@ private:
 	void _scroll_changed(double);
 	void _check_shape_changed();
 	void _shape_text(int p_idx);
+	void _mouse_exited();
 
 protected:
 	virtual void _update_theme_item_cache() override;

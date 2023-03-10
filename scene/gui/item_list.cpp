@@ -646,6 +646,14 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	if (mm.is_valid()) {
+		int closest = get_item_at_position(mm->get_position(), true);
+		if (closest != hovered) {
+			hovered = closest;
+			queue_redraw();
+		}
+	}
+
 	if (mb.is_valid() && mb->is_pressed()) {
 		search_string = ""; //any mousepress cancels
 		Vector2 pos = mb->get_position();
@@ -975,12 +983,14 @@ void ItemList::_update_theme_item_cache() {
 	theme_cache.font = get_theme_font(SNAME("font"));
 	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
 	theme_cache.font_color = get_theme_color(SNAME("font_color"));
+	theme_cache.font_hovered_color = get_theme_color(SNAME("font_hovered_color"));
 	theme_cache.font_selected_color = get_theme_color(SNAME("font_selected_color"));
 	theme_cache.font_outline_size = get_theme_constant(SNAME("outline_size"));
 	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
 
 	theme_cache.line_separation = get_theme_constant(SNAME("line_separation"));
 	theme_cache.icon_margin = get_theme_constant(SNAME("icon_margin"));
+	theme_cache.hovered_style = get_theme_stylebox(SNAME("hovered"));
 	theme_cache.selected_style = get_theme_stylebox(SNAME("selected"));
 	theme_cache.selected_focus_style = get_theme_stylebox(SNAME("selected_focus"));
 	theme_cache.cursor_style = get_theme_stylebox(SNAME("cursor_unfocused"));
@@ -1101,7 +1111,11 @@ void ItemList::_notification(int p_what) {
 					rcache.size.width = width - rcache.position.x;
 				}
 
-				if (items[i].selected) {
+				bool should_draw_selected_bg = items[i].selected;
+				bool should_draw_hovered_bg = hovered == i && !items[i].selected;
+				bool should_draw_custom_bg = items[i].custom_bg.a > 0.001;
+
+				if (should_draw_selected_bg || should_draw_hovered_bg || should_draw_custom_bg) {
 					Rect2 r = rcache;
 					r.position += base_ofs;
 					r.position.y -= theme_cache.v_separation / 2;
@@ -1113,23 +1127,15 @@ void ItemList::_notification(int p_what) {
 						r.position.x = size.width - r.position.x - r.size.x;
 					}
 
-					draw_style_box(sbsel, r);
-				}
-				if (items[i].custom_bg.a > 0.001) {
-					Rect2 r = rcache;
-					r.position += base_ofs;
-
-					// Size rect to make the align the temperature colors
-					r.position.y -= theme_cache.v_separation / 2;
-					r.size.y += theme_cache.v_separation;
-					r.position.x -= theme_cache.h_separation / 2;
-					r.size.x += theme_cache.h_separation;
-
-					if (rtl) {
-						r.position.x = size.width - r.position.x - r.size.x;
+					if (should_draw_selected_bg) {
+						draw_style_box(sbsel, r);
 					}
-
-					draw_rect(r, items[i].custom_bg);
+					if (should_draw_hovered_bg) {
+						draw_style_box(theme_cache.hovered_style, r);
+					}
+					if (should_draw_custom_bg) {
+						draw_rect(r, items[i].custom_bg);
+					}
 				}
 
 				Vector2 text_ofs;
@@ -1204,7 +1210,17 @@ void ItemList::_notification(int p_what) {
 						max_len = size2.x;
 					}
 
-					Color txt_modulate = items[i].selected ? theme_cache.font_selected_color : (items[i].custom_fg != Color() ? items[i].custom_fg : theme_cache.font_color);
+					Color txt_modulate;
+					if (items[i].selected) {
+						txt_modulate = theme_cache.font_selected_color;
+					} else if (hovered == i) {
+						txt_modulate = theme_cache.font_hovered_color;
+					} else if (items[i].custom_fg != Color()) {
+						txt_modulate = items[i].custom_fg;
+					} else {
+						txt_modulate = theme_cache.font_color;
+					}
+
 					if (items[i].disabled) {
 						txt_modulate.a *= 0.5;
 					}
@@ -1452,6 +1468,13 @@ void ItemList::_check_shape_changed() {
 
 void ItemList::_scroll_changed(double) {
 	queue_redraw();
+}
+
+void ItemList::_mouse_exited() {
+	if (hovered > -1) {
+		hovered = -1;
+		queue_redraw();
+	}
 }
 
 int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
@@ -1851,8 +1874,9 @@ void ItemList::_bind_methods() {
 ItemList::ItemList() {
 	scroll_bar = memnew(VScrollBar);
 	add_child(scroll_bar, false, INTERNAL_MODE_FRONT);
-
 	scroll_bar->connect("value_changed", callable_mp(this, &ItemList::_scroll_changed));
+
+	connect("mouse_exited", callable_mp(this, &ItemList::_mouse_exited));
 
 	set_focus_mode(FOCUS_ALL);
 	set_clip_contents(true);
