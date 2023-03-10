@@ -269,7 +269,7 @@ uniform vec4 sky_top_color : source_color = vec4(0.385, 0.454, 0.55, 1.0);
 uniform vec4 sky_horizon_color : source_color = vec4(0.646, 0.656, 0.67, 1.0);
 uniform float sky_curve : hint_range(0, 1) = 0.15;
 uniform float sky_energy = 1.0; // In Lux.
-uniform sampler2D sky_cover : source_color, hint_default_black;
+uniform sampler2D sky_cover : filter_linear, source_color, hint_default_black;
 uniform vec4 sky_cover_modulate : source_color = vec4(1.0, 1.0, 1.0, 1.0);
 uniform vec4 ground_bottom_color : source_color = vec4(0.2, 0.169, 0.133, 1.0);
 uniform vec4 ground_horizon_color : source_color = vec4(0.646, 0.656, 0.67, 1.0);
@@ -676,7 +676,7 @@ uniform float sun_disk_scale : hint_range(0, 360) = 1.0;
 uniform vec4 ground_color : source_color = vec4(0.1, 0.07, 0.034, 1.0);
 uniform float exposure : hint_range(0, 128) = 1.0;
 
-uniform sampler2D night_sky : source_color, hint_default_black;
+uniform sampler2D night_sky : filter_linear, source_color, hint_default_black;
 
 const vec3 UP = vec3( 0.0, 1.0, 0.0 );
 
