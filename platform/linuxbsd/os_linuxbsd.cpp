@@ -677,40 +677,45 @@ Vector<String> OS_LinuxBSD::get_system_font_path_for_text(const String &p_font_n
 	}
 
 	Vector<String> ret;
-	FcPattern *pattern = FcPatternCreate();
-	if (pattern) {
-		FcPatternAddString(pattern, FC_FAMILY, reinterpret_cast<const FcChar8 *>(p_font_name.utf8().get_data()));
-		FcPatternAddInteger(pattern, FC_WEIGHT, _weight_to_fc(p_weight));
-		FcPatternAddInteger(pattern, FC_WIDTH, _stretch_to_fc(p_stretch));
-		FcPatternAddInteger(pattern, FC_SLANT, p_italic ? FC_SLANT_ITALIC : FC_SLANT_ROMAN);
+	static const char *allowed_formats[] = { "TrueType", "CFF" };
+	for (size_t i = 0; i < sizeof(allowed_formats) / sizeof(const char *); i++) {
+		FcPattern *pattern = FcPatternCreate();
+		if (pattern) {
+			FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
+			FcPatternAddString(pattern, FC_FONTFORMAT, reinterpret_cast<const FcChar8 *>(allowed_formats[i]));
+			FcPatternAddString(pattern, FC_FAMILY, reinterpret_cast<const FcChar8 *>(p_font_name.utf8().get_data()));
+			FcPatternAddInteger(pattern, FC_WEIGHT, _weight_to_fc(p_weight));
+			FcPatternAddInteger(pattern, FC_WIDTH, _stretch_to_fc(p_stretch));
+			FcPatternAddInteger(pattern, FC_SLANT, p_italic ? FC_SLANT_ITALIC : FC_SLANT_ROMAN);
 
-		FcCharSet *char_set = FcCharSetCreate();
-		for (int i = 0; i < p_text.size(); i++) {
-			FcCharSetAddChar(char_set, p_text[i]);
-		}
-		FcPatternAddCharSet(pattern, FC_CHARSET, char_set);
-
-		FcLangSet *lang_set = FcLangSetCreate();
-		FcLangSetAdd(lang_set, reinterpret_cast<const FcChar8 *>(p_locale.utf8().get_data()));
-		FcPatternAddLangSet(pattern, FC_LANG, lang_set);
-
-		FcConfigSubstitute(0, pattern, FcMatchPattern);
-		FcDefaultSubstitute(pattern);
-
-		FcResult result;
-		FcPattern *match = FcFontMatch(0, pattern, &result);
-		if (match) {
-			char *file_name = nullptr;
-			if (FcPatternGetString(match, FC_FILE, 0, reinterpret_cast<FcChar8 **>(&file_name)) == FcResultMatch) {
-				if (file_name) {
-					ret.push_back(String::utf8(file_name));
-				}
+			FcCharSet *char_set = FcCharSetCreate();
+			for (int j = 0; j < p_text.size(); j++) {
+				FcCharSetAddChar(char_set, p_text[j]);
 			}
-			FcPatternDestroy(match);
+			FcPatternAddCharSet(pattern, FC_CHARSET, char_set);
+
+			FcLangSet *lang_set = FcLangSetCreate();
+			FcLangSetAdd(lang_set, reinterpret_cast<const FcChar8 *>(p_locale.utf8().get_data()));
+			FcPatternAddLangSet(pattern, FC_LANG, lang_set);
+
+			FcConfigSubstitute(0, pattern, FcMatchPattern);
+			FcDefaultSubstitute(pattern);
+
+			FcResult result;
+			FcPattern *match = FcFontMatch(0, pattern, &result);
+			if (match) {
+				char *file_name = nullptr;
+				if (FcPatternGetString(match, FC_FILE, 0, reinterpret_cast<FcChar8 **>(&file_name)) == FcResultMatch) {
+					if (file_name) {
+						ret.push_back(String::utf8(file_name));
+					}
+				}
+				FcPatternDestroy(match);
+			}
+			FcPatternDestroy(pattern);
+			FcCharSetDestroy(char_set);
+			FcLangSetDestroy(lang_set);
 		}
-		FcPatternDestroy(pattern);
-		FcCharSetDestroy(char_set);
-		FcLangSetDestroy(lang_set);
 	}
 
 	return ret;
@@ -725,47 +730,51 @@ String OS_LinuxBSD::get_system_font_path(const String &p_font_name, int p_weight
 		ERR_FAIL_V_MSG(String(), "Unable to load fontconfig, system font support is disabled.");
 	}
 
-	String ret;
-	FcPattern *pattern = FcPatternCreate();
-	if (pattern) {
-		bool allow_substitutes = (p_font_name.to_lower() == "sans-serif") || (p_font_name.to_lower() == "serif") || (p_font_name.to_lower() == "monospace") || (p_font_name.to_lower() == "cursive") || (p_font_name.to_lower() == "fantasy");
+	static const char *allowed_formats[] = { "TrueType", "CFF" };
+	for (size_t i = 0; i < sizeof(allowed_formats) / sizeof(const char *); i++) {
+		FcPattern *pattern = FcPatternCreate();
+		if (pattern) {
+			bool allow_substitutes = (p_font_name.to_lower() == "sans-serif") || (p_font_name.to_lower() == "serif") || (p_font_name.to_lower() == "monospace") || (p_font_name.to_lower() == "cursive") || (p_font_name.to_lower() == "fantasy");
 
-		FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
-		FcPatternAddString(pattern, FC_FAMILY, reinterpret_cast<const FcChar8 *>(p_font_name.utf8().get_data()));
-		FcPatternAddInteger(pattern, FC_WEIGHT, _weight_to_fc(p_weight));
-		FcPatternAddInteger(pattern, FC_WIDTH, _stretch_to_fc(p_stretch));
-		FcPatternAddInteger(pattern, FC_SLANT, p_italic ? FC_SLANT_ITALIC : FC_SLANT_ROMAN);
+			FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
+			FcPatternAddString(pattern, FC_FONTFORMAT, reinterpret_cast<const FcChar8 *>(allowed_formats[i]));
+			FcPatternAddString(pattern, FC_FAMILY, reinterpret_cast<const FcChar8 *>(p_font_name.utf8().get_data()));
+			FcPatternAddInteger(pattern, FC_WEIGHT, _weight_to_fc(p_weight));
+			FcPatternAddInteger(pattern, FC_WIDTH, _stretch_to_fc(p_stretch));
+			FcPatternAddInteger(pattern, FC_SLANT, p_italic ? FC_SLANT_ITALIC : FC_SLANT_ROMAN);
 
-		FcConfigSubstitute(0, pattern, FcMatchPattern);
-		FcDefaultSubstitute(pattern);
+			FcConfigSubstitute(0, pattern, FcMatchPattern);
+			FcDefaultSubstitute(pattern);
 
-		FcResult result;
-		FcPattern *match = FcFontMatch(0, pattern, &result);
-		if (match) {
-			if (!allow_substitutes) {
-				char *family_name = nullptr;
-				if (FcPatternGetString(match, FC_FAMILY, 0, reinterpret_cast<FcChar8 **>(&family_name)) == FcResultMatch) {
-					if (family_name && String::utf8(family_name).to_lower() != p_font_name.to_lower()) {
-						FcPatternDestroy(match);
-						FcPatternDestroy(pattern);
-
-						return String();
+			FcResult result;
+			FcPattern *match = FcFontMatch(0, pattern, &result);
+			if (match) {
+				if (!allow_substitutes) {
+					char *family_name = nullptr;
+					if (FcPatternGetString(match, FC_FAMILY, 0, reinterpret_cast<FcChar8 **>(&family_name)) == FcResultMatch) {
+						if (family_name && String::utf8(family_name).to_lower() != p_font_name.to_lower()) {
+							FcPatternDestroy(match);
+							FcPatternDestroy(pattern);
+							continue;
+						}
 					}
 				}
-			}
-			char *file_name = nullptr;
-			if (FcPatternGetString(match, FC_FILE, 0, reinterpret_cast<FcChar8 **>(&file_name)) == FcResultMatch) {
-				if (file_name) {
-					ret = String::utf8(file_name);
+				char *file_name = nullptr;
+				if (FcPatternGetString(match, FC_FILE, 0, reinterpret_cast<FcChar8 **>(&file_name)) == FcResultMatch) {
+					if (file_name) {
+						String ret = String::utf8(file_name);
+						FcPatternDestroy(match);
+						FcPatternDestroy(pattern);
+						return ret;
+					}
 				}
+				FcPatternDestroy(match);
 			}
-
-			FcPatternDestroy(match);
+			FcPatternDestroy(pattern);
 		}
-		FcPatternDestroy(pattern);
 	}
 
-	return ret;
+	return String();
 #else
 	ERR_FAIL_V_MSG(String(), "Godot was compiled without fontconfig, system font support is disabled.");
 #endif
