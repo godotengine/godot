@@ -966,30 +966,214 @@ ProjectDialog::ProjectDialog() {
 
 void ProjectListItemControl::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			if (icon_needs_reload) {
+				// The project icon may not be loaded by the time the control is displayed,
+				// so use a loading placeholder.
+				project_icon->set_texture(get_theme_icon(SNAME("ProjectIconLoading"), SNAME("EditorIcons")));
+			}
+
+			project_title->add_theme_font_override("font", get_theme_font(SNAME("title"), SNAME("EditorFonts")));
+			project_title->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("title_size"), SNAME("EditorFonts")));
+			project_title->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), SNAME("Tree")));
+			project_path->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), SNAME("Tree")));
+			project_unsupported_features->add_theme_font_override("font", get_theme_font(SNAME("title"), SNAME("EditorFonts")));
+			project_unsupported_features->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+
+			favorite_button->set_texture_normal(get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons")));
+			if (project_is_missing) {
+				explore_button->set_icon(get_theme_icon(SNAME("FileBroken"), SNAME("EditorIcons")));
+			} else {
+				explore_button->set_icon(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")));
+			}
+		} break;
+
 		case NOTIFICATION_MOUSE_ENTER: {
-			hover = true;
+			is_hovering = true;
 			queue_redraw();
 		} break;
 
 		case NOTIFICATION_MOUSE_EXIT: {
-			hover = false;
+			is_hovering = false;
 			queue_redraw();
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			if (hover) {
+			if (is_selected) {
+				draw_style_box(get_theme_stylebox(SNAME("selected"), SNAME("Tree")), Rect2(Point2(), get_size()));
+			}
+			if (is_hovering) {
 				draw_style_box(get_theme_stylebox(SNAME("hover"), SNAME("Tree")), Rect2(Point2(), get_size()));
 			}
+
+			draw_line(Point2(0, get_size().y + 1), Point2(get_size().x, get_size().y + 1), get_theme_color(SNAME("guide_color"), SNAME("Tree")));
 		} break;
 	}
 }
 
-void ProjectListItemControl::set_is_favorite(bool fav) {
-	favorite_button->set_modulate(fav ? Color(1, 1, 1, 1) : Color(1, 1, 1, 0.2));
+void ProjectListItemControl::set_project_title(const String &p_title) {
+	project_title->set_text(p_title);
+}
+
+void ProjectListItemControl::set_project_path(const String &p_path) {
+	project_path->set_text(p_path);
+}
+
+void ProjectListItemControl::set_project_icon(const Ref<Texture2D> &p_icon) {
+	icon_needs_reload = false;
+
+	// The default project icon is 128×128 to look crisp on hiDPI displays,
+	// but we want the actual displayed size to be 64×64 on loDPI displays.
+	project_icon->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+	project_icon->set_custom_minimum_size(Size2(64, 64) * EDSCALE);
+	project_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+
+	project_icon->set_texture(p_icon);
+}
+
+void ProjectListItemControl::set_unsupported_features(const PackedStringArray &p_features) {
+	if (p_features.size() > 0) {
+		String unsupported_features_str = String(", ").join(p_features);
+		project_unsupported_features->set_text(unsupported_features_str);
+		project_unsupported_features->set_custom_minimum_size(Size2(unsupported_features_str.length() * 15, 10) * EDSCALE);
+		project_unsupported_features->show();
+	} else {
+		project_unsupported_features->hide();
+	}
+}
+
+bool ProjectListItemControl::should_load_project_icon() const {
+	return icon_needs_reload;
+}
+
+void ProjectListItemControl::set_selected(bool p_selected) {
+	is_selected = p_selected;
+	queue_redraw();
+}
+
+void ProjectListItemControl::set_is_favorite(bool p_favorite) {
+	favorite_button->set_modulate(p_favorite ? Color(1, 1, 1, 1) : Color(1, 1, 1, 0.2));
+}
+
+void ProjectListItemControl::set_is_missing(bool p_missing) {
+	if (project_is_missing == p_missing) {
+		return;
+	}
+	project_is_missing = p_missing;
+
+	if (project_is_missing) {
+		project_icon->set_modulate(Color(1, 1, 1, 0.5));
+
+		explore_button->set_icon(get_theme_icon(SNAME("FileBroken"), SNAME("EditorIcons")));
+		explore_button->set_tooltip_text(TTR("Error: Project is missing on the filesystem."));
+	} else {
+		project_icon->set_modulate(Color(1, 1, 1, 1.0));
+
+		explore_button->set_icon(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")));
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+		explore_button->set_tooltip_text(TTR("Show in File Manager"));
+#else
+		// Opening the system file manager is not supported on the Android and web editors.
+		explore_button->hide();
+#endif
+	}
+}
+
+void ProjectListItemControl::set_is_grayed(bool p_grayed) {
+	if (p_grayed) {
+		main_vbox->set_modulate(Color(1, 1, 1, 0.5));
+		// Don't make the icon less prominent if the parent is already grayed out.
+		explore_button->set_modulate(Color(1, 1, 1, 1.0));
+	} else {
+		main_vbox->set_modulate(Color(1, 1, 1, 1.0));
+		explore_button->set_modulate(Color(1, 1, 1, 0.5));
+	}
+}
+
+void ProjectListItemControl::_favorite_button_pressed() {
+	emit_signal(SNAME("favorite_pressed"));
+}
+
+void ProjectListItemControl::_explore_button_pressed() {
+	emit_signal(SNAME("explore_pressed"));
+}
+
+void ProjectListItemControl::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("favorite_pressed"));
+	ADD_SIGNAL(MethodInfo("explore_pressed"));
 }
 
 ProjectListItemControl::ProjectListItemControl() {
 	set_focus_mode(FocusMode::FOCUS_ALL);
+
+	VBoxContainer *favorite_box = memnew(VBoxContainer);
+	favorite_box->set_alignment(BoxContainer::ALIGNMENT_CENTER);
+	add_child(favorite_box);
+
+	favorite_button = memnew(TextureButton);
+	favorite_button->set_name("FavoriteButton");
+	// This makes the project's "hover" style display correctly when hovering the favorite icon.
+	favorite_button->set_mouse_filter(MOUSE_FILTER_PASS);
+	favorite_box->add_child(favorite_button);
+	favorite_button->connect("pressed", callable_mp(this, &ProjectListItemControl::_favorite_button_pressed));
+
+	project_icon = memnew(TextureRect);
+	project_icon->set_name("ProjectIcon");
+	project_icon->set_v_size_flags(SIZE_SHRINK_CENTER);
+	add_child(project_icon);
+
+	main_vbox = memnew(VBoxContainer);
+	main_vbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	add_child(main_vbox);
+
+	Control *ec = memnew(Control);
+	ec->set_custom_minimum_size(Size2(0, 1));
+	ec->set_mouse_filter(MOUSE_FILTER_PASS);
+	main_vbox->add_child(ec);
+
+	// Top half, title and unsupported features labels.
+	{
+		HBoxContainer *title_hb = memnew(HBoxContainer);
+		main_vbox->add_child(title_hb);
+
+		project_title = memnew(Label);
+		project_title->set_name("ProjectName");
+		project_title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		project_title->set_clip_text(true);
+		title_hb->add_child(project_title);
+
+		project_unsupported_features = memnew(Label);
+		project_unsupported_features->set_name("ProjectUnsupportedFeatures");
+		project_unsupported_features->set_clip_text(true);
+		project_unsupported_features->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+		title_hb->add_child(project_unsupported_features);
+		project_unsupported_features->hide();
+
+		Control *spacer = memnew(Control);
+		spacer->set_custom_minimum_size(Size2(10, 10));
+		title_hb->add_child(spacer);
+	}
+
+	// Bottom half, containing the path and view folder button.
+	{
+		HBoxContainer *path_hb = memnew(HBoxContainer);
+		path_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		main_vbox->add_child(path_hb);
+
+		explore_button = memnew(Button);
+		explore_button->set_name("ExploreButton");
+		explore_button->set_flat(true);
+		path_hb->add_child(explore_button);
+		explore_button->connect("pressed", callable_mp(this, &ProjectListItemControl::_explore_button_pressed));
+
+		project_path = memnew(Label);
+		project_path->set_name("ProjectPath");
+		project_path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
+		project_path->set_clip_text(true);
+		project_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		project_path->set_modulate(Color(1, 1, 1, 0.5));
+		path_hb->add_child(project_path);
+	}
 }
 
 struct ProjectListComparator {
@@ -1023,7 +1207,7 @@ void ProjectList::_notification(int p_what) {
 			// Load icons as a coroutine to speed up launch when you have hundreds of projects
 			if (_icon_load_index < _projects.size()) {
 				Item &item = _projects.write[_icon_load_index];
-				if (item.control->icon_needs_reload) {
+				if (item.control->should_load_project_icon()) {
 					load_project_icon(_icon_load_index);
 				}
 				_icon_load_index++;
@@ -1058,14 +1242,7 @@ void ProjectList::load_project_icon(int p_index) {
 		icon = default_icon;
 	}
 
-	// The default project icon is 128×128 to look crisp on hiDPI displays,
-	// but we want the actual displayed size to be 64×64 on loDPI displays.
-	item.control->icon->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
-	item.control->icon->set_custom_minimum_size(Size2(64, 64) * EDSCALE);
-	item.control->icon->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
-
-	item.control->icon->set_texture(icon);
-	item.control->icon_needs_reload = false;
+	item.control->set_project_icon(icon);
 }
 
 // Load project data from p_property_key and return it in a ProjectList::Item.
@@ -1244,114 +1421,24 @@ void ProjectList::create_project_item_control(int p_index) {
 	Item &item = _projects.write[p_index];
 	ERR_FAIL_COND(item.control != nullptr); // Already created
 
-	Ref<Texture2D> favorite_icon = get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons"));
-	Color font_color = get_theme_color(SNAME("font_color"), SNAME("Tree"));
-
 	ProjectListItemControl *hb = memnew(ProjectListItemControl);
-	hb->connect("draw", callable_mp(this, &ProjectList::_panel_draw).bind(hb));
-	hb->connect("gui_input", callable_mp(this, &ProjectList::_panel_input).bind(hb));
 	hb->add_theme_constant_override("separation", 10 * EDSCALE);
+
+	hb->set_project_title(!item.missing ? item.project_name : TTR("Missing Project"));
+	hb->set_project_path(item.path);
 	hb->set_tooltip_text(item.description);
+	hb->set_unsupported_features(item.unsupported_features);
 
-	VBoxContainer *favorite_box = memnew(VBoxContainer);
-	favorite_box->set_name("FavoriteBox");
-	TextureButton *favorite = memnew(TextureButton);
-	favorite->set_name("FavoriteButton");
-	favorite->set_texture_normal(favorite_icon);
-	// This makes the project's "hover" style display correctly when hovering the favorite icon.
-	favorite->set_mouse_filter(MOUSE_FILTER_PASS);
-	favorite->connect("pressed", callable_mp(this, &ProjectList::_favorite_pressed).bind(hb));
-	favorite_box->add_child(favorite);
-	favorite_box->set_alignment(BoxContainer::ALIGNMENT_CENTER);
-	hb->add_child(favorite_box);
-	hb->favorite_button = favorite;
 	hb->set_is_favorite(item.favorite);
+	hb->set_is_missing(item.missing);
+	hb->set_is_grayed(item.grayed);
 
-	TextureRect *tf = memnew(TextureRect);
-	// The project icon may not be loaded by the time the control is displayed,
-	// so use a loading placeholder.
-	tf->set_texture(get_theme_icon(SNAME("ProjectIconLoading"), SNAME("EditorIcons")));
-	tf->set_v_size_flags(SIZE_SHRINK_CENTER);
-	if (item.missing) {
-		tf->set_modulate(Color(1, 1, 1, 0.5));
-	}
-	hb->add_child(tf);
-	hb->icon = tf;
+	hb->connect("gui_input", callable_mp(this, &ProjectList::_panel_input).bind(hb));
+	hb->connect("favorite_pressed", callable_mp(this, &ProjectList::_favorite_pressed).bind(hb));
 
-	VBoxContainer *vb = memnew(VBoxContainer);
-	if (item.grayed) {
-		vb->set_modulate(Color(1, 1, 1, 0.5));
-	}
-	vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	hb->add_child(vb);
-	Control *ec = memnew(Control);
-	ec->set_custom_minimum_size(Size2(0, 1));
-	ec->set_mouse_filter(MOUSE_FILTER_PASS);
-	vb->add_child(ec);
-
-	{ // Top half, title and unsupported features labels.
-		HBoxContainer *title_hb = memnew(HBoxContainer);
-		vb->add_child(title_hb);
-
-		Label *title = memnew(Label(!item.missing ? item.project_name : TTR("Missing Project")));
-		title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		title->add_theme_font_override("font", get_theme_font(SNAME("title"), SNAME("EditorFonts")));
-		title->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("title_size"), SNAME("EditorFonts")));
-		title->add_theme_color_override("font_color", font_color);
-		title->set_clip_text(true);
-		title_hb->add_child(title);
-
-		String unsupported_features_str = String(", ").join(item.unsupported_features);
-		int length = unsupported_features_str.length();
-		if (length > 0) {
-			Label *unsupported_label = memnew(Label(unsupported_features_str));
-			unsupported_label->set_custom_minimum_size(Size2(length * 15, 10) * EDSCALE);
-			unsupported_label->add_theme_font_override("font", get_theme_font(SNAME("title"), SNAME("EditorFonts")));
-			unsupported_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-			unsupported_label->set_clip_text(true);
-			unsupported_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
-			title_hb->add_child(unsupported_label);
-			Control *spacer = memnew(Control());
-			spacer->set_custom_minimum_size(Size2(10, 10));
-			title_hb->add_child(spacer);
-		}
-	}
-
-	{ // Bottom half, containing the path and view folder button.
-		HBoxContainer *path_hb = memnew(HBoxContainer);
-		path_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		vb->add_child(path_hb);
-
-		Button *show = memnew(Button);
-		// Display a folder icon if the project directory can be opened, or a "broken file" icon if it can't.
-		show->set_icon(get_theme_icon(!item.missing ? SNAME("Load") : SNAME("FileBroken"), SNAME("EditorIcons")));
-		show->set_flat(true);
-		if (!item.grayed) {
-			// Don't make the icon less prominent if the parent is already grayed out.
-			show->set_modulate(Color(1, 1, 1, 0.5));
-		}
-		path_hb->add_child(show);
-
-		if (!item.missing) {
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
-			show->connect("pressed", callable_mp(this, &ProjectList::_show_project).bind(item.path));
-			show->set_tooltip_text(TTR("Show in File Manager"));
-#else
-			// Opening the system file manager is not supported on the Android and web editors.
-			show->hide();
+	hb->connect("explore_pressed", callable_mp(this, &ProjectList::_show_project).bind(item.path));
 #endif
-		} else {
-			show->set_tooltip_text(TTR("Error: Project is missing on the filesystem."));
-		}
-
-		Label *fpath = memnew(Label(item.path));
-		fpath->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
-		path_hb->add_child(fpath);
-		fpath->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		fpath->set_modulate(Color(1, 1, 1, 0.5));
-		fpath->add_theme_color_override("font_color", font_color);
-		fpath->set_clip_text(true);
-	}
 
 	_scroll_children->add_child(hb);
 	item.control = hb;
@@ -1628,10 +1715,11 @@ void ProjectList::toggle_select(int p_index) {
 	Item &item = _projects.write[p_index];
 	if (_selected_project_paths.has(item.path)) {
 		_selected_project_paths.erase(item.path);
+		item.control->set_selected(false);
 	} else {
 		_selected_project_paths.insert(item.path);
+		item.control->set_selected(true);
 	}
-	item.control->queue_redraw();
 }
 
 void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
@@ -1661,23 +1749,6 @@ void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
 	_last_clicked = "";
 
 	update_dock_menu();
-}
-
-// Draws selected project highlight.
-void ProjectList::_panel_draw(Node *p_hb) {
-	Control *hb = Object::cast_to<Control>(p_hb);
-
-	if (is_layout_rtl() && get_v_scroll_bar()->is_visible_in_tree()) {
-		hb->draw_line(Point2(get_v_scroll_bar()->get_minimum_size().x, hb->get_size().y + 1), Point2(hb->get_size().x, hb->get_size().y + 1), get_theme_color(SNAME("guide_color"), SNAME("Tree")));
-	} else {
-		hb->draw_line(Point2(0, hb->get_size().y + 1), Point2(hb->get_size().x, hb->get_size().y + 1), get_theme_color(SNAME("guide_color"), SNAME("Tree")));
-	}
-
-	String key = _projects[p_hb->get_index()].path;
-
-	if (_selected_project_paths.has(key)) {
-		hb->draw_style_box(get_theme_stylebox(SNAME("selected"), SNAME("Tree")), Rect2(Point2(), hb->get_size()));
-	}
 }
 
 // Input for each item in the list.

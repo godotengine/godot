@@ -137,18 +137,39 @@ public:
 class ProjectListItemControl : public HBoxContainer {
 	GDCLASS(ProjectListItemControl, HBoxContainer)
 
-	friend class ProjectList;
-
+	VBoxContainer *main_vbox = nullptr;
 	TextureButton *favorite_button = nullptr;
-	TextureRect *icon = nullptr;
+	Button *explore_button = nullptr;
+
+	TextureRect *project_icon = nullptr;
+	Label *project_title = nullptr;
+	Label *project_path = nullptr;
+	Label *project_unsupported_features = nullptr;
+
+	bool project_is_missing = false;
 	bool icon_needs_reload = true;
-	bool hover = false;
+	bool is_selected = false;
+	bool is_hovering = false;
+
+	void _favorite_button_pressed();
+	void _explore_button_pressed();
 
 protected:
 	void _notification(int p_what);
+	static void _bind_methods();
 
 public:
-	void set_is_favorite(bool fav);
+	void set_project_title(const String &p_title);
+	void set_project_path(const String &p_path);
+	void set_project_icon(const Ref<Texture2D> &p_icon);
+	void set_unsupported_features(const PackedStringArray &p_features);
+
+	bool should_load_project_icon() const;
+	void set_selected(bool p_selected);
+
+	void set_is_favorite(bool p_favorite);
+	void set_is_missing(bool p_missing);
+	void set_is_grayed(bool p_grayed);
 
 	ProjectListItemControl();
 };
