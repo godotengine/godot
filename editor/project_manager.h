@@ -31,21 +31,254 @@
 #ifndef PROJECT_MANAGER_H
 #define PROJECT_MANAGER_H
 
+#include "core/io/config_file.h"
 #include "editor/editor_about.h"
-#include "editor/plugins/asset_library_editor_plugin.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/scroll_container.h"
-#include "scene/gui/tree.h"
 
 class CheckBox;
-class ProjectDialog;
-class ProjectList;
+class EditorAssetLibrary;
+class EditorFileDialog;
 
-enum FilterOption {
-	EDIT_DATE,
-	NAME,
-	PATH,
+class ProjectDialog : public ConfirmationDialog {
+	GDCLASS(ProjectDialog, ConfirmationDialog);
+
+public:
+	enum Mode {
+		MODE_NEW,
+		MODE_IMPORT,
+		MODE_INSTALL,
+		MODE_RENAME,
+	};
+
+private:
+	enum MessageType {
+		MESSAGE_ERROR,
+		MESSAGE_WARNING,
+		MESSAGE_SUCCESS,
+	};
+
+	enum InputType {
+		PROJECT_PATH,
+		INSTALL_PATH,
+	};
+
+	Mode mode = MODE_NEW;
+	bool is_folder_empty = true;
+
+	Button *browse = nullptr;
+	Button *install_browse = nullptr;
+	Button *create_dir = nullptr;
+	Container *name_container = nullptr;
+	Container *path_container = nullptr;
+	Container *install_path_container = nullptr;
+
+	Container *renderer_container = nullptr;
+	Label *renderer_info = nullptr;
+	HBoxContainer *default_files_container = nullptr;
+	Ref<ButtonGroup> renderer_button_group;
+
+	Label *msg = nullptr;
+	LineEdit *project_path = nullptr;
+	LineEdit *project_name = nullptr;
+	LineEdit *install_path = nullptr;
+	TextureRect *status_rect = nullptr;
+	TextureRect *install_status_rect = nullptr;
+
+	OptionButton *vcs_metadata_selection = nullptr;
+
+	EditorFileDialog *fdialog = nullptr;
+	EditorFileDialog *fdialog_install = nullptr;
+	AcceptDialog *dialog_error = nullptr;
+
+	String zip_path;
+	String zip_title;
+	String fav_dir;
+
+	String created_folder_path;
+
+	void _set_message(const String &p_msg, MessageType p_type = MESSAGE_SUCCESS, InputType input_type = PROJECT_PATH);
+
+	String _test_path();
+	void _path_text_changed(const String &p_path);
+	void _path_selected(const String &p_path);
+	void _file_selected(const String &p_path);
+	void _install_path_selected(const String &p_path);
+
+	void _browse_path();
+	void _browse_install_path();
+	void _create_folder();
+
+	void _text_changed(const String &p_text);
+	void _nonempty_confirmation_ok_pressed();
+	void _renderer_selected();
+	void _remove_created_folder();
+
+	void ok_pressed() override;
+	void cancel_pressed() override;
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	void set_zip_path(const String &p_path);
+	void set_zip_title(const String &p_title);
+	void set_mode(Mode p_mode);
+	void set_project_path(const String &p_path);
+
+	void show_dialog();
+
+	ProjectDialog();
+};
+
+class ProjectListItemControl : public HBoxContainer {
+	GDCLASS(ProjectListItemControl, HBoxContainer)
+
+	friend class ProjectList;
+
+	TextureButton *favorite_button = nullptr;
+	TextureRect *icon = nullptr;
+	bool icon_needs_reload = true;
+	bool hover = false;
+
+protected:
+	void _notification(int p_what);
+
+public:
+	void set_is_favorite(bool fav);
+
+	ProjectListItemControl();
+};
+
+class ProjectList : public ScrollContainer {
+	GDCLASS(ProjectList, ScrollContainer)
+
+	friend class ProjectManager;
+
+public:
+	enum FilterOption {
+		EDIT_DATE,
+		NAME,
+		PATH,
+	};
+
+	// Can often be passed by copy
+	struct Item {
+		String project_name;
+		String description;
+		String path;
+		String icon;
+		String main_scene;
+		PackedStringArray unsupported_features;
+		uint64_t last_edited = 0;
+		bool favorite = false;
+		bool grayed = false;
+		bool missing = false;
+		int version = 0;
+
+		ProjectListItemControl *control = nullptr;
+
+		Item() {}
+
+		Item(const String &p_name,
+				const String &p_description,
+				const String &p_path,
+				const String &p_icon,
+				const String &p_main_scene,
+				const PackedStringArray &p_unsupported_features,
+				uint64_t p_last_edited,
+				bool p_favorite,
+				bool p_grayed,
+				bool p_missing,
+				int p_version) {
+			project_name = p_name;
+			description = p_description;
+			path = p_path;
+			icon = p_icon;
+			main_scene = p_main_scene;
+			unsupported_features = p_unsupported_features;
+			last_edited = p_last_edited;
+			favorite = p_favorite;
+			grayed = p_grayed;
+			missing = p_missing;
+			version = p_version;
+			control = nullptr;
+		}
+
+		_FORCE_INLINE_ bool operator==(const Item &l) const {
+			return path == l.path;
+		}
+	};
+
+private:
+	bool project_opening_initiated = false;
+
+	String _search_term;
+	FilterOption _order_option = FilterOption::EDIT_DATE;
+	HashSet<String> _selected_project_paths;
+	String _last_clicked; // Project key
+	VBoxContainer *_scroll_children = nullptr;
+	int _icon_load_index = 0;
+
+	Vector<Item> _projects;
+
+	ConfigFile _config;
+	String _config_path;
+
+	void _panel_draw(Node *p_hb);
+	void _panel_input(const Ref<InputEvent> &p_ev, Node *p_hb);
+	void _favorite_pressed(Node *p_hb);
+	void _show_project(const String &p_path);
+
+	void select_range(int p_begin, int p_end);
+	void toggle_select(int p_index);
+	void create_project_item_control(int p_index);
+	void remove_project(int p_index, bool p_update_settings);
+	void update_icons_async();
+	void load_project_icon(int p_index);
+	static Item load_project_data(const String &p_property_key, bool p_favorite);
+
+	void _global_menu_new_window(const Variant &p_tag);
+	void _global_menu_open_project(const Variant &p_tag);
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	static const char *SIGNAL_SELECTION_CHANGED;
+	static const char *SIGNAL_PROJECT_ASK_OPEN;
+
+	void load_projects();
+	int get_project_count() const;
+
+	void sort_projects();
+
+	void add_project(const String &dir_path, bool favorite);
+	void set_project_version(const String &p_project_path, int version);
+	int refresh_project(const String &dir_path);
+	void ensure_project_visible(int p_index);
+
+	void select_project(int p_index);
+	void select_first_visible_project();
+	void erase_selected_projects(bool p_delete_project_contents);
+	Vector<Item> get_selected_projects() const;
+	const HashSet<String> &get_selected_project_keys() const;
+	int get_single_selected_index() const;
+
+	bool is_any_project_missing() const;
+	void erase_missing_projects();
+
+	void set_search_term(String p_search_term);
+	void set_order_option(int p_option);
+
+	void update_dock_menu();
+	void migrate_config();
+	void save_config();
+
+	ProjectList();
 };
 
 class ProjectManager : public Control {
