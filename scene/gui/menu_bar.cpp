@@ -666,7 +666,7 @@ void MenuBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_menu_popup", "menu"), &MenuBar::get_menu_popup);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "start_index"), "set_start_index", "get_start_index");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "start_index"), "set_start_index", "get_start_index");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "switch_on_hover"), "set_switch_on_hover", "is_switch_on_hover");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "prefer_global_menu"), "set_prefer_global_menu", "is_prefer_global_menu");
 
