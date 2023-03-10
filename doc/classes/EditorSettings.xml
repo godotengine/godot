@@ -504,6 +504,10 @@
 			If [code]true[/code], lengthens the editor's localizable strings and replaces their characters with accented variants. This allows spotting non-localizable strings easily, while also ensuring the UI layout doesn't break when strings are made longer (as many languages require strings to be longer).
 			This is a debugging feature and should only be enabled when working on the editor itself.
 		</member>
+		<member name="interface/editor/disable_minimum_window_size" type="bool" setter="" getter="">
+			Disables the minimum size of main editor window, allowing it to shrink smaller than the default, and gives full control over sizing to the window manager.
+			[b]Note:[/b] The minimum window size prevents UI elements from overlapping or being cut off. Disabling the minimum size may make some parts of the editor inaccessible.
+		</member>
 		<member name="interface/editor/display_scale" type="int" setter="" getter="">
 			The display scale factor to use for the editor interface. Higher values are more suited to hiDPI/Retina displays.
 			If set to [b]Auto[/b], the editor scale is automatically determined based on the screen resolution and reported display DPI. This heuristic is not always ideal, which means you can get better results by setting the editor scale manually.

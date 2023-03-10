@@ -6776,7 +6776,7 @@ EditorNode::EditorNode() {
 
 	// Define a minimum window size to prevent UI elements from overlapping or being cut off.
 	Window *w = Object::cast_to<Window>(SceneTree::get_singleton()->get_root());
-	if (w) {
+	if (w && !(bool)EDITOR_GET("interface/editor/disable_minimum_window_size")) {
 		w->set_min_size(Size2(1024, 600) * EDSCALE);
 	}
 
