@@ -127,6 +127,8 @@ bool Basis::is_symmetric() const {
 Basis Basis::diagonalize() {
 // NOTE: only implemented for symmetric matrices
 // with the Jacobi iterative method
+// this method diagonalises the original matrix and
+// returns a matrix with eigenvectors as its columns
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V(!is_symmetric(), Basis());
 #endif
