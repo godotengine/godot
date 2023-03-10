@@ -315,7 +315,7 @@ void KeyMappingWindows::initialize() {
 	scansym_map[0x51] = Key::KP_3;
 	scansym_map[0x52] = Key::KP_0;
 	scansym_map[0x53] = Key::KP_PERIOD;
-	scansym_map[0x57] = Key::SECTION;
+	scansym_map[0x56] = Key::SECTION;
 	scansym_map[0x57] = Key::F11;
 	scansym_map[0x58] = Key::F12;
 	scansym_map[0x5B] = Key::META;

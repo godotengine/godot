@@ -114,7 +114,7 @@ private:
 	Error _create_context(GLDisplay &gl_display);
 
 public:
-	XVisualInfo get_vi(Display *p_display);
+	XVisualInfo get_vi(Display *p_display, Error &r_error);
 	Error window_create(DisplayServer::WindowID p_window_id, ::Window p_window, Display *p_display, int p_width, int p_height);
 	void window_destroy(DisplayServer::WindowID p_window_id);
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);

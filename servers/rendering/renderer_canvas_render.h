@@ -321,6 +321,7 @@ public:
 		};
 
 		CanvasGroup *canvas_group = nullptr;
+		bool use_canvas_group = false;
 		int light_mask;
 		int z_final;
 
