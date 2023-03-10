@@ -316,8 +316,6 @@ protected:
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 public:
-	void disable_community_support();
-
 	EditorAssetLibrary(bool p_templates_only = false);
 };
 
