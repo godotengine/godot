@@ -83,7 +83,12 @@ Variant &Dictionary::operator[](const Variant &p_key) {
 	if (unlikely(_p->read_only)) {
 		if (p_key.get_type() == Variant::STRING_NAME) {
 			const StringName *sn = VariantInternal::get_string_name(&p_key);
-			*_p->read_only = _p->variant_map[sn->operator String()];
+			const String &key = sn->operator String();
+			if (_p->variant_map.has(key)) {
+				*_p->read_only = _p->variant_map[key];
+			} else {
+				*_p->read_only = Variant();
+			}
 		} else {
 			*_p->read_only = _p->variant_map[p_key];
 		}
