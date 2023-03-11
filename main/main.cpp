@@ -2108,8 +2108,10 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	audio_server = memnew(AudioServer);
 	audio_server->init();
 
-	// also init our xr_server from here
+	// Also init our xr_server from here
 	xr_server = memnew(XRServer);
+	// We register this right away so GDExternal plugins can interact with the XRServer to register XRInterfaces
+	Engine::get_singleton()->add_singleton(Engine::Singleton("XRServer", XRServer::get_singleton(), "XRServer"));
 
 	register_core_singletons();
 
