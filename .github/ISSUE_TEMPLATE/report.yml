@@ -1,0 +1,6 @@
+name: "Report"
+description: Some report
+body:
+- type: textarea
+  attributes:
+    label: Description
