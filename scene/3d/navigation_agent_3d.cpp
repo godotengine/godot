@@ -590,7 +590,19 @@ void NavigationAgent3D::update_navigation() {
 	}
 
 	if (reload_path) {
-		navigation_query->set_start_position(origin);
+		if (active_link_rid.is_valid()) {
+			// We are on a link, so we need to use the link's exit position as the origin.
+			if (active_link_use_start_position) {
+				Vector3 start_position = NavigationServer3D::get_singleton()->link_get_start_position(active_link_rid);
+				navigation_query->set_start_position(start_position);
+			} else {
+				Vector3 end_position = NavigationServer3D::get_singleton()->link_get_end_position(active_link_rid);
+				navigation_query->set_start_position(end_position);
+			}
+		} else {
+			navigation_query->set_start_position(origin);
+		}
+
 		navigation_query->set_target_position(target_position);
 		navigation_query->set_navigation_layers(navigation_layers);
 		navigation_query->set_metadata_flags(path_metadata_flags);
@@ -673,6 +685,21 @@ void NavigationAgent3D::update_navigation() {
 			// Emit a signal if we've reached a navigation link
 			if (waypoint_type == NavigationPathQueryResult3D::PATH_SEGMENT_TYPE_LINK) {
 				emit_signal(SNAME("link_reached"), details);
+			}
+
+			// Remember the current link so we can resume pathfinding from the link's exit point.
+			if (waypoint_type == NavigationPathQueryResult3D::PATH_SEGMENT_TYPE_LINK && path_metadata_flags.has_flag(NavigationPathQueryParameters3D::PathMetadataFlags::PATH_METADATA_INCLUDE_RIDS)) {
+				active_link_rid = navigation_path_rids[navigation_path_index];
+
+				Vector3 link_global_start_position = NavigationServer3D::get_singleton()->link_get_start_position(active_link_rid);
+				Vector3 link_global_end_position = NavigationServer3D::get_singleton()->link_get_end_position(active_link_rid);
+				if (waypoint.distance_to(link_global_start_position) < waypoint.distance_to(link_global_end_position)) {
+					active_link_use_start_position = false;
+				} else {
+					active_link_use_start_position = true;
+				}
+			} else if (active_link_rid.is_valid()) {
+				active_link_rid = RID();
 			}
 
 			// Move to the next waypoint on the list

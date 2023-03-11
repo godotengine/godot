@@ -74,6 +74,9 @@ class NavigationAgent3D : public Node {
 	bool navigation_finished = true;
 	// No initialized on purpose
 	uint32_t update_frame_id = 0;
+	// Used to remember if we are currently in a link.
+	RID active_link_rid;
+	bool active_link_use_start_position = false;
 
 	// Debug properties for exposed bindings
 	bool debug_enabled = false;
