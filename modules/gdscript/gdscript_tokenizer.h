@@ -31,6 +31,7 @@
 #ifndef GDSCRIPT_TOKENIZER_H
 #define GDSCRIPT_TOKENIZER_H
 
+#include "core/oa_hash_map.h"
 #include "core/pair.h"
 #include "core/string_name.h"
 #include "core/ustring.h"
@@ -154,8 +155,19 @@ protected:
 
 	static const char *token_names[TK_MAX];
 
+	enum {
+		TOKEN_HASH_TABLE_TYPE_START = 3,
+		TOKEN_HASH_TABLE_BUILTIN_START = TOKEN_HASH_TABLE_TYPE_START + Variant::VARIANT_MAX,
+		TOKEN_HASH_TABLE_KEYWORD_START = TOKEN_HASH_TABLE_BUILTIN_START + GDScriptFunctions::FUNC_MAX,
+	};
+
+	static OAHashMap<String, int> *token_hashtable;
+
 public:
 	static const char *get_token_name(Token p_token);
+
+	static void initialize();
+	static void terminate();
 
 	bool is_token_literal(int p_offset = 0, bool variable_safe = false) const;
 	StringName get_token_literal(int p_offset = 0) const;
@@ -177,7 +189,7 @@ public:
 	virtual bool is_ignoring_warnings() const = 0;
 #endif // DEBUG_ENABLED
 
-	virtual ~GDScriptTokenizer(){};
+	virtual ~GDScriptTokenizer() {}
 };
 
 class GDScriptTokenizerText : public GDScriptTokenizer {
@@ -230,6 +242,7 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 #endif // DEBUG_ENABLED
 
 	void _advance();
+	bool _parse_identifier(const String &p_str);
 
 public:
 	void set_code(const String &p_code);
