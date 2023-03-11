@@ -736,6 +736,8 @@ void EditorNode::_notification(int p_what) {
 				get_window()->set_theme(theme);
 
 				gui_base->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("Background"), SNAME("EditorStyles")));
+				main_vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, gui_base->get_theme_constant(SNAME("window_border_margin"), SNAME("Editor")));
+				main_vbox->add_theme_constant_override("separation", gui_base->get_theme_constant(SNAME("top_bar_separation"), SNAME("Editor")));
 				scene_root_parent->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("Content"), SNAME("EditorStyles")));
 				bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("BottomPanel"), SNAME("EditorStyles")));
 				tabbar_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("tabbar_background"), SNAME("TabContainer")));
@@ -7001,8 +7003,8 @@ EditorNode::EditorNode() {
 
 	main_vbox = memnew(VBoxContainer);
 	gui_base->add_child(main_vbox);
-	main_vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 8);
-	main_vbox->add_theme_constant_override("separation", 8 * EDSCALE);
+	main_vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, gui_base->get_theme_constant(SNAME("window_border_margin"), SNAME("Editor")));
+	main_vbox->add_theme_constant_override("separation", gui_base->get_theme_constant(SNAME("top_bar_separation"), SNAME("Editor")));
 
 	title_bar = memnew(EditorTitleBar);
 	main_vbox->add_child(title_bar);
