@@ -376,7 +376,9 @@ void OpenXRInteractionProfileMetaData::_register_core_metadata() {
 	register_io_path("/interaction_profiles/valve/index_controller", "Trigger touch", "/user/hand/right", "/user/hand/right/input/trigger/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
 
 	register_io_path("/interaction_profiles/valve/index_controller", "Squeeze", "/user/hand/left", "/user/hand/left/input/squeeze/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
+	register_io_path("/interaction_profiles/valve/index_controller", "Squeeze force", "/user/hand/left", "/user/hand/left/input/squeeze/force", "", OpenXRAction::OPENXR_ACTION_FLOAT);
 	register_io_path("/interaction_profiles/valve/index_controller", "Squeeze", "/user/hand/right", "/user/hand/right/input/squeeze/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
+	register_io_path("/interaction_profiles/valve/index_controller", "Squeeze force", "/user/hand/right", "/user/hand/right/input/squeeze/force", "", OpenXRAction::OPENXR_ACTION_FLOAT);
 
 	register_io_path("/interaction_profiles/valve/index_controller", "Thumbstick", "/user/hand/left", "/user/hand/left/input/thumbstick", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
 	register_io_path("/interaction_profiles/valve/index_controller", "Thumbstick click", "/user/hand/left", "/user/hand/left/input/thumbstick/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
