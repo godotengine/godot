@@ -49,7 +49,7 @@
 			Scales the layer when using [member follow_viewport_enable]. Layers moving into the foreground should have increasing scales, while layers moving into the background should have decreasing scales.
 		</member>
 		<member name="layer" type="int" setter="set_layer" getter="get_layer" default="1">
-			Layer index for draw order. Lower values are drawn first.
+			Layer index for draw order. Lower values are drawn behind higher values.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
 			The layer's base offset.
