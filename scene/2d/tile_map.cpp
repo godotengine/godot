@@ -854,7 +854,7 @@ void TileMap::_update_dirty_quadrants() {
 			q->self()->local_to_map.clear();
 			for (const Vector2i &E : q->self()->cells) {
 				Vector2i pk = E;
-				Vector2i pk_local_coords = map_to_local(pk);
+				Vector2i pk_local_coords = map_to_local(pk).floor();
 				q->self()->map_to_local[pk] = pk_local_coords;
 				q->self()->local_to_map[pk_local_coords] = pk;
 			}
@@ -1244,6 +1244,8 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 						// When Y-sorting, the quandrant size is sure to be 1, we can thus offset the CanvasItem.
 						tile_position.y += layers[q.layer].y_sort_origin + tile_data->get_y_sort_origin();
 					}
+
+					tile_position = tile_position.floor();
 
 					// --- CanvasItems ---
 					// Create two canvas items, for rendering and debug.
