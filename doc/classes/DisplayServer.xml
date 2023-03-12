@@ -1000,7 +1000,7 @@
 				- [code]name[/code] is voice name.
 				- [code]id[/code] is voice identifier.
 				- [code]language[/code] is language code in [code]lang_Variant[/code] format. [code]lang[/code] part is a 2 or 3-letter code based on the ISO-639 standard, in lowercase. And [code]Variant[/code] part is an engine dependent string describing country, region or/and dialect.
-				Note that Godot depends on system libraries for text-to-speech functionality. These libraries are installed by default on Windows and MacOS, but not on all Linux distributions. If they are not present, this method will return an empty list. This applies to both Godot users on Linux, as well as end-users on Linux running Godot games that use text-to-speech.
+				Note that Godot depends on system libraries for text-to-speech functionality. These libraries are installed by default on Windows and macOS, but not on all Linux distributions. If they are not present, this method will return an empty list. This applies to both Godot users on Linux, as well as end-users on Linux running Godot games that use text-to-speech.
 				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
 			</description>
 		</method>
@@ -1800,7 +1800,7 @@
 			OpenGL context (only with the GL Compatibility renderer):
 			- Windows: [code]HGLRC[/code] for the window.
 			- Linux: [code]GLXContext*[/code] for the window.
-			- MacOS: [code]NSOpenGLContext*[/code] for the window.
+			- macOS: [code]NSOpenGLContext*[/code] for the window.
 			- Android: [code]EGLContext[/code] for the window.
 		</constant>
 		<constant name="TTS_UTTERANCE_STARTED" value="0" enum="TTSUtteranceEvent">
