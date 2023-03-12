@@ -31,6 +31,7 @@
 			<param index="0" name="arc_from" type="Vector3" />
 			<param index="1" name="arc_to" type="Vector3" />
 			<description>
+				Constructs a quaternion representing the shortest arc between two points on the surface of a sphere with a radius of [code]1.0[/code].
 			</description>
 		</constructor>
 		<constructor name="Quaternion">
