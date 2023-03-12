@@ -181,10 +181,12 @@ void ScriptTextEditor::_load_theme_settings() {
 
 	Color updated_marked_line_color = EDITOR_GET("text_editor/theme/highlighting/mark_color");
 	Color updated_safe_line_number_color = EDITOR_GET("text_editor/theme/highlighting/safe_line_number_color");
+	Color updated_folded_code_region_color = EDITOR_GET("text_editor/theme/highlighting/folded_code_region_color");
 
 	bool safe_line_number_color_updated = updated_safe_line_number_color != safe_line_number_color;
 	bool marked_line_color_updated = updated_marked_line_color != marked_line_color;
-	if (safe_line_number_color_updated || marked_line_color_updated) {
+	bool folded_code_region_color_updated = updated_folded_code_region_color != folded_code_region_color;
+	if (safe_line_number_color_updated || marked_line_color_updated || folded_code_region_color_updated) {
 		safe_line_number_color = updated_safe_line_number_color;
 		for (int i = 0; i < text_edit->get_line_count(); i++) {
 			if (marked_line_color_updated && text_edit->get_line_background_color(i) == marked_line_color) {
@@ -194,8 +196,13 @@ void ScriptTextEditor::_load_theme_settings() {
 			if (safe_line_number_color_updated && text_edit->get_line_gutter_item_color(i, line_number_gutter) != default_line_number_color) {
 				text_edit->set_line_gutter_item_color(i, line_number_gutter, safe_line_number_color);
 			}
+
+			if (folded_code_region_color_updated && text_edit->get_line_background_color(i) == folded_code_region_color) {
+				text_edit->set_line_background_color(i, updated_folded_code_region_color);
+			}
 		}
 		marked_line_color = updated_marked_line_color;
+		folded_code_region_color = updated_folded_code_region_color;
 	}
 
 	theme_loaded = true;
@@ -647,7 +654,8 @@ void ScriptTextEditor::_update_errors() {
 	bool last_is_safe = false;
 	for (int i = 0; i < te->get_line_count(); i++) {
 		if (errors.is_empty()) {
-			te->set_line_background_color(i, Color(0, 0, 0, 0));
+			bool is_folded_code_region = te->is_line_code_region_start(i) && te->is_line_folded(i);
+			te->set_line_background_color(i, is_folded_code_region ? folded_code_region_color : Color(0, 0, 0, 0));
 		} else {
 			for (const ScriptLanguage::ScriptError &E : errors) {
 				bool error_line = i == E.line - 1;
@@ -1311,6 +1319,9 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		case EDIT_UNFOLD_ALL_LINES: {
 			tx->unfold_all_lines();
 			tx->queue_redraw();
+		} break;
+		case EDIT_CREATE_CODE_REGION: {
+			tx->create_code_region();
 		} break;
 		case EDIT_TOGGLE_COMMENT: {
 			_edit_option_toggle_inline_comment();
@@ -2064,6 +2075,7 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_uppercase"), EDIT_TO_UPPERCASE);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_lowercase"), EDIT_TO_LOWERCASE);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/evaluate_selection"), EDIT_EVALUATE);
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/create_code_region"), EDIT_CREATE_CODE_REGION);
 	}
 	if (p_foldable) {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_fold_line"), EDIT_TOGGLE_FOLD_LINE);
@@ -2178,6 +2190,7 @@ void ScriptTextEditor::_enable_code_editor() {
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_fold_line"), EDIT_TOGGLE_FOLD_LINE);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/fold_all_lines"), EDIT_FOLD_ALL_LINES);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_all_lines"), EDIT_UNFOLD_ALL_LINES);
+		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/create_code_region"), EDIT_CREATE_CODE_REGION);
 		sub_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
 		edit_menu->get_popup()->add_child(sub_menu);
 		edit_menu->get_popup()->add_submenu_item(TTR("Folding"), "folding_menu");
@@ -2373,6 +2386,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/toggle_fold_line", TTR("Fold/Unfold Line"), KeyModifierMask::ALT | Key::F);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/toggle_fold_line", "macos", KeyModifierMask::CTRL | KeyModifierMask::META | Key::F);
 	ED_SHORTCUT("script_text_editor/fold_all_lines", TTR("Fold All Lines"), Key::NONE);
+	ED_SHORTCUT("script_text_editor/create_code_region", TTR("Create Code Region"), KeyModifierMask::ALT | Key::R);
 	ED_SHORTCUT("script_text_editor/unfold_all_lines", TTR("Unfold All Lines"), Key::NONE);
 	ED_SHORTCUT("script_text_editor/duplicate_selection", TTR("Duplicate Selection"), KeyModifierMask::SHIFT | KeyModifierMask::CTRL | Key::D);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/duplicate_selection", "macos", KeyModifierMask::SHIFT | KeyModifierMask::META | Key::C);

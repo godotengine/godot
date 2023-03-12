@@ -125,6 +125,11 @@ private:
 
 	/* Line Folding */
 	bool line_folding_enabled = false;
+	String code_region_start_string;
+	String code_region_end_string;
+	String code_region_start_tag = "region";
+	String code_region_end_tag = "endregion";
+	void _update_code_region_tags();
 
 	/* Delimiters */
 	enum DelimiterType {
@@ -232,8 +237,11 @@ private:
 	struct ThemeCache {
 		/* Gutters */
 		Color code_folding_color = Color(1, 1, 1);
+		Color folded_code_region_color = Color(1, 1, 1);
 		Ref<Texture2D> can_fold_icon;
 		Ref<Texture2D> folded_icon;
+		Ref<Texture2D> can_fold_code_region_icon;
+		Ref<Texture2D> folded_code_region_icon;
 		Ref<Texture2D> folded_eol_icon;
 
 		Color breakpoint_color = Color(1, 1, 1);
@@ -396,6 +404,14 @@ public:
 
 	bool is_line_folded(int p_line) const;
 	TypedArray<int> get_folded_lines() const;
+
+	/* Code region */
+	void create_code_region();
+	String get_code_region_start_tag() const;
+	String get_code_region_end_tag() const;
+	void set_code_region_tags(const String &p_start = "region", const String &p_end = "endregion");
+	bool is_line_code_region_start(int p_line) const;
+	bool is_line_code_region_end(int p_line) const;
 
 	/* Delimiters */
 	void add_string_delimiter(const String &p_start_key, const String &p_end_key, bool p_line_only = false);
