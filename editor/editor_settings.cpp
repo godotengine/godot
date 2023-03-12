@@ -609,6 +609,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/completion/complete_file_paths", true);
 	_initial_set("text_editor/completion/add_type_hints", false);
 	_initial_set("text_editor/completion/use_single_quotes", false);
+	_initial_set("text_editor/completion/colorize_suggestions", true);
 
 	// Help
 	_initial_set("text_editor/help/show_help_index", true);

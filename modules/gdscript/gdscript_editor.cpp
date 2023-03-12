@@ -1207,6 +1207,9 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 					for (const PropertyInfo &E : members) {
 						if (!String(E.name).contains("/")) {
 							ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
+							if (GDScriptParser::theme_color_names.has(E.name)) {
+								option.theme_color_name = GDScriptParser::theme_color_names[E.name];
+							}
 							r_result.insert(option.display, option);
 						}
 					}

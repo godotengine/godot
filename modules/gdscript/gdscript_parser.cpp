@@ -66,6 +66,10 @@ Variant::Type GDScriptParser::get_builtin_type(const StringName &p_type) {
 	return Variant::VARIANT_MAX;
 }
 
+#ifdef TOOLS_ENABLED
+HashMap<String, String> GDScriptParser::theme_color_names;
+#endif
+
 void GDScriptParser::cleanup() {
 	builtin_types.clear();
 }
@@ -120,6 +124,15 @@ GDScriptParser::GDScriptParser() {
 
 #ifdef DEBUG_ENABLED
 	is_ignoring_warnings = !(bool)GLOBAL_GET("debug/gdscript/warnings/enable");
+#endif
+
+#ifdef TOOLS_ENABLED
+	if (theme_color_names.is_empty()) {
+		theme_color_names.insert("x", "axis_x_color");
+		theme_color_names.insert("y", "axis_y_color");
+		theme_color_names.insert("z", "axis_z_color");
+		theme_color_names.insert("w", "axis_w_color");
+	}
 #endif
 }
 
