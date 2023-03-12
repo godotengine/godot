@@ -35,6 +35,8 @@
 #include "core/print_string.h"
 #include "gdscript_functions.h"
 
+OAHashMap<String, int> *GDScriptTokenizer::token_hashtable = nullptr;
+
 const char *GDScriptTokenizer::token_names[TK_MAX] = {
 	"Empty",
 	"Identifier",
@@ -234,6 +236,96 @@ static const _kws _keyword_list[] = {
 	{ GDScriptTokenizer::TK_CONST_NAN, "NAN" },
 	{ GDScriptTokenizer::TK_ERROR, nullptr }
 };
+
+// Prepare the hash table for parsing as a one off at startup.
+void GDScriptTokenizer::initialize() {
+	token_hashtable = memnew((OAHashMap<String, int>));
+
+	token_hashtable->insert("null", 0);
+	token_hashtable->insert("true", 1);
+	token_hashtable->insert("false", 2);
+
+	// _type_list
+	int id = TOKEN_HASH_TABLE_TYPE_START;
+	int idx = 0;
+	while (_type_list[idx].text) {
+		token_hashtable->insert(_type_list[idx].text, id++);
+		idx++;
+	}
+
+	// built in funcs
+	id = TOKEN_HASH_TABLE_BUILTIN_START;
+	for (int j = 0; j < GDScriptFunctions::FUNC_MAX; j++) {
+		token_hashtable->insert(GDScriptFunctions::get_func_name(GDScriptFunctions::Function(j)), id++);
+	}
+
+	// keywords
+	id = TOKEN_HASH_TABLE_KEYWORD_START;
+	idx = 0;
+	while (_keyword_list[idx].text) {
+		token_hashtable->insert(_keyword_list[idx].text, id++);
+		idx++;
+	}
+}
+
+void GDScriptTokenizer::terminate() {
+	if (token_hashtable) {
+		memdelete(token_hashtable);
+		token_hashtable = nullptr;
+	}
+}
+
+// return whether found
+bool GDScriptTokenizerText::_parse_identifier(const String &p_str) {
+	// N.B. GDScriptTokenizer::initialize() must have been called before using this function,
+	// else token_hashtable will be NULL.
+	const int *found = token_hashtable->lookup_ptr(p_str);
+
+	if (found) {
+		int id = *found;
+		if (id < TOKEN_HASH_TABLE_TYPE_START) {
+			switch (id) {
+				case 0: {
+					_make_constant(Variant());
+				} break;
+				case 1: {
+					_make_constant(true);
+				} break;
+				case 2: {
+					_make_constant(false);
+				} break;
+				default: {
+					DEV_ASSERT(0);
+				} break;
+			}
+			return true;
+		} else {
+			// type list
+			if (id < TOKEN_HASH_TABLE_BUILTIN_START) {
+				int idx = id - TOKEN_HASH_TABLE_TYPE_START;
+				_make_type(_type_list[idx].type);
+				return true;
+			}
+
+			// built in func
+			if (id < TOKEN_HASH_TABLE_KEYWORD_START) {
+				int idx = id - TOKEN_HASH_TABLE_BUILTIN_START;
+				_make_built_in_func(GDScriptFunctions::Function(idx));
+				return true;
+			}
+
+			// keyword
+			int idx = id - TOKEN_HASH_TABLE_KEYWORD_START;
+			_make_token(_keyword_list[idx].token);
+			return true;
+		}
+
+		return true;
+	}
+
+	// not found
+	return false;
+}
 
 const char *GDScriptTokenizer::get_token_name(Token p_token) {
 	ERR_FAIL_INDEX_V(p_token, TK_MAX, "<error>");
@@ -977,68 +1069,13 @@ void GDScriptTokenizerText::_advance() {
 						i++;
 					}
 
-					bool identifier = false;
+					// Detect preset keywords / functions using hashtable.
+					bool found = _parse_identifier(str);
 
-					if (str == "null") {
-						_make_constant(Variant());
-
-					} else if (str == "true") {
-						_make_constant(true);
-
-					} else if (str == "false") {
-						_make_constant(false);
-					} else {
-						bool found = false;
-
-						{
-							int idx = 0;
-
-							while (_type_list[idx].text) {
-								if (str == _type_list[idx].text) {
-									_make_type(_type_list[idx].type);
-									found = true;
-									break;
-								}
-								idx++;
-							}
-						}
-
-						if (!found) {
-							//built in func?
-
-							for (int j = 0; j < GDScriptFunctions::FUNC_MAX; j++) {
-								if (str == GDScriptFunctions::get_func_name(GDScriptFunctions::Function(j))) {
-									_make_built_in_func(GDScriptFunctions::Function(j));
-									found = true;
-									break;
-								}
-							}
-						}
-
-						if (!found) {
-							//keyword
-
-							int idx = 0;
-							found = false;
-
-							while (_keyword_list[idx].text) {
-								if (str == _keyword_list[idx].text) {
-									_make_token(_keyword_list[idx].token);
-									found = true;
-									break;
-								}
-								idx++;
-							}
-						}
-
-						if (!found) {
-							identifier = true;
-						}
-					}
-
-					if (identifier) {
+					if (!found) {
 						_make_identifier(str);
 					}
+
 					INCPOS(str.length());
 					return;
 				}
