@@ -8632,8 +8632,8 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 	}
 
 	// Parse sub blocks
-	for (int i = 0; i < p_block->sub_blocks.size(); i++) {
-		current_block = p_block->sub_blocks[i];
+	for (const List<BlockNode *>::Element *E = p_block->sub_blocks.front(); E; E = E->next()) {
+		current_block = E->get();
 		_check_block_types(current_block);
 		current_block = p_block;
 		if (error_set) {
