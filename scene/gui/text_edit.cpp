@@ -112,6 +112,14 @@ float TextEdit::Text::get_width() const {
 	return width;
 }
 
+void TextEdit::Text::set_brk_flags(BitField<TextServer::LineBreakFlag> p_flags) {
+	brk_flags = p_flags;
+}
+
+BitField<TextServer::LineBreakFlag> TextEdit::Text::get_brk_flags() const {
+	return brk_flags;
+}
+
 int TextEdit::Text::get_line_wrap_amount(int p_line) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
 
@@ -180,6 +188,7 @@ void TextEdit::Text::invalidate_cache(int p_line, int p_column, bool p_text_chan
 
 	text.write[p_line].data_buf->set_width(width);
 	text.write[p_line].data_buf->set_direction((TextServer::Direction)direction);
+	text.write[p_line].data_buf->set_break_flags(brk_flags);
 	text.write[p_line].data_buf->set_preserve_control(draw_control_chars);
 	if (p_ime_text.length() > 0) {
 		if (p_text_changed) {
@@ -247,21 +256,19 @@ void TextEdit::Text::invalidate_cache(int p_line, int p_column, bool p_text_chan
 void TextEdit::Text::invalidate_all_lines() {
 	for (int i = 0; i < text.size(); i++) {
 		text.write[i].data_buf->set_width(width);
+		text.write[i].data_buf->set_break_flags(brk_flags);
 		if (tab_size_dirty) {
 			if (tab_size > 0) {
 				Vector<float> tabs;
 				tabs.push_back(font->get_char_size(' ', font_size).width * tab_size);
 				text.write[i].data_buf->tab_align(tabs);
 			}
-			// Tabs have changes, force width update.
-			text.write[i].width = get_line_width(i);
 		}
+		text.write[i].width = get_line_width(i);
 	}
+	tab_size_dirty = false;
 
-	if (tab_size_dirty) {
-		_calculate_max_line_width();
-		tab_size_dirty = false;
-	}
+	_calculate_max_line_width();
 }
 
 void TextEdit::Text::invalidate_font() {
@@ -2935,6 +2942,7 @@ void TextEdit::_update_placeholder() {
 	// Placeholder is generally smaller then text documents, and updates less so this should be fast enough for now.
 	placeholder_data_buf->clear();
 	placeholder_data_buf->set_width(text.get_width());
+	placeholder_data_buf->set_break_flags(text.get_brk_flags());
 	placeholder_data_buf->set_direction((TextServer::Direction)text_direction);
 	placeholder_data_buf->set_preserve_control(draw_control_chars);
 	placeholder_data_buf->add_string(placeholder_text, theme_cache.font, theme_cache.font_size, language);
@@ -5256,11 +5264,28 @@ void TextEdit::set_line_wrapping_mode(LineWrappingMode p_wrapping_mode) {
 	if (line_wrapping_mode != p_wrapping_mode) {
 		line_wrapping_mode = p_wrapping_mode;
 		_update_wrap_at_column(true);
+		queue_redraw();
 	}
 }
 
 TextEdit::LineWrappingMode TextEdit::get_line_wrapping_mode() const {
 	return line_wrapping_mode;
+}
+
+void TextEdit::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
+	if (autowrap_mode == p_mode) {
+		return;
+	}
+
+	autowrap_mode = p_mode;
+	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE) {
+		_update_wrap_at_column(true);
+		queue_redraw();
+	}
+}
+
+TextServer::AutowrapMode TextEdit::get_autowrap_mode() const {
+	return autowrap_mode;
 }
 
 bool TextEdit::is_line_wrapped(int p_line) const {
@@ -5540,37 +5565,32 @@ void TextEdit::adjust_viewport_to_caret(int p_caret) {
 	}
 	visible_width -= 20; // Give it a little more space.
 
-	if (get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
-		// Adjust x offset.
-		Vector2i caret_pos;
+	Vector2i caret_pos;
 
-		// Get position of the start of caret.
-		if (ime_text.length() != 0 && ime_selection.x != 0) {
-			caret_pos.x = _get_column_x_offset_for_line(get_caret_column(p_caret) + ime_selection.x, get_caret_line(p_caret), get_caret_column(p_caret));
+	// Get position of the start of caret.
+	if (ime_text.length() != 0 && ime_selection.x != 0) {
+		caret_pos.x = _get_column_x_offset_for_line(get_caret_column(p_caret) + ime_selection.x, get_caret_line(p_caret), get_caret_column(p_caret));
+	} else {
+		caret_pos.x = _get_column_x_offset_for_line(get_caret_column(p_caret), get_caret_line(p_caret), get_caret_column(p_caret));
+	}
+
+	// Get position of the end of caret.
+	if (ime_text.length() != 0) {
+		if (ime_selection.y != 0) {
+			caret_pos.y = _get_column_x_offset_for_line(get_caret_column(p_caret) + ime_selection.x + ime_selection.y, get_caret_line(p_caret), get_caret_column(p_caret));
 		} else {
-			caret_pos.x = _get_column_x_offset_for_line(get_caret_column(p_caret), get_caret_line(p_caret), get_caret_column(p_caret));
-		}
-
-		// Get position of the end of caret.
-		if (ime_text.length() != 0) {
-			if (ime_selection.y != 0) {
-				caret_pos.y = _get_column_x_offset_for_line(get_caret_column(p_caret) + ime_selection.x + ime_selection.y, get_caret_line(p_caret), get_caret_column(p_caret));
-			} else {
-				caret_pos.y = _get_column_x_offset_for_line(get_caret_column(p_caret) + ime_text.size(), get_caret_line(p_caret), get_caret_column(p_caret));
-			}
-		} else {
-			caret_pos.y = caret_pos.x;
-		}
-
-		if (MAX(caret_pos.x, caret_pos.y) > (first_visible_col + visible_width)) {
-			first_visible_col = MAX(caret_pos.x, caret_pos.y) - visible_width + 1;
-		}
-
-		if (MIN(caret_pos.x, caret_pos.y) < first_visible_col) {
-			first_visible_col = MIN(caret_pos.x, caret_pos.y);
+			caret_pos.y = _get_column_x_offset_for_line(get_caret_column(p_caret) + ime_text.size(), get_caret_line(p_caret), get_caret_column(p_caret));
 		}
 	} else {
-		first_visible_col = 0;
+		caret_pos.y = caret_pos.x;
+	}
+
+	if (MAX(caret_pos.x, caret_pos.y) > (first_visible_col + visible_width)) {
+		first_visible_col = MAX(caret_pos.x, caret_pos.y) - visible_width + 1;
+	}
+
+	if (MIN(caret_pos.x, caret_pos.y) < first_visible_col) {
+		first_visible_col = MIN(caret_pos.x, caret_pos.y);
 	}
 	h_scroll->set_value(first_visible_col);
 
@@ -6280,6 +6300,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_line_wrapping_mode", "mode"), &TextEdit::set_line_wrapping_mode);
 	ClassDB::bind_method(D_METHOD("get_line_wrapping_mode"), &TextEdit::get_line_wrapping_mode);
 
+	ClassDB::bind_method(D_METHOD("set_autowrap_mode", "autowrap_mode"), &TextEdit::set_autowrap_mode);
+	ClassDB::bind_method(D_METHOD("get_autowrap_mode"), &TextEdit::get_autowrap_mode);
+
 	ClassDB::bind_method(D_METHOD("is_line_wrapped", "line"), &TextEdit::is_line_wrapped);
 	ClassDB::bind_method(D_METHOD("get_line_wrap_count", "line"), &TextEdit::get_line_wrap_count);
 	ClassDB::bind_method(D_METHOD("get_line_wrap_index_at_column", "line", "column"), &TextEdit::get_line_wrap_index_at_column);
@@ -6415,6 +6438,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "virtual_keyboard_enabled"), "set_virtual_keyboard_enabled", "is_virtual_keyboard_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "middle_mouse_paste_enabled"), "set_middle_mouse_paste_enabled", "is_middle_mouse_paste_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "wrap_mode", PROPERTY_HINT_ENUM, "None,Boundary"), "set_line_wrapping_mode", "get_line_wrapping_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Arbitrary:1,Word:2,Word (Smart):3"), "set_autowrap_mode", "get_autowrap_mode");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_all_occurrences"), "set_highlight_all_occurrences", "is_highlight_all_occurrences_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_current_line"), "set_highlight_current_line", "is_highlight_current_line_enabled");
@@ -7222,10 +7246,26 @@ void TextEdit::_update_wrap_at_column(bool p_force) {
 	if ((wrap_at_column != new_wrap_at) || p_force) {
 		wrap_at_column = new_wrap_at;
 		if (line_wrapping_mode) {
+			BitField<TextServer::LineBreakFlag> autowrap_flags = TextServer::BREAK_MANDATORY;
+			switch (autowrap_mode) {
+				case TextServer::AUTOWRAP_WORD_SMART:
+					autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_ADAPTIVE | TextServer::BREAK_MANDATORY;
+					break;
+				case TextServer::AUTOWRAP_WORD:
+					autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY;
+					break;
+				case TextServer::AUTOWRAP_ARBITRARY:
+					autowrap_flags = TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_MANDATORY;
+					break;
+				case TextServer::AUTOWRAP_OFF:
+					break;
+			}
+			text.set_brk_flags(autowrap_flags);
 			text.set_width(wrap_at_column);
 		} else {
 			text.set_width(-1);
 		}
+
 		text.invalidate_all_lines();
 		_update_placeholder();
 	}
@@ -7293,7 +7333,7 @@ void TextEdit::_update_scrollbars() {
 		v_scroll->hide();
 	}
 
-	if (total_width > visible_width && get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
+	if (total_width > visible_width) {
 		h_scroll->show();
 		h_scroll->set_max(total_width);
 		h_scroll->set_page(visible_width);
