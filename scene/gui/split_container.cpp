@@ -55,6 +55,7 @@ void SplitContainerDragger::gui_input(const Ref<InputEvent> &p_event) {
 				} else {
 					drag_from = get_transform().xform(mb->get_position()).x;
 				}
+				queue_redraw();
 			} else {
 				dragging = false;
 				queue_redraw();
@@ -95,28 +96,61 @@ void SplitContainerDragger::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_MOUSE_ENTER: {
 			mouse_inside = true;
-			SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
-			if (sc->get_theme_constant(SNAME("autohide"))) {
-				queue_redraw();
-			}
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_MOUSE_EXIT: {
 			mouse_inside = false;
-			SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
-			if (sc->get_theme_constant(SNAME("autohide"))) {
-				queue_redraw();
-			}
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_DRAW: {
 			SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
-			if (!dragging && !mouse_inside && sc->get_theme_constant(SNAME("autohide"))) {
+
+			Ref<StyleBox> bg_sb = NULL;
+			if (dragging) {
+				bg_sb = sc->_get_bar_stylebox_pressed();
+			} else if (mouse_inside) {
+				bg_sb = sc->_get_bar_stylebox_hover();
+			} else {
+				bg_sb = sc->_get_bar_stylebox();
+			}
+
+			int inner_bar_thickness = sc->theme_cache.bar_thickness;
+			if (inner_bar_thickness == -1) {
+				inner_bar_thickness = sc->theme_cache.separation;
+			}
+			Rect2 inner_bar_rect = Rect2();
+			if (sc->vertical) {
+				inner_bar_rect = Rect2(Point2(0, int((get_size().height - inner_bar_thickness) / 2)), Size2(get_size().width, inner_bar_thickness));
+			} else {
+				inner_bar_rect = Rect2(Point2(int((get_size().width - inner_bar_thickness) / 2), 0), Size2(inner_bar_thickness, get_size().height));
+			}
+
+			draw_style_box(bg_sb, inner_bar_rect);
+
+			if (dragging) {
+				if (sc->get_theme_constant(SNAME("grabber_hidden_pressed"))) {
+					return;
+				}
+			} else if (mouse_inside) {
+				if (sc->get_theme_constant(SNAME("grabber_hidden_hover"))) {
+					return;
+				}
+			} else if (sc->get_theme_constant(SNAME("grabber_hidden"))) {
 				return;
 			}
 
-			Ref<Texture2D> tex = sc->_get_grabber_icon();
-			draw_texture(tex, (get_size() - tex->get_size()) / 2);
+			Ref<Texture2D> tex = NULL;
+			if (dragging) {
+				tex = sc->_get_grabber_icon_pressed();
+			} else if (mouse_inside) {
+				tex = sc->_get_grabber_icon_hover();
+			} else {
+				tex = sc->_get_grabber_icon();
+			}
+			Point2 tex_pos = (get_size() - tex->get_size()) / 2;
+			draw_texture(tex, Point2(int(tex_pos.x), int(tex_pos.y)));
 		} break;
 	}
 }
@@ -155,6 +189,66 @@ Ref<Texture2D> SplitContainer::_get_grabber_icon() const {
 	}
 }
 
+Ref<Texture2D> SplitContainer::_get_grabber_icon_hover() const {
+	if (is_fixed) {
+		return theme_cache.grabber_hover_icon;
+	} else {
+		if (vertical) {
+			return theme_cache.grabber_hover_icon_v;
+		} else {
+			return theme_cache.grabber_hover_icon_h;
+		}
+	}
+}
+
+Ref<Texture2D> SplitContainer::_get_grabber_icon_pressed() const {
+	if (is_fixed) {
+		return theme_cache.grabber_pressed_icon;
+	} else {
+		if (vertical) {
+			return theme_cache.grabber_pressed_icon_v;
+		} else {
+			return theme_cache.grabber_pressed_icon_h;
+		}
+	}
+}
+
+Ref<StyleBox> SplitContainer::_get_bar_stylebox() const {
+	if (is_fixed) {
+		return theme_cache.bar_style;
+	} else {
+		if (vertical) {
+			return theme_cache.bar_style_v;
+		} else {
+			return theme_cache.bar_style_h;
+		}
+	}
+}
+
+Ref<StyleBox> SplitContainer::_get_bar_stylebox_hover() const {
+	if (is_fixed) {
+		return theme_cache.bar_hover_style;
+	} else {
+		if (vertical) {
+			return theme_cache.bar_hover_style_v;
+		} else {
+			return theme_cache.bar_hover_style_h;
+		}
+	}
+}
+
+Ref<StyleBox> SplitContainer::_get_bar_stylebox_pressed() const {
+	if (is_fixed) {
+		return theme_cache.bar_pressed_style;
+	} else {
+		if (vertical) {
+			return theme_cache.bar_pressed_style_v;
+		} else {
+			return theme_cache.bar_pressed_style_h;
+		}
+	}
+}
+
 void SplitContainer::_compute_middle_sep(bool p_clamp) {
 	Control *first = _getch(0);
 	Control *second = _getch(1);
@@ -171,7 +265,7 @@ void SplitContainer::_compute_middle_sep(bool p_clamp) {
 
 	// Determine the separation between items.
 	Ref<Texture2D> g = _get_grabber_icon();
-	int sep = (dragger_visibility != DRAGGER_HIDDEN_COLLAPSED) ? MAX(theme_cache.separation, vertical ? g->get_height() : g->get_width()) : 0;
+	int sep = (dragger_visibility != DRAGGER_HIDDEN_COLLAPSED) ? theme_cache.separation : 0;
 
 	// Compute the wished separation_point.
 	int wished_middle_sep = 0;
@@ -217,7 +311,7 @@ void SplitContainer::_resort() {
 
 	// Determine the separation between items.
 	Ref<Texture2D> g = _get_grabber_icon();
-	int sep = (dragger_visibility != DRAGGER_HIDDEN_COLLAPSED) ? MAX(theme_cache.separation, vertical ? g->get_height() : g->get_width()) : 0;
+	int sep = (dragger_visibility != DRAGGER_HIDDEN_COLLAPSED) ? theme_cache.separation : 0;
 
 	// Move the children, including the dragger.
 	if (vertical) {
@@ -257,7 +351,7 @@ void SplitContainer::_resort() {
 Size2 SplitContainer::get_minimum_size() const {
 	Size2i minimum;
 	Ref<Texture2D> g = _get_grabber_icon();
-	int sep = (dragger_visibility != DRAGGER_HIDDEN_COLLAPSED) ? MAX(theme_cache.separation, vertical ? g->get_height() : g->get_width()) : 0;
+	int sep = (dragger_visibility != DRAGGER_HIDDEN_COLLAPSED) ? theme_cache.separation : 0;
 
 	for (int i = 0; i < 2; i++) {
 		if (!_getch(i)) {
@@ -297,10 +391,28 @@ void SplitContainer::_update_theme_item_cache() {
 
 	theme_cache.separation = get_theme_constant(SNAME("separation"));
 	theme_cache.minimum_grab_thickness = get_theme_constant(SNAME("minimum_grab_thickness"));
-	theme_cache.autohide = get_theme_constant(SNAME("autohide"));
+	theme_cache.bar_thickness = get_theme_constant(SNAME("bar_thickness"));
+	theme_cache.grabber_hidden = get_theme_constant(SNAME("hide_grabber"));
+	theme_cache.grabber_hidden_hover = get_theme_constant(SNAME("hide_grabber_hover"));
+	theme_cache.grabber_hidden_pressed = get_theme_constant(SNAME("hide_grabber_pressed"));
 	theme_cache.grabber_icon = get_theme_icon(SNAME("grabber"));
 	theme_cache.grabber_icon_h = get_theme_icon(SNAME("h_grabber"));
 	theme_cache.grabber_icon_v = get_theme_icon(SNAME("v_grabber"));
+	theme_cache.grabber_hover_icon = get_theme_icon(SNAME("grabber_hover"));
+	theme_cache.grabber_hover_icon_h = get_theme_icon(SNAME("h_grabber_hover"));
+	theme_cache.grabber_hover_icon_v = get_theme_icon(SNAME("v_grabber_hover"));
+	theme_cache.grabber_pressed_icon = get_theme_icon(SNAME("grabber_pressed"));
+	theme_cache.grabber_pressed_icon_h = get_theme_icon(SNAME("h_grabber_pressed"));
+	theme_cache.grabber_pressed_icon_v = get_theme_icon(SNAME("v_grabber_pressed"));
+	theme_cache.bar_style = get_theme_stylebox(SNAME("bar"));
+	theme_cache.bar_style_h = get_theme_stylebox(SNAME("h_bar"));
+	theme_cache.bar_style_v = get_theme_stylebox(SNAME("v_bar"));
+	theme_cache.bar_hover_style = get_theme_stylebox(SNAME("bar_hover"));
+	theme_cache.bar_hover_style_h = get_theme_stylebox(SNAME("h_bar_hover"));
+	theme_cache.bar_hover_style_v = get_theme_stylebox(SNAME("v_bar_hover"));
+	theme_cache.bar_pressed_style = get_theme_stylebox(SNAME("bar_pressed"));
+	theme_cache.bar_pressed_style_h = get_theme_stylebox(SNAME("h_bar_pressed"));
+	theme_cache.bar_pressed_style_v = get_theme_stylebox(SNAME("v_bar_pressed"));
 }
 
 void SplitContainer::_notification(int p_what) {
