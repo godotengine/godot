@@ -117,7 +117,7 @@
 		<member name="debug_path_custom_color" type="Color" setter="set_debug_path_custom_color" getter="get_debug_path_custom_color" default="Color(1, 1, 1, 1)">
 			If [member debug_use_custom] is [code]true[/code] uses this color for this agent instead of global color.
 		</member>
-		<member name="debug_path_custom_line_width" type="float" setter="set_debug_path_custom_line_width" getter="get_debug_path_custom_line_width" default="1.0">
+		<member name="debug_path_custom_line_width" type="float" setter="set_debug_path_custom_line_width" getter="get_debug_path_custom_line_width" default="-1.0">
 			If [member debug_use_custom] is [code]true[/code] uses this line width for rendering paths for this agent instead of global line width.
 		</member>
 		<member name="debug_path_custom_point_size" type="float" setter="set_debug_path_custom_point_size" getter="get_debug_path_custom_point_size" default="4.0">
