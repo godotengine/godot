@@ -372,6 +372,15 @@ void MobileVRInterface::uninitialize() {
 	};
 };
 
+Dictionary MobileVRInterface::get_system_info() {
+	Dictionary dict;
+
+	dict[SNAME("XRRuntimeName")] = String("Godot mobile VR interface");
+	dict[SNAME("XRRuntimeVersion")] = String("");
+
+	return dict;
+}
+
 bool MobileVRInterface::supports_play_area_mode(XRInterface::PlayAreaMode p_mode) {
 	// This interface has no positional tracking so fix this to 3DOF
 	return p_mode == XR_PLAY_AREA_3DOF;

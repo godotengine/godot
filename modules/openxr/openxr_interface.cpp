@@ -583,6 +583,17 @@ void OpenXRInterface::uninitialize() {
 	initialized = false;
 }
 
+Dictionary OpenXRInterface::get_system_info() {
+	Dictionary dict;
+
+	if (openxr_api) {
+		dict[SNAME("XRRuntimeName")] = openxr_api->get_runtime_name();
+		dict[SNAME("XRRuntimeVersion")] = openxr_api->get_runtime_version();
+	}
+
+	return dict;
+}
+
 bool OpenXRInterface::supports_play_area_mode(XRInterface::PlayAreaMode p_mode) {
 	return false;
 }

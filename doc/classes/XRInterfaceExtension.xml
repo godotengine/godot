@@ -98,6 +98,12 @@
 				Returns a [PackedStringArray] with tracker names configured by this interface. Note that user configuration can override this list.
 			</description>
 		</method>
+		<method name="_get_system_info" qualifiers="virtual const">
+			<return type="Dictionary" />
+			<description>
+				Returns a [Dictionary] with system informationr elated to this interface.
+			</description>
+		</method>
 		<method name="_get_tracking_status" qualifiers="virtual const">
 			<return type="int" enum="XRInterface.TrackingStatus" />
 			<description>
