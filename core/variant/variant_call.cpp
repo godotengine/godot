@@ -1744,6 +1744,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2, length, sarray(), varray());
 	bind_method(Vector2, length_squared, sarray(), varray());
 	bind_method(Vector2, limit_length, sarray("length"), varray(1.0));
+	bind_method(Vector2, normalize_and_get_length, sarray(), varray());
 	bind_method(Vector2, normalized, sarray(), varray());
 	bind_method(Vector2, is_normalized, sarray(), varray());
 	bind_method(Vector2, is_equal_approx, sarray("to"), varray());
@@ -1837,6 +1838,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3, length, sarray(), varray());
 	bind_method(Vector3, length_squared, sarray(), varray());
 	bind_method(Vector3, limit_length, sarray("length"), varray(1.0));
+	bind_method(Vector3, normalize_and_get_length, sarray(), varray());
 	bind_method(Vector3, normalized, sarray(), varray());
 	bind_method(Vector3, is_normalized, sarray(), varray());
 	bind_method(Vector3, is_equal_approx, sarray("to"), varray());

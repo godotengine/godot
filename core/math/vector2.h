@@ -78,6 +78,7 @@ struct _NO_DISCARD_ Vector2 {
 	}
 
 	void normalize();
+	_FORCE_INLINE_ real_t normalize_and_get_length();
 	Vector2 normalized() const;
 	bool is_normalized() const;
 
@@ -239,6 +240,40 @@ _FORCE_INLINE_ bool Vector2::operator==(const Vector2 &p_vec2) const {
 
 _FORCE_INLINE_ bool Vector2::operator!=(const Vector2 &p_vec2) const {
 	return x != p_vec2.x || y != p_vec2.y;
+}
+
+real_t Vector2::normalize_and_get_length() {
+	real_t lengthsq = length_squared();
+
+	// Long enough to guarantee unit length result.
+	if (lengthsq >= (real_t)CMP_EPSILON2) {
+		real_t length = Math::sqrt(lengthsq);
+		x /= length;
+		y /= length;
+		return length;
+	}
+	// Long enough to guarantee direction, but not unit length result.
+	constexpr real_t epsilon = NORMALIZE_DIRECTION_EPSILON;
+	if (lengthsq >= epsilon) {
+		// Boost length prior to normalize
+		// to guarantee unit length.
+		constexpr real_t mult = (1.0 / NORMALIZE_DIRECTION_EPSILON_SQRT);
+		x *= mult;
+		y *= mult;
+
+		lengthsq = length_squared();
+
+		real_t length = Math::sqrt(lengthsq);
+		x /= length;
+		y /= length;
+
+		// The length has been boosted so we need to un-boost to get the original length.
+		return length * NORMALIZE_DIRECTION_EPSILON_SQRT;
+	}
+	// Not long enough to guarantee direction,
+	// failed.
+
+	return 0;
 }
 
 Vector2 Vector2::lerp(const Vector2 &p_to, const real_t p_weight) const {

@@ -252,6 +252,13 @@
 				Returns a new vector moved toward [param to] by the fixed [param delta] amount. Will not go past the final value.
 			</description>
 		</method>
+		<method name="normalize_and_get_length">
+			<return type="float" />
+			<description>
+				Scales the vector to unit length, and returns the original length.
+				If the original vector was too small to normalize, the length returned is [code]zero[/code].
+			</description>
+		</method>
 		<method name="normalized" qualifiers="const">
 			<return type="Vector3" />
 			<description>
