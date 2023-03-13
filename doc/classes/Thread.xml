@@ -16,13 +16,13 @@
 		<method name="get_id" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the current [Thread]'s ID, uniquely identifying it among all threads. If the [Thread] is not running this returns an empty string.
+				Returns the current [Thread]'s ID, uniquely identifying it among all threads. If the [Thread] has not started running or if [method wait_to_finish] has been called, this returns an empty string.
 			</description>
 		</method>
 		<method name="is_alive" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this [Thread] is currently running. This is useful for determining if [method wait_to_finish] can be called without blocking the calling thread.
+				Returns [code]true[/code] if this [Thread] is currently running the provided function. This is useful for determining if [method wait_to_finish] can be called without blocking the calling thread.
 				To check if a [Thread] is joinable, use [method is_started].
 			</description>
 		</method>

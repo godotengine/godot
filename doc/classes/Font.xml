@@ -271,6 +271,17 @@
 			<description>
 				Returns list of supported [url=https://docs.microsoft.com/en-us/typography/opentype/spec/dvaraxisreg]variation coordinates[/url], each coordinate is returned as [code]tag: Vector3i(min_value,max_value,default_value)[/code].
 				Font variations allow for continuous change of glyph characteristics along some given design axis, such as weight, width or slant.
+				To print available variation axes of a variable font:
+				[codeblock]
+				var fv = FontVariation.new()
+				fv.set_base_font = load("res://RobotoFlex.ttf")
+				var variation_list = fv.get_supported_variation_list()
+				for tag in variation_list:
+				    var name = TextServerManager.get_primary_interface().tag_to_name(tag)
+				    var values = variation_list[tag]
+				    print("variation axis: %s (%d)\n\tmin, max, default: %s" % [name, tag, values])
+				[/codeblock]
+				[b]Note:[/b] To set and get variation coordinates of a [FontVariation], use [member FontVariation.variation_opentype].
 			</description>
 		</method>
 		<method name="get_underline_position" qualifiers="const">

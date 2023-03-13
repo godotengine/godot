@@ -1052,6 +1052,7 @@ void GDExtensionAPIDump::generate_extension_json_file(const String &p_path) {
 
 	String text = json->stringify(api, "\t", false) + "\n";
 	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_MSG(fa.is_null(), vformat("Cannot open file '%s' for writing.", p_path));
 	fa->store_string(text);
 }
 

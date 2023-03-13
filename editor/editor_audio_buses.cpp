@@ -257,7 +257,14 @@ void EditorAudioBus::update_bus() {
 }
 
 void EditorAudioBus::_name_changed(const String &p_new_name) {
+	if (updating_bus) {
+		return;
+	}
+	updating_bus = true;
+	track_name->release_focus();
+
 	if (p_new_name == AudioServer::get_singleton()->get_bus_name(get_index())) {
+		updating_bus = false;
 		return;
 	}
 
@@ -280,12 +287,15 @@ void EditorAudioBus::_name_changed(const String &p_new_name) {
 		attempts++;
 		attempt = p_new_name + " " + itos(attempts);
 	}
-	updating_bus = true;
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 
 	StringName current = AudioServer::get_singleton()->get_bus_name(get_index());
+
 	ur->create_action(TTR("Rename Audio Bus"));
+	ur->add_do_method(buses, "_set_renaming_buses", true);
+	ur->add_undo_method(buses, "_set_renaming_buses", true);
+
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_name", get_index(), attempt);
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_name", get_index(), current);
 
@@ -301,11 +311,12 @@ void EditorAudioBus::_name_changed(const String &p_new_name) {
 
 	ur->add_do_method(buses, "_update_sends");
 	ur->add_undo_method(buses, "_update_sends");
+
+	ur->add_do_method(buses, "_set_renaming_buses", false);
+	ur->add_undo_method(buses, "_set_renaming_buses", false);
 	ur->commit_action();
 
 	updating_bus = false;
-
-	track_name->release_focus();
 }
 
 void EditorAudioBus::_volume_changed(float p_normalized) {
@@ -995,12 +1006,31 @@ void EditorAudioBusDrop::_bind_methods() {
 EditorAudioBusDrop::EditorAudioBusDrop() {
 }
 
+void EditorAudioBuses::_set_renaming_buses(bool p_renaming) {
+	renaming_buses = p_renaming;
+}
+
 void EditorAudioBuses::_update_buses() {
-	while (bus_hb->get_child_count() > 0) {
-		memdelete(bus_hb->get_child(0));
+	if (renaming_buses) {
+		// This case will be handled more gracefully, no need to trigger a full rebuild.
+		// This is possibly a mistake in the AudioServer, which fires bus_layout_changed
+		// on a rename. This may not be intended, but no way to tell at the moment.
+		return;
 	}
 
-	drop_end = nullptr;
+	for (int i = bus_hb->get_child_count() - 1; i >= 0; i--) {
+		EditorAudioBus *audio_bus = Object::cast_to<EditorAudioBus>(bus_hb->get_child(i));
+		if (audio_bus) {
+			bus_hb->remove_child(audio_bus);
+			audio_bus->queue_free();
+		}
+	}
+
+	if (drop_end) {
+		bus_hb->remove_child(drop_end);
+		drop_end->queue_free();
+		drop_end = nullptr;
+	}
 
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 		bool is_master = (i == 0);
@@ -1033,6 +1063,7 @@ void EditorAudioBuses::_notification(int p_what) {
 
 		case NOTIFICATION_DRAG_END: {
 			if (drop_end) {
+				bus_hb->remove_child(drop_end);
 				drop_end->queue_free();
 				drop_end = nullptr;
 			}
@@ -1259,6 +1290,7 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 }
 
 void EditorAudioBuses::_bind_methods() {
+	ClassDB::bind_method("_set_renaming_buses", &EditorAudioBuses::_set_renaming_buses);
 	ClassDB::bind_method("_update_buses", &EditorAudioBuses::_update_buses);
 	ClassDB::bind_method("_update_bus", &EditorAudioBuses::_update_bus);
 	ClassDB::bind_method("_update_sends", &EditorAudioBuses::_update_sends);
