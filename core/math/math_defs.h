@@ -45,6 +45,9 @@ inline constexpr double PI = 3.1415926535897932384626433833;
 inline constexpr double E = 2.7182818284590452353602874714;
 inline constexpr double INF = std::numeric_limits<double>::infinity();
 inline constexpr double NaN = std::numeric_limits<double>::quiet_NaN();
+
+inline constexpr float NORMALIZE_32_SAFE_THRESHOLD = 5e-5f;
+inline constexpr float NORMALIZE_32_RESCUE_THRESHOLD = 1e-7f;
 } // namespace Math
 
 #define CMP_EPSILON 0.00001

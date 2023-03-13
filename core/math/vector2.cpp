@@ -69,6 +69,68 @@ bool Vector2::is_normalized() const {
 	return Math::is_equal_approx(length_squared(), 1, (real_t)UNIT_EPSILON);
 }
 
+real_t Vector2::safe_normalize() {
+	// Don't allow Inf / NaN to propagate.
+	if (!is_finite()) {
+		x = y = 0;
+		return 0;
+	}
+
+	real_t lengthsq = length_squared();
+
+#ifdef REAL_T_IS_DOUBLE
+	// Threshold where standard normalization is safe & accurate in float64
+	// (should be the same as the 32 bit lower threshold, in order to preserve
+	// behavior between the two builds).
+	if (lengthsq >= (real_t)Math::NORMALIZE_32_RESCUE_THRESHOLD) {
+		real_t length = Math::sqrt(lengthsq);
+		*this /= length;
+		return length;
+	}
+#else
+
+	// Threshold where standard normalization is safe & accurate in float32
+	if (lengthsq >= (real_t)Math::NORMALIZE_32_SAFE_THRESHOLD) {
+		real_t length = Math::sqrt(lengthsq);
+		*this /= length;
+		return length;
+	}
+
+	// Rescue branch: try to preserve tiny direction.
+	if (lengthsq >= (real_t)Math::NORMALIZE_32_RESCUE_THRESHOLD) {
+		// Estimate current (tiny) length once.
+		real_t tiny_len = Math::sqrt(lengthsq);
+
+		// Scale up toward unit length — avoid huge multipliers.
+		// We clamp the scale so boosted length stays roughly in [0.1, 10] range
+		// where float32 has best relative precision.
+		real_t target_scale = 1 / MAX(tiny_len, (real_t)1e-5f); // cap extreme scaling.
+
+		*this *= target_scale;
+
+		// Recompute squared length after scaling (necessary because of FP rounding).
+		real_t boosted_sq = length_squared();
+
+		if (boosted_sq > 0) { // should always be true unless catastrophic underflow.
+			real_t boosted_len = Math::sqrt(boosted_sq);
+
+			// Final normalization.
+			*this /= boosted_len;
+
+			// Recover approximate original length.
+			real_t original_len = boosted_len / target_scale;
+
+			return original_len;
+		}
+	}
+#endif
+
+	// Give up, length not enough to give a reasonable result.
+	// Zero vector is cleaner than leaving non-zero result.
+	x = y = 0;
+	return 0;
+}
+
 real_t Vector2::distance_to(const Vector2 &p_vector2) const {
 	return Math::sqrt((x - p_vector2.x) * (x - p_vector2.x) + (y - p_vector2.y) * (y - p_vector2.y));
 }
