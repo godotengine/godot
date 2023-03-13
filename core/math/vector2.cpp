@@ -60,8 +60,11 @@ void Vector2::normalize() {
 
 Vector2 Vector2::normalized() const {
 	Vector2 v = *this;
-	v.normalize();
-	return v;
+
+	if (v.normalize_and_get_length()) {
+		return v;
+	}
+	return Vector2();
 }
 
 bool Vector2::is_normalized() const {
