@@ -83,6 +83,11 @@ public:
 			real_t right_tangent = 0,
 			TangentMode left_mode = TANGENT_FREE,
 			TangentMode right_mode = TANGENT_FREE);
+	int add_point_no_update(Vector2 p_position,
+			real_t left_tangent = 0,
+			real_t right_tangent = 0,
+			TangentMode left_mode = TANGENT_FREE,
+			TangentMode right_mode = TANGENT_FREE);
 	void remove_point(int p_index);
 	void clear_points();
 
@@ -99,6 +104,8 @@ public:
 
 	real_t get_max_value() const { return _max_value; }
 	void set_max_value(real_t p_max);
+
+	real_t get_range() const { return _max_value - _min_value; }
 
 	real_t sample(real_t p_offset) const;
 	real_t sample_local_nocheck(int p_index, real_t p_local_offset) const;
