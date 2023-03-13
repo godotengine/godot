@@ -86,7 +86,7 @@
 		func _process(delta):
 		    if !connected:
 		        # Try to contact server
-		        udp.put_packet("The answer is... 42!".to_utf8())
+		        udp.put_packet("The answer is... 42!".to_utf8_buffer())
 		    if udp.get_available_packet_count() &gt; 0:
 		        print("Connected: %s" % udp.get_packet().get_string_from_utf8())
 		        connected = true
@@ -110,7 +110,7 @@
 		        if (!_connected)
 		        {
 		            // Try to contact server
-		            _udp.PutPacket("The Answer Is..42!".ToUtf8());
+		            _udp.PutPacket("The Answer Is..42!".ToUtf8Buffer());
 		        }
 		        if (_udp.GetAvailablePacketCount() &gt; 0)
 		        {
