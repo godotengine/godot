@@ -526,17 +526,19 @@ int CSGBrushOperation::MeshMerge::_create_bvh(FaceBVH *facebvhptr, FaceBVH **fac
 	return index;
 }
 
-void CSGBrushOperation::MeshMerge::_add_distance(List<real_t> &r_intersectionsA, List<real_t> &r_intersectionsB, bool p_from_B, real_t p_distance) const {
-	List<real_t> &intersections = p_from_B ? r_intersectionsB : r_intersectionsA;
+void CSGBrushOperation::MeshMerge::_add_distance(List<IntersectionDistance> &r_intersectionsA, List<IntersectionDistance> &r_intersectionsB, bool p_from_B, real_t p_distance_squared, bool p_is_conormal) const {
+	List<IntersectionDistance> &intersections = p_from_B ? r_intersectionsB : r_intersectionsA;
 
 	// Check if distance exists.
-	for (const real_t E : intersections) {
-		if (Math::is_equal_approx(E, p_distance)) {
+	for (const IntersectionDistance E : intersections) {
+		if (E.is_conormal == p_is_conormal && Math::is_equal_approx(E.distance_squared, p_distance_squared)) {
 			return;
 		}
 	}
-
-	intersections.push_back(p_distance);
+	IntersectionDistance IntersectionDistance;
+	IntersectionDistance.is_conormal = p_is_conormal;
+	IntersectionDistance.distance_squared = p_distance_squared;
+	intersections.push_back(IntersectionDistance);
 }
 
 bool CSGBrushOperation::MeshMerge::_bvh_inside(FaceBVH *facebvhptr, int p_max_depth, int p_bvh_first, int p_face_idx) const {
@@ -561,8 +563,11 @@ bool CSGBrushOperation::MeshMerge::_bvh_inside(FaceBVH *facebvhptr, int p_max_de
 		VISITED_BIT_MASK = ~NODE_IDX_MASK
 	};
 
-	List<real_t> intersectionsA;
-	List<real_t> intersectionsB;
+	List<IntersectionDistance> intersectionsA;
+	List<IntersectionDistance> intersectionsB;
+
+	Intersection closest_intersection;
+	closest_intersection.found = false;
 
 	int level = 0;
 	int pos = p_bvh_first;
@@ -587,17 +592,61 @@ bool CSGBrushOperation::MeshMerge::_bvh_inside(FaceBVH *facebvhptr, int p_max_de
 							};
 							Vector3 current_normal = Plane(current_points[0], current_points[1], current_points[2]).normal;
 							Vector3 intersection_point;
-
 							// Check if faces are co-planar.
 							if (current_normal.is_equal_approx(face_normal) &&
 									is_point_in_triangle(face_center, current_points)) {
 								// Only add an intersection if not a B face.
 								if (!face.from_b) {
-									_add_distance(intersectionsA, intersectionsB, current_face.from_b, 0);
+									_add_distance(intersectionsA, intersectionsB, current_face.from_b, 0, true);
 								}
 							} else if (ray_intersects_triangle(face_center, face_normal, current_points, CMP_EPSILON, intersection_point)) {
-								real_t distance = face_center.distance_to(intersection_point);
-								_add_distance(intersectionsA, intersectionsB, current_face.from_b, distance);
+								real_t distance_squared = face_center.distance_squared_to(intersection_point);
+								real_t inner = current_normal.dot(face_normal);
+								// If the faces are perpendicular, ignore this face.
+								// The triangles on the side should be intersected and result in the correct behavior.
+								if (!Math::is_zero_approx(inner)) {
+									_add_distance(intersectionsA, intersectionsB, current_face.from_b, distance_squared, inner > 0.0f);
+								}
+							}
+
+							if (face.from_b != current_face.from_b) {
+								if (current_normal.is_equal_approx(face_normal) &&
+										is_point_in_triangle(face_center, current_points)) {
+									// Only add an intersection if not a B face.
+									if (!face.from_b) {
+										closest_intersection.found = true;
+										closest_intersection.conormal = 1.0f;
+										closest_intersection.distance_squared = 0.0f;
+										closest_intersection.origin_angle = -FLT_MAX;
+									}
+								} else if (ray_intersects_triangle(face_center, face_normal, current_points, CMP_EPSILON, intersection_point)) {
+									Intersection potential_intersection;
+									potential_intersection.found = true;
+									potential_intersection.conormal = face_normal.dot(current_normal);
+									potential_intersection.distance_squared = face_center.distance_squared_to(intersection_point);
+									potential_intersection.origin_angle = Math::abs(potential_intersection.conormal);
+									real_t intersection_dist_from_face = face_normal.dot(intersection_point - face_center);
+									for (int i = 0; i < 3; i++) {
+										real_t point_dist_from_face = face_normal.dot(current_points[i] - face_center);
+										if (!Math::is_equal_approx(point_dist_from_face, intersection_dist_from_face) &&
+												point_dist_from_face < intersection_dist_from_face) {
+											potential_intersection.origin_angle = -potential_intersection.origin_angle;
+											break;
+										}
+									}
+									if (potential_intersection.conormal != 0.0f) {
+										if (!closest_intersection.found) {
+											closest_intersection = potential_intersection;
+										} else if (!Math::is_equal_approx(potential_intersection.distance_squared, closest_intersection.distance_squared) &&
+												potential_intersection.distance_squared < closest_intersection.distance_squared) {
+											closest_intersection = potential_intersection;
+										} else if (Math::is_equal_approx(potential_intersection.distance_squared, closest_intersection.distance_squared)) {
+											if (potential_intersection.origin_angle < closest_intersection.origin_angle) {
+												closest_intersection = potential_intersection;
+											}
+										}
+									}
+								}
 							}
 						}
 
@@ -652,8 +701,11 @@ bool CSGBrushOperation::MeshMerge::_bvh_inside(FaceBVH *facebvhptr, int p_max_de
 		}
 	}
 
-	// Inside if face normal intersects other faces an odd number of times.
-	return (intersectionsA.size() + intersectionsB.size()) & 1;
+	if (!closest_intersection.found) {
+		return false;
+	} else {
+		return closest_intersection.conormal > 0.0f;
+	}
 }
 
 void CSGBrushOperation::MeshMerge::mark_inside_faces() {
