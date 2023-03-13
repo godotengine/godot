@@ -144,7 +144,7 @@ def configure(env: "Environment"):
             env["CC"] = basecmd + "cc"
             env["CXX"] = basecmd + "c++"
         else:
-            # there aren't any ccache wrappers available for OS X cross-compile,
+            # there aren't any ccache wrappers available for macOS cross-compile,
             # to enable caching we need to prepend the path to the ccache binary
             env["CC"] = ccache_path + " " + basecmd + "cc"
             env["CXX"] = ccache_path + " " + basecmd + "c++"

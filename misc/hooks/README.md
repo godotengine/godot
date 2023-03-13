@@ -20,7 +20,7 @@ contributors to make sure they comply with our requirements.
 Copy all the files from this folder into your `.git/hooks` folder, and make
 sure the hooks and helper scripts are executable.
 
-#### Linux/MacOS
+#### Linux/macOS
 
 The hooks rely on bash scripts and tools which should be in the system `PATH`,
 so they should work out of the box on Linux/macOS.

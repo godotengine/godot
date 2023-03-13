@@ -7456,7 +7456,7 @@ EditorNode::EditorNode() {
 
 #ifndef ANDROID_ENABLED
 	if (OS::get_singleton()->get_data_path() == OS::get_singleton()->get_config_path()) {
-		// Configuration and data folders are located in the same place (Windows/MacOS).
+		// Configuration and data folders are located in the same place (Windows/macOS).
 		settings_menu->add_item(TTR("Open Editor Data/Settings Folder"), SETTINGS_EDITOR_DATA_FOLDER);
 	} else {
 		// Separate configuration and data folders (Linux).
