@@ -473,7 +473,10 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 
 	//erase navigation
 	for (Map<IndexKey, Octant::NavMesh>::Element *E = g.navmesh_ids.front(); E; E = E->next()) {
-		NavigationServer::get_singleton()->free(E->get().region);
+		if (E->get().region.is_valid()) {
+			NavigationServer::get_singleton()->free(E->get().region);
+			E->get().region = RID();
+		}
 		if (E->get().navmesh_debug_instance.is_valid()) {
 			VS::get_singleton()->free(E->get().navmesh_debug_instance);
 		}
