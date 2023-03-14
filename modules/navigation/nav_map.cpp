@@ -506,6 +506,7 @@ void NavMap::set_agent_as_controlled(RvoAgent *agent) {
 	if (!exist) {
 		ERR_FAIL_COND(!has_agent(agent));
 		controlled_agents.push_back(agent);
+		agents_dirty = true;
 	}
 }
 
@@ -669,9 +670,9 @@ void NavMap::sync() {
 	if (agents_dirty) {
 		// cannot use LocalVector here as RVO library expects std::vector to build KdTree
 		std::vector<RVO::Agent *> raw_agents;
-		raw_agents.reserve(agents.size());
-		for (size_t i(0); i < agents.size(); i++) {
-			raw_agents.push_back(agents[i]->get_agent());
+		raw_agents.reserve(controlled_agents.size());
+		for (size_t i(0); i < controlled_agents.size(); i++) {
+			raw_agents.push_back(controlled_agents[i]->get_agent());
 		}
 		rvo.buildAgentTree(raw_agents);
 	}
