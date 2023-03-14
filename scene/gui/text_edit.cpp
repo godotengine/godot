@@ -1263,7 +1263,7 @@ void TextEdit::_notification(int p_what) {
 							if (draw_tabs && ((glyphs[j].flags & TextServer::GRAPHEME_IS_TAB) == TextServer::GRAPHEME_IS_TAB)) {
 								int yofs = (text_height - tab_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
 								tab_icon->draw(ci, Point2(char_pos, ofs_y + yofs), gl_color);
-							} else if (draw_spaces && ((glyphs[j].flags & TextServer::GRAPHEME_IS_SPACE) == TextServer::GRAPHEME_IS_SPACE)) {
+							} else if (draw_spaces && ((glyphs[j].flags & TextServer::GRAPHEME_IS_SPACE) == TextServer::GRAPHEME_IS_SPACE) && ((glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL)) {
 								int yofs = (text_height - space_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
 								int xofs = (glyphs[j].advance * glyphs[j].repeat - space_icon->get_width()) / 2;
 								space_icon->draw(ci, Point2(char_pos + xofs, ofs_y + yofs), gl_color);

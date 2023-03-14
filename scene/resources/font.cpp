@@ -1458,6 +1458,9 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 						}
 						if (ch[i] == 1 && first_ol_ch == -1) {
 							first_ol_ch = i;
+							if (outline == 0) {
+								outline = 1;
+							}
 						}
 						if (ch[i] == 2 && first_cm_ch == -1) {
 							first_cm_ch = i;
@@ -1747,6 +1750,9 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 					}
 					if (ch[i] == 1 && first_ol_ch == -1) {
 						first_ol_ch = i;
+						if (outline == 0) {
+							outline = 1;
+						}
 					}
 					if (ch[i] == 2 && first_cm_ch == -1) {
 						first_cm_ch = i;

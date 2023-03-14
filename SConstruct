@@ -645,7 +645,7 @@ if selected_platform in platform_list:
             print(
                 "Detected mingw version is not using posix threads. Only posix "
                 "version of mingw is supported. "
-                'Use "update-alternatives --config <platform>-w64-mingw32-[gcc|g++]" '
+                'Use "update-alternatives --config x86_64-w64-mingw32-g++" '
                 "to switch to posix threads."
             )
             Exit(255)
