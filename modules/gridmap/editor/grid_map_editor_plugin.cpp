@@ -913,7 +913,7 @@ void GridMapEditor::update_palette() {
 }
 
 void GridMapEditor::edit(GridMap *p_gridmap) {
-	if (node) {
+	if (node && node->is_connected("cell_size_changed", callable_mp(this, &GridMapEditor::_draw_grids))) {
 		node->disconnect("cell_size_changed", callable_mp(this, &GridMapEditor::_draw_grids));
 	}
 
