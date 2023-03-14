@@ -851,9 +851,6 @@ public:
 	void set_drag_and_drop_selection_enabled(const bool p_enabled);
 	bool is_drag_and_drop_selection_enabled() const;
 
-	void set_override_selected_font_color(bool p_override_selected_font_color);
-	bool is_overriding_selected_font_color() const;
-
 	void set_selection_mode(SelectionMode p_mode, int p_line = -1, int p_column = -1, int p_caret = 0);
 	SelectionMode get_selection_mode() const;
 
