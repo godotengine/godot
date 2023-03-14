@@ -37,6 +37,28 @@
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering_server.h"
 
+// OpenXR requires us to submit sRGB textures so that it recognises the content
+// as being in sRGB color space. We do fall back on "normal" textures but this
+// will likely result in incorrect colors as OpenXR will double the sRGB conversion.
+// All major XR runtimes support sRGB textures.
+
+// In OpenGL output of the fragment shader is assumed to be in the color space of
+// the developers choice, however a linear to sRGB HW conversion can be enabled
+// through enabling GL_FRAMEBUFFER_SRGB if an sRGB color attachment is used.
+// This is a global setting.
+// See: https://www.khronos.org/opengl/wiki/Framebuffer
+
+// In OpenGLES output of the fragment shader is assumed to be in linear color space
+// and will be converted by default to sRGB if an sRGB color attachment is used.
+// The extension GL_EXT_sRGB_write_control was introduced to enable turning this
+// feature off.
+// See: https://registry.khronos.org/OpenGL/extensions/EXT/EXT_sRGB_write_control.txt
+
+// On OpenGLES this is not defined in our standard headers..
+#ifndef GL_FRAMEBUFFER_SRGB
+#define GL_FRAMEBUFFER_SRGB 0x8DB9
+#endif
+
 HashMap<String, bool *> OpenXROpenGLExtension::get_requested_extensions() {
 	HashMap<String, bool *> request_extensions;
 
@@ -157,8 +179,8 @@ void *OpenXROpenGLExtension::set_session_create_and_get_next_pointer(void *p_nex
 }
 
 void OpenXROpenGLExtension::get_usable_swapchain_formats(Vector<int64_t> &p_usable_swap_chains) {
-	p_usable_swap_chains.push_back(GL_RGBA8);
 	p_usable_swap_chains.push_back(GL_SRGB8_ALPHA8);
+	p_usable_swap_chains.push_back(GL_RGBA8);
 }
 
 void OpenXROpenGLExtension::get_usable_depth_formats(Vector<int64_t> &p_usable_depth_formats) {
@@ -166,6 +188,23 @@ void OpenXROpenGLExtension::get_usable_depth_formats(Vector<int64_t> &p_usable_d
 	p_usable_depth_formats.push_back(GL_DEPTH24_STENCIL8);
 	p_usable_depth_formats.push_back(GL_DEPTH32F_STENCIL8);
 	p_usable_depth_formats.push_back(GL_DEPTH_COMPONENT24);
+}
+
+void OpenXROpenGLExtension::on_pre_draw_viewport(RID p_render_target) {
+	if (srgb_ext_is_available) {
+		hw_linear_to_srgb_is_enabled = glIsEnabled(GL_FRAMEBUFFER_SRGB);
+		if (hw_linear_to_srgb_is_enabled) {
+			// Disable this.
+			glDisable(GL_FRAMEBUFFER_SRGB);
+		}
+	}
+}
+
+void OpenXROpenGLExtension::on_post_draw_viewport(RID p_render_target) {
+	if (srgb_ext_is_available && hw_linear_to_srgb_is_enabled) {
+		// Re-enable this.
+		glEnable(GL_FRAMEBUFFER_SRGB);
+	}
 }
 
 bool OpenXROpenGLExtension::get_swapchain_image_data(XrSwapchain p_swapchain, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size, void **r_swapchain_graphics_data) {
