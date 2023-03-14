@@ -94,6 +94,7 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns the first [AnimationLibrary] with key [param name] or [code]null[/code] if not found.
+				To get the [AnimationPlayer]'s global animation library, use [code]get_animation_library("")[/code].
 			</description>
 		</method>
 		<method name="get_animation_library_list" qualifiers="const">
