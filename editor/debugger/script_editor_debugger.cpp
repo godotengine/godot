@@ -509,6 +509,11 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		String tooltip = oe.warning ? TTR("Warning:") : TTR("Error:");
 
 		TreeItem *error = error_tree->create_item(r);
+		if (oe.warning) {
+			error->set_meta("_is_warning", true);
+		} else {
+			error->set_meta("_is_error", true);
+		}
 		error->set_collapsed(true);
 
 		error->set_icon(0, get_theme_icon(oe.warning ? SNAME("Warning") : SNAME("Error"), SNAME("EditorIcons")));
@@ -798,6 +803,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
+			tabs->add_theme_style_override("panel", get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
+
 			skip_breakpoints->set_icon(get_theme_icon(skip_breakpoints_value ? SNAME("DebugSkipBreakpointsOn") : SNAME("DebugSkipBreakpointsOff"), SNAME("EditorIcons")));
 			copy->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
 			step->set_icon(get_theme_icon(SNAME("DebugStep"), SNAME("EditorIcons")));
@@ -809,6 +816,24 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			search->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 
 			reason->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+
+			TreeItem *error_root = error_tree->get_root();
+			if (error_root) {
+				TreeItem *error = error_root->get_first_child();
+				while (error) {
+					if (error->has_meta("_is_warning")) {
+						error->set_icon(0, get_theme_icon(SNAME("Warning"), SNAME("EditorIcons")));
+						error->set_custom_color(0, get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+						error->set_custom_color(1, get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+					} else if (error->has_meta("_is_error")) {
+						error->set_icon(0, get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
+						error->set_custom_color(0, get_theme_color(SNAME("error_color"), SNAME("Editor")));
+						error->set_custom_color(1, get_theme_color(SNAME("error_color"), SNAME("Editor")));
+					}
+
+					error = error->get_next();
+				}
+			}
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -870,21 +895,6 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				_stop_and_notify();
 				break;
 			};
-		} break;
-
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (tabs->has_theme_stylebox_override("panel")) {
-				tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
-			}
-
-			copy->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
-			step->set_icon(get_theme_icon(SNAME("DebugStep"), SNAME("EditorIcons")));
-			next->set_icon(get_theme_icon(SNAME("DebugNext"), SNAME("EditorIcons")));
-			dobreak->set_icon(get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
-			docontinue->set_icon(get_theme_icon(SNAME("DebugContinue"), SNAME("EditorIcons")));
-			vmem_refresh->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
-			vmem_export->set_icon(get_theme_icon(SNAME("Save"), SNAME("EditorIcons")));
-			search->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 		} break;
 	}
 }
@@ -1557,9 +1567,9 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 
 			String type;
 
-			if (ti->get_icon(0) == get_theme_icon(SNAME("Warning"), SNAME("EditorIcons"))) {
+			if (ti->has_meta("_is_warning")) {
 				type = "W ";
-			} else if (ti->get_icon(0) == get_theme_icon(SNAME("Error"), SNAME("EditorIcons"))) {
+			} else if (ti->has_meta("_is_error")) {
 				type = "E ";
 			}
 
@@ -1700,10 +1710,8 @@ void ScriptEditorDebugger::toggle_profiler(const String &p_profiler, bool p_enab
 
 ScriptEditorDebugger::ScriptEditorDebugger() {
 	tabs = memnew(TabContainer);
-	tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
-	tabs->connect("tab_changed", callable_mp(this, &ScriptEditorDebugger::_tab_changed));
-
 	add_child(tabs);
+	tabs->connect("tab_changed", callable_mp(this, &ScriptEditorDebugger::_tab_changed));
 
 	InspectorDock::get_inspector_singleton()->connect("object_id_selected", callable_mp(this, &ScriptEditorDebugger::_remote_object_selected));
 

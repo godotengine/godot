@@ -83,8 +83,13 @@ int GLManager_X11::_find_or_create_display(Display *p_x11_display) {
 	d.context = memnew(GLManager_X11_Private);
 	d.context->glx_context = nullptr;
 
-	//Error err = _create_context(d);
-	_create_context(d);
+	Error err = _create_context(d);
+
+	if (err != OK) {
+		_displays.remove_at(new_display_id);
+		return -1;
+	}
+
 	return new_display_id;
 }
 
@@ -191,8 +196,14 @@ Error GLManager_X11::_create_context(GLDisplay &gl_display) {
 	return OK;
 }
 
-XVisualInfo GLManager_X11::get_vi(Display *p_display) {
-	return _displays[_find_or_create_display(p_display)].x_vi;
+XVisualInfo GLManager_X11::get_vi(Display *p_display, Error &r_error) {
+	int display_id = _find_or_create_display(p_display);
+	if (display_id < 0) {
+		r_error = FAILED;
+		return XVisualInfo();
+	}
+	r_error = OK;
+	return _displays[display_id].x_vi;
 }
 
 Error GLManager_X11::window_create(DisplayServer::WindowID p_window_id, ::Window p_window, Display *p_display, int p_width, int p_height) {
@@ -210,6 +221,10 @@ Error GLManager_X11::window_create(DisplayServer::WindowID p_window_id, ::Window
 	win.height = p_height;
 	win.x11_window = p_window;
 	win.gldisplay_id = _find_or_create_display(p_display);
+
+	if (win.gldisplay_id == -1) {
+		return FAILED;
+	}
 
 	// the display could be invalid .. check NYI
 	GLDisplay &gl_display = _displays[win.gldisplay_id];

@@ -30,6 +30,8 @@
 
 #include "fbx_importer_manager.h"
 
+#include "core/config/project_settings.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "scene/gui/link_button.h"
@@ -47,8 +49,18 @@ void FBXImporterManager::show_dialog(bool p_exclusive) {
 	fbx_path->set_text(fbx2gltf_path);
 	_validate_path(fbx2gltf_path);
 
-	set_flag(Window::FLAG_BORDERLESS, p_exclusive); // Avoid closing accidentally .
+	// If exclusive, we're importing a FBX file, there's no exit.
+	is_importing = p_exclusive;
+	set_flag(Window::FLAG_BORDERLESS, p_exclusive); // Avoid closing accidentally.
 	set_close_on_escape(!p_exclusive);
+
+	if (is_importing) {
+		get_cancel_button()->set_text(TTR("Disable FBX & Restart"));
+		get_cancel_button()->set_tooltip_text(TTR("Canceling this dialog will disable the FBX importer.\nYou can re-enable it in the Project Settings under Filesystem > Import > FBX > Enabled.\n\nThe editor will restart as importers are registered when the editor starts."));
+	} else {
+		get_cancel_button()->set_text(TTR("Cancel"));
+		get_cancel_button()->set_tooltip_text("");
+	}
 
 	popup_centered();
 }
@@ -96,6 +108,17 @@ void FBXImporterManager::_path_confirmed() {
 	EditorSettings::get_singleton()->save();
 }
 
+void FBXImporterManager::_cancel_setup() {
+	if (!is_importing) {
+		return; // No worry.
+	}
+	// No escape.
+	ProjectSettings::get_singleton()->set("filesystem/import/fbx/enabled", false);
+	ProjectSettings::get_singleton()->save();
+	EditorNode::get_singleton()->save_all_scenes();
+	EditorNode::get_singleton()->restart_editor();
+}
+
 void FBXImporterManager::_browse_install() {
 	if (fbx_path->get_text() != String()) {
 		browse_dialog->set_current_file(fbx_path->get_text());
@@ -140,6 +163,7 @@ FBXImporterManager::FBXImporterManager() {
 	fbx_path->connect("text_changed", callable_mp(this, &FBXImporterManager::_validate_path));
 
 	get_ok_button()->set_text(TTR("Confirm Path"));
+	get_cancel_button()->connect("pressed", callable_mp(this, &FBXImporterManager::_cancel_setup));
 
 	browse_dialog = memnew(EditorFileDialog);
 	browse_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
