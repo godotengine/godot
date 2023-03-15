@@ -198,7 +198,7 @@ protected:
 					pinfo.type = Variant::COLOR;
 				} break;
 				case RS::GLOBAL_VAR_TYPE_MAT2: {
-					pinfo.type = Variant::PACKED_INT32_ARRAY;
+					pinfo.type = Variant::PACKED_FLOAT32_ARRAY;
 				} break;
 				case RS::GLOBAL_VAR_TYPE_MAT3: {
 					pinfo.type = Variant::BASIS;
@@ -271,13 +271,7 @@ static Variant create_var(RS::GlobalShaderParameterType p_type) {
 			return Vector3i();
 		}
 		case RS::GLOBAL_VAR_TYPE_IVEC4: {
-			Vector<int> v4;
-			v4.resize(4);
-			v4.write[0] = 0;
-			v4.write[1] = 0;
-			v4.write[2] = 0;
-			v4.write[3] = 0;
-			return v4;
+			return Vector4i();
 		}
 		case RS::GLOBAL_VAR_TYPE_RECT2I: {
 			return Rect2i();
@@ -292,13 +286,7 @@ static Variant create_var(RS::GlobalShaderParameterType p_type) {
 			return Vector3i();
 		}
 		case RS::GLOBAL_VAR_TYPE_UVEC4: {
-			Vector<int> v4;
-			v4.resize(4);
-			v4.write[0] = 0;
-			v4.write[1] = 0;
-			v4.write[2] = 0;
-			v4.write[3] = 0;
-			return v4;
+			return Vector4i();
 		}
 		case RS::GLOBAL_VAR_TYPE_FLOAT: {
 			return 0.0;
@@ -310,7 +298,7 @@ static Variant create_var(RS::GlobalShaderParameterType p_type) {
 			return Vector3();
 		}
 		case RS::GLOBAL_VAR_TYPE_VEC4: {
-			return Quaternion();
+			return Vector4();
 		}
 		case RS::GLOBAL_VAR_TYPE_RECT2: {
 			return Rect2();
@@ -319,7 +307,7 @@ static Variant create_var(RS::GlobalShaderParameterType p_type) {
 			return Color();
 		}
 		case RS::GLOBAL_VAR_TYPE_MAT2: {
-			Vector<real_t> xform;
+			Vector<float> xform;
 			xform.resize(4);
 			xform.write[0] = 1;
 			xform.write[1] = 0;
@@ -337,29 +325,7 @@ static Variant create_var(RS::GlobalShaderParameterType p_type) {
 			return Transform3D();
 		}
 		case RS::GLOBAL_VAR_TYPE_MAT4: {
-			Vector<real_t> xform;
-			xform.resize(16);
-			xform.write[0] = 1;
-			xform.write[1] = 0;
-			xform.write[2] = 0;
-			xform.write[3] = 0;
-
-			xform.write[4] = 0;
-			xform.write[5] = 1;
-			xform.write[6] = 0;
-			xform.write[7] = 0;
-
-			xform.write[8] = 0;
-			xform.write[9] = 0;
-			xform.write[10] = 1;
-			xform.write[11] = 0;
-
-			xform.write[12] = 0;
-			xform.write[13] = 0;
-			xform.write[14] = 0;
-			xform.write[15] = 1;
-
-			return xform;
+			return Projection();
 		}
 		case RS::GLOBAL_VAR_TYPE_SAMPLER2D: {
 			return "";

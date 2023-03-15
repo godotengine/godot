@@ -39,32 +39,24 @@
 
 #include "drivers/gles3/rasterizer_canvas_gles3.h"
 #include "drivers/gles3/rasterizer_gles3.h"
+#include "servers/rendering/storage/variant_converters.h"
 
 using namespace GLES3;
 
 ///////////////////////////////////////////////////////////////////////////
 // UBI helper functions
 
-_FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataType type, int p_array_size, const Variant &value, uint8_t *data) {
+static void _fill_std140_variant_ubo_value(ShaderLanguage::DataType type, int p_array_size, const Variant &value, uint8_t *data) {
 	switch (type) {
 		case ShaderLanguage::TYPE_BOOL: {
 			uint32_t *gui = (uint32_t *)data;
 
 			if (p_array_size > 0) {
-				const PackedInt32Array &ba = value;
-				int s = ba.size();
-				const int *r = ba.ptr();
-
-				for (int i = 0, j = 0; i < p_array_size; i++, j += 4) {
-					if (i < s) {
-						gui[j] = (r[i] != 0) ? 1 : 0;
-					} else {
-						gui[j] = 0;
-					}
-					gui[j + 1] = 0; // ignored
-					gui[j + 2] = 0; // ignored
-					gui[j + 3] = 0; // ignored
+				PackedInt32Array ba = value;
+				for (int i = 0; i < ba.size(); i++) {
+					ba.set(i, ba[i] ? 1 : 0);
 				}
+				write_array_std140<int32_t>(ba, gui, p_array_size, 4);
 			} else {
 				bool v = value;
 				gui[0] = v ? 1 : 0;
@@ -74,22 +66,11 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			uint32_t *gui = (uint32_t *)data;
 
 			if (p_array_size > 0) {
-				const PackedInt32Array &ba = value;
-				int s = ba.size();
-				const int *r = ba.ptr();
-				int count = 2 * p_array_size;
-
-				for (int i = 0, j = 0; i < count; i += 2, j += 4) {
-					if (i < s) {
-						gui[j] = r[i] ? 1 : 0;
-						gui[j + 1] = r[i + 1] ? 1 : 0;
-					} else {
-						gui[j] = 0;
-						gui[j + 1] = 0;
-					}
-					gui[j + 2] = 0; // ignored
-					gui[j + 3] = 0; // ignored
+				PackedInt32Array ba = convert_array_std140<Vector2i, int32_t>(value);
+				for (int i = 0; i < ba.size(); i++) {
+					ba.set(i, ba[i] ? 1 : 0);
 				}
+				write_array_std140<Vector2i>(ba, gui, p_array_size, 4);
 			} else {
 				uint32_t v = value;
 				gui[0] = v & 1 ? 1 : 0;
@@ -100,23 +81,11 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			uint32_t *gui = (uint32_t *)data;
 
 			if (p_array_size > 0) {
-				const PackedInt32Array &ba = value;
-				int s = ba.size();
-				const int *r = ba.ptr();
-				int count = 3 * p_array_size;
-
-				for (int i = 0, j = 0; i < count; i += 3, j += 4) {
-					if (i < s) {
-						gui[j] = r[i] ? 1 : 0;
-						gui[j + 1] = r[i + 1] ? 1 : 0;
-						gui[j + 2] = r[i + 2] ? 1 : 0;
-					} else {
-						gui[j] = 0;
-						gui[j + 1] = 0;
-						gui[j + 2] = 0;
-					}
-					gui[j + 3] = 0; // ignored
+				PackedInt32Array ba = convert_array_std140<Vector3i, int32_t>(value);
+				for (int i = 0; i < ba.size(); i++) {
+					ba.set(i, ba[i] ? 1 : 0);
 				}
+				write_array_std140<Vector3i>(ba, gui, p_array_size, 4);
 			} else {
 				uint32_t v = value;
 				gui[0] = (v & 1) ? 1 : 0;
@@ -128,24 +97,11 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			uint32_t *gui = (uint32_t *)data;
 
 			if (p_array_size > 0) {
-				const PackedInt32Array &ba = value;
-				int s = ba.size();
-				const int *r = ba.ptr();
-				int count = 4 * p_array_size;
-
-				for (int i = 0; i < count; i += 4) {
-					if (i < s) {
-						gui[i] = r[i] ? 1 : 0;
-						gui[i + 1] = r[i + 1] ? 1 : 0;
-						gui[i + 2] = r[i + 2] ? 1 : 0;
-						gui[i + 3] = r[i + 3] ? 1 : 0;
-					} else {
-						gui[i] = 0;
-						gui[i + 1] = 0;
-						gui[i + 2] = 0;
-						gui[i + 3] = 0;
-					}
+				PackedInt32Array ba = convert_array_std140<Vector4i, int32_t>(value);
+				for (int i = 0; i < ba.size(); i++) {
+					ba.set(i, ba[i] ? 1 : 0);
 				}
+				write_array_std140<Vector4i>(ba, gui, p_array_size, 4);
 			} else {
 				uint32_t v = value;
 				gui[0] = (v & 1) ? 1 : 0;
@@ -158,20 +114,8 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			int32_t *gui = (int32_t *)data;
 
 			if (p_array_size > 0) {
-				Vector<int> iv = value;
-				int s = iv.size();
-				const int *r = iv.ptr();
-
-				for (int i = 0, j = 0; i < p_array_size; i++, j += 4) {
-					if (i < s) {
-						gui[j] = r[i];
-					} else {
-						gui[j] = 0;
-					}
-					gui[j + 1] = 0; // ignored
-					gui[j + 2] = 0; // ignored
-					gui[j + 3] = 0; // ignored
-				}
+				const PackedInt32Array &iv = value;
+				write_array_std140<int32_t>(iv, gui, p_array_size, 4);
 			} else {
 				int v = value;
 				gui[0] = v;
@@ -179,25 +123,12 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 		} break;
 		case ShaderLanguage::TYPE_IVEC2: {
 			int32_t *gui = (int32_t *)data;
-			if (p_array_size > 0) {
-				Vector<int> iv = value;
-				int s = iv.size();
-				int count = 2 * p_array_size;
 
-				const int *r = iv.ptr();
-				for (int i = 0, j = 0; i < count; i += 2, j += 4) {
-					if (i < s) {
-						gui[j] = r[i];
-						gui[j + 1] = r[i + 1];
-					} else {
-						gui[j] = 0;
-						gui[j + 1] = 0;
-					}
-					gui[j + 2] = 0; // ignored
-					gui[j + 3] = 0; // ignored
-				}
+			if (p_array_size > 0) {
+				const PackedInt32Array &iv = convert_array_std140<Vector2i, int32_t>(value);
+				write_array_std140<Vector2i>(iv, gui, p_array_size, 4);
 			} else {
-				Vector2i v = value;
+				Vector2i v = convert_to_vector<Vector2i>(value);
 				gui[0] = v.x;
 				gui[1] = v.y;
 			}
@@ -206,25 +137,10 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			int32_t *gui = (int32_t *)data;
 
 			if (p_array_size > 0) {
-				Vector<int> iv = value;
-				int s = iv.size();
-				int count = 3 * p_array_size;
-
-				const int *r = iv.ptr();
-				for (int i = 0, j = 0; i < count; i += 3, j += 4) {
-					if (i < s) {
-						gui[j] = r[i];
-						gui[j + 1] = r[i + 1];
-						gui[j + 2] = r[i + 2];
-					} else {
-						gui[j] = 0;
-						gui[j + 1] = 0;
-						gui[j + 2] = 0;
-					}
-					gui[j + 3] = 0; // ignored
-				}
+				const PackedInt32Array &iv = convert_array_std140<Vector3i, int32_t>(value);
+				write_array_std140<Vector3i>(iv, gui, p_array_size, 4);
 			} else {
-				Vector3i v = value;
+				Vector3i v = convert_to_vector<Vector3i>(value);
 				gui[0] = v.x;
 				gui[1] = v.y;
 				gui[2] = v.z;
@@ -234,26 +150,10 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			int32_t *gui = (int32_t *)data;
 
 			if (p_array_size > 0) {
-				Vector<int> iv = value;
-				int s = iv.size();
-				int count = 4 * p_array_size;
-
-				const int *r = iv.ptr();
-				for (int i = 0; i < count; i += 4) {
-					if (i < s) {
-						gui[i] = r[i];
-						gui[i + 1] = r[i + 1];
-						gui[i + 2] = r[i + 2];
-						gui[i + 3] = r[i + 3];
-					} else {
-						gui[i] = 0;
-						gui[i + 1] = 0;
-						gui[i + 2] = 0;
-						gui[i + 3] = 0;
-					}
-				}
+				const PackedInt32Array &iv = convert_array_std140<Vector4i, int32_t>(value);
+				write_array_std140<Vector4i>(iv, gui, p_array_size, 4);
 			} else {
-				Vector4i v = value;
+				Vector4i v = convert_to_vector<Vector4i>(value);
 				gui[0] = v.x;
 				gui[1] = v.y;
 				gui[2] = v.z;
@@ -264,20 +164,8 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			uint32_t *gui = (uint32_t *)data;
 
 			if (p_array_size > 0) {
-				Vector<int> iv = value;
-				int s = iv.size();
-				const int *r = iv.ptr();
-
-				for (int i = 0, j = 0; i < p_array_size; i++, j += 4) {
-					if (i < s) {
-						gui[j] = r[i];
-					} else {
-						gui[j] = 0;
-					}
-					gui[j + 1] = 0; // ignored
-					gui[j + 2] = 0; // ignored
-					gui[j + 3] = 0; // ignored
-				}
+				const PackedInt32Array &iv = value;
+				write_array_std140<uint32_t>(iv, gui, p_array_size, 4);
 			} else {
 				int v = value;
 				gui[0] = v;
@@ -285,25 +173,12 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 		} break;
 		case ShaderLanguage::TYPE_UVEC2: {
 			uint32_t *gui = (uint32_t *)data;
-			if (p_array_size > 0) {
-				Vector<int> iv = value;
-				int s = iv.size();
-				int count = 2 * p_array_size;
 
-				const int *r = iv.ptr();
-				for (int i = 0, j = 0; i < count; i += 2, j += 4) {
-					if (i < s) {
-						gui[j] = r[i];
-						gui[j + 1] = r[i + 1];
-					} else {
-						gui[j] = 0;
-						gui[j + 1] = 0;
-					}
-					gui[j + 2] = 0; // ignored
-					gui[j + 3] = 0; // ignored
-				}
+			if (p_array_size > 0) {
+				const PackedInt32Array &iv = convert_array_std140<Vector2i, int32_t>(value);
+				write_array_std140<Vector2i>(iv, gui, p_array_size, 4);
 			} else {
-				Vector2i v = value;
+				Vector2i v = convert_to_vector<Vector2i>(value);
 				gui[0] = v.x;
 				gui[1] = v.y;
 			}
@@ -312,25 +187,10 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			uint32_t *gui = (uint32_t *)data;
 
 			if (p_array_size > 0) {
-				Vector<int> iv = value;
-				int s = iv.size();
-				int count = 3 * p_array_size;
-
-				const int *r = iv.ptr();
-				for (int i = 0, j = 0; i < count; i += 3, j += 4) {
-					if (i < s) {
-						gui[j] = r[i];
-						gui[j + 1] = r[i + 1];
-						gui[j + 2] = r[i + 2];
-					} else {
-						gui[j] = 0;
-						gui[j + 1] = 0;
-						gui[j + 2] = 0;
-					}
-					gui[j + 3] = 0; // ignored
-				}
+				const PackedInt32Array &iv = convert_array_std140<Vector3i, int32_t>(value);
+				write_array_std140<Vector3i>(iv, gui, p_array_size, 4);
 			} else {
-				Vector3i v = value;
+				Vector3i v = convert_to_vector<Vector3i>(value);
 				gui[0] = v.x;
 				gui[1] = v.y;
 				gui[2] = v.z;
@@ -340,26 +200,10 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			uint32_t *gui = (uint32_t *)data;
 
 			if (p_array_size > 0) {
-				Vector<int> iv = value;
-				int s = iv.size();
-				int count = 4 * p_array_size;
-
-				const int *r = iv.ptr();
-				for (int i = 0; i < count; i++) {
-					if (i < s) {
-						gui[i] = r[i];
-						gui[i + 1] = r[i + 1];
-						gui[i + 2] = r[i + 2];
-						gui[i + 3] = r[i + 3];
-					} else {
-						gui[i] = 0;
-						gui[i + 1] = 0;
-						gui[i + 2] = 0;
-						gui[i + 3] = 0;
-					}
-				}
+				const PackedInt32Array &iv = convert_array_std140<Vector4i, int32_t>(value);
+				write_array_std140<Vector4i>(iv, gui, p_array_size, 4);
 			} else {
-				Vector4i v = value;
+				Vector4i v = convert_to_vector<Vector4i>(value);
 				gui[0] = v.x;
 				gui[1] = v.y;
 				gui[2] = v.z;
@@ -371,18 +215,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 
 			if (p_array_size > 0) {
 				const PackedFloat32Array &a = value;
-				int s = a.size();
-
-				for (int i = 0, j = 0; i < p_array_size; i++, j += 4) {
-					if (i < s) {
-						gui[j] = a[i];
-					} else {
-						gui[j] = 0;
-					}
-					gui[j + 1] = 0; // ignored
-					gui[j + 2] = 0; // ignored
-					gui[j + 3] = 0; // ignored
-				}
+				write_array_std140<float>(a, gui, p_array_size, 4);
 			} else {
 				float v = value;
 				gui[0] = v;
@@ -392,22 +225,10 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			float *gui = (float *)data;
 
 			if (p_array_size > 0) {
-				const PackedVector2Array &a = value;
-				int s = a.size();
-
-				for (int i = 0, j = 0; i < p_array_size; i++, j += 4) {
-					if (i < s) {
-						gui[j] = a[i].x;
-						gui[j + 1] = a[i].y;
-					} else {
-						gui[j] = 0;
-						gui[j + 1] = 0;
-					}
-					gui[j + 2] = 0; // ignored
-					gui[j + 3] = 0; // ignored
-				}
+				const PackedFloat32Array &a = convert_array_std140<Vector2, float>(value);
+				write_array_std140<Vector2>(a, gui, p_array_size, 4);
 			} else {
-				Vector2 v = value;
+				Vector2 v = convert_to_vector<Vector2>(value);
 				gui[0] = v.x;
 				gui[1] = v.y;
 			}
@@ -416,133 +237,27 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			float *gui = (float *)data;
 
 			if (p_array_size > 0) {
-				if (value.get_type() == Variant::PACKED_COLOR_ARRAY) {
-					const PackedColorArray &a = value;
-					int s = a.size();
-
-					for (int i = 0, j = 0; i < p_array_size; i++, j += 4) {
-						if (i < s) {
-							Color color = a[i];
-							gui[j] = color.r;
-							gui[j + 1] = color.g;
-							gui[j + 2] = color.b;
-						} else {
-							gui[j] = 0;
-							gui[j + 1] = 0;
-							gui[j + 2] = 0;
-						}
-						gui[j + 3] = 0; // ignored
-					}
-				} else {
-					const PackedVector3Array &a = value;
-					int s = a.size();
-
-					for (int i = 0, j = 0; i < p_array_size; i++, j += 4) {
-						if (i < s) {
-							gui[j] = a[i].x;
-							gui[j + 1] = a[i].y;
-							gui[j + 2] = a[i].z;
-						} else {
-							gui[j] = 0;
-							gui[j + 1] = 0;
-							gui[j + 2] = 0;
-						}
-						gui[j + 3] = 0; // ignored
-					}
-				}
+				const PackedFloat32Array &a = convert_array_std140<Vector3, float>(value);
+				write_array_std140<Vector3>(a, gui, p_array_size, 4);
 			} else {
-				if (value.get_type() == Variant::COLOR) {
-					Color v = value;
-
-					gui[0] = v.r;
-					gui[1] = v.g;
-					gui[2] = v.b;
-				} else {
-					Vector3 v = value;
-					gui[0] = v.x;
-					gui[1] = v.y;
-					gui[2] = v.z;
-				}
+				Vector3 v = convert_to_vector<Vector3>(value);
+				gui[0] = v.x;
+				gui[1] = v.y;
+				gui[2] = v.z;
 			}
 		} break;
 		case ShaderLanguage::TYPE_VEC4: {
 			float *gui = (float *)data;
 
 			if (p_array_size > 0) {
-				if (value.get_type() == Variant::PACKED_COLOR_ARRAY) {
-					const PackedColorArray &a = value;
-					int s = a.size();
-
-					for (int i = 0, j = 0; i < p_array_size; i++, j += 4) {
-						if (i < s) {
-							Color color = a[i];
-							gui[j] = color.r;
-							gui[j + 1] = color.g;
-							gui[j + 2] = color.b;
-							gui[j + 3] = color.a;
-						} else {
-							gui[j] = 0;
-							gui[j + 1] = 0;
-							gui[j + 2] = 0;
-							gui[j + 3] = 0;
-						}
-					}
-				} else {
-					const PackedFloat32Array &a = value;
-					int s = a.size();
-					int count = 4 * p_array_size;
-
-					for (int i = 0; i < count; i += 4) {
-						if (i + 3 < s) {
-							gui[i] = a[i];
-							gui[i + 1] = a[i + 1];
-							gui[i + 2] = a[i + 2];
-							gui[i + 3] = a[i + 3];
-						} else {
-							gui[i] = 0;
-							gui[i + 1] = 0;
-							gui[i + 2] = 0;
-							gui[i + 3] = 0;
-						}
-					}
-				}
+				const PackedFloat32Array &a = convert_array_std140<Vector4, float>(value);
+				write_array_std140<Vector4>(a, gui, p_array_size, 4);
 			} else {
-				if (value.get_type() == Variant::COLOR) {
-					Color v = value;
-
-					gui[0] = v.r;
-					gui[1] = v.g;
-					gui[2] = v.b;
-					gui[3] = v.a;
-				} else if (value.get_type() == Variant::RECT2) {
-					Rect2 v = value;
-
-					gui[0] = v.position.x;
-					gui[1] = v.position.y;
-					gui[2] = v.size.x;
-					gui[3] = v.size.y;
-				} else if (value.get_type() == Variant::QUATERNION) {
-					Quaternion v = value;
-
-					gui[0] = v.x;
-					gui[1] = v.y;
-					gui[2] = v.z;
-					gui[3] = v.w;
-				} else if (value.get_type() == Variant::VECTOR4) {
-					Vector4 v = value;
-
-					gui[0] = v.x;
-					gui[1] = v.y;
-					gui[2] = v.z;
-					gui[3] = v.w;
-				} else {
-					Plane v = value;
-
-					gui[0] = v.normal.x;
-					gui[1] = v.normal.y;
-					gui[2] = v.normal.z;
-					gui[3] = v.d;
-				}
+				Vector4 v = convert_to_vector<Vector4>(value);
+				gui[0] = v.x;
+				gui[1] = v.y;
+				gui[2] = v.z;
+				gui[3] = v.w;
 			}
 		} break;
 		case ShaderLanguage::TYPE_MAT2: {
@@ -590,135 +305,42 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			float *gui = (float *)data;
 
 			if (p_array_size > 0) {
-				const PackedFloat32Array &a = value;
-				int s = a.size();
+				const PackedFloat32Array &a = convert_array_std140<Basis, float>(value);
+				const Basis default_basis;
+				const int s = a.size();
 
 				for (int i = 0, j = 0; i < p_array_size * 9; i += 9, j += 12) {
 					if (i + 8 < s) {
 						gui[j] = a[i];
 						gui[j + 1] = a[i + 1];
 						gui[j + 2] = a[i + 2];
+						gui[j + 3] = 0; // Ignored.
 
 						gui[j + 4] = a[i + 3];
 						gui[j + 5] = a[i + 4];
 						gui[j + 6] = a[i + 5];
+						gui[j + 7] = 0; // Ignored.
 
 						gui[j + 8] = a[i + 6];
 						gui[j + 9] = a[i + 7];
 						gui[j + 10] = a[i + 8];
+						gui[j + 11] = 0; // Ignored.
 					} else {
-						gui[j] = 1;
-						gui[j + 1] = 0;
-						gui[j + 2] = 0;
-
-						gui[j + 4] = 0;
-						gui[j + 5] = 1;
-						gui[j + 6] = 0;
-
-						gui[j + 8] = 0;
-						gui[j + 9] = 0;
-						gui[j + 10] = 1;
+						convert_item_std140(default_basis, gui + j);
 					}
-					gui[j + 3] = 0; // ignored
-					gui[j + 7] = 0; // ignored
-					gui[j + 11] = 0; // ignored
 				}
 			} else {
-				Basis v = value;
-				gui[0] = v.rows[0][0];
-				gui[1] = v.rows[1][0];
-				gui[2] = v.rows[2][0];
-				gui[3] = 0; // ignored
-
-				gui[4] = v.rows[0][1];
-				gui[5] = v.rows[1][1];
-				gui[6] = v.rows[2][1];
-				gui[7] = 0; // ignored
-
-				gui[8] = v.rows[0][2];
-				gui[9] = v.rows[1][2];
-				gui[10] = v.rows[2][2];
-				gui[11] = 0; // ignored
+				convert_item_std140<Basis>(value, gui);
 			}
 		} break;
 		case ShaderLanguage::TYPE_MAT4: {
 			float *gui = (float *)data;
 
 			if (p_array_size > 0) {
-				const PackedFloat32Array &a = value;
-				int s = a.size();
-
-				for (int i = 0; i < p_array_size * 16; i += 16) {
-					if (i + 15 < s) {
-						gui[i] = a[i];
-						gui[i + 1] = a[i + 1];
-						gui[i + 2] = a[i + 2];
-						gui[i + 3] = a[i + 3];
-
-						gui[i + 4] = a[i + 4];
-						gui[i + 5] = a[i + 5];
-						gui[i + 6] = a[i + 6];
-						gui[i + 7] = a[i + 7];
-
-						gui[i + 8] = a[i + 8];
-						gui[i + 9] = a[i + 9];
-						gui[i + 10] = a[i + 10];
-						gui[i + 11] = a[i + 11];
-
-						gui[i + 12] = a[i + 12];
-						gui[i + 13] = a[i + 13];
-						gui[i + 14] = a[i + 14];
-						gui[i + 15] = a[i + 15];
-					} else {
-						gui[i] = 1;
-						gui[i + 1] = 0;
-						gui[i + 2] = 0;
-						gui[i + 3] = 0;
-
-						gui[i + 4] = 0;
-						gui[i + 5] = 1;
-						gui[i + 6] = 0;
-						gui[i + 7] = 0;
-
-						gui[i + 8] = 0;
-						gui[i + 9] = 0;
-						gui[i + 10] = 1;
-						gui[i + 11] = 0;
-
-						gui[i + 12] = 0;
-						gui[i + 13] = 0;
-						gui[i + 14] = 0;
-						gui[i + 15] = 1;
-					}
-				}
-			} else if (value.get_type() == Variant::TRANSFORM3D) {
-				Transform3D v = value;
-				gui[0] = v.basis.rows[0][0];
-				gui[1] = v.basis.rows[1][0];
-				gui[2] = v.basis.rows[2][0];
-				gui[3] = 0;
-
-				gui[4] = v.basis.rows[0][1];
-				gui[5] = v.basis.rows[1][1];
-				gui[6] = v.basis.rows[2][1];
-				gui[7] = 0;
-
-				gui[8] = v.basis.rows[0][2];
-				gui[9] = v.basis.rows[1][2];
-				gui[10] = v.basis.rows[2][2];
-				gui[11] = 0;
-
-				gui[12] = v.origin.x;
-				gui[13] = v.origin.y;
-				gui[14] = v.origin.z;
-				gui[15] = 1;
+				const PackedFloat32Array &a = convert_array_std140<Projection, float>(value);
+				write_array_std140<Projection>(a, gui, p_array_size, 16);
 			} else {
-				Projection v = value;
-				for (int i = 0; i < 4; i++) {
-					for (int j = 0; j < 4; j++) {
-						gui[i * 4 + j] = v.columns[i][j];
-					}
-				}
+				convert_item_std140<Projection>(value, gui);
 			}
 		} break;
 		default: {
@@ -1943,7 +1565,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 		} break;
 		case RS::GLOBAL_VAR_TYPE_IVEC2: {
 			GlobalShaderUniforms::ValueInt &bv = *(GlobalShaderUniforms::ValueInt *)&global_shader_uniforms.buffer_values[p_index];
-			Vector2i v = p_value;
+			Vector2i v = convert_to_vector<Vector2i>(p_value);
 			bv.x = v.x;
 			bv.y = v.y;
 			bv.z = 0;
@@ -1951,7 +1573,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 		} break;
 		case RS::GLOBAL_VAR_TYPE_IVEC3: {
 			GlobalShaderUniforms::ValueInt &bv = *(GlobalShaderUniforms::ValueInt *)&global_shader_uniforms.buffer_values[p_index];
-			Vector3i v = p_value;
+			Vector3i v = convert_to_vector<Vector3i>(p_value);
 			bv.x = v.x;
 			bv.y = v.y;
 			bv.z = v.z;
@@ -1959,11 +1581,11 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 		} break;
 		case RS::GLOBAL_VAR_TYPE_IVEC4: {
 			GlobalShaderUniforms::ValueInt &bv = *(GlobalShaderUniforms::ValueInt *)&global_shader_uniforms.buffer_values[p_index];
-			Vector<int32_t> v = p_value;
-			bv.x = v.size() >= 1 ? v[0] : 0;
-			bv.y = v.size() >= 2 ? v[1] : 0;
-			bv.z = v.size() >= 3 ? v[2] : 0;
-			bv.w = v.size() >= 4 ? v[3] : 0;
+			Vector4i v = convert_to_vector<Vector4i>(p_value);
+			bv.x = v.x;
+			bv.y = v.y;
+			bv.z = v.z;
+			bv.w = v.w;
 		} break;
 		case RS::GLOBAL_VAR_TYPE_RECT2I: {
 			GlobalShaderUniforms::ValueInt &bv = *(GlobalShaderUniforms::ValueInt *)&global_shader_uniforms.buffer_values[p_index];
@@ -1983,7 +1605,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 		} break;
 		case RS::GLOBAL_VAR_TYPE_UVEC2: {
 			GlobalShaderUniforms::ValueUInt &bv = *(GlobalShaderUniforms::ValueUInt *)&global_shader_uniforms.buffer_values[p_index];
-			Vector2i v = p_value;
+			Vector2i v = convert_to_vector<Vector2i>(p_value);
 			bv.x = v.x;
 			bv.y = v.y;
 			bv.z = 0;
@@ -1991,7 +1613,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 		} break;
 		case RS::GLOBAL_VAR_TYPE_UVEC3: {
 			GlobalShaderUniforms::ValueUInt &bv = *(GlobalShaderUniforms::ValueUInt *)&global_shader_uniforms.buffer_values[p_index];
-			Vector3i v = p_value;
+			Vector3i v = convert_to_vector<Vector3i>(p_value);
 			bv.x = v.x;
 			bv.y = v.y;
 			bv.z = v.z;
@@ -1999,11 +1621,11 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 		} break;
 		case RS::GLOBAL_VAR_TYPE_UVEC4: {
 			GlobalShaderUniforms::ValueUInt &bv = *(GlobalShaderUniforms::ValueUInt *)&global_shader_uniforms.buffer_values[p_index];
-			Vector<int32_t> v = p_value;
-			bv.x = v.size() >= 1 ? v[0] : 0;
-			bv.y = v.size() >= 2 ? v[1] : 0;
-			bv.z = v.size() >= 3 ? v[2] : 0;
-			bv.w = v.size() >= 4 ? v[3] : 0;
+			Vector4i v = convert_to_vector<Vector4i>(p_value);
+			bv.x = v.x;
+			bv.y = v.y;
+			bv.z = v.z;
+			bv.w = v.w;
 		} break;
 		case RS::GLOBAL_VAR_TYPE_FLOAT: {
 			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
@@ -2015,7 +1637,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 		} break;
 		case RS::GLOBAL_VAR_TYPE_VEC2: {
 			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
-			Vector2 v = p_value;
+			Vector2 v = convert_to_vector<Vector2>(p_value);
 			bv.x = v.x;
 			bv.y = v.y;
 			bv.z = 0;
@@ -2023,7 +1645,7 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 		} break;
 		case RS::GLOBAL_VAR_TYPE_VEC3: {
 			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
-			Vector3 v = p_value;
+			Vector3 v = convert_to_vector<Vector3>(p_value);
 			bv.x = v.x;
 			bv.y = v.y;
 			bv.z = v.z;
@@ -2031,11 +1653,11 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 		} break;
 		case RS::GLOBAL_VAR_TYPE_VEC4: {
 			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
-			Plane v = p_value;
-			bv.x = v.normal.x;
-			bv.y = v.normal.y;
-			bv.z = v.normal.z;
-			bv.w = v.d;
+			Vector4 v = convert_to_vector<Vector4>(p_value);
+			bv.x = v.x;
+			bv.y = v.y;
+			bv.z = v.z;
+			bv.w = v.w;
 		} break;
 		case RS::GLOBAL_VAR_TYPE_COLOR: {
 			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
@@ -2081,92 +1703,25 @@ void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS
 		case RS::GLOBAL_VAR_TYPE_MAT3: {
 			GlobalShaderUniforms::Value *bv = &global_shader_uniforms.buffer_values[p_index];
 			Basis v = p_value;
-			bv[0].x = v.rows[0][0];
-			bv[0].y = v.rows[1][0];
-			bv[0].z = v.rows[2][0];
-			bv[0].w = 0;
-
-			bv[1].x = v.rows[0][1];
-			bv[1].y = v.rows[1][1];
-			bv[1].z = v.rows[2][1];
-			bv[1].w = 0;
-
-			bv[2].x = v.rows[0][2];
-			bv[2].y = v.rows[1][2];
-			bv[2].z = v.rows[2][2];
-			bv[2].w = 0;
+			convert_item_std140<Basis>(v, &bv->x);
 
 		} break;
 		case RS::GLOBAL_VAR_TYPE_MAT4: {
 			GlobalShaderUniforms::Value *bv = &global_shader_uniforms.buffer_values[p_index];
-
-			Vector<float> m2 = p_value;
-			if (m2.size() < 16) {
-				m2.resize(16);
-			}
-
-			bv[0].x = m2[0];
-			bv[0].y = m2[1];
-			bv[0].z = m2[2];
-			bv[0].w = m2[3];
-
-			bv[1].x = m2[4];
-			bv[1].y = m2[5];
-			bv[1].z = m2[6];
-			bv[1].w = m2[7];
-
-			bv[2].x = m2[8];
-			bv[2].y = m2[9];
-			bv[2].z = m2[10];
-			bv[2].w = m2[11];
-
-			bv[3].x = m2[12];
-			bv[3].y = m2[13];
-			bv[3].z = m2[14];
-			bv[3].w = m2[15];
+			Projection m = p_value;
+			convert_item_std140<Projection>(m, &bv->x);
 
 		} break;
 		case RS::GLOBAL_VAR_TYPE_TRANSFORM_2D: {
 			GlobalShaderUniforms::Value *bv = &global_shader_uniforms.buffer_values[p_index];
 			Transform2D v = p_value;
-			bv[0].x = v.columns[0][0];
-			bv[0].y = v.columns[0][1];
-			bv[0].z = 0;
-			bv[0].w = 0;
-
-			bv[1].x = v.columns[1][0];
-			bv[1].y = v.columns[1][1];
-			bv[1].z = 0;
-			bv[1].w = 0;
-
-			bv[2].x = v.columns[2][0];
-			bv[2].y = v.columns[2][1];
-			bv[2].z = 1;
-			bv[2].w = 0;
+			convert_item_std140<Transform2D>(v, &bv->x);
 
 		} break;
 		case RS::GLOBAL_VAR_TYPE_TRANSFORM: {
 			GlobalShaderUniforms::Value *bv = &global_shader_uniforms.buffer_values[p_index];
 			Transform3D v = p_value;
-			bv[0].x = v.basis.rows[0][0];
-			bv[0].y = v.basis.rows[1][0];
-			bv[0].z = v.basis.rows[2][0];
-			bv[0].w = 0;
-
-			bv[1].x = v.basis.rows[0][1];
-			bv[1].y = v.basis.rows[1][1];
-			bv[1].z = v.basis.rows[2][1];
-			bv[1].w = 0;
-
-			bv[2].x = v.basis.rows[0][2];
-			bv[2].y = v.basis.rows[1][2];
-			bv[2].z = v.basis.rows[2][2];
-			bv[2].w = 0;
-
-			bv[3].x = v.origin.x;
-			bv[3].y = v.origin.y;
-			bv[3].z = v.origin.z;
-			bv[3].w = 1;
+			convert_item_std140<Transform3D>(v, &bv->x);
 
 		} break;
 		default: {
