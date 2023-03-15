@@ -11,5 +11,5 @@ func test():
 
 	print("done")
 
-func regular_func():
+func regular_func() -> int:
 	return 0
