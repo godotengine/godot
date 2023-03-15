@@ -2391,6 +2391,9 @@
 		<member name="xr/openxr/reference_space" type="int" setter="" getter="" default="&quot;1&quot;">
 			Specify the default reference space.
 		</member>
+		<member name="xr/openxr/startup_alert" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], Godot will display an alert modal when OpenXR initialization fails on startup.
+		</member>
 		<member name="xr/openxr/submit_depth_buffer" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], OpenXR will manage the depth buffer and use the depth buffer for advanced reprojection provided this is supported by the XR runtime. Note that some rendering features in Godot can't be used with this feature.
 		</member>
