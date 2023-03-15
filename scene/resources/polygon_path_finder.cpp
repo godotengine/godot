@@ -303,7 +303,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 
 	while (true) {
 		if (open_list.size() == 0) {
-			printf("open list empty\n");
+			print_verbose("Open list empty.");
 			break;
 		}
 		//check open list

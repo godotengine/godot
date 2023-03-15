@@ -1825,7 +1825,6 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 		}
 
 		if (p_format.usage_bits & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT && !(flags & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
-			printf("vkformat: %x\n", image_create_info.format);
 			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as depth-stencil attachment.");
 		}
 
