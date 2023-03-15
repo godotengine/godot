@@ -265,7 +265,7 @@ private:
 			}
 
 		} else {
-			// check if the specified folder is empty, even though this is not an error, it is good to check here
+			// Check if the specified folder is empty, even though this is not an error, it is good to check here.
 			d->list_dir_begin();
 			is_folder_empty = true;
 			String n = d->get_next();
@@ -283,6 +283,12 @@ private:
 			d->list_dir_end();
 
 			if (!is_folder_empty) {
+				if (valid_path == OS::get_singleton()->get_environment("HOME") || valid_path == OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DOCUMENTS) || valid_path == OS::get_singleton()->get_executable_path().get_base_dir()) {
+					set_message(TTR("You cannot save a project in the selected path. Please make a new folder or choose a new path."), MESSAGE_ERROR);
+					get_ok_button()->set_disabled(true);
+					return "";
+				}
+
 				set_message(TTR("The selected path is not empty. Choosing an empty folder is highly recommended."), MESSAGE_WARNING);
 				get_ok_button()->set_disabled(false);
 				return valid_path;
@@ -1828,9 +1834,11 @@ void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
 		if (_selected_project_paths.has(item.path) && item.control->is_visible()) {
 			_config.erase_section(item.path);
 
-			if (p_delete_project_contents) {
-				OS::get_singleton()->move_to_trash(item.path);
-			}
+			// Comment out for now until we have a better warning system to
+			// ensure users delete their project only.
+			//if (p_delete_project_contents) {
+			//	OS::get_singleton()->move_to_trash(item.path);
+			//}
 
 			memdelete(item.control);
 			_projects.remove_at(i);
@@ -2466,7 +2474,7 @@ void ProjectManager::_rename_project() {
 }
 
 void ProjectManager::_erase_project_confirm() {
-	_project_list->erase_selected_projects(delete_project_contents->is_pressed());
+	_project_list->erase_selected_projects(false);
 	_update_project_buttons();
 }
 
@@ -2490,7 +2498,7 @@ void ProjectManager::_erase_project() {
 	}
 
 	erase_ask_label->set_text(confirm_message);
-	delete_project_contents->set_pressed(false);
+	//delete_project_contents->set_pressed(false);
 	erase_ask->popup_centered();
 }
 
@@ -2953,9 +2961,11 @@ ProjectManager::ProjectManager() {
 		erase_ask_label = memnew(Label);
 		erase_ask_vb->add_child(erase_ask_label);
 
-		delete_project_contents = memnew(CheckBox);
-		delete_project_contents->set_text(TTR("Also delete project contents (no undo!)"));
-		erase_ask_vb->add_child(delete_project_contents);
+		// Comment out for now until we have a better warning system to
+		// ensure users delete their project only.
+		//delete_project_contents = memnew(CheckBox);
+		//delete_project_contents->set_text(TTR("Also delete project contents (no undo!)"));
+		//erase_ask_vb->add_child(delete_project_contents);
 
 		multi_open_ask = memnew(ConfirmationDialog);
 		multi_open_ask->set_ok_button_text(TTR("Edit"));
