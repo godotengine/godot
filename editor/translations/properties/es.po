@@ -97,8 +97,9 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-28 17:36+0000\n"
-"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
+"PO-Revision-Date: 2023-03-09 17:45+0000\n"
+"Last-Translator: Federico Sebastián Florentin <federicoflorentin6@gmail."
+"com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/es/>\n"
 "Language: es\n"
@@ -106,7 +107,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.16-rc\n"
+"X-Generator: Weblate 4.16.2-dev\n"
 
 msgid "Application"
 msgstr "Aplicación"
@@ -116,6 +117,9 @@ msgstr "Configuración"
 
 msgid "Name"
 msgstr "Nombre"
+
+msgid "Name Localized"
+msgstr "Nombre Localizado"
 
 msgid "Description"
 msgstr "Descripción"
@@ -189,6 +193,12 @@ msgstr "Extender al Título"
 msgid "No Focus"
 msgstr "Sin foco"
 
+msgid "Window Width Override"
+msgstr "Sobreescribir Ancho de Ventana"
+
+msgid "Window Height Override"
+msgstr "Sobreescribir Altura de Ventana"
+
 msgid "Energy Saving"
 msgstr "Ahorro de Energía"
 
@@ -213,17 +223,11 @@ msgstr "Fuerza de panoramización 3D"
 msgid "Editor"
 msgstr "Editor"
 
-msgid "Main Run Args"
-msgstr "Argumentos de la Ejecución Principal"
-
 msgid "Script"
 msgstr "Script"
 
 msgid "Search in File Extensions"
 msgstr "Buscar en Extensiones de Archivos"
-
-msgid "Templates Search Path"
-msgstr "Ruta de Búsqueda de Plantillas"
 
 msgid "Physics"
 msgstr "Física"
@@ -1105,7 +1109,7 @@ msgid "Window Placement"
 msgstr "Ubicación de la Ventana"
 
 msgid "Rect"
-msgstr "Rect"
+msgstr "Rectángulo"
 
 msgid "Rect Custom Position"
 msgstr "Posición Personalizada de Rect"
@@ -1631,6 +1635,15 @@ msgstr "Ruta de la clave pública SSH"
 
 msgid "SSH Private Key Path"
 msgstr "Ruta de la Clave Privada SSH"
+
+msgid "Main Run Args"
+msgstr "Argumentos de la Ejecución Principal"
+
+msgid "Templates Search Path"
+msgstr "Ruta de Búsqueda de Plantillas"
+
+msgid "Naming"
+msgstr "Nombrando"
 
 msgid "Show Scene Tree Root Selection"
 msgstr "Mostrar Selección de la Raíz del Árbol de Escenas"
@@ -4260,6 +4273,9 @@ msgstr "Expandir Icono"
 msgid "Use Top Left"
 msgstr "Usar Superior Izquierda"
 
+msgid "Indentation"
+msgstr "Sangría"
+
 msgid "Edit Alpha"
 msgstr "Editar Alfa"
 
@@ -5984,6 +6000,9 @@ msgstr "Usar Filtro de Mapa MIP más Cercano"
 
 msgid "Buffer Size"
 msgstr "Tamaño del Buffer"
+
+msgid "OpenGL"
+msgstr "OpenGL"
 
 msgid "Shaders"
 msgstr "Shaders"

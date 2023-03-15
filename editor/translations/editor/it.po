@@ -81,12 +81,13 @@
 # Andrea Migliaccio <andrea.migliaccio@gmail.com>, 2023.
 # gianmarco malandra <giamminho12@gmail.com>, 2023.
 # Francesco Franchina <cescus92@gmail.com>, 2023.
+# "Matteo A." <psyduck.boh@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-25 00:15+0000\n"
+"PO-Revision-Date: 2023-03-12 20:08+0000\n"
 "Last-Translator: Mirko <miknsop@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
@@ -95,7 +96,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16.2-dev\n"
 
 msgid "Unset"
 msgstr "Non impostato"
@@ -740,22 +741,16 @@ msgid "Stream:"
 msgstr "Flusso:"
 
 msgid "Start (s):"
-msgstr "inizia:"
+msgstr "Inizio (s):"
 
 msgid "End (s):"
-msgstr "finisci:"
+msgstr "Fine (s):"
 
 msgid "Animation Clip:"
-msgstr "clip delle animazioni:"
+msgstr "Clip di animazione:"
 
 msgid "Toggle Track Enabled"
 msgstr "Abilita/Disabilita una traccia"
-
-msgid "Continuous"
-msgstr "Continua"
-
-msgid "Discrete"
-msgstr "Discreta"
 
 msgid "Capture"
 msgstr "Cattura"
@@ -1441,9 +1436,6 @@ msgstr "Sorgente %s"
 
 msgid "%s Source:"
 msgstr "Sorgente %s:"
-
-msgid "Stack Trace"
-msgstr "Analisi dello stack"
 
 msgid "Debug session started."
 msgstr "Sessione di debug iniziata."
@@ -3586,6 +3578,9 @@ msgstr ""
 
 msgid "Choose a renderer."
 msgstr "Scegli un renderer."
+
+msgid "Forward+"
+msgstr "Forward+"
 
 msgid "Mobile"
 msgstr "Mobile"
@@ -9709,6 +9704,9 @@ msgstr "Disegna i tasselli"
 msgid "Paste tiles"
 msgstr "Incolla i tasselli"
 
+msgid "Selection"
+msgstr "Selezione"
+
 msgid "Paint"
 msgstr "Disegna"
 
@@ -11116,9 +11114,6 @@ msgstr "I dati GI Voxel fanno parte di una risorsa importata."
 
 msgid "Voxel GI data is an imported resource."
 msgstr "I dati GI Voxel sono una risorsa importata."
-
-msgid "Bake VoxelGI"
-msgstr "Cuoci VoxelGI"
 
 msgid "Select path for VoxelGI Data File"
 msgstr "Selezionare un percorso per il file di dati VoxelGI"

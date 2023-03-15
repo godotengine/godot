@@ -130,13 +130,15 @@
 # Alexander Alexeev <dergluck@gmail.com>, 2023.
 # Playmore Dev <playmoredevelop@gmail.com>, 2023.
 # Вячеслав Шароваров <frfnmtd272710@gmail.com>, 2023.
+# Artemy Fedotov <catlovescpp@gmail.com>, 2023.
+# Daniil <reidolf.danila@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-16 02:37+0000\n"
-"Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
+"PO-Revision-Date: 2023-03-09 00:25+0000\n"
+"Last-Translator: Daniil <reidolf.danila@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -145,7 +147,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16.2-dev\n"
 
 msgid "Unset"
 msgstr "Сбросить"
@@ -240,6 +242,24 @@ msgstr "Верхнее действие, Sony Triangle, Xbox Y, Nintendo X"
 msgid "Back, Sony Select, Xbox Back, Nintendo -"
 msgstr "Назад, Sony Select, Xbox Back, Nintendo -"
 
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "Гайд, Sony PS, Xbox Home"
+
+msgid "Start, Nintendo +"
+msgstr "Старт, Nintendo +"
+
+msgid "Left Stick, Sony L3, Xbox L/LS"
+msgstr "Левый Стик, Sony L3, Xbox L/LS"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "Правый Стик, Sony R3, Xbox R/RS"
+
+msgid "Left Shoulder, Sony L1, Xbox LB"
+msgstr "Левый Бампер, Sony L1, Xbox LB"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "Правый Бампер, Sony R1, Xbox RB"
+
 msgid "D-pad Up"
 msgstr "D-pad Вверх"
 
@@ -251,6 +271,21 @@ msgstr "D-pad Влево"
 
 msgid "D-pad Right"
 msgstr "D-pad Вправо"
+
+msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "Xbox Share, PS5 Microphone, Nintendo Capture"
+
+msgid "Xbox Paddle 1"
+msgstr "Xbox Крестовина 1"
+
+msgid "Xbox Paddle 2"
+msgstr "Xbox Крестовина 2"
+
+msgid "Xbox Paddle 3"
+msgstr "Xbox Крестовина 3"
+
+msgid "Xbox Paddle 4"
+msgstr "Xbox Крестовина 4"
 
 msgid "PS4/5 Touchpad"
 msgstr "PS4/5 Тачпад"
@@ -266,6 +301,16 @@ msgstr "коснулся"
 
 msgid "released"
 msgstr "отпустил"
+
+msgid "Screen %s at (%s) with %s touch points"
+msgstr "Экран %s в (%s) с %s тачпад точками"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr "Экран с %s тачпад точками в позиции (%s) перетянут со скоростью (%s)"
+
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "Жест увеличения в (%s) с коэффициентом %s"
 
 msgid "MIDI Input on Channel=%s Message=%s"
 msgstr "MIDI Вход на канале=%s Сообщение=%s"
@@ -417,6 +462,9 @@ msgstr "Выделить всё"
 msgid "Select Word Under Caret"
 msgstr "Выделить слово под курсором"
 
+msgid "Add Selection for Next Occurrence"
+msgstr "Добавить Выделение для Следующего Действия"
+
 msgid "Clear Carets and Selection"
 msgstr "Очистить каретки и выделение"
 
@@ -428,6 +476,9 @@ msgstr "Дублировать узлы"
 
 msgid "Delete Nodes"
 msgstr "Удалить узлы"
+
+msgid "Go Up One Level"
+msgstr "Вверх на один уровень"
 
 msgid "Refresh"
 msgstr "Обновить"
@@ -506,6 +557,9 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "Действие с именем «%s» уже существует."
 
+msgid "Cannot Revert - Action is same as initial"
+msgstr "Невозможно вернуться - Действие схоже с первоначальным"
+
 msgid "Revert Action"
 msgstr "Откатить действие"
 
@@ -566,6 +620,21 @@ msgstr "Удалить выделенные ключи"
 msgid "Make Handles Free"
 msgstr "Сделать ручки свободными"
 
+msgid "Make Handles Linear"
+msgstr "Сделать Дескрипторы Линейными"
+
+msgid "Make Handles Balanced"
+msgstr "Сделать Дескрипторы Сбалансированными"
+
+msgid "Make Handles Mirrored"
+msgstr "Сделать Дескрипторы Отражёнными"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "Сделать Дескрипторы Сбалансированными (Авто тангенс)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "Сделать Дескрипторы Отражёнными (Авто тангенс)"
+
 msgid "Add Bezier Point"
 msgstr "Добавить точку Безье"
 
@@ -617,6 +686,16 @@ msgstr "Изменить длину анимации"
 msgid "Change Animation Loop"
 msgstr "Изменить цикл анимации"
 
+msgid "Can't change loop mode on animation instanced from imported scene."
+msgstr ""
+"Невозможно переключить режим зацикливания анимации, взятой из "
+"импортированной сцены."
+
+msgid "Can't change loop mode on animation embedded in another scene."
+msgstr ""
+"Невозможно переключить режим зацикливания анимации, встроенной в другую "
+"сцену."
+
 msgid "Property Track"
 msgstr "Дорожка параметра"
 
@@ -628,6 +707,9 @@ msgstr "Дорожка вращения 3D"
 
 msgid "3D Scale Track"
 msgstr "Дорожка масштабирования 3D"
+
+msgid "Blend Shape Track"
+msgstr "Сгладить Форму Дорожки"
 
 msgid "Call Method Track"
 msgstr "Дорожка вызова метода"
@@ -713,6 +795,18 @@ msgstr "Ручка В:"
 msgid "Out-Handle:"
 msgstr "Ручка ИЗ:"
 
+msgid "Handle mode: Free\n"
+msgstr "Режим дескриптора: Свободный\n"
+
+msgid "Handle mode: Linear\n"
+msgstr "Режим дескриптора: Линейный\n"
+
+msgid "Handle mode: Balanced\n"
+msgstr "Режим дескриптора: Сбалансированный\n"
+
+msgid "Handle mode: Mirrored\n"
+msgstr "Режим дескриптора: Отражённый\n"
+
 msgid "Stream:"
 msgstr "Поток:"
 
@@ -727,6 +821,9 @@ msgstr "Клип Анимации:"
 
 msgid "Toggle Track Enabled"
 msgstr "Включить/выключить дорожку"
+
+msgid "Don't Use Blend"
+msgstr "Не использовать Сглаживание"
 
 msgid "Continuous"
 msgstr "Непрерывная"
@@ -781,6 +878,13 @@ msgstr "Изменить режим цикла анимации"
 
 msgid "Change Animation Use Blend"
 msgstr "Изменить использование смешивания анимации"
+
+msgid ""
+"Compressed tracks can't be edited or removed. Re-import the animation with "
+"compression disabled in order to edit."
+msgstr ""
+"Сжатые дорожки не могут быть удалены/изменены. Для редактирования анимации, "
+"вам нужно переимпортировать её с выключенным сжатием."
 
 msgid "Remove Anim Track"
 msgstr "Удалить дорожку анимации"
@@ -929,6 +1033,9 @@ msgstr "Выберите узел AnimationPlayer для создания и р�
 msgid "Imported Scene"
 msgstr "Импортированная сцена"
 
+msgid "Toggle between the bezier curve editor and track editor."
+msgstr "Переключаться между кривой Безье и редактором дорожек."
+
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Показывать дорожки только выделенных в дереве узлов."
 
@@ -1018,6 +1125,9 @@ msgstr "Подчистить"
 
 msgid "Scale Ratio:"
 msgstr "Коэффициент масштабирования:"
+
+msgid "Select Transition and Easing"
+msgstr "Выбрать Переход и Ослабление"
 
 msgid "Select Tracks to Copy"
 msgstr "Выбрать дорожки для копирования"
@@ -1133,6 +1243,9 @@ msgstr "Выбрать метод"
 
 msgid "Filter Methods"
 msgstr "Фильтр методов"
+
+msgid "No method found matching given filters."
+msgstr "Методы не найдены для данных фильтров."
 
 msgid "Script Methods Only"
 msgstr "Только методы скрипта"
@@ -2093,6 +2206,9 @@ msgstr "Загрузить профиль"
 msgid "Export Profile"
 msgstr "Экспортировать профиль"
 
+msgid "Forced classes on detect:"
+msgstr "Принудительные классы для обнаружения:"
+
 msgid "Edit Build Configuration Profile"
 msgstr "Изменить профиль конфигурации сборки"
 
@@ -2294,6 +2410,19 @@ msgstr "Открыть"
 
 msgid "Select Current Folder"
 msgstr "Выбрать текущую папку"
+
+msgid "Cannot save file with an empty filename."
+msgstr "Невозможно сохранить безымянный файл."
+
+msgid "Cannot save file with a name starting with a dot."
+msgstr "Невозможно сохранить файл с названием, начинающееся с точкой."
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"Файл \"%s\" уже существует.\n"
+"Перезаписать файл?"
 
 msgid "Select This Folder"
 msgstr "Выбрать эту папку"
@@ -11731,6 +11860,9 @@ msgstr "Внимание!"
 msgid "Please Confirm..."
 msgstr "Подтверждение..."
 
+msgid "All Files"
+msgstr "Все файлы"
+
 msgid "Enable grid minimap."
 msgstr "Включить миникарту сетки."
 
@@ -11921,6 +12053,15 @@ msgstr "Ошибка вычисления условия."
 
 msgid "Invalid macro argument count."
 msgstr "Недопустимое количество аргументов макроса."
+
+msgid ""
+"Direct floating-point comparison (this may not evaluate to `true` as you "
+"expect). Instead, use `abs(a - b) < 0.0001` for an approximate but "
+"predictable comparison."
+msgstr ""
+"Точное сравнение с плавающей точкой (может быть не совсем `тем`, чего вы "
+"ожидаете). Вместо этого, используйте `abs(a - b) < 0.0001` для "
+"приблизительного, но предсказуемого, сравнения."
 
 msgid "The const '%s' is declared but never used."
 msgstr "Константа '%s' объявлена, но не используется."

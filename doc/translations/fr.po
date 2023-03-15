@@ -64,13 +64,15 @@
 # Thalya Gauvrit <skar0ps.dev@gmail.com>, 2023.
 # Hipolyte Ponthieu <7hip.po6@orange.fr>, 2023.
 # Dricom Dragon <dev@jovian-hersemeule.eu>, 2023.
+# t8y <contact@t3y.eu>, 2023.
+# GuruWP <guruwp@protonmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-28 17:36+0000\n"
-"Last-Translator: Dricom Dragon <dev@jovian-hersemeule.eu>\n"
+"PO-Revision-Date: 2023-03-08 00:26+0000\n"
+"Last-Translator: GuruWP <guruwp@protonmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/fr/>\n"
 "Language: fr\n"
@@ -78,7 +80,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.16-rc\n"
+"X-Generator: Weblate 4.16.2-dev\n"
 
 msgid "Description"
 msgstr "Description"
@@ -385,6 +387,25 @@ msgstr ""
 
 msgid "Random number generation"
 msgstr "Génération de nombres aléatoires"
+
+msgid ""
+"Returns the arc cosine of [param x] in radians. Use to get the angle of "
+"cosine [param x]. [param x] must be between [code]-1.0[/code] and [code]1.0[/"
+"code] (inclusive), otherwise, [method acos] will return [constant @GDScript."
+"NAN].\n"
+"[codeblock]\n"
+"# c is 0.523599 or 30 degrees if converted with rad_to_deg(c)\n"
+"var c = acos(0.866025)\n"
+"[/codeblock]"
+msgstr ""
+"Renvoie le cosinus inverse de [param x] en radians. À utiliser pour obtenir "
+"l'angle du cosinus [param x]. [param x] doit être entre [code]-1.0[/code] et "
+"[code]1.0[/code] (inclus), dans le cas contraire, [method acos] retournera "
+"[constant @GDScript.NAN].\n"
+"[codeblock]\n"
+"# c vaut 0.523599 ou 30 degrés si converti avec rad2deg(s)\n"
+"c = acos(0.866025)\n"
+"[/codeblock]"
 
 msgid "Converts from decibels to linear energy (audio)."
 msgstr "Convertit les décibels en énergie linéaire (audio)."
@@ -19517,14 +19538,6 @@ msgstr "Une unité d'exécution dans un processus."
 msgid "Thread-safe APIs"
 msgstr "Les API sûres pour plusieurs fils d'exécution"
 
-msgid ""
-"Returns the current [Thread]'s ID, uniquely identifying it among all "
-"threads. If the [Thread] is not running this returns an empty string."
-msgstr ""
-"Retourne l'identifiant du [Thread] actuel, qui lui est unique parmi tous les "
-"autres fils d'exécution. Si le [Thread] n'est pas actif, une chaine vide est "
-"retournée."
-
 msgid "A thread running with lower priority than normally."
 msgstr "Un fil d'exécution avec une priorité inférieure à la normale."
 
@@ -19719,15 +19732,6 @@ msgstr "Retourne la rotation du transform (en radians)."
 
 msgid "Returns the scale."
 msgstr "Retourne l’échelle."
-
-msgid ""
-"Returns [code]true[/code] if this transform and [code]transform[/code] are "
-"approximately equal, by calling [code]is_equal_approx[/code] on each "
-"component."
-msgstr ""
-"Retourne [code]true[/code] si cette transformation est [code]transform[/"
-"code] sont approximativement égales, c'est-à-dire en appelant "
-"[code]is_equal_approx[/code] pour chaque composant."
 
 msgid ""
 "Returns the transform with the basis orthogonal (90 degrees), and normalized "

@@ -124,9 +124,6 @@ msgstr "音訊"
 msgid "Editor"
 msgstr "編輯器"
 
-msgid "Main Run Args"
-msgstr "主執行引數"
-
 msgid "Physics"
 msgstr "物理"
 
@@ -1473,6 +1470,9 @@ msgstr "SSH公鑰路徑"
 
 msgid "SSH Private Key Path"
 msgstr "SSH私鑰路徑"
+
+msgid "Main Run Args"
+msgstr "主執行引數"
 
 msgid "Show Scene Tree Root Selection"
 msgstr "顯示場景樹的根選擇"
