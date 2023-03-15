@@ -53,6 +53,7 @@ using namespace godot;
 #endif
 
 #ifdef MODULE_SVG_ENABLED
+#ifdef MODULE_FREETYPE_ENABLED
 
 #include "thorvg_bounds_iterator.h"
 #include "thorvg_svg_in_ot.h"
@@ -284,4 +285,5 @@ SVG_RendererHooks *get_tvg_svg_in_ot_hooks() {
 	return &tvg_svg_in_ot_hooks;
 }
 
+#endif // MODULE_FREETYPE_ENABLED
 #endif // MODULE_SVG_ENABLED
