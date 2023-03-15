@@ -3640,6 +3640,15 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 				d["alphaMode"] = "BLEND";
 			}
 		}
+
+		Dictionary extensions;
+		if (material->get_flag(SpatialMaterial::FLAG_UNSHADED)) {
+			Dictionary mat_unlit;
+			extensions["KHR_materials_unlit"] = mat_unlit;
+			p_state->add_used_extension("KHR_materials_unlit");
+		}
+		d["extensions"] = extensions;
+
 		materials.push_back(d);
 	}
 	if (!materials.size()) {
@@ -3673,6 +3682,11 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 		if (d.has("extensions")) {
 			pbr_spec_gloss_extensions = d["extensions"];
 		}
+
+		if (pbr_spec_gloss_extensions.has("KHR_materials_unlit")) {
+			material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+		}
+
 		if (pbr_spec_gloss_extensions.has("KHR_materials_pbrSpecularGlossiness")) {
 			WARN_PRINT("Material uses a specular and glossiness workflow. Textures will be converted to roughness and metallic workflow, which may not be 100% accurate.");
 			Dictionary sgm = pbr_spec_gloss_extensions["KHR_materials_pbrSpecularGlossiness"];
@@ -6951,6 +6965,7 @@ Error GLTFDocument::_parse_gltf_extensions(Ref<GLTFState> p_state) {
 	supported_extensions.insert("KHR_lights_punctual");
 	supported_extensions.insert("KHR_materials_pbrSpecularGlossiness");
 	supported_extensions.insert("KHR_texture_transform");
+	supported_extensions.insert("KHR_materials_unlit");
 	for (int ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
 		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
 		Vector<String> ext_supported_extensions = ext->get_supported_extensions();
