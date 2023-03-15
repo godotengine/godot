@@ -44,13 +44,14 @@
 # 오지훈 <jule1130@naver.com>, 2023.
 # 이정희 <daemul72@gmail.com>, 2023.
 # nulta <un5450@naver.com>, 2023.
+# jaehun choe <jayden.choe@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-26 20:44+0000\n"
-"Last-Translator: Godoto <aicompose@gmail.com>\n"
+"PO-Revision-Date: 2023-03-05 01:38+0000\n"
+"Last-Translator: jaehun choe <jayden.choe@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -58,7 +59,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16.2-dev\n"
 
 msgid "Unset"
 msgstr "설정 해제"
@@ -210,6 +211,9 @@ msgstr "압력:"
 msgid "touched"
 msgstr "터치"
 
+msgid "released"
+msgstr "출시된"
+
 msgid "Screen %s at (%s) with %s touch points"
 msgstr "터치 포인트가 %s개인 (%s)의 %s 화면"
 
@@ -257,6 +261,15 @@ msgstr "위"
 msgid "Down"
 msgstr "아래"
 
+msgid "Page Up"
+msgstr "페이지 업"
+
+msgid "Page Down"
+msgstr "페이지 다운"
+
+msgid "Home"
+msgstr "홈"
+
 msgid "End"
 msgstr "끝"
 
@@ -275,11 +288,20 @@ msgstr "실행 취소"
 msgid "Redo"
 msgstr "다시 실행"
 
+msgid "New Line"
+msgstr "뉴라인"
+
 msgid "New Blank Line"
-msgstr "새로운 빈 줄"
+msgstr "뉴라인(Blank)"
+
+msgid "New Line Above"
+msgstr "뉴라인(위로)"
 
 msgid "Indent"
 msgstr "들여쓰기"
+
+msgid "Backspace"
+msgstr "백스페이스"
 
 msgid "Backspace Word"
 msgstr "백스페이스 단어"
@@ -289,6 +311,9 @@ msgstr "모두 왼쪽으로 백스페이스"
 
 msgid "Delete"
 msgstr "삭제"
+
+msgid "Delete Word"
+msgstr "단어 삭제"
 
 msgid "Caret Add Above"
 msgstr "위에 캐럿 추가"
@@ -453,7 +478,7 @@ msgstr "애니메이션 루프 바꾸기"
 
 msgid "Can't change loop mode on animation instanced from imported scene."
 msgstr ""
-"임포트된 씬에서 인스턴스화된 애니메이션의 루프 모드를 변경할 수 없습니다."
+"가져온 씬에서 인스턴스화된 애니메이션의 루프 모드를 변경할 수 없습니다."
 
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr "다른 장면에 임베드된 애니메이션의 루프 모드를 변경할 수 없습니다."
@@ -3651,7 +3676,7 @@ msgid ""
 "FBX2glTF is required for importing FBX files.\n"
 "Please download it and provide a valid path to the binary:"
 msgstr ""
-"FBX 파일을 임포트하려면 FBX2glTF가 필요합니다.\n"
+"FBX 파일을 가져오려면 FBX2glTF가 필요합니다.\n"
 "다운로드하고 바이너리의 유효한 경로를 제공하세요:"
 
 msgid "Click this link to download FBX2glTF"
@@ -9225,6 +9250,9 @@ msgstr "식별자가 누락되어 있습니다."
 
 msgid "The character '%s' is not allowed in Identifier."
 msgstr "문자 '%s'은(는) 식별자에 쓸 수 없습니다."
+
+msgid "Stop and uninstall"
+msgstr "멈춤 및 설치 제거"
 
 msgid "Could not open icon file \"%s\"."
 msgstr "아이콘 파일 \"%s\"를 열 수 없습니다."

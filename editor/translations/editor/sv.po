@@ -28,13 +28,14 @@
 # Björn Åkesson <bjorn.akesson@gmail.com>, 2022, 2023.
 # Kenny Andersson <kenny@ordinary.se>, 2022.
 # Ludvig Svenonius <ludvig.svenonius@protonmail.com>, 2023.
+# Daniel Ljung <weblate@bazonic.mozmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-09 18:26+0000\n"
-"Last-Translator: Daniel K <danielkimblad@hotmail.com>\n"
+"PO-Revision-Date: 2023-03-15 01:17+0000\n"
+"Last-Translator: Daniel Ljung <weblate@bazonic.mozmail.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -42,7 +43,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16.2-dev\n"
 
 msgid "Unset"
 msgstr "Nollställ"
@@ -1903,6 +1904,9 @@ msgstr ""
 msgid "(Re)Importing Assets"
 msgstr "(Om)Importerar Tillgångar"
 
+msgid "Experimental"
+msgstr "Experimentell"
+
 msgid "Top"
 msgstr "Topp"
 
@@ -2355,6 +2359,9 @@ msgstr "Skicka Dokumentations Feedback"
 
 msgid "Community"
 msgstr "Gemenskap"
+
+msgid "Forward+"
+msgstr "Framåt+"
 
 msgid "FileSystem"
 msgstr "FilSystem"

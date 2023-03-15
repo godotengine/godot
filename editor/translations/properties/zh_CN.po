@@ -220,26 +220,11 @@ msgstr "3D 平移强度"
 msgid "Editor"
 msgstr "编辑器"
 
-msgid "Main Run Args"
-msgstr "主运行参数"
-
 msgid "Script"
 msgstr "脚本"
 
 msgid "Search in File Extensions"
 msgstr "搜索文件扩展名"
-
-msgid "Templates Search Path"
-msgstr "模板搜索路径"
-
-msgid "Naming"
-msgstr "命名"
-
-msgid "Default Signal Callback Name"
-msgstr "默认信号回调名称"
-
-msgid "Default Signal Callback to Self Name"
-msgstr "默认信号回调为自身名称"
 
 msgid "Physics"
 msgstr "物理"
@@ -783,9 +768,6 @@ msgstr "制作关键帧"
 
 msgid "Deletable"
 msgstr "可删除"
-
-msgid "Scene Name Casing"
-msgstr "场景名称大小写"
 
 msgid "Interface"
 msgstr "界面"
@@ -2373,6 +2355,24 @@ msgstr "SSH 公钥路径"
 
 msgid "SSH Private Key Path"
 msgstr "SSH 私钥路径"
+
+msgid "Main Run Args"
+msgstr "主运行参数"
+
+msgid "Templates Search Path"
+msgstr "模板搜索路径"
+
+msgid "Naming"
+msgstr "命名"
+
+msgid "Default Signal Callback Name"
+msgstr "默认信号回调名称"
+
+msgid "Default Signal Callback to Self Name"
+msgstr "默认信号回调为自身名称"
+
+msgid "Scene Name Casing"
+msgstr "场景名称大小写"
 
 msgid "Show Scene Tree Root Selection"
 msgstr "显示场景树根选择"
@@ -4239,15 +4239,6 @@ msgstr "底"
 
 msgid "Smoothed"
 msgstr "平滑"
-
-msgid "Follow Smoothing"
-msgstr "跟随平滑"
-
-msgid "Position Smoothing Enabled"
-msgstr "启用位置平滑"
-
-msgid "Position Smoothing Speed"
-msgstr "位置平滑速度"
 
 msgid "Rotation Smoothing"
 msgstr "旋转平滑"
