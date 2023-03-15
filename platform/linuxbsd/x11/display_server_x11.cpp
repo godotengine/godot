@@ -605,7 +605,7 @@ String DisplayServerX11::_clipboard_get_impl(Atom p_source, Window x11_window, A
 							success = true;
 						}
 					} else {
-						printf("Failed to get selection data chunk.\n");
+						print_verbose("Failed to get selection data chunk.");
 						done = true;
 					}
 
@@ -632,7 +632,7 @@ String DisplayServerX11::_clipboard_get_impl(Atom p_source, Window x11_window, A
 			if (result == Success) {
 				ret.parse_utf8((const char *)data);
 			} else {
-				printf("Failed to get selection data.\n");
+				print_verbose("Failed to get selection data.");
 			}
 
 			if (data) {
@@ -3343,7 +3343,7 @@ Atom DisplayServerX11::_process_selection_request_target(Atom p_target, Window p
 		return p_property;
 	} else {
 		char *target_name = XGetAtomName(x11_display, p_target);
-		printf("Target '%s' not supported.\n", target_name);
+		print_verbose(vformat("Target '%s' not supported.", target_name));
 		if (target_name) {
 			XFree(target_name);
 		}

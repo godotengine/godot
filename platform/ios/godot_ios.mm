@@ -83,14 +83,9 @@ int ios_main(int argc, char **argv) {
 		char path[512];
 		memcpy(path, argv[0], len > sizeof(path) ? sizeof(path) : len);
 		path[len] = 0;
-		printf("Path: %s\n", path);
 		chdir(path);
 	}
 
-	printf("godot_ios %s\n", argv[0]);
-	char cwd[512];
-	getcwd(cwd, sizeof(cwd));
-	printf("cwd %s\n", cwd);
 	os = new OS_IOS();
 
 	// We must override main when testing is enabled
@@ -104,10 +99,7 @@ int ios_main(int argc, char **argv) {
 	argc = add_path(argc, fargv);
 	argc = add_cmdline(argc, fargv);
 
-	printf("os created\n");
-
 	Error err = Main::setup(fargv[0], argc - 1, &fargv[1], false);
-	printf("setup %i\n", err);
 
 	if (err == ERR_HELP) { // Returned by --help and --version, so success.
 		return 0;
@@ -121,7 +113,6 @@ int ios_main(int argc, char **argv) {
 }
 
 void ios_finish() {
-	printf("ios_finish\n");
 	Main::cleanup();
 	delete os;
 }
