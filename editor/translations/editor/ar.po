@@ -73,13 +73,14 @@
 # Abdulrahman <abdelrahman.ramadan686@gmail.com>, 2022.
 # "Ali F. Abbas" <alifuadabbas@gmail.com>, 2023.
 # Youssef Mohamed <starmod300@gmail.com>, 2023.
+# "Mr.k" <mineshtine28546271@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-26 13:09+0000\n"
-"Last-Translator: Youssef Mohamed <starmod300@gmail.com>\n"
+"PO-Revision-Date: 2023-03-12 02:42+0000\n"
+"Last-Translator: \"Mr.k\" <mineshtine28546271@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -88,7 +89,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16.2-dev\n"
 
 msgid "Unset"
 msgstr "غير محدد"
@@ -468,10 +469,10 @@ msgid "Built-in"
 msgstr "مُدمج:"
 
 msgid "B"
-msgstr "بايت"
+msgstr "بايت (Byte)"
 
 msgid "KiB"
-msgstr "كيلوبايت"
+msgstr "كيبي بايت (KiB)"
 
 msgid "MiB"
 msgstr "ميبي بايت (MiB)"
@@ -493,12 +494,12 @@ msgstr "مثال: s%"
 
 msgid "%d item"
 msgid_plural "%d items"
-msgstr[0] "العنصر: d%"
-msgstr[1] "العنصر: d%"
-msgstr[2] "العنصران: d%"
-msgstr[3] "العناصر: d%"
-msgstr[4] "العناصر: d%"
-msgstr[5] "العناصر: d%"
+msgstr[0] "d% عنصر"
+msgstr[1] "d% عنصر"
+msgstr[2] "d% عنصران"
+msgstr[3] "d% عناصر"
+msgstr[4] "d% عناصر"
+msgstr[5] "d% عناصر"
 
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
@@ -533,12 +534,6 @@ msgstr "حذف الحدث"
 
 msgid "Filter by name..."
 msgstr "فلتر بواسطة الاسم..."
-
-msgid "Clear All"
-msgstr "مسح الكل"
-
-msgid "Add New Action"
-msgstr "إضافة إجراء جديد"
 
 msgid "Add"
 msgstr "أضف"
@@ -5476,7 +5471,7 @@ msgid "Reset Field of View to Default"
 msgstr "إعادة تعيين مجال الرؤية إلى الافتراضي"
 
 msgid "Transform"
-msgstr "التحوّل"
+msgstr "التَحَوّل"
 
 msgid "Snap Object to Floor"
 msgstr "محاذاة الشيء إلى الأرض"
@@ -6703,11 +6698,11 @@ msgstr "القلب أفقياً"
 msgid "Flip Vertically"
 msgstr "القلب عموديًا"
 
+msgid "Tiles"
+msgstr "البلاط"
+
 msgid "Yes"
 msgstr "نعم"
-
-msgid "TileSet"
-msgstr "مُحدد البلاط"
 
 msgid "Error"
 msgstr "خطأ"
