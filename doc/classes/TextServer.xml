@@ -113,6 +113,15 @@
 				Returns the font ascent (number of pixels above the baseline).
 			</description>
 		</method>
+		<method name="font_get_char_from_glyph_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph_index" type="int" />
+			<description>
+				Returns character code associated with [param glyph_index], or [code]0[/code] if [param glyph_index] is invalid. See [method font_get_glyph_index].
+			</description>
+		</method>
 		<method name="font_get_descent" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="font_rid" type="RID" />
@@ -191,7 +200,7 @@
 			<param index="2" name="char" type="int" />
 			<param index="3" name="variation_selector" type="int" />
 			<description>
-				Returns the glyph index of a [param char], optionally modified by the [param variation_selector].
+				Returns the glyph index of a [param char], optionally modified by the [param variation_selector].  See [method font_get_char_from_glyph_index].
 			</description>
 		</method>
 		<method name="font_get_glyph_list" qualifiers="const">
