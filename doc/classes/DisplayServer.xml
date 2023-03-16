@@ -952,7 +952,7 @@
 			<return type="void" />
 			<param index="0" name="image" type="Image" />
 			<description>
-				Sets the window icon (usually displayed in the top-left corner) in the operating system's [i]native[/i] format. To use icons in the operating system's native format, use [method set_native_icon] instead.
+				Sets the window icon (usually displayed in the top-left corner) with an [Image]. To use icons in the operating system's native format, use [method set_native_icon] instead.
 			</description>
 		</method>
 		<method name="set_native_icon">
@@ -1046,8 +1046,8 @@
 			<param index="1" name="callable" type="Callable" />
 			<description>
 				Adds a callback, which is called when the utterance has started, finished, canceled or reached a text boundary.
-				- [constant TTS_UTTERANCE_STARTED], [constant TTS_UTTERANCE_ENDED], and [constant TTS_UTTERANCE_CANCELED] callable's method should take one [int] parameter, the utterance id.
-				- [constant TTS_UTTERANCE_BOUNDARY] callable's method should take two [int] parameters, the index of the character and the utterance id.
+				- [constant TTS_UTTERANCE_STARTED], [constant TTS_UTTERANCE_ENDED], and [constant TTS_UTTERANCE_CANCELED] callable's method should take one [int] parameter, the utterance ID.
+				- [constant TTS_UTTERANCE_BOUNDARY] callable's method should take two [int] parameters, the index of the character and the utterance ID.
 				[b]Note:[/b] The granularity of the boundary callbacks is engine dependent.
 				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
 			</description>
