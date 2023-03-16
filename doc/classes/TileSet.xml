@@ -155,7 +155,7 @@
 			<return type="int" />
 			<param index="0" name="layer_index" type="int" />
 			<description>
-				Returns the navigation layers (as in the Navigation server) of the gives TileSet navigation layer.
+				Returns the navigation layers (as in the Navigation server) of the given TileSet navigation layer.
 			</description>
 		</method>
 		<method name="get_navigation_layers_count" qualifiers="const">
@@ -522,7 +522,7 @@
 			<param index="0" name="layer_index" type="int" />
 			<param index="1" name="layers" type="int" />
 			<description>
-				Sets the navigation layers (as in the navigation server) for navigation regions is the given TileSet navigation layer.
+				Sets the navigation layers (as in the navigation server) for navigation regions in the given TileSet navigation layer.
 			</description>
 		</method>
 		<method name="set_occlusion_layer_light_mask">
@@ -538,7 +538,7 @@
 			<param index="0" name="layer_index" type="int" />
 			<param index="1" name="sdf_collision" type="bool" />
 			<description>
-				Enables or disables sdf collision for occluders in the given TileSet occlusion layer.
+				Enables or disables SDF collision for occluders in the given TileSet occlusion layer.
 			</description>
 		</method>
 		<method name="set_physics_layer_collision_layer">
