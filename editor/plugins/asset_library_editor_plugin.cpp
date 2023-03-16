@@ -1398,7 +1398,7 @@ void EditorAssetLibrary::_asset_open() {
 }
 
 void EditorAssetLibrary::_manage_plugins() {
-	ProjectSettingsEditor::get_singleton()->popup_project_settings();
+	ProjectSettingsEditor::get_singleton()->popup_project_settings(true);
 	ProjectSettingsEditor::get_singleton()->set_plugins_page();
 }
 

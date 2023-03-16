@@ -82,7 +82,7 @@ private:
 	static thread_local ID caller_id;
 	std::thread thread;
 
-	static void callback(Thread *p_self, const Settings &p_settings, Thread::Callback p_callback, void *p_userdata);
+	static void callback(ID p_caller_id, const Settings &p_settings, Thread::Callback p_callback, void *p_userdata);
 
 	static PlatformFunctions platform_functions;
 

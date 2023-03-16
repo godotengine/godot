@@ -5,19 +5,19 @@ enum MyEnum { V0, V1, V2 }
 class InnerClass:
 	enum MyEnum { V0, V2, V1 }
 
-	func inner_inner_no_class(e : MyEnum) -> MyEnum:
+	func inner_inner_no_class(e: MyEnum) -> MyEnum:
 		print(e)
 		return e
 
-	func inner_inner_class(e : InnerClass.MyEnum) -> InnerClass.MyEnum:
+	func inner_inner_class(e: InnerClass.MyEnum) -> InnerClass.MyEnum:
 		print(e)
 		return e
 
-	func inner_inner_class_class(e : EnumFunctionTypecheckOuterClass.InnerClass.MyEnum) -> EnumFunctionTypecheckOuterClass.InnerClass.MyEnum:
+	func inner_inner_class_class(e: EnumFunctionTypecheckOuterClass.InnerClass.MyEnum) -> EnumFunctionTypecheckOuterClass.InnerClass.MyEnum:
 		print(e)
 		return e
 
-	func inner_outer(e : EnumFunctionTypecheckOuterClass.MyEnum) -> EnumFunctionTypecheckOuterClass.MyEnum:
+	func inner_outer(e: EnumFunctionTypecheckOuterClass.MyEnum) -> EnumFunctionTypecheckOuterClass.MyEnum:
 		print(e)
 		return e
 
@@ -59,19 +59,19 @@ class InnerClass:
 		print()
 
 
-func outer_outer_no_class(e : MyEnum) -> MyEnum:
+func outer_outer_no_class(e: MyEnum) -> MyEnum:
 	print(e)
 	return e
 
-func outer_outer_class(e : EnumFunctionTypecheckOuterClass.MyEnum) -> EnumFunctionTypecheckOuterClass.MyEnum:
+func outer_outer_class(e: EnumFunctionTypecheckOuterClass.MyEnum) -> EnumFunctionTypecheckOuterClass.MyEnum:
 	print(e)
 	return e
 
-func outer_inner_class(e : InnerClass.MyEnum) -> InnerClass.MyEnum:
+func outer_inner_class(e: InnerClass.MyEnum) -> InnerClass.MyEnum:
 	print(e)
 	return e
 
-func outer_inner_class_class(e : EnumFunctionTypecheckOuterClass.InnerClass.MyEnum) -> EnumFunctionTypecheckOuterClass.InnerClass.MyEnum:
+func outer_inner_class_class(e: EnumFunctionTypecheckOuterClass.InnerClass.MyEnum) -> EnumFunctionTypecheckOuterClass.InnerClass.MyEnum:
 	print(e)
 	return e
 

@@ -7,4 +7,4 @@ func test():
 	x.free()
 
 	var ok = x
-	var bad : A = x
+	var bad: A = x

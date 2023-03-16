@@ -23,7 +23,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-23 11:35+0000\n"
+"PO-Revision-Date: 2023-03-02 01:44+0000\n"
 "Last-Translator: Любомир Василев <lyubomirv@gmx.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bg/>\n"
@@ -32,7 +32,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16\n"
 
 msgid "Physical"
 msgstr "Физически"
@@ -2213,10 +2213,30 @@ msgstr ""
 "Филтри за изключване на файлове/папки от проекта\n"
 "(разделени със запетая, например: *.json, *.txt, docs/*)"
 
+msgid "Encryption"
+msgstr "Шифроване"
+
+msgid ""
+"Filters to include files/folders\n"
+"(comma-separated, e.g: *.tscn, *.tres, scenes/*)"
+msgstr ""
+"Филтри за включване на файлове/папки\n"
+"(разделени със запетая, например: *.tscn, *.tres, scenes/*)"
+
+msgid ""
+"Filters to exclude files/folders\n"
+"(comma-separated, e.g: *.ctex, *.import, music/*)"
+msgstr ""
+"Филтри за изключване на файлове/папки\n"
+"(разделени със запетая, например: *.ctex, *.import, music/*)"
+
 msgid "Invalid Encryption Key (must be 64 hexadecimal characters long)"
 msgstr ""
 "Неправилен ключ за шифроване (трябва да бъде с дължина 64 шестнадесетични "
 "знака)"
+
+msgid "Encryption Key (256-bits as hexadecimal):"
+msgstr "Ключ за шифроване (256 бита, в шестнадесетичен формат):"
 
 msgid "Export PCK/ZIP..."
 msgstr "Изнасяне на PCK/ZIP…"
@@ -2236,8 +2256,14 @@ msgstr "Изнасяне на всичко…"
 msgid "ZIP File"
 msgstr "Файл ZIP"
 
+msgid "Godot Project Pack"
+msgstr "Проектен пакет на Godot"
+
 msgid "Export templates for this platform are missing:"
 msgstr "Шаблоните за изнасяне за тази система липсват:"
+
+msgid "Project Export"
+msgstr "Изнасяне на проекта"
 
 msgid "Manage Export Templates"
 msgstr "Управление на шаблоните за изнасяне"
@@ -2245,8 +2271,17 @@ msgstr "Управление на шаблоните за изнасяне"
 msgid "Export With Debug"
 msgstr "Изнасяне с данни за дебъгване"
 
+msgid "FBX2glTF executable is valid."
+msgstr "Изпълнимият файл на FBX2glTF е правилен."
+
+msgid "Configure FBX Importer"
+msgstr "Настройване на функционалността за внасяне на файлове FBX"
+
 msgid "Browse"
 msgstr "Разглеждане"
+
+msgid "Confirm Path"
+msgstr "Потвърждаване на пътя"
 
 msgid "Favorites"
 msgstr "Любими"
@@ -2287,6 +2322,21 @@ msgstr "Добавяне в любимите"
 msgid "Remove from Favorites"
 msgstr "Премахване от любимите"
 
+msgid "Folder..."
+msgstr "Папка…"
+
+msgid "Scene..."
+msgstr "Сцена…"
+
+msgid "Script..."
+msgstr "Скрипт…"
+
+msgid "Resource..."
+msgstr "Ресурс…"
+
+msgid "TextFile..."
+msgstr "Текстов файл…"
+
 msgid "New Scene..."
 msgstr "Нова сцена..."
 
@@ -2296,8 +2346,26 @@ msgstr "Нов скрипт..."
 msgid "New Resource..."
 msgstr "Нов ресурс..."
 
+msgid "New TextFile..."
+msgstr "Нов текстов файл…"
+
+msgid "Sort Files"
+msgstr "Сортиране на файловете"
+
+msgid "Open in External Program"
+msgstr "Отваряне във външна програма"
+
+msgid "Go to previous selected folder/file."
+msgstr "Преминаване към предходно избраната папка/файл."
+
+msgid "Go to next selected folder/file."
+msgstr "Преминаване към следващата избрана папка/файл."
+
 msgid "Toggle Split Mode"
 msgstr "Превключване на разделения режим"
+
+msgid "Filter Files"
+msgstr "Филтриране на файловете"
 
 msgid "Find in Files"
 msgstr "Търсене във файловете"
@@ -2322,6 +2390,9 @@ msgstr "Замяна..."
 
 msgid "Replace in Files"
 msgstr "Замяна във файловете"
+
+msgid "Replace all (no undo)"
+msgstr "Замяна на всички (необратимо)"
 
 msgid "Searching..."
 msgstr "Търсене..."
@@ -2353,6 +2424,9 @@ msgstr "Групи"
 msgid "Group Editor"
 msgstr "Редактор на групи"
 
+msgid "Global"
+msgstr "Глобална"
+
 msgid "Reimport"
 msgstr "Повторно внасяне"
 
@@ -2368,8 +2442,20 @@ msgstr "Повтаряне:"
 msgid "Music Playback:"
 msgstr "Възпроизвеждане на музика:"
 
+msgid "New Configuration"
+msgstr "Нова конфигурация"
+
+msgid "Remove Variation"
+msgstr "Премахване на варианта"
+
+msgid "Rendering Options"
+msgstr "Настройки за изчертаване"
+
 msgid "Configuration:"
 msgstr "Конфигурация:"
+
+msgid "Add configuration"
+msgstr "Добавяне на конфигурация"
 
 msgid "Importing Scene..."
 msgstr "Внасяне на сцената..."

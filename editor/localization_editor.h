@@ -54,6 +54,7 @@ class LocalizationEditor : public VBoxContainer {
 	Tree *translation_pot_list = nullptr;
 	EditorFileDialog *pot_file_open_dialog = nullptr;
 	EditorFileDialog *pot_generate_dialog = nullptr;
+	Button *pot_generate_button = nullptr;
 
 	bool updating_translations = false;
 	String localization_changed;

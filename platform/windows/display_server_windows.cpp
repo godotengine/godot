@@ -90,6 +90,7 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_KEEP_SCREEN_ON:
 		case FEATURE_TEXT_TO_SPEECH:
+		case FEATURE_SCREEN_CAPTURE:
 			return true;
 		default:
 			return false;
@@ -264,15 +265,15 @@ BitField<MouseButtonMask> DisplayServerWindows::mouse_get_button_state() const {
 void DisplayServerWindows::clipboard_set(const String &p_text) {
 	_THREAD_SAFE_METHOD_
 
-	if (!windows.has(last_focused_window)) {
-		return; // No focused window?
+	if (!windows.has(MAIN_WINDOW_ID)) {
+		return;
 	}
 
 	// Convert LF line endings to CRLF in clipboard content.
 	// Otherwise, line endings won't be visible when pasted in other software.
 	String text = p_text.replace("\r\n", "\n").replace("\n", "\r\n"); // Avoid \r\r\n.
 
-	if (!OpenClipboard(windows[last_focused_window].hWnd)) {
+	if (!OpenClipboard(windows[MAIN_WINDOW_ID].hWnd)) {
 		ERR_FAIL_MSG("Unable to open clipboard.");
 	}
 	EmptyClipboard();
@@ -305,12 +306,12 @@ void DisplayServerWindows::clipboard_set(const String &p_text) {
 String DisplayServerWindows::clipboard_get() const {
 	_THREAD_SAFE_METHOD_
 
-	if (!windows.has(last_focused_window)) {
-		return String(); // No focused window?
+	if (!windows.has(MAIN_WINDOW_ID)) {
+		return String();
 	}
 
 	String ret;
-	if (!OpenClipboard(windows[last_focused_window].hWnd)) {
+	if (!OpenClipboard(windows[MAIN_WINDOW_ID].hWnd)) {
 		ERR_FAIL_V_MSG("", "Unable to open clipboard.");
 	}
 
@@ -631,6 +632,26 @@ int DisplayServerWindows::screen_get_dpi(int p_screen) const {
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcDpi, (LPARAM)&data);
 	return data.dpi;
 }
+
+Color DisplayServerWindows::screen_get_pixel(const Point2i &p_position) const {
+	Point2i pos = p_position + _get_screens_origin();
+
+	POINT p;
+	p.x = pos.x;
+	p.y = pos.y;
+	if (win81p_LogicalToPhysicalPointForPerMonitorDPI) {
+		win81p_LogicalToPhysicalPointForPerMonitorDPI(0, &p);
+	}
+	HDC dc = GetDC(0);
+	COLORREF col = GetPixel(dc, p.x, p.y);
+	if (col != CLR_INVALID) {
+		return Color(float(col & 0x000000FF) / 256.0, float((col & 0x0000FF00) >> 8) / 256.0, float((col & 0x00FF0000) >> 16) / 256.0, 1.0);
+	}
+	ReleaseDC(NULL, dc);
+
+	return Color();
+}
+
 float DisplayServerWindows::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
@@ -3404,16 +3425,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		} break;
 		case WM_SYSKEYUP:
 		case WM_KEYUP:
-			if (windows[window_id].ime_suppress_next_keyup) {
-				windows[window_id].ime_suppress_next_keyup = false;
-				break;
-			}
-			[[fallthrough]];
 		case WM_SYSKEYDOWN:
 		case WM_KEYDOWN: {
-			if (windows[window_id].ime_in_progress) {
-				break;
-			}
 			if (wParam == VK_SHIFT) {
 				shift_mem = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
 			}
@@ -3425,6 +3438,17 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				if (lParam & (1 << 24)) {
 					gr_mem = alt_mem;
 				}
+			}
+			if (wParam == VK_LWIN || wParam == VK_RWIN) {
+				meta_mem = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
+			}
+
+			if (windows[window_id].ime_suppress_next_keyup && (uMsg == WM_KEYUP || uMsg == WM_SYSKEYUP)) {
+				windows[window_id].ime_suppress_next_keyup = false;
+				break;
+			}
+			if (windows[window_id].ime_in_progress) {
+				break;
 			}
 
 			if (mouse_mode == MOUSE_MODE_CAPTURED) {
@@ -4020,6 +4044,7 @@ GetImmersiveUserColorSetPreferencePtr DisplayServerWindows::GetImmersiveUserColo
 bool DisplayServerWindows::winink_available = false;
 GetPointerTypePtr DisplayServerWindows::win8p_GetPointerType = nullptr;
 GetPointerPenInfoPtr DisplayServerWindows::win8p_GetPointerPenInfo = nullptr;
+LogicalToPhysicalPointForPerMonitorDPIPtr DisplayServerWindows::win81p_LogicalToPhysicalPointForPerMonitorDPI = nullptr;
 
 typedef enum _SHC_PROCESS_DPI_AWARENESS {
 	SHC_PROCESS_DPI_UNAWARE = 0,
@@ -4148,10 +4173,12 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	}
 
 	// Note: Windows Ink API for pen input, available on Windows 8+ only.
+	// Note: DPI conversion API, available on Windows 8.1+ only.
 	HMODULE user32_lib = LoadLibraryW(L"user32.dll");
 	if (user32_lib) {
 		win8p_GetPointerType = (GetPointerTypePtr)GetProcAddress(user32_lib, "GetPointerType");
 		win8p_GetPointerPenInfo = (GetPointerPenInfoPtr)GetProcAddress(user32_lib, "GetPointerPenInfo");
+		win81p_LogicalToPhysicalPointForPerMonitorDPI = (LogicalToPhysicalPointForPerMonitorDPIPtr)GetProcAddress(user32_lib, "LogicalToPhysicalPointForPerMonitorDPI");
 
 		winink_available = win8p_GetPointerType && win8p_GetPointerPenInfo;
 	}
@@ -4309,7 +4336,7 @@ DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_drive
 					vformat("Your video card drivers seem not to support the required Vulkan version.\n\n"
 							"If possible, consider updating your video card drivers or using the OpenGL 3 driver.\n\n"
 							"You can enable the OpenGL 3 driver by starting the engine from the\n"
-							"command line with the command:\n'%s --rendering-driver opengl3'\n\n"
+							"command line with the command:\n\n    \"%s\" --rendering-driver opengl3\n\n"
 							"If you have recently updated your video card drivers, try rebooting.",
 							executable_name),
 					"Unable to initialize Vulkan video driver");

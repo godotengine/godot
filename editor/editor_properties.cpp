@@ -1210,7 +1210,7 @@ void EditorPropertyLayers::_button_pressed() {
 
 void EditorPropertyLayers::_menu_pressed(int p_menu) {
 	if (p_menu == grid->layer_count) {
-		ProjectSettingsEditor::get_singleton()->popup_project_settings();
+		ProjectSettingsEditor::get_singleton()->popup_project_settings(true);
 		ProjectSettingsEditor::get_singleton()->set_general_page(basename);
 	} else {
 		if (grid->value & (1 << p_menu)) {

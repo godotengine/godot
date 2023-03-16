@@ -277,7 +277,7 @@
 			[b]Note:[/b] SSR is only supported in the Forward+ rendering method, not Mobile or Compatibility.
 		</member>
 		<member name="ssr_fade_in" type="float" setter="set_ssr_fade_in" getter="get_ssr_fade_in" default="0.15">
-			The fade-in distance for screen-space reflections. Affects the area from the reflected material to the screen-space reflection). Only positive values are valid (negative values will be clamped to [code]0.0[/code]).
+			The fade-in distance for screen-space reflections. Affects the area from the reflected material to the screen-space reflection. Only positive values are valid (negative values will be clamped to [code]0.0[/code]).
 		</member>
 		<member name="ssr_fade_out" type="float" setter="set_ssr_fade_out" getter="get_ssr_fade_out" default="2.0">
 			The fade-out distance for screen-space reflections. Affects the area from the screen-space reflection to the "global" reflection. Only positive values are valid (negative values will be clamped to [code]0.0[/code]).

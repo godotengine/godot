@@ -52,8 +52,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-18 07:45+0000\n"
-"Last-Translator: ueshita <nalto32@gmail.com>\n"
+"PO-Revision-Date: 2023-03-14 09:33+0000\n"
+"Last-Translator: Kenryu Shibata <kenryushibata@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ja/>\n"
 "Language: ja\n"
@@ -61,7 +61,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16.2-dev\n"
 
 msgid "Application"
 msgstr "アプリケーション"
@@ -135,6 +135,12 @@ msgstr "サイズを変更可能"
 msgid "Borderless"
 msgstr "ボーダーレス"
 
+msgid "Always on Top"
+msgstr "画面を常に最前面にする"
+
+msgid "Transparent"
+msgstr "透明"
+
 msgid "Energy Saving"
 msgstr "省エネルギー"
 
@@ -146,9 +152,6 @@ msgstr "オーディオ"
 
 msgid "Editor"
 msgstr "エディター"
-
-msgid "Main Run Args"
-msgstr "メイン実行引数"
 
 msgid "Physics"
 msgstr "物理"
@@ -1517,6 +1520,9 @@ msgstr "SSH 公開鍵パス"
 
 msgid "SSH Private Key Path"
 msgstr "SSH 秘密鍵パス"
+
+msgid "Main Run Args"
+msgstr "メイン実行引数"
 
 msgid "Show Scene Tree Root Selection"
 msgstr "シーンツリーのルート選択対象を表示"

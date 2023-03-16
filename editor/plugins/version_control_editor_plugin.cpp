@@ -57,8 +57,8 @@ void VersionControlEditorPlugin::_create_vcs_metadata_files() {
 
 void VersionControlEditorPlugin::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY) {
-		String installed_plugin = GLOBAL_DEF("editor/version_control/plugin_name", "");
-		bool has_autoload_enable = GLOBAL_DEF("editor/version_control/autoload_on_startup", false);
+		String installed_plugin = GLOBAL_GET("editor/version_control/plugin_name");
+		bool has_autoload_enable = GLOBAL_GET("editor/version_control/autoload_on_startup");
 
 		if (installed_plugin != "" && has_autoload_enable) {
 			if (_load_plugin(installed_plugin)) {

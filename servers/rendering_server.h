@@ -156,7 +156,7 @@ public:
 
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) = 0;
 
-	virtual RID texture_get_rd_texture_rid(RID p_texture, bool p_srgb = false) const = 0;
+	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const = 0;
 
 	/* SHADER API */
 

@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "register_types.h"
+#include "core/config/project_settings.h"
 #include "main/main.h"
 
 #include "openxr_interface.h"
@@ -113,10 +114,19 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			ERR_FAIL_NULL(openxr_api);
 
 			if (!openxr_api->initialize(Main::get_rendering_driver_name())) {
-				OS::get_singleton()->alert("OpenXR was requested but failed to start.\n"
-										   "Please check if your HMD is connected.\n"
-										   "When using Windows MR please note that WMR only has DirectX support, make sure SteamVR is your default OpenXR runtime.\n"
-										   "Godot will start in normal mode.\n");
+				const char *init_error_message =
+						"OpenXR was requested but failed to start.\n"
+						"Please check if your HMD is connected.\n"
+						"When using Windows MR please note that WMR only has DirectX support, make sure SteamVR is your default OpenXR runtime.\n"
+						"Godot will start in normal mode.\n";
+
+				WARN_PRINT(init_error_message);
+
+				bool init_show_startup_alert = GLOBAL_GET("xr/openxr/startup_alert");
+				if (init_show_startup_alert) {
+					OS::get_singleton()->alert(init_error_message);
+				}
+
 				memdelete(openxr_api);
 				openxr_api = nullptr;
 				return;

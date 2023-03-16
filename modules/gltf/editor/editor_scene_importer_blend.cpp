@@ -297,13 +297,14 @@ static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 		}
 		return false;
 	}
-
-	if (pipe.find("Blender ") != 0) {
+	int bl = pipe.find("Blender ");
+	if (bl == -1) {
 		if (r_err) {
 			*r_err = vformat(TTR("Unexpected --version output from Blender binary at: %s"), path);
 		}
 		return false;
 	}
+	pipe = pipe.substr(bl);
 	pipe = pipe.replace_first("Blender ", "");
 	int pp = pipe.find(".");
 	if (pp == -1) {

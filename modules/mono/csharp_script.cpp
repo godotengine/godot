@@ -42,7 +42,6 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/os/keyboard.h"
-#include "editor/bindings_generator.h"
 #include "editor/editor_internal_calls.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
@@ -58,6 +57,7 @@
 #include "godotsharp_dirs.h"
 #include "managed_callable.h"
 #include "mono_gd/gd_mono_cache.h"
+#include "servers/text_server.h"
 #include "signal_awaiter_utils.h"
 #include "utils/macros.h"
 #include "utils/naming_utils.h"
@@ -100,13 +100,6 @@ void CSharpLanguage::init() {
 		class_db_api_to_json("user://class_db_api_editor.json", ClassDB::API_EDITOR);
 #endif
 	}
-#endif
-
-#if defined(TOOLS_ENABLED) && defined(DEBUG_METHODS_ENABLED)
-	// Generate the bindings here, before loading assemblies. The Godot assemblies
-	// may be missing if the glue wasn't generated yet in order to build them.
-	List<String> cmdline_args = OS::get_singleton()->get_cmdline_args();
-	BindingsGenerator::handle_cmdline_args(cmdline_args);
 #endif
 
 	GLOBAL_DEF("dotnet/project/assembly_name", "");
@@ -374,6 +367,10 @@ String CSharpLanguage::validate_path(const String &p_path) const {
 	if (keywords.find(class_name)) {
 		return RTR("Class name can't be a reserved keyword");
 	}
+	if (!TS->is_valid_identifier(class_name)) {
+		return RTR("Class name must be a valid identifier");
+	}
+
 	return "";
 }
 

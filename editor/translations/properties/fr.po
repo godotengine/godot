@@ -114,8 +114,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-28 17:36+0000\n"
-"Last-Translator: Zizouloo <cube.luzima@hotmail.fr>\n"
+"PO-Revision-Date: 2023-03-05 01:38+0000\n"
+"Last-Translator: Godot Trad FR <godottrad@mailo.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/fr/>\n"
 "Language: fr\n"
@@ -123,7 +123,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.16-rc\n"
+"X-Generator: Weblate 4.16.2-dev\n"
 
 msgid "Application"
 msgstr "Application"
@@ -133,6 +133,9 @@ msgstr "Configuration"
 
 msgid "Name"
 msgstr "Nom"
+
+msgid "Name Localized"
+msgstr "Nom traduit"
 
 msgid "Description"
 msgstr "Description"
@@ -173,8 +176,20 @@ msgstr "Taille"
 msgid "Viewport Width"
 msgstr "Largeur de la fenêtre d'affichage"
 
+msgid "Viewport Height"
+msgstr "Hauteur de la fenêtre d'affichage"
+
 msgid "Mode"
 msgstr "Mode"
+
+msgid "Initial Position Type"
+msgstr "Type de Position Initiale"
+
+msgid "Initial Position"
+msgstr "Position Initiale"
+
+msgid "Initial Screen"
+msgstr "Ecran Initial"
 
 msgid "Resizable"
 msgstr "Redimensionnable"
@@ -191,6 +206,15 @@ msgstr "Transparent"
 msgid "Extend to Title"
 msgstr "Étirer au titre"
 
+msgid "No Focus"
+msgstr "Sans focus"
+
+msgid "Window Width Override"
+msgstr "Redéfinition de la largeur de fenêtre"
+
+msgid "Window Height Override"
+msgstr "Redéfinition de la hauteur de fenêtre"
+
 msgid "Energy Saving"
 msgstr "Économie d'Énergie"
 
@@ -200,17 +224,23 @@ msgstr "Garder l'écran actif"
 msgid "Audio"
 msgstr "Audio"
 
+msgid "General"
+msgstr "Général"
+
+msgid "2D Panning Strength"
+msgstr "Force de mouvement panoramique 2D"
+
+msgid "3D Panning Strength"
+msgstr "Force de mouvement panoramique 3D"
+
 msgid "Editor"
 msgstr "Éditeur"
 
-msgid "Main Run Args"
-msgstr "Paramètres d'exécution du programme principal"
+msgid "Script"
+msgstr "Script"
 
-msgid "Default Signal Callback Name"
-msgstr "Nom de rappel de signal par défaut"
-
-msgid "Default Signal Callback to Self Name"
-msgstr "Nom de rappel de signal à soi-même par défaut"
+msgid "Search in File Extensions"
+msgstr "Rechercher dans les extensions de fichier"
 
 msgid "Physics"
 msgstr "Physique"
@@ -230,8 +260,26 @@ msgstr "Débogage"
 msgid "Settings"
 msgstr "Paramètres"
 
+msgid "Profiler"
+msgstr "Profileur"
+
 msgid "Compression"
 msgstr "Compression"
+
+msgid "Formats"
+msgstr "Formats"
+
+msgid "Zstd"
+msgstr "Zstandard"
+
+msgid "Compression Level"
+msgstr "Niveau de compression"
+
+msgid "Zlib"
+msgstr "Zlib"
+
+msgid "Gzip"
+msgstr "Gzip"
 
 msgid "Crash Handler"
 msgstr "Gestionnaire de Crash"
@@ -245,6 +293,9 @@ msgstr "Rendu"
 msgid "Occlusion Culling"
 msgstr "Elagage de l'occlusion"
 
+msgid "Memory"
+msgstr "Mémoire"
+
 msgid "Limits"
 msgstr "Limites"
 
@@ -256,6 +307,9 @@ msgstr "Forcer l'affichage de droite à gauche"
 
 msgid "GUI"
 msgstr "GUI"
+
+msgid "Timers"
+msgstr "Chronomètres"
 
 msgid "Rendering Device"
 msgstr "Matériel de rendu"
@@ -487,6 +541,18 @@ msgstr "Graine"
 
 msgid "State"
 msgstr "État"
+
+msgid "Message Queue"
+msgstr "File de messages"
+
+msgid "Max Size (KB)"
+msgstr "Taille Max (Mo)"
+
+msgid "TCP"
+msgstr "TCP"
+
+msgid "Connect Timeout Seconds"
+msgstr "Expiration de tentative de connexion (sec)"
 
 msgid "TLS"
 msgstr "TLS"
@@ -841,6 +907,15 @@ msgstr "Espacement supplémentaire"
 
 msgid "Custom Theme"
 msgstr "Thème Personnalisé"
+
+msgid "Touchscreen"
+msgstr "Ecran tactile"
+
+msgid "Enable Long Press as Right Click"
+msgstr "Activer l'appui long comme clic droit"
+
+msgid "Enable Pan and Scale Gestures"
+msgstr "Activer les gestes de mouvement panoramique et de mise à l'échelle"
 
 msgid "Display Close Button"
 msgstr "Afficher bouton Fermer"
@@ -1265,8 +1340,14 @@ msgstr "Couleur de bordure de la fenêtre d'affichage"
 msgid "Constrain Editor View"
 msgstr "Restreindre la fenêtre d'éditeur"
 
+msgid "Panning"
+msgstr "Mouvement panoramique"
+
 msgid "Simple Panning"
 msgstr "Panoramique simple"
+
+msgid "2D Editor Pan Speed"
+msgstr "Vitesse de mouvement panoramique 2D"
 
 msgid "Tiles Editor"
 msgstr "Éditeur de tuiles"
@@ -1363,6 +1444,9 @@ msgstr "Gestionnaire de projets"
 
 msgid "Sorting Order"
 msgstr "Ordre de Tri"
+
+msgid "Default Renderer"
+msgstr "Rendeur par défaut"
 
 msgid "Highlighting"
 msgstr "Surlignage"
@@ -1514,6 +1598,12 @@ msgstr "ETC"
 msgid "ETC2"
 msgstr "ETC2"
 
+msgid "SSH"
+msgstr "SSH"
+
+msgid "SCP"
+msgstr "SCP"
+
 msgid "Export Path"
 msgstr "Chemin d'exportation"
 
@@ -1523,20 +1613,44 @@ msgstr "Serveur de fichiers"
 msgid "Password"
 msgstr "Mot de passe"
 
+msgid "Antialiasing"
+msgstr "Anticrénelage"
+
+msgid "Generate Mipmaps"
+msgstr "Générer des Mipmaps"
+
 msgid "Hinting"
 msgstr "Suggestion"
+
+msgid "Subpixel Positioning"
+msgstr "Positionnement subpixelaire"
 
 msgid "Oversampling"
 msgstr "Sur-échantillonnage"
 
+msgid "Metadata Overrides"
+msgstr "Redéfinition des métadonnées"
+
+msgid "Language Support"
+msgstr "Support de langues"
+
+msgid "Script Support"
+msgstr "Support de scripts"
+
 msgid "Compress"
 msgstr "Compresser"
+
+msgid "Language"
+msgstr "Langage"
 
 msgid "Outline Size"
 msgstr "Taille de Contour"
 
 msgid "Variation"
 msgstr "Variation"
+
+msgid "Embolden"
+msgstr "Mettre en gras"
 
 msgid "Transform"
 msgstr "Transformation"
@@ -1547,8 +1661,29 @@ msgstr "Collada"
 msgid "Use Ambient"
 msgstr "Utiliser ambiant"
 
+msgid "Retarget"
+msgstr "Recibler"
+
+msgid "Bone Renamer"
+msgstr "Renommeur d'os"
+
+msgid "Rename Bones"
+msgstr "Renommer les os"
+
+msgid "Unique Node"
+msgstr "Nœud unique"
+
 msgid "Make Unique"
 msgstr "Rendre unique"
+
+msgid "Skeleton Name"
+msgstr "Nom du squelette"
+
+msgid "Apply Node Transforms"
+msgstr "Appliquer les transformations de nœud"
+
+msgid "Overwrite Axis"
+msgstr "Remplacer l'axe"
 
 msgid "Enable"
 msgstr "Activer"
@@ -1559,6 +1694,12 @@ msgstr "Filtre"
 msgid "Threshold"
 msgstr "Seuil"
 
+msgid "Base Height Adjustment"
+msgstr "Ajustement de la hauteur de base"
+
+msgid "Remove Tracks"
+msgstr "Retirer les pistes"
+
 msgid "Create From"
 msgstr "Créer à Partir de"
 
@@ -1568,8 +1709,23 @@ msgstr "Délimiteur"
 msgid "Columns"
 msgstr "Colonnes"
 
+msgid "Rows"
+msgstr "Lignes"
+
+msgid "Image Margin"
+msgstr "Marge d'image"
+
+msgid "Character Margin"
+msgstr "Marge de caractère"
+
+msgid "High Quality"
+msgstr "Haute qualité"
+
 msgid "Lossy Quality"
 msgstr "Mauvaise qualité"
+
+msgid "HDR Compression"
+msgstr "Compression HDR"
 
 msgid "Mipmaps"
 msgstr "Mipmaps"
@@ -1589,6 +1745,9 @@ msgstr "Horizontal"
 msgid "Vertical"
 msgstr "Vertical"
 
+msgid "Arrangement"
+msgstr "Arrangement"
+
 msgid "Layout"
 msgstr "Disposition sur l'écran"
 
@@ -1604,14 +1763,41 @@ msgstr "Échelle du maillage"
 msgid "Offset Mesh"
 msgstr "Décalage du maillage"
 
+msgid "Optimize Mesh"
+msgstr "Optimiser le maillage"
+
+msgid "Skip Import"
+msgstr "Passer l'import"
+
 msgid "NavMesh"
 msgstr "NavMesh"
+
+msgid "Shape Type"
+msgstr "Type de forme"
+
+msgid "Decomposition"
+msgstr "Décomposition"
 
 msgid "Advanced"
 msgstr "Options avancées"
 
 msgid "Precision"
 msgstr "Précision"
+
+msgid "Max Concavity"
+msgstr "Concavité maximale"
+
+msgid "Resolution"
+msgstr "Résolution"
+
+msgid "Plane Downsampling"
+msgstr "Sous-échantillonnage de plan"
+
+msgid "Normalize Mesh"
+msgstr "Normaliser le maillage"
+
+msgid "Primitive"
+msgstr "Primitif"
 
 msgid "Height"
 msgstr "Hauteur"
@@ -1622,8 +1808,20 @@ msgstr "Rayon"
 msgid "Occluder"
 msgstr "Occulteur"
 
+msgid "Simplification Distance"
+msgstr "Distance de simplification"
+
+msgid "Save to File"
+msgstr "Enregistrer vers un fichier"
+
 msgid "Enabled"
 msgstr "Activé"
+
+msgid "Shadow Meshes"
+msgstr "Maillages d'ombres"
+
+msgid "LODs"
+msgstr "Niveaux de détails"
 
 msgid "Loop Mode"
 msgstr "Mode de bouclage"
@@ -1646,6 +1844,9 @@ msgstr "Type de Racine"
 msgid "Root Name"
 msgstr "Nom de la Racine"
 
+msgid "Apply Root Scale"
+msgstr "Appliquer l'échelle de la racine"
+
 msgid "Root Scale"
 msgstr "Échelle de la racine"
 
@@ -1654,6 +1855,12 @@ msgstr "Maillages"
 
 msgid "Ensure Tangents"
 msgstr "Vérifier les tangentes"
+
+msgid "Generate LODs"
+msgstr "Générer des niveaux de details"
+
+msgid "Create Shadow Meshes"
+msgstr "Créer des maillages d'ombres"
 
 msgid "Light Baking"
 msgstr "Pré-calculer les lumières"
@@ -1669,6 +1876,9 @@ msgstr "Utiliser les enveloppes nommées"
 
 msgid "FPS"
 msgstr "IPS"
+
+msgid "Import Script"
+msgstr "Importer un script"
 
 msgid "Normal Map"
 msgstr "Carte de normales"
@@ -1688,6 +1898,12 @@ msgstr "Alpha pré-multiplié"
 msgid "Normal Map Invert Y"
 msgstr "Inverser l'axe Y de la carte de normales"
 
+msgid "HDR as sRGB"
+msgstr "HDR comme sRGB"
+
+msgid "HDR Clamp Exposure"
+msgstr "HDR borner l'exposition"
+
 msgid "Size Limit"
 msgstr "Limite de taille"
 
@@ -1697,11 +1913,17 @@ msgstr "Détecter la 3D"
 msgid "SVG"
 msgstr "SVG"
 
+msgid "Scale With Editor Scale"
+msgstr "Garder à l'échelle de l'éditeur"
+
 msgid "Atlas File"
 msgstr "Fichier Atlas"
 
 msgid "Import Mode"
 msgstr "Mode d'Importation"
+
+msgid "Crop to Region"
+msgstr "Rogner à la région"
 
 msgid "Trim Alpha Border From Region"
 msgstr "Rogner les bordures alpha de la région"
@@ -1748,6 +1970,9 @@ msgstr "URLs disponibles"
 msgid "Unset"
 msgstr "Non défini"
 
+msgid "Missing"
+msgstr "Manquant"
+
 msgid "Error"
 msgstr "Erreur"
 
@@ -1763,14 +1988,26 @@ msgstr "Notifiant de visibilité"
 msgid "Particles"
 msgstr "Particules"
 
+msgid "Particle Attractor"
+msgstr "Attracteur de particules"
+
+msgid "Particle Collision"
+msgstr "Collision de particules"
+
 msgid "Reflection Probe"
 msgstr "Sonde de réflexion"
+
+msgid "Decal"
+msgstr "Décalcomanie"
 
 msgid "Joint Body A"
 msgstr "Jointure Corps A"
 
 msgid "Joint Body B"
 msgstr "Jointure Corps B"
+
+msgid "Fog Volume"
+msgstr "Volume de brouillard"
 
 msgid "Manipulator Gizmo Size"
 msgstr "Taille des manipulateurs"
@@ -1811,6 +2048,15 @@ msgstr "Paramètres d'exécution"
 msgid "Skeleton"
 msgstr "Squelette"
 
+msgid "Selected Bone"
+msgstr "Os sélectionné"
+
+msgid "Bone Shape"
+msgstr "Forme des os"
+
+msgid "Shader Language"
+msgstr "Langue de shader"
+
 msgid "Warnings"
 msgstr "Avertissements"
 
@@ -1820,8 +2066,17 @@ msgstr "ID"
 msgid "Texture"
 msgstr "Texture"
 
+msgid "Margins"
+msgstr "Marges"
+
 msgid "Separation"
 msgstr "Séparation"
+
+msgid "Size in Atlas"
+msgstr "Taille dans l'atlas"
+
+msgid "Alternative ID"
+msgstr "ID alternatif"
 
 msgid "Speed"
 msgstr "Vitesse"
@@ -1837,6 +2092,21 @@ msgstr "Chemin de la clé publique SSH"
 
 msgid "SSH Private Key Path"
 msgstr "Chemin de la clé privée SSH"
+
+msgid "Main Run Args"
+msgstr "Paramètres d'exécution du programme principal"
+
+msgid "Naming"
+msgstr "Nommage"
+
+msgid "Default Signal Callback Name"
+msgstr "Nom de rappel de signal par défaut"
+
+msgid "Default Signal Callback to Self Name"
+msgstr "Nom de rappel de signal à soi-même par défaut"
+
+msgid "Scene Name Casing"
+msgstr "Notation du nom de la scène"
 
 msgid "Show Scene Tree Root Selection"
 msgstr "Afficher la sélection de la racine de la hiérarchie de la scène"
@@ -1903,6 +2173,9 @@ msgstr "iOS"
 
 msgid "Hide Home Indicator"
 msgstr "Masquer l'indicateur d’accueil"
+
+msgid "XR"
+msgstr "XR"
 
 msgid "Boot Splash"
 msgstr "Écran de démarrage"

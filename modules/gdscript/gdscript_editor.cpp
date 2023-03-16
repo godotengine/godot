@@ -1956,7 +1956,7 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 				GDScriptParser::CompletionContext c = p_context;
 				c.current_line = type_test->operand->start_line;
 				c.current_suite = suite;
-				if ((!id_type.is_set() || id_type.is_variant()) && type_test->test_datatype.is_hard_type()) {
+				if (type_test->test_datatype.is_hard_type()) {
 					id_type = type_test->test_datatype;
 					if (last_assign_line < c.current_line) {
 						// Override last assignment.

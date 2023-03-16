@@ -130,7 +130,7 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 			wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - p_rect.size.width / 3);
 			wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - p_rect.size.height / 3);
 		}
-		// OS X native y-coordinate relative to _get_screens_origin() is negative,
+		// macOS native y-coordinate relative to _get_screens_origin() is negative,
 		// Godot passes a positive value.
 		wpos.y *= -1;
 		wpos += _get_screens_origin();
@@ -329,7 +329,7 @@ Point2i DisplayServerMacOS::_get_screens_origin() const {
 	// Returns the native top-left screen coordinate of the smallest rectangle
 	// that encompasses all screens. Needed in get_screen_position(),
 	// window_get_position, and window_set_position()
-	// to convert between OS X native screen coordinates and the ones expected by Godot.
+	// to convert between macOS native screen coordinates and the ones expected by Godot.
 
 	if (displays_arrangement_dirty) {
 		const_cast<DisplayServerMacOS *>(this)->_update_displays_arrangement();
@@ -342,7 +342,7 @@ Point2i DisplayServerMacOS::_get_native_screen_position(int p_screen) const {
 	NSArray *screenArray = [NSScreen screens];
 	if ((NSUInteger)p_screen < [screenArray count]) {
 		NSRect nsrect = [[screenArray objectAtIndex:p_screen] frame];
-		// Return the top-left corner of the screen, for OS X the y starts at the bottom.
+		// Return the top-left corner of the screen, for macOS the y starts at the bottom.
 		return Point2i(nsrect.origin.x, nsrect.origin.y + nsrect.size.height) * screen_get_max_scale();
 	}
 
@@ -765,6 +765,7 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_TEXT_TO_SPEECH:
 		case FEATURE_EXTEND_TO_TITLE:
+		case FEATURE_SCREEN_CAPTURE:
 			return true;
 		default: {
 		}
@@ -2126,7 +2127,7 @@ Point2i DisplayServerMacOS::screen_get_position(int p_screen) const {
 	}
 
 	Point2i position = _get_native_screen_position(p_screen) - _get_screens_origin();
-	// OS X native y-coordinate relative to _get_screens_origin() is negative,
+	// macOS native y-coordinate relative to _get_screens_origin() is negative,
 	// Godot expects a positive value.
 	position.y *= -1;
 	return position;
@@ -2247,6 +2248,35 @@ Rect2i DisplayServerMacOS::screen_get_usable_rect(int p_screen) const {
 	}
 
 	return Rect2i();
+}
+
+Color DisplayServerMacOS::screen_get_pixel(const Point2i &p_position) const {
+	Point2i position = p_position;
+	// macOS native y-coordinate relative to _get_screens_origin() is negative,
+	// Godot passes a positive value.
+	position.y *= -1;
+	position += _get_screens_origin();
+	position /= screen_get_max_scale();
+
+	for (NSScreen *screen in [NSScreen screens]) {
+		NSRect frame = [screen frame];
+		if (NSMouseInRect(NSMakePoint(position.x, position.y), frame, NO)) {
+			NSDictionary *screenDescription = [screen deviceDescription];
+			CGDirectDisplayID display_id = [[screenDescription objectForKey:@"NSScreenNumber"] unsignedIntValue];
+			CGImageRef image = CGDisplayCreateImageForRect(display_id, CGRectMake(position.x - frame.origin.x, frame.size.height - (position.y - frame.origin.y), 1, 1));
+			if (image) {
+				NSBitmapImageRep *bitmap = [[NSBitmapImageRep alloc] initWithCGImage:image];
+				CGImageRelease(image);
+				NSColor *color = [bitmap colorAtX:0 y:0];
+				if (color) {
+					CGFloat components[4];
+					[color getRed:&components[0] green:&components[1] blue:&components[2] alpha:&components[3]];
+					return Color(components[0], components[1], components[2], components[3]);
+				}
+			}
+		}
+	}
+	return Color();
 }
 
 float DisplayServerMacOS::screen_get_refresh_rate(int p_screen) const {
@@ -2502,13 +2532,13 @@ Point2i DisplayServerMacOS::window_get_position(WindowID p_window) const {
 	const NSRect nsrect = [wd.window_object convertRectToScreen:contentRect];
 	Point2i pos;
 
-	// Return the position of the top-left corner, for OS X the y starts at the bottom.
+	// Return the position of the top-left corner, for macOS the y starts at the bottom.
 	const float scale = screen_get_max_scale();
 	pos.x = nsrect.origin.x;
 	pos.y = (nsrect.origin.y + nsrect.size.height);
 	pos *= scale;
 	pos -= _get_screens_origin();
-	// OS X native y-coordinate relative to _get_screens_origin() is negative,
+	// macOS native y-coordinate relative to _get_screens_origin() is negative,
 	// Godot expects a positive value.
 	pos.y *= -1;
 	return pos;
@@ -2523,13 +2553,13 @@ Point2i DisplayServerMacOS::window_get_position_with_decorations(WindowID p_wind
 	const NSRect nsrect = [wd.window_object frame];
 	Point2i pos;
 
-	// Return the position of the top-left corner, for OS X the y starts at the bottom.
+	// Return the position of the top-left corner, for macOS the y starts at the bottom.
 	const float scale = screen_get_max_scale();
 	pos.x = nsrect.origin.x;
 	pos.y = (nsrect.origin.y + nsrect.size.height);
 	pos *= scale;
 	pos -= _get_screens_origin();
-	// OS X native y-coordinate relative to _get_screens_origin() is negative,
+	// macOS native y-coordinate relative to _get_screens_origin() is negative,
 	// Godot expects a positive value.
 	pos.y *= -1;
 	return pos;
@@ -2546,7 +2576,7 @@ void DisplayServerMacOS::window_set_position(const Point2i &p_position, WindowID
 	}
 
 	Point2i position = p_position;
-	// OS X native y-coordinate relative to _get_screens_origin() is negative,
+	// macOS native y-coordinate relative to _get_screens_origin() is negative,
 	// Godot passes a positive value.
 	position.y *= -1;
 	position += _get_screens_origin();
@@ -3617,15 +3647,15 @@ DisplayServer *DisplayServerMacOS::create_func(const String &p_rendering_driver,
 		if (p_rendering_driver == "vulkan") {
 			String executable_command;
 			if (OS::get_singleton()->get_bundle_resource_dir() == OS::get_singleton()->get_executable_path().get_base_dir()) {
-				executable_command = vformat("%s --rendering-driver opengl3", OS::get_singleton()->get_executable_path());
+				executable_command = vformat("\"%s\" --rendering-driver opengl3", OS::get_singleton()->get_executable_path());
 			} else {
-				executable_command = vformat("open %s --args --rendering-driver opengl3", OS::get_singleton()->get_bundle_resource_dir().path_join("../..").simplify_path());
+				executable_command = vformat("open \"%s\" --args --rendering-driver opengl3", OS::get_singleton()->get_bundle_resource_dir().path_join("../..").simplify_path());
 			}
 			OS::get_singleton()->alert(
 					vformat("Your video card drivers seem not to support the required Vulkan version.\n\n"
 							"If possible, consider updating your macOS version or using the OpenGL 3 driver.\n\n"
 							"You can enable the OpenGL 3 driver by starting the engine from the\n"
-							"command line with the command:\n'%s'",
+							"command line with the command:\n\n    %s",
 							executable_command),
 					"Unable to initialize Vulkan video driver");
 		} else {
