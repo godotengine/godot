@@ -276,6 +276,7 @@ String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset, bool p_uses
 
 	if (p_uses_vulkan) {
 		manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"android.hardware.vulkan.level\" android:required=\"true\" android:version=\"1\" />\n";
+		manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"android.hardware.vulkan.version\" android:required=\"true\" android:version=\"0x400003\" />\n";
 	}
 	return manifest_xr_features;
 }

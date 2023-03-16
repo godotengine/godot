@@ -282,7 +282,8 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 		if (usesVulkan()) {
 			if (!meetsVulkanRequirements(activity.getPackageManager())) {
-				Log.w(TAG, "Missing requirements for vulkan support!");
+				alert(R.string.error_missing_vulkan_requirements_message, R.string.text_error_title, this::forceQuit);
+				return false;
 			}
 			mRenderView = new GodotVulkanRenderView(activity, this);
 		} else {
@@ -392,7 +393,17 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 			return false;
 		}
 
-		return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_LEVEL, 1);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+			if (!packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_LEVEL, 1)) {
+				// Optional requirements.. log as warning if missing
+				Log.w(TAG, "The vulkan hardware level does not meet the minimum requirement: 1");
+			}
+
+			// Check for api version 1.0
+			return packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_VERSION, 0x400003);
+		}
+
+		return false;
 	}
 
 	public void setKeepScreenOn(final boolean p_enabled) {
