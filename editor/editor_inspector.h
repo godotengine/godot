@@ -521,6 +521,8 @@ class EditorInspector : public ScrollContainer {
 	void _changed_callback();
 	void _edit_request_change(Object *p_object, const String &p_prop);
 
+	void _keying_changed();
+
 	void _filter_changed(const String &p_text);
 	void _parse_added_editors(VBoxContainer *current_vbox, EditorInspectorSection *p_section, Ref<EditorInspectorPlugin> ped);
 
