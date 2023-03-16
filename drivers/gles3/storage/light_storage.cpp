@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  light_storage.cpp                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  light_storage.cpp                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifdef GLES3_ENABLED
 
@@ -311,6 +311,13 @@ uint64_t LightStorage::light_get_version(RID p_light) const {
 	return light->version;
 }
 
+uint32_t LightStorage::light_get_cull_mask(RID p_light) const {
+	const Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_COND_V(!light, 0);
+
+	return light->cull_mask;
+}
+
 AABB LightStorage::light_get_aabb(RID p_light) const {
 	const Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_COND_V(!light, AABB());
@@ -331,6 +338,46 @@ AABB LightStorage::light_get_aabb(RID p_light) const {
 	}
 
 	ERR_FAIL_V(AABB());
+}
+
+/* LIGHT INSTANCE API */
+
+RID LightStorage::light_instance_create(RID p_light) {
+	RID li = light_instance_owner.make_rid(LightInstance());
+
+	LightInstance *light_instance = light_instance_owner.get_or_null(li);
+
+	light_instance->self = li;
+	light_instance->light = p_light;
+	light_instance->light_type = light_get_type(p_light);
+
+	return li;
+}
+
+void LightStorage::light_instance_free(RID p_light_instance) {
+	LightInstance *light_instance = light_instance_owner.get_or_null(p_light_instance);
+	ERR_FAIL_COND(!light_instance);
+	light_instance_owner.free(p_light_instance);
+}
+
+void LightStorage::light_instance_set_transform(RID p_light_instance, const Transform3D &p_transform) {
+	LightInstance *light_instance = light_instance_owner.get_or_null(p_light_instance);
+	ERR_FAIL_COND(!light_instance);
+
+	light_instance->transform = p_transform;
+}
+
+void LightStorage::light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb) {
+	LightInstance *light_instance = light_instance_owner.get_or_null(p_light_instance);
+	ERR_FAIL_COND(!light_instance);
+
+	light_instance->aabb = p_aabb;
+}
+
+void LightStorage::light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale, float p_range_begin, const Vector2 &p_uv_scale) {
+}
+
+void LightStorage::light_instance_mark_visible(RID p_light_instance) {
 }
 
 /* PROBE API */
@@ -363,7 +410,7 @@ void LightStorage::reflection_probe_set_ambient_energy(RID p_probe, float p_ener
 void LightStorage::reflection_probe_set_max_distance(RID p_probe, float p_distance) {
 }
 
-void LightStorage::reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents) {
+void LightStorage::reflection_probe_set_size(RID p_probe, const Vector3 &p_size) {
 }
 
 void LightStorage::reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset) {
@@ -396,7 +443,7 @@ uint32_t LightStorage::reflection_probe_get_cull_mask(RID p_probe) const {
 	return 0;
 }
 
-Vector3 LightStorage::reflection_probe_get_extents(RID p_probe) const {
+Vector3 LightStorage::reflection_probe_get_size(RID p_probe) const {
 	return Vector3();
 }
 
@@ -417,6 +464,57 @@ void LightStorage::reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_
 
 float LightStorage::reflection_probe_get_mesh_lod_threshold(RID p_probe) const {
 	return 0.0;
+}
+
+/* REFLECTION ATLAS */
+
+RID LightStorage::reflection_atlas_create() {
+	return RID();
+}
+
+void LightStorage::reflection_atlas_free(RID p_ref_atlas) {
+}
+
+int LightStorage::reflection_atlas_get_size(RID p_ref_atlas) const {
+	return 0;
+}
+
+void LightStorage::reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count) {
+}
+
+/* REFLECTION PROBE INSTANCE */
+
+RID LightStorage::reflection_probe_instance_create(RID p_probe) {
+	return RID();
+}
+
+void LightStorage::reflection_probe_instance_free(RID p_instance) {
+}
+
+void LightStorage::reflection_probe_instance_set_transform(RID p_instance, const Transform3D &p_transform) {
+}
+
+void LightStorage::reflection_probe_release_atlas_index(RID p_instance) {
+}
+
+bool LightStorage::reflection_probe_instance_needs_redraw(RID p_instance) {
+	return false;
+}
+
+bool LightStorage::reflection_probe_instance_has_reflection(RID p_instance) {
+	return false;
+}
+
+bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) {
+	return false;
+}
+
+Ref<RenderSceneBuffers> LightStorage::reflection_probe_atlas_get_render_buffers(RID p_reflection_atlas) {
+	return Ref<RenderSceneBuffers>();
+}
+
+bool LightStorage::reflection_probe_instance_postprocess_step(RID p_instance) {
+	return true;
 }
 
 /* LIGHTMAP CAPTURE */
@@ -482,6 +580,18 @@ void LightStorage::lightmap_set_probe_capture_update_speed(float p_speed) {
 
 float LightStorage::lightmap_get_probe_capture_update_speed() const {
 	return 0;
+}
+
+/* LIGHTMAP INSTANCE */
+
+RID LightStorage::lightmap_instance_create(RID p_lightmap) {
+	return RID();
+}
+
+void LightStorage::lightmap_instance_free(RID p_lightmap) {
+}
+
+void LightStorage::lightmap_instance_set_transform(RID p_lightmap, const Transform3D &p_transform) {
 }
 
 /* LIGHT SHADOW MAPPING */
@@ -583,5 +693,37 @@ void LightStorage::canvas_light_occluder_set_polylines(RID p_occluder, const Poo
 	}
 }
 */
+
+/* SHADOW ATLAS API */
+
+RID LightStorage::shadow_atlas_create() {
+	return RID();
+}
+
+void LightStorage::shadow_atlas_free(RID p_atlas) {
+}
+
+void LightStorage::shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits) {
+}
+
+void LightStorage::shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) {
+}
+
+bool LightStorage::shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) {
+	return false;
+}
+
+void LightStorage::shadow_atlas_update(RID p_atlas) {
+}
+
+void LightStorage::directional_shadow_atlas_set_size(int p_size, bool p_16_bits) {
+}
+
+int LightStorage::get_directional_light_shadow_size(RID p_light_intance) {
+	return 0;
+}
+
+void LightStorage::set_directional_shadow_count(int p_count) {
+}
 
 #endif // !GLES3_ENABLED

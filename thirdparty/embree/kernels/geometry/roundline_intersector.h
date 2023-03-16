@@ -19,7 +19,7 @@
 
   For multiple connected round linear curve segments this construction
   yield a proper shape when viewed from the outside. Using the
-  following CSG we can also handle the interiour in most common cases:
+  following CSG we can also handle the interior in most common cases:
 
      round_linear_curve(pl,rl,p0,r0,p1,r1,pr,rr) =
        cone_sphere(p0,r0,p1,r1) - cone(pl,rl,p0,r0) - cone(p1,r1,pr,rr)
@@ -431,7 +431,7 @@ namespace embree
              Ng' = (h-u*dP) - (w0+u*dw)*dw/dP^2*dP
            
            Inserting the definition of w0 and dw and refactoring
-           yield a furhter scaled Ng'':
+           yield a further scaled Ng'':
            
              Ng'' = (dP^2 - dr^2) (h-q) - (r0+u*dr)*dr*dP
            

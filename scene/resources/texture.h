@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  texture.h                                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  texture.h                                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef TEXTURE_H
 #define TEXTURE_H
@@ -81,6 +81,8 @@ public:
 	virtual bool get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const;
 
 	virtual Ref<Image> get_image() const { return Ref<Image>(); }
+
+	virtual Ref<Resource> create_placeholder() const;
 
 	Texture2D();
 };
@@ -238,7 +240,7 @@ private:
 	Error _load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit = 0);
 	String path_to_file;
 	mutable RID texture;
-	Image::Format format = Image::FORMAT_MAX;
+	Image::Format format = Image::FORMAT_L8;
 	int w = 0;
 	int h = 0;
 	mutable Ref<BitMap> alpha_cache;
@@ -415,7 +417,7 @@ class ImageTextureLayered : public TextureLayered {
 	LayeredType layered_type;
 
 	mutable RID texture;
-	Image::Format format = Image::FORMAT_MAX;
+	Image::Format format = Image::FORMAT_L8;
 
 	int width = 0;
 	int height = 0;
@@ -425,6 +427,7 @@ class ImageTextureLayered : public TextureLayered {
 	Error _create_from_images(const TypedArray<Image> &p_images);
 
 	TypedArray<Image> _get_images() const;
+	void _set_images(const TypedArray<Image> &p_images);
 
 protected:
 	static void _bind_methods();
@@ -450,25 +453,41 @@ public:
 
 class Texture2DArray : public ImageTextureLayered {
 	GDCLASS(Texture2DArray, ImageTextureLayered)
+
+protected:
+	static void _bind_methods();
+
 public:
 	Texture2DArray() :
 			ImageTextureLayered(LAYERED_TYPE_2D_ARRAY) {}
+
+	virtual Ref<Resource> create_placeholder() const;
 };
 
 class Cubemap : public ImageTextureLayered {
 	GDCLASS(Cubemap, ImageTextureLayered);
 
+protected:
+	static void _bind_methods();
+
 public:
 	Cubemap() :
 			ImageTextureLayered(LAYERED_TYPE_CUBEMAP) {}
+
+	virtual Ref<Resource> create_placeholder() const;
 };
 
 class CubemapArray : public ImageTextureLayered {
 	GDCLASS(CubemapArray, ImageTextureLayered);
 
+protected:
+	static void _bind_methods();
+
 public:
 	CubemapArray() :
 			ImageTextureLayered(LAYERED_TYPE_CUBEMAP_ARRAY) {}
+
+	virtual Ref<Resource> create_placeholder() const;
 };
 
 class CompressedTextureLayered : public TextureLayered {
@@ -495,7 +514,7 @@ private:
 	Error _load_data(const String &p_path, Vector<Ref<Image>> &images, int &mipmap_limit, int p_size_limit = 0);
 	String path_to_file;
 	mutable RID texture;
-	Image::Format format = Image::FORMAT_MAX;
+	Image::Format format = Image::FORMAT_L8;
 	int w = 0;
 	int h = 0;
 	int layers = 0;
@@ -580,6 +599,7 @@ public:
 	virtual int get_depth() const;
 	virtual bool has_mipmaps() const;
 	virtual Vector<Ref<Image>> get_data() const;
+	virtual Ref<Resource> create_placeholder() const;
 };
 
 class ImageTexture3D : public Texture3D {
@@ -587,7 +607,7 @@ class ImageTexture3D : public Texture3D {
 
 	mutable RID texture;
 
-	Image::Format format = Image::FORMAT_MAX;
+	Image::Format format = Image::FORMAT_L8;
 	int width = 1;
 	int height = 1;
 	int depth = 1;
@@ -641,7 +661,7 @@ private:
 	Error _load_data(const String &p_path, Vector<Ref<Image>> &r_data, Image::Format &r_format, int &r_width, int &r_height, int &r_depth, bool &r_mipmaps);
 	String path_to_file;
 	mutable RID texture;
-	Image::Format format = Image::FORMAT_MAX;
+	Image::Format format = Image::FORMAT_L8;
 	int w = 0;
 	int h = 0;
 	int d = 0;
@@ -769,15 +789,6 @@ public:
 class GradientTexture1D : public Texture2D {
 	GDCLASS(GradientTexture1D, Texture2D);
 
-public:
-	struct Point {
-		float offset = 0.0;
-		Color color;
-		bool operator<(const Point &p_ponit) const {
-			return offset < p_ponit.offset;
-		}
-	};
-
 private:
 	Ref<Gradient> gradient;
 	bool update_pending = false;
@@ -881,29 +892,6 @@ public:
 
 VARIANT_ENUM_CAST(GradientTexture2D::Fill);
 VARIANT_ENUM_CAST(GradientTexture2D::Repeat);
-
-class ProxyTexture : public Texture2D {
-private:
-	mutable RID proxy_ph;
-	mutable RID proxy;
-	Ref<Texture2D> base;
-
-protected:
-	static void _bind_methods();
-
-public:
-	void set_base(const Ref<Texture2D> &p_texture);
-	Ref<Texture2D> get_base() const;
-
-	virtual int get_width() const override;
-	virtual int get_height() const override;
-	virtual RID get_rid() const override;
-
-	virtual bool has_alpha() const override;
-
-	ProxyTexture();
-	~ProxyTexture();
-};
 
 class AnimatedTexture : public Texture2D {
 	GDCLASS(AnimatedTexture, Texture2D);

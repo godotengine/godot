@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  input.h                                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  input.h                                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef INPUT_H
 #define INPUT_H
@@ -82,8 +82,9 @@ public:
 	typedef void (*EventDispatchFunc)(const Ref<InputEvent> &p_event);
 
 private:
-	MouseButton mouse_button_mask = MouseButton::NONE;
+	BitField<MouseButtonMask> mouse_button_mask;
 
+	RBSet<Key> key_label_pressed;
 	RBSet<Key> physical_keys_pressed;
 	RBSet<Key> keys_pressed;
 	RBSet<JoyButton> joy_buttons_pressed;
@@ -222,6 +223,10 @@ private:
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 
 	List<Ref<InputEvent>> buffered_events;
+#ifdef DEBUG_ENABLED
+	HashSet<Ref<InputEvent>> frame_parsed_events;
+	uint64_t last_parsed_frame = UINT64_MAX;
+#endif
 
 	friend class DisplayServer;
 
@@ -247,6 +252,7 @@ public:
 	bool is_anything_pressed() const;
 	bool is_key_pressed(Key p_keycode) const;
 	bool is_physical_key_pressed(Key p_keycode) const;
+	bool is_key_label_pressed(Key p_keycode) const;
 	bool is_mouse_button_pressed(MouseButton p_button) const;
 	bool is_joy_button_pressed(int p_device, JoyButton p_button) const;
 	bool is_action_pressed(const StringName &p_action, bool p_exact = false) const;
@@ -273,7 +279,7 @@ public:
 
 	Point2 get_mouse_position() const;
 	Vector2 get_last_mouse_velocity();
-	MouseButton get_mouse_button_mask() const;
+	BitField<MouseButtonMask> get_mouse_button_mask() const;
 
 	void warp_mouse(const Vector2 &p_position);
 	Point2i warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect);
@@ -310,7 +316,7 @@ public:
 	void parse_mapping(String p_mapping);
 	void joy_button(int p_device, JoyButton p_button, bool p_pressed);
 	void joy_axis(int p_device, JoyAxis p_axis, float p_value);
-	void joy_hat(int p_device, HatMask p_val);
+	void joy_hat(int p_device, BitField<HatMask> p_val);
 
 	void add_joy_mapping(String p_mapping, bool p_update_existing = false);
 	void remove_joy_mapping(String p_guid);

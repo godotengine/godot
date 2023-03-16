@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  godot_physics_server_3d.cpp                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  godot_physics_server_3d.cpp                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "godot_physics_server_3d.h"
 
@@ -387,11 +387,25 @@ void GodotPhysicsServer3D::area_set_collision_layer(RID p_area, uint32_t p_layer
 	area->set_collision_layer(p_layer);
 }
 
+uint32_t GodotPhysicsServer3D::area_get_collision_layer(RID p_area) const {
+	GodotArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_COND_V(!area, 0);
+
+	return area->get_collision_layer();
+}
+
 void GodotPhysicsServer3D::area_set_collision_mask(RID p_area, uint32_t p_mask) {
 	GodotArea3D *area = area_owner.get_or_null(p_area);
 	ERR_FAIL_COND(!area);
 
 	area->set_collision_mask(p_mask);
+}
+
+uint32_t GodotPhysicsServer3D::area_get_collision_mask(RID p_area) const {
+	GodotArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_COND_V(!area, 0);
+
+	return area->get_collision_mask();
 }
 
 void GodotPhysicsServer3D::area_set_monitorable(RID p_area, bool p_monitorable) {
@@ -877,10 +891,10 @@ int GodotPhysicsServer3D::body_get_max_contacts_reported(RID p_body) const {
 	return body->get_max_contacts_reported();
 }
 
-void GodotPhysicsServer3D::body_set_state_sync_callback(RID p_body, void *p_instance, BodyStateCallback p_callback) {
+void GodotPhysicsServer3D::body_set_state_sync_callback(RID p_body, const Callable &p_callable) {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_COND(!body);
-	body->set_state_sync_callback(p_instance, p_callback);
+	body->set_state_sync_callback(p_callable);
 }
 
 void GodotPhysicsServer3D::body_set_force_integration_callback(RID p_body, const Callable &p_callable, const Variant &p_udata) {
@@ -1196,6 +1210,7 @@ RID GodotPhysicsServer3D::joint_create() {
 
 void GodotPhysicsServer3D::joint_clear(RID p_joint) {
 	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL(joint);
 	if (joint->get_type() != JOINT_TYPE_MAX) {
 		GodotJoint3D *empty_joint = memnew(GodotJoint3D);
 		empty_joint->copy_settings_from(joint);
@@ -1722,7 +1737,7 @@ void GodotPhysicsServer3D::_update_shapes() {
 	}
 }
 
-void GodotPhysicsServer3D::_shape_col_cbk(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata) {
+void GodotPhysicsServer3D::_shape_col_cbk(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, const Vector3 &normal, void *p_userdata) {
 	CollCbkData *cbk = static_cast<CollCbkData *>(p_userdata);
 
 	if (cbk->max == 0) {

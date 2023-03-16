@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RandomNumberGenerator" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="RandomNumberGenerator" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A class for generating pseudo-random numbers.
 	</brief_description>
@@ -10,10 +10,9 @@
 		[codeblock]
 		var rng = RandomNumberGenerator.new()
 		func _ready():
-		    rng.randomize()
 		    var my_random_number = rng.randf_range(-10.0, 10.0)
 		[/codeblock]
-		[b]Note:[/b] The default values of [member seed] and [member state] properties are pseudo-random, and changes when calling [method randomize]. The [code]0[/code] value documented here is a placeholder, and not the actual default seed.
+		[b]Note:[/b] The default values of [member seed] and [member state] properties are pseudo-random, and change when calling [method randomize]. The [code]0[/code] value documented here is a placeholder, and not the actual default seed.
 	</description>
 	<tutorials>
 		<link title="Random number generation">$DOCS_URL/tutorials/math/random_number_generation.html</link>

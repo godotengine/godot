@@ -8,6 +8,9 @@ msdfgen_enabled = "msdfgen" in env.module_list
 
 env_text_server_fb = env_modules.Clone()
 
+if "svg" in env.module_list:
+    env_text_server_fb.Prepend(CPPPATH=["#thirdparty/thorvg/inc", "#thirdparty/thorvg/src/lib"])
+
 if env["builtin_msdfgen"] and msdfgen_enabled:
     env_text_server_fb.Prepend(CPPPATH=["#thirdparty/msdfgen"])
 

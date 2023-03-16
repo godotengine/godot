@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  lightmap_gi.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  lightmap_gi.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "lightmap_gi.h"
 
@@ -145,10 +145,7 @@ Array LightmapGIData::_get_light_textures_data() const {
 	for (int i = 0; i < texture_count; i++) {
 		int texture_slice_count = (i == texture_count - 1 && last_count != 0) ? last_count : slices_per_texture;
 
-		Ref<Image> texture_image;
-		texture_image.instantiate();
-
-		texture_image->create(slice_width, slice_height * texture_slice_count, false, images[0]->get_format());
+		Ref<Image> texture_image = Image::create_empty(slice_width, slice_height * texture_slice_count, false, images[0]->get_format());
 
 		for (int j = 0; j < texture_slice_count; j++) {
 			texture_image->blit_rect(images[i * slices_per_texture + j], Rect2i(0, 0, slice_width, slice_height), Point2i(0, slice_height * j));
@@ -166,7 +163,8 @@ Array LightmapGIData::_get_light_textures_data() const {
 		config->set_value("remap", "importer", "2d_array_texture");
 		config->set_value("remap", "type", "CompressedTexture2DArray");
 		if (!config->has_section_key("params", "compress/mode")) {
-			config->set_value("params", "compress/mode", 2); //user may want another compression, so leave it be
+			// User may want another compression, so leave it be, but default to VRAM uncompressed.
+			config->set_value("params", "compress/mode", 3);
 		}
 		config->set_value("params", "compress/channel_pack", 1);
 		config->set_value("params", "mipmaps/generate", false);
@@ -316,6 +314,7 @@ LightmapGIData::LightmapGIData() {
 }
 
 LightmapGIData::~LightmapGIData() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(lightmap);
 }
 
@@ -457,8 +456,8 @@ int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const Loc
 	Plane best_plane;
 	float best_plane_score = -1.0;
 
-	for (uint32_t i = 0; i < p_simplex_indices.size(); i++) {
-		const BSPSimplex &s = p_simplices[p_simplex_indices[i]];
+	for (const int idx : p_simplex_indices) {
+		const BSPSimplex &s = p_simplices[idx];
 		for (int j = 0; j < 4; j++) {
 			uint32_t plane_index = s.planes[j];
 			if (planes_tested[plane_index] == node_index) {
@@ -486,8 +485,8 @@ int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const Loc
 			int over_count = 0;
 			int under_count = 0;
 
-			for (uint32_t k = 0; k < p_simplex_indices.size(); k++) {
-				int side = _bsp_get_simplex_side(p_points, p_simplices, plane, p_simplex_indices[k]);
+			for (const int &index : p_simplex_indices) {
+				int side = _bsp_get_simplex_side(p_points, p_simplices, plane, index);
 				if (side == -2) {
 					continue; //this simplex is invalid, skip for now
 				} else if (side < 0) {
@@ -525,8 +524,7 @@ int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const Loc
 	LocalVector<int32_t> indices_under;
 
 	//split again, but add to list
-	for (uint32_t i = 0; i < p_simplex_indices.size(); i++) {
-		uint32_t index = p_simplex_indices[i];
+	for (const uint32_t index : p_simplex_indices) {
 		int side = _bsp_get_simplex_side(p_points, p_simplices, best_plane, index);
 
 		if (side == -2) {
@@ -765,7 +763,15 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 			MeshesFound &mf = meshes_found.write[m_i];
 
-			Size2i lightmap_size = mf.mesh->get_lightmap_size_hint() * mf.lightmap_scale;
+			Size2i lightmap_size = mf.mesh->get_lightmap_size_hint();
+
+			if (lightmap_size == Size2i(0, 0)) {
+				// TODO we should compute a size if no lightmap hint is set, as we did in 3.x.
+				// For now set to basic size to avoid crash.
+				lightmap_size = Size2i(64, 64);
+			}
+
+			lightmap_size *= mf.lightmap_scale;
 			TypedArray<RID> overrides;
 			overrides.resize(mf.overrides.size());
 			for (int i = 0; i < mf.overrides.size(); i++) {
@@ -818,7 +824,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 				}
 
 				md.albedo_on_uv2.instantiate();
-				md.albedo_on_uv2->create(lightmap_size.width, lightmap_size.height, false, Image::FORMAT_RGBA8, albedom);
+				md.albedo_on_uv2->set_data(lightmap_size.width, lightmap_size.height, false, Image::FORMAT_RGBA8, albedom);
 			}
 
 			md.emission_on_uv2 = images[RS::BAKE_CHANNEL_EMISSION];
@@ -971,8 +977,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			}
 		}
 
-		for (uint32_t i = 0; i < new_probe_positions.size(); i++) {
-			probes_found.push_back(new_probe_positions[i]);
+		for (const Vector3 &position : new_probe_positions) {
+			probes_found.push_back(position);
 		}
 	}
 
@@ -1001,10 +1007,16 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 				lightmapper->add_directional_light(light->get_bake_mode() == Light3D::BAKE_STATIC, -xf.basis.get_column(Vector3::AXIS_Z).normalized(), linear_color, energy, l->get_param(Light3D::PARAM_SIZE), l->get_param(Light3D::PARAM_SHADOW_BLUR));
 			} else if (Object::cast_to<OmniLight3D>(light)) {
 				OmniLight3D *l = Object::cast_to<OmniLight3D>(light);
-				lightmapper->add_omni_light(light->get_bake_mode() == Light3D::BAKE_STATIC, xf.origin, linear_color, energy * (1.0 / (Math_PI * 4.0)), l->get_param(Light3D::PARAM_RANGE), l->get_param(Light3D::PARAM_ATTENUATION), l->get_param(Light3D::PARAM_SIZE), l->get_param(Light3D::PARAM_SHADOW_BLUR));
+				if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+					energy *= (1.0 / (Math_PI * 4.0));
+				}
+				lightmapper->add_omni_light(light->get_bake_mode() == Light3D::BAKE_STATIC, xf.origin, linear_color, energy, l->get_param(Light3D::PARAM_RANGE), l->get_param(Light3D::PARAM_ATTENUATION), l->get_param(Light3D::PARAM_SIZE), l->get_param(Light3D::PARAM_SHADOW_BLUR));
 			} else if (Object::cast_to<SpotLight3D>(light)) {
 				SpotLight3D *l = Object::cast_to<SpotLight3D>(light);
-				lightmapper->add_spot_light(light->get_bake_mode() == Light3D::BAKE_STATIC, xf.origin, -xf.basis.get_column(Vector3::AXIS_Z).normalized(), linear_color, energy * (1.0 / Math_PI), l->get_param(Light3D::PARAM_RANGE), l->get_param(Light3D::PARAM_ATTENUATION), l->get_param(Light3D::PARAM_SPOT_ANGLE), l->get_param(Light3D::PARAM_SPOT_ATTENUATION), l->get_param(Light3D::PARAM_SIZE), l->get_param(Light3D::PARAM_SHADOW_BLUR));
+				if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+					energy *= (1.0 / Math_PI);
+				}
+				lightmapper->add_spot_light(light->get_bake_mode() == Light3D::BAKE_STATIC, xf.origin, -xf.basis.get_column(Vector3::AXIS_Z).normalized(), linear_color, energy, l->get_param(Light3D::PARAM_RANGE), l->get_param(Light3D::PARAM_ATTENUATION), l->get_param(Light3D::PARAM_SPOT_ANGLE), l->get_param(Light3D::PARAM_SPOT_ATTENUATION), l->get_param(Light3D::PARAM_SIZE), l->get_param(Light3D::PARAM_SHADOW_BLUR));
 			}
 		}
 		for (int i = 0; i < probes_found.size(); i++) {
@@ -1048,7 +1060,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			} break;
 			case ENVIRONMENT_MODE_CUSTOM_COLOR: {
 				environment_image.instantiate();
-				environment_image->create(128, 64, false, Image::FORMAT_RGBAF);
+				environment_image->initialize_data(128, 64, false, Image::FORMAT_RGBAF);
 				Color c = environment_custom_color;
 				c.r *= environment_custom_energy;
 				c.g *= environment_custom_energy;
@@ -1061,7 +1073,10 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 	float exposure_normalization = 1.0;
 	if (camera_attributes.is_valid()) {
-		exposure_normalization = camera_attributes->calculate_exposure_normalization() * camera_attributes->get_exposure_multiplier();
+		exposure_normalization = camera_attributes->get_exposure_multiplier();
+		if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+			exposure_normalization = camera_attributes->calculate_exposure_normalization();
+		}
 	}
 
 	Lightmapper::BakeError bake_err = lightmapper->bake(Lightmapper::BakeQuality(bake_quality), use_denoiser, bounces, bias, max_texture_size, directional, Lightmapper::GenerateProbes(gen_probes), environment_image, environment_transform, _lightmap_bake_step_function, &bsud, exposure_normalization);
@@ -1072,13 +1087,13 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 	/* POSTBAKE: Save Light Data */
 
-	Ref<LightmapGIData> data;
+	Ref<LightmapGIData> gi_data;
 	if (get_light_data().is_valid()) {
-		data = get_light_data();
+		gi_data = get_light_data();
 		set_light_data(Ref<LightmapGIData>()); //clear
-		data->clear();
+		gi_data->clear();
 	} else {
-		data.instantiate();
+		gi_data.instantiate();
 	}
 
 	Ref<Texture2DArray> texture;
@@ -1092,8 +1107,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		texture->create_from_images(images);
 	}
 
-	data->set_light_texture(texture);
-	data->set_uses_spherical_harmonics(directional);
+	gi_data->set_light_texture(texture);
+	gi_data->set_uses_spherical_harmonics(directional);
 
 	for (int i = 0; i < lightmapper->get_bake_mesh_count(); i++) {
 		Dictionary d = lightmapper->get_bake_mesh_userdata(i);
@@ -1105,7 +1120,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 		Rect2 uv_scale = lightmapper->get_bake_mesh_uv_scale(i);
 		int slice_index = lightmapper->get_bake_mesh_texture_slice(i);
-		data->add_user(np, uv_scale, slice_index, subindex);
+		gi_data->add_user(np, uv_scale, slice_index, subindex);
 	}
 
 	{
@@ -1204,8 +1219,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		LocalVector<BSPNode> bsp_nodes;
 		LocalVector<int32_t> planes_tested;
 		planes_tested.resize(bsp_planes.size());
-		for (uint32_t i = 0; i < planes_tested.size(); i++) {
-			planes_tested[i] = 0x7FFFFFFF;
+		for (int &index : planes_tested) {
+			index = 0x7FFFFFFF;
 		}
 
 		if (p_bake_step) {
@@ -1238,18 +1253,18 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 		/* Obtain the colors from the images, they will be re-created as cubemaps on the server, depending on the driver */
 
-		data->set_capture_data(bounds, interior, points, sh, tetrahedrons, bsp_array, exposure_normalization);
+		gi_data->set_capture_data(bounds, interior, points, sh, tetrahedrons, bsp_array, exposure_normalization);
 		/* Compute a BSP tree of the simplices, so it's easy to find the exact one */
 	}
 
-	data->set_path(p_image_data_path);
-	Error err = ResourceSaver::save(data);
+	gi_data->set_path(p_image_data_path);
+	Error err = ResourceSaver::save(gi_data);
 
 	if (err != OK) {
 		return BAKE_ERROR_CANT_CREATE_IMAGE;
 	}
 
-	set_light_data(data);
+	set_light_data(gi_data);
 
 	return BAKE_ERROR_OK;
 }
@@ -1277,9 +1292,9 @@ void LightmapGI::_assign_lightmaps() {
 		Node *node = get_node(light_data->get_user_path(i));
 		int instance_idx = light_data->get_user_sub_instance(i);
 		if (instance_idx >= 0) {
-			RID instance = node->call("get_bake_mesh_instance", instance_idx);
-			if (instance.is_valid()) {
-				RS::get_singleton()->instance_geometry_set_lightmap(instance, get_instance(), light_data->get_user_lightmap_uv_scale(i), light_data->get_user_lightmap_slice_index(i));
+			RID instance_id = node->call("get_bake_mesh_instance", instance_idx);
+			if (instance_id.is_valid()) {
+				RS::get_singleton()->instance_geometry_set_lightmap(instance_id, get_instance(), light_data->get_user_lightmap_uv_scale(i), light_data->get_user_lightmap_slice_index(i));
 			}
 		} else {
 			VisualInstance3D *vi = Object::cast_to<VisualInstance3D>(node);
@@ -1295,9 +1310,9 @@ void LightmapGI::_clear_lightmaps() {
 		Node *node = get_node(light_data->get_user_path(i));
 		int instance_idx = light_data->get_user_sub_instance(i);
 		if (instance_idx >= 0) {
-			RID instance = node->call("get_bake_mesh_instance", instance_idx);
-			if (instance.is_valid()) {
-				RS::get_singleton()->instance_geometry_set_lightmap(instance, RID(), Rect2(), 0);
+			RID instance_id = node->call("get_bake_mesh_instance", instance_idx);
+			if (instance_id.is_valid()) {
+				RS::get_singleton()->instance_geometry_set_lightmap(instance_id, RID(), Rect2(), 0);
 			}
 		} else {
 			VisualInstance3D *vi = Object::cast_to<VisualInstance3D>(node);
@@ -1443,6 +1458,17 @@ Ref<CameraAttributes> LightmapGI::get_camera_attributes() const {
 	return camera_attributes;
 }
 
+PackedStringArray LightmapGI::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
+
+	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		warnings.push_back(RTR("LightmapGI nodes are not supported when using the GL Compatibility backend yet. Support will be added in a future release."));
+		return warnings;
+	}
+
+	return warnings;
+}
+
 void LightmapGI::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "environment_custom_sky" && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
 		p_property.usage = PROPERTY_USAGE_NONE;
@@ -1531,6 +1557,8 @@ void LightmapGI::_bind_methods() {
 	BIND_ENUM_CONSTANT(GENERATE_PROBES_SUBDIV_32);
 
 	BIND_ENUM_CONSTANT(BAKE_ERROR_OK);
+	BIND_ENUM_CONSTANT(BAKE_ERROR_NO_SCENE_ROOT);
+	BIND_ENUM_CONSTANT(BAKE_ERROR_FOREIGN_DATA);
 	BIND_ENUM_CONSTANT(BAKE_ERROR_NO_LIGHTMAPPER);
 	BIND_ENUM_CONSTANT(BAKE_ERROR_NO_SAVE_PATH);
 	BIND_ENUM_CONSTANT(BAKE_ERROR_NO_MESHES);

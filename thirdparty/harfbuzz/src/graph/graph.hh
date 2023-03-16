@@ -49,6 +49,95 @@ struct graph_t
     unsigned end = 0;
     unsigned priority = 0;
 
+
+    bool link_positions_valid (unsigned num_objects, bool removed_nil)
+    {
+      hb_set_t assigned_bytes;
+      for (const auto& l : obj.real_links)
+      {
+        if (l.objidx >= num_objects
+            || (removed_nil && !l.objidx))
+        {
+          DEBUG_MSG (SUBSET_REPACK, nullptr,
+                     "Invalid graph. Invalid object index.");
+          return false;
+        }
+
+        unsigned start = l.position;
+        unsigned end = start + l.width - 1;
+
+        if (unlikely (l.width < 2 || l.width > 4))
+        {
+          DEBUG_MSG (SUBSET_REPACK, nullptr,
+                     "Invalid graph. Invalid link width.");
+          return false;
+        }
+
+        if (unlikely (end >= table_size ()))
+        {
+          DEBUG_MSG (SUBSET_REPACK, nullptr,
+                     "Invalid graph. Link position is out of bounds.");
+          return false;
+        }
+
+        if (unlikely (assigned_bytes.intersects (start, end)))
+        {
+          DEBUG_MSG (SUBSET_REPACK, nullptr,
+                     "Invalid graph. Found offsets whose positions overlap.");
+          return false;
+        }
+
+        assigned_bytes.add_range (start, end);
+      }
+
+      return !assigned_bytes.in_error ();
+    }
+
+    void normalize ()
+    {
+      obj.real_links.qsort ();
+      for (auto& l : obj.real_links)
+      {
+        for (unsigned i = 0; i < l.width; i++)
+        {
+          obj.head[l.position + i] = 0;
+        }
+      }
+    }
+
+    bool equals (const vertex_t& other,
+                 const graph_t& graph,
+                 const graph_t& other_graph,
+                 unsigned depth) const
+    {
+      if (!(as_bytes () == other.as_bytes ()))
+      {
+        DEBUG_MSG (SUBSET_REPACK, nullptr,
+                   "vertex [%lu] bytes != [%lu] bytes, depth = %u",
+                   (unsigned long) table_size (),
+                   (unsigned long) other.table_size (),
+                   depth);
+
+        auto a = as_bytes ();
+        auto b = other.as_bytes ();
+        while (a || b)
+        {
+          DEBUG_MSG (SUBSET_REPACK, nullptr,
+                     "  0x%x %s 0x%x", *a, (*a == *b) ? "==" : "!=", *b);
+          a++;
+          b++;
+        }
+        return false;
+      }
+
+      return links_equal (obj.real_links, other.obj.real_links, graph, other_graph, depth);
+    }
+
+    hb_bytes_t as_bytes () const
+    {
+      return hb_bytes_t (obj.head, table_size ());
+    }
+
     friend void swap (vertex_t& a, vertex_t& b)
     {
       hb_swap (a.obj, b.obj);
@@ -58,6 +147,18 @@ struct graph_t
       hb_swap (a.start, b.start);
       hb_swap (a.end, b.end);
       hb_swap (a.priority, b.priority);
+    }
+
+    hb_hashmap_t<unsigned, unsigned>
+    position_to_index_map () const
+    {
+      hb_hashmap_t<unsigned, unsigned> result;
+
+      for (const auto& l : obj.real_links) {
+        result.set (l.position, l.objidx);
+      }
+
+      return result;
     }
 
     bool is_shared () const
@@ -75,7 +176,7 @@ struct graph_t
       for (unsigned i = 0; i < parents.length; i++)
       {
         if (parents[i] != parent_index) continue;
-        parents.remove (i);
+        parents.remove_unordered (i);
         break;
       }
     }
@@ -84,14 +185,14 @@ struct graph_t
     {
       for (unsigned i = 0; i < obj.real_links.length; i++)
       {
-        auto& link = obj.real_links[i];
+        auto& link = obj.real_links.arrayZ[i];
         if (link.objidx != child_index)
           continue;
 
         if ((obj.head + link.position) != offset)
           continue;
 
-        obj.real_links.remove (i);
+        obj.real_links.remove_unordered (i);
         return;
       }
     }
@@ -155,6 +256,57 @@ struct graph_t
 
       return -table_size;
     }
+
+   private:
+    bool links_equal (const hb_vector_t<hb_serialize_context_t::object_t::link_t>& this_links,
+                      const hb_vector_t<hb_serialize_context_t::object_t::link_t>& other_links,
+                      const graph_t& graph,
+                      const graph_t& other_graph,
+                      unsigned depth) const
+    {
+      auto a = this_links.iter ();
+      auto b = other_links.iter ();
+
+      while (a && b)
+      {
+        const auto& link_a = *a;
+        const auto& link_b = *b;
+
+        if (link_a.width != link_b.width ||
+            link_a.is_signed != link_b.is_signed ||
+            link_a.whence != link_b.whence ||
+            link_a.position != link_b.position ||
+            link_a.bias != link_b.bias)
+          return false;
+
+        if (!graph.vertices_[link_a.objidx].equals (
+                other_graph.vertices_[link_b.objidx], graph, other_graph, depth + 1))
+          return false;
+
+        a++;
+        b++;
+      }
+
+      if (bool (a) != bool (b))
+        return false;
+
+      return true;
+    }
+  };
+
+  template <typename T>
+  struct vertex_and_table_t
+  {
+    vertex_and_table_t () : index (0), vertex (nullptr), table (nullptr)
+    {}
+
+    unsigned index;
+    vertex_t* vertex;
+    T* table;
+
+    operator bool () {
+       return table && vertex;
+    }
   };
 
   /*
@@ -169,7 +321,8 @@ struct graph_t
       : parents_invalid (true),
         distance_invalid (true),
         positions_invalid (true),
-        successful (true)
+        successful (true),
+        buffers ()
   {
     num_roots_for_space_.push (1);
     bool removed_nil = false;
@@ -177,8 +330,6 @@ struct graph_t
     vertices_scratch_.alloc (objects.length);
     for (unsigned i = 0; i < objects.length; i++)
     {
-      // TODO(grieger): check all links point to valid objects.
-
       // If this graph came from a serialization buffer object 0 is the
       // nil object. We don't need it for our purposes here so drop it.
       if (i == 0 && !objects[i])
@@ -190,6 +341,9 @@ struct graph_t
       vertex_t* v = vertices_.push ();
       if (check_success (!vertices_.in_error ()))
         v->obj = *objects[i];
+
+      check_success (v->link_positions_valid (objects.length, removed_nil));
+
       if (!removed_nil) continue;
       // Fix indices to account for removed nil object.
       for (auto& l : v->obj.all_links_writer ()) {
@@ -201,6 +355,20 @@ struct graph_t
   ~graph_t ()
   {
     vertices_.fini ();
+    for (char* b : buffers)
+      hb_free (b);
+  }
+
+  bool operator== (const graph_t& other) const
+  {
+    return root ().equals (other.root (), *this, other, 0);
+  }
+
+  // Sorts links of all objects in a consistent manner and zeroes all offsets.
+  void normalize ()
+  {
+    for (auto& v : vertices_.writer ())
+      v.normalize ();
   }
 
   bool in_error () const
@@ -226,6 +394,27 @@ struct graph_t
   const hb_serialize_context_t::object_t& object (unsigned i) const
   {
     return vertices_[i].obj;
+  }
+
+  void add_buffer (char* buffer)
+  {
+    buffers.push (buffer);
+  }
+
+  /*
+   * Adds a 16 bit link from parent_id to child_id
+   */
+  template<typename T>
+  void add_link (T* offset,
+                 unsigned parent_id,
+                 unsigned child_id)
+  {
+    auto& v = vertices_[parent_id];
+    auto* link = v.obj.real_links.push ();
+    link->width = 2;
+    link->objidx = child_id;
+    link->position = (char*) offset - (char*) v.obj.head;
+    vertices_[child_id].parents.push (parent_id);
   }
 
   /*
@@ -273,6 +462,13 @@ struct graph_t
 
       hb_swap (sorted_graph[new_id], vertices_[next_id]);
       const vertex_t& next = sorted_graph[new_id];
+
+      if (unlikely (!check_success(new_id >= 0))) {
+        // We are out of ids. Which means we've visited a node more than once.
+        // This graph contains a cycle which is not allowed.
+        DEBUG_MSG (SUBSET_REPACK, nullptr, "Invalid graph. Contains cycle.");
+        return;
+      }
 
       id_map[next_id] = new_id--;
 
@@ -345,19 +541,73 @@ struct graph_t
     }
   }
 
-  unsigned index_for_offset(unsigned node_idx, const void* offset) const
+  template <typename T, typename ...Ts>
+  vertex_and_table_t<T> as_table (unsigned parent, const void* offset, Ts... ds)
+  {
+    return as_table_from_index<T> (index_for_offset (parent, offset), std::forward<Ts>(ds)...);
+  }
+
+  template <typename T, typename ...Ts>
+  vertex_and_table_t<T> as_mutable_table (unsigned parent, const void* offset, Ts... ds)
+  {
+    return as_table_from_index<T> (mutable_index_for_offset (parent, offset), std::forward<Ts>(ds)...);
+  }
+
+  template <typename T, typename ...Ts>
+  vertex_and_table_t<T> as_table_from_index (unsigned index, Ts... ds)
+  {
+    if (index >= vertices_.length)
+      return vertex_and_table_t<T> ();
+
+    vertex_and_table_t<T> r;
+    r.vertex = &vertices_[index];
+    r.table = (T*) r.vertex->obj.head;
+    r.index = index;
+    if (!r.table)
+      return vertex_and_table_t<T> ();
+
+    if (!r.table->sanitize (*(r.vertex), std::forward<Ts>(ds)...))
+      return vertex_and_table_t<T> ();
+
+    return r;
+  }
+
+  // Finds the object id of the object pointed to by the offset at 'offset'
+  // within object[node_idx].
+  unsigned index_for_offset (unsigned node_idx, const void* offset) const
   {
     const auto& node = object (node_idx);
     if (offset < node.head || offset >= node.tail) return -1;
 
-    for (const auto& link : node.real_links)
+    unsigned length = node.real_links.length;
+    for (unsigned i = 0; i < length; i++)
     {
+      // Use direct access for increased performance, this is a hot method.
+      const auto& link = node.real_links.arrayZ[i];
       if (offset != node.head + link.position)
         continue;
       return link.objidx;
     }
 
     return -1;
+  }
+
+  // Finds the object id of the object pointed to by the offset at 'offset'
+  // within object[node_idx]. Ensures that the returned object is safe to mutate.
+  // That is, if the original child object is shared by parents other than node_idx
+  // it will be duplicated and the duplicate will be returned instead.
+  unsigned mutable_index_for_offset (unsigned node_idx, const void* offset)
+  {
+    unsigned child_idx = index_for_offset (node_idx, offset);
+    auto& child = vertices_[child_idx];
+    for (unsigned p : child.parents)
+    {
+      if (p != node_idx) {
+        return duplicate (node_idx, child_idx);
+      }
+    }
+
+    return child_idx;
   }
 
 
@@ -382,7 +632,7 @@ struct graph_t
 
     while (roots)
     {
-      unsigned next = HB_SET_VALUE_INVALID;
+      uint32_t next = HB_SET_VALUE_INVALID;
       if (unlikely (!check_success (!roots.in_error ()))) break;
       if (!roots.next (&next)) break;
 
@@ -463,8 +713,8 @@ struct graph_t
 
     auto new_subgraph =
         + subgraph.keys ()
-        | hb_map([&] (unsigned node_idx) {
-          const unsigned *v;
+        | hb_map([&] (uint32_t node_idx) {
+          const uint32_t *v;
           if (index_map.has (node_idx, &v)) return *v;
           return node_idx;
         })
@@ -474,10 +724,10 @@ struct graph_t
     remap_obj_indices (index_map, parents.iter (), true);
 
     // Update roots set with new indices as needed.
-    unsigned next = HB_SET_VALUE_INVALID;
+    uint32_t next = HB_SET_VALUE_INVALID;
     while (roots.next (&next))
     {
-      const unsigned *v;
+      const uint32_t *v;
       if (index_map.has (next, &v))
       {
         roots.del (next);
@@ -492,7 +742,7 @@ struct graph_t
   {
     for (const auto& link : vertices_[node_idx].obj.all_links ())
     {
-      const unsigned *v;
+      const uint32_t *v;
       if (subgraph.has (link.objidx, &v))
       {
         subgraph.set (link.objidx, *v + 1);
@@ -641,7 +891,20 @@ struct graph_t
    * parent to the clone. The copy is a shallow copy, objects
    * linked from child are not duplicated.
    */
-  bool duplicate (unsigned parent_idx, unsigned child_idx)
+  unsigned duplicate_if_shared (unsigned parent_idx, unsigned child_idx)
+  {
+    unsigned new_idx = duplicate (parent_idx, child_idx);
+    if (new_idx == (unsigned) -1) return child_idx;
+    return new_idx;
+  }
+
+
+  /*
+   * Creates a copy of child and re-assigns the link from
+   * parent to the clone. The copy is a shallow copy, objects
+   * linked from child are not duplicated.
+   */
+  unsigned duplicate (unsigned parent_idx, unsigned child_idx)
   {
     update_parents ();
 
@@ -657,7 +920,7 @@ struct graph_t
       // to child are from parent.
       DEBUG_MSG (SUBSET_REPACK, nullptr, "  Not duplicating %d => %d",
                  parent_idx, child_idx);
-      return false;
+      return -1;
     }
 
     DEBUG_MSG (SUBSET_REPACK, nullptr, "  Duplicating %d => %d",
@@ -677,7 +940,7 @@ struct graph_t
       reassign_link (l, parent_idx, clone_idx);
     }
 
-    return true;
+    return clone_idx;
   }
 
 
@@ -730,6 +993,72 @@ struct graph_t
     return made_change;
   }
 
+  bool is_fully_connected ()
+  {
+    update_parents();
+
+    if (root().parents)
+      // Root cannot have parents.
+      return false;
+
+    for (unsigned i = 0; i < root_idx (); i++)
+    {
+      if (!vertices_[i].parents)
+        return false;
+    }
+    return true;
+  }
+
+#if 0
+  /*
+   * Saves the current graph to a packed binary format which the repacker fuzzer takes
+   * as a seed.
+   */
+  void save_fuzzer_seed (hb_tag_t tag) const
+  {
+    FILE* f = fopen ("./repacker_fuzzer_seed", "w");
+    fwrite ((void*) &tag, sizeof (tag), 1, f);
+
+    uint16_t num_objects = vertices_.length;
+    fwrite ((void*) &num_objects, sizeof (num_objects), 1, f);
+
+    for (const auto& v : vertices_)
+    {
+      uint16_t blob_size = v.table_size ();
+      fwrite ((void*) &blob_size, sizeof (blob_size), 1, f);
+      fwrite ((const void*) v.obj.head, blob_size, 1, f);
+    }
+
+    uint16_t link_count = 0;
+    for (const auto& v : vertices_)
+      link_count += v.obj.real_links.length;
+
+    fwrite ((void*) &link_count, sizeof (link_count), 1, f);
+
+    typedef struct
+    {
+      uint16_t parent;
+      uint16_t child;
+      uint16_t position;
+      uint8_t width;
+    } link_t;
+
+    for (unsigned i = 0; i < vertices_.length; i++)
+    {
+      for (const auto& l : vertices_[i].obj.real_links)
+      {
+        link_t link {
+          (uint16_t) i, (uint16_t) l.objidx,
+          (uint16_t) l.position, (uint8_t) l.width
+        };
+        fwrite ((void*) &link, sizeof (link), 1, f);
+      }
+    }
+
+    fclose (f);
+  }
+#endif
+
   void print_orphaned_nodes ()
   {
     if (!DEBUG_ENABLED(SUBSET_REPACK)) return;
@@ -737,6 +1066,10 @@ struct graph_t
     DEBUG_MSG (SUBSET_REPACK, nullptr, "Graph is not fully connected.");
     parents_invalid = true;
     update_parents();
+
+    if (root().parents) {
+      DEBUG_MSG (SUBSET_REPACK, nullptr, "Root node has incoming edges.");
+    }
 
     for (unsigned i = 0; i < root_idx (); i++)
     {
@@ -853,6 +1186,11 @@ struct graph_t
         vertices_[l.objidx].parents.push (p);
       }
     }
+
+    for (unsigned i = 0; i < vertices_.length; i++)
+      // parents arrays must be accurate or downstream operations like cycle detection
+      // and sorting won't work correctly.
+      check_success (!vertices_[i].parents.in_error ());
 
     parents_invalid = false;
   }
@@ -972,7 +1310,7 @@ struct graph_t
     {
       for (auto& link : vertices_[i].obj.all_links_writer ())
       {
-        const unsigned *v;
+        const uint32_t *v;
         if (!id_map.has (link.objidx, &v)) continue;
         if (only_wide && !(link.width == 4 && !link.is_signed)) continue;
 
@@ -1039,6 +1377,7 @@ struct graph_t
   bool positions_invalid;
   bool successful;
   hb_vector_t<unsigned> num_roots_for_space_;
+  hb_vector_t<char*> buffers;
 };
 
 }

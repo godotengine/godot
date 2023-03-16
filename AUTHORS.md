@@ -29,11 +29,14 @@ name is available.
 
     Aaron Franke (aaronfranke)
     Aaron Record (LightningAA)
+    Adam Scott (adamscott)
     Alexander Holland (AlexHolly)
     Alexey Khoroshavin (allkhor)
+    Alfred Reinold Baudisch (alfredbaudisch)
     Alket Rexhepi (alketii)
     Andrea Catania (AndreaCatania)
     Andrii Doroshenko (Xrayez)
+    Andy Maloney (asmaloney)
     Andy Moss (MillionOstrich)
     Angad Kambli (angad-k)
     Anilforextra (AnilBK)
@@ -63,6 +66,7 @@ name is available.
     Dana Olson (adolson)
     Daniel J. Ramirez (djrm)
     Daniel Rakos (aqnuep)
+    Daniel Zilberleyb (dzil123)
     Danil Alexeev (dalexeev)
     dankan1890
     David Cambré (Gallilus)
@@ -70,7 +74,9 @@ name is available.
     David Snopek (dsnopek)
     Dharkael (lupoDharkael)
     Dmitry Koteroff (Krakean)
+    Dmitry Maganov (vonagam)
     Dominik Jasiński (dreamsComeTrue)
+    Douglas Leão (DeeJayLSP)
     DualMatrix
     Ellen Poe (ellenhp)
     Emmanuel Barroga (codecustard)
@@ -117,13 +123,17 @@ name is available.
     Jake Young (Duroxxigar)
     Jakub Grzesik (kubecz3k)
     James Buck (jbuck3)
+    Jan Haller (Bromeon)
+    Jason Knight (jasonwinterpixel)
     Jean-Michel Bernard (jmb462)
     Jérôme Gully (Nutriz)
     Jia Jun Chai (SkyLucilfer)
     Joan Fons Sanchez (JFonS)
     Johan Manuel (29jm)
     Johannes Witt (HaSa1002)
+    Jonathan Nicholl (jtnicholl)
     Jordan Schidlowsky (winterpixelgames)
+    Josh Jones (DarkKilauea)
     Joshua Grams (JoshuaGrams)
     Juan Linietsky (reduz)
     Julian Murgia (StraToN)
@@ -152,6 +162,7 @@ name is available.
     Mariano Javier Suligoy (MarianoGnu)
     Mario Schlack (hurikhan)
     Marios Staikopoulos (marstaik)
+    Marius Hanl (Maran23)
     Mark Riedesel (klowner)
     Markus Sauermann (Sauermann)
     Martin Capitanio (capnm)
@@ -165,9 +176,12 @@ name is available.
     Max Hilbrunner (mhilbrunner)
     merumelu
     Meru Patel (Janglee123)
+    MewPurPur
     Michael Alexsander (YeldhamDev)
     Michał Iwańczuk (iwek7)
     MichiRecRoom (LikeLakers2)
+    Micky (Mickeon)
+    MinusKube
     Morris "Tabor" Arroad (mortarroad)
     mrezai
     Muhammad Huri (CakHuri)
@@ -176,9 +190,11 @@ name is available.
     Nathan Lovato (NathanLovato)
     Nathan Warden (NathanWarden)
     Nicholas Huelin (SirQuartz)
+    Nikita Lita (nikitalita)
     Nils André-Chang (NilsIrl)
     Noah Beard (TwistedTwigleg)
     Nuno Donato (nunodonato)
+    ocean (they/them) (anvilfolk)
     Omar El Sheikh (The-O-King)
     Ovnuniarchos
     Pascal Richter (ShyRed)
@@ -201,13 +217,17 @@ name is available.
     Raphael2048
     Raul Santos (raulsntos)
     Ray Koopa (RayKoopa)
+    RedMser
+    RedworkDE
     Rémi Verschelde (akien-mga)
     Rhody Lugo (rraallvv)
     Ricardo Buring (rburing)
     Ricardo Subtil (Ev1lbl0w)
+    Riteo Siuga (Riteo)
     Roberto F. Arroyo (robfram)
     Robin Hübner (profan)
     romulox-x
+    Rune Smith (rune-scape)
     Ruslan Mustakov (endragor)
     Ryan Roden-Corrent (rrcore)
     Saniko (sanikoyes)
@@ -219,9 +239,11 @@ name is available.
     Silc 'Tokage' Renew (TokageItLab)
     Simon Wenner (swenner)
     smix8
+    snailrhymer
     Stijn Hinlopen (hinlopen)
     Swarnim Arun (minraws)
     TC (floppyhammer)
+    TechnoPorg
     Thakee Nathees (ThakeeNathees)
     thebestnom
     Theo Hallenius (TheoXD)

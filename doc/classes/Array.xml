@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Array" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Array" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A generic array datatype.
 	</brief_description>
@@ -40,7 +40,7 @@
 		[/codeblocks]
 		[b]Note:[/b] Concatenating with the [code]+=[/code] operator will create a new array, which has a cost. If you want to append another array to an existing array, [method append_array] is more efficient.
 		[b]Note:[/b] Arrays are always passed by reference. To get a copy of an array that can be modified independently of the original array, use [method duplicate].
-		[b]Note:[/b] When declaring an array with [code]const[/code], the array itself can still be mutated by defining the values at individual indices or pushing/removing elements. Using [code]const[/code] will only prevent assigning the constant with another value after it was initialized.
+		[b]Note:[/b] Erasing elements while iterating over arrays is [b]not[/b] supported and will result in unpredictable behavior.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -53,9 +53,19 @@
 		</constructor>
 		<constructor name="Array">
 			<return type="Array" />
+			<param index="0" name="base" type="Array" />
+			<param index="1" name="type" type="int" />
+			<param index="2" name="class_name" type="StringName" />
+			<param index="3" name="script" type="Variant" />
+			<description>
+				Creates a typed array from the [param base] array.
+			</description>
+		</constructor>
+		<constructor name="Array">
+			<return type="Array" />
 			<param index="0" name="from" type="Array" />
 			<description>
-				Constructs an [Array] as a copy of the given [Array].
+				Returns the same array as [param from]. If you need a copy of the array, use [method duplicate].
 			</description>
 		</constructor>
 		<constructor name="Array">
@@ -189,6 +199,13 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="assign">
+			<return type="void" />
+			<param index="0" name="array" type="Array" />
+			<description>
+				Assigns elements of another [param array] into the array. Resizes the array to match [param array]. Performs type conversions if the array is typed.
+			</description>
+		</method>
 		<method name="back" qualifiers="const">
 			<return type="Variant" />
 			<description>
@@ -196,7 +213,7 @@
 				[b]Note:[/b] Calling this function is not the same as writing [code]array[-1][/code]. If the array is empty, accessing by index will pause project execution when running from the editor.
 			</description>
 		</method>
-		<method name="bsearch">
+		<method name="bsearch" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="value" type="Variant" />
 			<param index="1" name="before" type="bool" default="true" />
@@ -205,7 +222,7 @@
 				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
 			</description>
 		</method>
-		<method name="bsearch_custom">
+		<method name="bsearch_custom" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="value" type="Variant" />
 			<param index="1" name="func" type="Callable" />
@@ -233,7 +250,7 @@
 			<param index="0" name="deep" type="bool" default="false" />
 			<description>
 				Returns a copy of the array.
-				If [param deep] is [code]true[/code], a deep copy is performed: all nested arrays and dictionaries are duplicated and will not be shared with the original array. If [code]false[/code], a shallow copy is made and references to the original nested arrays and dictionaries are kept, so that modifying a sub-array or dictionary in the copy will also impact those referenced in the source array.
+				If [param deep] is [code]true[/code], a deep copy is performed: all nested arrays and dictionaries are duplicated and will not be shared with the original array. If [code]false[/code], a shallow copy is made and references to the original nested arrays and dictionaries are kept, so that modifying a sub-array or dictionary in the copy will also impact those referenced in the source array. Note that any [Object]-derived elements will be shallow copied regardless of the [param deep] setting.
 			</description>
 		</method>
 		<method name="erase">
@@ -243,6 +260,7 @@
 				Removes the first occurrence of a value from the array. If the value does not exist in the array, nothing happens. To remove an element by index, use [method remove_at] instead.
 				[b]Note:[/b] This method acts in-place and doesn't return a value.
 				[b]Note:[/b] On large arrays, this method will be slower if the removed element is close to the beginning of the array (index 0). This is because all elements placed after the removed element have to be reindexed.
+				[b]Note:[/b] Do not erase entries while iterating over the array.
 			</description>
 		</method>
 		<method name="fill">
@@ -257,11 +275,12 @@
 				array.fill(0) # Initialize the 10 elements to 0.
 				[/gdscript]
 				[csharp]
-				var array = new Godot.Collections.Array{};
+				var array = new Godot.Collections.Array();
 				array.Resize(10);
 				array.Fill(0); // Initialize the 10 elements to 0.
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] If [param value] is of a reference type ([Object]-derived, [Array], [Dictionary], etc.) then the array is filled with the references to the same object, i.e. no duplicates are created.
 			</description>
 		</method>
 		<method name="filter" qualifiers="const">
@@ -289,18 +308,29 @@
 				Searches the array for a value and returns its index or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
 			</description>
 		</method>
-		<method name="find_last" qualifiers="const">
-			<return type="int" />
-			<param index="0" name="value" type="Variant" />
-			<description>
-				Searches the array in reverse order for a value and returns its index or [code]-1[/code] if not found.
-			</description>
-		</method>
 		<method name="front" qualifiers="const">
 			<return type="Variant" />
 			<description>
 				Returns the first element of the array. Prints an error and returns [code]null[/code] if the array is empty.
 				[b]Note:[/b] Calling this function is not the same as writing [code]array[0][/code]. If the array is empty, accessing by index will pause project execution when running from the editor.
+			</description>
+		</method>
+		<method name="get_typed_builtin" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the [enum Variant.Type] constant for a typed array. If the [Array] is not typed, returns [constant TYPE_NIL].
+			</description>
+		</method>
+		<method name="get_typed_class_name" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns a class name of a typed [Array] of type [constant TYPE_OBJECT].
+			</description>
+		</method>
+		<method name="get_typed_script" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns the script associated with a typed array tied to a class name.
 			</description>
 		</method>
 		<method name="has" qualifiers="const">
@@ -316,7 +346,7 @@
 				print(["inside", 7].has("7")) # False
 				[/gdscript]
 				[csharp]
-				var arr = new Godot.Collections.Array{"inside", 7};
+				var arr = new Godot.Collections.Array { "inside", 7 };
 				// has is renamed to Contains
 				GD.Print(arr.Contains("inside")); // True
 				GD.Print(arr.Contains("outside")); // False
@@ -324,7 +354,6 @@
 				GD.Print(arr.Contains("7")); // False
 				[/csharp]
 				[/codeblocks]
-
 				[b]Note:[/b] This is equivalent to using the [code]in[/code] operator as follows:
 				[codeblocks]
 				[gdscript]
@@ -334,7 +363,7 @@
 				[/gdscript]
 				[csharp]
 				// As there is no "in" keyword in C#, you have to use Contains
-				var array = new Godot.Collections.Array{2, 4, 6, 8};
+				var array = new Godot.Collections.Array { 2, 4, 6, 8 };
 				if (array.Contains(2))
 				{
 				    GD.Print("Contains!");
@@ -366,6 +395,31 @@
 				Returns [code]true[/code] if the array is empty.
 			</description>
 		</method>
+		<method name="is_read_only" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the array is read-only. See [method make_read_only]. Arrays are automatically read-only if declared with [code]const[/code] keyword.
+			</description>
+		</method>
+		<method name="is_same_typed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="array" type="Array" />
+			<description>
+				Returns [code]true[/code] if the array is typed the same as [param array].
+			</description>
+		</method>
+		<method name="is_typed" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the array is typed. Typed arrays can only store elements of their associated type and provide type safety for the [code][][/code] operator. Methods of typed array still return [Variant].
+			</description>
+		</method>
+		<method name="make_read_only">
+			<return type="void" />
+			<description>
+				Makes the array read-only, i.e. disabled modifying of the array's elements. Does not apply to nested content, e.g. content of nested arrays.
+			</description>
+		</method>
 		<method name="map" qualifiers="const">
 			<return type="Array" />
 			<param index="0" name="method" type="Callable" />
@@ -393,6 +447,22 @@
 			<return type="Variant" />
 			<description>
 				Returns the minimum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
+			</description>
+		</method>
+		<method name="pick_random" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns a random value from the target array.
+				[codeblocks]
+				[gdscript]
+				var array: Array[int] = [1, 2, 3, 4]
+				print(array.pick_random())  # Prints either of the four numbers.
+				[/gdscript]
+				[csharp]
+				var array = new Godot.Collections.Array { 1, 2, 3, 4 };
+				GD.Print(array.PickRandom()); // Prints either of the four numbers.
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="pop_at">
@@ -501,7 +571,7 @@
 				Returns the slice of the [Array], from [param begin] (inclusive) to [param end] (exclusive), as a new [Array].
 				The absolute value of [param begin] and [param end] will be clamped to the array size, so the default value for [param end] makes it slice to the size of the array by default (i.e. [code]arr.slice(1)[/code] is a shorthand for [code]arr.slice(1, arr.size())[/code]).
 				If either [param begin] or [param end] are negative, they will be relative to the end of the array (i.e. [code]arr.slice(0, -2)[/code] is a shorthand for [code]arr.slice(0, arr.size() - 2)[/code]).
-				If specified, [param step] is the relative index between source elements. It can be negative, then [param begin] must be higher than [param end]. For example, [code][0, 1, 2, 3, 4, 5].slice(5, 1, -2)[/code] returns [code][5, 3][/code]).
+				If specified, [param step] is the relative index between source elements. It can be negative, then [param begin] must be higher than [param end]. For example, [code][0, 1, 2, 3, 4, 5].slice(5, 1, -2)[/code] returns [code][5, 3][/code].
 				If [param deep] is true, each element will be copied by value rather than by reference.
 			</description>
 		</method>
@@ -509,6 +579,7 @@
 			<return type="void" />
 			<description>
 				Sorts the array.
+				[b]Note:[/b] The sorting algorithm used is not [url=https://en.wikipedia.org/wiki/Sorting_algorithm#Stability]stable[/url]. This means that values considered equal may have their order changed when using [method sort].
 				[b]Note:[/b] Strings are sorted in alphabetical order (as opposed to natural order). This may lead to unexpected behavior when sorting an array of strings ending with a sequence of numbers. Consider the following example:
 				[codeblocks]
 				[gdscript]
@@ -517,7 +588,9 @@
 				print(strings) # Prints [string1, string10, string11, string2]
 				[/gdscript]
 				[csharp]
-				// There is no sort support for Godot.Collections.Array
+				var strings = new Godot.Collections.Array { "string1", "string2", "string10", "string11" };
+				strings.Sort();
+				GD.Print(strings); // Prints [string1, string10, string11, string2]
 				[/csharp]
 				[/codeblocks]
 				To perform natural order sorting, you can use [method sort_custom] with [method String.naturalnocasecmp_to] as follows:
@@ -533,7 +606,8 @@
 			<param index="0" name="func" type="Callable" />
 			<description>
 				Sorts the array using a custom method. The custom method receives two arguments (a pair of elements from the array) and must return either [code]true[/code] or [code]false[/code]. For two elements [code]a[/code] and [code]b[/code], if the given method returns [code]true[/code], element [code]b[/code] will be after element [code]a[/code] in the array.
-				[b]Note:[/b] You cannot randomize the return value as the heapsort algorithm expects a deterministic result. Doing so will result in unexpected behavior.
+				[b]Note:[/b] The sorting algorithm used is not [url=https://en.wikipedia.org/wiki/Sorting_algorithm#Stability]stable[/url]. This means that values considered equal may have their order changed when using [method sort_custom].
+				[b]Note:[/b] You cannot randomize the return value as the heapsort algorithm expects a deterministic result. Randomizing the return value will result in unexpected behavior.
 				[codeblocks]
 				[gdscript]
 				func sort_ascending(a, b):
@@ -608,7 +682,7 @@
 			</description>
 		</operator>
 		<operator name="operator []">
-			<return type="void" />
+			<return type="Variant" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns a reference to the element of type [Variant] at the specified location. Arrays start at index 0. [param index] can be a zero or positive value to start from the beginning, or a negative value to start from the end. Out-of-bounds array access causes a run-time error, which will result in an error being printed and the project execution pausing if run from the editor.

@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RenderingServer" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="RenderingServer" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Server for anything visible.
 	</brief_description>
 	<description>
-		Server for anything visible. The rendering server is the API backend for everything visible. The whole scene system mounts on it to display.
+		The rendering server is the API backend for everything visible. The whole scene system mounts on it to display.
 		The rendering server is completely opaque, the internals are entirely implementation specific and cannot be accessed.
-		The rendering server can be used to bypass the scene system entirely.
-		Resources are created using the [code]*_create[/code] functions.
+		The rendering server can be used to bypass the scene/[Node] system entirely.
+		Resources are created using the [code]*_create[/code] functions. These functions return [RID]s which are not references to the objects themselves, but opaque [i]pointers[/i] towards these objects.
 		All objects are drawn to a viewport. You can use the [Viewport] attached to the [SceneTree] or you can create one yourself with [method viewport_create]. When using a custom scenario or canvas, the scenario or canvas needs to be attached to the viewport using [method viewport_set_scenario] or [method viewport_attach_canvas].
 		In 3D, all visual objects must be associated with a scenario. The scenario is a visual representation of the world. If accessing the rendering server from a running game, the scenario can be accessed from the scene tree from any [Node3D] node with [method Node3D.get_world_3d]. Otherwise, a scenario can be created with [method scenario_create].
 		Similarly, in 2D, a canvas is needed to draw all canvas items.
 		In 3D, all visible objects are comprised of a resource and an instance. A resource can be a mesh, a particle system, a light, or any other 3D object. In order to be visible resources must be attached to an instance using [method instance_set_base]. The instance must also be attached to the scenario using [method instance_set_scenario] in order to be visible.
 		In 2D, all visible objects are some form of canvas item. In order to be visible, a canvas item needs to be the child of a canvas attached to a viewport, or it needs to be the child of another canvas item that is eventually attached to the canvas.
+		[b]Headless mode:[/b] Starting the engine with the [code]--headless[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url] disables all rendering and window management functions. Most functions from [RenderingServer] will return dummy values in this case.
 	</description>
 	<tutorials>
 		<link title="Optimization using Servers">$DOCS_URL/tutorials/performance/using_servers.html</link>
@@ -24,6 +25,7 @@
 			<param index="1" name="material_overrides" type="RID[]" />
 			<param index="2" name="image_size" type="Vector2i" />
 			<description>
+				Bakes the material data of the Mesh passed in the [param base] parameter with optional [param material_overrides] to a set of [Image]s of size [param image_size]. Returns an array of [Image]s containing material properties as specified in [enum BakeChannels].
 			</description>
 		</method>
 		<method name="camera_attributes_create">
@@ -42,6 +44,7 @@
 			<param index="4" name="speed" type="float" />
 			<param index="5" name="scale" type="float" />
 			<description>
+				Sets the parameters to use with the auto-exposure effect. These parameters take on the same meaning as their counterparts in [CameraAttributes] and [CameraAttributesPractical].
 			</description>
 		</method>
 		<method name="camera_attributes_set_dof_blur">
@@ -55,12 +58,14 @@
 			<param index="6" name="near_transition" type="float" />
 			<param index="7" name="amount" type="float" />
 			<description>
+				Sets the parameters to use with the DOF blur effect. These parameters take on the same meaning as their counterparts in [CameraAttributesPractical].
 			</description>
 		</method>
 		<method name="camera_attributes_set_dof_blur_bokeh_shape">
 			<return type="void" />
 			<param index="0" name="shape" type="int" enum="RenderingServer.DOFBokehShape" />
 			<description>
+				Sets the shape of the DOF bokeh pattern. Different shapes may be used to achieve artistic effect, or to meet performance targets. For more detail on available options see [enum DOFBokehShape].
 			</description>
 		</method>
 		<method name="camera_attributes_set_dof_blur_quality">
@@ -68,6 +73,7 @@
 			<param index="0" name="quality" type="int" enum="RenderingServer.DOFBlurQuality" />
 			<param index="1" name="use_jitter" type="bool" />
 			<description>
+				Sets the quality level of the DOF blur effect to one of the options in [enum DOFBlurQuality]. [param use_jitter] can be used to jitter samples taken during the blur pass to hide artifacts at the cost of looking more fuzzy.
 			</description>
 		</method>
 		<method name="camera_attributes_set_exposure">
@@ -101,6 +107,7 @@
 			<param index="0" name="camera" type="RID" />
 			<param index="1" name="effects" type="RID" />
 			<description>
+				Sets the camera_attributes created with [method camera_attributes_create] to the given camera.
 			</description>
 		</method>
 		<method name="camera_set_cull_mask">
@@ -191,6 +198,7 @@
 			<param index="2" name="radius" type="float" />
 			<param index="3" name="color" type="Color" />
 			<description>
+				Draws a circle on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_circle].
 			</description>
 		</method>
 		<method name="canvas_item_add_clip_ignore">
@@ -198,6 +206,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="ignore" type="bool" />
 			<description>
+				If [param ignore] is [code]true[/code], ignore clipping on items drawn with this canvas item until this is called again with [param ignore] set to false.
 			</description>
 		</method>
 		<method name="canvas_item_add_lcd_texture_rect_region">
@@ -208,6 +217,7 @@
 			<param index="3" name="src_rect" type="Rect2" />
 			<param index="4" name="modulate" type="Color" />
 			<description>
+				See also [method CanvasItem.draw_lcd_texture_rect_region].
 			</description>
 		</method>
 		<method name="canvas_item_add_line">
@@ -216,9 +226,10 @@
 			<param index="1" name="from" type="Vector2" />
 			<param index="2" name="to" type="Vector2" />
 			<param index="3" name="color" type="Color" />
-			<param index="4" name="width" type="float" default="1.0" />
+			<param index="4" name="width" type="float" default="-1.0" />
 			<param index="5" name="antialiased" type="bool" default="false" />
 			<description>
+				Draws a line on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_line].
 			</description>
 		</method>
 		<method name="canvas_item_add_mesh">
@@ -229,6 +240,7 @@
 			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="4" name="texture" type="RID" />
 			<description>
+				Draws a mesh created with [method mesh_create] with given [param transform], [param modulate] color, and [param texture]. This is used internally by [MeshInstance2D].
 			</description>
 		</method>
 		<method name="canvas_item_add_msdf_texture_rect_region">
@@ -240,7 +252,9 @@
 			<param index="4" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="5" name="outline_size" type="int" default="0" />
 			<param index="6" name="px_range" type="float" default="1.0" />
+			<param index="7" name="scale" type="float" default="1.0" />
 			<description>
+				See also [method CanvasItem.draw_msdf_texture_rect_region].
 			</description>
 		</method>
 		<method name="canvas_item_add_multimesh">
@@ -249,6 +263,7 @@
 			<param index="1" name="mesh" type="RID" />
 			<param index="2" name="texture" type="RID" />
 			<description>
+				Draws a 2D [MultiMesh] on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_multimesh].
 			</description>
 		</method>
 		<method name="canvas_item_add_nine_patch">
@@ -264,6 +279,7 @@
 			<param index="8" name="draw_center" type="bool" default="true" />
 			<param index="9" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
+				Draws a nine-patch rectangle on the [CanvasItem] pointed to by the [param item] [RID].
 			</description>
 		</method>
 		<method name="canvas_item_add_particles">
@@ -272,6 +288,7 @@
 			<param index="1" name="particles" type="RID" />
 			<param index="2" name="texture" type="RID" />
 			<description>
+				Draws particles on the [CanvasItem] pointed to by the [param item] [RID].
 			</description>
 		</method>
 		<method name="canvas_item_add_polygon">
@@ -282,6 +299,7 @@
 			<param index="3" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
 			<param index="4" name="texture" type="RID" />
 			<description>
+				Draws a 2D polygon on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_polygon].
 			</description>
 		</method>
 		<method name="canvas_item_add_polyline">
@@ -289,9 +307,10 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="points" type="PackedVector2Array" />
 			<param index="2" name="colors" type="PackedColorArray" />
-			<param index="3" name="width" type="float" default="1.0" />
+			<param index="3" name="width" type="float" default="-1.0" />
 			<param index="4" name="antialiased" type="bool" default="false" />
 			<description>
+				Draws a 2D polyline on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_polyline].
 			</description>
 		</method>
 		<method name="canvas_item_add_primitive">
@@ -301,8 +320,8 @@
 			<param index="2" name="colors" type="PackedColorArray" />
 			<param index="3" name="uvs" type="PackedVector2Array" />
 			<param index="4" name="texture" type="RID" />
-			<param index="5" name="width" type="float" default="1.0" />
 			<description>
+				Draws a 2D primitive on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_primitive].
 			</description>
 		</method>
 		<method name="canvas_item_add_rect">
@@ -311,6 +330,7 @@
 			<param index="1" name="rect" type="Rect2" />
 			<param index="2" name="color" type="Color" />
 			<description>
+				Draws a rectangle on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_rect].
 			</description>
 		</method>
 		<method name="canvas_item_add_set_transform">
@@ -318,6 +338,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
+				Sets a [Transform2D] that will be used to transform subsequent canvas item commands.
 			</description>
 		</method>
 		<method name="canvas_item_add_texture_rect">
@@ -367,6 +388,7 @@
 		<method name="canvas_item_create">
 			<return type="RID" />
 			<description>
+				Creates a new [CanvasItem] instance and returns its [RID].
 			</description>
 		</method>
 		<method name="canvas_item_set_canvas_group_mode">
@@ -498,6 +520,14 @@
 				Sets if the [CanvasItem] uses its parent's material.
 			</description>
 		</method>
+		<method name="canvas_item_set_visibility_layer">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="visibility_layer" type="int" />
+			<description>
+				Sets the rendering visibility layer associated with this [CanvasItem]. Only [Viewport] nodes with a matching rendering mask will render this [CanvasItem].
+			</description>
+		</method>
 		<method name="canvas_item_set_visibility_notifier">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
@@ -598,6 +628,14 @@
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
 				Sets a light occluder's [Transform2D].
+			</description>
+		</method>
+		<method name="canvas_light_set_blend_mode">
+			<return type="void" />
+			<param index="0" name="light" type="RID" />
+			<param index="1" name="mode" type="int" enum="RenderingServer.CanvasLightBlendMode" />
+			<description>
+				Sets the blend mode for the given canvas light. See [enum CanvasLightBlendMode] for options. Equivalent to [member Light2D.blend_mode].
 			</description>
 		</method>
 		<method name="canvas_light_set_color">
@@ -829,6 +867,8 @@
 		<method name="create_local_rendering_device" qualifiers="const">
 			<return type="RenderingDevice" />
 			<description>
+				Creates a RenderingDevice that can be used to do draw and compute operations on a separate thread. Cannot draw to the screen nor share data with the global RenderingDevice.
+				[b]Note:[/b] When using the OpenGL backend or when running in headless mode, this function always returns [code]null[/code].
 			</description>
 		</method>
 		<method name="decal_create">
@@ -866,13 +906,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="decal_set_extents">
-			<return type="void" />
-			<param index="0" name="decal" type="RID" />
-			<param index="1" name="extents" type="Vector3" />
-			<description>
-			</description>
-		</method>
 		<method name="decal_set_fade">
 			<return type="void" />
 			<param index="0" name="decal" type="RID" />
@@ -892,6 +925,13 @@
 			<return type="void" />
 			<param index="0" name="decal" type="RID" />
 			<param index="1" name="fade" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="decal_set_size">
+			<return type="void" />
+			<param index="0" name="decal" type="RID" />
+			<param index="1" name="size" type="Vector3" />
 			<description>
 			</description>
 		</method>
@@ -946,12 +986,6 @@
 			</description>
 		</method>
 		<method name="environment_glow_set_use_bicubic_upscale">
-			<return type="void" />
-			<param index="0" name="enable" type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="environment_glow_set_use_high_quality">
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
 			<description>
@@ -1213,14 +1247,6 @@
 				Creates a new fog volume and allocates an RID.
 			</description>
 		</method>
-		<method name="fog_volume_set_extents">
-			<return type="void" />
-			<param index="0" name="fog_volume" type="RID" />
-			<param index="1" name="extents" type="Vector3" />
-			<description>
-				Sets the size of the fog volume when shape is [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID], [constant RenderingServer.FOG_VOLUME_SHAPE_CONE], [constant RenderingServer.FOG_VOLUME_SHAPE_CYLINDER] or [constant RenderingServer.FOG_VOLUME_SHAPE_BOX].
-			</description>
-		</method>
 		<method name="fog_volume_set_material">
 			<return type="void" />
 			<param index="0" name="fog_volume" type="RID" />
@@ -1235,6 +1261,14 @@
 			<param index="1" name="shape" type="int" enum="RenderingServer.FogVolumeShape" />
 			<description>
 				Sets the shape of the fog volume to either [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID], [constant RenderingServer.FOG_VOLUME_SHAPE_CONE], [constant RenderingServer.FOG_VOLUME_SHAPE_CYLINDER], [constant RenderingServer.FOG_VOLUME_SHAPE_BOX] or [constant RenderingServer.FOG_VOLUME_SHAPE_WORLD].
+			</description>
+		</method>
+		<method name="fog_volume_set_size">
+			<return type="void" />
+			<param index="0" name="fog_volume" type="RID" />
+			<param index="1" name="size" type="Vector3" />
+			<description>
+				Sets the size of the fog volume when shape is [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID], [constant RenderingServer.FOG_VOLUME_SHAPE_CONE], [constant RenderingServer.FOG_VOLUME_SHAPE_CYLINDER] or [constant RenderingServer.FOG_VOLUME_SHAPE_BOX].
 			</description>
 		</method>
 		<method name="force_draw">
@@ -1256,6 +1290,12 @@
 				Tries to free an object in the RenderingServer.
 			</description>
 		</method>
+		<method name="get_default_clear_color">
+			<return type="Color" />
+			<description>
+				Returns the default clear color which is used when a specific clear color has not been selected.
+			</description>
+		</method>
 		<method name="get_frame_setup_time_cpu" qualifiers="const">
 			<return type="float" />
 			<description>
@@ -1264,6 +1304,8 @@
 		<method name="get_rendering_device" qualifiers="const">
 			<return type="RenderingDevice" />
 			<description>
+				Returns the global RenderingDevice.
+				[b]Note:[/b] When using the OpenGL backend or when running in headless mode, this function always returns [code]null[/code].
 			</description>
 		</method>
 		<method name="get_rendering_info">
@@ -1282,13 +1324,13 @@
 		<method name="get_test_cube">
 			<return type="RID" />
 			<description>
-				Returns the id of the test cube. Creates one if none exists.
+				Returns the ID of the test cube. Creates one if none exists.
 			</description>
 		</method>
 		<method name="get_test_texture">
 			<return type="RID" />
 			<description>
-				Returns the id of the test texture. Creates one if none exists.
+				Returns the ID of the test texture. Creates one if none exists.
 			</description>
 		</method>
 		<method name="get_video_adapter_api_version" qualifiers="const">
@@ -1322,7 +1364,7 @@
 		<method name="get_white_texture">
 			<return type="RID" />
 			<description>
-				Returns the id of a white texture. Creates one if none exists.
+				Returns the ID of a white texture. Creates one if none exists.
 			</description>
 		</method>
 		<method name="gi_set_use_half_resolution">
@@ -1552,7 +1594,7 @@
 			<param index="0" name="instance" type="RID" />
 			<param index="1" name="aabb" type="AABB" />
 			<description>
-				Sets a custom AABB to use when culling objects from the view frustum. Equivalent to [method GeometryInstance3D.set_custom_aabb].
+				Sets a custom AABB to use when culling objects from the view frustum. Equivalent to setting [member GeometryInstance3D.custom_aabb].
 			</description>
 		</method>
 		<method name="instance_set_extra_visibility_margin">
@@ -1576,6 +1618,15 @@
 			<param index="1" name="mask" type="int" />
 			<description>
 				Sets the render layers that this instance will be drawn to. Equivalent to [member VisualInstance3D.layers].
+			</description>
+		</method>
+		<method name="instance_set_pivot_data">
+			<return type="void" />
+			<param index="0" name="instance" type="RID" />
+			<param index="1" name="sorting_offset" type="float" />
+			<param index="2" name="use_aabb_center" type="bool" />
+			<description>
+				Sets the sorting offset and switches between using the bounding box or instance origin for depth sorting.
 			</description>
 		</method>
 		<method name="instance_set_scenario">
@@ -1770,6 +1821,7 @@
 		<method name="lightmap_create">
 			<return type="RID" />
 			<description>
+				Creates a new [LightmapGI] instance.
 			</description>
 		</method>
 		<method name="lightmap_get_probe_capture_bsp_tree" qualifiers="const">
@@ -1913,7 +1965,7 @@
 			<param index="2" name="arrays" type="Array" />
 			<param index="3" name="blend_shapes" type="Array" default="[]" />
 			<param index="4" name="lods" type="Dictionary" default="{}" />
-			<param index="5" name="compress_format" type="int" default="0" />
+			<param index="5" name="compress_format" type="int" enum="RenderingServer.ArrayFormat" default="0" />
 			<description>
 			</description>
 		</method>
@@ -2015,14 +2067,14 @@
 		</method>
 		<method name="mesh_surface_get_format_attribute_stride" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="format" type="int" />
+			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" />
 			<param index="1" name="vertex_count" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="mesh_surface_get_format_offset" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="format" type="int" />
+			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" />
 			<param index="1" name="vertex_count" type="int" />
 			<param index="2" name="array_index" type="int" />
 			<description>
@@ -2030,14 +2082,14 @@
 		</method>
 		<method name="mesh_surface_get_format_skin_stride" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="format" type="int" />
+			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" />
 			<param index="1" name="vertex_count" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="mesh_surface_get_format_vertex_stride" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="format" type="int" />
+			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" />
 			<param index="1" name="vertex_count" type="int" />
 			<description>
 			</description>
@@ -2633,14 +2685,6 @@
 				If [code]true[/code], computes shadows in the reflection probe. This makes the reflection much slower to compute. Equivalent to [member ReflectionProbe.enable_shadows].
 			</description>
 		</method>
-		<method name="reflection_probe_set_extents">
-			<return type="void" />
-			<param index="0" name="probe" type="RID" />
-			<param index="1" name="extents" type="Vector3" />
-			<description>
-				Sets the size of the area that the reflection probe will capture. Equivalent to [member ReflectionProbe.extents].
-			</description>
-		</method>
 		<method name="reflection_probe_set_intensity">
 			<return type="void" />
 			<param index="0" name="probe" type="RID" />
@@ -2677,6 +2721,14 @@
 			<param index="0" name="probe" type="RID" />
 			<param index="1" name="resolution" type="int" />
 			<description>
+			</description>
+		</method>
+		<method name="reflection_probe_set_size">
+			<return type="void" />
+			<param index="0" name="probe" type="RID" />
+			<param index="1" name="size" type="Vector3" />
+			<description>
+				Sets the size of the area that the reflection probe will capture. Equivalent to [member ReflectionProbe.size].
 			</description>
 		</method>
 		<method name="reflection_probe_set_update_mode">
@@ -3015,6 +3067,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="texture_get_rd_texture" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="texture" type="RID" />
+			<param index="1" name="srgb" type="bool" default="false" />
+			<description>
+				Returns a texture [RID] that can be used with [RenderingDevice].
+			</description>
+		</method>
 		<method name="texture_proxy_create">
 			<return type="RID" />
 			<param index="0" name="base" type="RID" />
@@ -3142,6 +3202,14 @@
 				If [code]true[/code], sets the viewport active, else sets it inactive.
 			</description>
 		</method>
+		<method name="viewport_set_canvas_cull_mask">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="canvas_cull_mask" type="int" />
+			<description>
+				Sets the rendering mask associated with this [Viewport]. Only [CanvasItem] nodes with a matching rendering visibility layer will be rendered by this [Viewport].
+			</description>
+		</method>
 		<method name="viewport_set_canvas_stacking">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
@@ -3207,12 +3275,12 @@
 			<description>
 			</description>
 		</method>
-		<method name="viewport_set_disable_environment">
+		<method name="viewport_set_environment_mode">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
-			<param index="1" name="disabled" type="bool" />
+			<param index="1" name="mode" type="int" enum="RenderingServer.ViewportEnvironmentMode" />
 			<description>
-				If [code]true[/code], rendering of a viewport's environment is disabled.
+				Sets the viewport's environment mode which allows enabling or disabling rendering of 3D environment over 2D canvas. When disabled, 2D will not be affected by the environment. When enabled, 2D will be affected by the environment if the environment background mode is [constant ENV_BG_CANVAS]. The default behavior is to inherit the setting from the viewport's parent. If the topmost parent is also set to [constant VIEWPORT_ENVIRONMENT_INHERIT], then the behavior will be the same as if it was set to [constant VIEWPORT_ENVIRONMENT_ENABLED].
 			</description>
 		</method>
 		<method name="viewport_set_fsr_sharpness">
@@ -3298,7 +3366,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				If [code]true[/code], render the contents of the viewport directly to screen. This allows a low-level optimization where you can skip drawing a viewport to the root viewport. While this optimization can result in a significant increase in speed (especially on older devices), it comes at a cost of usability. When this is enabled, you cannot read from the viewport or from the [code]SCREEN_TEXTURE[/code]. You also lose the benefit of certain window settings, such as the various stretch modes. Another consequence to be aware of is that in 2D the rendering happens in window coordinates, so if you have a viewport that is double the size of the window, and you set this, then only the portion that fits within the window will be drawn, no automatic scaling is possible, even if your game scene is significantly larger than the window size.
+				If [code]true[/code], render the contents of the viewport directly to screen. This allows a low-level optimization where you can skip drawing a viewport to the root viewport. While this optimization can result in a significant increase in speed (especially on older devices), it comes at a cost of usability. When this is enabled, you cannot read from the viewport or from the screen_texture. You also lose the benefit of certain window settings, such as the various stretch modes. Another consequence to be aware of is that in 2D the rendering happens in window coordinates, so if you have a viewport that is double the size of the window, and you set this, then only the portion that fits within the window will be drawn, no automatic scaling is possible, even if your game scene is significantly larger than the window size.
 			</description>
 		</method>
 		<method name="viewport_set_scaling_3d_mode">
@@ -3712,65 +3780,67 @@
 		</constant>
 		<constant name="ARRAY_CUSTOM_MAX" value="8" enum="ArrayCustomFormat">
 		</constant>
-		<constant name="ARRAY_FORMAT_VERTEX" value="1" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_VERTEX" value="1" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark a vertex array.
 		</constant>
-		<constant name="ARRAY_FORMAT_NORMAL" value="2" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_NORMAL" value="2" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark a normal array.
 		</constant>
-		<constant name="ARRAY_FORMAT_TANGENT" value="4" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_TANGENT" value="4" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark a tangent array.
 		</constant>
-		<constant name="ARRAY_FORMAT_COLOR" value="8" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_COLOR" value="8" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark a color array.
 		</constant>
-		<constant name="ARRAY_FORMAT_TEX_UV" value="16" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_TEX_UV" value="16" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark an UV coordinates array.
 		</constant>
-		<constant name="ARRAY_FORMAT_TEX_UV2" value="32" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_TEX_UV2" value="32" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark an UV coordinates array for the second UV coordinates.
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM0" value="64" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM0" value="64" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM1" value="128" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM1" value="128" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM2" value="256" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM2" value="256" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM3" value="512" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM3" value="512" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FORMAT_BONES" value="1024" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_BONES" value="1024" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark a bone information array.
 		</constant>
-		<constant name="ARRAY_FORMAT_WEIGHTS" value="2048" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_WEIGHTS" value="2048" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark a weights array.
 		</constant>
-		<constant name="ARRAY_FORMAT_INDEX" value="4096" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_INDEX" value="4096" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark an index array.
 		</constant>
-		<constant name="ARRAY_FORMAT_BLEND_SHAPE_MASK" value="7" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_BLEND_SHAPE_MASK" value="7" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM_BASE" value="13" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM_BASE" value="13" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM_BITS" value="3" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM_BITS" value="3" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM0_SHIFT" value="13" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM0_SHIFT" value="13" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM1_SHIFT" value="16" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM1_SHIFT" value="16" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM2_SHIFT" value="19" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM2_SHIFT" value="19" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM3_SHIFT" value="22" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM3_SHIFT" value="22" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM_MASK" value="7" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM_MASK" value="7" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_COMPRESS_FLAGS_BASE" value="25" enum="ArrayFormat">
+		<constant name="ARRAY_COMPRESS_FLAGS_BASE" value="25" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="33554432" enum="ArrayFormat">
+		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="33554432" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark that the array contains 2D vertices.
 		</constant>
-		<constant name="ARRAY_FLAG_USE_DYNAMIC_UPDATE" value="67108864" enum="ArrayFormat">
+		<constant name="ARRAY_FLAG_USE_DYNAMIC_UPDATE" value="67108864" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FLAG_USE_8_BONE_WEIGHTS" value="134217728" enum="ArrayFormat">
+		<constant name="ARRAY_FLAG_USE_8_BONE_WEIGHTS" value="134217728" enum="ArrayFormat" is_bitfield="true">
+		</constant>
+		<constant name="ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY" value="268435456" enum="ArrayFormat" is_bitfield="true">
 		</constant>
 		<constant name="PRIMITIVE_POINTS" value="0" enum="PrimitiveType">
 			Primitive to draw consists of points.
@@ -4051,10 +4121,10 @@
 			[FogVolume] will be shaped like an ellipsoid (stretched sphere).
 		</constant>
 		<constant name="FOG_VOLUME_SHAPE_CONE" value="1" enum="FogVolumeShape">
-			[FogVolume] will be shaped like a cone pointing upwards (in local coordinates). The cone's angle is set automatically to fill the extents. The cone will be adjusted to fit within the extents. Rotate the [FogVolume] node to reorient the cone. Non-uniform scaling via extents is not supported (scale the [FogVolume] node instead).
+			[FogVolume] will be shaped like a cone pointing upwards (in local coordinates). The cone's angle is set automatically to fill the size. The cone will be adjusted to fit within the size. Rotate the [FogVolume] node to reorient the cone. Non-uniform scaling via size is not supported (scale the [FogVolume] node instead).
 		</constant>
 		<constant name="FOG_VOLUME_SHAPE_CYLINDER" value="2" enum="FogVolumeShape">
-			[FogVolume] will be shaped like an upright cylinder (in local coordinates). Rotate the [FogVolume] node to reorient the cylinder. The cylinder will be adjusted to fit within the extents. Non-uniform scaling via extents is not supported (scale the [FogVolume] node instead).
+			[FogVolume] will be shaped like an upright cylinder (in local coordinates). Rotate the [FogVolume] node to reorient the cylinder. The cylinder will be adjusted to fit within the size. Non-uniform scaling via size is not supported (scale the [FogVolume] node instead).
 		</constant>
 		<constant name="FOG_VOLUME_SHAPE_BOX" value="3" enum="FogVolumeShape">
 			[FogVolume] will be shaped like a box.
@@ -4094,6 +4164,18 @@
 		</constant>
 		<constant name="VIEWPORT_CLEAR_ONLY_NEXT_FRAME" value="2" enum="ViewportClearMode">
 			The viewport is cleared once, then the clear mode is set to [constant VIEWPORT_CLEAR_NEVER].
+		</constant>
+		<constant name="VIEWPORT_ENVIRONMENT_DISABLED" value="0" enum="ViewportEnvironmentMode">
+			Disable rendering of 3D environment over 2D canvas.
+		</constant>
+		<constant name="VIEWPORT_ENVIRONMENT_ENABLED" value="1" enum="ViewportEnvironmentMode">
+			Enable rendering of 3D environment over 2D canvas.
+		</constant>
+		<constant name="VIEWPORT_ENVIRONMENT_INHERIT" value="2" enum="ViewportEnvironmentMode">
+			Inherit enable/disable value from parent. If topmost parent is also set to inherit, then this has the same behavior as [constant VIEWPORT_ENVIRONMENT_ENABLED].
+		</constant>
+		<constant name="VIEWPORT_ENVIRONMENT_MAX" value="3" enum="ViewportEnvironmentMode">
+			Max value of [enum ViewportEnvironmentMode] enum.
 		</constant>
 		<constant name="VIEWPORT_SDF_OVERSIZE_100_PERCENT" value="0" enum="ViewportSDFOversize">
 		</constant>
@@ -4513,12 +4595,16 @@
 			Fade-in the given instance's dependencies when reaching its visibility range limits.
 		</constant>
 		<constant name="BAKE_CHANNEL_ALBEDO_ALPHA" value="0" enum="BakeChannels">
+			Index of [Image] in array of [Image]s returned by [method bake_render_uv2]. Image uses [constant Image.FORMAT_RGBA8] and contains albedo color in the [code].rgb[/code] channels and alpha in the [code].a[/code] channel.
 		</constant>
 		<constant name="BAKE_CHANNEL_NORMAL" value="1" enum="BakeChannels">
+			Index of [Image] in array of [Image]s returned by [method bake_render_uv2]. Image uses [constant Image.FORMAT_RGBA8] and contains the per-pixel normal of the object in the [code].rgb[/code] channels and nothing in the [code].a[/code] channel. The per-pixel normal is encoded as [code]normal * 0.5 + 0.5[/code].
 		</constant>
 		<constant name="BAKE_CHANNEL_ORM" value="2" enum="BakeChannels">
+			Index of [Image] in array of [Image]s returned by [method bake_render_uv2]. Image uses [constant Image.FORMAT_RGBA8] and contains ambient occlusion (from material and decals only) in the [code].r[/code] channel, roughness in the [code].g[/code] channel, metallic in the [code].b[/code] channel and sub surface scattering amount in the [code].a[/code] channel.
 		</constant>
 		<constant name="BAKE_CHANNEL_EMISSION" value="3" enum="BakeChannels">
+			Index of [Image] in array of [Image]s returned by [method bake_render_uv2]. Image uses [constant Image.FORMAT_RGBAH] and contains emission color in the [code].rgb[/code] channels and nothing in the [code].a[/code] channel.
 		</constant>
 		<constant name="CANVAS_TEXTURE_CHANNEL_DIFFUSE" value="0" enum="CanvasTextureChannel">
 		</constant>
@@ -4576,9 +4662,11 @@
 		</constant>
 		<constant name="CANVAS_GROUP_MODE_DISABLED" value="0" enum="CanvasGroupMode">
 		</constant>
-		<constant name="CANVAS_GROUP_MODE_OPAQUE" value="1" enum="CanvasGroupMode">
+		<constant name="CANVAS_GROUP_MODE_CLIP_ONLY" value="1" enum="CanvasGroupMode">
 		</constant>
-		<constant name="CANVAS_GROUP_MODE_TRANSPARENT" value="2" enum="CanvasGroupMode">
+		<constant name="CANVAS_GROUP_MODE_CLIP_AND_DRAW" value="2" enum="CanvasGroupMode">
+		</constant>
+		<constant name="CANVAS_GROUP_MODE_TRANSPARENT" value="3" enum="CanvasGroupMode">
 		</constant>
 		<constant name="CANVAS_LIGHT_MODE_POINT" value="0" enum="CanvasLightMode">
 		</constant>

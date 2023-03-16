@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SceneTreeTimer" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="SceneTreeTimer" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		One-shot timer.
 	</brief_description>
@@ -14,10 +14,10 @@
 		    print("Timer ended.")
 		[/gdscript]
 		[csharp]
-		public async void SomeFunction()
+		public async Task SomeFunction()
 		{
 		    GD.Print("Timer started.");
-		    await ToSignal(GetTree().CreateTimer(1.0f), "timeout");
+		    await ToSignal(GetTree().CreateTimer(1.0f), SceneTreeTimer.SignalName.Timeout);
 		    GD.Print("Timer ended.");
 		}
 		[/csharp]

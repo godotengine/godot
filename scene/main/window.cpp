@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  window.cpp                                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  window.cpp                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "window.h"
 
@@ -39,6 +39,226 @@
 #include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
+
+// Dynamic properties.
+
+bool Window::_set(const StringName &p_name, const Variant &p_value) {
+	String name = p_name;
+	if (!name.begins_with("theme_override")) {
+		return false;
+	}
+
+	if (p_value.get_type() == Variant::NIL || (p_value.get_type() == Variant::OBJECT && (Object *)p_value == nullptr)) {
+		if (name.begins_with("theme_override_icons/")) {
+			String dname = name.get_slicec('/', 1);
+			if (theme_icon_override.has(dname)) {
+				theme_icon_override[dname]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+			}
+			theme_icon_override.erase(dname);
+			_notify_theme_override_changed();
+		} else if (name.begins_with("theme_override_styles/")) {
+			String dname = name.get_slicec('/', 1);
+			if (theme_style_override.has(dname)) {
+				theme_style_override[dname]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+			}
+			theme_style_override.erase(dname);
+			_notify_theme_override_changed();
+		} else if (name.begins_with("theme_override_fonts/")) {
+			String dname = name.get_slicec('/', 1);
+			if (theme_font_override.has(dname)) {
+				theme_font_override[dname]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+			}
+			theme_font_override.erase(dname);
+			_notify_theme_override_changed();
+		} else if (name.begins_with("theme_override_font_sizes/")) {
+			String dname = name.get_slicec('/', 1);
+			theme_font_size_override.erase(dname);
+			_notify_theme_override_changed();
+		} else if (name.begins_with("theme_override_colors/")) {
+			String dname = name.get_slicec('/', 1);
+			theme_color_override.erase(dname);
+			_notify_theme_override_changed();
+		} else if (name.begins_with("theme_override_constants/")) {
+			String dname = name.get_slicec('/', 1);
+			theme_constant_override.erase(dname);
+			_notify_theme_override_changed();
+		} else {
+			return false;
+		}
+
+	} else {
+		if (name.begins_with("theme_override_icons/")) {
+			String dname = name.get_slicec('/', 1);
+			add_theme_icon_override(dname, p_value);
+		} else if (name.begins_with("theme_override_styles/")) {
+			String dname = name.get_slicec('/', 1);
+			add_theme_style_override(dname, p_value);
+		} else if (name.begins_with("theme_override_fonts/")) {
+			String dname = name.get_slicec('/', 1);
+			add_theme_font_override(dname, p_value);
+		} else if (name.begins_with("theme_override_font_sizes/")) {
+			String dname = name.get_slicec('/', 1);
+			add_theme_font_size_override(dname, p_value);
+		} else if (name.begins_with("theme_override_colors/")) {
+			String dname = name.get_slicec('/', 1);
+			add_theme_color_override(dname, p_value);
+		} else if (name.begins_with("theme_override_constants/")) {
+			String dname = name.get_slicec('/', 1);
+			add_theme_constant_override(dname, p_value);
+		} else {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool Window::_get(const StringName &p_name, Variant &r_ret) const {
+	String sname = p_name;
+	if (!sname.begins_with("theme_override")) {
+		return false;
+	}
+
+	if (sname.begins_with("theme_override_icons/")) {
+		String name = sname.get_slicec('/', 1);
+		r_ret = theme_icon_override.has(name) ? Variant(theme_icon_override[name]) : Variant();
+	} else if (sname.begins_with("theme_override_styles/")) {
+		String name = sname.get_slicec('/', 1);
+		r_ret = theme_style_override.has(name) ? Variant(theme_style_override[name]) : Variant();
+	} else if (sname.begins_with("theme_override_fonts/")) {
+		String name = sname.get_slicec('/', 1);
+		r_ret = theme_font_override.has(name) ? Variant(theme_font_override[name]) : Variant();
+	} else if (sname.begins_with("theme_override_font_sizes/")) {
+		String name = sname.get_slicec('/', 1);
+		r_ret = theme_font_size_override.has(name) ? Variant(theme_font_size_override[name]) : Variant();
+	} else if (sname.begins_with("theme_override_colors/")) {
+		String name = sname.get_slicec('/', 1);
+		r_ret = theme_color_override.has(name) ? Variant(theme_color_override[name]) : Variant();
+	} else if (sname.begins_with("theme_override_constants/")) {
+		String name = sname.get_slicec('/', 1);
+		r_ret = theme_constant_override.has(name) ? Variant(theme_constant_override[name]) : Variant();
+	} else {
+		return false;
+	}
+
+	return true;
+}
+
+void Window::_get_property_list(List<PropertyInfo> *p_list) const {
+	Ref<Theme> default_theme = ThemeDB::get_singleton()->get_default_theme();
+
+	p_list->push_back(PropertyInfo(Variant::NIL, TTRC("Theme Overrides"), PROPERTY_HINT_NONE, "theme_override_", PROPERTY_USAGE_GROUP));
+
+	{
+		List<StringName> names;
+		default_theme->get_color_list(get_class_name(), &names);
+		for (const StringName &E : names) {
+			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			if (theme_color_override.has(E)) {
+				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
+
+			p_list->push_back(PropertyInfo(Variant::COLOR, "theme_override_colors/" + E, PROPERTY_HINT_NONE, "", usage));
+		}
+	}
+	{
+		List<StringName> names;
+		default_theme->get_constant_list(get_class_name(), &names);
+		for (const StringName &E : names) {
+			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			if (theme_constant_override.has(E)) {
+				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
+
+			p_list->push_back(PropertyInfo(Variant::INT, "theme_override_constants/" + E, PROPERTY_HINT_RANGE, "-16384,16384", usage));
+		}
+	}
+	{
+		List<StringName> names;
+		default_theme->get_font_list(get_class_name(), &names);
+		for (const StringName &E : names) {
+			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			if (theme_font_override.has(E)) {
+				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
+
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "theme_override_fonts/" + E, PROPERTY_HINT_RESOURCE_TYPE, "Font", usage));
+		}
+	}
+	{
+		List<StringName> names;
+		default_theme->get_font_size_list(get_class_name(), &names);
+		for (const StringName &E : names) {
+			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			if (theme_font_size_override.has(E)) {
+				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
+
+			p_list->push_back(PropertyInfo(Variant::INT, "theme_override_font_sizes/" + E, PROPERTY_HINT_RANGE, "1,256,1,or_greater,suffix:px", usage));
+		}
+	}
+	{
+		List<StringName> names;
+		default_theme->get_icon_list(get_class_name(), &names);
+		for (const StringName &E : names) {
+			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			if (theme_icon_override.has(E)) {
+				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
+
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "theme_override_icons/" + E, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", usage));
+		}
+	}
+	{
+		List<StringName> names;
+		default_theme->get_stylebox_list(get_class_name(), &names);
+		for (const StringName &E : names) {
+			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			if (theme_style_override.has(E)) {
+				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
+
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "theme_override_styles/" + E, PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", usage));
+		}
+	}
+}
+
+void Window::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "position" && initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE) {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+
+	if (p_property.name == "current_screen" && initial_position != WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN) {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+
+	if (p_property.name == "theme_type_variation") {
+		List<StringName> names;
+
+		// Only the default theme and the project theme are used for the list of options.
+		// This is an imposed limitation to simplify the logic needed to leverage those options.
+		ThemeDB::get_singleton()->get_default_theme()->get_type_variation_list(get_class_name(), &names);
+		if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
+			ThemeDB::get_singleton()->get_project_theme()->get_type_variation_list(get_class_name(), &names);
+		}
+		names.sort_custom<StringName::AlphCompare>();
+
+		Vector<StringName> unique_names;
+		String hint_string;
+		for (const StringName &E : names) {
+			// Skip duplicate values.
+			if (unique_names.has(E)) {
+				continue;
+			}
+
+			hint_string += String(E) + ",";
+			unique_names.append(E);
+		}
+
+		p_property.hint_string = hint_string;
+	}
+}
+
+//
 
 void Window::set_title(const String &p_title) {
 	title = p_title;
@@ -61,6 +281,15 @@ void Window::set_title(const String &p_title) {
 
 String Window::get_title() const {
 	return title;
+}
+
+void Window::set_initial_position(Window::WindowInitialPosition p_initial_position) {
+	initial_position = p_initial_position;
+	notify_property_list_changed();
+}
+
+Window::WindowInitialPosition Window::get_initial_position() const {
+	return initial_position;
 }
 
 void Window::set_current_screen(int p_screen) {
@@ -106,15 +335,44 @@ void Window::reset_size() {
 	set_size(Size2i());
 }
 
-Size2i Window::get_real_size() const {
+Point2i Window::get_position_with_decorations() const {
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		return DisplayServer::get_singleton()->window_get_real_size(window_id);
+		return DisplayServer::get_singleton()->window_get_position_with_decorations(window_id);
+	}
+	return position;
+}
+
+Size2i Window::get_size_with_decorations() const {
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		return DisplayServer::get_singleton()->window_get_size_with_decorations(window_id);
 	}
 	return size;
 }
 
+Size2i Window::_clamp_limit_size(const Size2i &p_limit_size) {
+	// Force window limits to respect size limitations of rendering server.
+	Size2i max_window_size = RS::get_singleton()->get_maximum_viewport_size();
+	if (max_window_size != Size2i()) {
+		return p_limit_size.clamp(Vector2i(), max_window_size);
+	} else {
+		return p_limit_size.max(Vector2i());
+	}
+}
+
+void Window::_validate_limit_size() {
+	// When max_size is invalid, max_size_used falls back to respect size limitations of rendering server.
+	bool max_size_valid = (max_size.x > 0 || max_size.y > 0) && max_size.x >= min_size.x && max_size.y >= min_size.y;
+	max_size_used = max_size_valid ? max_size : RS::get_singleton()->get_maximum_viewport_size();
+}
+
 void Window::set_max_size(const Size2i &p_max_size) {
-	max_size = p_max_size;
+	Size2i max_size_clamped = _clamp_limit_size(p_max_size);
+	if (max_size == max_size_clamped) {
+		return;
+	}
+	max_size = max_size_clamped;
+
+	_validate_limit_size();
 	_update_window_size();
 }
 
@@ -123,7 +381,13 @@ Size2i Window::get_max_size() const {
 }
 
 void Window::set_min_size(const Size2i &p_min_size) {
-	min_size = p_min_size;
+	Size2i min_size_clamped = _clamp_limit_size(p_min_size);
+	if (min_size == min_size_clamped) {
+		return;
+	}
+	min_size = min_size_clamped;
+
+	_validate_limit_size();
 	_update_window_size();
 }
 
@@ -157,26 +421,18 @@ void Window::set_flag(Flags p_flag, bool p_enabled) {
 		embedder->_sub_window_update(this);
 
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-#ifdef TOOLS_ENABLED
-		if ((p_flag != FLAG_POPUP) || !(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this))) {
+		if (!is_in_edited_scene_root()) {
 			DisplayServer::get_singleton()->window_set_flag(DisplayServer::WindowFlags(p_flag), p_enabled, window_id);
 		}
-#else
-		DisplayServer::get_singleton()->window_set_flag(DisplayServer::WindowFlags(p_flag), p_enabled, window_id);
-#endif
 	}
 }
 
 bool Window::get_flag(Flags p_flag) const {
 	ERR_FAIL_INDEX_V(p_flag, FLAG_MAX, false);
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-#ifdef TOOLS_ENABLED
-		if ((p_flag != FLAG_POPUP) || !(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this))) {
+		if (!is_in_edited_scene_root()) {
 			flags[p_flag] = DisplayServer::get_singleton()->window_get_flag(DisplayServer::WindowFlags(p_flag), window_id);
 		}
-#else
-		flags[p_flag] = DisplayServer::get_singleton()->window_get_flag(DisplayServer::WindowFlags(p_flag), window_id);
-#endif
 	}
 	return flags[p_flag];
 }
@@ -229,7 +485,15 @@ void Window::set_ime_position(const Point2i &p_pos) {
 bool Window::is_embedded() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
-	return _get_embedder() != nullptr;
+	return get_embedder() != nullptr;
+}
+
+bool Window::is_in_edited_scene_root() const {
+#ifdef TOOLS_ENABLED
+	return (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this));
+#else
+	return false;
+#endif
 }
 
 void Window::_make_window() {
@@ -243,11 +507,21 @@ void Window::_make_window() {
 	}
 
 	DisplayServer::VSyncMode vsync_mode = DisplayServer::get_singleton()->window_get_vsync_mode(DisplayServer::MAIN_WINDOW_ID);
-	window_id = DisplayServer::get_singleton()->create_sub_window(DisplayServer::WindowMode(mode), vsync_mode, f, Rect2i(position, size));
+	Rect2i window_rect;
+	if (initial_position == WINDOW_INITIAL_POSITION_ABSOLUTE) {
+		window_rect = Rect2i(position, size);
+	} else if (initial_position == WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN) {
+		window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(DisplayServer::SCREEN_PRIMARY) + (DisplayServer::get_singleton()->screen_get_size(DisplayServer::SCREEN_PRIMARY) - size) / 2, size);
+	} else if (initial_position == WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN) {
+		window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(DisplayServer::SCREEN_OF_MAIN_WINDOW) + (DisplayServer::get_singleton()->screen_get_size(DisplayServer::SCREEN_OF_MAIN_WINDOW) - size) / 2, size);
+	} else if (initial_position == WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN) {
+		window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(current_screen) + (DisplayServer::get_singleton()->screen_get_size(current_screen) - size) / 2, size);
+	}
+	window_id = DisplayServer::get_singleton()->create_sub_window(DisplayServer::WindowMode(mode), vsync_mode, f, window_rect);
 	ERR_FAIL_COND(window_id == DisplayServer::INVALID_WINDOW_ID);
-	DisplayServer::get_singleton()->window_set_current_screen(current_screen, window_id);
 	DisplayServer::get_singleton()->window_set_max_size(Size2i(), window_id);
 	DisplayServer::get_singleton()->window_set_min_size(Size2i(), window_id);
+	DisplayServer::get_singleton()->window_set_mouse_passthrough(mpath, window_id);
 	String tr_title = atr(title);
 #ifdef DEBUG_ENABLED
 	if (window_id == DisplayServer::MAIN_WINDOW_ID) {
@@ -259,15 +533,12 @@ void Window::_make_window() {
 #endif
 	DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
-#ifdef TOOLS_ENABLED
-	if (!(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this))) {
-		DisplayServer::get_singleton()->window_set_exclusive(window_id, exclusive);
-	} else {
+
+	if (is_in_edited_scene_root()) {
 		DisplayServer::get_singleton()->window_set_exclusive(window_id, false);
+	} else {
+		DisplayServer::get_singleton()->window_set_exclusive(window_id, exclusive);
 	}
-#else
-	DisplayServer::get_singleton()->window_set_exclusive(window_id, exclusive);
-#endif
 
 	_update_window_size();
 
@@ -297,6 +568,12 @@ void Window::_update_from_window() {
 
 void Window::_clear_window() {
 	ERR_FAIL_COND(window_id == DisplayServer::INVALID_WINDOW_ID);
+
+	DisplayServer::get_singleton()->window_set_rect_changed_callback(Callable(), window_id);
+	DisplayServer::get_singleton()->window_set_window_event_callback(Callable(), window_id);
+	DisplayServer::get_singleton()->window_set_input_event_callback(Callable(), window_id);
+	DisplayServer::get_singleton()->window_set_input_text_callback(Callable(), window_id);
+	DisplayServer::get_singleton()->window_set_drop_files_callback(Callable(), window_id);
 
 	if (transient_parent && transient_parent->window_id != DisplayServer::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_transient(window_id, DisplayServer::INVALID_WINDOW_ID);
@@ -389,7 +666,23 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 			_propagate_window_notification(this, NOTIFICATION_WM_DPI_CHANGE);
 			emit_signal(SNAME("dpi_changed"));
 		} break;
+		case DisplayServer::WINDOW_EVENT_TITLEBAR_CHANGE: {
+			emit_signal(SNAME("titlebar_changed"));
+		} break;
 	}
+}
+
+void Window::update_mouse_cursor_shape() {
+	// The default shape is set in Viewport::_gui_input_event. To instantly
+	// see the shape in the viewport we need to trigger a mouse motion event.
+	Ref<InputEventMouseMotion> mm;
+	Vector2 pos = get_mouse_position();
+	Transform2D xform = get_global_canvas_transform().affine_inverse();
+	mm.instantiate();
+	mm->set_position(pos);
+	mm->set_global_position(xform.xform(pos));
+	mm->set_device(InputEvent::DEVICE_ID_INTERNAL);
+	push_input(mm);
 }
 
 void Window::show() {
@@ -405,19 +698,19 @@ void Window::set_visible(bool p_visible) {
 		return;
 	}
 
-	visible = p_visible;
-
 	if (!is_inside_tree()) {
+		visible = p_visible;
 		return;
-	}
-
-	if (updating_child_controls) {
-		_update_child_controls();
 	}
 
 	ERR_FAIL_COND_MSG(get_parent() == nullptr, "Can't change visibility of main window.");
 
-	Viewport *embedder_vp = _get_embedder();
+	visible = p_visible;
+
+	// Stop any queued resizing, as the window will be resized right now.
+	updating_child_controls = false;
+
+	Viewport *embedder_vp = get_embedder();
 
 	if (!embedder_vp) {
 		if (!p_visible && window_id != DisplayServer::INVALID_WINDOW_ID) {
@@ -450,14 +743,10 @@ void Window::set_visible(bool p_visible) {
 	//update transient exclusive
 	if (transient_parent) {
 		if (exclusive && visible) {
-#ifdef TOOLS_ENABLED
-			if (!(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this))) {
+			if (!is_in_edited_scene_root()) {
 				ERR_FAIL_COND_MSG(transient_parent->exclusive_child && transient_parent->exclusive_child != this, "Transient parent has another exclusive child.");
 				transient_parent->exclusive_child = this;
 			}
-#else
-			transient_parent->exclusive_child = this;
-#endif
 		} else {
 			if (transient_parent->exclusive_child == this) {
 				transient_parent->exclusive_child = nullptr;
@@ -504,13 +793,9 @@ void Window::_make_transient() {
 		window->transient_children.insert(this);
 		if (is_inside_tree() && is_visible() && exclusive) {
 			if (transient_parent->exclusive_child == nullptr) {
-#ifdef TOOLS_ENABLED
-				if (!(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this))) {
+				if (!is_in_edited_scene_root()) {
 					transient_parent->exclusive_child = this;
 				}
-#else
-				transient_parent->exclusive_child = this;
-#endif
 			} else if (transient_parent->exclusive_child != this) {
 				ERR_PRINT("Making child transient exclusive, but parent has another exclusive child");
 			}
@@ -553,27 +838,19 @@ void Window::set_exclusive(bool p_exclusive) {
 	exclusive = p_exclusive;
 
 	if (!embedder && window_id != DisplayServer::INVALID_WINDOW_ID) {
-#ifdef TOOLS_ENABLED
-		if (!(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this))) {
-			DisplayServer::get_singleton()->window_set_exclusive(window_id, exclusive);
-		} else {
+		if (is_in_edited_scene_root()) {
 			DisplayServer::get_singleton()->window_set_exclusive(window_id, false);
+		} else {
+			DisplayServer::get_singleton()->window_set_exclusive(window_id, exclusive);
 		}
-#else
-		DisplayServer::get_singleton()->window_set_exclusive(window_id, exclusive);
-#endif
 	}
 
 	if (transient_parent) {
 		if (p_exclusive && is_inside_tree() && is_visible()) {
 			ERR_FAIL_COND_MSG(transient_parent->exclusive_child && transient_parent->exclusive_child != this, "Transient parent has another exclusive child.");
-#ifdef TOOLS_ENABLED
-			if (!(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this))) {
+			if (!is_in_edited_scene_root()) {
 				transient_parent->exclusive_child = this;
 			}
-#else
-			transient_parent->exclusive_child = this;
-#endif
 		} else {
 			if (transient_parent->exclusive_child == this) {
 				transient_parent->exclusive_child = nullptr;
@@ -590,37 +867,35 @@ bool Window::is_visible() const {
 	return visible;
 }
 
-void Window::_update_window_size() {
-	Size2i size_limit;
-	if (wrap_controls) {
-		size_limit = get_contents_minimum_size();
+Size2i Window::_clamp_window_size(const Size2i &p_size) {
+	Size2i window_size_clamped = p_size;
+	Size2 minsize = get_clamped_minimum_size();
+	window_size_clamped = window_size_clamped.max(minsize);
+
+	if (max_size_used != Size2i()) {
+		window_size_clamped = window_size_clamped.min(max_size_used);
 	}
 
-	size_limit.x = MAX(size_limit.x, min_size.x);
-	size_limit.y = MAX(size_limit.y, min_size.y);
+	return window_size_clamped;
+}
 
-	size.x = MAX(size_limit.x, size.x);
-	size.y = MAX(size_limit.y, size.y);
+void Window::_update_window_size() {
+	Size2i size_limit = get_clamped_minimum_size();
+
+	size = size.max(size_limit);
 
 	bool reset_min_first = false;
 
-	bool max_size_valid = false;
-	if ((max_size.x > 0 || max_size.y > 0) && (max_size.x >= min_size.x && max_size.y >= min_size.y)) {
-		max_size_valid = true;
+	if (max_size_used != Size2i()) {
+		// Force window size to respect size limitations of max_size_used.
+		size = size.min(max_size_used);
 
-		if (size.x > max_size.x) {
-			size.x = max_size.x;
-		}
-		if (size_limit.x > max_size.x) {
-			size_limit.x = max_size.x;
+		if (size_limit.x > max_size_used.x) {
+			size_limit.x = max_size_used.x;
 			reset_min_first = true;
 		}
-
-		if (size.y > max_size.y) {
-			size.y = max_size.y;
-		}
-		if (size_limit.y > max_size.y) {
-			size_limit.y = max_size.y;
+		if (size_limit.y > max_size_used.y) {
+			size_limit.y = max_size_used.y;
 			reset_min_first = true;
 		}
 	}
@@ -636,9 +911,9 @@ void Window::_update_window_size() {
 			DisplayServer::get_singleton()->window_set_min_size(Size2i(), window_id);
 		}
 
-		DisplayServer::get_singleton()->window_set_size(size, window_id);
-		DisplayServer::get_singleton()->window_set_max_size(max_size_valid ? max_size : Size2i(), window_id);
+		DisplayServer::get_singleton()->window_set_max_size(max_size_used, window_id);
 		DisplayServer::get_singleton()->window_set_min_size(size_limit, window_id);
+		DisplayServer::get_singleton()->window_set_size(size, window_id);
 	}
 
 	//update the viewport
@@ -651,16 +926,13 @@ void Window::_update_viewport_size() {
 	Size2i final_size;
 	Size2i final_size_override;
 	Rect2i attach_to_screen_rect(Point2i(), size);
-	Transform2D stretch_transform;
 	float font_oversampling = 1.0;
+	window_transform = Transform2D();
 
 	if (content_scale_mode == CONTENT_SCALE_MODE_DISABLED || content_scale_size.x == 0 || content_scale_size.y == 0) {
 		font_oversampling = content_scale_factor;
 		final_size = size;
 		final_size_override = Size2(size) / content_scale_factor;
-
-		stretch_transform = Transform2D();
-		stretch_transform.scale(Size2(content_scale_factor, content_scale_factor));
 	} else {
 		//actual screen video mode
 		Size2 video_mode = size;
@@ -712,17 +984,13 @@ void Window::_update_viewport_size() {
 
 		Size2 margin;
 		Size2 offset;
-		//black bars and margin
+
 		if (content_scale_aspect != CONTENT_SCALE_ASPECT_EXPAND && screen_size.x < video_mode.x) {
 			margin.x = Math::round((video_mode.x - screen_size.x) / 2.0);
-			//RenderingServer::get_singleton()->black_bars_set_margins(margin.x, 0, margin.x, 0);
 			offset.x = Math::round(margin.x * viewport_size.y / screen_size.y);
 		} else if (content_scale_aspect != CONTENT_SCALE_ASPECT_EXPAND && screen_size.y < video_mode.y) {
 			margin.y = Math::round((video_mode.y - screen_size.y) / 2.0);
-			//RenderingServer::get_singleton()->black_bars_set_margins(0, margin.y, 0, margin.y);
 			offset.y = Math::round(margin.y * viewport_size.x / screen_size.x);
-		} else {
-			//RenderingServer::get_singleton()->black_bars_set_margins(0, 0, 0, 0);
 		}
 
 		switch (content_scale_mode) {
@@ -736,20 +1004,24 @@ void Window::_update_viewport_size() {
 				attach_to_screen_rect = Rect2(margin, screen_size);
 				font_oversampling = (screen_size.x / viewport_size.x) * content_scale_factor;
 
-				Size2 scale = Vector2(screen_size) / Vector2(final_size_override);
-				stretch_transform.scale(scale);
-
+				window_transform.translate_local(margin);
 			} break;
 			case CONTENT_SCALE_MODE_VIEWPORT: {
 				final_size = (viewport_size / content_scale_factor).floor();
 				attach_to_screen_rect = Rect2(margin, screen_size);
 
+				window_transform.translate_local(margin);
+				if (final_size.x != 0 && final_size.y != 0) {
+					Transform2D scale_transform;
+					scale_transform.scale(Vector2(attach_to_screen_rect.size) / Vector2(final_size));
+					window_transform *= scale_transform;
+				}
 			} break;
 		}
 	}
 
 	bool allocate = is_inside_tree() && visible && (window_id != DisplayServer::INVALID_WINDOW_ID || embedder != nullptr);
-	_set_size(final_size, final_size_override, attach_to_screen_rect, stretch_transform, allocate);
+	_set_size(final_size, final_size_override, allocate);
 
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		RenderingServer::get_singleton()->viewport_attach_to_screen(get_viewport_rid(), attach_to_screen_rect, window_id);
@@ -781,7 +1053,7 @@ void Window::_update_window_callbacks() {
 	DisplayServer::get_singleton()->window_set_drop_files_callback(callable_mp(this, &Window::_window_drop_files), window_id);
 }
 
-Viewport *Window::_get_embedder() const {
+Viewport *Window::get_embedder() const {
 	Viewport *vp = get_parent_viewport();
 
 	while (vp) {
@@ -816,7 +1088,7 @@ void Window::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			bool embedded = false;
 			{
-				embedder = _get_embedder();
+				embedder = get_embedder();
 				if (embedder) {
 					embedded = true;
 					if (!visible) {
@@ -845,6 +1117,7 @@ void Window::_notification(int p_what) {
 						position = DisplayServer::get_singleton()->window_get_position(window_id);
 						size = DisplayServer::get_singleton()->window_get_size(window_id);
 					}
+					_update_window_size(); // Inform DisplayServer of minimum and maximum size.
 					_update_viewport_size(); // Then feed back to the viewport.
 					_update_window_callbacks();
 					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
@@ -876,6 +1149,7 @@ void Window::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 			if (wrap_controls) {
+				// Finish any resizing immediately so it doesn't interfere on stuff overriding _ready().
 				_update_child_controls();
 			}
 		} break;
@@ -884,9 +1158,7 @@ void Window::_notification(int p_what) {
 			_invalidate_theme_cache();
 			_update_theme_item_cache();
 
-			if (embedder) {
-				embedder->_sub_window_update(this);
-			} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+			if (!embedder && window_id != DisplayServer::INVALID_WINDOW_ID) {
 				String tr_title = atr(title);
 #ifdef DEBUG_ENABLED
 				if (window_id == DisplayServer::MAIN_WINDOW_ID) {
@@ -898,8 +1170,6 @@ void Window::_notification(int p_what) {
 #endif
 				DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
 			}
-
-			child_controls_changed();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -986,10 +1256,27 @@ DisplayServer::WindowID Window::get_window_id() const {
 	return window_id;
 }
 
+void Window::set_mouse_passthrough_polygon(const Vector<Vector2> &p_region) {
+	mpath = p_region;
+	if (window_id == DisplayServer::INVALID_WINDOW_ID) {
+		return;
+	}
+	DisplayServer::get_singleton()->window_set_mouse_passthrough(mpath, window_id);
+}
+
+Vector<Vector2> Window::get_mouse_passthrough_polygon() const {
+	return mpath;
+}
+
 void Window::set_wrap_controls(bool p_enable) {
 	wrap_controls = p_enable;
-	if (wrap_controls) {
-		child_controls_changed();
+
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	if (updating_child_controls) {
+		_update_child_controls();
 	} else {
 		_update_window_size();
 	}
@@ -1016,6 +1303,15 @@ Size2 Window::_get_contents_minimum_size() const {
 	return max;
 }
 
+void Window::child_controls_changed() {
+	if (!is_inside_tree() || !visible || updating_child_controls) {
+		return;
+	}
+
+	updating_child_controls = true;
+	call_deferred(SNAME("_update_child_controls"));
+}
+
 void Window::_update_child_controls() {
 	if (!updating_child_controls) {
 		return;
@@ -1024,15 +1320,6 @@ void Window::_update_child_controls() {
 	_update_window_size();
 
 	updating_child_controls = false;
-}
-
-void Window::child_controls_changed() {
-	if (!is_inside_tree() || !visible || updating_child_controls) {
-		return;
-	}
-
-	updating_child_controls = true;
-	call_deferred(SNAME("_update_child_controls"));
 }
 
 bool Window::_can_consume_input_events() const {
@@ -1078,8 +1365,11 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 
 	emit_signal(SceneStringNames::get_singleton()->window_input, p_ev);
 
-	push_input(p_ev);
-	if (!is_input_handled()) {
+	if (is_inside_tree()) {
+		push_input(p_ev);
+	}
+
+	if (!is_input_handled() && is_inside_tree()) {
 		push_unhandled_input(p_ev);
 	}
 }
@@ -1138,10 +1428,13 @@ void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
 
+	// Consider the current size when calling with the default value.
+	Size2i expected_size = p_size == Size2i() ? size : p_size;
+
 	Rect2 parent_rect;
 
 	if (is_embedded()) {
-		parent_rect = _get_embedder()->get_visible_rect();
+		parent_rect = get_embedder()->get_visible_rect();
 	} else {
 		DisplayServer::WindowID parent_id = get_parent_visible_window()->get_window_id();
 		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(parent_id);
@@ -1152,7 +1445,9 @@ void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio
 	Vector2i size_ratio = parent_rect.size * p_fallback_ratio;
 
 	Rect2i popup_rect;
-	popup_rect.size = Vector2i(MIN(size_ratio.x, p_size.x), MIN(size_ratio.y, p_size.y));
+	popup_rect.size = Vector2i(MIN(size_ratio.x, expected_size.x), MIN(size_ratio.y, expected_size.y));
+	popup_rect.size = _clamp_window_size(popup_rect.size);
+
 	if (parent_rect != Rect2()) {
 		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
 	}
@@ -1164,10 +1459,13 @@ void Window::popup_centered(const Size2i &p_minsize) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
 
+	// Consider the current size when calling with the default value.
+	Size2i expected_size = p_minsize == Size2i() ? size : p_minsize;
+
 	Rect2 parent_rect;
 
 	if (is_embedded()) {
-		parent_rect = _get_embedder()->get_visible_rect();
+		parent_rect = get_embedder()->get_visible_rect();
 	} else {
 		DisplayServer::WindowID parent_id = get_parent_visible_window()->get_window_id();
 		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(parent_id);
@@ -1176,9 +1474,7 @@ void Window::popup_centered(const Size2i &p_minsize) {
 	}
 
 	Rect2i popup_rect;
-	Size2 contents_minsize = _get_contents_minimum_size();
-	popup_rect.size.x = MAX(p_minsize.x, contents_minsize.x);
-	popup_rect.size.y = MAX(p_minsize.y, contents_minsize.y);
+	popup_rect.size = _clamp_window_size(expected_size);
 
 	if (parent_rect != Rect2()) {
 		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
@@ -1195,7 +1491,7 @@ void Window::popup_centered_ratio(float p_ratio) {
 	Rect2 parent_rect;
 
 	if (is_embedded()) {
-		parent_rect = _get_embedder()->get_visible_rect();
+		parent_rect = get_embedder()->get_visible_rect();
 	} else {
 		DisplayServer::WindowID parent_id = get_parent_visible_window()->get_window_id();
 		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(parent_id);
@@ -1206,6 +1502,7 @@ void Window::popup_centered_ratio(float p_ratio) {
 	Rect2i popup_rect;
 	if (parent_rect != Rect2()) {
 		popup_rect.size = parent_rect.size * p_ratio;
+		popup_rect.size = _clamp_window_size(popup_rect.size);
 		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
 	}
 
@@ -1215,7 +1512,7 @@ void Window::popup_centered_ratio(float p_ratio) {
 void Window::popup(const Rect2i &p_screen_rect) {
 	emit_signal(SNAME("about_to_popup"));
 
-	if (!_get_embedder() && get_flag(FLAG_POPUP)) {
+	if (!get_embedder() && get_flag(FLAG_POPUP)) {
 		// Send a focus-out notification when opening a Window Manager Popup.
 		SceneTree *scene_tree = get_tree();
 		if (scene_tree) {
@@ -1248,12 +1545,33 @@ void Window::popup(const Rect2i &p_screen_rect) {
 
 	set_transient(true);
 	set_visible(true);
+
+	Rect2i parent_rect;
+	if (is_embedded()) {
+		parent_rect = get_embedder()->get_visible_rect();
+	} else {
+		int screen_id = DisplayServer::get_singleton()->window_get_current_screen(get_window_id());
+		parent_rect = DisplayServer::get_singleton()->screen_get_usable_rect(screen_id);
+	}
+	if (parent_rect != Rect2i() && !parent_rect.intersects(Rect2i(position, size))) {
+		ERR_PRINT(vformat("Window %d spawned at invalid position: %s.", get_window_id(), position));
+		set_position((parent_rect.size - size) / 2);
+	}
+
 	_post_popup();
 	notification(NOTIFICATION_POST_POPUP);
 }
 
 Size2 Window::get_contents_minimum_size() const {
 	return _get_contents_minimum_size();
+}
+
+Size2 Window::get_clamped_minimum_size() const {
+	if (!wrap_controls) {
+		return min_size;
+	}
+
+	return min_size.max(get_contents_minimum_size());
 }
 
 void Window::grab_focus() {
@@ -1270,17 +1588,17 @@ bool Window::has_focus() const {
 
 Rect2i Window::get_usable_parent_rect() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), Rect2());
-	Rect2i parent;
+	Rect2i parent_rect;
 	if (is_embedded()) {
-		parent = _get_embedder()->get_visible_rect();
+		parent_rect = get_embedder()->get_visible_rect();
 	} else {
 		const Window *w = is_visible() ? this : get_parent_visible_window();
 		//find a parent that can contain us
 		ERR_FAIL_COND_V(!w, Rect2());
 
-		parent = DisplayServer::get_singleton()->screen_get_usable_rect(DisplayServer::get_singleton()->window_get_current_screen(w->get_window_id()));
+		parent_rect = DisplayServer::get_singleton()->screen_get_usable_rect(DisplayServer::get_singleton()->window_get_current_screen(w->get_window_id()));
 	}
-	return parent;
+	return parent_rect;
 }
 
 void Window::add_child_notify(Node *p_child) {
@@ -1294,6 +1612,8 @@ void Window::remove_child_notify(Node *p_child) {
 		child_controls_changed();
 	}
 }
+
+// Theming.
 
 void Window::set_theme_owner_node(Node *p_node) {
 	theme_owner->set_owner_node(p_node);
@@ -1348,6 +1668,12 @@ void Window::_theme_changed() {
 	}
 }
 
+void Window::_notify_theme_override_changed() {
+	if (!bulk_theme_override && is_inside_tree()) {
+		notification(NOTIFICATION_THEME_CHANGED);
+	}
+}
+
 void Window::_invalidate_theme_cache() {
 	theme_icon_cache.clear();
 	theme_style_cache.clear();
@@ -1358,6 +1684,26 @@ void Window::_invalidate_theme_cache() {
 }
 
 void Window::_update_theme_item_cache() {
+	// Request an update on the next frame to reflect theme changes.
+	// Updating without a delay can cause a lot of lag.
+	if (!wrap_controls) {
+		updating_embedded_window = true;
+		call_deferred(SNAME("_update_embedded_window"));
+	} else {
+		child_controls_changed();
+	}
+}
+
+void Window::_update_embedded_window() {
+	if (!updating_embedded_window) {
+		return;
+	}
+
+	if (embedder) {
+		embedder->_sub_window_update(this);
+	};
+
+	updating_embedded_window = false;
 }
 
 void Window::set_theme_type_variation(const StringName &p_theme_type) {
@@ -1371,7 +1717,16 @@ StringName Window::get_theme_type_variation() const {
 	return theme_type_variation;
 }
 
+/// Theme property lookup.
+
 Ref<Texture2D> Window::get_theme_icon(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		const Ref<Texture2D> *tex = theme_icon_override.getptr(p_name);
+		if (tex) {
+			return *tex;
+		}
+	}
+
 	if (theme_icon_cache.has(p_theme_type) && theme_icon_cache[p_theme_type].has(p_name)) {
 		return theme_icon_cache[p_theme_type][p_name];
 	}
@@ -1384,6 +1739,13 @@ Ref<Texture2D> Window::get_theme_icon(const StringName &p_name, const StringName
 }
 
 Ref<StyleBox> Window::get_theme_stylebox(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		const Ref<StyleBox> *style = theme_style_override.getptr(p_name);
+		if (style) {
+			return *style;
+		}
+	}
+
 	if (theme_style_cache.has(p_theme_type) && theme_style_cache[p_theme_type].has(p_name)) {
 		return theme_style_cache[p_theme_type][p_name];
 	}
@@ -1396,6 +1758,13 @@ Ref<StyleBox> Window::get_theme_stylebox(const StringName &p_name, const StringN
 }
 
 Ref<Font> Window::get_theme_font(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		const Ref<Font> *font = theme_font_override.getptr(p_name);
+		if (font) {
+			return *font;
+		}
+	}
+
 	if (theme_font_cache.has(p_theme_type) && theme_font_cache[p_theme_type].has(p_name)) {
 		return theme_font_cache[p_theme_type][p_name];
 	}
@@ -1408,6 +1777,13 @@ Ref<Font> Window::get_theme_font(const StringName &p_name, const StringName &p_t
 }
 
 int Window::get_theme_font_size(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		const int *font_size = theme_font_size_override.getptr(p_name);
+		if (font_size && (*font_size) > 0) {
+			return *font_size;
+		}
+	}
+
 	if (theme_font_size_cache.has(p_theme_type) && theme_font_size_cache[p_theme_type].has(p_name)) {
 		return theme_font_size_cache[p_theme_type][p_name];
 	}
@@ -1420,6 +1796,13 @@ int Window::get_theme_font_size(const StringName &p_name, const StringName &p_th
 }
 
 Color Window::get_theme_color(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		const Color *color = theme_color_override.getptr(p_name);
+		if (color) {
+			return *color;
+		}
+	}
+
 	if (theme_color_cache.has(p_theme_type) && theme_color_cache[p_theme_type].has(p_name)) {
 		return theme_color_cache[p_theme_type][p_name];
 	}
@@ -1432,6 +1815,13 @@ Color Window::get_theme_color(const StringName &p_name, const StringName &p_them
 }
 
 int Window::get_theme_constant(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		const int *constant = theme_constant_override.getptr(p_name);
+		if (constant) {
+			return *constant;
+		}
+	}
+
 	if (theme_constant_cache.has(p_theme_type) && theme_constant_cache[p_theme_type].has(p_name)) {
 		return theme_constant_cache[p_theme_type][p_name];
 	}
@@ -1444,40 +1834,203 @@ int Window::get_theme_constant(const StringName &p_name, const StringName &p_the
 }
 
 bool Window::has_theme_icon(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		if (has_theme_icon_override(p_name)) {
+			return true;
+		}
+	}
+
 	List<StringName> theme_types;
 	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
 	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_ICON, p_name, theme_types);
 }
 
 bool Window::has_theme_stylebox(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		if (has_theme_stylebox_override(p_name)) {
+			return true;
+		}
+	}
+
 	List<StringName> theme_types;
 	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
 	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
 }
 
 bool Window::has_theme_font(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		if (has_theme_font_override(p_name)) {
+			return true;
+		}
+	}
+
 	List<StringName> theme_types;
 	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
 	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_FONT, p_name, theme_types);
 }
 
 bool Window::has_theme_font_size(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		if (has_theme_font_size_override(p_name)) {
+			return true;
+		}
+	}
+
 	List<StringName> theme_types;
 	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
 	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
 }
 
 bool Window::has_theme_color(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		if (has_theme_color_override(p_name)) {
+			return true;
+		}
+	}
+
 	List<StringName> theme_types;
 	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
 	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_COLOR, p_name, theme_types);
 }
 
 bool Window::has_theme_constant(const StringName &p_name, const StringName &p_theme_type) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		if (has_theme_constant_override(p_name)) {
+			return true;
+		}
+	}
+
 	List<StringName> theme_types;
 	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
 	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
 }
+
+/// Local property overrides.
+
+void Window::add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon) {
+	ERR_FAIL_COND(!p_icon.is_valid());
+
+	if (theme_icon_override.has(p_name)) {
+		theme_icon_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+	}
+
+	theme_icon_override[p_name] = p_icon;
+	theme_icon_override[p_name]->connect("changed", callable_mp(this, &Window::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
+	_notify_theme_override_changed();
+}
+
+void Window::add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style) {
+	ERR_FAIL_COND(!p_style.is_valid());
+
+	if (theme_style_override.has(p_name)) {
+		theme_style_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+	}
+
+	theme_style_override[p_name] = p_style;
+	theme_style_override[p_name]->connect("changed", callable_mp(this, &Window::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
+	_notify_theme_override_changed();
+}
+
+void Window::add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font) {
+	ERR_FAIL_COND(!p_font.is_valid());
+
+	if (theme_font_override.has(p_name)) {
+		theme_font_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+	}
+
+	theme_font_override[p_name] = p_font;
+	theme_font_override[p_name]->connect("changed", callable_mp(this, &Window::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
+	_notify_theme_override_changed();
+}
+
+void Window::add_theme_font_size_override(const StringName &p_name, int p_font_size) {
+	theme_font_size_override[p_name] = p_font_size;
+	_notify_theme_override_changed();
+}
+
+void Window::add_theme_color_override(const StringName &p_name, const Color &p_color) {
+	theme_color_override[p_name] = p_color;
+	_notify_theme_override_changed();
+}
+
+void Window::add_theme_constant_override(const StringName &p_name, int p_constant) {
+	theme_constant_override[p_name] = p_constant;
+	_notify_theme_override_changed();
+}
+
+void Window::remove_theme_icon_override(const StringName &p_name) {
+	if (theme_icon_override.has(p_name)) {
+		theme_icon_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+	}
+
+	theme_icon_override.erase(p_name);
+	_notify_theme_override_changed();
+}
+
+void Window::remove_theme_style_override(const StringName &p_name) {
+	if (theme_style_override.has(p_name)) {
+		theme_style_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+	}
+
+	theme_style_override.erase(p_name);
+	_notify_theme_override_changed();
+}
+
+void Window::remove_theme_font_override(const StringName &p_name) {
+	if (theme_font_override.has(p_name)) {
+		theme_font_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+	}
+
+	theme_font_override.erase(p_name);
+	_notify_theme_override_changed();
+}
+
+void Window::remove_theme_font_size_override(const StringName &p_name) {
+	theme_font_size_override.erase(p_name);
+	_notify_theme_override_changed();
+}
+
+void Window::remove_theme_color_override(const StringName &p_name) {
+	theme_color_override.erase(p_name);
+	_notify_theme_override_changed();
+}
+
+void Window::remove_theme_constant_override(const StringName &p_name) {
+	theme_constant_override.erase(p_name);
+	_notify_theme_override_changed();
+}
+
+bool Window::has_theme_icon_override(const StringName &p_name) const {
+	const Ref<Texture2D> *tex = theme_icon_override.getptr(p_name);
+	return tex != nullptr;
+}
+
+bool Window::has_theme_stylebox_override(const StringName &p_name) const {
+	const Ref<StyleBox> *style = theme_style_override.getptr(p_name);
+	return style != nullptr;
+}
+
+bool Window::has_theme_font_override(const StringName &p_name) const {
+	const Ref<Font> *font = theme_font_override.getptr(p_name);
+	return font != nullptr;
+}
+
+bool Window::has_theme_font_size_override(const StringName &p_name) const {
+	const int *font_size = theme_font_size_override.getptr(p_name);
+	return font_size != nullptr;
+}
+
+bool Window::has_theme_color_override(const StringName &p_name) const {
+	const Color *color = theme_color_override.getptr(p_name);
+	return color != nullptr;
+}
+
+bool Window::has_theme_constant_override(const StringName &p_name) const {
+	const int *constant = theme_constant_override.getptr(p_name);
+	return constant != nullptr;
+}
+
+/// Default theme properties.
 
 float Window::get_theme_default_base_scale() const {
 	return theme_owner->get_theme_default_base_scale();
@@ -1490,6 +2043,21 @@ Ref<Font> Window::get_theme_default_font() const {
 int Window::get_theme_default_font_size() const {
 	return theme_owner->get_theme_default_font_size();
 }
+
+/// Bulk actions.
+
+void Window::begin_bulk_theme_override() {
+	bulk_theme_override = true;
+}
+
+void Window::end_bulk_theme_override() {
+	ERR_FAIL_COND(!bulk_theme_override);
+
+	bulk_theme_override = false;
+	_notify_theme_override_changed();
+}
+
+//
 
 Rect2i Window::get_parent_rect() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), Rect2i());
@@ -1548,22 +2116,39 @@ Window::LayoutDirection Window::get_layout_direction() const {
 
 bool Window::is_layout_rtl() const {
 	if (layout_dir == LAYOUT_DIRECTION_INHERITED) {
-		Window *parent = Object::cast_to<Window>(get_parent());
-		if (parent) {
-			return parent->is_layout_rtl();
-		} else {
-			if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
-				return true;
+		if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
+			return true;
+		}
+		Node *parent_node = get_parent();
+		while (parent_node) {
+			Control *parent_control = Object::cast_to<Control>(parent_node);
+			if (parent_control) {
+				return parent_control->is_layout_rtl();
 			}
+
+			Window *parent_window = Object::cast_to<Window>(parent_node);
+			if (parent_window) {
+				return parent_window->is_layout_rtl();
+			}
+			parent_node = parent_node->get_parent();
+		}
+
+		int root_dir = GLOBAL_GET(SNAME("internationalization/rendering/root_node_layout_direction"));
+		if (root_dir == 1) {
+			return false;
+		} else if (root_dir == 2) {
+			return true;
+		} else {
 			String locale = TranslationServer::get_singleton()->get_tool_locale();
 			return TS->is_locale_right_to_left(locale);
 		}
 	} else if (layout_dir == LAYOUT_DIRECTION_LOCALE) {
 		if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
 			return true;
+		} else {
+			String locale = TranslationServer::get_singleton()->get_tool_locale();
+			return TS->is_locale_right_to_left(locale);
 		}
-		String locale = TranslationServer::get_singleton()->get_tool_locale();
-		return TS->is_locale_right_to_left(locale);
 	} else {
 		return (layout_dir == LAYOUT_DIRECTION_RTL);
 	}
@@ -1583,46 +2168,40 @@ bool Window::is_auto_translating() const {
 	return auto_translate;
 }
 
-void Window::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "theme_type_variation") {
-		List<StringName> names;
-
-		// Only the default theme and the project theme are used for the list of options.
-		// This is an imposed limitation to simplify the logic needed to leverage those options.
-		ThemeDB::get_singleton()->get_default_theme()->get_type_variation_list(get_class_name(), &names);
-		if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
-			ThemeDB::get_singleton()->get_project_theme()->get_type_variation_list(get_class_name(), &names);
-		}
-		names.sort_custom<StringName::AlphCompare>();
-
-		Vector<StringName> unique_names;
-		String hint_string;
-		for (const StringName &E : names) {
-			// Skip duplicate values.
-			if (unique_names.has(E)) {
-				continue;
-			}
-
-			hint_string += String(E) + ",";
-			unique_names.append(E);
-		}
-
-		p_property.hint_string = hint_string;
-	}
+Transform2D Window::get_final_transform() const {
+	return window_transform * stretch_transform * global_canvas_transform;
 }
 
-Transform2D Window::get_screen_transform() const {
-	Transform2D embedder_transform = Transform2D();
-	if (_get_embedder()) {
+Transform2D Window::get_screen_transform_internal(bool p_absolute_position) const {
+	Transform2D embedder_transform;
+	if (get_embedder()) {
 		embedder_transform.translate_local(get_position());
-		embedder_transform = _get_embedder()->get_screen_transform() * embedder_transform;
+		embedder_transform = get_embedder()->get_screen_transform_internal(p_absolute_position) * embedder_transform;
+	} else if (p_absolute_position) {
+		embedder_transform.translate_local(get_position());
 	}
-	return embedder_transform * Viewport::get_screen_transform();
+	return embedder_transform * get_final_transform();
+}
+
+Transform2D Window::get_popup_base_transform() const {
+	if (is_embedding_subwindows()) {
+		return Transform2D();
+	}
+	Transform2D popup_base_transform;
+	popup_base_transform.set_origin(get_position());
+	popup_base_transform *= get_final_transform();
+	if (get_embedder()) {
+		return get_embedder()->get_popup_base_transform() * popup_base_transform;
+	}
+	return popup_base_transform;
 }
 
 void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &Window::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &Window::get_title);
+
+	ClassDB::bind_method(D_METHOD("set_initial_position", "initial_position"), &Window::set_initial_position);
+	ClassDB::bind_method(D_METHOD("get_initial_position"), &Window::get_initial_position);
 
 	ClassDB::bind_method(D_METHOD("set_current_screen", "index"), &Window::set_current_screen);
 	ClassDB::bind_method(D_METHOD("get_current_screen"), &Window::get_current_screen);
@@ -1634,7 +2213,8 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_size"), &Window::get_size);
 	ClassDB::bind_method(D_METHOD("reset_size"), &Window::reset_size);
 
-	ClassDB::bind_method(D_METHOD("get_real_size"), &Window::get_real_size);
+	ClassDB::bind_method(D_METHOD("get_position_with_decorations"), &Window::get_position_with_decorations);
+	ClassDB::bind_method(D_METHOD("get_size_with_decorations"), &Window::get_size_with_decorations);
 
 	ClassDB::bind_method(D_METHOD("set_max_size", "max_size"), &Window::set_max_size);
 	ClassDB::bind_method(D_METHOD("get_max_size"), &Window::get_max_size);
@@ -1692,11 +2272,15 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_font_oversampling", "enable"), &Window::set_use_font_oversampling);
 	ClassDB::bind_method(D_METHOD("is_using_font_oversampling"), &Window::is_using_font_oversampling);
 
+	ClassDB::bind_method(D_METHOD("set_mouse_passthrough_polygon", "polygon"), &Window::set_mouse_passthrough_polygon);
+	ClassDB::bind_method(D_METHOD("get_mouse_passthrough_polygon"), &Window::get_mouse_passthrough_polygon);
+
 	ClassDB::bind_method(D_METHOD("set_wrap_controls", "enable"), &Window::set_wrap_controls);
 	ClassDB::bind_method(D_METHOD("is_wrapping_controls"), &Window::is_wrapping_controls);
 	ClassDB::bind_method(D_METHOD("child_controls_changed"), &Window::child_controls_changed);
 
 	ClassDB::bind_method(D_METHOD("_update_child_controls"), &Window::_update_child_controls);
+	ClassDB::bind_method(D_METHOD("_update_embedded_window"), &Window::_update_embedded_window);
 
 	ClassDB::bind_method(D_METHOD("set_theme", "theme"), &Window::set_theme);
 	ClassDB::bind_method(D_METHOD("get_theme"), &Window::get_theme);
@@ -1704,12 +2288,36 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_theme_type_variation", "theme_type"), &Window::set_theme_type_variation);
 	ClassDB::bind_method(D_METHOD("get_theme_type_variation"), &Window::get_theme_type_variation);
 
+	ClassDB::bind_method(D_METHOD("begin_bulk_theme_override"), &Window::begin_bulk_theme_override);
+	ClassDB::bind_method(D_METHOD("end_bulk_theme_override"), &Window::end_bulk_theme_override);
+
+	ClassDB::bind_method(D_METHOD("add_theme_icon_override", "name", "texture"), &Window::add_theme_icon_override);
+	ClassDB::bind_method(D_METHOD("add_theme_stylebox_override", "name", "stylebox"), &Window::add_theme_style_override);
+	ClassDB::bind_method(D_METHOD("add_theme_font_override", "name", "font"), &Window::add_theme_font_override);
+	ClassDB::bind_method(D_METHOD("add_theme_font_size_override", "name", "font_size"), &Window::add_theme_font_size_override);
+	ClassDB::bind_method(D_METHOD("add_theme_color_override", "name", "color"), &Window::add_theme_color_override);
+	ClassDB::bind_method(D_METHOD("add_theme_constant_override", "name", "constant"), &Window::add_theme_constant_override);
+
+	ClassDB::bind_method(D_METHOD("remove_theme_icon_override", "name"), &Window::remove_theme_icon_override);
+	ClassDB::bind_method(D_METHOD("remove_theme_stylebox_override", "name"), &Window::remove_theme_style_override);
+	ClassDB::bind_method(D_METHOD("remove_theme_font_override", "name"), &Window::remove_theme_font_override);
+	ClassDB::bind_method(D_METHOD("remove_theme_font_size_override", "name"), &Window::remove_theme_font_size_override);
+	ClassDB::bind_method(D_METHOD("remove_theme_color_override", "name"), &Window::remove_theme_color_override);
+	ClassDB::bind_method(D_METHOD("remove_theme_constant_override", "name"), &Window::remove_theme_constant_override);
+
 	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "theme_type"), &Window::get_theme_icon, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "theme_type"), &Window::get_theme_stylebox, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_font", "name", "theme_type"), &Window::get_theme_font, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_font_size", "name", "theme_type"), &Window::get_theme_font_size, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_color", "name", "theme_type"), &Window::get_theme_color, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_constant", "name", "theme_type"), &Window::get_theme_constant, DEFVAL(""));
+
+	ClassDB::bind_method(D_METHOD("has_theme_icon_override", "name"), &Window::has_theme_icon_override);
+	ClassDB::bind_method(D_METHOD("has_theme_stylebox_override", "name"), &Window::has_theme_stylebox_override);
+	ClassDB::bind_method(D_METHOD("has_theme_font_override", "name"), &Window::has_theme_font_override);
+	ClassDB::bind_method(D_METHOD("has_theme_font_size_override", "name"), &Window::has_theme_font_size_override);
+	ClassDB::bind_method(D_METHOD("has_theme_color_override", "name"), &Window::has_theme_color_override);
+	ClassDB::bind_method(D_METHOD("has_theme_constant_override", "name"), &Window::has_theme_constant_override);
 
 	ClassDB::bind_method(D_METHOD("has_theme_icon", "name", "theme_type"), &Window::has_theme_icon, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("has_theme_stylebox", "name", "theme_type"), &Window::has_theme_stylebox, DEFVAL(""));
@@ -1735,11 +2343,16 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("popup_centered", "minsize"), &Window::popup_centered, DEFVAL(Size2i()));
 	ClassDB::bind_method(D_METHOD("popup_centered_clamped", "minsize", "fallback_ratio"), &Window::popup_centered_clamped, DEFVAL(Size2i()), DEFVAL(0.75));
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "initial_position", PROPERTY_HINT_ENUM, "Absolute,Primary Screen Center,Main Window Screen Center,Other Screen Center"), "set_initial_position", "get_initial_position");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Windowed,Minimized,Maximized,Fullscreen"), "set_mode", "get_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_screen"), "set_current_screen", "get_current_screen");
+
+	// Keep the enum values in sync with the `DisplayServer::SCREEN_` enum.
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_screen", PROPERTY_HINT_RANGE, "0,64,1,or_greater"), "set_current_screen", "get_current_screen");
+
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "mouse_passthrough_polygon"), "set_mouse_passthrough_polygon", "get_mouse_passthrough_polygon");
 
 	ADD_GROUP("Flags", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
@@ -1753,6 +2366,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "unfocusable"), "set_flag", "get_flag", FLAG_NO_FOCUS);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "popup_window"), "set_flag", "get_flag", FLAG_POPUP);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "extend_to_title"), "set_flag", "get_flag", FLAG_EXTEND_TO_TITLE);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "mouse_passthrough"), "set_flag", "get_flag", FLAG_MOUSE_PASSTHROUGH);
 
 	ADD_GROUP("Limits", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "min_size", PROPERTY_HINT_NONE, "suffix:px"), "set_min_size", "get_min_size");
@@ -1764,12 +2378,12 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_aspect", PROPERTY_HINT_ENUM, "Ignore,Keep,Keep Width,Keep Height,Expand"), "set_content_scale_aspect", "get_content_scale_aspect");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "content_scale_factor"), "set_content_scale_factor", "get_content_scale_factor");
 
+	ADD_GROUP("Localization", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate"), "set_auto_translate", "is_auto_translating");
+
 	ADD_GROUP("Theme", "theme_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "theme_type_variation", PROPERTY_HINT_ENUM_SUGGESTION), "set_theme_type_variation", "get_theme_type_variation");
-
-	ADD_GROUP("Auto Translate", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate"), "set_auto_translate", "is_auto_translating");
 
 	ADD_SIGNAL(MethodInfo("window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
@@ -1782,6 +2396,8 @@ void Window::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
 	ADD_SIGNAL(MethodInfo("about_to_popup"));
 	ADD_SIGNAL(MethodInfo("theme_changed"));
+	ADD_SIGNAL(MethodInfo("dpi_changed"));
+	ADD_SIGNAL(MethodInfo("titlebar_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_THEME_CHANGED);
@@ -1799,6 +2415,7 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_NO_FOCUS);
 	BIND_ENUM_CONSTANT(FLAG_POPUP);
 	BIND_ENUM_CONSTANT(FLAG_EXTEND_TO_TITLE);
+	BIND_ENUM_CONSTANT(FLAG_MOUSE_PASSTHROUGH);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_DISABLED);
@@ -1815,13 +2432,43 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_LOCALE);
 	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_LTR);
 	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_RTL);
+
+	BIND_ENUM_CONSTANT(WINDOW_INITIAL_POSITION_ABSOLUTE);
+	BIND_ENUM_CONSTANT(WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN);
+	BIND_ENUM_CONSTANT(WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN);
+	BIND_ENUM_CONSTANT(WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN);
 }
 
 Window::Window() {
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	if (rendering_server) {
+		max_size = rendering_server->get_maximum_viewport_size();
+		max_size_used = max_size; // Update max_size_used.
+	}
+
 	theme_owner = memnew(ThemeOwner);
 	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
 }
 
 Window::~Window() {
 	memdelete(theme_owner);
+
+	// Resources need to be disconnected.
+	for (KeyValue<StringName, Ref<Texture2D>> &E : theme_icon_override) {
+		E.value->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+	}
+	for (KeyValue<StringName, Ref<StyleBox>> &E : theme_style_override) {
+		E.value->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+	}
+	for (KeyValue<StringName, Ref<Font>> &E : theme_font_override) {
+		E.value->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+	}
+
+	// Then override maps can be simply cleared.
+	theme_icon_override.clear();
+	theme_style_override.clear();
+	theme_font_override.clear();
+	theme_font_size_override.clear();
+	theme_color_override.clear();
+	theme_constant_override.clear();
 }

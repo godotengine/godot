@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  tree.h                                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  tree.h                                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef TREE_H
 #define TREE_H
@@ -173,6 +173,8 @@ private:
 		}
 	}
 
+	bool _is_any_collapsed(bool p_only_visible);
+
 protected:
 	static void _bind_methods();
 
@@ -245,15 +247,15 @@ public:
 
 	void add_button(int p_column, const Ref<Texture2D> &p_button, int p_id = -1, bool p_disabled = false, const String &p_tooltip = "");
 	int get_button_count(int p_column) const;
-	String get_button_tooltip_text(int p_column, int p_idx) const;
-	Ref<Texture2D> get_button(int p_column, int p_idx) const;
-	int get_button_id(int p_column, int p_idx) const;
-	void erase_button(int p_column, int p_idx);
+	String get_button_tooltip_text(int p_column, int p_index) const;
+	Ref<Texture2D> get_button(int p_column, int p_index) const;
+	int get_button_id(int p_column, int p_index) const;
+	void erase_button(int p_column, int p_index);
 	int get_button_by_id(int p_column, int p_id) const;
-	void set_button(int p_column, int p_idx, const Ref<Texture2D> &p_button);
-	void set_button_color(int p_column, int p_idx, const Color &p_color);
-	void set_button_disabled(int p_column, int p_idx, bool p_disabled);
-	bool is_button_disabled(int p_column, int p_idx) const;
+	void set_button(int p_column, int p_index, const Ref<Texture2D> &p_button);
+	void set_button_color(int p_column, int p_index, const Color &p_color);
+	void set_button_disabled(int p_column, int p_index, bool p_disabled);
+	bool is_button_disabled(int p_column, int p_index) const;
 
 	/* range works for mode number or mode combo */
 
@@ -271,6 +273,9 @@ public:
 
 	void set_collapsed(bool p_collapsed);
 	bool is_collapsed();
+
+	void set_collapsed_recursive(bool p_collapsed);
+	bool is_any_collapsed(bool p_only_visible = false);
 
 	void set_visible(bool p_visible);
 	bool is_visible();
@@ -324,7 +329,7 @@ public:
 
 	/* Item manipulation */
 
-	TreeItem *create_child(int p_idx = -1);
+	TreeItem *create_child(int p_index = -1);
 
 	Tree *get_tree() const;
 
@@ -336,7 +341,7 @@ public:
 	TreeItem *get_prev_visible(bool p_wrap = false);
 	TreeItem *get_next_visible(bool p_wrap = false);
 
-	TreeItem *get_child(int p_idx);
+	TreeItem *get_child(int p_index);
 	int get_visible_child_count();
 	int get_child_count();
 	TypedArray<TreeItem> get_children();
@@ -526,8 +531,8 @@ private:
 
 		float base_scale = 1.0;
 
-		int hseparation = 0;
-		int vseparation = 0;
+		int h_separation = 0;
+		int v_separation = 0;
 		int item_margin = 0;
 		int button_margin = 0;
 		Point2 offset;
@@ -613,6 +618,8 @@ private:
 
 	bool hide_folding = false;
 
+	bool enable_recursive_folding = true;
+
 	int _count_selected_items(TreeItem *p_from) const;
 	bool _is_branch_selected(TreeItem *p_from) const;
 	bool _is_sibling_branch_selected(TreeItem *p_from) const;
@@ -640,7 +647,7 @@ public:
 
 	void clear();
 
-	TreeItem *create_item(TreeItem *p_parent = nullptr, int p_idx = -1);
+	TreeItem *create_item(TreeItem *p_parent = nullptr, int p_index = -1);
 	TreeItem *get_root() const;
 	TreeItem *get_last_item() const;
 
@@ -659,6 +666,7 @@ public:
 	bool is_root_hidden() const;
 	TreeItem *get_next_selected(TreeItem *p_item);
 	TreeItem *get_selected() const;
+	void set_selected(TreeItem *p_item, int p_column = 0);
 	int get_selected_column() const;
 	int get_pressed_button() const;
 	void set_select_mode(SelectMode p_mode);
@@ -711,6 +719,9 @@ public:
 
 	void set_hide_folding(bool p_hide);
 	bool is_folding_hidden() const;
+
+	void set_enable_recursive_folding(bool p_enable);
+	bool is_recursive_folding_enabled() const;
 
 	void set_drop_mode_flags(int p_flags);
 	int get_drop_mode_flags() const;

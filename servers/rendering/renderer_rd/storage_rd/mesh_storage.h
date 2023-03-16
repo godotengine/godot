@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  mesh_storage.h                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  mesh_storage.h                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef MESH_STORAGE_RD_H
 #define MESH_STORAGE_RD_H
@@ -138,12 +138,11 @@ private:
 		Surface **surfaces = nullptr;
 		uint32_t surface_count = 0;
 
-		Vector<AABB> bone_aabbs;
-
 		bool has_bone_weights = false;
 
 		AABB aabb;
 		AABB custom_aabb;
+		uint64_t skeleton_aabb_version = 0;
 
 		Vector<RID> material_cache;
 
@@ -179,6 +178,7 @@ private:
 		bool weights_dirty = false;
 		SelfList<MeshInstance> weight_update_list;
 		SelfList<MeshInstance> array_update_list;
+		Transform2D canvas_item_transform_2d;
 		MeshInstance() :
 				weight_update_list(this), array_update_list(this) {}
 	};
@@ -257,6 +257,14 @@ private:
 			uint32_t normalized_blend_shapes;
 			uint32_t pad0;
 			uint32_t pad1;
+			float skeleton_transform_x[2];
+			float skeleton_transform_y[2];
+
+			float skeleton_transform_offset[2];
+			float inverse_transform_x[2];
+
+			float inverse_transform_y[2];
+			float inverse_transform_offset[2];
 		};
 
 		enum {
@@ -307,6 +315,8 @@ public:
 
 	MeshStorage();
 	virtual ~MeshStorage();
+
+	bool free(RID p_rid);
 
 	RID get_default_rd_storage_buffer() const { return default_rd_storage_buffer; }
 
@@ -396,13 +406,11 @@ public:
 		return s->index_count ? s->index_count : s->vertex_count;
 	}
 
-	_FORCE_INLINE_ uint32_t mesh_surface_get_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_mesh_lod_threshold, uint32_t *r_index_count = nullptr) const {
+	_FORCE_INLINE_ uint32_t mesh_surface_get_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_mesh_lod_threshold, uint32_t &r_index_count) const {
 		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
 
 		int32_t current_lod = -1;
-		if (r_index_count) {
-			*r_index_count = s->index_count;
-		}
+		r_index_count = s->index_count;
 		for (uint32_t i = 0; i < s->lod_count; i++) {
 			float screen_size = s->lods[i].edge_length * p_model_scale / p_distance_threshold;
 			if (screen_size > p_mesh_lod_threshold) {
@@ -413,9 +421,7 @@ public:
 		if (current_lod == -1) {
 			return 0;
 		} else {
-			if (r_index_count) {
-				*r_index_count = s->lods[current_lod].index_count;
-			}
+			r_index_count = s->lods[current_lod].index_count;
 			return current_lod + 1;
 		}
 	}
@@ -551,6 +557,7 @@ public:
 	virtual void mesh_instance_set_skeleton(RID p_mesh_instance, RID p_skeleton) override;
 	virtual void mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int p_shape, float p_weight) override;
 	virtual void mesh_instance_check_for_update(RID p_mesh_instance) override;
+	virtual void mesh_instance_set_canvas_item_transform(RID p_mesh_instance, const Transform2D &p_transform) override;
 	virtual void update_mesh_instances() override;
 
 	/* MULTIMESH API */
@@ -666,7 +673,6 @@ public:
 
 	virtual void skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_skeleton = false) override;
 	virtual void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) override;
-	void skeleton_set_world_transform(RID p_skeleton, bool p_enable, const Transform3D &p_world_transform);
 	virtual int skeleton_get_bone_count(RID p_skeleton) const override;
 	virtual void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform3D &p_transform) override;
 	virtual Transform3D skeleton_bone_get_transform(RID p_skeleton, int p_bone) const override;

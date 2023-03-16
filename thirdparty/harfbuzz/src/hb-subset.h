@@ -28,6 +28,7 @@
 #define HB_SUBSET_H
 
 #include "hb.h"
+#include "hb-ot.h"
 
 HB_BEGIN_DECLS
 
@@ -70,6 +71,14 @@ typedef struct hb_subset_plan_t hb_subset_plan_t;
  * in the final subset.
  * @HB_SUBSET_FLAGS_NO_PRUNE_UNICODE_RANGES: If set then the unicode ranges in
  * OS/2 will not be recalculated.
+ * @HB_SUBSET_FLAGS_PATCH_MODE: If set the subsetter behaviour will be modified
+ * to produce a subset that is better suited to patching. For example cmap
+ * subtable format will be kept stable.
+ * @HB_SUBSET_FLAGS_OMIT_GLYF: If set the subsetter won't actually produce the final
+ * glyf table bytes. The table directory will include and entry as if the table was
+ * there but the actual final font blob will be truncated prior to the glyf data. This
+ * is a useful performance optimization when a font aware binary patching algorithm
+ * is being used to diff two subsets.
  *
  * List of boolean properties that can be configured on the subset input.
  *
@@ -86,6 +95,8 @@ typedef enum { /*< flags >*/
   HB_SUBSET_FLAGS_NOTDEF_OUTLINE =	     0x00000040u,
   HB_SUBSET_FLAGS_GLYPH_NAMES =		     0x00000080u,
   HB_SUBSET_FLAGS_NO_PRUNE_UNICODE_RANGES =  0x00000100u,
+  // Not supported yet: HB_SUBSET_FLAGS_PATCH_MODE = 0x00000200u,
+  // Not supported yet: HB_SUBSET_FLAGS_OMIT_GLYF =  0x00000400u,
 } hb_subset_flags_t;
 
 /**
@@ -154,8 +165,6 @@ HB_EXTERN void
 hb_subset_input_set_flags (hb_subset_input_t *input,
 			   unsigned value);
 
-#ifdef HB_EXPERIMENTAL_API
-#ifndef HB_NO_VAR
 HB_EXTERN hb_bool_t
 hb_subset_input_pin_axis_to_default (hb_subset_input_t  *input,
 				     hb_face_t          *face,
@@ -166,8 +175,21 @@ hb_subset_input_pin_axis_location (hb_subset_input_t  *input,
 				   hb_face_t          *face,
 				   hb_tag_t            axis_tag,
 				   float               axis_value);
+
+#ifdef HB_EXPERIMENTAL_API
+HB_EXTERN hb_bool_t
+hb_subset_input_override_name_table (hb_subset_input_t  *input,
+				     hb_ot_name_id_t     name_id,
+				     unsigned            platform_id,
+				     unsigned            encoding_id,
+				     unsigned            language_id,
+				     const char         *name_str,
+				     int                 str_len);
+
 #endif
-#endif
+
+HB_EXTERN hb_face_t *
+hb_subset_preprocess (hb_face_t *source);
 
 HB_EXTERN hb_face_t *
 hb_subset_or_fail (hb_face_t *source, const hb_subset_input_t *input);

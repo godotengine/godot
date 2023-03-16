@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  node_3d.cpp                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  node_3d.cpp                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "node_3d.h"
 
@@ -188,7 +188,7 @@ void Node3D::_notification(int p_what) {
 
 #ifdef TOOLS_ENABLED
 			if (Engine::get_singleton()->is_editor_hint() && get_tree()->is_node_being_edited(this)) {
-				get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_request_gizmo, this);
+				get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringNames::get_singleton()->_spatial_editor_group, SNAME("_request_gizmo_for_id"), get_instance_id());
 			}
 #endif
 		} break;
@@ -251,12 +251,20 @@ Vector3 Node3D::get_global_rotation() const {
 	return get_global_transform().get_basis().get_euler();
 }
 
+Vector3 Node3D::get_global_rotation_degrees() const {
+	Vector3 radians = get_global_rotation();
+	return Vector3(Math::rad_to_deg(radians.x), Math::rad_to_deg(radians.y), Math::rad_to_deg(radians.z));
+}
+
 void Node3D::set_global_rotation(const Vector3 &p_euler_rad) {
 	Transform3D transform = get_global_transform();
-	Basis new_basis = transform.get_basis();
-	new_basis.set_euler(p_euler_rad);
-	transform.set_basis(new_basis);
+	transform.basis = Basis::from_euler(p_euler_rad);
 	set_global_transform(transform);
+}
+
+void Node3D::set_global_rotation_degrees(const Vector3 &p_euler_degrees) {
+	Vector3 radians(Math::deg_to_rad(p_euler_degrees.x), Math::deg_to_rad(p_euler_degrees.y), Math::deg_to_rad(p_euler_degrees.z));
+	set_global_rotation(radians);
 }
 
 void Node3D::set_transform(const Transform3D &p_transform) {
@@ -394,27 +402,25 @@ Node3D::RotationEditMode Node3D::get_rotation_edit_mode() const {
 	return data.rotation_edit_mode;
 }
 
-void Node3D::set_rotation_order(RotationOrder p_order) {
-	Basis::EulerOrder order = Basis::EulerOrder(p_order);
-
-	if (data.euler_rotation_order == order) {
+void Node3D::set_rotation_order(EulerOrder p_order) {
+	if (data.euler_rotation_order == p_order) {
 		return;
 	}
 
-	ERR_FAIL_INDEX(int32_t(order), 6);
+	ERR_FAIL_INDEX(int32_t(p_order), 6);
 	bool transform_changed = false;
 
 	if (data.dirty & DIRTY_EULER_ROTATION_AND_SCALE) {
 		_update_rotation_and_scale();
 	} else if (data.dirty & DIRTY_LOCAL_TRANSFORM) {
-		data.euler_rotation = Basis::from_euler(data.euler_rotation, data.euler_rotation_order).get_euler_normalized(order);
+		data.euler_rotation = Basis::from_euler(data.euler_rotation, data.euler_rotation_order).get_euler_normalized(p_order);
 		transform_changed = true;
 	} else {
 		data.dirty |= DIRTY_LOCAL_TRANSFORM;
 		transform_changed = true;
 	}
 
-	data.euler_rotation_order = order;
+	data.euler_rotation_order = p_order;
 
 	if (transform_changed) {
 		_propagate_transform_changed(this);
@@ -425,8 +431,8 @@ void Node3D::set_rotation_order(RotationOrder p_order) {
 	notify_property_list_changed(); // Will change the rotation property.
 }
 
-Node3D::RotationOrder Node3D::get_rotation_order() const {
-	return RotationOrder(data.euler_rotation_order);
+EulerOrder Node3D::get_rotation_order() const {
+	return data.euler_rotation_order;
 }
 
 void Node3D::set_rotation(const Vector3 &p_euler_rad) {
@@ -442,6 +448,11 @@ void Node3D::set_rotation(const Vector3 &p_euler_rad) {
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
+}
+
+void Node3D::set_rotation_degrees(const Vector3 &p_euler_degrees) {
+	Vector3 radians(Math::deg_to_rad(p_euler_degrees.x), Math::deg_to_rad(p_euler_degrees.y), Math::deg_to_rad(p_euler_degrees.z));
+	set_rotation(radians);
 }
 
 void Node3D::set_scale(const Vector3 &p_scale) {
@@ -471,6 +482,11 @@ Vector3 Node3D::get_rotation() const {
 	return data.euler_rotation;
 }
 
+Vector3 Node3D::get_rotation_degrees() const {
+	Vector3 radians = get_rotation();
+	return Vector3(Math::rad_to_deg(radians.x), Math::rad_to_deg(radians.y), Math::rad_to_deg(radians.z));
+}
+
 Vector3 Node3D::get_scale() const {
 	if (data.dirty & DIRTY_EULER_ROTATION_AND_SCALE) {
 		_update_rotation_and_scale();
@@ -486,7 +502,7 @@ void Node3D::update_gizmos() {
 	}
 
 	if (data.gizmos.is_empty()) {
-		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_request_gizmo, this);
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringNames::get_singleton()->_spatial_editor_group, SNAME("_request_gizmo_for_id"), get_instance_id());
 		return;
 	}
 	if (data.gizmos_dirty) {
@@ -605,6 +621,14 @@ void Node3D::set_disable_gizmos(bool p_enabled) {
 		clear_gizmos();
 	}
 #endif
+}
+
+void Node3D::reparent(Node *p_parent, bool p_keep_global_transform) {
+	Transform3D temp = get_global_transform();
+	Node::reparent(p_parent);
+	if (p_keep_global_transform) {
+		set_global_transform(temp);
+	}
 }
 
 void Node3D::set_disable_scale(bool p_enabled) {
@@ -786,6 +810,7 @@ void Node3D::set_identity() {
 }
 
 void Node3D::look_at(const Vector3 &p_target, const Vector3 &p_up) {
+	ERR_FAIL_COND_MSG(!is_inside_tree(), "Node not inside tree. Use look_at_from_position() instead.");
 	Vector3 origin = get_global_transform().origin;
 	look_at_from_position(origin, p_target, p_up);
 }
@@ -961,8 +986,10 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_transform"), &Node3D::get_transform);
 	ClassDB::bind_method(D_METHOD("set_position", "position"), &Node3D::set_position);
 	ClassDB::bind_method(D_METHOD("get_position"), &Node3D::get_position);
-	ClassDB::bind_method(D_METHOD("set_rotation", "euler"), &Node3D::set_rotation);
+	ClassDB::bind_method(D_METHOD("set_rotation", "euler_radians"), &Node3D::set_rotation);
 	ClassDB::bind_method(D_METHOD("get_rotation"), &Node3D::get_rotation);
+	ClassDB::bind_method(D_METHOD("set_rotation_degrees", "euler_degrees"), &Node3D::set_rotation_degrees);
+	ClassDB::bind_method(D_METHOD("get_rotation_degrees"), &Node3D::get_rotation_degrees);
 	ClassDB::bind_method(D_METHOD("set_rotation_order", "order"), &Node3D::set_rotation_order);
 	ClassDB::bind_method(D_METHOD("get_rotation_order"), &Node3D::get_rotation_order);
 	ClassDB::bind_method(D_METHOD("set_rotation_edit_mode", "edit_mode"), &Node3D::set_rotation_edit_mode);
@@ -978,8 +1005,10 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_global_transform"), &Node3D::get_global_transform);
 	ClassDB::bind_method(D_METHOD("set_global_position", "position"), &Node3D::set_global_position);
 	ClassDB::bind_method(D_METHOD("get_global_position"), &Node3D::get_global_position);
-	ClassDB::bind_method(D_METHOD("set_global_rotation", "radians"), &Node3D::set_global_rotation);
+	ClassDB::bind_method(D_METHOD("set_global_rotation", "euler_radians"), &Node3D::set_global_rotation);
 	ClassDB::bind_method(D_METHOD("get_global_rotation"), &Node3D::get_global_rotation);
+	ClassDB::bind_method(D_METHOD("set_global_rotation_degrees", "euler_degrees"), &Node3D::set_global_rotation_degrees);
+	ClassDB::bind_method(D_METHOD("get_global_rotation_degrees"), &Node3D::get_global_rotation_degrees);
 
 	ClassDB::bind_method(D_METHOD("get_parent_node_3d"), &Node3D::get_parent_node_3d);
 	ClassDB::bind_method(D_METHOD("set_ignore_transform_notification", "enabled"), &Node3D::set_ignore_transform_notification);
@@ -1037,23 +1066,18 @@ void Node3D::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_ENTER_WORLD);
 	BIND_CONSTANT(NOTIFICATION_EXIT_WORLD);
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
+	BIND_CONSTANT(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 
 	BIND_ENUM_CONSTANT(ROTATION_EDIT_MODE_EULER);
 	BIND_ENUM_CONSTANT(ROTATION_EDIT_MODE_QUATERNION);
 	BIND_ENUM_CONSTANT(ROTATION_EDIT_MODE_BASIS);
 
-	BIND_ENUM_CONSTANT(ROTATION_ORDER_XYZ);
-	BIND_ENUM_CONSTANT(ROTATION_ORDER_XZY);
-	BIND_ENUM_CONSTANT(ROTATION_ORDER_YXZ);
-	BIND_ENUM_CONSTANT(ROTATION_ORDER_YZX);
-	BIND_ENUM_CONSTANT(ROTATION_ORDER_ZXY);
-	BIND_ENUM_CONSTANT(ROTATION_ORDER_ZYX);
-
 	ADD_GROUP("Transform", "");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "transform", PROPERTY_HINT_NONE, "suffix:m", PROPERTY_USAGE_NO_EDITOR), "set_transform", "get_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "global_transform", PROPERTY_HINT_NONE, "suffix:m", PROPERTY_USAGE_NONE), "set_global_transform", "get_global_transform");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position", PROPERTY_HINT_RANGE, "-99999,99999,0.001,or_greater,or_less,no_slider,suffix:m", PROPERTY_USAGE_EDITOR), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position", PROPERTY_HINT_RANGE, "-99999,99999,0.001,or_greater,or_less,hide_slider,suffix:m", PROPERTY_USAGE_EDITOR), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_less,or_greater,radians", PROPERTY_USAGE_EDITOR), "set_rotation", "get_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_rotation_degrees", "get_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::QUATERNION, "quaternion", PROPERTY_HINT_HIDE_QUATERNION_EDIT, "", PROPERTY_USAGE_EDITOR), "set_quaternion", "get_quaternion");
 	ADD_PROPERTY(PropertyInfo(Variant::BASIS, "basis", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_basis", "get_basis");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale", PROPERTY_HINT_LINK, "", PROPERTY_USAGE_EDITOR), "set_scale", "get_scale");
@@ -1063,6 +1087,7 @@ void Node3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "global_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_position", "get_global_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "global_rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_rotation", "get_global_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "global_rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_rotation_degrees", "get_global_rotation_degrees");
 	ADD_GROUP("Visibility", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "visibility_parent", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GeometryInstance3D"), "set_visibility_parent", "get_visibility_parent");

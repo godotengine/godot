@@ -220,17 +220,25 @@ struct PairPosFormat2_4
     if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
     {
       c->buffer->message (c->font,
-			  "kerning glyphs at %d,%d",
+			  "try kerning glyphs at %d,%d",
 			  c->buffer->idx, skippy_iter.idx);
     }
 
     applied_first = valueFormat1.apply_value (c, this, v, buffer->cur_pos());
     applied_second = valueFormat2.apply_value (c, this, v + len1, buffer->pos[skippy_iter.idx]);
 
+    if (applied_first || applied_second)
+      if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+      {
+	c->buffer->message (c->font,
+			    "kerned glyphs at %d,%d",
+			    c->buffer->idx, skippy_iter.idx);
+      }
+
     if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
     {
       c->buffer->message (c->font,
-			  "kerned glyphs at %d,%d",
+			  "tried kerning glyphs at %d,%d",
 			  c->buffer->idx, skippy_iter.idx);
     }
 
@@ -241,10 +249,15 @@ struct PairPosFormat2_4
     boring:
       buffer->unsafe_to_concat (buffer->idx, skippy_iter.idx + 1);
 
+    if (len2)
+    {
+      skippy_iter.idx++;
+      // https://github.com/harfbuzz/harfbuzz/issues/3824
+      // https://github.com/harfbuzz/harfbuzz/issues/3888#issuecomment-1326781116
+      buffer->unsafe_to_break (buffer->idx, skippy_iter.idx + 1);
+    }
 
     buffer->idx = skippy_iter.idx;
-    if (len2)
-      buffer->idx++;
 
     return_trace (true);
   }
@@ -274,13 +287,19 @@ struct PairPosFormat2_4
     out->valueFormat1 = newFormats.first;
     out->valueFormat2 = newFormats.second;
 
+    if (c->plan->all_axes_pinned)
+    {
+      out->valueFormat1 = out->valueFormat1.drop_device_table_flags ();
+      out->valueFormat2 = out->valueFormat2.drop_device_table_flags ();
+    }
+
     for (unsigned class1_idx : + hb_range ((unsigned) class1Count) | hb_filter (klass1_map))
     {
       for (unsigned class2_idx : + hb_range ((unsigned) class2Count) | hb_filter (klass2_map))
       {
         unsigned idx = (class1_idx * (unsigned) class2Count + class2_idx) * (len1 + len2);
-        valueFormat1.copy_values (c->serializer, newFormats.first, this, &values[idx], c->plan->layout_variation_idx_map);
-        valueFormat2.copy_values (c->serializer, newFormats.second, this, &values[idx + len1], c->plan->layout_variation_idx_map);
+        valueFormat1.copy_values (c->serializer, out->valueFormat1, this, &values[idx], c->plan->layout_variation_idx_delta_map);
+        valueFormat2.copy_values (c->serializer, out->valueFormat2, this, &values[idx + len1], c->plan->layout_variation_idx_delta_map);
       }
     }
 
@@ -303,6 +322,7 @@ struct PairPosFormat2_4
   {
     unsigned len1 = valueFormat1.get_len ();
     unsigned len2 = valueFormat2.get_len ();
+    unsigned record_size = len1 + len2;
 
     unsigned format1 = 0;
     unsigned format2 = 0;
@@ -311,10 +331,13 @@ struct PairPosFormat2_4
     {
       for (unsigned class2_idx : + hb_range ((unsigned) class2Count) | hb_filter (klass2_map))
       {
-        unsigned idx = (class1_idx * (unsigned) class2Count + class2_idx) * (len1 + len2);
+        unsigned idx = (class1_idx * (unsigned) class2Count + class2_idx) * record_size;
         format1 = format1 | valueFormat1.get_effective_format (&values[idx]);
         format2 = format2 | valueFormat2.get_effective_format (&values[idx + len1]);
       }
+
+      if (format1 == valueFormat1 && format2 == valueFormat2)
+        break;
     }
 
     return hb_pair (format1, format2);

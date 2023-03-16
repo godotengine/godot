@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  script_editor_debugger.cpp                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  script_editor_debugger.cpp                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "script_editor_debugger.h"
 
@@ -37,7 +37,6 @@
 #include "core/string/ustring.h"
 #include "core/version.h"
 #include "editor/debugger/debug_adapter/debug_adapter_protocol.h"
-#include "editor/debugger/editor_network_profiler.h"
 #include "editor/debugger/editor_performance_profiler.h"
 #include "editor/debugger/editor_profiler.h"
 #include "editor/debugger/editor_visual_profiler.h"
@@ -47,12 +46,15 @@
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/inspector_dock.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "main/performance.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/debugger/scene_debugger.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
@@ -306,6 +308,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		String error = p_data[1];
 		bool has_stackdump = p_data[2];
 		breaked = true;
+		can_request_idle_draw = true;
 		can_debug = can_continue;
 		_update_buttons_state();
 		_set_reason_text(error, MESSAGE_ERROR);
@@ -317,6 +320,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			tabs->set_current_tab(0);
 		}
 		profiler->set_enabled(false, false);
+		visual_profiler->set_enabled(false);
 		inspector->clear_cache(); // Take a chance to force remote objects update.
 
 	} else if (p_msg == "debug_exit") {
@@ -326,8 +330,12 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		_update_buttons_state();
 		_set_reason_text(TTR("Execution resumed."), MESSAGE_SUCCESS);
 		emit_signal(SNAME("breaked"), false, false, "", false);
+
 		profiler->set_enabled(true, false);
 		profiler->disable_seeking();
+
+		visual_profiler->set_enabled(true);
+
 	} else if (p_msg == "set_pid") {
 		ERR_FAIL_COND(p_data.size() < 1);
 		remote_pid = p_data[0];
@@ -371,6 +379,8 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		vmem_total->set_tooltip_text(TTR("Bytes:") + " " + itos(total));
 		vmem_total->set_text(String::humanize_size(total));
 
+	} else if (p_msg == "servers:drawn") {
+		can_request_idle_draw = true;
 	} else if (p_msg == "stack_dump") {
 		DebuggerMarshalls::ScriptStackDump stack;
 		stack.deserialize(p_data);
@@ -499,6 +509,11 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		String tooltip = oe.warning ? TTR("Warning:") : TTR("Error:");
 
 		TreeItem *error = error_tree->create_item(r);
+		if (oe.warning) {
+			error->set_meta("_is_warning", true);
+		} else {
+			error->set_meta("_is_error", true);
+		}
 		error->set_collapsed(true);
 
 		error->set_icon(0, get_theme_icon(oe.warning ? SNAME("Warning") : SNAME("Error"), SNAME("EditorIcons")));
@@ -512,7 +527,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		String error_title;
 		if (oe.callstack.size() > 0) {
 			// If available, use the script's stack in the error title.
-			error_title = oe.callstack[oe.callstack.size() - 1].func + ": ";
+			error_title = _format_frame_text(&oe.callstack[0]) + ": ";
 		} else if (!oe.source_func.is_empty()) {
 			// Otherwise try to use the C++ source function.
 			error_title += oe.source_func + ": ";
@@ -523,13 +538,25 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		error->set_text(1, error_title);
 		tooltip += " " + error_title + "\n";
 
+		// Find the language of the error's source file.
+		String source_language_name = "C++"; // Default value is the old hard-coded one.
+		const String source_file_extension = oe.source_file.get_extension();
+		for (int i = 0; i < ScriptServer::get_language_count(); ++i) {
+			ScriptLanguage *script_language = ScriptServer::get_language(i);
+			if (source_file_extension == script_language->get_extension()) {
+				source_language_name = script_language->get_name();
+				break;
+			}
+		}
+
 		if (!oe.error_descr.is_empty()) {
 			// Add item for C++ error condition.
 			TreeItem *cpp_cond = error_tree->create_item(error);
-			cpp_cond->set_text(0, "<" + TTR("C++ Error") + ">");
+			// TRANSLATORS: %s is the name of a language, e.g. C++.
+			cpp_cond->set_text(0, "<" + vformat(TTR("%s Error"), source_language_name) + ">");
 			cpp_cond->set_text(1, oe.error);
 			cpp_cond->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
-			tooltip += TTR("C++ Error:") + " " + oe.error + "\n";
+			tooltip += vformat(TTR("%s Error:"), source_language_name) + " " + oe.error + "\n";
 			if (source_is_project_file) {
 				cpp_cond->set_metadata(0, source_meta);
 			}
@@ -540,14 +567,18 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		// Source of the error.
 		String source_txt = (source_is_project_file ? oe.source_file.get_file() : oe.source_file) + ":" + itos(oe.source_line);
 		if (!oe.source_func.is_empty()) {
-			source_txt += " @ " + oe.source_func + "()";
+			source_txt += " @ " + oe.source_func;
+			if (!oe.source_func.ends_with(")")) {
+				source_txt += "()";
+			}
 		}
 
 		TreeItem *cpp_source = error_tree->create_item(error);
-		cpp_source->set_text(0, "<" + (source_is_project_file ? TTR("Source") : TTR("C++ Source")) + ">");
+		// TRANSLATORS: %s is the name of a language, e.g. C++.
+		cpp_source->set_text(0, "<" + vformat(TTR("%s Source"), source_language_name) + ">");
 		cpp_source->set_text(1, source_txt);
 		cpp_source->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
-		tooltip += (source_is_project_file ? TTR("Source:") : TTR("C++ Source:")) + " " + source_txt + "\n";
+		tooltip += vformat(TTR("%s Source:"), source_language_name) + " " + source_txt + "\n";
 
 		// Set metadata to highlight error line in scripts.
 		if (source_is_project_file) {
@@ -574,7 +605,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				tooltip += TTR("Stack Trace:") + "\n";
 			}
 
-			String frame_txt = infos[i].file.get_file() + ":" + itos(infos[i].line) + " @ " + infos[i].func + "()";
+			String frame_txt = _format_frame_text(&infos[i]);
 			tooltip += frame_txt + "\n";
 			stack_trace->set_text(1, frame_txt);
 		}
@@ -713,17 +744,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			profiler->add_frame_metric(metric, true);
 		}
 
-	} else if (p_msg == "multiplayer:rpc") {
-		SceneDebugger::RPCProfilerFrame frame;
-		frame.deserialize(p_data);
-		for (int i = 0; i < frame.infos.size(); i++) {
-			network_profiler->add_node_frame_data(frame.infos[i]);
-		}
-
-	} else if (p_msg == "multiplayer:bandwidth") {
-		ERR_FAIL_COND(p_data.size() < 2);
-		network_profiler->set_bandwidth(p_data[0], p_data[1]);
-
 	} else if (p_msg == "request_quit") {
 		emit_signal(SNAME("stop_requested"));
 		_stop_and_notify();
@@ -741,22 +761,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		int colon_index = p_msg.find_char(':');
 		ERR_FAIL_COND_MSG(colon_index < 1, "Invalid message received");
 
-		bool parsed = false;
-		const String cap = p_msg.substr(0, colon_index);
-		HashMap<StringName, Callable>::Iterator element = captures.find(cap);
-		if (element) {
-			Callable &c = element->value;
-			ERR_FAIL_COND_MSG(c.is_null(), "Invalid callable registered: " + cap);
-			Variant cmd = p_msg.substr(colon_index + 1), data = p_data;
-			const Variant *args[2] = { &cmd, &data };
-			Variant retval;
-			Callable::CallError err;
-			c.callp(args, 2, retval, err);
-			ERR_FAIL_COND_MSG(err.error != Callable::CallError::CALL_OK, "Error calling 'capture' to callable: " + Variant::get_callable_error_text(c, args, 2, err));
-			ERR_FAIL_COND_MSG(retval.get_type() != Variant::BOOL, "Error calling 'capture' to callable: " + String(c) + ". Return type is not bool.");
-			parsed = retval;
-		}
-
+		bool parsed = EditorDebuggerNode::get_singleton()->plugins_capture(this, p_msg, p_data);
 		if (!parsed) {
 			WARN_PRINT("unknown message " + p_msg);
 		}
@@ -775,7 +780,16 @@ void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType 
 			reason->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
 	}
 	reason->set_text(p_reason);
-	reason->set_tooltip_text(p_reason.word_wrap(80));
+
+	const PackedInt32Array boundaries = TS->string_get_word_breaks(p_reason, "", 80);
+	PackedStringArray lines;
+	for (int i = 0; i < boundaries.size(); i += 2) {
+		const int start = boundaries[i];
+		const int end = boundaries[i + 1];
+		lines.append(p_reason.substr(start, end - start + 1));
+	}
+
+	reason->set_tooltip_text(String("\n").join(lines));
 }
 
 void ScriptEditorDebugger::_notification(int p_what) {
@@ -789,6 +803,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
+			tabs->add_theme_style_override("panel", get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
+
 			skip_breakpoints->set_icon(get_theme_icon(skip_breakpoints_value ? SNAME("DebugSkipBreakpointsOn") : SNAME("DebugSkipBreakpointsOff"), SNAME("EditorIcons")));
 			copy->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
 			step->set_icon(get_theme_icon(SNAME("DebugStep"), SNAME("EditorIcons")));
@@ -800,6 +816,24 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			search->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 
 			reason->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+
+			TreeItem *error_root = error_tree->get_root();
+			if (error_root) {
+				TreeItem *error = error_root->get_first_child();
+				while (error) {
+					if (error->has_meta("_is_warning")) {
+						error->set_icon(0, get_theme_icon(SNAME("Warning"), SNAME("EditorIcons")));
+						error->set_custom_color(0, get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+						error->set_custom_color(1, get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+					} else if (error->has_meta("_is_error")) {
+						error->set_icon(0, get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
+						error->set_custom_color(0, get_theme_color(SNAME("error_color"), SNAME("Editor")));
+						error->set_custom_color(1, get_theme_color(SNAME("error_color"), SNAME("Editor")));
+					}
+
+					error = error->get_next();
+				}
+			}
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -837,8 +871,9 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					msg.push_back(cam->get_far());
 					_put_msg("scene:override_camera_3D:transform", msg);
 				}
-				if (breaked) {
+				if (breaked && can_request_idle_draw) {
 					_put_msg("servers:draw", Array());
+					can_request_idle_draw = false;
 				}
 			}
 
@@ -861,21 +896,6 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				break;
 			};
 		} break;
-
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (tabs->has_theme_stylebox_override("panel")) {
-				tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
-			}
-
-			copy->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
-			step->set_icon(get_theme_icon(SNAME("DebugStep"), SNAME("EditorIcons")));
-			next->set_icon(get_theme_icon(SNAME("DebugNext"), SNAME("EditorIcons")));
-			dobreak->set_icon(get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
-			docontinue->set_icon(get_theme_icon(SNAME("DebugContinue"), SNAME("EditorIcons")));
-			vmem_refresh->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
-			vmem_export->set_icon(get_theme_icon(SNAME("Save"), SNAME("EditorIcons")));
-			search->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-		} break;
 	}
 }
 
@@ -895,9 +915,9 @@ void ScriptEditorDebugger::_clear_execution() {
 }
 
 void ScriptEditorDebugger::_set_breakpoint(const String &p_file, const int &p_line, const bool &p_enabled) {
-	Ref<Script> script = ResourceLoader::load(p_file);
-	emit_signal(SNAME("set_breakpoint"), script, p_line - 1, p_enabled);
-	script.unref();
+	Ref<Script> scr = ResourceLoader::load(p_file);
+	emit_signal(SNAME("set_breakpoint"), scr, p_line - 1, p_enabled);
+	scr.unref();
 }
 
 void ScriptEditorDebugger::_clear_breakpoints() {
@@ -911,11 +931,20 @@ void ScriptEditorDebugger::_breakpoint_tree_clicked() {
 	}
 }
 
+String ScriptEditorDebugger::_format_frame_text(const ScriptLanguage::StackInfo *info) {
+	String text = info->file.get_file() + ":" + itos(info->line) + " @ " + info->func;
+	if (!text.ends_with(")")) {
+		text += "()";
+	}
+	return text;
+}
+
 void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 	_clear_errors_list();
 	stop();
 
 	profiler->set_enabled(true, true);
+	visual_profiler->set_enabled(true);
 
 	peer = p_peer;
 	ERR_FAIL_COND(p_peer.is_null());
@@ -972,22 +1001,22 @@ void ScriptEditorDebugger::stop() {
 	res_path_cache.clear();
 	profiler_signature.clear();
 
-	profiler->set_enabled(true, false);
+	profiler->set_enabled(false, false);
+	profiler->set_pressed(false);
+
+	visual_profiler->set_enabled(false);
+	visual_profiler->set_pressed(false);
 
 	inspector->edit(nullptr);
 	_update_buttons_state();
 }
 
 void ScriptEditorDebugger::_profiler_activate(bool p_enable, int p_type) {
-	Array data;
-	data.push_back(p_enable);
+	Array msg_data;
+	msg_data.push_back(p_enable);
 	switch (p_type) {
-		case PROFILER_NETWORK:
-			_put_msg("profiler:multiplayer", data);
-			_put_msg("profiler:rpc", data);
-			break;
 		case PROFILER_VISUAL:
-			_put_msg("profiler:visual", data);
+			_put_msg("profiler:visual", msg_data);
 			break;
 		case PROFILER_SCRIPTS_SERVERS:
 			if (p_enable) {
@@ -995,11 +1024,11 @@ void ScriptEditorDebugger::_profiler_activate(bool p_enable, int p_type) {
 				profiler_signature.clear();
 				// Add max funcs options to request.
 				Array opts;
-				int max_funcs = EditorSettings::get_singleton()->get("debugger/profiler_frame_max_functions");
+				int max_funcs = EDITOR_GET("debugger/profiler_frame_max_functions");
 				opts.push_back(CLAMP(max_funcs, 16, 512));
-				data.push_back(opts);
+				msg_data.push_back(opts);
 			}
-			_put_msg("profiler:servers", data);
+			_put_msg("profiler:servers", msg_data);
 			break;
 		default:
 			ERR_FAIL_MSG("Invalid profiler type");
@@ -1283,13 +1312,13 @@ void ScriptEditorDebugger::live_debug_create_node(const NodePath &p_parent, cons
 	}
 }
 
-void ScriptEditorDebugger::live_debug_instance_node(const NodePath &p_parent, const String &p_path, const String &p_name) {
+void ScriptEditorDebugger::live_debug_instantiate_node(const NodePath &p_parent, const String &p_path, const String &p_name) {
 	if (live_debug) {
 		Array msg;
 		msg.push_back(p_parent);
 		msg.push_back(p_path);
 		msg.push_back(p_name);
-		_put_msg("scene:live_instance_node", msg);
+		_put_msg("scene:live_instantiate_node", msg);
 	}
 }
 
@@ -1538,9 +1567,9 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 
 			String type;
 
-			if (ti->get_icon(0) == get_theme_icon(SNAME("Warning"), SNAME("EditorIcons"))) {
+			if (ti->has_meta("_is_warning")) {
 				type = "W ";
-			} else if (ti->get_icon(0) == get_theme_icon(SNAME("Error"), SNAME("EditorIcons"))) {
+			} else if (ti->has_meta("_is_error")) {
 				type = "E ";
 			}
 
@@ -1563,8 +1592,22 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 				ti = ti->get_parent();
 			}
 
-			// We only need the first child here (C++ source stack trace).
+			// Find the child with the "C++ Source".
+			// It's not at a fixed position as "C++ Error" may come first.
 			TreeItem *ci = ti->get_first_child();
+			const String cpp_source = "<" + TTR("C++ Source") + ">";
+			while (ci) {
+				if (ci->get_text(0) == cpp_source) {
+					break;
+				}
+				ci = ci->get_next();
+			}
+
+			if (!ci) {
+				WARN_PRINT_ED("No C++ source reference is available for this error.");
+				return;
+			}
+
 			// Parse back the `file:line @ method()` string.
 			const Vector<String> file_line_number = ci->get_text(1).split("@")[0].strip_edges().split(":");
 			ERR_FAIL_COND_MSG(file_line_number.size() < 2, "Incorrect C++ source stack trace file:line format (please report).");
@@ -1612,7 +1655,7 @@ void ScriptEditorDebugger::_tab_changed(int p_tab) {
 
 void ScriptEditorDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("live_debug_create_node"), &ScriptEditorDebugger::live_debug_create_node);
-	ClassDB::bind_method(D_METHOD("live_debug_instance_node"), &ScriptEditorDebugger::live_debug_instance_node);
+	ClassDB::bind_method(D_METHOD("live_debug_instantiate_node"), &ScriptEditorDebugger::live_debug_instantiate_node);
 	ClassDB::bind_method(D_METHOD("live_debug_remove_node"), &ScriptEditorDebugger::live_debug_remove_node);
 	ClassDB::bind_method(D_METHOD("live_debug_remove_and_keep_node"), &ScriptEditorDebugger::live_debug_remove_and_keep_node);
 	ClassDB::bind_method(D_METHOD("live_debug_restore_node"), &ScriptEditorDebugger::live_debug_restore_node);
@@ -1644,49 +1687,33 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("errors_cleared"));
 }
 
-void ScriptEditorDebugger::add_debugger_plugin(const Ref<Script> &p_script) {
-	if (!debugger_plugins.has(p_script)) {
-		EditorDebuggerPlugin *plugin = memnew(EditorDebuggerPlugin());
-		plugin->attach_debugger(this);
-		plugin->set_script(p_script);
-		tabs->add_child(plugin);
-		debugger_plugins.insert(p_script, plugin);
-	}
+void ScriptEditorDebugger::add_debugger_tab(Control *p_control) {
+	tabs->add_child(p_control);
 }
 
-void ScriptEditorDebugger::remove_debugger_plugin(const Ref<Script> &p_script) {
-	if (debugger_plugins.has(p_script)) {
-		tabs->remove_child(debugger_plugins[p_script]);
-		debugger_plugins[p_script]->detach_debugger(false);
-		memdelete(debugger_plugins[p_script]);
-		debugger_plugins.erase(p_script);
-	}
+void ScriptEditorDebugger::remove_debugger_tab(Control *p_control) {
+	int idx = tabs->get_tab_idx_from_control(p_control);
+	ERR_FAIL_COND(idx < 0);
+	p_control->queue_free();
 }
 
 void ScriptEditorDebugger::send_message(const String &p_message, const Array &p_args) {
 	_put_msg(p_message, p_args);
 }
 
-void ScriptEditorDebugger::register_message_capture(const StringName &p_name, const Callable &p_callable) {
-	ERR_FAIL_COND_MSG(has_capture(p_name), "Capture already registered: " + p_name);
-	captures.insert(p_name, p_callable);
-}
-
-void ScriptEditorDebugger::unregister_message_capture(const StringName &p_name) {
-	ERR_FAIL_COND_MSG(!has_capture(p_name), "Capture not registered: " + p_name);
-	captures.erase(p_name);
-}
-
-bool ScriptEditorDebugger::has_capture(const StringName &p_name) {
-	return captures.has(p_name);
+void ScriptEditorDebugger::toggle_profiler(const String &p_profiler, bool p_enable, const Array &p_data) {
+	Array msg_data;
+	msg_data.push_back(p_enable);
+	msg_data.append_array(p_data);
+	_put_msg("profiler:" + p_profiler, msg_data);
 }
 
 ScriptEditorDebugger::ScriptEditorDebugger() {
 	tabs = memnew(TabContainer);
-	tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
+	add_child(tabs);
 	tabs->connect("tab_changed", callable_mp(this, &ScriptEditorDebugger::_tab_changed));
 
-	add_child(tabs);
+	InspectorDock::get_inspector_singleton()->connect("object_id_selected", callable_mp(this, &ScriptEditorDebugger::_remote_object_selected));
 
 	{ //debugger
 		VBoxContainer *vbc = memnew(VBoxContainer);
@@ -1888,13 +1915,6 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		visual_profiler->set_name(TTR("Visual Profiler"));
 		tabs->add_child(visual_profiler);
 		visual_profiler->connect("enable_profiling", callable_mp(this, &ScriptEditorDebugger::_profiler_activate).bind(PROFILER_VISUAL));
-	}
-
-	{ //network profiler
-		network_profiler = memnew(EditorNetworkProfiler);
-		network_profiler->set_name(TTR("Network Profiler"));
-		tabs->add_child(network_profiler);
-		network_profiler->connect("enable_profiling", callable_mp(this, &ScriptEditorDebugger::_profiler_activate).bind(PROFILER_NETWORK));
 	}
 
 	{ //monitors

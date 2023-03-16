@@ -25,7 +25,7 @@ extern "C" {
     ((((major) & 0xffffULL) << 48) | (((minor) & 0xffffULL) << 32) | ((patch) & 0xffffffffULL))
 
 // OpenXR current version number.
-#define XR_CURRENT_API_VERSION XR_MAKE_VERSION(1, 0, 25)
+#define XR_CURRENT_API_VERSION XR_MAKE_VERSION(1, 0, 26)
 
 #define XR_VERSION_MAJOR(version) (uint16_t)(((uint64_t)(version) >> 48)& 0xffffULL)
 #define XR_VERSION_MINOR(version) (uint16_t)(((uint64_t)(version) >> 32) & 0xffffULL)
@@ -450,6 +450,15 @@ typedef enum XrStructureType {
     XR_TYPE_VULKAN_SWAPCHAIN_CREATE_INFO_META = 1000227000,
     XR_TYPE_PERFORMANCE_METRICS_STATE_META = 1000232001,
     XR_TYPE_PERFORMANCE_METRICS_COUNTER_META = 1000232002,
+    XR_TYPE_SYSTEM_HEADSET_ID_PROPERTIES_META = 1000245000,
+    XR_TYPE_PASSTHROUGH_CREATE_INFO_HTC = 1000317001,
+    XR_TYPE_PASSTHROUGH_COLOR_HTC = 1000317002,
+    XR_TYPE_PASSTHROUGH_MESH_TRANSFORM_INFO_HTC = 1000317003,
+    XR_TYPE_COMPOSITION_LAYER_PASSTHROUGH_HTC = 1000317004,
+    XR_TYPE_FOVEATION_APPLY_INFO_HTC = 1000318000,
+    XR_TYPE_FOVEATION_DYNAMIC_MODE_INFO_HTC = 1000318001,
+    XR_TYPE_FOVEATION_CUSTOM_MODE_INFO_HTC = 1000318002,
+    XR_TYPE_ACTIVE_ACTION_SET_PRIORITIES_EXT = 1000373000,
     XR_TYPE_GRAPHICS_BINDING_VULKAN2_KHR = XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR,
     XR_TYPE_SWAPCHAIN_IMAGE_VULKAN2_KHR = XR_TYPE_SWAPCHAIN_IMAGE_VULKAN_KHR,
     XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN2_KHR = XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN_KHR,
@@ -536,6 +545,7 @@ typedef enum XrObjectType {
     XR_OBJECT_TYPE_PASSTHROUGH_LAYER_FB = 1000118002,
     XR_OBJECT_TYPE_GEOMETRY_INSTANCE_FB = 1000118004,
     XR_OBJECT_TYPE_SPATIAL_ANCHOR_STORE_CONNECTION_MSFT = 1000142000,
+    XR_OBJECT_TYPE_PASSTHROUGH_HTC = 1000317000,
     XR_OBJECT_TYPE_MAX_ENUM = 0x7FFFFFFF
 } XrObjectType;
 typedef XrFlags64 XrInstanceCreateFlags;
@@ -1631,7 +1641,7 @@ typedef struct XrBindingModificationsKHR {
 
 
 #define XR_EXT_performance_settings 1
-#define XR_EXT_performance_settings_SPEC_VERSION 3
+#define XR_EXT_performance_settings_SPEC_VERSION 4
 #define XR_EXT_PERFORMANCE_SETTINGS_EXTENSION_NAME "XR_EXT_performance_settings"
 
 typedef enum XrPerfSettingsDomainEXT {
@@ -3007,7 +3017,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrRequestDisplayRefreshRateFB(
 
 
 #define XR_HTCX_vive_tracker_interaction 1
-#define XR_HTCX_vive_tracker_interaction_SPEC_VERSION 1
+#define XR_HTCX_vive_tracker_interaction_SPEC_VERSION 2
 #define XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME "XR_HTCX_vive_tracker_interaction"
 typedef struct XrViveTrackerPathsHTCX {
     XrStructureType       type;
@@ -3043,7 +3053,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateViveTrackerPathsHTCX(
 #define XR_FACIAL_EXPRESSION_LIP_COUNT_HTC 37
 
 XR_DEFINE_HANDLE(XrFacialTrackerHTC)
-#define XR_HTC_facial_tracking_SPEC_VERSION 1
+#define XR_HTC_facial_tracking_SPEC_VERSION 2
 #define XR_HTC_FACIAL_TRACKING_EXTENSION_NAME "XR_HTC_facial_tracking"
 
 typedef enum XrEyeExpressionHTC {
@@ -4508,7 +4518,7 @@ typedef struct XrCompositionLayerSettingsFB {
 
 
 #define XR_META_performance_metrics 1
-#define XR_META_performance_metrics_SPEC_VERSION 1
+#define XR_META_performance_metrics_SPEC_VERSION 2
 #define XR_META_PERFORMANCE_METRICS_EXTENSION_NAME "XR_META_performance_metrics"
 
 typedef enum XrPerformanceMetricsCounterUnitMETA {
@@ -4570,9 +4580,166 @@ XRAPI_ATTR XrResult XRAPI_CALL xrQueryPerformanceMetricsCounterMETA(
 #endif /* !XR_NO_PROTOTYPES */
 
 
+#define XR_META_headset_id 1
+#define XR_META_headset_id_SPEC_VERSION   1
+#define XR_META_HEADSET_ID_EXTENSION_NAME "XR_META_headset_id"
+// XrSystemHeadsetIdPropertiesMETA extends XrSystemProperties
+typedef struct XrSystemHeadsetIdPropertiesMETA {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    XrUuidEXT             id;
+} XrSystemHeadsetIdPropertiesMETA;
+
+
+
 #define XR_EXT_uuid 1
 #define XR_EXT_uuid_SPEC_VERSION          1
 #define XR_EXT_UUID_EXTENSION_NAME        "XR_EXT_uuid"
+
+
+#define XR_HTC_passthrough 1
+XR_DEFINE_HANDLE(XrPassthroughHTC)
+#define XR_HTC_passthrough_SPEC_VERSION   1
+#define XR_HTC_PASSTHROUGH_EXTENSION_NAME "XR_HTC_passthrough"
+
+typedef enum XrPassthroughFormHTC {
+    XR_PASSTHROUGH_FORM_PLANAR_HTC = 0,
+    XR_PASSTHROUGH_FORM_PROJECTED_HTC = 1,
+    XR_PASSTHROUGH_FORM_MAX_ENUM_HTC = 0x7FFFFFFF
+} XrPassthroughFormHTC;
+typedef struct XrPassthroughCreateInfoHTC {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrPassthroughFormHTC        form;
+} XrPassthroughCreateInfoHTC;
+
+typedef struct XrPassthroughColorHTC {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    float                       alpha;
+} XrPassthroughColorHTC;
+
+// XrPassthroughMeshTransformInfoHTC extends XrCompositionLayerPassthroughHTC
+typedef struct XrPassthroughMeshTransformInfoHTC {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    uint32_t                    vertexCount;
+    const XrVector3f*           vertices;
+    uint32_t                    indexCount;
+    const uint32_t*             indices;
+    XrSpace                     baseSpace;
+    XrTime                      time;
+    XrPosef                     pose;
+    XrVector3f                  scale;
+} XrPassthroughMeshTransformInfoHTC;
+
+typedef struct XrCompositionLayerPassthroughHTC {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrCompositionLayerFlags     layerFlags;
+    XrSpace                     space;
+    XrPassthroughHTC            passthrough;
+    XrPassthroughColorHTC       color;
+} XrCompositionLayerPassthroughHTC;
+
+typedef XrResult (XRAPI_PTR *PFN_xrCreatePassthroughHTC)(XrSession session, const XrPassthroughCreateInfoHTC* createInfo, XrPassthroughHTC* passthrough);
+typedef XrResult (XRAPI_PTR *PFN_xrDestroyPassthroughHTC)(XrPassthroughHTC passthrough);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrCreatePassthroughHTC(
+    XrSession                                   session,
+    const XrPassthroughCreateInfoHTC*           createInfo,
+    XrPassthroughHTC*                           passthrough);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrDestroyPassthroughHTC(
+    XrPassthroughHTC                            passthrough);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
+
+
+#define XR_HTC_foveation 1
+#define XR_HTC_foveation_SPEC_VERSION     1
+#define XR_HTC_FOVEATION_EXTENSION_NAME   "XR_HTC_foveation"
+
+typedef enum XrFoveationModeHTC {
+    XR_FOVEATION_MODE_DISABLE_HTC = 0,
+    XR_FOVEATION_MODE_FIXED_HTC = 1,
+    XR_FOVEATION_MODE_DYNAMIC_HTC = 2,
+    XR_FOVEATION_MODE_CUSTOM_HTC = 3,
+    XR_FOVEATION_MODE_MAX_ENUM_HTC = 0x7FFFFFFF
+} XrFoveationModeHTC;
+
+typedef enum XrFoveationLevelHTC {
+    XR_FOVEATION_LEVEL_NONE_HTC = 0,
+    XR_FOVEATION_LEVEL_LOW_HTC = 1,
+    XR_FOVEATION_LEVEL_MEDIUM_HTC = 2,
+    XR_FOVEATION_LEVEL_HIGH_HTC = 3,
+    XR_FOVEATION_LEVEL_MAX_ENUM_HTC = 0x7FFFFFFF
+} XrFoveationLevelHTC;
+typedef XrFlags64 XrFoveationDynamicFlagsHTC;
+
+// Flag bits for XrFoveationDynamicFlagsHTC
+static const XrFoveationDynamicFlagsHTC XR_FOVEATION_DYNAMIC_LEVEL_ENABLED_BIT_HTC = 0x00000001;
+static const XrFoveationDynamicFlagsHTC XR_FOVEATION_DYNAMIC_CLEAR_FOV_ENABLED_BIT_HTC = 0x00000002;
+static const XrFoveationDynamicFlagsHTC XR_FOVEATION_DYNAMIC_FOCAL_CENTER_OFFSET_ENABLED_BIT_HTC = 0x00000004;
+
+typedef struct XrFoveationApplyInfoHTC {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrFoveationModeHTC          mode;
+    uint32_t                    subImageCount;
+    XrSwapchainSubImage*        subImages;
+} XrFoveationApplyInfoHTC;
+
+typedef struct XrFoveationConfigurationHTC {
+    XrFoveationLevelHTC    level;
+    float                  clearFovDegree;
+    XrVector2f             focalCenterOffset;
+} XrFoveationConfigurationHTC;
+
+// XrFoveationDynamicModeInfoHTC extends XrFoveationApplyInfoHTC
+typedef struct XrFoveationDynamicModeInfoHTC {
+    XrStructureType               type;
+    const void* XR_MAY_ALIAS      next;
+    XrFoveationDynamicFlagsHTC    dynamicFlags;
+} XrFoveationDynamicModeInfoHTC;
+
+// XrFoveationCustomModeInfoHTC extends XrFoveationApplyInfoHTC
+typedef struct XrFoveationCustomModeInfoHTC {
+    XrStructureType                       type;
+    const void* XR_MAY_ALIAS              next;
+    uint32_t                              configCount;
+    const XrFoveationConfigurationHTC*    configs;
+} XrFoveationCustomModeInfoHTC;
+
+typedef XrResult (XRAPI_PTR *PFN_xrApplyFoveationHTC)(XrSession session, const XrFoveationApplyInfoHTC* applyInfo);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrApplyFoveationHTC(
+    XrSession                                   session,
+    const XrFoveationApplyInfoHTC*              applyInfo);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
+
+
+#define XR_EXT_active_action_set_priority 1
+#define XR_EXT_active_action_set_priority_SPEC_VERSION 1
+#define XR_EXT_ACTIVE_ACTION_SET_PRIORITY_EXTENSION_NAME "XR_EXT_active_action_set_priority"
+typedef struct XrActiveActionSetPriorityEXT {
+    XrActionSet    actionSet;
+    uint32_t       priorityOverride;
+} XrActiveActionSetPriorityEXT;
+
+// XrActiveActionSetPrioritiesEXT extends XrActionsSyncInfo
+typedef struct XrActiveActionSetPrioritiesEXT {
+    XrStructureType                        type;
+    const void* XR_MAY_ALIAS               next;
+    uint32_t                               actionSetPriorityCount;
+    const XrActiveActionSetPriorityEXT*    actionSetPriorities;
+} XrActiveActionSetPrioritiesEXT;
+
 
 #ifdef __cplusplus
 }

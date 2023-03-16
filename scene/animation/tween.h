@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  tween.h                                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  tween.h                                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef TWEEN_H
 #define TWEEN_H
@@ -42,13 +42,14 @@ class Tweener : public RefCounted {
 public:
 	virtual void set_tween(Ref<Tween> p_tween);
 	virtual void start() = 0;
-	virtual bool step(float &r_delta) = 0;
+	virtual bool step(double &r_delta) = 0;
 	void clear_tween();
 
 protected:
 	static void _bind_methods();
+
 	Ref<Tween> tween;
-	float elapsed_time = 0;
+	double elapsed_time = 0;
 	bool finished = false;
 };
 
@@ -59,6 +60,8 @@ class MethodTweener;
 
 class Tween : public RefCounted {
 	GDCLASS(Tween, RefCounted);
+
+	friend class PropertyTweener;
 
 public:
 	enum TweenProcessMode {
@@ -103,7 +106,7 @@ private:
 	ObjectID bound_node;
 
 	Vector<List<Ref<Tweener>>> tweeners;
-	float total_time = 0;
+	double total_time = 0;
 	int current_step = -1;
 	int loops = 1;
 	int loops_done = 0;
@@ -123,19 +126,23 @@ private:
 	typedef real_t (*interpolater)(real_t t, real_t b, real_t c, real_t d);
 	static interpolater interpolaters[TRANS_MAX][EASE_MAX];
 
-	void start_tweeners();
+	void _start_tweeners();
+	void _stop_internal(bool p_reset);
+	bool _validate_type_match(const Variant &p_from, Variant &r_to);
 
 protected:
 	static void _bind_methods();
 
 public:
-	Ref<PropertyTweener> tween_property(Object *p_target, NodePath p_property, Variant p_to, float p_duration);
-	Ref<IntervalTweener> tween_interval(float p_time);
+	virtual String to_string() override;
+
+	Ref<PropertyTweener> tween_property(Object *p_target, NodePath p_property, Variant p_to, double p_duration);
+	Ref<IntervalTweener> tween_interval(double p_time);
 	Ref<CallbackTweener> tween_callback(Callable p_callback);
-	Ref<MethodTweener> tween_method(Callable p_callback, Variant p_from, Variant p_to, float p_duration);
+	Ref<MethodTweener> tween_method(Callable p_callback, Variant p_from, Variant p_to, double p_duration);
 	void append(Ref<Tweener> p_tweener);
 
-	bool custom_step(float p_delta);
+	bool custom_step(double p_delta);
 	void stop();
 	void pause();
 	void play();
@@ -163,12 +170,12 @@ public:
 	Ref<Tween> chain();
 
 	static real_t run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t t, real_t b, real_t c, real_t d);
-	static Variant interpolate_variant(Variant p_initial_val, Variant p_delta_val, float p_time, float p_duration, Tween::TransitionType p_trans, Tween::EaseType p_ease);
+	static Variant interpolate_variant(Variant p_initial_val, Variant p_delta_val, double p_time, double p_duration, Tween::TransitionType p_trans, Tween::EaseType p_ease);
 
-	bool step(float p_delta);
+	bool step(double p_delta);
 	bool can_process(bool p_tree_paused) const;
 	Node *get_bound_node() const;
-	float get_total_time() const;
+	double get_total_time() const;
 
 	Tween();
 	Tween(bool p_valid);
@@ -188,13 +195,13 @@ public:
 	Ref<PropertyTweener> as_relative();
 	Ref<PropertyTweener> set_trans(Tween::TransitionType p_trans);
 	Ref<PropertyTweener> set_ease(Tween::EaseType p_ease);
-	Ref<PropertyTweener> set_delay(float p_delay);
+	Ref<PropertyTweener> set_delay(double p_delay);
 
 	void set_tween(Ref<Tween> p_tween) override;
 	void start() override;
-	bool step(float &r_delta) override;
+	bool step(double &r_delta) override;
 
-	PropertyTweener(Object *p_target, NodePath p_property, Variant p_to, float p_duration);
+	PropertyTweener(Object *p_target, NodePath p_property, Variant p_to, double p_duration);
 	PropertyTweener();
 
 protected:
@@ -208,11 +215,13 @@ private:
 	Variant final_val;
 	Variant delta_val;
 
-	float duration = 0;
+	Ref<RefCounted> ref_copy; // Makes sure that RefCounted objects are not freed too early.
+
+	double duration = 0;
 	Tween::TransitionType trans_type = Tween::TRANS_MAX; // This is set inside set_tween();
 	Tween::EaseType ease_type = Tween::EASE_MAX;
 
-	float delay = 0;
+	double delay = 0;
 	bool do_continue = true;
 	bool relative = false;
 };
@@ -222,23 +231,23 @@ class IntervalTweener : public Tweener {
 
 public:
 	void start() override;
-	bool step(float &r_delta) override;
+	bool step(double &r_delta) override;
 
-	IntervalTweener(float p_time);
+	IntervalTweener(double p_time);
 	IntervalTweener();
 
 private:
-	float duration = 0;
+	double duration = 0;
 };
 
 class CallbackTweener : public Tweener {
 	GDCLASS(CallbackTweener, Tweener);
 
 public:
-	Ref<CallbackTweener> set_delay(float p_delay);
+	Ref<CallbackTweener> set_delay(double p_delay);
 
 	void start() override;
-	bool step(float &r_delta) override;
+	bool step(double &r_delta) override;
 
 	CallbackTweener(Callable p_callback);
 	CallbackTweener();
@@ -248,7 +257,9 @@ protected:
 
 private:
 	Callable callback;
-	float delay = 0;
+	double delay = 0;
+
+	Ref<RefCounted> ref_copy;
 };
 
 class MethodTweener : public Tweener {
@@ -257,21 +268,21 @@ class MethodTweener : public Tweener {
 public:
 	Ref<MethodTweener> set_trans(Tween::TransitionType p_trans);
 	Ref<MethodTweener> set_ease(Tween::EaseType p_ease);
-	Ref<MethodTweener> set_delay(float p_delay);
+	Ref<MethodTweener> set_delay(double p_delay);
 
 	void set_tween(Ref<Tween> p_tween) override;
 	void start() override;
-	bool step(float &r_delta) override;
+	bool step(double &r_delta) override;
 
-	MethodTweener(Callable p_callback, Variant p_from, Variant p_to, float p_duration);
+	MethodTweener(Callable p_callback, Variant p_from, Variant p_to, double p_duration);
 	MethodTweener();
 
 protected:
 	static void _bind_methods();
 
 private:
-	float duration = 0;
-	float delay = 0;
+	double duration = 0;
+	double delay = 0;
 	Tween::TransitionType trans_type = Tween::TRANS_MAX;
 	Tween::EaseType ease_type = Tween::EASE_MAX;
 
@@ -280,6 +291,8 @@ private:
 	Variant delta_val;
 	Variant final_val;
 	Callable callback;
+
+	Ref<RefCounted> ref_copy;
 };
 
 #endif // TWEEN_H

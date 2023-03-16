@@ -411,7 +411,7 @@ namespace embree
           ReductionTy bounds[MAX_BRANCHING_FACTOR];
           if (current.size() > singleThreadThreshold)
           {
-            /*! parallel_for is faster than spawing sub-tasks */
+            /*! parallel_for is faster than spawning sub-tasks */
             parallel_for(size_t(0), numChildren, [&] (const range<size_t>& r) {
                 for (size_t i=r.begin(); i<r.end(); i++) {
                   bounds[i] = recurse(depth+1,children[i],nullptr,true);

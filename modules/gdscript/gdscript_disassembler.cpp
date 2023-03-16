@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  gdscript_disassembler.cpp                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gdscript_disassembler.cpp                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifdef DEBUG_ENABLED
 
@@ -104,10 +104,9 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 		text += ": ";
 
 		// This makes the compiler complain if some opcode is unchecked in the switch.
-		Opcode code = Opcode(_code_ptr[ip] & INSTR_MASK);
-		int instr_var_args = (_code_ptr[ip] & INSTR_ARGS_MASK) >> INSTR_BITS;
+		Opcode opcode = Opcode(_code_ptr[ip]);
 
-		switch (code) {
+		switch (opcode) {
 			case OPCODE_OPERATOR: {
 				int operation = _code_ptr[ip + 4];
 
@@ -129,28 +128,63 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += DADDR(3);
 				text += " = ";
 				text += DADDR(1);
-				text += " <operator function> ";
+				text += " ";
+				text += operator_names[_code_ptr[ip + 4]];
+				text += " ";
 				text += DADDR(2);
 
 				incr += 5;
 			} break;
-			case OPCODE_EXTENDS_TEST: {
-				text += "is object ";
-				text += DADDR(3);
-				text += " = ";
+			case OPCODE_TYPE_TEST_BUILTIN: {
+				text += "type test ";
 				text += DADDR(1);
-				text += " is ";
+				text += " = ";
 				text += DADDR(2);
+				text += " is ";
+				text += Variant::get_type_name(Variant::Type(_code_ptr[ip + 3]));
 
 				incr += 4;
 			} break;
-			case OPCODE_IS_BUILTIN: {
-				text += "is builtin ";
-				text += DADDR(2);
-				text += " = ";
+			case OPCODE_TYPE_TEST_ARRAY: {
+				text += "type test ";
 				text += DADDR(1);
+				text += " = ";
+				text += DADDR(2);
+				text += " is Array[";
+
+				Ref<Script> script_type = get_constant(_code_ptr[ip + 3] & GDScriptFunction::ADDR_MASK);
+				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + 4];
+				StringName native_type = get_global_name(_code_ptr[ip + 5]);
+
+				if (script_type.is_valid() && script_type->is_valid()) {
+					text += script_type->get_path();
+				} else if (native_type != StringName()) {
+					text += native_type;
+				} else {
+					text += Variant::get_type_name(builtin_type);
+				}
+
+				text += "]";
+
+				incr += 6;
+			} break;
+			case OPCODE_TYPE_TEST_NATIVE: {
+				text += "type test ";
+				text += DADDR(1);
+				text += " = ";
+				text += DADDR(2);
 				text += " is ";
-				text += Variant::get_type_name(Variant::Type(_code_ptr[ip + 3]));
+				text += get_global_name(_code_ptr[ip + 3]);
+
+				incr += 4;
+			} break;
+			case OPCODE_TYPE_TEST_SCRIPT: {
+				text += "type test ";
+				text += DADDR(1);
+				text += " = ";
+				text += DADDR(2);
+				text += " is ";
+				text += DADDR(3);
 
 				incr += 4;
 			} break;
@@ -231,7 +265,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += "set_named validated ";
 				text += DADDR(1);
 				text += "[\"";
-				text += "<unknown name>";
+				text += setter_names[_code_ptr[ip + 3]];
 				text += "\"] = ";
 				text += DADDR(2);
 
@@ -254,7 +288,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += " = ";
 				text += DADDR(1);
 				text += "[\"";
-				text += "<unknown name>";
+				text += getter_names[_code_ptr[ip + 3]];
 				text += "\"]";
 
 				incr += 4;
@@ -316,7 +350,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += " = ";
 				text += DADDR(2);
 
-				incr += 3;
+				incr += 6;
 			} break;
 			case OPCODE_ASSIGN_TYPED_NATIVE: {
 				text += "assign typed native (";
@@ -372,6 +406,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 4;
 			} break;
 			case OPCODE_CONSTRUCT: {
+				int instr_var_args = _code_ptr[++ip];
 				Variant::Type t = Variant::Type(_code_ptr[ip + 3 + instr_var_args]);
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 
@@ -391,13 +426,15 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr = 3 + instr_var_args;
 			} break;
 			case OPCODE_CONSTRUCT_VALIDATED: {
+				int instr_var_args = _code_ptr[++ip];
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 
 				text += "construct validated ";
 				text += DADDR(1 + argc);
 				text += " = ";
 
-				text += "<unknown type>(";
+				text += constructors_names[_code_ptr[ip + 3 + argc]];
+				text += "(";
 				for (int i = 0; i < argc; i++) {
 					if (i > 0) {
 						text += ", ";
@@ -409,6 +446,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr = 3 + instr_var_args;
 			} break;
 			case OPCODE_CONSTRUCT_ARRAY: {
+				int instr_var_args = _code_ptr[++ip];
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 				text += " make_array ";
 				text += DADDR(1 + argc);
@@ -426,9 +464,10 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 3 + argc;
 			} break;
 			case OPCODE_CONSTRUCT_TYPED_ARRAY: {
+				int instr_var_args = _code_ptr[++ip];
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 
-				Ref<Script> script_type = get_constant(_code_ptr[ip + argc + 2]);
+				Ref<Script> script_type = get_constant(_code_ptr[ip + argc + 2] & GDScriptFunction::ADDR_MASK);
 				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + argc + 4];
 				StringName native_type = get_global_name(_code_ptr[ip + argc + 5]);
 
@@ -457,9 +496,10 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				text += "]";
 
-				incr += 3 + argc;
+				incr += 6 + argc;
 			} break;
 			case OPCODE_CONSTRUCT_DICTIONARY: {
+				int instr_var_args = _code_ptr[++ip];
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 				text += "make_dict ";
 				text += DADDR(1 + argc * 2);
@@ -481,8 +521,10 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 			case OPCODE_CALL:
 			case OPCODE_CALL_RETURN:
 			case OPCODE_CALL_ASYNC: {
-				bool ret = (_code_ptr[ip] & INSTR_MASK) == OPCODE_CALL_RETURN;
-				bool async = (_code_ptr[ip] & INSTR_MASK) == OPCODE_CALL_ASYNC;
+				bool ret = (_code_ptr[ip]) == OPCODE_CALL_RETURN;
+				bool async = (_code_ptr[ip]) == OPCODE_CALL_ASYNC;
+
+				int instr_var_args = _code_ptr[++ip];
 
 				if (ret) {
 					text += "call-ret ";
@@ -513,7 +555,8 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 			} break;
 			case OPCODE_CALL_METHOD_BIND:
 			case OPCODE_CALL_METHOD_BIND_RET: {
-				bool ret = (_code_ptr[ip] & INSTR_MASK) == OPCODE_CALL_METHOD_BIND_RET;
+				bool ret = (_code_ptr[ip]) == OPCODE_CALL_METHOD_BIND_RET;
+				int instr_var_args = _code_ptr[++ip];
 
 				if (ret) {
 					text += "call-method_bind-ret ";
@@ -543,6 +586,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr = 5 + argc;
 			} break;
 			case OPCODE_CALL_BUILTIN_STATIC: {
+				int instr_var_args = _code_ptr[++ip];
 				Variant::Type type = (Variant::Type)_code_ptr[ip + 1 + instr_var_args];
 				int argc = _code_ptr[ip + 3 + instr_var_args];
 
@@ -565,6 +609,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 5 + argc;
 			} break;
 			case OPCODE_CALL_NATIVE_STATIC: {
+				int instr_var_args = _code_ptr[++ip];
 				MethodBind *method = _methods_ptr[_code_ptr[ip + 1 + instr_var_args]];
 				int argc = _code_ptr[ip + 2 + instr_var_args];
 
@@ -587,6 +632,8 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 4 + argc;
 			} break;
 			case OPCODE_CALL_PTRCALL_NO_RETURN: {
+				int instr_var_args = _code_ptr[++ip];
+
 				text += "call-ptrcall (no return) ";
 
 				MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]];
@@ -610,6 +657,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 #define DISASSEMBLE_PTRCALL(m_type)                                            \
 	case OPCODE_CALL_PTRCALL_##m_type: {                                       \
+		int instr_var_args = _code_ptr[++ip];                                  \
 		text += "call-ptrcall (return ";                                       \
 		text += #m_type;                                                       \
 		text += ") ";                                                          \
@@ -667,6 +715,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				DISASSEMBLE_PTRCALL(PACKED_COLOR_ARRAY);
 
 			case OPCODE_CALL_BUILTIN_TYPE_VALIDATED: {
+				int instr_var_args = _code_ptr[++ip];
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 
 				text += "call-builtin-method validated ";
@@ -674,7 +723,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += DADDR(2 + argc) + " = ";
 
 				text += DADDR(1) + ".";
-				text += "<unknown method>";
+				text += builtin_methods_names[_code_ptr[ip + 4 + argc]];
 
 				text += "(";
 
@@ -689,6 +738,8 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr = 5 + argc;
 			} break;
 			case OPCODE_CALL_UTILITY: {
+				int instr_var_args = _code_ptr[++ip];
+
 				text += "call-utility ";
 
 				int argc = _code_ptr[ip + 1 + instr_var_args];
@@ -708,12 +759,14 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr = 4 + argc;
 			} break;
 			case OPCODE_CALL_UTILITY_VALIDATED: {
-				text += "call-utility ";
+				int instr_var_args = _code_ptr[++ip];
+
+				text += "call-utility validated ";
 
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 				text += DADDR(1 + argc) + " = ";
 
-				text += "<unknown function>";
+				text += utilities_names[_code_ptr[ip + 3 + argc]];
 				text += "(";
 
 				for (int i = 0; i < argc; i++) {
@@ -727,12 +780,14 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr = 4 + argc;
 			} break;
 			case OPCODE_CALL_GDSCRIPT_UTILITY: {
-				text += "call-gscript-utility ";
+				int instr_var_args = _code_ptr[++ip];
+
+				text += "call-gdscript-utility ";
 
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 				text += DADDR(1 + argc) + " = ";
 
-				text += "<unknown function>";
+				text += gds_utilities_names[_code_ptr[ip + 3 + argc]];
 				text += "(";
 
 				for (int i = 0; i < argc; i++) {
@@ -746,6 +801,8 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr = 4 + argc;
 			} break;
 			case OPCODE_CALL_SELF_BASE: {
+				int instr_var_args = _code_ptr[++ip];
+
 				text += "call-self-base ";
 
 				int argc = _code_ptr[ip + 1 + instr_var_args];
@@ -777,6 +834,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr = 2;
 			} break;
 			case OPCODE_CREATE_LAMBDA: {
+				int instr_var_args = _code_ptr[++ip];
 				int captures_count = _code_ptr[ip + 1 + instr_var_args];
 				GDScriptFunction *lambda = _lambdas_ptr[_code_ptr[ip + 2 + instr_var_args]];
 
@@ -796,6 +854,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr = 3 + captures_count;
 			} break;
 			case OPCODE_CREATE_SELF_LAMBDA: {
+				int instr_var_args = _code_ptr[++ip];
 				int captures_count = _code_ptr[ip + 1 + instr_var_args];
 				GDScriptFunction *lambda = _lambdas_ptr[_code_ptr[ip + 2 + instr_var_args]];
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Transform2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Transform2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		2D transformation (2×3 matrix).
 	</brief_description>
@@ -120,14 +120,20 @@
 			<return type="bool" />
 			<param index="0" name="xform" type="Transform2D" />
 			<description>
-				Returns [code]true[/code] if this transform and [code]transform[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
+				Returns [code]true[/code] if this transform and [param xform] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
+			</description>
+		</method>
+		<method name="is_finite" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this transform is finite, by calling [method @GlobalScope.is_finite] on each component.
 			</description>
 		</method>
 		<method name="looking_at" qualifiers="const">
 			<return type="Transform2D" />
 			<param index="0" name="target" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Returns a copy of the transform rotated such that it's rotation on the X-axis points towards the [param target] position.
+				Returns a copy of the transform rotated such that the rotated X-axis points towards the [param target] position.
 				Operations take place in global space.
 			</description>
 		</method>
@@ -175,28 +181,6 @@
 				This method is an optimized version of multiplying the given transform [code]X[/code]
 				with a corresponding scaling transform [code]S[/code] from the right, i.e., [code]X * S[/code].
 				This can be seen as transforming with respect to the local frame.
-			</description>
-		</method>
-		<method name="set_rotation">
-			<return type="void" />
-			<param index="0" name="rotation" type="float" />
-			<description>
-				Sets the transform's rotation (in radians).
-			</description>
-		</method>
-		<method name="set_scale">
-			<return type="void" />
-			<param index="0" name="scale" type="Vector2" />
-			<description>
-				Sets the transform's scale.
-				[b]Note:[/b] Negative X scales in 2D are not decomposable from the transformation matrix. Due to the way scale is represented with transformation matrices in Godot, negative scales on the X axis will be changed to negative scales on the Y axis and a rotation of 180 degrees when decomposed.
-			</description>
-		</method>
-		<method name="set_skew">
-			<return type="void" />
-			<param index="0" name="skew" type="float" />
-			<description>
-				Sets the transform's skew (in radians).
 			</description>
 		</method>
 		<method name="translated" qualifiers="const">

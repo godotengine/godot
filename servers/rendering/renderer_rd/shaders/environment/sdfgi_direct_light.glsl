@@ -24,7 +24,7 @@ struct ProcessVoxel {
 	uint albedo; // rgb bits 0-15 albedo, bits 16-21 are normal bits (set if geometry exists toward that side), extra 11 bits for neighbors.
 	uint light; // rgbe8985 encoded total saved light, extra 2 bits for neighbors.
 	uint light_aniso; // 55555 light anisotropy, extra 2 bits for neighbors.
-	//total neighbours: 26
+	//total neighbors: 26
 };
 
 #ifdef MODE_PROCESS_STATIC
@@ -443,10 +443,10 @@ void main() {
 	imageStore(dst_aniso1, positioni, vec4(aniso1, 0.0, 0.0));
 	imageStore(dst_light, positioni, uvec4(light_total_rgbe));
 
-	//also fill neighbours, so light interpolation during the indirect pass works
+	//also fill neighbors, so light interpolation during the indirect pass works
 
-	//recover the neighbour list from the leftover bits
-	uint neighbours = (voxel_albedo >> 21) | ((voxel_position >> 21) << 11) | ((process_voxels.data[voxel_index].light >> 30) << 22) | ((process_voxels.data[voxel_index].light_aniso >> 30) << 24);
+	//recover the neighbor list from the leftover bits
+	uint neighbors = (voxel_albedo >> 21) | ((voxel_position >> 21) << 11) | ((process_voxels.data[voxel_index].light >> 30) << 22) | ((process_voxels.data[voxel_index].light_aniso >> 30) << 24);
 
 	const uint max_neighbours = 26;
 	const ivec3 neighbour_positions[max_neighbours] = ivec3[](
@@ -478,7 +478,7 @@ void main() {
 			ivec3(1, 1, 1));
 
 	for (uint i = 0; i < max_neighbours; i++) {
-		if (bool(neighbours & (1 << i))) {
+		if (bool(neighbors & (1 << i))) {
 			ivec3 neighbour_pos = positioni + neighbour_positions[i];
 			imageStore(dst_light, neighbour_pos, uvec4(light_total_rgbe));
 			imageStore(dst_aniso0, neighbour_pos, aniso0);

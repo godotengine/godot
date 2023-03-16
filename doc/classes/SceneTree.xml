@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SceneTree" inherits="MainLoop" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="SceneTree" inherits="MainLoop" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Manages the game loop via a hierarchy of nodes.
 	</brief_description>
@@ -42,15 +42,15 @@
 			<description>
 				Changes the running scene to the one at the given [param path], after loading it into a [PackedScene] and creating a new instance.
 				Returns [constant OK] on success, [constant ERR_CANT_OPEN] if the [param path] cannot be loaded into a [PackedScene], or [constant ERR_CANT_CREATE] if that scene cannot be instantiated.
-				[b]Note:[/b] The scene change is deferred, which means that the new scene node is added on the next idle frame. You won't be able to access it immediately after the [method change_scene_to_file] call.
+				[b]Note:[/b] The scene change is deferred, which means that the new scene node is added on the next idle frame. This ensures that both scenes are never loaded at the same time, which can exhaust system resources if the scenes are too large or if running in a memory constrained environment. As such, you won't be able to access the loaded scene immediately after the [method change_scene_to_file] call.
 			</description>
 		</method>
 		<method name="change_scene_to_packed">
 			<return type="int" enum="Error" />
 			<param index="0" name="packed_scene" type="PackedScene" />
 			<description>
-				Changes the running scene to a new instance of the given [PackedScene].
-				Returns [constant OK] on success or [constant ERR_CANT_CREATE] if the scene cannot be instantiated.
+				Changes the running scene to a new instance of the given [PackedScene] (which must be valid).
+				Returns [constant OK] on success, [constant ERR_CANT_CREATE] if the scene cannot be instantiated, or [constant ERR_INVALID_PARAMETER] if the scene is invalid.
 				[b]Note:[/b] The scene change is deferred, which means that the new scene node is added on the next idle frame. You won't be able to access it immediately after the [method change_scene_to_packed] call.
 			</description>
 		</method>
@@ -74,10 +74,10 @@
 				    print("end")
 				[/gdscript]
 				[csharp]
-				public async void SomeFunction()
+				public async Task SomeFunction()
 				{
 				    GD.Print("start");
-				    await ToSignal(GetTree().CreateTimer(1.0f), "timeout");
+				    await ToSignal(GetTree().CreateTimer(1.0f), SceneTreeTimer.SignalName.Timeout);
 				    GD.Print("end");
 				}
 				[/csharp]
@@ -88,7 +88,7 @@
 		<method name="create_tween">
 			<return type="Tween" />
 			<description>
-				Creates and returns a new [Tween].
+				Creates and returns a new [Tween]. The Tween will start automatically on the next process frame or physics frame (depending on [enum Tween.TweenProcessMode]).
 			</description>
 		</method>
 		<method name="get_first_node_in_group">
@@ -209,10 +209,16 @@
 				Sets a custom [MultiplayerAPI] with the given [param root_path] (controlling also the relative subpaths), or override the default one if [param root_path] is empty.
 			</description>
 		</method>
+		<method name="unload_current_scene">
+			<return type="void" />
+			<description>
+				If a current scene is loaded, calling this method will unload it.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="auto_accept_quit" type="bool" setter="set_auto_accept_quit" getter="is_auto_accept_quit" default="true">
-			If [code]true[/code], the application automatically accepts quitting.
+			If [code]true[/code], the application automatically accepts quitting requests.
 			For mobile platforms, see [member quit_on_go_back].
 		</member>
 		<member name="current_scene" type="Node" setter="set_current_scene" getter="get_current_scene">
@@ -243,7 +249,7 @@
 			- [method Node._process], [method Node._physics_process] and [method Node._input] will not be called anymore in nodes.
 		</member>
 		<member name="quit_on_go_back" type="bool" setter="set_quit_on_go_back" getter="is_quit_on_go_back" default="true">
-			If [code]true[/code], the application quits automatically on going back (e.g. on Android).
+			If [code]true[/code], the application quits automatically when navigating back (e.g. using the system "Back" button on Android).
 			To handle 'Go Back' button when this option is disabled, use [constant DisplayServer.WINDOW_EVENT_GO_BACK_REQUEST].
 		</member>
 		<member name="root" type="Window" setter="" getter="get_root">
@@ -308,6 +314,7 @@
 		</constant>
 		<constant name="GROUP_CALL_UNIQUE" value="4" enum="GroupCallFlags">
 			Call a group only once even if the call is executed many times.
+			[b]Note:[/b] Arguments are not taken into account when deciding whether the call is unique or not. Therefore when the same method is called with different arguments, only the first call will be performed.
 		</constant>
 	</constants>
 </class>

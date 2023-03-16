@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  editor_file_dialog.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_file_dialog.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_file_dialog.h"
 
@@ -34,7 +34,6 @@
 #include "core/io/file_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/string/print_string.h"
 #include "dependency_editor.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
@@ -44,10 +43,14 @@
 #include "scene/gui/center_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/separator.h"
+#include "scene/gui/split_container.h"
+#include "scene/gui/texture_rect.h"
 #include "servers/display_server.h"
 
 EditorFileDialog::GetIconFunc EditorFileDialog::get_icon_func = nullptr;
-EditorFileDialog::GetIconFunc EditorFileDialog::get_large_icon_func = nullptr;
+EditorFileDialog::GetIconFunc EditorFileDialog::get_thumbnail_func = nullptr;
 
 EditorFileDialog::RegisterFunc EditorFileDialog::register_func = nullptr;
 EditorFileDialog::RegisterFunc EditorFileDialog::unregister_func = nullptr;
@@ -131,11 +134,11 @@ void EditorFileDialog::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			bool is_showing_hidden = EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files");
+			bool is_showing_hidden = EDITOR_GET("filesystem/file_dialog/show_hidden_files");
 			if (show_hidden_files != is_showing_hidden) {
 				set_show_hidden_files(is_showing_hidden);
 			}
-			set_display_mode((DisplayMode)EditorSettings::get_singleton()->get("filesystem/file_dialog/display_mode").operator int());
+			set_display_mode((DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
 
 			// DO NOT CALL UPDATE FILE LIST HERE, ALL HUNDREDS OF HIDDEN DIALOGS WILL RESPOND, CALL INVALIDATE INSTEAD
 			invalidate();
@@ -469,6 +472,14 @@ void EditorFileDialog::_action_pressed() {
 			}
 		}
 
+		// First check we're not having an empty name.
+		String file_name = file_text.strip_edges().get_file();
+		if (file_name.is_empty()) {
+			error_dialog->set_text(TTR("Cannot save file with an empty filename."));
+			error_dialog->popup_centered(Size2(250, 80) * EDSCALE);
+			return;
+		}
+
 		// Add first extension of filter if no valid extension is found.
 		if (!valid) {
 			int idx = filter->get_selected();
@@ -477,9 +488,15 @@ void EditorFileDialog::_action_pressed() {
 			f += "." + ext;
 		}
 
+		if (file_name.begins_with(".")) { // Could still happen if typed manually.
+			error_dialog->set_text(TTR("Cannot save file with a name starting with a dot."));
+			error_dialog->popup_centered(Size2(250, 80) * EDSCALE);
+			return;
+		}
+
 		if (dir_access->file_exists(f) && !disable_overwrite_warning) {
-			confirm_save->set_text(TTR("File exists, overwrite?"));
-			confirm_save->popup_centered(Size2(200, 80));
+			confirm_save->set_text(vformat(TTR("File \"%s\" already exists.\nDo you want to overwrite it?"), f));
+			confirm_save->popup_centered(Size2(250, 80) * EDSCALE);
 		} else {
 			_save_to_recent();
 			hide();
@@ -617,12 +634,16 @@ void EditorFileDialog::_item_list_item_rmb_clicked(int p_item, const Vector2 &p_
 	if (allow_delete) {
 		item_menu->add_icon_item(theme_cache.action_delete, TTR("Delete"), ITEM_MENU_DELETE, Key::KEY_DELETE);
 	}
+
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+	// Opening the system file manager is not supported on the Android and web editors.
 	if (single_item_selected) {
 		item_menu->add_separator();
 		Dictionary item_meta = item_list->get_item_metadata(p_item);
 		String item_text = item_meta["dir"] ? TTR("Open in File Manager") : TTR("Show in File Manager");
 		item_menu->add_icon_item(theme_cache.filesystem, item_text, ITEM_MENU_SHOW_IN_EXPLORER);
 	}
+#endif
 
 	if (item_menu->get_item_count() > 0) {
 		item_menu->set_position(item_list->get_screen_position() + p_pos);
@@ -652,8 +673,11 @@ void EditorFileDialog::_item_list_empty_clicked(const Vector2 &p_pos, MouseButto
 		item_menu->add_icon_item(theme_cache.folder, TTR("New Folder..."), ITEM_MENU_NEW_FOLDER, KeyModifierMask::CMD_OR_CTRL | Key::N);
 	}
 	item_menu->add_icon_item(theme_cache.reload, TTR("Refresh"), ITEM_MENU_REFRESH, Key::F5);
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+	// Opening the system file manager is not supported on the Android and web editors.
 	item_menu->add_separator();
 	item_menu->add_icon_item(theme_cache.filesystem, TTR("Open in File Manager"), ITEM_MENU_SHOW_IN_EXPLORER);
+#endif
 
 	item_menu->set_position(item_list->get_screen_position() + p_pos);
 	item_menu->reset_size();
@@ -740,7 +764,7 @@ void EditorFileDialog::update_file_name() {
 
 // DO NOT USE THIS FUNCTION UNLESS NEEDED, CALL INVALIDATE() INSTEAD.
 void EditorFileDialog::update_file_list() {
-	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
+	int thumbnail_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 	thumbnail_size *= EDSCALE;
 	Ref<Texture2D> folder_thumbnail;
 	Ref<Texture2D> file_thumbnail;
@@ -878,7 +902,15 @@ void EditorFileDialog::update_file_list() {
 			if (get_icon_func) {
 				Ref<Texture2D> icon = get_icon_func(cdir.path_join(files.front()->get()));
 				if (display_mode == DISPLAY_THUMBNAILS) {
-					item_list->set_item_icon(-1, file_thumbnail);
+					Ref<Texture2D> thumbnail;
+					if (get_thumbnail_func) {
+						thumbnail = get_thumbnail_func(cdir.path_join(files.front()->get()));
+					}
+					if (thumbnail.is_null()) {
+						thumbnail = file_thumbnail;
+					}
+
+					item_list->set_item_icon(-1, thumbnail);
 					item_list->set_item_tag_icon(-1, icon);
 				} else {
 					item_list->set_item_icon(-1, icon);
@@ -983,6 +1015,19 @@ void EditorFileDialog::add_filter(const String &p_filter, const String &p_descri
 	invalidate();
 }
 
+void EditorFileDialog::set_filters(const Vector<String> &p_filters) {
+	if (filters == p_filters) {
+		return;
+	}
+	filters = p_filters;
+	update_filters();
+	invalidate();
+}
+
+Vector<String> EditorFileDialog::get_filters() const {
+	return filters;
+}
+
 String EditorFileDialog::get_current_dir() const {
 	return dir_access->get_current_dir();
 }
@@ -1023,10 +1068,10 @@ void EditorFileDialog::set_current_path(const String &p_path) {
 	if (pos == -1) {
 		set_current_file(p_path);
 	} else {
-		String dir = p_path.substr(0, pos);
-		String file = p_path.substr(pos + 1, p_path.length());
-		set_current_dir(dir);
-		set_current_file(file);
+		String path_dir = p_path.substr(0, pos);
+		String path_file = p_path.substr(pos + 1, p_path.length());
+		set_current_dir(path_dir);
+		set_current_file(path_file);
 	}
 }
 
@@ -1497,7 +1542,7 @@ void EditorFileDialog::_go_back() {
 }
 
 void EditorFileDialog::_go_forward() {
-	if (local_history_pos == local_history.size() - 1) {
+	if (local_history_pos >= local_history.size() - 1) {
 		return;
 	}
 
@@ -1538,6 +1583,8 @@ void EditorFileDialog::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("clear_filters"), &EditorFileDialog::clear_filters);
 	ClassDB::bind_method(D_METHOD("add_filter", "filter", "description"), &EditorFileDialog::add_filter, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("set_filters", "filters"), &EditorFileDialog::set_filters);
+	ClassDB::bind_method(D_METHOD("get_filters"), &EditorFileDialog::get_filters);
 	ClassDB::bind_method(D_METHOD("get_current_dir"), &EditorFileDialog::get_current_dir);
 	ClassDB::bind_method(D_METHOD("get_current_file"), &EditorFileDialog::get_current_file);
 	ClassDB::bind_method(D_METHOD("get_current_path"), &EditorFileDialog::get_current_path);
@@ -1547,6 +1594,7 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_file_mode", "mode"), &EditorFileDialog::set_file_mode);
 	ClassDB::bind_method(D_METHOD("get_file_mode"), &EditorFileDialog::get_file_mode);
 	ClassDB::bind_method(D_METHOD("get_vbox"), &EditorFileDialog::get_vbox);
+	ClassDB::bind_method(D_METHOD("get_line_edit"), &EditorFileDialog::get_line_edit);
 	ClassDB::bind_method(D_METHOD("set_access", "access"), &EditorFileDialog::set_access);
 	ClassDB::bind_method(D_METHOD("get_access"), &EditorFileDialog::get_access);
 	ClassDB::bind_method(D_METHOD("set_show_hidden_files", "show"), &EditorFileDialog::set_show_hidden_files);
@@ -1573,6 +1621,7 @@ void EditorFileDialog::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_dir", PROPERTY_HINT_DIR, "", PROPERTY_USAGE_NONE), "set_current_dir", "get_current_dir");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_file", PROPERTY_HINT_FILE, "*", PROPERTY_USAGE_NONE), "set_current_file", "get_current_file");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_current_path", "get_current_path");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "filters"), "set_filters", "get_filters");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_hidden_files"), "set_show_hidden_files", "is_showing_hidden_files");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_overwrite_warning"), "set_disable_overwrite_warning", "is_overwrite_warning_disabled");
 
@@ -1614,26 +1663,26 @@ void EditorFileDialog::set_default_display_mode(DisplayMode p_mode) {
 }
 
 void EditorFileDialog::_save_to_recent() {
-	String dir = get_current_dir();
-	Vector<String> recent = EditorSettings::get_singleton()->get_recent_dirs();
+	String cur_dir = get_current_dir();
+	Vector<String> recent_new = EditorSettings::get_singleton()->get_recent_dirs();
 
 	const int max = 20;
 	int count = 0;
-	bool res = dir.begins_with("res://");
+	bool res = cur_dir.begins_with("res://");
 
-	for (int i = 0; i < recent.size(); i++) {
-		bool cres = recent[i].begins_with("res://");
-		if (recent[i] == dir || (res == cres && count > max)) {
-			recent.remove_at(i);
+	for (int i = 0; i < recent_new.size(); i++) {
+		bool cres = recent_new[i].begins_with("res://");
+		if (recent_new[i] == cur_dir || (res == cres && count > max)) {
+			recent_new.remove_at(i);
 			i--;
 		} else {
 			count++;
 		}
 	}
 
-	recent.insert(0, dir);
+	recent_new.insert(0, cur_dir);
 
-	EditorSettings::get_singleton()->set_recent_dirs(recent);
+	EditorSettings::get_singleton()->set_recent_dirs(recent_new);
 }
 
 void EditorFileDialog::set_disable_overwrite_warning(bool p_disable) {
@@ -1672,6 +1721,11 @@ EditorFileDialog::EditorFileDialog() {
 	ED_SHORTCUT("file_dialog/focus_path", TTR("Focus Path"), KeyModifierMask::CMD_OR_CTRL | Key::D);
 	ED_SHORTCUT("file_dialog/move_favorite_up", TTR("Move Favorite Up"), KeyModifierMask::CMD_OR_CTRL | Key::UP);
 	ED_SHORTCUT("file_dialog/move_favorite_down", TTR("Move Favorite Down"), KeyModifierMask::CMD_OR_CTRL | Key::DOWN);
+
+	if (EditorSettings::get_singleton()) {
+		ED_SHORTCUT_OVERRIDE("file_dialog/toggle_favorite", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::F);
+		ED_SHORTCUT_OVERRIDE("file_dialog/toggle_mode", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::V);
+	}
 
 	HBoxContainer *pathhb = memnew(HBoxContainer);
 

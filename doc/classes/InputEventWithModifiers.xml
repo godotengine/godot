@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventWithModifiers" inherits="InputEventFromWindow" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="InputEventWithModifiers" inherits="InputEventFromWindow" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for keys events with modifiers.
 	</brief_description>
@@ -10,6 +10,12 @@
 		<link title="InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<methods>
+		<method name="get_modifiers_mask" qualifiers="const">
+			<return type="int" enum="KeyModifierMask" />
+			<description>
+				Returns the keycode combination of modifier keys.
+			</description>
+		</method>
 		<method name="is_command_or_control_pressed" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -23,7 +29,7 @@
 			State of the [kbd]Alt[/kbd] modifier.
 		</member>
 		<member name="command_or_control_autoremap" type="bool" setter="set_command_or_control_autoremap" getter="is_command_or_control_autoremap" default="false">
-			Automaticaly use [kbd]Meta[/kbd] ([kbd]Command[/kbd]) on macOS and [kbd]Ctrl[/kbd] on other platforms. If [code]true[/code], [member ctrl_pressed] and [member meta_pressed] cannot be set.
+			Automatically use [kbd]Meta[/kbd] ([kbd]Command[/kbd]) on macOS and [kbd]Ctrl[/kbd] on other platforms. If [code]true[/code], [member ctrl_pressed] and [member meta_pressed] cannot be set.
 		</member>
 		<member name="ctrl_pressed" type="bool" setter="set_ctrl_pressed" getter="is_ctrl_pressed" default="false">
 			State of the [kbd]Ctrl[/kbd] modifier.

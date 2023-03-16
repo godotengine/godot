@@ -4,7 +4,7 @@ namespace Godot.Bridge;
 
 #nullable enable
 
-public struct MethodInfo
+public readonly struct MethodInfo
 {
     public StringName Name { get; init; }
     public PropertyInfo ReturnVal { get; init; }

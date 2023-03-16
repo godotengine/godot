@@ -91,9 +91,11 @@ hb_ot_shape_planner_t::hb_ot_shape_planner_t (hb_face_t                     *fac
   script_zero_marks = shaper->zero_width_marks != HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE;
   script_fallback_mark_positioning = shaper->fallback_position;
 
+#ifndef HB_NO_AAT_SHAPE
   /* https://github.com/harfbuzz/harfbuzz/issues/1528 */
   if (apply_morx && shaper != &_hb_ot_shaper_default)
     shaper = &_hb_ot_shaper_dumber;
+#endif
 }
 
 void
@@ -527,18 +529,20 @@ hb_set_unicode_props (hb_buffer_t *buffer)
     }
 #endif
     /* Or part of the Other_Grapheme_Extend that is not marks.
-     * As of Unicode 11 that is just:
+     * As of Unicode 15 that is just:
      *
      * 200C          ; Other_Grapheme_Extend # Cf       ZERO WIDTH NON-JOINER
      * FF9E..FF9F    ; Other_Grapheme_Extend # Lm   [2] HALFWIDTH KATAKANA VOICED SOUND MARK..HALFWIDTH KATAKANA SEMI-VOICED SOUND MARK
      * E0020..E007F  ; Other_Grapheme_Extend # Cf  [96] TAG SPACE..CANCEL TAG
      *
      * ZWNJ is special, we don't want to merge it as there's no need, and keeping
-     * it separate results in more granular clusters.  Ignore Katakana for now.
+     * it separate results in more granular clusters.
      * Tags are used for Emoji sub-region flag sequences:
      * https://github.com/harfbuzz/harfbuzz/issues/1556
+     * Katakana ones were requested:
+     * https://github.com/harfbuzz/harfbuzz/issues/3844
      */
-    else if (unlikely (hb_in_range<hb_codepoint_t> (info[i].codepoint, 0xE0020u, 0xE007Fu)))
+    else if (unlikely (hb_in_ranges<hb_codepoint_t> (info[i].codepoint, 0xFF9Eu, 0xFF9Fu, 0xE0020u, 0xE007Fu)))
       _hb_glyph_info_set_continuation (&info[i]);
   }
 }
@@ -862,7 +866,7 @@ hb_ot_hide_default_ignorables (hb_buffer_t *buffer,
     }
   }
   else
-    hb_ot_layout_delete_glyphs_inplace (buffer, _hb_glyph_info_is_default_ignorable);
+    buffer->delete_glyphs_inplace (_hb_glyph_info_is_default_ignorable);
 }
 
 

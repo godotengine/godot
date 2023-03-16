@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  test_text_server.h                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  test_text_server.h                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef TEST_TEXT_SERVER_H
 #define TEST_TEXT_SERVER_H
@@ -68,8 +68,10 @@ TEST_SUITE("[TextServer]") {
 
 				RID font1 = ts->create_font();
 				ts->font_set_data_ptr(font1, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
+				ts->font_set_allow_system_fallback(font1, false);
 				RID font2 = ts->create_font();
 				ts->font_set_data_ptr(font2, _font_NotoSansThaiUI_Regular, _font_NotoSansThaiUI_Regular_size);
+				ts->font_set_allow_system_fallback(font2, false);
 
 				Array font;
 				font.push_back(font1);
@@ -591,12 +593,18 @@ TEST_SUITE("[TextServer]") {
 					String text1 = U"linguistically similar and effectively form";
 					//                           14^     22^ 26^         38^
 					PackedInt32Array breaks = ts->string_get_word_breaks(text1, "en");
-					CHECK(breaks.size() == 4);
-					if (breaks.size() == 4) {
-						CHECK(breaks[0] == 14);
-						CHECK(breaks[1] == 22);
-						CHECK(breaks[2] == 26);
-						CHECK(breaks[3] == 38);
+					CHECK(breaks.size() == 10);
+					if (breaks.size() == 10) {
+						CHECK(breaks[0] == 0);
+						CHECK(breaks[1] == 14);
+						CHECK(breaks[2] == 15);
+						CHECK(breaks[3] == 22);
+						CHECK(breaks[4] == 23);
+						CHECK(breaks[5] == 26);
+						CHECK(breaks[6] == 27);
+						CHECK(breaks[7] == 38);
+						CHECK(breaks[8] == 39);
+						CHECK(breaks[9] == 43);
 					}
 				}
 
@@ -606,16 +614,26 @@ TEST_SUITE("[TextServer]") {
 					//                 3^   7^    13^ 16^  20^   25^ 29^ 32^
 
 					PackedInt32Array breaks = ts->string_get_word_breaks(text2, "th");
-					CHECK(breaks.size() == 8);
-					if (breaks.size() == 8) {
-						CHECK(breaks[0] == 3);
-						CHECK(breaks[1] == 7);
-						CHECK(breaks[2] == 13);
-						CHECK(breaks[3] == 16);
-						CHECK(breaks[4] == 20);
-						CHECK(breaks[5] == 25);
-						CHECK(breaks[6] == 29);
-						CHECK(breaks[7] == 32);
+					CHECK(breaks.size() == 18);
+					if (breaks.size() == 18) {
+						CHECK(breaks[0] == 0);
+						CHECK(breaks[1] == 4);
+						CHECK(breaks[2] == 4);
+						CHECK(breaks[3] == 8);
+						CHECK(breaks[4] == 8);
+						CHECK(breaks[5] == 14);
+						CHECK(breaks[6] == 14);
+						CHECK(breaks[7] == 17);
+						CHECK(breaks[8] == 17);
+						CHECK(breaks[9] == 21);
+						CHECK(breaks[10] == 21);
+						CHECK(breaks[11] == 26);
+						CHECK(breaks[12] == 26);
+						CHECK(breaks[13] == 30);
+						CHECK(breaks[14] == 30);
+						CHECK(breaks[15] == 33);
+						CHECK(breaks[16] == 33);
+						CHECK(breaks[17] == 42);
 					}
 				}
 			}

@@ -1,40 +1,40 @@
-/*************************************************************************/
-/*  dom_keys.inc                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  dom_keys.inc                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "core/os/keyboard.h"
 
 // See https://w3c.github.io/uievents-code/#code-value-tables
 Key dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], bool p_physical) {
-#define DOM2GODOT(p_str, p_godot_code)                                         \
-	if (memcmp((const void *)p_str, (void *)p_code, strlen(p_str) + 1) == 0) { \
-		return Key::p_godot_code;                                              \
+#define DOM2GODOT(p_str, p_godot_code)                                                                \
+	if (memcmp((const void *)p_str, (void *)(p_physical ? p_key : p_code), strlen(p_str) + 1) == 0) { \
+		return Key::p_godot_code;                                                                     \
 	}
 
 	// Numpad section.
@@ -51,6 +51,7 @@ Key dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], b
 	DOM2GODOT("Numpad9", KP_9);
 	DOM2GODOT("NumpadAdd", KP_ADD);
 	DOM2GODOT("NumpadBackspace", BACKSPACE);
+	DOM2GODOT("Clear", CLEAR); // NumLock on macOS.
 	DOM2GODOT("NumpadClear", CLEAR);
 	DOM2GODOT("NumpadClearEntry", CLEAR);
 	//DOM2GODOT("NumpadComma", UNKNOWN);
@@ -69,35 +70,6 @@ Key dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], b
 	DOM2GODOT("NumpadParenRight", PARENRIGHT);
 	DOM2GODOT("NumpadStar", KP_MULTIPLY); // or ASTERISK ?
 	DOM2GODOT("NumpadSubtract", KP_SUBTRACT);
-
-	// Printable ASCII.
-	if (!p_physical) {
-		uint8_t b0 = (uint8_t)p_key[0];
-		uint8_t b1 = (uint8_t)p_key[1];
-		uint8_t b2 = (uint8_t)p_key[2];
-		if (b1 == 0 && b0 > 0x1F && b0 < 0x7F) { // ASCII.
-			if (b0 > 0x60 && b0 < 0x7B) { // Lowercase ASCII.
-				b0 -= 32;
-			}
-			return (Key)b0;
-		}
-
-#define _U_2BYTES_MASK 0xE0
-#define _U_2BYTES 0xC0
-		// Latin-1 codes.
-		if (b2 == 0 && (b0 & _U_2BYTES_MASK) == _U_2BYTES) { // 2-bytes utf8, only known latin.
-			uint32_t key = ((b0 & ~_U_2BYTES_MASK) << 6) | (b1 & 0x3F);
-			if (key >= 0xA0 && key <= 0xDF) {
-				return (Key)key;
-			}
-			if (key >= 0xE0 && key <= 0xFF) { // Lowercase known latin.
-				key -= 0x20;
-				return (Key)key;
-			}
-		}
-#undef _U_2BYTES_MASK
-#undef _U_2BYTES
-	}
 
 	// Alphanumeric section.
 	DOM2GODOT("Backquote", QUOTELEFT);
@@ -154,16 +126,22 @@ Key dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], b
 	DOM2GODOT("Slash", SLASH);
 
 	// Functional keys in the Alphanumeric section.
+	DOM2GODOT("Alt", ALT);
 	DOM2GODOT("AltLeft", ALT);
 	DOM2GODOT("AltRight", ALT);
 	DOM2GODOT("Backspace", BACKSPACE);
 	DOM2GODOT("CapsLock", CAPSLOCK);
 	DOM2GODOT("ContextMenu", MENU);
+	DOM2GODOT("Control", CTRL);
 	DOM2GODOT("ControlLeft", CTRL);
 	DOM2GODOT("ControlRight", CTRL);
 	DOM2GODOT("Enter", ENTER);
-	DOM2GODOT("MetaLeft", SUPER_L);
-	DOM2GODOT("MetaRight", SUPER_R);
+	DOM2GODOT("Meta", META);
+	DOM2GODOT("MetaLeft", META);
+	DOM2GODOT("MetaRight", META);
+	DOM2GODOT("OSLeft", META); // Command on macOS.
+	DOM2GODOT("OSRight", META); // Command on macOS.
+	DOM2GODOT("Shift", SHIFT);
 	DOM2GODOT("ShiftLeft", SHIFT);
 	DOM2GODOT("ShiftRight", SHIFT);
 	DOM2GODOT("Space", SPACE);
@@ -227,6 +205,21 @@ Key dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], b
 	DOM2GODOT("AudioVolumeMute", VOLUMEMUTE);
 	DOM2GODOT("AudioVolumeUp", VOLUMEUP);
 	//DOM2GODOT("WakeUp", UNKNOWN);
-	return Key::UNKNOWN;
+
+	// Printable ASCII.
+	uint8_t b0 = (uint8_t)p_key[0];
+	uint8_t b1 = (uint8_t)p_key[1];
+	if (b0 >= 0x20 && b0 < 0x7F) { // ASCII.
+		if (b0 > 0x60 && b0 < 0x7B) { // Lowercase ASCII.
+			b0 -= 32;
+		}
+		return (Key)b0;
+	} else if (b0 == 0xC2 && b1 == 0xA5) {
+		return Key::YEN;
+	} else if (b0 == 0xC2 && b1 == 0xA7) {
+		return Key::SECTION;
+	}
+
+	return Key::NONE;
 #undef DOM2GODOT
 }

@@ -1,64 +1,66 @@
-/*************************************************************************/
-/*  editor_plugin.h                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_plugin.h                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef EDITOR_PLUGIN_H
 #define EDITOR_PLUGIN_H
 
 #include "core/io/config_file.h"
-#include "core/object/undo_redo.h"
-#include "editor/debugger/editor_debugger_node.h"
-#include "editor/editor_inspector.h"
-#include "editor/editor_translation_parser.h"
-#include "editor/import/editor_import_plugin.h"
-#include "editor/import/resource_importer_scene.h"
-#include "editor/script_create_dialog.h"
 #include "scene/3d/camera_3d.h"
-#include "scene/main/node.h"
-#include "scene/resources/texture.h"
+#include "scene/gui/control.h"
 
 class Node3D;
-class Camera3D;
+class Button;
+class PopupMenu;
 class EditorCommandPalette;
-class EditorSelection;
+class EditorDebuggerPlugin;
 class EditorExport;
-class EditorSettings;
-class EditorImportPlugin;
 class EditorExportPlugin;
-class EditorNode3DGizmoPlugin;
-class EditorResourcePreview;
-class EditorUndoRedoManager;
 class EditorFileSystem;
-class EditorToolAddons;
+class EditorImportPlugin;
+class EditorInspector;
+class EditorInspectorPlugin;
+class EditorNode3DGizmoPlugin;
 class EditorPaths;
+class EditorResourceConversionPlugin;
+class EditorResourcePreview;
+class EditorSceneFormatImporter;
+class EditorScenePostImportPlugin;
+class EditorSelection;
+class EditorSettings;
+class EditorToolAddons;
+class EditorTranslationParserPlugin;
+class EditorUndoRedoManager;
 class FileSystemDock;
+class ScriptCreateDialog;
 class ScriptEditor;
+class VBoxContainer;
 
 class EditorInterface : public Node {
 	GDCLASS(EditorInterface, Node);
@@ -93,8 +95,9 @@ public:
 	EditorCommandPalette *get_command_palette() const;
 
 	void select_file(const String &p_file);
-	String get_selected_path() const;
+	Vector<String> get_selected_paths() const;
 	String get_current_path() const;
+	String get_current_directory() const;
 
 	void inspect_object(Object *p_obj, const String &p_for_property = String(), bool p_inspector_only = false);
 
@@ -112,6 +115,9 @@ public:
 
 	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
 	bool is_plugin_enabled(const String &p_plugin) const;
+
+	void set_movie_maker_enabled(bool p_enabled);
+	bool is_movie_maker_enabled() const;
 
 	EditorInspector *get_inspector() const;
 
@@ -131,7 +137,6 @@ public:
 class EditorPlugin : public Node {
 	GDCLASS(EditorPlugin, Node);
 	friend class EditorData;
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	bool input_event_forwarding_always_enabled = false;
 	bool force_draw_over_forwarding_enabled = false;
@@ -144,7 +149,7 @@ protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
-	Ref<EditorUndoRedoManager> get_undo_redo();
+	EditorUndoRedoManager *get_undo_redo();
 
 	void add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
 	void remove_custom_type(const String &p_type);
@@ -159,8 +164,8 @@ protected:
 	GDVIRTUAL0RC(Ref<Texture2D>, _get_plugin_icon)
 	GDVIRTUAL0RC(bool, _has_main_screen)
 	GDVIRTUAL1(_make_visible, bool)
-	GDVIRTUAL1(_edit, Variant)
-	GDVIRTUAL1RC(bool, _handles, Variant)
+	GDVIRTUAL1(_edit, Object *)
+	GDVIRTUAL1RC(bool, _handles, Object *)
 	GDVIRTUAL0RC(Dictionary, _get_state)
 	GDVIRTUAL1(_set_state, Dictionary)
 	GDVIRTUAL0(_clear)
@@ -237,9 +242,9 @@ public:
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay);
 	virtual void forward_canvas_force_draw_over_viewport(Control *p_overlay);
 
-	virtual EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event);
-	virtual void forward_spatial_draw_over_viewport(Control *p_overlay);
-	virtual void forward_spatial_force_draw_over_viewport(Control *p_overlay);
+	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event);
+	virtual void forward_3d_draw_over_viewport(Control *p_overlay);
+	virtual void forward_3d_force_draw_over_viewport(Control *p_overlay);
 
 	virtual String get_name() const;
 	virtual const Ref<Texture2D> get_icon() const;
@@ -273,9 +278,6 @@ public:
 	void make_bottom_panel_item_visible(Control *p_item);
 	void hide_bottom_panel();
 
-	virtual void restore_global_state();
-	virtual void save_global_state();
-
 	void add_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser);
 	void remove_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser);
 
@@ -285,8 +287,8 @@ public:
 	void add_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
 	void remove_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
 
-	void add_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
-	void remove_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
+	void add_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
+	void remove_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
 
 	void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
@@ -300,8 +302,11 @@ public:
 	void add_autoload_singleton(const String &p_name, const String &p_path);
 	void remove_autoload_singleton(const String &p_name);
 
-	void add_debugger_plugin(const Ref<Script> &p_script);
-	void remove_debugger_plugin(const Ref<Script> &p_script);
+	void add_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
+	void remove_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
+
+	void add_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
+	void remove_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
 
 	void enable_plugin();
 	void disable_plugin();
@@ -318,7 +323,7 @@ typedef EditorPlugin *(*EditorPluginCreateFunc)();
 
 class EditorPlugins {
 	enum {
-		MAX_CREATE_FUNCS = 64
+		MAX_CREATE_FUNCS = 128
 	};
 
 	static EditorPluginCreateFunc creation_funcs[MAX_CREATE_FUNCS];

@@ -1,38 +1,40 @@
-/*************************************************************************/
-/*  render_forward_clustered.h                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  render_forward_clustered.h                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef RENDER_FORWARD_CLUSTERED_H
 #define RENDER_FORWARD_CLUSTERED_H
 
 #include "core/templates/paged_allocator.h"
+#include "servers/rendering/renderer_rd/cluster_builder_rd.h"
 #include "servers/rendering/renderer_rd/effects/resolve.h"
+#include "servers/rendering/renderer_rd/effects/ss_effects.h"
 #include "servers/rendering/renderer_rd/effects/taa.h"
 #include "servers/rendering/renderer_rd/forward_clustered/scene_shader_forward_clustered.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
@@ -99,7 +101,16 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		RD::TextureSamples texture_samples = RD::TEXTURE_SAMPLES_1;
 
 	public:
-		//for rendering, may be MSAAd
+		ClusterBuilderRD *cluster_builder = nullptr;
+
+		struct SSEffectsData {
+			Projection last_frame_projections[RendererSceneRender::MAX_RENDER_VIEWS];
+			Transform3D last_frame_transform;
+
+			RendererRD::SSEffects::SSILRenderBuffers ssil;
+			RendererRD::SSEffects::SSAORenderBuffers ssao;
+			RendererRD::SSEffects::SSRRenderBuffers ssr;
+		} ss_effects_data;
 
 		enum DepthFrameBufferType {
 			DEPTH_FB,
@@ -149,10 +160,6 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 
 	uint64_t lightmap_texture_array_version = 0xFFFFFFFF;
 
-	virtual void _base_uniforms_changed() override;
-	virtual RID _render_buffers_get_normal_texture(Ref<RenderSceneBuffersRD> p_render_buffers) override;
-	virtual RID _render_buffers_get_velocity_texture(Ref<RenderSceneBuffersRD> p_render_buffers) override;
-
 	bool base_uniform_set_updated = false;
 	void _update_render_base_uniform_set();
 	RID _setup_sdfgi_render_pass_uniform_set(RID p_albedo_texture, RID p_emission_texture, RID p_emission_aniso_texture, RID p_geom_facing_texture);
@@ -191,15 +198,14 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		RID render_pass_uniform_set;
 		bool force_wireframe = false;
 		Vector2 uv_offset;
-		Plane lod_plane;
 		float lod_distance_multiplier = 0.0;
 		float screen_mesh_lod_threshold = 0.0;
 		RD::FramebufferFormatID framebuffer_format = 0;
 		uint32_t element_offset = 0;
-		uint32_t barrier = RD::BARRIER_MASK_ALL;
+		uint32_t barrier = RD::BARRIER_MASK_ALL_BARRIERS;
 		bool use_directional_soft_shadow = false;
 
-		RenderListParameters(GeometryInstanceSurfaceDataCache **p_elements, RenderElementInfo *p_element_info, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, uint32_t p_color_pass_flags, bool p_no_gi, bool p_use_directional_soft_shadows, RID p_render_pass_uniform_set, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), const Plane &p_lod_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0, uint32_t p_view_count = 1, uint32_t p_element_offset = 0, uint32_t p_barrier = RD::BARRIER_MASK_ALL) {
+		RenderListParameters(GeometryInstanceSurfaceDataCache **p_elements, RenderElementInfo *p_element_info, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, uint32_t p_color_pass_flags, bool p_no_gi, bool p_use_directional_soft_shadows, RID p_render_pass_uniform_set, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0, uint32_t p_view_count = 1, uint32_t p_element_offset = 0, uint32_t p_barrier = RD::BARRIER_MASK_ALL_BARRIERS) {
 			elements = p_elements;
 			element_info = p_element_info;
 			element_count = p_element_count;
@@ -211,7 +217,6 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 			render_pass_uniform_set = p_render_pass_uniform_set;
 			force_wireframe = p_force_wireframe;
 			uv_offset = p_uv_offset;
-			lod_plane = p_lod_plane;
 			lod_distance_multiplier = p_lod_distance_multiplier;
 			screen_mesh_lod_threshold = p_screen_mesh_lod_threshold;
 			element_offset = p_element_offset;
@@ -230,6 +235,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		float sh[9 * 4];
 	};
 
+	// When changing any of these enums, remember to change the corresponding enums in the shader files as well.
 	enum {
 		INSTANCE_DATA_FLAGS_NON_UNIFORM_SCALE = 1 << 4,
 		INSTANCE_DATA_FLAG_USE_GI_BUFFERS = 1 << 5,
@@ -427,6 +433,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		void *surface = nullptr;
 		RID material_uniform_set;
 		SceneShaderForwardClustered::ShaderData *shader = nullptr;
+		SceneShaderForwardClustered::MaterialData *material = nullptr;
 
 		void *surface_shadow = nullptr;
 		RID material_uniform_set_shadow;
@@ -557,16 +564,61 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 
 	virtual void _update_shader_quality_settings() override;
 
+	/* Effects */
+
 	RendererRD::Resolve *resolve_effects = nullptr;
 	RendererRD::TAA *taa = nullptr;
+	RendererRD::SSEffects *ss_effects = nullptr;
+
+	/* Cluster builder */
+
+	ClusterBuilderSharedDataRD cluster_builder_shared;
+	ClusterBuilderRD *current_cluster_builder = nullptr;
+
+	/* SDFGI */
+	void _update_sdfgi(RenderDataRD *p_render_data);
+
+	/* Volumetric fog */
+	RID shadow_sampler;
+
+	void _update_volumetric_fog(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const Projection &p_cam_projection, const Transform3D &p_cam_transform, const Transform3D &p_prev_cam_inv_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes);
+
+	/* Render shadows */
+
+	void _render_shadow_pass(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<RenderGeometryInstance *> &p_instances, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0, float p_screen_mesh_lod_threshold = 0.0, bool p_open_pass = true, bool p_close_pass = true, bool p_clear_region = true, RenderingMethod::RenderInfo *p_render_info = nullptr);
+	void _render_shadow_begin();
+	void _render_shadow_append(RID p_framebuffer, const PagedArray<RenderGeometryInstance *> &p_instances, const Projection &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0, const Rect2i &p_rect = Rect2i(), bool p_flip_y = false, bool p_clear_region = true, bool p_begin = true, bool p_end = true, RenderingMethod::RenderInfo *p_render_info = nullptr);
+	void _render_shadow_process();
+	void _render_shadow_end(uint32_t p_barrier = RD::BARRIER_MASK_ALL_BARRIERS);
+
+	/* Render Scene */
+	void _process_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const RID *p_normal_buffers, const Projection *p_projections);
+	void _process_ssil(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const RID *p_normal_buffers, const Projection *p_projections, const Transform3D &p_transform);
+	void _copy_framebuffer_to_ssil(Ref<RenderSceneBuffersRD> p_render_buffers);
+	void _pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_gi, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer);
+	void _process_ssr(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_dest_framebuffer, const RID *p_normal_buffer_slices, RID p_specular_buffer, const RID *p_metallic_slices, RID p_environment, const Projection *p_projections, const Vector3 *p_eye_offsets, bool p_use_additive);
+	void _process_sss(Ref<RenderSceneBuffersRD> p_render_buffers, const Projection &p_camera);
+
+	/* Debug */
+	void _debug_draw_cluster(Ref<RenderSceneBuffersRD> p_render_buffers);
 
 protected:
-	virtual void _render_scene(RenderDataRD *p_render_data, const Color &p_default_bg_color) override;
+	/* setup */
 
-	virtual void _render_shadow_begin() override;
-	virtual void _render_shadow_append(RID p_framebuffer, const PagedArray<RenderGeometryInstance *> &p_instances, const Projection &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0, const Rect2i &p_rect = Rect2i(), bool p_flip_y = false, bool p_clear_region = true, bool p_begin = true, bool p_end = true, RendererScene::RenderInfo *p_render_info = nullptr) override;
-	virtual void _render_shadow_process() override;
-	virtual void _render_shadow_end(uint32_t p_barrier = RD::BARRIER_MASK_ALL) override;
+	virtual RID _render_buffers_get_normal_texture(Ref<RenderSceneBuffersRD> p_render_buffers) override;
+	virtual RID _render_buffers_get_velocity_texture(Ref<RenderSceneBuffersRD> p_render_buffers) override;
+
+	virtual void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override;
+	virtual void environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override;
+	virtual void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) override;
+
+	virtual void sub_surface_scattering_set_quality(RS::SubSurfaceScatteringQuality p_quality) override;
+	virtual void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) override;
+
+	/* Rendering */
+
+	virtual void _render_scene(RenderDataRD *p_render_data, const Color &p_default_bg_color) override;
+	virtual void _render_buffers_debug_draw(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_shadow_atlas, RID p_occlusion_buffer) override;
 
 	virtual void _render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region, float p_exposure_normalization) override;
 	virtual void _render_uv2(const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
@@ -576,10 +628,29 @@ protected:
 public:
 	static RenderForwardClustered *get_singleton() { return singleton; }
 
+	ClusterBuilderSharedDataRD *get_cluster_builder_shared() { return &cluster_builder_shared; }
+	RendererRD::SSEffects *get_ss_effects() { return ss_effects; }
+
+	/* callback from updating our lighting UBOs, used to populate cluster builder */
+	virtual void setup_added_reflection_probe(const Transform3D &p_transform, const Vector3 &p_half_size) override;
+	virtual void setup_added_light(const RS::LightType p_type, const Transform3D &p_transform, float p_radius, float p_spot_aperture) override;
+	virtual void setup_added_decal(const Transform3D &p_transform, const Vector3 &p_half_size) override;
+
+	virtual void base_uniforms_changed() override;
 	_FORCE_INLINE_ virtual void update_uniform_sets() override {
 		base_uniform_set_updated = true;
 		_update_render_base_uniform_set();
 	}
+
+	/* SDFGI UPDATE */
+
+	virtual void sdfgi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Vector3 &p_world_position) override;
+	virtual int sdfgi_get_pending_region_count(const Ref<RenderSceneBuffers> &p_render_buffers) const override;
+	virtual AABB sdfgi_get_pending_region_bounds(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const override;
+	virtual uint32_t sdfgi_get_pending_region_cascade(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const override;
+	RID sdfgi_get_ubo() const { return gi.sdfgi_ubo; }
+
+	/* GEOMETRY INSTANCE */
 
 	virtual RenderGeometryInstance *geometry_instance_create(RID p_base) override;
 	virtual void geometry_instance_free(RenderGeometryInstance *p_geometry_instance) override;

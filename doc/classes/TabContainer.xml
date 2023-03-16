@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TabContainer" inherits="Container" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TabContainer" inherits="Container" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Tabbed container.
 	</brief_description>
@@ -214,10 +214,11 @@
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the tab text outline.
+			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
 		</theme_item>
 		<theme_item name="side_margin" data_type="constant" type="int" default="8">
 			The space at the left or right edges of the tab bar, accordingly with the current [member tab_alignment].
-			The margin is ignored with [code]ALIGNMENT_RIGHT[/code] if the tabs are clipped (see [member clip_tabs]) or a popup has been set (see [method set_popup]). The margin is always ignored with [code]ALIGNMENT_CENTER[/code].
+			The margin is ignored with [constant TabBar.ALIGNMENT_RIGHT] if the tabs are clipped (see [member clip_tabs]) or a popup has been set (see [method set_popup]). The margin is always ignored with [constant TabBar.ALIGNMENT_CENTER].
 		</theme_item>
 		<theme_item name="font" data_type="font" type="Font">
 			The font used to draw tab names.

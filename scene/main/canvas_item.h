@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  canvas_item.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  canvas_item.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef CANVAS_ITEM_H
 #define CANVAS_ITEM_H
@@ -66,8 +66,16 @@ public:
 		TEXTURE_REPEAT_MAX,
 	};
 
+	enum ClipChildrenMode {
+		CLIP_CHILDREN_DISABLED,
+		CLIP_CHILDREN_ONLY,
+		CLIP_CHILDREN_AND_DRAW,
+		CLIP_CHILDREN_MAX,
+	};
+
 private:
-	mutable SelfList<Node> xform_change;
+	mutable SelfList<Node>
+			xform_change;
 
 	RID canvas_item;
 	StringName canvas_group;
@@ -81,11 +89,15 @@ private:
 	List<CanvasItem *>::Element *C = nullptr;
 
 	int light_mask = 1;
+	uint32_t visibility_layer = 1;
+
+	int z_index = 0;
+	bool z_relative = true;
+	bool y_sort_enabled = false;
 
 	Window *window = nullptr;
 	bool visible = true;
 	bool parent_visible_in_tree = false;
-	bool clip_children = false;
 	bool pending_update = false;
 	bool top_level = false;
 	bool drawing = false;
@@ -94,6 +106,9 @@ private:
 	bool use_parent_material = false;
 	bool notify_local_transform = false;
 	bool notify_transform = false;
+	bool hide_clip_children = false;
+
+	ClipChildrenMode clip_children_mode = CLIP_CHILDREN_DISABLED;
 
 	RS::CanvasItemTextureFilter texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
 	RS::CanvasItemTextureRepeat texture_repeat_cache = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
@@ -110,6 +125,9 @@ private:
 	void _propagate_visibility_changed(bool p_parent_visible_in_tree);
 	void _handle_visibility_change(bool p_visible);
 
+	virtual void _top_level_changed();
+	virtual void _top_level_changed_on_parent();
+
 	void _redraw_callback();
 
 	void _enter_canvas();
@@ -121,7 +139,9 @@ private:
 
 	static CanvasItem *current_item_drawn;
 	friend class Viewport;
+	void _refresh_texture_repeat_cache();
 	void _update_texture_repeat_changed(bool p_propagate);
+	void _refresh_texture_filter_cache();
 	void _update_texture_filter_changed(bool p_propagate);
 
 protected:
@@ -139,6 +159,9 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
+
+	_FORCE_INLINE_ void set_hide_clip_children(bool p_value) { hide_clip_children = p_value; }
 
 	GDVIRTUAL0(_draw)
 public:
@@ -200,36 +223,55 @@ public:
 	void queue_redraw();
 	void move_to_front();
 
-	void set_clip_children(bool p_enabled);
-	bool is_clipping_children() const;
+	void set_clip_children_mode(ClipChildrenMode p_clip_mode);
+	ClipChildrenMode get_clip_children_mode() const;
 
 	virtual void set_light_mask(int p_light_mask);
 	int get_light_mask() const;
 
 	void set_modulate(const Color &p_modulate);
 	Color get_modulate() const;
+	Color get_modulate_in_tree() const;
 
 	void set_self_modulate(const Color &p_self_modulate);
 	Color get_self_modulate() const;
 
+	void set_visibility_layer(uint32_t p_visibility_layer);
+	uint32_t get_visibility_layer() const;
+
+	void set_visibility_layer_bit(uint32_t p_visibility_layer, bool p_enable);
+	bool get_visibility_layer_bit(uint32_t p_visibility_layer) const;
+
+	/* ORDERING */
+
+	void set_z_index(int p_z);
+	int get_z_index() const;
+	int get_effective_z_index() const;
+
+	void set_z_as_relative(bool p_enabled);
+	bool is_z_relative() const;
+
+	virtual void set_y_sort_enabled(bool p_enabled);
+	virtual bool is_y_sort_enabled() const;
+
 	/* DRAWING API */
 
-	void draw_dashed_line(const Point2 &p_from, const Point2 &p_to, const Color &p_color, real_t p_width = 1.0, real_t p_dash = 2.0);
-	void draw_line(const Point2 &p_from, const Point2 &p_to, const Color &p_color, real_t p_width = 1.0, bool p_antialiased = false);
-	void draw_polyline(const Vector<Point2> &p_points, const Color &p_color, real_t p_width = 1.0, bool p_antialiased = false);
-	void draw_polyline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, real_t p_width = 1.0, bool p_antialiased = false);
-	void draw_arc(const Vector2 &p_center, real_t p_radius, real_t p_start_angle, real_t p_end_angle, int p_point_count, const Color &p_color, real_t p_width = 1.0, bool p_antialiased = false);
-	void draw_multiline(const Vector<Point2> &p_points, const Color &p_color, real_t p_width = 1.0);
-	void draw_multiline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, real_t p_width = 1.0);
-	void draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_filled = true, real_t p_width = 1.0);
+	void draw_dashed_line(const Point2 &p_from, const Point2 &p_to, const Color &p_color, real_t p_width = -1.0, real_t p_dash = 2.0, bool p_aligned = true);
+	void draw_line(const Point2 &p_from, const Point2 &p_to, const Color &p_color, real_t p_width = -1.0, bool p_antialiased = false);
+	void draw_polyline(const Vector<Point2> &p_points, const Color &p_color, real_t p_width = -1.0, bool p_antialiased = false);
+	void draw_polyline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, real_t p_width = -1.0, bool p_antialiased = false);
+	void draw_arc(const Vector2 &p_center, real_t p_radius, real_t p_start_angle, real_t p_end_angle, int p_point_count, const Color &p_color, real_t p_width = -1.0, bool p_antialiased = false);
+	void draw_multiline(const Vector<Point2> &p_points, const Color &p_color, real_t p_width = -1.0);
+	void draw_multiline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, real_t p_width = -1.0);
+	void draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_filled = true, real_t p_width = -1.0);
 	void draw_circle(const Point2 &p_pos, real_t p_radius, const Color &p_color);
 	void draw_texture(const Ref<Texture2D> &p_texture, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1, 1));
 	void draw_texture_rect(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false);
 	void draw_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = false);
-	void draw_msdf_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), double p_outline = 0.0, double p_pixel_range = 4.0);
+	void draw_msdf_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), double p_outline = 0.0, double p_pixel_range = 4.0, double p_scale = 1.0);
 	void draw_lcd_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1));
 	void draw_style_box(const Ref<StyleBox> &p_style_box, const Rect2 &p_rect);
-	void draw_primitive(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture = Ref<Texture2D>(), real_t p_width = 1);
+	void draw_primitive(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture = Ref<Texture2D>());
 	void draw_polygon(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), Ref<Texture2D> p_texture = Ref<Texture2D>());
 	void draw_colored_polygon(const Vector<Point2> &p_points, const Color &p_color, const Vector<Point2> &p_uvs = Vector<Point2>(), Ref<Texture2D> p_texture = Ref<Texture2D>());
 
@@ -310,6 +352,9 @@ public:
 	virtual void set_texture_repeat(TextureRepeat p_texture_repeat);
 	TextureRepeat get_texture_repeat() const;
 
+	TextureFilter get_texture_filter_in_tree();
+	TextureRepeat get_texture_repeat_in_tree();
+
 	// Used by control nodes to retrieve the parent's anchorable area
 	virtual Rect2 get_anchorable_rect() const { return Rect2(0, 0, 0, 0); };
 
@@ -321,6 +366,7 @@ public:
 
 VARIANT_ENUM_CAST(CanvasItem::TextureFilter)
 VARIANT_ENUM_CAST(CanvasItem::TextureRepeat)
+VARIANT_ENUM_CAST(CanvasItem::ClipChildrenMode)
 
 class CanvasTexture : public Texture2D {
 	GDCLASS(CanvasTexture, Texture2D);

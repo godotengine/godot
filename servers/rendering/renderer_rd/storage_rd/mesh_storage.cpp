@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  mesh_storage.cpp                                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  mesh_storage.cpp                                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "mesh_storage.h"
 #include "../../rendering_server_globals.h"
@@ -195,6 +195,24 @@ MeshStorage::~MeshStorage() {
 	RD::get_singleton()->free(default_rd_storage_buffer);
 
 	singleton = nullptr;
+}
+
+bool MeshStorage::free(RID p_rid) {
+	if (owns_mesh(p_rid)) {
+		mesh_free(p_rid);
+		return true;
+	} else if (owns_mesh_instance(p_rid)) {
+		mesh_instance_free(p_rid);
+		return true;
+	} else if (owns_multimesh(p_rid)) {
+		multimesh_free(p_rid);
+		return true;
+	} else if (owns_skeleton(p_rid)) {
+		skeleton_free(p_rid);
+		return true;
+	}
+
+	return false;
 }
 
 /* MESH API */
@@ -416,22 +434,11 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 	}
 
 	if (mesh->surface_count == 0) {
-		mesh->bone_aabbs = p_surface.bone_aabbs;
 		mesh->aabb = p_surface.aabb;
 	} else {
-		if (mesh->bone_aabbs.size() < p_surface.bone_aabbs.size()) {
-			// ArrayMesh::_surface_set_data only allocates bone_aabbs up to max_bone
-			// Each surface may affect different numbers of bones.
-			mesh->bone_aabbs.resize(p_surface.bone_aabbs.size());
-		}
-		for (int i = 0; i < p_surface.bone_aabbs.size(); i++) {
-			const AABB &bone = p_surface.bone_aabbs[i];
-			if (bone.has_volume()) {
-				mesh->bone_aabbs.write[i].merge_with(bone);
-			}
-		}
 		mesh->aabb.merge_with(p_surface.aabb);
 	}
+	mesh->skeleton_aabb_version = 0;
 
 	s->material = p_surface.material;
 
@@ -580,6 +587,8 @@ void MeshStorage::mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) {
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_COND(!mesh);
 	mesh->custom_aabb = p_aabb;
+
+	mesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 }
 
 AABB MeshStorage::mesh_get_custom_aabb(RID p_mesh) const {
@@ -598,7 +607,7 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 
 	Skeleton *skeleton = skeleton_owner.get_or_null(p_skeleton);
 
-	if (!skeleton || skeleton->size == 0) {
+	if (!skeleton || skeleton->size == 0 || mesh->skeleton_aabb_version == skeleton->version) {
 		return mesh->aabb;
 	}
 
@@ -626,12 +635,12 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 
 					Transform3D mtx;
 
-					mtx.basis.rows[0].x = dataptr[0];
-					mtx.basis.rows[1].x = dataptr[1];
+					mtx.basis.rows[0][0] = dataptr[0];
+					mtx.basis.rows[0][1] = dataptr[1];
 					mtx.origin.x = dataptr[3];
 
-					mtx.basis.rows[0].y = dataptr[4];
-					mtx.basis.rows[1].y = dataptr[5];
+					mtx.basis.rows[1][0] = dataptr[4];
+					mtx.basis.rows[1][1] = dataptr[5];
 					mtx.origin.y = dataptr[7];
 
 					AABB baabb = mtx.xform(skbones[j]);
@@ -690,6 +699,9 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 		}
 	}
 
+	mesh->aabb = aabb;
+
+	mesh->skeleton_aabb_version = skeleton->version;
 	return aabb;
 }
 
@@ -833,15 +845,15 @@ void MeshStorage::mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int 
 }
 
 void MeshStorage::_mesh_instance_clear(MeshInstance *mi) {
-	for (uint32_t i = 0; i < mi->surfaces.size(); i++) {
-		if (mi->surfaces[i].versions) {
-			for (uint32_t j = 0; j < mi->surfaces[i].version_count; j++) {
-				RD::get_singleton()->free(mi->surfaces[i].versions[j].vertex_array);
+	for (const RendererRD::MeshStorage::MeshInstance::Surface &surface : mi->surfaces) {
+		if (surface.versions) {
+			for (uint32_t j = 0; j < surface.version_count; j++) {
+				RD::get_singleton()->free(surface.versions[j].vertex_array);
 			}
-			memfree(mi->surfaces[i].versions);
+			memfree(surface.versions);
 		}
-		if (mi->surfaces[i].vertex_buffer.is_valid()) {
-			RD::get_singleton()->free(mi->surfaces[i].vertex_buffer);
+		if (surface.vertex_buffer.is_valid()) {
+			RD::get_singleton()->free(surface.vertex_buffer);
 		}
 	}
 	mi->surfaces.clear();
@@ -857,8 +869,8 @@ void MeshStorage::_mesh_instance_clear(MeshInstance *mi) {
 void MeshStorage::_mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint32_t p_surface) {
 	if (mesh->blend_shape_count > 0 && mi->blend_weights_buffer.is_null()) {
 		mi->blend_weights.resize(mesh->blend_shape_count);
-		for (uint32_t i = 0; i < mi->blend_weights.size(); i++) {
-			mi->blend_weights[i] = 0;
+		for (float &weight : mi->blend_weights) {
+			weight = 0;
 		}
 		mi->blend_weights_buffer = RD::get_singleton()->storage_buffer_create(sizeof(float) * mi->blend_weights.size(), mi->blend_weights.to_byte_array());
 		mi->weights_dirty = true;
@@ -921,6 +933,11 @@ void MeshStorage::mesh_instance_check_for_update(RID p_mesh_instance) {
 	}
 }
 
+void MeshStorage::mesh_instance_set_canvas_item_transform(RID p_mesh_instance, const Transform2D &p_transform) {
+	MeshInstance *mi = mesh_instance_owner.get_or_null(p_mesh_instance);
+	mi->canvas_item_transform_2d = p_transform;
+}
+
 void MeshStorage::update_mesh_instances() {
 	while (dirty_mesh_instance_weights.first()) {
 		MeshInstance *mi = dirty_mesh_instance_weights.first()->self();
@@ -971,6 +988,25 @@ void MeshStorage::update_mesh_instances() {
 			push_constant.vertex_stride = (mi->mesh->surfaces[i]->vertex_buffer_size / mi->mesh->surfaces[i]->vertex_count) / 4;
 			push_constant.skin_stride = (mi->mesh->surfaces[i]->skin_buffer_size / mi->mesh->surfaces[i]->vertex_count) / 4;
 			push_constant.skin_weight_offset = (mi->mesh->surfaces[i]->format & RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 4 : 2;
+
+			Transform2D transform = Transform2D();
+			if (sk && sk->use_2d) {
+				transform = mi->canvas_item_transform_2d.affine_inverse() * sk->base_transform_2d;
+			}
+			push_constant.skeleton_transform_x[0] = transform.columns[0][0];
+			push_constant.skeleton_transform_x[1] = transform.columns[0][1];
+			push_constant.skeleton_transform_y[0] = transform.columns[1][0];
+			push_constant.skeleton_transform_y[1] = transform.columns[1][1];
+			push_constant.skeleton_transform_offset[0] = transform.columns[2][0];
+			push_constant.skeleton_transform_offset[1] = transform.columns[2][1];
+
+			Transform2D inverse_transform = transform.affine_inverse();
+			push_constant.inverse_transform_x[0] = inverse_transform.columns[0][0];
+			push_constant.inverse_transform_x[1] = inverse_transform.columns[0][1];
+			push_constant.inverse_transform_y[0] = inverse_transform.columns[1][0];
+			push_constant.inverse_transform_y[1] = inverse_transform.columns[1][1];
+			push_constant.inverse_transform_offset[0] = inverse_transform.columns[2][0];
+			push_constant.inverse_transform_offset[1] = inverse_transform.columns[2][1];
 
 			push_constant.blend_shape_count = mi->mesh->blend_shape_count;
 			push_constant.normalized_blend_shapes = mi->mesh->blend_shape_mode == RS::BLEND_SHAPE_MODE_NORMALIZED;
@@ -1466,12 +1502,12 @@ void MeshStorage::_multimesh_re_create_aabb(MultiMesh *multimesh, const float *p
 			t.origin.z = data[11];
 
 		} else {
-			t.basis.rows[0].x = data[0];
-			t.basis.rows[1].x = data[1];
+			t.basis.rows[0][0] = data[0];
+			t.basis.rows[0][1] = data[1];
 			t.origin.x = data[3];
 
-			t.basis.rows[0].y = data[4];
-			t.basis.rows[1].y = data[5];
+			t.basis.rows[1][0] = data[4];
+			t.basis.rows[1][1] = data[5];
 			t.origin.y = data[7];
 		}
 
@@ -1770,8 +1806,12 @@ void MeshStorage::multimesh_set_visible_instances(RID p_multimesh, int p_visible
 	}
 
 	if (multimesh->data_cache.size()) {
-		//there is a data cache..
+		// There is a data cache, but we may need to update some sections.
 		_multimesh_mark_all_dirty(multimesh, false, true);
+		int start = multimesh->visible_instances >= 0 ? multimesh->visible_instances : multimesh->instances;
+		for (int i = start; i < p_visible; i++) {
+			_multimesh_mark_dirty(multimesh, i, true);
+		}
 	}
 
 	multimesh->visible_instances = p_visible;
@@ -1823,7 +1863,7 @@ void MeshStorage::_update_dirty_multimeshes() {
 							RD::get_singleton()->buffer_update(multimesh->buffer, buffer_offset * sizeof(float) + offset, MIN(region_size, size - offset), &data[region_start_index], RD::BARRIER_MASK_NO_BARRIER);
 						}
 					}
-					RD::get_singleton()->barrier(RD::BARRIER_MASK_NO_BARRIER, RD::BARRIER_MASK_ALL);
+					RD::get_singleton()->barrier(RD::BARRIER_MASK_NO_BARRIER, RD::BARRIER_MASK_ALL_BARRIERS);
 				}
 
 				memcpy(multimesh->previous_data_cache_dirty_regions, multimesh->data_cache_dirty_regions, data_cache_dirty_region_count * sizeof(bool));
@@ -2021,6 +2061,7 @@ Transform2D MeshStorage::skeleton_bone_get_transform_2d(RID p_skeleton, int p_bo
 void MeshStorage::skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) {
 	Skeleton *skeleton = skeleton_owner.get_or_null(p_skeleton);
 
+	ERR_FAIL_NULL(skeleton);
 	ERR_FAIL_COND(!skeleton->use_2d);
 
 	skeleton->base_transform_2d = p_base_transform;

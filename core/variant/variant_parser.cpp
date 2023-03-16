@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  variant_parser.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  variant_parser.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "variant_parser.h"
 
@@ -35,37 +35,91 @@
 #include "core/os/keyboard.h"
 #include "core/string/string_buffer.h"
 
-char32_t VariantParser::StreamFile::get_char() {
-	return f->get_8();
+char32_t VariantParser::Stream::get_char() {
+	// is within buffer?
+	if (readahead_pointer < readahead_filled) {
+		return readahead_buffer[readahead_pointer++];
+	}
+
+	// attempt to readahead
+	readahead_filled = _read_buffer(readahead_buffer, readahead_enabled ? READAHEAD_SIZE : 1);
+	if (readahead_filled) {
+		readahead_pointer = 0;
+	} else {
+		// EOF
+		readahead_pointer = 1;
+		eof = true;
+		return 0;
+	}
+	return get_char();
+}
+
+bool VariantParser::Stream::is_eof() const {
+	if (readahead_enabled) {
+		return eof;
+	}
+	return _is_eof();
 }
 
 bool VariantParser::StreamFile::is_utf8() const {
 	return true;
 }
 
-bool VariantParser::StreamFile::is_eof() const {
+bool VariantParser::StreamFile::_is_eof() const {
 	return f->eof_reached();
 }
 
-char32_t VariantParser::StreamString::get_char() {
-	if (pos > s.length()) {
-		return 0;
-	} else if (pos == s.length()) {
-		// You need to try to read again when you have reached the end for EOF to be reported,
-		// so this works the same as files (like StreamFile does)
-		pos++;
-		return 0;
-	} else {
-		return s[pos++];
+uint32_t VariantParser::StreamFile::_read_buffer(char32_t *p_buffer, uint32_t p_num_chars) {
+	// The buffer is assumed to include at least one character (for null terminator)
+	ERR_FAIL_COND_V(!p_num_chars, 0);
+
+	uint8_t *temp = (uint8_t *)alloca(p_num_chars);
+	uint64_t num_read = f->get_buffer(temp, p_num_chars);
+	ERR_FAIL_COND_V(num_read == UINT64_MAX, 0);
+
+	// translate to wchar
+	for (uint32_t n = 0; n < num_read; n++) {
+		p_buffer[n] = temp[n];
 	}
+
+	// could be less than p_num_chars, or zero
+	return num_read;
 }
 
 bool VariantParser::StreamString::is_utf8() const {
 	return false;
 }
 
-bool VariantParser::StreamString::is_eof() const {
+bool VariantParser::StreamString::_is_eof() const {
 	return pos > s.length();
+}
+
+uint32_t VariantParser::StreamString::_read_buffer(char32_t *p_buffer, uint32_t p_num_chars) {
+	// The buffer is assumed to include at least one character (for null terminator)
+	ERR_FAIL_COND_V(!p_num_chars, 0);
+
+	int available = MAX(s.length() - pos, 0);
+	if (available >= (int)p_num_chars) {
+		const char32_t *src = s.ptr();
+		src += pos;
+		memcpy(p_buffer, src, p_num_chars * sizeof(char32_t));
+		pos += p_num_chars;
+
+		return p_num_chars;
+	}
+
+	// going to reach EOF
+	if (available) {
+		const char32_t *src = s.ptr();
+		src += pos;
+		memcpy(p_buffer, src, available * sizeof(char32_t));
+		pos += available;
+	}
+
+	// add a zero
+	p_buffer[available] = 0;
+
+	return available;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -856,7 +910,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			bool at_key = true;
 			String key;
-			Token token2;
 			bool need_comma = false;
 
 			while (true) {
@@ -866,18 +919,18 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				}
 
 				if (at_key) {
-					Error err = get_token(p_stream, token2, line, r_err_str);
+					Error err = get_token(p_stream, token, line, r_err_str);
 					if (err != OK) {
 						return err;
 					}
 
-					if (token2.type == TK_PARENTHESIS_CLOSE) {
+					if (token.type == TK_PARENTHESIS_CLOSE) {
 						value = ref.is_valid() ? Variant(ref) : Variant(obj);
 						return OK;
 					}
 
 					if (need_comma) {
-						if (token2.type != TK_COMMA) {
+						if (token.type != TK_COMMA) {
 							r_err_str = "Expected '}' or ','";
 							return ERR_PARSE_ERROR;
 						} else {
@@ -886,31 +939,31 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 						}
 					}
 
-					if (token2.type != TK_STRING) {
+					if (token.type != TK_STRING) {
 						r_err_str = "Expected property name as string";
 						return ERR_PARSE_ERROR;
 					}
 
-					key = token2.value;
+					key = token.value;
 
-					err = get_token(p_stream, token2, line, r_err_str);
+					err = get_token(p_stream, token, line, r_err_str);
 
 					if (err != OK) {
 						return err;
 					}
-					if (token2.type != TK_COLON) {
+					if (token.type != TK_COLON) {
 						r_err_str = "Expected ':'";
 						return ERR_PARSE_ERROR;
 					}
 					at_key = false;
 				} else {
-					Error err = get_token(p_stream, token2, line, r_err_str);
+					Error err = get_token(p_stream, token, line, r_err_str);
 					if (err != OK) {
 						return err;
 					}
 
 					Variant v;
-					err = parse_value(token2, v, p_stream, line, r_err_str, p_res_parser);
+					err = parse_value(token, v, p_stream, line, r_err_str, p_res_parser);
 					if (err) {
 						return err;
 					}
@@ -972,6 +1025,89 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 			}
+		} else if (id == "Array") {
+			Error err = OK;
+
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_BRACKET_OPEN) {
+				r_err_str = "Expected '['";
+				return ERR_PARSE_ERROR;
+			}
+
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_IDENTIFIER) {
+				r_err_str = "Expected type identifier";
+				return ERR_PARSE_ERROR;
+			}
+
+			static HashMap<StringName, Variant::Type> builtin_types;
+			if (builtin_types.is_empty()) {
+				for (int i = 1; i < Variant::VARIANT_MAX; i++) {
+					builtin_types[Variant::get_type_name((Variant::Type)i)] = (Variant::Type)i;
+				}
+			}
+
+			Array array = Array();
+			bool got_bracket_token = false;
+			if (builtin_types.has(token.value)) {
+				array.set_typed(builtin_types.get(token.value), StringName(), Variant());
+			} else if (token.value == "Resource" || token.value == "SubResource" || token.value == "ExtResource") {
+				Variant resource;
+				err = parse_value(token, resource, p_stream, line, r_err_str, p_res_parser);
+				if (err) {
+					if (token.value == "Resource" && err == ERR_PARSE_ERROR && r_err_str == "Expected '('" && token.type == TK_BRACKET_CLOSE) {
+						err = OK;
+						r_err_str = String();
+						array.set_typed(Variant::OBJECT, token.value, Variant());
+						got_bracket_token = true;
+					} else {
+						return err;
+					}
+				} else {
+					Ref<Script> script = resource;
+					if (script.is_valid() && script->is_valid()) {
+						array.set_typed(Variant::OBJECT, script->get_instance_base_type(), script);
+					}
+				}
+			} else if (ClassDB::class_exists(token.value)) {
+				array.set_typed(Variant::OBJECT, token.value, Variant());
+			}
+
+			if (!got_bracket_token) {
+				get_token(p_stream, token, line, r_err_str);
+				if (token.type != TK_BRACKET_CLOSE) {
+					r_err_str = "Expected ']'";
+					return ERR_PARSE_ERROR;
+				}
+			}
+
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_PARENTHESIS_OPEN) {
+				r_err_str = "Expected '('";
+				return ERR_PARSE_ERROR;
+			}
+
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_BRACKET_OPEN) {
+				r_err_str = "Expected '['";
+				return ERR_PARSE_ERROR;
+			}
+
+			Array values;
+			err = _parse_array(values, p_stream, line, r_err_str, p_res_parser);
+			if (err) {
+				return err;
+			}
+
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_PARENTHESIS_CLOSE) {
+				r_err_str = "Expected ')'";
+				return ERR_PARSE_ERROR;
+			}
+
+			array.assign(values);
+
+			value = array;
 		} else if (id == "PackedByteArray" || id == "PoolByteArray" || id == "ByteArray") {
 			Vector<uint8_t> args;
 			Error err = _parse_construct<uint8_t>(p_stream, args, line, r_err_str);
@@ -1283,7 +1419,7 @@ Error VariantParser::_parse_dictionary(Dictionary &object, Stream *p_stream, int
 
 			Variant v;
 			err = parse_value(token, v, p_stream, line, r_err_str, p_res_parser);
-			if (err) {
+			if (err && err != ERR_FILE_MISSING_DEPENDENCIES) {
 				return err;
 			}
 			object[key] = v;
@@ -1304,6 +1440,7 @@ Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, Strin
 	if (p_simple_tag) {
 		r_tag.name = "";
 		r_tag.fields.clear();
+		bool escaping = false;
 
 		if (p_stream->is_utf8()) {
 			CharString cs;
@@ -1314,7 +1451,15 @@ Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, Strin
 					return ERR_PARSE_ERROR;
 				}
 				if (c == ']') {
-					break;
+					if (escaping) {
+						escaping = false;
+					} else {
+						break;
+					}
+				} else if (c == '\\') {
+					escaping = true;
+				} else {
+					escaping = false;
 				}
 				cs += c;
 			}
@@ -1327,7 +1472,15 @@ Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, Strin
 					return ERR_PARSE_ERROR;
 				}
 				if (c == ']') {
-					break;
+					if (escaping) {
+						escaping = false;
+					} else {
+						break;
+					}
+				} else if (c == '\\') {
+					escaping = true;
+				} else {
+					escaping = false;
 				}
 				r_tag.name += String::chr(c);
 			}
@@ -1651,7 +1804,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (i != 0 || j != 0) {
 						s += ", ";
 					}
-					s += rtos_fix(t.matrix[i][j]);
+					s += rtos_fix(t.columns[i][j]);
 				}
 			}
 
@@ -1772,6 +1925,38 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		} break;
 
 		case Variant::ARRAY: {
+			Array array = p_variant;
+			if (array.get_typed_builtin() != Variant::NIL) {
+				p_store_string_func(p_store_string_ud, "Array[");
+
+				Variant::Type builtin_type = (Variant::Type)array.get_typed_builtin();
+				StringName class_name = array.get_typed_class_name();
+				Ref<Script> script = array.get_typed_script();
+
+				if (script.is_valid()) {
+					String resource_text = String();
+					if (p_encode_res_func) {
+						resource_text = p_encode_res_func(p_encode_res_ud, script);
+					}
+					if (resource_text.is_empty() && script->get_path().is_resource_file()) {
+						resource_text = "Resource(\"" + script->get_path() + "\")";
+					}
+
+					if (!resource_text.is_empty()) {
+						p_store_string_func(p_store_string_ud, resource_text);
+					} else {
+						ERR_PRINT("Failed to encode a path to a custom script for an array type.");
+						p_store_string_func(p_store_string_ud, class_name);
+					}
+				} else if (class_name != StringName()) {
+					p_store_string_func(p_store_string_ud, class_name);
+				} else {
+					p_store_string_func(p_store_string_ud, Variant::get_type_name(builtin_type));
+				}
+
+				p_store_string_func(p_store_string_ud, "](");
+			}
+
 			if (recursion_count > MAX_RECURSION) {
 				ERR_PRINT("Max recursion reached");
 				p_store_string_func(p_store_string_ud, "[]");
@@ -1779,7 +1964,6 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				recursion_count++;
 
 				p_store_string_func(p_store_string_ud, "[");
-				Array array = p_variant;
 				int len = array.size();
 				for (int i = 0; i < len; i++) {
 					if (i > 0) {
@@ -1791,11 +1975,14 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				p_store_string_func(p_store_string_ud, "]");
 			}
 
+			if (array.get_typed_builtin() != Variant::NIL) {
+				p_store_string_func(p_store_string_ud, ")");
+			}
+
 		} break;
 
 		case Variant::PACKED_BYTE_ARRAY: {
 			p_store_string_func(p_store_string_ud, "PackedByteArray(");
-			String s;
 			Vector<uint8_t> data = p_variant;
 			int len = data.size();
 			const uint8_t *ptr = data.ptr();
@@ -1883,15 +2070,11 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			int len = data.size();
 			const String *ptr = data.ptr();
 
-			String s;
-			//write_string("\n");
-
 			for (int i = 0; i < len; i++) {
 				if (i > 0) {
 					p_store_string_func(p_store_string_ud, ", ");
 				}
-				String str = ptr[i];
-				p_store_string_func(p_store_string_ud, "\"" + str.c_escape() + "\"");
+				p_store_string_func(p_store_string_ud, "\"" + ptr[i].c_escape() + "\"");
 			}
 
 			p_store_string_func(p_store_string_ud, ")");
@@ -1939,9 +2122,9 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				if (i > 0) {
 					p_store_string_func(p_store_string_ud, ", ");
 				}
-
 				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].r) + ", " + rtos_fix(ptr[i].g) + ", " + rtos_fix(ptr[i].b) + ", " + rtos_fix(ptr[i].a));
 			}
+
 			p_store_string_func(p_store_string_ud, ")");
 
 		} break;

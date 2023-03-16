@@ -1,5 +1,8 @@
 #!/bin/sh
-SKIP_LIST="./thirdparty,*.gen.*,*.po,*.pot,package-lock.json,./core/string/locales.h,./DONORS.md,./misc/dist/linux/org.godotengine.Godot.desktop,./misc/scripts/codespell.sh"
-IGNORE_LIST="ba,childs,complies,curvelinear,expct,fave,findn,gird,inout,lod,nd,numer,ois,ro,statics,te,varius,varn"
+SKIP_LIST="./.*,./**/.*,./bin,./thirdparty,*.desktop,*.gen.*,*.po,*.pot,*.rc,./AUTHORS.md,./COPYRIGHT.txt,./DONORS.md,"
+SKIP_LIST+="./core/input/gamecontrollerdb.txt,./core/string/locales.h,./editor/renames_map_3_to_4.cpp,./misc/scripts/codespell.sh,"
+SKIP_LIST+="./platform/android/java/lib/src/com,./platform/web/node_modules,./platform/web/package-lock.json,"
 
-codespell -w -q 3 -S "${SKIP_LIST}" -L "${IGNORE_LIST}"
+IGNORE_LIST="curvelinear,doubleclick,expct,findn,gird,hel,inout,lod,nd,numer,ot,te"
+
+codespell -w -q 3 -S "${SKIP_LIST}" -L "${IGNORE_LIST}" --builtin "clear,rare,en-GB_to_en-US"

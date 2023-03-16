@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  shader.cpp                                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  shader.cpp                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "shader.h"
 
@@ -42,15 +42,23 @@ Shader::Mode Shader::get_mode() const {
 }
 
 void Shader::_dependency_changed() {
-	RenderingServer::get_singleton()->shader_set_code(shader, RenderingServer::get_singleton()->shader_get_code(shader));
-	params_cache_dirty = true;
+	// Preprocess and compile the code again because a dependency has changed. It also calls emit_changed() for us.
+	_recompile();
+}
 
-	emit_changed();
+void Shader::_recompile() {
+	set_code(get_code());
 }
 
 void Shader::set_path(const String &p_path, bool p_take_over) {
 	Resource::set_path(p_path, p_take_over);
 	RS::get_singleton()->shader_set_path_hint(shader, p_path);
+}
+
+void Shader::set_include_path(const String &p_path) {
+	// Used only if the shader does not have a resource path set,
+	// for example during loading stage or when created by code.
+	include_path = p_path;
 }
 
 void Shader::set_code(const String &p_code) {
@@ -78,11 +86,15 @@ void Shader::set_code(const String &p_code) {
 	HashSet<Ref<ShaderInclude>> new_include_dependencies;
 
 	{
+		String path = get_path();
+		if (path.is_empty()) {
+			path = include_path;
+		}
 		// Preprocessor must run here and not in the server because:
 		// 1) Need to keep track of include dependencies at resource level
 		// 2) Server does not do interaction with Resource filetypes, this is a scene level feature.
 		ShaderPreprocessor preprocessor;
-		preprocessor.preprocess(p_code, "", pp_code, nullptr, nullptr, nullptr, &new_include_dependencies);
+		preprocessor.preprocess(p_code, path, pp_code, nullptr, nullptr, nullptr, &new_include_dependencies);
 	}
 
 	// This ensures previous include resources are not freed and then re-loaded during parse (which would make compiling slower)
@@ -93,7 +105,6 @@ void Shader::set_code(const String &p_code) {
 	}
 
 	RenderingServer::get_singleton()->shader_set_code(shader, pp_code);
-	params_cache_dirty = true;
 
 	emit_changed();
 }
@@ -108,8 +119,6 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 
 	List<PropertyInfo> local;
 	RenderingServer::get_singleton()->get_shader_parameter_list(shader, &local);
-	params_cache.clear();
-	params_cache_dirty = false;
 
 	for (PropertyInfo &pi : local) {
 		bool is_group = pi.usage == PROPERTY_USAGE_GROUP || pi.usage == PROPERTY_USAGE_SUBGROUP;
@@ -120,7 +129,6 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 			if (default_textures.has(pi.name)) { //do not show default textures
 				continue;
 			}
-			params_cache[pi.name] = pi.name;
 		}
 		if (p_params) {
 			//small little hack
@@ -176,11 +184,17 @@ bool Shader::is_text_shader() const {
 	return true;
 }
 
-bool Shader::has_parameter(const StringName &p_name) const {
-	return params_cache.has("shader_parameter/" + p_name);
+void Shader::_update_shader() const {
 }
 
-void Shader::_update_shader() const {
+Array Shader::_get_shader_uniform_list(bool p_get_groups) {
+	List<PropertyInfo> uniform_list;
+	get_shader_uniform_list(&uniform_list, p_get_groups);
+	Array ret;
+	for (const PropertyInfo &pi : uniform_list) {
+		ret.push_back(pi.operator Dictionary());
+	}
+	return ret;
 }
 
 void Shader::_bind_methods() {
@@ -192,7 +206,7 @@ void Shader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_texture_parameter", "name", "texture", "index"), &Shader::set_default_texture_parameter, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_default_texture_parameter", "name", "index"), &Shader::get_default_texture_parameter, DEFVAL(0));
 
-	ClassDB::bind_method(D_METHOD("has_parameter", "name"), &Shader::has_parameter);
+	ClassDB::bind_method(D_METHOD("get_shader_uniform_list", "get_groups"), &Shader::_get_shader_uniform_list, DEFVAL(false));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_code", "get_code");
 
@@ -208,6 +222,7 @@ Shader::Shader() {
 }
 
 Shader::~Shader() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free(shader);
 }
 
@@ -221,11 +236,12 @@ Ref<Resource> ResourceFormatLoaderShader::load(const String &p_path, const Strin
 	Ref<Shader> shader;
 	shader.instantiate();
 
-	Vector<uint8_t> buffer = FileAccess::get_file_as_array(p_path);
+	Vector<uint8_t> buffer = FileAccess::get_file_as_bytes(p_path);
 
 	String str;
 	str.parse_utf8((const char *)buffer.ptr(), buffer.size());
 
+	shader->set_include_path(p_path);
 	shader->set_code(str);
 
 	if (r_error) {

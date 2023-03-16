@@ -1,35 +1,36 @@
-/*************************************************************************/
-/*  os_web.cpp                                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  os_web.cpp                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "os_web.h"
 
+#include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
@@ -37,9 +38,6 @@
 #include "platform/web/display_server_web.h"
 
 #include "modules/modules_enabled.gen.h" // For websocket.
-#ifdef MODULE_WEBSOCKET_ENABLED
-#include "modules/websocket/remote_debugger_peer_websocket.h"
-#endif
 
 #include <dlfcn.h>
 #include <emscripten.h>
@@ -56,11 +54,6 @@ void OS_Web::alert(const String &p_alert, const String &p_title) {
 void OS_Web::initialize() {
 	OS_Unix::initialize_core();
 	DisplayServerWeb::register_web_driver();
-
-#ifdef MODULE_WEBSOCKET_ENABLED
-	EngineDebugger::register_uri_handler("ws://", RemoteDebuggerPeerWebSocket::create);
-	EngineDebugger::register_uri_handler("wss://", RemoteDebuggerPeerWebSocket::create);
-#endif
 }
 
 void OS_Web::resume_audio() {
@@ -165,7 +158,22 @@ void OS_Web::vibrate_handheld(int p_duration_ms) {
 }
 
 String OS_Web::get_user_data_dir() const {
-	return "/userfs";
+	String userfs = "/userfs";
+	String appname = get_safe_dir_name(GLOBAL_GET("application/config/name"));
+	if (!appname.is_empty()) {
+		bool use_custom_dir = GLOBAL_GET("application/config/use_custom_user_dir");
+		if (use_custom_dir) {
+			String custom_dir = get_safe_dir_name(GLOBAL_GET("application/config/custom_user_dir_name"), true);
+			if (custom_dir.is_empty()) {
+				custom_dir = appname;
+			}
+			return userfs.path_join(custom_dir).replace("\\", "/");
+		} else {
+			return userfs.path_join(get_godot_dir_name()).path_join("app_userdata").path_join(appname).replace("\\", "/");
+		}
+	}
+
+	return userfs.path_join(get_godot_dir_name()).path_join("app_userdata").path_join("[unnamed project]");
 }
 
 String OS_Web::get_cache_path() const {
@@ -204,6 +212,12 @@ void OS_Web::update_pwa_state_callback() {
 	}
 }
 
+void OS_Web::force_fs_sync() {
+	if (is_userfs_persistent()) {
+		idb_needs_sync = true;
+	}
+}
+
 Error OS_Web::pwa_update() {
 	return godot_js_pwa_update() ? FAILED : OK;
 }
@@ -239,9 +253,6 @@ OS_Web::OS_Web() {
 	godot_js_pwa_cb(&OS_Web::update_pwa_state_callback);
 
 	if (AudioDriverWeb::is_available()) {
-#ifdef NO_THREADS
-		audio_drivers.push_back(memnew(AudioDriverScriptProcessor));
-#endif
 		audio_drivers.push_back(memnew(AudioDriverWorklet));
 	}
 	for (int i = 0; i < audio_drivers.size(); i++) {

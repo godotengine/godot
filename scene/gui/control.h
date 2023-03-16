@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  control.h                                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  control.h                                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef CONTROL_H
 #define CONTROL_H
@@ -145,7 +145,7 @@ public:
 		TEXT_DIRECTION_AUTO = TextServer::DIRECTION_AUTO,
 		TEXT_DIRECTION_LTR = TextServer::DIRECTION_LTR,
 		TEXT_DIRECTION_RTL = TextServer::DIRECTION_RTL,
-		TEXT_DIRECTION_INHERITED,
+		TEXT_DIRECTION_INHERITED = TextServer::DIRECTION_INHERITED,
 	};
 
 private:
@@ -159,15 +159,18 @@ private:
 		}
 	};
 
+	// This Data struct is to avoid namespace pollution in derived classes.
 	struct Data {
 		// Global relations.
 
 		List<Control *>::Element *RI = nullptr;
 
-		Control *parent = nullptr;
+		Control *parent_control = nullptr;
 		Window *parent_window = nullptr;
 		CanvasItem *parent_canvas_item = nullptr;
-		ObjectID drag_owner;
+		Callable forward_drag;
+		Callable forward_can_drop;
+		Callable forward_drop;
 
 		// Positioning and sizing.
 
@@ -197,10 +200,10 @@ private:
 
 		// Container sizing.
 
-		int h_size_flags = SIZE_FILL;
-		int v_size_flags = SIZE_FILL;
+		BitField<SizeFlags> h_size_flags = SIZE_FILL;
+		BitField<SizeFlags> v_size_flags = SIZE_FILL;
 		real_t expand = 1.0;
-		Point2i custom_minimum_size;
+		Point2 custom_minimum_size;
 
 		// Input events and rendering.
 
@@ -218,6 +221,8 @@ private:
 		NodePath focus_next;
 		NodePath focus_prev;
 
+		ObjectID shortcut_context;
+
 		// Theming.
 
 		ThemeOwner *theme_owner = nullptr;
@@ -225,12 +230,12 @@ private:
 		StringName theme_type_variation;
 
 		bool bulk_theme_override = false;
-		Theme::ThemeIconMap icon_override;
-		Theme::ThemeStyleMap style_override;
-		Theme::ThemeFontMap font_override;
-		Theme::ThemeFontSizeMap font_size_override;
-		Theme::ThemeColorMap color_override;
-		Theme::ThemeConstantMap constant_override;
+		Theme::ThemeIconMap theme_icon_override;
+		Theme::ThemeStyleMap theme_style_override;
+		Theme::ThemeFontMap theme_font_override;
+		Theme::ThemeFontSizeMap theme_font_size_override;
+		Theme::ThemeColorMap theme_color_override;
+		Theme::ThemeConstantMap theme_constant_override;
 
 		mutable HashMap<StringName, Theme::ThemeIconMap> theme_icon_cache;
 		mutable HashMap<StringName, Theme::ThemeStyleMap> theme_style_cache;
@@ -246,6 +251,7 @@ private:
 		bool is_rtl = false;
 
 		bool auto_translate = true;
+		bool localize_numeral_system = true;
 
 		// Extra properties.
 
@@ -276,6 +282,7 @@ private:
 	void _compute_anchors(Rect2 p_rect, const real_t p_offsets[4], real_t (&r_anchors)[4]);
 
 	void _set_layout_mode(LayoutMode p_mode);
+	void _update_layout_mode();
 	LayoutMode _get_layout_mode() const;
 	LayoutMode _get_default_layout_mode() const;
 	void _set_anchors_layout_preset(int p_preset);
@@ -284,6 +291,9 @@ private:
 	void _update_minimum_size_cache();
 	void _update_minimum_size();
 	void _size_changed();
+
+	void _top_level_changed() override {} // Controls don't need to do anything, only other CanvasItems.
+	void _top_level_changed_on_parent() override;
 
 	void _clear_size_warning();
 
@@ -323,7 +333,7 @@ protected:
 
 	// Internationalization.
 
-	virtual TypedArray<Vector2i> structured_text_parser(TextServer::StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
+	virtual TypedArray<Vector3i> structured_text_parser(TextServer::StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
 
 	// Base object overrides.
 
@@ -333,7 +343,7 @@ protected:
 	// Exposed virtual methods.
 
 	GDVIRTUAL1RC(bool, _has_point, Vector2)
-	GDVIRTUAL2RC(TypedArray<Vector2i>, _structured_text_parser, Array, String)
+	GDVIRTUAL2RC(TypedArray<Vector3i>, _structured_text_parser, Array, String)
 	GDVIRTUAL0RC(Vector2, _get_minimum_size)
 
 	GDVIRTUAL1RC(Variant, _get_drag_data, Vector2)
@@ -383,11 +393,12 @@ public:
 
 	virtual Size2 _edit_get_minimum_size() const override;
 #endif
+	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true) override;
 
 	// Editor integration.
 
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	virtual bool is_text_field() const;
 
@@ -442,33 +453,33 @@ public:
 	Rect2 get_rect() const;
 	Rect2 get_global_rect() const;
 	Rect2 get_screen_rect() const;
-	Rect2 get_window_rect() const; ///< use with care, as it blocks waiting for the rendering server
 	Rect2 get_anchorable_rect() const override;
 
 	void set_scale(const Vector2 &p_scale);
 	Vector2 get_scale() const;
 	void set_rotation(real_t p_radians);
+	void set_rotation_degrees(real_t p_degrees);
 	real_t get_rotation() const;
+	real_t get_rotation_degrees() const;
 	void set_pivot_offset(const Vector2 &p_pivot);
 	Vector2 get_pivot_offset() const;
 
 	void update_minimum_size();
 
 	void set_block_minimum_size_adjust(bool p_block);
-	bool is_minimum_size_adjust_blocked() const;
 
 	virtual Size2 get_minimum_size() const;
 	virtual Size2 get_combined_minimum_size() const;
 
-	void set_custom_minimum_size(const Size2i &p_custom);
-	Size2i get_custom_minimum_size() const;
+	void set_custom_minimum_size(const Size2 &p_custom);
+	Size2 get_custom_minimum_size() const;
 
 	// Container sizing.
 
-	void set_h_size_flags(int p_flags);
-	int get_h_size_flags() const;
-	void set_v_size_flags(int p_flags);
-	int get_v_size_flags() const;
+	void set_h_size_flags(BitField<SizeFlags> p_flags);
+	BitField<SizeFlags> get_h_size_flags() const;
+	void set_v_size_flags(BitField<SizeFlags> p_flags);
+	BitField<SizeFlags> get_v_size_flags() const;
 	void set_stretch_ratio(real_t p_ratio);
 	real_t get_stretch_ratio() const;
 
@@ -487,9 +498,13 @@ public:
 
 	void warp_mouse(const Point2 &p_position);
 
+	bool is_focus_owner_in_shortcut_context() const;
+	void set_shortcut_context(const Node *p_node);
+	Node *get_shortcut_context() const;
+
 	// Drag and drop handling.
 
-	virtual void set_drag_forwarding(Object *p_target);
+	virtual void set_drag_forwarding(const Callable &p_drag, const Callable &p_can_drop, const Callable &p_drop);
 	virtual Variant get_drag_data(const Point2 &p_point);
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
@@ -589,6 +604,9 @@ public:
 	LayoutDirection get_layout_direction() const;
 	virtual bool is_layout_rtl() const;
 
+	void set_localize_numeral_system(bool p_enable);
+	bool is_localizing_numeral_system() const;
+
 	void set_auto_translate(bool p_enable);
 	bool is_auto_translating() const;
 	_FORCE_INLINE_ String atr(const String p_string) const {
@@ -606,7 +624,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(Control::FocusMode);
-VARIANT_ENUM_CAST(Control::SizeFlags);
+VARIANT_BITFIELD_CAST(Control::SizeFlags);
 VARIANT_ENUM_CAST(Control::CursorShape);
 VARIANT_ENUM_CAST(Control::LayoutPreset);
 VARIANT_ENUM_CAST(Control::LayoutPresetMode);
@@ -616,5 +634,11 @@ VARIANT_ENUM_CAST(Control::Anchor);
 VARIANT_ENUM_CAST(Control::LayoutMode);
 VARIANT_ENUM_CAST(Control::LayoutDirection);
 VARIANT_ENUM_CAST(Control::TextDirection);
+
+// G = get_drag_data_fw, C = can_drop_data_fw, D = drop_data_fw, U = underscore
+#define SET_DRAG_FORWARDING_CD(from, to) from->set_drag_forwarding(Callable(), callable_mp(this, &to::can_drop_data_fw).bind(from), callable_mp(this, &to::drop_data_fw).bind(from));
+#define SET_DRAG_FORWARDING_CDU(from, to) from->set_drag_forwarding(Callable(), callable_mp(this, &to::_can_drop_data_fw).bind(from), callable_mp(this, &to::_drop_data_fw).bind(from));
+#define SET_DRAG_FORWARDING_GCD(from, to) from->set_drag_forwarding(callable_mp(this, &to::get_drag_data_fw).bind(from), callable_mp(this, &to::can_drop_data_fw).bind(from), callable_mp(this, &to::drop_data_fw).bind(from));
+#define SET_DRAG_FORWARDING_GCDU(from, to) from->set_drag_forwarding(callable_mp(this, &to::_get_drag_data_fw).bind(from), callable_mp(this, &to::_can_drop_data_fw).bind(from), callable_mp(this, &to::_drop_data_fw).bind(from));
 
 #endif // CONTROL_H

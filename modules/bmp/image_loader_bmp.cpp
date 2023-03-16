@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  image_loader_bmp.cpp                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  image_loader_bmp.cpp                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "image_loader_bmp.h"
 
@@ -58,6 +58,13 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 			ERR_FAIL_COND_V_MSG(height % 8 != 0, ERR_UNAVAILABLE,
 					vformat("1-bpp BMP images must have a height that is a multiple of 8, but the imported BMP is %d pixels tall.", int(height)));
 
+		} else if (bits_per_pixel == 2) {
+			// Requires bit unpacking...
+			ERR_FAIL_COND_V_MSG(width % 4 != 0, ERR_UNAVAILABLE,
+					vformat("2-bpp BMP images must have a width that is a multiple of 4, but the imported BMP is %d pixels wide.", int(width)));
+			ERR_FAIL_COND_V_MSG(height % 4 != 0, ERR_UNAVAILABLE,
+					vformat("2-bpp BMP images must have a height that is a multiple of 4, but the imported BMP is %d pixels tall.", int(height)));
+
 		} else if (bits_per_pixel == 4) {
 			// Requires bit unpacking...
 			ERR_FAIL_COND_V_MSG(width % 2 != 0, ERR_UNAVAILABLE,
@@ -88,7 +95,7 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 		const uint32_t line_width = (width_bytes + 3) & ~3;
 
 		// The actual data traversal is determined by
-		// the data width in case of 8/4/1 bit images
+		// the data width in case of 8/4/2/1 bit images
 		const uint32_t w = bits_per_pixel >= 24 ? width : width_bytes;
 		const uint8_t *line = p_buffer + (line_width * (height - 1));
 		const uint8_t *end_buffer = p_buffer + p_header.bmp_file_header.bmp_file_size - p_header.bmp_file_header.bmp_file_offset;
@@ -112,6 +119,17 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 						write_buffer[index + 7] = (color_index >> 0) & 1;
 
 						index += 8;
+						line_ptr += 1;
+					} break;
+					case 2: {
+						uint8_t color_index = *line_ptr;
+
+						write_buffer[index + 0] = (color_index >> 6) & 3;
+						write_buffer[index + 1] = (color_index >> 4) & 3;
+						write_buffer[index + 2] = (color_index >> 2) & 3;
+						write_buffer[index + 3] = color_index & 3;
+
+						index += 4;
 						line_ptr += 1;
 					} break;
 					case 4: {
@@ -156,7 +174,7 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 
 		if (p_color_buffer == nullptr || color_table_size == 0) { // regular pixels
 
-			p_image->create(width, height, false, Image::FORMAT_RGBA8, data);
+			p_image->set_data(width, height, false, Image::FORMAT_RGBA8, data);
 
 		} else { // data is in indexed format, extend it
 
@@ -194,13 +212,13 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 
 				dest += 4;
 			}
-			p_image->create(width, height, false, Image::FORMAT_RGBA8, extended_data);
+			p_image->set_data(width, height, false, Image::FORMAT_RGBA8, extended_data);
 		}
 	}
 	return err;
 }
 
-Error ImageLoaderBMP::load_image(Ref<Image> p_image, Ref<FileAccess> f, uint32_t p_flags, float p_scale) {
+Error ImageLoaderBMP::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
 	bmp_header_s bmp_header;
 	Error err = ERR_INVALID_DATA;
 

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  rasterizer_scene_gles3.cpp                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  rasterizer_scene_gles3.cpp                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "rasterizer_scene_gles3.h"
 #include "core/config/project_settings.h"
@@ -34,8 +34,8 @@
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "storage/config.h"
-#include "storage/light_storage.h"
 #include "storage/mesh_storage.h"
+#include "storage/particles_storage.h"
 #include "storage/texture_storage.h"
 
 #ifdef GLES3_ENABLED
@@ -51,6 +51,9 @@ RenderGeometryInstance *RasterizerSceneGLES3::geometry_instance_create(RID p_bas
 
 	ginstance->data->base = p_base;
 	ginstance->data->base_type = type;
+	ginstance->data->dependency_tracker.userdata = ginstance;
+	ginstance->data->dependency_tracker.changed_callback = _geometry_instance_dependency_changed;
+	ginstance->data->dependency_tracker.deleted_callback = _geometry_instance_dependency_deleted;
 
 	ginstance->_mark_dirty();
 
@@ -70,7 +73,7 @@ void RasterizerSceneGLES3::GeometryInstanceGLES3::pair_light_instances(const RID
 	spot_lights.clear();
 
 	for (uint32_t i = 0; i < p_light_instance_count; i++) {
-		RS::LightType type = RasterizerSceneGLES3::get_singleton()->light_instance_get_type(p_light_instances[i]);
+		RS::LightType type = GLES3::LightStorage::get_singleton()->light_instance_get_type(p_light_instances[i]);
 		switch (type) {
 			case RS::LIGHT_OMNI: {
 				if (omni_light_count < (uint32_t)config->max_lights_per_object) {
@@ -142,6 +145,7 @@ void RasterizerSceneGLES3::_geometry_instance_dependency_changed(Dependency::Dep
 		case Dependency::DEPENDENCY_CHANGED_MULTIMESH:
 		case Dependency::DEPENDENCY_CHANGED_SKELETON_DATA: {
 			static_cast<RenderGeometryInstance *>(p_tracker->userdata)->_mark_dirty();
+			static_cast<GeometryInstanceGLES3 *>(p_tracker->userdata)->data->dirty_dependencies = true;
 		} break;
 		case Dependency::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES: {
 			GeometryInstanceGLES3 *ginstance = static_cast<GeometryInstanceGLES3 *>(p_tracker->userdata);
@@ -157,6 +161,7 @@ void RasterizerSceneGLES3::_geometry_instance_dependency_changed(Dependency::Dep
 
 void RasterizerSceneGLES3::_geometry_instance_dependency_deleted(const RID &p_dependency, DependencyTracker *p_tracker) {
 	static_cast<RenderGeometryInstance *>(p_tracker->userdata)->_mark_dirty();
+	static_cast<GeometryInstanceGLES3 *>(p_tracker->userdata)->data->dirty_dependencies = true;
 }
 
 void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material(GeometryInstanceGLES3 *ginstance, uint32_t p_surface, GLES3::SceneMaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh) {
@@ -188,7 +193,7 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material(Geometry
 	if (has_alpha || has_read_screen_alpha || p_material->shader_data->depth_draw == GLES3::SceneShaderData::DEPTH_DRAW_DISABLED || p_material->shader_data->depth_test == GLES3::SceneShaderData::DEPTH_TEST_DISABLED) {
 		//material is only meant for alpha pass
 		flags |= GeometryInstanceSurface::FLAG_PASS_ALPHA;
-		if (p_material->shader_data->uses_depth_pre_pass && !(p_material->shader_data->depth_draw == GLES3::SceneShaderData::DEPTH_DRAW_DISABLED || p_material->shader_data->depth_test == GLES3::SceneShaderData::DEPTH_TEST_DISABLED)) {
+		if (p_material->shader_data->uses_depth_prepass_alpha && !(p_material->shader_data->depth_draw == GLES3::SceneShaderData::DEPTH_DRAW_DISABLED || p_material->shader_data->depth_test == GLES3::SceneShaderData::DEPTH_TEST_DISABLED)) {
 			flags |= GeometryInstanceSurface::FLAG_PASS_DEPTH;
 			flags |= GeometryInstanceSurface::FLAG_PASS_SHADOW;
 		}
@@ -200,7 +205,7 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material(Geometry
 
 	GLES3::SceneMaterialData *material_shadow = nullptr;
 	void *surface_shadow = nullptr;
-	if (!p_material->shader_data->uses_particle_trails && !p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_pre_pass && !p_material->shader_data->uses_alpha_clip) {
+	if (!p_material->shader_data->uses_particle_trails && !p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_prepass_alpha && !p_material->shader_data->uses_alpha_clip) {
 		flags |= GeometryInstanceSurface::FLAG_USES_SHARED_SHADOW_MATERIAL;
 		material_shadow = static_cast<GLES3::SceneMaterialData *>(GLES3::MaterialStorage::get_singleton()->material_get_data(scene_globals.default_material, RS::SHADER_SPATIAL));
 
@@ -315,6 +320,8 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface(GeometryInstanceGLES3 
 
 void RasterizerSceneGLES3::_geometry_instance_update(RenderGeometryInstance *p_geometry_instance) {
 	GLES3::MeshStorage *mesh_storage = GLES3::MeshStorage::get_singleton();
+	GLES3::ParticlesStorage *particles_storage = GLES3::ParticlesStorage::get_singleton();
+
 	GeometryInstanceGLES3 *ginstance = static_cast<GeometryInstanceGLES3 *>(p_geometry_instance);
 
 	if (ginstance->data->dirty_dependencies) {
@@ -362,6 +369,26 @@ void RasterizerSceneGLES3::_geometry_instance_update(RenderGeometryInstance *p_g
 
 		} break;
 		case RS::INSTANCE_PARTICLES: {
+			int draw_passes = particles_storage->particles_get_draw_passes(ginstance->data->base);
+
+			for (int j = 0; j < draw_passes; j++) {
+				RID mesh = particles_storage->particles_get_draw_pass_mesh(ginstance->data->base, j);
+				if (!mesh.is_valid()) {
+					continue;
+				}
+
+				const RID *materials = nullptr;
+				uint32_t surface_count;
+
+				materials = mesh_storage->mesh_get_surface_count_and_materials(mesh, surface_count);
+				if (materials) {
+					for (uint32_t k = 0; k < surface_count; k++) {
+						_geometry_instance_add_surface(ginstance, k, materials[k], mesh);
+					}
+				}
+			}
+
+			ginstance->instance_count = particles_storage->particles_get_amount(ginstance->data->base);
 		} break;
 
 		default: {
@@ -383,10 +410,23 @@ void RasterizerSceneGLES3::_geometry_instance_update(RenderGeometryInstance *p_g
 			ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA;
 		}
 
-		//ginstance->transforms_uniform_set = mesh_storage->multimesh_get_3d_uniform_set(ginstance->data->base, scene_globals.default_shader_rd, TRANSFORMS_UNIFORM_SET);
-
 	} else if (ginstance->data->base_type == RS::INSTANCE_PARTICLES) {
+		ginstance->base_flags |= INSTANCE_DATA_FLAG_PARTICLES;
+		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH;
+
+		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR;
+		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA;
+
+		if (!particles_storage->particles_is_using_local_coords(ginstance->data->base)) {
+			store_transform = false;
+		}
+
 	} else if (ginstance->data->base_type == RS::INSTANCE_MESH) {
+		if (mesh_storage->skeleton_is_valid(ginstance->data->skeleton)) {
+			if (ginstance->data->dirty_dependencies) {
+				mesh_storage->skeleton_update_dependency(ginstance->data->skeleton, &ginstance->data->dependency_tracker);
+			}
+		}
 	}
 
 	ginstance->store_transform_cache = store_transform;
@@ -397,32 +437,6 @@ void RasterizerSceneGLES3::_geometry_instance_update(RenderGeometryInstance *p_g
 	}
 
 	ginstance->dirty_list_element.remove_from_list();
-}
-
-/* SHADOW ATLAS API */
-
-RID RasterizerSceneGLES3::shadow_atlas_create() {
-	return RID();
-}
-
-void RasterizerSceneGLES3::shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits) {
-}
-
-void RasterizerSceneGLES3::shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) {
-}
-
-bool RasterizerSceneGLES3::shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) {
-	return false;
-}
-
-void RasterizerSceneGLES3::directional_shadow_atlas_set_size(int p_size, bool p_16_bits) {
-}
-
-int RasterizerSceneGLES3::get_directional_light_shadow_size(RID p_light_intance) {
-	return 0;
-}
-
-void RasterizerSceneGLES3::set_directional_shadow_count(int p_count) {
 }
 
 /* SKY API */
@@ -622,10 +636,11 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 			sky->reflection_dirty = true;
 		}
 
+		glBindBufferBase(GL_UNIFORM_BUFFER, SKY_DIRECTIONAL_LIGHT_UNIFORM_LOCATION, sky_globals.directional_light_buffer);
 		if (shader_data->uses_light) {
 			sky_globals.directional_light_count = 0;
 			for (int i = 0; i < (int)p_lights.size(); i++) {
-				LightInstance *li = light_instance_owner.get_or_null(p_lights[i]);
+				GLES3::LightInstance *li = GLES3::LightStorage::get_singleton()->get_light_instance(p_lights[i]);
 				if (!li) {
 					continue;
 				}
@@ -705,7 +720,6 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 			}
 
 			if (light_data_dirty) {
-				glBindBufferBase(GL_UNIFORM_BUFFER, SKY_DIRECTIONAL_LIGHT_UNIFORM_LOCATION, sky_globals.directional_light_buffer);
 				glBufferData(GL_UNIFORM_BUFFER, sizeof(DirectionalLightData) * sky_globals.max_directional_lights, sky_globals.directional_lights, GL_STREAM_DRAW);
 				glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
@@ -717,6 +731,11 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 			}
 		}
 
+		if (p_render_data->view_count > 1) {
+			glBindBufferBase(GL_UNIFORM_BUFFER, SKY_MULTIVIEW_UNIFORM_LOCATION, scene_state.multiview_buffer);
+			glBindBuffer(GL_UNIFORM_BUFFER, 0);
+		}
+
 		if (!sky->radiance) {
 			_invalidate_sky(sky);
 			_update_dirty_skys();
@@ -724,7 +743,7 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 	}
 }
 
-void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_luminance_multiplier) {
+void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_luminance_multiplier, bool p_use_multiview, bool p_flip_y) {
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	ERR_FAIL_COND(p_env.is_null());
 
@@ -734,10 +753,14 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 	GLES3::SkyMaterialData *material_data = nullptr;
 	RID sky_material;
 
+	uint64_t spec_constants = p_use_multiview ? SkyShaderGLES3::USE_MULTIVIEW : 0;
+	if (p_flip_y) {
+		spec_constants |= SkyShaderGLES3::USE_INVERTED_Y;
+	}
+
 	RS::EnvironmentBG background = environment_get_background(p_env);
 
 	if (sky) {
-		ERR_FAIL_COND(!sky);
 		sky_material = sky->material;
 
 		if (sky_material.is_valid()) {
@@ -777,14 +800,23 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 	}
 	Basis sky_transform = environment_get_sky_orientation(p_env);
 	sky_transform.invert();
-	sky_transform = p_transform.basis * sky_transform;
+	sky_transform = sky_transform * p_transform.basis;
 
-	GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_bind_shader(shader_data->version, SkyShaderGLES3::MODE_BACKGROUND);
-	GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::ORIENTATION, sky_transform, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND);
-	GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::PROJECTION, camera.matrix[2][0], camera.matrix[0][0], camera.matrix[2][1], camera.matrix[1][1], shader_data->version, SkyShaderGLES3::MODE_BACKGROUND);
-	GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::POSITION, p_transform.origin, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND);
-	GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::TIME, time, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND);
-	GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::LUMINANCE_MULTIPLIER, p_luminance_multiplier, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND);
+	bool success = material_storage->shaders.sky_shader.version_bind_shader(shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
+	if (!success) {
+		return;
+	}
+
+	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::ORIENTATION, sky_transform, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
+	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::PROJECTION, camera.columns[2][0], camera.columns[0][0], camera.columns[2][1], camera.columns[1][1], shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
+	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::POSITION, p_transform.origin, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
+	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::TIME, time, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
+	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::LUMINANCE_MULTIPLIER, p_luminance_multiplier, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
+
+	if (p_use_multiview) {
+		glBindBufferBase(GL_UNIFORM_BUFFER, SKY_MULTIVIEW_UNIFORM_LOCATION, scene_state.multiview_buffer);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	}
 
 	glBindVertexArray(sky_globals.screen_triangle_array);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -875,15 +907,18 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 		Projection cm;
 		cm.set_perspective(90, 1, 0.01, 10.0);
 		Projection correction;
-		correction.set_depth_correction(true);
+		correction.columns[1][1] = -1.0;
 		cm = correction * cm;
 
-		GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_bind_shader(shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
+		bool success = material_storage->shaders.sky_shader.version_bind_shader(shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
+		if (!success) {
+			return;
+		}
 
-		GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::POSITION, p_transform.origin, shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
-		GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::TIME, time, shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
-		GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::PROJECTION, cm.matrix[2][0], cm.matrix[0][0], cm.matrix[2][1], cm.matrix[1][1], shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
-		GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::LUMINANCE_MULTIPLIER, p_luminance_multiplier, shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
+		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::POSITION, p_transform.origin, shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
+		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::TIME, time, shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
+		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::PROJECTION, cm.columns[2][0], cm.columns[0][0], cm.columns[2][1], cm.columns[1][1], shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
+		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::LUMINANCE_MULTIPLIER, p_luminance_multiplier, shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
 
 		glBindVertexArray(sky_globals.screen_triangle_array);
 
@@ -892,7 +927,7 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 
 		for (int i = 0; i < 6; i++) {
 			Basis local_view = Basis::looking_at(view_normals[i], view_up[i]);
-			GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::ORIENTATION, local_view, shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
+			material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::ORIENTATION, local_view, shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, sky->raw_radiance, 0);
 			glDrawArrays(GL_TRIANGLES, 0, 3);
 		}
@@ -973,7 +1008,10 @@ void RasterizerSceneGLES3::_filter_sky_radiance(Sky *p_sky, int p_base_layer) {
 	glViewport(0, 0, size, size);
 	glBindVertexArray(sky_globals.screen_triangle_array);
 
-	material_storage->shaders.cubemap_filter_shader.version_bind_shader(scene_globals.cubemap_filter_shader_version, mode);
+	bool success = material_storage->shaders.cubemap_filter_shader.version_bind_shader(scene_globals.cubemap_filter_shader_version, mode);
+	if (!success) {
+		return;
+	}
 
 	if (p_base_layer > 0) {
 		const uint32_t sample_counts[4] = { 1, sky_globals.ggx_samples / 4, sky_globals.ggx_samples / 2, sky_globals.ggx_samples };
@@ -1047,10 +1085,6 @@ void RasterizerSceneGLES3::environment_glow_set_use_bicubic_upscale(bool p_enabl
 	glow_bicubic_upscale = p_enable;
 }
 
-void RasterizerSceneGLES3::environment_glow_set_use_high_quality(bool p_enable) {
-	glow_high_quality = p_enable;
-}
-
 void RasterizerSceneGLES3::environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) {
 }
 
@@ -1085,38 +1119,6 @@ void RasterizerSceneGLES3::positional_soft_shadow_filter_set_quality(RS::ShadowQ
 void RasterizerSceneGLES3::directional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) {
 }
 
-RID RasterizerSceneGLES3::light_instance_create(RID p_light) {
-	RID li = light_instance_owner.make_rid(LightInstance());
-
-	LightInstance *light_instance = light_instance_owner.get_or_null(li);
-
-	light_instance->self = li;
-	light_instance->light = p_light;
-	light_instance->light_type = RSG::light_storage->light_get_type(p_light);
-
-	return li;
-}
-
-void RasterizerSceneGLES3::light_instance_set_transform(RID p_light_instance, const Transform3D &p_transform) {
-	LightInstance *light_instance = light_instance_owner.get_or_null(p_light_instance);
-	ERR_FAIL_COND(!light_instance);
-
-	light_instance->transform = p_transform;
-}
-
-void RasterizerSceneGLES3::light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb) {
-	LightInstance *light_instance = light_instance_owner.get_or_null(p_light_instance);
-	ERR_FAIL_COND(!light_instance);
-
-	light_instance->aabb = p_aabb;
-}
-
-void RasterizerSceneGLES3::light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale, float p_range_begin, const Vector2 &p_uv_scale) {
-}
-
-void RasterizerSceneGLES3::light_instance_mark_visible(RID p_light_instance) {
-}
-
 RID RasterizerSceneGLES3::fog_volume_instance_create(RID p_fog_volume) {
 	return RID();
 }
@@ -1133,57 +1135,6 @@ RID RasterizerSceneGLES3::fog_volume_instance_get_volume(RID p_fog_volume_instan
 
 Vector3 RasterizerSceneGLES3::fog_volume_instance_get_position(RID p_fog_volume_instance) const {
 	return Vector3();
-}
-
-RID RasterizerSceneGLES3::reflection_atlas_create() {
-	return RID();
-}
-
-int RasterizerSceneGLES3::reflection_atlas_get_size(RID p_ref_atlas) const {
-	return 0;
-}
-
-void RasterizerSceneGLES3::reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count) {
-}
-
-RID RasterizerSceneGLES3::reflection_probe_instance_create(RID p_probe) {
-	return RID();
-}
-
-void RasterizerSceneGLES3::reflection_probe_instance_set_transform(RID p_instance, const Transform3D &p_transform) {
-}
-
-void RasterizerSceneGLES3::reflection_probe_release_atlas_index(RID p_instance) {
-}
-
-bool RasterizerSceneGLES3::reflection_probe_instance_needs_redraw(RID p_instance) {
-	return false;
-}
-
-bool RasterizerSceneGLES3::reflection_probe_instance_has_reflection(RID p_instance) {
-	return false;
-}
-
-bool RasterizerSceneGLES3::reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) {
-	return false;
-}
-
-bool RasterizerSceneGLES3::reflection_probe_instance_postprocess_step(RID p_instance) {
-	return true;
-}
-
-RID RasterizerSceneGLES3::decal_instance_create(RID p_decal) {
-	return RID();
-}
-
-void RasterizerSceneGLES3::decal_instance_set_transform(RID p_decal, const Transform3D &p_transform) {
-}
-
-RID RasterizerSceneGLES3::lightmap_instance_create(RID p_lightmap) {
-	return RID();
-}
-
-void RasterizerSceneGLES3::lightmap_instance_set_transform(RID p_lightmap, const Transform3D &p_transform) {
 }
 
 RID RasterizerSceneGLES3::voxel_gi_instance_create(RID p_voxel_gi) {
@@ -1236,12 +1187,17 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 	for (int i = 0; i < (int)p_render_data->instances->size(); i++) {
 		GeometryInstanceGLES3 *inst = static_cast<GeometryInstanceGLES3 *>((*p_render_data->instances)[i]);
 
+		Vector3 center = inst->transform.origin;
 		if (p_render_data->cam_orthogonal) {
-			Vector3 support_min = inst->transformed_aabb.get_support(-near_plane.normal);
-			inst->depth = near_plane.distance_to(support_min);
+			if (inst->use_aabb_center) {
+				center = inst->transformed_aabb.get_support(-near_plane.normal);
+			}
+			inst->depth = near_plane.distance_to(center) - inst->sorting_offset;
 		} else {
-			Vector3 aabb_center = inst->transformed_aabb.position + (inst->transformed_aabb.size * 0.5);
-			inst->depth = p_render_data->cam_transform.origin.distance_to(aabb_center);
+			if (inst->use_aabb_center) {
+				center = inst->transformed_aabb.position + (inst->transformed_aabb.size * 0.5);
+			}
+			inst->depth = p_render_data->cam_transform.origin.distance_to(center) - inst->sorting_offset;
 		}
 		uint32_t depth_layer = CLAMP(int(inst->depth * 16 / z_max), 0, 15);
 
@@ -1258,13 +1214,13 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 			if (inst->omni_light_count) {
 				inst->omni_light_gl_cache.resize(inst->omni_light_count);
 				for (uint32_t j = 0; j < inst->omni_light_count; j++) {
-					inst->omni_light_gl_cache[j] = light_instance_get_gl_id(inst->omni_lights[j]);
+					inst->omni_light_gl_cache[j] = GLES3::LightStorage::get_singleton()->light_instance_get_gl_id(inst->omni_lights[j]);
 				}
 			}
 			if (inst->spot_light_count) {
 				inst->spot_light_gl_cache.resize(inst->spot_light_count);
 				for (uint32_t j = 0; j < inst->spot_light_count; j++) {
-					inst->spot_light_gl_cache[j] = light_instance_get_gl_id(inst->spot_lights[j]);
+					inst->spot_light_gl_cache[j] = GLES3::LightStorage::get_singleton()->light_instance_get_gl_id(inst->spot_lights[j]);
 				}
 			}
 		}
@@ -1277,12 +1233,13 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 			// LOD
 
 			if (p_render_data->screen_mesh_lod_threshold > 0.0 && mesh_storage->mesh_surface_has_lod(surf->surface)) {
-				//lod
-				Vector3 lod_support_min = inst->transformed_aabb.get_support(-p_render_data->lod_camera_plane.normal);
-				Vector3 lod_support_max = inst->transformed_aabb.get_support(p_render_data->lod_camera_plane.normal);
+				// Get the LOD support points on the mesh AABB.
+				Vector3 lod_support_min = inst->transformed_aabb.get_support(p_render_data->cam_transform.basis.get_column(Vector3::AXIS_Z));
+				Vector3 lod_support_max = inst->transformed_aabb.get_support(-p_render_data->cam_transform.basis.get_column(Vector3::AXIS_Z));
 
-				float distance_min = p_render_data->lod_camera_plane.distance_to(lod_support_min);
-				float distance_max = p_render_data->lod_camera_plane.distance_to(lod_support_max);
+				// Get the distances to those points on the AABB from the camera origin.
+				float distance_min = (float)p_render_data->cam_transform.origin.distance_to(lod_support_min);
+				float distance_max = (float)p_render_data->cam_transform.origin.distance_to(lod_support_max);
 
 				float distance = 0.0;
 
@@ -1299,8 +1256,8 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 					distance = 1.0;
 				}
 
-				uint32_t indices;
-				surf->lod_index = mesh_storage->mesh_surface_get_lod(surf->surface, inst->lod_model_scale * inst->lod_bias, distance * p_render_data->lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, &indices);
+				uint32_t indices = 0;
+				surf->lod_index = mesh_storage->mesh_surface_get_lod(surf->surface, inst->lod_model_scale * inst->lod_bias, distance * p_render_data->lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, indices);
 				/*
 				if (p_render_data->render_info) {
 					indices = _indices_to_primitives(surf->primitive, indices);
@@ -1375,13 +1332,27 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 // Needs to be called after _setup_lights so that directional_light_count is accurate.
 void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_data, bool p_no_fog, const Size2i &p_screen_size, bool p_flip_y, const Color &p_default_bg_color, bool p_pancake_shadows) {
 	Projection correction;
-	correction.set_depth_correction(p_flip_y);
+	correction.columns[1][1] = p_flip_y ? -1.0 : 1.0;
 	Projection projection = correction * p_render_data->cam_projection;
 	//store camera into ubo
 	GLES3::MaterialStorage::store_camera(projection, scene_state.ubo.projection_matrix);
 	GLES3::MaterialStorage::store_camera(projection.inverse(), scene_state.ubo.inv_projection_matrix);
 	GLES3::MaterialStorage::store_transform(p_render_data->cam_transform, scene_state.ubo.inv_view_matrix);
 	GLES3::MaterialStorage::store_transform(p_render_data->inv_cam_transform, scene_state.ubo.view_matrix);
+	scene_state.ubo.camera_visible_layers = p_render_data->camera_visible_layers;
+
+	if (p_render_data->view_count > 1) {
+		for (uint32_t v = 0; v < p_render_data->view_count; v++) {
+			projection = correction * p_render_data->view_projection[v];
+			GLES3::MaterialStorage::store_camera(projection, scene_state.multiview_ubo.projection_matrix_view[v]);
+			GLES3::MaterialStorage::store_camera(projection.inverse(), scene_state.multiview_ubo.inv_projection_matrix_view[v]);
+
+			scene_state.multiview_ubo.eye_offset[v][0] = p_render_data->view_eye_offset[v].x;
+			scene_state.multiview_ubo.eye_offset[v][1] = p_render_data->view_eye_offset[v].y;
+			scene_state.multiview_ubo.eye_offset[v][2] = p_render_data->view_eye_offset[v].z;
+			scene_state.multiview_ubo.eye_offset[v][3] = 0.0;
+		}
+	}
 
 	scene_state.ubo.directional_light_count = p_render_data->directional_light_count;
 
@@ -1484,6 +1455,15 @@ void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_da
 	glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_DATA_UNIFORM_LOCATION, scene_state.ubo_buffer);
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(SceneState::UBO), &scene_state.ubo, GL_STREAM_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+	if (p_render_data->view_count > 1) {
+		if (scene_state.multiview_buffer == 0) {
+			glGenBuffers(1, &scene_state.multiview_buffer);
+		}
+		glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_MULTIVIEW_UNIFORM_LOCATION, scene_state.multiview_buffer);
+		glBufferData(GL_UNIFORM_BUFFER, sizeof(SceneState::MultiviewUBO), &scene_state.multiview_ubo, GL_STREAM_DRAW);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	}
 }
 
 // Puts lights into Uniform Buffers. Needs to be called before _fill_list as this caches the index of each light in the Uniform Buffer
@@ -1502,7 +1482,7 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 	int num_lights = lights.size();
 
 	for (int i = 0; i < num_lights; i++) {
-		LightInstance *li = light_instance_owner.get_or_null(lights[i]);
+		GLES3::LightInstance *li = GLES3::LightStorage::get_singleton()->get_light_instance(lights[i]);
 		if (!li) {
 			continue;
 		}
@@ -1572,8 +1552,6 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 					}
 				}
 
-				li->gl_id = r_omni_light_count;
-
 				scene_state.omni_light_sort[r_omni_light_count].instance = li;
 				scene_state.omni_light_sort[r_omni_light_count].depth = distance;
 				r_omni_light_count++;
@@ -1597,8 +1575,6 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 					}
 				}
 
-				li->gl_id = r_spot_light_count;
-
 				scene_state.spot_light_sort[r_spot_light_count].instance = li;
 				scene_state.spot_light_sort[r_spot_light_count].depth = distance;
 				r_spot_light_count++;
@@ -1607,12 +1583,12 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 	}
 
 	if (r_omni_light_count) {
-		SortArray<InstanceSort<LightInstance>> sorter;
+		SortArray<InstanceSort<GLES3::LightInstance>> sorter;
 		sorter.sort(scene_state.omni_light_sort, r_omni_light_count);
 	}
 
 	if (r_spot_light_count) {
-		SortArray<InstanceSort<LightInstance>> sorter;
+		SortArray<InstanceSort<GLES3::LightInstance>> sorter;
 		sorter.sort(scene_state.spot_light_sort, r_spot_light_count);
 	}
 
@@ -1620,8 +1596,11 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 		uint32_t index = (i < r_omni_light_count) ? i : i - (r_omni_light_count);
 		LightData &light_data = (i < r_omni_light_count) ? scene_state.omni_lights[index] : scene_state.spot_lights[index];
 		RS::LightType type = (i < r_omni_light_count) ? RS::LIGHT_OMNI : RS::LIGHT_SPOT;
-		LightInstance *li = (i < r_omni_light_count) ? scene_state.omni_light_sort[index].instance : scene_state.spot_light_sort[index].instance;
+		GLES3::LightInstance *li = (i < r_omni_light_count) ? scene_state.omni_light_sort[index].instance : scene_state.spot_light_sort[index].instance;
+		real_t distance = (i < r_omni_light_count) ? scene_state.omni_light_sort[index].depth : scene_state.spot_light_sort[index].depth;
 		RID base = li->light;
+
+		li->gl_id = index;
 
 		Transform3D light_transform = li->transform;
 		Vector3 pos = inverse_transform.xform(light_transform.origin);
@@ -1649,13 +1628,11 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 		// Reuse fade begin, fade length and distance for shadow LOD determination later.
 		float fade_begin = 0.0;
 		float fade_length = 0.0;
-		real_t distance = 0.0;
 
 		float fade = 1.0;
 		if (light_storage->light_is_distance_fade_enabled(li->light)) {
 			fade_begin = light_storage->light_get_distance_fade_begin(li->light);
 			fade_length = light_storage->light_get_distance_fade_length(li->light);
-			distance = p_render_data->cam_transform.origin.distance_to(li->transform.origin);
 
 			if (distance > fade_begin) {
 				// Use `smoothstep()` to make opacity changes more gradual and less noticeable to the player.
@@ -1719,7 +1696,7 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
-void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data, RendererScene::RenderInfo *r_render_info) {
+void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data, RenderingMethod::RenderInfo *r_render_info) {
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	GLES3::Config *config = GLES3::Config::get_singleton();
 	RENDER_TIMESTAMP("Setup 3D Scene");
@@ -1729,6 +1706,9 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		rb = p_render_buffers;
 		ERR_FAIL_COND(rb.is_null());
 	}
+
+	GLES3::RenderTarget *rt = texture_storage->get_render_target(rb->render_target);
+	ERR_FAIL_COND(!rt);
 
 	// Assign render data
 	// Use the format from rendererRD
@@ -1741,6 +1721,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		render_data.inv_cam_transform = render_data.cam_transform.affine_inverse();
 		render_data.cam_projection = p_camera_data->main_projection;
 		render_data.cam_orthogonal = p_camera_data->is_orthogonal;
+		render_data.camera_visible_layers = p_camera_data->visible_layers;
 
 		render_data.view_count = p_camera_data->view_count;
 		for (uint32_t v = 0; v < p_camera_data->view_count; v++) {
@@ -1761,7 +1742,6 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 		// this should be the same for all cameras..
 		render_data.lod_distance_multiplier = p_camera_data->main_projection.get_lod_multiplier();
-		render_data.lod_camera_plane = Plane(-p_camera_data->main_transform.basis.get_column(Vector3::AXIS_Z), p_camera_data->main_transform.get_origin());
 
 		if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD) {
 			render_data.screen_mesh_lod_threshold = 0.0;
@@ -1778,7 +1758,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		render_data.reflection_probes = &empty;
 	}
 
-	bool reverse_cull = false;
+	bool reverse_cull = render_data.cam_transform.basis.determinant() < 0;
 
 	///////////
 	// Fill Light lists here
@@ -1818,8 +1798,20 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 	scene_state.ubo.emissive_exposure_normalization = -1.0; // Use default exposure normalization.
 
+	bool flip_y = !render_data.reflection_probe.is_valid();
+
+	if (rt->overridden.color.is_valid()) {
+		// If we've overridden the render target's color texture, then don't render upside down.
+		// We're probably rendering directly to an XR device.
+		flip_y = false;
+	}
+	if (!flip_y) {
+		// If we're rendering right-side up, then we need to change the winding order.
+		glFrontFace(GL_CW);
+	}
+
 	_setup_lights(&render_data, false, render_data.directional_light_count, render_data.omni_light_count, render_data.spot_light_count);
-	_setup_environment(&render_data, render_data.reflection_probe.is_valid(), screen_size, !render_data.reflection_probe.is_valid(), clear_color, false);
+	_setup_environment(&render_data, render_data.reflection_probe.is_valid(), screen_size, flip_y, clear_color, false);
 
 	_fill_render_list(RENDER_LIST_OPAQUE, &render_data, PASS_MODE_COLOR);
 	render_list[RENDER_LIST_OPAQUE].sort_by_key();
@@ -1881,7 +1873,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 			Projection projection = render_data.cam_projection;
 			if (render_data.reflection_probe.is_valid()) {
 				Projection correction;
-				correction.set_depth_correction(true);
+				correction.columns[1][1] = -1.0;
 				projection = correction * render_data.cam_projection;
 			}
 
@@ -1900,8 +1892,12 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		}
 	}
 
-	glBindFramebuffer(GL_FRAMEBUFFER, rb->framebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
 	glViewport(0, 0, rb->width, rb->height);
+
+	glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
+	scene_state.cull_mode = GLES3::SceneShaderData::CULL_BACK;
 
 	// Do depth prepass if it's explicitly enabled
 	bool use_depth_prepass = config->use_depth_prepass;
@@ -1918,15 +1914,15 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
 		glDisable(GL_SCISSOR_TEST);
-		glCullFace(GL_BACK);
-		glEnable(GL_CULL_FACE);
-		scene_state.cull_mode = GLES3::SceneShaderData::CULL_BACK;
 
 		glColorMask(0, 0, 0, 0);
 		glClearDepth(1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT);
+		uint64_t spec_constant = SceneShaderGLES3::DISABLE_FOG | SceneShaderGLES3::DISABLE_LIGHT_DIRECTIONAL |
+				SceneShaderGLES3::DISABLE_LIGHTMAP | SceneShaderGLES3::DISABLE_LIGHT_OMNI |
+				SceneShaderGLES3::DISABLE_LIGHT_SPOT;
 
-		RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, 0, use_wireframe);
+		RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, spec_constant, use_wireframe);
 		_render_list_template<PASS_MODE_DEPTH>(&render_list_params, &render_data, 0, render_list[RENDER_LIST_OPAQUE].elements.size());
 
 		glColorMask(1, 1, 1, 1);
@@ -1963,16 +1959,16 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		glClearBufferfv(GL_COLOR, 0, clear_color.components);
 	}
 	RENDER_TIMESTAMP("Render Opaque Pass");
-	uint32_t spec_constant_base_flags = 0;
+	uint64_t spec_constant_base_flags = 0;
 
 	{
 		// Specialization Constants that apply for entire rendering pass.
 		if (render_data.directional_light_count == 0) {
-			spec_constant_base_flags |= 1 << SPEC_CONSTANT_DISABLE_DIRECTIONAL_LIGHTS;
+			spec_constant_base_flags |= SceneShaderGLES3::DISABLE_LIGHT_DIRECTIONAL;
 		}
 
 		if (render_data.environment.is_null() || (render_data.environment.is_valid() && !environment_get_fog_enabled(render_data.environment))) {
-			spec_constant_base_flags |= 1 << SPEC_CONSTANT_DISABLE_FOG;
+			spec_constant_base_flags |= SceneShaderGLES3::DISABLE_FOG;
 		}
 	}
 	// Render Opaque Objects.
@@ -1995,7 +1991,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		scene_state.current_depth_draw = GLES3::SceneShaderData::DEPTH_DRAW_DISABLED;
 		scene_state.cull_mode = GLES3::SceneShaderData::CULL_BACK;
 
-		_draw_sky(render_data.environment, render_data.cam_projection, render_data.cam_transform, sky_energy_multiplier);
+		_draw_sky(render_data.environment, render_data.cam_projection, render_data.cam_transform, sky_energy_multiplier, p_camera_data->view_count > 1, flip_y);
 	}
 
 	RENDER_TIMESTAMP("Render 3D Transparent Pass");
@@ -2005,6 +2001,11 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	RenderListParameters render_list_params_alpha(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, spec_constant_base_flags, use_wireframe);
 
 	_render_list_template<PASS_MODE_COLOR_TRANSPARENT>(&render_list_params_alpha, &render_data, 0, render_list[RENDER_LIST_ALPHA].elements.size(), true);
+
+	if (!flip_y) {
+		// Restore the default winding order.
+		glFrontFace(GL_CCW);
+	}
 
 	if (rb.is_valid()) {
 		_render_buffers_debug_draw(rb, p_shadow_atlas, p_occluder_debug_tex);
@@ -2016,6 +2017,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 template <PassMode p_pass_mode>
 void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params, const RenderDataGLES3 *p_render_data, uint32_t p_from_element, uint32_t p_to_element, bool p_alpha_pass) {
 	GLES3::MeshStorage *mesh_storage = GLES3::MeshStorage::get_singleton();
+	GLES3::ParticlesStorage *particles_storage = GLES3::ParticlesStorage::get_singleton();
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	GLES3::Config *config = GLES3::Config::get_singleton();
@@ -2027,8 +2029,15 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 	GLES3::SceneShaderData *prev_shader = nullptr;
 	GeometryInstanceGLES3 *prev_inst = nullptr;
 	SceneShaderGLES3::ShaderVariant prev_variant = SceneShaderGLES3::ShaderVariant::MODE_COLOR;
+	SceneShaderGLES3::ShaderVariant shader_variant = SceneShaderGLES3::MODE_COLOR; // Assigned to silence wrong -Wmaybe-initialized
+	uint64_t prev_spec_constants = 0;
 
-	SceneShaderGLES3::ShaderVariant shader_variant = SceneShaderGLES3::MODE_COLOR; // Assigned to silence wrong -Wmaybe-initialized.
+	// Specializations constants used by all instances in the scene.
+	uint64_t base_spec_constants = p_params->spec_constant_base_flags;
+
+	if (p_render_data->view_count > 1) {
+		base_spec_constants |= SceneShaderGLES3::USE_MULTIVIEW;
+	}
 
 	switch (p_pass_mode) {
 		case PASS_MODE_COLOR:
@@ -2043,18 +2052,20 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 		} break;
 	}
 
-	if (p_pass_mode == PASS_MODE_COLOR || p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) {
+	if constexpr (p_pass_mode == PASS_MODE_COLOR || p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) {
 		glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 2);
 		GLuint texture_to_bind = texture_storage->get_texture(texture_storage->texture_gl_get_default(GLES3::DEFAULT_GL_TEXTURE_CUBEMAP_BLACK))->tex_id;
 		if (p_render_data->environment.is_valid()) {
 			Sky *sky = sky_owner.get_or_null(environment_get_sky(p_render_data->environment));
 			if (sky && sky->radiance != 0) {
 				texture_to_bind = sky->radiance;
-				// base_spec_constant |= USE_RADIANCE_MAP;
+				base_spec_constants |= SceneShaderGLES3::USE_RADIANCE_MAP;
 			}
 			glBindTexture(GL_TEXTURE_CUBE_MAP, texture_to_bind);
 		}
 	}
+
+	bool should_request_redraw = false;
 
 	for (uint32_t i = p_from_element; i < p_to_element; i++) {
 		const GeometryInstanceSurface *surf = p_params->elements[i];
@@ -2068,13 +2079,11 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			continue;
 		}
 
-		//uint32_t base_spec_constants = p_params->spec_constant_base_flags;
-
 		GLES3::SceneShaderData *shader;
 		GLES3::SceneMaterialData *material_data;
 		void *mesh_surface;
 
-		if (p_pass_mode == PASS_MODE_SHADOW) {
+		if constexpr (p_pass_mode == PASS_MODE_SHADOW) {
 			shader = surf->shader_shadow;
 			material_data = surf->material_shadow;
 			mesh_surface = surf->surface_shadow;
@@ -2088,7 +2097,12 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			continue;
 		}
 
-		if (p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) {
+		//request a redraw if one of the shaders uses TIME
+		if (shader->uses_time) {
+			should_request_redraw = true;
+		}
+
+		if constexpr (p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) {
 			if (scene_state.current_depth_test != shader->depth_test) {
 				if (shader->depth_test == GLES3::SceneShaderData::DEPTH_TEST_DISABLED) {
 					glDisable(GL_DEPTH_TEST);
@@ -2115,9 +2129,9 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			scene_state.current_depth_draw = shader->depth_draw;
 		}
 
-		if (p_pass_mode == PASS_MODE_COLOR_TRANSPARENT || p_pass_mode == PASS_MODE_COLOR_ADDITIVE) {
+		if constexpr (p_pass_mode == PASS_MODE_COLOR_TRANSPARENT || p_pass_mode == PASS_MODE_COLOR_ADDITIVE) {
 			GLES3::SceneShaderData::BlendMode desired_blend_mode;
-			if (p_pass_mode == PASS_MODE_COLOR_ADDITIVE) {
+			if constexpr (p_pass_mode == PASS_MODE_COLOR_ADDITIVE) {
 				desired_blend_mode = GLES3::SceneShaderData::BLEND_MODE_ADD;
 			} else {
 				desired_blend_mode = shader->blend_mode;
@@ -2192,6 +2206,9 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 		}
 
 		RS::PrimitiveType primitive = surf->primitive;
+		if (shader->uses_point_size) {
+			primitive = RS::PRIMITIVE_POINTS;
+		}
 		static const GLenum prim[5] = { GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP };
 		GLenum primitive_gl = prim[int(primitive)];
 
@@ -2212,6 +2229,9 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 				glBindVertexArray(vertex_array_gl);
 			}
 			prev_vertex_array_gl = vertex_array_gl;
+
+			// Invalidate the previous index array
+			prev_index_array_gl = 0;
 		}
 
 		bool use_index_buffer = index_array_gl != 0;
@@ -2235,61 +2255,94 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 
 		SceneShaderGLES3::ShaderVariant instance_variant = shader_variant;
 		if (inst->instance_count > 0) {
+			// Will need to use instancing to draw (either MultiMesh or Particles).
 			instance_variant = SceneShaderGLES3::ShaderVariant(1 + int(shader_variant));
 		}
 
-		if (prev_shader != shader || prev_variant != instance_variant) {
-			material_storage->shaders.scene_shader.version_bind_shader(shader->version, instance_variant);
+		uint64_t spec_constants = base_spec_constants;
+
+		if (inst->omni_light_count == 0) {
+			spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_OMNI;
+		}
+
+		if (inst->spot_light_count == 0) {
+			spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_SPOT;
+		}
+
+		if (prev_shader != shader || prev_variant != instance_variant || spec_constants != prev_spec_constants) {
+			bool success = material_storage->shaders.scene_shader.version_bind_shader(shader->version, instance_variant, spec_constants);
+			if (!success) {
+				continue;
+			}
+
 			float opaque_prepass_threshold = 0.0;
-			if (p_pass_mode == PASS_MODE_DEPTH) {
+			if constexpr (p_pass_mode == PASS_MODE_DEPTH) {
 				opaque_prepass_threshold = 0.99;
-			} else if (p_pass_mode == PASS_MODE_SHADOW) {
+			} else if constexpr (p_pass_mode == PASS_MODE_SHADOW) {
 				opaque_prepass_threshold = 0.1;
 			}
 
-			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::OPAQUE_PREPASS_THRESHOLD, opaque_prepass_threshold, shader->version, instance_variant);
+			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::OPAQUE_PREPASS_THRESHOLD, opaque_prepass_threshold, shader->version, instance_variant, spec_constants);
 
 			prev_shader = shader;
 			prev_variant = instance_variant;
+			prev_spec_constants = spec_constants;
 		}
 
 		if (prev_inst != inst || prev_shader != shader || prev_variant != instance_variant) {
 			// Rebind the light indices.
-			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::OMNI_LIGHT_COUNT, inst->omni_light_count, shader->version, instance_variant);
-			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::SPOT_LIGHT_COUNT, inst->spot_light_count, shader->version, instance_variant);
+			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::OMNI_LIGHT_COUNT, inst->omni_light_count, shader->version, instance_variant, spec_constants);
+			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::SPOT_LIGHT_COUNT, inst->spot_light_count, shader->version, instance_variant, spec_constants);
 
 			if (inst->omni_light_count) {
-				glUniform1uiv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::OMNI_LIGHT_INDICES, shader->version, instance_variant), inst->omni_light_count, inst->omni_light_gl_cache.ptr());
+				glUniform1uiv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::OMNI_LIGHT_INDICES, shader->version, instance_variant, spec_constants), inst->omni_light_count, inst->omni_light_gl_cache.ptr());
 			}
 
 			if (inst->spot_light_count) {
-				glUniform1uiv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::SPOT_LIGHT_INDICES, shader->version, instance_variant), inst->spot_light_count, inst->spot_light_gl_cache.ptr());
+				glUniform1uiv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::SPOT_LIGHT_INDICES, shader->version, instance_variant, spec_constants), inst->spot_light_count, inst->spot_light_gl_cache.ptr());
 			}
 
 			prev_inst = inst;
 		}
 
-		material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, world_transform, shader->version, instance_variant);
+		material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, world_transform, shader->version, instance_variant, spec_constants);
 		if (inst->instance_count > 0) {
-			// Using MultiMesh.
+			// Using MultiMesh or Particles.
 			// Bind instance buffers.
 
-			GLuint multimesh_buffer = mesh_storage->multimesh_get_gl_buffer(inst->data->base);
-			glBindBuffer(GL_ARRAY_BUFFER, multimesh_buffer);
-			uint32_t multimesh_stride = mesh_storage->multimesh_get_stride(inst->data->base);
+			GLuint instance_buffer = 0;
+			uint32_t stride = 0;
+			if (inst->flags_cache & INSTANCE_DATA_FLAG_PARTICLES) {
+				instance_buffer = particles_storage->particles_get_gl_buffer(inst->data->base);
+				stride = 16; // 12 bytes for instance transform and 4 bytes for packed color and custom.
+			} else {
+				instance_buffer = mesh_storage->multimesh_get_gl_buffer(inst->data->base);
+				stride = mesh_storage->multimesh_get_stride(inst->data->base);
+			}
+
+			if (instance_buffer == 0) {
+				// Instance buffer not initialized yet. Skip rendering for now.
+				continue;
+			}
+
+			glBindBuffer(GL_ARRAY_BUFFER, instance_buffer);
+
 			glEnableVertexAttribArray(12);
-			glVertexAttribPointer(12, 4, GL_FLOAT, GL_FALSE, multimesh_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(0));
+			glVertexAttribPointer(12, 4, GL_FLOAT, GL_FALSE, stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(0));
 			glVertexAttribDivisor(12, 1);
 			glEnableVertexAttribArray(13);
-			glVertexAttribPointer(13, 4, GL_FLOAT, GL_FALSE, multimesh_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(4 * 4));
+			glVertexAttribPointer(13, 4, GL_FLOAT, GL_FALSE, stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(sizeof(float) * 4));
 			glVertexAttribDivisor(13, 1);
-			glEnableVertexAttribArray(14);
-			glVertexAttribPointer(14, 4, GL_FLOAT, GL_FALSE, multimesh_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(4 * 8));
-			glVertexAttribDivisor(14, 1);
+			if (!(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D)) {
+				glEnableVertexAttribArray(14);
+				glVertexAttribPointer(14, 4, GL_FLOAT, GL_FALSE, stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(sizeof(float) * 8));
+				glVertexAttribDivisor(14, 1);
+			}
 
-			if (mesh_storage->multimesh_uses_colors(inst->data->base) || mesh_storage->multimesh_uses_custom_data(inst->data->base)) {
+			if ((inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR) || (inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA)) {
+				uint32_t color_custom_offset = inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D ? 8 : 12;
 				glEnableVertexAttribArray(15);
-				glVertexAttribIPointer(15, 4, GL_UNSIGNED_INT, multimesh_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(mesh_storage->multimesh_get_color_offset(inst->data->base) * sizeof(float)));
+				glVertexAttribIPointer(15, 4, GL_UNSIGNED_INT, stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(color_custom_offset * sizeof(float)));
 				glVertexAttribDivisor(15, 1);
 			}
 			if (use_index_buffer) {
@@ -2312,12 +2365,83 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			glDisableVertexAttribArray(15);
 		}
 	}
+
+	// Make the actual redraw request
+	if (should_request_redraw) {
+		RenderingServerDefault::redraw_request();
+	}
 }
 
 void RasterizerSceneGLES3::render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
 }
 
 void RasterizerSceneGLES3::render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<RenderGeometryInstance *> &p_instances) {
+	GLES3::ParticlesStorage *particles_storage = GLES3::ParticlesStorage::get_singleton();
+
+	ERR_FAIL_COND(!particles_storage->particles_collision_is_heightfield(p_collider));
+	Vector3 extents = particles_storage->particles_collision_get_extents(p_collider) * p_transform.basis.get_scale();
+	Projection cm;
+	cm.set_orthogonal(-extents.x, extents.x, -extents.z, extents.z, 0, extents.y * 2.0);
+
+	Vector3 cam_pos = p_transform.origin;
+	cam_pos.y += extents.y;
+
+	Transform3D cam_xform;
+	cam_xform.set_look_at(cam_pos, cam_pos - p_transform.basis.get_column(Vector3::AXIS_Y), -p_transform.basis.get_column(Vector3::AXIS_Z).normalized());
+
+	GLuint fb = particles_storage->particles_collision_get_heightfield_framebuffer(p_collider);
+	Size2i fb_size = particles_storage->particles_collision_get_heightfield_size(p_collider);
+
+	RENDER_TIMESTAMP("Setup GPUParticlesCollisionHeightField3D");
+
+	RenderDataGLES3 render_data;
+
+	render_data.cam_projection = cm;
+	render_data.cam_transform = cam_xform;
+	render_data.view_projection[0] = cm;
+	render_data.inv_cam_transform = render_data.cam_transform.affine_inverse();
+	render_data.cam_orthogonal = true;
+	render_data.z_near = 0.0;
+	render_data.z_far = cm.get_z_far();
+
+	render_data.instances = &p_instances;
+
+	_setup_environment(&render_data, true, Vector2(fb_size), true, Color(), false);
+
+	PassMode pass_mode = PASS_MODE_SHADOW;
+
+	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, pass_mode);
+	render_list[RENDER_LIST_SECONDARY].sort_by_key();
+
+	RENDER_TIMESTAMP("Render Collider Heightfield");
+
+	glBindFramebuffer(GL_FRAMEBUFFER, fb);
+	glViewport(0, 0, fb_size.width, fb_size.height);
+
+	GLuint global_buffer = GLES3::MaterialStorage::get_singleton()->global_shader_parameters_get_uniform_buffer();
+
+	glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_GLOBALS_UNIFORM_LOCATION, global_buffer);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+	glDisable(GL_BLEND);
+	glDepthMask(GL_TRUE);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+	glDisable(GL_SCISSOR_TEST);
+	glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
+	scene_state.cull_mode = GLES3::SceneShaderData::CULL_BACK;
+
+	glColorMask(0, 0, 0, 0);
+	glClearDepth(1.0f);
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+	RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), false, 31, false);
+
+	_render_list_template<PASS_MODE_SHADOW>(&render_list_params, &render_data, 0, render_list[RENDER_LIST_SECONDARY].elements.size());
+
+	glColorMask(1, 1, 1, 1);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void RasterizerSceneGLES3::set_time(double p_time, double p_step) {
@@ -2391,10 +2515,8 @@ bool RasterizerSceneGLES3::free(RID p_rid) {
 		ERR_FAIL_COND_V(!sky, false);
 		_free_sky_data(sky);
 		sky_owner.free(p_rid);
-	} else if (light_instance_owner.owns(p_rid)) {
-		LightInstance *light_instance = light_instance_owner.get_or_null(p_rid);
-		ERR_FAIL_COND_V(!light_instance, false);
-		light_instance_owner.free(p_rid);
+	} else if (GLES3::LightStorage::get_singleton()->owns_light_instance(p_rid)) {
+		GLES3::LightStorage::get_singleton()->light_instance_free(p_rid);
 	} else if (RSG::camera_attributes->owns_camera_attributes(p_rid)) {
 		//not much to delete, just free it
 		RSG::camera_attributes->camera_attributes_free(p_rid);
@@ -2434,13 +2556,13 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 
 		uint32_t light_buffer_size = config->max_renderable_lights * sizeof(LightData);
 		scene_state.omni_lights = memnew_arr(LightData, config->max_renderable_lights);
-		scene_state.omni_light_sort = memnew_arr(InstanceSort<LightInstance>, config->max_renderable_lights);
+		scene_state.omni_light_sort = memnew_arr(InstanceSort<GLES3::LightInstance>, config->max_renderable_lights);
 		glGenBuffers(1, &scene_state.omni_light_buffer);
 		glBindBuffer(GL_UNIFORM_BUFFER, scene_state.omni_light_buffer);
 		glBufferData(GL_UNIFORM_BUFFER, light_buffer_size, nullptr, GL_STREAM_DRAW);
 
 		scene_state.spot_lights = memnew_arr(LightData, config->max_renderable_lights);
-		scene_state.spot_light_sort = memnew_arr(InstanceSort<LightInstance>, config->max_renderable_lights);
+		scene_state.spot_light_sort = memnew_arr(InstanceSort<GLES3::LightInstance>, config->max_renderable_lights);
 		glGenBuffers(1, &scene_state.spot_light_buffer);
 		glBindBuffer(GL_UNIFORM_BUFFER, scene_state.spot_light_buffer);
 		glBufferData(GL_UNIFORM_BUFFER, light_buffer_size, nullptr, GL_STREAM_DRAW);
@@ -2470,7 +2592,7 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 		global_defines += "#define MAX_GLOBAL_SHADER_UNIFORMS 256\n"; // TODO: this is arbitrary for now
 		global_defines += "\n#define MAX_LIGHT_DATA_STRUCTS " + itos(config->max_renderable_lights) + "\n";
 		global_defines += "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(MAX_DIRECTIONAL_LIGHTS) + "\n";
-		global_defines += "\n#define MAX_FORWARD_LIGHTS " + itos(config->max_lights_per_object) + "\n";
+		global_defines += "\n#define MAX_FORWARD_LIGHTS uint(" + itos(config->max_lights_per_object) + ")\n";
 		material_storage->shaders.scene_shader.initialize(global_defines);
 		scene_globals.shader_default_version = material_storage->shaders.scene_shader.version_create();
 		material_storage->shaders.scene_shader.version_bind_shader(scene_globals.shader_default_version, SceneShaderGLES3::MODE_COLOR);
@@ -2481,7 +2603,7 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 		scene_globals.default_shader = material_storage->shader_allocate();
 		material_storage->shader_initialize(scene_globals.default_shader);
 		material_storage->shader_set_code(scene_globals.default_shader, R"(
-// Default 3D material shader (clustered).
+// Default 3D material shader.
 
 shader_type spatial;
 
@@ -2510,7 +2632,6 @@ void fragment() {
 		global_defines += "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(sky_globals.max_directional_lights) + "\n";
 		material_storage->shaders.sky_shader.initialize(global_defines);
 		sky_globals.shader_default_version = material_storage->shaders.sky_shader.version_create();
-		material_storage->shaders.sky_shader.version_bind_shader(sky_globals.shader_default_version, SkyShaderGLES3::MODE_BACKGROUND);
 	}
 
 	{
@@ -2518,7 +2639,6 @@ void fragment() {
 		global_defines += "\n#define MAX_SAMPLE_COUNT " + itos(sky_globals.ggx_samples) + "\n";
 		material_storage->shaders.cubemap_filter_shader.initialize(global_defines);
 		scene_globals.cubemap_filter_shader_version = material_storage->shaders.cubemap_filter_shader.version_create();
-		material_storage->shaders.cubemap_filter_shader.version_bind_shader(scene_globals.cubemap_filter_shader_version, CubemapFilterShaderGLES3::MODE_DEFAULT);
 	}
 
 	{

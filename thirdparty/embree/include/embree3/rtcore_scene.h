@@ -47,8 +47,11 @@ RTC_API void rtcAttachGeometryByID(RTCScene scene, RTCGeometry geometry, unsigne
 /* Detaches the geometry from the scene. */
 RTC_API void rtcDetachGeometry(RTCScene scene, unsigned int geomID);
 
-/* Gets a geometry handle from the scene. */
+/* Gets a geometry handle from the scene. This function is not thread safe and should get used during rendering. */
 RTC_API RTCGeometry rtcGetGeometry(RTCScene scene, unsigned int geomID);
+
+/* Gets a geometry handle from the scene. This function is thread safe and should NOT get used during rendering. */
+RTC_API RTCGeometry rtcGetGeometryThreadSafe(RTCScene scene, unsigned int geomID);
 
 
 /* Commits the scene. */

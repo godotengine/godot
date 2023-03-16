@@ -1,37 +1,39 @@
-/*************************************************************************/
-/*  navigation_agent_3d.h                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  navigation_agent_3d.h                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef NAVIGATION_AGENT_3D_H
 #define NAVIGATION_AGENT_3D_H
 
 #include "scene/main/node.h"
+#include "servers/navigation/navigation_path_query_parameters_3d.h"
+#include "servers/navigation/navigation_path_query_result_3d.h"
 
 class Node3D;
 
@@ -46,22 +48,24 @@ class NavigationAgent3D : public Node {
 
 	bool avoidance_enabled = false;
 	uint32_t navigation_layers = 1;
+	BitField<NavigationPathQueryParameters3D::PathMetadataFlags> path_metadata_flags = NavigationPathQueryParameters3D::PathMetadataFlags::PATH_METADATA_INCLUDE_ALL;
 
 	real_t path_desired_distance = 1.0;
 	real_t target_desired_distance = 1.0;
-	real_t radius = 0.0;
+	real_t radius = 0.5;
 	real_t navigation_height_offset = 0.0;
-	bool ignore_y = false;
-	real_t neighbor_distance = 0.0;
-	int max_neighbors = 0;
-	real_t time_horizon = 0.0;
-	real_t max_speed = 0.0;
+	bool ignore_y = true;
+	real_t neighbor_distance = 50.0;
+	int max_neighbors = 10;
+	real_t time_horizon = 1.0;
+	real_t max_speed = 10.0;
+	real_t path_max_distance = 5.0;
 
-	real_t path_max_distance = 3.0;
-
-	Vector3 target_location;
-	Vector<Vector3> navigation_path;
-	int nav_path_index = 0;
+	Vector3 target_position;
+	bool target_position_submitted = false;
+	Ref<NavigationPathQueryParameters3D> navigation_query;
+	Ref<NavigationPathQueryResult3D> navigation_result;
+	int navigation_path_index = 0;
 	bool velocity_submitted = false;
 	Vector3 prev_safe_velocity;
 	/// The submitted target velocity
@@ -70,6 +74,24 @@ class NavigationAgent3D : public Node {
 	bool navigation_finished = true;
 	// No initialized on purpose
 	uint32_t update_frame_id = 0;
+
+	// Debug properties for exposed bindings
+	bool debug_enabled = false;
+	float debug_path_custom_point_size = 4.0;
+	bool debug_use_custom = false;
+	Color debug_path_custom_color = Color(1.0, 1.0, 1.0, 1.0);
+#ifdef DEBUG_ENABLED
+	// Debug properties internal only
+	bool debug_path_dirty = true;
+	RID debug_path_instance;
+	Ref<ArrayMesh> debug_path_mesh;
+	Ref<StandardMaterial3D> debug_agent_path_line_custom_material;
+	Ref<StandardMaterial3D> debug_agent_path_point_custom_material;
+
+private:
+	void _navigation_debug_changed();
+	void _update_debug_path();
+#endif // DEBUG_ENABLED
 
 protected:
 	static void _bind_methods();
@@ -93,6 +115,11 @@ public:
 
 	void set_navigation_layer_value(int p_layer_number, bool p_value);
 	bool get_navigation_layer_value(int p_layer_number) const;
+
+	void set_path_metadata_flags(BitField<NavigationPathQueryParameters3D::PathMetadataFlags> p_flags);
+	BitField<NavigationPathQueryParameters3D::PathMetadataFlags> get_path_metadata_flags() const {
+		return path_metadata_flags;
+	}
 
 	void set_navigation_map(RID p_navigation_map);
 	RID get_navigation_map() const;
@@ -145,29 +172,43 @@ public:
 	void set_path_max_distance(real_t p_pmd);
 	real_t get_path_max_distance();
 
-	void set_target_location(Vector3 p_location);
-	Vector3 get_target_location() const;
+	void set_target_position(Vector3 p_position);
+	Vector3 get_target_position() const;
 
-	Vector3 get_next_location();
+	Vector3 get_next_path_position();
 
-	Vector<Vector3> get_nav_path() const {
-		return navigation_path;
+	Ref<NavigationPathQueryResult3D> get_current_navigation_result() const {
+		return navigation_result;
 	}
-
-	int get_nav_path_index() const {
-		return nav_path_index;
+	const Vector<Vector3> &get_current_navigation_path() const {
+		return navigation_result->get_path();
+	}
+	int get_current_navigation_path_index() const {
+		return navigation_path_index;
 	}
 
 	real_t distance_to_target() const;
 	bool is_target_reached() const;
 	bool is_target_reachable();
 	bool is_navigation_finished();
-	Vector3 get_final_location();
+	Vector3 get_final_position();
 
 	void set_velocity(Vector3 p_velocity);
 	void _avoidance_done(Vector3 p_new_velocity);
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
+
+	void set_debug_enabled(bool p_enabled);
+	bool get_debug_enabled() const;
+
+	void set_debug_use_custom(bool p_enabled);
+	bool get_debug_use_custom() const;
+
+	void set_debug_path_custom_color(Color p_color);
+	Color get_debug_path_custom_color() const;
+
+	void set_debug_path_custom_point_size(float p_point_size);
+	float get_debug_path_custom_point_size() const;
 
 private:
 	void update_navigation();

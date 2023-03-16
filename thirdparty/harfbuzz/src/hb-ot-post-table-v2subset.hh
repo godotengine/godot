@@ -78,14 +78,14 @@ HB_INTERNAL bool postV2Tail::subset (hb_subset_context_t *c) const
 
   post::accelerator_t _post (c->plan->source);
 
-  hb_hashmap_t<hb_bytes_t, unsigned, true> glyph_name_to_new_index;
+  hb_hashmap_t<hb_bytes_t, uint32_t, true> glyph_name_to_new_index;
   for (hb_codepoint_t new_gid = 0; new_gid < num_glyphs; new_gid++)
   {
     hb_codepoint_t old_gid = reverse_glyph_map.get (new_gid);
     unsigned old_index = glyphNameIndex[old_gid];
 
     unsigned new_index;
-    const unsigned *new_index2;
+    const uint32_t *new_index2;
     if (old_index <= 257) new_index = old_index;
     else if (old_new_index_map.has (old_index, &new_index2))
     {

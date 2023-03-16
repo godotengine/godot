@@ -11,7 +11,7 @@
  ********************************************************************
 
   function: packing variable sized words into an octet stream
-  last mod: $Id: bitpack.c 16503 2009-08-22 18:14:02Z giles $
+  last mod: $Id$
 
  ********************************************************************/
 #include <string.h>
@@ -32,15 +32,18 @@ static oc_pb_window oc_pack_refill(oc_pack_buf *_b,int _bits){
   const unsigned char *stop;
   oc_pb_window         window;
   int                  available;
+  unsigned             shift;
+  stop=_b->stop;
+  ptr=_b->ptr;
   window=_b->window;
   available=_b->bits;
-  ptr=_b->ptr;
-  stop=_b->stop;
-  while(available<=OC_PB_WINDOW_SIZE-8&&ptr<stop){
-    available+=8;
-    window|=(oc_pb_window)*ptr++<<OC_PB_WINDOW_SIZE-available;
+  shift=OC_PB_WINDOW_SIZE-available;
+  while(7<shift&&ptr<stop){
+    shift-=8;
+    window|=(oc_pb_window)*ptr++<<shift;
   }
   _b->ptr=ptr;
+  available=OC_PB_WINDOW_SIZE-shift;
   if(_bits>available){
     if(ptr>=stop){
       _b->eof=1;
@@ -67,7 +70,7 @@ void oc_pack_adv1(oc_pack_buf *_b){
 }
 
 /*Here we assume that 0<=_bits&&_bits<=32.*/
-long oc_pack_read(oc_pack_buf *_b,int _bits){
+long oc_pack_read_c(oc_pack_buf *_b,int _bits){
   oc_pb_window window;
   int          available;
   long         result;
@@ -82,12 +85,12 @@ long oc_pack_read(oc_pack_buf *_b,int _bits){
   available-=_bits;
   window<<=1;
   window<<=_bits-1;
-  _b->bits=available;
   _b->window=window;
+  _b->bits=available;
   return result;
 }
 
-int oc_pack_read1(oc_pack_buf *_b){
+int oc_pack_read1_c(oc_pack_buf *_b){
   oc_pb_window window;
   int          available;
   int          result;
@@ -100,8 +103,8 @@ int oc_pack_read1(oc_pack_buf *_b){
   result=window>>OC_PB_WINDOW_SIZE-1;
   available--;
   window<<=1;
-  _b->bits=available;
   _b->window=window;
+  _b->bits=available;
   return result;
 }
 

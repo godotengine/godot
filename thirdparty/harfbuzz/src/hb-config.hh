@@ -35,6 +35,10 @@
 #include "config.h"
 #endif
 
+#ifndef HB_EXPERIMENTAL_API
+#define HB_NO_BEYOND_64K
+#define HB_NO_VAR_COMPOSITES
+#endif
 
 #ifdef HB_TINY
 #define HB_LEAN
@@ -68,6 +72,7 @@
 #define HB_NO_LANGUAGE_PRIVATE_SUBTAG
 #define HB_NO_LAYOUT_FEATURE_PARAMS
 #define HB_NO_LAYOUT_COLLECT_GLYPHS
+#define HB_NO_LAYOUT_RARELY_USED
 #define HB_NO_LAYOUT_UNUSED
 #define HB_NO_MATH
 #define HB_NO_META
@@ -80,6 +85,7 @@
 #define HB_NO_OT_SHAPE_FRACTIONS
 #define HB_NO_STYLE
 #define HB_NO_SUBSET_LAYOUT
+#define HB_NO_VERTICAL
 #define HB_NO_VAR
 #endif
 
@@ -100,13 +106,18 @@
 
 #ifdef HB_NO_BORING_EXPANSION
 #define HB_NO_BEYOND_64K
-#define HB_NO_VARIATIONS2
+#define HB_NO_AVAR2
 #endif
 
 #ifdef HB_DISABLE_DEPRECATED
 #define HB_IF_NOT_DEPRECATED(x)
 #else
 #define HB_IF_NOT_DEPRECATED(x) x
+#endif
+
+#ifdef HB_NO_SHAPER
+#define HB_NO_OT_SHAPE
+#define HB_NO_AAT_SHAPE
 #endif
 
 #ifdef HB_NO_AAT
@@ -155,6 +166,7 @@
 #define HB_NO_OT_SHAPER_HEBREW_FALLBACK
 #define HB_NO_OT_SHAPER_THAI_FALLBACK
 #define HB_NO_OT_SHAPER_VOWEL_CONSTRAINTS
+#define HB_NO_OT_SHAPER_MYANMAR_ZAWGYI
 #endif
 
 #ifdef NDEBUG

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  viewport.h                                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  viewport.h                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef VIEWPORT_H
 #define VIEWPORT_H
@@ -208,6 +208,7 @@ private:
 	friend class ViewportTexture;
 
 	Viewport *parent = nullptr;
+	Viewport *gui_parent = nullptr; // Whose gui.tooltip_popup it is.
 
 	AudioListener2D *audio_listener_2d = nullptr;
 	Camera2D *camera_2d = nullptr;
@@ -245,6 +246,7 @@ private:
 	bool snap_2d_vertices_to_pixel = false;
 
 	bool physics_object_picking = false;
+	bool physics_object_picking_sort = false;
 	List<Ref<InputEvent>> physics_picking_events;
 	ObjectID physics_object_capture;
 	ObjectID physics_object_over;
@@ -258,7 +260,7 @@ private:
 		bool control = false;
 		bool shift = false;
 		bool meta = false;
-		MouseButton mouse_mask = MouseButton::NONE;
+		BitField<MouseButtonMask> mouse_mask;
 
 	} physics_last_mouse_state;
 
@@ -274,7 +276,6 @@ private:
 
 	Ref<World2D> world_2d;
 
-	Rect2i to_screen_rect;
 	StringName input_group;
 	StringName gui_input_group;
 	StringName shortcut_input_group;
@@ -316,6 +317,8 @@ private:
 	SDFOversize sdf_oversize = SDF_OVERSIZE_120_PERCENT;
 	SDFScale sdf_scale = SDF_SCALE_50_PERCENT;
 
+	uint32_t canvas_cull_mask = 0xffffffff; // by default show everything
+
 	enum SubWindowDrag {
 		SUB_WINDOW_DRAG_DISABLED,
 		SUB_WINDOW_DRAG_MOVE,
@@ -351,10 +354,11 @@ private:
 		bool forced_mouse_focus = false; //used for menu buttons
 		bool mouse_in_viewport = true;
 		bool key_event_accepted = false;
+		HashMap<int, ObjectID> touch_focus;
 		Control *mouse_focus = nullptr;
 		Control *last_mouse_focus = nullptr;
 		Control *mouse_click_grabber = nullptr;
-		MouseButton mouse_focus_mask = MouseButton::NONE;
+		BitField<MouseButtonMask> mouse_focus_mask;
 		Control *key_focus = nullptr;
 		Control *mouse_over = nullptr;
 		Control *drag_mouse_over = nullptr;
@@ -370,7 +374,6 @@ private:
 		ObjectID drag_preview_id;
 		Ref<SceneTreeTimer> tooltip_timer;
 		double tooltip_delay = 0.0;
-		Transform2D focus_inv_xform;
 		bool roots_order_dirty = false;
 		List<Control *> roots;
 		int canvas_sort_index = 0; //for sorting items with canvas as root
@@ -399,12 +402,11 @@ private:
 	void _gui_call_notification(Control *p_control, int p_what);
 
 	void _gui_sort_roots();
-	Control *_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_global, const Transform2D &p_xform, Transform2D &r_inv_xform);
+	Control *_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_global, const Transform2D &p_xform);
 
 	void _gui_input_event(Ref<InputEvent> p_event);
+	void _perform_drop(Control *p_control = nullptr, Point2 p_pos = Point2());
 	void _gui_cleanup_internal_state(Ref<InputEvent> p_event);
-
-	_FORCE_INLINE_ Transform2D _get_input_pre_xform() const;
 
 	Ref<InputEvent> _make_input_local(const Ref<InputEvent> &ev);
 
@@ -452,8 +454,6 @@ private:
 
 	void _update_canvas_items(Node *p_node);
 
-	void _gui_set_root_order_dirty();
-
 	friend class Window;
 
 	void _sub_window_update_order();
@@ -469,7 +469,7 @@ private:
 	uint64_t event_count = 0;
 
 protected:
-	void _set_size(const Size2i &p_size, const Size2i &p_size_2d_override, const Rect2i &p_to_screen_rect, const Transform2D &p_stretch_transform, bool p_allocated);
+	void _set_size(const Size2i &p_size, const Size2i &p_size_2d_override, bool p_allocated);
 
 	Size2i _get_size() const;
 	Size2i _get_size_2d_override() const;
@@ -508,7 +508,10 @@ public:
 	void set_global_canvas_transform(const Transform2D &p_transform);
 	Transform2D get_global_canvas_transform() const;
 
-	Transform2D get_final_transform() const;
+	virtual Transform2D get_final_transform() const;
+	void assign_next_enabled_camera_2d(const StringName &p_camera_group);
+
+	void gui_set_root_order_dirty();
 
 	void set_transparent_background(bool p_enable);
 	bool has_transparent_background() const;
@@ -572,6 +575,8 @@ public:
 
 	void set_physics_object_picking(bool p_enable);
 	bool get_physics_object_picking();
+	void set_physics_object_picking_sort(bool p_enable);
+	bool get_physics_object_picking_sort();
 
 	Variant gui_get_drag_data() const;
 
@@ -581,7 +586,7 @@ public:
 	void gui_release_focus();
 	Control *gui_get_focus_owner();
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	void set_debug_draw(DebugDraw p_debug_draw);
 	DebugDraw get_debug_draw() const;
@@ -638,7 +643,17 @@ public:
 
 	void pass_mouse_focus_to(Viewport *p_viewport, Control *p_control);
 
-	virtual Transform2D get_screen_transform() const;
+	void set_canvas_cull_mask(uint32_t p_layers);
+	uint32_t get_canvas_cull_mask() const;
+
+	void set_canvas_cull_mask_bit(uint32_t p_layer, bool p_enable);
+	bool get_canvas_cull_mask_bit(uint32_t p_layer) const;
+
+	virtual bool is_size_2d_override_stretch_enabled() const { return true; }
+
+	Transform2D get_screen_transform() const;
+	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const;
+	virtual Transform2D get_popup_base_transform() const { return Transform2D(); }
 
 #ifndef _3D_DISABLED
 	bool use_xr = false;
@@ -742,21 +757,23 @@ private:
 	ClearMode clear_mode = CLEAR_MODE_ALWAYS;
 	bool size_2d_override_stretch = false;
 
+	void _internal_set_size(const Size2i &p_size, bool p_force = false);
+
 protected:
 	static void _bind_methods();
 	virtual DisplayServer::WindowID get_window_id() const override;
-	Transform2D _stretch_transform();
 	void _notification(int p_what);
 
 public:
 	void set_size(const Size2i &p_size);
 	Size2i get_size() const;
+	void set_size_force(const Size2i &p_size);
 
 	void set_size_2d_override(const Size2i &p_size);
 	Size2i get_size_2d_override() const;
 
 	void set_size_2d_override_stretch(bool p_enable);
-	bool is_size_2d_override_stretch_enabled() const;
+	bool is_size_2d_override_stretch_enabled() const override;
 
 	void set_update_mode(UpdateMode p_mode);
 	UpdateMode get_update_mode() const;
@@ -764,8 +781,10 @@ public:
 	void set_clear_mode(ClearMode p_mode);
 	ClearMode get_clear_mode() const;
 
-	virtual Transform2D get_screen_transform() const override;
+	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const override;
+	virtual Transform2D get_popup_base_transform() const override;
 
+	void _validate_property(PropertyInfo &p_property) const;
 	SubViewport();
 	~SubViewport();
 };

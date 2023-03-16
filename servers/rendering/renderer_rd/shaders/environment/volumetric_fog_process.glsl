@@ -381,7 +381,7 @@ void main() {
 	float cell_depth_size = abs(view_pos.z - get_depth_at_pos(fog_cell_size.z, pos.z + 1));
 	//compute directional lights
 
-	if (total_density > 0.001) {
+	if (total_density > 0.00005) {
 		for (uint i = 0; i < params.directional_light_count; i++) {
 			if (directional_lights.data[i].volumetric_fog_energy > 0.001) {
 				vec3 shadow_attenuation = vec3(1.0);
@@ -585,23 +585,14 @@ void main() {
 						if (spot_lights.data[light_index].shadow_opacity > 0.001) {
 							//has shadow
 							vec4 uv_rect = spot_lights.data[light_index].atlas_rect;
-							vec2 flip_offset = spot_lights.data[light_index].direction.xy;
 
-							vec3 local_vert = (spot_lights.data[light_index].shadow_matrix * vec4(view_pos, 1.0)).xyz;
+							vec4 v = vec4(view_pos, 1.0);
 
-							float shadow_len = length(local_vert); //need to remember shadow len from here
-							vec3 shadow_sample = normalize(local_vert);
+							vec4 splane = (spot_lights.data[light_index].shadow_matrix * v);
+							splane.z -= spot_lights.data[light_index].shadow_bias / (d * spot_lights.data[light_index].inv_radius);
+							splane /= splane.w;
 
-							if (shadow_sample.z >= 0.0) {
-								uv_rect.xy += flip_offset;
-							}
-
-							shadow_sample.z = 1.0 + abs(shadow_sample.z);
-							vec3 pos = vec3(shadow_sample.xy / shadow_sample.z, shadow_len - spot_lights.data[light_index].shadow_bias);
-							pos.z *= spot_lights.data[light_index].inv_radius;
-
-							pos.xy = pos.xy * 0.5 + 0.5;
-							pos.xy = uv_rect.xy + pos.xy * uv_rect.zw;
+							vec3 pos = vec3(splane.xy * spot_lights.data[light_index].atlas_rect.zw + spot_lights.data[light_index].atlas_rect.xy, splane.z);
 
 							float depth = texture(sampler2D(shadow_atlas, linear_sampler), pos.xy).r;
 

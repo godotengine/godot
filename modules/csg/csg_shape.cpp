@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  csg_shape.cpp                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  csg_shape.cpp                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "csg_shape.h"
 
@@ -92,13 +92,13 @@ uint32_t CSGShape3D::get_collision_mask() const {
 void CSGShape3D::set_collision_layer_value(int p_layer_number, bool p_value) {
 	ERR_FAIL_COND_MSG(p_layer_number < 1, "Collision layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
-	uint32_t collision_layer = get_collision_layer();
+	uint32_t layer = get_collision_layer();
 	if (p_value) {
-		collision_layer |= 1 << (p_layer_number - 1);
+		layer |= 1 << (p_layer_number - 1);
 	} else {
-		collision_layer &= ~(1 << (p_layer_number - 1));
+		layer &= ~(1 << (p_layer_number - 1));
 	}
-	set_collision_layer(collision_layer);
+	set_collision_layer(layer);
 }
 
 bool CSGShape3D::get_collision_layer_value(int p_layer_number) const {
@@ -558,7 +558,7 @@ void CSGShape3D::_notification(int p_what) {
 				set_collision_layer(collision_layer);
 				set_collision_mask(collision_mask);
 				set_collision_priority(collision_priority);
-				_update_collision_faces();
+				_make_dirty();
 			}
 		} break;
 
@@ -690,7 +690,7 @@ CSGCombiner3D::CSGCombiner3D() {
 /////////////////////
 
 CSGBrush *CSGPrimitive3D::_create_brush_from_arrays(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uv, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials) {
-	CSGBrush *brush = memnew(CSGBrush);
+	CSGBrush *new_brush = memnew(CSGBrush);
 
 	Vector<bool> invert;
 	invert.resize(p_vertices.size() / 3);
@@ -701,9 +701,9 @@ CSGBrush *CSGPrimitive3D::_create_brush_from_arrays(const Vector<Vector3> &p_ver
 			w[i] = flip_faces;
 		}
 	}
-	brush->build_from_faces(p_vertices, p_uv, p_smooth, p_materials, invert);
+	new_brush->build_from_faces(p_vertices, p_uv, p_smooth, p_materials, invert);
 
-	return brush;
+	return new_brush;
 }
 
 void CSGPrimitive3D::_bind_methods() {
@@ -742,7 +742,7 @@ CSGBrush *CSGMesh3D::_build_brush() {
 	Vector<bool> smooth;
 	Vector<Ref<Material>> materials;
 	Vector<Vector2> uvs;
-	Ref<Material> material = get_material();
+	Ref<Material> base_material = get_material();
 
 	for (int i = 0; i < mesh->get_surface_count(); i++) {
 		if (mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
@@ -776,8 +776,8 @@ CSGBrush *CSGMesh3D::_build_brush() {
 		}
 
 		Ref<Material> mat;
-		if (material.is_valid()) {
-			mat = material;
+		if (base_material.is_valid()) {
+			mat = base_material;
 		} else {
 			mat = mesh->surface_get_material(i);
 		}
@@ -933,12 +933,12 @@ Ref<Mesh> CSGMesh3D::get_mesh() {
 CSGBrush *CSGSphere3D::_build_brush() {
 	// set our bounding box
 
-	CSGBrush *brush = memnew(CSGBrush);
+	CSGBrush *new_brush = memnew(CSGBrush);
 
 	int face_count = rings * radial_segments * 2 - radial_segments * 2;
 
 	bool invert_val = get_flip_faces();
-	Ref<Material> material = get_material();
+	Ref<Material> base_material = get_material();
 
 	Vector<Vector3> faces;
 	Vector<Vector2> uvs;
@@ -1019,7 +1019,7 @@ CSGBrush *CSGSphere3D::_build_brush() {
 
 					smoothw[face] = smooth_faces;
 					invertw[face] = invert_val;
-					materialsw[face] = material;
+					materialsw[face] = base_material;
 
 					face++;
 				}
@@ -1036,7 +1036,7 @@ CSGBrush *CSGSphere3D::_build_brush() {
 
 					smoothw[face] = smooth_faces;
 					invertw[face] = invert_val;
-					materialsw[face] = material;
+					materialsw[face] = base_material;
 
 					face++;
 				}
@@ -1048,9 +1048,9 @@ CSGBrush *CSGSphere3D::_build_brush() {
 		}
 	}
 
-	brush->build_from_faces(faces, uvs, smooth, materials, invert);
+	new_brush->build_from_faces(faces, uvs, smooth, materials, invert);
 
-	return brush;
+	return new_brush;
 }
 
 void CSGSphere3D::_bind_methods() {
@@ -1137,12 +1137,12 @@ CSGSphere3D::CSGSphere3D() {
 CSGBrush *CSGBox3D::_build_brush() {
 	// set our bounding box
 
-	CSGBrush *brush = memnew(CSGBrush);
+	CSGBrush *new_brush = memnew(CSGBrush);
 
 	int face_count = 12; //it's a cube..
 
 	bool invert_val = get_flip_faces();
-	Ref<Material> material = get_material();
+	Ref<Material> base_material = get_material();
 
 	Vector<Vector3> faces;
 	Vector<Vector2> uvs;
@@ -1204,7 +1204,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 
 				smoothw[face] = false;
 				invertw[face] = invert_val;
-				materialsw[face] = material;
+				materialsw[face] = base_material;
 
 				face++;
 				//face 2
@@ -1218,7 +1218,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 
 				smoothw[face] = false;
 				invertw[face] = invert_val;
-				materialsw[face] = material;
+				materialsw[face] = base_material;
 
 				face++;
 			}
@@ -1229,9 +1229,9 @@ CSGBrush *CSGBox3D::_build_brush() {
 		}
 	}
 
-	brush->build_from_faces(faces, uvs, smooth, materials, invert);
+	new_brush->build_from_faces(faces, uvs, smooth, materials, invert);
 
-	return brush;
+	return new_brush;
 }
 
 void CSGBox3D::_bind_methods() {
@@ -1255,6 +1255,30 @@ Vector3 CSGBox3D::get_size() const {
 	return size;
 }
 
+#ifndef DISABLE_DEPRECATED
+// Kept for compatibility from 3.x to 4.0.
+bool CSGBox3D::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "width") {
+		size.x = p_value;
+		_make_dirty();
+		update_gizmos();
+		return true;
+	} else if (p_name == "height") {
+		size.y = p_value;
+		_make_dirty();
+		update_gizmos();
+		return true;
+	} else if (p_name == "depth") {
+		size.z = p_value;
+		_make_dirty();
+		update_gizmos();
+		return true;
+	} else {
+		return false;
+	}
+}
+#endif
+
 void CSGBox3D::set_material(const Ref<Material> &p_material) {
 	material = p_material;
 	_make_dirty();
@@ -1270,12 +1294,12 @@ Ref<Material> CSGBox3D::get_material() const {
 CSGBrush *CSGCylinder3D::_build_brush() {
 	// set our bounding box
 
-	CSGBrush *brush = memnew(CSGBrush);
+	CSGBrush *new_brush = memnew(CSGBrush);
 
 	int face_count = sides * (cone ? 1 : 2) + sides + (cone ? 0 : sides);
 
 	bool invert_val = get_flip_faces();
-	Ref<Material> material = get_material();
+	Ref<Material> base_material = get_material();
 
 	Vector<Vector3> faces;
 	Vector<Vector2> uvs;
@@ -1312,14 +1336,14 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 				float ang = inc * Math_TAU;
 				float ang_n = inc_n * Math_TAU;
 
-				Vector3 base(Math::cos(ang), 0, Math::sin(ang));
-				Vector3 base_n(Math::cos(ang_n), 0, Math::sin(ang_n));
+				Vector3 face_base(Math::cos(ang), 0, Math::sin(ang));
+				Vector3 face_base_n(Math::cos(ang_n), 0, Math::sin(ang_n));
 
 				Vector3 face_points[4] = {
-					base + Vector3(0, -1, 0),
-					base_n + Vector3(0, -1, 0),
-					base_n * (cone ? 0.0 : 1.0) + Vector3(0, 1, 0),
-					base * (cone ? 0.0 : 1.0) + Vector3(0, 1, 0),
+					face_base + Vector3(0, -1, 0),
+					face_base_n + Vector3(0, -1, 0),
+					face_base_n * (cone ? 0.0 : 1.0) + Vector3(0, 1, 0),
+					face_base * (cone ? 0.0 : 1.0) + Vector3(0, 1, 0),
 				};
 
 				Vector2 u[4] = {
@@ -1340,7 +1364,7 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 
 				smoothw[face] = smooth_faces;
 				invertw[face] = invert_val;
-				materialsw[face] = material;
+				materialsw[face] = base_material;
 
 				face++;
 
@@ -1356,7 +1380,7 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 
 					smoothw[face] = smooth_faces;
 					invertw[face] = invert_val;
-					materialsw[face] = material;
+					materialsw[face] = base_material;
 					face++;
 				}
 
@@ -1371,7 +1395,7 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 
 				smoothw[face] = false;
 				invertw[face] = invert_val;
-				materialsw[face] = material;
+				materialsw[face] = base_material;
 				face++;
 
 				if (!cone) {
@@ -1386,7 +1410,7 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 
 					smoothw[face] = false;
 					invertw[face] = invert_val;
-					materialsw[face] = material;
+					materialsw[face] = base_material;
 					face++;
 				}
 			}
@@ -1397,9 +1421,9 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 		}
 	}
 
-	brush->build_from_faces(faces, uvs, smooth, materials, invert);
+	new_brush->build_from_faces(faces, uvs, smooth, materials, invert);
 
-	return brush;
+	return new_brush;
 }
 
 void CSGCylinder3D::_bind_methods() {
@@ -1515,12 +1539,12 @@ CSGBrush *CSGTorus3D::_build_brush() {
 
 	float radius = (max_radius - min_radius) * 0.5;
 
-	CSGBrush *brush = memnew(CSGBrush);
+	CSGBrush *new_brush = memnew(CSGBrush);
 
 	int face_count = ring_sides * sides * 2;
 
 	bool invert_val = get_flip_faces();
-	Ref<Material> material = get_material();
+	Ref<Material> base_material = get_material();
 
 	Vector<Vector3> faces;
 	Vector<Vector2> uvs;
@@ -1596,7 +1620,7 @@ CSGBrush *CSGTorus3D::_build_brush() {
 
 					smoothw[face] = smooth_faces;
 					invertw[face] = invert_val;
-					materialsw[face] = material;
+					materialsw[face] = base_material;
 
 					face++;
 
@@ -1611,7 +1635,7 @@ CSGBrush *CSGTorus3D::_build_brush() {
 
 					smoothw[face] = smooth_faces;
 					invertw[face] = invert_val;
-					materialsw[face] = material;
+					materialsw[face] = base_material;
 					face++;
 				}
 			}
@@ -1622,9 +1646,9 @@ CSGBrush *CSGTorus3D::_build_brush() {
 		}
 	}
 
-	brush->build_from_faces(faces, uvs, smooth, materials, invert);
+	new_brush->build_from_faces(faces, uvs, smooth, materials, invert);
 
-	return brush;
+	return new_brush;
 }
 
 void CSGTorus3D::_bind_methods() {
@@ -1726,10 +1750,10 @@ CSGTorus3D::CSGTorus3D() {
 ///////////////
 
 CSGBrush *CSGPolygon3D::_build_brush() {
-	CSGBrush *brush = memnew(CSGBrush);
+	CSGBrush *new_brush = memnew(CSGBrush);
 
 	if (polygon.size() < 3) {
-		return brush;
+		return new_brush;
 	}
 
 	// Triangulate polygon shape.
@@ -1739,7 +1763,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 	}
 	int shape_sides = shape_polygon.size();
 	Vector<int> shape_faces = Geometry2D::triangulate_polygon(shape_polygon);
-	ERR_FAIL_COND_V_MSG(shape_faces.size() < 3, brush, "Failed to triangulate CSGPolygon. Make sure the polygon doesn't have any intersecting edges.");
+	ERR_FAIL_COND_V_MSG(shape_faces.size() < 3, new_brush, "Failed to triangulate CSGPolygon. Make sure the polygon doesn't have any intersecting edges.");
 
 	// Get polygon enclosing Rect2.
 	Rect2 shape_rect(shape_polygon[0], Vector2());
@@ -1763,13 +1787,13 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 			}
 		}
 
-		if (!path) {
-			return brush;
+		if (!path || !path->is_inside_tree()) {
+			return new_brush;
 		}
 
 		curve = path->get_curve();
 		if (curve.is_null() || curve->get_point_count() < 2) {
-			return brush;
+			return new_brush;
 		}
 	}
 
@@ -1806,7 +1830,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 	int face_count = extrusions * extrusion_face_count + end_count * shape_face_count;
 
 	// Initialize variables used to create the mesh.
-	Ref<Material> material = get_material();
+	Ref<Material> base_material = get_material();
 
 	Vector<Vector3> faces;
 	Vector<Vector2> uvs;
@@ -1896,7 +1920,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 				}
 
 				smoothw[face] = false;
-				materialsw[face] = material;
+				materialsw[face] = base_material;
 				invertw[face] = flip_faces;
 				face++;
 			}
@@ -2003,7 +2027,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 				smoothw[face] = smooth_faces;
 				invertw[face] = flip_faces;
-				materialsw[face] = material;
+				materialsw[face] = base_material;
 
 				face++;
 
@@ -2018,7 +2042,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 				smoothw[face] = smooth_faces;
 				invertw[face] = flip_faces;
-				materialsw[face] = material;
+				materialsw[face] = base_material;
 
 				face++;
 			}
@@ -2041,14 +2065,14 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 				}
 
 				smoothw[face] = false;
-				materialsw[face] = material;
+				materialsw[face] = base_material;
 				invertw[face] = flip_faces;
 				face++;
 			}
 		}
 
 		face_count -= faces_removed;
-		ERR_FAIL_COND_V_MSG(face != face_count, brush, "Bug: Failed to create the CSGPolygon mesh correctly.");
+		ERR_FAIL_COND_V_MSG(face != face_count, new_brush, "Bug: Failed to create the CSGPolygon mesh correctly.");
 	}
 
 	if (faces_removed > 0) {
@@ -2059,9 +2083,9 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 		invert.resize(face_count);
 	}
 
-	brush->build_from_faces(faces, uvs, smooth, materials, invert);
+	new_brush->build_from_faces(faces, uvs, smooth, materials, invert);
 
-	return brush;
+	return new_brush;
 }
 
 void CSGPolygon3D::_notification(int p_what) {

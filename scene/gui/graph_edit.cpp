@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  graph_edit.cpp                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  graph_edit.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "graph_edit.h"
 
@@ -92,8 +92,8 @@ void GraphEditMinimap::update_minimap() {
 Rect2 GraphEditMinimap::get_camera_rect() {
 	Vector2 camera_center = _convert_from_graph_position(camera_position + camera_size / 2) + minimap_offset;
 	Vector2 camera_viewport = _convert_from_graph_position(camera_size);
-	Vector2 camera_position = (camera_center - camera_viewport / 2);
-	return Rect2(camera_position, camera_viewport);
+	Vector2 camera_pos = (camera_center - camera_viewport / 2);
+	return Rect2(camera_pos, camera_viewport);
 }
 
 Vector2 GraphEditMinimap::_get_render_size() {
@@ -190,10 +190,10 @@ void GraphEditMinimap::_adjust_graph_scroll(const Vector2 &p_offset) {
 	ge->set_scroll_ofs(p_offset + graph_offset - camera_size / 2);
 }
 
-TypedArray<String> GraphEdit::get_configuration_warnings() const {
-	TypedArray<String> warnings = Control::get_configuration_warnings();
+PackedStringArray GraphEdit::get_configuration_warnings() const {
+	PackedStringArray warnings = Control::get_configuration_warnings();
 
-	warnings.push_back(RTR("Please be aware that GraphEdit and GraphNode will undergo extensive refactoring in a future beta version involving compatibility-breaking API changes."));
+	warnings.push_back(RTR("Please be aware that GraphEdit and GraphNode will undergo extensive refactoring in a future 4.x version involving compatibility-breaking API changes."));
 
 	return warnings;
 }
@@ -264,10 +264,6 @@ void GraphEdit::_scroll_moved(double) {
 	top_layer->queue_redraw();
 	minimap->queue_redraw();
 	queue_redraw();
-
-	if (!setting_scroll_ofs) { //in godot, signals on change value are avoided as a convention
-		emit_signal(SNAME("scroll_offset_changed"), get_scroll_ofs());
-	}
 }
 
 void GraphEdit::_update_scroll_offset() {
@@ -290,6 +286,10 @@ void GraphEdit::_update_scroll_offset() {
 	connections_layer->set_position(-Point2(h_scroll->get_value(), v_scroll->get_value()));
 	set_block_minimum_size_adjust(false);
 	awaiting_scroll_offset_update = false;
+
+	if (!setting_scroll_ofs) { //in godot, signals on change value are avoided as a convention
+		emit_signal(SNAME("scroll_offset_changed"), get_scroll_ofs());
+	}
 }
 
 void GraphEdit::_update_scroll() {
@@ -404,8 +404,8 @@ void GraphEdit::add_child_notify(Node *p_child) {
 	if (gn) {
 		gn->set_scale(Vector2(zoom, zoom));
 		gn->connect("position_offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved).bind(gn));
-		gn->connect("selected", callable_mp(this, &GraphEdit::_graph_node_selected).bind(gn));
-		gn->connect("deselected", callable_mp(this, &GraphEdit::_graph_node_deselected).bind(gn));
+		gn->connect("node_selected", callable_mp(this, &GraphEdit::_graph_node_selected).bind(gn));
+		gn->connect("node_deselected", callable_mp(this, &GraphEdit::_graph_node_deselected).bind(gn));
 		gn->connect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated).bind(gn));
 		gn->connect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised).bind(gn));
 		gn->connect("item_rect_changed", callable_mp((CanvasItem *)connections_layer, &CanvasItem::queue_redraw));
@@ -432,8 +432,8 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_child);
 	if (gn) {
 		gn->disconnect("position_offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved));
-		gn->disconnect("selected", callable_mp(this, &GraphEdit::_graph_node_selected));
-		gn->disconnect("deselected", callable_mp(this, &GraphEdit::_graph_node_deselected));
+		gn->disconnect("node_selected", callable_mp(this, &GraphEdit::_graph_node_selected));
+		gn->disconnect("node_deselected", callable_mp(this, &GraphEdit::_graph_node_deselected));
 		gn->disconnect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated));
 		gn->disconnect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised));
 
@@ -623,7 +623,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 						//check disconnect
 						for (const Connection &E : connections) {
 							if (E.from == gn->get_name() && E.from_port == j) {
-								Node *to = get_node(String(E.to));
+								Node *to = get_node(NodePath(E.to));
 								if (Object::cast_to<GraphNode>(to)) {
 									connecting_from = E.to;
 									connecting_index = E.to_port;
@@ -637,7 +637,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 										just_disconnected = true;
 
 										emit_signal(SNAME("disconnection_request"), E.from, E.from_port, E.to, E.to_port);
-										to = get_node(String(connecting_from)); //maybe it was erased
+										to = get_node(NodePath(connecting_from)); // Maybe it was erased.
 										if (Object::cast_to<GraphNode>(to)) {
 											connecting = true;
 											emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, false);
@@ -673,10 +673,10 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 				if (is_in_input_hotzone(gn, j, click_pos, port_size)) {
 					if (right_disconnects || valid_right_disconnect_types.has(gn->get_connection_input_type(j))) {
-						//check disconnect
+						// Check disconnect.
 						for (const Connection &E : connections) {
 							if (E.to == gn->get_name() && E.to_port == j) {
-								Node *fr = get_node(String(E.from));
+								Node *fr = get_node(NodePath(E.from));
 								if (Object::cast_to<GraphNode>(fr)) {
 									connecting_from = E.from;
 									connecting_index = E.from_port;
@@ -689,7 +689,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 									if (connecting_type >= 0) {
 										emit_signal(SNAME("disconnection_request"), E.from, E.from_port, E.to, E.to_port);
-										fr = get_node(String(connecting_from)); //maybe it was erased
+										fr = get_node(NodePath(connecting_from)); // Maybe it was erased.
 										if (Object::cast_to<GraphNode>(fr)) {
 											connecting = true;
 											emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, true);
@@ -780,26 +780,16 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
 		if (connecting_valid) {
 			if (connecting && connecting_target) {
-				String from = connecting_from;
-				int from_port = connecting_index;
-				String to = connecting_target_to;
-				int to_port = connecting_target_index;
-
-				if (!connecting_out) {
-					SWAP(from, to);
-					SWAP(from_port, to_port);
-				}
-				emit_signal(SNAME("connection_request"), from, from_port, to, to_port);
-
-			} else if (!just_disconnected) {
-				String from = connecting_from;
-				int from_port = connecting_index;
-				Vector2 ofs = mb->get_position();
-
-				if (!connecting_out) {
-					emit_signal(SNAME("connection_from_empty"), from, from_port, ofs);
+				if (connecting_out) {
+					emit_signal(SNAME("connection_request"), connecting_from, connecting_index, connecting_target_to, connecting_target_index);
 				} else {
-					emit_signal(SNAME("connection_to_empty"), from, from_port, ofs);
+					emit_signal(SNAME("connection_request"), connecting_target_to, connecting_target_index, connecting_from, connecting_index);
+				}
+			} else if (!just_disconnected) {
+				if (connecting_out) {
+					emit_signal(SNAME("connection_to_empty"), connecting_from, connecting_index, mb->get_position());
+				} else {
+					emit_signal(SNAME("connection_from_empty"), connecting_from, connecting_index, mb->get_position());
 				}
 			}
 		}
@@ -870,7 +860,7 @@ bool GraphEdit::is_in_port_hotzone(const Vector2 &pos, const Vector2 &p_mouse_po
 	}
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *child = Object::cast_to<Control>(get_child(i));
+		GraphNode *child = Object::cast_to<GraphNode>(get_child(i));
 		if (!child) {
 			continue;
 		}
@@ -930,22 +920,18 @@ void GraphEdit::_draw_connection_line(CanvasItem *p_where, const Vector2 &p_from
 		scaled_points.push_back(points[i] * p_zoom);
 	}
 
-	p_where->draw_polyline_colors(scaled_points, colors, Math::floor(p_width * get_theme_default_base_scale()), lines_antialiased);
+	// Thickness below 0.5 doesn't look good on the graph or its minimap.
+	p_where->draw_polyline_colors(scaled_points, colors, MAX(0.5, Math::floor(p_width * get_theme_default_base_scale())), lines_antialiased);
 }
 
 void GraphEdit::_connections_layer_draw() {
 	Color activity_color = get_theme_color(SNAME("activity"));
-	//draw connections
+	// Draw connections.
 	List<List<Connection>::Element *> to_erase;
 	for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
-		NodePath fromnp(E->get().from);
+		const Connection &c = E->get();
 
-		Node *from = get_node(fromnp);
-		if (!from) {
-			to_erase.push_back(E);
-			continue;
-		}
-
+		Node *from = get_node(NodePath(c.from));
 		GraphNode *gfrom = Object::cast_to<GraphNode>(from);
 
 		if (!gfrom) {
@@ -953,13 +939,7 @@ void GraphEdit::_connections_layer_draw() {
 			continue;
 		}
 
-		NodePath tonp(E->get().to);
-		Node *to = get_node(tonp);
-		if (!to) {
-			to_erase.push_back(E);
-			continue;
-		}
-
+		Node *to = get_node(NodePath(c.to));
 		GraphNode *gto = Object::cast_to<GraphNode>(to);
 
 		if (!gto) {
@@ -967,21 +947,20 @@ void GraphEdit::_connections_layer_draw() {
 			continue;
 		}
 
-		Vector2 frompos = gfrom->get_connection_output_position(E->get().from_port) + gfrom->get_position_offset() * zoom;
-		Color color = gfrom->get_connection_output_color(E->get().from_port);
-		Vector2 topos = gto->get_connection_input_position(E->get().to_port) + gto->get_position_offset() * zoom;
-		Color tocolor = gto->get_connection_input_color(E->get().to_port);
+		Vector2 frompos = gfrom->get_connection_output_position(c.from_port) + gfrom->get_position_offset() * zoom;
+		Color color = gfrom->get_connection_output_color(c.from_port);
+		Vector2 topos = gto->get_connection_input_position(c.to_port) + gto->get_position_offset() * zoom;
+		Color tocolor = gto->get_connection_input_color(c.to_port);
 
-		if (E->get().activity > 0) {
-			color = color.lerp(activity_color, E->get().activity);
-			tocolor = tocolor.lerp(activity_color, E->get().activity);
+		if (c.activity > 0) {
+			color = color.lerp(activity_color, c.activity);
+			tocolor = tocolor.lerp(activity_color, c.activity);
 		}
 		_draw_connection_line(connections_layer, frompos, topos, color, tocolor, lines_thickness, zoom);
 	}
 
-	while (to_erase.size()) {
-		connections.erase(to_erase.front()->get());
-		to_erase.pop_front();
+	for (List<Connection>::Element *&E : to_erase) {
+		connections.erase(E);
 	}
 }
 
@@ -989,7 +968,7 @@ void GraphEdit::_top_layer_draw() {
 	_update_scroll();
 
 	if (connecting) {
-		Node *fromn = get_node(connecting_from);
+		Node *fromn = get_node(NodePath(connecting_from));
 		ERR_FAIL_COND(!fromn);
 		GraphNode *from = Object::cast_to<GraphNode>(fromn);
 		ERR_FAIL_COND(!from);
@@ -1087,22 +1066,13 @@ void GraphEdit::_minimap_draw() {
 	// Draw node connections.
 	Color activity_color = get_theme_color(SNAME("activity"));
 	for (const Connection &E : connections) {
-		NodePath fromnp(E.from);
-
-		Node *from = get_node(fromnp);
-		if (!from) {
-			continue;
-		}
+		Node *from = get_node(NodePath(E.from));
 		GraphNode *gfrom = Object::cast_to<GraphNode>(from);
 		if (!gfrom) {
 			continue;
 		}
 
-		NodePath tonp(E.to);
-		Node *to = get_node(tonp);
-		if (!to) {
-			continue;
-		}
+		Node *to = get_node(NodePath(E.to));
 		GraphNode *gto = Object::cast_to<GraphNode>(to);
 		if (!gto) {
 			continue;
@@ -1119,7 +1089,7 @@ void GraphEdit::_minimap_draw() {
 			from_color = from_color.lerp(activity_color, E.activity);
 			to_color = to_color.lerp(activity_color, E.activity);
 		}
-		_draw_connection_line(minimap, from_position, to_position, from_color, to_color, 0.1, minimap->_convert_from_graph_position(Vector2(zoom, zoom)).length());
+		_draw_connection_line(minimap, from_position, to_position, from_color, to_color, 0.5, minimap->_convert_from_graph_position(Vector2(zoom, zoom)).length());
 	}
 
 	// Draw the "camera" viewport.
@@ -1385,16 +1355,16 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 	}
 
 	if (p_ev->is_pressed()) {
-		if (p_ev->is_action("ui_graph_duplicate")) {
+		if (p_ev->is_action("ui_graph_duplicate", true)) {
 			emit_signal(SNAME("duplicate_nodes_request"));
 			accept_event();
-		} else if (p_ev->is_action("ui_copy")) {
+		} else if (p_ev->is_action("ui_copy", true)) {
 			emit_signal(SNAME("copy_nodes_request"));
 			accept_event();
-		} else if (p_ev->is_action("ui_paste")) {
+		} else if (p_ev->is_action("ui_paste", true)) {
 			emit_signal(SNAME("paste_nodes_request"));
 			accept_event();
-		} else if (p_ev->is_action("ui_graph_delete")) {
+		} else if (p_ev->is_action("ui_graph_delete", true)) {
 			TypedArray<StringName> nodes;
 
 			for (int i = 0; i < get_child_count(); i++) {
@@ -1411,34 +1381,15 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 			accept_event();
 		}
 	}
-
-	Ref<InputEventMagnifyGesture> magnify_gesture = p_ev;
-	if (magnify_gesture.is_valid()) {
-		set_zoom_custom(zoom * magnify_gesture->get_factor(), magnify_gesture->get_position());
-	}
-
-	Ref<InputEventPanGesture> pan_gesture = p_ev;
-	if (pan_gesture.is_valid()) {
-		h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * pan_gesture->get_delta().x / 8);
-		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * pan_gesture->get_delta().y / 8);
-	}
 }
 
-void GraphEdit::_scroll_callback(Vector2 p_scroll_vec, bool p_alt) {
-	if (p_scroll_vec.x != 0) {
-		h_scroll->set_value(h_scroll->get_value() + (h_scroll->get_page() * Math::abs(p_scroll_vec.x) / 8) * SIGN(p_scroll_vec.x));
-	} else {
-		v_scroll->set_value(v_scroll->get_value() + (v_scroll->get_page() * Math::abs(p_scroll_vec.y) / 8) * SIGN(p_scroll_vec.y));
-	}
-}
-
-void GraphEdit::_pan_callback(Vector2 p_scroll_vec) {
+void GraphEdit::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
 	h_scroll->set_value(h_scroll->get_value() - p_scroll_vec.x);
 	v_scroll->set_value(v_scroll->get_value() - p_scroll_vec.y);
 }
 
-void GraphEdit::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
-	set_zoom_custom(p_scroll_vec.y < 0 ? zoom * zoom_step : zoom / zoom_step, p_origin);
+void GraphEdit::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
+	set_zoom_custom(zoom * p_zoom_factor, p_origin);
 }
 
 void GraphEdit::set_connection_activity(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, float p_activity) {
@@ -1475,11 +1426,9 @@ void GraphEdit::force_connection_drag_end() {
 }
 
 bool GraphEdit::is_node_hover_valid(const StringName &p_from, const int p_from_port, const StringName &p_to, const int p_to_port) {
-	bool valid;
-	if (GDVIRTUAL_CALL(_is_node_hover_valid, p_from, p_from_port, p_to, p_to_port, valid)) {
-		return valid;
-	}
-	return true;
+	bool valid = true;
+	GDVIRTUAL_CALL(_is_node_hover_valid, p_from, p_from_port, p_to, p_to_port, valid);
+	return valid;
 }
 
 void GraphEdit::set_panning_scheme(PanningScheme p_scheme) {
@@ -1529,11 +1478,13 @@ float GraphEdit::get_zoom() const {
 
 void GraphEdit::set_zoom_step(float p_zoom_step) {
 	p_zoom_step = abs(p_zoom_step);
+	ERR_FAIL_COND(!isfinite(p_zoom_step));
 	if (zoom_step == p_zoom_step) {
 		return;
 	}
 
 	zoom_step = p_zoom_step;
+	panner->set_scroll_zoom_factor(zoom_step);
 }
 
 float GraphEdit::get_zoom_step() const {
@@ -2167,6 +2118,7 @@ void GraphEdit::arrange_nodes() {
 	Dictionary node_names;
 	HashSet<StringName> selected_nodes;
 
+	bool arrange_entire_graph = true;
 	for (int i = get_child_count() - 1; i >= 0; i--) {
 		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
 		if (!gn) {
@@ -2174,6 +2126,10 @@ void GraphEdit::arrange_nodes() {
 		}
 
 		node_names[gn->get_name()] = gn;
+
+		if (gn->is_selected()) {
+			arrange_entire_graph = false;
+		}
 	}
 
 	HashMap<StringName, HashSet<StringName>> upper_neighbours;
@@ -2189,12 +2145,12 @@ void GraphEdit::arrange_nodes() {
 			continue;
 		}
 
-		if (gn->is_selected()) {
+		if (gn->is_selected() || arrange_entire_graph) {
 			selected_nodes.insert(gn->get_name());
 			HashSet<StringName> s;
 			for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
 				GraphNode *p_from = Object::cast_to<GraphNode>(node_names[E->get().from]);
-				if (E->get().to == gn->get_name() && p_from->is_selected() && E->get().to != E->get().from) {
+				if (E->get().to == gn->get_name() && (p_from->is_selected() || arrange_entire_graph) && E->get().to != E->get().from) {
 					if (!s.has(p_from->get_name())) {
 						s.insert(p_from->get_name());
 					}
@@ -2408,7 +2364,7 @@ void GraphEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "zoom_step"), "set_zoom_step", "get_zoom_step");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_zoom_label"), "set_show_zoom_label", "is_showing_zoom_label");
 
-	ADD_GROUP("Minimap", "minimap");
+	ADD_GROUP("Minimap", "minimap_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_enabled"), "set_minimap_enabled", "is_minimap_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "minimap_size", PROPERTY_HINT_NONE, "suffix:px"), "set_minimap_size", "get_minimap_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "minimap_opacity"), "set_minimap_opacity", "get_minimap_opacity");
@@ -2430,7 +2386,7 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("begin_node_move"));
 	ADD_SIGNAL(MethodInfo("end_node_move"));
 	ADD_SIGNAL(MethodInfo("scroll_offset_changed", PropertyInfo(Variant::VECTOR2, "offset")));
-	ADD_SIGNAL(MethodInfo("connection_drag_started", PropertyInfo(Variant::STRING, "from_node"), PropertyInfo(Variant::INT, "from_port"), PropertyInfo(Variant::BOOL, "is_output")));
+	ADD_SIGNAL(MethodInfo("connection_drag_started", PropertyInfo(Variant::STRING_NAME, "from_node"), PropertyInfo(Variant::INT, "from_port"), PropertyInfo(Variant::BOOL, "is_output")));
 	ADD_SIGNAL(MethodInfo("connection_drag_ended"));
 
 	BIND_ENUM_CONSTANT(SCROLL_ZOOMS);
@@ -2448,7 +2404,7 @@ GraphEdit::GraphEdit() {
 	zoom_max = (1 * Math::pow(zoom_step, 4));
 
 	panner.instantiate();
-	panner->set_callbacks(callable_mp(this, &GraphEdit::_scroll_callback), callable_mp(this, &GraphEdit::_pan_callback), callable_mp(this, &GraphEdit::_zoom_callback));
+	panner->set_callbacks(callable_mp(this, &GraphEdit::_pan_callback), callable_mp(this, &GraphEdit::_zoom_callback));
 
 	top_layer = memnew(GraphEditFilter(this));
 	add_child(top_layer, false, INTERNAL_MODE_BACK);

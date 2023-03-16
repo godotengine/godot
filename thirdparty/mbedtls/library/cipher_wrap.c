@@ -76,13 +76,7 @@
 #include <string.h>
 #endif
 
-#if defined(MBEDTLS_PLATFORM_C)
 #include "mbedtls/platform.h"
-#else
-#include <stdlib.h>
-#define mbedtls_calloc    calloc
-#define mbedtls_free       free
-#endif
 
 #if defined(MBEDTLS_GCM_C)
 /* shared by all GCM ciphers */

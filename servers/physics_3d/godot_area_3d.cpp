@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  godot_area_3d.cpp                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  godot_area_3d.cpp                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "godot_area_3d.h"
 
@@ -152,11 +152,8 @@ void GodotArea3D::set_param(PhysicsServer3D::AreaParameter p_param, const Varian
 		case PhysicsServer3D::AREA_PARAM_GRAVITY_IS_POINT:
 			gravity_is_point = p_value;
 			break;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
-			gravity_distance_scale = p_value;
-			break;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
-			point_attenuation = p_value;
+		case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE:
+			gravity_point_unit_distance = p_value;
 			break;
 		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE:
 			_set_space_override_mode(linear_damping_override_mode, (PhysicsServer3D::AreaSpaceOverrideMode)(int)p_value);
@@ -200,10 +197,8 @@ Variant GodotArea3D::get_param(PhysicsServer3D::AreaParameter p_param) const {
 			return gravity_vector;
 		case PhysicsServer3D::AREA_PARAM_GRAVITY_IS_POINT:
 			return gravity_is_point;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
-			return gravity_distance_scale;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
-			return point_attenuation;
+		case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE:
+			return gravity_point_unit_distance;
 		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE:
 			return linear_damping_override_mode;
 		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP:
@@ -333,13 +328,13 @@ void GodotArea3D::call_queries() {
 
 void GodotArea3D::compute_gravity(const Vector3 &p_position, Vector3 &r_gravity) const {
 	if (is_gravity_point()) {
-		const real_t gravity_distance_scale = get_gravity_distance_scale();
+		const real_t gr_unit_dist = get_gravity_point_unit_distance();
 		Vector3 v = get_transform().xform(get_gravity_vector()) - p_position;
-		if (gravity_distance_scale > 0) {
-			const real_t v_length = v.length();
-			if (v_length > 0) {
-				const real_t v_scaled = v_length * gravity_distance_scale;
-				r_gravity = (v.normalized() * (get_gravity() / (v_scaled * v_scaled)));
+		if (gr_unit_dist > 0) {
+			const real_t v_length_sq = v.length_squared();
+			if (v_length_sq > 0) {
+				const real_t gravity_strength = get_gravity() * gr_unit_dist * gr_unit_dist / v_length_sq;
+				r_gravity = v.normalized() * gravity_strength;
 			} else {
 				r_gravity = Vector3();
 			}

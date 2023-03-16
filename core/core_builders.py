@@ -2,6 +2,7 @@
 
 All such functions are invoked in a subprocess on Windows to prevent build flakiness.
 """
+import zlib
 
 from platform_methods import subprocess_main
 
@@ -33,7 +34,6 @@ def make_certs_header(target, source, env):
     g = open(dst, "w", encoding="utf-8")
     buf = f.read()
     decomp_size = len(buf)
-    import zlib
 
     # Use maximum zlib compression level to further reduce file size
     # (at the cost of initial build times).
@@ -208,7 +208,7 @@ def make_license_header(target, source, env):
 
     from collections import OrderedDict
 
-    projects = OrderedDict()
+    projects: dict = OrderedDict()
     license_list = []
 
     with open(src_copyright, "r", encoding="utf-8") as copyright_file:
@@ -230,7 +230,7 @@ def make_license_header(target, source, env):
                 part = {}
                 reader.next_line()
 
-    data_list = []
+    data_list: list = []
     for project in iter(projects.values()):
         for part in project:
             part["file_index"] = len(data_list)

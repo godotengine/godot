@@ -24,12 +24,16 @@
 #include "mbedtls/hkdf.h"
 #include "mbedtls/ssl_internal.h"
 #include "ssl_tls13_keys.h"
+#include "psa/crypto_sizes.h"
 
 #include <stdint.h>
 #include <string.h>
 
 #define MBEDTLS_SSL_TLS1_3_LABEL( name, string )       \
     .name = string,
+
+#define TLS1_3_EVOLVE_INPUT_SIZE ( PSA_HASH_MAX_SIZE > PSA_RAW_KEY_AGREEMENT_OUTPUT_MAX_SIZE ) ? \
+                                     PSA_HASH_MAX_SIZE : PSA_RAW_KEY_AGREEMENT_OUTPUT_MAX_SIZE
 
 struct mbedtls_ssl_tls1_3_labels_struct const mbedtls_ssl_tls1_3_labels =
 {
@@ -292,8 +296,8 @@ int mbedtls_ssl_tls1_3_evolve_secret(
 {
     int ret = MBEDTLS_ERR_SSL_INTERNAL_ERROR;
     size_t hlen, ilen;
-    unsigned char tmp_secret[ MBEDTLS_MD_MAX_SIZE ] = { 0 };
-    unsigned char tmp_input [ MBEDTLS_MD_MAX_SIZE ] = { 0 };
+    unsigned char tmp_secret[ PSA_MAC_MAX_SIZE ] = { 0 };
+    unsigned char tmp_input [ TLS1_3_EVOLVE_INPUT_SIZE ] = { 0 };
 
     const mbedtls_md_info_t *md;
     md = mbedtls_md_info_from_type( hash_alg );

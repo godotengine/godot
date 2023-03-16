@@ -71,22 +71,31 @@ struct MultipleSubstFormat1_2
     return_trace ((this+sequence[index]).apply (c));
   }
 
+  template<typename Iterator,
+           hb_requires (hb_is_sorted_iterator (Iterator))>
   bool serialize (hb_serialize_context_t *c,
-                  hb_sorted_array_t<const HBGlyphID16> glyphs,
-                  hb_array_t<const unsigned int> substitute_len_list,
-                  hb_array_t<const HBGlyphID16> substitute_glyphs_list)
+		  Iterator it)
   {
     TRACE_SERIALIZE (this);
+    auto sequences =
+      + it
+      | hb_map (hb_second)
+      ;
+    auto glyphs =
+      + it
+      | hb_map_retains_sorting (hb_first)
+      ;
     if (unlikely (!c->extend_min (this))) return_trace (false);
-    if (unlikely (!sequence.serialize (c, glyphs.length))) return_trace (false);
-    for (unsigned int i = 0; i < glyphs.length; i++)
+
+    if (unlikely (!sequence.serialize (c, sequences.length))) return_trace (false);
+
+    for (auto& pair : hb_zip (sequences, sequence))
     {
-      unsigned int substitute_len = substitute_len_list[i];
-      if (unlikely (!sequence[i]
-                        .serialize_serialize (c, substitute_glyphs_list.sub_array (0, substitute_len))))
+      if (unlikely (!pair.second
+		    .serialize_serialize (c, pair.first)))
         return_trace (false);
-      substitute_glyphs_list += substitute_len;
     }
+
     return_trace (coverage.serialize_serialize (c, glyphs));
   }
 

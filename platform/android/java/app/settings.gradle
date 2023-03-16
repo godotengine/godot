@@ -1,4 +1,4 @@
-// This is the root directory of the Godot custom build.
+// This is the root directory of the Godot Android gradle build.
 pluginManagement {
     apply from: 'config.gradle'
 

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  tile_map.h                                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  tile_map.h                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef TILE_MAP_H
 #define TILE_MAP_H
@@ -68,7 +68,7 @@ struct TileMapQuadrant {
 
 	// Rendering.
 	List<RID> canvas_items;
-	List<RID> occluders;
+	HashMap<Vector2i, RID> occluders;
 
 	// Physics.
 	List<RID> bodies;
@@ -115,7 +115,7 @@ public:
 	class TerrainConstraint {
 	private:
 		const TileMap *tile_map;
-		Vector2i base_cell_coords = Vector2i();
+		Vector2i base_cell_coords;
 		int bit = -1;
 		int terrain = -1;
 
@@ -155,7 +155,7 @@ public:
 			priority = p_priority;
 		}
 
-		int get_priority() {
+		int get_priority() const {
 			return priority;
 		}
 
@@ -179,7 +179,7 @@ private:
 		FORMAT_2,
 		FORMAT_3
 	};
-	mutable DataFormat format = FORMAT_1; // Assume lowest possible format if none is present;
+	mutable DataFormat format = FORMAT_3;
 
 	static constexpr float FP_ADJUST = 0.00001;
 
@@ -211,6 +211,8 @@ private:
 		HashMap<Vector2i, TileMapCell> tile_map;
 		HashMap<Vector2i, TileMapQuadrant> quadrant_map;
 		SelfList<TileMapQuadrant>::List dirty_quadrant_list;
+		RID navigation_map;
+		bool uses_world_navigation_map = false;
 	};
 	LocalVector<TileMapLayer> layers;
 	int selected_layer = -1;
@@ -236,6 +238,8 @@ private:
 	void _clear_layer_internals(int p_layer);
 	void _clear_internals();
 
+	HashSet<Vector3i> instantiated_scenes;
+
 	// Rect caching.
 	void _recompute_rect_cache();
 
@@ -257,6 +261,8 @@ private:
 	void _physics_draw_quadrant_debug(TileMapQuadrant *p_quadrant);
 
 	void _navigation_notification(int p_what);
+	void _navigation_update_layer(int p_layer);
+	void _navigation_cleanup_layer(int p_layer);
 	void _navigation_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list);
 	void _navigation_cleanup_quadrant(TileMapQuadrant *p_quadrant);
 	void _navigation_draw_quadrant_debug(TileMapQuadrant *p_quadrant);
@@ -266,9 +272,9 @@ private:
 	void _scenes_draw_quadrant_debug(TileMapQuadrant *p_quadrant);
 
 	// Terrains.
-	TileSet::TerrainsPattern _get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, RBSet<TerrainConstraint> p_constraints);
-	RBSet<TerrainConstraint> _get_terrain_constraints_from_added_pattern(Vector2i p_position, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const;
-	RBSet<TerrainConstraint> _get_terrain_constraints_from_cells_list(int p_layer, const RBSet<Vector2i> &p_on_map, int p_terrain_set, bool p_ignore_empty_terrains) const;
+	TileSet::TerrainsPattern _get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, const RBSet<TerrainConstraint> &p_constraints, TileSet::TerrainsPattern p_current_pattern);
+	RBSet<TerrainConstraint> _get_terrain_constraints_from_added_pattern(const Vector2i &p_position, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const;
+	RBSet<TerrainConstraint> _get_terrain_constraints_from_painted_cells_list(int p_layer, const RBSet<Vector2i> &p_painted, int p_terrain_set, bool p_ignore_empty_terrains) const;
 
 	// Set and get tiles from data arrays.
 	void _set_tile_data(int p_layer, const Vector<int> &p_data);
@@ -289,7 +295,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	static Vector2i transform_coords_layout(Vector2i p_coords, TileSet::TileOffsetAxis p_offset_axis, TileSet::TileLayout p_from_layout, TileSet::TileLayout p_to_layout);
+	static Vector2i transform_coords_layout(const Vector2i &p_coords, TileSet::TileOffsetAxis p_offset_axis, TileSet::TileLayout p_from_layout, TileSet::TileLayout p_to_layout);
 
 	enum {
 		INVALID_CELL = -1
@@ -305,7 +311,7 @@ public:
 	void set_quadrant_size(int p_size);
 	int get_quadrant_size() const;
 
-	static void draw_tile(RID p_canvas_item, Vector2i p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, int p_frame = -1, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0), const TileData *p_tile_data_override = nullptr);
+	static void draw_tile(RID p_canvas_item, const Vector2i &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame = -1, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0), const TileData *p_tile_data_override = nullptr);
 
 	// Layers management.
 	int get_layers_count() const;
@@ -337,8 +343,11 @@ public:
 	void set_navigation_visibility_mode(VisibilityMode p_show_navigation);
 	VisibilityMode get_navigation_visibility_mode();
 
+	void set_navigation_map(int p_layer, RID p_map);
+	RID get_navigation_map(int p_layer) const;
+
 	// Cells accessors.
-	void set_cell(int p_layer, const Vector2i &p_coords, int p_source_id = -1, const Vector2i p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = 0);
+	void set_cell(int p_layer, const Vector2i &p_coords, int p_source_id = TileSet::INVALID_SOURCE, const Vector2i p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = 0);
 	void erase_cell(int p_layer, const Vector2i &p_coords);
 	int get_cell_source_id(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 	Vector2i get_cell_atlas_coords(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
@@ -348,11 +357,11 @@ public:
 
 	// Patterns.
 	Ref<TileMapPattern> get_pattern(int p_layer, TypedArray<Vector2i> p_coords_array);
-	Vector2i map_pattern(Vector2i p_position_in_tilemap, Vector2i p_coords_in_pattern, Ref<TileMapPattern> p_pattern);
-	void set_pattern(int p_layer, Vector2i p_position, const Ref<TileMapPattern> p_pattern);
+	Vector2i map_pattern(const Vector2i &p_position_in_tilemap, const Vector2i &p_coords_in_pattern, Ref<TileMapPattern> p_pattern);
+	void set_pattern(int p_layer, const Vector2i &p_position, const Ref<TileMapPattern> p_pattern);
 
 	// Terrains.
-	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_constraints(const Vector<Vector2i> &p_to_replace, int p_terrain_set, const RBSet<TerrainConstraint> p_constraints); // Not exposed.
+	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_constraints(int p_layer, const Vector<Vector2i> &p_to_replace, int p_terrain_set, const RBSet<TerrainConstraint> &p_constraints); // Not exposed.
 	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_connect(int p_layer, const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true); // Not exposed.
 	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_path(int p_layer, const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true); // Not exposed.
 	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_pattern(int p_layer, const Vector<Vector2i> &p_coords_array, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern, bool p_ignore_empty_terrains = true); // Not exposed.
@@ -375,7 +384,8 @@ public:
 	Vector2i get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeighbor p_cell_neighbor) const;
 
 	TypedArray<Vector2i> get_used_cells(int p_layer) const;
-	Rect2 get_used_rect(); // Not const because of cache
+	TypedArray<Vector2i> get_used_cells_by_id(int p_layer, int p_source_id = TileSet::INVALID_SOURCE, const Vector2i p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE) const;
+	Rect2i get_used_rect(); // Not const because of cache
 
 	// Override some methods of the CanvasItem class to pass the changes to the quadrants CanvasItems
 	virtual void set_light_mask(int p_light_mask) override;
@@ -398,15 +408,15 @@ public:
 	void force_update(int p_layer = -1);
 
 	// Helpers?
-	TypedArray<Vector2i> get_surrounding_tiles(Vector2i coords);
-	void draw_cells_outline(Control *p_control, RBSet<Vector2i> p_cells, Color p_color, Transform2D p_transform = Transform2D());
+	TypedArray<Vector2i> get_surrounding_cells(const Vector2i &coords);
+	void draw_cells_outline(Control *p_control, const RBSet<Vector2i> &p_cells, Color p_color, Transform2D p_transform = Transform2D());
 
 	// Virtual function to modify the TileData at runtime
 	GDVIRTUAL2R(bool, _use_tile_data_runtime_update, int, Vector2i);
 	GDVIRTUAL3(_tile_data_runtime_update, int, Vector2i, TileData *);
 
 	// Configuration warnings.
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	TileMap();
 	~TileMap();

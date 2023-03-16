@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsDirectSpaceState2DExtension" inherits="PhysicsDirectSpaceState2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PhysicsDirectSpaceState2DExtension" inherits="PhysicsDirectSpaceState2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -84,6 +84,12 @@
 			<param index="5" name="collide_with_bodies" type="bool" />
 			<param index="6" name="collide_with_areas" type="bool" />
 			<param index="7" name="rest_info" type="PhysicsServer2DExtensionShapeRestInfo*" />
+			<description>
+			</description>
+		</method>
+		<method name="is_body_excluded_from_query" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="body" type="RID" />
 			<description>
 			</description>
 		</method>

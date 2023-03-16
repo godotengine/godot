@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  expression.cpp                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  expression.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "expression.h"
 
@@ -434,14 +434,13 @@ Error Expression::_get_token(Token &r_token) {
 					}
 					return OK;
 
-				} else if (is_ascii_char(cchar) || is_underscore(cchar)) {
-					String id;
-					bool first = true;
+				} else if (is_unicode_identifier_start(cchar)) {
+					String id = String::chr(cchar);
+					cchar = GET_CHAR();
 
-					while (is_ascii_char(cchar) || is_underscore(cchar) || (!first && is_digit(cchar))) {
+					while (is_unicode_identifier_continue(cchar)) {
 						id += String::chr(cchar);
 						cchar = GET_CHAR();
-						first = false;
 					}
 
 					str_ofs--; //go back one
@@ -560,7 +559,7 @@ const char *Expression::token_name[TK_MAX] = {
 };
 
 Expression::ENode *Expression::_parse_expression() {
-	Vector<ExpressionNode> expression;
+	Vector<ExpressionNode> expression_nodes;
 
 	while (true) {
 		//keep appending stuff to expression
@@ -838,14 +837,14 @@ Expression::ENode *Expression::_parse_expression() {
 				ExpressionNode e;
 				e.is_op = true;
 				e.op = Variant::OP_NEGATE;
-				expression.push_back(e);
+				expression_nodes.push_back(e);
 				continue;
 			} break;
 			case TK_OP_NOT: {
 				ExpressionNode e;
 				e.is_op = true;
 				e.op = Variant::OP_NOT;
-				expression.push_back(e);
+				expression_nodes.push_back(e);
 				continue;
 			} break;
 
@@ -960,7 +959,7 @@ Expression::ENode *Expression::_parse_expression() {
 			ExpressionNode e;
 			e.is_op = false;
 			e.node = expr;
-			expression.push_back(e);
+			expression_nodes.push_back(e);
 		}
 
 		//ok finally look for an operator
@@ -1054,19 +1053,19 @@ Expression::ENode *Expression::_parse_expression() {
 			ExpressionNode e;
 			e.is_op = true;
 			e.op = op;
-			expression.push_back(e);
+			expression_nodes.push_back(e);
 		}
 	}
 
 	/* Reduce the set of expressions and place them in an operator tree, respecting precedence */
 
-	while (expression.size() > 1) {
+	while (expression_nodes.size() > 1) {
 		int next_op = -1;
 		int min_priority = 0xFFFFF;
 		bool is_unary = false;
 
-		for (int i = 0; i < expression.size(); i++) {
-			if (!expression[i].is_op) {
+		for (int i = 0; i < expression_nodes.size(); i++) {
+			if (!expression_nodes[i].is_op) {
 				continue;
 			}
 
@@ -1074,7 +1073,7 @@ Expression::ENode *Expression::_parse_expression() {
 
 			bool unary = false;
 
-			switch (expression[i].op) {
+			switch (expression_nodes[i].op) {
 				case Variant::OP_POWER:
 					priority = 0;
 					break;
@@ -1130,7 +1129,7 @@ Expression::ENode *Expression::_parse_expression() {
 					priority = 14;
 					break;
 				default: {
-					_set_error("Parser bug, invalid operator in expression: " + itos(expression[i].op));
+					_set_error("Parser bug, invalid operator in expression: " + itos(expression_nodes[i].op));
 					return nullptr;
 				}
 			}
@@ -1153,9 +1152,9 @@ Expression::ENode *Expression::_parse_expression() {
 		// OK! create operator..
 		if (is_unary) {
 			int expr_pos = next_op;
-			while (expression[expr_pos].is_op) {
+			while (expression_nodes[expr_pos].is_op) {
 				expr_pos++;
-				if (expr_pos == expression.size()) {
+				if (expr_pos == expression_nodes.size()) {
 					//can happen..
 					_set_error("Unexpected end of expression...");
 					return nullptr;
@@ -1165,29 +1164,29 @@ Expression::ENode *Expression::_parse_expression() {
 			//consecutively do unary operators
 			for (int i = expr_pos - 1; i >= next_op; i--) {
 				OperatorNode *op = alloc_node<OperatorNode>();
-				op->op = expression[i].op;
-				op->nodes[0] = expression[i + 1].node;
+				op->op = expression_nodes[i].op;
+				op->nodes[0] = expression_nodes[i + 1].node;
 				op->nodes[1] = nullptr;
-				expression.write[i].is_op = false;
-				expression.write[i].node = op;
-				expression.remove_at(i + 1);
+				expression_nodes.write[i].is_op = false;
+				expression_nodes.write[i].node = op;
+				expression_nodes.remove_at(i + 1);
 			}
 
 		} else {
-			if (next_op < 1 || next_op >= (expression.size() - 1)) {
+			if (next_op < 1 || next_op >= (expression_nodes.size() - 1)) {
 				_set_error("Parser bug...");
 				ERR_FAIL_V(nullptr);
 			}
 
 			OperatorNode *op = alloc_node<OperatorNode>();
-			op->op = expression[next_op].op;
+			op->op = expression_nodes[next_op].op;
 
-			if (expression[next_op - 1].is_op) {
+			if (expression_nodes[next_op - 1].is_op) {
 				_set_error("Parser bug...");
 				ERR_FAIL_V(nullptr);
 			}
 
-			if (expression[next_op + 1].is_op) {
+			if (expression_nodes[next_op + 1].is_op) {
 				// this is not invalid and can really appear
 				// but it becomes invalid anyway because no binary op
 				// can be followed by a unary op in a valid combination,
@@ -1197,17 +1196,17 @@ Expression::ENode *Expression::_parse_expression() {
 				return nullptr;
 			}
 
-			op->nodes[0] = expression[next_op - 1].node; //expression goes as left
-			op->nodes[1] = expression[next_op + 1].node; //next expression goes as right
+			op->nodes[0] = expression_nodes[next_op - 1].node; //expression goes as left
+			op->nodes[1] = expression_nodes[next_op + 1].node; //next expression goes as right
 
 			//replace all 3 nodes by this operator and make it an expression
-			expression.write[next_op - 1].node = op;
-			expression.remove_at(next_op);
-			expression.remove_at(next_op);
+			expression_nodes.write[next_op - 1].node = op;
+			expression_nodes.remove_at(next_op);
+			expression_nodes.remove_at(next_op);
 		}
 	}
 
-	return expression[0].node;
+	return expression_nodes[0].node;
 }
 
 bool Expression::_compile_expression() {
@@ -1420,7 +1419,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			Callable::CallError ce;
 			Variant::call_utility_function(bifunc->func, &r_ret, (const Variant **)argp.ptr(), argp.size(), ce);
 			if (ce.error != Callable::CallError::CALL_OK) {
-				r_error_str = "Builtin Call Failed. " + Variant::get_call_error_text(bifunc->func, (const Variant **)argp.ptr(), argp.size(), ce);
+				r_error_str = "Builtin call failed: " + Variant::get_call_error_text(bifunc->func, (const Variant **)argp.ptr(), argp.size(), ce);
 				return true;
 			}
 

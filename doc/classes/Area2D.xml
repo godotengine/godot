@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Area2D" inherits="CollisionObject2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Area2D" inherits="CollisionObject2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		2D area for detection and physics and audio influence.
+		2D area for detection, as well as physics and audio influence.
 	</brief_description>
 	<description>
 		2D area that detects [CollisionObject2D] nodes overlapping, entering, or exiting. Can also alter or override local physics parameters (gravity, damping) and route audio to custom audio buses.
@@ -87,8 +87,9 @@
 		<member name="gravity_point_center" type="Vector2" setter="set_gravity_point_center" getter="get_gravity_point_center" default="Vector2(0, 1)">
 			If gravity is a point (see [member gravity_point]), this will be the point of attraction.
 		</member>
-		<member name="gravity_point_distance_scale" type="float" setter="set_gravity_point_distance_scale" getter="get_gravity_point_distance_scale" default="0.0">
-			The falloff factor for point gravity. The greater the value, the faster gravity decreases with distance.
+		<member name="gravity_point_unit_distance" type="float" setter="set_gravity_point_unit_distance" getter="get_gravity_point_unit_distance" default="0.0">
+			The distance at which the gravity strength is equal to [member gravity]. For example, on a planet 100 pixels in radius with a surface gravity of 4.0 px/s², set the [member gravity] to 4.0 and the unit distance to 100.0. The gravity will have falloff according to the inverse square law, so in the example, at 200 pixels from the center the gravity will be 1.0 px/s² (twice the distance, 1/4th the gravity), at 50 pixels it will be 16.0 px/s² (half the distance, 4x the gravity), and so on.
+			The above is true only when the unit distance is a positive number. When this is set to 0.0, the gravity will be constant regardless of distance.
 		</member>
 		<member name="gravity_space_override" type="int" setter="set_gravity_space_override_mode" getter="get_gravity_space_override_mode" enum="Area2D.SpaceOverride" default="0">
 			Override mode for gravity calculations within this area. See [enum SpaceOverride] for possible values.
@@ -114,15 +115,13 @@
 		<signal name="area_entered">
 			<param index="0" name="area" type="Area2D" />
 			<description>
-				Emitted when another Area2D enters this Area2D. Requires [member monitoring] to be set to [code]true[/code].
-				[param area] the other Area2D.
+				Emitted when the received [param area] enters this area. Requires [member monitoring] to be set to [code]true[/code].
 			</description>
 		</signal>
 		<signal name="area_exited">
 			<param index="0" name="area" type="Area2D" />
 			<description>
-				Emitted when another Area2D exits this Area2D. Requires [member monitoring] to be set to [code]true[/code].
-				[param area] the other Area2D.
+				Emitted when the received [param area] exits this area. Requires [member monitoring] to be set to [code]true[/code].
 			</description>
 		</signal>
 		<signal name="area_shape_entered">
@@ -131,11 +130,18 @@
 			<param index="2" name="area_shape_index" type="int" />
 			<param index="3" name="local_shape_index" type="int" />
 			<description>
-				Emitted when one of another Area2D's [Shape2D]s enters one of this Area2D's [Shape2D]s. Requires [member monitoring] to be set to [code]true[/code].
-				[param area_rid] the [RID] of the other Area2D's [CollisionObject2D] used by the [PhysicsServer2D].
-				[param area] the other Area2D.
-				[param area_shape_index] the index of the [Shape2D] of the other Area2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]area.shape_owner_get_owner(area.shape_find_owner(area_shape_index))[/code].
-				[param local_shape_index] the index of the [Shape2D] of this Area2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
+				Emitted when a [Shape2D] of the received [param area] enters a shape of this area. Requires [member monitoring] to be set to [code]true[/code].
+				[param local_shape_index] and [param area_shape_index] contain indices of the interacting shapes from this area and the other area, respectively. [param area_rid] contains the [RID] of the other area. These values can be used with the [PhysicsServer2D].
+				[b]Example of getting the[/b] [CollisionShape2D] [b]node from the shape index:[/b]
+				[codeblocks]
+				[gdscript]
+				var other_shape_owner = area.shape_find_owner(area_shape_index)
+				var other_shape_node = area.shape_owner_get_owner(other_shape_owner)
+
+				var local_shape_owner = shape_find_owner(local_shape_index)
+				var local_shape_node = shape_owner_get_owner(local_shape_owner)
+				[/gdscript]
+				[/codeblocks]
 			</description>
 		</signal>
 		<signal name="area_shape_exited">
@@ -144,25 +150,20 @@
 			<param index="2" name="area_shape_index" type="int" />
 			<param index="3" name="local_shape_index" type="int" />
 			<description>
-				Emitted when one of another Area2D's [Shape2D]s exits one of this Area2D's [Shape2D]s. Requires [member monitoring] to be set to [code]true[/code].
-				[param area_rid] the [RID] of the other Area2D's [CollisionObject2D] used by the [PhysicsServer2D].
-				[param area] the other Area2D.
-				[param area_shape_index] the index of the [Shape2D] of the other Area2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]area.shape_owner_get_owner(area.shape_find_owner(area_shape_index))[/code].
-				[param local_shape_index] the index of the [Shape2D] of this Area2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
+				Emitted when a [Shape2D] of the received [param area] exits a shape of this area. Requires [member monitoring] to be set to [code]true[/code].
+				See also [signal area_shape_entered].
 			</description>
 		</signal>
 		<signal name="body_entered">
 			<param index="0" name="body" type="Node2D" />
 			<description>
-				Emitted when a [PhysicsBody2D] or [TileMap] enters this Area2D. Requires [member monitoring] to be set to [code]true[/code]. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
-				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
+				Emitted when the received [param body] enters this area. [param body] can be a [PhysicsBody2D] or a [TileMap]. [TileMap]s are detected if their [TileSet] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
 			</description>
 		</signal>
 		<signal name="body_exited">
 			<param index="0" name="body" type="Node2D" />
 			<description>
-				Emitted when a [PhysicsBody2D] or [TileMap] exits this Area2D. Requires [member monitoring] to be set to [code]true[/code]. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
-				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
+				Emitted when the received [param body] exits this area. [param body] can be a [PhysicsBody2D] or a [TileMap]. [TileMap]s are detected if their [TileSet] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
 			</description>
 		</signal>
 		<signal name="body_shape_entered">
@@ -171,11 +172,18 @@
 			<param index="2" name="body_shape_index" type="int" />
 			<param index="3" name="local_shape_index" type="int" />
 			<description>
-				Emitted when one of a [PhysicsBody2D] or [TileMap]'s [Shape2D]s enters one of this Area2D's [Shape2D]s. Requires [member monitoring] to be set to [code]true[/code]. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
-				[param body_rid] the [RID] of the [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [PhysicsServer2D].
-				[param body] the [Node], if it exists in the tree, of the [PhysicsBody2D] or [TileMap].
-				[param body_shape_index] the index of the [Shape2D] of the [PhysicsBody2D] or [TileMap] used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
-				[param local_shape_index] the index of the [Shape2D] of this Area2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
+				Emitted when a [Shape2D] of the received [param body] enters a shape of this area. [param body] can be a [PhysicsBody2D] or a [TileMap]. [TileMap]s are detected if their [TileSet] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
+				[param local_shape_index] and [param body_shape_index] contain indices of the interacting shapes from this area and the interacting body, respectively. [param body_rid] contains the [RID] of the body. These values can be used with the [PhysicsServer2D].
+				[b]Example of getting the[/b] [CollisionShape2D] [b]node from the shape index:[/b]
+				[codeblocks]
+				[gdscript]
+				var body_shape_owner = body.shape_find_owner(body_shape_index)
+				var body_shape_node = body.shape_owner_get_owner(body_shape_owner)
+
+				var local_shape_owner = shape_find_owner(local_shape_index)
+				var local_shape_node = shape_owner_get_owner(local_shape_owner)
+				[/gdscript]
+				[/codeblocks]
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
@@ -184,11 +192,8 @@
 			<param index="2" name="body_shape_index" type="int" />
 			<param index="3" name="local_shape_index" type="int" />
 			<description>
-				Emitted when one of a [PhysicsBody2D] or [TileMap]'s [Shape2D]s exits one of this Area2D's [Shape2D]s. Requires [member monitoring] to be set to [code]true[/code]. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
-				[param body_rid] the [RID] of the [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [PhysicsServer2D].
-				[param body] the [Node], if it exists in the tree, of the [PhysicsBody2D] or [TileMap].
-				[param body_shape_index] the index of the [Shape2D] of the [PhysicsBody2D] or [TileMap] used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
-				[param local_shape_index] the index of the [Shape2D] of this Area2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
+				Emitted when a [Shape2D] of the received [param body] exits a shape of this area. [param body] can be a [PhysicsBody2D] or a [TileMap]. [TileMap]s are detected if their [TileSet] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
+				See also [signal body_shape_entered].
 			</description>
 		</signal>
 	</signals>

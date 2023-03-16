@@ -1,5 +1,0 @@
-GDTEST_OK
->> WARNING
->> Line: 6
->> VOID_ASSIGNMENT
->> Assignment operation, but the function 'i_return_void()' returns void.

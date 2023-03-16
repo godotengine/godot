@@ -5,7 +5,7 @@
 
 @export var color: Color
 @export_color_no_alpha var color_no_alpha: Color
-@export_node_path(Sprite2D, Sprite3D, Control, Node) var nodepath := ^"hello"
+@export_node_path("Sprite2D", "Sprite3D", "Control", "Node") var nodepath := ^"hello"
 
 
 func test():

@@ -55,13 +55,14 @@ layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 layout(set = 0, binding = 3) uniform sampler decal_sampler;
 layout(set = 0, binding = 4) uniform sampler light_projector_sampler;
 
-#define INSTANCE_FLAGS_NON_UNIFORM_SCALE (1 << 5)
-#define INSTANCE_FLAGS_USE_GI_BUFFERS (1 << 6)
-#define INSTANCE_FLAGS_USE_SDFGI (1 << 7)
-#define INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE (1 << 8)
-#define INSTANCE_FLAGS_USE_LIGHTMAP (1 << 9)
-#define INSTANCE_FLAGS_USE_SH_LIGHTMAP (1 << 10)
-#define INSTANCE_FLAGS_USE_VOXEL_GI (1 << 11)
+#define INSTANCE_FLAGS_NON_UNIFORM_SCALE (1 << 4)
+#define INSTANCE_FLAGS_USE_GI_BUFFERS (1 << 5)
+#define INSTANCE_FLAGS_USE_SDFGI (1 << 6)
+#define INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE (1 << 7)
+#define INSTANCE_FLAGS_USE_LIGHTMAP (1 << 8)
+#define INSTANCE_FLAGS_USE_SH_LIGHTMAP (1 << 9)
+#define INSTANCE_FLAGS_USE_VOXEL_GI (1 << 10)
+#define INSTANCE_FLAGS_PARTICLES (1 << 11)
 #define INSTANCE_FLAGS_MULTIMESH (1 << 12)
 #define INSTANCE_FLAGS_MULTIMESH_FORMAT_2D (1 << 13)
 #define INSTANCE_FLAGS_MULTIMESH_HAS_COLOR (1 << 14)
@@ -153,8 +154,15 @@ layout(set = 1, binding = 5) uniform highp texture2D directional_shadow_atlas;
 // this needs to change to providing just the lightmap we're using..
 layout(set = 1, binding = 6) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES];
 
+#ifdef USE_MULTIVIEW
+layout(set = 1, binding = 9) uniform highp texture2DArray depth_buffer;
+layout(set = 1, binding = 10) uniform mediump texture2DArray color_buffer;
+#define multiviewSampler sampler2DArray
+#else
 layout(set = 1, binding = 9) uniform highp texture2D depth_buffer;
 layout(set = 1, binding = 10) uniform mediump texture2D color_buffer;
+#define multiviewSampler sampler2D
+#endif // USE_MULTIVIEW
 
 /* Set 2 Skeleton & Instancing (can change per item) */
 

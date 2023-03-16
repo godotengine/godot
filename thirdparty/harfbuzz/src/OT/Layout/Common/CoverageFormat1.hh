@@ -77,7 +77,14 @@ struct CoverageFormat1_3
 
   bool intersects (const hb_set_t *glyphs) const
   {
-    /* TODO Speed up, using hb_set_next() and bsearch()? */
+    if (glyphArray.len > glyphs->get_population () * hb_bit_storage ((unsigned) glyphArray.len) / 2)
+    {
+      for (hb_codepoint_t g = HB_SET_VALUE_INVALID; glyphs->next (&g);)
+        if (get_coverage (g) != NOT_COVERED)
+	  return true;
+      return false;
+    }
+
     for (const auto& g : glyphArray.as_array ())
       if (glyphs->has (g))
         return true;
@@ -88,7 +95,7 @@ struct CoverageFormat1_3
 
   template <typename IterableOut,
 	    hb_requires (hb_is_sink_of (IterableOut, hb_codepoint_t))>
-  void intersect_set (const hb_set_t &glyphs, IterableOut &intersect_glyphs) const
+  void intersect_set (const hb_set_t &glyphs, IterableOut&& intersect_glyphs) const
   {
     unsigned count = glyphArray.len;
     for (unsigned i = 0; i < count; i++)

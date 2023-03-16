@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  inspector_dock.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  inspector_dock.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "inspector_dock.h"
 
@@ -34,6 +34,8 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
+#include "editor/filesystem_dock.h"
 #include "editor/plugins/script_editor_plugin.h"
 
 InspectorDock *InspectorDock::singleton = nullptr;
@@ -84,6 +86,11 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case RESOURCE_EDIT_CLIPBOARD: {
 			_paste_resource();
+		} break;
+		case RESOURCE_SHOW_IN_FILESYSTEM: {
+			Ref<Resource> current_res = _get_current_resource();
+			ERR_FAIL_COND(current_res.is_null());
+			FileSystemDock::get_singleton()->navigate_to_path(current_res->get_path());
 		} break;
 
 		case OBJECT_REQUEST_HELP: {
@@ -141,10 +148,11 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 						ti->set_text(0, bool(EDITOR_GET("interface/inspector/capitalize_properties")) ? propname.capitalize() : propname);
 					}
 
+					unique_resources_label->set_text(TTR("The following resources will be duplicated and embedded within this resource/object."));
 					unique_resources_confirmation->popup_centered();
 				} else {
-					unique_resources_confirmation->set_text(TTR("This object has no resources."));
 					current_option = -1;
+					unique_resources_label->set_text(TTR("This object has no resources."));
 					unique_resources_confirmation->popup_centered();
 				}
 			} else {
@@ -178,11 +186,10 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 					}
 				}
 
-				int history_id = editor_data->get_undo_redo()->get_history_for_object(current).id;
-				editor_data->get_undo_redo()->clear_history(true, history_id);
+				int history_id = EditorUndoRedoManager::get_singleton()->get_history_id_for_object(current);
+				EditorUndoRedoManager::get_singleton()->clear_history(true, history_id);
 
-				EditorNode::get_singleton()->get_editor_plugins_over()->edit(nullptr);
-				EditorNode::get_singleton()->get_editor_plugins_over()->edit(current);
+				EditorNode::get_singleton()->edit_item(current, inspector);
 			}
 
 		} break;
@@ -227,7 +234,7 @@ void InspectorDock::_load_resource(const String &p_type) {
 		load_resource_dialog->add_filter("*." + extensions[i], extensions[i].to_upper());
 	}
 
-	const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
+	const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
 	for (int i = 0; i < textfile_ext.size(); i++) {
 		load_resource_dialog->add_filter("*." + textfile_ext[i], textfile_ext[i].to_upper());
 	}
@@ -240,7 +247,7 @@ void InspectorDock::_resource_file_selected(String p_file) {
 	if (ResourceLoader::exists(p_file, "")) {
 		res = ResourceLoader::load(p_file);
 	} else {
-		const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
+		const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
 		if (textfile_ext.has(p_file.get_extension())) {
 			res = ScriptEditor::get_singleton()->open_file(p_file);
 		}
@@ -255,12 +262,8 @@ void InspectorDock::_resource_file_selected(String p_file) {
 }
 
 void InspectorDock::_save_resource(bool save_as) {
-	ObjectID current = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
-	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
-
-	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
-
-	Ref<Resource> current_res = Ref<Resource>(Object::cast_to<Resource>(current_obj));
+	Ref<Resource> current_res = _get_current_resource();
+	ERR_FAIL_COND(current_res.is_null());
 
 	if (save_as) {
 		EditorNode::get_singleton()->save_resource_as(current_res);
@@ -270,24 +273,15 @@ void InspectorDock::_save_resource(bool save_as) {
 }
 
 void InspectorDock::_unref_resource() {
-	ObjectID current = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
-	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
-
-	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
-
-	Ref<Resource> current_res = Ref<Resource>(Object::cast_to<Resource>(current_obj));
+	Ref<Resource> current_res = _get_current_resource();
+	ERR_FAIL_COND(current_res.is_null());
 	current_res->set_path("");
 	EditorNode::get_singleton()->edit_current();
 }
 
 void InspectorDock::_copy_resource() {
-	ObjectID current = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
-	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
-
-	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
-
-	Ref<Resource> current_res = Ref<Resource>(Object::cast_to<Resource>(current_obj));
-
+	Ref<Resource> current_res = _get_current_resource();
+	ERR_FAIL_COND(current_res.is_null());
 	EditorSettings::get_singleton()->set_resource_clipboard(current_res);
 }
 
@@ -302,6 +296,16 @@ void InspectorDock::_prepare_resource_extra_popup() {
 	Ref<Resource> r = EditorSettings::get_singleton()->get_resource_clipboard();
 	PopupMenu *popup = resource_extra_button->get_popup();
 	popup->set_item_disabled(popup->get_item_index(RESOURCE_EDIT_CLIPBOARD), r.is_null());
+
+	Ref<Resource> current_res = _get_current_resource();
+	ERR_FAIL_COND(current_res.is_null());
+	popup->set_item_disabled(popup->get_item_index(RESOURCE_SHOW_IN_FILESYSTEM), current_res->is_built_in());
+}
+
+Ref<Resource> InspectorDock::_get_current_resource() const {
+	ObjectID current_id = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
+	Object *current_obj = current_id.is_valid() ? ObjectDB::get_instance(current_id) : nullptr;
+	return Ref<Resource>(Object::cast_to<Resource>(current_obj));
 }
 
 void InspectorDock::_prepare_history() {
@@ -364,7 +368,7 @@ void InspectorDock::_select_history(int p_idx) {
 }
 
 void InspectorDock::_resource_created() {
-	Variant c = new_resource_dialog->instance_selected();
+	Variant c = new_resource_dialog->instantiate_selected();
 
 	ERR_FAIL_COND(!c);
 	Resource *r = Object::cast_to<Resource>(c);
@@ -610,8 +614,8 @@ void InspectorDock::apply_script_properties(Object *p_object) {
 	}
 
 	for (const Pair<StringName, Variant> &E : stored_properties) {
-		Variant current;
-		if (si->get(E.first, current) && current.get_type() == E.second.get_type()) {
+		Variant current_prop;
+		if (si->get(E.first, current_prop) && current_prop.get_type() == E.second.get_type()) {
 			si->set(E.first, E.second);
 		}
 	}
@@ -660,6 +664,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	resource_extra_button->get_popup()->add_icon_shortcut(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), ED_SHORTCUT("property_editor/copy_resource", TTR("Copy Resource")), RESOURCE_COPY);
 	resource_extra_button->get_popup()->set_item_disabled(1, true);
 	resource_extra_button->get_popup()->add_separator();
+	resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/show_in_filesystem", TTR("Show in FileSystem")), RESOURCE_SHOW_IN_FILESYSTEM);
 	resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/unref_resource", TTR("Make Resource Built-In")), RESOURCE_MAKE_BUILT_IN);
 	resource_extra_button->get_popup()->set_item_disabled(3, true);
 	resource_extra_button->get_popup()->connect("id_pressed", callable_mp(this, &InspectorDock::_menu_option));
@@ -669,14 +674,14 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	backward_button = memnew(Button);
 	backward_button->set_flat(true);
 	general_options_hb->add_child(backward_button);
-	backward_button->set_tooltip_text(TTR("Go to the previous edited object in history."));
+	backward_button->set_tooltip_text(TTR("Go to previous edited object in history."));
 	backward_button->set_disabled(true);
 	backward_button->connect("pressed", callable_mp(this, &InspectorDock::_edit_back));
 
 	forward_button = memnew(Button);
 	forward_button->set_flat(true);
 	general_options_hb->add_child(forward_button);
-	forward_button->set_tooltip_text(TTR("Go to the next edited object in history."));
+	forward_button->set_tooltip_text(TTR("Go to next edited object in history."));
 	forward_button->set_disabled(true);
 	forward_button->connect("pressed", callable_mp(this, &InspectorDock::_edit_forward));
 
@@ -733,9 +738,8 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	VBoxContainer *container = memnew(VBoxContainer);
 	unique_resources_confirmation->add_child(container);
 
-	Label *top_label = memnew(Label);
-	top_label->set_text(TTR("The following resources will be duplicated and embedded within this resource/object."));
-	container->add_child(top_label);
+	unique_resources_label = memnew(Label);
+	container->add_child(unique_resources_label);
 
 	unique_resources_list_tree = memnew(Tree);
 	unique_resources_list_tree->set_hide_root(true);
@@ -769,7 +773,6 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	inspector->set_property_name_style(EditorPropertyNameProcessor::get_default_inspector_style());
 	inspector->set_use_folding(!bool(EDITOR_GET("interface/inspector/disable_folding")));
 	inspector->register_text_enter(search);
-	inspector->set_undo_redo(editor_data->get_undo_redo());
 
 	inspector->set_use_filter(true); // TODO: check me
 

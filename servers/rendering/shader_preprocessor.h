@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  shader_preprocessor.h                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  shader_preprocessor.h                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef SHADER_PREPROCESSOR_H
 #define SHADER_PREPROCESSOR_H
@@ -93,11 +93,13 @@ private:
 		int get_line() const;
 		int get_index() const;
 		char32_t peek();
+		int consume_line_continuations(int p_offset);
 
 		void get_and_clear_generated(Vector<Token> *r_out);
 		void backtrack(char32_t p_what);
 		LocalVector<Token> advance(char32_t p_what);
 		void skip_whitespace();
+		bool consume_empty_line();
 		String get_identifier(bool *r_is_cursor = nullptr, bool p_started = false);
 		String peek_identifier();
 		Token get_token();
@@ -167,7 +169,6 @@ private:
 private:
 	LocalVector<char32_t> output;
 	State *state = nullptr;
-	bool state_owner = false;
 
 private:
 	static bool is_char_word(char32_t p_char);
@@ -181,7 +182,7 @@ private:
 	}
 
 	void _set_unexpected_token_error(const String &p_what, int p_line) {
-		set_error(vformat(RTR("Unexpected token '%s'."), p_what), p_line);
+		set_error(vformat(RTR("Unexpected token: '%s'."), p_what), p_line);
 	}
 
 	void process_directive(Tokenizer *p_tokenizer);
@@ -211,14 +212,14 @@ private:
 
 	static Define *create_define(const String &p_body);
 
-	void clear();
+	void clear_state();
 
 	Error preprocess(State *p_state, const String &p_code, String &r_result);
 
 public:
 	typedef void (*IncludeCompletionFunction)(List<ScriptLanguage::CodeCompletionOption> *);
 
-	Error preprocess(const String &p_code, const String &p_filename, String &r_result, String *r_error_text = nullptr, List<FilePosition> *r_error_position = nullptr, List<Region> *r_regions = nullptr, HashSet<Ref<ShaderInclude>> *r_includes = nullptr, List<ScriptLanguage::CodeCompletionOption> *r_completion_options = nullptr, IncludeCompletionFunction p_include_completion_func = nullptr);
+	Error preprocess(const String &p_code, const String &p_filename, String &r_result, String *r_error_text = nullptr, List<FilePosition> *r_error_position = nullptr, List<Region> *r_regions = nullptr, HashSet<Ref<ShaderInclude>> *r_includes = nullptr, List<ScriptLanguage::CodeCompletionOption> *r_completion_options = nullptr, List<ScriptLanguage::CodeCompletionOption> *r_completion_defines = nullptr, IncludeCompletionFunction p_include_completion_func = nullptr);
 
 	static void get_keyword_list(List<String> *r_keywords, bool p_include_shader_keywords, bool p_ignore_context_keywords = false);
 	static void get_pragma_list(List<String> *r_pragmas);

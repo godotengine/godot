@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  tile_map_editor.h                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  tile_map_editor.h                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef TILE_MAP_EDITOR_H
 #define TILE_MAP_EDITOR_H
@@ -38,6 +38,7 @@
 #include "scene/2d/tile_map.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
@@ -46,8 +47,6 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_bar.h"
 #include "scene/gui/tree.h"
-
-class EditorUndoRedoManager;
 
 class TileMapEditorPlugin : public Object {
 public:
@@ -70,7 +69,6 @@ class TileMapEditorTilesPlugin : public TileMapEditorPlugin {
 	GDCLASS(TileMapEditorTilesPlugin, TileMapEditorPlugin);
 
 private:
-	Ref<EditorUndoRedoManager> undo_redo;
 	ObjectID tile_map_id;
 	int tile_map_layer = -1;
 	virtual void edit(ObjectID p_tile_map_id, int p_tile_map_layer) override;
@@ -94,6 +92,8 @@ private:
 	VSeparator *tools_settings_vsep_2 = nullptr;
 	CheckBox *bucket_contiguous_checkbox = nullptr;
 	Button *random_tile_toggle = nullptr;
+
+	HBoxContainer *scatter_controls_container = nullptr;
 	float scattering = 0.0;
 	Label *scatter_label = nullptr;
 	SpinBox *scatter_spinbox = nullptr;
@@ -223,7 +223,6 @@ class TileMapEditorTerrainsPlugin : public TileMapEditorPlugin {
 	GDCLASS(TileMapEditorTerrainsPlugin, TileMapEditorPlugin);
 
 private:
-	Ref<EditorUndoRedoManager> undo_redo;
 	ObjectID tile_map_id;
 	int tile_map_layer = -1;
 	virtual void edit(ObjectID p_tile_map_id, int p_tile_map_layer) override;
@@ -317,7 +316,6 @@ class TileMapEditor : public VBoxContainer {
 	GDCLASS(TileMapEditor, VBoxContainer);
 
 private:
-	Ref<EditorUndoRedoManager> undo_redo;
 	bool tileset_changed_needs_update = false;
 	ObjectID tile_map_id;
 	int tile_map_layer = -1;
@@ -326,7 +324,7 @@ private:
 	Vector<TileMapEditorPlugin *> tile_map_editor_plugins;
 
 	// Toolbar.
-	HBoxContainer *tile_map_toolbar = nullptr;
+	HFlowContainer *tile_map_toolbar = nullptr;
 
 	OptionButton *layers_selection_button = nullptr;
 	Button *toggle_highlight_selected_layer_button = nullptr;

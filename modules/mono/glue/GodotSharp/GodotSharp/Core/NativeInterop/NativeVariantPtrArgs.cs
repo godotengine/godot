@@ -8,8 +8,22 @@ namespace Godot.NativeInterop
     public unsafe ref struct NativeVariantPtrArgs
     {
         private godot_variant** _args;
+        private int _argc;
 
-        internal NativeVariantPtrArgs(godot_variant** args) => _args = args;
+        internal NativeVariantPtrArgs(godot_variant** args, int argc)
+        {
+            _args = args;
+            _argc = argc;
+        }
+
+        /// <summary>
+        /// Returns the number of arguments.
+        /// </summary>
+        public int Count
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _argc;
+        }
 
         public ref godot_variant this[int index]
         {

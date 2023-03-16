@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  dir_access.cpp                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  dir_access.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "dir_access.h"
 
@@ -35,6 +35,8 @@
 #include "core/os/memory.h"
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
+
+thread_local Error DirAccess::last_dir_open_error = OK;
 
 String DirAccess::_get_root_path() const {
 	switch (_access_type) {
@@ -249,6 +251,61 @@ Ref<DirAccess> DirAccess::open(const String &p_path, Error *r_error) {
 	return da;
 }
 
+Ref<DirAccess> DirAccess::_open(const String &p_path) {
+	Error err = OK;
+	Ref<DirAccess> da = open(p_path, &err);
+	last_dir_open_error = err;
+	if (err) {
+		return Ref<DirAccess>();
+	}
+	return da;
+}
+
+int DirAccess::_get_drive_count() {
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	return d->get_drive_count();
+}
+
+String DirAccess::get_drive_name(int p_idx) {
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	return d->get_drive(p_idx);
+}
+
+Error DirAccess::make_dir_absolute(const String &p_dir) {
+	Ref<DirAccess> d = DirAccess::create_for_path(p_dir);
+	return d->make_dir(p_dir);
+}
+
+Error DirAccess::make_dir_recursive_absolute(const String &p_dir) {
+	Ref<DirAccess> d = DirAccess::create_for_path(p_dir);
+	return d->make_dir_recursive(p_dir);
+}
+
+bool DirAccess::dir_exists_absolute(const String &p_dir) {
+	Ref<DirAccess> d = DirAccess::create_for_path(p_dir);
+	return d->dir_exists(p_dir);
+}
+
+Error DirAccess::copy_absolute(const String &p_from, const String &p_to, int p_chmod_flags) {
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	// Support copying from res:// to user:// etc.
+	String from = ProjectSettings::get_singleton()->globalize_path(p_from);
+	String to = ProjectSettings::get_singleton()->globalize_path(p_to);
+	return d->copy(from, to, p_chmod_flags);
+}
+
+Error DirAccess::rename_absolute(const String &p_from, const String &p_to) {
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	String from = ProjectSettings::get_singleton()->globalize_path(p_from);
+	String to = ProjectSettings::get_singleton()->globalize_path(p_to);
+	return d->rename(from, to);
+}
+
+Error DirAccess::remove_absolute(const String &p_path) {
+	Ref<DirAccess> d = DirAccess::create_for_path(p_path);
+	return d->remove(p_path);
+}
+
 Ref<DirAccess> DirAccess::create(AccessType p_access) {
 	Ref<DirAccess> da = create_func[p_access] ? create_func[p_access]() : nullptr;
 	if (da.is_valid()) {
@@ -264,6 +321,10 @@ Ref<DirAccess> DirAccess::create(AccessType p_access) {
 	}
 
 	return da;
+}
+
+Error DirAccess::get_open_error() {
+	return last_dir_open_error;
 }
 
 String DirAccess::get_full_path(const String &p_path, AccessType p_access) {
@@ -290,7 +351,7 @@ Error DirAccess::copy(String p_from, String p_to, int p_chmod_flags) {
 		const size_t copy_buffer_limit = 65536; // 64 KB
 
 		fsrc->seek_end(0);
-		int size = fsrc->get_position();
+		uint64_t size = fsrc->get_position();
 		fsrc->seek(0);
 		err = OK;
 		size_t buffer_size = MIN(size * sizeof(uint8_t), copy_buffer_limit);
@@ -423,4 +484,105 @@ Error DirAccess::copy_dir(String p_from, String p_to, int p_chmod_flags, bool p_
 bool DirAccess::exists(String p_dir) {
 	Ref<DirAccess> da = DirAccess::create_for_path(p_dir);
 	return da->change_dir(p_dir) == OK;
+}
+
+PackedStringArray DirAccess::get_files() {
+	return _get_contents(false);
+}
+
+PackedStringArray DirAccess::get_files_at(const String &p_path) {
+	Ref<DirAccess> da = DirAccess::open(p_path);
+	ERR_FAIL_COND_V_MSG(da.is_null(), PackedStringArray(), vformat("Couldn't open directory at path \"%s\".", p_path));
+	return da->get_files();
+}
+
+PackedStringArray DirAccess::get_directories() {
+	return _get_contents(true);
+}
+
+PackedStringArray DirAccess::get_directories_at(const String &p_path) {
+	Ref<DirAccess> da = DirAccess::open(p_path);
+	ERR_FAIL_COND_V_MSG(da.is_null(), PackedStringArray(), vformat("Couldn't open directory at path \"%s\".", p_path));
+	return da->get_directories();
+}
+
+PackedStringArray DirAccess::_get_contents(bool p_directories) {
+	PackedStringArray ret;
+
+	list_dir_begin();
+	String s = _get_next();
+	while (!s.is_empty()) {
+		if (current_is_dir() == p_directories) {
+			ret.append(s);
+		}
+		s = _get_next();
+	}
+
+	ret.sort();
+	return ret;
+}
+
+String DirAccess::_get_next() {
+	String next = get_next();
+	while (!next.is_empty() && ((!include_navigational && (next == "." || next == "..")) || (!include_hidden && current_is_hidden()))) {
+		next = get_next();
+	}
+	return next;
+}
+
+void DirAccess::set_include_navigational(bool p_enable) {
+	include_navigational = p_enable;
+}
+
+bool DirAccess::get_include_navigational() const {
+	return include_navigational;
+}
+
+void DirAccess::set_include_hidden(bool p_enable) {
+	include_hidden = p_enable;
+}
+
+bool DirAccess::get_include_hidden() const {
+	return include_hidden;
+}
+
+void DirAccess::_bind_methods() {
+	ClassDB::bind_static_method("DirAccess", D_METHOD("open", "path"), &DirAccess::_open);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("get_open_error"), &DirAccess::get_open_error);
+
+	ClassDB::bind_method(D_METHOD("list_dir_begin"), &DirAccess::list_dir_begin, DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_next"), &DirAccess::_get_next);
+	ClassDB::bind_method(D_METHOD("current_is_dir"), &DirAccess::current_is_dir);
+	ClassDB::bind_method(D_METHOD("list_dir_end"), &DirAccess::list_dir_end);
+	ClassDB::bind_method(D_METHOD("get_files"), &DirAccess::get_files);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("get_files_at", "path"), &DirAccess::get_files_at);
+	ClassDB::bind_method(D_METHOD("get_directories"), &DirAccess::get_directories);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("get_directories_at", "path"), &DirAccess::get_directories_at);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("get_drive_count"), &DirAccess::_get_drive_count);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("get_drive_name", "idx"), &DirAccess::get_drive_name);
+	ClassDB::bind_method(D_METHOD("get_current_drive"), &DirAccess::get_current_drive);
+	ClassDB::bind_method(D_METHOD("change_dir", "to_dir"), &DirAccess::change_dir);
+	ClassDB::bind_method(D_METHOD("get_current_dir", "include_drive"), &DirAccess::get_current_dir, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("make_dir", "path"), &DirAccess::make_dir);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("make_dir_absolute", "path"), &DirAccess::make_dir_absolute);
+	ClassDB::bind_method(D_METHOD("make_dir_recursive", "path"), &DirAccess::make_dir_recursive);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("make_dir_recursive_absolute", "path"), &DirAccess::make_dir_recursive_absolute);
+	ClassDB::bind_method(D_METHOD("file_exists", "path"), &DirAccess::file_exists);
+	ClassDB::bind_method(D_METHOD("dir_exists", "path"), &DirAccess::dir_exists);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("dir_exists_absolute", "path"), &DirAccess::dir_exists_absolute);
+	ClassDB::bind_method(D_METHOD("get_space_left"), &DirAccess::get_space_left);
+	ClassDB::bind_method(D_METHOD("copy", "from", "to", "chmod_flags"), &DirAccess::copy, DEFVAL(-1));
+	ClassDB::bind_static_method("DirAccess", D_METHOD("copy_absolute", "from", "to", "chmod_flags"), &DirAccess::copy_absolute, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("rename", "from", "to"), &DirAccess::rename);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("rename_absolute", "from", "to"), &DirAccess::rename_absolute);
+	ClassDB::bind_method(D_METHOD("remove", "path"), &DirAccess::remove);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("remove_absolute", "path"), &DirAccess::remove_absolute);
+
+	ClassDB::bind_method(D_METHOD("set_include_navigational", "enable"), &DirAccess::set_include_navigational);
+	ClassDB::bind_method(D_METHOD("get_include_navigational"), &DirAccess::get_include_navigational);
+	ClassDB::bind_method(D_METHOD("set_include_hidden", "enable"), &DirAccess::set_include_hidden);
+	ClassDB::bind_method(D_METHOD("get_include_hidden"), &DirAccess::get_include_hidden);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "include_navigational"), "set_include_navigational", "get_include_navigational");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "include_hidden"), "set_include_hidden", "get_include_hidden");
 }

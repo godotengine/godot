@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OS" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="OS" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Operating System functions.
 	</brief_description>
 	<description>
-		Operating System functions. OS wraps the most common functionality to communicate with the host operating system, such as the clipboard, video driver, date and time, timers, environment variables, execution of binaries, command line, etc.
+		Operating System functions. [OS] wraps the most common functionality to communicate with the host operating system, such as the clipboard, video driver, delays, environment variables, execution of binaries, command line, etc.
+		[b]Note:[/b] In Godot 4, [OS] functions related to window management were moved to the [DisplayServer] singleton.
 	</description>
 	<tutorials>
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
@@ -16,12 +17,6 @@
 			<param index="1" name="title" type="String" default="&quot;Alert!&quot;" />
 			<description>
 				Displays a modal dialog box using the host OS' facilities. Execution is blocked until the dialog is closed.
-			</description>
-		</method>
-		<method name="can_use_threads" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if the current host platform is using multiple threads.
 			</description>
 		</method>
 		<method name="close_midi_inputs">
@@ -139,7 +134,7 @@
 		<method name="get_cache_dir" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the [i]global[/i] cache data directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_CACHE_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_config_dir] and [method get_data_dir].
+				Returns the [i]global[/i] cache data directory according to the operating system's standards. On the Linux/BSD platform, this path can be overridden by setting the [code]XDG_CACHE_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_config_dir] and [method get_data_dir].
 				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>
@@ -187,17 +182,19 @@
 		<method name="get_cmdline_user_args">
 			<return type="PackedStringArray" />
 			<description>
-				Similar to [method get_cmdline_args], but this returns the user arguments (any argument passed after the double dash [code]--[/code] argument). These are left untouched by Godot for the user.
+				Similar to [method get_cmdline_args], but this returns the user arguments (any argument passed after the double dash [code]--[/code] or double plus [code]++[/code] argument). These are left untouched by Godot for the user. [code]++[/code] can be used in situations where [code]--[/code] is intercepted by another program (such as [code]startx[/code]).
 				For example, in the command line below, [code]--fullscreen[/code] will not be returned in [method get_cmdline_user_args] and [code]--level 1[/code] will only be returned in [method get_cmdline_user_args]:
 				[codeblock]
 				godot --fullscreen -- --level 1
+				# Or:
+				godot --fullscreen ++ --level 1
 				[/codeblock]
 			</description>
 		</method>
 		<method name="get_config_dir" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the [i]global[/i] user configuration directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_CONFIG_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_data_dir].
+				Returns the [i]global[/i] user configuration directory according to the operating system's standards. On the Linux/BSD platform, this path can be overridden by setting the [code]XDG_CONFIG_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_data_dir].
 				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>
@@ -205,14 +202,14 @@
 			<return type="PackedStringArray" />
 			<description>
 				Returns an array of MIDI device names.
-				The returned array will be empty if the system MIDI driver has not previously been initialised with [method open_midi_inputs].
+				The returned array will be empty if the system MIDI driver has not previously been initialized with [method open_midi_inputs].
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_data_dir" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the [i]global[/i] user data directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_DATA_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_config_dir].
+				Returns the [i]global[/i] user data directory according to the operating system's standards. On the Linux/BSD platform, this path can be overridden by setting the [code]XDG_DATA_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_config_dir].
 				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>
@@ -397,18 +394,38 @@
 		<method name="get_system_font_path" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="font_name" type="String" />
-			<param index="1" name="bold" type="bool" default="false" />
-			<param index="2" name="italic" type="bool" default="false" />
+			<param index="1" name="weight" type="int" default="400" />
+			<param index="2" name="stretch" type="int" default="100" />
+			<param index="3" name="italic" type="bool" default="false" />
 			<description>
-				Returns path to the system font file with [param font_name] and style. Return empty string if no matching fonts found.
-				[b]Note:[/b] This method is implemented on iOS, Linux, macOS and Windows.
+				Returns path to the system font file with [param font_name] and style. Returns empty string if no matching fonts found.
+				The following aliases can be used to request default fonts: "sans-serif", "serif", "monospace", "cursive", and "fantasy".
+				[b]Note:[/b] Returned font might have different style if the requested style is not available.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="get_system_font_path_for_text" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="font_name" type="String" />
+			<param index="1" name="text" type="String" />
+			<param index="2" name="locale" type="String" default="&quot;&quot;" />
+			<param index="3" name="script" type="String" default="&quot;&quot;" />
+			<param index="4" name="weight" type="int" default="400" />
+			<param index="5" name="stretch" type="int" default="100" />
+			<param index="6" name="italic" type="bool" default="false" />
+			<description>
+				Returns an array of the system substitute font file paths, which are similar to the font with [param font_name] and style for the specified text, locale and script. Returns empty array if no matching fonts found.
+				The following aliases can be used to request default fonts: "sans-serif", "serif", "monospace", "cursive", and "fantasy".
+				[b]Note:[/b] Depending on OS, it's not guaranteed that any of the returned fonts is suitable for rendering specified text. Fonts should be loaded and checked in the order they are returned, and the first suitable one used.
+				[b]Note:[/b] Returned fonts might have different style if the requested style is not available or belong to a different font family.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_system_fonts" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
 				Returns list of font family names available.
-				[b]Note:[/b] This method is implemented on iOS, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_thread_caller_id" qualifiers="const">
@@ -451,6 +468,15 @@
 				[b]Note:[/b] This method is not supported on the web platform. It returns an empty string.
 			</description>
 		</method>
+		<method name="get_video_adapter_driver_info" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns the video adapter driver name and version for the user's currently active graphics card.
+				The first element holds the driver name, such as [code]nvidia[/code], [code]amdgpu[/code], etc.
+				The second element holds the driver version. For e.g. the [code]nvidia[/code] driver on a Linux/BSD platform, the version is in the format [code]510.85.02[/code]. For Windows, the driver's format is [code]31.0.15.1659[/code].
+				[b]Note:[/b] This method is only supported on the platforms Linux/BSD and Windows when not running in headless mode. It returns an empty array on other platforms.
+			</description>
+		</method>
 		<method name="has_environment" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="variable" type="String" />
@@ -463,7 +489,7 @@
 			<return type="bool" />
 			<param index="0" name="tag_name" type="String" />
 			<description>
-				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on the platform, build, etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=$DOCS_URL/getting_started/workflow/export/feature_tags.html]Feature Tags[/url] documentation for more details.
+				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on the platform, build, etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=$DOCS_URL/tutorials/export/feature_tags.html]Feature Tags[/url] documentation for more details.
 				[b]Note:[/b] Tag names are case-sensitive.
 			</description>
 		</method>
@@ -472,7 +498,7 @@
 			<description>
 				Returns [code]true[/code] if the Godot binary used to run the project is a [i]debug[/i] export template, or when running in the editor.
 				Returns [code]false[/code] if the Godot binary used to run the project is a [i]release[/i] export template.
-				To check whether the Godot binary used to run the project is an export template (debug or release), use [code]OS.has_feature("standalone")[/code] instead.
+				To check whether the Godot binary used to run the project is an export template (debug or release), use [code]OS.has_feature("template")[/code] instead.
 			</description>
 		</method>
 		<method name="is_keycode_unicode" qualifiers="const">
@@ -522,19 +548,32 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Moves the file or directory to the system's recycle bin. See also [method Directory.remove].
-				The method takes only global paths, so you may need to use [method ProjectSettings.globalize_path]. Do not use it for files in [code]res://[/code] as it will not work in exported project.
+				Moves the file or directory to the system's recycle bin. See also [method DirAccess.remove].
+				The method takes only global paths, so you may need to use [method ProjectSettings.globalize_path]. Do not use it for files in [code]res://[/code] as it will not work in exported projects.
 				[b]Note:[/b] If the user has disabled the recycle bin on their system, the file will be permanently deleted instead.
-				[codeblock]
-				var file_to_remove = "user://slot1.sav"
+				[codeblocks]
+				[gdscript]
+				var file_to_remove = "user://slot1.save"
 				OS.move_to_trash(ProjectSettings.globalize_path(file_to_remove))
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var fileToRemove = "user://slot1.save";
+				OS.MoveToTrash(ProjectSettings.GlobalizePath(fileToRemove));
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="open_midi_inputs">
 			<return type="void" />
 			<description>
-				Initialises the singleton for the system MIDI driver.
+				Initializes the singleton for the system MIDI driver.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="read_string_from_stdin">
+			<return type="String" />
+			<description>
+				Reads a user input string from the standard input (usually the terminal). This operation is [i]blocking[/i], which causes the window to freeze if [method read_string_from_stdin] is called on the main thread. The thread calling [method read_string_from_stdin] will block until the program receives a line break in standard input (usually by the user pressing [kbd]Enter[/kbd]).
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
@@ -553,12 +592,12 @@
 			</description>
 		</method>
 		<method name="set_environment" qualifiers="const">
-			<return type="bool" />
+			<return type="void" />
 			<param index="0" name="variable" type="String" />
 			<param index="1" name="value" type="String" />
 			<description>
 				Sets the value of the environment variable [param variable] to [param value]. The environment variable will be set for the Godot process and any process executed with [method execute] after running [method set_environment]. The environment variable will [i]not[/i] persist to processes run after the Godot process was terminated.
-				[b]Note:[/b] Double-check the casing of [param variable]. Environment variable names are case-sensitive on all platforms except Windows.
+				[b]Note:[/b] Environment variable names are case-sensitive on all platforms except Windows. The [param variable] name cannot be empty or include the [code]=[/code] character. On Windows, there is a 32767 characters limit for the combined length of [param variable], [param value], and the [code]=[/code] and null terminator characters that will be registered in the environment block.
 			</description>
 		</method>
 		<method name="set_restart_on_exit">
@@ -595,7 +634,16 @@
 				- [code]OS.shell_open("https://godotengine.org")[/code] opens the default web browser on the official Godot website.
 				- [code]OS.shell_open("mailto:example@example.com")[/code] opens the default email client with the "To" field set to [code]example@example.com[/code]. See [url=https://datatracker.ietf.org/doc/html/rfc2368]RFC 2368 - The [code]mailto[/code] URL scheme[/url] for a list of fields that can be added.
 				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] path into a system path for use with this method.
+				[b]Note:[/b] Use [method String.uri_encode] to encode characters within URLs in a URL-safe, portable way. This is especially required for line breaks. Otherwise, [method shell_open] may not work correctly in a project exported to the Web platform.
 				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="unset_environment" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="variable" type="String" />
+			<description>
+				Removes the environment [param variable] from the current environment, if it exists. The environment variable will be removed for the Godot process and any process executed with [method execute] after running [method unset_environment]. The removal of the environment variable will [i]not[/i] persist to processes run after the Godot process was terminated.
+				[b]Note:[/b] Environment variable names are case-sensitive on all platforms except Windows. The [param variable] name cannot be empty or include the [code]=[/code] character.
 			</description>
 		</method>
 	</methods>
@@ -608,68 +656,11 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="VIDEO_DRIVER_VULKAN" value="0" enum="VideoDriver">
-			The Vulkan rendering backend. It requires Vulkan 1.0 support and automatically uses features from Vulkan 1.1 and 1.2 if available.
+		<constant name="RENDERING_DRIVER_VULKAN" value="0" enum="RenderingDriver">
+			The Vulkan rendering driver. It requires Vulkan 1.0 support and automatically uses features from Vulkan 1.1 and 1.2 if available.
 		</constant>
-		<constant name="VIDEO_DRIVER_OPENGL_3" value="1" enum="VideoDriver">
-			The OpenGL 3 rendering backend. It uses OpenGL 3.3 Core Profile on desktop platforms, OpenGL ES 3.0 on mobile devices, and WebGL 2.0 on Web.
-		</constant>
-		<constant name="DAY_SUNDAY" value="0" enum="Weekday">
-			Sunday.
-		</constant>
-		<constant name="DAY_MONDAY" value="1" enum="Weekday">
-			Monday.
-		</constant>
-		<constant name="DAY_TUESDAY" value="2" enum="Weekday">
-			Tuesday.
-		</constant>
-		<constant name="DAY_WEDNESDAY" value="3" enum="Weekday">
-			Wednesday.
-		</constant>
-		<constant name="DAY_THURSDAY" value="4" enum="Weekday">
-			Thursday.
-		</constant>
-		<constant name="DAY_FRIDAY" value="5" enum="Weekday">
-			Friday.
-		</constant>
-		<constant name="DAY_SATURDAY" value="6" enum="Weekday">
-			Saturday.
-		</constant>
-		<constant name="MONTH_JANUARY" value="1" enum="Month">
-			January.
-		</constant>
-		<constant name="MONTH_FEBRUARY" value="2" enum="Month">
-			February.
-		</constant>
-		<constant name="MONTH_MARCH" value="3" enum="Month">
-			March.
-		</constant>
-		<constant name="MONTH_APRIL" value="4" enum="Month">
-			April.
-		</constant>
-		<constant name="MONTH_MAY" value="5" enum="Month">
-			May.
-		</constant>
-		<constant name="MONTH_JUNE" value="6" enum="Month">
-			June.
-		</constant>
-		<constant name="MONTH_JULY" value="7" enum="Month">
-			July.
-		</constant>
-		<constant name="MONTH_AUGUST" value="8" enum="Month">
-			August.
-		</constant>
-		<constant name="MONTH_SEPTEMBER" value="9" enum="Month">
-			September.
-		</constant>
-		<constant name="MONTH_OCTOBER" value="10" enum="Month">
-			October.
-		</constant>
-		<constant name="MONTH_NOVEMBER" value="11" enum="Month">
-			November.
-		</constant>
-		<constant name="MONTH_DECEMBER" value="12" enum="Month">
-			December.
+		<constant name="RENDERING_DRIVER_OPENGL3" value="1" enum="RenderingDriver">
+			The OpenGL 3 rendering driver. It uses OpenGL 3.3 Core Profile on desktop platforms, OpenGL ES 3.0 on mobile devices, and WebGL 2.0 on Web.
 		</constant>
 		<constant name="SYSTEM_DIR_DESKTOP" value="0" enum="SystemDir">
 			Desktop directory path.

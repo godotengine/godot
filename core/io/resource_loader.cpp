@@ -1,38 +1,39 @@
-/*************************************************************************/
-/*  resource_loader.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  resource_loader.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "resource_loader.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_importer.h"
+#include "core/os/condition_variable.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
@@ -49,6 +50,11 @@ Ref<ResourceFormatLoader> ResourceLoader::loader[ResourceLoader::MAX_LOADERS];
 int ResourceLoader::loader_count = 0;
 
 bool ResourceFormatLoader::recognize_path(const String &p_path, const String &p_for_type) const {
+	bool ret = false;
+	if (GDVIRTUAL_CALL(_recognize_path, p_path, p_for_type, ret)) {
+		return ret;
+	}
+
 	String extension = p_path.get_extension();
 
 	List<String> extensions;
@@ -68,12 +74,9 @@ bool ResourceFormatLoader::recognize_path(const String &p_path, const String &p_
 }
 
 bool ResourceFormatLoader::handles_type(const String &p_type) const {
-	bool success;
-	if (GDVIRTUAL_CALL(_handles_type, p_type, success)) {
-		return success;
-	}
-
-	return false;
+	bool success = false;
+	GDVIRTUAL_CALL(_handles_type, p_type, success);
+	return success;
 }
 
 void ResourceFormatLoader::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
@@ -93,21 +96,20 @@ void ResourceFormatLoader::get_classes_used(const String &p_path, HashSet<String
 
 String ResourceFormatLoader::get_resource_type(const String &p_path) const {
 	String ret;
+	GDVIRTUAL_CALL(_get_resource_type, p_path, ret);
+	return ret;
+}
 
-	if (GDVIRTUAL_CALL(_get_resource_type, p_path, ret)) {
-		return ret;
-	}
-
-	return "";
+String ResourceFormatLoader::get_resource_script_class(const String &p_path) const {
+	String ret;
+	GDVIRTUAL_CALL(_get_resource_script_class, p_path, ret);
+	return ret;
 }
 
 ResourceUID::ID ResourceFormatLoader::get_resource_uid(const String &p_path) const {
-	int64_t uid;
-	if (GDVIRTUAL_CALL(_get_resource_uid, p_path, uid)) {
-		return uid;
-	}
-
-	return ResourceUID::INVALID_ID;
+	int64_t uid = ResourceUID::INVALID_ID;
+	GDVIRTUAL_CALL(_get_resource_uid, p_path, uid);
+	return uid;
 }
 
 void ResourceFormatLoader::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
@@ -123,11 +125,11 @@ void ResourceLoader::get_recognized_extensions_for_type(const String &p_type, Li
 }
 
 bool ResourceFormatLoader::exists(const String &p_path) const {
-	bool success;
+	bool success = false;
 	if (GDVIRTUAL_CALL(_exists, p_path, success)) {
 		return success;
 	}
-	return FileAccess::exists(p_path); //by default just check file
+	return FileAccess::exists(p_path); // By default just check file.
 }
 
 void ResourceFormatLoader::get_recognized_extensions(List<String> *p_extensions) const {
@@ -175,12 +177,9 @@ Error ResourceFormatLoader::rename_dependencies(const String &p_path, const Hash
 		deps_dict[E.key] = E.value;
 	}
 
-	int64_t err;
-	if (GDVIRTUAL_CALL(_rename_dependencies, p_path, deps_dict, err)) {
-		return (Error)err;
-	}
-
-	return OK;
+	Error err = OK;
+	GDVIRTUAL_CALL(_rename_dependencies, p_path, deps_dict, err);
+	return err;
 }
 
 void ResourceFormatLoader::_bind_methods() {
@@ -189,8 +188,10 @@ void ResourceFormatLoader::_bind_methods() {
 	BIND_ENUM_CONSTANT(CACHE_MODE_REPLACE);
 
 	GDVIRTUAL_BIND(_get_recognized_extensions);
+	GDVIRTUAL_BIND(_recognize_path, "path", "type");
 	GDVIRTUAL_BIND(_handles_type, "type");
 	GDVIRTUAL_BIND(_get_resource_type, "path");
+	GDVIRTUAL_BIND(_get_resource_script_class, "path");
 	GDVIRTUAL_BIND(_get_resource_uid, "path");
 	GDVIRTUAL_BIND(_get_dependencies, "path", "add_types");
 	GDVIRTUAL_BIND(_rename_dependencies, "path", "renames");
@@ -233,7 +234,7 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	ThreadLoadTask &load_task = *(ThreadLoadTask *)p_userdata;
 	load_task.loader_id = Thread::get_caller_id();
 
-	if (load_task.semaphore) {
+	if (load_task.cond_var) {
 		//this is an actual thread, so wait for Ok from semaphore
 		thread_load_semaphore->wait(); //wait until its ok to start loading
 	}
@@ -247,7 +248,7 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	} else {
 		load_task.status = THREAD_LOAD_LOADED;
 	}
-	if (load_task.semaphore) {
+	if (load_task.cond_var) {
 		if (load_task.start_next && thread_waiting_count > 0) {
 			thread_waiting_count--;
 			//thread loading count remains constant, this ends but another one begins
@@ -258,11 +259,9 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 
 		print_lt("END: load count: " + itos(thread_loading_count) + " / wait count: " + itos(thread_waiting_count) + " / suspended count: " + itos(thread_suspended_count) + " / active: " + itos(thread_loading_count - thread_suspended_count));
 
-		for (int i = 0; i < load_task.poll_requests; i++) {
-			load_task.semaphore->post();
-		}
-		memdelete(load_task.semaphore);
-		load_task.semaphore = nullptr;
+		load_task.cond_var->notify_all();
+		memdelete(load_task.cond_var);
+		load_task.cond_var = nullptr;
 	}
 
 	if (load_task.resource.is_valid()) {
@@ -311,12 +310,6 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 			thread_load_mutex->unlock();
 			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "There is no thread loading source resource '" + p_source_resource + "'.");
 		}
-		//must be loading from this thread
-		if (thread_load_tasks[p_source_resource].loader_id != Thread::get_caller_id()) {
-			thread_load_mutex->unlock();
-			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Threading loading resource'" + local_path + " failed: Source specified: '" + p_source_resource + "' but was not called by it.");
-		}
-
 		//must not be already added as s sub tasks
 		if (thread_load_tasks[p_source_resource].sub_tasks.has(local_path)) {
 			thread_load_mutex->unlock();
@@ -373,7 +366,7 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 
 	if (load_task.resource.is_null()) { //needs to be loaded in thread
 
-		load_task.semaphore = memnew(Semaphore);
+		load_task.cond_var = memnew(ConditionVariable);
 		if (thread_loading_count < thread_load_max) {
 			thread_loading_count++;
 			thread_load_semaphore->post(); //we have free threads, so allow one
@@ -438,9 +431,8 @@ ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const 
 Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_error) {
 	String local_path = _validate_local_path(p_path);
 
-	thread_load_mutex->lock();
+	MutexLock thread_load_lock(*thread_load_mutex);
 	if (!thread_load_tasks.has(local_path)) {
-		thread_load_mutex->unlock();
 		if (r_error) {
 			*r_error = ERR_INVALID_PARAMETER;
 		}
@@ -449,13 +441,30 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 
 	ThreadLoadTask &load_task = thread_load_tasks[local_path];
 
-	//semaphore still exists, meaning it's still loading, request poll
-	Semaphore *semaphore = load_task.semaphore;
-	if (semaphore) {
-		load_task.poll_requests++;
+	if (load_task.status == THREAD_LOAD_IN_PROGRESS) {
+		if (load_task.loader_id == Thread::get_caller_id()) {
+			// Load is in progress, but it's precisely this thread the one in charge.
+			// That means this is a cyclic load.
+			if (r_error) {
+				*r_error = ERR_BUSY;
+			}
+			return Ref<Resource>();
+		} else if (!load_task.cond_var) {
+			// Load is in progress, but a condition variable was never created for it.
+			// That happens when a load has been initiated with subthreads disabled,
+			// but now another load thread needs to interact with this one (either
+			// because of subthreads being used this time, or because it's simply a
+			// threaded load running on a different thread).
+			// Since we want to be notified when the load ends, we must create the
+			// condition variable now.
+			load_task.cond_var = memnew(ConditionVariable);
+		}
+	}
 
+	//cond var still exists, meaning it's still loading, request poll
+	if (load_task.cond_var) {
 		{
-			// As we got a semaphore, this means we are going to have to wait
+			// As we got a cond var, this means we are going to have to wait
 			// until the sub-resource is done loading
 			//
 			// As this thread will become 'blocked' we should "exchange" its
@@ -477,14 +486,21 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 			print_lt("GET: load count: " + itos(thread_loading_count) + " / wait count: " + itos(thread_waiting_count) + " / suspended count: " + itos(thread_suspended_count) + " / active: " + itos(thread_loading_count - thread_suspended_count));
 		}
 
-		thread_load_mutex->unlock();
-		semaphore->wait();
-		thread_load_mutex->lock();
+		bool still_valid = true;
+		bool was_thread = load_task.thread;
+		do {
+			load_task.cond_var->wait(thread_load_lock);
+			if (!thread_load_tasks.has(local_path)) { //may have been erased during unlock and this was always an invalid call
+				still_valid = false;
+				break;
+			}
+		} while (load_task.cond_var); // In case of spurious wakeup.
 
-		thread_suspended_count--;
+		if (was_thread) {
+			thread_suspended_count--;
+		}
 
-		if (!thread_load_tasks.has(local_path)) { //may have been erased during unlock and this was always an invalid call
-			thread_load_mutex->unlock();
+		if (!still_valid) {
 			if (r_error) {
 				*r_error = ERR_INVALID_PARAMETER;
 			}
@@ -506,8 +522,6 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 		}
 		thread_load_tasks.erase(local_path);
 	}
-
-	thread_load_mutex->unlock();
 
 	return resource;
 }
@@ -771,6 +785,19 @@ String ResourceLoader::get_resource_type(const String &p_path) {
 	return "";
 }
 
+String ResourceLoader::get_resource_script_class(const String &p_path) {
+	String local_path = _validate_local_path(p_path);
+
+	for (int i = 0; i < loader_count; i++) {
+		String result = loader[i]->get_resource_script_class(local_path);
+		if (!result.is_empty()) {
+			return result;
+		}
+	}
+
+	return "";
+}
+
 ResourceUID::ID ResourceLoader::get_resource_uid(const String &p_path) {
 	String local_path = _validate_local_path(p_path);
 
@@ -908,7 +935,7 @@ void ResourceLoader::load_translation_remaps() {
 		return;
 	}
 
-	Dictionary remaps = ProjectSettings::get_singleton()->get("internationalization/locale/translation_remaps");
+	Dictionary remaps = GLOBAL_GET("internationalization/locale/translation_remaps");
 	List<Variant> keys;
 	remaps.get_key_list(&keys);
 	for (const Variant &E : keys) {
@@ -930,12 +957,41 @@ void ResourceLoader::clear_translation_remaps() {
 	}
 }
 
+void ResourceLoader::clear_thread_load_tasks() {
+	thread_load_mutex->lock();
+
+	for (KeyValue<String, ResourceLoader::ThreadLoadTask> &E : thread_load_tasks) {
+		switch (E.value.status) {
+			case ResourceLoader::ThreadLoadStatus::THREAD_LOAD_LOADED: {
+				E.value.resource = Ref<Resource>();
+			} break;
+
+			case ResourceLoader::ThreadLoadStatus::THREAD_LOAD_IN_PROGRESS: {
+				if (E.value.thread != nullptr) {
+					E.value.thread->wait_to_finish();
+					memdelete(E.value.thread);
+					E.value.thread = nullptr;
+				}
+				E.value.resource = Ref<Resource>();
+			} break;
+
+			case ResourceLoader::ThreadLoadStatus::THREAD_LOAD_FAILED:
+			default: {
+				// do nothing
+			}
+		}
+	}
+	thread_load_tasks.clear();
+
+	thread_load_mutex->unlock();
+}
+
 void ResourceLoader::load_path_remaps() {
 	if (!ProjectSettings::get_singleton()->has_setting("path_remap/remapped_paths")) {
 		return;
 	}
 
-	Vector<String> remaps = ProjectSettings::get_singleton()->get("path_remap/remapped_paths");
+	Vector<String> remaps = GLOBAL_GET("path_remap/remapped_paths");
 	int rc = remaps.size();
 	ERR_FAIL_COND(rc & 1); //must be even
 	const String *r = remaps.ptr();
@@ -989,13 +1045,6 @@ bool ResourceLoader::add_custom_resource_format_loader(String script_path) {
 	return true;
 }
 
-void ResourceLoader::remove_custom_resource_format_loader(String script_path) {
-	Ref<ResourceFormatLoader> custom_loader = _find_custom_resource_format_loader(script_path);
-	if (custom_loader.is_valid()) {
-		remove_resource_format_loader(custom_loader);
-	}
-}
-
 void ResourceLoader::set_create_missing_resources_if_class_unavailable(bool p_enable) {
 	create_missing_resources_if_class_unavailable = p_enable;
 }
@@ -1032,7 +1081,7 @@ void ResourceLoader::remove_custom_loaders() {
 }
 
 void ResourceLoader::initialize() {
-	thread_load_mutex = memnew(Mutex);
+	thread_load_mutex = memnew(SafeBinaryMutex<BINARY_MUTEX_TAG>);
 	thread_load_max = OS::get_singleton()->get_processor_count();
 	thread_loading_count = 0;
 	thread_waiting_count = 0;
@@ -1055,7 +1104,9 @@ bool ResourceLoader::create_missing_resources_if_class_unavailable = false;
 bool ResourceLoader::abort_on_missing_resource = true;
 bool ResourceLoader::timestamp_on_load = false;
 
-Mutex *ResourceLoader::thread_load_mutex = nullptr;
+template <>
+thread_local uint32_t SafeBinaryMutex<ResourceLoader::BINARY_MUTEX_TAG>::count = 0;
+SafeBinaryMutex<ResourceLoader::BINARY_MUTEX_TAG> *ResourceLoader::thread_load_mutex = nullptr;
 HashMap<String, ResourceLoader::ThreadLoadTask> ResourceLoader::thread_load_tasks;
 Semaphore *ResourceLoader::thread_load_semaphore = nullptr;
 

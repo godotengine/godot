@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  display_server.h                                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  display_server.h                                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef DISPLAY_SERVER_H
 #define DISPLAY_SERVER_H
@@ -70,9 +70,10 @@ public:
 		DISPLAY_HANDLE,
 		WINDOW_HANDLE,
 		WINDOW_VIEW,
+		OPENGL_CONTEXT,
 	};
 
-	typedef DisplayServer *(*CreateFunction)(const String &, WindowMode, VSyncMode, uint32_t, const Size2i &, Error &r_error);
+	typedef DisplayServer *(*CreateFunction)(const String &, WindowMode, VSyncMode, uint32_t, const Point2i *, const Size2i &, int p_screen, Error &r_error);
 	typedef Vector<String> (*GetRenderingDriversFunction)();
 
 private:
@@ -123,6 +124,7 @@ public:
 		FEATURE_CLIPBOARD_PRIMARY,
 		FEATURE_TEXT_TO_SPEECH,
 		FEATURE_EXTEND_TO_TITLE,
+		FEATURE_SCREEN_CAPTURE,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
@@ -216,6 +218,16 @@ public:
 	virtual bool is_dark_mode() const { return false; };
 	virtual Color get_accent_color() const { return Color(0, 0, 0, 0); };
 
+private:
+	static bool window_early_clear_override_enabled;
+	static Color window_early_clear_override_color;
+
+protected:
+	static bool _get_window_early_clear_override(Color &r_color);
+
+public:
+	static void set_early_window_clear_color_override(bool p_enabled, Color p_color = Color(0, 0, 0, 0));
+
 	enum MouseMode {
 		MOUSE_MODE_VISIBLE,
 		MOUSE_MODE_HIDDEN,
@@ -229,7 +241,7 @@ public:
 
 	virtual void warp_mouse(const Point2i &p_position);
 	virtual Point2i mouse_get_position() const;
-	virtual MouseButton mouse_get_button_state() const;
+	virtual BitField<MouseButtonMask> mouse_get_button_state() const;
 
 	virtual void clipboard_set(const String &p_text);
 	virtual String clipboard_get() const;
@@ -241,12 +253,15 @@ public:
 	virtual Rect2i get_display_safe_area() const { return screen_get_usable_rect(); }
 
 	enum {
-		SCREEN_OF_MAIN_WINDOW = -1
+		SCREEN_PRIMARY = -2,
+		SCREEN_OF_MAIN_WINDOW = -1, // Note: for the main window, determine screen from position.
 	};
 
 	const float SCREEN_REFRESH_RATE_FALLBACK = -1.0; // Returned by screen_get_refresh_rate if the method fails.
 
 	virtual int get_screen_count() const = 0;
+	virtual int get_primary_screen() const = 0;
+	virtual int get_screen_from_rect(const Rect2 &p_rect) const;
 	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
@@ -261,7 +276,8 @@ public:
 		return scale;
 	}
 	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
-	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
+	virtual Color screen_get_pixel(const Point2i &p_position) const { return Color(); };
+	virtual bool is_touchscreen_available() const;
 
 	// Keep the ScreenOrientation enum values in sync with the `display/window/handheld/orientation`
 	// project setting hint.
@@ -297,6 +313,7 @@ public:
 		WINDOW_FLAG_NO_FOCUS,
 		WINDOW_FLAG_POPUP,
 		WINDOW_FLAG_EXTEND_TO_TITLE,
+		WINDOW_FLAG_MOUSE_PASSTHROUGH,
 		WINDOW_FLAG_MAX,
 	};
 
@@ -309,6 +326,7 @@ public:
 		WINDOW_FLAG_NO_FOCUS_BIT = (1 << WINDOW_FLAG_NO_FOCUS),
 		WINDOW_FLAG_POPUP_BIT = (1 << WINDOW_FLAG_POPUP),
 		WINDOW_FLAG_EXTEND_TO_TITLE_BIT = (1 << WINDOW_FLAG_EXTEND_TO_TITLE),
+		WINDOW_FLAG_MOUSE_PASSTHROUGH_BIT = (1 << WINDOW_FLAG_MOUSE_PASSTHROUGH),
 	};
 
 	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());
@@ -336,6 +354,7 @@ public:
 		WINDOW_EVENT_CLOSE_REQUEST,
 		WINDOW_EVENT_GO_BACK_REQUEST,
 		WINDOW_EVENT_DPI_CHANGE,
+		WINDOW_EVENT_TITLEBAR_CHANGE,
 	};
 	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) = 0;
@@ -351,6 +370,7 @@ public:
 	virtual void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID) = 0;
 
 	virtual Point2i window_get_position(WindowID p_window = MAIN_WINDOW_ID) const = 0;
+	virtual Point2i window_get_position_with_decorations(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 	virtual void window_set_position(const Point2i &p_position, WindowID p_window = MAIN_WINDOW_ID) = 0;
 
 	virtual void window_set_transient(WindowID p_window, WindowID p_parent) = 0;
@@ -364,7 +384,7 @@ public:
 
 	virtual void window_set_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual Size2i window_get_size(WindowID p_window = MAIN_WINDOW_ID) const = 0;
-	virtual Size2i window_get_real_size(WindowID p_window = MAIN_WINDOW_ID) const = 0; // FIXME: Find clearer name for this.
+	virtual Size2i window_get_size_with_decorations(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
 	virtual void window_set_mode(WindowMode p_mode, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual WindowMode window_get_mode(WindowID p_window = MAIN_WINDOW_ID) const = 0;
@@ -380,7 +400,8 @@ public:
 	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) = 0;
 
-	virtual Vector2i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const { return Vector2i(); };
+	virtual void window_set_window_buttons_offset(const Vector2i &p_offset, WindowID p_window = MAIN_WINDOW_ID) {}
+	virtual Vector3i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const { return Vector3i(); }
 
 	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
@@ -481,7 +502,7 @@ public:
 	static int get_create_function_count();
 	static const char *get_create_function_name(int p_index);
 	static Vector<String> get_create_function_rendering_drivers(int p_index);
-	static DisplayServer *create(int p_index, const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
+	static DisplayServer *create(int p_index, const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error);
 
 	DisplayServer();
 	~DisplayServer();

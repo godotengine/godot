@@ -30,13 +30,7 @@
 #include "mps_common.h"
 #include "mps_trace.h"
 
-#if defined(MBEDTLS_PLATFORM_C)
 #include "mbedtls/platform.h"
-#else
-#include <stdio.h>
-#define mbedtls_printf    printf
-#define mbedtls_vsnprintf vsnprintf
-#endif /* MBEDTLS_PLATFORM_C */
 
 #if defined(MBEDTLS_MPS_ENABLE_TRACE)
 

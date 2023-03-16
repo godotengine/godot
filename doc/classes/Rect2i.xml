@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Rect2i" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Rect2i" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		2D axis-aligned bounding box using integer coordinates.
 	</brief_description>
@@ -79,10 +79,10 @@
 				var rect2 = rect.expand(Vector2i(0, -1))
 				[/gdscript]
 				[csharp]
-				# position (-3, 2), size (1, 1)
-				var rect = new Rect2i(new Vector2i(-3, 2), new Vector2i(1, 1));
-				# position (-3, -1), size (3, 4), so we fit both rect and Vector2i(0, -1)
-				var rect2 = rect.Expand(new Vector2i(0, -1));
+				// position (-3, 2), size (1, 1)
+				var rect = new Rect2I(new Vector2I(-3, 2), new Vector2I(1, 1));
+				// position (-3, -1), size (3, 4), so we fit both rect and Vector2I(0, -1)
+				var rect2 = rect.Expand(new Vector2I(0, -1));
 				[/csharp]
 				[/codeblocks]
 			</description>

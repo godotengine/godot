@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  joypad_windows.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  joypad_windows.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "joypad_windows.h"
 
@@ -101,10 +101,12 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 	static GUID IID_ValveStreamingGamepad = { MAKELONG(0x28DE, 0x11FF), 0x28DE, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
 	static GUID IID_X360WiredGamepad = { MAKELONG(0x045E, 0x02A1), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
 	static GUID IID_X360WirelessGamepad = { MAKELONG(0x045E, 0x028E), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
+	static GUID IID_XSWirelessGamepad = { MAKELONG(0x045E, 0x0B13), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
 
 	if (memcmp(p_guid, &IID_ValveStreamingGamepad, sizeof(*p_guid)) == 0 ||
 			memcmp(p_guid, &IID_X360WiredGamepad, sizeof(*p_guid)) == 0 ||
-			memcmp(p_guid, &IID_X360WirelessGamepad, sizeof(*p_guid)) == 0)
+			memcmp(p_guid, &IID_X360WirelessGamepad, sizeof(*p_guid)) == 0 ||
+			memcmp(p_guid, &IID_XSWirelessGamepad, sizeof(*p_guid)) == 0)
 		return true;
 
 	PRAWINPUTDEVICELIST dev_list = nullptr;
@@ -167,7 +169,7 @@ bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
 	const GUID &guid = instance->guidProduct;
 	char uid[128];
 
-	ERR_FAIL_COND_V_MSG(memcmp(&guid.Data4[2], "PIDVID", 6), false, "DirectInput device not recognised.");
+	ERR_FAIL_COND_V_MSG(memcmp(&guid.Data4[2], "PIDVID", 6), false, "DirectInput device not recognized.");
 	WORD type = BSWAP16(0x03);
 	WORD vendor = BSWAP16(LOWORD(guid.Data1));
 	WORD product = BSWAP16(HIWORD(guid.Data1));
@@ -420,38 +422,43 @@ void JoypadWindows::process_joypads() {
 }
 
 void JoypadWindows::post_hat(int p_device, DWORD p_dpad) {
-	HatMask dpad_val = (HatMask)0;
+	BitField<HatMask> dpad_val;
 
 	// Should be -1 when centered, but according to docs:
 	// "Some drivers report the centered position of the POV indicator as 65,535. Determine whether the indicator is centered as follows:
 	//  BOOL POVCentered = (LOWORD(dwPOV) == 0xFFFF);"
 	// https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee416628(v%3Dvs.85)#remarks
 	if (LOWORD(p_dpad) == 0xFFFF) {
-		dpad_val = (HatMask)HatMask::CENTER;
+		// Do nothing.
+		// dpad_val.set_flag(HatMask::CENTER);
 	}
 	if (p_dpad == 0) {
-		dpad_val = (HatMask)HatMask::UP;
+		dpad_val.set_flag(HatMask::UP);
 
 	} else if (p_dpad == 4500) {
-		dpad_val = (HatMask)(HatMask::UP | HatMask::RIGHT);
+		dpad_val.set_flag(HatMask::UP);
+		dpad_val.set_flag(HatMask::RIGHT);
 
 	} else if (p_dpad == 9000) {
-		dpad_val = (HatMask)HatMask::RIGHT;
+		dpad_val.set_flag(HatMask::RIGHT);
 
 	} else if (p_dpad == 13500) {
-		dpad_val = (HatMask)(HatMask::RIGHT | HatMask::DOWN);
+		dpad_val.set_flag(HatMask::RIGHT);
+		dpad_val.set_flag(HatMask::DOWN);
 
 	} else if (p_dpad == 18000) {
-		dpad_val = (HatMask)HatMask::DOWN;
+		dpad_val.set_flag(HatMask::DOWN);
 
 	} else if (p_dpad == 22500) {
-		dpad_val = (HatMask)(HatMask::DOWN | HatMask::LEFT);
+		dpad_val.set_flag(HatMask::DOWN);
+		dpad_val.set_flag(HatMask::LEFT);
 
 	} else if (p_dpad == 27000) {
-		dpad_val = (HatMask)HatMask::LEFT;
+		dpad_val.set_flag(HatMask::LEFT);
 
 	} else if (p_dpad == 31500) {
-		dpad_val = (HatMask)(HatMask::LEFT | HatMask::UP);
+		dpad_val.set_flag(HatMask::LEFT);
+		dpad_val.set_flag(HatMask::UP);
 	}
 	input->joy_hat(p_device, dpad_val);
 }

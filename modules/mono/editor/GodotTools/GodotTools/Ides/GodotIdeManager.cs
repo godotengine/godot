@@ -21,7 +21,8 @@ namespace GodotTools.Ides
                 return _messagingServer;
 
             _messagingServer?.Dispose();
-            _messagingServer = new MessagingServer(OS.GetExecutablePath(), ProjectSettings.GlobalizePath(GodotSharpDirs.ResMetadataDir), new GodotLogger());
+            _messagingServer = new MessagingServer(OS.GetExecutablePath(),
+                ProjectSettings.GlobalizePath(GodotSharpDirs.ResMetadataDir), new GodotLogger());
 
             _ = _messagingServer.Listen();
 
@@ -76,8 +77,8 @@ namespace GodotTools.Ides
 
         public async Task<EditorPick?> LaunchIdeAsync(int millisecondsTimeout = 10000)
         {
-            var editorId = (ExternalEditorId)(int)GodotSharpEditor.Instance.GetEditorInterface()
-                .GetEditorSettings().GetSetting("mono/editor/external_editor");
+            var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
+            var editorId = editorSettings.GetSetting(GodotSharpEditor.Settings.ExternalEditor).As<ExternalEditorId>();
             string editorIdentity = GetExternalEditorIdentity(editorId);
 
             var runningServer = GetRunningOrNewServer();
@@ -200,13 +201,13 @@ namespace GodotTools.Ides
         {
             public void LogDebug(string message)
             {
-                if (OS.IsStdoutVerbose())
+                if (OS.IsStdOutVerbose())
                     Console.WriteLine(message);
             }
 
             public void LogInfo(string message)
             {
-                if (OS.IsStdoutVerbose())
+                if (OS.IsStdOutVerbose())
                     Console.WriteLine(message);
             }
 

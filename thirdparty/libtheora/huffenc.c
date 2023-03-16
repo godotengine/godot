@@ -859,9 +859,10 @@ int oc_huff_codes_pack(oggpack_buffer *_opb,
     /*First, find the maximum code length so we can align all the bit
        patterns.*/
     maxlen=_codes[i][0].nbits;
-    for(j=1;j<TH_NDCT_TOKENS;j++){
-      maxlen=OC_MAXI(_codes[i][j].nbits,maxlen);
-    }
+    for(j=1;j<TH_NDCT_TOKENS;j++)maxlen=OC_MAXI(_codes[i][j].nbits,maxlen);
+    /*It's improbable that a code with more than 32 bits could pass the
+       validation below, but abort early in any case.*/
+    if(maxlen>32)return TH_EINVAL;
     mask=(1<<(maxlen>>1)<<(maxlen+1>>1))-1;
     /*Copy over the codes into our temporary workspace.
       The bit patterns are aligned, and the original entry each code is from
@@ -877,34 +878,89 @@ int oc_huff_codes_pack(oggpack_buffer *_opb,
     /*For each leaf of the tree:*/
     bpos=maxlen;
     for(j=0;j<TH_NDCT_TOKENS;j++){
-      int bit;
-      /*If this code has any bits at all.*/
-      if(entries[j].shift<maxlen){
-        /*Descend into the tree, writing a bit for each branch.*/
-        for(;bpos>entries[j].shift;bpos--)oggpackB_write(_opb,0,1);
-        /*Mark this as a leaf node, and write its value.*/
-        oggpackB_write(_opb,1,1);
-        oggpackB_write(_opb,entries[j].token,5);
-        /*For each 1 branch we've descended, back up the tree until we reach a
-           0 branch.*/
-        bit=1<<bpos;
-        for(;entries[j].pattern&bit;bpos++)bit<<=1;
-        /*Validate the code.*/
-        if(j+1<TH_NDCT_TOKENS){
-          mask=~(bit-1)<<1;
-          /*The next entry should have a 1 bit where we had a 0, and should
-             match our code above that bit.
-            This verifies both fullness and prefix-freeness simultaneously.*/
-          if(!(entries[j+1].pattern&bit)||
-           (entries[j].pattern&mask)!=(entries[j+1].pattern&mask)){
-            return TH_EINVAL;
-          }
+      ogg_uint32_t bit;
+      /*Fail if this code has no bits at all.
+        Technically a codebook with a single 0-bit entry is legal, but the
+         encoder currently does not support codebooks which do not contain all
+         the tokens.*/
+      if(entries[j].shift>=maxlen)return TH_EINVAL;
+      /*Descend into the tree, writing a bit for each branch.*/
+      for(;bpos>entries[j].shift;bpos--)oggpackB_write(_opb,0,1);
+      /*Mark this as a leaf node, and write its value.*/
+      oggpackB_write(_opb,1,1);
+      oggpackB_write(_opb,entries[j].token,5);
+      /*For each 1 branch we've descended, back up the tree until we reach a
+         0 branch.*/
+      bit=(ogg_uint32_t)1<<bpos;
+      for(;entries[j].pattern&bit;bpos++)bit<<=1;
+      /*Validate the code.*/
+      if(j+1<TH_NDCT_TOKENS){
+        mask=~(bit-1)<<1;
+        /*The next entry should have a 1 bit where we had a 0, and should
+           match our code above that bit.
+          This verifies both fullness and prefix-freeness simultaneously.*/
+        if(!(entries[j+1].pattern&bit)||
+         (entries[j].pattern&mask)!=(entries[j+1].pattern&mask)){
+          return TH_EINVAL;
         }
-        /*If there are no more codes, we should have ascended back to the top
-           of the tree.*/
-        else if(bpos<maxlen)return TH_EINVAL;
+      }
+      /*If there are no more codes, we should have ascended back to the top
+         of the tree.*/
+      else if(bpos<maxlen)return TH_EINVAL;
+    }
+  }
+  return 0;
+}
+
+/*This is used to copy the configuration of an existing setup header for use by
+   the encoder.
+  The decoder uses a completely different data structure for the Huffman
+   codebooks.*/
+int oc_huff_codes_unpack(oc_pack_buf *_opb,
+ th_huff_code _codes[TH_NHUFFMAN_TABLES][TH_NDCT_TOKENS]){
+  int i;
+  for(i=0;i<TH_NHUFFMAN_TABLES;i++){
+    ogg_uint32_t code;
+    int          len;
+    int          nleaves;
+    code=0;
+    len=nleaves=0;
+    memset(_codes[i],0,TH_NDCT_TOKENS*sizeof(*_codes[i]));
+    for(;;){
+      long bits;
+      bits=oc_pack_read1(_opb);
+      /*Only process nodes so long as there's more bits in the buffer.*/
+      if(oc_pack_bytes_left(_opb)<0)return TH_EBADHEADER;
+      /*Read an internal node:*/
+      if(!bits){
+        len++;
+        /*Don't allow codewords longer than 32 bits.*/
+        if(len>32)return TH_EBADHEADER;
+      }
+      /*Read a leaf node:*/
+      else{
+        ogg_uint32_t code_bit;
+        /*Don't allow more than 32 tokens per codebook.*/
+        if(++nleaves>32)return TH_EBADHEADER;
+        bits=oc_pack_read(_opb,OC_NDCT_TOKEN_BITS);
+        /*The current encoder does not support codebooks that do not contain
+           all of the tokens.*/
+        if(_codes[i][bits].nbits>0)return TH_EINVAL;
+        _codes[i][bits].pattern=code>>32-len;
+        _codes[i][bits].nbits=len;
+        code_bit=0x80000000U>>len-1;
+        while(len>0&&(code&code_bit)){
+          code^=code_bit;
+          code_bit<<=1;
+          len--;
+        }
+        if(len<=0)break;
+        code|=code_bit;
       }
     }
+    /*The current encoder does not support codebooks that do not contain all of
+       the tokens.*/
+    if(nleaves<32)return TH_EINVAL;
   }
   return 0;
 }

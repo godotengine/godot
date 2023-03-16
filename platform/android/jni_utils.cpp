@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  jni_utils.cpp                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  jni_utils.cpp                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "jni_utils.h"
 
@@ -149,6 +149,15 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 			v.obj = arr;
 
 		} break;
+		case Variant::PACKED_INT64_ARRAY: {
+			Vector<int64_t> array = *p_arg;
+			jlongArray arr = env->NewLongArray(array.size());
+			const int64_t *r = array.ptr();
+			env->SetLongArrayRegion(arr, 0, array.size(), r);
+			v.val.l = arr;
+			v.obj = arr;
+
+		} break;
 		case Variant::PACKED_BYTE_ARRAY: {
 			Vector<uint8_t> array = *p_arg;
 			jbyteArray arr = env->NewByteArray(array.size());
@@ -167,9 +176,15 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 			v.obj = arr;
 
 		} break;
-#ifndef _MSC_VER
-#warning This is missing 64 bits arrays, I have no idea how to do it in JNI
-#endif
+		case Variant::PACKED_FLOAT64_ARRAY: {
+			Vector<double> array = *p_arg;
+			jdoubleArray arr = env->NewDoubleArray(array.size());
+			const double *r = array.ptr();
+			env->SetDoubleArrayRegion(arr, 0, array.size(), r);
+			v.val.l = arr;
+			v.obj = arr;
+
+		} break;
 
 		default: {
 			v.val.i = 0;
@@ -245,6 +260,17 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 		return sarr;
 	}
 
+	if (name == "[J") {
+		jlongArray arr = (jlongArray)obj;
+		int fCount = env->GetArrayLength(arr);
+		Vector<int64_t> sarr;
+		sarr.resize(fCount);
+
+		int64_t *w = sarr.ptrw();
+		env->GetLongArrayRegion(arr, 0, fCount, w);
+		return sarr;
+	}
+
 	if (name == "[B") {
 		jbyteArray arr = (jbyteArray)obj;
 		int fCount = env->GetArrayLength(arr);
@@ -266,33 +292,33 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 	if (name == "[D") {
 		jdoubleArray arr = (jdoubleArray)obj;
 		int fCount = env->GetArrayLength(arr);
-		PackedFloat32Array sarr;
-		sarr.resize(fCount);
+		PackedFloat64Array packed_array;
+		packed_array.resize(fCount);
 
-		real_t *w = sarr.ptrw();
+		double *w = packed_array.ptrw();
 
 		for (int i = 0; i < fCount; i++) {
 			double n;
 			env->GetDoubleArrayRegion(arr, i, 1, &n);
 			w[i] = n;
 		}
-		return sarr;
+		return packed_array;
 	}
 
 	if (name == "[F") {
 		jfloatArray arr = (jfloatArray)obj;
 		int fCount = env->GetArrayLength(arr);
-		PackedFloat32Array sarr;
-		sarr.resize(fCount);
+		PackedFloat32Array packed_array;
+		packed_array.resize(fCount);
 
-		real_t *w = sarr.ptrw();
+		float *w = packed_array.ptrw();
 
 		for (int i = 0; i < fCount; i++) {
 			float n;
 			env->GetFloatArrayRegion(arr, i, 1, &n);
 			w[i] = n;
 		}
-		return sarr;
+		return packed_array;
 	}
 
 	if (name == "[Ljava.lang.Object;") {
@@ -345,12 +371,15 @@ Variant::Type get_jni_type(const String &p_type) {
 		{ "void", Variant::NIL },
 		{ "boolean", Variant::BOOL },
 		{ "int", Variant::INT },
+		{ "long", Variant::INT },
 		{ "float", Variant::FLOAT },
 		{ "double", Variant::FLOAT },
 		{ "java.lang.String", Variant::STRING },
 		{ "[I", Variant::PACKED_INT32_ARRAY },
+		{ "[J", Variant::PACKED_INT64_ARRAY },
 		{ "[B", Variant::PACKED_BYTE_ARRAY },
 		{ "[F", Variant::PACKED_FLOAT32_ARRAY },
+		{ "[D", Variant::PACKED_FLOAT64_ARRAY },
 		{ "[Ljava.lang.String;", Variant::PACKED_STRING_ARRAY },
 		{ "org.godotengine.godot.Dictionary", Variant::DICTIONARY },
 		{ nullptr, Variant::NIL }
@@ -377,13 +406,16 @@ const char *get_jni_sig(const String &p_type) {
 		{ "void", "V" },
 		{ "boolean", "Z" },
 		{ "int", "I" },
+		{ "long", "J" },
 		{ "float", "F" },
 		{ "double", "D" },
 		{ "java.lang.String", "Ljava/lang/String;" },
 		{ "org.godotengine.godot.Dictionary", "Lorg/godotengine/godot/Dictionary;" },
 		{ "[I", "[I" },
+		{ "[J", "[J" },
 		{ "[B", "[B" },
 		{ "[F", "[F" },
+		{ "[D", "[D" },
 		{ "[Ljava.lang.String;", "[Ljava/lang/String;" },
 		{ nullptr, "V" }
 	};

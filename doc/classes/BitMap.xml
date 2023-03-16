@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="BitMap" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="BitMap" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Boolean matrix.
 	</brief_description>
@@ -12,7 +12,7 @@
 		<method name="convert_to_image" qualifiers="const">
 			<return type="Image" />
 			<description>
-				Returns an image of the same size as the bitmap and with a [enum Image.Format] of type [code]FORMAT_L8[/code]. [code]true[/code] bits of the bitmap are being converted into white pixels, and [code]false[/code] bits into black.
+				Returns an image of the same size as the bitmap and with a [enum Image.Format] of type [constant Image.FORMAT_L8]. [code]true[/code] bits of the bitmap are being converted into white pixels, and [code]false[/code] bits into black.
 			</description>
 		</method>
 		<method name="create">

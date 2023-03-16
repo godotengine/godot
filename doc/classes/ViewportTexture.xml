@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ViewportTexture" inherits="Texture2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ViewportTexture" inherits="Texture2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Texture which displays the content of a [Viewport].
 	</brief_description>
 	<description>
 		Displays the content of a [Viewport] node as a dynamic [Texture2D]. This can be used to mix controls, 2D, and 3D elements in the same scene.
 		To create a ViewportTexture in code, use the [method Viewport.get_texture] method on the target viewport.
+		[b]Note:[/b] When local to scene, this texture uses [method Resource.setup_local_to_scene] to set the proxy texture and flags in the local viewport.
 	</description>
 	<tutorials>
 		<link title="GUI in 3D Demo">https://godotengine.org/asset-library/asset/127</link>

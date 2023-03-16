@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  rasterizer_scene_gles3.h                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  rasterizer_scene_gles3.h                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef RASTERIZER_SCENE_GLES3_H
 #define RASTERIZER_SCENE_GLES3_H
@@ -44,6 +44,7 @@
 #include "shader_gles3.h"
 #include "shaders/cubemap_filter.glsl.gen.h"
 #include "shaders/sky.glsl.gen.h"
+#include "storage/light_storage.h"
 #include "storage/material_storage.h"
 #include "storage/render_scene_buffers_gles3.h"
 #include "storage/utilities.h"
@@ -73,6 +74,7 @@ enum SceneUniformLocation {
 	SCENE_OMNILIGHT_UNIFORM_LOCATION,
 	SCENE_SPOTLIGHT_UNIFORM_LOCATION,
 	SCENE_DIRECTIONAL_LIGHT_UNIFORM_LOCATION,
+	SCENE_MULTIVIEW_UNIFORM_LOCATION,
 };
 
 enum SkyUniformLocation {
@@ -81,24 +83,18 @@ enum SkyUniformLocation {
 	SKY_EMPTY, // Unused, put here to avoid conflicts with SCENE_DATA_UNIFORM_LOCATION.
 	SKY_MATERIAL_UNIFORM_LOCATION,
 	SKY_DIRECTIONAL_LIGHT_UNIFORM_LOCATION,
-};
-
-enum {
-	SPEC_CONSTANT_DISABLE_LIGHTMAP = 0,
-	SPEC_CONSTANT_DISABLE_DIRECTIONAL_LIGHTS = 1,
-	SPEC_CONSTANT_DISABLE_OMNI_LIGHTS = 2,
-	SPEC_CONSTANT_DISABLE_SPOT_LIGHTS = 3,
-	SPEC_CONSTANT_DISABLE_FOG = 4,
+	SKY_MULTIVIEW_UNIFORM_LOCATION,
 };
 
 struct RenderDataGLES3 {
 	Ref<RenderSceneBuffersGLES3> render_buffers;
 	bool transparent_bg = false;
 
-	Transform3D cam_transform = Transform3D();
-	Transform3D inv_cam_transform = Transform3D();
-	Projection cam_projection = Projection();
+	Transform3D cam_transform;
+	Transform3D inv_cam_transform;
+	Projection cam_projection;
 	bool cam_orthogonal = false;
+	uint32_t camera_visible_layers = 0xFFFFFFFF;
 
 	// For stereo rendering
 	uint32_t view_count = 1;
@@ -111,20 +107,19 @@ struct RenderDataGLES3 {
 	const PagedArray<RenderGeometryInstance *> *instances = nullptr;
 	const PagedArray<RID> *lights = nullptr;
 	const PagedArray<RID> *reflection_probes = nullptr;
-	RID environment = RID();
-	RID camera_attributes = RID();
-	RID reflection_probe = RID();
+	RID environment;
+	RID camera_attributes;
+	RID reflection_probe;
 	int reflection_probe_pass = 0;
 
 	float lod_distance_multiplier = 0.0;
-	Plane lod_camera_plane = Plane();
 	float screen_mesh_lod_threshold = 0.0;
 
 	uint32_t directional_light_count = 0;
 	uint32_t spot_light_count = 0;
 	uint32_t omni_light_count = 0;
 
-	RendererScene::RenderInfo *render_info = nullptr;
+	RenderingMethod::RenderInfo *render_info = nullptr;
 };
 
 class RasterizerCanvasGLES3;
@@ -182,34 +177,6 @@ private:
 		float specular;
 	};
 	static_assert(sizeof(DirectionalLightData) % 16 == 0, "DirectionalLightData size must be a multiple of 16 bytes");
-
-	struct LightInstance {
-		RS::LightType light_type = RS::LIGHT_DIRECTIONAL;
-
-		AABB aabb;
-		RID self;
-		RID light;
-		Transform3D transform;
-
-		Vector3 light_vector;
-		Vector3 spot_vector;
-		float linear_att = 0.0;
-
-		uint64_t shadow_pass = 0;
-		uint64_t last_scene_pass = 0;
-		uint64_t last_scene_shadow_pass = 0;
-		uint64_t last_pass = 0;
-		uint32_t cull_mask = 0;
-		uint32_t light_directional_index = 0;
-
-		Rect2 directional_rect;
-
-		uint32_t gl_id = -1;
-
-		LightInstance() {}
-	};
-
-	mutable RID_Owner<LightInstance> light_instance_owner;
 
 	class GeometryInstanceGLES3;
 
@@ -368,8 +335,19 @@ private:
 
 			float fog_light_color[3];
 			float fog_sun_scatter;
+			uint32_t camera_visible_layers;
+			uint32_t pad1;
+			uint32_t pad2;
+			uint32_t pad3;
 		};
 		static_assert(sizeof(UBO) % 16 == 0, "Scene UBO size must be a multiple of 16 bytes");
+
+		struct MultiviewUBO {
+			float projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
+			float inv_projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
+			float eye_offset[RendererSceneRender::MAX_RENDER_VIEWS][4];
+		};
+		static_assert(sizeof(MultiviewUBO) % 16 == 0, "Multiview UBO size must be a multiple of 16 bytes");
 
 		struct TonemapUBO {
 			float exposure = 1.0;
@@ -381,6 +359,8 @@ private:
 
 		UBO ubo;
 		GLuint ubo_buffer = 0;
+		MultiviewUBO multiview_ubo;
+		GLuint multiview_buffer = 0;
 		GLuint tonemap_buffer = 0;
 
 		bool used_depth_prepass = false;
@@ -398,8 +378,8 @@ private:
 		LightData *omni_lights = nullptr;
 		LightData *spot_lights = nullptr;
 
-		InstanceSort<LightInstance> *omni_light_sort;
-		InstanceSort<LightInstance> *spot_light_sort;
+		InstanceSort<GLES3::LightInstance> *omni_light_sort;
+		InstanceSort<GLES3::LightInstance> *spot_light_sort;
 		GLuint omni_light_buffer = 0;
 		GLuint spot_light_buffer = 0;
 		uint32_t omni_light_count = 0;
@@ -413,10 +393,10 @@ private:
 		GeometryInstanceSurface **elements = nullptr;
 		int element_count = 0;
 		bool reverse_cull = false;
-		uint32_t spec_constant_base_flags = 0;
+		uint64_t spec_constant_base_flags = 0;
 		bool force_wireframe = false;
 
-		RenderListParameters(GeometryInstanceSurface **p_elements, int p_element_count, bool p_reverse_cull, uint32_t p_spec_constant_base_flags, bool p_force_wireframe = false) {
+		RenderListParameters(GeometryInstanceSurface **p_elements, int p_element_count, bool p_reverse_cull, uint64_t p_spec_constant_base_flags, bool p_force_wireframe = false) {
 			elements = p_elements;
 			element_count = p_element_count;
 			reverse_cull = p_reverse_cull;
@@ -518,7 +498,6 @@ protected:
 	float ssao_fadeout_to = 300.0;
 
 	bool glow_bicubic_upscale = false;
-	bool glow_high_quality = false;
 	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::ENV_SSR_ROUGHNESS_QUALITY_LOW;
 
 	/* Sky */
@@ -592,7 +571,7 @@ protected:
 	void _update_dirty_skys();
 	void _update_sky_radiance(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_luminance_multiplier);
 	void _filter_sky_radiance(Sky *p_sky, int p_base_layer);
-	void _draw_sky(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_luminance_multiplier);
+	void _draw_sky(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_luminance_multiplier, bool p_use_multiview, bool p_flip_y);
 	void _free_sky_data(Sky *p_sky);
 
 public:
@@ -604,17 +583,6 @@ public:
 	void geometry_instance_free(RenderGeometryInstance *p_geometry_instance) override;
 
 	uint32_t geometry_instance_get_pair_mask() override;
-
-	/* SHADOW ATLAS API */
-
-	RID shadow_atlas_create() override;
-	void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = true) override;
-	void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) override;
-	bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) override;
-
-	void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) override;
-	int get_directional_light_shadow_size(RID p_light_intance) override;
-	void set_directional_shadow_count(int p_count) override;
 
 	/* SDFGI UPDATE */
 
@@ -642,7 +610,6 @@ public:
 	/* ENVIRONMENT API */
 
 	void environment_glow_set_use_bicubic_upscale(bool p_enable) override;
-	void environment_glow_set_use_high_quality(bool p_enable) override;
 
 	void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) override;
 
@@ -666,44 +633,11 @@ public:
 	void positional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) override;
 	void directional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) override;
 
-	RID light_instance_create(RID p_light) override;
-	void light_instance_set_transform(RID p_light_instance, const Transform3D &p_transform) override;
-	void light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb) override;
-	void light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) override;
-	void light_instance_mark_visible(RID p_light_instance) override;
-
-	_FORCE_INLINE_ RS::LightType light_instance_get_type(RID p_light_instance) {
-		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
-		return li->light_type;
-	}
-	_FORCE_INLINE_ uint32_t light_instance_get_gl_id(RID p_light_instance) {
-		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
-		return li->gl_id;
-	}
-
 	RID fog_volume_instance_create(RID p_fog_volume) override;
 	void fog_volume_instance_set_transform(RID p_fog_volume_instance, const Transform3D &p_transform) override;
 	void fog_volume_instance_set_active(RID p_fog_volume_instance, bool p_active) override;
 	RID fog_volume_instance_get_volume(RID p_fog_volume_instance) const override;
 	Vector3 fog_volume_instance_get_position(RID p_fog_volume_instance) const override;
-
-	RID reflection_atlas_create() override;
-	int reflection_atlas_get_size(RID p_ref_atlas) const override;
-	void reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count) override;
-
-	RID reflection_probe_instance_create(RID p_probe) override;
-	void reflection_probe_instance_set_transform(RID p_instance, const Transform3D &p_transform) override;
-	void reflection_probe_release_atlas_index(RID p_instance) override;
-	bool reflection_probe_instance_needs_redraw(RID p_instance) override;
-	bool reflection_probe_instance_has_reflection(RID p_instance) override;
-	bool reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) override;
-	bool reflection_probe_instance_postprocess_step(RID p_instance) override;
-
-	RID decal_instance_create(RID p_decal) override;
-	void decal_instance_set_transform(RID p_decal, const Transform3D &p_transform) override;
-
-	RID lightmap_instance_create(RID p_lightmap) override;
-	void lightmap_instance_set_transform(RID p_lightmap, const Transform3D &p_transform) override;
 
 	RID voxel_gi_instance_create(RID p_voxel_gi) override;
 	void voxel_gi_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform) override;
@@ -712,7 +646,7 @@ public:
 
 	void voxel_gi_set_quality(RS::VoxelGIQuality) override;
 
-	void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RendererScene::RenderInfo *r_render_info = nullptr) override;
+	void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RenderingMethod::RenderInfo *r_render_info = nullptr) override;
 	void render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
 	void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<RenderGeometryInstance *> &p_instances) override;
 

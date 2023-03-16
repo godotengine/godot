@@ -6,12 +6,14 @@
 
 
 namespace OT {
+
+struct glyf_accelerator_t;
+
 namespace glyf_impl {
 
 
 struct SubsetGlyph
 {
-  hb_codepoint_t new_gid;
   hb_codepoint_t old_gid;
   Glyph source_glyph;
   hb_bytes_t dest_start;  /* region of source_glyph to copy first */
@@ -19,9 +21,17 @@ struct SubsetGlyph
 
   bool serialize (hb_serialize_context_t *c,
 		  bool use_short_loca,
-		  const hb_subset_plan_t *plan) const
+		  const hb_subset_plan_t *plan,
+		  hb_font_t *font)
   {
     TRACE_SERIALIZE (this);
+
+    if (font)
+    {
+      const OT::glyf_accelerator_t &glyf = *font->face->table.glyf;
+      if (!this->compile_bytes_with_deltas (plan, font, glyf))
+        return_trace (false);
+    }
 
     hb_bytes_t dest_glyph = dest_start.copy (c);
     dest_glyph = hb_bytes_t (&dest_glyph, dest_glyph.length + dest_end.copy (c).length);
@@ -53,6 +63,17 @@ struct SubsetGlyph
       Glyph (dest_glyph).set_overlaps_flag ();
 
     return_trace (true);
+  }
+
+  bool compile_bytes_with_deltas (const hb_subset_plan_t *plan,
+                                  hb_font_t *font,
+                                  const glyf_accelerator_t &glyf)
+  { return source_glyph.compile_bytes_with_deltas (plan, font, glyf, dest_start, dest_end); }
+
+  void free_compiled_bytes ()
+  {
+    dest_start.fini ();
+    dest_end.fini ();
   }
 
   void drop_hints_bytes ()

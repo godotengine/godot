@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  tab_container.cpp                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  tab_container.cpp                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "tab_container.h"
 
@@ -345,7 +345,7 @@ Vector<Control *> TabContainer::_get_tab_controls() const {
 	Vector<Control *> controls;
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *control = Object::cast_to<Control>(get_child(i));
-		if (!control || control->is_set_as_top_level() || control == tab_bar || control == child_removing) {
+		if (!control || control->is_set_as_top_level() || control == tab_bar || children_removing.has(control)) {
 			continue;
 		}
 
@@ -519,11 +519,11 @@ void TabContainer::_refresh_tab_names() {
 }
 
 void TabContainer::add_child_notify(Node *p_child) {
+	Container::add_child_notify(p_child);
+
 	if (p_child == tab_bar) {
 		return;
 	}
-
-	Container::add_child_notify(p_child);
 
 	Control *c = Object::cast_to<Control>(p_child);
 	if (!c || c->is_set_as_top_level()) {
@@ -584,10 +584,10 @@ void TabContainer::remove_child_notify(Node *p_child) {
 
 	int idx = get_tab_idx_from_control(c);
 
-	// Before this, the tab control has not changed; after this, the tab control has changed.
-	child_removing = p_child;
+	// As the child hasn't been removed yet, keep track of it so when the "tab_changed" signal is fired it can be ignored.
+	children_removing.push_back(c);
 	tab_bar->remove_tab(idx);
-	child_removing = nullptr;
+	children_removing.erase(c);
 
 	_update_margins();
 	if (get_tab_count() == 0) {
@@ -803,22 +803,6 @@ Ref<Texture2D> TabContainer::get_tab_button_icon(int p_tab) const {
 	return tab_bar->get_tab_button_icon(p_tab);
 }
 
-void TabContainer::get_translatable_strings(List<String> *p_strings) const {
-	Vector<Control *> controls = _get_tab_controls();
-	for (int i = 0; i < controls.size(); i++) {
-		Control *c = controls[i];
-
-		if (!c->has_meta("_tab_name")) {
-			continue;
-		}
-
-		String name = c->get_meta("_tab_name");
-		if (!name.is_empty()) {
-			p_strings->push_back(name);
-		}
-	}
-}
-
 Size2 TabContainer::get_minimum_size() const {
 	Size2 ms;
 
@@ -838,7 +822,7 @@ Size2 TabContainer::get_minimum_size() const {
 	}
 
 	Vector<Control *> controls = _get_tab_controls();
-	int max_control_height = 0;
+	Size2 largest_child_min_size;
 	for (int i = 0; i < controls.size(); i++) {
 		Control *c = controls[i];
 
@@ -847,13 +831,14 @@ Size2 TabContainer::get_minimum_size() const {
 		}
 
 		Size2 cms = c->get_combined_minimum_size();
-		ms.x = MAX(ms.x, cms.x);
-		max_control_height = MAX(max_control_height, cms.y);
+		largest_child_min_size.x = MAX(largest_child_min_size.x, cms.x);
+		largest_child_min_size.y = MAX(largest_child_min_size.y, cms.y);
 	}
-	ms.y += max_control_height;
+	ms.y += largest_child_min_size.y;
 
 	Size2 panel_ms = theme_cache.panel_style->get_minimum_size();
-	ms.x = MAX(ms.x, panel_ms.x);
+
+	ms.x = MAX(ms.x, largest_child_min_size.x + panel_ms.x);
 	ms.y += panel_ms.y;
 
 	return ms;
@@ -969,9 +954,6 @@ void TabContainer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_repaint"), &TabContainer::_repaint);
 	ClassDB::bind_method(D_METHOD("_on_theme_changed"), &TabContainer::_on_theme_changed);
-	ClassDB::bind_method(D_METHOD("_get_drag_data_fw"), &TabContainer::_get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &TabContainer::_can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &TabContainer::_drop_data_fw);
 
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_selected", PropertyInfo(Variant::INT, "tab")));
@@ -990,7 +972,7 @@ void TabContainer::_bind_methods() {
 
 TabContainer::TabContainer() {
 	tab_bar = memnew(TabBar);
-	tab_bar->set_drag_forwarding(this);
+	SET_DRAG_FORWARDING_GCDU(tab_bar, TabContainer);
 	add_child(tab_bar, false, INTERNAL_MODE_FRONT);
 	tab_bar->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE);
 	tab_bar->connect("tab_changed", callable_mp(this, &TabContainer::_on_tab_changed));

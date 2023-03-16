@@ -42,15 +42,7 @@
 #include "mbedtls/pem.h"
 #endif
 
-#if defined(MBEDTLS_PLATFORM_C)
 #include "mbedtls/platform.h"
-#else
-#include <stdlib.h>
-#include <stdio.h>
-#define mbedtls_free       free
-#define mbedtls_calloc    calloc
-#define mbedtls_snprintf   snprintf
-#endif
 
 #if defined(MBEDTLS_FS_IO) || defined(EFIX64) || defined(EFI32)
 #include <stdio.h>

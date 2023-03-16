@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  debugger_editor_plugin.cpp                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  debugger_editor_plugin.cpp                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "debugger_editor_plugin.h"
 
@@ -47,7 +47,6 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	ED_SHORTCUT("debugger/step_over", TTR("Step Over"), Key::F10);
 	ED_SHORTCUT("debugger/break", TTR("Break"));
 	ED_SHORTCUT("debugger/continue", TTR("Continue"), Key::F12);
-	ED_SHORTCUT("debugger/keep_debugger_open", TTR("Keep Debugger Open"));
 	ED_SHORTCUT("debugger/debug_with_external_editor", TTR("Debug with External Editor"));
 
 	// File Server for deploy with remote filesystem.
@@ -69,7 +68,7 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	debug_menu->set_item_tooltip(-1,
 			TTR("When this option is enabled, using one-click deploy for Android will only export an executable without the project data.\nThe filesystem will be provided from the project by the editor over the network.\nOn Android, deploying will use the USB cable for faster performance. This option speeds up testing for projects with large assets."));
 	debug_menu->add_separator();
-	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_collision_shapes", TTR("Visible Collision Shapes")), RUN_DEBUG_COLLISONS);
+	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_collision_shapes", TTR("Visible Collision Shapes")), RUN_DEBUG_COLLISIONS);
 	debug_menu->set_item_tooltip(-1,
 			TTR("When this option is enabled, collision shapes and raycast nodes (for 2D and 3D) will be visible in the running project."));
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_paths", TTR("Visible Paths")), RUN_DEBUG_PATHS);
@@ -85,6 +84,9 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/sync_script_changes", TTR("Synchronize Script Changes")), RUN_RELOAD_SCRIPTS);
 	debug_menu->set_item_tooltip(-1,
 			TTR("When this option is enabled, any script that is saved will be reloaded in the running project.\nWhen used remotely on a device, this is more efficient when the network filesystem option is enabled."));
+	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/keep_server_open", TTR("Keep Debug Server Open")), SERVER_KEEP_OPEN);
+	debug_menu->set_item_tooltip(-1,
+			TTR("When this option is enabled, the editor debug server will stay open and listen for new sessions started outside of the editor itself."));
 
 	// Multi-instance, start/stop
 	instances_menu = memnew(PopupMenu);
@@ -95,14 +97,10 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	debug_menu->add_separator();
 	debug_menu->add_submenu_item(TTR("Run Multiple Instances"), "run_instances");
 
-	instances_menu->add_radio_check_item(TTR("Run 1 Instance"));
-	instances_menu->set_item_metadata(0, 1);
-	instances_menu->add_radio_check_item(TTR("Run 2 Instances"));
-	instances_menu->set_item_metadata(1, 2);
-	instances_menu->add_radio_check_item(TTR("Run 3 Instances"));
-	instances_menu->set_item_metadata(2, 3);
-	instances_menu->add_radio_check_item(TTR("Run 4 Instances"));
-	instances_menu->set_item_metadata(3, 4);
+	for (int i = 1; i <= 4; i++) {
+		instances_menu->add_radio_check_item(vformat(TTRN("Run %d Instance", "Run %d Instances", i), i));
+		instances_menu->set_item_metadata(i - 1, i);
+	}
 	instances_menu->set_item_checked(0, true);
 	instances_menu->connect("index_pressed", callable_mp(this, &DebuggerEditorPlugin::_select_run_count));
 	debug_menu->connect("id_pressed", callable_mp(this, &DebuggerEditorPlugin::_menu_option));
@@ -150,10 +148,10 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_deploy_remote_debug", !ischecked);
 
 		} break;
-		case RUN_DEBUG_COLLISONS: {
-			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_COLLISONS));
-			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_COLLISONS), !ischecked);
-			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_collisons", !ischecked);
+		case RUN_DEBUG_COLLISIONS: {
+			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_COLLISIONS));
+			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_COLLISIONS), !ischecked);
+			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_collisions", !ischecked);
 
 		} break;
 		case RUN_DEBUG_PATHS: {
@@ -176,6 +174,14 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_reload_scripts", !ischecked);
 
 		} break;
+		case SERVER_KEEP_OPEN: {
+			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(SERVER_KEEP_OPEN));
+			debug_menu->set_item_checked(debug_menu->get_item_index(SERVER_KEEP_OPEN), !ischecked);
+
+			EditorDebuggerNode::get_singleton()->set_keep_open(!ischecked);
+			EditorSettings::get_singleton()->set_project_metadata("debug_options", "server_keep_open", !ischecked);
+
+		} break;
 	}
 }
 
@@ -190,11 +196,12 @@ void DebuggerEditorPlugin::_notification(int p_what) {
 void DebuggerEditorPlugin::_update_debug_options() {
 	bool check_deploy_remote = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_deploy_remote_debug", false);
 	bool check_file_server = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_file_server", false);
-	bool check_debug_collisions = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisons", false);
+	bool check_debug_collisions = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisions", false);
 	bool check_debug_paths = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_paths", false);
 	bool check_debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
 	bool check_live_debug = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_live_debug", true);
 	bool check_reload_scripts = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_reload_scripts", true);
+	bool check_server_keep_open = EditorSettings::get_singleton()->get_project_metadata("debug_options", "server_keep_open", false);
 	int instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
 
 	if (check_deploy_remote) {
@@ -204,7 +211,7 @@ void DebuggerEditorPlugin::_update_debug_options() {
 		_menu_option(RUN_FILE_SERVER);
 	}
 	if (check_debug_collisions) {
-		_menu_option(RUN_DEBUG_COLLISONS);
+		_menu_option(RUN_DEBUG_COLLISIONS);
 	}
 	if (check_debug_paths) {
 		_menu_option(RUN_DEBUG_PATHS);
@@ -217,6 +224,9 @@ void DebuggerEditorPlugin::_update_debug_options() {
 	}
 	if (check_reload_scripts) {
 		_menu_option(RUN_RELOAD_SCRIPTS);
+	}
+	if (check_server_keep_open) {
+		_menu_option(SERVER_KEEP_OPEN);
 	}
 
 	int len = instances_menu->get_item_count();

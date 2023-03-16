@@ -2733,10 +2733,10 @@ TIntermAggregate* TIntermediate::addForLoop(TIntermNode* body, TIntermNode* init
     TIntermAggregate* loopSequence = (initializer == nullptr ||
                                       initializer->getAsAggregate() == nullptr) ? makeAggregate(initializer, loc)
                                                                                 : initializer->getAsAggregate();
-    if (loopSequence != nullptr && loopSequence->getOp() == EOpSequence)
+    if (loopSequence != nullptr && (loopSequence->getOp() == EOpSequence || loopSequence->getOp() == EOpScope))
         loopSequence->setOp(EOpNull);
     loopSequence = growAggregate(loopSequence, node);
-    loopSequence->setOperator(EOpSequence);
+    loopSequence->setOperator(getDebugInfo() ? EOpScope : EOpSequence);
 
     return loopSequence;
 }
@@ -2766,7 +2766,7 @@ void TIntermBranch::updatePrecision(TPrecisionQualifier parentPrecision)
         return;
 
     if (exp->getBasicType() == EbtInt || exp->getBasicType() == EbtUint ||
-        exp->getBasicType() == EbtFloat || exp->getBasicType() == EbtFloat16) {
+        exp->getBasicType() == EbtFloat) {
         if (parentPrecision != EpqNone && exp->getQualifier().precision == EpqNone) {
             exp->propagatePrecision(parentPrecision);
         }
@@ -3284,7 +3284,7 @@ bool TIntermediate::promoteUnary(TIntermUnary& node)
 void TIntermUnary::updatePrecision()
 {
     if (getBasicType() == EbtInt || getBasicType() == EbtUint ||
-        getBasicType() == EbtFloat || getBasicType() == EbtFloat16) {
+        getBasicType() == EbtFloat) {
         if (operand->getQualifier().precision > getQualifier().precision)
             getQualifier().precision = operand->getQualifier().precision;
     }
@@ -3785,7 +3785,7 @@ bool TIntermediate::promoteAggregate(TIntermAggregate& node)
 void TIntermAggregate::updatePrecision()
 {
     if (getBasicType() == EbtInt || getBasicType() == EbtUint ||
-        getBasicType() == EbtFloat || getBasicType() == EbtFloat16) {
+        getBasicType() == EbtFloat) {
         TPrecisionQualifier maxPrecision = EpqNone;
         TIntermSequence operands = getSequence();
         for (unsigned int i = 0; i < operands.size(); ++i) {
@@ -3807,7 +3807,7 @@ void TIntermAggregate::updatePrecision()
 void TIntermBinary::updatePrecision()
 {
      if (getBasicType() == EbtInt || getBasicType() == EbtUint ||
-         getBasicType() == EbtFloat || getBasicType() == EbtFloat16) {
+         getBasicType() == EbtFloat) {
        if (op == EOpRightShift || op == EOpLeftShift) {
          // For shifts get precision from left side only and thus no need to propagate
          getQualifier().precision = left->getQualifier().precision;

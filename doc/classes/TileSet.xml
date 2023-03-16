@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TileSet" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TileSet" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Tile library for tilemaps.
 	</brief_description>
@@ -7,7 +7,6 @@
 		A TileSet is a library of tiles for a [TileMap]. A TileSet handles a list of [TileSetSource], each of them storing a set of tiles.
 		Tiles can either be from a [TileSetAtlasSource], that render tiles out of a texture with support for physics, navigation, etc... or from a [TileSetScenesCollectionSource] which exposes scene-based tiles.
 		Tiles are referenced by using three IDs: their source ID, their atlas coordinates ID and their alternative tile ID.
-
 		A TileSet can be configured so that its tiles expose more or less properties. To do so, the TileSet resources uses property layers, that you can add or remove depending on your needs.
 		For example, adding a physics layer allows giving collision shapes to your tiles. Each layer having dedicated properties (physics layer an mask), you may add several TileSet physics layers for each type of collision you need.
 		See the functions to add new layers for more information.
@@ -142,6 +141,14 @@
 			<return type="int" />
 			<description>
 				Returns the custom data layers count.
+			</description>
+		</method>
+		<method name="get_navigation_layer_layer_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_index" type="int" />
+			<param index="1" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified navigation layer of the TileSet navigation data layer identified by the given [param layer_index] is enabled, given a navigation_layers [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="get_navigation_layer_layers" qualifiers="const">
@@ -293,7 +300,7 @@
 			<param index="1" name="coords_from" type="Vector2i" />
 			<param index="2" name="alternative_from" type="int" />
 			<description>
-				Returns if there is and alternative-level proxy for the given identifiers.
+				Returns if there is an alternative-level proxy for the given identifiers.
 			</description>
 		</method>
 		<method name="has_coords_level_tile_proxy">
@@ -501,6 +508,15 @@
 				Sets the type of the custom data layer identified by the given index.
 			</description>
 		</method>
+		<method name="set_navigation_layer_layer_value">
+			<return type="void" />
+			<param index="0" name="layer_index" type="int" />
+			<param index="1" name="layer_number" type="int" />
+			<param index="2" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified navigation layer of the TileSet navigation data layer identified by the given [param layer_index], given a navigation_layers [param layer_number] between 1 and 32.
+			</description>
+		</method>
 		<method name="set_navigation_layer_layers">
 			<return type="void" />
 			<param index="0" name="layer_index" type="int" />
@@ -590,7 +606,7 @@
 			<param index="0" name="terrain_set" type="int" />
 			<param index="1" name="mode" type="int" enum="TileSet.TerrainMode" />
 			<description>
-				Sets a terrain mode. Each mode determines which bits of a tile shape is used to match the neighbouring tiles' terrains.
+				Sets a terrain mode. Each mode determines which bits of a tile shape is used to match the neighboring tiles' terrains.
 			</description>
 		</method>
 	</methods>
@@ -617,6 +633,7 @@
 		</constant>
 		<constant name="TILE_SHAPE_ISOMETRIC" value="1" enum="TileShape">
 			Diamond tile shape (for isometric look).
+			[b]Note:[/b] Isometric [TileSet] works best if [TileMap] and all its layers have Y-sort enabled.
 		</constant>
 		<constant name="TILE_SHAPE_HALF_OFFSET_SQUARE" value="2" enum="TileShape">
 			Rectangular tile shape with one row/column out of two offset by half a tile.

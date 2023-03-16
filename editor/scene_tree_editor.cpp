@@ -1,40 +1,41 @@
-/*************************************************************************/
-/*  scene_tree_editor.cpp                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  scene_tree_editor.cpp                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "scene_tree_editor.h"
 
+#include "core/config/project_settings.h"
 #include "core/object/message_queue.h"
-#include "core/string/print_string.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/node_dock.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
@@ -67,6 +68,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 	Node *n = get_node(np);
 	ERR_FAIL_COND(!n);
 
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (p_id == BUTTON_SUBSCENE) {
 		if (n == get_scene_node()) {
 			if (n && n->get_scene_inherited_state().is_valid()) {
@@ -130,8 +132,16 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		if (config_err.is_empty()) {
 			return;
 		}
-		config_err = config_err.word_wrap(80);
-		warning->set_text(config_err);
+
+		const PackedInt32Array boundaries = TS->string_get_word_breaks(config_err, "", 80);
+		PackedStringArray lines;
+		for (int i = 0; i < boundaries.size(); i += 2) {
+			const int start = boundaries[i];
+			const int end = boundaries[i + 1];
+			lines.append(config_err.substr(start, end - start + 1));
+		}
+
+		warning->set_text(String("\n").join(lines));
 		warning->popup_centered();
 
 	} else if (p_id == BUTTON_SIGNALS) {
@@ -166,6 +176,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 void SceneTreeEditor::_toggle_visible(Node *p_node) {
 	if (p_node->has_method("is_visible") && p_node->has_method("set_visible")) {
 		bool v = bool(p_node->call("is_visible"));
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->add_do_method(p_node, "set_visible", !v);
 		undo_redo->add_undo_method(p_node, "set_visible", v);
 	}
@@ -214,8 +225,8 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	if (connect_to_script_mode) {
 		Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 
-		Ref<Script> script = p_node->get_script();
-		if (!script.is_null() && EditorNode::get_singleton()->get_object_custom_type_base(p_node) != script) {
+		Ref<Script> scr = p_node->get_script();
+		if (!scr.is_null() && EditorNode::get_singleton()->get_object_custom_type_base(p_node) != scr) {
 			//has script
 			item->add_button(0, get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), BUTTON_SCRIPT);
 		} else {
@@ -223,7 +234,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			item->set_custom_color(0, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
 			item->set_selectable(0, false);
 
-			if (!script.is_null()) { // make sure to mark the script if a custom type
+			if (!scr.is_null()) { // make sure to mark the script if a custom type
 				item->add_button(0, get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), BUTTON_SCRIPT);
 				item->set_button_disabled(0, item->get_button_count(0) - 1, true);
 			}
@@ -267,8 +278,8 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 	if (can_rename) { //should be can edit..
 
-		String warning = p_node->get_configuration_warnings_as_string();
-		if (!warning.is_empty()) {
+		String conf_warning = p_node->get_configuration_warnings_as_string();
+		if (!conf_warning.is_empty()) {
 			const int num_warnings = p_node->get_configuration_warnings().size();
 			String warning_icon;
 			if (num_warnings == 1) {
@@ -283,15 +294,15 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			const String bullet_point = String::utf8("•  ");
 			int next_newline = 0;
 			while (next_newline != -1) {
-				next_newline = warning.find("\n", next_newline + 2);
-				if (warning.substr(next_newline + 1, bullet_point.length()) != bullet_point) {
-					warning = warning.insert(next_newline + 1, "    ");
+				next_newline = conf_warning.find("\n", next_newline + 2);
+				if (conf_warning.substr(next_newline + 1, bullet_point.length()) != bullet_point) {
+					conf_warning = conf_warning.insert(next_newline + 1, "    ");
 				}
 			}
 
 			String newline = (num_warnings == 1 ? "\n" : "\n\n");
 
-			item->add_button(0, get_theme_icon(warning_icon, SNAME("EditorIcons")), BUTTON_WARNING, false, TTR("Node configuration warning:") + newline + warning);
+			item->add_button(0, get_theme_icon(warning_icon, SNAME("EditorIcons")), BUTTON_WARNING, false, TTR("Node configuration warning:") + newline + conf_warning);
 		}
 
 		if (p_node->is_unique_name_in_owner()) {
@@ -378,26 +389,25 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		item->set_tooltip_text(0, tooltip);
 	}
 
-	if (can_open_instance && undo_redo.is_valid()) { //Show buttons only when necessary(SceneTreeDock) to avoid crashes
-
+	if (can_open_instance && is_scene_tree_dock) { // Show buttons only when necessary (SceneTreeDock) to avoid crashes.
 		if (!p_node->is_connected("script_changed", callable_mp(this, &SceneTreeEditor::_node_script_changed))) {
 			p_node->connect("script_changed", callable_mp(this, &SceneTreeEditor::_node_script_changed).bind(p_node));
 		}
 
-		Ref<Script> script = p_node->get_script();
-		if (!script.is_null()) {
+		Ref<Script> scr = p_node->get_script();
+		if (!scr.is_null()) {
 			String additional_notes;
 			Color button_color = Color(1, 1, 1);
 			// Can't set tooltip after adding button, need to do it before.
-			if (script->is_tool()) {
+			if (scr->is_tool()) {
 				additional_notes += "\n" + TTR("This script is currently running in the editor.");
 				button_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 			}
-			if (EditorNode::get_singleton()->get_object_custom_type_base(p_node) == script) {
+			if (EditorNode::get_singleton()->get_object_custom_type_base(p_node) == scr) {
 				additional_notes += "\n" + TTR("This script is a custom type.");
 				button_color.a = 0.5;
 			}
-			item->add_button(0, get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), BUTTON_SCRIPT, false, TTR("Open Script:") + " " + script->get_path() + additional_notes);
+			item->add_button(0, get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), BUTTON_SCRIPT, false, TTR("Open Script:") + " " + scr->get_path() + additional_notes);
 			item->set_button_color(0, item->get_button_count(0) - 1, button_color);
 		}
 
@@ -482,8 +492,9 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 	if (valid_types.size()) {
 		bool valid = false;
-		for (int i = 0; i < valid_types.size(); i++) {
-			if (p_node->is_class(valid_types[i])) {
+		for (const StringName &E : valid_types) {
+			if (p_node->is_class(E) ||
+					EditorNode::get_singleton()->is_object_of_custom_type(p_node, E)) {
 				valid = true;
 				break;
 			}
@@ -510,16 +521,16 @@ void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 	int idx = item->get_button_by_id(0, BUTTON_VISIBILITY);
 	ERR_FAIL_COND(idx == -1);
 
-	bool visible = false;
+	bool node_visible = false;
 
 	if (p_node->is_class("CanvasItem") || p_node->is_class("CanvasLayer") || p_node->is_class("Window")) {
-		visible = p_node->call("is_visible");
+		node_visible = p_node->call("is_visible");
 		CanvasItemEditor::get_singleton()->get_viewport_control()->queue_redraw();
 	} else if (p_node->is_class("Node3D")) {
-		visible = p_node->call("is_visible");
+		node_visible = p_node->call("is_visible");
 	}
 
-	if (visible) {
+	if (node_visible) {
 		item->set_button(0, idx, get_theme_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons")));
 	} else {
 		item->set_button(0, idx, get_theme_icon(SNAME("GuiVisibilityHidden"), SNAME("EditorIcons")));
@@ -611,6 +622,7 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_selected) {
 	if (!p_parent) {
 		p_parent = tree->get_root();
+		filter_term_warning.clear();
 	}
 
 	if (!p_parent) {
@@ -665,34 +677,44 @@ bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, PackedStringArra
 	for (int i = 0; i < p_terms.size(); i++) {
 		String term = p_terms[i];
 
-		// Recognise special filter.
+		// Recognize special filter.
 		if (term.contains(":") && !term.get_slicec(':', 0).is_empty()) {
 			String parameter = term.get_slicec(':', 0);
 			String argument = term.get_slicec(':', 1);
 
 			if (parameter == "type" || parameter == "t") {
 				// Filter by Type.
-				String node_type = get_node(p_item->get_metadata(0))->get_class().to_lower();
+				String type = get_node(p_item->get_metadata(0))->get_class();
+				bool term_in_inherited_class = false;
+				// Every Node is is a Node, duh!
+				while (type != "Node") {
+					if (type.to_lower().contains(argument)) {
+						term_in_inherited_class = true;
+						break;
+					}
 
-				if (!node_type.contains(argument)) {
+					type = ClassDB::get_parent_class(type);
+				}
+				if (!term_in_inherited_class) {
 					return false;
 				}
 			} else if (parameter == "group" || parameter == "g") {
 				// Filter by Group.
 				Node *node = get_node(p_item->get_metadata(0));
 
-				List<Node::GroupInfo> group_info_list;
-				node->get_groups(&group_info_list);
-				if (group_info_list.is_empty()) {
-					return false;
-				}
-				// When argument is empty, match all Nodes belonging to any group.
-				if (!argument.is_empty()) {
+				if (argument.is_empty()) {
+					// When argument is empty, match all Nodes belonging to any exposed group.
+					if (node->get_persistent_group_count() == 0) {
+						return false;
+					}
+				} else {
+					List<Node::GroupInfo> group_info_list;
+					node->get_groups(&group_info_list);
+
 					bool term_in_groups = false;
 					for (int j = 0; j < group_info_list.size(); j++) {
-						// Ignore private groups.
-						if (String(group_info_list[j].name).begins_with("__")) {
-							continue;
+						if (!group_info_list[j].persistent) {
+							continue; // Ignore internal groups.
 						}
 						if (String(group_info_list[j].name).to_lower().contains(argument)) {
 							term_in_groups = true;
@@ -703,8 +725,8 @@ bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, PackedStringArra
 						return false;
 					}
 				}
-			} else {
-				WARN_PRINT(vformat(TTR("Special Node filter \"%s\" is not recognised. Available filters include \"type\" and \"group\"."), parameter));
+			} else if (filter_term_warning.is_empty()) {
+				filter_term_warning = vformat(TTR("\"%s\" is not a known filter."), parameter);
 				continue;
 			}
 		} else {
@@ -803,6 +825,10 @@ void SceneTreeEditor::_cell_multi_selected(Object *p_object, int p_cell, bool p_
 	TreeItem *item = Object::cast_to<TreeItem>(p_object);
 	ERR_FAIL_COND(!item);
 
+	if (!item->is_visible()) {
+		return;
+	}
+
 	NodePath np = item->get_metadata(0);
 
 	Node *n = get_node(np);
@@ -835,7 +861,7 @@ void SceneTreeEditor::_notification(int p_what) {
 			get_tree()->connect("tree_process_mode_changed", callable_mp(this, &SceneTreeEditor::_tree_process_mode_changed));
 			get_tree()->connect("node_removed", callable_mp(this, &SceneTreeEditor::_node_removed));
 			get_tree()->connect("node_renamed", callable_mp(this, &SceneTreeEditor::_node_renamed));
-			get_tree()->connect("node_configuration_warning_changed", callable_mp(this, &SceneTreeEditor::_warning_changed), CONNECT_DEFERRED);
+			get_tree()->connect("node_configuration_warning_changed", callable_mp(this, &SceneTreeEditor::_warning_changed));
 
 			tree->connect("item_collapsed", callable_mp(this, &SceneTreeEditor::_cell_collapsed));
 
@@ -942,14 +968,16 @@ void SceneTreeEditor::_renamed() {
 	Node *n = get_node(np);
 	ERR_FAIL_COND(!n);
 
-	// Empty node names are not allowed, so resets it to previous text and show warning
-	if (which->get_text(0).strip_edges().is_empty()) {
-		which->set_text(0, n->get_name());
-		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
-		return;
+	String raw_new_name = which->get_text(0);
+	if (raw_new_name.strip_edges().is_empty()) {
+		// If name is empty, fallback to class name.
+		if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
+			raw_new_name = Node::adjust_name_casing(n->get_class());
+		} else {
+			raw_new_name = n->get_class();
+		}
 	}
 
-	String raw_new_name = which->get_text(0);
 	String new_name = raw_new_name.validate_node_name();
 
 	if (new_name != raw_new_name) {
@@ -965,6 +993,10 @@ void SceneTreeEditor::_renamed() {
 	}
 
 	if (new_name == n->get_name()) {
+		if (which->get_text(0).is_empty()) {
+			which->set_text(0, new_name);
+		}
+
 		return;
 	}
 
@@ -978,12 +1010,13 @@ void SceneTreeEditor::_renamed() {
 		return;
 	}
 
-	if (!undo_redo.is_valid()) {
+	if (!is_scene_tree_dock) {
 		n->set_name(new_name);
 		which->set_metadata(0, n->get_path());
 		emit_signal(SNAME("node_renamed"));
 	} else {
-		undo_redo->create_action(TTR("Rename Node"));
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Rename Node"), UndoRedo::MERGE_DISABLE, n);
 		emit_signal(SNAME("node_prerename"), n, new_name);
 		undo_redo->add_do_method(this, "_rename_node", n->get_instance_id(), new_name);
 		undo_redo->add_undo_method(this, "_rename_node", n->get_instance_id(), n->get_name());
@@ -1022,8 +1055,12 @@ String SceneTreeEditor::get_filter() const {
 	return filter;
 }
 
-void SceneTreeEditor::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
-	undo_redo = p_undo_redo;
+String SceneTreeEditor::get_filter_term_warning() {
+	return filter_term_warning;
+}
+
+void SceneTreeEditor::set_as_scene_tree_dock() {
+	is_scene_tree_dock = true;
 }
 
 void SceneTreeEditor::set_display_foreign_nodes(bool p_display) {
@@ -1116,7 +1153,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 		return Variant(); //dragging from button
 	}
 
-	Vector<Node *> selected;
+	Vector<Node *> selected_nodes;
 	Vector<Ref<Texture2D>> icons;
 	TreeItem *next = tree->get_next_selected(nullptr);
 	while (next) {
@@ -1126,14 +1163,14 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 		if (n) {
 			// Only allow selection if not part of an instantiated scene.
 			if (!n->get_owner() || n->get_owner() == get_scene_node() || n->get_owner()->get_scene_file_path().is_empty()) {
-				selected.push_back(n);
+				selected_nodes.push_back(n);
 				icons.push_back(next->get_icon(0));
 			}
 		}
 		next = tree->get_next_selected(next);
 	}
 
-	if (selected.is_empty()) {
+	if (selected_nodes.is_empty()) {
 		return Variant();
 	}
 
@@ -1142,20 +1179,20 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 	int list_max = 10;
 	float opacity_step = 1.0f / list_max;
 	float opacity_item = 1.0f;
-	for (int i = 0; i < selected.size(); i++) {
+	for (int i = 0; i < selected_nodes.size(); i++) {
 		if (i < list_max) {
 			HBoxContainer *hb = memnew(HBoxContainer);
 			TextureRect *tf = memnew(TextureRect);
 			tf->set_texture(icons[i]);
 			tf->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 			hb->add_child(tf);
-			Label *label = memnew(Label(selected[i]->get_name()));
+			Label *label = memnew(Label(selected_nodes[i]->get_name()));
 			hb->add_child(label);
 			vb->add_child(hb);
 			hb->set_modulate(Color(1, 1, 1, opacity_item));
 			opacity_item -= opacity_step;
 		}
-		NodePath p = selected[i]->get_path();
+		NodePath p = selected_nodes[i]->get_path();
 		objs.push_back(p);
 	}
 
@@ -1332,13 +1369,9 @@ void SceneTreeEditor::set_connecting_signal(bool p_enable) {
 }
 
 void SceneTreeEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_tree"), &SceneTreeEditor::_update_tree, DEFVAL(false)); // Still used by some connect_compat.
+	ClassDB::bind_method(D_METHOD("_update_tree"), &SceneTreeEditor::_update_tree, DEFVAL(false)); // Still used by UndoRedo.
 	ClassDB::bind_method("_rename_node", &SceneTreeEditor::_rename_node);
 	ClassDB::bind_method("_test_update_tree", &SceneTreeEditor::_test_update_tree);
-
-	ClassDB::bind_method(D_METHOD("_get_drag_data_fw"), &SceneTreeEditor::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &SceneTreeEditor::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &SceneTreeEditor::drop_data_fw);
 
 	ClassDB::bind_method(D_METHOD("update_tree"), &SceneTreeEditor::update_tree);
 
@@ -1382,7 +1415,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 
 	add_child(tree);
 
-	tree->set_drag_forwarding(this);
+	SET_DRAG_FORWARDING_GCD(tree, SceneTreeEditor);
 	if (p_can_rename) {
 		tree->set_allow_rmb_select(true);
 		tree->connect("item_mouse_selected", callable_mp(this, &SceneTreeEditor::_rmb_select));
@@ -1434,6 +1467,9 @@ void SceneTreeDialog::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
 				tree->update_tree();
+
+				// Select the search bar by default.
+				filter->call_deferred(SNAME("grab_focus"));
 			}
 		} break;
 

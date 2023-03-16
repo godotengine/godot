@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  godot_collision_solver_3d_sat.cpp                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  godot_collision_solver_3d_sat.cpp                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "godot_collision_solver_3d_sat.h"
 
@@ -75,11 +75,13 @@ struct _CollectorCallback {
 	Vector3 normal;
 	Vector3 *prev_axis = nullptr;
 
-	_FORCE_INLINE_ void call(const Vector3 &p_point_A, const Vector3 &p_point_B) {
+	_FORCE_INLINE_ void call(const Vector3 &p_point_A, const Vector3 &p_point_B, Vector3 p_normal) {
+		if (p_normal.dot(p_point_B - p_point_A) < 0)
+			p_normal = -p_normal;
 		if (swap) {
-			callback(p_point_B, 0, p_point_A, 0, userdata);
+			callback(p_point_B, 0, p_point_A, 0, -p_normal, userdata);
 		} else {
-			callback(p_point_A, 0, p_point_B, 0, userdata);
+			callback(p_point_A, 0, p_point_B, 0, p_normal, userdata);
 		}
 	}
 };
@@ -92,7 +94,7 @@ static void _generate_contacts_point_point(const Vector3 *p_points_A, int p_poin
 	ERR_FAIL_COND(p_point_count_B != 1);
 #endif
 
-	p_callback->call(*p_points_A, *p_points_B);
+	p_callback->call(*p_points_A, *p_points_B, p_callback->normal);
 }
 
 static void _generate_contacts_point_edge(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
@@ -102,7 +104,7 @@ static void _generate_contacts_point_edge(const Vector3 *p_points_A, int p_point
 #endif
 
 	Vector3 closest_B = Geometry3D::get_closest_point_to_segment_uncapped(*p_points_A, p_points_B);
-	p_callback->call(*p_points_A, closest_B);
+	p_callback->call(*p_points_A, closest_B, p_callback->normal);
 }
 
 static void _generate_contacts_point_face(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
@@ -111,9 +113,9 @@ static void _generate_contacts_point_face(const Vector3 *p_points_A, int p_point
 	ERR_FAIL_COND(p_point_count_B < 3);
 #endif
 
-	Vector3 closest_B = Plane(p_points_B[0], p_points_B[1], p_points_B[2]).project(*p_points_A);
-
-	p_callback->call(*p_points_A, closest_B);
+	Plane plane(p_points_B[0], p_points_B[1], p_points_B[2]);
+	Vector3 closest_B = plane.project(*p_points_A);
+	p_callback->call(*p_points_A, closest_B, plane.get_normal());
 }
 
 static void _generate_contacts_point_circle(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
@@ -122,9 +124,9 @@ static void _generate_contacts_point_circle(const Vector3 *p_points_A, int p_poi
 	ERR_FAIL_COND(p_point_count_B != 3);
 #endif
 
-	Vector3 closest_B = Plane(p_points_B[0], p_points_B[1], p_points_B[2]).project(*p_points_A);
-
-	p_callback->call(*p_points_A, closest_B);
+	Plane plane(p_points_B[0], p_points_B[1], p_points_B[2]);
+	Vector3 closest_B = plane.project(*p_points_A);
+	p_callback->call(*p_points_A, closest_B, plane.get_normal());
 }
 
 static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
@@ -154,8 +156,8 @@ static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_
 		sa.sort(dvec, 4);
 
 		//use the middle ones as contacts
-		p_callback->call(base_A + axis * dvec[1], base_B + axis * dvec[1]);
-		p_callback->call(base_A + axis * dvec[2], base_B + axis * dvec[2]);
+		p_callback->call(base_A + axis * dvec[1], base_B + axis * dvec[1], p_callback->normal);
+		p_callback->call(base_A + axis * dvec[2], base_B + axis * dvec[2], p_callback->normal);
 
 		return;
 	}
@@ -170,7 +172,14 @@ static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_
 
 	Vector3 closest_A = p_points_A[0] + rel_A * d;
 	Vector3 closest_B = Geometry3D::get_closest_point_to_segment_uncapped(closest_A, p_points_B);
-	p_callback->call(closest_A, closest_B);
+	// The normal should be perpendicular to both edges.
+	Vector3 normal = rel_A.cross(rel_B);
+	real_t normal_len = normal.length();
+	if (normal_len > 1e-3)
+		normal /= normal_len;
+	else
+		normal = p_callback->normal;
+	p_callback->call(closest_A, closest_B, normal);
 }
 
 static void _generate_contacts_edge_circle(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
@@ -267,7 +276,7 @@ static void _generate_contacts_edge_circle(const Vector3 *p_points_A, int p_poin
 			continue;
 		}
 
-		p_callback->call(contact_point_A, closest_B);
+		p_callback->call(contact_point_A, closest_B, circle_plane.get_normal());
 	}
 }
 
@@ -352,7 +361,7 @@ static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_
 			continue;
 		}
 
-		p_callback->call(clipbuf_src[i], closest_B);
+		p_callback->call(clipbuf_src[i], closest_B, plane_B.get_normal());
 	}
 }
 
@@ -431,7 +440,7 @@ static void _generate_contacts_face_circle(const Vector3 *p_points_A, int p_poin
 			continue;
 		}
 
-		p_callback->call(contact_point_A, closest_B);
+		p_callback->call(contact_point_A, closest_B, circle_plane.get_normal());
 	}
 }
 
@@ -534,7 +543,7 @@ static void _generate_contacts_circle_circle(const Vector3 *p_points_A, int p_po
 			continue;
 		}
 
-		p_callback->call(contact_point_A, closest_B);
+		p_callback->call(contact_point_A, closest_B, circle_B_plane.get_normal());
 	}
 }
 
@@ -634,7 +643,7 @@ public:
 			axis = Vector3(0.0, 1.0, 0.0);
 		}
 
-		real_t min_A, max_A, min_B, max_B;
+		real_t min_A = 0.0, max_A = 0.0, min_B = 0.0, max_B = 0.0;
 
 		shape_A->project_range(axis, *transform_A, min_A, max_A);
 		shape_B->project_range(axis, *transform_B, min_B, max_B);
@@ -678,7 +687,7 @@ public:
 		return true;
 	}
 
-	static _FORCE_INLINE_ void test_contact_points(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata) {
+	static _FORCE_INLINE_ void test_contact_points(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, const Vector3 &normal, void *p_userdata) {
 		SeparatorAxisTest<ShapeA, ShapeB, withMargin> *separator = (SeparatorAxisTest<ShapeA, ShapeB, withMargin> *)p_userdata;
 		Vector3 axis = (p_point_B - p_point_A);
 		real_t depth = axis.length();
@@ -758,24 +767,72 @@ public:
 
 typedef void (*CollisionFunc)(const GodotShape3D *, const Transform3D &, const GodotShape3D *, const Transform3D &, _CollectorCallback *p_callback, real_t, real_t);
 
+// Perform analytic sphere-sphere collision and report results to collector
+template <bool withMargin>
+static void analytic_sphere_collision(const Vector3 &p_origin_a, real_t p_radius_a, const Vector3 &p_origin_b, real_t p_radius_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+	// Expand the spheres by the margins if enabled
+	if (withMargin) {
+		p_radius_a += p_margin_a;
+		p_radius_b += p_margin_b;
+	}
+
+	// Get the vector from sphere B to A
+	Vector3 b_to_a = p_origin_a - p_origin_b;
+
+	// Get the length from B to A
+	real_t b_to_a_len = b_to_a.length();
+
+	// Calculate the sphere overlap, and bail if not overlapping
+	real_t overlap = p_radius_a + p_radius_b - b_to_a_len;
+	if (overlap < 0)
+		return;
+
+	// Report collision
+	p_collector->collided = true;
+
+	// Bail if there is no callback to receive the A and B collision points.
+	if (!p_collector->callback) {
+		return;
+	}
+
+	// Normalize the B to A vector
+	if (b_to_a_len < CMP_EPSILON) {
+		b_to_a = Vector3(0, 1, 0); // Spheres coincident, use arbitrary direction
+	} else {
+		b_to_a /= b_to_a_len;
+	}
+
+	// Report collision points. The operations below are intended to minimize
+	// floating-point precision errors. This is done by calculating the first
+	// collision point from the smaller sphere, and then jumping across to
+	// the larger spheres collision point using the overlap distance. This
+	// jump is usually small even if the large sphere is massive, and so the
+	// second point will not suffer from precision errors.
+	if (p_radius_a < p_radius_b) {
+		Vector3 point_a = p_origin_a - b_to_a * p_radius_a;
+		Vector3 point_b = point_a + b_to_a * overlap;
+		p_collector->call(point_a, point_b, b_to_a); // Consider adding b_to_a vector
+	} else {
+		Vector3 point_b = p_origin_b + b_to_a * p_radius_b;
+		Vector3 point_a = point_b - b_to_a * overlap;
+		p_collector->call(point_a, point_b, b_to_a); // Consider adding b_to_a vector
+	}
+}
+
 template <bool withMargin>
 static void _collision_sphere_sphere(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const GodotSphereShape3D *sphere_A = static_cast<const GodotSphereShape3D *>(p_a);
 	const GodotSphereShape3D *sphere_B = static_cast<const GodotSphereShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotSphereShape3D, GodotSphereShape3D, withMargin> separator(sphere_A, p_transform_a, sphere_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
-
-	// previous axis
-
-	if (!separator.test_previous_axis()) {
-		return;
-	}
-
-	if (!separator.test_axis((p_transform_a.origin - p_transform_b.origin).normalized())) {
-		return;
-	}
-
-	separator.generate_contacts();
+	// Perform an analytic sphere collision between the two spheres
+	analytic_sphere_collision<withMargin>(
+			p_transform_a.origin,
+			sphere_A->get_radius() * p_transform_a.basis[0].length(),
+			p_transform_b.origin,
+			sphere_B->get_radius() * p_transform_b.basis[0].length(),
+			p_collector,
+			p_margin_a,
+			p_margin_b);
 }
 
 template <bool withMargin>
@@ -783,50 +840,37 @@ static void _collision_sphere_box(const GodotShape3D *p_a, const Transform3D &p_
 	const GodotSphereShape3D *sphere_A = static_cast<const GodotSphereShape3D *>(p_a);
 	const GodotBoxShape3D *box_B = static_cast<const GodotBoxShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotSphereShape3D, GodotBoxShape3D, withMargin> separator(sphere_A, p_transform_a, box_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	// Find the point on the box nearest to the center of the sphere.
 
-	if (!separator.test_previous_axis()) {
+	Vector3 center = p_transform_b.affine_inverse().xform(p_transform_a.origin);
+	Vector3 extents = box_B->get_half_extents();
+	Vector3 nearest(MIN(MAX(center.x, -extents.x), extents.x),
+			MIN(MAX(center.y, -extents.y), extents.y),
+			MIN(MAX(center.z, -extents.z), extents.z));
+	nearest = p_transform_b.xform(nearest);
+
+	// See if it is inside the sphere.
+
+	Vector3 delta = nearest - p_transform_a.origin;
+	real_t length = delta.length();
+	real_t radius = sphere_A->get_radius() * p_transform_a.basis[0].length();
+	if (length > radius + p_margin_a + p_margin_b) {
 		return;
 	}
-
-	// test faces
-
-	for (int i = 0; i < 3; i++) {
-		Vector3 axis = p_transform_b.basis.get_column(i).normalized();
-
-		if (!separator.test_axis(axis)) {
-			return;
-		}
-	}
-
-	// calculate closest point to sphere
-
-	Vector3 cnormal = p_transform_b.xform_inv(p_transform_a.origin);
-
-	Vector3 cpoint = p_transform_b.xform(Vector3(
-
-			(cnormal.x < 0) ? -box_B->get_half_extents().x : box_B->get_half_extents().x,
-			(cnormal.y < 0) ? -box_B->get_half_extents().y : box_B->get_half_extents().y,
-			(cnormal.z < 0) ? -box_B->get_half_extents().z : box_B->get_half_extents().z));
-
-	// use point to test axis
-	Vector3 point_axis = (p_transform_a.origin - cpoint).normalized();
-
-	if (!separator.test_axis(point_axis)) {
+	p_collector->collided = true;
+	if (!p_collector->callback) {
 		return;
 	}
-
-	// test edges
-
-	for (int i = 0; i < 3; i++) {
-		Vector3 axis = point_axis.cross(p_transform_b.basis.get_column(i)).cross(p_transform_b.basis.get_column(i)).normalized();
-
-		if (!separator.test_axis(axis)) {
-			return;
-		}
+	Vector3 axis;
+	if (length == 0) {
+		// The box passes through the sphere center.  Select an axis based on the box's center.
+		axis = (p_transform_b.origin - nearest).normalized();
+	} else {
+		axis = delta / length;
 	}
-
-	separator.generate_contacts();
+	Vector3 point_a = p_transform_a.origin + (radius + p_margin_a) * axis;
+	Vector3 point_b = (withMargin ? nearest - p_margin_b * axis : nearest);
+	p_collector->call(point_a, point_b, axis);
 }
 
 template <bool withMargin>
@@ -834,41 +878,67 @@ static void _collision_sphere_capsule(const GodotShape3D *p_a, const Transform3D
 	const GodotSphereShape3D *sphere_A = static_cast<const GodotSphereShape3D *>(p_a);
 	const GodotCapsuleShape3D *capsule_B = static_cast<const GodotCapsuleShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotSphereShape3D, GodotCapsuleShape3D, withMargin> separator(sphere_A, p_transform_a, capsule_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	real_t scale_A = p_transform_a.basis[0].length();
+	real_t scale_B = p_transform_b.basis[0].length();
 
-	if (!separator.test_previous_axis()) {
-		return;
-	}
-
-	//capsule sphere 1, sphere
-
+	// Construct the capsule segment (ball-center to ball-center)
+	Vector3 capsule_segment[2];
 	Vector3 capsule_axis = p_transform_b.basis.get_column(1) * (capsule_B->get_height() * 0.5 - capsule_B->get_radius());
+	capsule_segment[0] = p_transform_b.origin + capsule_axis;
+	capsule_segment[1] = p_transform_b.origin - capsule_axis;
 
-	Vector3 capsule_ball_1 = p_transform_b.origin + capsule_axis;
+	// Get the capsules closest segment-point to the sphere
+	Vector3 capsule_closest = Geometry3D::get_closest_point_to_segment(p_transform_a.origin, capsule_segment);
 
-	if (!separator.test_axis((capsule_ball_1 - p_transform_a.origin).normalized())) {
+	// Perform an analytic sphere collision between the sphere and the sphere-collider in the capsule
+	analytic_sphere_collision<withMargin>(
+			p_transform_a.origin,
+			sphere_A->get_radius() * scale_A,
+			capsule_closest,
+			capsule_B->get_radius() * scale_B,
+			p_collector,
+			p_margin_a,
+			p_margin_b);
+}
+
+template <bool withMargin>
+static void analytic_sphere_cylinder_collision(real_t p_radius_a, real_t p_radius_b, real_t p_height_b, const Transform3D &p_transform_a, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+	// Find the point on the cylinder nearest to the center of the sphere.
+
+	Vector3 center = p_transform_b.affine_inverse().xform(p_transform_a.origin);
+	Vector3 nearest = center;
+	real_t scale_A = p_transform_a.basis[0].length();
+	real_t r = Math::sqrt(center.x * center.x + center.z * center.z);
+	if (r > p_radius_b) {
+		real_t scale = p_radius_b / r;
+		nearest.x *= scale;
+		nearest.z *= scale;
+	}
+	real_t half_height = p_height_b / 2;
+	nearest.y = MIN(MAX(center.y, -half_height), half_height);
+	nearest = p_transform_b.xform(nearest);
+
+	// See if it is inside the sphere.
+
+	Vector3 delta = nearest - p_transform_a.origin;
+	real_t length = delta.length();
+	if (length > p_radius_a * scale_A + p_margin_a + p_margin_b) {
 		return;
 	}
-
-	//capsule sphere 2, sphere
-
-	Vector3 capsule_ball_2 = p_transform_b.origin - capsule_axis;
-
-	if (!separator.test_axis((capsule_ball_2 - p_transform_a.origin).normalized())) {
+	p_collector->collided = true;
+	if (!p_collector->callback) {
 		return;
 	}
-
-	//capsule edge, sphere
-
-	Vector3 b2a = p_transform_a.origin - p_transform_b.origin;
-
-	Vector3 axis = b2a.cross(capsule_axis).cross(capsule_axis).normalized();
-
-	if (!separator.test_axis(axis)) {
-		return;
+	Vector3 axis;
+	if (length == 0) {
+		// The cylinder passes through the sphere center.  Select an axis based on the cylinder's center.
+		axis = (p_transform_b.origin - nearest).normalized();
+	} else {
+		axis = delta / length;
 	}
-
-	separator.generate_contacts();
+	Vector3 point_a = p_transform_a.origin + (p_radius_a * scale_A + p_margin_a) * axis;
+	Vector3 point_b = (withMargin ? nearest - p_margin_b * axis : nearest);
+	p_collector->call(point_a, point_b, axis);
 }
 
 template <bool withMargin>
@@ -876,58 +946,7 @@ static void _collision_sphere_cylinder(const GodotShape3D *p_a, const Transform3
 	const GodotSphereShape3D *sphere_A = static_cast<const GodotSphereShape3D *>(p_a);
 	const GodotCylinderShape3D *cylinder_B = static_cast<const GodotCylinderShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotSphereShape3D, GodotCylinderShape3D, withMargin> separator(sphere_A, p_transform_a, cylinder_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
-
-	if (!separator.test_previous_axis()) {
-		return;
-	}
-
-	// Cylinder B end caps.
-	Vector3 cylinder_B_axis = p_transform_b.basis.get_column(1).normalized();
-	if (!separator.test_axis(cylinder_B_axis)) {
-		return;
-	}
-
-	Vector3 cylinder_diff = p_transform_b.origin - p_transform_a.origin;
-
-	// Cylinder B lateral surface.
-	if (!separator.test_axis(cylinder_B_axis.cross(cylinder_diff).cross(cylinder_B_axis).normalized())) {
-		return;
-	}
-
-	// Closest point to cylinder caps.
-	const Vector3 &sphere_center = p_transform_a.origin;
-	Vector3 cyl_axis = p_transform_b.basis.get_column(1);
-	Vector3 cap_axis = p_transform_b.basis.get_column(0);
-	real_t height_scale = cyl_axis.length();
-	real_t cap_dist = cylinder_B->get_height() * 0.5 * height_scale;
-	cyl_axis /= height_scale;
-	real_t radius_scale = cap_axis.length();
-	real_t cap_radius = cylinder_B->get_radius() * radius_scale;
-
-	for (int i = 0; i < 2; i++) {
-		Vector3 cap_dir = ((i == 0) ? cyl_axis : -cyl_axis);
-		Vector3 cap_pos = p_transform_b.origin + cap_dir * cap_dist;
-
-		Vector3 closest_point;
-
-		Vector3 diff = sphere_center - cap_pos;
-		Vector3 proj = diff - cap_dir.dot(diff) * cap_dir;
-
-		real_t proj_len = proj.length();
-		if (Math::is_zero_approx(proj_len)) {
-			// Point is equidistant to all circle points.
-			continue;
-		}
-
-		closest_point = cap_pos + (cap_radius / proj_len) * proj;
-
-		if (!separator.test_axis((closest_point - sphere_center).normalized())) {
-			return;
-		}
-	}
-
-	separator.generate_contacts();
+	analytic_sphere_cylinder_collision<withMargin>(sphere_A->get_radius(), cylinder_B->get_radius(), cylinder_B->get_height(), p_transform_a, p_transform_b, p_collector, p_margin_a, p_margin_b);
 }
 
 template <bool withMargin>
@@ -964,8 +983,8 @@ static void _collision_sphere_convex_polygon(const GodotShape3D *p_a, const Tran
 
 	// edges of B
 	for (int i = 0; i < edge_count; i++) {
-		Vector3 v1 = p_transform_b.xform(vertices[edges[i].a]);
-		Vector3 v2 = p_transform_b.xform(vertices[edges[i].b]);
+		Vector3 v1 = p_transform_b.xform(vertices[edges[i].vertex_a]);
+		Vector3 v2 = p_transform_b.xform(vertices[edges[i].vertex_b]);
 		Vector3 v3 = p_transform_a.origin;
 
 		Vector3 n1 = v2 - v1;
@@ -1404,7 +1423,7 @@ static void _collision_box_convex_polygon(const GodotShape3D *p_a, const Transfo
 		Vector3 e1 = p_transform_a.basis.get_column(i);
 
 		for (int j = 0; j < edge_count; j++) {
-			Vector3 e2 = p_transform_b.basis.xform(vertices[edges[j].a]) - p_transform_b.basis.xform(vertices[edges[j].b]);
+			Vector3 e2 = p_transform_b.basis.xform(vertices[edges[j].vertex_a]) - p_transform_b.basis.xform(vertices[edges[j].vertex_b]);
 
 			Vector3 axis = e1.cross(e2).normalized();
 
@@ -1460,8 +1479,8 @@ static void _collision_box_convex_polygon(const GodotShape3D *p_a, const Transfo
 					}
 
 					for (int e = 0; e < edge_count; e++) {
-						Vector3 p1 = p_transform_b.xform(vertices[edges[e].a]);
-						Vector3 p2 = p_transform_b.xform(vertices[edges[e].b]);
+						Vector3 p1 = p_transform_b.xform(vertices[edges[e].vertex_a]);
+						Vector3 p2 = p_transform_b.xform(vertices[edges[e].vertex_b]);
 						Vector3 n = (p2 - p1);
 
 						if (!separator.test_axis((point - p2).cross(n).cross(n).normalized())) {
@@ -1615,63 +1634,31 @@ static void _collision_capsule_capsule(const GodotShape3D *p_a, const Transform3
 	const GodotCapsuleShape3D *capsule_A = static_cast<const GodotCapsuleShape3D *>(p_a);
 	const GodotCapsuleShape3D *capsule_B = static_cast<const GodotCapsuleShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotCapsuleShape3D, GodotCapsuleShape3D, withMargin> separator(capsule_A, p_transform_a, capsule_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	real_t scale_A = p_transform_a.basis[0].length();
+	real_t scale_B = p_transform_b.basis[0].length();
 
-	if (!separator.test_previous_axis()) {
-		return;
-	}
-
-	// some values
-
+	// Get the closest points between the capsule segments
+	Vector3 capsule_A_closest;
+	Vector3 capsule_B_closest;
 	Vector3 capsule_A_axis = p_transform_a.basis.get_column(1) * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
 	Vector3 capsule_B_axis = p_transform_b.basis.get_column(1) * (capsule_B->get_height() * 0.5 - capsule_B->get_radius());
+	Geometry3D::get_closest_points_between_segments(
+			p_transform_a.origin + capsule_A_axis,
+			p_transform_a.origin - capsule_A_axis,
+			p_transform_b.origin + capsule_B_axis,
+			p_transform_b.origin - capsule_B_axis,
+			capsule_A_closest,
+			capsule_B_closest);
 
-	Vector3 capsule_A_ball_1 = p_transform_a.origin + capsule_A_axis;
-	Vector3 capsule_A_ball_2 = p_transform_a.origin - capsule_A_axis;
-	Vector3 capsule_B_ball_1 = p_transform_b.origin + capsule_B_axis;
-	Vector3 capsule_B_ball_2 = p_transform_b.origin - capsule_B_axis;
-
-	//balls-balls
-
-	if (!separator.test_axis((capsule_A_ball_1 - capsule_B_ball_1).normalized())) {
-		return;
-	}
-	if (!separator.test_axis((capsule_A_ball_1 - capsule_B_ball_2).normalized())) {
-		return;
-	}
-
-	if (!separator.test_axis((capsule_A_ball_2 - capsule_B_ball_1).normalized())) {
-		return;
-	}
-	if (!separator.test_axis((capsule_A_ball_2 - capsule_B_ball_2).normalized())) {
-		return;
-	}
-
-	// edges-balls
-
-	if (!separator.test_axis((capsule_A_ball_1 - capsule_B_ball_1).cross(capsule_A_axis).cross(capsule_A_axis).normalized())) {
-		return;
-	}
-
-	if (!separator.test_axis((capsule_A_ball_1 - capsule_B_ball_2).cross(capsule_A_axis).cross(capsule_A_axis).normalized())) {
-		return;
-	}
-
-	if (!separator.test_axis((capsule_B_ball_1 - capsule_A_ball_1).cross(capsule_B_axis).cross(capsule_B_axis).normalized())) {
-		return;
-	}
-
-	if (!separator.test_axis((capsule_B_ball_1 - capsule_A_ball_2).cross(capsule_B_axis).cross(capsule_B_axis).normalized())) {
-		return;
-	}
-
-	// edges
-
-	if (!separator.test_axis(capsule_A_axis.cross(capsule_B_axis).normalized())) {
-		return;
-	}
-
-	separator.generate_contacts();
+	// Perform the analytic collision between the two closest capsule spheres
+	analytic_sphere_collision<withMargin>(
+			capsule_A_closest,
+			capsule_A->get_radius() * scale_A,
+			capsule_B_closest,
+			capsule_B->get_radius() * scale_B,
+			p_collector,
+			p_margin_a,
+			p_margin_b);
 }
 
 template <bool withMargin>
@@ -1679,61 +1666,24 @@ static void _collision_capsule_cylinder(const GodotShape3D *p_a, const Transform
 	const GodotCapsuleShape3D *capsule_A = static_cast<const GodotCapsuleShape3D *>(p_a);
 	const GodotCylinderShape3D *cylinder_B = static_cast<const GodotCylinderShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotCapsuleShape3D, GodotCylinderShape3D, withMargin> separator(capsule_A, p_transform_a, cylinder_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	// Find the closest points between the axes of the two objects.
 
-	if (!separator.test_previous_axis()) {
-		return;
-	}
+	Vector3 capsule_A_closest;
+	Vector3 cylinder_B_closest;
+	Vector3 capsule_A_axis = p_transform_a.basis.get_column(1) * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
+	Vector3 cylinder_B_axis = p_transform_b.basis.get_column(1) * (cylinder_B->get_height() * 0.5);
+	Geometry3D::get_closest_points_between_segments(
+			p_transform_a.origin + capsule_A_axis,
+			p_transform_a.origin - capsule_A_axis,
+			p_transform_b.origin + cylinder_B_axis,
+			p_transform_b.origin - cylinder_B_axis,
+			capsule_A_closest,
+			cylinder_B_closest);
 
-	// Cylinder B end caps.
-	Vector3 cylinder_B_axis = p_transform_b.basis.get_column(1).normalized();
-	if (!separator.test_axis(cylinder_B_axis)) {
-		return;
-	}
+	// Perform the collision test between the cylinder and the nearest sphere on the capsule axis.
 
-	// Cylinder edge against capsule balls.
-
-	Vector3 capsule_A_axis = p_transform_a.basis.get_column(1);
-
-	Vector3 capsule_A_ball_1 = p_transform_a.origin + capsule_A_axis * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
-	Vector3 capsule_A_ball_2 = p_transform_a.origin - capsule_A_axis * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
-
-	if (!separator.test_axis((p_transform_b.origin - capsule_A_ball_1).cross(cylinder_B_axis).cross(cylinder_B_axis).normalized())) {
-		return;
-	}
-
-	if (!separator.test_axis((p_transform_b.origin - capsule_A_ball_2).cross(cylinder_B_axis).cross(cylinder_B_axis).normalized())) {
-		return;
-	}
-
-	// Cylinder edge against capsule edge.
-
-	Vector3 center_diff = p_transform_b.origin - p_transform_a.origin;
-
-	if (!separator.test_axis(capsule_A_axis.cross(center_diff).cross(capsule_A_axis).normalized())) {
-		return;
-	}
-
-	if (!separator.test_axis(cylinder_B_axis.cross(center_diff).cross(cylinder_B_axis).normalized())) {
-		return;
-	}
-
-	real_t proj = capsule_A_axis.cross(cylinder_B_axis).cross(cylinder_B_axis).dot(capsule_A_axis);
-	if (Math::is_zero_approx(proj)) {
-		// Parallel capsule and cylinder axes, handle with specific axes only.
-		// Note: GJKEPA with no margin can lead to degenerate cases in this situation.
-		separator.generate_contacts();
-		return;
-	}
-
-	GodotCollisionSolver3D::CallbackResult callback = SeparatorAxisTest<GodotCapsuleShape3D, GodotCylinderShape3D, withMargin>::test_contact_points;
-
-	// Fallback to generic algorithm to find the best separating axis.
-	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator, false, p_margin_a, p_margin_b)) {
-		return;
-	}
-
-	separator.generate_contacts();
+	Transform3D sphere_transform(p_transform_a.basis, capsule_A_closest);
+	analytic_sphere_cylinder_collision<withMargin>(capsule_A->get_radius(), cylinder_B->get_radius(), cylinder_B->get_height(), sphere_transform, p_transform_b, p_collector, p_margin_a, p_margin_b);
 }
 
 template <bool withMargin>
@@ -1771,7 +1721,7 @@ static void _collision_capsule_convex_polygon(const GodotShape3D *p_a, const Tra
 
 	for (int i = 0; i < edge_count; i++) {
 		// cylinder
-		Vector3 edge_axis = p_transform_b.basis.xform(vertices[edges[i].a]) - p_transform_b.basis.xform(vertices[edges[i].b]);
+		Vector3 edge_axis = p_transform_b.basis.xform(vertices[edges[i].vertex_a]) - p_transform_b.basis.xform(vertices[edges[i].vertex_b]);
 		Vector3 axis = edge_axis.cross(p_transform_a.basis.get_column(1)).normalized();
 
 		if (!separator.test_axis(axis)) {
@@ -1789,8 +1739,8 @@ static void _collision_capsule_convex_polygon(const GodotShape3D *p_a, const Tra
 		Vector3 sphere_pos = p_transform_a.origin + ((i == 0) ? capsule_axis : -capsule_axis);
 
 		for (int j = 0; j < edge_count; j++) {
-			Vector3 n1 = sphere_pos - p_transform_b.xform(vertices[edges[j].a]);
-			Vector3 n2 = p_transform_b.basis.xform(vertices[edges[j].a]) - p_transform_b.basis.xform(vertices[edges[j].b]);
+			Vector3 n1 = sphere_pos - p_transform_b.xform(vertices[edges[j].vertex_a]);
+			Vector3 n2 = p_transform_b.basis.xform(vertices[edges[j].vertex_a]) - p_transform_b.basis.xform(vertices[edges[j].vertex_b]);
 
 			Vector3 axis = n1.cross(n2).cross(n2).normalized();
 
@@ -1908,7 +1858,7 @@ static void _collision_cylinder_cylinder(const GodotShape3D *p_a, const Transfor
 	}
 
 	// Cylinder B end caps.
-	if (!separator.test_axis(cylinder_A_axis.normalized())) {
+	if (!separator.test_axis(cylinder_B_axis.normalized())) {
 		return;
 	}
 
@@ -2075,6 +2025,16 @@ static void _collision_cylinder_face(const GodotShape3D *p_a, const Transform3D 
 	separator.generate_contacts();
 }
 
+static _FORCE_INLINE_ bool is_minkowski_face(const Vector3 &A, const Vector3 &B, const Vector3 &B_x_A, const Vector3 &C, const Vector3 &D, const Vector3 &D_x_C) {
+	// Test if arcs AB and CD intersect on the unit sphere
+	real_t CBA = C.dot(B_x_A);
+	real_t DBA = D.dot(B_x_A);
+	real_t ADC = A.dot(D_x_C);
+	real_t BDC = B.dot(D_x_C);
+
+	return (CBA * DBA < 0.0f) && (ADC * BDC < 0.0f) && (CBA * BDC > 0.0f);
+}
+
 template <bool withMargin>
 static void _collision_convex_polygon_convex_polygon(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const GodotConvexPolygonShape3D *convex_polygon_A = static_cast<const GodotConvexPolygonShape3D *>(p_a);
@@ -2129,16 +2089,27 @@ static void _collision_convex_polygon_convex_polygon(const GodotShape3D *p_a, co
 	}
 
 	// A<->B edges
+
 	for (int i = 0; i < edge_count_A; i++) {
-		Vector3 e1 = p_transform_a.basis.xform(vertices_A[edges_A[i].a]) - p_transform_a.basis.xform(vertices_A[edges_A[i].b]);
+		Vector3 p1 = p_transform_a.xform(vertices_A[edges_A[i].vertex_a]);
+		Vector3 q1 = p_transform_a.xform(vertices_A[edges_A[i].vertex_b]);
+		Vector3 e1 = q1 - p1;
+		Vector3 u1 = p_transform_a.basis.xform(faces_A[edges_A[i].face_a].plane.normal).normalized();
+		Vector3 v1 = p_transform_a.basis.xform(faces_A[edges_A[i].face_b].plane.normal).normalized();
 
 		for (int j = 0; j < edge_count_B; j++) {
-			Vector3 e2 = p_transform_b.basis.xform(vertices_B[edges_B[j].a]) - p_transform_b.basis.xform(vertices_B[edges_B[j].b]);
+			Vector3 p2 = p_transform_b.xform(vertices_B[edges_B[j].vertex_a]);
+			Vector3 q2 = p_transform_b.xform(vertices_B[edges_B[j].vertex_b]);
+			Vector3 e2 = q2 - p2;
+			Vector3 u2 = p_transform_b.basis.xform(faces_B[edges_B[j].face_a].plane.normal).normalized();
+			Vector3 v2 = p_transform_b.basis.xform(faces_B[edges_B[j].face_b].plane.normal).normalized();
 
-			Vector3 axis = e1.cross(e2).normalized();
+			if (is_minkowski_face(u1, v1, -e1, -u2, -v2, -e2)) {
+				Vector3 axis = e1.cross(e2).normalized();
 
-			if (!separator.test_axis(axis)) {
-				return;
+				if (!separator.test_axis(axis)) {
+					return;
+				}
 			}
 		}
 	}
@@ -2157,8 +2128,8 @@ static void _collision_convex_polygon_convex_polygon(const GodotShape3D *p_a, co
 		//edge-vertex (shell)
 
 		for (int i = 0; i < edge_count_A; i++) {
-			Vector3 e1 = p_transform_a.basis.xform(vertices_A[edges_A[i].a]);
-			Vector3 e2 = p_transform_a.basis.xform(vertices_A[edges_A[i].b]);
+			Vector3 e1 = p_transform_a.basis.xform(vertices_A[edges_A[i].vertex_a]);
+			Vector3 e2 = p_transform_a.basis.xform(vertices_A[edges_A[i].vertex_b]);
 			Vector3 n = (e2 - e1);
 
 			for (int j = 0; j < vertex_count_B; j++) {
@@ -2171,8 +2142,8 @@ static void _collision_convex_polygon_convex_polygon(const GodotShape3D *p_a, co
 		}
 
 		for (int i = 0; i < edge_count_B; i++) {
-			Vector3 e1 = p_transform_b.basis.xform(vertices_B[edges_B[i].a]);
-			Vector3 e2 = p_transform_b.basis.xform(vertices_B[edges_B[i].b]);
+			Vector3 e1 = p_transform_b.basis.xform(vertices_B[edges_B[i].vertex_a]);
+			Vector3 e2 = p_transform_b.basis.xform(vertices_B[edges_B[i].vertex_b]);
 			Vector3 n = (e2 - e1);
 
 			for (int j = 0; j < vertex_count_A; j++) {
@@ -2231,7 +2202,7 @@ static void _collision_convex_polygon_face(const GodotShape3D *p_a, const Transf
 
 	// A<->B edges
 	for (int i = 0; i < edge_count; i++) {
-		Vector3 e1 = p_transform_a.xform(vertices[edges[i].a]) - p_transform_a.xform(vertices[edges[i].b]);
+		Vector3 e1 = p_transform_a.xform(vertices[edges[i].vertex_a]) - p_transform_a.xform(vertices[edges[i].vertex_b]);
 
 		for (int j = 0; j < 3; j++) {
 			Vector3 e2 = vertex[j] - vertex[(j + 1) % 3];
@@ -2266,8 +2237,8 @@ static void _collision_convex_polygon_face(const GodotShape3D *p_a, const Transf
 		//edge-vertex (shell)
 
 		for (int i = 0; i < edge_count; i++) {
-			Vector3 e1 = p_transform_a.basis.xform(vertices[edges[i].a]);
-			Vector3 e2 = p_transform_a.basis.xform(vertices[edges[i].b]);
+			Vector3 e1 = p_transform_a.basis.xform(vertices[edges[i].vertex_a]);
+			Vector3 e2 = p_transform_a.basis.xform(vertices[edges[i].vertex_b]);
 			Vector3 n = (e2 - e1);
 
 			for (int j = 0; j < 3; j++) {

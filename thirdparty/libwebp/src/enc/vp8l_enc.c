@@ -361,10 +361,11 @@ typedef enum {
   kHistoTotal  // Must be last.
 } HistoIx;
 
-static void AddSingleSubGreen(int p, uint32_t* const r, uint32_t* const b) {
-  const int green = p >> 8;  // The upper bits are masked away later.
-  ++r[((p >> 16) - green) & 0xff];
-  ++b[((p >>  0) - green) & 0xff];
+static void AddSingleSubGreen(uint32_t p,
+                              uint32_t* const r, uint32_t* const b) {
+  const int green = (int)p >> 8;  // The upper bits are masked away later.
+  ++r[(((int)p >> 16) - green) & 0xff];
+  ++b[(((int)p >>  0) - green) & 0xff];
 }
 
 static void AddSingle(uint32_t p,
@@ -1354,7 +1355,7 @@ static int EncodeImageInternal(
 static void ApplySubtractGreen(VP8LEncoder* const enc, int width, int height,
                                VP8LBitWriter* const bw) {
   VP8LPutBits(bw, TRANSFORM_PRESENT, 1);
-  VP8LPutBits(bw, SUBTRACT_GREEN, 2);
+  VP8LPutBits(bw, SUBTRACT_GREEN_TRANSFORM, 2);
   VP8LSubtractGreenFromBlueAndRed(enc->argb_, width * height);
 }
 

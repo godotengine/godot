@@ -1,40 +1,37 @@
-/*************************************************************************/
-/*  core_bind.h                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  core_bind.h                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef CORE_BIND_H
 #define CORE_BIND_H
 
 #include "core/debugger/engine_profiler.h"
-#include "core/io/compression.h"
-#include "core/io/dir_access.h"
-#include "core/io/file_access.h"
 #include "core/io/image.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
@@ -127,36 +124,9 @@ protected:
 	static OS *singleton;
 
 public:
-	enum VideoDriver {
-		VIDEO_DRIVER_VULKAN,
-		VIDEO_DRIVER_OPENGL_3,
-	};
-
-	enum Weekday {
-		DAY_SUNDAY,
-		DAY_MONDAY,
-		DAY_TUESDAY,
-		DAY_WEDNESDAY,
-		DAY_THURSDAY,
-		DAY_FRIDAY,
-		DAY_SATURDAY
-	};
-
-	enum Month {
-		// Start at 1 to follow Windows SYSTEMTIME structure
-		// https://msdn.microsoft.com/en-us/library/windows/desktop/ms724950(v=vs.85).aspx
-		MONTH_JANUARY = 1,
-		MONTH_FEBRUARY,
-		MONTH_MARCH,
-		MONTH_APRIL,
-		MONTH_MAY,
-		MONTH_JUNE,
-		MONTH_JULY,
-		MONTH_AUGUST,
-		MONTH_SEPTEMBER,
-		MONTH_OCTOBER,
-		MONTH_NOVEMBER,
-		MONTH_DECEMBER
+	enum RenderingDriver {
+		RENDERING_DRIVER_VULKAN,
+		RENDERING_DRIVER_OPENGL3,
 	};
 
 	virtual PackedStringArray get_connected_midi_inputs();
@@ -173,8 +143,10 @@ public:
 	void crash(const String &p_message);
 
 	Vector<String> get_system_fonts() const;
-	String get_system_font_path(const String &p_font_name, bool p_bold = false, bool p_italic = false) const;
+	String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const;
+	Vector<String> get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale = String(), const String &p_script = String(), int p_weight = 400, int p_stretch = 100, bool p_italic = false) const;
 	String get_executable_path() const;
+	String read_string_from_stdin();
 	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false, bool p_open_console = false);
 	int create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console = false);
 	int create_instance(const Vector<String> &p_arguments);
@@ -190,13 +162,16 @@ public:
 
 	bool has_environment(const String &p_var) const;
 	String get_environment(const String &p_var) const;
-	bool set_environment(const String &p_var, const String &p_value) const;
+	void set_environment(const String &p_var, const String &p_value) const;
+	void unset_environment(const String &p_var) const;
 
 	String get_name() const;
 	String get_distribution_name() const;
 	String get_version() const;
 	Vector<String> get_cmdline_args();
 	Vector<String> get_cmdline_user_args();
+
+	Vector<String> get_video_adapter_driver_info() const;
 
 	String get_locale() const;
 	String get_locale_language() const;
@@ -220,8 +195,6 @@ public:
 	void delay_msec(int p_msec) const;
 	uint64_t get_ticks_msec() const;
 	uint64_t get_ticks_usec() const;
-
-	bool can_use_threads() const;
 
 	bool is_userfs_persistent() const;
 
@@ -289,6 +262,7 @@ public:
 	Vector<int> triangulate_polygon(const Vector<Vector2> &p_polygon);
 	Vector<int> triangulate_delaunay(const Vector<Vector2> &p_points);
 	Vector<Point2> convex_hull(const Vector<Point2> &p_points);
+	TypedArray<PackedVector2Array> decompose_polygon_in_convex(const Vector<Vector2> &p_polygon);
 
 	enum PolyBooleanOperation {
 		OPERATION_UNION,
@@ -355,156 +329,6 @@ public:
 	Geometry3D() { singleton = this; }
 };
 
-class File : public RefCounted {
-	GDCLASS(File, RefCounted);
-
-	Ref<FileAccess> f;
-	bool big_endian = false;
-
-protected:
-	static void _bind_methods();
-
-public:
-	enum ModeFlags {
-		READ = 1,
-		WRITE = 2,
-		READ_WRITE = 3,
-		WRITE_READ = 7,
-	};
-
-	enum CompressionMode {
-		COMPRESSION_FASTLZ = Compression::MODE_FASTLZ,
-		COMPRESSION_DEFLATE = Compression::MODE_DEFLATE,
-		COMPRESSION_ZSTD = Compression::MODE_ZSTD,
-		COMPRESSION_GZIP = Compression::MODE_GZIP
-	};
-
-	Error open_encrypted(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key);
-	Error open_encrypted_pass(const String &p_path, ModeFlags p_mode_flags, const String &p_pass);
-	Error open_compressed(const String &p_path, ModeFlags p_mode_flags, CompressionMode p_compress_mode = COMPRESSION_FASTLZ);
-
-	Error open(const String &p_path, ModeFlags p_mode_flags); // open a file.
-	void flush(); // Flush a file (write its buffer to disk).
-	void close(); // Close a file.
-	bool is_open() const; // True when file is open.
-
-	String get_path() const; // Returns the path for the current open file.
-	String get_path_absolute() const; // Returns the absolute path for the current open file.
-
-	void seek(int64_t p_position); // Seek to a given position.
-	void seek_end(int64_t p_position = 0); // Seek from the end of file.
-	uint64_t get_position() const; // Get position in the file.
-	uint64_t get_length() const; // Get size of the file.
-
-	bool eof_reached() const; // Reading passed EOF.
-
-	uint8_t get_8() const; // Get a byte.
-	uint16_t get_16() const; // Get 16 bits uint.
-	uint32_t get_32() const; // Get 32 bits uint.
-	uint64_t get_64() const; // Get 64 bits uint.
-
-	float get_float() const;
-	double get_double() const;
-	real_t get_real() const;
-
-	Variant get_var(bool p_allow_objects = false) const;
-
-	Vector<uint8_t> get_buffer(int64_t p_length) const; // Get an array of bytes.
-	String get_line() const;
-	Vector<String> get_csv_line(const String &p_delim = ",") const;
-	String get_as_text(bool p_skip_cr = false) const;
-	String get_md5(const String &p_path) const;
-	String get_sha256(const String &p_path) const;
-
-	/*
-	 * Use this for files WRITTEN in _big_ endian machines (ie, amiga/mac).
-	 * It's not about the current CPU type but file formats.
-	 * This flag gets reset to `false` (little endian) on each open.
-	 */
-	void set_big_endian(bool p_big_endian);
-	bool is_big_endian();
-
-	Error get_error() const; // Get last error.
-
-	void store_8(uint8_t p_dest); // Store a byte.
-	void store_16(uint16_t p_dest); // Store 16 bits uint.
-	void store_32(uint32_t p_dest); // Store 32 bits uint.
-	void store_64(uint64_t p_dest); // Store 64 bits uint.
-
-	void store_float(float p_dest);
-	void store_double(double p_dest);
-	void store_real(real_t p_real);
-
-	void store_string(const String &p_string);
-	void store_line(const String &p_string);
-	void store_csv_line(const Vector<String> &p_values, const String &p_delim = ",");
-
-	virtual void store_pascal_string(const String &p_string);
-	virtual String get_pascal_string();
-
-	void store_buffer(const Vector<uint8_t> &p_buffer); // Store an array of bytes.
-
-	void store_var(const Variant &p_var, bool p_full_objects = false);
-
-	static bool file_exists(const String &p_name); // Return true if a file exists.
-
-	uint64_t get_modified_time(const String &p_file) const;
-
-	File() {}
-};
-
-class Directory : public RefCounted {
-	GDCLASS(Directory, RefCounted);
-	Ref<DirAccess> d;
-
-	bool dir_open = false;
-	bool include_navigational = false;
-	bool include_hidden = false;
-
-protected:
-	static void _bind_methods();
-
-public:
-	Error open(const String &p_path);
-
-	bool is_open() const;
-
-	Error list_dir_begin();
-	String get_next();
-	bool current_is_dir() const;
-	void list_dir_end();
-
-	PackedStringArray get_files();
-	PackedStringArray get_directories();
-	PackedStringArray _get_contents(bool p_directories);
-
-	void set_include_navigational(bool p_enable);
-	bool get_include_navigational() const;
-	void set_include_hidden(bool p_enable);
-	bool get_include_hidden() const;
-
-	int get_drive_count();
-	String get_drive(int p_drive);
-	int get_current_drive();
-
-	Error change_dir(String p_dir); // Can be relative or absolute, return false on success.
-	String get_current_dir(); // Return current dir location.
-
-	Error make_dir(String p_dir);
-	Error make_dir_recursive(String p_dir);
-
-	bool file_exists(String p_file);
-	bool dir_exists(String p_dir);
-
-	uint64_t get_space_left();
-
-	Error copy(String p_from, String p_to);
-	Error rename(String p_from, String p_to);
-	Error remove(String p_name);
-
-	Directory();
-};
-
 class Marshalls : public Object {
 	GDCLASS(Marshalls, Object);
 
@@ -537,7 +361,7 @@ class Mutex : public RefCounted {
 
 public:
 	void lock();
-	Error try_lock();
+	bool try_lock();
 	void unlock();
 };
 
@@ -549,7 +373,7 @@ class Semaphore : public RefCounted {
 
 public:
 	void wait();
-	Error try_wait();
+	bool try_wait();
 	void post();
 };
 
@@ -637,12 +461,15 @@ public:
 	void set_physics_ticks_per_second(int p_ips);
 	int get_physics_ticks_per_second() const;
 
+	void set_max_physics_steps_per_frame(int p_max_physics_steps);
+	int get_max_physics_steps_per_frame() const;
+
 	void set_physics_jitter_fix(double p_threshold);
 	double get_physics_jitter_fix() const;
 	double get_physics_interpolation_fraction() const;
 
-	void set_target_fps(int p_fps);
-	int get_target_fps() const;
+	void set_max_fps(int p_fps);
+	int get_max_fps() const;
 
 	double get_frames_per_second() const;
 	uint64_t get_physics_frames() const;
@@ -672,7 +499,8 @@ public:
 	void unregister_singleton(const StringName &p_name);
 	Vector<String> get_singleton_list() const;
 
-	void register_script_language(ScriptLanguage *p_language);
+	Error register_script_language(ScriptLanguage *p_language);
+	Error unregister_script_language(const ScriptLanguage *p_language);
 	int get_script_language_count();
 	ScriptLanguage *get_script_language(int p_index) const;
 
@@ -729,17 +557,12 @@ VARIANT_ENUM_CAST(core_bind::ResourceLoader::CacheMode);
 
 VARIANT_BITFIELD_CAST(core_bind::ResourceSaver::SaverFlags);
 
-VARIANT_ENUM_CAST(core_bind::OS::VideoDriver);
-VARIANT_ENUM_CAST(core_bind::OS::Weekday);
-VARIANT_ENUM_CAST(core_bind::OS::Month);
+VARIANT_ENUM_CAST(core_bind::OS::RenderingDriver);
 VARIANT_ENUM_CAST(core_bind::OS::SystemDir);
 
 VARIANT_ENUM_CAST(core_bind::Geometry2D::PolyBooleanOperation);
 VARIANT_ENUM_CAST(core_bind::Geometry2D::PolyJoinType);
 VARIANT_ENUM_CAST(core_bind::Geometry2D::PolyEndType);
-
-VARIANT_ENUM_CAST(core_bind::File::ModeFlags);
-VARIANT_ENUM_CAST(core_bind::File::CompressionMode);
 
 VARIANT_ENUM_CAST(core_bind::Thread::Priority);
 

@@ -2,29 +2,27 @@
 # define _mathops_H (1)
 # include <ogg/ogg.h>
 
-# ifdef __GNUC_PREREQ
-#  if __GNUC_PREREQ(3,4)
-#   include <limits.h>
+# if __GNUC_PREREQ(3,4)
+#  include <limits.h>
 /*Note the casts to (int) below: this prevents OC_CLZ{32|64}_OFFS from
    "upgrading" the type of an entire expression to an (unsigned) size_t.*/
-#   if INT_MAX>=2147483647
-#    define OC_CLZ32_OFFS ((int)sizeof(unsigned)*CHAR_BIT)
-#    define OC_CLZ32(_x) (__builtin_clz(_x))
-#   elif LONG_MAX>=2147483647L
-#    define OC_CLZ32_OFFS ((int)sizeof(unsigned long)*CHAR_BIT)
-#    define OC_CLZ32(_x) (__builtin_clzl(_x))
-#   endif
-#   if INT_MAX>=9223372036854775807LL
-#    define OC_CLZ64_OFFS ((int)sizeof(unsigned)*CHAR_BIT)
-#    define OC_CLZ64(_x) (__builtin_clz(_x))
-#   elif LONG_MAX>=9223372036854775807LL
-#    define OC_CLZ64_OFFS ((int)sizeof(unsigned long)*CHAR_BIT)
-#    define OC_CLZ64(_x) (__builtin_clzl(_x))
-#   elif LLONG_MAX>=9223372036854775807LL|| \
-     __LONG_LONG_MAX__>=9223372036854775807LL
-#    define OC_CLZ64_OFFS ((int)sizeof(unsigned long long)*CHAR_BIT)
-#    define OC_CLZ64(_x) (__builtin_clzll(_x))
-#   endif
+#  if INT_MAX>=2147483647
+#   define OC_CLZ32_OFFS ((int)sizeof(unsigned)*CHAR_BIT)
+#   define OC_CLZ32(_x) (__builtin_clz(_x))
+#  elif LONG_MAX>=2147483647L
+#   define OC_CLZ32_OFFS ((int)sizeof(unsigned long)*CHAR_BIT)
+#   define OC_CLZ32(_x) (__builtin_clzl(_x))
+#  endif
+#  if INT_MAX>=9223372036854775807LL
+#   define OC_CLZ64_OFFS ((int)sizeof(unsigned)*CHAR_BIT)
+#   define OC_CLZ64(_x) (__builtin_clz(_x))
+#  elif LONG_MAX>=9223372036854775807LL
+#   define OC_CLZ64_OFFS ((int)sizeof(unsigned long)*CHAR_BIT)
+#   define OC_CLZ64(_x) (__builtin_clzl(_x))
+#  elif LLONG_MAX>=9223372036854775807LL|| \
+    __LONG_LONG_MAX__>=9223372036854775807LL
+#   define OC_CLZ64_OFFS ((int)sizeof(unsigned long long)*CHAR_BIT)
+#   define OC_CLZ64(_x) (__builtin_clzll(_x))
 #  endif
 # endif
 
@@ -134,8 +132,12 @@ int oc_ilog64(ogg_int64_t _v);
 # define OC_STATIC_ILOG_64(_v) (OC_STATIC_ILOG6((ogg_int64_t)(_v)))
 
 #define OC_Q57(_v) ((ogg_int64_t)(_v)<<57)
+#define OC_Q10(_v) ((_v)<<10)
 
 ogg_int64_t oc_bexp64(ogg_int64_t _z);
 ogg_int64_t oc_blog64(ogg_int64_t _w);
+
+ogg_uint32_t oc_bexp32_q10(int _z);
+int oc_blog32_q10(ogg_uint32_t _w);
 
 #endif

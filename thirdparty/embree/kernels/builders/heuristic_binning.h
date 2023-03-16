@@ -57,14 +57,12 @@ namespace embree
         __forceinline Vec3ia bin(const Vec3fa& p) const 
         {
           const vint4 i = floori((vfloat4(p)-ofs)*scale);
-#if 1
           assert(i[0] >= 0 && (size_t)i[0] < num); 
           assert(i[1] >= 0 && (size_t)i[1] < num);
           assert(i[2] >= 0 && (size_t)i[2] < num);
-          return Vec3ia(i);
-#else
+          
+          // we clamp to handle corner cases that could calculate out of bounds bin
           return Vec3ia(clamp(i,vint4(0),vint4(num-1)));
-#endif
         }
 
         /*! faster but unsafe binning */

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Translation" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Translation" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Language Translation.
 	</brief_description>
@@ -86,6 +86,12 @@
 			<description>
 				Returns a message's translation involving plurals.
 				The number [param n] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
+			</description>
+		</method>
+		<method name="get_translated_message_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns all the messages (translated text).
 			</description>
 		</method>
 	</methods>

@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Could not resolve member "f1": Cyclic reference.

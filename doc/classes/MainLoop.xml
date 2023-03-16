@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MainLoop" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="MainLoop" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Abstract base class for the game's main loop.
 	</brief_description>
@@ -29,29 +29,28 @@
 		[/gdscript]
 		[csharp]
 		using Godot;
-		using System;
 
-		public class CustomMainLoop : MainLoop
+		public partial class CustomMainLoop : MainLoop
 		{
-		    public float TimeElapsed = 0;
+		    private double _timeElapsed = 0;
 
 		    public override void _Initialize()
 		    {
 		        GD.Print("Initialized:");
-		        GD.Print($"  Starting Time: {TimeElapsed}");
+		        GD.Print($"  Starting Time: {_timeElapsed}");
 		    }
 
-		    public override bool _Process(float delta)
+		    public override bool _Process(double delta)
 		    {
-		        TimeElapsed += delta;
+		        _timeElapsed += delta;
 		        // Return true to end the main loop.
-		        return Input.GetMouseButtonMask() != 0 || Input.IsKeyPressed((int)KeyList.Escape);
+		        return Input.GetMouseButtonMask() != 0 || Input.IsKeyPressed(Key.Escape);
 		    }
 
 		    private void _Finalize()
 		    {
 		        GD.Print("Finalized:");
-		        GD.Print($"  End Time: {TimeElapsed}");
+		        GD.Print($"  End Time: {_timeElapsed}");
 		    }
 		}
 		[/csharp]

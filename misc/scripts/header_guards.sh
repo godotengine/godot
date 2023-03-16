@@ -5,11 +5,15 @@ if [ ! -f "version.py" ]; then
   echo "Some of the paths checks may not work as intended from a different folder."
 fi
 
+files_invalid_guard=""
+
 for file in $(find -name "thirdparty" -prune -o -name "*.h" -print); do
   # Skip *.gen.h and *-so_wrap.h, they're generated.
   if [[ "$file" == *".gen.h" || "$file" == *"-so_wrap.h" ]]; then continue; fi
   # Has important define before normal header guards.
   if [[ "$file" == *"thread.h" || "$file" == *"platform_config.h" ]]; then continue; fi
+  # Obj-C files don't use header guards.
+  if grep -q "#import " "$file"; then continue; fi
 
   bname=$(basename $file .h)
 
@@ -43,7 +47,20 @@ for file in $(find -name "thirdparty" -prune -o -name "*.h" -print); do
   sed -i $file -e "$ s/#endif.*/\n#endif \/\/ $guard/"
   # Removes redundant \n added before, if they weren't needed.
   sed -i $file -e "/^$/N;/^\n$/D"
+
+  # Check that first ifndef (should be header guard) is at the expected position.
+  # If not it can mean we have some code before the guard that should be after.
+  # "31" is the expected line with the copyright header.
+  first_ifndef=$(grep -n -m 1 "ifndef" $file | sed 's/\([0-9]*\).*/\1/')
+  if [[ "$first_ifndef" != "31" ]]; then
+    files_invalid_guard+="$file\n"
+  fi
 done
+
+if [[ ! -z "$files_invalid_guard" ]]; then
+  echo -e "The following files were found to have potentially invalid header guard:\n"
+  echo -e "$files_invalid_guard"
+fi
 
 diff=$(git diff --color)
 

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  menu_bar.cpp                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  menu_bar.cpp                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "menu_bar.h"
 
@@ -41,7 +41,7 @@ void MenuBar::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	MutexLock lock(mutex);
-	if (p_event->is_action("ui_left") && p_event->is_pressed()) {
+	if (p_event->is_action("ui_left", true) && p_event->is_pressed()) {
 		int new_sel = selected_menu;
 		int old_sel = (selected_menu < 0) ? 0 : selected_menu;
 		do {
@@ -63,7 +63,7 @@ void MenuBar::gui_input(const Ref<InputEvent> &p_event) {
 			_open_popup(selected_menu, true);
 		}
 		return;
-	} else if (p_event->is_action("ui_right") && p_event->is_pressed()) {
+	} else if (p_event->is_action("ui_right", true) && p_event->is_pressed()) {
 		int new_sel = selected_menu;
 		int old_sel = (selected_menu < 0) ? menu_cache.size() - 1 : selected_menu;
 		do {
@@ -149,10 +149,6 @@ void MenuBar::_open_popup(int p_index, bool p_focus_item) {
 void MenuBar::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (!_is_focus_owner_in_shortcut_context()) {
-		return;
-	}
-
 	if (disable_shortcuts) {
 		return;
 	}
@@ -175,34 +171,6 @@ void MenuBar::shortcut_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void MenuBar::set_shortcut_context(Node *p_node) {
-	if (p_node != nullptr) {
-		shortcut_context = p_node->get_instance_id();
-	} else {
-		shortcut_context = ObjectID();
-	}
-}
-
-Node *MenuBar::get_shortcut_context() const {
-	Object *ctx_obj = ObjectDB::get_instance(shortcut_context);
-	Node *ctx_node = Object::cast_to<Node>(ctx_obj);
-
-	return ctx_node;
-}
-
-bool MenuBar::_is_focus_owner_in_shortcut_context() const {
-	if (shortcut_context == ObjectID()) {
-		// No context, therefore global - always "in" context.
-		return true;
-	}
-
-	Node *ctx_node = get_shortcut_context();
-	Control *vp_focus = get_viewport() ? get_viewport()->gui_get_focus_owner() : nullptr;
-
-	// If the context is valid and the viewport focus is valid, check if the context is the focus or is a parent of it.
-	return ctx_node && vp_focus && (ctx_node == vp_focus || ctx_node->is_ancestor_of(vp_focus));
-}
-
 void MenuBar::_popup_visibility_changed(bool p_visible) {
 	if (!p_visible) {
 		active_menu = -1;
@@ -213,19 +181,19 @@ void MenuBar::_popup_visibility_changed(bool p_visible) {
 	}
 
 	if (switch_on_hover) {
-		Window *window = Object::cast_to<Window>(get_viewport());
-		if (window) {
-			mouse_pos_adjusted = window->get_position();
+		Window *wnd = Object::cast_to<Window>(get_viewport());
+		if (wnd) {
+			mouse_pos_adjusted = wnd->get_position();
 
-			if (window->is_embedded()) {
-				Window *window_parent = Object::cast_to<Window>(window->get_parent()->get_viewport());
-				while (window_parent) {
-					if (!window_parent->is_embedded()) {
-						mouse_pos_adjusted += window_parent->get_position();
+			if (wnd->is_embedded()) {
+				Window *wnd_parent = Object::cast_to<Window>(wnd->get_parent()->get_viewport());
+				while (wnd_parent) {
+					if (!wnd_parent->is_embedded()) {
+						mouse_pos_adjusted += wnd_parent->get_position();
 						break;
 					}
 
-					window_parent = Object::cast_to<Window>(window_parent->get_parent()->get_viewport());
+					wnd_parent = Object::cast_to<Window>(wnd_parent->get_parent()->get_viewport());
 				}
 			}
 
@@ -246,10 +214,10 @@ void MenuBar::_update_submenu(const String &p_menu_name, PopupMenu *p_child) {
 			PopupMenu *pm = Object::cast_to<PopupMenu>(n);
 			ERR_FAIL_COND_MSG(!pm, "Item subnode is not a PopupMenu: " + p_child->get_item_submenu(i) + ".");
 
-			DisplayServer::get_singleton()->global_menu_add_submenu_item(p_menu_name, p_child->get_item_text(i), p_menu_name + "/" + itos(i));
+			DisplayServer::get_singleton()->global_menu_add_submenu_item(p_menu_name, atr(p_child->get_item_text(i)), p_menu_name + "/" + itos(i));
 			_update_submenu(p_menu_name + "/" + itos(i), pm);
 		} else {
-			int index = DisplayServer::get_singleton()->global_menu_add_item(p_menu_name, p_child->get_item_text(i), callable_mp(p_child, &PopupMenu::activate_item), Callable(), i);
+			int index = DisplayServer::get_singleton()->global_menu_add_item(p_menu_name, atr(p_child->get_item_text(i)), callable_mp(p_child, &PopupMenu::activate_item), Callable(), i);
 
 			if (p_child->is_item_checkable(i)) {
 				DisplayServer::get_singleton()->global_menu_set_item_checkable(p_menu_name, index, true);
@@ -322,7 +290,7 @@ void MenuBar::_update_menu() {
 			if (menu_cache[i].hidden) {
 				continue;
 			}
-			String menu_name = String(popups[i]->get_meta("_menu_name", popups[i]->get_name()));
+			String menu_name = atr(String(popups[i]->get_meta("_menu_name", popups[i]->get_name())));
 
 			index = DisplayServer::get_singleton()->global_menu_add_submenu_item("_main", menu_name, root_name + "/" + itos(i), index);
 			if (menu_cache[i].disabled) {
@@ -377,6 +345,7 @@ void MenuBar::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_MOUSE_EXIT: {
 			focused_menu = -1;
+			selected_menu = -1;
 			queue_redraw();
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED:
@@ -556,7 +525,7 @@ void MenuBar::shape(Menu &p_menu) {
 	} else {
 		p_menu.text_buf->set_direction((TextServer::Direction)text_direction);
 	}
-	p_menu.text_buf->add_string(p_menu.name, theme_cache.font, theme_cache.font_size, language);
+	p_menu.text_buf->add_string(atr(p_menu.name), theme_cache.font, theme_cache.font_size, language);
 }
 
 void MenuBar::_refresh_menu_names() {
@@ -694,16 +663,12 @@ void MenuBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_menu_hidden", "menu", "hidden"), &MenuBar::set_menu_hidden);
 	ClassDB::bind_method(D_METHOD("is_menu_hidden", "menu"), &MenuBar::is_menu_hidden);
 
-	ClassDB::bind_method(D_METHOD("set_shortcut_context", "node"), &MenuBar::set_shortcut_context);
-	ClassDB::bind_method(D_METHOD("get_shortcut_context"), &MenuBar::get_shortcut_context);
-
 	ClassDB::bind_method(D_METHOD("get_menu_popup", "menu"), &MenuBar::get_menu_popup);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "start_index"), "set_start_index", "get_start_index");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "start_index"), "set_start_index", "get_start_index");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "switch_on_hover"), "set_switch_on_hover", "is_switch_on_hover");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "prefer_global_menu"), "set_prefer_global_menu", "is_prefer_global_menu");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut_context", PROPERTY_HINT_RESOURCE_TYPE, "Node"), "set_shortcut_context", "get_shortcut_context");
 
 	ADD_GROUP("BiDi", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
@@ -874,27 +839,6 @@ String MenuBar::get_tooltip(const Point2 &p_pos) const {
 		return menu_cache[index].tooltip;
 	} else {
 		return String();
-	}
-}
-
-void MenuBar::get_translatable_strings(List<String> *p_strings) const {
-	Vector<PopupMenu *> popups = _get_popups();
-	for (int i = 0; i < popups.size(); i++) {
-		PopupMenu *pm = popups[i];
-
-		if (!pm->has_meta("_menu_name") && !pm->has_meta("_menu_tooltip")) {
-			continue;
-		}
-
-		String name = pm->get_meta("_menu_name");
-		if (!name.is_empty()) {
-			p_strings->push_back(name);
-		}
-
-		String tooltip = pm->get_meta("_menu_tooltip");
-		if (!tooltip.is_empty()) {
-			p_strings->push_back(tooltip);
-		}
 	}
 }
 

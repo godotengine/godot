@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  theme_editor_plugin.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  theme_editor_plugin.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "theme_editor_plugin.h"
 
@@ -38,6 +38,8 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/progress_dialog.h"
 #include "scene/gui/color_picker.h"
+#include "scene/gui/panel_container.h"
+#include "scene/gui/split_container.h"
 #include "scene/theme/theme_db.h"
 
 void ThemeItemImportTree::_update_items_tree() {
@@ -134,7 +136,7 @@ void ThemeItemImportTree::_update_items_tree() {
 			data_type_node->set_checked(IMPORT_ITEM_DATA, false);
 			data_type_node->set_editable(IMPORT_ITEM_DATA, true);
 
-			List<TreeItem *> *item_list;
+			List<TreeItem *> *item_list = nullptr;
 
 			switch (dt) {
 				case Theme::DATA_TYPE_COLOR:
@@ -398,7 +400,7 @@ void ThemeItemImportTree::_restore_selected_item(TreeItem *p_tree_item) {
 void ThemeItemImportTree::_update_total_selected(Theme::DataType p_data_type) {
 	ERR_FAIL_INDEX_MSG(p_data_type, Theme::DATA_TYPE_MAX, "Theme item data type is out of bounds.");
 
-	Label *total_selected_items_label;
+	Label *total_selected_items_label = nullptr;
 	switch (p_data_type) {
 		case Theme::DATA_TYPE_COLOR:
 			total_selected_items_label = total_selected_colors_label;
@@ -562,7 +564,7 @@ void ThemeItemImportTree::_select_all_data_type_pressed(int p_data_type) {
 	}
 
 	Theme::DataType data_type = (Theme::DataType)p_data_type;
-	List<TreeItem *> *item_list;
+	List<TreeItem *> *item_list = nullptr;
 
 	switch (data_type) {
 		case Theme::DATA_TYPE_COLOR:
@@ -617,7 +619,7 @@ void ThemeItemImportTree::_select_full_data_type_pressed(int p_data_type) {
 	}
 
 	Theme::DataType data_type = (Theme::DataType)p_data_type;
-	List<TreeItem *> *item_list;
+	List<TreeItem *> *item_list = nullptr;
 
 	switch (data_type) {
 		case Theme::DATA_TYPE_COLOR:
@@ -674,7 +676,7 @@ void ThemeItemImportTree::_deselect_all_data_type_pressed(int p_data_type) {
 	}
 
 	Theme::DataType data_type = (Theme::DataType)p_data_type;
-	List<TreeItem *> *item_list;
+	List<TreeItem *> *item_list = nullptr;
 
 	switch (data_type) {
 		case Theme::DATA_TYPE_COLOR:
@@ -798,7 +800,7 @@ void ThemeItemImportTree::_import_selected() {
 
 	ProgressDialog::get_singleton()->end_task("import_theme_items");
 
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Import Theme Items"));
 
 	ur->add_do_method(*edited_theme, "clear");
@@ -982,17 +984,17 @@ ThemeItemImportTree::ThemeItemImportTree() {
 	for (int i = 0; i < Theme::DATA_TYPE_MAX; i++) {
 		Theme::DataType dt = (Theme::DataType)i;
 
-		TextureRect *select_items_icon;
-		Label *select_items_label;
-		Button *deselect_all_items_button;
-		Button *select_all_items_button;
-		Button *select_full_items_button;
-		Label *total_selected_items_label;
+		TextureRect *select_items_icon = nullptr;
+		Label *select_items_label = nullptr;
+		Button *deselect_all_items_button = nullptr;
+		Button *select_all_items_button = nullptr;
+		Button *select_full_items_button = nullptr;
+		Label *total_selected_items_label = nullptr;
 
-		String items_title = "";
-		String select_all_items_tooltip = "";
-		String select_full_items_tooltip = "";
-		String deselect_all_items_tooltip = "";
+		String items_title;
+		String select_all_items_tooltip;
+		String select_full_items_tooltip;
+		String deselect_all_items_tooltip;
 
 		switch (dt) {
 			case Theme::DATA_TYPE_COLOR:
@@ -1496,7 +1498,7 @@ void ThemeItemEditorDialog::_item_tree_button_pressed(Object *p_item, int p_colu
 			String item_name = item->get_text(0);
 			int data_type = item->get_parent()->get_metadata(0);
 
-			Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 			ur->create_action(TTR("Remove Theme Item"));
 			ur->add_do_method(*edited_theme, "clear_theme_item", (Theme::DataType)data_type, item_name, edited_item_type);
 			ur->add_undo_method(*edited_theme, "set_theme_item", (Theme::DataType)data_type, item_name, edited_item_type, edited_theme->get_theme_item((Theme::DataType)data_type, item_name, edited_item_type));
@@ -1515,7 +1517,7 @@ void ThemeItemEditorDialog::_add_theme_type(const String &p_new_text) {
 	const String new_type = edit_add_type_value->get_text().strip_edges();
 	edit_add_type_value->clear();
 
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Add Theme Type"));
 
 	ur->add_do_method(*edited_theme, "add_type", new_type);
@@ -1527,7 +1529,7 @@ void ThemeItemEditorDialog::_add_theme_type(const String &p_new_text) {
 }
 
 void ThemeItemEditorDialog::_add_theme_item(Theme::DataType p_data_type, String p_item_name, String p_item_type) {
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Create Theme Item"));
 
 	switch (p_data_type) {
@@ -1572,7 +1574,7 @@ void ThemeItemEditorDialog::_remove_theme_type(const String &p_theme_type) {
 	Ref<Theme> old_snapshot = edited_theme->duplicate();
 	Ref<Theme> new_snapshot = edited_theme->duplicate();
 
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Remove Theme Type"));
 
 	new_snapshot->remove_type(p_theme_type);
@@ -1595,7 +1597,7 @@ void ThemeItemEditorDialog::_remove_data_type_items(Theme::DataType p_data_type,
 	Ref<Theme> old_snapshot = edited_theme->duplicate();
 	Ref<Theme> new_snapshot = edited_theme->duplicate();
 
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Remove Data Type Items From Theme"));
 
 	new_snapshot->get_theme_item_list(p_data_type, p_item_type, &names);
@@ -1624,7 +1626,7 @@ void ThemeItemEditorDialog::_remove_class_items() {
 	Ref<Theme> old_snapshot = edited_theme->duplicate();
 	Ref<Theme> new_snapshot = edited_theme->duplicate();
 
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Remove Class Items From Theme"));
 
 	for (int dt = 0; dt < Theme::DATA_TYPE_MAX; dt++) {
@@ -1660,7 +1662,7 @@ void ThemeItemEditorDialog::_remove_custom_items() {
 	Ref<Theme> old_snapshot = edited_theme->duplicate();
 	Ref<Theme> new_snapshot = edited_theme->duplicate();
 
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Remove Custom Items From Theme"));
 
 	for (int dt = 0; dt < Theme::DATA_TYPE_MAX; dt++) {
@@ -1696,7 +1698,7 @@ void ThemeItemEditorDialog::_remove_all_items() {
 	Ref<Theme> old_snapshot = edited_theme->duplicate();
 	Ref<Theme> new_snapshot = edited_theme->duplicate();
 
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Remove All Items From Theme"));
 
 	for (int dt = 0; dt < Theme::DATA_TYPE_MAX; dt++) {
@@ -1800,7 +1802,7 @@ void ThemeItemEditorDialog::_confirm_edit_theme_item() {
 	if (item_popup_mode == CREATE_THEME_ITEM) {
 		_add_theme_item(edit_item_data_type, theme_item_name->get_text(), edited_item_type);
 	} else if (item_popup_mode == RENAME_THEME_ITEM) {
-		Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 		ur->create_action(TTR("Rename Theme Item"));
 
 		ur->add_do_method(*edited_theme, "rename_theme_item", edit_item_data_type, edit_item_old_name, theme_item_name->get_text(), edited_item_type);
@@ -2481,7 +2483,7 @@ void ThemeTypeEditor::_update_type_items() {
 	{
 		for (int i = color_items_list->get_child_count() - 1; i >= 0; i--) {
 			Node *node = color_items_list->get_child(i);
-			node->queue_delete();
+			node->queue_free();
 			color_items_list->remove_child(node);
 		}
 
@@ -2510,7 +2512,7 @@ void ThemeTypeEditor::_update_type_items() {
 	{
 		for (int i = constant_items_list->get_child_count() - 1; i >= 0; i--) {
 			Node *node = constant_items_list->get_child(i);
-			node->queue_delete();
+			node->queue_free();
 			constant_items_list->remove_child(node);
 		}
 
@@ -2543,7 +2545,7 @@ void ThemeTypeEditor::_update_type_items() {
 	{
 		for (int i = font_items_list->get_child_count() - 1; i >= 0; i--) {
 			Node *node = font_items_list->get_child(i);
-			node->queue_delete();
+			node->queue_free();
 			font_items_list->remove_child(node);
 		}
 
@@ -2581,7 +2583,7 @@ void ThemeTypeEditor::_update_type_items() {
 	{
 		for (int i = font_size_items_list->get_child_count() - 1; i >= 0; i--) {
 			Node *node = font_size_items_list->get_child(i);
-			node->queue_delete();
+			node->queue_free();
 			font_size_items_list->remove_child(node);
 		}
 
@@ -2614,7 +2616,7 @@ void ThemeTypeEditor::_update_type_items() {
 	{
 		for (int i = icon_items_list->get_child_count() - 1; i >= 0; i--) {
 			Node *node = icon_items_list->get_child(i);
-			node->queue_delete();
+			node->queue_free();
 			icon_items_list->remove_child(node);
 		}
 
@@ -2652,7 +2654,7 @@ void ThemeTypeEditor::_update_type_items() {
 	{
 		for (int i = stylebox_items_list->get_child_count() - 1; i >= 0; i--) {
 			Node *node = stylebox_items_list->get_child(i);
-			node->queue_delete();
+			node->queue_free();
 			stylebox_items_list->remove_child(node);
 		}
 
@@ -2826,7 +2828,7 @@ void ThemeTypeEditor::_add_default_type_items() {
 
 	updating = false;
 
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Override All Default Theme Items"));
 
 	ur->add_do_method(*edited_theme, "merge_with", new_snapshot);
@@ -2846,7 +2848,7 @@ void ThemeTypeEditor::_item_add_cbk(int p_data_type, Control *p_control) {
 	}
 
 	String item_name = le->get_text().strip_edges();
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Add Theme Item"));
 
 	switch (p_data_type) {
@@ -2891,7 +2893,7 @@ void ThemeTypeEditor::_item_add_lineedit_cbk(String p_value, int p_data_type, Co
 }
 
 void ThemeTypeEditor::_item_override_cbk(int p_data_type, String p_item_name) {
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Override Theme Item"));
 
 	switch (p_data_type) {
@@ -2930,7 +2932,7 @@ void ThemeTypeEditor::_item_override_cbk(int p_data_type, String p_item_name) {
 }
 
 void ThemeTypeEditor::_item_remove_cbk(int p_data_type, String p_item_name) {
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Remove Theme Item"));
 
 	switch (p_data_type) {
@@ -2949,6 +2951,10 @@ void ThemeTypeEditor::_item_remove_cbk(int p_data_type, String p_item_name) {
 			} else {
 				ur->add_undo_method(*edited_theme, "set_font", p_item_name, edited_type, Ref<Font>());
 			}
+		} break;
+		case Theme::DATA_TYPE_FONT_SIZE: {
+			ur->add_do_method(*edited_theme, "clear_font_size", p_item_name, edited_type);
+			ur->add_undo_method(*edited_theme, "set_font_size", p_item_name, edited_type, edited_theme->get_font_size(p_item_name, edited_type));
 		} break;
 		case Theme::DATA_TYPE_ICON: {
 			ur->add_do_method(*edited_theme, "clear_icon", p_item_name, edited_type);
@@ -3004,7 +3010,7 @@ void ThemeTypeEditor::_item_rename_confirmed(int p_data_type, String p_item_name
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Rename Theme Item"));
 
 	switch (p_data_type) {
@@ -3060,7 +3066,7 @@ void ThemeTypeEditor::_item_rename_canceled(int p_data_type, String p_item_name,
 }
 
 void ThemeTypeEditor::_color_item_changed(Color p_value, String p_item_name) {
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Set Color Item in Theme"), UndoRedo::MERGE_ENDS);
 	ur->add_do_method(*edited_theme, "set_color", p_item_name, edited_type, p_value);
 	ur->add_undo_method(*edited_theme, "set_color", p_item_name, edited_type, edited_theme->get_color(p_item_name, edited_type));
@@ -3068,7 +3074,7 @@ void ThemeTypeEditor::_color_item_changed(Color p_value, String p_item_name) {
 }
 
 void ThemeTypeEditor::_constant_item_changed(float p_value, String p_item_name) {
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Set Constant Item in Theme"));
 	ur->add_do_method(*edited_theme, "set_constant", p_item_name, edited_type, p_value);
 	ur->add_undo_method(*edited_theme, "set_constant", p_item_name, edited_type, edited_theme->get_constant(p_item_name, edited_type));
@@ -3076,7 +3082,7 @@ void ThemeTypeEditor::_constant_item_changed(float p_value, String p_item_name) 
 }
 
 void ThemeTypeEditor::_font_size_item_changed(float p_value, String p_item_name) {
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Set Font Size Item in Theme"));
 	ur->add_do_method(*edited_theme, "set_font_size", p_item_name, edited_type, p_value);
 	ur->add_undo_method(*edited_theme, "set_font_size", p_item_name, edited_type, edited_theme->get_font_size(p_item_name, edited_type));
@@ -3088,7 +3094,7 @@ void ThemeTypeEditor::_edit_resource_item(Ref<Resource> p_resource, bool p_edit)
 }
 
 void ThemeTypeEditor::_font_item_changed(Ref<Font> p_value, String p_item_name) {
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Set Font Item in Theme"));
 
 	ur->add_do_method(*edited_theme, "set_font", p_item_name, edited_type, p_value.is_valid() ? p_value : Ref<Font>());
@@ -3105,7 +3111,7 @@ void ThemeTypeEditor::_font_item_changed(Ref<Font> p_value, String p_item_name) 
 }
 
 void ThemeTypeEditor::_icon_item_changed(Ref<Texture2D> p_value, String p_item_name) {
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Set Icon Item in Theme"));
 
 	ur->add_do_method(*edited_theme, "set_icon", p_item_name, edited_type, p_value.is_valid() ? p_value : Ref<Texture2D>());
@@ -3122,7 +3128,7 @@ void ThemeTypeEditor::_icon_item_changed(Ref<Texture2D> p_value, String p_item_n
 }
 
 void ThemeTypeEditor::_stylebox_item_changed(Ref<StyleBox> p_value, String p_item_name) {
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Set Stylebox Item in Theme"));
 
 	ur->add_do_method(*edited_theme, "set_stylebox", p_item_name, edited_type, p_value.is_valid() ? p_value : Ref<StyleBox>());
@@ -3165,7 +3171,7 @@ void ThemeTypeEditor::_on_pin_leader_button_pressed(Control *p_editor, String p_
 		stylebox = Object::cast_to<EditorResourcePicker>(p_editor)->get_edited_resource();
 	}
 
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Pin Stylebox"));
 	ur->add_do_method(this, "_pin_leading_stylebox", p_item_name, stylebox);
 
@@ -3198,7 +3204,7 @@ void ThemeTypeEditor::_pin_leading_stylebox(String p_item_name, Ref<StyleBox> p_
 }
 
 void ThemeTypeEditor::_on_unpin_leader_button_pressed() {
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Unpin Stylebox"));
 	ur->add_do_method(this, "_unpin_leading_stylebox");
 	ur->add_undo_method(this, "_pin_leading_stylebox", leading_stylebox.item_name, leading_stylebox.stylebox);
@@ -3221,6 +3227,7 @@ void ThemeTypeEditor::_update_stylebox_from_leading() {
 	if (!leading_stylebox.pinned || leading_stylebox.stylebox.is_null()) {
 		return;
 	}
+	ERR_FAIL_COND_MSG(edited_theme.is_null(), "Leading stylebox does not have an edited theme to update");
 
 	// Prevent changes from immediately being reported while the operation is still ongoing.
 	edited_theme->_freeze_change_propagation();
@@ -3267,7 +3274,7 @@ void ThemeTypeEditor::_update_stylebox_from_leading() {
 }
 
 void ThemeTypeEditor::_type_variation_changed(const String p_value) {
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Set Theme Type Variation"));
 
 	if (p_value.is_empty()) {
@@ -3333,8 +3340,10 @@ void ThemeTypeEditor::set_edited_theme(const Ref<Theme> &p_theme) {
 	}
 
 	edited_theme = p_theme;
-	edited_theme->connect("changed", callable_mp(this, &ThemeTypeEditor::_update_type_list_debounced));
-	_update_type_list();
+	if (edited_theme.is_valid()) {
+		edited_theme->connect("changed", callable_mp(this, &ThemeTypeEditor::_update_type_list_debounced));
+		_update_type_list();
+	}
 
 	add_type_dialog->set_edited_theme(edited_theme);
 }
@@ -3494,7 +3503,9 @@ void ThemeEditor::edit(const Ref<Theme> &p_theme) {
 		preview_tab->set_preview_theme(p_theme);
 	}
 
-	theme_name->set_text(TTR("Theme:") + " " + theme->get_path().get_file());
+	if (theme.is_valid()) {
+		theme_name->set_text(TTR("Theme:") + " " + theme->get_path().get_file());
+	}
 }
 
 Ref<Theme> ThemeEditor::get_edited_theme() {
@@ -3699,82 +3710,17 @@ ThemeEditor::ThemeEditor() {
 void ThemeEditorPlugin::edit(Object *p_node) {
 	if (Object::cast_to<Theme>(p_node)) {
 		theme_editor->edit(Object::cast_to<Theme>(p_node));
-	} else if (Object::cast_to<Font>(p_node) || Object::cast_to<StyleBox>(p_node) || Object::cast_to<Texture2D>(p_node)) {
-		// Do nothing, keep editing the existing theme.
 	} else {
-		theme_editor->edit(Ref<Theme>());
+		// We intentionally keep a reference to the last used theme to work around
+		// the the editor being hidden while base resources are edited. Uncomment
+		// the following line again and remove this comment once that bug has been
+		// fixed (scheduled for Godot 4.1 in PR 73098):
+		// theme_editor->edit(Ref<Theme>());
 	}
 }
 
 bool ThemeEditorPlugin::handles(Object *p_node) const {
-	if (Object::cast_to<Theme>(p_node)) {
-		return true;
-	}
-
-	Ref<Theme> edited_theme = theme_editor->get_edited_theme();
-	if (edited_theme.is_null()) {
-		return false;
-	}
-
-	// If we are editing a theme already and this particular resource happens to belong to it,
-	// then we just keep editing it, despite not being able to directly handle it.
-	// This only goes one layer deep, but if required this can be extended to support, say, Font inside of Font.
-	bool belongs_to_theme = false;
-
-	if (Object::cast_to<Font>(p_node)) {
-		Ref<Font> font_item = Object::cast_to<Font>(p_node);
-		List<StringName> types;
-		List<StringName> names;
-
-		edited_theme->get_font_type_list(&types);
-		for (const StringName &E : types) {
-			names.clear();
-			edited_theme->get_font_list(E, &names);
-
-			for (const StringName &F : names) {
-				if (font_item == edited_theme->get_font(F, E)) {
-					belongs_to_theme = true;
-					break;
-				}
-			}
-		}
-	} else if (Object::cast_to<StyleBox>(p_node)) {
-		Ref<StyleBox> stylebox_item = Object::cast_to<StyleBox>(p_node);
-		List<StringName> types;
-		List<StringName> names;
-
-		edited_theme->get_stylebox_type_list(&types);
-		for (const StringName &E : types) {
-			names.clear();
-			edited_theme->get_stylebox_list(E, &names);
-
-			for (const StringName &F : names) {
-				if (stylebox_item == edited_theme->get_stylebox(F, E)) {
-					belongs_to_theme = true;
-					break;
-				}
-			}
-		}
-	} else if (Object::cast_to<Texture2D>(p_node)) {
-		Ref<Texture2D> icon_item = Object::cast_to<Texture2D>(p_node);
-		List<StringName> types;
-		List<StringName> names;
-
-		edited_theme->get_icon_type_list(&types);
-		for (const StringName &E : types) {
-			names.clear();
-			edited_theme->get_icon_list(E, &names);
-
-			for (const StringName &F : names) {
-				if (icon_item == edited_theme->get_icon(F, E)) {
-					belongs_to_theme = true;
-					break;
-				}
-			}
-		}
-	}
-
-	return belongs_to_theme;
+	return Object::cast_to<Theme>(p_node) != nullptr;
 }
 
 void ThemeEditorPlugin::make_visible(bool p_visible) {

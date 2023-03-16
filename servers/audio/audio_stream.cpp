@@ -1,39 +1,39 @@
-/*************************************************************************/
-/*  audio_stream.cpp                                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  audio_stream.cpp                                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "audio_stream.h"
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 
-void AudioStreamPlayback::start(float p_from_pos) {
+void AudioStreamPlayback::start(double p_from_pos) {
 	if (GDVIRTUAL_CALL(_start, p_from_pos)) {
 		return;
 	}
@@ -54,33 +54,26 @@ bool AudioStreamPlayback::is_playing() const {
 }
 
 int AudioStreamPlayback::get_loop_count() const {
-	int ret;
-	if (GDVIRTUAL_CALL(_get_loop_count, ret)) {
-		return ret;
-	}
-	return 0;
+	int ret = 0;
+	GDVIRTUAL_CALL(_get_loop_count, ret);
+	return ret;
 }
 
-float AudioStreamPlayback::get_playback_position() const {
-	float ret;
+double AudioStreamPlayback::get_playback_position() const {
+	double ret;
 	if (GDVIRTUAL_CALL(_get_playback_position, ret)) {
 		return ret;
 	}
 	ERR_FAIL_V_MSG(0, "AudioStreamPlayback::get_playback_position unimplemented!");
 }
-void AudioStreamPlayback::seek(float p_time) {
-	if (GDVIRTUAL_CALL(_seek, p_time)) {
-		return;
-	}
+void AudioStreamPlayback::seek(double p_time) {
+	GDVIRTUAL_CALL(_seek, p_time);
 }
 
 int AudioStreamPlayback::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
-	int ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_mix, p_buffer, p_rate_scale, p_frames, ret)) {
-		return ret;
-	}
-
-	return 0;
+	int ret = 0;
+	GDVIRTUAL_REQUIRED_CALL(_mix, p_buffer, p_rate_scale, p_frames, ret);
+	return ret;
 }
 
 void AudioStreamPlayback::tag_used_streams() {
@@ -111,20 +104,14 @@ void AudioStreamPlaybackResampled::begin_resample() {
 }
 
 int AudioStreamPlaybackResampled::_mix_internal(AudioFrame *p_buffer, int p_frames) {
-	int ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_mix_resampled, p_buffer, p_frames, ret)) {
-		return ret;
-	}
-
-	return 0;
+	int ret = 0;
+	GDVIRTUAL_REQUIRED_CALL(_mix_resampled, p_buffer, p_frames, ret);
+	return ret;
 }
 float AudioStreamPlaybackResampled::get_stream_sampling_rate() {
-	float ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_stream_sampling_rate, ret)) {
-		return ret;
-	}
-
-	return 0;
+	float ret = 0;
+	GDVIRTUAL_REQUIRED_CALL(_get_stream_sampling_rate, ret);
+	return ret;
 }
 
 void AudioStreamPlaybackResampled::_bind_methods() {
@@ -201,58 +188,44 @@ Ref<AudioStreamPlayback> AudioStream::instantiate_playback() {
 }
 String AudioStream::get_stream_name() const {
 	String ret;
-	if (GDVIRTUAL_CALL(_get_stream_name, ret)) {
-		return ret;
-	}
-	return String();
+	GDVIRTUAL_CALL(_get_stream_name, ret);
+	return ret;
 }
 
-float AudioStream::get_length() const {
-	float ret;
-	if (GDVIRTUAL_CALL(_get_length, ret)) {
-		return ret;
-	}
-	return 0;
+double AudioStream::get_length() const {
+	double ret = 0;
+	GDVIRTUAL_CALL(_get_length, ret);
+	return ret;
 }
 
 bool AudioStream::is_monophonic() const {
-	bool ret;
-	if (GDVIRTUAL_CALL(_is_monophonic, ret)) {
-		return ret;
-	}
-	return true;
+	bool ret = true;
+	GDVIRTUAL_CALL(_is_monophonic, ret);
+	return ret;
 }
 
 double AudioStream::get_bpm() const {
 	double ret = 0;
-	if (GDVIRTUAL_CALL(_get_bpm, ret)) {
-		return ret;
-	}
-	return 0;
+	GDVIRTUAL_CALL(_get_bpm, ret);
+	return ret;
 }
 
 bool AudioStream::has_loop() const {
 	bool ret = 0;
-	if (GDVIRTUAL_CALL(_has_loop, ret)) {
-		return ret;
-	}
-	return 0;
+	GDVIRTUAL_CALL(_has_loop, ret);
+	return ret;
 }
 
 int AudioStream::get_bar_beats() const {
 	int ret = 0;
-	if (GDVIRTUAL_CALL(_get_bar_beats, ret)) {
-		return ret;
-	}
-	return 0;
+	GDVIRTUAL_CALL(_get_bar_beats, ret);
+	return ret;
 }
 
 int AudioStream::get_beat_count() const {
 	int ret = 0;
-	if (GDVIRTUAL_CALL(_get_beat_count, ret)) {
-		return ret;
-	}
-	return 0;
+	GDVIRTUAL_CALL(_get_beat_count, ret);
+	return ret;
 }
 
 void AudioStream::tag_used(float p_offset) {
@@ -309,7 +282,7 @@ String AudioStreamMicrophone::get_stream_name() const {
 	return "Microphone";
 }
 
-float AudioStreamMicrophone::get_length() const {
+double AudioStreamMicrophone::get_length() const {
 	return 0;
 }
 
@@ -382,7 +355,7 @@ float AudioStreamPlaybackMicrophone::get_stream_sampling_rate() {
 	return AudioDriver::get_singleton()->get_mix_rate();
 }
 
-void AudioStreamPlaybackMicrophone::start(float p_from_pos) {
+void AudioStreamPlaybackMicrophone::start(double p_from_pos) {
 	if (active) {
 		return;
 	}
@@ -394,7 +367,7 @@ void AudioStreamPlaybackMicrophone::start(float p_from_pos) {
 
 	input_ofs = 0;
 
-	if (AudioDriver::get_singleton()->capture_start() == OK) {
+	if (AudioDriver::get_singleton()->input_start() == OK) {
 		active = true;
 		begin_resample();
 	}
@@ -402,7 +375,7 @@ void AudioStreamPlaybackMicrophone::start(float p_from_pos) {
 
 void AudioStreamPlaybackMicrophone::stop() {
 	if (active) {
-		AudioDriver::get_singleton()->capture_stop();
+		AudioDriver::get_singleton()->input_stop();
 		active = false;
 	}
 }
@@ -415,11 +388,11 @@ int AudioStreamPlaybackMicrophone::get_loop_count() const {
 	return 0;
 }
 
-float AudioStreamPlaybackMicrophone::get_playback_position() const {
+double AudioStreamPlaybackMicrophone::get_playback_position() const {
 	return 0;
 }
 
-void AudioStreamPlaybackMicrophone::seek(float p_time) {
+void AudioStreamPlaybackMicrophone::seek(double p_time) {
 	// Can't seek a microphone input
 }
 
@@ -437,12 +410,12 @@ AudioStreamPlaybackMicrophone::AudioStreamPlaybackMicrophone() {
 
 ////////////////////////////////
 
-void AudioStreamRandomizer::add_stream(int p_index) {
+void AudioStreamRandomizer::add_stream(int p_index, Ref<AudioStream> p_stream, float p_weight) {
 	if (p_index < 0) {
 		p_index = audio_stream_pool.size();
 	}
 	ERR_FAIL_COND(p_index > audio_stream_pool.size());
-	PoolEntry entry{ nullptr, 1.0f };
+	PoolEntry entry{ p_stream, p_weight };
 	audio_stream_pool.insert(p_index, entry);
 	emit_signal(SNAME("changed"));
 	notify_property_list_changed();
@@ -582,8 +555,9 @@ Ref<AudioStreamPlayback> AudioStreamRandomizer::instance_playback_no_repeats() {
 		}
 	}
 	if (local_pool.is_empty()) {
+		// There is only one sound to choose from.
+		// Always play a random sound while allowing repeats (which always plays the same sound).
 		playback = instance_playback_random();
-		WARN_PRINT("Playback stream pool is too small to prevent repeats.");
 		return playback;
 	}
 
@@ -664,7 +638,7 @@ String AudioStreamRandomizer::get_stream_name() const {
 	return "Randomizer";
 }
 
-float AudioStreamRandomizer::get_length() const {
+double AudioStreamRandomizer::get_length() const {
 	return 0;
 }
 
@@ -735,7 +709,7 @@ void AudioStreamRandomizer::_get_property_list(List<PropertyInfo> *p_list) const
 }
 
 void AudioStreamRandomizer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("add_stream", "index"), &AudioStreamRandomizer::add_stream);
+	ClassDB::bind_method(D_METHOD("add_stream", "index", "stream", "weight"), &AudioStreamRandomizer::add_stream, DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("move_stream", "index_from", "index_to"), &AudioStreamRandomizer::move_stream);
 	ClassDB::bind_method(D_METHOD("remove_stream", "index"), &AudioStreamRandomizer::remove_stream);
 
@@ -769,7 +743,7 @@ void AudioStreamRandomizer::_bind_methods() {
 
 AudioStreamRandomizer::AudioStreamRandomizer() {}
 
-void AudioStreamPlaybackRandomizer::start(float p_from_pos) {
+void AudioStreamPlaybackRandomizer::start(double p_from_pos) {
 	playing = playback;
 	{
 		float range_from = 1.0 / randomizer->random_pitch_scale;
@@ -812,7 +786,7 @@ int AudioStreamPlaybackRandomizer::get_loop_count() const {
 	return 0;
 }
 
-float AudioStreamPlaybackRandomizer::get_playback_position() const {
+double AudioStreamPlaybackRandomizer::get_playback_position() const {
 	if (playing.is_valid()) {
 		return playing->get_playback_position();
 	}
@@ -820,7 +794,7 @@ float AudioStreamPlaybackRandomizer::get_playback_position() const {
 	return 0;
 }
 
-void AudioStreamPlaybackRandomizer::seek(float p_time) {
+void AudioStreamPlaybackRandomizer::seek(double p_time) {
 	if (playing.is_valid()) {
 		playing->seek(p_time);
 	}

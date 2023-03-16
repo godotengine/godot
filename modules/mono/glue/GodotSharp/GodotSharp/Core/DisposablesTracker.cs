@@ -28,7 +28,7 @@ namespace Godot
 
             try
             {
-                isStdoutVerbose = OS.IsStdoutVerbose();
+                isStdoutVerbose = OS.IsStdOutVerbose();
             }
             catch (ObjectDisposedException)
             {
@@ -43,9 +43,9 @@ namespace Godot
             // like StringName, NodePath, Godot.Collections.Array/Dictionary, etc.
             // The Godot Object Dispose() method may need any of the later instances.
 
-            foreach (WeakReference<Object> item in GodotObjectInstances.Keys)
+            foreach (WeakReference<GodotObject> item in GodotObjectInstances.Keys)
             {
-                if (item.TryGetTarget(out Object? self))
+                if (item.TryGetTarget(out GodotObject? self))
                     self.Dispose();
             }
 
@@ -60,15 +60,15 @@ namespace Godot
         }
 
         // ReSharper disable once RedundantNameQualifier
-        private static ConcurrentDictionary<WeakReference<Godot.Object>, byte> GodotObjectInstances { get; } =
+        private static ConcurrentDictionary<WeakReference<GodotObject>, byte> GodotObjectInstances { get; } =
             new();
 
         private static ConcurrentDictionary<WeakReference<IDisposable>, byte> OtherInstances { get; } =
             new();
 
-        public static WeakReference<Object> RegisterGodotObject(Object godotObject)
+        public static WeakReference<GodotObject> RegisterGodotObject(GodotObject godotObject)
         {
-            var weakReferenceToSelf = new WeakReference<Object>(godotObject);
+            var weakReferenceToSelf = new WeakReference<GodotObject>(godotObject);
             GodotObjectInstances.TryAdd(weakReferenceToSelf, 0);
             return weakReferenceToSelf;
         }
@@ -80,7 +80,7 @@ namespace Godot
             return weakReferenceToSelf;
         }
 
-        public static void UnregisterGodotObject(Object godotObject, WeakReference<Object> weakReferenceToSelf)
+        public static void UnregisterGodotObject(GodotObject godotObject, WeakReference<GodotObject> weakReferenceToSelf)
         {
             if (!GodotObjectInstances.TryRemove(weakReferenceToSelf, out _))
                 throw new ArgumentException("Godot Object not registered.", nameof(weakReferenceToSelf));

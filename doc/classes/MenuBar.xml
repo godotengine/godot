@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MenuBar" inherits="Control" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="MenuBar" inherits="Control" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A horizontal menu bar, which displays [PopupMenu]s or system global menu.
 	</brief_description>
 	<description>
-		New items can be created by adding [PopupMenu] nodes to his node.
+		New items can be created by adding [PopupMenu] nodes to this node.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -106,9 +106,6 @@
 		<member name="prefer_global_menu" type="bool" setter="set_prefer_global_menu" getter="is_prefer_global_menu" default="true">
 			If [code]true[/code], [MenuBar] will use system global menu when supported.
 		</member>
-		<member name="shortcut_context" type="Node" setter="set_shortcut_context" getter="get_shortcut_context">
-			The [Node] which must be a parent of the focused GUI [Control] for the shortcut to be activated. If [code]null[/code], the shortcut can be activated when any control is focused (a global shortcut). This allows shortcuts to be accepted only when the user has a certain area of the GUI focused.
-		</member>
 		<member name="start_index" type="int" setter="set_start_index" getter="get_start_index" default="-1">
 			Position in the global menu to insert first [MenuBar] item at.
 		</member>
@@ -146,6 +143,7 @@
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
+			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
 		</theme_item>
 		<theme_item name="font" data_type="font" type="Font">
 			[Font] of the menu item's text.

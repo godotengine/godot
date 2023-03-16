@@ -112,8 +112,7 @@ template <typename T> auto _hb_try_add_pointer (hb_priority<1>) -> hb_type_ident
 template <typename T> using hb_add_pointer = decltype (_hb_try_add_pointer<T> (hb_prioritize));
 
 
-/* TODO Add feature-parity to std::decay. */
-template <typename T> using hb_decay = hb_remove_const<hb_remove_reference<T>>;
+template <typename T> using hb_decay = typename std::decay<T>::type;
 
 #define hb_is_convertible(From,To) std::is_convertible<From, To>::value
 
@@ -133,6 +132,18 @@ struct
 
   template <typename T> constexpr auto
   operator () (T *v) const HB_AUTO_RETURN (*v)
+
+  template <typename T> constexpr auto
+  operator () (const hb::shared_ptr<T>& v) const HB_AUTO_RETURN (*v)
+
+  template <typename T> constexpr auto
+  operator () (hb::shared_ptr<T>& v) const HB_AUTO_RETURN (*v)
+  
+  template <typename T> constexpr auto
+  operator () (const hb::unique_ptr<T>& v) const HB_AUTO_RETURN (*v)
+
+  template <typename T> constexpr auto
+  operator () (hb::unique_ptr<T>& v) const HB_AUTO_RETURN (*v)
 }
 HB_FUNCOBJ (hb_deref);
 

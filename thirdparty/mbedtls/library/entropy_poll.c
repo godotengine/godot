@@ -38,9 +38,7 @@
 #if defined(MBEDTLS_HAVEGE_C)
 #include "mbedtls/havege.h"
 #endif
-#if defined(MBEDTLS_ENTROPY_NV_SEED)
 #include "mbedtls/platform.h"
-#endif
 
 #if !defined(MBEDTLS_NO_PLATFORM_ENTROPY)
 

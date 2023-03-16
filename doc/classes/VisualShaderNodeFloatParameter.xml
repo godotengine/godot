@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeFloatParameter" inherits="VisualShaderNodeParameter" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="VisualShaderNodeFloatParameter" inherits="VisualShaderNodeParameter" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A scalar float parameter to be used within the visual shader graph.
 	</brief_description>
@@ -16,7 +16,7 @@
 			Enables usage of the [member default_value].
 		</member>
 		<member name="hint" type="int" setter="set_hint" getter="get_hint" enum="VisualShaderNodeFloatParameter.Hint" default="0">
-			A hint applied to the uniform, which controls the values it can take when set through the inspector.
+			A hint applied to the uniform, which controls the values it can take when set through the Inspector.
 		</member>
 		<member name="max" type="float" setter="set_max" getter="get_max" default="1.0">
 			Minimum value for range hints. Used if [member hint] is set to [constant HINT_RANGE] or [constant HINT_RANGE_STEP].

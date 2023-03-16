@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  os_linuxbsd.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  os_linuxbsd.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "os_linuxbsd.h"
 
@@ -34,28 +34,27 @@
 #include "main/main.h"
 #include "servers/display_server.h"
 
+#include "modules/modules_enabled.gen.h" // For regex.
+#ifdef MODULE_REGEX_ENABLED
+#include "modules/regex/regex.h"
+#endif
+
 #ifdef X11_ENABLED
-#include "display_server_x11.h"
+#include "x11/display_server_x11.h"
 #endif
 
 #ifdef HAVE_MNTENT
 #include <mntent.h>
 #endif
 
+#include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <dlfcn.h>
-#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <unistd.h>
-
-#ifdef FONTCONFIG_ENABLED
-#include "fontconfig-so_wrap.h"
-#endif
 
 void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 	const char *message_programs[] = { "zenity", "kdialog", "Xdialog", "xmessage" };
@@ -82,7 +81,7 @@ void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 	List<String> args;
 
 	if (program.ends_with("zenity")) {
-		args.push_back("--error");
+		args.push_back("--warning");
 		args.push_back("--width");
 		args.push_back("500");
 		args.push_back("--title");
@@ -92,7 +91,9 @@ void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 	}
 
 	if (program.ends_with("kdialog")) {
-		args.push_back("--error");
+		// `--sorry` uses the same icon as `--warning` in Zenity.
+		// As of KDialog 22.12.1, its `--warning` options are only available for yes/no questions.
+		args.push_back("--sorry");
 		args.push_back(p_alert);
 		args.push_back("--title");
 		args.push_back(p_title);
@@ -125,6 +126,8 @@ void OS_LinuxBSD::initialize() {
 	crash_handler.initialize();
 
 	OS_Unix::initialize_core();
+
+	system_dir_desktop_cache = get_system_dir(SYSTEM_DIR_DESKTOP);
 }
 
 void OS_LinuxBSD::initialize_joypads() {
@@ -242,6 +245,204 @@ String OS_LinuxBSD::get_version() const {
 	return uts.version;
 }
 
+Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
+	if (RenderingServer::get_singleton()->get_rendering_device() == nullptr) {
+		return Vector<String>();
+	}
+
+	const String rendering_device_name = RenderingServer::get_singleton()->get_rendering_device()->get_device_name(); // e.g. `NVIDIA GeForce GTX 970`
+	const String rendering_device_vendor = RenderingServer::get_singleton()->get_rendering_device()->get_device_vendor_name(); // e.g. `NVIDIA`
+	const String card_name = rendering_device_name.trim_prefix(rendering_device_vendor).strip_edges(); // -> `GeForce GTX 970`
+
+	String vendor_device_id_mappings;
+	List<String> lspci_args;
+	lspci_args.push_back("-n");
+	Error err = const_cast<OS_LinuxBSD *>(this)->execute("lspci", lspci_args, &vendor_device_id_mappings);
+	if (err != OK || vendor_device_id_mappings.is_empty()) {
+		return Vector<String>();
+	}
+
+	// Usually found under "VGA", but for example NVIDIA mobile/laptop adapters are often listed under "3D" and some AMD adapters are under "Display".
+	const String dc_vga = "0300"; // VGA compatible controller
+	const String dc_display = "0302"; // Display controller
+	const String dc_3d = "0380"; // 3D controller
+
+	// splitting results by device class allows prioritizing, if multiple devices are found.
+	Vector<String> class_vga_device_candidates;
+	Vector<String> class_display_device_candidates;
+	Vector<String> class_3d_device_candidates;
+
+#ifdef MODULE_REGEX_ENABLED
+	RegEx regex_id_format = RegEx();
+	regex_id_format.compile("^[a-f0-9]{4}:[a-f0-9]{4}$"); // e.g. `10de:13c2`; IDs are always in hexadecimal
+#endif
+
+	Vector<String> value_lines = vendor_device_id_mappings.split("\n", false); // example: `02:00.0 0300: 10de:13c2 (rev a1)`
+	for (const String &line : value_lines) {
+		Vector<String> columns = line.split(" ", false);
+		if (columns.size() < 3) {
+			continue;
+		}
+		String device_class = columns[1].trim_suffix(":");
+		String vendor_device_id_mapping = columns[2];
+
+#ifdef MODULE_REGEX_ENABLED
+		if (regex_id_format.search(vendor_device_id_mapping).is_null()) {
+			continue;
+		}
+#endif
+
+		if (device_class == dc_vga) {
+			class_vga_device_candidates.push_back(vendor_device_id_mapping);
+		} else if (device_class == dc_display) {
+			class_display_device_candidates.push_back(vendor_device_id_mapping);
+		} else if (device_class == dc_3d) {
+			class_3d_device_candidates.push_back(vendor_device_id_mapping);
+		}
+	}
+
+	// Check results against currently used device (`card_name`), in case the user has multiple graphics cards.
+	const String device_lit = "Device"; // line of interest
+	class_vga_device_candidates = OS_LinuxBSD::lspci_device_filter(class_vga_device_candidates, dc_vga, device_lit, card_name);
+	class_display_device_candidates = OS_LinuxBSD::lspci_device_filter(class_display_device_candidates, dc_display, device_lit, card_name);
+	class_3d_device_candidates = OS_LinuxBSD::lspci_device_filter(class_3d_device_candidates, dc_3d, device_lit, card_name);
+
+	// Get driver names and filter out invalid ones, because some adapters are dummys used only for passthrough.
+	// And they have no indicator besides certain driver names.
+	const String kernel_lit = "Kernel driver in use"; // line of interest
+	const String dummys = "vfio"; // for e.g. pci passthrough dummy kernel driver `vfio-pci`
+	Vector<String> class_vga_device_drivers = OS_LinuxBSD::lspci_get_device_value(class_vga_device_candidates, kernel_lit, dummys);
+	Vector<String> class_display_device_drivers = OS_LinuxBSD::lspci_get_device_value(class_display_device_candidates, kernel_lit, dummys);
+	Vector<String> class_3d_device_drivers = OS_LinuxBSD::lspci_get_device_value(class_3d_device_candidates, kernel_lit, dummys);
+
+	static String driver_name;
+	static String driver_version;
+
+	// Use first valid value:
+	for (const String &driver : class_3d_device_drivers) {
+		driver_name = driver;
+		break;
+	}
+	if (driver_name.is_empty()) {
+		for (const String &driver : class_display_device_drivers) {
+			driver_name = driver;
+			break;
+		}
+	}
+	if (driver_name.is_empty()) {
+		for (const String &driver : class_vga_device_drivers) {
+			driver_name = driver;
+			break;
+		}
+	}
+
+	Vector<String> info;
+	info.push_back(driver_name);
+
+	String modinfo;
+	List<String> modinfo_args;
+	modinfo_args.push_back(driver_name);
+	err = const_cast<OS_LinuxBSD *>(this)->execute("modinfo", modinfo_args, &modinfo);
+	if (err != OK || modinfo.is_empty()) {
+		info.push_back(""); // So that this method always either returns an empty array, or an array of length 2.
+		return info;
+	}
+	Vector<String> lines = modinfo.split("\n", false);
+	for (const String &line : lines) {
+		Vector<String> columns = line.split(":", false, 1);
+		if (columns.size() < 2) {
+			continue;
+		}
+		if (columns[0].strip_edges() == "version") {
+			driver_version = columns[1].strip_edges(); // example value: `510.85.02` on Linux/BSD
+			break;
+		}
+	}
+
+	info.push_back(driver_version);
+
+	return info;
+}
+
+Vector<String> OS_LinuxBSD::lspci_device_filter(Vector<String> vendor_device_id_mapping, String class_suffix, String check_column, String whitelist) const {
+	// NOTE: whitelist can be changed to `Vector<String>`, if the need arises.
+	const String sep = ":";
+	Vector<String> devices;
+	for (const String &mapping : vendor_device_id_mapping) {
+		String device;
+		List<String> d_args;
+		d_args.push_back("-d");
+		d_args.push_back(mapping + sep + class_suffix);
+		d_args.push_back("-vmm");
+		Error err = const_cast<OS_LinuxBSD *>(this)->execute("lspci", d_args, &device); // e.g. `lspci -d 10de:13c2:0300 -vmm`
+		if (err != OK) {
+			return Vector<String>();
+		} else if (device.is_empty()) {
+			continue;
+		}
+
+		Vector<String> device_lines = device.split("\n", false);
+		for (const String &line : device_lines) {
+			Vector<String> columns = line.split(":", false, 1);
+			if (columns.size() < 2) {
+				continue;
+			}
+			if (columns[0].strip_edges() == check_column) {
+				// for `column[0] == "Device"` this may contain `GM204 [GeForce GTX 970]`
+				bool is_valid = true;
+				if (!whitelist.is_empty()) {
+					is_valid = columns[1].strip_edges().contains(whitelist);
+				}
+				if (is_valid) {
+					devices.push_back(mapping);
+				}
+				break;
+			}
+		}
+	}
+	return devices;
+}
+
+Vector<String> OS_LinuxBSD::lspci_get_device_value(Vector<String> vendor_device_id_mapping, String check_column, String blacklist) const {
+	// NOTE: blacklist can be changed to `Vector<String>`, if the need arises.
+	const String sep = ":";
+	Vector<String> values;
+	for (const String &mapping : vendor_device_id_mapping) {
+		String device;
+		List<String> d_args;
+		d_args.push_back("-d");
+		d_args.push_back(mapping);
+		d_args.push_back("-k");
+		Error err = const_cast<OS_LinuxBSD *>(this)->execute("lspci", d_args, &device); // e.g. `lspci -d 10de:13c2 -k`
+		if (err != OK) {
+			return Vector<String>();
+		} else if (device.is_empty()) {
+			continue;
+		}
+
+		Vector<String> device_lines = device.split("\n", false);
+		for (const String &line : device_lines) {
+			Vector<String> columns = line.split(":", false, 1);
+			if (columns.size() < 2) {
+				continue;
+			}
+			if (columns[0].strip_edges() == check_column) {
+				// for `column[0] == "Kernel driver in use"` this may contain `nvidia`
+				bool is_valid = true;
+				const String value = columns[1].strip_edges();
+				if (!blacklist.is_empty()) {
+					is_valid = !value.contains(blacklist);
+				}
+				if (is_valid) {
+					values.push_back(value);
+				}
+				break;
+			}
+		}
+	}
+	return values;
+}
+
 Error OS_LinuxBSD::shell_open(String p_uri) {
 	Error ok;
 	int err_code;
@@ -280,7 +481,16 @@ Error OS_LinuxBSD::shell_open(String p_uri) {
 }
 
 bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
-	return p_feature == "pc";
+#ifdef FONTCONFIG_ENABLED
+	if (p_feature == "system_fonts") {
+		return font_config_initialized;
+	}
+#endif
+	if (p_feature == "pc") {
+		return true;
+	}
+
+	return false;
 }
 
 uint64_t OS_LinuxBSD::get_embedded_pck_offset() const {
@@ -373,15 +583,9 @@ Vector<String> OS_LinuxBSD::get_system_fonts() const {
 	if (!font_config_initialized) {
 		ERR_FAIL_V_MSG(Vector<String>(), "Unable to load fontconfig, system font support is disabled.");
 	}
+
 	HashSet<String> font_names;
 	Vector<String> ret;
-
-	FcConfig *config = FcInitLoadConfigAndFonts();
-	ERR_FAIL_COND_V(!config, ret);
-
-	FcObjectSet *object_set = FcObjectSetBuild(FC_FAMILY, nullptr);
-	ERR_FAIL_COND_V(!object_set, ret);
-
 	static const char *allowed_formats[] = { "TrueType", "CFF" };
 	for (size_t i = 0; i < sizeof(allowed_formats) / sizeof(const char *); i++) {
 		FcPattern *pattern = FcPatternCreate();
@@ -404,8 +608,6 @@ Vector<String> OS_LinuxBSD::get_system_fonts() const {
 		}
 		FcPatternDestroy(pattern);
 	}
-	FcObjectSetDestroy(object_set);
-	FcConfigDestroy(config);
 
 	for (const String &E : font_names) {
 		ret.push_back(E);
@@ -416,48 +618,163 @@ Vector<String> OS_LinuxBSD::get_system_fonts() const {
 #endif
 }
 
-String OS_LinuxBSD::get_system_font_path(const String &p_font_name, bool p_bold, bool p_italic) const {
+#ifdef FONTCONFIG_ENABLED
+int OS_LinuxBSD::_weight_to_fc(int p_weight) const {
+	if (p_weight < 150) {
+		return FC_WEIGHT_THIN;
+	} else if (p_weight < 250) {
+		return FC_WEIGHT_EXTRALIGHT;
+	} else if (p_weight < 325) {
+		return FC_WEIGHT_LIGHT;
+	} else if (p_weight < 375) {
+		return FC_WEIGHT_DEMILIGHT;
+	} else if (p_weight < 390) {
+		return FC_WEIGHT_BOOK;
+	} else if (p_weight < 450) {
+		return FC_WEIGHT_REGULAR;
+	} else if (p_weight < 550) {
+		return FC_WEIGHT_MEDIUM;
+	} else if (p_weight < 650) {
+		return FC_WEIGHT_DEMIBOLD;
+	} else if (p_weight < 750) {
+		return FC_WEIGHT_BOLD;
+	} else if (p_weight < 850) {
+		return FC_WEIGHT_EXTRABOLD;
+	} else if (p_weight < 925) {
+		return FC_WEIGHT_BLACK;
+	} else {
+		return FC_WEIGHT_EXTRABLACK;
+	}
+}
+
+int OS_LinuxBSD::_stretch_to_fc(int p_stretch) const {
+	if (p_stretch < 56) {
+		return FC_WIDTH_ULTRACONDENSED;
+	} else if (p_stretch < 69) {
+		return FC_WIDTH_EXTRACONDENSED;
+	} else if (p_stretch < 81) {
+		return FC_WIDTH_CONDENSED;
+	} else if (p_stretch < 93) {
+		return FC_WIDTH_SEMICONDENSED;
+	} else if (p_stretch < 106) {
+		return FC_WIDTH_NORMAL;
+	} else if (p_stretch < 137) {
+		return FC_WIDTH_SEMIEXPANDED;
+	} else if (p_stretch < 144) {
+		return FC_WIDTH_EXPANDED;
+	} else if (p_stretch < 162) {
+		return FC_WIDTH_EXTRAEXPANDED;
+	} else {
+		return FC_WIDTH_ULTRAEXPANDED;
+	}
+}
+#endif // FONTCONFIG_ENABLED
+
+Vector<String> OS_LinuxBSD::get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale, const String &p_script, int p_weight, int p_stretch, bool p_italic) const {
+#ifdef FONTCONFIG_ENABLED
+	if (!font_config_initialized) {
+		ERR_FAIL_V_MSG(Vector<String>(), "Unable to load fontconfig, system font support is disabled.");
+	}
+
+	Vector<String> ret;
+	static const char *allowed_formats[] = { "TrueType", "CFF" };
+	for (size_t i = 0; i < sizeof(allowed_formats) / sizeof(const char *); i++) {
+		FcPattern *pattern = FcPatternCreate();
+		if (pattern) {
+			FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
+			FcPatternAddString(pattern, FC_FONTFORMAT, reinterpret_cast<const FcChar8 *>(allowed_formats[i]));
+			FcPatternAddString(pattern, FC_FAMILY, reinterpret_cast<const FcChar8 *>(p_font_name.utf8().get_data()));
+			FcPatternAddInteger(pattern, FC_WEIGHT, _weight_to_fc(p_weight));
+			FcPatternAddInteger(pattern, FC_WIDTH, _stretch_to_fc(p_stretch));
+			FcPatternAddInteger(pattern, FC_SLANT, p_italic ? FC_SLANT_ITALIC : FC_SLANT_ROMAN);
+
+			FcCharSet *char_set = FcCharSetCreate();
+			for (int j = 0; j < p_text.size(); j++) {
+				FcCharSetAddChar(char_set, p_text[j]);
+			}
+			FcPatternAddCharSet(pattern, FC_CHARSET, char_set);
+
+			FcLangSet *lang_set = FcLangSetCreate();
+			FcLangSetAdd(lang_set, reinterpret_cast<const FcChar8 *>(p_locale.utf8().get_data()));
+			FcPatternAddLangSet(pattern, FC_LANG, lang_set);
+
+			FcConfigSubstitute(0, pattern, FcMatchPattern);
+			FcDefaultSubstitute(pattern);
+
+			FcResult result;
+			FcPattern *match = FcFontMatch(0, pattern, &result);
+			if (match) {
+				char *file_name = nullptr;
+				if (FcPatternGetString(match, FC_FILE, 0, reinterpret_cast<FcChar8 **>(&file_name)) == FcResultMatch) {
+					if (file_name) {
+						ret.push_back(String::utf8(file_name));
+					}
+				}
+				FcPatternDestroy(match);
+			}
+			FcPatternDestroy(pattern);
+			FcCharSetDestroy(char_set);
+			FcLangSetDestroy(lang_set);
+		}
+	}
+
+	return ret;
+#else
+	ERR_FAIL_V_MSG(Vector<String>(), "Godot was compiled without fontconfig, system font support is disabled.");
+#endif
+}
+
+String OS_LinuxBSD::get_system_font_path(const String &p_font_name, int p_weight, int p_stretch, bool p_italic) const {
 #ifdef FONTCONFIG_ENABLED
 	if (!font_config_initialized) {
 		ERR_FAIL_V_MSG(String(), "Unable to load fontconfig, system font support is disabled.");
 	}
 
-	String ret;
+	static const char *allowed_formats[] = { "TrueType", "CFF" };
+	for (size_t i = 0; i < sizeof(allowed_formats) / sizeof(const char *); i++) {
+		FcPattern *pattern = FcPatternCreate();
+		if (pattern) {
+			bool allow_substitutes = (p_font_name.to_lower() == "sans-serif") || (p_font_name.to_lower() == "serif") || (p_font_name.to_lower() == "monospace") || (p_font_name.to_lower() == "cursive") || (p_font_name.to_lower() == "fantasy");
 
-	FcConfig *config = FcInitLoadConfigAndFonts();
-	ERR_FAIL_COND_V(!config, ret);
+			FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
+			FcPatternAddString(pattern, FC_FONTFORMAT, reinterpret_cast<const FcChar8 *>(allowed_formats[i]));
+			FcPatternAddString(pattern, FC_FAMILY, reinterpret_cast<const FcChar8 *>(p_font_name.utf8().get_data()));
+			FcPatternAddInteger(pattern, FC_WEIGHT, _weight_to_fc(p_weight));
+			FcPatternAddInteger(pattern, FC_WIDTH, _stretch_to_fc(p_stretch));
+			FcPatternAddInteger(pattern, FC_SLANT, p_italic ? FC_SLANT_ITALIC : FC_SLANT_ROMAN);
 
-	FcObjectSet *object_set = FcObjectSetBuild(FC_FAMILY, FC_FILE, nullptr);
-	ERR_FAIL_COND_V(!object_set, ret);
+			FcConfigSubstitute(0, pattern, FcMatchPattern);
+			FcDefaultSubstitute(pattern);
 
-	FcPattern *pattern = FcPatternCreate();
-	if (pattern) {
-		FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
-		FcPatternAddString(pattern, FC_FAMILY, reinterpret_cast<const FcChar8 *>(p_font_name.utf8().get_data()));
-		FcPatternAddInteger(pattern, FC_WEIGHT, p_bold ? FC_WEIGHT_BOLD : FC_WEIGHT_NORMAL);
-		FcPatternAddInteger(pattern, FC_SLANT, p_italic ? FC_SLANT_ITALIC : FC_SLANT_ROMAN);
-
-		FcConfigSubstitute(0, pattern, FcMatchPattern);
-		FcDefaultSubstitute(pattern);
-
-		FcResult result;
-		FcPattern *match = FcFontMatch(0, pattern, &result);
-		if (match) {
-			char *file_name = nullptr;
-			if (FcPatternGetString(match, FC_FILE, 0, reinterpret_cast<FcChar8 **>(&file_name)) == FcResultMatch) {
-				if (file_name) {
-					ret = String::utf8(file_name);
+			FcResult result;
+			FcPattern *match = FcFontMatch(0, pattern, &result);
+			if (match) {
+				if (!allow_substitutes) {
+					char *family_name = nullptr;
+					if (FcPatternGetString(match, FC_FAMILY, 0, reinterpret_cast<FcChar8 **>(&family_name)) == FcResultMatch) {
+						if (family_name && String::utf8(family_name).to_lower() != p_font_name.to_lower()) {
+							FcPatternDestroy(match);
+							FcPatternDestroy(pattern);
+							continue;
+						}
+					}
 				}
+				char *file_name = nullptr;
+				if (FcPatternGetString(match, FC_FILE, 0, reinterpret_cast<FcChar8 **>(&file_name)) == FcResultMatch) {
+					if (file_name) {
+						String ret = String::utf8(file_name);
+						FcPatternDestroy(match);
+						FcPatternDestroy(pattern);
+						return ret;
+					}
+				}
+				FcPatternDestroy(match);
 			}
-
-			FcPatternDestroy(match);
+			FcPatternDestroy(pattern);
 		}
-		FcPatternDestroy(pattern);
 	}
-	FcObjectSetDestroy(object_set);
-	FcConfigDestroy(config);
 
-	return ret;
+	return String();
 #else
 	ERR_FAIL_V_MSG(String(), "Godot was compiled without fontconfig, system font support is disabled.");
 #endif
@@ -509,6 +826,10 @@ String OS_LinuxBSD::get_cache_path() const {
 }
 
 String OS_LinuxBSD::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
+	if (p_dir == SYSTEM_DIR_DESKTOP && !system_dir_desktop_cache.is_empty()) {
+		return system_dir_desktop_cache;
+	}
+
 	String xdgparam;
 
 	switch (p_dir) {
@@ -517,31 +838,24 @@ String OS_LinuxBSD::get_system_dir(SystemDir p_dir, bool p_shared_storage) const
 		} break;
 		case SYSTEM_DIR_DCIM: {
 			xdgparam = "PICTURES";
-
 		} break;
 		case SYSTEM_DIR_DOCUMENTS: {
 			xdgparam = "DOCUMENTS";
-
 		} break;
 		case SYSTEM_DIR_DOWNLOADS: {
 			xdgparam = "DOWNLOAD";
-
 		} break;
 		case SYSTEM_DIR_MOVIES: {
 			xdgparam = "VIDEOS";
-
 		} break;
 		case SYSTEM_DIR_MUSIC: {
 			xdgparam = "MUSIC";
-
 		} break;
 		case SYSTEM_DIR_PICTURES: {
 			xdgparam = "PICTURES";
-
 		} break;
 		case SYSTEM_DIR_RINGTONES: {
 			xdgparam = "MUSIC";
-
 		} break;
 	}
 
@@ -778,11 +1092,36 @@ OS_LinuxBSD::OS_LinuxBSD() {
 #endif
 
 #ifdef FONTCONFIG_ENABLED
+#ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
 	int dylibloader_verbose = 1;
 #else
 	int dylibloader_verbose = 0;
 #endif
 	font_config_initialized = (initialize_fontconfig(dylibloader_verbose) == 0);
+#else
+	font_config_initialized = true;
+#endif
+	if (font_config_initialized) {
+		config = FcInitLoadConfigAndFonts();
+		if (!config) {
+			font_config_initialized = false;
+		}
+		object_set = FcObjectSetBuild(FC_FAMILY, FC_FILE, nullptr);
+		if (!object_set) {
+			font_config_initialized = false;
+		}
+	}
+#endif // FONTCONFIG_ENABLED
+}
+
+OS_LinuxBSD::~OS_LinuxBSD() {
+#ifdef FONTCONFIG_ENABLED
+	if (object_set) {
+		FcObjectSetDestroy(object_set);
+	}
+	if (config) {
+		FcConfigDestroy(config);
+	}
 #endif // FONTCONFIG_ENABLED
 }

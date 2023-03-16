@@ -16,7 +16,7 @@ template<typename IteratorIn, typename IteratorOut,
 	 hb_requires (hb_is_source_of (IteratorIn, unsigned int)),
 	 hb_requires (hb_is_sink_of (IteratorOut, unsigned))>
 static void
-_write_loca (IteratorIn it, bool short_offsets, IteratorOut dest)
+_write_loca (IteratorIn&& it, bool short_offsets, IteratorOut&& dest)
 {
   unsigned right_shift = short_offsets ? 1 : 0;
   unsigned int offset = 0;

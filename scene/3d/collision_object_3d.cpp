@@ -1,35 +1,36 @@
-/*************************************************************************/
-/*  collision_object_3d.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  collision_object_3d.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "collision_object_3d.h"
 
+#include "scene/resources/shape_3d.h"
 #include "scene/scene_string_names.h"
 
 void CollisionObject3D::_notification(int p_what) {
@@ -42,6 +43,11 @@ void CollisionObject3D::_notification(int p_what) {
 				}
 				_update_debug_shapes();
 			}
+#ifdef TOOLS_ENABLED
+			if (Engine::get_singleton()->is_editor_hint()) {
+				set_notify_local_transform(true); // Used for warnings and only in editor.
+			}
+#endif
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -77,6 +83,14 @@ void CollisionObject3D::_notification(int p_what) {
 			_update_pickable();
 		} break;
 
+#ifdef TOOLS_ENABLED
+		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				update_configuration_warnings();
+			}
+		} break;
+#endif
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (only_update_transform_changes) {
 				return;
@@ -99,10 +113,14 @@ void CollisionObject3D::_notification(int p_what) {
 			bool disabled = !is_enabled();
 
 			if (!disabled || (disable_mode != DISABLE_MODE_REMOVE)) {
-				if (area) {
-					PhysicsServer3D::get_singleton()->area_set_space(rid, RID());
+				if (callback_lock > 0) {
+					ERR_PRINT("Removing a CollisionObject node during a physics callback is not allowed and will cause undesired behavior. Remove with call_deferred() instead.");
 				} else {
-					PhysicsServer3D::get_singleton()->body_set_space(rid, RID());
+					if (area) {
+						PhysicsServer3D::get_singleton()->area_set_space(rid, RID());
+					} else {
+						PhysicsServer3D::get_singleton()->body_set_space(rid, RID());
+					}
 				}
 			}
 
@@ -150,13 +168,13 @@ uint32_t CollisionObject3D::get_collision_mask() const {
 void CollisionObject3D::set_collision_layer_value(int p_layer_number, bool p_value) {
 	ERR_FAIL_COND_MSG(p_layer_number < 1, "Collision layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
-	uint32_t collision_layer = get_collision_layer();
+	uint32_t collision_layer_new = get_collision_layer();
 	if (p_value) {
-		collision_layer |= 1 << (p_layer_number - 1);
+		collision_layer_new |= 1 << (p_layer_number - 1);
 	} else {
-		collision_layer &= ~(1 << (p_layer_number - 1));
+		collision_layer_new &= ~(1 << (p_layer_number - 1));
 	}
-	set_collision_layer(collision_layer);
+	set_collision_layer(collision_layer_new);
 }
 
 bool CollisionObject3D::get_collision_layer_value(int p_layer_number) const {
@@ -222,10 +240,14 @@ void CollisionObject3D::_apply_disabled() {
 	switch (disable_mode) {
 		case DISABLE_MODE_REMOVE: {
 			if (is_inside_tree()) {
-				if (area) {
-					PhysicsServer3D::get_singleton()->area_set_space(rid, RID());
+				if (callback_lock > 0) {
+					ERR_PRINT("Disabling a CollisionObject node during a physics callback is not allowed and will cause undesired behavior. Disable with call_deferred() instead.");
 				} else {
-					PhysicsServer3D::get_singleton()->body_set_space(rid, RID());
+					if (area) {
+						PhysicsServer3D::get_singleton()->area_set_space(rid, RID());
+					} else {
+						PhysicsServer3D::get_singleton()->body_set_space(rid, RID());
+					}
 				}
 			}
 		} break;
@@ -330,7 +352,7 @@ bool CollisionObject3D::_are_collision_shapes_visible() {
 void CollisionObject3D::_update_shape_data(uint32_t p_owner) {
 	if (_are_collision_shapes_visible()) {
 		if (debug_shapes_to_update.is_empty()) {
-			callable_mp(this, &CollisionObject3D::_update_debug_shapes).call_deferredp({}, 0);
+			callable_mp(this, &CollisionObject3D::_update_debug_shapes).call_deferred();
 		}
 		debug_shapes_to_update.insert(p_owner);
 	}
@@ -339,9 +361,9 @@ void CollisionObject3D::_update_shape_data(uint32_t p_owner) {
 void CollisionObject3D::_shape_changed(const Ref<Shape3D> &p_shape) {
 	for (KeyValue<uint32_t, ShapeData> &E : shapes) {
 		ShapeData &shapedata = E.value;
-		ShapeData::ShapeBase *shapes = shapedata.shapes.ptrw();
+		ShapeData::ShapeBase *shape_bases = shapedata.shapes.ptrw();
 		for (int i = 0; i < shapedata.shapes.size(); i++) {
-			ShapeData::ShapeBase &s = shapes[i];
+			ShapeData::ShapeBase &s = shape_bases[i];
 			if (s.shape == p_shape && s.debug_shape.is_valid()) {
 				Ref<Mesh> mesh = s.shape->get_debug_mesh();
 				RS::get_singleton()->instance_set_base(s.debug_shape, mesh->get_rid());
@@ -351,6 +373,8 @@ void CollisionObject3D::_shape_changed(const Ref<Shape3D> &p_shape) {
 }
 
 void CollisionObject3D::_update_debug_shapes() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+
 	if (!is_inside_tree()) {
 		debug_shapes_to_update.clear();
 		return;
@@ -359,9 +383,9 @@ void CollisionObject3D::_update_debug_shapes() {
 	for (const uint32_t &shapedata_idx : debug_shapes_to_update) {
 		if (shapes.has(shapedata_idx)) {
 			ShapeData &shapedata = shapes[shapedata_idx];
-			ShapeData::ShapeBase *shapes = shapedata.shapes.ptrw();
+			ShapeData::ShapeBase *shape_bases = shapedata.shapes.ptrw();
 			for (int i = 0; i < shapedata.shapes.size(); i++) {
-				ShapeData::ShapeBase &s = shapes[i];
+				ShapeData::ShapeBase &s = shape_bases[i];
 				if (s.shape.is_null() || shapedata.disabled) {
 					if (s.debug_shape.is_valid()) {
 						RS::get_singleton()->free(s.debug_shape);
@@ -392,11 +416,13 @@ void CollisionObject3D::_update_debug_shapes() {
 }
 
 void CollisionObject3D::_clear_debug_shapes() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+
 	for (KeyValue<uint32_t, ShapeData> &E : shapes) {
 		ShapeData &shapedata = E.value;
-		ShapeData::ShapeBase *shapes = shapedata.shapes.ptrw();
+		ShapeData::ShapeBase *shape_bases = shapedata.shapes.ptrw();
 		for (int i = 0; i < shapedata.shapes.size(); i++) {
-			ShapeData::ShapeBase &s = shapes[i];
+			ShapeData::ShapeBase &s = shape_bases[i];
 			if (s.debug_shape.is_valid()) {
 				RS::get_singleton()->free(s.debug_shape);
 				s.debug_shape = RID();
@@ -417,9 +443,9 @@ void CollisionObject3D::_on_transform_changed() {
 			if (shapedata.disabled) {
 				continue; // If disabled then there are no debug shapes to update.
 			}
-			const ShapeData::ShapeBase *shapes = shapedata.shapes.ptr();
+			const ShapeData::ShapeBase *shape_bases = shapedata.shapes.ptr();
 			for (int i = 0; i < shapedata.shapes.size(); i++) {
-				RS::get_singleton()->instance_set_transform(shapes[i].debug_shape, debug_shape_old_transform * shapedata.xform);
+				RS::get_singleton()->instance_set_transform(shape_bases[i].debug_shape, debug_shape_old_transform * shapedata.xform);
 			}
 		}
 	}
@@ -626,6 +652,7 @@ int CollisionObject3D::shape_owner_get_shape_index(uint32_t p_owner, int p_shape
 }
 
 void CollisionObject3D::shape_owner_remove_shape(uint32_t p_owner, int p_shape) {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	ERR_FAIL_COND(!shapes.has(p_owner));
 	ERR_FAIL_INDEX(p_shape, shapes[p_owner].shapes.size());
 
@@ -703,11 +730,16 @@ bool CollisionObject3D::get_capture_input_on_drag() const {
 	return capture_input_on_drag;
 }
 
-TypedArray<String> CollisionObject3D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray CollisionObject3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (shapes.is_empty()) {
 		warnings.push_back(RTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape3D or CollisionPolygon3D as a child to define its shape."));
+	}
+
+	Vector3 scale = get_transform().get_basis().get_scale();
+	if (!(Math::is_zero_approx(scale.x - scale.y) && Math::is_zero_approx(scale.y - scale.z))) {
+		warnings.push_back(RTR("With a non-uniform scale this node will probably not function as expected.\nPlease make its scale uniform (i.e. the same on all axes), and change the size in children collision shapes instead."));
 	}
 
 	return warnings;
@@ -721,5 +753,6 @@ CollisionObject3D::CollisionObject3D() {
 }
 
 CollisionObject3D::~CollisionObject3D() {
+	ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
 	PhysicsServer3D::get_singleton()->free(rid);
 }

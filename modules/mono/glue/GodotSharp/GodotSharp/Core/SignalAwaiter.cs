@@ -10,13 +10,13 @@ namespace Godot
         private Variant[] _result;
         private Action _continuation;
 
-        public SignalAwaiter(Object source, StringName signal, Object target)
+        public SignalAwaiter(GodotObject source, StringName signal, GodotObject target)
         {
             var awaiterGcHandle = CustomGCHandle.AllocStrong(this);
             using godot_string_name signalSrc = NativeFuncs.godotsharp_string_name_new_copy(
                 (godot_string_name)(signal?.NativeValue ?? default));
-            NativeFuncs.godotsharp_internal_signal_awaiter_connect(Object.GetPtr(source), in signalSrc,
-                Object.GetPtr(target), GCHandle.ToIntPtr(awaiterGcHandle));
+            NativeFuncs.godotsharp_internal_signal_awaiter_connect(GodotObject.GetPtr(source), in signalSrc,
+                GodotObject.GetPtr(target), GCHandle.ToIntPtr(awaiterGcHandle));
         }
 
         public bool IsCompleted => _completed;

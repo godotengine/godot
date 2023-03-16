@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  noise_texture_2d.cpp                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  noise_texture_2d.cpp                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "noise_texture_2d.h"
 
@@ -40,6 +40,7 @@ NoiseTexture2D::NoiseTexture2D() {
 }
 
 NoiseTexture2D::~NoiseTexture2D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (texture.is_valid()) {
 		RS::get_singleton()->free(texture);
 	}
@@ -75,6 +76,9 @@ void NoiseTexture2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bump_strength", "bump_strength"), &NoiseTexture2D::set_bump_strength);
 	ClassDB::bind_method(D_METHOD("get_bump_strength"), &NoiseTexture2D::get_bump_strength);
 
+	ClassDB::bind_method(D_METHOD("set_normalize", "normalize"), &NoiseTexture2D::set_normalize);
+	ClassDB::bind_method(D_METHOD("is_normalized"), &NoiseTexture2D::is_normalized);
+
 	ClassDB::bind_method(D_METHOD("set_color_ramp", "gradient"), &NoiseTexture2D::set_color_ramp);
 	ClassDB::bind_method(D_METHOD("get_color_ramp"), &NoiseTexture2D::get_color_ramp);
 
@@ -87,9 +91,10 @@ void NoiseTexture2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "in_3d_space"), "set_in_3d_space", "is_in_3d_space");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_mipmaps"), "set_generate_mipmaps", "is_generating_mipmaps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "seamless"), "set_seamless", "get_seamless");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "seamless_blend_skirt", PROPERTY_HINT_RANGE, "0.05,1,0.001"), "set_seamless_blend_skirt", "get_seamless_blend_skirt");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "seamless_blend_skirt", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_seamless_blend_skirt", "get_seamless_blend_skirt");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "as_normal_map"), "set_as_normal_map", "is_normal_map");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bump_strength", PROPERTY_HINT_RANGE, "0,32,0.1,or_greater"), "set_bump_strength", "get_bump_strength");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "normalize"), "set_normalize", "is_normalized");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_color_ramp", "get_color_ramp");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "noise", PROPERTY_HINT_RESOURCE_TYPE, "Noise"), "set_noise", "get_noise");
 }
@@ -152,38 +157,36 @@ Ref<Image> NoiseTexture2D::_generate_texture() {
 		return Ref<Image>();
 	}
 
-	Ref<Image> image;
+	Ref<Image> new_image;
 
 	if (seamless) {
-		image = ref_noise->get_seamless_image(size.x, size.y, invert, in_3d_space, seamless_blend_skirt);
+		new_image = ref_noise->get_seamless_image(size.x, size.y, invert, in_3d_space, seamless_blend_skirt, normalize);
 	} else {
-		image = ref_noise->get_image(size.x, size.y, invert, in_3d_space);
+		new_image = ref_noise->get_image(size.x, size.y, invert, in_3d_space, normalize);
 	}
 	if (color_ramp.is_valid()) {
-		image = _modulate_with_gradient(image, color_ramp);
+		new_image = _modulate_with_gradient(new_image, color_ramp);
 	}
 	if (as_normal_map) {
-		image->bump_map_to_normal_map(bump_strength);
+		new_image->bump_map_to_normal_map(bump_strength);
 	}
 	if (generate_mipmaps) {
-		image->generate_mipmaps();
+		new_image->generate_mipmaps();
 	}
 
-	return image;
+	return new_image;
 }
 
 Ref<Image> NoiseTexture2D::_modulate_with_gradient(Ref<Image> p_image, Ref<Gradient> p_gradient) {
 	int width = p_image->get_width();
 	int height = p_image->get_height();
 
-	Ref<Image> new_image;
-	new_image.instantiate();
-	new_image->create(width, height, false, Image::FORMAT_RGBA8);
+	Ref<Image> new_image = Image::create_empty(width, height, false, Image::FORMAT_RGBA8);
 
 	for (int row = 0; row < height; row++) {
 		for (int col = 0; col < width; col++) {
 			Color pixel_color = p_image->get_pixel(col, row);
-			Color ramp_color = color_ramp->get_color_at_offset(pixel_color.get_luminance());
+			Color ramp_color = p_gradient->get_color_at_offset(pixel_color.get_luminance());
 			new_image->set_pixel(col, row, ramp_color);
 		}
 	}
@@ -197,9 +200,6 @@ void NoiseTexture2D::_update_texture() {
 		use_thread = false;
 		first_time = false;
 	}
-#ifdef NO_THREADS
-	use_thread = false;
-#endif
 	if (use_thread) {
 		if (!noise_thread.is_started()) {
 			noise_thread.start(_thread_function, this);
@@ -209,8 +209,8 @@ void NoiseTexture2D::_update_texture() {
 		}
 
 	} else {
-		Ref<Image> image = _generate_texture();
-		_set_texture_image(image);
+		Ref<Image> new_image = _generate_texture();
+		_set_texture_image(new_image);
 	}
 	update_queued = false;
 }
@@ -300,7 +300,7 @@ bool NoiseTexture2D::get_seamless() {
 }
 
 void NoiseTexture2D::set_seamless_blend_skirt(real_t p_blend_skirt) {
-	ERR_FAIL_COND(p_blend_skirt < 0.05 || p_blend_skirt > 1);
+	ERR_FAIL_COND(p_blend_skirt < 0 || p_blend_skirt > 1);
 
 	if (p_blend_skirt == seamless_blend_skirt) {
 		return;
@@ -351,6 +351,18 @@ void NoiseTexture2D::set_color_ramp(const Ref<Gradient> &p_gradient) {
 		color_ramp->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NoiseTexture2D::_queue_update));
 	}
 	_queue_update();
+}
+
+void NoiseTexture2D::set_normalize(bool p_normalize) {
+	if (normalize == p_normalize) {
+		return;
+	}
+	normalize = p_normalize;
+	_queue_update();
+}
+
+bool NoiseTexture2D::is_normalized() const {
+	return normalize;
 }
 
 Ref<Gradient> NoiseTexture2D::get_color_ramp() const {

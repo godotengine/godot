@@ -6,8 +6,11 @@ namespace Godot
     /// An attribute that contains the path to the object's script.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-    public class ScriptPathAttribute : Attribute
+    public sealed class ScriptPathAttribute : Attribute
     {
+        /// <summary>
+        /// File path to the script.
+        /// </summary>
         public string Path { get; }
 
         /// <summary>

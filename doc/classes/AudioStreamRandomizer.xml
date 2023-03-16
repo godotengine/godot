@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamRandomizer" inherits="AudioStream" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AudioStreamRandomizer" inherits="AudioStream" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Wraps a pool of audio streams with pitch and volume shifting.
 	</brief_description>
@@ -12,8 +12,10 @@
 		<method name="add_stream">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
+			<param index="1" name="stream" type="AudioStream" />
+			<param index="2" name="weight" type="float" default="1.0" />
 			<description>
-				Insert a stream at the specified index.
+				Insert a stream at the specified index. If the index is less than zero, the insertion occurs at the end of the underlying pool.
 			</description>
 		</method>
 		<method name="get_stream" qualifiers="const">
@@ -78,13 +80,13 @@
 	</members>
 	<constants>
 		<constant name="PLAYBACK_RANDOM_NO_REPEATS" value="0" enum="PlaybackMode">
-			Pick a stream at random according to the probability weights chosen for each stream, but avoid playing the same stream twice in a row whenever possible.
+			Pick a stream at random according to the probability weights chosen for each stream, but avoid playing the same stream twice in a row whenever possible. If only 1 sound is present in the pool, the same sound will always play, effectively allowing repeats to occur.
 		</constant>
 		<constant name="PLAYBACK_RANDOM" value="1" enum="PlaybackMode">
-			Pick a stream at random according to the probability weights chosen for each stream.
+			Pick a stream at random according to the probability weights chosen for each stream. If only 1 sound is present in the pool, the same sound will always play.
 		</constant>
 		<constant name="PLAYBACK_SEQUENTIAL" value="2" enum="PlaybackMode">
-			Play streams in the order they appear in the stream pool.
+			Play streams in the order they appear in the stream pool. If only 1 sound is present in the pool, the same sound will always play.
 		</constant>
 	</constants>
 </class>

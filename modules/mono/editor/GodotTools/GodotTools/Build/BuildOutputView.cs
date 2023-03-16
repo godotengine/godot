@@ -69,51 +69,41 @@ namespace GodotTools.Build
 
         private void LoadIssuesFromFile(string csvFile)
         {
-            using (var file = new Godot.File())
+            using var file = FileAccess.Open(csvFile, FileAccess.ModeFlags.Read);
+
+            if (file == null)
+                return;
+
+            while (!file.EofReached())
             {
-                try
+                string[] csvColumns = file.GetCsvLine();
+
+                if (csvColumns.Length == 1 && string.IsNullOrEmpty(csvColumns[0]))
+                    return;
+
+                if (csvColumns.Length != 7)
                 {
-                    Error openError = file.Open(csvFile, Godot.File.ModeFlags.Read);
-
-                    if (openError != Error.Ok)
-                        return;
-
-                    while (!file.EofReached())
-                    {
-                        string[] csvColumns = file.GetCsvLine();
-
-                        if (csvColumns.Length == 1 && string.IsNullOrEmpty(csvColumns[0]))
-                            return;
-
-                        if (csvColumns.Length != 7)
-                        {
-                            GD.PushError($"Expected 7 columns, got {csvColumns.Length}");
-                            continue;
-                        }
-
-                        var issue = new BuildIssue
-                        {
-                            Warning = csvColumns[0] == "warning",
-                            File = csvColumns[1],
-                            Line = int.Parse(csvColumns[2]),
-                            Column = int.Parse(csvColumns[3]),
-                            Code = csvColumns[4],
-                            Message = csvColumns[5],
-                            ProjectFile = csvColumns[6]
-                        };
-
-                        if (issue.Warning)
-                            WarningCount += 1;
-                        else
-                            ErrorCount += 1;
-
-                        _issues.Add(issue);
-                    }
+                    GD.PushError($"Expected 7 columns, got {csvColumns.Length}");
+                    continue;
                 }
-                finally
+
+                var issue = new BuildIssue
                 {
-                    file.Close(); // Disposing it is not enough. We need to call Close()
-                }
+                    Warning = csvColumns[0] == "warning",
+                    File = csvColumns[1],
+                    Line = int.Parse(csvColumns[2]),
+                    Column = int.Parse(csvColumns[3]),
+                    Code = csvColumns[4],
+                    Message = csvColumns[5],
+                    ProjectFile = csvColumns[6]
+                };
+
+                if (issue.Warning)
+                    WarningCount += 1;
+                else
+                    ErrorCount += 1;
+
+                _issues.Add(issue);
             }
         }
 
@@ -346,7 +336,7 @@ namespace GodotTools.Build
             _ = index; // Unused
 
             _issuesListContextMenu.Clear();
-            _issuesListContextMenu.Size = new Vector2i(1, 1);
+            _issuesListContextMenu.Size = new Vector2I(1, 1);
 
             if (_issuesList.IsAnythingSelected())
             {
@@ -357,7 +347,7 @@ namespace GodotTools.Build
 
             if (_issuesListContextMenu.ItemCount > 0)
             {
-                _issuesListContextMenu.Position = (Vector2i)(_issuesList.GlobalPosition + atPosition);
+                _issuesListContextMenu.Position = (Vector2I)(_issuesList.GlobalPosition + atPosition);
                 _issuesListContextMenu.Popup();
             }
         }
@@ -366,19 +356,19 @@ namespace GodotTools.Build
         {
             base._Ready();
 
-            SizeFlagsVertical = (int)SizeFlags.ExpandFill;
+            SizeFlagsVertical = SizeFlags.ExpandFill;
 
             var hsc = new HSplitContainer
             {
-                SizeFlagsHorizontal = (int)SizeFlags.ExpandFill,
-                SizeFlagsVertical = (int)SizeFlags.ExpandFill
+                SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                SizeFlagsVertical = SizeFlags.ExpandFill
             };
             AddChild(hsc);
 
             _issuesList = new ItemList
             {
-                SizeFlagsVertical = (int)SizeFlags.ExpandFill,
-                SizeFlagsHorizontal = (int)SizeFlags.ExpandFill // Avoid being squashed by the build log
+                SizeFlagsVertical = SizeFlags.ExpandFill,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill // Avoid being squashed by the build log
             };
             _issuesList.ItemActivated += IssueActivated;
             _issuesList.AllowRmbSelect = true;
@@ -392,8 +382,8 @@ namespace GodotTools.Build
             _buildLog = new TextEdit
             {
                 Editable = false,
-                SizeFlagsVertical = (int)SizeFlags.ExpandFill,
-                SizeFlagsHorizontal = (int)SizeFlags.ExpandFill // Avoid being squashed by the issues list
+                SizeFlagsVertical = SizeFlags.ExpandFill,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill // Avoid being squashed by the issues list
             };
             hsc.AddChild(_buildLog);
 

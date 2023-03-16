@@ -284,7 +284,7 @@ static const int khmer_syllable_machine_en_main = 21;
     for (unsigned int i = ts; i < te; i++) \
       info[i].syllable() = (syllable_serial << 4) | syllable_type; \
     syllable_serial++; \
-    if (unlikely (syllable_serial == 16)) syllable_serial = 1; \
+    if (syllable_serial == 16) syllable_serial = 1; \
   } HB_STMT_END
 
 inline void

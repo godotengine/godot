@@ -57,15 +57,6 @@ namespace glslang {
 //
 
 //
-// Wrapper for Linux call to DetachThread.  This is required as pthread_cleanup_push() expects
-// the cleanup routine to return void.
-//
-static void DetachThreadLinux(void *)
-{
-    DetachThread();
-}
-
-//
 // Thread Local Storage Operations
 //
 inline OS_TLSIndex PthreadKeyToTLSIndex(pthread_key_t key)

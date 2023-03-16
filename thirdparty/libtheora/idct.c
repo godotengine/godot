@@ -11,7 +11,7 @@
  ********************************************************************
 
   function:
-    last mod: $Id: idct.c 16503 2009-08-22 18:14:02Z giles $
+    last mod: $Id$
 
  ********************************************************************/
 
@@ -231,18 +231,18 @@ static void idct8_1(ogg_int16_t *_y,const ogg_int16_t _x[1]){
   _y: The buffer to store the result in.
       This may be the same as _x.
   _x: The input coefficients.*/
-static void oc_idct8x8_3(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
-  const ogg_int16_t *in;
-  ogg_int16_t       *end;
-  ogg_int16_t       *out;
-  ogg_int16_t        w[64];
+static void oc_idct8x8_3(ogg_int16_t _y[64],ogg_int16_t _x[64]){
+  ogg_int16_t w[64];
+  int         i;
   /*Transform rows of x into columns of w.*/
   idct8_2(w,_x);
   idct8_1(w+1,_x+8);
   /*Transform rows of w into columns of y.*/
-  for(in=w,out=_y,end=out+8;out<end;in+=8,out++)idct8_2(out,in);
+  for(i=0;i<8;i++)idct8_2(_y+i,w+i*8);
   /*Adjust for the scale factor.*/
-  for(out=_y,end=out+64;out<end;out++)*out=(ogg_int16_t)(*out+8>>4);
+  for(i=0;i<64;i++)_y[i]=(ogg_int16_t)(_y[i]+8>>4);
+  /*Clear input data for next block.*/
+  _x[0]=_x[1]=_x[8]=0;
 }
 
 /*Performs an inverse 8x8 Type-II DCT transform.
@@ -260,20 +260,20 @@ static void oc_idct8x8_3(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
   _y: The buffer to store the result in.
       This may be the same as _x.
   _x: The input coefficients.*/
-static void oc_idct8x8_10(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
-  const ogg_int16_t *in;
-  ogg_int16_t       *end;
-  ogg_int16_t       *out;
-  ogg_int16_t        w[64];
+static void oc_idct8x8_10(ogg_int16_t _y[64],ogg_int16_t _x[64]){
+  ogg_int16_t w[64];
+  int         i;
   /*Transform rows of x into columns of w.*/
   idct8_4(w,_x);
   idct8_3(w+1,_x+8);
   idct8_2(w+2,_x+16);
   idct8_1(w+3,_x+24);
   /*Transform rows of w into columns of y.*/
-  for(in=w,out=_y,end=out+8;out<end;in+=8,out++)idct8_4(out,in);
+  for(i=0;i<8;i++)idct8_4(_y+i,w+i*8);
   /*Adjust for the scale factor.*/
-  for(out=_y,end=out+64;out<end;out++)*out=(ogg_int16_t)(*out+8>>4);
+  for(i=0;i<64;i++)_y[i]=(ogg_int16_t)(_y[i]+8>>4);
+  /*Clear input data for next block.*/
+  _x[0]=_x[1]=_x[2]=_x[3]=_x[8]=_x[9]=_x[10]=_x[16]=_x[17]=_x[24]=0;
 }
 
 /*Performs an inverse 8x8 Type-II DCT transform.
@@ -282,28 +282,23 @@ static void oc_idct8x8_10(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
   _y: The buffer to store the result in.
       This may be the same as _x.
   _x: The input coefficients.*/
-static void oc_idct8x8_slow(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
-  const ogg_int16_t *in;
-  ogg_int16_t       *end;
-  ogg_int16_t       *out;
-  ogg_int16_t        w[64];
+static void oc_idct8x8_slow(ogg_int16_t _y[64],ogg_int16_t _x[64]){
+  ogg_int16_t w[64];
+  int         i;
   /*Transform rows of x into columns of w.*/
-  for(in=_x,out=w,end=out+8;out<end;in+=8,out++)idct8(out,in);
+  for(i=0;i<8;i++)idct8(w+i,_x+i*8);
   /*Transform rows of w into columns of y.*/
-  for(in=w,out=_y,end=out+8;out<end;in+=8,out++)idct8(out,in);
+  for(i=0;i<8;i++)idct8(_y+i,w+i*8);
   /*Adjust for the scale factor.*/
-  for(out=_y,end=out+64;out<end;out++)*out=(ogg_int16_t)(*out+8>>4);
-}
-
-void oc_idct8x8(const oc_theora_state *_state,ogg_int16_t _y[64],
- int _last_zzi){
-  (*_state->opt_vtable.idct8x8)(_y,_last_zzi);
+  for(i=0;i<64;i++)_y[i]=(ogg_int16_t)(_y[i]+8>>4);
+  /*Clear input data for next block.*/
+  for(i=0;i<64;i++)_x[i]=0;
 }
 
 /*Performs an inverse 8x8 Type-II DCT transform.
   The input is assumed to be scaled by a factor of 4 relative to orthonormal
    version of the transform.*/
-void oc_idct8x8_c(ogg_int16_t _y[64],int _last_zzi){
+void oc_idct8x8_c(ogg_int16_t _y[64],ogg_int16_t _x[64],int _last_zzi){
   /*_last_zzi is subtly different from an actual count of the number of
      coefficients we decoded for this block.
     It contains the value of zzi BEFORE the final token in the block was
@@ -329,7 +324,7 @@ void oc_idct8x8_c(ogg_int16_t _y[64],int _last_zzi){
      gets.
     Needless to say we inherited this approach from VP3.*/
   /*Then perform the iDCT.*/
-  if(_last_zzi<3)oc_idct8x8_3(_y,_y);
-  else if(_last_zzi<10)oc_idct8x8_10(_y,_y);
-  else oc_idct8x8_slow(_y,_y);
+  if(_last_zzi<=3)oc_idct8x8_3(_y,_x);
+  else if(_last_zzi<=10)oc_idct8x8_10(_y,_x);
+  else oc_idct8x8_slow(_y,_x);
 }

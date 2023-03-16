@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  csharp_script.h                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  csharp_script.h                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef CSHARP_SCRIPT_H
 #define CSHARP_SCRIPT_H
@@ -48,20 +48,10 @@ class CSharpScript;
 class CSharpInstance;
 class CSharpLanguage;
 
-#ifdef NO_SAFE_CAST
-template <typename TScriptInstance, typename TScriptLanguage>
-TScriptInstance *cast_script_instance(ScriptInstance *p_inst) {
-	if (!p_inst) {
-		return nullptr;
-	}
-	return p_inst->get_language() == TScriptLanguage::get_singleton() ? static_cast<TScriptInstance *>(p_inst) : nullptr;
-}
-#else
 template <typename TScriptInstance, typename TScriptLanguage>
 TScriptInstance *cast_script_instance(ScriptInstance *p_inst) {
 	return dynamic_cast<TScriptInstance *>(p_inst);
 }
-#endif
 
 #define CAST_CSHARP_INSTANCE(m_inst) (cast_script_instance<CSharpInstance, CSharpLanguage>(m_inst))
 
@@ -196,6 +186,8 @@ public:
 	bool inherits_script(const Ref<Script> &p_script) const override;
 
 	Ref<Script> get_base_script() const override;
+	StringName get_global_name() const override;
+
 	ScriptLanguage *get_language() const override;
 
 	void get_script_method_list(List<MethodInfo> *p_list) const override;
@@ -362,9 +354,9 @@ class CSharpLanguage : public ScriptLanguage {
 
 	static void *_instance_binding_create_callback(void *p_token, void *p_instance);
 	static void _instance_binding_free_callback(void *p_token, void *p_instance, void *p_binding);
-	static GDNativeBool _instance_binding_reference_callback(void *p_token, void *p_binding, GDNativeBool p_reference);
+	static GDExtensionBool _instance_binding_reference_callback(void *p_token, void *p_binding, GDExtensionBool p_reference);
 
-	static GDNativeInstanceBindingCallbacks _instance_binding_callbacks;
+	static GDExtensionInstanceBindingCallbacks _instance_binding_callbacks;
 
 public:
 	static void *get_instance_binding(Object *p_object);
@@ -421,7 +413,6 @@ public:
 	/* LANGUAGE FUNCTIONS */
 	String get_type() const override;
 	String get_extension() const override;
-	Error execute_file(const String &p_path) override;
 	void init() override;
 	void finish() override;
 

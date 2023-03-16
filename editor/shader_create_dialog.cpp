@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  shader_create_dialog.cpp                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  shader_create_dialog.cpp                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "shader_create_dialog.h"
 
@@ -96,20 +96,20 @@ void ShaderCreateDialog::_update_language_info() {
 	type_data.clear();
 
 	for (int i = 0; i < SHADER_TYPE_MAX; i++) {
-		ShaderTypeData data;
+		ShaderTypeData shader_type_data;
 		if (i == int(SHADER_TYPE_TEXT)) {
-			data.use_templates = true;
-			data.extensions.push_back("gdshader");
-			data.default_extension = "gdshader";
+			shader_type_data.use_templates = true;
+			shader_type_data.extensions.push_back("gdshader");
+			shader_type_data.default_extension = "gdshader";
 		} else if (i == int(SHADER_TYPE_INC)) {
-			data.extensions.push_back("gdshaderinc");
-			data.default_extension = "gdshaderinc";
+			shader_type_data.extensions.push_back("gdshaderinc");
+			shader_type_data.default_extension = "gdshaderinc";
 		} else {
-			data.default_extension = "tres";
+			shader_type_data.default_extension = "tres";
 		}
-		data.extensions.push_back("res");
-		data.extensions.push_back("tres");
-		type_data.push_back(data);
+		shader_type_data.extensions.push_back("res");
+		shader_type_data.extensions.push_back("tres");
+		type_data.push_back(shader_type_data);
 	}
 }
 
@@ -261,9 +261,9 @@ void ShaderCreateDialog::_load_exist() {
 
 void ShaderCreateDialog::_type_changed(int p_language) {
 	current_type = p_language;
-	ShaderTypeData data = type_data[p_language];
+	ShaderTypeData shader_type_data = type_data[p_language];
 
-	String selected_ext = "." + data.default_extension;
+	String selected_ext = "." + shader_type_data.default_extension;
 	String path = file_path->get_text();
 	String extension = "";
 
@@ -284,10 +284,10 @@ void ShaderCreateDialog::_type_changed(int p_language) {
 
 	type_menu->set_item_disabled(int(SHADER_TYPE_INC), load_enabled);
 	mode_menu->set_disabled(p_language == SHADER_TYPE_INC);
-	template_menu->set_disabled(!data.use_templates);
+	template_menu->set_disabled(!shader_type_data.use_templates);
 	template_menu->clear();
 
-	if (data.use_templates) {
+	if (shader_type_data.use_templates) {
 		int last_template = EditorSettings::get_singleton()->get_project_metadata("shader_setup", "last_selected_template", 0);
 
 		template_menu->add_item(TTR("Default"));
@@ -436,8 +436,6 @@ String ShaderCreateDialog::_validate_path(const String &p_path) {
 			}
 		}
 	}
-
-	ShaderTypeData data = type_data[type_menu->get_selected()];
 
 	bool found = false;
 	bool match = false;

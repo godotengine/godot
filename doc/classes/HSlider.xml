@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HSlider" inherits="Slider" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="HSlider" inherits="Slider" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Horizontal slider.
 	</brief_description>
@@ -10,6 +10,9 @@
 	<tutorials>
 	</tutorials>
 	<theme_items>
+		<theme_item name="grabber_offset" data_type="constant" type="int" default="0">
+			Vertical offset of the grabber.
+		</theme_item>
 		<theme_item name="grabber" data_type="icon" type="Texture2D">
 			The texture for the grabber (the draggable element).
 		</theme_item>
@@ -26,6 +29,7 @@
 			The background of the area to the left of the grabber.
 		</theme_item>
 		<theme_item name="grabber_area_highlight" data_type="style" type="StyleBox">
+			The background of the area to the left of the grabber that displays when it's being hovered or focused.
 		</theme_item>
 		<theme_item name="slider" data_type="style" type="StyleBox">
 			The background for the whole slider. Determines the height of the [code]grabber_area[/code].

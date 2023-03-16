@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  editor_export_preset.cpp                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_export_preset.cpp                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_export.h"
 
@@ -64,15 +64,29 @@ Ref<EditorExportPlatform> EditorExportPreset::get_platform() const {
 	return platform;
 }
 
-void EditorExportPreset::update_files_to_export() {
-	Vector<String> to_remove;
-	for (const String &E : selected_files) {
-		if (!FileAccess::exists(E)) {
-			to_remove.push_back(E);
+void EditorExportPreset::update_files() {
+	{
+		Vector<String> to_remove;
+		for (const String &E : selected_files) {
+			if (!FileAccess::exists(E)) {
+				to_remove.push_back(E);
+			}
+		}
+		for (int i = 0; i < to_remove.size(); ++i) {
+			selected_files.erase(to_remove[i]);
 		}
 	}
-	for (int i = 0; i < to_remove.size(); ++i) {
-		selected_files.erase(to_remove[i]);
+
+	{
+		Vector<String> to_remove;
+		for (const KeyValue<String, FileExportMode> &E : customized_files) {
+			if (!FileAccess::exists(E.key) && !DirAccess::exists(E.key)) {
+				to_remove.push_back(E.key);
+			}
+		}
+		for (int i = 0; i < to_remove.size(); ++i) {
+			customized_files.erase(to_remove[i]);
+		}
 	}
 }
 
@@ -82,6 +96,48 @@ Vector<String> EditorExportPreset::get_files_to_export() const {
 		files.push_back(E);
 	}
 	return files;
+}
+
+Dictionary EditorExportPreset::get_customized_files() const {
+	Dictionary files;
+	for (const KeyValue<String, FileExportMode> &E : customized_files) {
+		String mode;
+		switch (E.value) {
+			case MODE_FILE_NOT_CUSTOMIZED: {
+				continue;
+			} break;
+			case MODE_FILE_STRIP: {
+				mode = "strip";
+			} break;
+			case MODE_FILE_KEEP: {
+				mode = "keep";
+			} break;
+			case MODE_FILE_REMOVE: {
+				mode = "remove";
+			}
+		}
+		files[E.key] = mode;
+	}
+	return files;
+}
+
+int EditorExportPreset::get_customized_files_count() const {
+	return customized_files.size();
+}
+
+void EditorExportPreset::set_customized_files(const Dictionary &p_files) {
+	for (const Variant *key = p_files.next(nullptr); key; key = p_files.next(key)) {
+		EditorExportPreset::FileExportMode mode = EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED;
+		String value = p_files[*key];
+		if (value == "strip") {
+			mode = EditorExportPreset::MODE_FILE_STRIP;
+		} else if (value == "keep") {
+			mode = EditorExportPreset::MODE_FILE_KEEP;
+		} else if (value == "remove") {
+			mode = EditorExportPreset::MODE_FILE_REMOVE;
+		}
+		set_file_export_mode(*key, mode);
+	}
 }
 
 void EditorExportPreset::set_name(const String &p_name) {
@@ -100,6 +156,15 @@ void EditorExportPreset::set_runnable(bool p_enable) {
 
 bool EditorExportPreset::is_runnable() const {
 	return runnable;
+}
+
+void EditorExportPreset::set_dedicated_server(bool p_enable) {
+	dedicated_server = p_enable;
+	EditorExport::singleton->save_presets();
+}
+
+bool EditorExportPreset::is_dedicated_server() const {
+	return dedicated_server;
 }
 
 void EditorExportPreset::set_export_filter(ExportFilter p_filter) {
@@ -158,6 +223,23 @@ bool EditorExportPreset::has_export_file(const String &p_path) {
 	return selected_files.has(p_path);
 }
 
+void EditorExportPreset::set_file_export_mode(const String &p_path, EditorExportPreset::FileExportMode p_mode) {
+	if (p_mode == FileExportMode::MODE_FILE_NOT_CUSTOMIZED) {
+		customized_files.erase(p_path);
+	} else {
+		customized_files.insert(p_path, p_mode);
+	}
+	EditorExport::singleton->save_presets();
+}
+
+EditorExportPreset::FileExportMode EditorExportPreset::get_file_export_mode(const String &p_path, EditorExportPreset::FileExportMode p_default) const {
+	HashMap<String, FileExportMode>::ConstIterator i = customized_files.find(p_path);
+	if (i) {
+		return i->value;
+	}
+	return p_default;
+}
+
 void EditorExportPreset::set_custom_features(const String &p_custom_features) {
 	custom_features = p_custom_features;
 	EditorExport::singleton->save_presets();
@@ -201,15 +283,6 @@ void EditorExportPreset::set_enc_directory(bool p_enabled) {
 
 bool EditorExportPreset::get_enc_directory() const {
 	return enc_directory;
-}
-
-void EditorExportPreset::set_script_export_mode(int p_mode) {
-	script_mode = p_mode;
-	EditorExport::singleton->save_presets();
-}
-
-int EditorExportPreset::get_script_export_mode() const {
-	return script_mode;
 }
 
 void EditorExportPreset::set_script_encryption_key(const String &p_key) {

@@ -2,7 +2,7 @@ namespace Godot.Bridge;
 
 #nullable enable
 
-public struct PropertyInfo
+public readonly struct PropertyInfo
 {
     public Variant.Type Type { get; init; }
     public StringName Name { get; init; }

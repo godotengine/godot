@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  lightmap_gi_editor_plugin.cpp                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  lightmap_gi_editor_plugin.cpp                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "lightmap_gi_editor_plugin.h"
 
@@ -35,12 +35,43 @@
 
 void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
 	if (lightmap) {
-		LightmapGI::BakeError err;
+		LightmapGI::BakeError err = LightmapGI::BAKE_ERROR_OK;
 		const uint64_t time_started = OS::get_singleton()->get_ticks_msec();
-		if (get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root() == lightmap) {
-			err = lightmap->bake(lightmap, p_file, bake_func_step);
+		if (get_tree()->get_edited_scene_root()) {
+			Ref<LightmapGIData> lightmapGIData = lightmap->get_light_data();
+
+			if (lightmapGIData.is_valid()) {
+				String path = lightmapGIData->get_path();
+				if (!path.is_resource_file()) {
+					int srpos = path.find("::");
+					if (srpos != -1) {
+						String base = path.substr(0, srpos);
+						if (ResourceLoader::get_resource_type(base) == "PackedScene") {
+							if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
+								err = LightmapGI::BAKE_ERROR_FOREIGN_DATA;
+							}
+						} else {
+							if (FileAccess::exists(base + ".import")) {
+								err = LightmapGI::BAKE_ERROR_FOREIGN_DATA;
+							}
+						}
+					}
+				} else {
+					if (FileAccess::exists(path + ".import")) {
+						err = LightmapGI::BAKE_ERROR_FOREIGN_DATA;
+					}
+				}
+			}
+
+			if (err == LightmapGI::BAKE_ERROR_OK) {
+				if (get_tree()->get_edited_scene_root() == lightmap) {
+					err = lightmap->bake(lightmap, p_file, bake_func_step);
+				} else {
+					err = lightmap->bake(lightmap->get_parent(), p_file, bake_func_step);
+				}
+			}
 		} else {
-			err = lightmap->bake(lightmap->get_parent(), p_file, bake_func_step);
+			err = LightmapGI::BAKE_ERROR_NO_SCENE_ROOT;
 		}
 
 		bake_func_end(time_started);
@@ -59,16 +90,21 @@ void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
 
 				file_dialog->set_current_path(scene_path);
 				file_dialog->popup_file_dialog();
-
 			} break;
-			case LightmapGI::BAKE_ERROR_NO_MESHES:
+			case LightmapGI::BAKE_ERROR_NO_MESHES: {
 				EditorNode::get_singleton()->show_warning(TTR("No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake Light' flag is on."));
-				break;
-			case LightmapGI::BAKE_ERROR_CANT_CREATE_IMAGE:
+			} break;
+			case LightmapGI::BAKE_ERROR_CANT_CREATE_IMAGE: {
 				EditorNode::get_singleton()->show_warning(TTR("Failed creating lightmap images, make sure path is writable."));
-				break;
+			} break;
+			case LightmapGI::BAKE_ERROR_NO_SCENE_ROOT: {
+				EditorNode::get_singleton()->show_warning(TTR("No editor scene root found."));
+			} break;
+			case LightmapGI::BAKE_ERROR_FOREIGN_DATA: {
+				EditorNode::get_singleton()->show_warning(TTR("Lightmap data is not local to the scene."));
+			} break;
 			default: {
-			}
+			} break;
 		}
 	}
 }

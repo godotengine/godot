@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  joypad_macos.cpp                                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  joypad_macos.cpp                                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "joypad_macos.h"
 
@@ -316,7 +316,7 @@ bool JoypadMacOS::configure_joypad(IOHIDDeviceRef p_device_ref, joypad *p_joy) {
 
 	if (vendor && product_id) {
 		char uid[128];
-		sprintf(uid, "%08x%08x%08x%08x", OSSwapHostToBigInt32(3), OSSwapHostToBigInt32(vendor), OSSwapHostToBigInt32(product_id), OSSwapHostToBigInt32(version));
+		snprintf(uid, 128, "%08x%08x%08x%08x", OSSwapHostToBigInt32(3), OSSwapHostToBigInt32(vendor), OSSwapHostToBigInt32(product_id), OSSwapHostToBigInt32(version));
 		input->joy_connection_changed(id, true, name, uid);
 	} else {
 		// Bluetooth device.
@@ -402,10 +402,10 @@ bool joypad::check_ff_features() {
 	return false;
 }
 
-static HatMask process_hat_value(int p_min, int p_max, int p_value, bool p_offset_hat) {
+static BitField<HatMask> process_hat_value(int p_min, int p_max, int p_value, bool p_offset_hat) {
 	int range = (p_max - p_min + 1);
 	int value = p_value - p_min;
-	HatMask hat_value = HatMask::CENTER;
+	BitField<HatMask> hat_value;
 	if (range == 4) {
 		value *= 2;
 	}
@@ -415,31 +415,34 @@ static HatMask process_hat_value(int p_min, int p_max, int p_value, bool p_offse
 
 	switch (value) {
 		case 0:
-			hat_value = HatMask::UP;
+			hat_value.set_flag(HatMask::UP);
 			break;
 		case 1:
-			hat_value = (HatMask::UP | HatMask::RIGHT);
+			hat_value.set_flag(HatMask::UP);
+			hat_value.set_flag(HatMask::RIGHT);
 			break;
 		case 2:
-			hat_value = HatMask::RIGHT;
+			hat_value.set_flag(HatMask::RIGHT);
 			break;
 		case 3:
-			hat_value = (HatMask::DOWN | HatMask::RIGHT);
+			hat_value.set_flag(HatMask::DOWN);
+			hat_value.set_flag(HatMask::RIGHT);
 			break;
 		case 4:
-			hat_value = HatMask::DOWN;
+			hat_value.set_flag(HatMask::DOWN);
 			break;
 		case 5:
-			hat_value = (HatMask::DOWN | HatMask::LEFT);
+			hat_value.set_flag(HatMask::DOWN);
+			hat_value.set_flag(HatMask::LEFT);
 			break;
 		case 6:
-			hat_value = HatMask::LEFT;
+			hat_value.set_flag(HatMask::LEFT);
 			break;
 		case 7:
-			hat_value = (HatMask::UP | HatMask::LEFT);
+			hat_value.set_flag(HatMask::UP);
+			hat_value.set_flag(HatMask::LEFT);
 			break;
 		default:
-			hat_value = HatMask::CENTER;
 			break;
 	}
 	return hat_value;
@@ -474,7 +477,7 @@ void JoypadMacOS::process_joypads() {
 		for (int j = 0; j < joy.hat_elements.size(); j++) {
 			rec_element &elem = joy.hat_elements.write[j];
 			int value = joy.get_hid_element_state(&elem);
-			HatMask hat_value = process_hat_value(elem.min, elem.max, value, joy.offset_hat);
+			BitField<HatMask> hat_value = process_hat_value(elem.min, elem.max, value, joy.offset_hat);
 			input->joy_hat(joy.id, hat_value);
 		}
 

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  shader_preprocessor.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  shader_preprocessor.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "shader_preprocessor.h"
 #include "core/math/expression.h"
@@ -78,18 +78,45 @@ char32_t ShaderPreprocessor::Tokenizer::peek() {
 	return 0;
 }
 
+int ShaderPreprocessor::Tokenizer::consume_line_continuations(int p_offset) {
+	int skips = 0;
+
+	for (int i = index + p_offset; i < size; i++) {
+		char32_t c = code[i];
+		if (c == '\\') {
+			if (i + 1 < size && code[i + 1] == '\n') {
+				// This line ends with "\" and "\n" continuation.
+				add_generated(Token('\n', line));
+				line++;
+				skips++;
+
+				i = i + 2;
+				index = i;
+			} else {
+				break;
+			}
+		} else if (!is_whitespace(c)) {
+			break;
+		}
+	}
+	return skips;
+}
+
 LocalVector<ShaderPreprocessor::Token> ShaderPreprocessor::Tokenizer::advance(char32_t p_what) {
 	LocalVector<ShaderPreprocessor::Token> tokens;
 
 	while (index < size) {
 		char32_t c = code[index++];
-
-		tokens.push_back(ShaderPreprocessor::Token(c, line));
+		if (c == '\\' && consume_line_continuations(-1) > 0) {
+			continue;
+		}
 
 		if (c == '\n') {
 			add_generated(ShaderPreprocessor::Token('\n', line));
 			line++;
 		}
+
+		tokens.push_back(ShaderPreprocessor::Token(c, line));
 
 		if (c == p_what || c == 0) {
 			return tokens;
@@ -104,6 +131,11 @@ void ShaderPreprocessor::Tokenizer::skip_whitespace() {
 	}
 }
 
+bool ShaderPreprocessor::Tokenizer::consume_empty_line() {
+	// Read until newline and return true if the content was all whitespace/empty.
+	return tokens_to_string(advance('\n')).strip_edges().size() == 0;
+}
+
 String ShaderPreprocessor::Tokenizer::get_identifier(bool *r_is_cursor, bool p_started) {
 	if (r_is_cursor != nullptr) {
 		*r_is_cursor = false;
@@ -113,6 +145,10 @@ String ShaderPreprocessor::Tokenizer::get_identifier(bool *r_is_cursor, bool p_s
 
 	while (true) {
 		char32_t c = peek();
+		if (c == '\\' && consume_line_continuations(0) > 0) {
+			continue;
+		}
+
 		if (is_char_end(c) || c == '(' || c == ')' || c == ',' || c == ';') {
 			break;
 		}
@@ -146,8 +182,10 @@ String ShaderPreprocessor::Tokenizer::get_identifier(bool *r_is_cursor, bool p_s
 
 String ShaderPreprocessor::Tokenizer::peek_identifier() {
 	const int original = index;
+	const int original_line = line;
 	String id = get_identifier();
 	index = original;
+	line = original_line;
 	return id;
 }
 
@@ -330,8 +368,8 @@ String ShaderPreprocessor::vector_to_string(const LocalVector<char32_t> &p_v, in
 
 String ShaderPreprocessor::tokens_to_string(const LocalVector<Token> &p_tokens) {
 	LocalVector<char32_t> result;
-	for (uint32_t i = 0; i < p_tokens.size(); i++) {
-		result.push_back(p_tokens[i].text);
+	for (const Token &token : p_tokens) {
+		result.push_back(token.text);
 	}
 	return vector_to_string(result);
 }
@@ -485,7 +523,9 @@ void ShaderPreprocessor::process_else(Tokenizer *p_tokenizer) {
 		state->previous_region->to_line = line - 1;
 	}
 
-	p_tokenizer->advance('\n');
+	if (!p_tokenizer->consume_empty_line()) {
+		set_error(RTR("Invalid else."), p_tokenizer->get_line());
+	}
 
 	bool skip = false;
 	for (int i = 0; i < state->current_branch->conditions.size(); i++) {
@@ -508,17 +548,21 @@ void ShaderPreprocessor::process_else(Tokenizer *p_tokenizer) {
 }
 
 void ShaderPreprocessor::process_endif(Tokenizer *p_tokenizer) {
+	const int line = p_tokenizer->get_line();
+
 	state->condition_depth--;
 	if (state->condition_depth < 0) {
-		set_error(RTR("Unmatched endif."), p_tokenizer->get_line());
+		set_error(RTR("Unmatched endif."), line);
 		return;
 	}
 	if (state->previous_region != nullptr) {
-		state->previous_region->to_line = p_tokenizer->get_line() - 1;
+		state->previous_region->to_line = line - 1;
 		state->previous_region = state->previous_region->parent;
 	}
 
-	p_tokenizer->advance('\n');
+	if (!p_tokenizer->consume_empty_line()) {
+		set_error(RTR("Invalid endif."), line);
+	}
 
 	state->current_branch = state->current_branch->parent;
 	state->branches.pop_back();
@@ -574,12 +618,10 @@ void ShaderPreprocessor::process_ifdef(Tokenizer *p_tokenizer) {
 		return;
 	}
 
-	p_tokenizer->skip_whitespace();
-	if (!is_char_end(p_tokenizer->peek())) {
+	if (!p_tokenizer->consume_empty_line()) {
 		set_error(RTR("Invalid ifdef."), line);
 		return;
 	}
-	p_tokenizer->advance('\n');
 
 	bool success = state->defines.has(label);
 	start_branch_condition(p_tokenizer, success);
@@ -598,12 +640,10 @@ void ShaderPreprocessor::process_ifndef(Tokenizer *p_tokenizer) {
 		return;
 	}
 
-	p_tokenizer->skip_whitespace();
-	if (!is_char_end(p_tokenizer->peek())) {
+	if (!p_tokenizer->consume_empty_line()) {
 		set_error(RTR("Invalid ifndef."), line);
 		return;
 	}
-	p_tokenizer->advance('\n');
 
 	bool success = !state->defines.has(label);
 	start_branch_condition(p_tokenizer, success);
@@ -628,10 +668,19 @@ void ShaderPreprocessor::process_include(Tokenizer *p_tokenizer) {
 		}
 	}
 	path = path.substr(0, path.length() - 1);
-	p_tokenizer->skip_whitespace();
 
-	if (path.is_empty() || !is_char_end(p_tokenizer->peek())) {
+	if (path.is_empty() || !p_tokenizer->consume_empty_line()) {
 		set_error(RTR("Invalid path."), line);
+		return;
+	}
+
+	path = path.simplify_path();
+	if (path.is_relative_path()) {
+		path = state->current_filename.get_base_dir().path_join(path);
+	}
+
+	if (!ResourceLoader::exists(path)) {
+		set_error(RTR("Shader include file does not exist: ") + path, line);
 		return;
 	}
 
@@ -728,25 +777,24 @@ void ShaderPreprocessor::process_pragma(Tokenizer *p_tokenizer) {
 		return;
 	}
 
-	p_tokenizer->advance('\n');
+	if (!p_tokenizer->consume_empty_line()) {
+		set_error(RTR("Invalid pragma directive."), line);
+		return;
+	}
 }
 
 void ShaderPreprocessor::process_undef(Tokenizer *p_tokenizer) {
 	const int line = p_tokenizer->get_line();
 	const String label = p_tokenizer->get_identifier();
-	if (label.is_empty() || !state->defines.has(label)) {
-		set_error(RTR("Invalid name."), line);
-		return;
-	}
-
-	p_tokenizer->skip_whitespace();
-	if (!is_char_end(p_tokenizer->peek())) {
+	if (label.is_empty() || !p_tokenizer->consume_empty_line()) {
 		set_error(RTR("Invalid undef."), line);
 		return;
 	}
 
-	memdelete(state->defines[label]);
-	state->defines.erase(label);
+	if (state->defines.has(label)) {
+		memdelete(state->defines[label]);
+		state->defines.erase(label);
+	}
 }
 
 void ShaderPreprocessor::add_region(int p_line, bool p_enabled, Region *p_parent_region) {
@@ -957,15 +1005,57 @@ bool ShaderPreprocessor::expand_macros_once(const String &p_line, int p_line_num
 		String body = define->body;
 		if (define->arguments.size() > 0) {
 			// Complex macro with arguments.
-			int args_start = index + key.length();
-			int args_end = p_line.find(")", args_start);
-			if (args_start == -1 || args_end == -1) {
-				set_error(RTR("Missing macro argument parenthesis."), p_line_number);
-				return false;
+
+			int args_start = -1;
+			int args_end = -1;
+			int brackets_open = 0;
+			Vector<String> args;
+			for (int i = index_start - 1; i < p_line.length(); i++) {
+				bool add_argument = false;
+				bool reached_end = false;
+				char32_t c = p_line[i];
+
+				if (c == '(') {
+					brackets_open++;
+					if (brackets_open == 1) {
+						args_start = i + 1;
+						args_end = -1;
+					}
+				} else if (c == ')') {
+					brackets_open--;
+					if (brackets_open == 0) {
+						args_end = i;
+						add_argument = true;
+						reached_end = true;
+					}
+				} else if (c == ',') {
+					if (brackets_open == 1) {
+						args_end = i;
+						add_argument = true;
+					}
+				}
+
+				if (add_argument) {
+					if (args_start == -1 || args_end == -1) {
+						set_error(RTR("Invalid macro argument list."), p_line_number);
+						return false;
+					}
+
+					String arg = p_line.substr(args_start, args_end - args_start).strip_edges();
+					if (arg.is_empty()) {
+						set_error(RTR("Invalid macro argument."), p_line_number);
+						return false;
+					}
+					args.append(arg);
+
+					args_start = args_end + 1;
+				}
+
+				if (reached_end) {
+					break;
+				}
 			}
 
-			String values = result.substr(args_start + 1, args_end - (args_start + 1));
-			Vector<String> args = values.split(",");
 			if (args.size() != define->arguments.size()) {
 				set_error(RTR("Invalid macro argument count."), p_line_number);
 				return false;
@@ -987,9 +1077,6 @@ bool ShaderPreprocessor::expand_macros_once(const String &p_line, int p_line_num
 			result = result.substr(0, index) + " " + body + " " + result.substr(args_end + 1, result.length());
 		} else {
 			result = result.substr(0, index) + body + result.substr(index + key.length(), result.length() - (index + key.length()));
-			// Manually reset index_start to where the body value of the define finishes.
-			// This ensures we don't skip another instance of this macro in the string.
-			index_start = index + body.length() + 1;
 		}
 
 		r_expanded = result;
@@ -1081,21 +1168,17 @@ ShaderPreprocessor::Define *ShaderPreprocessor::create_define(const String &p_bo
 	return define;
 }
 
-void ShaderPreprocessor::clear() {
-	if (state_owner && state != nullptr) {
+void ShaderPreprocessor::clear_state() {
+	if (state != nullptr) {
 		for (const RBMap<String, Define *>::Element *E = state->defines.front(); E; E = E->next()) {
 			memdelete(E->get());
 		}
-
-		memdelete(state);
+		state->defines.clear();
 	}
-	state_owner = false;
 	state = nullptr;
 }
 
 Error ShaderPreprocessor::preprocess(State *p_state, const String &p_code, String &r_result) {
-	clear();
-
 	output.clear();
 
 	state = p_state;
@@ -1176,7 +1259,7 @@ Error ShaderPreprocessor::preprocess(State *p_state, const String &p_code, Strin
 	return OK;
 }
 
-Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filename, String &r_result, String *r_error_text, List<FilePosition> *r_error_position, List<Region> *r_regions, HashSet<Ref<ShaderInclude>> *r_includes, List<ScriptLanguage::CodeCompletionOption> *r_completion_options, IncludeCompletionFunction p_include_completion_func) {
+Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filename, String &r_result, String *r_error_text, List<FilePosition> *r_error_position, List<Region> *r_regions, HashSet<Ref<ShaderInclude>> *r_includes, List<ScriptLanguage::CodeCompletionOption> *r_completion_options, List<ScriptLanguage::CodeCompletionOption> *r_completion_defines, IncludeCompletionFunction p_include_completion_func) {
 	State pp_state;
 	if (!p_filename.is_empty()) {
 		pp_state.current_filename = p_filename;
@@ -1198,6 +1281,13 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 		*r_includes = pp_state.shader_includes;
 	}
 
+	if (r_completion_defines) {
+		for (const KeyValue<String, Define *> &E : state->defines) {
+			ScriptLanguage::CodeCompletionOption option(E.key, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT);
+			r_completion_defines->push_back(option);
+		}
+	}
+
 	if (r_completion_options) {
 		switch (pp_state.completion_type) {
 			case COMPLETION_TYPE_DIRECTIVE: {
@@ -1212,7 +1302,6 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 			} break;
 			case COMPLETION_TYPE_PRAGMA: {
 				List<String> options;
-
 				ShaderPreprocessor::get_pragma_list(&options);
 
 				for (const String &E : options) {
@@ -1236,6 +1325,9 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 			}
 		}
 	}
+
+	clear_state();
+
 	return err;
 }
 
@@ -1267,5 +1359,4 @@ ShaderPreprocessor::ShaderPreprocessor() {
 }
 
 ShaderPreprocessor::~ShaderPreprocessor() {
-	clear();
 }

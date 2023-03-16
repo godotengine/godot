@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PackedByteArray" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PackedByteArray" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A packed array of bytes.
 	</brief_description>
@@ -65,7 +65,7 @@
 			<return type="PackedByteArray" />
 			<param index="0" name="compression_mode" type="int" default="0" />
 			<description>
-				Returns a new [PackedByteArray] with the data compressed. Set the compression mode using one of [enum File.CompressionMode]'s constants.
+				Returns a new [PackedByteArray] with the data compressed. Set the compression mode using one of [enum FileAccess.CompressionMode]'s constants.
 			</description>
 		</method>
 		<method name="count" qualifiers="const">
@@ -173,7 +173,7 @@
 			<param index="0" name="buffer_size" type="int" />
 			<param index="1" name="compression_mode" type="int" default="0" />
 			<description>
-				Returns a new [PackedByteArray] with the data decompressed. Set [param buffer_size] to the size of the uncompressed data. Set the compression mode using one of [enum File.CompressionMode]'s constants.
+				Returns a new [PackedByteArray] with the data decompressed. Set [param buffer_size] to the size of the uncompressed data. Set the compression mode using one of [enum FileAccess.CompressionMode]'s constants.
 			</description>
 		</method>
 		<method name="decompress_dynamic" qualifiers="const">
@@ -181,7 +181,7 @@
 			<param index="0" name="max_output_size" type="int" />
 			<param index="1" name="compression_mode" type="int" default="0" />
 			<description>
-				Returns a new [PackedByteArray] with the data decompressed. Set the compression mode using one of [enum File.CompressionMode]'s constants. [b]This method only accepts gzip and deflate compression modes.[/b]
+				Returns a new [PackedByteArray] with the data decompressed. Set the compression mode using one of [enum FileAccess.CompressionMode]'s constants. [b]This method only accepts gzip and deflate compression modes.[/b]
 				This method is potentially slower than [code]decompress[/code], as it may have to re-allocate its output buffer multiple times while decompressing, whereas [code]decompress[/code] knows it's output buffer size from the beginning.
 				GZIP has a maximal compression ratio of 1032:1, meaning it's very possible for a small compressed payload to decompress to a potentially very large output. To guard against this, you may provide a maximum size this function is allowed to allocate in bytes via [param max_output_size]. Passing -1 will allow for unbounded output. If any positive value is passed, and the decompression exceeds that amount in bytes, then an error will be returned.
 			</description>
@@ -229,7 +229,7 @@
 			<param index="0" name="byte_offset" type="int" />
 			<param index="1" name="value" type="int" />
 			<description>
-				Encodes a 32-bit signed integer number as bytes at the index of [param byte_offset] bytes. The array must have at least 2 bytes of space, starting at the offset.
+				Encodes a 32-bit signed integer number as bytes at the index of [param byte_offset] bytes. The array must have at least 4 bytes of space, starting at the offset.
 			</description>
 		</method>
 		<method name="encode_s64">
@@ -237,7 +237,7 @@
 			<param index="0" name="byte_offset" type="int" />
 			<param index="1" name="value" type="int" />
 			<description>
-				Encodes a 64-bit signed integer number as bytes at the index of [param byte_offset] bytes. The array must have at least 2 bytes of space, starting at the offset.
+				Encodes a 64-bit signed integer number as bytes at the index of [param byte_offset] bytes. The array must have at least 8 bytes of space, starting at the offset.
 			</description>
 		</method>
 		<method name="encode_s8">

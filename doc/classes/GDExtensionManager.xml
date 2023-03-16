@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GDExtensionManager" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_extension">
+			<return type="GDExtension" />
+			<param index="0" name="path" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="get_loaded_extensions" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="is_extension_loaded" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="load_extension">
+			<return type="int" enum="GDExtensionManager.LoadStatus" />
+			<param index="0" name="path" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="reload_extension">
+			<return type="int" enum="GDExtensionManager.LoadStatus" />
+			<param index="0" name="path" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="unload_extension">
+			<return type="int" enum="GDExtensionManager.LoadStatus" />
+			<param index="0" name="path" type="String" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="LOAD_STATUS_OK" value="0" enum="LoadStatus">
+		</constant>
+		<constant name="LOAD_STATUS_FAILED" value="1" enum="LoadStatus">
+		</constant>
+		<constant name="LOAD_STATUS_ALREADY_LOADED" value="2" enum="LoadStatus">
+		</constant>
+		<constant name="LOAD_STATUS_NOT_LOADED" value="3" enum="LoadStatus">
+		</constant>
+		<constant name="LOAD_STATUS_NEEDS_RESTART" value="4" enum="LoadStatus">
+		</constant>
+	</constants>
+</class>

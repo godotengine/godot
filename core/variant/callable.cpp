@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  callable.cpp                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  callable.cpp                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "callable.h"
 
@@ -63,6 +63,21 @@ void Callable::callp(const Variant **p_arguments, int p_argcount, Variant &r_ret
 	}
 }
 
+Variant Callable::callv(const Array &p_arguments) const {
+	int argcount = p_arguments.size();
+	const Variant **argptrs = nullptr;
+	if (argcount) {
+		argptrs = (const Variant **)alloca(sizeof(Variant *) * argcount);
+		for (int i = 0; i < argcount; i++) {
+			argptrs[i] = &p_arguments[i];
+		}
+	}
+	CallError ce;
+	Variant ret;
+	callp(argptrs, argcount, ret, ce);
+	return ret;
+}
+
 Error Callable::rpcp(int p_id, const Variant **p_arguments, int p_argcount, CallError &r_call_error) const {
 	if (is_null()) {
 		r_call_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
@@ -87,7 +102,22 @@ Callable Callable::bindp(const Variant **p_arguments, int p_argcount) const {
 	}
 	return Callable(memnew(CallableCustomBind(*this, args)));
 }
+
+Callable Callable::bindv(const Array &p_arguments) {
+	if (p_arguments.is_empty()) {
+		return *this; // No point in creating a new callable if nothing is bound.
+	}
+
+	Vector<Variant> args;
+	args.resize(p_arguments.size());
+	for (int i = 0; i < p_arguments.size(); i++) {
+		args.write[i] = p_arguments[i];
+	}
+	return Callable(memnew(CallableCustomBind(*this, args)));
+}
+
 Callable Callable::unbind(int p_argcount) const {
+	ERR_FAIL_COND_V_MSG(p_argcount <= 0, Callable(*this), "Amount of unbind() arguments must be 1 or greater.");
 	return Callable(memnew(CallableCustomUnbind(*this, p_argcount)));
 }
 
@@ -120,6 +150,35 @@ StringName Callable::get_method() const {
 		return get_custom()->get_method();
 	}
 	return method;
+}
+
+int Callable::get_bound_arguments_count() const {
+	if (!is_null() && is_custom()) {
+		return custom->get_bound_arguments_count();
+	} else {
+		return 0;
+	}
+}
+
+void Callable::get_bound_arguments_ref(Vector<Variant> &r_arguments, int &r_argcount) const {
+	if (!is_null() && is_custom()) {
+		custom->get_bound_arguments(r_arguments, r_argcount);
+	} else {
+		r_arguments.clear();
+		r_argcount = 0;
+	}
+}
+
+Array Callable::get_bound_arguments() const {
+	Vector<Variant> arr;
+	int ac;
+	get_bound_arguments_ref(arr, ac);
+	Array ret;
+	ret.resize(arr.size());
+	for (int i = 0; i < arr.size(); i++) {
+		ret[i] = arr[i];
+	}
+	return ret;
 }
 
 CallableCustom *Callable::get_custom() const {
@@ -329,6 +388,15 @@ const Callable *CallableCustom::get_base_comparator() const {
 	return nullptr;
 }
 
+int CallableCustom::get_bound_arguments_count() const {
+	return 0;
+}
+
+void CallableCustom::get_bound_arguments(Vector<Variant> &r_arguments, int &r_argcount) const {
+	r_arguments = Vector<Variant>();
+	r_argcount = 0;
+}
+
 CallableCustom::CallableCustom() {
 	ref_count.init();
 }
@@ -387,33 +455,33 @@ Error Signal::emit(const Variant **p_arguments, int p_argcount) const {
 }
 
 Error Signal::connect(const Callable &p_callable, uint32_t p_flags) {
-	Object *object = get_object();
-	ERR_FAIL_COND_V(!object, ERR_UNCONFIGURED);
+	Object *obj = get_object();
+	ERR_FAIL_COND_V(!obj, ERR_UNCONFIGURED);
 
-	return object->connect(name, p_callable, p_flags);
+	return obj->connect(name, p_callable, p_flags);
 }
 
 void Signal::disconnect(const Callable &p_callable) {
-	Object *object = get_object();
-	ERR_FAIL_COND(!object);
-	object->disconnect(name, p_callable);
+	Object *obj = get_object();
+	ERR_FAIL_COND(!obj);
+	obj->disconnect(name, p_callable);
 }
 
 bool Signal::is_connected(const Callable &p_callable) const {
-	Object *object = get_object();
-	ERR_FAIL_COND_V(!object, false);
+	Object *obj = get_object();
+	ERR_FAIL_COND_V(!obj, false);
 
-	return object->is_connected(name, p_callable);
+	return obj->is_connected(name, p_callable);
 }
 
 Array Signal::get_connections() const {
-	Object *object = get_object();
-	if (!object) {
+	Object *obj = get_object();
+	if (!obj) {
 		return Array();
 	}
 
 	List<Object::Connection> connections;
-	object->get_signal_connection_list(name, &connections);
+	obj->get_signal_connection_list(name, &connections);
 
 	Array arr;
 	for (const Object::Connection &E : connections) {

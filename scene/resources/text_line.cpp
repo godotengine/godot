@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  text_line.cpp                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  text_line.cpp                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "text_line.h"
 
@@ -56,8 +56,8 @@ void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bidi_override", "override"), &TextLine::set_bidi_override);
 
 	ClassDB::bind_method(D_METHOD("add_string", "text", "font", "font_size", "language", "meta"), &TextLine::add_string, DEFVAL(""), DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("add_object", "key", "size", "inline_align", "length"), &TextLine::add_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(1));
-	ClassDB::bind_method(D_METHOD("resize_object", "key", "size", "inline_align"), &TextLine::resize_object, DEFVAL(INLINE_ALIGNMENT_CENTER));
+	ClassDB::bind_method(D_METHOD("add_object", "key", "size", "inline_align", "length", "baseline"), &TextLine::add_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(1), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("resize_object", "key", "size", "inline_align", "baseline"), &TextLine::resize_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(0.0));
 
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &TextLine::set_width);
 	ClassDB::bind_method(D_METHOD("get_width"), &TextLine::get_width);
@@ -101,6 +101,11 @@ void TextLine::_bind_methods() {
 }
 
 void TextLine::_shape() {
+	// When a shaped text is invalidated by an external source, we want to reshape it.
+	if (!TS->shaped_text_is_ready(rid)) {
+		dirty = true;
+	}
+
 	if (dirty) {
 		if (!tab_stops.is_empty()) {
 			TS->shaped_text_tab_align(rid, tab_stops);
@@ -202,15 +207,15 @@ bool TextLine::add_string(const String &p_text, const Ref<Font> &p_font, int p_f
 	return res;
 }
 
-bool TextLine::add_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align, int p_length) {
-	bool res = TS->shaped_text_add_object(rid, p_key, p_size, p_inline_align, p_length);
+bool TextLine::add_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align, int p_length, float p_baseline) {
+	bool res = TS->shaped_text_add_object(rid, p_key, p_size, p_inline_align, p_length, p_baseline);
 	dirty = true;
 	return res;
 }
 
-bool TextLine::resize_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align) {
+bool TextLine::resize_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align, float p_baseline) {
 	const_cast<TextLine *>(this)->_shape();
-	return TS->shaped_text_resize_object(rid, p_key, p_size, p_inline_align);
+	return TS->shaped_text_resize_object(rid, p_key, p_size, p_inline_align, p_baseline);
 }
 
 Array TextLine::get_objects() const {
@@ -218,7 +223,48 @@ Array TextLine::get_objects() const {
 }
 
 Rect2 TextLine::get_object_rect(Variant p_key) const {
-	return TS->shaped_text_get_object_rect(rid, p_key);
+	Vector2 ofs;
+
+	float length = TS->shaped_text_get_width(rid);
+	if (width > 0) {
+		switch (alignment) {
+			case HORIZONTAL_ALIGNMENT_FILL:
+			case HORIZONTAL_ALIGNMENT_LEFT:
+				break;
+			case HORIZONTAL_ALIGNMENT_CENTER: {
+				if (length <= width) {
+					if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
+						ofs.x += Math::floor((width - length) / 2.0);
+					} else {
+						ofs.y += Math::floor((width - length) / 2.0);
+					}
+				} else if (TS->shaped_text_get_inferred_direction(rid) == TextServer::DIRECTION_RTL) {
+					if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
+						ofs.x += width - length;
+					} else {
+						ofs.y += width - length;
+					}
+				}
+			} break;
+			case HORIZONTAL_ALIGNMENT_RIGHT: {
+				if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
+					ofs.x += width - length;
+				} else {
+					ofs.y += width - length;
+				}
+			} break;
+		}
+	}
+	if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
+		ofs.y += TS->shaped_text_get_ascent(rid);
+	} else {
+		ofs.x += TS->shaped_text_get_ascent(rid);
+	}
+
+	Rect2 rect = TS->shaped_text_get_object_rect(rid, p_key);
+	rect.position += ofs;
+
+	return rect;
 }
 
 void TextLine::set_horizontal_alignment(HorizontalAlignment p_alignment) {
@@ -276,11 +322,7 @@ float TextLine::get_width() const {
 
 Size2 TextLine::get_size() const {
 	const_cast<TextLine *>(this)->_shape();
-	if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
-		return Size2(TS->shaped_text_get_size(rid).x, TS->shaped_text_get_size(rid).y);
-	} else {
-		return Size2(TS->shaped_text_get_size(rid).x, TS->shaped_text_get_size(rid).y);
-	}
+	return TS->shaped_text_get_size(rid);
 }
 
 float TextLine::get_line_ascent() const {

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  link_button.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  link_button.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "link_button.h"
 
@@ -108,6 +108,14 @@ String LinkButton::get_language() const {
 	return language;
 }
 
+void LinkButton::set_uri(const String &p_uri) {
+	uri = p_uri;
+}
+
+String LinkButton::get_uri() const {
+	return uri;
+}
+
 void LinkButton::set_underline_mode(UnderlineMode p_underline_mode) {
 	if (underline_mode == p_underline_mode) {
 		return;
@@ -119,6 +127,14 @@ void LinkButton::set_underline_mode(UnderlineMode p_underline_mode) {
 
 LinkButton::UnderlineMode LinkButton::get_underline_mode() const {
 	return underline_mode;
+}
+
+void LinkButton::pressed() {
+	if (uri.is_empty()) {
+		return;
+	}
+
+	OS::get_singleton()->shell_open(uri);
 }
 
 Size2 LinkButton::get_minimum_size() const {
@@ -227,11 +243,12 @@ void LinkButton::_notification(int p_what) {
 			if (do_underline) {
 				int underline_spacing = theme_cache.underline_spacing + text_buf->get_line_underline_position();
 				int y = text_buf->get_line_ascent() + underline_spacing;
+				int underline_thickness = MAX(1, text_buf->get_line_underline_thickness());
 
 				if (is_layout_rtl()) {
-					draw_line(Vector2(size.width - width, y), Vector2(size.width, y), color, text_buf->get_line_underline_thickness());
+					draw_line(Vector2(size.width - width, y), Vector2(size.width, y), color, underline_thickness);
 				} else {
-					draw_line(Vector2(0, y), Vector2(width, y), color, text_buf->get_line_underline_thickness());
+					draw_line(Vector2(0, y), Vector2(width, y), color, underline_thickness);
 				}
 			}
 		} break;
@@ -245,6 +262,8 @@ void LinkButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text_direction"), &LinkButton::get_text_direction);
 	ClassDB::bind_method(D_METHOD("set_language", "language"), &LinkButton::set_language);
 	ClassDB::bind_method(D_METHOD("get_language"), &LinkButton::get_language);
+	ClassDB::bind_method(D_METHOD("set_uri", "uri"), &LinkButton::set_uri);
+	ClassDB::bind_method(D_METHOD("get_uri"), &LinkButton::get_uri);
 	ClassDB::bind_method(D_METHOD("set_underline_mode", "underline_mode"), &LinkButton::set_underline_mode);
 	ClassDB::bind_method(D_METHOD("get_underline_mode"), &LinkButton::get_underline_mode);
 	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override", "parser"), &LinkButton::set_structured_text_bidi_override);
@@ -258,6 +277,7 @@ void LinkButton::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text"), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "underline", PROPERTY_HINT_ENUM, "Always,On Hover,Never"), "set_underline_mode", "get_underline_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "uri"), "set_uri", "get_uri");
 
 	ADD_GROUP("BiDi", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");

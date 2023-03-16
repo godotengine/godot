@@ -1,44 +1,51 @@
-/*************************************************************************/
-/*  editor_plugin.cpp                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_plugin.cpp                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_plugin.h"
 
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/export/editor_export.h"
 #include "editor/filesystem_dock.h"
+#include "editor/import/editor_import_plugin.h"
+#include "editor/import/resource_importer_scene.h"
+#include "editor/inspector_dock.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editor/plugins/editor_debugger_plugin.h"
+#include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/project_settings_editor.h"
@@ -130,6 +137,7 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 		RS::get_singleton()->instance_set_transform(light_instance2, xform * Transform3D().looking_at(Vector3(+1, -1, -2), Vector3(0, 1, 0)));
 
 		ep.step(TTR("Thumbnail..."), i);
+		DisplayServer::get_singleton()->process_events();
 		Main::iteration();
 		Main::iteration();
 		Ref<Image> img = RS::get_singleton()->texture_2d_get(viewport_texture);
@@ -238,12 +246,16 @@ void EditorInterface::select_file(const String &p_file) {
 	FileSystemDock::get_singleton()->select_file(p_file);
 }
 
-String EditorInterface::get_selected_path() const {
-	return FileSystemDock::get_singleton()->get_selected_path();
+Vector<String> EditorInterface::get_selected_paths() const {
+	return FileSystemDock::get_singleton()->get_selected_paths();
 }
 
 String EditorInterface::get_current_path() const {
 	return FileSystemDock::get_singleton()->get_current_path();
+}
+
+String EditorInterface::get_current_directory() const {
+	return FileSystemDock::get_singleton()->get_current_directory();
 }
 
 void EditorInterface::inspect_object(Object *p_obj, const String &p_for_property, bool p_inspector_only) {
@@ -287,6 +299,14 @@ void EditorInterface::set_plugin_enabled(const String &p_plugin, bool p_enabled)
 
 bool EditorInterface::is_plugin_enabled(const String &p_plugin) const {
 	return EditorNode::get_singleton()->is_addon_plugin_enabled(p_plugin);
+}
+
+void EditorInterface::set_movie_maker_enabled(bool p_enabled) {
+	EditorNode::get_singleton()->set_movie_maker_enabled(p_enabled);
+}
+
+bool EditorInterface::is_movie_maker_enabled() const {
+	return EditorNode::get_singleton()->is_movie_maker_enabled();
 }
 
 EditorInspector *EditorInterface::get_inspector() const {
@@ -355,14 +375,18 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_editor_main_screen"), &EditorInterface::get_editor_main_screen);
 	ClassDB::bind_method(D_METHOD("make_mesh_previews", "meshes", "preview_size"), &EditorInterface::_make_mesh_previews);
 	ClassDB::bind_method(D_METHOD("select_file", "file"), &EditorInterface::select_file);
-	ClassDB::bind_method(D_METHOD("get_selected_path"), &EditorInterface::get_selected_path);
+	ClassDB::bind_method(D_METHOD("get_selected_paths"), &EditorInterface::get_selected_paths);
 	ClassDB::bind_method(D_METHOD("get_current_path"), &EditorInterface::get_current_path);
+	ClassDB::bind_method(D_METHOD("get_current_directory"), &EditorInterface::get_current_directory);
 	ClassDB::bind_method(D_METHOD("get_file_system_dock"), &EditorInterface::get_file_system_dock);
 	ClassDB::bind_method(D_METHOD("get_editor_paths"), &EditorInterface::get_editor_paths);
 	ClassDB::bind_method(D_METHOD("get_command_palette"), &EditorInterface::get_command_palette);
 
 	ClassDB::bind_method(D_METHOD("set_plugin_enabled", "plugin", "enabled"), &EditorInterface::set_plugin_enabled);
 	ClassDB::bind_method(D_METHOD("is_plugin_enabled", "plugin"), &EditorInterface::is_plugin_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_movie_maker_enabled", "enabled"), &EditorInterface::set_movie_maker_enabled);
+	ClassDB::bind_method(D_METHOD("is_movie_maker_enabled"), &EditorInterface::is_movie_maker_enabled);
 
 	ClassDB::bind_method(D_METHOD("get_inspector"), &EditorInterface::get_inspector);
 
@@ -570,11 +594,9 @@ void EditorPlugin::notify_resource_saved(const Ref<Resource> &p_resource) {
 }
 
 bool EditorPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
-	bool success;
-	if (GDVIRTUAL_CALL(_forward_canvas_gui_input, p_event, success)) {
-		return success;
-	}
-	return false;
+	bool success = false;
+	GDVIRTUAL_CALL(_forward_canvas_gui_input, p_event, success);
+	return success;
 }
 
 void EditorPlugin::forward_canvas_draw_over_viewport(Control *p_overlay) {
@@ -604,49 +626,36 @@ int EditorPlugin::update_overlays() const {
 	}
 }
 
-EditorPlugin::AfterGUIInput EditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
-	int success;
-
-	if (GDVIRTUAL_CALL(_forward_3d_gui_input, p_camera, p_event, success)) {
-		return static_cast<EditorPlugin::AfterGUIInput>(success);
-	}
-
-	return EditorPlugin::AFTER_GUI_INPUT_PASS;
+EditorPlugin::AfterGUIInput EditorPlugin::forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
+	int success = EditorPlugin::AFTER_GUI_INPUT_PASS;
+	GDVIRTUAL_CALL(_forward_3d_gui_input, p_camera, p_event, success);
+	return static_cast<EditorPlugin::AfterGUIInput>(success);
 }
 
-void EditorPlugin::forward_spatial_draw_over_viewport(Control *p_overlay) {
+void EditorPlugin::forward_3d_draw_over_viewport(Control *p_overlay) {
 	GDVIRTUAL_CALL(_forward_3d_draw_over_viewport, p_overlay);
 }
 
-void EditorPlugin::forward_spatial_force_draw_over_viewport(Control *p_overlay) {
+void EditorPlugin::forward_3d_force_draw_over_viewport(Control *p_overlay) {
 	GDVIRTUAL_CALL(_forward_3d_force_draw_over_viewport, p_overlay);
 }
 
 String EditorPlugin::get_name() const {
 	String name;
-	if (GDVIRTUAL_CALL(_get_plugin_name, name)) {
-		return name;
-	}
-
-	return String();
+	GDVIRTUAL_CALL(_get_plugin_name, name);
+	return name;
 }
 
 const Ref<Texture2D> EditorPlugin::get_icon() const {
 	Ref<Texture2D> icon;
-	if (GDVIRTUAL_CALL(_get_plugin_icon, icon)) {
-		return icon;
-	}
-
-	return Ref<Texture2D>();
+	GDVIRTUAL_CALL(_get_plugin_icon, icon);
+	return icon;
 }
 
 bool EditorPlugin::has_main_screen() const {
-	bool success;
-	if (GDVIRTUAL_CALL(_has_main_screen, success)) {
-		return success;
-	}
-
-	return false;
+	bool success = false;
+	GDVIRTUAL_CALL(_has_main_screen, success);
+	return success;
 }
 
 void EditorPlugin::make_visible(bool p_visible) {
@@ -654,29 +663,19 @@ void EditorPlugin::make_visible(bool p_visible) {
 }
 
 void EditorPlugin::edit(Object *p_object) {
-	if (p_object->is_class("Resource")) {
-		GDVIRTUAL_CALL(_edit, Ref<Resource>(Object::cast_to<Resource>(p_object)));
-	} else {
-		GDVIRTUAL_CALL(_edit, p_object);
-	}
+	GDVIRTUAL_CALL(_edit, p_object);
 }
 
 bool EditorPlugin::handles(Object *p_object) const {
-	bool success;
-	if (GDVIRTUAL_CALL(_handles, p_object, success)) {
-		return success;
-	}
-
-	return false;
+	bool success = false;
+	GDVIRTUAL_CALL(_handles, p_object, success);
+	return success;
 }
 
 Dictionary EditorPlugin::get_state() const {
 	Dictionary state;
-	if (GDVIRTUAL_CALL(_get_state, state)) {
-		return state;
-	}
-
-	return Dictionary();
+	GDVIRTUAL_CALL(_get_state, state);
+	return state;
 }
 
 void EditorPlugin::set_state(const Dictionary &p_state) {
@@ -709,9 +708,6 @@ void EditorPlugin::get_breakpoints(List<String> *p_breakpoints) {
 bool EditorPlugin::get_remove_list(List<Node *> *p_list) {
 	return false;
 }
-
-void EditorPlugin::restore_global_state() {}
-void EditorPlugin::save_global_state() {}
 
 void EditorPlugin::add_undo_redo_inspector_hook_callback(Callable p_callable) {
 	EditorNode::get_singleton()->get_editor_data().add_undo_redo_inspector_hook_callback(p_callable);
@@ -753,12 +749,12 @@ void EditorPlugin::remove_export_plugin(const Ref<EditorExportPlugin> &p_exporte
 	EditorExport::get_singleton()->remove_export_plugin(p_exporter);
 }
 
-void EditorPlugin::add_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin) {
+void EditorPlugin::add_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin) {
 	ERR_FAIL_COND(!p_gizmo_plugin.is_valid());
 	Node3DEditor::get_singleton()->add_gizmo_plugin(p_gizmo_plugin);
 }
 
-void EditorPlugin::remove_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin) {
+void EditorPlugin::remove_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin) {
 	ERR_FAIL_COND(!p_gizmo_plugin.is_valid());
 	Node3DEditor::get_singleton()->remove_gizmo_plugin(p_gizmo_plugin);
 }
@@ -822,11 +818,9 @@ void EditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
 }
 
 bool EditorPlugin::build() {
-	bool success;
-	if (GDVIRTUAL_CALL(_build, success)) {
-		return success;
-	}
-	return true;
+	bool success = true;
+	GDVIRTUAL_CALL(_build, success);
+	return success;
 }
 
 void EditorPlugin::queue_save_layout() {
@@ -849,12 +843,20 @@ ScriptCreateDialog *EditorPlugin::get_script_create_dialog() {
 	return SceneTreeDock::get_singleton()->get_script_create_dialog();
 }
 
-void EditorPlugin::add_debugger_plugin(const Ref<Script> &p_script) {
-	EditorDebuggerNode::get_singleton()->add_debugger_plugin(p_script);
+void EditorPlugin::add_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin) {
+	EditorDebuggerNode::get_singleton()->add_debugger_plugin(p_plugin);
 }
 
-void EditorPlugin::remove_debugger_plugin(const Ref<Script> &p_script) {
-	EditorDebuggerNode::get_singleton()->remove_debugger_plugin(p_script);
+void EditorPlugin::remove_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin) {
+	EditorDebuggerNode::get_singleton()->remove_debugger_plugin(p_plugin);
+}
+
+void EditorPlugin::add_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin) {
+	EditorNode::get_singleton()->add_resource_conversion_plugin(p_plugin);
+}
+
+void EditorPlugin::remove_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin) {
+	EditorNode::get_singleton()->remove_resource_conversion_plugin(p_plugin);
 }
 
 void EditorPlugin::_editor_project_settings_changed() {
@@ -908,10 +910,12 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_scene_post_import_plugin", "scene_import_plugin"), &EditorPlugin::remove_scene_post_import_plugin);
 	ClassDB::bind_method(D_METHOD("add_export_plugin", "plugin"), &EditorPlugin::add_export_plugin);
 	ClassDB::bind_method(D_METHOD("remove_export_plugin", "plugin"), &EditorPlugin::remove_export_plugin);
-	ClassDB::bind_method(D_METHOD("add_spatial_gizmo_plugin", "plugin"), &EditorPlugin::add_spatial_gizmo_plugin);
-	ClassDB::bind_method(D_METHOD("remove_spatial_gizmo_plugin", "plugin"), &EditorPlugin::remove_spatial_gizmo_plugin);
+	ClassDB::bind_method(D_METHOD("add_node_3d_gizmo_plugin", "plugin"), &EditorPlugin::add_node_3d_gizmo_plugin);
+	ClassDB::bind_method(D_METHOD("remove_node_3d_gizmo_plugin", "plugin"), &EditorPlugin::remove_node_3d_gizmo_plugin);
 	ClassDB::bind_method(D_METHOD("add_inspector_plugin", "plugin"), &EditorPlugin::add_inspector_plugin);
 	ClassDB::bind_method(D_METHOD("remove_inspector_plugin", "plugin"), &EditorPlugin::remove_inspector_plugin);
+	ClassDB::bind_method(D_METHOD("add_resource_conversion_plugin", "plugin"), &EditorPlugin::add_resource_conversion_plugin);
+	ClassDB::bind_method(D_METHOD("remove_resource_conversion_plugin", "plugin"), &EditorPlugin::remove_resource_conversion_plugin);
 	ClassDB::bind_method(D_METHOD("set_input_event_forwarding_always_enabled"), &EditorPlugin::set_input_event_forwarding_always_enabled);
 	ClassDB::bind_method(D_METHOD("set_force_draw_over_forwarding_enabled"), &EditorPlugin::set_force_draw_over_forwarding_enabled);
 
@@ -978,8 +982,8 @@ void EditorPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(AFTER_GUI_INPUT_CUSTOM);
 }
 
-Ref<EditorUndoRedoManager> EditorPlugin::get_undo_redo() {
-	return undo_redo;
+EditorUndoRedoManager *EditorPlugin::get_undo_redo() {
+	return EditorUndoRedoManager::get_singleton();
 }
 
 EditorPluginCreateFunc EditorPlugins::creation_funcs[MAX_CREATE_FUNCS];

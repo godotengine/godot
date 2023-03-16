@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  audio_driver_web.cpp                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  audio_driver_web.cpp                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "audio_driver_web.h"
 
@@ -166,69 +166,24 @@ void AudioDriverWeb::finish() {
 	}
 }
 
-Error AudioDriverWeb::capture_start() {
+Error AudioDriverWeb::input_start() {
 	lock();
 	input_buffer_init(buffer_length);
 	unlock();
-	if (godot_audio_capture_start()) {
+	if (godot_audio_input_start()) {
 		return FAILED;
 	}
 	return OK;
 }
 
-Error AudioDriverWeb::capture_stop() {
-	godot_audio_capture_stop();
+Error AudioDriverWeb::input_stop() {
+	godot_audio_input_stop();
 	lock();
 	input_buffer.clear();
 	unlock();
 	return OK;
 }
 
-#ifdef NO_THREADS
-/// ScriptProcessorNode implementation
-AudioDriverScriptProcessor *AudioDriverScriptProcessor::singleton = nullptr;
-
-void AudioDriverScriptProcessor::_process_callback() {
-	AudioDriverScriptProcessor::singleton->_audio_driver_capture();
-	AudioDriverScriptProcessor::singleton->_audio_driver_process();
-}
-
-Error AudioDriverScriptProcessor::create(int &p_buffer_samples, int p_channels) {
-	if (!godot_audio_has_script_processor()) {
-		return ERR_UNAVAILABLE;
-	}
-	return (Error)godot_audio_script_create(&p_buffer_samples, p_channels);
-}
-
-void AudioDriverScriptProcessor::start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) {
-	godot_audio_script_start(p_in_buf, p_in_buf_size, p_out_buf, p_out_buf_size, &_process_callback);
-}
-
-/// AudioWorkletNode implementation (no threads)
-AudioDriverWorklet *AudioDriverWorklet::singleton = nullptr;
-
-Error AudioDriverWorklet::create(int &p_buffer_size, int p_channels) {
-	if (!godot_audio_has_worklet()) {
-		return ERR_UNAVAILABLE;
-	}
-	return (Error)godot_audio_worklet_create(p_channels);
-}
-
-void AudioDriverWorklet::start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) {
-	_audio_driver_process();
-	godot_audio_worklet_start_no_threads(p_out_buf, p_out_buf_size, &_process_callback, p_in_buf, p_in_buf_size, &_capture_callback);
-}
-
-void AudioDriverWorklet::_process_callback(int p_pos, int p_samples) {
-	AudioDriverWorklet *driver = AudioDriverWorklet::singleton;
-	driver->_audio_driver_process(p_pos, p_samples);
-}
-
-void AudioDriverWorklet::_capture_callback(int p_pos, int p_samples) {
-	AudioDriverWorklet *driver = AudioDriverWorklet::singleton;
-	driver->_audio_driver_capture(p_pos, p_samples);
-}
-#else
 /// AudioWorkletNode implementation (threads)
 void AudioDriverWorklet::_audio_thread_func(void *p_data) {
 	AudioDriverWorklet *driver = static_cast<AudioDriverWorklet *>(p_data);
@@ -290,4 +245,3 @@ void AudioDriverWorklet::finish_driver() {
 	quit = true; // Ask thread to quit.
 	thread.wait_to_finish();
 }
-#endif

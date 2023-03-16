@@ -143,7 +143,7 @@ struct avar
     TRACE_SANITIZE (this);
     if (!(version.sanitize (c) &&
 	  (version.major == 1
-#ifndef HB_NO_VARIATIONS2
+#ifndef HB_NO_AVAR2
 	   || version.major == 2
 #endif
 	   ) &&
@@ -159,7 +159,7 @@ struct avar
       map = &StructAfter<SegmentMaps> (*map);
     }
 
-#ifndef HB_NO_VARIATIONS2
+#ifndef HB_NO_AVAR2
     if (version.major < 2)
       return_trace (true);
 
@@ -182,7 +182,7 @@ struct avar
       map = &StructAfter<SegmentMaps> (*map);
     }
 
-#ifndef HB_NO_VARIATIONS2
+#ifndef HB_NO_AVAR2
     if (version.major < 2)
       return;
 
@@ -206,11 +206,10 @@ struct avar
       v = hb_clamp (v, -(1<<14), +(1<<14));
       out.push (v);
     }
-
-    OT::VariationStore::destroy_cache (var_store_cache);
-
     for (unsigned i = 0; i < coords_length; i++)
       coords[i] = out[i];
+
+    OT::VariationStore::destroy_cache (var_store_cache);
 #endif
   }
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Skeleton2D" inherits="Node2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Skeleton2D" inherits="Node2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Skeleton for 2D characters and animated objects.
 	</brief_description>
@@ -16,7 +16,7 @@
 			<param index="0" name="delta" type="float" />
 			<param index="1" name="execution_mode" type="int" />
 			<description>
-				Executes all the modifications on the [SkeletonModificationStack2D], if the Skeleton3D has one assigned.
+				Executes all the modifications on the [SkeletonModificationStack2D], if the Skeleton2D has one assigned.
 			</description>
 		</method>
 		<method name="get_bone">

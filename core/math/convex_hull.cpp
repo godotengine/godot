@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  convex_hull.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  convex_hull.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 /*
  * Based on Godot's patched VHACD-version of Bullet's btConvexHullComputer.
@@ -62,6 +62,7 @@ subject to the following restrictions:
 #include "core/math/aabb.h"
 #include "core/math/math_defs.h"
 #include "core/os/memory.h"
+#include "core/templates/oa_hash_map.h"
 #include "core/templates/paged_allocator.h"
 
 #include <string.h>
@@ -2252,19 +2253,61 @@ Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry3
 
 	r_mesh.vertices = ch.vertices;
 
+	// Tag which face each edge belongs to
+	LocalVector<int32_t> edge_faces;
+	edge_faces.resize(ch.edges.size());
+
+	for (uint32_t i = 0; i < ch.edges.size(); i++) {
+		edge_faces[i] = -1;
+	}
+
+	for (uint32_t i = 0; i < ch.faces.size(); i++) {
+		const Edge *e_start = &ch.edges[ch.faces[i]];
+		const Edge *e = e_start;
+		do {
+			int64_t ofs = e - ch.edges.ptr();
+			edge_faces[ofs] = i;
+
+			e = e->get_next_edge_of_face();
+		} while (e != e_start);
+	}
+
 	// Copy the edges over. There's two "half-edges" for every edge, so we pick only one of them.
 	r_mesh.edges.resize(ch.edges.size() / 2);
+	OAHashMap<uint64_t, int32_t> edge_map(ch.edges.size() * 4); // The higher the capacity, the faster the insert
+
 	uint32_t edges_copied = 0;
 	for (uint32_t i = 0; i < ch.edges.size(); i++) {
+		ERR_CONTINUE(edge_faces[i] == -1); // Sanity check
+
 		uint32_t a = (&ch.edges[i])->get_source_vertex();
 		uint32_t b = (&ch.edges[i])->get_target_vertex();
 		if (a < b) { // Copy only the "canonical" edge. For the reverse edge, this will be false.
 			ERR_BREAK(edges_copied >= (uint32_t)r_mesh.edges.size());
-			r_mesh.edges.write[edges_copied].a = a;
-			r_mesh.edges.write[edges_copied].b = b;
+			r_mesh.edges[edges_copied].vertex_a = a;
+			r_mesh.edges[edges_copied].vertex_b = b;
+			r_mesh.edges[edges_copied].face_a = edge_faces[i];
+			r_mesh.edges[edges_copied].face_b = -1;
+
+			uint64_t key = a;
+			key <<= 32;
+			key |= b;
+			edge_map.insert(key, edges_copied);
+
 			edges_copied++;
+		} else {
+			uint64_t key = b;
+			key <<= 32;
+			key |= a;
+			int32_t index;
+			if (!edge_map.lookup(key, index)) {
+				ERR_PRINT("Invalid edge");
+			} else {
+				r_mesh.edges[index].face_b = edge_faces[i];
+			}
 		}
 	}
+
 	if (edges_copied != (uint32_t)r_mesh.edges.size()) {
 		ERR_PRINT("Invalid edge count.");
 	}
@@ -2273,7 +2316,7 @@ Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry3
 	for (uint32_t i = 0; i < ch.faces.size(); i++) {
 		const Edge *e_start = &ch.edges[ch.faces[i]];
 		const Edge *e = e_start;
-		Geometry3D::MeshData::Face &face = r_mesh.faces.write[i];
+		Geometry3D::MeshData::Face &face = r_mesh.faces[i];
 
 		do {
 			face.indices.push_back(e->get_target_vertex());
@@ -2284,8 +2327,8 @@ Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry3
 		// reverse indices: Godot wants clockwise, but this is counter-clockwise
 		if (face.indices.size() > 2) {
 			// reverse all but the first index.
-			int *indices = face.indices.ptrw();
-			for (int c = 0; c < (face.indices.size() - 1) / 2; c++) {
+			int *indices = face.indices.ptr();
+			for (uint32_t c = 0; c < (face.indices.size() - 1) / 2; c++) {
 				SWAP(indices[c + 1], indices[face.indices.size() - 1 - c]);
 			}
 		}

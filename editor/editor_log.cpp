@@ -1,35 +1,36 @@
-/*************************************************************************/
-/*  editor_log.cpp                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_log.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_log.h"
 
+#include "core/object/undo_redo.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
@@ -65,18 +66,33 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 }
 
 void EditorLog::_update_theme() {
-	Ref<Font> normal_font = get_theme_font(SNAME("output_source"), SNAME("EditorFonts"));
+	const Ref<Font> normal_font = get_theme_font(SNAME("output_source"), SNAME("EditorFonts"));
 	if (normal_font.is_valid()) {
 		log->add_theme_font_override("normal_font", normal_font);
 	}
 
-	log->add_theme_font_size_override("normal_font_size", get_theme_font_size(SNAME("output_source_size"), SNAME("EditorFonts")));
-	log->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
-
-	Ref<Font> bold_font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
+	const Ref<Font> bold_font = get_theme_font(SNAME("output_source_bold"), SNAME("EditorFonts"));
 	if (bold_font.is_valid()) {
 		log->add_theme_font_override("bold_font", bold_font);
 	}
+
+	const Ref<Font> italics_font = get_theme_font(SNAME("output_source_italic"), SNAME("EditorFonts"));
+	if (italics_font.is_valid()) {
+		log->add_theme_font_override("italics_font", italics_font);
+	}
+
+	const Ref<Font> bold_italics_font = get_theme_font(SNAME("output_source_bold_italic"), SNAME("EditorFonts"));
+	if (bold_italics_font.is_valid()) {
+		log->add_theme_font_override("bold_italics_font", bold_italics_font);
+	}
+
+	const Ref<Font> mono_font = get_theme_font(SNAME("output_source_mono"), SNAME("EditorFonts"));
+	if (mono_font.is_valid()) {
+		log->add_theme_font_override("mono_font", mono_font);
+	}
+
+	log->add_theme_font_size_override("normal_font_size", get_theme_font_size(SNAME("output_source_size"), SNAME("EditorFonts")));
+	log->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
 
 	type_filter_map[MSG_TYPE_STD]->toggle_button->set_icon(get_theme_icon(SNAME("Popup"), SNAME("EditorIcons")));
 	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_icon(get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
@@ -211,7 +227,7 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 	// Make text split by new lines their own message.
 	// See #41321 for reasoning. At time of writing, multiple print()'s in running projects
 	// get grouped together and sent to the editor log as one message. This can mess with the
-	// search functionality (see the comments on the PR above for more details). This behaviour
+	// search functionality (see the comments on the PR above for more details). This behavior
 	// also matches that of other IDE's.
 	Vector<String> lines = p_msg.split("\n", true);
 
@@ -270,7 +286,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		// Remove last line if replacing, as it will be replace by the next added line.
 		// Why "- 2"? RichTextLabel is weird. When you add a line with add_newline(), it also adds an element to the list of lines which is null/blank,
 		// but it still counts as a line. So if you remove the last line (count - 1) you are actually removing nothing...
-		log->remove_line(log->get_paragraph_count() - 2);
+		log->remove_paragraph(log->get_paragraph_count() - 2);
 	}
 
 	switch (p_message.type) {
@@ -342,11 +358,6 @@ void EditorLog::_reset_message_counts() {
 	for (const KeyValue<MessageType, LogFilter *> &E : type_filter_map) {
 		E.value->set_message_count(0);
 	}
-}
-
-void EditorLog::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("clear_request"));
-	ADD_SIGNAL(MethodInfo("copy_request"));
 }
 
 EditorLog::EditorLog() {
@@ -460,7 +471,7 @@ EditorLog::EditorLog() {
 	vb_right->add_child(editor_filter->toggle_button);
 	type_filter_map.insert(MSG_TYPE_EDITOR, editor_filter);
 
-	add_message(VERSION_FULL_NAME " (c) 2007-2022 Juan Linietsky, Ariel Manzur & Godot Contributors.");
+	add_message(VERSION_FULL_NAME " (c) 2007-present Juan Linietsky, Ariel Manzur & Godot Contributors.");
 
 	eh.errfunc = _error_handler;
 	eh.userdata = this;

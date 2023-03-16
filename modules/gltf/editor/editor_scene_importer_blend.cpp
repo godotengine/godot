@@ -1,39 +1,40 @@
-/*************************************************************************/
-/*  editor_scene_importer_blend.cpp                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_scene_importer_blend.cpp                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_scene_importer_blend.h"
 
 #ifdef TOOLS_ENABLED
 
+#include "../gltf_defines.h"
 #include "../gltf_document.h"
-#include "../gltf_state.h"
+#include "editor_import_blend_runner.h"
 
 #include "core/config/project_settings.h"
 #include "editor/editor_file_dialog.h"
@@ -41,11 +42,9 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "main/main.h"
-#include "scene/main/node.h"
-#include "scene/resources/animation.h"
+#include "scene/gui/line_edit.h"
 
 #ifdef WINDOWS_ENABLED
-// Code by Pedro Estebanez (https://github.com/godotengine/godot/pull/59766)
 #include <shlwapi.h>
 #endif
 
@@ -58,7 +57,7 @@ void EditorSceneFormatImporterBlend::get_extensions(List<String> *r_extensions) 
 }
 
 Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_t p_flags,
-		const HashMap<StringName, Variant> &p_options, int p_bake_fps,
+		const HashMap<StringName, Variant> &p_options,
 		List<String> *r_missing_deps, Error *r_err) {
 	// Get global paths for source and sink.
 
@@ -70,150 +69,129 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 
 	// Handle configuration options.
 
-	String parameters_arg;
+	Dictionary request_options;
+	Dictionary parameters_map;
+
+	parameters_map["filepath"] = sink_global;
+	parameters_map["export_keep_originals"] = true;
+	parameters_map["export_format"] = "GLTF_SEPARATE";
+	parameters_map["export_yup"] = true;
 
 	if (p_options.has(SNAME("blender/nodes/custom_properties")) && p_options[SNAME("blender/nodes/custom_properties")]) {
-		parameters_arg += "export_extras=True,";
+		parameters_map["export_extras"] = true;
 	} else {
-		parameters_arg += "export_extras=False,";
+		parameters_map["export_extras"] = false;
 	}
-	if (p_options.has(SNAME("blender/meshes/skins")) && p_options[SNAME("blender/meshes/skins")]) {
+	if (p_options.has(SNAME("blender/meshes/skins"))) {
 		int32_t skins = p_options["blender/meshes/skins"];
 		if (skins == BLEND_BONE_INFLUENCES_NONE) {
-			parameters_arg += "export_all_influences=False,";
+			parameters_map["export_skins"] = false;
 		} else if (skins == BLEND_BONE_INFLUENCES_COMPATIBLE) {
-			parameters_arg += "export_all_influences=False,";
+			parameters_map["export_skins"] = true;
+			parameters_map["export_all_influences"] = false;
 		} else if (skins == BLEND_BONE_INFLUENCES_ALL) {
-			parameters_arg += "export_all_influences=True,";
+			parameters_map["export_skins"] = true;
+			parameters_map["export_all_influences"] = true;
 		}
-		parameters_arg += "export_skins=True,";
 	} else {
-		parameters_arg += "export_skins=False,";
+		parameters_map["export_skins"] = false;
 	}
-	if (p_options.has(SNAME("blender/materials/export_materials")) && p_options[SNAME("blender/materials/export_materials")]) {
+	if (p_options.has(SNAME("blender/materials/export_materials"))) {
 		int32_t exports = p_options["blender/materials/export_materials"];
 		if (exports == BLEND_MATERIAL_EXPORT_PLACEHOLDER) {
-			parameters_arg += "export_materials='PLACEHOLDER',";
+			parameters_map["export_materials"] = "PLACEHOLDER";
 		} else if (exports == BLEND_MATERIAL_EXPORT_EXPORT) {
-			parameters_arg += "export_materials='EXPORT',";
+			parameters_map["export_materials"] = "EXPORT";
 		}
 	} else {
-		parameters_arg += "export_materials='PLACEHOLDER',";
+		parameters_map["export_materials"] = "PLACEHOLDER";
 	}
 	if (p_options.has(SNAME("blender/nodes/cameras")) && p_options[SNAME("blender/nodes/cameras")]) {
-		parameters_arg += "export_cameras=True,";
+		parameters_map["export_cameras"] = true;
 	} else {
-		parameters_arg += "export_cameras=False,";
+		parameters_map["export_cameras"] = false;
 	}
 	if (p_options.has(SNAME("blender/nodes/punctual_lights")) && p_options[SNAME("blender/nodes/punctual_lights")]) {
-		parameters_arg += "export_lights=True,";
+		parameters_map["export_lights"] = true;
 	} else {
-		parameters_arg += "export_lights=False,";
+		parameters_map["export_lights"] = false;
 	}
 	if (p_options.has(SNAME("blender/meshes/colors")) && p_options[SNAME("blender/meshes/colors")]) {
-		parameters_arg += "export_colors=True,";
+		parameters_map["export_colors"] = true;
 	} else {
-		parameters_arg += "export_colors=False,";
+		parameters_map["export_colors"] = false;
 	}
-	if (p_options.has(SNAME("blender/nodes/visible")) && p_options[SNAME("blender/nodes/visible")]) {
+	if (p_options.has(SNAME("blender/nodes/visible"))) {
 		int32_t visible = p_options["blender/nodes/visible"];
 		if (visible == BLEND_VISIBLE_VISIBLE_ONLY) {
-			parameters_arg += "use_visible=True,";
+			parameters_map["use_visible"] = true;
 		} else if (visible == BLEND_VISIBLE_RENDERABLE) {
-			parameters_arg += "use_renderable=True,";
+			parameters_map["use_renderable"] = true;
 		} else if (visible == BLEND_VISIBLE_ALL) {
-			parameters_arg += "use_visible=False,use_renderable=False,";
+			parameters_map["use_renderable"] = false;
+			parameters_map["use_visible"] = false;
 		}
 	} else {
-		parameters_arg += "use_visible=False,use_renderable=False,";
+		parameters_map["use_renderable"] = false;
+		parameters_map["use_visible"] = false;
 	}
 
 	if (p_options.has(SNAME("blender/meshes/uvs")) && p_options[SNAME("blender/meshes/uvs")]) {
-		parameters_arg += "export_texcoords=True,";
+		parameters_map["export_texcoords"] = true;
 	} else {
-		parameters_arg += "export_texcoords=False,";
+		parameters_map["export_texcoords"] = false;
 	}
 	if (p_options.has(SNAME("blender/meshes/normals")) && p_options[SNAME("blender/meshes/normals")]) {
-		parameters_arg += "export_normals=True,";
+		parameters_map["export_normals"] = true;
 	} else {
-		parameters_arg += "export_normals=False,";
+		parameters_map["export_normals"] = false;
 	}
 	if (p_options.has(SNAME("blender/meshes/tangents")) && p_options[SNAME("blender/meshes/tangents")]) {
-		parameters_arg += "export_tangents=True,";
+		parameters_map["export_tangents"] = true;
 	} else {
-		parameters_arg += "export_tangents=False,";
+		parameters_map["export_tangents"] = false;
 	}
 	if (p_options.has(SNAME("blender/animation/group_tracks")) && p_options[SNAME("blender/animation/group_tracks")]) {
-		parameters_arg += "export_nla_strips=True,";
+		parameters_map["export_nla_strips"] = true;
 	} else {
-		parameters_arg += "export_nla_strips=False,";
+		parameters_map["export_nla_strips"] = false;
 	}
 	if (p_options.has(SNAME("blender/animation/limit_playback")) && p_options[SNAME("blender/animation/limit_playback")]) {
-		parameters_arg += "export_frame_range=True,";
+		parameters_map["export_frame_range"] = true;
 	} else {
-		parameters_arg += "export_frame_range=False,";
+		parameters_map["export_frame_range"] = false;
 	}
 	if (p_options.has(SNAME("blender/animation/always_sample")) && p_options[SNAME("blender/animation/always_sample")]) {
-		parameters_arg += "export_force_sampling=True,";
+		parameters_map["export_force_sampling"] = true;
 	} else {
-		parameters_arg += "export_force_sampling=False,";
+		parameters_map["export_force_sampling"] = false;
 	}
 	if (p_options.has(SNAME("blender/meshes/export_bones_deforming_mesh_only")) && p_options[SNAME("blender/meshes/export_bones_deforming_mesh_only")]) {
-		parameters_arg += "export_def_bones=True,";
+		parameters_map["export_def_bones"] = true;
 	} else {
-		parameters_arg += "export_def_bones=False,";
+		parameters_map["export_def_bones"] = false;
 	}
 	if (p_options.has(SNAME("blender/nodes/modifiers")) && p_options[SNAME("blender/nodes/modifiers")]) {
-		parameters_arg += "export_apply=True";
+		parameters_map["export_apply"] = true;
 	} else {
-		parameters_arg += "export_apply=False";
+		parameters_map["export_apply"] = false;
 	}
 
-	String unpack_all;
 	if (p_options.has(SNAME("blender/materials/unpack_enabled")) && p_options[SNAME("blender/materials/unpack_enabled")]) {
-		unpack_all = "bpy.ops.file.unpack_all(method='USE_LOCAL');";
+		request_options["unpack_all"] = true;
+	} else {
+		request_options["unpack_all"] = false;
 	}
 
-	// Prepare Blender export script.
+	request_options["path"] = source_global;
+	request_options["gltf_options"] = parameters_map;
 
-	String common_args = vformat("filepath='%s',", sink_global) +
-			"export_format='GLTF_SEPARATE',"
-			"export_yup=True," +
-			parameters_arg;
-	String script =
-			String("import bpy, sys;") +
-			"print('Blender 3.0 or higher is required.', file=sys.stderr) if bpy.app.version < (3, 0, 0) else None;" +
-			vformat("bpy.ops.wm.open_mainfile(filepath='%s');", source_global) +
-			unpack_all +
-			vformat("bpy.ops.export_scene.gltf(export_keep_originals=True,%s);", common_args);
-	print_verbose(script);
-
-	// Run script with configured Blender binary.
-
-	String blender_path = EDITOR_GET("filesystem/import/blender/blender3_path");
-
-#ifdef WINDOWS_ENABLED
-	blender_path = blender_path.path_join("blender.exe");
-#else
-	blender_path = blender_path.path_join("blender");
-#endif
-
-	List<String> args;
-	args.push_back("--background");
-	args.push_back("--python-expr");
-	args.push_back(script);
-
-	String standard_out;
-	int ret;
-	OS::get_singleton()->execute(blender_path, args, &standard_out, &ret, true);
-	print_verbose(blender_path);
-	print_verbose(standard_out);
-
-	if (ret != 0) {
+	// Run Blender and export glTF.
+	Error err = EditorImportBlendRunner::get_singleton()->do_import(request_options);
+	if (err != OK) {
 		if (r_err) {
 			*r_err = ERR_SCRIPT_FAILED;
 		}
-		ERR_PRINT(vformat("Blend export to glTF failed with error: %d.", ret));
 		return nullptr;
 	}
 
@@ -224,18 +202,26 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	gltf.instantiate();
 	Ref<GLTFState> state;
 	state.instantiate();
+
 	String base_dir;
 	if (p_options.has(SNAME("blender/materials/unpack_enabled")) && p_options[SNAME("blender/materials/unpack_enabled")]) {
 		base_dir = sink.get_base_dir();
 	}
-	Error err = gltf->append_from_file(sink.get_basename() + ".gltf", state, p_flags, p_bake_fps, base_dir);
+	err = gltf->append_from_file(sink.get_basename() + ".gltf", state, p_flags, base_dir);
 	if (err != OK) {
 		if (r_err) {
 			*r_err = FAILED;
 		}
 		return nullptr;
 	}
-	return gltf->generate_scene(state, p_bake_fps);
+
+#ifndef DISABLE_DEPRECATED
+	bool trimming = p_options.has("animation/trimming") ? (bool)p_options["animation/trimming"] : false;
+	bool remove_immutable = p_options.has("animation/remove_immutable_tracks") ? (bool)p_options["animation/remove_immutable_tracks"] : true;
+	return gltf->generate_scene(state, (float)p_options["animation/fps"], trimming, remove_immutable);
+#else
+	return gltf->generate_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"], (bool)p_options["animation/remove_immutable_tracks"]);
+#endif
 }
 
 Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option,
@@ -261,7 +247,7 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 #define ADD_OPTION_ENUM(PATH, ENUM_HINT, VALUE) \
 	r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, SNAME(PATH), PROPERTY_HINT_ENUM, ENUM_HINT), VALUE));
 
-	ADD_OPTION_ENUM("blender/nodes/visible", "Visible Only,Renderable,All", BLEND_VISIBLE_ALL);
+	ADD_OPTION_ENUM("blender/nodes/visible", "All,Visible Only,Renderable", BLEND_VISIBLE_ALL);
 	ADD_OPTION_BOOL("blender/nodes/punctual_lights", true);
 	ADD_OPTION_BOOL("blender/nodes/cameras", true);
 	ADD_OPTION_BOOL("blender/nodes/custom_properties", true);
@@ -277,9 +263,6 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 	ADD_OPTION_BOOL("blender/animation/limit_playback", true);
 	ADD_OPTION_BOOL("blender/animation/always_sample", true);
 	ADD_OPTION_BOOL("blender/animation/group_tracks", true);
-
-#undef ADD_OPTION_BOOL
-#undef ADD_OPTION_ENUM
 }
 
 ///////////////////////////
@@ -314,13 +297,14 @@ static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 		}
 		return false;
 	}
-
-	if (pipe.find("Blender ") != 0) {
+	int bl = pipe.find("Blender ");
+	if (bl == -1) {
 		if (r_err) {
 			*r_err = vformat(TTR("Unexpected --version output from Blender binary at: %s"), path);
 		}
 		return false;
 	}
+	pipe = pipe.substr(bl);
 	pipe = pipe.replace_first("Blender ", "");
 	int pp = pipe.find(".");
 	if (pp == -1) {
@@ -350,9 +334,7 @@ static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 bool EditorFileSystemImportFormatSupportQueryBlend::is_active() const {
 	bool blend_enabled = GLOBAL_GET("filesystem/import/blender/enabled");
 
-	String blender_path = EDITOR_GET("filesystem/import/blender/blender3_path");
-
-	if (blend_enabled && !_test_blender_path(blender_path)) {
+	if (blend_enabled && !_test_blender_path(EDITOR_GET("filesystem/import/blender/blender3_path").operator String())) {
 		// Intending to import Blender, but blend not configured.
 		return true;
 	}

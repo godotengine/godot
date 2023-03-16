@@ -1,36 +1,37 @@
-/*************************************************************************/
-/*  runtime_interop.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  runtime_interop.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "runtime_interop.h"
 
 #include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/marshalls.h"
@@ -45,6 +46,7 @@
 #include "modules/mono/managed_callable.h"
 #include "modules/mono/mono_gd/gd_mono_cache.h"
 #include "modules/mono/signal_awaiter_utils.h"
+#include "modules/mono/utils/path_utils.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -84,7 +86,8 @@ void godotsharp_stack_info_vector_destroy(
 void godotsharp_internal_script_debugger_send_error(const String *p_func,
 		const String *p_file, int32_t p_line, const String *p_err, const String *p_descr,
 		bool p_warning, const Vector<ScriptLanguage::StackInfo> *p_stack_info_vector) {
-	EngineDebugger::get_script_debugger()->send_error(*p_func, *p_file, p_line, *p_err, *p_descr,
+	const String file = ProjectSettings::get_singleton()->localize_path(p_file->simplify_path());
+	EngineDebugger::get_script_debugger()->send_error(*p_func, file, p_line, *p_err, *p_descr,
 			true, p_warning ? ERR_HANDLER_WARNING : ERR_HANDLER_ERROR, *p_stack_info_vector);
 }
 
@@ -447,14 +450,16 @@ void godotsharp_packed_string_array_add(PackedStringArray *r_dest, const String 
 	r_dest->append(*p_element);
 }
 
-void godotsharp_callable_new_with_delegate(GCHandleIntPtr p_delegate_handle, Callable *r_callable) {
+void godotsharp_callable_new_with_delegate(GCHandleIntPtr p_delegate_handle, void *p_trampoline,
+		const Object *p_object, Callable *r_callable) {
 	// TODO: Use pooling for ManagedCallable instances.
-	CallableCustom *managed_callable = memnew(ManagedCallable(p_delegate_handle));
+	ObjectID objid = p_object ? p_object->get_instance_id() : ObjectID();
+	CallableCustom *managed_callable = memnew(ManagedCallable(p_delegate_handle, p_trampoline, objid));
 	memnew_placement(r_callable, Callable(managed_callable));
 }
 
 bool godotsharp_callable_get_data_for_marshalling(const Callable *p_callable,
-		GCHandleIntPtr *r_delegate_handle, Object **r_object, StringName *r_name) {
+		GCHandleIntPtr *r_delegate_handle, void **r_trampoline, Object **r_object, StringName *r_name) {
 	if (p_callable->is_custom()) {
 		CallableCustom *custom = p_callable->get_custom();
 		CallableCustom::CompareEqualFunc compare_equal_func = custom->get_compare_equal_func();
@@ -462,18 +467,21 @@ bool godotsharp_callable_get_data_for_marshalling(const Callable *p_callable,
 		if (compare_equal_func == ManagedCallable::compare_equal_func_ptr) {
 			ManagedCallable *managed_callable = static_cast<ManagedCallable *>(custom);
 			*r_delegate_handle = managed_callable->get_delegate();
+			*r_trampoline = managed_callable->get_trampoline();
 			*r_object = nullptr;
 			memnew_placement(r_name, StringName());
 			return true;
 		} else if (compare_equal_func == SignalAwaiterCallable::compare_equal_func_ptr) {
 			SignalAwaiterCallable *signal_awaiter_callable = static_cast<SignalAwaiterCallable *>(custom);
 			*r_delegate_handle = { nullptr };
+			*r_trampoline = nullptr;
 			*r_object = ObjectDB::get_instance(signal_awaiter_callable->get_object());
 			memnew_placement(r_name, StringName(signal_awaiter_callable->get_signal()));
 			return true;
 		} else if (compare_equal_func == EventSignalCallable::compare_equal_func_ptr) {
 			EventSignalCallable *event_signal_callable = static_cast<EventSignalCallable *>(custom);
 			*r_delegate_handle = { nullptr };
+			*r_trampoline = nullptr;
 			*r_object = ObjectDB::get_instance(event_signal_callable->get_object());
 			memnew_placement(r_name, StringName(event_signal_callable->get_signal()));
 			return true;
@@ -481,11 +489,13 @@ bool godotsharp_callable_get_data_for_marshalling(const Callable *p_callable,
 
 		// Some other CallableCustom. We only support ManagedCallable.
 		*r_delegate_handle = { nullptr };
+		*r_trampoline = nullptr;
 		*r_object = nullptr;
 		memnew_placement(r_name, StringName());
 		return false;
 	} else {
 		*r_delegate_handle = { nullptr };
+		*r_trampoline = nullptr;
 		*r_object = ObjectDB::get_instance(p_callable->get_object_id());
 		memnew_placement(r_name, StringName(p_callable->get_method()));
 		return true;
@@ -505,6 +515,13 @@ godot_variant godotsharp_callable_call(Callable *p_callable, const Variant **p_a
 
 void godotsharp_callable_call_deferred(Callable *p_callable, const Variant **p_args, const int32_t p_arg_count) {
 	p_callable->call_deferredp(p_args, p_arg_count);
+}
+
+godot_color godotsharp_color_from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha) {
+	godot_color ret;
+	Color *dest = (Color *)&ret;
+	memnew_placement(dest, Color(Color::from_ok_hsl(p_h, p_s, p_l, p_alpha)));
+	return ret;
 }
 
 // GDNative functions
@@ -975,16 +992,76 @@ int32_t godotsharp_array_add(Array *p_self, const Variant *p_item) {
 	return p_self->size();
 }
 
+int32_t godotsharp_array_add_range(Array *p_self, const Array *p_collection) {
+	p_self->append_array(*p_collection);
+	return p_self->size();
+}
+
+int32_t godotsharp_array_binary_search(const Array *p_self, int32_t p_index, int32_t p_length, const Variant *p_value) {
+	ERR_FAIL_COND_V(p_index < 0, -1);
+	ERR_FAIL_COND_V(p_length < 0, -1);
+	ERR_FAIL_COND_V(p_self->size() - p_index < p_length, -1);
+
+	const Variant &value = *p_value;
+	const Array &array = *p_self;
+
+	int lo = p_index;
+	int hi = p_index + p_length - 1;
+	while (lo <= hi) {
+		int mid = lo + ((hi - lo) >> 1);
+		const Variant &mid_item = array[mid];
+
+		if (mid_item == value) {
+			return mid;
+		}
+		if (mid_item < value) {
+			lo = mid + 1;
+		} else {
+			hi = mid - 1;
+		}
+	}
+
+	return ~lo;
+}
+
 void godotsharp_array_duplicate(const Array *p_self, bool p_deep, Array *r_dest) {
 	memnew_placement(r_dest, Array(p_self->duplicate(p_deep)));
 }
 
-int32_t godotsharp_array_index_of(const Array *p_self, const Variant *p_item) {
-	return p_self->find(*p_item);
+void godotsharp_array_fill(Array *p_self, const Variant *p_value) {
+	p_self->fill(*p_value);
+}
+
+int32_t godotsharp_array_index_of(const Array *p_self, const Variant *p_item, int32_t p_index = 0) {
+	return p_self->find(*p_item, p_index);
 }
 
 void godotsharp_array_insert(Array *p_self, int32_t p_index, const Variant *p_item) {
 	p_self->insert(p_index, *p_item);
+}
+
+int32_t godotsharp_array_last_index_of(const Array *p_self, const Variant *p_item, int32_t p_index) {
+	return p_self->rfind(*p_item, p_index);
+}
+
+void godotsharp_array_make_read_only(Array *p_self) {
+	p_self->make_read_only();
+}
+
+void godotsharp_array_max(const Array *p_self, Variant *r_value) {
+	*r_value = p_self->max();
+}
+
+void godotsharp_array_min(const Array *p_self, Variant *r_value) {
+	*r_value = p_self->min();
+}
+
+void godotsharp_array_pick_random(const Array *p_self, Variant *r_value) {
+	*r_value = p_self->pick_random();
+}
+
+bool godotsharp_array_recursive_equal(const Array *p_self, const Array *p_other) {
+	return p_self->recursive_equal(*p_other, 0);
 }
 
 void godotsharp_array_remove_at(Array *p_self, int32_t p_index) {
@@ -995,8 +1072,20 @@ int32_t godotsharp_array_resize(Array *p_self, int32_t p_new_size) {
 	return (int32_t)p_self->resize(p_new_size);
 }
 
+void godotsharp_array_reverse(Array *p_self) {
+	p_self->reverse();
+}
+
 void godotsharp_array_shuffle(Array *p_self) {
 	p_self->shuffle();
+}
+
+void godotsharp_array_slice(Array *p_self, int32_t p_start, int32_t p_end, int32_t p_step, bool p_deep, Array *r_dest) {
+	memnew_placement(r_dest, Array(p_self->slice(p_start, p_end, p_step, p_deep)));
+}
+
+void godotsharp_array_sort(Array *p_self) {
+	p_self->sort();
 }
 
 void godotsharp_array_to_string(const Array *p_self, String *r_str) {
@@ -1052,36 +1141,24 @@ void godotsharp_dictionary_duplicate(const Dictionary *p_self, bool p_deep, Dict
 	memnew_placement(r_dest, Dictionary(p_self->duplicate(p_deep)));
 }
 
+void godotsharp_dictionary_merge(Dictionary *p_self, const Dictionary *p_dictionary, bool p_overwrite) {
+	p_self->merge(*p_dictionary, p_overwrite);
+}
+
+bool godotsharp_dictionary_recursive_equal(const Dictionary *p_self, const Dictionary *p_other) {
+	return p_self->recursive_equal(*p_other, 0);
+}
+
 bool godotsharp_dictionary_remove_key(Dictionary *p_self, const Variant *p_key) {
 	return p_self->erase(*p_key);
 }
 
+void godotsharp_dictionary_make_read_only(Dictionary *p_self) {
+	p_self->make_read_only();
+}
+
 void godotsharp_dictionary_to_string(const Dictionary *p_self, String *r_str) {
 	*r_str = Variant(*p_self).operator String();
-}
-
-void godotsharp_string_md5_buffer(const String *p_self, PackedByteArray *r_md5_buffer) {
-	memnew_placement(r_md5_buffer, PackedByteArray(p_self->md5_buffer()));
-}
-
-void godotsharp_string_md5_text(const String *p_self, String *r_md5_text) {
-	memnew_placement(r_md5_text, String(p_self->md5_text()));
-}
-
-int32_t godotsharp_string_rfind(const String *p_self, const String *p_what, int32_t p_from) {
-	return p_self->rfind(*p_what, p_from);
-}
-
-int32_t godotsharp_string_rfindn(const String *p_self, const String *p_what, int32_t p_from) {
-	return p_self->rfindn(*p_what, p_from);
-}
-
-void godotsharp_string_sha256_buffer(const String *p_self, PackedByteArray *r_sha256_buffer) {
-	memnew_placement(r_sha256_buffer, PackedByteArray(p_self->sha256_buffer()));
-}
-
-void godotsharp_string_sha256_text(const String *p_self, String *r_sha256_text) {
-	memnew_placement(r_sha256_text, String(p_self->sha256_text()));
 }
 
 void godotsharp_string_simplify_path(const String *p_self, String *r_simplified_path) {
@@ -1130,6 +1207,14 @@ int32_t godotsharp_node_path_get_subname_count(const NodePath *p_self) {
 
 bool godotsharp_node_path_is_absolute(const NodePath *p_self) {
 	return p_self->is_absolute();
+}
+
+bool godotsharp_node_path_equals(const NodePath *p_self, const NodePath *p_other) {
+	return *p_self == *p_other;
+}
+
+int godotsharp_node_path_hash(const NodePath *p_self) {
+	return p_self->hash();
 }
 
 void godotsharp_randomize() {
@@ -1188,21 +1273,6 @@ void godotsharp_weakref(Object *p_ptr, Ref<RefCounted> *r_weak_ref) {
 	}
 
 	memnew_placement(r_weak_ref, Ref<RefCounted>(wref));
-}
-
-void godotsharp_str(const godot_array *p_what, godot_string *r_ret) {
-	String &str = *memnew_placement(r_ret, String);
-	const Array &what = *reinterpret_cast<const Array *>(p_what);
-
-	for (int i = 0; i < what.size(); i++) {
-		String os = what[i].operator String();
-
-		if (i == 0) {
-			str = os;
-		} else {
-			str += os;
-		}
-	}
 }
 
 void godotsharp_print(const godot_string *p_what) {
@@ -1362,6 +1432,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_callable_get_data_for_marshalling,
 	(void *)godotsharp_callable_call,
 	(void *)godotsharp_callable_call_deferred,
+	(void *)godotsharp_color_from_ok_hsl,
 	(void *)godotsharp_method_bind_ptrcall,
 	(void *)godotsharp_method_bind_call,
 	(void *)godotsharp_variant_new_string_name,
@@ -1447,12 +1518,24 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_array_destroy,
 	(void *)godotsharp_dictionary_destroy,
 	(void *)godotsharp_array_add,
+	(void *)godotsharp_array_add_range,
+	(void *)godotsharp_array_binary_search,
 	(void *)godotsharp_array_duplicate,
+	(void *)godotsharp_array_fill,
 	(void *)godotsharp_array_index_of,
 	(void *)godotsharp_array_insert,
+	(void *)godotsharp_array_last_index_of,
+	(void *)godotsharp_array_make_read_only,
+	(void *)godotsharp_array_max,
+	(void *)godotsharp_array_min,
+	(void *)godotsharp_array_pick_random,
+	(void *)godotsharp_array_recursive_equal,
 	(void *)godotsharp_array_remove_at,
 	(void *)godotsharp_array_resize,
+	(void *)godotsharp_array_reverse,
 	(void *)godotsharp_array_shuffle,
+	(void *)godotsharp_array_slice,
+	(void *)godotsharp_array_sort,
 	(void *)godotsharp_array_to_string,
 	(void *)godotsharp_dictionary_try_get_value,
 	(void *)godotsharp_dictionary_set_value,
@@ -1464,14 +1547,11 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_dictionary_clear,
 	(void *)godotsharp_dictionary_contains_key,
 	(void *)godotsharp_dictionary_duplicate,
+	(void *)godotsharp_dictionary_merge,
+	(void *)godotsharp_dictionary_recursive_equal,
 	(void *)godotsharp_dictionary_remove_key,
+	(void *)godotsharp_dictionary_make_read_only,
 	(void *)godotsharp_dictionary_to_string,
-	(void *)godotsharp_string_md5_buffer,
-	(void *)godotsharp_string_md5_text,
-	(void *)godotsharp_string_rfind,
-	(void *)godotsharp_string_rfindn,
-	(void *)godotsharp_string_sha256_buffer,
-	(void *)godotsharp_string_sha256_text,
 	(void *)godotsharp_string_simplify_path,
 	(void *)godotsharp_string_to_camel_case,
 	(void *)godotsharp_string_to_pascal_case,
@@ -1484,6 +1564,8 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_node_path_get_subname,
 	(void *)godotsharp_node_path_get_subname_count,
 	(void *)godotsharp_node_path_is_absolute,
+	(void *)godotsharp_node_path_equals,
+	(void *)godotsharp_node_path_hash,
 	(void *)godotsharp_bytes_to_var,
 	(void *)godotsharp_convert,
 	(void *)godotsharp_hash,
@@ -1503,7 +1585,6 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_rand_from_seed,
 	(void *)godotsharp_seed,
 	(void *)godotsharp_weakref,
-	(void *)godotsharp_str,
 	(void *)godotsharp_str_to_var,
 	(void *)godotsharp_var_to_bytes,
 	(void *)godotsharp_var_to_str,

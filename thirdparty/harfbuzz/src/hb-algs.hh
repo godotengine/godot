@@ -236,17 +236,6 @@ struct
   template <typename T> constexpr auto
   impl (const T& v, hb_priority<1>) const HB_RETURN (uint32_t, hb_deref (v).hash ())
 
-  template <typename T> constexpr uint32_t
-  impl (const hb::shared_ptr<T>& v, hb_priority<1>) const
-  {
-    return v.get () ? v.get ()->hash () : 0;
-  }
-  template <typename T> constexpr uint32_t
-  impl (const hb::unique_ptr<T>& v, hb_priority<1>) const
-  {
-    return v.get () ? v.get ()->hash () : 0;
-  }
-
   template <typename T> constexpr auto
   impl (const T& v, hb_priority<0>) const HB_RETURN (uint32_t, std::hash<hb_decay<decltype (hb_deref (v))>>{} (hb_deref (v)))
 
@@ -495,6 +484,17 @@ struct
 }
 HB_FUNCOBJ (hb_equal);
 
+struct
+{
+  template <typename T> void
+  operator () (T& a, T& b) const
+  {
+    using std::swap; // allow ADL
+    swap (a, b);
+  }
+}
+HB_FUNCOBJ (hb_swap);
+
 
 template <typename T1, typename T2>
 struct hb_pair_t
@@ -507,7 +507,7 @@ struct hb_pair_t
 	    hb_enable_if (std::is_default_constructible<U1>::value &&
 			  std::is_default_constructible<U2>::value)>
   hb_pair_t () : first (), second () {}
-  hb_pair_t (T1 a, T2 b) : first (a), second (b) {}
+  hb_pair_t (T1 a, T2 b) : first (std::forward<T1> (a)), second (std::forward<T2> (b)) {}
 
   template <typename Q1, typename Q2,
 	    hb_enable_if (hb_is_convertible (T1, Q1) &&
@@ -523,6 +523,25 @@ struct hb_pair_t
   bool operator >= (const pair_t& o) const { return !(*this < o); }
   bool operator > (const pair_t& o) const { return first > o.first || (first == o.first && second > o.second); }
   bool operator <= (const pair_t& o) const { return !(*this > o); }
+
+  static int cmp (const void *pa, const void *pb)
+  {
+    pair_t *a = (pair_t *) pa;
+    pair_t *b = (pair_t *) pb;
+
+    if (a->first < b->first) return -1;
+    if (a->first > b->first) return +1;
+    if (a->second < b->second) return -1;
+    if (a->second > b->second) return +1;
+    return 0;
+  }
+
+  friend void swap (hb_pair_t& a, hb_pair_t& b)
+  {
+    hb_swap (a.first, b.first);
+    hb_swap (a.second, b.second);
+  }
+
 
   T1 first;
   T2 second;
@@ -569,17 +588,6 @@ struct
   (hb_min (hb_max (std::forward<T> (x), std::forward<T2> (min)), std::forward<T3> (max)))
 }
 HB_FUNCOBJ (hb_clamp);
-
-struct
-{
-  template <typename T> void
-  operator () (T& a, T& b) const
-  {
-    using std::swap; // allow ADL
-    swap (a, b);
-  }
-}
-HB_FUNCOBJ (hb_swap);
 
 /*
  * Bithacks.
@@ -849,19 +857,14 @@ hb_in_range (T u, T lo, T hi)
   return (T)(u - lo) <= (T)(hi - lo);
 }
 template <typename T> static inline bool
-hb_in_ranges (T u, T lo1, T hi1, T lo2, T hi2)
+hb_in_ranges (T u, T lo1, T hi1)
 {
-  return hb_in_range (u, lo1, hi1) || hb_in_range (u, lo2, hi2);
+  return hb_in_range (u, lo1, hi1);
 }
-template <typename T> static inline bool
-hb_in_ranges (T u, T lo1, T hi1, T lo2, T hi2, T lo3, T hi3)
+template <typename T, typename ...Ts> static inline bool
+hb_in_ranges (T u, T lo1, T hi1, Ts... ds)
 {
-  return hb_in_range (u, lo1, hi1) || hb_in_range (u, lo2, hi2) || hb_in_range (u, lo3, hi3);
-}
-template <typename T> static inline bool
-hb_in_ranges (T u, T lo1, T hi1, T lo2, T hi2, T lo3, T hi3, T lo4, T hi4)
-{
-  return hb_in_range (u, lo1, hi1) || hb_in_range (u, lo2, hi2) || hb_in_range (u, lo3, hi3) || hb_in_range (u, lo4, hi4);
+  return hb_in_range<T> (u, lo1, hi1) || hb_in_ranges<T> (u, ds...);
 }
 
 
@@ -869,10 +872,18 @@ hb_in_ranges (T u, T lo1, T hi1, T lo2, T hi2, T lo3, T hi3, T lo4, T hi4)
  * Overflow checking.
  */
 
-/* Consider __builtin_mul_overflow use here also */
 static inline bool
-hb_unsigned_mul_overflows (unsigned int count, unsigned int size)
+hb_unsigned_mul_overflows (unsigned int count, unsigned int size, unsigned *result = nullptr)
 {
+#if (defined(__GNUC__) && (__GNUC__ >= 4)) || defined(__clang__)
+  unsigned stack_result;
+  if (!result)
+    result = &stack_result;
+  return __builtin_mul_overflow (count, size, result);
+#endif
+
+  if (result)
+    *result = count * size;
   return (size > 0) && (count >= ((unsigned int) -1) / size);
 }
 
@@ -1164,9 +1175,12 @@ hb_qsort (void *base, size_t nel, size_t width,
 }
 
 
-template <typename T, typename T2, typename T3> static inline void
-hb_stable_sort (T *array, unsigned int len, int(*compar)(const T2 *, const T2 *), T3 *array2)
+template <typename T, typename T2, typename T3 = int> static inline void
+hb_stable_sort (T *array, unsigned int len, int(*compar)(const T2 *, const T2 *), T3 *array2 = nullptr)
 {
+  static_assert (hb_is_trivially_copy_assignable (T), "");
+  static_assert (hb_is_trivially_copy_assignable (T3), "");
+
   for (unsigned int i = 1; i < len; i++)
   {
     unsigned int j = i;
@@ -1187,12 +1201,6 @@ hb_stable_sort (T *array, unsigned int len, int(*compar)(const T2 *, const T2 *)
       array2[j] = t;
     }
   }
-}
-
-template <typename T> static inline void
-hb_stable_sort (T *array, unsigned int len, int(*compar)(const T *, const T *))
-{
-  hb_stable_sort (array, len, compar, (int *) nullptr);
 }
 
 static inline hb_bool_t
@@ -1320,49 +1328,6 @@ struct
   operator () (T &a) const HB_AUTO_RETURN (--a)
 }
 HB_FUNCOBJ (hb_dec);
-
-
-/* Compiler-assisted vectorization. */
-
-/* Type behaving similar to vectorized vars defined using __attribute__((vector_size(...))),
- * basically a fixed-size bitset. */
-template <typename elt_t, unsigned int byte_size>
-struct hb_vector_size_t
-{
-  elt_t& operator [] (unsigned int i) { return v[i]; }
-  const elt_t& operator [] (unsigned int i) const { return v[i]; }
-
-  void clear (unsigned char v = 0) { memset (this, v, sizeof (*this)); }
-
-  template <typename Op>
-  hb_vector_size_t process (const Op& op) const
-  {
-    hb_vector_size_t r;
-    for (unsigned int i = 0; i < ARRAY_LENGTH (v); i++)
-      r.v[i] = op (v[i]);
-    return r;
-  }
-  template <typename Op>
-  hb_vector_size_t process (const Op& op, const hb_vector_size_t &o) const
-  {
-    hb_vector_size_t r;
-    for (unsigned int i = 0; i < ARRAY_LENGTH (v); i++)
-      r.v[i] = op (v[i], o.v[i]);
-    return r;
-  }
-  hb_vector_size_t operator | (const hb_vector_size_t &o) const
-  { return process (hb_bitwise_or, o); }
-  hb_vector_size_t operator & (const hb_vector_size_t &o) const
-  { return process (hb_bitwise_and, o); }
-  hb_vector_size_t operator ^ (const hb_vector_size_t &o) const
-  { return process (hb_bitwise_xor, o); }
-  hb_vector_size_t operator ~ () const
-  { return process (hb_bitwise_neg); }
-
-  private:
-  static_assert (0 == byte_size % sizeof (elt_t), "");
-  elt_t v[byte_size / sizeof (elt_t)];
-};
 
 
 #endif /* HB_ALGS_HH */

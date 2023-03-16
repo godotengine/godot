@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MeshInstance3D" inherits="GeometryInstance3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="MeshInstance3D" inherits="GeometryInstance3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Node that instances meshes into a scenario.
 	</brief_description>
@@ -45,31 +45,35 @@
 			<return type="int" />
 			<param index="0" name="name" type="StringName" />
 			<description>
+				Returns the index of the blend shape with the given [param name]. Returns [code]-1[/code] if no blend shape with this name exists, including when [member mesh] is [code]null[/code].
 			</description>
 		</method>
 		<method name="get_active_material" qualifiers="const">
 			<return type="Material" />
 			<param index="0" name="surface" type="int" />
 			<description>
-				Returns the [Material] that will be used by the [Mesh] when drawing. This can return the [member GeometryInstance3D.material_override], the surface override [Material] defined in this [MeshInstance3D], or the surface [Material] defined in the [Mesh]. For example, if [member GeometryInstance3D.material_override] is used, all surfaces will return the override material.
+				Returns the [Material] that will be used by the [Mesh] when drawing. This can return the [member GeometryInstance3D.material_override], the surface override [Material] defined in this [MeshInstance3D], or the surface [Material] defined in the [member mesh]. For example, if [member GeometryInstance3D.material_override] is used, all surfaces will return the override material.
+				Returns [code]null[/code] if no material is active, including when [member mesh] is [code]null[/code].
 			</description>
 		</method>
 		<method name="get_blend_shape_count" qualifiers="const">
 			<return type="int" />
 			<description>
+				Returns the number of blend shapes available. Produces an error if [member mesh] is [code]null[/code].
 			</description>
 		</method>
 		<method name="get_blend_shape_value" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="blend_shape_idx" type="int" />
 			<description>
+				Returns the value of the blend shape at the given [param blend_shape_idx]. Returns [code]0.0[/code] and produces an error if [member mesh] is [code]null[/code] or doesn't have a blend shape at that index.
 			</description>
 		</method>
 		<method name="get_surface_override_material" qualifiers="const">
 			<return type="Material" />
 			<param index="0" name="surface" type="int" />
 			<description>
-				Returns the override [Material] for the specified surface of the [Mesh] resource.
+				Returns the override [Material] for the specified [param surface] of the [Mesh] resource.
 			</description>
 		</method>
 		<method name="get_surface_override_material_count" qualifiers="const">
@@ -83,6 +87,7 @@
 			<param index="0" name="blend_shape_idx" type="int" />
 			<param index="1" name="value" type="float" />
 			<description>
+				Sets the value of the blend shape at [param blend_shape_idx] to [param value]. Produces an error if [member mesh] is [code]null[/code] or doesn't have a blend shape at that index.
 			</description>
 		</method>
 		<method name="set_surface_override_material">
@@ -90,7 +95,7 @@
 			<param index="0" name="surface" type="int" />
 			<param index="1" name="material" type="Material" />
 			<description>
-				Sets the override [Material] for the specified surface of the [Mesh] resource. This material is associated with this [MeshInstance3D] rather than with the [Mesh] resource.
+				Sets the override [param material] for the specified [param surface] of the [Mesh] resource. This material is associated with this [MeshInstance3D] rather than with [member mesh].
 			</description>
 		</method>
 	</methods>
@@ -102,7 +107,7 @@
 			[NodePath] to the [Skeleton3D] associated with the instance.
 		</member>
 		<member name="skin" type="Skin" setter="set_skin" getter="get_skin">
-			Sets the skin to be used by this instance.
+			The [Skin] to be used by this instance.
 		</member>
 	</members>
 </class>

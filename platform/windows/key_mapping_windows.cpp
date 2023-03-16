@@ -1,519 +1,415 @@
-/*************************************************************************/
-/*  key_mapping_windows.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  key_mapping_windows.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "key_mapping_windows.h"
 
-#include <stdio.h>
+#include "core/templates/hash_map.h"
 
 // This provides translation from Windows virtual key codes to Godot and back.
 // See WinUser.h and the below for documentation:
 // https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
 
-struct _WinTranslatePair {
-	Key keysym;
-	unsigned int keycode;
+struct HashMapHasherKeys {
+	static _FORCE_INLINE_ uint32_t hash(const Key p_key) { return hash_fmix32(static_cast<uint32_t>(p_key)); }
+	static _FORCE_INLINE_ uint32_t hash(const char32_t p_uchar) { return hash_fmix32(p_uchar); }
+	static _FORCE_INLINE_ uint32_t hash(const unsigned p_key) { return hash_fmix32(p_key); }
 };
 
-static _WinTranslatePair _vk_to_keycode[] = {
+HashMap<unsigned int, Key, HashMapHasherKeys> vk_map;
+HashMap<unsigned int, Key, HashMapHasherKeys> scansym_map;
+HashMap<Key, unsigned int, HashMapHasherKeys> scansym_map_inv;
+HashMap<unsigned int, Key, HashMapHasherKeys> scansym_map_ext;
+
+void KeyMappingWindows::initialize() {
 	// VK_LBUTTON (0x01)
 	// VK_RBUTTON (0x02)
 	// VK_CANCEL (0x03)
 	// VK_MBUTTON (0x04)
 	// VK_XBUTTON1 (0x05)
-	// VK_XBUTTON2 (0x06)
-	// We have no mappings for the above, as we only map keyboard buttons here.
-
+	// VK_XBUTTON2 (0x06), We have no mappings for the above;as we only map keyboard buttons here.
 	// 0x07 is undefined.
-
-	{ Key::BACKSPACE, VK_BACK }, // (0x08)
-	{ Key::TAB, VK_TAB }, // (0x09)
-
+	vk_map[VK_BACK] = Key::BACKSPACE; // (0x08)
+	vk_map[VK_TAB] = Key::TAB; // (0x09)
 	// 0x0A-0B are reserved.
-
-	{ Key::CLEAR, VK_CLEAR }, // (0x0C)
-	{ Key::ENTER, VK_RETURN }, // (0x0D)
-
+	vk_map[VK_CLEAR] = Key::CLEAR; // (0x0C)
+	vk_map[VK_RETURN] = Key::ENTER; // (0x0D)
 	// 0x0E-0F are undefined.
-
-	{ Key::SHIFT, VK_SHIFT }, // (0x10)
-	{ Key::CTRL, VK_CONTROL }, // (0x11)
-	{ Key::ALT, VK_MENU }, // (0x12)
-	{ Key::PAUSE, VK_PAUSE }, // (0x13)
-	{ Key::CAPSLOCK, VK_CAPITAL }, // (0x14)
-
-	// 0x15-1A are IME keys. We have no mapping.
-
-	{ Key::ESCAPE, VK_ESCAPE }, // (0x1B)
-
-	// 0x1C-1F are IME keys. We have no mapping.
-
-	{ Key::SPACE, VK_SPACE }, // (0x20)
-	{ Key::PAGEUP, VK_PRIOR }, // (0x21)
-	{ Key::PAGEDOWN, VK_NEXT }, // (0x22)
-	{ Key::END, VK_END }, // (0x23)
-	{ Key::HOME, VK_HOME }, // (0x24)
-	{ Key::LEFT, VK_LEFT }, // (0x25)
-	{ Key::UP, VK_UP }, // (0x26)
-	{ Key::RIGHT, VK_RIGHT }, // (0x27)
-	{ Key::DOWN, VK_DOWN }, // (0x28)
-
-	// VK_SELECT (0x29)
-	// Old select key, e.g. on Digital Equipment Corporation keyboards.
-	// Old and uncommon, we have no mapping.
-
-	{ Key::PRINT, VK_PRINT }, // (0x2A)
-	// Old IBM key, modern keyboards use VK_SNAPSHOT. Map to VK_SNAPSHOT.
-
-	// VK_EXECUTE (0x2B)
-	// Old and uncommon, we have no mapping.
-
-	{ Key::PRINT, VK_SNAPSHOT }, // (0x2C)
-	{ Key::INSERT, VK_INSERT }, // (0x2D)
-	{ Key::KEY_DELETE, VK_DELETE }, // (0x2E)
-
-	{ Key::HELP, VK_HELP }, // (0x2F)
-	// Old and uncommon, but we have a mapping.
-
-	{ Key::KEY_0, (0x30) }, // 0 key.
-	{ Key::KEY_1, (0x31) }, // 1 key.
-	{ Key::KEY_2, (0x32) }, // 2 key.
-	{ Key::KEY_3, (0x33) }, // 3 key.
-	{ Key::KEY_4, (0x34) }, // 4 key.
-	{ Key::KEY_5, (0x35) }, // 5 key.
-	{ Key::KEY_6, (0x36) }, // 6 key.
-	{ Key::KEY_7, (0x37) }, // 7 key.
-	{ Key::KEY_8, (0x38) }, // 8 key.
-	{ Key::KEY_9, (0x39) }, // 9 key.
+	vk_map[VK_SHIFT] = Key::SHIFT; // (0x10)
+	vk_map[VK_CONTROL] = Key::CTRL; // (0x11)
+	vk_map[VK_MENU] = Key::ALT; // (0x12)
+	vk_map[VK_PAUSE] = Key::PAUSE; // (0x13)
+	vk_map[VK_CAPITAL] = Key::CAPSLOCK; // (0x14)
+	// 0x15-1A are IME keys.
+	vk_map[VK_ESCAPE] = Key::ESCAPE; // (0x1B)
+	// 0x1C-1F are IME keys.
+	vk_map[VK_SPACE] = Key::SPACE; // (0x20)
+	vk_map[VK_PRIOR] = Key::PAGEUP; // (0x21)
+	vk_map[VK_NEXT] = Key::PAGEDOWN; // (0x22)
+	vk_map[VK_END] = Key::END; // (0x23)
+	vk_map[VK_HOME] = Key::HOME; // (0x24)
+	vk_map[VK_LEFT] = Key::LEFT; // (0x25)
+	vk_map[VK_UP] = Key::UP; // (0x26)
+	vk_map[VK_RIGHT] = Key::RIGHT; // (0x27)
+	vk_map[VK_DOWN] = Key::DOWN; // (0x28)
+	// VK_SELECT (0x29), Old select key; e.g. on Digital Equipment Corporation keyboards.
+	vk_map[VK_PRINT] = Key::PRINT; // (0x2A), Old IBM key; modern keyboards use VK_SNAPSHOT.
+	// VK_EXECUTE (0x2B), Old and uncommon.
+	vk_map[VK_SNAPSHOT] = Key::PRINT; // (0x2C)
+	vk_map[VK_INSERT] = Key::INSERT; // (0x2D)
+	vk_map[VK_DELETE] = Key::KEY_DELETE; // (0x2E)
+	vk_map[VK_HELP] = Key::HELP; // (0x2F)
+	vk_map[0x30] = Key::KEY_0; // 0 key.
+	vk_map[0x31] = Key::KEY_1; // 1 key.
+	vk_map[0x32] = Key::KEY_2; // 2 key.
+	vk_map[0x33] = Key::KEY_3; // 3 key.
+	vk_map[0x34] = Key::KEY_4; // 4 key.
+	vk_map[0x35] = Key::KEY_5; // 5 key.
+	vk_map[0x36] = Key::KEY_6; // 6 key.
+	vk_map[0x37] = Key::KEY_7; // 7 key.
+	vk_map[0x38] = Key::KEY_8; // 8 key.
+	vk_map[0x39] = Key::KEY_9; // 9 key.
 	// 0x3A-40 are undefined.
-	{ Key::A, (0x41) }, // A key.
-	{ Key::B, (0x42) }, // B key.
-	{ Key::C, (0x43) }, // C key.
-	{ Key::D, (0x44) }, // D key.
-	{ Key::E, (0x45) }, // E key.
-	{ Key::F, (0x46) }, // F key.
-	{ Key::G, (0x47) }, // G key.
-	{ Key::H, (0x48) }, // H key.
-	{ Key::I, (0x49) }, // I key
-	{ Key::J, (0x4A) }, // J key.
-	{ Key::K, (0x4B) }, // K key.
-	{ Key::L, (0x4C) }, // L key.
-	{ Key::M, (0x4D) }, // M key.
-	{ Key::N, (0x4E) }, // N key.
-	{ Key::O, (0x4F) }, // O key.
-	{ Key::P, (0x50) }, // P key.
-	{ Key::Q, (0x51) }, // Q key.
-	{ Key::R, (0x52) }, // R key.
-	{ Key::S, (0x53) }, // S key.
-	{ Key::T, (0x54) }, // T key.
-	{ Key::U, (0x55) }, // U key.
-	{ Key::V, (0x56) }, // V key.
-	{ Key::W, (0x57) }, // W key.
-	{ Key::X, (0x58) }, // X key.
-	{ Key::Y, (0x59) }, // Y key.
-	{ Key::Z, (0x5A) }, // Z key.
-
-	{ (Key)KeyModifierMask::META, VK_LWIN }, // (0x5B)
-	{ (Key)KeyModifierMask::META, VK_RWIN }, // (0x5C)
-	{ Key::MENU, VK_APPS }, // (0x5D)
+	vk_map[0x41] = Key::A; // A key.
+	vk_map[0x42] = Key::B; // B key.
+	vk_map[0x43] = Key::C; // C key.
+	vk_map[0x44] = Key::D; // D key.
+	vk_map[0x45] = Key::E; // E key.
+	vk_map[0x46] = Key::F; // F key.
+	vk_map[0x47] = Key::G; // G key.
+	vk_map[0x48] = Key::H; // H key.
+	vk_map[0x49] = Key::I; // I key
+	vk_map[0x4A] = Key::J; // J key.
+	vk_map[0x4B] = Key::K; // K key.
+	vk_map[0x4C] = Key::L; // L key.
+	vk_map[0x4D] = Key::M; // M key.
+	vk_map[0x4E] = Key::N; // N key.
+	vk_map[0x4F] = Key::O; // O key.
+	vk_map[0x50] = Key::P; // P key.
+	vk_map[0x51] = Key::Q; // Q key.
+	vk_map[0x52] = Key::R; // R key.
+	vk_map[0x53] = Key::S; // S key.
+	vk_map[0x54] = Key::T; // T key.
+	vk_map[0x55] = Key::U; // U key.
+	vk_map[0x56] = Key::V; // V key.
+	vk_map[0x57] = Key::W; // W key.
+	vk_map[0x58] = Key::X; // X key.
+	vk_map[0x59] = Key::Y; // Y key.
+	vk_map[0x5A] = Key::Z; // Z key.
+	vk_map[VK_LWIN] = (Key)Key::META; // (0x5B)
+	vk_map[VK_RWIN] = (Key)Key::META; // (0x5C)
+	vk_map[VK_APPS] = Key::MENU; // (0x5D)
 	// 0x5E is reserved.
-	{ Key::STANDBY, VK_SLEEP }, // (0x5F)
-	{ Key::KP_0, VK_NUMPAD0 }, // (0x60)
-	{ Key::KP_1, VK_NUMPAD1 }, // (0x61)
-	{ Key::KP_2, VK_NUMPAD2 }, // (0x62)
-	{ Key::KP_3, VK_NUMPAD3 }, // (0x63)
-	{ Key::KP_4, VK_NUMPAD4 }, // (0x64)
-	{ Key::KP_5, VK_NUMPAD5 }, // (0x65)
-	{ Key::KP_6, VK_NUMPAD6 }, // (0x66)
-	{ Key::KP_7, VK_NUMPAD7 }, // (0x67)
-	{ Key::KP_8, VK_NUMPAD8 }, // (0x68)
-	{ Key::KP_9, VK_NUMPAD9 }, // (0x69)
-	{ Key::KP_MULTIPLY, VK_MULTIPLY }, // (0x6A)
-	{ Key::KP_ADD, VK_ADD }, // (0x6B)
-	{ Key::KP_PERIOD, VK_SEPARATOR }, // (0x6C)
-	// VK_SEPERATOR (key 0x6C) is not found on US keyboards.
-	// It is used on some Brazilian and Far East keyboards.
-	// We don't have a direct mapping, map to period.
-	{ Key::KP_SUBTRACT, VK_SUBTRACT }, // (0x6D)
-	{ Key::KP_PERIOD, VK_DECIMAL }, // (0x6E)
-	{ Key::KP_DIVIDE, VK_DIVIDE }, // (0x6F)
-	{ Key::F1, VK_F1 }, // (0x70)
-	{ Key::F2, VK_F2 }, // (0x71)
-	{ Key::F3, VK_F3 }, // (0x72)
-	{ Key::F4, VK_F4 }, // (0x73)
-	{ Key::F5, VK_F5 }, // (0x74)
-	{ Key::F6, VK_F6 }, // (0x75)
-	{ Key::F7, VK_F7 }, // (0x76)
-	{ Key::F8, VK_F8 }, // (0x77)
-	{ Key::F9, VK_F9 }, // (0x78)
-	{ Key::F10, VK_F10 }, // (0x79)
-	{ Key::F11, VK_F11 }, // (0x7A)
-	{ Key::F12, VK_F12 }, // (0x7B)
-	{ Key::F13, VK_F13 }, // (0x7C)
-	{ Key::F14, VK_F14 }, // (0x7D)
-	{ Key::F15, VK_F15 }, // (0x7E)
-	{ Key::F16, VK_F16 }, // (0x7F)
-	{ Key::F17, VK_F17 }, // (0x80)
-	{ Key::F18, VK_F18 }, // (0x81)
-	{ Key::F19, VK_F19 }, // (0x82)
-	{ Key::F20, VK_F20 }, // (0x83)
-	{ Key::F21, VK_F21 }, // (0x84)
-	{ Key::F22, VK_F22 }, // (0x85)
-	{ Key::F23, VK_F23 }, // (0x86)
-	{ Key::F24, VK_F24 }, // (0x87)
+	vk_map[VK_SLEEP] = Key::STANDBY; // (0x5F)
+	vk_map[VK_NUMPAD0] = Key::KP_0; // (0x60)
+	vk_map[VK_NUMPAD1] = Key::KP_1; // (0x61)
+	vk_map[VK_NUMPAD2] = Key::KP_2; // (0x62)
+	vk_map[VK_NUMPAD3] = Key::KP_3; // (0x63)
+	vk_map[VK_NUMPAD4] = Key::KP_4; // (0x64)
+	vk_map[VK_NUMPAD5] = Key::KP_5; // (0x65)
+	vk_map[VK_NUMPAD6] = Key::KP_6; // (0x66)
+	vk_map[VK_NUMPAD7] = Key::KP_7; // (0x67)
+	vk_map[VK_NUMPAD8] = Key::KP_8; // (0x68)
+	vk_map[VK_NUMPAD9] = Key::KP_9; // (0x69)
+	vk_map[VK_MULTIPLY] = Key::KP_MULTIPLY; // (0x6A)
+	vk_map[VK_ADD] = Key::KP_ADD; // (0x6B)
+	vk_map[VK_SEPARATOR] = Key::KP_PERIOD; // (0x6C)
+	vk_map[VK_SUBTRACT] = Key::KP_SUBTRACT; // (0x6D)
+	vk_map[VK_DECIMAL] = Key::KP_PERIOD; // (0x6E)
+	vk_map[VK_DIVIDE] = Key::KP_DIVIDE; // (0x6F)
+	vk_map[VK_F1] = Key::F1; // (0x70)
+	vk_map[VK_F2] = Key::F2; // (0x71)
+	vk_map[VK_F3] = Key::F3; // (0x72)
+	vk_map[VK_F4] = Key::F4; // (0x73)
+	vk_map[VK_F5] = Key::F5; // (0x74)
+	vk_map[VK_F6] = Key::F6; // (0x75)
+	vk_map[VK_F7] = Key::F7; // (0x76)
+	vk_map[VK_F8] = Key::F8; // (0x77)
+	vk_map[VK_F9] = Key::F9; // (0x78)
+	vk_map[VK_F10] = Key::F10; // (0x79)
+	vk_map[VK_F11] = Key::F11; // (0x7A)
+	vk_map[VK_F12] = Key::F12; // (0x7B)
+	vk_map[VK_F13] = Key::F13; // (0x7C)
+	vk_map[VK_F14] = Key::F14; // (0x7D)
+	vk_map[VK_F15] = Key::F15; // (0x7E)
+	vk_map[VK_F16] = Key::F16; // (0x7F)
+	vk_map[VK_F17] = Key::F17; // (0x80)
+	vk_map[VK_F18] = Key::F18; // (0x81)
+	vk_map[VK_F19] = Key::F19; // (0x82)
+	vk_map[VK_F20] = Key::F20; // (0x83)
+	vk_map[VK_F21] = Key::F21; // (0x84)
+	vk_map[VK_F22] = Key::F22; // (0x85)
+	vk_map[VK_F23] = Key::F23; // (0x86)
+	vk_map[VK_F24] = Key::F24; // (0x87)
 	// 0x88-8F are reserved for UI navigation.
-	{ Key::NUMLOCK, VK_NUMLOCK }, // (0x90)
-	{ Key::SCROLLLOCK, VK_SCROLL }, // (0x91)
-
-	{ Key::EQUAL, VK_OEM_NEC_EQUAL }, // (0x92)
-	// OEM NEC PC-9800 numpad '=' key.
-
-	// 0x93-96 are OEM specific (e.g. used by Fujitsu/OASYS), we have no mappings.
+	vk_map[VK_NUMLOCK] = Key::NUMLOCK; // (0x90)
+	vk_map[VK_SCROLL] = Key::SCROLLLOCK; // (0x91)
+	vk_map[VK_OEM_NEC_EQUAL] = Key::EQUAL; // (0x92), OEM NEC PC-9800 numpad '=' key.
+	// 0x93-96 are OEM specific (e.g. used by Fujitsu/OASYS);
 	// 0x97-9F are unassigned.
-
-	{ Key::SHIFT, VK_LSHIFT }, // (0xA0)
-	{ Key::SHIFT, VK_RSHIFT }, // (0xA1)
-	{ Key::CTRL, VK_LCONTROL }, // (0xA2)
-	{ Key::CTRL, VK_RCONTROL }, // (0xA3)
-	{ Key::MENU, VK_LMENU }, // (0xA4)
-	{ Key::MENU, VK_RMENU }, // (0xA5)
-
-	{ Key::BACK, VK_BROWSER_BACK }, // (0xA6)
-	{ Key::FORWARD, VK_BROWSER_FORWARD }, // (0xA7)
-	{ Key::REFRESH, VK_BROWSER_REFRESH }, // (0xA8)
-	{ Key::STOP, VK_BROWSER_STOP }, // (0xA9)
-	{ Key::SEARCH, VK_BROWSER_SEARCH }, // (0xAA)
-	{ Key::FAVORITES, VK_BROWSER_FAVORITES }, // (0xAB)
-	{ Key::HOMEPAGE, VK_BROWSER_HOME }, // (0xAC)
-	{ Key::VOLUMEMUTE, VK_VOLUME_MUTE }, // (0xAD)
-	{ Key::VOLUMEDOWN, VK_VOLUME_DOWN }, // (0xAE)
-	{ Key::VOLUMEUP, VK_VOLUME_UP }, // (0xAF)
-	{ Key::MEDIANEXT, VK_MEDIA_NEXT_TRACK }, // (0xB0)
-	{ Key::MEDIAPREVIOUS, VK_MEDIA_PREV_TRACK }, // (0xB1)
-	{ Key::MEDIASTOP, VK_MEDIA_STOP }, // (0xB2)
-
-	{ Key::MEDIAPLAY, VK_MEDIA_PLAY_PAUSE }, // (0xB3)
-	// Media button play/pause toggle.
-	// Map to media play (there is no other 'play' mapping on Windows).
-
-	{ Key::LAUNCHMAIL, VK_LAUNCH_MAIL }, // (0xB4)
-	{ Key::LAUNCHMEDIA, VK_LAUNCH_MEDIA_SELECT }, // (0xB5)
-	{ Key::LAUNCH0, VK_LAUNCH_APP1 }, // (0xB6)
-	{ Key::LAUNCH1, VK_LAUNCH_APP2 }, // (0xB7)
-
+	vk_map[VK_LSHIFT] = Key::SHIFT; // (0xA0)
+	vk_map[VK_RSHIFT] = Key::SHIFT; // (0xA1)
+	vk_map[VK_LCONTROL] = Key::CTRL; // (0xA2)
+	vk_map[VK_RCONTROL] = Key::CTRL; // (0xA3)
+	vk_map[VK_LMENU] = Key::MENU; // (0xA4)
+	vk_map[VK_RMENU] = Key::MENU; // (0xA5)
+	vk_map[VK_BROWSER_BACK] = Key::BACK; // (0xA6)
+	vk_map[VK_BROWSER_FORWARD] = Key::FORWARD; // (0xA7)
+	vk_map[VK_BROWSER_REFRESH] = Key::REFRESH; // (0xA8)
+	vk_map[VK_BROWSER_STOP] = Key::STOP; // (0xA9)
+	vk_map[VK_BROWSER_SEARCH] = Key::SEARCH; // (0xAA)
+	vk_map[VK_BROWSER_FAVORITES] = Key::FAVORITES; // (0xAB)
+	vk_map[VK_BROWSER_HOME] = Key::HOMEPAGE; // (0xAC)
+	vk_map[VK_VOLUME_MUTE] = Key::VOLUMEMUTE; // (0xAD)
+	vk_map[VK_VOLUME_DOWN] = Key::VOLUMEDOWN; // (0xAE)
+	vk_map[VK_VOLUME_UP] = Key::VOLUMEUP; // (0xAF)
+	vk_map[VK_MEDIA_NEXT_TRACK] = Key::MEDIANEXT; // (0xB0)
+	vk_map[VK_MEDIA_PREV_TRACK] = Key::MEDIAPREVIOUS; // (0xB1)
+	vk_map[VK_MEDIA_STOP] = Key::MEDIASTOP; // (0xB2)
+	vk_map[VK_MEDIA_PLAY_PAUSE] = Key::MEDIAPLAY; // (0xB3), Media button play/pause toggle.
+	vk_map[VK_LAUNCH_MAIL] = Key::LAUNCHMAIL; // (0xB4)
+	vk_map[VK_LAUNCH_MEDIA_SELECT] = Key::LAUNCHMEDIA; // (0xB5)
+	vk_map[VK_LAUNCH_APP1] = Key::LAUNCH0; // (0xB6)
+	vk_map[VK_LAUNCH_APP2] = Key::LAUNCH1; // (0xB7)
 	// 0xB8-B9 are reserved.
-
-	{ Key::SEMICOLON, VK_OEM_1 }, // (0xBA)
-	// Misc. character, can vary by keyboard/region.
-	// Windows 2000/XP:  For US standard keyboards, the ';:' key.
-
-	{ Key::EQUAL, VK_OEM_PLUS }, // (0xBB)
-	// Windows 2000/XP: For any country/region, the '+' key.
-	{ Key::COMMA, VK_OEM_COMMA }, // (0xBC)
-	// Windows 2000/XP: For any country/region, the ',' key.
-	{ Key::MINUS, VK_OEM_MINUS }, // (0xBD)
-	// Windows 2000/XP: For any country/region, the '-' key.
-	{ Key::PERIOD, VK_OEM_PERIOD }, // (0xBE)
-	// Windows 2000/XP: For any country/region, the '.' key.
-
-	{ Key::SLASH, VK_OEM_2 }, // (0xBF)
-	// Windows 2000/XP: For US standard keyboards, the '/?' key.
-
-	{ Key::QUOTELEFT, VK_OEM_3 }, // (0xC0)
-	// Windows 2000/XP: For US standard keyboards, the '`~' key.
-
+	vk_map[VK_OEM_1] = Key::SEMICOLON; // (0xBA), Misc. character;can vary by keyboard/region. For US standard keyboards;the ';:' key.
+	vk_map[VK_OEM_PLUS] = Key::EQUAL; // (0xBB)
+	vk_map[VK_OEM_COMMA] = Key::COMMA; // (0xBC)
+	vk_map[VK_OEM_MINUS] = Key::MINUS; // (0xBD)
+	vk_map[VK_OEM_PERIOD] = Key::PERIOD; // (0xBE)
+	vk_map[VK_OEM_2] = Key::SLASH; // (0xBF), For US standard keyboards;the '/?' key.
+	vk_map[VK_OEM_3] = Key::QUOTELEFT; // (0xC0), For US standard keyboards;the '`~' key.
 	// 0xC1-D7 are reserved. 0xD8-DA are unassigned.
-	// TODO: 0xC3-DA may be used for old gamepads? Maybe we want to support this? See WinUser.h.
-
-	{ Key::BRACKETLEFT, VK_OEM_4 }, // (0xDB)
-	// Misc. character, can vary by keyboard/region.
-	// Windows 2000/XP: For US standard keyboards, the '[{' key.
-
-	{ Key::BACKSLASH, VK_OEM_5 }, // (0xDC)
-	// Misc. character, can vary by keyboard/region.
-	// Windows 2000/XP: For US standard keyboards, the '\|' key.
-
-	{ Key::BRACKETRIGHT, VK_OEM_6 }, // (0xDD)
-	// Misc. character, can vary by keyboard/region.
-	// Windows 2000/XP: For US standard keyboards, the ']}' key.
-
-	{ Key::APOSTROPHE, VK_OEM_7 }, // (0xDE)
-	// Misc. character, can vary by keyboard/region.
-	// Windows 2000/XP: For US standard keyboards, single quote/double quote.
-
+	// 0xC3-DA may be used for old gamepads? Maybe we want to support this? See WinUser.h.
+	vk_map[VK_OEM_4] = Key::BRACKETLEFT; // (0xDB),  For US standard keyboards;the '[{' key.
+	vk_map[VK_OEM_5] = Key::BACKSLASH; // (0xDC), For US standard keyboards;the '\|' key.
+	vk_map[VK_OEM_6] = Key::BRACKETRIGHT; // (0xDD), For US standard keyboards;the ']}' key.
+	vk_map[VK_OEM_7] = Key::APOSTROPHE; // (0xDE), For US standard keyboards;single quote/double quote.
 	// VK_OEM_8 (0xDF)
-	// Misc. character, can vary by keyboard/region. We have no mapping.
+	// 0xE0 is reserved. 0xE1 is OEM specific.
+	vk_map[VK_OEM_102] = Key::BAR; // (0xE2), Either angle bracket or backslash key on the RT 102-key keyboard.
+	vk_map[VK_ICO_HELP] = Key::HELP; // (0xE3)
+	// 0xE4 is OEM (e.g. ICO) specific.
+	// VK_PROCESSKEY (0xE5), For IME.
+	vk_map[VK_ICO_CLEAR] = Key::CLEAR; // (0xE6)
+	// VK_PACKET (0xE7), Used to pass Unicode characters as if they were keystrokes.
+	// 0xE8 is unassigned.
+	// 0xE9-F5 are OEM (Nokia/Ericsson) specific.
+	vk_map[VK_ATTN] = Key::ESCAPE; // (0xF6), Old IBM 'ATTN' key used on midrange computers ;e.g. AS/400.
+	vk_map[VK_CRSEL] = Key::TAB; // (0xF7), Old IBM 3270 'CrSel' (cursor select) key; used to select data fields.
+	// VK_EXSEL (0xF7), Old IBM 3270 extended selection key.
+	// VK_EREOF (0xF8), Old IBM 3270 erase to end of field key.
+	vk_map[VK_PLAY] = Key::MEDIAPLAY; // (0xFA), Old IBM 3270 'Play' key.
+	// VK_ZOOM (0xFB), Old IBM 3290 'Zoom' key.
+	// VK_NONAME (0xFC), Reserved.
+	// VK_PA1 (0xFD), Old IBM 3270 PA1 key.
+	vk_map[VK_OEM_CLEAR] = Key::CLEAR; // (0xFE), OEM specific clear key. Unclear how it differs from normal clear.
 
-	// 0xE0 is reserved. 0xE1 is OEM specific, we have no mapping.
+	scansym_map[0x00] = Key::PAUSE;
+	scansym_map[0x01] = Key::ESCAPE;
+	scansym_map[0x02] = Key::KEY_1;
+	scansym_map[0x03] = Key::KEY_2;
+	scansym_map[0x04] = Key::KEY_3;
+	scansym_map[0x05] = Key::KEY_4;
+	scansym_map[0x06] = Key::KEY_5;
+	scansym_map[0x07] = Key::KEY_6;
+	scansym_map[0x08] = Key::KEY_7;
+	scansym_map[0x09] = Key::KEY_8;
+	scansym_map[0x0A] = Key::KEY_9;
+	scansym_map[0x0B] = Key::KEY_0;
+	scansym_map[0x0C] = Key::MINUS;
+	scansym_map[0x0D] = Key::EQUAL;
+	scansym_map[0x0E] = Key::BACKSPACE;
+	scansym_map[0x0F] = Key::TAB;
+	scansym_map[0x10] = Key::Q;
+	scansym_map[0x11] = Key::W;
+	scansym_map[0x12] = Key::E;
+	scansym_map[0x13] = Key::R;
+	scansym_map[0x14] = Key::T;
+	scansym_map[0x15] = Key::Y;
+	scansym_map[0x16] = Key::U;
+	scansym_map[0x17] = Key::I;
+	scansym_map[0x18] = Key::O;
+	scansym_map[0x19] = Key::P;
+	scansym_map[0x1A] = Key::BRACKETLEFT;
+	scansym_map[0x1B] = Key::BRACKETRIGHT;
+	scansym_map[0x1C] = Key::ENTER;
+	scansym_map[0x1D] = Key::CTRL;
+	scansym_map[0x1E] = Key::A;
+	scansym_map[0x1F] = Key::S;
+	scansym_map[0x20] = Key::D;
+	scansym_map[0x21] = Key::F;
+	scansym_map[0x22] = Key::G;
+	scansym_map[0x23] = Key::H;
+	scansym_map[0x24] = Key::J;
+	scansym_map[0x25] = Key::K;
+	scansym_map[0x26] = Key::L;
+	scansym_map[0x27] = Key::SEMICOLON;
+	scansym_map[0x28] = Key::APOSTROPHE;
+	scansym_map[0x29] = Key::QUOTELEFT;
+	scansym_map[0x2A] = Key::SHIFT;
+	scansym_map[0x2B] = Key::BACKSLASH;
+	scansym_map[0x2C] = Key::Z;
+	scansym_map[0x2D] = Key::X;
+	scansym_map[0x2E] = Key::C;
+	scansym_map[0x2F] = Key::V;
+	scansym_map[0x30] = Key::B;
+	scansym_map[0x31] = Key::N;
+	scansym_map[0x32] = Key::M;
+	scansym_map[0x33] = Key::COMMA;
+	scansym_map[0x34] = Key::PERIOD;
+	scansym_map[0x35] = Key::SLASH;
+	scansym_map[0x36] = Key::SHIFT;
+	scansym_map[0x37] = Key::KP_MULTIPLY;
+	scansym_map[0x38] = Key::ALT;
+	scansym_map[0x39] = Key::SPACE;
+	scansym_map[0x3A] = Key::CAPSLOCK;
+	scansym_map[0x3B] = Key::F1;
+	scansym_map[0x3C] = Key::F2;
+	scansym_map[0x3D] = Key::F3;
+	scansym_map[0x3E] = Key::F4;
+	scansym_map[0x3F] = Key::F5;
+	scansym_map[0x40] = Key::F6;
+	scansym_map[0x41] = Key::F7;
+	scansym_map[0x42] = Key::F8;
+	scansym_map[0x43] = Key::F9;
+	scansym_map[0x44] = Key::F10;
+	scansym_map[0x45] = Key::NUMLOCK;
+	scansym_map[0x46] = Key::SCROLLLOCK;
+	scansym_map[0x47] = Key::KP_7;
+	scansym_map[0x48] = Key::KP_8;
+	scansym_map[0x49] = Key::KP_9;
+	scansym_map[0x4A] = Key::KP_SUBTRACT;
+	scansym_map[0x4B] = Key::KP_4;
+	scansym_map[0x4C] = Key::KP_5;
+	scansym_map[0x4D] = Key::KP_6;
+	scansym_map[0x4E] = Key::KP_ADD;
+	scansym_map[0x4F] = Key::KP_1;
+	scansym_map[0x50] = Key::KP_2;
+	scansym_map[0x51] = Key::KP_3;
+	scansym_map[0x52] = Key::KP_0;
+	scansym_map[0x53] = Key::KP_PERIOD;
+	scansym_map[0x56] = Key::SECTION;
+	scansym_map[0x57] = Key::F11;
+	scansym_map[0x58] = Key::F12;
+	scansym_map[0x5B] = Key::META;
+	scansym_map[0x5C] = Key::META;
+	scansym_map[0x5D] = Key::MENU;
+	scansym_map[0x64] = Key::F13;
+	scansym_map[0x65] = Key::F14;
+	scansym_map[0x66] = Key::F15;
+	scansym_map[0x67] = Key::F16;
+	scansym_map[0x68] = Key::F17;
+	scansym_map[0x69] = Key::F18;
+	scansym_map[0x6A] = Key::F19;
+	scansym_map[0x6B] = Key::F20;
+	scansym_map[0x6C] = Key::F21;
+	scansym_map[0x6D] = Key::F22;
+	scansym_map[0x6E] = Key::F23;
+	//	scansym_map[0x71] = Key::JIS_KANA;
+	//	scansym_map[0x72] = Key::JIS_EISU;
+	scansym_map[0x76] = Key::F24;
 
-	// VK_OEM_102 (0xE2)
-	// Either angle bracket or backslash key on the RT 102-key keyboard.
-	// Old and uncommon, we have no mapping.
-
-	{ Key::HELP, VK_ICO_HELP }, // (0xE3)
-	// OEM (ICO) help key. Map to help.
-
-	// 0xE4 is OEM (e.g. ICO) specific, we have no mapping.
-
-	// VK_PROCESSKEY (0xE5)
-	// For IME, we have no mapping.
-
-	{ Key::CLEAR, VK_ICO_CLEAR }, // (0xE6)
-	// OEM (ICO) clear key. Map to clear.
-
-	// VK_PACKET (0xE7)
-	// Used to pass Unicode characters as if they were keystrokes.
-	// See Win32 API docs. We have no mapping.
-
-	// 0xE8 is unassigned, 0xE9-F5 are OEM (Nokia/Ericsson) specific, we have no mappings.
-
-	{ Key::ESCAPE, VK_ATTN }, // (0xF6)
-	// Old IBM 'ATTN' key used on midrange computers, e.g. AS/400, map to Escape.
-
-	{ Key::TAB, VK_CRSEL }, // (0xF7)
-	// Old IBM 3270  'CrSel' (cursor select) key, used to select data fields, map to Tab.
-
-	// VK_EXSEL (0xF7)
-	// Old IBM 3270  extended selection key. No mapping.
-
-	// VK_EREOF (0xF8)
-	// Old IBM 3270 erase to end of field key. No mapping.
-
-	{ Key::MEDIAPLAY, VK_PLAY }, // (0xFA)
-	// Old IBM 3270 'Play' key. Map to media play.
-
-	// VK_ZOOM (0xFB)
-	// Old IBM 3290 'Zoom' key. No mapping.
-
-	// VK_NONAME (0xFC)
-	// Reserved. No mapping.
-
-	// VK_PA1 (0xFD)
-	// Old IBM 3270 PA1 key. No mapping.
-
-	{ Key::CLEAR, VK_OEM_CLEAR }, // (0xFE)
-	// OEM specific clear key. Unclear how it differs from normal clear. Map to clear.
-
-	{ Key::UNKNOWN, 0 }
-};
-
-static _WinTranslatePair _scancode_to_keycode[] = {
-	{ Key::ESCAPE, 0x01 },
-	{ Key::KEY_1, 0x02 },
-	{ Key::KEY_2, 0x03 },
-	{ Key::KEY_3, 0x04 },
-	{ Key::KEY_4, 0x05 },
-	{ Key::KEY_5, 0x06 },
-	{ Key::KEY_6, 0x07 },
-	{ Key::KEY_7, 0x08 },
-	{ Key::KEY_8, 0x09 },
-	{ Key::KEY_9, 0x0A },
-	{ Key::KEY_0, 0x0B },
-	{ Key::MINUS, 0x0C },
-	{ Key::EQUAL, 0x0D },
-	{ Key::BACKSPACE, 0x0E },
-	{ Key::TAB, 0x0F },
-	{ Key::Q, 0x10 },
-	{ Key::W, 0x11 },
-	{ Key::E, 0x12 },
-	{ Key::R, 0x13 },
-	{ Key::T, 0x14 },
-	{ Key::Y, 0x15 },
-	{ Key::U, 0x16 },
-	{ Key::I, 0x17 },
-	{ Key::O, 0x18 },
-	{ Key::P, 0x19 },
-	{ Key::BRACELEFT, 0x1A },
-	{ Key::BRACERIGHT, 0x1B },
-	{ Key::ENTER, 0x1C },
-	{ Key::CTRL, 0x1D },
-	{ Key::A, 0x1E },
-	{ Key::S, 0x1F },
-	{ Key::D, 0x20 },
-	{ Key::F, 0x21 },
-	{ Key::G, 0x22 },
-	{ Key::H, 0x23 },
-	{ Key::J, 0x24 },
-	{ Key::K, 0x25 },
-	{ Key::L, 0x26 },
-	{ Key::SEMICOLON, 0x27 },
-	{ Key::APOSTROPHE, 0x28 },
-	{ Key::QUOTELEFT, 0x29 },
-	{ Key::SHIFT, 0x2A },
-	{ Key::BACKSLASH, 0x2B },
-	{ Key::Z, 0x2C },
-	{ Key::X, 0x2D },
-	{ Key::C, 0x2E },
-	{ Key::V, 0x2F },
-	{ Key::B, 0x30 },
-	{ Key::N, 0x31 },
-	{ Key::M, 0x32 },
-	{ Key::COMMA, 0x33 },
-	{ Key::PERIOD, 0x34 },
-	{ Key::SLASH, 0x35 },
-	{ Key::SHIFT, 0x36 },
-	{ Key::PRINT, 0x37 },
-	{ Key::ALT, 0x38 },
-	{ Key::SPACE, 0x39 },
-	{ Key::CAPSLOCK, 0x3A },
-	{ Key::F1, 0x3B },
-	{ Key::F2, 0x3C },
-	{ Key::F3, 0x3D },
-	{ Key::F4, 0x3E },
-	{ Key::F5, 0x3F },
-	{ Key::F6, 0x40 },
-	{ Key::F7, 0x41 },
-	{ Key::F8, 0x42 },
-	{ Key::F9, 0x43 },
-	{ Key::F10, 0x44 },
-	{ Key::NUMLOCK, 0x45 },
-	{ Key::SCROLLLOCK, 0x46 },
-	{ Key::HOME, 0x47 },
-	{ Key::UP, 0x48 },
-	{ Key::PAGEUP, 0x49 },
-	{ Key::KP_SUBTRACT, 0x4A },
-	{ Key::LEFT, 0x4B },
-	{ Key::KP_5, 0x4C },
-	{ Key::RIGHT, 0x4D },
-	{ Key::KP_ADD, 0x4E },
-	{ Key::END, 0x4F },
-	{ Key::DOWN, 0x50 },
-	{ Key::PAGEDOWN, 0x51 },
-	{ Key::INSERT, 0x52 },
-	{ Key::KEY_DELETE, 0x53 },
-	{ Key::F11, 0x57 },
-	{ Key::F12, 0x58 },
-	{ Key::META, 0x5B },
-	{ Key::META, 0x5C },
-	{ Key::MENU, 0x5D },
-	{ Key::F13, 0x64 },
-	{ Key::F14, 0x65 },
-	{ Key::F15, 0x66 },
-	{ Key::F16, 0x67 },
-	{ Key::F17, 0x68 },
-	{ Key::F18, 0x69 },
-	{ Key::F19, 0x6A },
-	{ Key::F20, 0x6B },
-	{ Key::F21, 0x6C },
-	{ Key::F22, 0x6D },
-	{ Key::F23, 0x6E },
-	{ Key::F24, 0x76 },
-	{ Key::UNKNOWN, 0 }
-};
-
-Key KeyMappingWindows::get_keysym(unsigned int p_code) {
-	for (int i = 0; _vk_to_keycode[i].keysym != Key::UNKNOWN; i++) {
-		if (_vk_to_keycode[i].keycode == p_code) {
-			return _vk_to_keycode[i].keysym;
-		}
+	for (const KeyValue<unsigned int, Key> &E : scansym_map) {
+		scansym_map_inv[E.value] = E.key;
 	}
 
+	scansym_map_ext[0x09] = Key::MENU;
+	scansym_map_ext[0x10] = Key::MEDIAPREVIOUS;
+	scansym_map_ext[0x19] = Key::MEDIANEXT;
+	scansym_map_ext[0x1C] = Key::KP_ENTER;
+	scansym_map_ext[0x20] = Key::VOLUMEMUTE;
+	scansym_map_ext[0x21] = Key::LAUNCH1;
+	scansym_map_ext[0x22] = Key::MEDIAPLAY;
+	scansym_map_ext[0x24] = Key::MEDIASTOP;
+	scansym_map_ext[0x2E] = Key::VOLUMEDOWN;
+	scansym_map_ext[0x30] = Key::VOLUMEUP;
+	scansym_map_ext[0x32] = Key::HOMEPAGE;
+	scansym_map_ext[0x35] = Key::KP_DIVIDE;
+	scansym_map_ext[0x37] = Key::PRINT;
+	scansym_map_ext[0x3A] = Key::KP_ADD;
+	scansym_map_ext[0x45] = Key::NUMLOCK;
+	scansym_map_ext[0x47] = Key::HOME;
+	scansym_map_ext[0x48] = Key::UP;
+	scansym_map_ext[0x49] = Key::PAGEUP;
+	scansym_map_ext[0x4A] = Key::KP_SUBTRACT;
+	scansym_map_ext[0x4B] = Key::LEFT;
+	scansym_map_ext[0x4C] = Key::KP_5;
+	scansym_map_ext[0x4D] = Key::RIGHT;
+	scansym_map_ext[0x4E] = Key::KP_ADD;
+	scansym_map_ext[0x4F] = Key::END;
+	scansym_map_ext[0x50] = Key::DOWN;
+	scansym_map_ext[0x51] = Key::PAGEDOWN;
+	scansym_map_ext[0x52] = Key::INSERT;
+	scansym_map_ext[0x53] = Key::KEY_DELETE;
+	scansym_map_ext[0x5D] = Key::MENU;
+	scansym_map_ext[0x5F] = Key::STANDBY;
+	scansym_map_ext[0x65] = Key::SEARCH;
+	scansym_map_ext[0x66] = Key::FAVORITES;
+	scansym_map_ext[0x67] = Key::REFRESH;
+	scansym_map_ext[0x68] = Key::STOP;
+	scansym_map_ext[0x69] = Key::FORWARD;
+	scansym_map_ext[0x6A] = Key::BACK;
+	scansym_map_ext[0x6B] = Key::LAUNCH0;
+	scansym_map_ext[0x6C] = Key::LAUNCHMAIL;
+	scansym_map_ext[0x6D] = Key::LAUNCHMEDIA;
+	scansym_map_ext[0x78] = Key::MEDIARECORD;
+}
+
+Key KeyMappingWindows::get_keysym(unsigned int p_code) {
+	const Key *key = vk_map.getptr(p_code);
+	if (key) {
+		return *key;
+	}
 	return Key::UNKNOWN;
 }
 
 unsigned int KeyMappingWindows::get_scancode(Key p_keycode) {
-	for (int i = 0; _scancode_to_keycode[i].keysym != Key::UNKNOWN; i++) {
-		if (_scancode_to_keycode[i].keysym == p_keycode) {
-			return _scancode_to_keycode[i].keycode;
-		}
+	const unsigned int *key = scansym_map_inv.getptr(p_keycode);
+	if (key) {
+		return *key;
 	}
-
 	return 0;
 }
 
 Key KeyMappingWindows::get_scansym(unsigned int p_code, bool p_extended) {
-	Key keycode = Key::UNKNOWN;
-	for (int i = 0; _scancode_to_keycode[i].keysym != Key::UNKNOWN; i++) {
-		if (_scancode_to_keycode[i].keycode == p_code) {
-			keycode = _scancode_to_keycode[i].keysym;
-			break;
-		}
-	}
-
 	if (p_extended) {
-		switch (keycode) {
-			case Key::ENTER: {
-				keycode = Key::KP_ENTER;
-			} break;
-			case Key::SLASH: {
-				keycode = Key::KP_DIVIDE;
-			} break;
-			case Key::CAPSLOCK: {
-				keycode = Key::KP_ADD;
-			} break;
-			default:
-				break;
-		}
-	} else {
-		switch (keycode) {
-			case Key::NUMLOCK: {
-				keycode = Key::PAUSE;
-			} break;
-			case Key::HOME: {
-				keycode = Key::KP_7;
-			} break;
-			case Key::UP: {
-				keycode = Key::KP_8;
-			} break;
-			case Key::PAGEUP: {
-				keycode = Key::KP_9;
-			} break;
-			case Key::LEFT: {
-				keycode = Key::KP_4;
-			} break;
-			case Key::RIGHT: {
-				keycode = Key::KP_6;
-			} break;
-			case Key::END: {
-				keycode = Key::KP_1;
-			} break;
-			case Key::DOWN: {
-				keycode = Key::KP_2;
-			} break;
-			case Key::PAGEDOWN: {
-				keycode = Key::KP_3;
-			} break;
-			case Key::INSERT: {
-				keycode = Key::KP_0;
-			} break;
-			case Key::KEY_DELETE: {
-				keycode = Key::KP_PERIOD;
-			} break;
-			case Key::PRINT: {
-				keycode = Key::KP_MULTIPLY;
-			} break;
-			default:
-				break;
+		const Key *key = scansym_map_ext.getptr(p_code);
+		if (key) {
+			return *key;
 		}
 	}
-
-	return keycode;
+	const Key *key = scansym_map.getptr(p_code);
+	if (key) {
+		return *key;
+	}
+	return Key::NONE;
 }
 
 bool KeyMappingWindows::is_extended_key(unsigned int p_code) {

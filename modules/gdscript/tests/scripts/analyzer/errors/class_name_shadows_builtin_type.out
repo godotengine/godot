@@ -1,2 +1,2 @@
 GDTEST_ANALYZER_ERROR
-The member "Vector2" cannot have the same name as a builtin type.
+Class "Vector2" hides a built-in type.

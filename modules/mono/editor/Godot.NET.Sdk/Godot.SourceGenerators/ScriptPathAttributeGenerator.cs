@@ -22,10 +22,17 @@ namespace Godot.SourceGenerators
 
             // NOTE: NotNullWhen diagnostics don't work on projects targeting .NET Standard 2.0
             // ReSharper disable once ReplaceWithStringIsNullOrEmpty
-            if (!context.TryGetGlobalAnalyzerProperty("GodotProjectDir", out string? godotProjectDir)
-                || godotProjectDir!.Length == 0)
+            if (!context.TryGetGlobalAnalyzerProperty("GodotProjectDirBase64", out string? godotProjectDir) || godotProjectDir!.Length == 0)
             {
-                throw new InvalidOperationException("Property 'GodotProjectDir' is null or empty.");
+                if (!context.TryGetGlobalAnalyzerProperty("GodotProjectDir", out godotProjectDir) || godotProjectDir!.Length == 0)
+                {
+                    throw new InvalidOperationException("Property 'GodotProjectDir' is null or empty.");
+                }
+            }
+            else
+            {
+                // Workaround for https://github.com/dotnet/roslyn/issues/51692
+                godotProjectDir = Encoding.UTF8.GetString(Convert.FromBase64String(godotProjectDir));
             }
 
             Dictionary<INamedTypeSymbol, IEnumerable<ClassDeclarationSyntax>> godotClasses = context
@@ -45,8 +52,11 @@ namespace Godot.SourceGenerators
                             return false;
                         })
                 )
-                // Ignore classes whose name is not the same as the file name
-                .Where(x => Path.GetFileNameWithoutExtension(x.cds.SyntaxTree.FilePath) == x.symbol.Name)
+                .Where(x =>
+                    // Ignore classes whose name is not the same as the file name
+                    Path.GetFileNameWithoutExtension(x.cds.SyntaxTree.FilePath) == x.symbol.Name &&
+                    // Ignore generic classes
+                    !x.symbol.IsGenericType)
                 .GroupBy(x => x.symbol)
                 .ToDictionary(g => g.Key, g => g.Select(x => x.cds));
 
@@ -92,12 +102,12 @@ namespace Godot.SourceGenerators
 
             INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
             string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace ?
-                namespaceSymbol.FullQualifiedName() :
+                namespaceSymbol.FullQualifiedNameOmitGlobal() :
                 string.Empty;
             bool hasNamespace = classNs.Length != 0;
 
-            var uniqueHint = symbol.FullQualifiedName().SanitizeQualifiedNameForUniqueHint()
-                             + "_ScriptPath_Generated";
+            string uniqueHint = symbol.FullQualifiedNameOmitGlobal().SanitizeQualifiedNameForUniqueHint()
+                             + "_ScriptPath.generated";
 
             var source = new StringBuilder();
 
@@ -126,7 +136,7 @@ namespace Godot.SourceGenerators
                 source.Append("\n}\n");
             }
 
-            context.AddSource(uniqueHint.ToString(), SourceText.From(source.ToString(), Encoding.UTF8));
+            context.AddSource(uniqueHint, SourceText.From(source.ToString(), Encoding.UTF8));
         }
 
         private static void AddScriptTypesAssemblyAttr(GeneratorExecutionContext context,
@@ -150,14 +160,12 @@ namespace Godot.SourceGenerators
                 first = false;
                 sourceBuilder.Append("typeof(");
                 sourceBuilder.Append(qualifiedName);
-                if (godotClass.Key.IsGenericType)
-                    sourceBuilder.Append($"<{new string(',', godotClass.Key.TypeParameters.Count() - 1)}>");
                 sourceBuilder.Append(")");
             }
 
             sourceBuilder.Append("})]\n");
 
-            context.AddSource("AssemblyScriptTypes_Generated",
+            context.AddSource("AssemblyScriptTypes.generated",
                 SourceText.From(sourceBuilder.ToString(), Encoding.UTF8));
         }
 

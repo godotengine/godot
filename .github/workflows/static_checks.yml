@@ -13,21 +13,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      # Azure repositories are not reliable, we need to prevent Azure giving us packages.
-      - name: Make apt sources.list use the default Ubuntu repositories
-        run: |
-          sudo rm -f /etc/apt/sources.list.d/*
-          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
-          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-          sudo apt-add-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main"
-          sudo apt-get update
-
       - name: Install dependencies
         run: |
-          sudo apt-get install -qq dos2unix recode clang-format-13 libxml2-utils python3-pip moreutils
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          sudo apt-add-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-15 main"
+          sudo apt-get install -qq dos2unix clang-format-15 libxml2-utils python3-pip moreutils
           sudo update-alternatives --remove-all clang-format || true
-          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-13 100
-          sudo pip3 install black==22.3.0 pygments pytest
+          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-15 100
+          sudo pip3 install black==22.3.0 pygments pytest==7.1.2 mypy==0.971
 
       - name: File formatting checks (file_format.sh)
         run: |
@@ -40,6 +34,10 @@ jobs:
       - name: Python style checks via black (black_format.sh)
         run: |
           bash ./misc/scripts/black_format.sh
+
+      - name: Python scripts static analysis (mypy_check.sh)
+        run: |
+          bash ./misc/scripts/mypy_check.sh
 
       - name: Python builders checks via pytest (pytest_builders.sh)
         run: |
@@ -67,3 +65,11 @@ jobs:
       - name: Style checks via dotnet format (dotnet_format.sh)
         run: |
           bash ./misc/scripts/dotnet_format.sh
+
+      - name: Spell checks via codespell
+        uses: codespell-project/actions-codespell@v1
+        with:
+          skip: ./.*,./**/.*,./bin,./thirdparty,*.desktop,*.gen.*,*.po,*.pot,*.rc,./AUTHORS.md,./COPYRIGHT.txt,./DONORS.md,./core/input/gamecontrollerdb.txt,./core/string/locales.h,./editor/project_converter_3_to_4.cpp,./misc/scripts/codespell.sh,./platform/android/java/lib/src/com,./platform/web/node_modules,./platform/web/package-lock.json
+          check_hidden: false
+          ignore_words_list: curvelinear,doubleclick,expct,findn,gird,hel,inout,lod,nd,numer,ot,te
+          only_warn: true

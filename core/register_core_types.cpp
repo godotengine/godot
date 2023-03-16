@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  register_core_types.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  register_core_types.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "register_core_types.h"
 
@@ -38,12 +38,13 @@
 #include "core/crypto/crypto.h"
 #include "core/crypto/hashing_context.h"
 #include "core/debugger/engine_profiler.h"
-#include "core/extension/native_extension.h"
-#include "core/extension/native_extension_manager.h"
+#include "core/extension/gdextension.h"
+#include "core/extension/gdextension_manager.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/input/shortcut.h"
 #include "core/io/config_file.h"
+#include "core/io/dir_access.h"
 #include "core/io/dtls_server.h"
 #include "core/io/http_client.h"
 #include "core/io/image_loader.h"
@@ -58,6 +59,7 @@
 #include "core/io/resource_format_binary.h"
 #include "core/io/resource_importer.h"
 #include "core/io/resource_uid.h"
+#include "core/io/stream_peer_gzip.h"
 #include "core/io/stream_peer_tls.h"
 #include "core/io/tcp_server.h"
 #include "core/io/translation_loader_po.h"
@@ -82,11 +84,12 @@
 static Ref<ResourceFormatSaverBinary> resource_saver_binary;
 static Ref<ResourceFormatLoaderBinary> resource_loader_binary;
 static Ref<ResourceFormatImporter> resource_format_importer;
+static Ref<ResourceFormatImporterSaver> resource_format_importer_saver;
 static Ref<ResourceFormatLoaderImage> resource_format_image;
 static Ref<TranslationLoaderPO> resource_format_po;
 static Ref<ResourceFormatSaverCrypto> resource_format_saver_crypto;
 static Ref<ResourceFormatLoaderCrypto> resource_format_loader_crypto;
-static Ref<NativeExtensionResourceLoader> resource_loader_native_extension;
+static Ref<GDExtensionResourceLoader> resource_loader_gdextension;
 static Ref<ResourceFormatSaverJSON> resource_saver_json;
 static Ref<ResourceFormatLoaderJSON> resource_loader_json;
 
@@ -107,7 +110,7 @@ static WorkerThreadPool *worker_thread_pool = nullptr;
 
 extern Mutex _global_mutex;
 
-static NativeExtensionManager *native_extension_manager = nullptr;
+static GDExtensionManager *gdextension_manager = nullptr;
 
 extern void register_global_constants();
 extern void unregister_global_constants();
@@ -141,6 +144,9 @@ void register_core_types() {
 
 	resource_format_importer.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_format_importer);
+
+	resource_format_importer_saver.instantiate();
+	ResourceSaver::add_resource_format_saver(resource_format_importer_saver);
 
 	resource_format_image.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_format_image);
@@ -184,6 +190,7 @@ void register_core_types() {
 	GDREGISTER_ABSTRACT_CLASS(StreamPeer);
 	GDREGISTER_CLASS(StreamPeerExtension);
 	GDREGISTER_CLASS(StreamPeerBuffer);
+	GDREGISTER_CLASS(StreamPeerGZIP);
 	GDREGISTER_CLASS(StreamPeerTCP);
 	GDREGISTER_CLASS(TCPServer);
 
@@ -202,6 +209,7 @@ void register_core_types() {
 	GDREGISTER_CLASS(AESContext);
 	ClassDB::register_custom_instance_class<X509Certificate>();
 	ClassDB::register_custom_instance_class<CryptoKey>();
+	GDREGISTER_ABSTRACT_CLASS(TLSOptions);
 	ClassDB::register_custom_instance_class<HMACContext>();
 	ClassDB::register_custom_instance_class<Crypto>();
 	ClassDB::register_custom_instance_class<StreamPeerTLS>();
@@ -228,8 +236,8 @@ void register_core_types() {
 	GDREGISTER_CLASS(ResourceFormatLoader);
 	GDREGISTER_CLASS(ResourceFormatSaver);
 
-	GDREGISTER_CLASS(core_bind::File);
-	GDREGISTER_CLASS(core_bind::Directory);
+	GDREGISTER_ABSTRACT_CLASS(FileAccess);
+	GDREGISTER_ABSTRACT_CLASS(DirAccess);
 	GDREGISTER_CLASS(core_bind::Thread);
 	GDREGISTER_CLASS(core_bind::Mutex);
 	GDREGISTER_CLASS(core_bind::Semaphore);
@@ -249,11 +257,13 @@ void register_core_types() {
 	GDREGISTER_CLASS(EncodedObjectAsID);
 	GDREGISTER_CLASS(RandomNumberGenerator);
 
+	GDREGISTER_ABSTRACT_CLASS(ImageFormatLoader);
+	GDREGISTER_CLASS(ImageFormatLoaderExtension);
 	GDREGISTER_ABSTRACT_CLASS(ResourceImporter);
 
-	GDREGISTER_CLASS(NativeExtension);
+	GDREGISTER_CLASS(GDExtension);
 
-	GDREGISTER_ABSTRACT_CLASS(NativeExtensionManager);
+	GDREGISTER_ABSTRACT_CLASS(GDExtensionManager);
 
 	GDREGISTER_ABSTRACT_CLASS(ResourceUID);
 
@@ -261,10 +271,10 @@ void register_core_types() {
 
 	resource_uid = memnew(ResourceUID);
 
-	native_extension_manager = memnew(NativeExtensionManager);
+	gdextension_manager = memnew(GDExtensionManager);
 
-	resource_loader_native_extension.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_loader_native_extension);
+	resource_loader_gdextension.instantiate();
+	ResourceLoader::add_resource_format_loader(resource_loader_gdextension);
 
 	ip = IP::create();
 
@@ -288,12 +298,9 @@ void register_core_types() {
 
 void register_core_settings() {
 	// Since in register core types, globals may not be present.
-	GLOBAL_DEF("network/limits/tcp/connect_timeout_seconds", (30));
-	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/tcp/connect_timeout_seconds", PropertyInfo(Variant::INT, "network/limits/tcp/connect_timeout_seconds", PROPERTY_HINT_RANGE, "1,1800,1"));
-	GLOBAL_DEF_RST("network/limits/packet_peer_stream/max_buffer_po2", (16));
-	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/packet_peer_stream/max_buffer_po2", PropertyInfo(Variant::INT, "network/limits/packet_peer_stream/max_buffer_po2", PROPERTY_HINT_RANGE, "0,64,1,or_greater"));
-	GLOBAL_DEF("network/tls/certificate_bundle_override", "");
-	ProjectSettings::get_singleton()->set_custom_property_info("network/tls/certificate_bundle_override", PropertyInfo(Variant::STRING, "network/tls/certificate_bundle_override", PROPERTY_HINT_FILE, "*.crt"));
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "network/limits/tcp/connect_timeout_seconds", PROPERTY_HINT_RANGE, "1,1800,1"), (30));
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "network/limits/packet_peer_stream/max_buffer_po2", PROPERTY_HINT_RANGE, "0,64,1,or_greater"), (16));
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, "network/tls/certificate_bundle_override", PROPERTY_HINT_FILE, "*.crt"), "");
 
 	int worker_threads = GLOBAL_DEF("threading/worker_pool/max_threads", -1);
 	bool low_priority_use_system_threads = GLOBAL_DEF("threading/worker_pool/use_system_threads_for_low_priority_tasks", true);
@@ -339,27 +346,27 @@ void register_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("InputMap", InputMap::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("EngineDebugger", core_bind::EngineDebugger::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Time", Time::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("NativeExtensionManager", NativeExtensionManager::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("GDExtensionManager", GDExtensionManager::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceUID", ResourceUID::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("WorkerThreadPool", worker_thread_pool));
 }
 
 void register_core_extensions() {
 	// Hardcoded for now.
-	NativeExtension::initialize_native_extensions();
-	native_extension_manager->load_extensions();
-	native_extension_manager->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_CORE);
+	GDExtension::initialize_gdextensions();
+	gdextension_manager->load_extensions();
+	gdextension_manager->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_CORE);
 	_is_core_extensions_registered = true;
 }
 
 void unregister_core_extensions() {
 	if (_is_core_extensions_registered) {
-		native_extension_manager->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_CORE);
+		gdextension_manager->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_CORE);
 	}
 }
 
 void unregister_core_types() {
-	memdelete(native_extension_manager);
+	memdelete(gdextension_manager);
 
 	memdelete(resource_uid);
 	memdelete(_resource_loader);
@@ -387,6 +394,9 @@ void unregister_core_types() {
 	ResourceLoader::remove_resource_format_loader(resource_format_importer);
 	resource_format_importer.unref();
 
+	ResourceSaver::remove_resource_format_saver(resource_format_importer_saver);
+	resource_format_importer_saver.unref();
+
 	ResourceLoader::remove_resource_format_loader(resource_format_po);
 	resource_format_po.unref();
 
@@ -405,8 +415,8 @@ void unregister_core_types() {
 		memdelete(ip);
 	}
 
-	ResourceLoader::remove_resource_format_loader(resource_loader_native_extension);
-	resource_loader_native_extension.unref();
+	ResourceLoader::remove_resource_format_loader(resource_loader_gdextension);
+	resource_loader_gdextension.unref();
 
 	ResourceLoader::finalize();
 

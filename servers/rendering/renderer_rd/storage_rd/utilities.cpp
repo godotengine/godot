@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  utilities.cpp                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  utilities.cpp                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "utilities.h"
 #include "../environment/fog.h"
@@ -89,49 +89,28 @@ RS::InstanceType Utilities::get_base_type(RID p_rid) const {
 }
 
 bool Utilities::free(RID p_rid) {
-	if (RendererRD::TextureStorage::get_singleton()->owns_texture(p_rid)) {
-		RendererRD::TextureStorage::get_singleton()->texture_free(p_rid);
-	} else if (RendererRD::TextureStorage::get_singleton()->owns_canvas_texture(p_rid)) {
-		RendererRD::TextureStorage::get_singleton()->canvas_texture_free(p_rid);
-	} else if (RendererRD::MaterialStorage::get_singleton()->owns_shader(p_rid)) {
-		RendererRD::MaterialStorage::get_singleton()->shader_free(p_rid);
-	} else if (RendererRD::MaterialStorage::get_singleton()->owns_material(p_rid)) {
-		RendererRD::MaterialStorage::get_singleton()->material_free(p_rid);
-	} else if (RendererRD::MeshStorage::get_singleton()->owns_mesh(p_rid)) {
-		RendererRD::MeshStorage::get_singleton()->mesh_free(p_rid);
-	} else if (RendererRD::MeshStorage::get_singleton()->owns_mesh_instance(p_rid)) {
-		RendererRD::MeshStorage::get_singleton()->mesh_instance_free(p_rid);
-	} else if (RendererRD::MeshStorage::get_singleton()->owns_multimesh(p_rid)) {
-		RendererRD::MeshStorage::get_singleton()->multimesh_free(p_rid);
-	} else if (RendererRD::MeshStorage::get_singleton()->owns_skeleton(p_rid)) {
-		RendererRD::MeshStorage::get_singleton()->skeleton_free(p_rid);
-	} else if (RendererRD::LightStorage::get_singleton()->owns_reflection_probe(p_rid)) {
-		RendererRD::LightStorage::get_singleton()->reflection_probe_free(p_rid);
-	} else if (RendererRD::TextureStorage::get_singleton()->owns_decal(p_rid)) {
-		RendererRD::TextureStorage::get_singleton()->decal_free(p_rid);
+	if (RendererRD::LightStorage::get_singleton()->free(p_rid)) {
+		return true;
+	} else if (RendererRD::MaterialStorage::get_singleton()->free(p_rid)) {
+		return true;
+	} else if (RendererRD::MeshStorage::get_singleton()->free(p_rid)) {
+		return true;
+	} else if (RendererRD::ParticlesStorage::get_singleton()->free(p_rid)) {
+		return true;
+	} else if (RendererRD::TextureStorage::get_singleton()->free(p_rid)) {
+		return true;
 	} else if (RendererRD::GI::get_singleton()->owns_voxel_gi(p_rid)) {
 		RendererRD::GI::get_singleton()->voxel_gi_free(p_rid);
-	} else if (RendererRD::LightStorage::get_singleton()->owns_lightmap(p_rid)) {
-		RendererRD::LightStorage::get_singleton()->lightmap_free(p_rid);
-	} else if (RendererRD::LightStorage::get_singleton()->owns_light(p_rid)) {
-		RendererRD::LightStorage::get_singleton()->light_free(p_rid);
-	} else if (RendererRD::ParticlesStorage::get_singleton()->owns_particles(p_rid)) {
-		RendererRD::ParticlesStorage::get_singleton()->particles_free(p_rid);
-	} else if (RendererRD::ParticlesStorage::get_singleton()->owns_particles_collision(p_rid)) {
-		RendererRD::ParticlesStorage::get_singleton()->particles_collision_free(p_rid);
+		return true;
+	} else if (RendererRD::Fog::get_singleton()->owns_fog_volume(p_rid)) {
+		RendererRD::Fog::get_singleton()->fog_volume_free(p_rid);
+		return true;
 	} else if (owns_visibility_notifier(p_rid)) {
 		visibility_notifier_free(p_rid);
-	} else if (RendererRD::ParticlesStorage::get_singleton()->owns_particles_collision_instance(p_rid)) {
-		RendererRD::ParticlesStorage::get_singleton()->particles_collision_instance_free(p_rid);
-	} else if (RendererRD::Fog::get_singleton()->owns_fog_volume(p_rid)) {
-		RendererRD::Fog::get_singleton()->fog_free(p_rid);
-	} else if (RendererRD::TextureStorage::get_singleton()->owns_render_target(p_rid)) {
-		RendererRD::TextureStorage::get_singleton()->render_target_free(p_rid);
+		return true;
 	} else {
 		return false;
 	}
-
-	return true;
 }
 
 /* DEPENDENCIES */
@@ -170,8 +149,8 @@ void Utilities::base_update_dependency(RID p_base, DependencyTracker *p_instance
 		Dependency *dependency = ParticlesStorage::get_singleton()->particles_collision_get_dependency(p_base);
 		p_instance->update_dependency(dependency);
 	} else if (Fog::get_singleton()->owns_fog_volume(p_base)) {
-		Fog::FogVolume *fv = Fog::get_singleton()->get_fog_volume(p_base);
-		p_instance->update_dependency(&fv->dependency);
+		Dependency *dependency = Fog::get_singleton()->fog_volume_get_dependency(p_base);
+		p_instance->update_dependency(dependency);
 	} else if (owns_visibility_notifier(p_base)) {
 		VisibilityNotifier *vn = get_visibility_notifier(p_base);
 		p_instance->update_dependency(&vn->dependency);
@@ -221,7 +200,7 @@ void Utilities::visibility_notifier_call(RID p_notifier, bool p_enter, bool p_de
 	if (p_enter) {
 		if (!vn->enter_callback.is_null()) {
 			if (p_deferred) {
-				vn->enter_callback.call_deferredp(nullptr, 0);
+				vn->enter_callback.call_deferred();
 			} else {
 				Variant r;
 				Callable::CallError ce;
@@ -231,7 +210,7 @@ void Utilities::visibility_notifier_call(RID p_notifier, bool p_enter, bool p_de
 	} else {
 		if (!vn->exit_callback.is_null()) {
 			if (p_deferred) {
-				vn->exit_callback.call_deferredp(nullptr, 0);
+				vn->exit_callback.call_deferred();
 			} else {
 				Variant r;
 				Callable::CallError ce;
@@ -307,6 +286,10 @@ bool Utilities::has_os_feature(const String &p_feature) const {
 		return true;
 	}
 
+	if (p_feature == "astc" && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_ASTC_4x4_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT)) {
+		return true;
+	}
+
 	return false;
 }
 
@@ -341,4 +324,12 @@ RenderingDevice::DeviceType Utilities::get_video_adapter_type() const {
 
 String Utilities::get_video_adapter_api_version() const {
 	return RenderingDevice::get_singleton()->get_device_api_version();
+}
+
+Size2i Utilities::get_maximum_viewport_size() const {
+	RenderingDevice *device = RenderingDevice::get_singleton();
+
+	int max_x = device->limit_get(RenderingDevice::LIMIT_MAX_VIEWPORT_DIMENSIONS_X);
+	int max_y = device->limit_get(RenderingDevice::LIMIT_MAX_VIEWPORT_DIMENSIONS_Y);
+	return Size2i(max_x, max_y);
 }

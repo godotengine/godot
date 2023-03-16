@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  rect2.h                                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  rect2.h                                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef RECT2_H
 #define RECT2_H
@@ -144,7 +144,7 @@ struct _NO_DISCARD_ Rect2 {
 		return size.x > 0.0f && size.y > 0.0f;
 	}
 
-	// Returns the instersection between two Rect2s or an empty Rect2 if there is no intersection
+	// Returns the intersection between two Rect2s or an empty Rect2 if there is no intersection.
 	inline Rect2 intersection(const Rect2 &p_rect) const {
 		Rect2 new_rect = p_rect;
 
@@ -178,7 +178,7 @@ struct _NO_DISCARD_ Rect2 {
 		new_rect.size.x = MAX(p_rect.position.x + p_rect.size.x, position.x + size.x);
 		new_rect.size.y = MAX(p_rect.position.y + p_rect.size.y, position.y + size.y);
 
-		new_rect.size = new_rect.size - new_rect.position; //make relative again
+		new_rect.size = new_rect.size - new_rect.position; // Make relative again.
 
 		return new_rect;
 	}
@@ -207,6 +207,7 @@ struct _NO_DISCARD_ Rect2 {
 	}
 
 	bool is_equal_approx(const Rect2 &p_rect) const;
+	bool is_finite() const;
 
 	bool operator==(const Rect2 &p_rect) const { return position == p_rect.position && size == p_rect.size; }
 	bool operator!=(const Rect2 &p_rect) const { return position != p_rect.position || size != p_rect.size; }
@@ -253,7 +254,7 @@ struct _NO_DISCARD_ Rect2 {
 		return r;
 	}
 
-	inline void expand_to(const Vector2 &p_vector) { //in place function for speed
+	inline void expand_to(const Vector2 &p_vector) { // In place function for speed.
 #ifdef MATH_CHECKS
 		if (unlikely(size.x < 0 || size.y < 0)) {
 			ERR_PRINT("Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.");
@@ -281,7 +282,7 @@ struct _NO_DISCARD_ Rect2 {
 	}
 
 	_FORCE_INLINE_ Rect2 abs() const {
-		return Rect2(Point2(position.x + MIN(size.x, 0), position.y + MIN(size.y, 0)), size.abs());
+		return Rect2(Point2(position.x + MIN(size.x, (real_t)0), position.y + MIN(size.y, (real_t)0)), size.abs());
 	}
 
 	Vector2 get_support(const Vector2 &p_normal) const {
@@ -311,7 +312,7 @@ struct _NO_DISCARD_ Rect2 {
 				continue;
 			}
 
-			//check inside
+			// Check inside.
 			Vector2 tg = r.orthogonal();
 			float s = tg.dot(center) - tg.dot(a);
 			if (s < 0.0f) {
@@ -320,7 +321,7 @@ struct _NO_DISCARD_ Rect2 {
 				side_minus++;
 			}
 
-			//check ray box
+			// Check ray box.
 			r /= l;
 			Vector2 ir(1.0f / r.x, 1.0f / r.y);
 
@@ -341,7 +342,7 @@ struct _NO_DISCARD_ Rect2 {
 		}
 
 		if (side_plus * side_minus == 0) {
-			return true; //all inside
+			return true; // All inside.
 		} else {
 			return false;
 		}

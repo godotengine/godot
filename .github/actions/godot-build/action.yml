@@ -2,16 +2,13 @@ name: Build Godot
 description: Build Godot with the provided options.
 inputs:
   target:
-    description: The scons target (debug/release_debug/release).
-    default: "debug"
-  tools:
-    description: If tools are to be built.
-    default: false
+    description: Build target (editor, template_release, template_debug).
+    default: "editor"
   tests:
-    description: If tests are to be built.
+    description: Unit tests.
     default: false
   platform:
-    description: The Godot platform to build.
+    description: Target platform.
     required: false
   sconsflags:
     default: ""
@@ -33,7 +30,7 @@ runs:
           SCONS_CACHE: ${{ inputs.scons-cache }}
           SCONS_CACHE_LIMIT: ${{ inputs.scons-cache-limit }}
       run: |
-        echo "Building with flags:" ${{ env.SCONSFLAGS }}
-        if ! ${{ inputs.tools }}; then rm -rf editor; fi  # Ensure we don't include editor code.
-        scons p=${{ inputs.platform }} target=${{ inputs.target }} tools=${{ inputs.tools }} tests=${{ inputs.tests }} ${{ env.SCONSFLAGS }}
+        echo "Building with flags:" platform=${{ inputs.platform }} target=${{ inputs.target }} tests=${{ inputs.tests }} ${{ env.SCONSFLAGS }}
+        if [ "${{ inputs.target }}" != "editor" ]; then rm -rf editor; fi  # Ensure we don't include editor code.
+        scons platform=${{ inputs.platform }} target=${{ inputs.target }} tests=${{ inputs.tests }} ${{ env.SCONSFLAGS }}
         ls -l bin/

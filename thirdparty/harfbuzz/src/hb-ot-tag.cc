@@ -307,12 +307,12 @@ hb_ot_tags_from_language (const char   *lang_str,
     hb_tag_t lang_tag = hb_tag_from_string (lang_str, first_len);
 
     static hb_atomic_int_t last_tag_idx; /* Poor man's cache. */
-    unsigned tag_idx = last_tag_idx.get_relaxed ();
+    unsigned tag_idx = last_tag_idx;
 
     if (likely (tag_idx < ot_languages_len && ot_languages[tag_idx].language == lang_tag) ||
 	hb_sorted_array (ot_languages, ot_languages_len).bfind (lang_tag, &tag_idx))
     {
-      last_tag_idx.set_relaxed (tag_idx);
+      last_tag_idx = tag_idx;
       unsigned int i;
       while (tag_idx != 0 &&
 	     ot_languages[tag_idx].language == ot_languages[tag_idx - 1].language)
@@ -577,7 +577,7 @@ hb_ot_tags_to_script_and_language (hb_tag_t       script_tag,
       else
       {
 	int shift;
-	memcpy (buf, lang_str, len);
+	hb_memcpy (buf, lang_str, len);
 	if (lang_str[0] != 'x' || lang_str[1] != '-') {
 	  buf[len++] = '-';
 	  buf[len++] = 'x';

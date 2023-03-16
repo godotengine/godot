@@ -66,6 +66,19 @@ void main() {
 
 	vec4 normal_roughness = imageLoad(source_normal_roughness, ssC);
 	vec3 normal = normal_roughness.xyz * 2.0 - 1.0;
+	float roughness = normal_roughness.w;
+
+	// The roughness cutoff of 0.6 is chosen to match the roughness fadeout from GH-69828.
+	if (roughness > 0.6) {
+		// Do not compute SSR for rough materials to improve performance at the cost of
+		// subtle artifacting.
+#ifdef MODE_ROUGH
+		imageStore(blur_radius_image, ssC, vec4(0.0));
+#endif
+		imageStore(ssr_image, ssC, vec4(0.0));
+		return;
+	}
+
 	normal = normalize(normal);
 	normal.y = -normal.y; //because this code reads flipped
 
@@ -81,8 +94,6 @@ void main() {
 		imageStore(ssr_image, ssC, vec4(0.0));
 		return;
 	}
-	//ray_dir = normalize(view_dir - normal * dot(normal,view_dir) * 2.0);
-	//ray_dir = normalize(vec3(1.0, 1.0, -1.0));
 
 	////////////////
 
@@ -121,7 +132,7 @@ void main() {
 
 	// clip z and w advance to line advance
 	vec2 line_advance = normalize(line_dir); // down to pixel
-	float step_size = length(line_advance) / length(line_dir);
+	float step_size = 1.0 / length(line_dir);
 	float z_advance = z_dir * step_size; // adapt z advance to line advance
 	float w_advance = w_dir * step_size; // adapt w advance to line advance
 
@@ -139,6 +150,14 @@ void main() {
 	float depth;
 	vec2 prev_pos = pos;
 
+	if (ivec2(pos + line_advance - 0.5) == ssC) {
+		// It is possible for rounding to cause our first pixel to check to be the pixel we're reflecting.
+		// Make sure we skip it
+		pos += line_advance;
+		z += z_advance;
+		w += w_advance;
+	}
+
 	bool found = false;
 
 	float steps_taken = 0.0;
@@ -149,8 +168,8 @@ void main() {
 		w += w_advance;
 
 		// convert to linear depth
-
-		depth = imageLoad(source_depth, ivec2(pos - 0.5)).r;
+		ivec2 test_pos = ivec2(pos - 0.5);
+		depth = imageLoad(source_depth, test_pos).r;
 		if (sc_multiview) {
 			depth = depth * 2.0 - 1.0;
 			depth = 2.0 * params.camera_z_near * params.camera_z_far / (params.camera_z_far + params.camera_z_near - depth * (params.camera_z_far - params.camera_z_near));
@@ -161,13 +180,21 @@ void main() {
 		z_to = z / w;
 
 		if (depth > z_to) {
-			// if depth was surpassed
-			if (depth <= max(z_to, z_from) + params.depth_tolerance && -depth < params.camera_z_far * 0.95) {
-				// check the depth tolerance and far clip
-				// check that normal is valid
-				found = true;
+			// Test if our ray is hitting the "right" side of the surface, if not we're likely self reflecting and should skip.
+			vec4 test_normal_roughness = imageLoad(source_normal_roughness, test_pos);
+			vec3 test_normal = test_normal_roughness.xyz * 2.0 - 1.0;
+			test_normal = normalize(test_normal);
+			test_normal.y = -test_normal.y; //because this code reads flipped
+
+			if (dot(ray_dir, test_normal) < 0.001) {
+				// if depth was surpassed
+				if (depth <= max(z_to, z_from) + params.depth_tolerance && -depth < params.camera_z_far * 0.95) {
+					// check the depth tolerance and far clip
+					// check that normal is valid
+					found = true;
+				}
+				break;
 			}
-			break;
 		}
 
 		steps_taken += 1.0;
@@ -196,6 +223,9 @@ void main() {
 		float grad = (steps_taken + 1.0) / float(params.num_steps);
 		float initial_fade = params.curve_fade_in == 0.0 ? 1.0 : pow(clamp(grad, 0.0, 1.0), params.curve_fade_in);
 		float fade = pow(clamp(1.0 - grad, 0.0, 1.0), params.distance_fade) * initial_fade;
+		// This is an ad-hoc term to fade out the SSR as roughness increases. Values used
+		// are meant to match the visual appearance of a ReflectionProbe.
+		float roughness_fade = smoothstep(0.4, 0.7, 1.0 - normal_roughness.w);
 		final_pos = pos;
 
 		vec4 final_color;
@@ -204,7 +234,6 @@ void main() {
 
 		// if roughness is enabled, do screen space cone tracing
 		float blur_radius = 0.0;
-		float roughness = normal_roughness.w;
 
 		if (roughness > 0.001) {
 			float cone_angle = min(roughness, 0.999) * M_PI * 0.5;
@@ -230,7 +259,7 @@ void main() {
 
 #endif // MODE_ROUGH
 
-		final_color = vec4(imageLoad(source_diffuse, ivec2(final_pos - 0.5)).rgb, fade * margin_blend);
+		final_color = vec4(imageLoad(source_diffuse, ivec2(final_pos - 0.5)).rgb, fade * margin_blend * roughness_fade);
 
 		// Schlick term.
 		float metallic = texelFetch(source_metallic, ssC << 1, 0).w;

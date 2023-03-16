@@ -590,8 +590,8 @@ _resume:
 	case 1:
 #line 38 "hb-buffer-deserialize-json.rl"
 	{
-	memset (&info, 0, sizeof (info));
-	memset (&pos , 0, sizeof (pos ));
+	hb_memset (&info, 0, sizeof (info));
+	hb_memset (&pos , 0, sizeof (pos ));
 }
 	break;
 	case 5:

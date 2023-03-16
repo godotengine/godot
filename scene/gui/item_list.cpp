@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  item_list.cpp                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  item_list.cpp                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "item_list.h"
 
@@ -307,12 +307,6 @@ void ItemList::set_item_tag_icon(int p_idx, const Ref<Texture2D> &p_tag_icon) {
 	items.write[p_idx].tag_icon = p_tag_icon;
 	queue_redraw();
 	shape_changed = true;
-}
-
-Ref<Texture2D> ItemList::get_item_tag_icon(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, items.size(), Ref<Texture2D>());
-
-	return items[p_idx].tag_icon;
 }
 
 void ItemList::set_item_selectable(int p_idx, bool p_selectable) {
@@ -662,19 +656,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			pos.x = get_size().width - pos.x;
 		}
 
-		int closest = -1;
-
-		for (int i = 0; i < items.size(); i++) {
-			Rect2 rc = items[i].rect_cache;
-			if (i % current_columns == current_columns - 1) {
-				rc.size.width = get_size().width; //not right but works
-			}
-
-			if (rc.has_point(pos)) {
-				closest = i;
-				break;
-			}
-		}
+		int closest = get_item_at_position(mb->get_position(), true);
 
 		if (closest != -1 && (mb->get_button_index() == MouseButton::LEFT || (allow_rmb_select && mb->get_button_index() == MouseButton::RIGHT))) {
 			int i = closest;
@@ -740,12 +722,12 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (p_event->is_pressed() && items.size() > 0) {
-		if (p_event->is_action("ui_up")) {
+		if (p_event->is_action("ui_up", true)) {
 			if (!search_string.is_empty()) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
 
-				if (diff < uint64_t(ProjectSettings::get_singleton()->get("gui/timers/incremental_search_max_interval_msec")) * 2) {
+				if (diff < uint64_t(GLOBAL_GET("gui/timers/incremental_search_max_interval_msec")) * 2) {
 					for (int i = current - 1; i >= 0; i--) {
 						if (CAN_SELECT(i) && items[i].text.begins_with(search_string)) {
 							set_current(i);
@@ -778,12 +760,12 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				accept_event();
 			}
-		} else if (p_event->is_action("ui_down")) {
+		} else if (p_event->is_action("ui_down", true)) {
 			if (!search_string.is_empty()) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
 
-				if (diff < uint64_t(ProjectSettings::get_singleton()->get("gui/timers/incremental_search_max_interval_msec")) * 2) {
+				if (diff < uint64_t(GLOBAL_GET("gui/timers/incremental_search_max_interval_msec")) * 2) {
 					for (int i = current + 1; i < items.size(); i++) {
 						if (CAN_SELECT(i) && items[i].text.begins_with(search_string)) {
 							set_current(i);
@@ -815,12 +797,13 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				accept_event();
 			}
-		} else if (p_event->is_action("ui_page_up")) {
+		} else if (p_event->is_action("ui_page_up", true)) {
 			search_string = ""; //any mousepress cancels
 
 			for (int i = 4; i > 0; i--) {
-				if (current - current_columns * i >= 0 && CAN_SELECT(current - current_columns * i)) {
-					set_current(current - current_columns * i);
+				int index = current - current_columns * i;
+				if (index >= 0 && index < items.size() && CAN_SELECT(index)) {
+					set_current(index);
 					ensure_current_is_visible();
 					if (select_mode == SELECT_SINGLE) {
 						emit_signal(SNAME("item_selected"), current);
@@ -829,12 +812,13 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					break;
 				}
 			}
-		} else if (p_event->is_action("ui_page_down")) {
+		} else if (p_event->is_action("ui_page_down", true)) {
 			search_string = ""; //any mousepress cancels
 
 			for (int i = 4; i > 0; i--) {
-				if (current + current_columns * i < items.size() && CAN_SELECT(current + current_columns * i)) {
-					set_current(current + current_columns * i);
+				int index = current + current_columns * i;
+				if (index >= 0 && index < items.size() && CAN_SELECT(index)) {
+					set_current(index);
 					ensure_current_is_visible();
 					if (select_mode == SELECT_SINGLE) {
 						emit_signal(SNAME("item_selected"), current);
@@ -844,13 +828,13 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					break;
 				}
 			}
-		} else if (p_event->is_action("ui_left")) {
+		} else if (p_event->is_action("ui_left", true)) {
 			search_string = ""; //any mousepress cancels
 
 			if (current % current_columns != 0) {
 				int current_row = current / current_columns;
 				int next = current - 1;
-				while (!CAN_SELECT(next)) {
+				while (next >= 0 && !CAN_SELECT(next)) {
 					next = next - 1;
 				}
 				if (next < 0 || !IS_SAME_ROW(next, current_row)) {
@@ -864,13 +848,13 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				accept_event();
 			}
-		} else if (p_event->is_action("ui_right")) {
+		} else if (p_event->is_action("ui_right", true)) {
 			search_string = ""; //any mousepress cancels
 
 			if (current % current_columns != (current_columns - 1) && current + 1 < items.size()) {
 				int current_row = current / current_columns;
 				int next = current + 1;
-				while (!CAN_SELECT(next)) {
+				while (next < items.size() && !CAN_SELECT(next)) {
 					next = next + 1;
 				}
 				if (items.size() <= next || !IS_SAME_ROW(next, current_row)) {
@@ -884,9 +868,9 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				accept_event();
 			}
-		} else if (p_event->is_action("ui_cancel")) {
+		} else if (p_event->is_action("ui_cancel", true)) {
 			search_string = "";
-		} else if (p_event->is_action("ui_select") && select_mode == SELECT_MULTI) {
+		} else if (p_event->is_action("ui_select", true) && select_mode == SELECT_MULTI) {
 			if (current >= 0 && current < items.size()) {
 				if (items[current].selectable && !items[current].disabled && !items[current].selected) {
 					select(current, false);
@@ -896,7 +880,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					emit_signal(SNAME("multi_selected"), current, false);
 				}
 			}
-		} else if (p_event->is_action("ui_accept")) {
+		} else if (p_event->is_action("ui_accept", true)) {
 			search_string = ""; //any mousepress cancels
 
 			if (current >= 0 && current < items.size()) {
@@ -908,7 +892,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			if (k.is_valid() && k->get_unicode()) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
-				uint64_t max_interval = uint64_t(GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec", 2000));
+				uint64_t max_interval = uint64_t(GLOBAL_GET("gui/timers/incremental_search_max_interval_msec"));
 				search_time_msec = now;
 
 				if (diff > max_interval) {
@@ -1308,9 +1292,9 @@ void ItemList::_notification(int p_what) {
 						draw_rect.size = adj.size;
 					}
 
-					Color modulate = items[i].icon_modulate;
+					Color icon_modulate = items[i].icon_modulate;
 					if (items[i].disabled) {
-						modulate.a *= 0.5;
+						icon_modulate.a *= 0.5;
 					}
 
 					// If the icon is transposed, we have to switch the size so that it is drawn correctly
@@ -1325,7 +1309,7 @@ void ItemList::_notification(int p_what) {
 					if (rtl) {
 						draw_rect.position.x = size.width - draw_rect.position.x - draw_rect.size.x;
 					}
-					draw_texture_rect_region(items[i].icon, draw_rect, region, modulate, items[i].icon_transposed);
+					draw_texture_rect_region(items[i].icon, draw_rect, region, icon_modulate, items[i].icon_transposed);
 				}
 
 				if (items[i].tag_icon.is_valid()) {
@@ -1348,9 +1332,9 @@ void ItemList::_notification(int p_what) {
 						max_len = size2.x;
 					}
 
-					Color modulate = items[i].selected ? theme_cache.font_selected_color : (items[i].custom_fg != Color() ? items[i].custom_fg : theme_cache.font_color);
+					Color txt_modulate = items[i].selected ? theme_cache.font_selected_color : (items[i].custom_fg != Color() ? items[i].custom_fg : theme_cache.font_color);
 					if (items[i].disabled) {
-						modulate.a *= 0.5;
+						txt_modulate.a *= 0.5;
 					}
 
 					if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
@@ -1367,7 +1351,7 @@ void ItemList::_notification(int p_what) {
 							items[i].text_buf->draw_outline(get_canvas_item(), text_ofs, theme_cache.font_outline_size, theme_cache.font_outline_color);
 						}
 
-						items[i].text_buf->draw(get_canvas_item(), text_ofs, modulate);
+						items[i].text_buf->draw(get_canvas_item(), text_ofs, txt_modulate);
 					} else {
 						if (fixed_column_width > 0) {
 							size2.x = MIN(size2.x, fixed_column_width);
@@ -1399,7 +1383,7 @@ void ItemList::_notification(int p_what) {
 						}
 
 						if (width - text_ofs.x > 0) {
-							items[i].text_buf->draw(get_canvas_item(), text_ofs, modulate);
+							items[i].text_buf->draw(get_canvas_item(), text_ofs, txt_modulate);
 						}
 					}
 				}
@@ -1467,7 +1451,7 @@ int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 	for (int i = 0; i < items.size(); i++) {
 		Rect2 rc = items[i].rect_cache;
 		if (i % current_columns == current_columns - 1) {
-			rc.size.width = get_size().width - rc.position.x; //make sure you can still select the last item when clicking past the column
+			rc.size.width = get_size().width - rc.position.x; // Make sure you can still select the last item when clicking past the column.
 		}
 
 		if (rc.has_point(pos)) {
@@ -1562,6 +1546,7 @@ bool ItemList::get_allow_reselect() const {
 }
 
 void ItemList::set_icon_scale(real_t p_scale) {
+	ERR_FAIL_COND(!Math::is_finite(p_scale));
 	icon_scale = p_scale;
 }
 
@@ -1843,9 +1828,6 @@ void ItemList::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_clicked", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::VECTOR2, "at_position"), PropertyInfo(Variant::INT, "mouse_button_index")));
 	ADD_SIGNAL(MethodInfo("multi_selected", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "selected")));
 	ADD_SIGNAL(MethodInfo("item_activated", PropertyInfo(Variant::INT, "index")));
-
-	GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec", 2000);
-	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/incremental_search_max_interval_msec", PropertyInfo(Variant::INT, "gui/timers/incremental_search_max_interval_msec", PROPERTY_HINT_RANGE, "0,10000,1,or_greater")); // No negative numbers
 }
 
 ItemList::ItemList() {

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  resource_loader.h                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  resource_loader.h                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef RESOURCE_LOADER_H
 #define RESOURCE_LOADER_H
@@ -36,6 +36,8 @@
 #include "core/object/script_language.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
+
+class ConditionVariable;
 
 class ResourceFormatLoader : public RefCounted {
 	GDCLASS(ResourceFormatLoader, RefCounted);
@@ -51,12 +53,14 @@ protected:
 	static void _bind_methods();
 
 	GDVIRTUAL0RC(Vector<String>, _get_recognized_extensions)
+	GDVIRTUAL2RC(bool, _recognize_path, String, StringName)
 	GDVIRTUAL1RC(bool, _handles_type, StringName)
 	GDVIRTUAL1RC(String, _get_resource_type, String)
+	GDVIRTUAL1RC(String, _get_resource_script_class, String)
 	GDVIRTUAL1RC(ResourceUID::ID, _get_resource_uid, String)
 	GDVIRTUAL2RC(Vector<String>, _get_dependencies, String, bool)
 	GDVIRTUAL1RC(Vector<String>, _get_classes_used, String)
-	GDVIRTUAL2RC(int64_t, _rename_dependencies, String, Dictionary)
+	GDVIRTUAL2RC(Error, _rename_dependencies, String, Dictionary)
 	GDVIRTUAL1RC(bool, _exists, String)
 
 	GDVIRTUAL4RC(Variant, _load, String, String, bool, int)
@@ -70,6 +74,7 @@ public:
 	virtual bool handles_type(const String &p_type) const;
 	virtual void get_classes_used(const String &p_path, HashSet<StringName> *r_classes);
 	virtual String get_resource_type(const String &p_path) const;
+	virtual String get_resource_script_class(const String &p_path) const;
 	virtual ResourceUID::ID get_resource_uid(const String &p_path) const;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	virtual Error rename_dependencies(const String &p_path, const HashMap<String, String> &p_map);
@@ -102,6 +107,8 @@ public:
 		THREAD_LOAD_LOADED
 	};
 
+	static const int BINARY_MUTEX_TAG = 1;
+
 private:
 	static Ref<ResourceFormatLoader> loader[MAX_LOADERS];
 	static int loader_count;
@@ -133,7 +140,7 @@ private:
 	struct ThreadLoadTask {
 		Thread *thread = nullptr;
 		Thread::ID loader_id = 0;
-		Semaphore *semaphore = nullptr;
+		ConditionVariable *cond_var = nullptr;
 		String local_path;
 		String remapped_path;
 		String type_hint;
@@ -146,12 +153,11 @@ private:
 		bool use_sub_threads = false;
 		bool start_next = true;
 		int requests = 0;
-		int poll_requests = 0;
 		HashSet<String> sub_tasks;
 	};
 
 	static void _thread_load_function(void *p_userdata);
-	static Mutex *thread_load_mutex;
+	static SafeBinaryMutex<BINARY_MUTEX_TAG> *thread_load_mutex;
 	static HashMap<String, ThreadLoadTask> thread_load_tasks;
 	static Semaphore *thread_load_semaphore;
 	static int thread_waiting_count;
@@ -174,6 +180,7 @@ public:
 	static void remove_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader);
 	static void get_classes_used(const String &p_path, HashSet<StringName> *r_classes);
 	static String get_resource_type(const String &p_path);
+	static String get_resource_script_class(const String &p_path);
 	static ResourceUID::ID get_resource_uid(const String &p_path);
 	static void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	static Error rename_dependencies(const String &p_path, const HashMap<String, String> &p_map);
@@ -218,11 +225,12 @@ public:
 	static void load_translation_remaps();
 	static void clear_translation_remaps();
 
+	static void clear_thread_load_tasks();
+
 	static void set_load_callback(ResourceLoadedCallback p_callback);
 	static ResourceLoaderImport import;
 
 	static bool add_custom_resource_format_loader(String script_path);
-	static void remove_custom_resource_format_loader(String script_path);
 	static void add_custom_loaders();
 	static void remove_custom_loaders();
 

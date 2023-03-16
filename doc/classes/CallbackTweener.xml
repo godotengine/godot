@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CallbackTweener" inherits="Tweener" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="CallbackTweener" inherits="Tweener" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Calls the specified method after optional delay.
 	</brief_description>
@@ -14,7 +14,8 @@
 			<return type="CallbackTweener" />
 			<param index="0" name="delay" type="float" />
 			<description>
-				Makes the callback call delayed by given time in seconds. Example:
+				Makes the callback call delayed by given time in seconds.
+				[b]Example:[/b]
 				[codeblock]
 				var tween = get_tree().create_tween()
 				tween.tween_callback(queue_free).set_delay(2) #this will call queue_free() after 2 seconds

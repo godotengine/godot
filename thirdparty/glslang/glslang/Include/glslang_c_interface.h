@@ -148,6 +148,15 @@ typedef struct glslang_resource_s {
     int max_task_work_group_size_y_nv;
     int max_task_work_group_size_z_nv;
     int max_mesh_view_count_nv;
+    int max_mesh_output_vertices_ext;
+    int max_mesh_output_primitives_ext;
+    int max_mesh_work_group_size_x_ext;
+    int max_mesh_work_group_size_y_ext;
+    int max_mesh_work_group_size_z_ext;
+    int max_task_work_group_size_x_ext;
+    int max_task_work_group_size_y_ext;
+    int max_task_work_group_size_z_ext;
+    int max_mesh_view_count_ext;
     int maxDualSourceDrawBuffersEXT;
 
     glslang_limits_t limits;
@@ -199,6 +208,18 @@ typedef struct glsl_include_callbacks_s {
     glsl_free_include_result_func free_include_result;
 } glsl_include_callbacks_t;
 
+/* SpvOptions counterpart */
+typedef struct glslang_spv_options_s {
+    bool generate_debug_info;
+    bool strip_debug_info;
+    bool disable_optimizer;
+    bool optimize_size;
+    bool disassemble;
+    bool validate;
+    bool emit_nonsemantic_shader_debug_info;
+    bool emit_nonsemantic_shader_debug_source;
+} glslang_spv_options_t;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -224,9 +245,11 @@ GLSLANG_EXPORT void glslang_finalize_process();
 
 GLSLANG_EXPORT glslang_shader_t* glslang_shader_create(const glslang_input_t* input);
 GLSLANG_EXPORT void glslang_shader_delete(glslang_shader_t* shader);
+GLSLANG_EXPORT void glslang_shader_set_preamble(glslang_shader_t* shader, const char* s);
 GLSLANG_EXPORT void glslang_shader_shift_binding(glslang_shader_t* shader, glslang_resource_type_t res, unsigned int base);
 GLSLANG_EXPORT void glslang_shader_shift_binding_for_set(glslang_shader_t* shader, glslang_resource_type_t res, unsigned int base, unsigned int set);
 GLSLANG_EXPORT void glslang_shader_set_options(glslang_shader_t* shader, int options); // glslang_shader_options_t
+GLSLANG_EXPORT void glslang_shader_set_glsl_version(glslang_shader_t* shader, int version);
 GLSLANG_EXPORT int glslang_shader_preprocess(glslang_shader_t* shader, const glslang_input_t* input);
 GLSLANG_EXPORT int glslang_shader_parse(glslang_shader_t* shader, const glslang_input_t* input);
 GLSLANG_EXPORT const char* glslang_shader_get_preprocessed_code(glslang_shader_t* shader);
@@ -237,8 +260,11 @@ GLSLANG_EXPORT glslang_program_t* glslang_program_create();
 GLSLANG_EXPORT void glslang_program_delete(glslang_program_t* program);
 GLSLANG_EXPORT void glslang_program_add_shader(glslang_program_t* program, glslang_shader_t* shader);
 GLSLANG_EXPORT int glslang_program_link(glslang_program_t* program, int messages); // glslang_messages_t
+GLSLANG_EXPORT void glslang_program_add_source_text(glslang_program_t* program, glslang_stage_t stage, const char* text, size_t len);
+GLSLANG_EXPORT void glslang_program_set_source_file(glslang_program_t* program, glslang_stage_t stage, const char* file);
 GLSLANG_EXPORT int glslang_program_map_io(glslang_program_t* program);
 GLSLANG_EXPORT void glslang_program_SPIRV_generate(glslang_program_t* program, glslang_stage_t stage);
+GLSLANG_EXPORT void glslang_program_SPIRV_generate_with_options(glslang_program_t* program, glslang_stage_t stage, glslang_spv_options_t* spv_options);
 GLSLANG_EXPORT size_t glslang_program_SPIRV_get_size(glslang_program_t* program);
 GLSLANG_EXPORT void glslang_program_SPIRV_get(glslang_program_t* program, unsigned int*);
 GLSLANG_EXPORT unsigned int* glslang_program_SPIRV_get_ptr(glslang_program_t* program);

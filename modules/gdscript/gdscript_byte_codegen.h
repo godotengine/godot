@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  gdscript_byte_codegen.h                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gdscript_byte_codegen.h                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef GDSCRIPT_BYTE_CODEGEN_H
 #define GDSCRIPT_BYTE_CODEGEN_H
@@ -47,6 +47,33 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	};
 
 	const static int RESERVED_STACK = 3; // For self, class, and nil.
+
+	struct CallTarget {
+		Address target;
+		bool is_new_temporary = false;
+		GDScriptByteCodeGenerator *codegen = nullptr;
+#ifdef DEV_ENABLED
+		bool cleaned = false;
+#endif
+
+		void cleanup() {
+			DEV_ASSERT(!cleaned);
+			if (is_new_temporary) {
+				codegen->pop_temporary();
+			}
+#ifdef DEV_ENABLED
+			cleaned = true;
+#endif
+		}
+
+		CallTarget(Address p_target, bool p_is_new_temporary, GDScriptByteCodeGenerator *p_codegen) :
+				target(p_target),
+				is_new_temporary(p_is_new_temporary),
+				codegen(p_codegen) {}
+		~CallTarget() { DEV_ASSERT(cleaned); }
+		CallTarget(const CallTarget &) = delete;
+		CallTarget &operator=(CallTarget &) = delete;
+	};
 
 	bool ended = false;
 	GDScriptFunction *function = nullptr;
@@ -95,6 +122,24 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	RBMap<MethodBind *, int> method_bind_map;
 	RBMap<GDScriptFunction *, int> lambdas_map;
 
+#if DEBUG_ENABLED
+	// Keep method and property names for pointer and validated operations.
+	// Used when disassembling the bytecode.
+	Vector<String> operator_names;
+	Vector<String> setter_names;
+	Vector<String> getter_names;
+	Vector<String> builtin_methods_names;
+	Vector<String> constructors_names;
+	Vector<String> utilities_names;
+	Vector<String> gds_utilities_names;
+	void add_debug_name(Vector<String> &vector, int index, const String &name) {
+		if (index >= vector.size()) {
+			vector.resize(index + 1);
+		}
+		vector.write[index] = name;
+	}
+#endif
+
 	// Lists since these can be nested.
 	List<int> if_jmp_addrs;
 	List<int> for_jmp_addrs;
@@ -113,7 +158,6 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	List<int> ternary_jump_skip_pos;
 
 	List<List<int>> current_breaks_to_patch;
-	List<List<int>> match_continues_to_patch;
 
 	void add_stack_identifier(const StringName &p_id, int p_stackpos) {
 		if (locals.size() > max_locals) {
@@ -309,6 +353,8 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		}
 	}
 
+	CallTarget get_call_target(const Address &p_target, Variant::Type p_type = Variant::NIL);
+
 	int address_of(const Address &p_address) {
 		switch (p_address.mode) {
 			case Address::SELF:
@@ -331,8 +377,13 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		return -1; // Unreachable.
 	}
 
-	void append(GDScriptFunction::Opcode p_code, int p_argument_count) {
-		opcodes.push_back((p_code & GDScriptFunction::INSTR_MASK) | (p_argument_count << GDScriptFunction::INSTR_BITS));
+	void append_opcode(GDScriptFunction::Opcode p_code) {
+		opcodes.push_back(p_code);
+	}
+
+	void append_opcode_and_argcount(GDScriptFunction::Opcode p_code, int p_argument_count) {
+		opcodes.push_back(p_code);
+		opcodes.push_back(p_argument_count);
 		instr_args_max = MAX(instr_args_max, p_argument_count);
 	}
 
@@ -430,8 +481,7 @@ public:
 	virtual void write_type_adjust(const Address &p_target, Variant::Type p_new_type) override;
 	virtual void write_unary_operator(const Address &p_target, Variant::Operator p_operator, const Address &p_left_operand) override;
 	virtual void write_binary_operator(const Address &p_target, Variant::Operator p_operator, const Address &p_left_operand, const Address &p_right_operand) override;
-	virtual void write_type_test(const Address &p_target, const Address &p_source, const Address &p_type) override;
-	virtual void write_type_test_builtin(const Address &p_target, const Address &p_source, Variant::Type p_type) override;
+	virtual void write_type_test(const Address &p_target, const Address &p_source, const GDScriptDataType &p_type) override;
 	virtual void write_and_left_operand(const Address &p_left_operand) override;
 	virtual void write_and_right_operand(const Address &p_right_operand) override;
 	virtual void write_end_and(const Address &p_target) override;
@@ -453,7 +503,7 @@ public:
 	virtual void write_assign_with_conversion(const Address &p_target, const Address &p_source) override;
 	virtual void write_assign_true(const Address &p_target) override;
 	virtual void write_assign_false(const Address &p_target) override;
-	virtual void write_assign_default_parameter(const Address &p_dst, const Address &p_src) override;
+	virtual void write_assign_default_parameter(const Address &p_dst, const Address &p_src, bool p_use_conversion) override;
 	virtual void write_store_global(const Address &p_dst, int p_global_index) override;
 	virtual void write_store_named_global(const Address &p_dst, const StringName &p_global) override;
 	virtual void write_cast(const Address &p_target, const Address &p_source, const GDScriptDataType &p_type) override;
@@ -461,7 +511,8 @@ public:
 	virtual void write_super_call(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_async(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_utility(const Address &p_target, const StringName &p_function, const Vector<Address> &p_arguments) override;
-	virtual void write_call_gdscript_utility(const Address &p_target, GDScriptUtilityFunctions::FunctionPtr p_function, const Vector<Address> &p_arguments) override;
+	void write_call_builtin_type(const Address &p_target, const Address &p_base, Variant::Type p_type, const StringName &p_method, bool p_is_static, const Vector<Address> &p_arguments);
+	virtual void write_call_gdscript_utility(const Address &p_target, const StringName &p_function, const Vector<Address> &p_arguments) override;
 	virtual void write_call_builtin_type(const Address &p_target, const Address &p_base, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_builtin_type_static(const Address &p_target, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_native_static(const Address &p_target, const StringName &p_class, const StringName &p_method, const Vector<Address> &p_arguments) override;
@@ -488,12 +539,8 @@ public:
 	virtual void start_while_condition() override;
 	virtual void write_while(const Address &p_condition) override;
 	virtual void write_endwhile() override;
-	virtual void start_match() override;
-	virtual void start_match_branch() override;
-	virtual void end_match() override;
 	virtual void write_break() override;
 	virtual void write_continue() override;
-	virtual void write_continue_match() override;
 	virtual void write_breakpoint() override;
 	virtual void write_newline(int p_line) override;
 	virtual void write_return(const Address &p_return_value) override;

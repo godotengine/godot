@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Curve" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Curve" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A mathematic curve.
 	</brief_description>
@@ -30,7 +30,7 @@
 		<method name="clean_dupes">
 			<return type="void" />
 			<description>
-				Removes points that are closer than [code]CMP_EPSILON[/code] (0.00001) units to their neighbor on the curve.
+				Removes duplicate points, i.e. points that are less than 0.00001 units (engine epsilon value) away from their neighbor on the curve.
 			</description>
 		</method>
 		<method name="clear_points">

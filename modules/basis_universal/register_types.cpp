@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  register_types.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  register_types.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "register_types.h"
 
@@ -52,43 +52,54 @@ enum BasisDecompressFormat {
 #ifdef TOOLS_ENABLED
 static Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedChannels p_channels) {
 	Vector<uint8_t> budata;
-
 	{
+		basisu::basis_compressor_params params;
 		Ref<Image> image = p_image->duplicate();
-
-		// unfortunately, basis universal does not support compressing supplied mipmaps,
-		// so for the time being, only compressing individual images will have to do.
-
-		if (image->has_mipmaps()) {
-			image->clear_mipmaps();
-		}
 		if (image->get_format() != Image::FORMAT_RGBA8) {
 			image->convert(Image::FORMAT_RGBA8);
 		}
-
-		basisu::image buimg(image->get_width(), image->get_height());
-
-		{
+		if (!image->has_mipmaps()) {
+			basisu::image buimg(image->get_width(), image->get_height());
 			Vector<uint8_t> vec = image->get_data();
 			const uint8_t *r = vec.ptr();
-
 			memcpy(buimg.get_ptr(), r, vec.size());
+			params.m_source_images.push_back(buimg);
+		} else {
+			{
+				Ref<Image> base_image = image->get_image_from_mipmap(0);
+				Vector<uint8_t> image_vec = base_image->get_data();
+				basisu::image buimg_image(base_image->get_width(), base_image->get_height());
+				const uint8_t *r = image_vec.ptr();
+				memcpy(buimg_image.get_ptr(), r, image_vec.size());
+				params.m_source_images.push_back(buimg_image);
+			}
+			basisu::vector<basisu::image> images;
+			for (int32_t mip_map_i = 1; mip_map_i <= image->get_mipmap_count(); mip_map_i++) {
+				Ref<Image> mip_map = image->get_image_from_mipmap(mip_map_i);
+				Vector<uint8_t> mip_map_vec = mip_map->get_data();
+				basisu::image buimg_mipmap(mip_map->get_width(), mip_map->get_height());
+				const uint8_t *r = mip_map_vec.ptr();
+				memcpy(buimg_mipmap.get_ptr(), r, mip_map_vec.size());
+				images.push_back(buimg_mipmap);
+			}
+			params.m_source_mipmap_images.push_back(images);
 		}
-
-		basisu::basis_compressor_params params;
 		params.m_uastc = true;
-		params.m_max_endpoint_clusters = 512;
-		params.m_max_selector_clusters = 512;
+		params.m_quality_level = basisu::BASISU_QUALITY_MIN;
+
+		params.m_pack_uastc_flags &= ~basisu::cPackUASTCLevelMask;
+
+		static const uint32_t s_level_flags[basisu::TOTAL_PACK_UASTC_LEVELS] = { basisu::cPackUASTCLevelFastest, basisu::cPackUASTCLevelFaster, basisu::cPackUASTCLevelDefault, basisu::cPackUASTCLevelSlower, basisu::cPackUASTCLevelVerySlow };
+		params.m_pack_uastc_flags |= s_level_flags[0];
+		params.m_rdo_uastc = 0.0f;
+		params.m_rdo_uastc_quality_scalar = 0.0f;
+		params.m_rdo_uastc_dict_size = 1024;
+
+		params.m_mip_fast = true;
 		params.m_multithreading = true;
-		//params.m_quality_level = 0;
-		//params.m_disable_hierarchical_endpoint_codebooks = true;
-		//params.m_no_selector_rdo = true;
 
 		basisu::job_pool jpool(OS::get_singleton()->get_processor_count());
 		params.m_pJob_pool = &jpool;
-
-		params.m_mip_gen = false; //sorry, please some day support provided mipmaps.
-		params.m_source_images.push_back(buimg);
 
 		BasisDecompressFormat decompress_format = BASIS_DECOMPRESS_RG;
 		params.m_check_for_alpha = false;
@@ -148,6 +159,7 @@ static Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size
 
 	const uint8_t *ptr = p_data;
 	int size = p_size;
+	ERR_FAIL_COND_V_MSG(p_data == nullptr, image, "Cannot unpack invalid basis universal data.");
 
 	basist::transcoder_texture_format format = basist::transcoder_texture_format::cTFTotalTextureFormats;
 	Image::Format imgfmt = Image::FORMAT_MAX;
@@ -222,38 +234,31 @@ static Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size
 
 	ERR_FAIL_COND_V(!tr.validate_header(ptr, size), image);
 
+	tr.start_transcoding(ptr, size);
+
 	basist::basisu_image_info info;
 	tr.get_image_info(ptr, size, info, 0);
-
-	int block_size = basist::basis_get_bytes_per_block_or_pixel(format);
 	Vector<uint8_t> gpudata;
-	gpudata.resize(info.m_total_blocks * block_size);
+	gpudata.resize(Image::get_image_data_size(info.m_width, info.m_height, imgfmt, info.m_total_levels > 1));
 
-	{
-		uint8_t *w = gpudata.ptrw();
-		uint8_t *dst = w;
-		for (int i = 0; i < gpudata.size(); i++) {
-			dst[i] = 0x00;
-		}
-
-		int ofs = 0;
-		tr.start_transcoding(ptr, size);
-		for (uint32_t i = 0; i < info.m_total_levels; i++) {
-			basist::basisu_image_level_info level;
-			tr.get_image_level_info(ptr, size, level, 0, i);
-
-			bool ret = tr.transcode_image_level(ptr, size, 0, i, dst + ofs, level.m_total_blocks - i, format);
-			if (!ret) {
-				printf("failed! on level %u\n", i);
-				break;
-			};
-
-			ofs += level.m_total_blocks * block_size;
+	uint8_t *w = gpudata.ptrw();
+	uint8_t *dst = w;
+	for (int i = 0; i < gpudata.size(); i++) {
+		dst[i] = 0x00;
+	}
+	uint32_t mip_count = Image::get_image_required_mipmaps(info.m_orig_width, info.m_orig_height, imgfmt);
+	for (uint32_t level_i = 0; level_i <= mip_count; level_i++) {
+		basist::basisu_image_level_info level;
+		tr.get_image_level_info(ptr, size, level, 0, level_i);
+		int ofs = Image::get_image_mipmap_offset(info.m_width, info.m_height, imgfmt, level_i);
+		bool ret = tr.transcode_image_level(ptr, size, 0, level_i, dst + ofs, level.m_total_blocks, format);
+		if (!ret) {
+			print_line(vformat("Basis universal cannot unpack level %d.", level_i));
+			break;
 		};
-	};
+	}
 
-	image.instantiate();
-	image->create(info.m_width, info.m_height, info.m_total_levels > 1, imgfmt, gpudata);
+	image = Image::create_from_data(info.m_width, info.m_height, info.m_total_levels > 1, imgfmt, gpudata);
 
 	return image;
 }
@@ -277,6 +282,7 @@ void initialize_basis_universal_module(ModuleInitializationLevel p_level) {
 	basisu_encoder_init();
 	Image::basis_universal_packer = basis_universal_packer;
 #endif
+	basist::basisu_transcoder_init();
 	Image::basis_universal_unpacker = basis_universal_unpacker;
 	Image::basis_universal_unpacker_ptr = basis_universal_unpacker_ptr;
 }

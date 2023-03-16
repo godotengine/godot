@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  renderer_viewport.h                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  renderer_viewport.h                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef RENDERER_VIEWPORT_H
 #define RENDERER_VIEWPORT_H
@@ -34,8 +34,8 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
-#include "servers/rendering/renderer_scene.h"
 #include "servers/rendering/renderer_scene_render.h"
+#include "servers/rendering/rendering_method.h"
 #include "servers/rendering_server.h"
 #include "servers/xr/xr_interface.h"
 #include "storage/render_scene_buffers.h"
@@ -85,7 +85,7 @@ public:
 		bool viewport_render_direct_to_screen;
 
 		bool disable_2d = false;
-		bool disable_environment = false;
+		RS::ViewportEnvironmentMode disable_environment = RS::VIEWPORT_ENVIRONMENT_INHERIT;
 		bool disable_3d = false;
 		bool measure_render_time = false;
 
@@ -116,6 +116,8 @@ public:
 		RS::CanvasItemTextureRepeat texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 
 		bool transparent_bg = false;
+
+		uint32_t canvas_cull_mask = 0xffffffff;
 
 		struct CanvasKey {
 			int64_t stacking;
@@ -148,7 +150,7 @@ public:
 
 		HashMap<RID, CanvasData> canvas_map;
 
-		RendererScene::RenderInfo render_info;
+		RenderingMethod::RenderInfo render_info;
 
 		Viewport() {
 			view_count = 1;
@@ -236,8 +238,10 @@ public:
 	const RendererSceneRender::CameraData *viewport_get_prev_camera_data(RID p_viewport);
 
 	void viewport_set_disable_2d(RID p_viewport, bool p_disable);
-	void viewport_set_disable_environment(RID p_viewport, bool p_disable);
+	void viewport_set_environment_mode(RID p_viewport, RS::ViewportEnvironmentMode p_mode);
 	void viewport_set_disable_3d(RID p_viewport, bool p_disable);
+
+	bool viewport_is_environment_disabled(Viewport *viewport);
 
 	void viewport_attach_camera(RID p_viewport, RID p_camera);
 	void viewport_set_scenario(RID p_viewport, RID p_scenario);
@@ -248,6 +252,8 @@ public:
 
 	void viewport_set_global_canvas_transform(RID p_viewport, const Transform2D &p_transform);
 	void viewport_set_canvas_stacking(RID p_viewport, RID p_canvas, int p_layer, int p_sublayer);
+
+	void viewport_set_canvas_cull_mask(RID p_viewport, uint32_t p_canvas_cull_mask);
 
 	void viewport_set_positional_shadow_atlas_size(RID p_viewport, int p_size, bool p_16_bits = true);
 	void viewport_set_positional_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv);

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  godot_collision_solver_3d.cpp                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  godot_collision_solver_3d.cpp                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "godot_collision_solver_3d.h"
 
@@ -48,7 +48,7 @@ bool GodotCollisionSolver3D::solve_static_world_boundary(const GodotShape3D *p_s
 	static const int max_supports = 16;
 	Vector3 supports[max_supports];
 	int support_count;
-	GodotShape3D::FeatureType support_type;
+	GodotShape3D::FeatureType support_type = GodotShape3D::FeatureType::FEATURE_POINT;
 	p_shape_B->get_supports(p_transform_B.basis.xform_inv(-p.normal).normalized(), max_supports, supports, support_count, support_type);
 
 	if (support_type == GodotShape3D::FEATURE_CIRCLE) {
@@ -81,9 +81,11 @@ bool GodotCollisionSolver3D::solve_static_world_boundary(const GodotShape3D *p_s
 
 		if (p_result_callback) {
 			if (p_swap_result) {
-				p_result_callback(supports[i], 0, support_A, 0, p_userdata);
+				Vector3 normal = (support_A - supports[i]).normalized();
+				p_result_callback(supports[i], 0, support_A, 0, normal, p_userdata);
 			} else {
-				p_result_callback(support_A, 0, supports[i], 0, p_userdata);
+				Vector3 normal = (supports[i] - support_A).normalized();
+				p_result_callback(support_A, 0, supports[i], 0, normal, p_userdata);
 			}
 		}
 	}
@@ -125,10 +127,11 @@ bool GodotCollisionSolver3D::solve_separation_ray(const GodotShape3D *p_shape_A,
 	}
 
 	if (p_result_callback) {
+		Vector3 normal = (support_B - support_A).normalized();
 		if (p_swap_result) {
-			p_result_callback(support_B, 0, support_A, 0, p_userdata);
+			p_result_callback(support_B, 0, support_A, 0, -normal, p_userdata);
 		} else {
-			p_result_callback(support_A, 0, support_B, 0, p_userdata);
+			p_result_callback(support_A, 0, support_B, 0, normal, p_userdata);
 		}
 	}
 	return true;
@@ -142,7 +145,7 @@ struct _SoftBodyContactCollisionInfo {
 	int contact_count = 0;
 };
 
-void GodotCollisionSolver3D::soft_body_contact_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata) {
+void GodotCollisionSolver3D::soft_body_contact_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, const Vector3 &normal, void *p_userdata) {
 	_SoftBodyContactCollisionInfo &cinfo = *(static_cast<_SoftBodyContactCollisionInfo *>(p_userdata));
 
 	++cinfo.contact_count;
@@ -152,9 +155,9 @@ void GodotCollisionSolver3D::soft_body_contact_callback(const Vector3 &p_point_A
 	}
 
 	if (cinfo.swap_result) {
-		cinfo.result_callback(p_point_B, cinfo.node_index, p_point_A, p_index_A, cinfo.userdata);
+		cinfo.result_callback(p_point_B, cinfo.node_index, p_point_A, p_index_A, -normal, cinfo.userdata);
 	} else {
-		cinfo.result_callback(p_point_A, p_index_A, p_point_B, cinfo.node_index, cinfo.userdata);
+		cinfo.result_callback(p_point_A, p_index_A, p_point_B, cinfo.node_index, normal, cinfo.userdata);
 	}
 }
 
@@ -338,7 +341,7 @@ bool GodotCollisionSolver3D::solve_concave(const GodotShape3D *p_shape_A, const 
 		real_t axis_scale = 1.0 / axis.length();
 		axis *= axis_scale;
 
-		real_t smin, smax;
+		real_t smin = 0.0, smax = 0.0;
 		p_shape_A->project_range(axis, rel_transform, smin, smax);
 		smin -= p_margin_A;
 		smax += p_margin_A;
@@ -370,12 +373,15 @@ bool GodotCollisionSolver3D::solve_static(const GodotShape3D *p_shape_A, const T
 
 	if (type_A == PhysicsServer3D::SHAPE_WORLD_BOUNDARY) {
 		if (type_B == PhysicsServer3D::SHAPE_WORLD_BOUNDARY) {
+			WARN_PRINT_ONCE("Collisions between world boundaries are not supported.");
 			return false;
 		}
 		if (type_B == PhysicsServer3D::SHAPE_SEPARATION_RAY) {
+			WARN_PRINT_ONCE("Collisions between world boundaries and rays are not supported.");
 			return false;
 		}
 		if (type_B == PhysicsServer3D::SHAPE_SOFT_BODY) {
+			WARN_PRINT_ONCE("Collisions between world boundaries and soft bodies are not supported.");
 			return false;
 		}
 
@@ -387,6 +393,7 @@ bool GodotCollisionSolver3D::solve_static(const GodotShape3D *p_shape_A, const T
 
 	} else if (type_A == PhysicsServer3D::SHAPE_SEPARATION_RAY) {
 		if (type_B == PhysicsServer3D::SHAPE_SEPARATION_RAY) {
+			WARN_PRINT_ONCE("Collisions between rays are not supported.");
 			return false;
 		}
 
@@ -398,7 +405,7 @@ bool GodotCollisionSolver3D::solve_static(const GodotShape3D *p_shape_A, const T
 
 	} else if (type_B == PhysicsServer3D::SHAPE_SOFT_BODY) {
 		if (type_A == PhysicsServer3D::SHAPE_SOFT_BODY) {
-			// Soft Body / Soft Body not supported.
+			WARN_PRINT_ONCE("Collisions between soft bodies are not supported.");
 			return false;
 		}
 
@@ -410,6 +417,7 @@ bool GodotCollisionSolver3D::solve_static(const GodotShape3D *p_shape_A, const T
 
 	} else if (concave_B) {
 		if (concave_A) {
+			WARN_PRINT_ONCE("Collisions between two concave shapes are not supported.");
 			return false;
 		}
 
@@ -508,10 +516,6 @@ bool GodotCollisionSolver3D::solve_distance_world_boundary(const GodotShape3D *p
 }
 
 bool GodotCollisionSolver3D::solve_distance(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, Vector3 &r_point_A, Vector3 &r_point_B, const AABB &p_concave_hint, Vector3 *r_sep_axis) {
-	if (p_shape_A->is_concave()) {
-		return false;
-	}
-
 	if (p_shape_B->get_type() == PhysicsServer3D::SHAPE_WORLD_BOUNDARY) {
 		Vector3 a, b;
 		bool col = solve_distance_world_boundary(p_shape_B, p_transform_B, p_shape_A, p_transform_A, a, b);

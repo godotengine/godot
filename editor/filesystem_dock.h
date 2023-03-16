@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  filesystem_dock.h                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  filesystem_dock.h                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef FILESYSTEM_DOCK_H
 #define FILESYSTEM_DOCK_H
@@ -79,7 +79,7 @@ private:
 		FILE_OPEN,
 		FILE_INHERIT,
 		FILE_MAIN_SCENE,
-		FILE_INSTANCE,
+		FILE_INSTANTIATE,
 		FILE_ADD_FAVORITE,
 		FILE_REMOVE_FAVORITE,
 		FILE_DEPENDENCIES,
@@ -90,16 +90,18 @@ private:
 		FILE_DUPLICATE,
 		FILE_REIMPORT,
 		FILE_INFO,
+		FILE_NEW,
+		FILE_SHOW_IN_EXPLORER,
+		FILE_OPEN_EXTERNAL,
+		FILE_COPY_PATH,
+		FILE_COPY_UID,
+		FOLDER_EXPAND_ALL,
+		FOLDER_COLLAPSE_ALL,
+		FILE_NEW_RESOURCE,
+		FILE_NEW_TEXTFILE,
 		FILE_NEW_FOLDER,
 		FILE_NEW_SCRIPT,
 		FILE_NEW_SCENE,
-		FILE_SHOW_IN_EXPLORER,
-		FILE_COPY_PATH,
-		FILE_COPY_UID,
-		FILE_NEW_RESOURCE,
-		FILE_NEW_TEXTFILE,
-		FOLDER_EXPAND_ALL,
-		FOLDER_COLLAPSE_ALL,
 	};
 
 	FileSortOption file_sort = FILE_SORT_NAME;
@@ -213,11 +215,11 @@ private:
 	void _file_multi_selected(int p_index, bool p_selected);
 	void _tree_multi_selected(Object *p_item, int p_column, bool p_selected);
 
-	void _get_imported_files(const String &p_path, Vector<String> &files) const;
+	bool _get_imported_files(const String &p_path, String &r_extension, Vector<String> &r_files) const;
 	void _update_import_dock();
 
-	void _get_all_items_in_dir(EditorFileSystemDirectory *efsd, Vector<String> &files, Vector<String> &folders) const;
-	void _find_remaps(EditorFileSystemDirectory *efsd, const HashMap<String, String> &renames, Vector<String> &to_remaps) const;
+	void _get_all_items_in_dir(EditorFileSystemDirectory *p_efsd, Vector<String> &r_files, Vector<String> &r_folders) const;
+	void _find_remaps(EditorFileSystemDirectory *p_efsd, const HashMap<String, String> &r_renames, Vector<String> &r_to_remaps) const;
 	void _try_move_item(const FileOrFolder &p_item, const String &p_new_path, HashMap<String, String> &p_file_renames, HashMap<String, String> &p_folder_renames);
 	void _try_duplicate_item(const FileOrFolder &p_item, const String &p_new_path) const;
 	void _update_dependencies_after_move(const HashMap<String, String> &p_renames) const;
@@ -226,6 +228,7 @@ private:
 	void _update_favorites_list_after_move(const HashMap<String, String> &p_files_renames, const HashMap<String, String> &p_folders_renames) const;
 	void _update_project_settings_after_move(const HashMap<String, String> &p_renames) const;
 
+	void _resource_removed(const Ref<Resource> &p_resource);
 	void _file_removed(String p_file);
 	void _folder_removed(String p_folder);
 
@@ -297,12 +300,12 @@ private:
 
 	void _update_display_mode(bool p_force = false);
 
-	Vector<String> _tree_get_selected(bool remove_self_inclusion = true);
+	Vector<String> _tree_get_selected(bool remove_self_inclusion = true) const;
 
 	bool _is_file_type_disabled_by_feature_profile(const StringName &p_class);
 
 	void _feature_profile_changed();
-	Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
+	static Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
 
 private:
 	static FileSystemDock *singleton;
@@ -315,9 +318,11 @@ protected:
 	static void _bind_methods();
 
 public:
-	String get_selected_path() const;
+	Vector<String> get_selected_paths() const;
 
 	String get_current_path() const;
+	String get_current_directory() const;
+
 	void navigate_to_path(const String &p_path);
 	void focus_on_filter();
 

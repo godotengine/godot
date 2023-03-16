@@ -1,29 +1,6 @@
-/*  GRAPHITE2 LICENSING
+// SPDX-License-Identifier: MIT OR MPL-2.0 OR LGPL-2.1-or-later OR GPL-2.0-or-later
+// Copyright 2012, SIL International, All rights reserved.
 
-    Copyright 2012, SIL International
-    All rights reserved.
-
-    This library is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published
-    by the Free Software Foundation; either version 2.1 of License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Lesser General Public License for more details.
-
-    You should also have received a copy of the GNU Lesser General Public
-    License along with this library in the file named "LICENSE".
-    If not, write to the Free Software Foundation, 51 Franklin Street,
-    Suite 500, Boston, MA 02110-1335, USA or visit their web page on the
-    internet at http://www.fsf.org/licenses/lgpl.html.
-
-Alternatively, the contents of this file may be used under the terms of the
-Mozilla Public License (http://mozilla.org/MPL) or the GNU General Public
-License, as published by the Free Software Foundation, either version 2
-of the License or (at your option) any later version.
-*/
 #include "graphite2/Font.h"
 
 #include "inc/Main.h"
@@ -44,12 +21,18 @@ namespace
     // variable length structures.
 
     template<typename W>
-    class _glat_iterator : public std::iterator<std::input_iterator_tag, std::pair<sparse::key_type, sparse::mapped_type> >
+    class _glat_iterator
     {
         unsigned short  key() const             { return uint16(be::peek<W>(_e) + _n); }
         unsigned int    run() const             { return be::peek<W>(_e+sizeof(W)); }
         void            advance_entry()         { _n = 0; _e = _v; be::skip<W>(_v,2); }
     public:
+        using iterator_category = std::input_iterator_tag;
+        using value_type = std::pair<sparse::key_type, sparse::mapped_type>;
+        using difference_type = ptrdiff_t;
+        using pointer = value_type *;
+        using reference = value_type &;
+
         _glat_iterator(const void * glat=0) : _e(reinterpret_cast<const byte *>(glat)), _v(_e+2*sizeof(W)), _n(0) {}
 
         _glat_iterator<W> & operator ++ () {

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  camera_2d.cpp                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  camera_2d.cpp                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "camera_2d.h"
 
@@ -39,15 +39,18 @@ void Camera2D::_update_scroll() {
 	}
 
 	if (Engine::get_singleton()->is_editor_hint()) {
-		queue_redraw(); //will just be drawn
-		return;
+		queue_redraw();
+		// Only set viewport transform when not bound to the main viewport.
+		if (get_viewport() == get_tree()->get_edited_scene_root()->get_viewport()) {
+			return;
+		}
 	}
 
 	if (!viewport) {
 		return;
 	}
 
-	if (current) {
+	if (is_current()) {
 		ERR_FAIL_COND(custom_viewport && !ObjectDB::get_instance(custom_viewport_id));
 
 		Transform2D xform = get_camera_transform();
@@ -155,11 +158,11 @@ Transform2D Camera2D::get_camera_transform() {
 			}
 		}
 
-		if (smoothing_enabled && !Engine::get_singleton()->is_editor_hint()) {
-			real_t c = smoothing * (process_callback == CAMERA2D_PROCESS_PHYSICS ? get_physics_process_delta_time() : get_process_delta_time());
+		if (position_smoothing_enabled && !Engine::get_singleton()->is_editor_hint()) {
+			real_t c = position_smoothing_speed * (process_callback == CAMERA2D_PROCESS_PHYSICS ? get_physics_process_delta_time() : get_process_delta_time());
 			smoothed_camera_pos = ((camera_pos - smoothed_camera_pos) * c) + smoothed_camera_pos;
 			ret_camera_pos = smoothed_camera_pos;
-			//camera_pos=camera_pos*(1.0-smoothing)+new_camera_pos*smoothing;
+			//camera_pos=camera_pos*(1.0-position_smoothing_speed)+new_camera_pos*position_smoothing_speed;
 		} else {
 			ret_camera_pos = smoothed_camera_pos = camera_pos;
 		}
@@ -171,14 +174,19 @@ Transform2D Camera2D::get_camera_transform() {
 
 	Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5 * zoom_scale) : Point2());
 
-	real_t angle = get_global_rotation();
-	if (rotating) {
-		screen_offset = screen_offset.rotated(angle);
+	if (!ignore_rotation) {
+		if (rotation_smoothing_enabled && !Engine::get_singleton()->is_editor_hint()) {
+			real_t step = rotation_smoothing_speed * (process_callback == CAMERA2D_PROCESS_PHYSICS ? get_physics_process_delta_time() : get_process_delta_time());
+			camera_angle = Math::lerp_angle(camera_angle, get_global_rotation(), step);
+		} else {
+			camera_angle = get_global_rotation();
+		}
+		screen_offset = screen_offset.rotated(camera_angle);
 	}
 
 	Rect2 screen_rect(-screen_offset + ret_camera_pos, screen_size * zoom_scale);
 
-	if (!smoothing_enabled || !limit_smoothing_enabled) {
+	if (!position_smoothing_enabled || !limit_smoothing_enabled) {
 		if (screen_rect.position.x < limit[SIDE_LEFT]) {
 			screen_rect.position.x = limit[SIDE_LEFT];
 		}
@@ -204,8 +212,8 @@ Transform2D Camera2D::get_camera_transform() {
 
 	Transform2D xform;
 	xform.scale_basis(zoom_scale);
-	if (rotating) {
-		xform.set_rotation(angle);
+	if (!ignore_rotation) {
+		xform.set_rotation(camera_angle);
 	}
 	xform.set_origin(screen_rect.position);
 
@@ -233,10 +241,6 @@ void Camera2D::_notification(int p_what) {
 				viewport = get_viewport();
 			}
 
-			if (is_current()) {
-				viewport->_camera_2d_set(this);
-			}
-
 			canvas = get_canvas();
 
 			RID vp = viewport->get_viewport_rid();
@@ -246,22 +250,24 @@ void Camera2D::_notification(int p_what) {
 			add_to_group(group_name);
 			add_to_group(canvas_group_name);
 
+			if (!Engine::get_singleton()->is_editor_hint() && enabled && !viewport->get_camera_2d()) {
+				make_current();
+			}
+
 			_update_process_callback();
 			first = true;
 			_update_scroll();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			if (is_current()) {
-				if (viewport && !(custom_viewport && !ObjectDB::get_instance(custom_viewport_id))) {
-					viewport->set_canvas_transform(Transform2D());
-					clear_current();
-					current = true;
-				}
-			}
 			remove_from_group(group_name);
 			remove_from_group(canvas_group_name);
+			if (is_current()) {
+				clear_current();
+			}
 			viewport = nullptr;
+			just_exited_tree = true;
+			callable_mp(this, &Camera2D::_reset_just_exited).call_deferred();
 		} break;
 
 #ifdef TOOLS_ENABLED
@@ -363,15 +369,21 @@ Camera2D::AnchorMode Camera2D::get_anchor_mode() const {
 	return anchor_mode;
 }
 
-void Camera2D::set_rotating(bool p_rotating) {
-	rotating = p_rotating;
+void Camera2D::set_ignore_rotation(bool p_ignore) {
+	ignore_rotation = p_ignore;
 	Point2 old_smoothed_camera_pos = smoothed_camera_pos;
+
+	// Reset back to zero so it matches the camera rotation when ignore_rotation is enabled.
+	if (ignore_rotation) {
+		camera_angle = 0.0;
+	}
+
 	_update_scroll();
 	smoothed_camera_pos = old_smoothed_camera_pos;
 }
 
-bool Camera2D::is_rotating() const {
-	return rotating;
+bool Camera2D::is_ignoring_rotation() const {
+	return ignore_rotation;
 }
 
 void Camera2D::set_process_callback(Camera2DProcessCallback p_mode) {
@@ -383,57 +395,74 @@ void Camera2D::set_process_callback(Camera2DProcessCallback p_mode) {
 	_update_process_callback();
 }
 
+void Camera2D::set_enabled(bool p_enabled) {
+	enabled = p_enabled;
+
+	if (enabled && is_inside_tree() && !viewport->get_camera_2d()) {
+		make_current();
+	} else if (!enabled && is_current()) {
+		clear_current();
+	}
+}
+
+bool Camera2D::is_enabled() const {
+	return enabled;
+}
+
 Camera2D::Camera2DProcessCallback Camera2D::get_process_callback() const {
 	return process_callback;
 }
 
 void Camera2D::_make_current(Object *p_which) {
+	if (!viewport || (custom_viewport && !ObjectDB::get_instance(custom_viewport_id))) {
+		return;
+	}
+
 	if (p_which == this) {
-		current = true;
 		if (is_inside_tree()) {
-			get_viewport()->_camera_2d_set(this);
+			viewport->_camera_2d_set(this);
 			queue_redraw();
 		}
 	} else {
-		current = false;
 		if (is_inside_tree()) {
-			if (get_viewport()->get_camera_2d() == this) {
-				get_viewport()->_camera_2d_set(nullptr);
+			if (viewport->get_camera_2d() == this) {
+				viewport->_camera_2d_set(nullptr);
 			}
 			queue_redraw();
 		}
 	}
 }
 
-void Camera2D::set_current(bool p_current) {
-	if (p_current) {
-		make_current();
-	} else {
-		if (current) {
-			clear_current();
-		}
-	}
-}
+void Camera2D::_update_process_internal_for_smoothing() {
+	bool is_not_in_scene_or_editor = !(is_inside_tree() && Engine::get_singleton()->is_editor_hint());
+	bool is_any_smoothing_valid = position_smoothing_speed > 0 || rotation_smoothing_speed > 0;
 
-bool Camera2D::is_current() const {
-	return current;
+	bool enable = is_any_smoothing_valid && is_not_in_scene_or_editor;
+	set_process_internal(enable);
 }
 
 void Camera2D::make_current() {
-	if (is_inside_tree()) {
-		get_tree()->call_group(group_name, "_make_current", this);
-	} else {
-		current = true;
+	ERR_FAIL_COND(!enabled || !is_inside_tree());
+	get_tree()->call_group(group_name, "_make_current", this);
+	if (just_exited_tree) {
+		// If camera exited the scene tree in the same frame, group call will skip it, so this needs to be called manually.
+		_make_current(this);
 	}
 	_update_scroll();
 }
 
 void Camera2D::clear_current() {
-	if (is_inside_tree()) {
-		get_tree()->call_group(group_name, "_make_current", (Object *)nullptr);
-	} else {
-		current = false;
+	ERR_FAIL_COND(!is_current());
+	if (viewport && !(custom_viewport && !ObjectDB::get_instance(custom_viewport_id)) && viewport->is_inside_tree()) {
+		viewport->assign_next_enabled_camera_2d(group_name);
 	}
+}
+
+bool Camera2D::is_current() const {
+	if (viewport && !(custom_viewport && !ObjectDB::get_instance(custom_viewport_id))) {
+		return viewport->get_camera_2d() == this;
+	}
+	return false;
 }
 
 void Camera2D::set_limit(Side p_side, int p_limit) {
@@ -506,17 +535,31 @@ void Camera2D::align() {
 	_update_scroll();
 }
 
-void Camera2D::set_follow_smoothing(real_t p_speed) {
-	smoothing = p_speed;
-	if (smoothing > 0 && !(is_inside_tree() && Engine::get_singleton()->is_editor_hint())) {
-		set_process_internal(true);
-	} else {
-		set_process_internal(false);
-	}
+void Camera2D::set_position_smoothing_speed(real_t p_speed) {
+	position_smoothing_speed = p_speed;
+	_update_process_internal_for_smoothing();
 }
 
-real_t Camera2D::get_follow_smoothing() const {
-	return smoothing;
+real_t Camera2D::get_position_smoothing_speed() const {
+	return position_smoothing_speed;
+}
+
+void Camera2D::set_rotation_smoothing_speed(real_t p_speed) {
+	rotation_smoothing_speed = p_speed;
+	_update_process_internal_for_smoothing();
+}
+
+real_t Camera2D::get_rotation_smoothing_speed() const {
+	return rotation_smoothing_speed;
+}
+
+void Camera2D::set_rotation_smoothing_enabled(bool p_enabled) {
+	rotation_smoothing_enabled = p_enabled;
+	notify_property_list_changed();
+}
+
+bool Camera2D::is_rotation_smoothing_enabled() const {
+	return rotation_smoothing_enabled;
 }
 
 Point2 Camera2D::get_camera_screen_center() const {
@@ -526,7 +569,7 @@ Point2 Camera2D::get_camera_screen_center() const {
 Size2 Camera2D::_get_camera_screen_size() const {
 	// special case if the camera2D is in the root viewport
 	if (Engine::get_singleton()->is_editor_hint() && get_viewport()->get_parent_viewport() == get_tree()->get_root()) {
-		return Size2(ProjectSettings::get_singleton()->get("display/window/size/viewport_width"), ProjectSettings::get_singleton()->get("display/window/size/viewport_height"));
+		return Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
 	}
 	return get_viewport_rect().size;
 }
@@ -574,18 +617,18 @@ real_t Camera2D::get_drag_horizontal_offset() const {
 void Camera2D::_set_old_smoothing(real_t p_enable) {
 	//compatibility
 	if (p_enable > 0) {
-		smoothing_enabled = true;
-		set_follow_smoothing(p_enable);
+		position_smoothing_enabled = true;
+		set_position_smoothing_speed(p_enable);
 	}
 }
 
-void Camera2D::set_enable_follow_smoothing(bool p_enabled) {
-	smoothing_enabled = p_enabled;
+void Camera2D::set_position_smoothing_enabled(bool p_enabled) {
+	position_smoothing_enabled = p_enabled;
 	notify_property_list_changed();
 }
 
-bool Camera2D::is_follow_smoothing_enabled() const {
-	return smoothing_enabled;
+bool Camera2D::is_position_smoothing_enabled() const {
+	return position_smoothing_enabled;
 }
 
 void Camera2D::set_custom_viewport(Node *p_viewport) {
@@ -656,7 +699,10 @@ bool Camera2D::is_margin_drawing_enabled() const {
 }
 
 void Camera2D::_validate_property(PropertyInfo &p_property) const {
-	if (!smoothing_enabled && p_property.name == "smoothing_speed") {
+	if (!position_smoothing_enabled && p_property.name == "position_smoothing_speed") {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+	if (!rotation_smoothing_enabled && p_property.name == "rotation_smoothing_speed") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
@@ -668,15 +714,18 @@ void Camera2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_anchor_mode", "anchor_mode"), &Camera2D::set_anchor_mode);
 	ClassDB::bind_method(D_METHOD("get_anchor_mode"), &Camera2D::get_anchor_mode);
 
-	ClassDB::bind_method(D_METHOD("set_rotating", "rotating"), &Camera2D::set_rotating);
-	ClassDB::bind_method(D_METHOD("is_rotating"), &Camera2D::is_rotating);
+	ClassDB::bind_method(D_METHOD("set_ignore_rotation", "ignore"), &Camera2D::set_ignore_rotation);
+	ClassDB::bind_method(D_METHOD("is_ignoring_rotation"), &Camera2D::is_ignoring_rotation);
 
 	ClassDB::bind_method(D_METHOD("_update_scroll"), &Camera2D::_update_scroll);
 
 	ClassDB::bind_method(D_METHOD("set_process_callback", "mode"), &Camera2D::set_process_callback);
 	ClassDB::bind_method(D_METHOD("get_process_callback"), &Camera2D::get_process_callback);
 
-	ClassDB::bind_method(D_METHOD("set_current", "current"), &Camera2D::set_current);
+	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &Camera2D::set_enabled);
+	ClassDB::bind_method(D_METHOD("is_enabled"), &Camera2D::is_enabled);
+
+	ClassDB::bind_method(D_METHOD("make_current"), &Camera2D::make_current);
 	ClassDB::bind_method(D_METHOD("is_current"), &Camera2D::is_current);
 	ClassDB::bind_method(D_METHOD("_make_current"), &Camera2D::_make_current);
 
@@ -710,11 +759,17 @@ void Camera2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_viewport", "viewport"), &Camera2D::set_custom_viewport);
 	ClassDB::bind_method(D_METHOD("get_custom_viewport"), &Camera2D::get_custom_viewport);
 
-	ClassDB::bind_method(D_METHOD("set_follow_smoothing", "follow_smoothing"), &Camera2D::set_follow_smoothing);
-	ClassDB::bind_method(D_METHOD("get_follow_smoothing"), &Camera2D::get_follow_smoothing);
+	ClassDB::bind_method(D_METHOD("set_position_smoothing_speed", "position_smoothing_speed"), &Camera2D::set_position_smoothing_speed);
+	ClassDB::bind_method(D_METHOD("get_position_smoothing_speed"), &Camera2D::get_position_smoothing_speed);
 
-	ClassDB::bind_method(D_METHOD("set_enable_follow_smoothing", "follow_smoothing"), &Camera2D::set_enable_follow_smoothing);
-	ClassDB::bind_method(D_METHOD("is_follow_smoothing_enabled"), &Camera2D::is_follow_smoothing_enabled);
+	ClassDB::bind_method(D_METHOD("set_position_smoothing_enabled", "position_smoothing_speed"), &Camera2D::set_position_smoothing_enabled);
+	ClassDB::bind_method(D_METHOD("is_position_smoothing_enabled"), &Camera2D::is_position_smoothing_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_rotation_smoothing_enabled", "enabled"), &Camera2D::set_rotation_smoothing_enabled);
+	ClassDB::bind_method(D_METHOD("is_rotation_smoothing_enabled"), &Camera2D::is_rotation_smoothing_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_rotation_smoothing_speed", "speed"), &Camera2D::set_rotation_smoothing_speed);
+	ClassDB::bind_method(D_METHOD("get_rotation_smoothing_speed"), &Camera2D::get_rotation_smoothing_speed);
 
 	ClassDB::bind_method(D_METHOD("force_update_scroll"), &Camera2D::force_update_scroll);
 	ClassDB::bind_method(D_METHOD("reset_smoothing"), &Camera2D::reset_smoothing);
@@ -733,8 +788,8 @@ void Camera2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "anchor_mode", PROPERTY_HINT_ENUM, "Fixed TopLeft,Drag Center"), "set_anchor_mode", "get_anchor_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotating"), "set_rotating", "is_rotating");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "current"), "set_current", "is_current");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_rotation"), "set_ignore_rotation", "is_ignoring_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "zoom", PROPERTY_HINT_LINK), "set_zoom", "get_zoom");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_viewport", PROPERTY_HINT_RESOURCE_TYPE, "Viewport", PROPERTY_USAGE_NONE), "set_custom_viewport", "get_custom_viewport");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_callback", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_process_callback", "get_process_callback");
@@ -746,9 +801,13 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "limit_bottom", PROPERTY_HINT_NONE, "suffix:px"), "set_limit", "get_limit", SIDE_BOTTOM);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "limit_smoothed"), "set_limit_smoothing_enabled", "is_limit_smoothing_enabled");
 
-	ADD_GROUP("Smoothing", "smoothing_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smoothing_enabled"), "set_enable_follow_smoothing", "is_follow_smoothing_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "smoothing_speed", PROPERTY_HINT_NONE, "suffix:px/s"), "set_follow_smoothing", "get_follow_smoothing");
+	ADD_GROUP("Position Smoothing", "position_smoothing_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "position_smoothing_enabled"), "set_position_smoothing_enabled", "is_position_smoothing_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "position_smoothing_speed", PROPERTY_HINT_NONE, "suffix:px/s"), "set_position_smoothing_speed", "get_position_smoothing_speed");
+
+	ADD_GROUP("Rotation Smoothing", "rotation_smoothing_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotation_smoothing_enabled"), "set_rotation_smoothing_enabled", "is_rotation_smoothing_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation_smoothing_speed"), "set_rotation_smoothing_speed", "get_rotation_smoothing_speed");
 
 	ADD_GROUP("Drag", "drag_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_horizontal_enabled"), "set_drag_horizontal_enabled", "is_drag_horizontal_enabled");
@@ -783,4 +842,5 @@ Camera2D::Camera2D() {
 	drag_margin[SIDE_BOTTOM] = 0.2;
 
 	set_notify_transform(true);
+	set_hide_clip_children(true);
 }

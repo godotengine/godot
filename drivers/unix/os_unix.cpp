@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  os_unix.cpp                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  os_unix.cpp                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "os_unix.h"
 
@@ -51,7 +51,6 @@
 #include <sys/sysctl.h>
 #endif
 
-#include <assert.h>
 #include <dlfcn.h>
 #include <errno.h>
 #include <poll.h>
@@ -104,10 +103,6 @@ static void _setup_clock() {
 }
 #endif
 
-void OS_Unix::debug_break() {
-	assert(false);
-}
-
 static void handle_interrupt(int sig) {
 	if (!EngineDebugger::is_active()) {
 		return;
@@ -131,9 +126,7 @@ int OS_Unix::unix_initialize_audio(int p_audio_driver) {
 }
 
 void OS_Unix::initialize_core() {
-#if !defined(NO_THREADS)
 	init_thread_posix();
-#endif
 
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
@@ -142,10 +135,8 @@ void OS_Unix::initialize_core() {
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
 
-#ifndef NO_NETWORK
 	NetSocketPosix::make_default();
 	IPUnix::make_default();
-#endif
 
 	_setup_clock();
 }
@@ -154,15 +145,13 @@ void OS_Unix::finalize_core() {
 	NetSocketPosix::cleanup();
 }
 
-String OS_Unix::get_stdin_string(bool p_block) {
-	if (p_block) {
-		char buff[1024];
-		String ret = stdin_buf + fgets(buff, 1024, stdin);
-		stdin_buf = "";
-		return ret;
-	}
+Vector<String> OS_Unix::get_video_adapter_driver_info() const {
+	return Vector<String>();
+}
 
-	return "";
+String OS_Unix::get_stdin_string() {
+	char buff[1024];
+	return String::utf8(fgets(buff, 1024, stdin));
 }
 
 Error OS_Unix::get_entropy(uint8_t *r_buffer, int p_bytes) {
@@ -175,6 +164,7 @@ Error OS_Unix::get_entropy(uint8_t *r_buffer, int p_bytes) {
 		left -= chunk;
 		ofs += chunk;
 	} while (left > 0);
+// Define this yourself if you don't want to fall back to /dev/urandom.
 #elif !defined(NO_URANDOM)
 	int r = open("/dev/urandom", O_RDONLY);
 	ERR_FAIL_COND_V(r < 0, FAILED);
@@ -421,10 +411,6 @@ bool OS_Unix::is_process_running(const ProcessID &p_pid) const {
 	return true;
 }
 
-bool OS_Unix::has_environment(const String &p_var) const {
-	return getenv(p_var.utf8().get_data()) != nullptr;
-}
-
 String OS_Unix::get_locale() const {
 	if (!has_environment("LANG")) {
 		return "en";
@@ -497,6 +483,10 @@ Error OS_Unix::set_cwd(const String &p_cwd) {
 	return OK;
 }
 
+bool OS_Unix::has_environment(const String &p_var) const {
+	return getenv(p_var.utf8().get_data()) != nullptr;
+}
+
 String OS_Unix::get_environment(const String &p_var) const {
 	if (getenv(p_var.utf8().get_data())) {
 		return getenv(p_var.utf8().get_data());
@@ -504,20 +494,23 @@ String OS_Unix::get_environment(const String &p_var) const {
 	return "";
 }
 
-bool OS_Unix::set_environment(const String &p_var, const String &p_value) const {
-	return setenv(p_var.utf8().get_data(), p_value.utf8().get_data(), /* overwrite: */ true) == 0;
+void OS_Unix::set_environment(const String &p_var, const String &p_value) const {
+	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains("="), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
+	int err = setenv(p_var.utf8().get_data(), p_value.utf8().get_data(), /* overwrite: */ 1);
+	ERR_FAIL_COND_MSG(err != 0, vformat("Failed setting environment variable '%s', the system is out of memory.", p_var));
 }
 
-int OS_Unix::get_processor_count() const {
-	return sysconf(_SC_NPROCESSORS_CONF);
+void OS_Unix::unset_environment(const String &p_var) const {
+	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains("="), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
+	unsetenv(p_var.utf8().get_data());
 }
 
 String OS_Unix::get_user_data_dir() const {
-	String appname = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/name"));
+	String appname = get_safe_dir_name(GLOBAL_GET("application/config/name"));
 	if (!appname.is_empty()) {
-		bool use_custom_dir = ProjectSettings::get_singleton()->get("application/config/use_custom_user_dir");
+		bool use_custom_dir = GLOBAL_GET("application/config/use_custom_user_dir");
 		if (use_custom_dir) {
-			String custom_dir = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/custom_user_dir_name"), true);
+			String custom_dir = get_safe_dir_name(GLOBAL_GET("application/config/custom_user_dir_name"), true);
 			if (custom_dir.is_empty()) {
 				custom_dir = appname;
 			}
@@ -573,7 +566,7 @@ String OS_Unix::get_executable_path() const {
 		WARN_PRINT("MAXPATHLEN is too small");
 	}
 
-	String path(resolved_path);
+	String path = String::utf8(resolved_path);
 	delete[] resolved_path;
 
 	return path;

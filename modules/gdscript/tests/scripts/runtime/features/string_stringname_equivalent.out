@@ -1,0 +1,8 @@
+GDTEST_OK
+Compare ==: true
+Compare ==: true
+Compare !=: false
+Compare !=: false
+Concat: abcdef
+Concat: abcdef
+Concat: abcdef

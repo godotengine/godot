@@ -51,6 +51,15 @@ layout(push_constant, std430) uniform Params {
 	bool normalized_blend_shapes;
 	uint pad0;
 	uint pad1;
+
+	vec2 skeleton_transform_x;
+	vec2 skeleton_transform_y;
+
+	vec2 skeleton_transform_offset;
+	vec2 inverse_transform_x;
+
+	vec2 inverse_transform_y;
+	vec2 inverse_transform_offset;
 }
 params;
 
@@ -63,7 +72,7 @@ vec3 oct_to_vec3(vec2 oct) {
 	vec3 v = vec3(oct.xy, 1.0 - abs(oct.x) - abs(oct.y));
 	float t = max(-v.z, 0.0);
 	v.xy += t * -sign(v.xy);
-	return v;
+	return normalize(v);
 }
 
 vec3 decode_uint_oct_to_norm(uint base) {
@@ -143,8 +152,8 @@ void main() {
 		uint skin_offset = params.skin_stride * index;
 
 		uvec2 bones = uvec2(src_bone_weights.data[skin_offset + 0], src_bone_weights.data[skin_offset + 1]);
-		uvec2 bones_01 = uvec2(bones.x & 0xFFFF, bones.x >> 16) * 3; //pre-add xform offset
-		uvec2 bones_23 = uvec2(bones.y & 0xFFFF, bones.y >> 16) * 3;
+		uvec2 bones_01 = uvec2(bones.x & 0xFFFF, bones.x >> 16) * 2; //pre-add xform offset
+		uvec2 bones_23 = uvec2(bones.y & 0xFFFF, bones.y >> 16) * 2;
 
 		skin_offset += params.skin_weight_offset;
 
@@ -158,9 +167,20 @@ void main() {
 		m += mat4(bone_transforms.data[bones_23.x], bone_transforms.data[bones_23.x + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.x;
 		m += mat4(bone_transforms.data[bones_23.y], bone_transforms.data[bones_23.y + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.y;
 
-		//reverse order because its transposed
-		vertex = (vec4(vertex, 0.0, 1.0) * m).xy;
+		mat4 skeleton_matrix = mat4(vec4(params.skeleton_transform_x, 0.0, 0.0), vec4(params.skeleton_transform_y, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(params.skeleton_transform_offset, 0.0, 1.0));
+		mat4 inverse_matrix = mat4(vec4(params.inverse_transform_x, 0.0, 0.0), vec4(params.inverse_transform_y, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(params.inverse_transform_offset, 0.0, 1.0));
+
+		m = skeleton_matrix * transpose(m) * inverse_matrix;
+
+		vertex = (m * vec4(vertex, 0.0, 1.0)).xy;
 	}
+
+	uint dst_offset = index * params.vertex_stride;
+
+	uvec2 uvertex = floatBitsToUint(vertex);
+	dst_vertices.data[dst_offset + 0] = uvertex.x;
+	dst_vertices.data[dst_offset + 1] = uvertex.y;
+
 #else
 	vec3 vertex;
 	vec3 normal;

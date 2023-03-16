@@ -44,13 +44,7 @@
 #include "mbedtls/pem.h"
 #endif
 
-#if defined(MBEDTLS_PLATFORM_C)
 #include "mbedtls/platform.h"
-#else
-#include <stdlib.h>
-#define mbedtls_calloc    calloc
-#define mbedtls_free      free
-#endif
 
 void mbedtls_x509write_csr_init( mbedtls_x509write_csr *ctx )
 {

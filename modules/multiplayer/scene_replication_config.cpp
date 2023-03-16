@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  scene_replication_config.cpp                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  scene_replication_config.cpp                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "scene_replication_config.h"
 
@@ -34,11 +34,11 @@
 #include "scene/main/node.h"
 
 bool SceneReplicationConfig::_set(const StringName &p_name, const Variant &p_value) {
-	String name = p_name;
+	String prop_name = p_name;
 
-	if (name.begins_with("properties/")) {
-		int idx = name.get_slicec('/', 1).to_int();
-		String what = name.get_slicec('/', 2);
+	if (prop_name.begins_with("properties/")) {
+		int idx = prop_name.get_slicec('/', 1).to_int();
+		String what = prop_name.get_slicec('/', 2);
 
 		if (properties.size() == idx && what == "path") {
 			ERR_FAIL_COND_V(p_value.get_type() != Variant::NODE_PATH, false);
@@ -72,11 +72,11 @@ bool SceneReplicationConfig::_set(const StringName &p_name, const Variant &p_val
 }
 
 bool SceneReplicationConfig::_get(const StringName &p_name, Variant &r_ret) const {
-	String name = p_name;
+	String prop_name = p_name;
 
-	if (name.begins_with("properties/")) {
-		int idx = name.get_slicec('/', 1).to_int();
-		String what = name.get_slicec('/', 2);
+	if (prop_name.begins_with("properties/")) {
+		int idx = prop_name.get_slicec('/', 1).to_int();
+		String what = prop_name.get_slicec('/', 2);
 		ERR_FAIL_INDEX_V(idx, properties.size(), false);
 		const ReplicationProperty &prop = properties[idx];
 		if (what == "path") {
@@ -114,6 +114,8 @@ void SceneReplicationConfig::add_property(const NodePath &p_path, int p_index) {
 
 	if (p_index < 0 || p_index == properties.size()) {
 		properties.push_back(ReplicationProperty(p_path));
+		sync_props.push_back(p_path);
+		spawn_props.push_back(p_path);
 		return;
 	}
 
@@ -126,6 +128,16 @@ void SceneReplicationConfig::add_property(const NodePath &p_path, int p_index) {
 		c++;
 	}
 	properties.insert_before(I, ReplicationProperty(p_path));
+	sync_props.clear();
+	spawn_props.clear();
+	for (const ReplicationProperty &prop : properties) {
+		if (prop.sync) {
+			sync_props.push_back(p_path);
+		}
+		if (prop.spawn) {
+			spawn_props.push_back(p_path);
+		}
+	}
 }
 
 void SceneReplicationConfig::remove_property(const NodePath &p_path) {

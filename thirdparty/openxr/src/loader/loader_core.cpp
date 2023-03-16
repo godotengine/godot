@@ -35,7 +35,7 @@
 // Global loader lock to:
 //   1. Ensure ActiveLoaderInstance get and set operations are done atomically.
 //   2. Ensure RuntimeInterface isn't used to unload the runtime while the runtime is in use.
-std::mutex &GetGlobalLoaderMutex() {
+static std::mutex &GetGlobalLoaderMutex() {
     static std::mutex loader_mutex;
     return loader_mutex;
 }
@@ -58,6 +58,8 @@ static XRAPI_ATTR XrResult XRAPI_CALL LoaderXrTermDestroyDebugUtilsMessengerEXT(
 static XRAPI_ATTR XrResult XRAPI_CALL LoaderXrTermSubmitDebugUtilsMessageEXT(
     XrInstance instance, XrDebugUtilsMessageSeverityFlagsEXT messageSeverity, XrDebugUtilsMessageTypeFlagsEXT messageTypes,
     const XrDebugUtilsMessengerCallbackDataEXT *callbackData);
+static XRAPI_ATTR XrResult XRAPI_CALL LoaderXrGetInstanceProcAddr(XrInstance instance, const char *name,
+                                                                  PFN_xrVoidFunction *function);
 
 // Utility template function meant to validate if a fixed size string contains
 // a null-terminator.

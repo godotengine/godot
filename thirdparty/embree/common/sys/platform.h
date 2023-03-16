@@ -92,16 +92,19 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifdef __WIN32__
-#define dll_export __declspec(dllexport)
-#define dll_import __declspec(dllimport)
+#  if defined(EMBREE_STATIC_LIB)
+#    define dll_export
+#    define dll_import
+#  else
+#    define dll_export __declspec(dllexport)
+#    define dll_import __declspec(dllimport)
+#  endif
 #else
-#define dll_export __attribute__ ((visibility ("default")))
-#define dll_import 
+#  define dll_export __attribute__ ((visibility ("default")))
+#  define dll_import
 #endif
 
-// -- GODOT start --
 #if defined(__WIN32__) && !defined(__MINGW32__)
-// -- GODOT end --
 #if !defined(__noinline)
 #define __noinline             __declspec(noinline)
 #endif
@@ -151,9 +154,7 @@
   #define DELETED  = delete
 #endif
 
-// -- GODOT start --
 #if !defined(likely)
-// -- GODOT end --
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 #define   likely(expr) (expr)
 #define unlikely(expr) (expr)
@@ -161,9 +162,7 @@
 #define   likely(expr) __builtin_expect((bool)(expr),true )
 #define unlikely(expr) __builtin_expect((bool)(expr),false)
 #endif
-// -- GODOT start --
 #endif
-// -- GODOT end --
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Error handling and debugging
@@ -252,6 +251,7 @@ __forceinline std::string toString(long long value) {
 #pragma warning(disable:4800) // forcing value to bool 'true' or 'false' (performance warning)
 //#pragma warning(disable:4267) // '=' : conversion from 'size_t' to 'unsigned long', possible loss of data
 #pragma warning(disable:4244) // 'argument' : conversion from 'ssize_t' to 'unsigned int', possible loss of data
+#pragma warning(disable:4267) // conversion from 'size_t' to 'const int', possible loss of data
 //#pragma warning(disable:4355) // 'this' : used in base member initializer list
 //#pragma warning(disable:391 ) // '<=' : signed / unsigned mismatch
 //#pragma warning(disable:4018) // '<' : signed / unsigned mismatch

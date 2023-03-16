@@ -264,8 +264,8 @@ namespace embree
           const Vec3vf<K> p2 = vtx[i*4+2];
           const Vec3vf<K> p3 = vtx[i*4+3];
           STAT3(shadow.trav_prims,1,popcnt(valid0),K);
-          if (pre.intersectK(valid0,ray,p0,p1,p2,p3,g,subgrid,i,OccludedKEpilogM<4,K,filter>(valid0,ray,context,subgrid.geomID(),subgrid.primID(),i)))
-            break;
+          pre.intersectK(valid0,ray,p0,p1,p2,p3,g,subgrid,i,OccludedKEpilogM<4,K,filter>(valid0,ray,context,subgrid.geomID(),subgrid.primID(),i));
+          if (none(valid0)) break;
         }
         return !valid0;
       }
@@ -408,10 +408,8 @@ namespace embree
           const Vec3vf<K> p2 = vtx[i*4+2];
           const Vec3vf<K> p3 = vtx[i*4+3];
           STAT3(shadow.trav_prims,1,popcnt(valid0),K);
-          //if (pre.intersectK(valid0,ray,p0,p1,p2,p3,g,subgrid,i,OccludedKEpilogM<4,K,filter>(valid0,ray,context,subgrid.geomID(),subgrid.primID(),i)))
-          if (pre.occludedK(valid0,ray,p0,p1,p2,p3,g,subgrid,i,OccludedKEpilogM<4,K,filter>(valid0,ray,context,subgrid.geomID(),subgrid.primID(),i)))
-	    
-            break;
+          pre.occludedK(valid0,ray,p0,p1,p2,p3,g,subgrid,i,OccludedKEpilogM<4,K,filter>(valid0,ray,context,subgrid.geomID(),subgrid.primID(),i));
+          if (none(valid0)) break;
         }
         return !valid0;
       }

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  editor_resource_preview.cpp                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_resource_preview.cpp                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_resource_preview.h"
 
@@ -41,7 +41,7 @@
 #include "editor/editor_settings.h"
 
 bool EditorResourcePreviewGenerator::handles(const String &p_type) const {
-	bool success;
+	bool success = false;
 	if (GDVIRTUAL_CALL(_handles, p_type, success)) {
 		return success;
 	}
@@ -70,21 +70,15 @@ Ref<Texture2D> EditorResourcePreviewGenerator::generate_from_path(const String &
 }
 
 bool EditorResourcePreviewGenerator::generate_small_preview_automatically() const {
-	bool success;
-	if (GDVIRTUAL_CALL(_generate_small_preview_automatically, success)) {
-		return success;
-	}
-
-	return false;
+	bool success = false;
+	GDVIRTUAL_CALL(_generate_small_preview_automatically, success);
+	return success;
 }
 
 bool EditorResourcePreviewGenerator::can_generate_small_preview() const {
-	bool success;
-	if (GDVIRTUAL_CALL(_can_generate_small_preview, success)) {
-		return success;
-	}
-
-	return false;
+	bool success = false;
+	GDVIRTUAL_CALL(_can_generate_small_preview, success);
+	return success;
 }
 
 void EditorResourcePreviewGenerator::_bind_methods() {
@@ -148,7 +142,7 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 		return; //could not guess type
 	}
 
-	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
+	int thumbnail_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 	thumbnail_size *= EDSCALE;
 
 	r_texture = Ref<ImageTexture>();
@@ -232,7 +226,7 @@ void EditorResourcePreview::_iterate() {
 			Ref<ImageTexture> texture;
 			Ref<ImageTexture> small_texture;
 
-			int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
+			int thumbnail_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 			thumbnail_size *= EDSCALE;
 
 			if (item.resource.is_valid()) {
@@ -430,8 +424,10 @@ void EditorResourcePreview::check_for_invalidation(const String &p_path) {
 }
 
 void EditorResourcePreview::start() {
-	ERR_FAIL_COND_MSG(thread.is_started(), "Thread already started.");
-	thread.start(_thread_func, this);
+	if (DisplayServer::get_singleton()->get_name() != "headless") {
+		ERR_FAIL_COND_MSG(thread.is_started(), "Thread already started.");
+		thread.start(_thread_func, this);
+	}
 }
 
 void EditorResourcePreview::stop() {

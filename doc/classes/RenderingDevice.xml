@@ -1,16 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RenderingDevice" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="RenderingDevice" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Abstraction for working with modern low-level graphics APIs.
 	</brief_description>
 	<description>
+		[RenderingDevice] is an abstraction for working with modern low-level graphics APIs such as Vulkan.
+		On startup, Godot creates a global [RenderingDevice] which can be retrieved using [method RenderingServer.get_rendering_device]. This global RenderingDevice performs drawing to the screen.
+		Internally, [RenderingDevice] is used in Godot to provide support for several modern low-level graphics APIs while reducing the amount of code duplication required.
+		[b]Local RenderingDevices:[/b] Using [method RenderingServer.create_local_rendering_device], you can create "secondary" rendering devices to perform drawing and GPU compute operations on separate threads.
+		[b]Note:[/b] [RenderingDevice] is not available when running in headless mode or when using the Compatibility rendering method.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="barrier">
 			<return type="void" />
-			<param index="0" name="from" type="int" default="7" />
-			<param index="1" name="to" type="int" default="7" />
+			<param index="0" name="from" type="int" enum="RenderingDevice.BarrierMask" default="7" />
+			<param index="1" name="to" type="int" enum="RenderingDevice.BarrierMask" default="7" />
 			<description>
 			</description>
 		</method>
@@ -19,14 +25,17 @@
 			<param index="0" name="buffer" type="RID" />
 			<param index="1" name="offset" type="int" />
 			<param index="2" name="size_bytes" type="int" />
-			<param index="3" name="post_barrier" type="int" default="7" />
+			<param index="3" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
 			<description>
 			</description>
 		</method>
 		<method name="buffer_get_data">
 			<return type="PackedByteArray" />
 			<param index="0" name="buffer" type="RID" />
+			<param index="1" name="offset_bytes" type="int" default="0" />
+			<param index="2" name="size_bytes" type="int" default="0" />
 			<description>
+				Returns a copy of the data of the specified [param buffer], optionally [param offset_bytes] and [param size_bytes] can be set to copy only a portion of the buffer.
 			</description>
 		</method>
 		<method name="buffer_update">
@@ -35,7 +44,7 @@
 			<param index="1" name="offset" type="int" />
 			<param index="2" name="size_bytes" type="int" />
 			<param index="3" name="data" type="PackedByteArray" />
-			<param index="4" name="post_barrier" type="int" default="7" />
+			<param index="4" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
 			<description>
 			</description>
 		</method>
@@ -83,7 +92,7 @@
 		</method>
 		<method name="compute_list_end">
 			<return type="void" />
-			<param index="0" name="post_barrier" type="int" default="7" />
+			<param index="0" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
 			<description>
 			</description>
 		</method>
@@ -223,7 +232,7 @@
 		</method>
 		<method name="draw_list_end">
 			<return type="void" />
-			<param index="0" name="post_barrier" type="int" default="7" />
+			<param index="0" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
 			<description>
 			</description>
 		</method>
@@ -232,7 +241,7 @@
 			<param index="0" name="draw_list" type="int" />
 			<param index="1" name="color" type="Color" />
 			<description>
-				Sets blend constants for draw list, blend constants are used only if the graphics pipeline is created with [code]DYNAMIC_STATE_BLEND_CONSTANTS[/code] flag set.
+				Sets blend constants for draw list, blend constants are used only if the graphics pipeline is created with [constant DYNAMIC_STATE_BLEND_CONSTANTS] flag set.
 			</description>
 		</method>
 		<method name="draw_list_set_push_constant">
@@ -425,7 +434,7 @@
 			<param index="5" name="multisample_state" type="RDPipelineMultisampleState" />
 			<param index="6" name="stencil_state" type="RDPipelineDepthStencilState" />
 			<param index="7" name="color_blend_state" type="RDPipelineColorBlendState" />
-			<param index="8" name="dynamic_state_flags" type="int" default="0" />
+			<param index="8" name="dynamic_state_flags" type="int" enum="RenderingDevice.PipelineDynamicStateFlags" default="0" />
 			<param index="9" name="for_render_pass" type="int" default="0" />
 			<param index="10" name="specialization_constants" type="RDPipelineSpecializationConstant[]" default="[]" />
 			<description>
@@ -504,7 +513,7 @@
 			<return type="RID" />
 			<param index="0" name="size_bytes" type="int" />
 			<param index="1" name="data" type="PackedByteArray" default="PackedByteArray()" />
-			<param index="2" name="usage" type="int" default="0" />
+			<param index="2" name="usage" type="int" enum="RenderingDevice.StorageBufferUsage" default="0" />
 			<description>
 			</description>
 		</method>
@@ -534,7 +543,7 @@
 			<param index="3" name="mipmap_count" type="int" />
 			<param index="4" name="base_layer" type="int" />
 			<param index="5" name="layer_count" type="int" />
-			<param index="6" name="post_barrier" type="int" default="7" />
+			<param index="6" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
 			<description>
 			</description>
 		</method>
@@ -549,7 +558,7 @@
 			<param index="6" name="dst_mipmap" type="int" />
 			<param index="7" name="src_layer" type="int" />
 			<param index="8" name="dst_layer" type="int" />
-			<param index="9" name="post_barrier" type="int" default="7" />
+			<param index="9" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
 			<description>
 			</description>
 		</method>
@@ -589,7 +598,7 @@
 		<method name="texture_is_format_supported_for_usage" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="format" type="int" enum="RenderingDevice.DataFormat" />
-			<param index="1" name="usage_flags" type="int" />
+			<param index="1" name="usage_flags" type="int" enum="RenderingDevice.TextureUsageBits" />
 			<description>
 			</description>
 		</method>
@@ -609,7 +618,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="from_texture" type="RID" />
 			<param index="1" name="to_texture" type="RID" />
-			<param index="2" name="post_barrier" type="int" default="7" />
+			<param index="2" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
 			<description>
 			</description>
 		</method>
@@ -618,7 +627,7 @@
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="layer" type="int" />
 			<param index="2" name="data" type="PackedByteArray" />
-			<param index="3" name="post_barrier" type="int" default="7" />
+			<param index="3" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
 			<description>
 			</description>
 		</method>
@@ -643,6 +652,16 @@
 			<description>
 			</description>
 		</method>
+		<method name="vertex_array_create">
+			<return type="RID" />
+			<param index="0" name="vertex_count" type="int" />
+			<param index="1" name="vertex_format" type="int" />
+			<param index="2" name="src_buffers" type="RID[]" />
+			<param index="3" name="offsets" type="PackedInt64Array" default="PackedInt64Array()" />
+			<description>
+				Creates a vertex array based on the specified buffers. Optionally, [param offsets] (in bytes) may be defined for each buffer.
+			</description>
+		</method>
 		<method name="vertex_buffer_create">
 			<return type="RID" />
 			<param index="0" name="size_bytes" type="int" />
@@ -659,16 +678,6 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="BARRIER_MASK_RASTER" value="1">
-		</constant>
-		<constant name="BARRIER_MASK_COMPUTE" value="2">
-		</constant>
-		<constant name="BARRIER_MASK_TRANSFER" value="4">
-		</constant>
-		<constant name="BARRIER_MASK_ALL" value="7">
-		</constant>
-		<constant name="BARRIER_MASK_NO_BARRIER" value="8">
-		</constant>
 		<constant name="DEVICE_TYPE_OTHER" value="0" enum="DeviceType">
 			Rendering device type does not match any of the other enum values or is unknown.
 		</constant>
@@ -1151,21 +1160,39 @@
 		</constant>
 		<constant name="DATA_FORMAT_MAX" value="218" enum="DataFormat">
 		</constant>
+		<constant name="BARRIER_MASK_RASTER" value="1" enum="BarrierMask" is_bitfield="true">
+		</constant>
+		<constant name="BARRIER_MASK_COMPUTE" value="2" enum="BarrierMask" is_bitfield="true">
+		</constant>
+		<constant name="BARRIER_MASK_TRANSFER" value="4" enum="BarrierMask" is_bitfield="true">
+		</constant>
+		<constant name="BARRIER_MASK_ALL_BARRIERS" value="7" enum="BarrierMask" is_bitfield="true">
+		</constant>
+		<constant name="BARRIER_MASK_NO_BARRIER" value="8" enum="BarrierMask" is_bitfield="true">
+		</constant>
 		<constant name="TEXTURE_TYPE_1D" value="0" enum="TextureType">
+			1-dimensional texture.
 		</constant>
 		<constant name="TEXTURE_TYPE_2D" value="1" enum="TextureType">
+			2-dimensional texture.
 		</constant>
 		<constant name="TEXTURE_TYPE_3D" value="2" enum="TextureType">
+			3-dimensional texture.
 		</constant>
 		<constant name="TEXTURE_TYPE_CUBE" value="3" enum="TextureType">
+			[Cubemap] texture.
 		</constant>
 		<constant name="TEXTURE_TYPE_1D_ARRAY" value="4" enum="TextureType">
+			Array of 1-dimensional textures.
 		</constant>
 		<constant name="TEXTURE_TYPE_2D_ARRAY" value="5" enum="TextureType">
+			Array of 2-dimensional textures.
 		</constant>
 		<constant name="TEXTURE_TYPE_CUBE_ARRAY" value="6" enum="TextureType">
+			Array of [Cubemap] textures.
 		</constant>
 		<constant name="TEXTURE_TYPE_MAX" value="7" enum="TextureType">
+			Represents the size of the [enum TextureType] enum.
 		</constant>
 		<constant name="TEXTURE_SAMPLES_1" value="0" enum="TextureSamples">
 		</constant>
@@ -1182,26 +1209,27 @@
 		<constant name="TEXTURE_SAMPLES_64" value="6" enum="TextureSamples">
 		</constant>
 		<constant name="TEXTURE_SAMPLES_MAX" value="7" enum="TextureSamples">
+			Represents the size of the [enum TextureSamples] enum.
 		</constant>
-		<constant name="TEXTURE_USAGE_SAMPLING_BIT" value="1" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_SAMPLING_BIT" value="1" enum="TextureUsageBits" is_bitfield="true">
 		</constant>
-		<constant name="TEXTURE_USAGE_COLOR_ATTACHMENT_BIT" value="2" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_COLOR_ATTACHMENT_BIT" value="2" enum="TextureUsageBits" is_bitfield="true">
 		</constant>
-		<constant name="TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT" value="4" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT" value="4" enum="TextureUsageBits" is_bitfield="true">
 		</constant>
-		<constant name="TEXTURE_USAGE_STORAGE_BIT" value="8" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_STORAGE_BIT" value="8" enum="TextureUsageBits" is_bitfield="true">
 		</constant>
-		<constant name="TEXTURE_USAGE_STORAGE_ATOMIC_BIT" value="16" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_STORAGE_ATOMIC_BIT" value="16" enum="TextureUsageBits" is_bitfield="true">
 		</constant>
-		<constant name="TEXTURE_USAGE_CPU_READ_BIT" value="32" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_CPU_READ_BIT" value="32" enum="TextureUsageBits" is_bitfield="true">
 		</constant>
-		<constant name="TEXTURE_USAGE_CAN_UPDATE_BIT" value="64" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_CAN_UPDATE_BIT" value="64" enum="TextureUsageBits" is_bitfield="true">
 		</constant>
-		<constant name="TEXTURE_USAGE_CAN_COPY_FROM_BIT" value="128" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_CAN_COPY_FROM_BIT" value="128" enum="TextureUsageBits" is_bitfield="true">
 		</constant>
-		<constant name="TEXTURE_USAGE_CAN_COPY_TO_BIT" value="256" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_CAN_COPY_TO_BIT" value="256" enum="TextureUsageBits" is_bitfield="true">
 		</constant>
-		<constant name="TEXTURE_USAGE_INPUT_ATTACHMENT_BIT" value="512" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_INPUT_ATTACHMENT_BIT" value="512" enum="TextureUsageBits" is_bitfield="true">
 		</constant>
 		<constant name="TEXTURE_SWIZZLE_IDENTITY" value="0" enum="TextureSwizzle">
 		</constant>
@@ -1226,8 +1254,10 @@
 		<constant name="TEXTURE_SLICE_3D" value="2" enum="TextureSliceType">
 		</constant>
 		<constant name="SAMPLER_FILTER_NEAREST" value="0" enum="SamplerFilter">
+			Nearest-neighbor sampler filtering. Sampling at higher resolutions than the source will result in a pixelated look.
 		</constant>
 		<constant name="SAMPLER_FILTER_LINEAR" value="1" enum="SamplerFilter">
+			Bilinear sampler filtering. Sampling at higher resolutions than the source will result in a blurry look.
 		</constant>
 		<constant name="SAMPLER_REPEAT_MODE_REPEAT" value="0" enum="SamplerRepeatMode">
 		</constant>
@@ -1263,7 +1293,7 @@
 		</constant>
 		<constant name="INDEX_BUFFER_FORMAT_UINT32" value="1" enum="IndexBufferFormat">
 		</constant>
-		<constant name="STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT" value="1" enum="StorageBufferUsage">
+		<constant name="STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT" value="1" enum="StorageBufferUsage" is_bitfield="true">
 		</constant>
 		<constant name="UNIFORM_TYPE_SAMPLER" value="0" enum="UniformType">
 		</constant>
@@ -1288,8 +1318,10 @@
 		<constant name="UNIFORM_TYPE_MAX" value="10" enum="UniformType">
 		</constant>
 		<constant name="RENDER_PRIMITIVE_POINTS" value="0" enum="RenderPrimitive">
+			Point rendering primitive (with constant size, regardless of distance from camera).
 		</constant>
 		<constant name="RENDER_PRIMITIVE_LINES" value="1" enum="RenderPrimitive">
+			Line rendering primitive.
 		</constant>
 		<constant name="RENDER_PRIMITIVE_LINES_WITH_ADJACENCY" value="2" enum="RenderPrimitive">
 		</constant>
@@ -1370,6 +1402,7 @@
 		<constant name="LOGIC_OP_NO_OP" value="5" enum="LogicOperation">
 		</constant>
 		<constant name="LOGIC_OP_XOR" value="6" enum="LogicOperation">
+			Exclusive or (XOR) logic operation.
 		</constant>
 		<constant name="LOGIC_OP_OR" value="7" enum="LogicOperation">
 		</constant>
@@ -1432,30 +1465,36 @@
 		<constant name="BLEND_FACTOR_MAX" value="19" enum="BlendFactor">
 		</constant>
 		<constant name="BLEND_OP_ADD" value="0" enum="BlendOperation">
+			Additive blending operation ([code]source + destination[/code]).
 		</constant>
 		<constant name="BLEND_OP_SUBTRACT" value="1" enum="BlendOperation">
+			Subtractive blending operation ([code]source - destination[/code]).
 		</constant>
 		<constant name="BLEND_OP_REVERSE_SUBTRACT" value="2" enum="BlendOperation">
+			Reverse subtractive blending operation ([code]destination - source[/code]).
 		</constant>
 		<constant name="BLEND_OP_MINIMUM" value="3" enum="BlendOperation">
+			Minimum blending operation (keep the lowest value of the two).
 		</constant>
 		<constant name="BLEND_OP_MAXIMUM" value="4" enum="BlendOperation">
+			Maximum blending operation (keep the highest value of the two).
 		</constant>
 		<constant name="BLEND_OP_MAX" value="5" enum="BlendOperation">
+			Represents the size of the [enum BlendOperation] enum.
 		</constant>
-		<constant name="DYNAMIC_STATE_LINE_WIDTH" value="1" enum="PipelineDynamicStateFlags">
+		<constant name="DYNAMIC_STATE_LINE_WIDTH" value="1" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>
-		<constant name="DYNAMIC_STATE_DEPTH_BIAS" value="2" enum="PipelineDynamicStateFlags">
+		<constant name="DYNAMIC_STATE_DEPTH_BIAS" value="2" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>
-		<constant name="DYNAMIC_STATE_BLEND_CONSTANTS" value="4" enum="PipelineDynamicStateFlags">
+		<constant name="DYNAMIC_STATE_BLEND_CONSTANTS" value="4" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>
-		<constant name="DYNAMIC_STATE_DEPTH_BOUNDS" value="8" enum="PipelineDynamicStateFlags">
+		<constant name="DYNAMIC_STATE_DEPTH_BOUNDS" value="8" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>
-		<constant name="DYNAMIC_STATE_STENCIL_COMPARE_MASK" value="16" enum="PipelineDynamicStateFlags">
+		<constant name="DYNAMIC_STATE_STENCIL_COMPARE_MASK" value="16" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>
-		<constant name="DYNAMIC_STATE_STENCIL_WRITE_MASK" value="32" enum="PipelineDynamicStateFlags">
+		<constant name="DYNAMIC_STATE_STENCIL_WRITE_MASK" value="32" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>
-		<constant name="DYNAMIC_STATE_STENCIL_REFERENCE" value="64" enum="PipelineDynamicStateFlags">
+		<constant name="DYNAMIC_STATE_STENCIL_REFERENCE" value="64" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>
 		<constant name="INITIAL_ACTION_CLEAR" value="0" enum="InitialAction">
 		</constant>
@@ -1534,12 +1573,16 @@
 		<constant name="LIMIT_MAX_TEXTURE_ARRAY_LAYERS" value="10" enum="Limit">
 		</constant>
 		<constant name="LIMIT_MAX_TEXTURE_SIZE_1D" value="11" enum="Limit">
+			Maximum supported 1-dimensional texture size (in pixels on a single axis).
 		</constant>
 		<constant name="LIMIT_MAX_TEXTURE_SIZE_2D" value="12" enum="Limit">
+			Maximum supported 2-dimensional texture size (in pixels on a single axis).
 		</constant>
 		<constant name="LIMIT_MAX_TEXTURE_SIZE_3D" value="13" enum="Limit">
+			Maximum supported 3-dimensional texture size (in pixels on a single axis).
 		</constant>
 		<constant name="LIMIT_MAX_TEXTURE_SIZE_CUBE" value="14" enum="Limit">
+			Maximum supported cubemap texture size (in pixels on a single axis of a single face).
 		</constant>
 		<constant name="LIMIT_MAX_TEXTURES_PER_SHADER_STAGE" value="15" enum="Limit">
 		</constant>
@@ -1581,15 +1624,24 @@
 		</constant>
 		<constant name="LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z" value="34" enum="Limit">
 		</constant>
+		<constant name="LIMIT_MAX_VIEWPORT_DIMENSIONS_X" value="35" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_VIEWPORT_DIMENSIONS_Y" value="36" enum="Limit">
+		</constant>
 		<constant name="MEMORY_TEXTURES" value="0" enum="MemoryType">
+			Memory taken by textures.
 		</constant>
 		<constant name="MEMORY_BUFFERS" value="1" enum="MemoryType">
+			Memory taken by buffers.
 		</constant>
 		<constant name="MEMORY_TOTAL" value="2" enum="MemoryType">
+			Total memory taken. This is greater than the sum of [constant MEMORY_TEXTURES] and [constant MEMORY_BUFFERS], as it also includes miscellaneous memory usage.
 		</constant>
 		<constant name="INVALID_ID" value="-1">
+			Returned by functions that return an ID if a value is invalid.
 		</constant>
 		<constant name="INVALID_FORMAT_ID" value="-1">
+			Returned by functions that return a format ID if a value is invalid.
 		</constant>
 	</constants>
 </class>

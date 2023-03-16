@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ShapeCast3D" inherits="Node3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ShapeCast3D" inherits="Node3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Node for physics collision sweep and immediate overlap queries. Similar to the [RayCast3D] node.
 	</brief_description>
@@ -14,7 +14,7 @@
 	<methods>
 		<method name="add_exception">
 			<return type="void" />
-			<param index="0" name="node" type="Object" />
+			<param index="0" name="node" type="CollisionObject3D" />
 			<description>
 				Adds a collision exception so the shape does not report collisions with the specified [CollisionObject3D] node.
 			</description>
@@ -56,6 +56,13 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns the collided [Object] of one of the multiple collisions at [param index], or [code]null[/code] if no object is intersecting the shape (i.e. [method is_colliding] returns [code]false[/code]).
+			</description>
+		</method>
+		<method name="get_collider_rid" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the [RID] of the collided object of one of the multiple collisions at [param index].
 			</description>
 		</method>
 		<method name="get_collider_shape" qualifiers="const">
@@ -101,7 +108,7 @@
 		</method>
 		<method name="remove_exception">
 			<return type="void" />
-			<param index="0" name="node" type="Object" />
+			<param index="0" name="node" type="CollisionObject3D" />
 			<description>
 				Removes a collision exception so the shape does report collisions with the specified [CollisionObject3D] node.
 			</description>

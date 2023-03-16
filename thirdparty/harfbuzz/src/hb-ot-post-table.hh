@@ -84,7 +84,7 @@ struct post
     post *post_prime = c->allocate_min<post> ();
     if (unlikely (!post_prime))  return_trace (false);
 
-    memcpy (post_prime, this, post::min_size);
+    hb_memcpy (post_prime, this, post::min_size);
     if (!glyph_names)
       return_trace (c->check_assign (post_prime->version.major, 3,
                                      HB_SERIALIZE_ERROR_INT_OVERFLOW)); // Version 3 does not have any glyph names.
@@ -101,6 +101,14 @@ struct post
     bool glyph_names = c->plan->flags & HB_SUBSET_FLAGS_GLYPH_NAMES;
     if (!serialize (c->serializer, glyph_names))
       return_trace (false);
+
+    if (c->plan->user_axes_location->has (HB_TAG ('s','l','n','t')) &&
+        !c->plan->pinned_at_default)
+    {
+      float italic_angle = c->plan->user_axes_location->get (HB_TAG ('s','l','n','t'));
+      italic_angle = hb_max (-90.f, hb_min (italic_angle, 90.f));
+      post_prime->italicAngle.set_float (italic_angle);
+    }
 
     if (glyph_names && version.major == 2)
       return_trace (v2X.subset (c));
@@ -133,7 +141,7 @@ struct post
     }
     ~accelerator_t ()
     {
-      hb_free (gids_sorted_by_name.get ());
+      hb_free (gids_sorted_by_name.get_acquire ());
       table.destroy ();
     }
 
@@ -160,7 +168,7 @@ struct post
       if (unlikely (!len)) return false;
 
     retry:
-      uint16_t *gids = gids_sorted_by_name.get ();
+      uint16_t *gids = gids_sorted_by_name.get_acquire ();
 
       if (unlikely (!gids))
       {
@@ -274,7 +282,7 @@ struct post
 					 * 0x00020000 for version 2.0
 					 * 0x00025000 for version 2.5 (deprecated)
 					 * 0x00030000 for version 3.0 */
-  HBFixed	italicAngle;		/* Italic angle in counter-clockwise degrees
+  F16DOT16	italicAngle;		/* Italic angle in counter-clockwise degrees
 					 * from the vertical. Zero for upright text,
 					 * negative for text that leans to the right
 					 * (forward). */

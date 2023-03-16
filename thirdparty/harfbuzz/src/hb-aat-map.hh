@@ -38,7 +38,7 @@ struct hb_aat_map_t
 
   void init ()
   {
-    memset (this, 0, sizeof (*this));
+    hb_memset (this, 0, sizeof (*this));
     chain_flags.init ();
   }
   void fini () { chain_flags.fini (); }

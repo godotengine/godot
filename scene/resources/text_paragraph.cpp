@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  text_paragraph.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  text_paragraph.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "scene/resources/text_paragraph.h"
 
@@ -64,8 +64,8 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_dropcap"), &TextParagraph::clear_dropcap);
 
 	ClassDB::bind_method(D_METHOD("add_string", "text", "font", "font_size", "language", "meta"), &TextParagraph::add_string, DEFVAL(""), DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("add_object", "key", "size", "inline_align", "length"), &TextParagraph::add_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(1));
-	ClassDB::bind_method(D_METHOD("resize_object", "key", "size", "inline_align"), &TextParagraph::resize_object, DEFVAL(INLINE_ALIGNMENT_CENTER));
+	ClassDB::bind_method(D_METHOD("add_object", "key", "size", "inline_align", "length", "baseline"), &TextParagraph::add_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(1), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("resize_object", "key", "size", "inline_align", "baseline"), &TextParagraph::resize_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(0.0));
 
 	ClassDB::bind_method(D_METHOD("set_alignment", "alignment"), &TextParagraph::set_alignment);
 	ClassDB::bind_method(D_METHOD("get_alignment"), &TextParagraph::get_alignment);
@@ -134,9 +134,21 @@ void TextParagraph::_bind_methods() {
 }
 
 void TextParagraph::_shape_lines() {
+	// When a shaped text is invalidated by an external source, we want to reshape it.
+	if (!TS->shaped_text_is_ready(rid) || !TS->shaped_text_is_ready(dropcap_rid)) {
+		lines_dirty = true;
+	}
+
+	for (const RID &line_rid : lines_rid) {
+		if (!TS->shaped_text_is_ready(line_rid)) {
+			lines_dirty = true;
+			break;
+		}
+	}
+
 	if (lines_dirty) {
-		for (int i = 0; i < (int)lines_rid.size(); i++) {
-			TS->free_rid(lines_rid[i]);
+		for (const RID &line_rid : lines_rid) {
+			TS->free_rid(line_rid);
 		}
 		lines_rid.clear();
 
@@ -234,14 +246,14 @@ void TextParagraph::_shape_lines() {
 
 		} else {
 			// Autowrap disabled.
-			for (int i = 0; i < (int)lines_rid.size(); i++) {
+			for (const RID &line_rid : lines_rid) {
 				if (alignment == HORIZONTAL_ALIGNMENT_FILL) {
-					TS->shaped_text_fit_to_width(lines_rid[i], width, jst_flags);
+					TS->shaped_text_fit_to_width(line_rid, width, jst_flags);
 					overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
-					TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
-					TS->shaped_text_fit_to_width(lines_rid[i], width, jst_flags | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
+					TS->shaped_text_overrun_trim_to_width(line_rid, width, overrun_flags);
+					TS->shaped_text_fit_to_width(line_rid, width, jst_flags | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
 				} else {
-					TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
+					TS->shaped_text_overrun_trim_to_width(line_rid, width, overrun_flags);
 				}
 			}
 		}
@@ -268,8 +280,8 @@ RID TextParagraph::get_dropcap_rid() const {
 void TextParagraph::clear() {
 	_THREAD_SAFE_METHOD_
 
-	for (int i = 0; i < (int)lines_rid.size(); i++) {
-		TS->free_rid(lines_rid[i]);
+	for (const RID &line_rid : lines_rid) {
+		TS->free_rid(line_rid);
 	}
 	lines_rid.clear();
 	TS->shaped_text_clear(rid);
@@ -385,18 +397,18 @@ void TextParagraph::set_bidi_override(const Array &p_override) {
 	lines_dirty = true;
 }
 
-bool TextParagraph::add_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align, int p_length) {
+bool TextParagraph::add_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align, int p_length, float p_baseline) {
 	_THREAD_SAFE_METHOD_
 
-	bool res = TS->shaped_text_add_object(rid, p_key, p_size, p_inline_align, p_length);
+	bool res = TS->shaped_text_add_object(rid, p_key, p_size, p_inline_align, p_length, p_baseline);
 	lines_dirty = true;
 	return res;
 }
 
-bool TextParagraph::resize_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align) {
+bool TextParagraph::resize_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align, float p_baseline) {
 	_THREAD_SAFE_METHOD_
 
-	bool res = TS->shaped_text_resize_object(rid, p_key, p_size, p_inline_align);
+	bool res = TS->shaped_text_resize_object(rid, p_key, p_size, p_inline_align, p_baseline);
 	lines_dirty = true;
 	return res;
 }
@@ -540,16 +552,90 @@ Rect2 TextParagraph::get_line_object_rect(int p_line, Variant p_key) const {
 
 	const_cast<TextParagraph *>(this)->_shape_lines();
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= (int)lines_rid.size(), Rect2());
-	Rect2 xrect = TS->shaped_text_get_object_rect(lines_rid[p_line], p_key);
-	for (int i = 0; i < p_line; i++) {
-		Size2 lsize = TS->shaped_text_get_size(lines_rid[i]);
+
+	Vector2 ofs;
+
+	float h_offset = 0.f;
+	if (TS->shaped_text_get_orientation(dropcap_rid) == TextServer::ORIENTATION_HORIZONTAL) {
+		h_offset = TS->shaped_text_get_size(dropcap_rid).x + dropcap_margins.size.x + dropcap_margins.position.x;
+	} else {
+		h_offset = TS->shaped_text_get_size(dropcap_rid).y + dropcap_margins.size.y + dropcap_margins.position.y;
+	}
+
+	for (int i = 0; i <= p_line; i++) {
+		float l_width = width;
 		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
-			xrect.position.y += lsize.y;
+			ofs.x = 0.f;
+			ofs.y += TS->shaped_text_get_ascent(lines_rid[i]);
+			if (i <= dropcap_lines) {
+				if (TS->shaped_text_get_inferred_direction(dropcap_rid) == TextServer::DIRECTION_LTR) {
+					ofs.x -= h_offset;
+				}
+				l_width -= h_offset;
+			}
 		} else {
-			xrect.position.x += lsize.x;
+			ofs.y = 0.f;
+			ofs.x += TS->shaped_text_get_ascent(lines_rid[i]);
+			if (i <= dropcap_lines) {
+				if (TS->shaped_text_get_inferred_direction(dropcap_rid) == TextServer::DIRECTION_LTR) {
+					ofs.x -= h_offset;
+				}
+				l_width -= h_offset;
+			}
+		}
+		float length = TS->shaped_text_get_width(lines_rid[i]);
+		if (width > 0) {
+			switch (alignment) {
+				case HORIZONTAL_ALIGNMENT_FILL:
+					if (TS->shaped_text_get_inferred_direction(lines_rid[i]) == TextServer::DIRECTION_RTL) {
+						if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+							ofs.x += l_width - length;
+						} else {
+							ofs.y += l_width - length;
+						}
+					}
+					break;
+				case HORIZONTAL_ALIGNMENT_LEFT:
+					break;
+				case HORIZONTAL_ALIGNMENT_CENTER: {
+					if (length <= l_width) {
+						if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+							ofs.x += Math::floor((l_width - length) / 2.0);
+						} else {
+							ofs.y += Math::floor((l_width - length) / 2.0);
+						}
+					} else if (TS->shaped_text_get_inferred_direction(lines_rid[i]) == TextServer::DIRECTION_RTL) {
+						if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+							ofs.x += l_width - length;
+						} else {
+							ofs.y += l_width - length;
+						}
+					}
+				} break;
+				case HORIZONTAL_ALIGNMENT_RIGHT: {
+					if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+						ofs.x += l_width - length;
+					} else {
+						ofs.y += l_width - length;
+					}
+				} break;
+			}
+		}
+		if (i != p_line) {
+			if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+				ofs.x = 0.f;
+				ofs.y += TS->shaped_text_get_descent(lines_rid[i]);
+			} else {
+				ofs.y = 0.f;
+				ofs.x += TS->shaped_text_get_descent(lines_rid[i]);
+			}
 		}
 	}
-	return xrect;
+
+	Rect2 rect = TS->shaped_text_get_object_rect(lines_rid[p_line], p_key);
+	rect.position += ofs;
+
+	return rect;
 }
 
 Size2 TextParagraph::get_line_size(int p_line) const {
@@ -841,17 +927,17 @@ int TextParagraph::hit_test(const Point2 &p_coords) const {
 			return 0;
 		}
 	}
-	for (int i = 0; i < (int)lines_rid.size(); i++) {
-		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
-			if ((p_coords.y >= ofs.y) && (p_coords.y <= ofs.y + TS->shaped_text_get_size(lines_rid[i]).y)) {
-				return TS->shaped_text_hit_test_position(lines_rid[i], p_coords.x);
+	for (const RID &line_rid : lines_rid) {
+		if (TS->shaped_text_get_orientation(line_rid) == TextServer::ORIENTATION_HORIZONTAL) {
+			if ((p_coords.y >= ofs.y) && (p_coords.y <= ofs.y + TS->shaped_text_get_size(line_rid).y)) {
+				return TS->shaped_text_hit_test_position(line_rid, p_coords.x);
 			}
-			ofs.y += TS->shaped_text_get_size(lines_rid[i]).y;
+			ofs.y += TS->shaped_text_get_size(line_rid).y;
 		} else {
-			if ((p_coords.x >= ofs.x) && (p_coords.x <= ofs.x + TS->shaped_text_get_size(lines_rid[i]).x)) {
-				return TS->shaped_text_hit_test_position(lines_rid[i], p_coords.y);
+			if ((p_coords.x >= ofs.x) && (p_coords.x <= ofs.x + TS->shaped_text_get_size(line_rid).x)) {
+				return TS->shaped_text_hit_test_position(line_rid, p_coords.y);
 			}
-			ofs.y += TS->shaped_text_get_size(lines_rid[i]).x;
+			ofs.y += TS->shaped_text_get_size(line_rid).x;
 		}
 	}
 	return TS->shaped_text_get_range(rid).y;
@@ -953,8 +1039,8 @@ TextParagraph::TextParagraph() {
 }
 
 TextParagraph::~TextParagraph() {
-	for (int i = 0; i < (int)lines_rid.size(); i++) {
-		TS->free_rid(lines_rid[i]);
+	for (const RID &line_rid : lines_rid) {
+		TS->free_rid(line_rid);
 	}
 	lines_rid.clear();
 	TS->free_rid(rid);

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  label.cpp                                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  label.cpp                                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "label.h"
 
@@ -102,12 +102,12 @@ void Label::_shape() {
 		const Ref<Font> &font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : theme_cache.font;
 		int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
 		ERR_FAIL_COND(font.is_null());
-		String text = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
+		String txt = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
 		if (visible_chars >= 0 && visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
-			text = text.substr(0, visible_chars);
+			txt = txt.substr(0, visible_chars);
 		}
 		if (dirty) {
-			TS->shaped_text_add_string(text_rid, text, font->get_rids(), font_size, font->get_opentype_features(), language);
+			TS->shaped_text_add_string(text_rid, txt, font->get_rids(), font_size, font->get_opentype_features(), language);
 		} else {
 			int spans = TS->shaped_get_span_count(text_rid);
 			for (int i = 0; i < spans; i++) {
@@ -117,7 +117,7 @@ void Label::_shape() {
 		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 			TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
 		}
-		TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, text));
+		TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, txt));
 		dirty = false;
 		font_dirty = false;
 		lines_dirty = true;
@@ -288,6 +288,36 @@ void Label::_update_theme_item_cache() {
 	theme_cache.font_shadow_outline_size = get_theme_constant(SNAME("shadow_outline_size"));
 }
 
+PackedStringArray Label::get_configuration_warnings() const {
+	PackedStringArray warnings = Control::get_configuration_warnings();
+
+	// Ensure that the font can render all of the required glyphs.
+	Ref<Font> font;
+	if (settings.is_valid()) {
+		font = settings->get_font();
+	}
+	if (font.is_null()) {
+		font = theme_cache.font;
+	}
+
+	if (font.is_valid()) {
+		if (dirty || font_dirty || lines_dirty) {
+			const_cast<Label *>(this)->_shape();
+		}
+
+		const Glyph *glyph = TS->shaped_text_get_glyphs(text_rid);
+		int64_t glyph_count = TS->shaped_text_get_glyph_count(text_rid);
+		for (int64_t i = 0; i < glyph_count; i++) {
+			if (glyph[i].font_rid == RID()) {
+				warnings.push_back(RTR("The current font does not support rendering one or more characters used in this Label's text."));
+				break;
+			}
+		}
+	}
+
+	return warnings;
+}
+
 void Label::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -302,6 +332,7 @@ void Label::_notification(int p_what) {
 			dirty = true;
 
 			queue_redraw();
+			update_configuration_warnings();
 		} break;
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
@@ -311,6 +342,18 @@ void Label::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			if (clip) {
 				RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), true);
+			}
+
+			// When a shaped text is invalidated by an external source, we want to reshape it.
+			if (!TS->shaped_text_is_ready(text_rid)) {
+				dirty = true;
+			}
+
+			for (const RID &line_rid : lines_rid) {
+				if (!TS->shaped_text_is_ready(line_rid)) {
+					lines_dirty = true;
+					break;
+				}
 			}
 
 			if (dirty || font_dirty || lines_dirty) {
@@ -674,6 +717,7 @@ void Label::set_text(const String &p_string) {
 	}
 	queue_redraw();
 	update_minimum_size();
+	update_configuration_warnings();
 }
 
 void Label::_invalidate() {
@@ -917,7 +961,7 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override_options", "args"), &Label::set_structured_text_bidi_override_options);
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override_options"), &Label::get_structured_text_bidi_override_options);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "label_settings", PROPERTY_HINT_RESOURCE_TYPE, "LabelSettings"), "set_label_settings", "get_label_settings");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom,Fill"), "set_vertical_alignment", "get_vertical_alignment");

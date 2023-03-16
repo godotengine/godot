@@ -70,17 +70,6 @@ float DistributionGGX(float NdotH, float roughness4) {
 	return roughness4 / denom;
 }
 
-// https://graphicrants.blogspot.com.au/2013/08/specular-brdf-reference.html
-float GGX(float NdotV, float a) {
-	float k = a / 2.0;
-	return NdotV / (NdotV * (1.0 - k) + k);
-}
-
-// https://graphicrants.blogspot.com.au/2013/08/specular-brdf-reference.html
-float G_Smith(float a, float nDotV, float nDotL) {
-	return GGX(nDotL, a * a) * GGX(nDotV, a * a);
-}
-
 float radicalInverse_VdC(uint bits) {
 	bits = (bits << 16u) | (bits >> 16u);
 	bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);

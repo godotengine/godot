@@ -1,37 +1,45 @@
-/*************************************************************************/
-/*  export_plugin.cpp                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  export_plugin.cpp                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "export_plugin.h"
 
 #include "core/config/project_settings.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "platform/web/logo_svg.gen.h"
+#include "platform/web/run_icon_svg.gen.h"
+
+#include "modules/modules_enabled.gen.h" // For svg.
+#ifdef MODULE_SVG_ENABLED
+#include "modules/svg/image_loader_svg.h"
+#endif
 
 Error EditorExportPlatformWeb::_extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa) {
 	Ref<FileAccess> io_fa;
@@ -133,7 +141,7 @@ void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<Edito
 	config["canvasResizePolicy"] = p_preset->get("html/canvas_resize_policy");
 	config["experimentalVK"] = p_preset->get("html/experimental_virtual_keyboard");
 	config["focusCanvas"] = p_preset->get("html/focus_canvas_on_start");
-	config["gdnativeLibs"] = libs;
+	config["gdextensionLibs"] = libs;
 	config["executable"] = p_name;
 	config["args"] = args;
 	config["fileSizes"] = p_file_sizes;
@@ -153,7 +161,7 @@ void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<Edito
 	const String custom_head_include = p_preset->get("html/head_include");
 	HashMap<String, String> replaces;
 	replaces["$GODOT_URL"] = p_name + ".js";
-	replaces["$GODOT_PROJECT_NAME"] = ProjectSettings::get_singleton()->get_setting("application/config/name");
+	replaces["$GODOT_PROJECT_NAME"] = GLOBAL_GET("application/config/name");
 	replaces["$GODOT_HEAD_INCLUDE"] = head_include + custom_head_include;
 	replaces["$GODOT_CONFIG"] = str_config;
 	_replace_strings(replaces, p_html);
@@ -193,7 +201,7 @@ Error EditorExportPlatformWeb::_add_manifest_icon(const String &p_path, const St
 }
 
 Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_preset, const String p_path, const Vector<SharedObject> &p_shared_objects) {
-	String proj_name = ProjectSettings::get_singleton()->get_setting("application/config/name");
+	String proj_name = GLOBAL_GET("application/config/name");
 	if (proj_name.is_empty()) {
 		proj_name = "Godot Game";
 	}
@@ -307,13 +315,7 @@ void EditorExportPlatformWeb::get_preset_features(const Ref<EditorExportPreset> 
 	}
 
 	if (p_preset->get("vram_texture_compression/for_mobile")) {
-		String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
-		if (driver == "opengl3") {
-			r_features->push_back("etc");
-		} else if (driver == "vulkan") {
-			// FIXME: Review if this is correct.
-			r_features->push_back("etc2");
-		}
+		r_features->push_back("etc2");
 	}
 	r_features->push_back("wasm32");
 }
@@ -491,6 +493,7 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	}
 	html.resize(f->get_length());
 	f->get_buffer(html.ptrw(), html.size());
+	f.unref(); // close file.
 
 	// Generate HTML file with replaced strings.
 	_fix_html(html, p_preset, base_name, p_debug, p_flags, shared_objects, file_sizes);
@@ -656,8 +659,17 @@ EditorExportPlatformWeb::EditorExportPlatformWeb() {
 	server.instantiate();
 	server_thread.start(_server_thread_poll, this);
 
-	logo = ImageTexture::create_from_image(memnew(Image(_web_logo)));
-	run_icon = ImageTexture::create_from_image(memnew(Image(_web_run_icon)));
+#ifdef MODULE_SVG_ENABLED
+	Ref<Image> img = memnew(Image);
+	const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
+
+	ImageLoaderSVG img_loader;
+	img_loader.create_image_from_string(img, _web_logo_svg, EDSCALE, upsample, false);
+	logo = ImageTexture::create_from_image(img);
+
+	img_loader.create_image_from_string(img, _web_run_icon_svg, EDSCALE, upsample, false);
+	run_icon = ImageTexture::create_from_image(img);
+#endif
 
 	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 	if (theme.is_valid()) {

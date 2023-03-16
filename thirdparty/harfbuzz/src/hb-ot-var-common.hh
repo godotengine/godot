@@ -47,7 +47,7 @@ struct DeltaSetIndexMapFormat01
     HBUINT8 *p = c->allocate_size<HBUINT8> (total_size);
     if (unlikely (!p)) return_trace (nullptr);
 
-    memcpy (p, this, HBUINT8::static_size * total_size);
+    hb_memcpy (p, this, HBUINT8::static_size * total_size);
     return_trace (out);
   }
 
@@ -218,6 +218,25 @@ struct DeltaSetIndexMap
   public:
   DEFINE_SIZE_UNION (1, format);
 };
+
+
+struct VarStoreInstancer
+{
+  VarStoreInstancer (const VariationStore &varStore,
+		     const DeltaSetIndexMap &varIdxMap,
+		     hb_array_t<int> coords) :
+    varStore (varStore), varIdxMap (varIdxMap), coords (coords) {}
+
+  operator bool () const { return bool (coords); }
+
+  float operator() (uint32_t varIdx, unsigned short offset = 0) const
+  { return varStore.get_delta (varIdxMap.map (VarIdx::add (varIdx, offset)), coords); }
+
+  const VariationStore &varStore;
+  const DeltaSetIndexMap &varIdxMap;
+  hb_array_t<int> coords;
+};
+
 
 } /* namespace OT */
 

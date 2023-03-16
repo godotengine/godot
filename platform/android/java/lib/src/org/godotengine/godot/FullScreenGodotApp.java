@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  FullScreenGodotApp.java                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  FullScreenGodotApp.java                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 package org.godotengine.godot;
 
@@ -74,28 +74,36 @@ public abstract class FullScreenGodotApp extends FragmentActivity implements God
 	public void onDestroy() {
 		Log.v(TAG, "Destroying Godot app...");
 		super.onDestroy();
-		onGodotForceQuit(godotFragment);
+		terminateGodotInstance(godotFragment);
 	}
 
 	@Override
 	public final void onGodotForceQuit(Godot instance) {
+		runOnUiThread(() -> {
+			terminateGodotInstance(instance);
+		});
+	}
+
+	private void terminateGodotInstance(Godot instance) {
 		if (instance == godotFragment) {
 			Log.v(TAG, "Force quitting Godot instance");
-			ProcessPhoenix.forceQuit(this);
+			ProcessPhoenix.forceQuit(FullScreenGodotApp.this);
 		}
 	}
 
 	@Override
 	public final void onGodotRestartRequested(Godot instance) {
-		if (instance == godotFragment) {
-			// It's very hard to properly de-initialize Godot on Android to restart the game
-			// from scratch. Therefore, we need to kill the whole app process and relaunch it.
-			//
-			// Restarting only the activity, wouldn't be enough unless it did proper cleanup (including
-			// releasing and reloading native libs or resetting their state somehow and clearing statics).
-			Log.v(TAG, "Restarting Godot instance...");
-			ProcessPhoenix.triggerRebirth(this);
-		}
+		runOnUiThread(() -> {
+			if (instance == godotFragment) {
+				// It's very hard to properly de-initialize Godot on Android to restart the game
+				// from scratch. Therefore, we need to kill the whole app process and relaunch it.
+				//
+				// Restarting only the activity, wouldn't be enough unless it did proper cleanup (including
+				// releasing and reloading native libs or resetting their state somehow and clearing static data).
+				Log.v(TAG, "Restarting Godot instance...");
+				ProcessPhoenix.triggerRebirth(FullScreenGodotApp.this);
+			}
+		});
 	}
 
 	@Override

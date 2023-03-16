@@ -1,0 +1,17 @@
+GDTEST_OK
+>> WARNING
+>> Line: 5
+>> SHADOWED_VARIABLE
+>> The local function parameter "a" is shadowing an already-declared variable at line 3.
+>> WARNING
+>> Line: 15
+>> SHADOWED_VARIABLE
+>> The local function parameter "v" is shadowing an already-declared variable at line 13.
+a
+1
+b
+1
+(1, 1)
+(0, 0)
+(6, 1)
+(0, 0)

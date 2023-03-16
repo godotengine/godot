@@ -1,39 +1,43 @@
-/*************************************************************************/
-/*  gdscript_tokenizer.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gdscript_tokenizer.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "gdscript_tokenizer.h"
 
 #include "core/error/error_macros.h"
+#include "core/string/char_utils.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
+#endif
+#ifdef DEBUG_ENABLED
+#include "servers/text_server.h"
 #endif
 
 static const char *token_names[] = {
@@ -164,6 +168,11 @@ bool GDScriptTokenizer::Token::is_identifier() const {
 	switch (type) {
 		case IDENTIFIER:
 		case MATCH: // Used in String.match().
+		// Allow constants to be treated as regular identifiers.
+		case CONST_PI:
+		case CONST_INF:
+		case CONST_NAN:
+		case CONST_TAU:
 			return true;
 		default:
 			return false;
@@ -183,6 +192,10 @@ bool GDScriptTokenizer::Token::is_node_name() const {
 		case CLASS_NAME:
 		case CLASS:
 		case CONST:
+		case CONST_PI:
+		case CONST_INF:
+		case CONST_NAN:
+		case CONST_TAU:
 		case CONTINUE:
 		case ELIF:
 		case ELSE:
@@ -434,10 +447,12 @@ GDScriptTokenizer::Token GDScriptTokenizer::check_vcs_marker(char32_t p_test, To
 }
 
 GDScriptTokenizer::Token GDScriptTokenizer::annotation() {
-	if (!is_ascii_identifier_char(_peek())) {
+	if (is_unicode_identifier_start(_peek())) {
+		_advance(); // Consume start character.
+	} else {
 		push_error("Expected annotation identifier after \"@\".");
 	}
-	while (is_ascii_identifier_char(_peek())) {
+	while (is_unicode_identifier_continue(_peek())) {
 		// Consume all identifier characters.
 		_advance();
 	}
@@ -446,7 +461,6 @@ GDScriptTokenizer::Token GDScriptTokenizer::annotation() {
 	return annotation;
 }
 
-GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
 #define KEYWORDS(KEYWORD_GROUP, KEYWORD)     \
 	KEYWORD_GROUP('a')                       \
 	KEYWORD("as", Token::AS)                 \
@@ -511,20 +525,36 @@ GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
 #define MIN_KEYWORD_LENGTH 2
 #define MAX_KEYWORD_LENGTH 10
 
-	// Consume all alphanumeric characters.
-	while (is_ascii_identifier_char(_peek())) {
-		_advance();
+#ifdef DEBUG_ENABLED
+void GDScriptTokenizer::make_keyword_list() {
+#define KEYWORD_LINE(keyword, token_type) keyword,
+#define KEYWORD_GROUP_IGNORE(group)
+	keyword_list = {
+		KEYWORDS(KEYWORD_GROUP_IGNORE, KEYWORD_LINE)
+	};
+#undef KEYWORD_LINE
+#undef KEYWORD_GROUP_IGNORE
+}
+#endif // DEBUG_ENABLED
+
+GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
+	bool only_ascii = _peek(-1) < 128;
+
+	// Consume all identifier characters.
+	while (is_unicode_identifier_continue(_peek())) {
+		char32_t c = _advance();
+		only_ascii = only_ascii && c < 128;
 	}
 
-	int length = _current - _start;
+	int len = _current - _start;
 
-	if (length == 1 && _peek(-1) == '_') {
+	if (len == 1 && _peek(-1) == '_') {
 		// Lone underscore.
 		return make_token(Token::UNDERSCORE);
 	}
 
-	String name(_start, length);
-	if (length < MIN_KEYWORD_LENGTH || length > MAX_KEYWORD_LENGTH) {
+	String name(_start, len);
+	if (len < MIN_KEYWORD_LENGTH || len > MAX_KEYWORD_LENGTH) {
 		// Cannot be a keyword, as the length doesn't match any.
 		return make_identifier(name);
 	}
@@ -538,7 +568,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
 		const int keyword_length = sizeof(keyword) - 1;                                                                   \
 		static_assert(keyword_length <= MAX_KEYWORD_LENGTH, "There's a keyword longer than the defined maximum length");  \
 		static_assert(keyword_length >= MIN_KEYWORD_LENGTH, "There's a keyword shorter than the defined minimum length"); \
-		if (keyword_length == length && name == keyword) {                                                                \
+		if (keyword_length == len && name == keyword) {                                                                   \
 			return make_token(token_type);                                                                                \
 		}                                                                                                                 \
 	}
@@ -551,27 +581,40 @@ GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
 	}
 
 	// Check if it's a special literal
-	if (length == 4) {
+	if (len == 4) {
 		if (name == "true") {
 			return make_literal(true);
 		} else if (name == "null") {
 			return make_literal(Variant());
 		}
-	} else if (length == 5) {
+	} else if (len == 5) {
 		if (name == "false") {
 			return make_literal(false);
 		}
 	}
 
 	// Not a keyword, so must be an identifier.
-	return make_identifier(name);
+	Token id = make_identifier(name);
 
-#undef KEYWORDS
-#undef MIN_KEYWORD_LENGTH
-#undef MAX_KEYWORD_LENGTH
+#ifdef DEBUG_ENABLED
+	// Additional checks for identifiers but only in debug and if it's available in TextServer.
+	if (!only_ascii && TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY)) {
+		int64_t confusable = TS->is_confusable(name, keyword_list);
+		if (confusable >= 0) {
+			push_error(vformat(R"(Identifier "%s" is visually similar to the GDScript keyword "%s" and thus not allowed.)", name, keyword_list[confusable]));
+		}
+	}
+#endif // DEBUG_ENABLED
+
+	return id;
+
 #undef KEYWORD_GROUP_CASE
 #undef KEYWORD
 }
+
+#undef MAX_KEYWORD_LENGTH
+#undef MIN_KEYWORD_LENGTH
+#undef KEYWORDS
 
 void GDScriptTokenizer::newline(bool p_make_token) {
 	// Don't overwrite previous newline, nor create if we want a line continuation.
@@ -719,14 +762,14 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 		error.rightmost_column = column + 1;
 		push_error(error);
 		has_error = true;
-	} else if (is_ascii_identifier_char(_peek())) {
+	} else if (is_unicode_identifier_start(_peek()) || is_unicode_identifier_continue(_peek())) {
 		// Letter at the end of the number.
 		push_error("Invalid numeric notation.");
 	}
 
 	// Create a string with the whole number.
-	int length = _current - _start;
-	String number = String(_start, length).replace("_", "");
+	int len = _current - _start;
+	String number = String(_start, len).replace("_", "");
 
 	// Convert to the appropriate literal type.
 	if (base == 16) {
@@ -1310,7 +1353,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 
 	if (is_digit(c)) {
 		return number();
-	} else if (is_ascii_identifier_char(c)) {
+	} else if (is_unicode_identifier_start(c)) {
 		return potential_identifier();
 	}
 
@@ -1503,7 +1546,11 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 			}
 
 		default:
-			return make_error(vformat(R"(Unknown character "%s".)", String(&c, 1)));
+			if (is_whitespace(c)) {
+				return make_error(vformat(R"(Invalid white space character "\\u%X".)", static_cast<int32_t>(c)));
+			} else {
+				return make_error(vformat(R"(Unknown character "%s".)", String(&c, 1)));
+			}
 	}
 }
 
@@ -1513,4 +1560,7 @@ GDScriptTokenizer::GDScriptTokenizer() {
 		tab_size = EditorSettings::get_singleton()->get_setting("text_editor/behavior/indent/size");
 	}
 #endif // TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
+	make_keyword_list();
+#endif // DEBUG_ENABLED
 }

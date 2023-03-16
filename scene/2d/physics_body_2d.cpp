@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  physics_body_2d.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  physics_body_2d.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "physics_body_2d.h"
 
@@ -34,8 +34,8 @@
 #include "scene/scene_string_names.h"
 
 void PhysicsBody2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("move_and_collide", "distance", "test_only", "safe_margin"), &PhysicsBody2D::_move, DEFVAL(false), DEFVAL(0.08));
-	ClassDB::bind_method(D_METHOD("test_move", "from", "distance", "collision", "safe_margin"), &PhysicsBody2D::test_move, DEFVAL(Variant()), DEFVAL(0.08));
+	ClassDB::bind_method(D_METHOD("move_and_collide", "motion", "test_only", "safe_margin", "recovery_as_collision"), &PhysicsBody2D::_move, DEFVAL(false), DEFVAL(0.08), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("test_move", "from", "motion", "collision", "safe_margin", "recovery_as_collision"), &PhysicsBody2D::test_move, DEFVAL(Variant()), DEFVAL(0.08), DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("get_collision_exceptions"), &PhysicsBody2D::get_collision_exceptions);
 	ClassDB::bind_method(D_METHOD("add_collision_exception_with", "body"), &PhysicsBody2D::add_collision_exception_with);
@@ -54,15 +54,15 @@ PhysicsBody2D::~PhysicsBody2D() {
 	}
 }
 
-Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_distance, bool p_test_only, real_t p_margin) {
-	PhysicsServer2D::MotionParameters parameters(get_global_transform(), p_distance, p_margin);
-	parameters.recovery_as_collision = false; // Don't report collisions generated only from recovery.
+Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_motion, bool p_test_only, real_t p_margin, bool p_recovery_as_collision) {
+	PhysicsServer2D::MotionParameters parameters(get_global_transform(), p_motion, p_margin);
+	parameters.recovery_as_collision = p_recovery_as_collision;
 
 	PhysicsServer2D::MotionResult result;
 
 	if (move_and_collide(parameters, result, p_test_only)) {
 		// Create a new instance when the cached reference is invalid or still in use in script.
-		if (motion_cache.is_null() || motion_cache->reference_get_count() > 1) {
+		if (motion_cache.is_null() || motion_cache->get_reference_count() > 1) {
 			motion_cache.instantiate();
 			motion_cache->owner = this;
 		}
@@ -128,7 +128,7 @@ bool PhysicsBody2D::move_and_collide(const PhysicsServer2D::MotionParameters &p_
 	return colliding;
 }
 
-bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_distance, const Ref<KinematicCollision2D> &r_collision, real_t p_margin) {
+bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_motion, const Ref<KinematicCollision2D> &r_collision, real_t p_margin, bool p_recovery_as_collision) {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
 	PhysicsServer2D::MotionResult *r = nullptr;
@@ -140,8 +140,8 @@ bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_distan
 		r = &temp_result;
 	}
 
-	PhysicsServer2D::MotionParameters parameters(p_from, p_distance, p_margin);
-	parameters.recovery_as_collision = false; // Don't report collisions generated only from recovery.
+	PhysicsServer2D::MotionParameters parameters(p_from, p_motion, p_margin);
+	parameters.recovery_as_collision = p_recovery_as_collision;
 
 	return PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), parameters, r);
 }
@@ -162,14 +162,14 @@ TypedArray<PhysicsBody2D> PhysicsBody2D::get_collision_exceptions() {
 void PhysicsBody2D::add_collision_exception_with(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	PhysicsBody2D *physics_body = Object::cast_to<PhysicsBody2D>(p_node);
-	ERR_FAIL_COND_MSG(!physics_body, "Collision exception only works between two objects of PhysicsBody2D type.");
+	ERR_FAIL_COND_MSG(!physics_body, "Collision exception only works between two nodes that inherit from PhysicsBody2D.");
 	PhysicsServer2D::get_singleton()->body_add_collision_exception(get_rid(), physics_body->get_rid());
 }
 
 void PhysicsBody2D::remove_collision_exception_with(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	PhysicsBody2D *physics_body = Object::cast_to<PhysicsBody2D>(p_node);
-	ERR_FAIL_COND_MSG(!physics_body, "Collision exception only works between two objects of PhysicsBody2D type.");
+	ERR_FAIL_COND_MSG(!physics_body, "Collision exception only works between two nodes that inherit from PhysicsBody2D.");
 	PhysicsServer2D::get_singleton()->body_remove_collision_exception(get_rid(), physics_body->get_rid());
 }
 
@@ -262,19 +262,14 @@ void AnimatableBody2D::_update_kinematic_motion() {
 #endif
 
 	if (sync_to_physics) {
-		PhysicsServer2D::get_singleton()->body_set_state_sync_callback(get_rid(), this, _body_state_changed_callback);
+		PhysicsServer2D::get_singleton()->body_set_state_sync_callback(get_rid(), callable_mp(this, &AnimatableBody2D::_body_state_changed));
 		set_only_update_transform_changes(true);
 		set_notify_local_transform(true);
 	} else {
-		PhysicsServer2D::get_singleton()->body_set_state_sync_callback(get_rid(), nullptr, nullptr);
+		PhysicsServer2D::get_singleton()->body_set_state_sync_callback(get_rid(), Callable());
 		set_only_update_transform_changes(false);
 		set_notify_local_transform(false);
 	}
-}
-
-void AnimatableBody2D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState2D *p_state) {
-	AnimatableBody2D *body = static_cast<AnimatableBody2D *>(p_instance);
-	body->_body_state_changed(p_state);
 }
 
 void AnimatableBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
@@ -438,12 +433,9 @@ struct _RigidBody2DInOut {
 	int local_shape = 0;
 };
 
-void RigidBody2D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState2D *p_state) {
-	RigidBody2D *body = static_cast<RigidBody2D *>(p_instance);
-	body->_body_state_changed(p_state);
-}
-
 void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
+	lock_callback();
+
 	set_block_transform_notify(true); // don't want notify (would feedback loop)
 	if (!freeze || freeze_mode != FREEZE_MODE_KINEMATIC) {
 		set_global_transform(p_state->get_transform());
@@ -481,28 +473,28 @@ void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 		//put the ones to add
 
 		for (int i = 0; i < p_state->get_contact_count(); i++) {
-			RID rid = p_state->get_contact_collider(i);
-			ObjectID obj = p_state->get_contact_collider_id(i);
+			RID col_rid = p_state->get_contact_collider(i);
+			ObjectID col_obj = p_state->get_contact_collider_id(i);
 			int local_shape = p_state->get_contact_local_shape(i);
-			int shape = p_state->get_contact_collider_shape(i);
+			int col_shape = p_state->get_contact_collider_shape(i);
 
-			HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(obj);
+			HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(col_obj);
 			if (!E) {
-				toadd[toadd_count].rid = rid;
+				toadd[toadd_count].rid = col_rid;
 				toadd[toadd_count].local_shape = local_shape;
-				toadd[toadd_count].id = obj;
-				toadd[toadd_count].shape = shape;
+				toadd[toadd_count].id = col_obj;
+				toadd[toadd_count].shape = col_shape;
 				toadd_count++;
 				continue;
 			}
 
-			ShapePair sp(shape, local_shape);
+			ShapePair sp(col_shape, local_shape);
 			int idx = E->value.shapes.find(sp);
 			if (idx == -1) {
-				toadd[toadd_count].rid = rid;
+				toadd[toadd_count].rid = col_rid;
 				toadd[toadd_count].local_shape = local_shape;
-				toadd[toadd_count].id = obj;
-				toadd[toadd_count].shape = shape;
+				toadd[toadd_count].id = col_obj;
+				toadd[toadd_count].shape = col_shape;
 				toadd_count++;
 				continue;
 			}
@@ -537,6 +529,8 @@ void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 
 		contact_monitor->locked = false;
 	}
+
+	unlock_callback();
 }
 
 void RigidBody2D::_apply_body_mode() {
@@ -921,10 +915,10 @@ void RigidBody2D::_notification(int p_what) {
 #endif
 }
 
-TypedArray<String> RigidBody2D::get_configuration_warnings() const {
+PackedStringArray RigidBody2D::get_configuration_warnings() const {
 	Transform2D t = get_transform();
 
-	TypedArray<String> warnings = CollisionObject2D::get_configuration_warnings();
+	PackedStringArray warnings = CollisionObject2D::get_configuration_warnings();
 
 	if (ABS(t.columns[0].length() - 1.0) > 0.05 || ABS(t.columns[1].length() - 1.0) > 0.05) {
 		warnings.push_back(RTR("Size changes to RigidBody2D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
@@ -1079,7 +1073,7 @@ void RigidBody2D::_validate_property(PropertyInfo &p_property) const {
 
 RigidBody2D::RigidBody2D() :
 		PhysicsBody2D(PhysicsServer2D::BODY_MODE_RIGID) {
-	PhysicsServer2D::get_singleton()->body_set_state_sync_callback(get_rid(), this, _body_state_changed_callback);
+	PhysicsServer2D::get_singleton()->body_set_state_sync_callback(get_rid(), callable_mp(this, &RigidBody2D::_body_state_changed));
 }
 
 RigidBody2D::~RigidBody2D() {
@@ -1397,9 +1391,13 @@ void CharacterBody2D::_move_and_slide_floating(double p_delta) {
 		first_slide = false;
 	}
 }
+void CharacterBody2D::apply_floor_snap() {
+	_apply_floor_snap();
+}
 
-void CharacterBody2D::_snap_on_floor(bool p_was_on_floor, bool p_vel_dir_facing_up, bool p_wall_as_floor) {
-	if (on_floor || !p_was_on_floor || p_vel_dir_facing_up) {
+// Method that avoids the p_wall_as_floor parameter for the public method.
+void CharacterBody2D::_apply_floor_snap(bool p_wall_as_floor) {
+	if (on_floor) {
 		return;
 	}
 
@@ -1432,6 +1430,14 @@ void CharacterBody2D::_snap_on_floor(bool p_was_on_floor, bool p_vel_dir_facing_
 			set_global_transform(parameters.from);
 		}
 	}
+}
+
+void CharacterBody2D::_snap_on_floor(bool p_was_on_floor, bool p_vel_dir_facing_up, bool p_wall_as_floor) {
+	if (on_floor || !p_was_on_floor || p_vel_dir_facing_up) {
+		return;
+	}
+
+	_apply_floor_snap(p_wall_as_floor);
 }
 
 bool CharacterBody2D::_on_floor_if_snapped(bool p_was_on_floor, bool p_vel_dir_facing_up) {
@@ -1557,7 +1563,7 @@ Ref<KinematicCollision2D> CharacterBody2D::_get_slide_collision(int p_bounce) {
 	}
 
 	// Create a new instance when the cached reference is invalid or still in use in script.
-	if (slide_colliders[p_bounce].is_null() || slide_colliders[p_bounce]->reference_get_count() > 1) {
+	if (slide_colliders[p_bounce].is_null() || slide_colliders[p_bounce]->get_reference_count() > 1) {
 		slide_colliders.write[p_bounce].instantiate();
 		slide_colliders.write[p_bounce]->owner = this;
 	}
@@ -1705,6 +1711,7 @@ void CharacterBody2D::_notification(int p_what) {
 
 void CharacterBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_slide"), &CharacterBody2D::move_and_slide);
+	ClassDB::bind_method(D_METHOD("apply_floor_snap"), &CharacterBody2D::apply_floor_snap);
 
 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &CharacterBody2D::set_velocity);
 	ClassDB::bind_method(D_METHOD("get_velocity"), &CharacterBody2D::get_velocity);
@@ -1771,7 +1778,7 @@ void CharacterBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_max_angle", PROPERTY_HINT_RANGE, "0,180,0.1,radians"), "set_floor_max_angle", "get_floor_max_angle");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_snap_length", PROPERTY_HINT_RANGE, "0,32,0.1,or_greater,suffix:px"), "set_floor_snap_length", "get_floor_snap_length");
 
-	ADD_GROUP("Moving Platform", "platform");
+	ADD_GROUP("Moving Platform", "platform_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "platform_on_leave", PROPERTY_HINT_ENUM, "Add Velocity,Add Upward Velocity,Do Nothing", PROPERTY_USAGE_DEFAULT), "set_platform_on_leave", "get_platform_on_leave");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "platform_floor_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_platform_floor_layers", "get_platform_floor_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "platform_wall_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_platform_wall_layers", "get_platform_wall_layers");

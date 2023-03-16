@@ -1,0 +1,15 @@
+diff --git a/thirdparty/misc/polypartition.h b/thirdparty/misc/polypartition.h
+index fae7909079..c084bdf74c 100644
+--- a/thirdparty/misc/polypartition.h
++++ b/thirdparty/misc/polypartition.h
+@@ -71,8 +71,8 @@ class TPPLPoly {
+     return hole;
+   }
+ 
+-  void SetHole(bool hole) {
+-    this->hole = hole;
++  void SetHole(bool p_hole) {
++    this->hole = p_hole;
+   }
+ 
+   TPPLPoint &GetPoint(long i) {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Shape2D" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Shape2D" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for all 2D shapes.
 	</brief_description>
@@ -64,6 +64,12 @@
 			<param index="1" name="color" type="Color" />
 			<description>
 				Draws a solid shape onto a [CanvasItem] with the [RenderingServer] API filled with the specified [param color]. The exact drawing method is specific for each shape and cannot be configured.
+			</description>
+		</method>
+		<method name="get_rect" qualifiers="const">
+			<return type="Rect2" />
+			<description>
+				Returns a [Rect2] representing the shapes boundary.
 			</description>
 		</method>
 	</methods>

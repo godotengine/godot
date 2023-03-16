@@ -80,16 +80,19 @@
  */
 
 
+using hb_ft_advance_cache_t = hb_cache_t<16, 24, 8, false>;
+
 struct hb_ft_font_t
 {
   int load_flags;
   bool symbol; /* Whether selected cmap is symbol cmap. */
   bool unref; /* Whether to destroy ft_face when done. */
+  bool transform; /* Whether to apply FT_Face's transform. */
 
-  mutable hb_mutex_t lock;
+  mutable hb_mutex_t lock; /* Protects members below. */
   FT_Face ft_face;
   mutable unsigned cached_serial;
-  mutable hb_advance_cache_t advance_cache;
+  mutable hb_ft_advance_cache_t advance_cache;
 };
 
 static hb_ft_font_t *
@@ -136,6 +139,8 @@ _hb_ft_font_destroy (void *data)
 /* hb_font changed, update FT_Face. */
 static void _hb_ft_hb_font_changed (hb_font_t *font, FT_Face ft_face)
 {
+  hb_ft_font_t *ft_font = (hb_ft_font_t *) font->user_data;
+
   float x_mult = 1.f, y_mult = 1.f;
 
   if (font->x_scale < 0) x_mult = -x_mult;
@@ -173,6 +178,7 @@ static void _hb_ft_hb_font_changed (hb_font_t *font, FT_Face ft_face)
     FT_Matrix matrix = { (int) roundf (x_mult * (1<<16)), 0,
 			  0, (int) roundf (y_mult * (1<<16))};
     FT_Set_Transform (ft_face, &matrix, nullptr);
+    ft_font->transform = true;
   }
 
 #if defined(HAVE_FT_GET_VAR_BLEND_COORDINATES) && !defined(HB_NO_VAR)
@@ -428,13 +434,19 @@ hb_ft_get_glyph_h_advances (hb_font_t* font, void* font_data,
   hb_lock_t lock (ft_font->lock);
   FT_Face ft_face = ft_font->ft_face;
   int load_flags = ft_font->load_flags;
+  float x_mult;
 #ifdef HAVE_FT_GET_TRANSFORM
-  FT_Matrix matrix;
-  FT_Get_Transform (ft_face, &matrix, nullptr);
-  float mult = matrix.xx / 65536.f;
-#else
-  float mult = font->x_scale < 0 ? -1 : +1;
+  if (ft_font->transform)
+  {
+    FT_Matrix matrix;
+    FT_Get_Transform (ft_face, &matrix, nullptr);
+    x_mult = sqrtf ((float)matrix.xx * matrix.xx + (float)matrix.xy * matrix.xy) / 65536.f;
+  }
+  else
 #endif
+  {
+    x_mult = font->x_scale < 0 ? -1 : +1;
+  }
 
   for (unsigned int i = 0; i < count; i++)
   {
@@ -450,7 +462,7 @@ hb_ft_get_glyph_h_advances (hb_font_t* font, void* font_data,
       ft_font->advance_cache.set (glyph, v);
     }
 
-    *first_advance = (int) (v * mult + (1<<9)) >> 10;
+    *first_advance = (int) (v * x_mult + (1<<9)) >> 10;
     first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t> (first_glyph, glyph_stride);
     first_advance = &StructAtOffsetUnaligned<hb_position_t> (first_advance, advance_stride);
   }
@@ -466,13 +478,19 @@ hb_ft_get_glyph_v_advance (hb_font_t *font,
   const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font_data;
   hb_lock_t lock (ft_font->lock);
   FT_Fixed v;
+  float y_mult;
 #ifdef HAVE_FT_GET_TRANSFORM
-  FT_Matrix matrix;
-  FT_Get_Transform (ft_font->ft_face, &matrix, nullptr);
-  float y_mult = matrix.yy / 65536.f;
-#else
-  float y_mult = font->y_scale < 0 ? -1 : +1;
+  if (ft_font->transform)
+  {
+    FT_Matrix matrix;
+    FT_Get_Transform (ft_font->ft_face, &matrix, nullptr);
+    y_mult = sqrtf ((float)matrix.yx * matrix.yx + (float)matrix.yy * matrix.yy) / 65536.f;
+  }
+  else
 #endif
+  {
+    y_mult = font->y_scale < 0 ? -1 : +1;
+  }
 
   if (unlikely (FT_Get_Advance (ft_font->ft_face, glyph, ft_font->load_flags | FT_LOAD_VERTICAL_LAYOUT, &v)))
     return 0;
@@ -498,15 +516,21 @@ hb_ft_get_glyph_v_origin (hb_font_t *font,
   const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font_data;
   hb_lock_t lock (ft_font->lock);
   FT_Face ft_face = ft_font->ft_face;
+  float x_mult, y_mult;
 #ifdef HAVE_FT_GET_TRANSFORM
-  FT_Matrix matrix;
-  FT_Get_Transform (ft_face, &matrix, nullptr);
-  float x_mult = matrix.xx / 65536.f;
-  float y_mult = matrix.yy / 65536.f;
-#else
-  float x_mult = font->x_scale < 0 ? -1 : +1;
-  float y_mult = font->y_scale < 0 ? -1 : +1;
+  if (ft_font->transform)
+  {
+    FT_Matrix matrix;
+    FT_Get_Transform (ft_face, &matrix, nullptr);
+    x_mult = sqrtf ((float)matrix.xx * matrix.xx + (float)matrix.xy * matrix.xy) / 65536.f;
+    y_mult = sqrtf ((float)matrix.yx * matrix.yx + (float)matrix.yy * matrix.yy) / 65536.f;
+  }
+  else
 #endif
+  {
+    x_mult = font->x_scale < 0 ? -1 : +1;
+    y_mult = font->y_scale < 0 ? -1 : +1;
+  }
 
   if (unlikely (FT_Load_Glyph (ft_face, glyph, ft_font->load_flags)))
     return false;
@@ -553,15 +577,21 @@ hb_ft_get_glyph_extents (hb_font_t *font,
   const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font_data;
   hb_lock_t lock (ft_font->lock);
   FT_Face ft_face = ft_font->ft_face;
+  float x_mult, y_mult;
 #ifdef HAVE_FT_GET_TRANSFORM
-  FT_Matrix matrix;
-  FT_Get_Transform (ft_face, &matrix, nullptr);
-  float x_mult = matrix.xx / 65536.f;
-  float y_mult = matrix.yy / 65536.f;
-#else
-  float x_mult = font->x_scale < 0 ? -1 : +1;
-  float y_mult = font->y_scale < 0 ? -1 : +1;
+  if (ft_font->transform)
+  {
+    FT_Matrix matrix;
+    FT_Get_Transform (ft_face, &matrix, nullptr);
+    x_mult = sqrtf ((float)matrix.xx * matrix.xx + (float)matrix.xy * matrix.xy) / 65536.f;
+    y_mult = sqrtf ((float)matrix.yx * matrix.yx + (float)matrix.yy * matrix.yy) / 65536.f;
+  }
+  else
 #endif
+  {
+    x_mult = font->x_scale < 0 ? -1 : +1;
+    y_mult = font->y_scale < 0 ? -1 : +1;
+  }
 
   if (unlikely (FT_Load_Glyph (ft_face, glyph, ft_font->load_flags)))
     return false;
@@ -663,13 +693,19 @@ hb_ft_get_font_h_extents (hb_font_t *font HB_UNUSED,
   const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font_data;
   hb_lock_t lock (ft_font->lock);
   FT_Face ft_face = ft_font->ft_face;
+  float y_mult;
 #ifdef HAVE_FT_GET_TRANSFORM
-  FT_Matrix matrix;
-  FT_Get_Transform (ft_face, &matrix, nullptr);
-  float y_mult = matrix.yy / 65536.f;
-#else
-  float y_mult = font->y_scale < 0 ? -1 : +1;
+  if (ft_font->transform)
+  {
+    FT_Matrix matrix;
+    FT_Get_Transform (ft_face, &matrix, nullptr);
+    y_mult = sqrtf ((float)matrix.yx * matrix.yx + (float)matrix.yy * matrix.yy) / 65536.f;
+  }
+  else
 #endif
+  {
+    y_mult = font->y_scale < 0 ? -1 : +1;
+  }
 
   if (ft_face->units_per_EM != 0)
   {
@@ -696,16 +732,18 @@ hb_ft_get_font_h_extents (hb_font_t *font HB_UNUSED,
 
 static int
 _hb_ft_move_to (const FT_Vector *to,
-		hb_draw_session_t *drawing)
+		void *arg)
 {
+  hb_draw_session_t *drawing = (hb_draw_session_t *) arg;
   drawing->move_to (to->x, to->y);
   return FT_Err_Ok;
 }
 
 static int
 _hb_ft_line_to (const FT_Vector *to,
-		hb_draw_session_t *drawing)
+		void *arg)
 {
+  hb_draw_session_t *drawing = (hb_draw_session_t *) arg;
   drawing->line_to (to->x, to->y);
   return FT_Err_Ok;
 }
@@ -713,8 +751,9 @@ _hb_ft_line_to (const FT_Vector *to,
 static int
 _hb_ft_conic_to (const FT_Vector *control,
 		 const FT_Vector *to,
-		 hb_draw_session_t *drawing)
+		 void *arg)
 {
+  hb_draw_session_t *drawing = (hb_draw_session_t *) arg;
   drawing->quadratic_to (control->x, control->y,
 			 to->x, to->y);
   return FT_Err_Ok;
@@ -724,8 +763,9 @@ static int
 _hb_ft_cubic_to (const FT_Vector *control1,
 		 const FT_Vector *control2,
 		 const FT_Vector *to,
-		 hb_draw_session_t *drawing)
+		 void *arg)
 {
+  hb_draw_session_t *drawing = (hb_draw_session_t *) arg;
   drawing->cubic_to (control1->x, control1->y,
 		     control2->x, control2->y,
 		     to->x, to->y);
@@ -751,10 +791,10 @@ hb_ft_get_glyph_shape (hb_font_t *font HB_UNUSED,
     return;
 
   const FT_Outline_Funcs outline_funcs = {
-    (FT_Outline_MoveToFunc) _hb_ft_move_to,
-    (FT_Outline_LineToFunc) _hb_ft_line_to,
-    (FT_Outline_ConicToFunc) _hb_ft_conic_to,
-    (FT_Outline_CubicToFunc) _hb_ft_cubic_to,
+    _hb_ft_move_to,
+    _hb_ft_line_to,
+    _hb_ft_conic_to,
+    _hb_ft_cubic_to,
     0, /* shift */
     0, /* delta */
   };
@@ -939,8 +979,9 @@ hb_ft_face_create_referenced (FT_Face ft_face)
 }
 
 static void
-hb_ft_face_finalize (FT_Face ft_face)
+hb_ft_face_finalize (void *arg)
 {
+  FT_Face ft_face = (FT_Face) arg;
   hb_face_destroy ((hb_face_t *) ft_face->generic.data);
 }
 
@@ -972,7 +1013,7 @@ hb_ft_face_create_cached (FT_Face ft_face)
       ft_face->generic.finalizer (ft_face);
 
     ft_face->generic.data = hb_ft_face_create (ft_face, nullptr);
-    ft_face->generic.finalizer = (FT_Generic_Finalizer) hb_ft_face_finalize;
+    ft_face->generic.finalizer = hb_ft_face_finalize;
   }
 
   return hb_face_reference ((hb_face_t *) ft_face->generic.data);
@@ -1181,8 +1222,9 @@ get_ft_library ()
 }
 
 static void
-_release_blob (FT_Face ft_face)
+_release_blob (void *arg)
 {
+  FT_Face ft_face = (FT_Face) arg;
   hb_blob_destroy ((hb_blob_t *) ft_face->generic.data);
 }
 
@@ -1233,13 +1275,14 @@ hb_ft_font_set_funcs (hb_font_t *font)
   if (FT_Select_Charmap (ft_face, FT_ENCODING_MS_SYMBOL))
     FT_Select_Charmap (ft_face, FT_ENCODING_UNICODE);
 
-  _hb_ft_hb_font_changed (font, ft_face);
 
   ft_face->generic.data = blob;
-  ft_face->generic.finalizer = (FT_Generic_Finalizer) _release_blob;
+  ft_face->generic.finalizer = _release_blob;
 
   _hb_ft_font_set_funcs (font, ft_face, true);
   hb_ft_font_set_load_flags (font, FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING);
+
+  _hb_ft_hb_font_changed (font, ft_face);
 }
 
 

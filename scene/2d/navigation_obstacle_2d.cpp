@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  navigation_obstacle_2d.cpp                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  navigation_obstacle_2d.cpp                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "navigation_obstacle_2d.h"
 
@@ -116,12 +116,13 @@ NavigationObstacle2D::NavigationObstacle2D() {
 }
 
 NavigationObstacle2D::~NavigationObstacle2D() {
+	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
 	NavigationServer2D::get_singleton()->free(agent);
 	agent = RID(); // Pointless
 }
 
-TypedArray<String> NavigationObstacle2D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray NavigationObstacle2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<Node2D>(get_parent())) {
 		warnings.push_back(RTR("The NavigationObstacle2D only serves to provide collision avoidance to a Node2D object."));
@@ -153,7 +154,7 @@ void NavigationObstacle2D::reevaluate_agent_radius() {
 real_t NavigationObstacle2D::estimate_agent_radius() const {
 	if (parent_node2d && parent_node2d->is_inside_tree()) {
 		// Estimate the radius of this physics body
-		real_t radius = 0.0;
+		real_t max_radius = 0.0;
 		for (int i(0); i < parent_node2d->get_child_count(); i++) {
 			// For each collision shape
 			CollisionShape2D *cs = Object::cast_to<CollisionShape2D>(parent_node2d->get_child(i));
@@ -167,23 +168,27 @@ real_t NavigationObstacle2D::estimate_agent_radius() const {
 				Size2 s = cs->get_global_scale();
 				r *= MAX(s.x, s.y);
 				// Takes the biggest radius
-				radius = MAX(radius, r);
+				max_radius = MAX(max_radius, r);
 			} else if (cs && !cs->is_inside_tree()) {
 				WARN_PRINT("A CollisionShape2D of the NavigationObstacle2D parent node was not inside the SceneTree when estimating the obstacle radius."
 						   "\nMove the NavigationObstacle2D to a child position below any CollisionShape2D node of the parent node so the CollisionShape2D is already inside the SceneTree.");
 			}
 		}
 		Vector2 s = parent_node2d->get_global_scale();
-		radius *= MAX(s.x, s.y);
+		max_radius *= MAX(s.x, s.y);
 
-		if (radius > 0.0) {
-			return radius;
+		if (max_radius > 0.0) {
+			return max_radius;
 		}
 	}
 	return 1.0; // Never a 0 radius
 }
 
 void NavigationObstacle2D::set_agent_parent(Node *p_agent_parent) {
+	if (parent_node2d == p_agent_parent) {
+		return;
+	}
+
 	if (Object::cast_to<Node2D>(p_agent_parent) != nullptr) {
 		parent_node2d = Object::cast_to<Node2D>(p_agent_parent);
 		if (map_override.is_valid()) {
@@ -199,7 +204,12 @@ void NavigationObstacle2D::set_agent_parent(Node *p_agent_parent) {
 }
 
 void NavigationObstacle2D::set_navigation_map(RID p_navigation_map) {
+	if (map_override == p_navigation_map) {
+		return;
+	}
+
 	map_override = p_navigation_map;
+
 	NavigationServer2D::get_singleton()->agent_set_map(agent, map_override);
 }
 
@@ -213,13 +223,23 @@ RID NavigationObstacle2D::get_navigation_map() const {
 }
 
 void NavigationObstacle2D::set_estimate_radius(bool p_estimate_radius) {
+	if (estimate_radius == p_estimate_radius) {
+		return;
+	}
+
 	estimate_radius = p_estimate_radius;
+
 	notify_property_list_changed();
 	reevaluate_agent_radius();
 }
 
 void NavigationObstacle2D::set_radius(real_t p_radius) {
 	ERR_FAIL_COND_MSG(p_radius <= 0.0, "Radius must be greater than 0.");
+	if (Math::is_equal_approx(radius, p_radius)) {
+		return;
+	}
+
 	radius = p_radius;
+
 	reevaluate_agent_radius();
 }

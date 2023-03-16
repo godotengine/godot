@@ -142,6 +142,7 @@ typedef struct SpvReflectPrvNode {
   SpvOp                           op;
   uint32_t                        result_type_id;
   uint32_t                        type_id;
+  SpvCapability                   capability;
   SpvStorageClass                 storage_class;
   uint32_t                        word_offset;
   uint32_t                        word_count;
@@ -208,6 +209,7 @@ typedef struct SpvReflectPrvParser {
   size_t                          node_count;
   SpvReflectPrvNode*              nodes;
   uint32_t                        entry_point_count;
+  uint32_t                        capability_count;
   uint32_t                        function_count;
   SpvReflectPrvFunction*          functions;
   uint32_t                        access_chain_count;
@@ -736,6 +738,12 @@ static SpvReflectResult ParseNodes(SpvReflectPrvParser* p_parser)
 
       case SpvOpEntryPoint: {
         ++(p_parser->entry_point_count);
+      }
+      break;
+
+      case SpvOpCapability: {
+        CHECKED_READU32(p_parser, p_node->word_offset + 1, p_node->capability);
+        ++(p_parser->capability_count);
       }
       break;
 
@@ -1883,6 +1891,44 @@ static SpvReflectResult ParseTypes(
     }
     ++type_index;
   }
+  return SPV_REFLECT_RESULT_SUCCESS;
+}
+
+static SpvReflectResult ParseCapabilities(
+    SpvReflectPrvParser* p_parser,
+    SpvReflectShaderModule* p_module)
+{
+  if (p_parser->capability_count == 0) {
+    return SPV_REFLECT_RESULT_SUCCESS;
+  }
+
+  p_module->capability_count = p_parser->capability_count;
+  p_module->capabilities = (SpvReflectCapability*)calloc(p_module->capability_count,
+                                                         sizeof(*(p_module->capabilities)));
+  if (IsNull(p_module->capabilities)) {
+    return SPV_REFLECT_RESULT_ERROR_ALLOC_FAILED;
+  }
+
+  // Mark all types with an invalid state
+  for (size_t i = 0; i < p_module->capability_count; ++i) {
+    SpvReflectCapability* p_cap = &(p_module->capabilities[i]);
+    p_cap->value = SpvCapabilityMax;
+    p_cap->word_offset = (uint32_t)INVALID_VALUE;
+  }
+
+  size_t capability_index = 0;
+  for (size_t i = 0; i < p_parser->node_count; ++i) {
+    SpvReflectPrvNode* p_node = &(p_parser->nodes[i]);
+    if (SpvOpCapability != p_node->op) {
+      continue;
+    }
+
+    SpvReflectCapability* p_cap = &(p_module->capabilities[capability_index]);
+    p_cap->value = p_node->capability;
+    p_cap->word_offset = p_node->word_offset + 1;
+    ++capability_index;
+  }
+
   return SPV_REFLECT_RESULT_SUCCESS;
 }
 
@@ -3825,6 +3871,10 @@ static SpvReflectResult CreateShaderModule(
     result = ParseEntryPoints(&parser, p_module);
     SPV_REFLECT_ASSERT(result == SPV_REFLECT_RESULT_SUCCESS);
   }
+  if (result == SPV_REFLECT_RESULT_SUCCESS) {
+    result = ParseCapabilities(&parser, p_module);
+    SPV_REFLECT_ASSERT(result == SPV_REFLECT_RESULT_SUCCESS);
+  }
   if (result == SPV_REFLECT_RESULT_SUCCESS && p_module->entry_point_count > 0) {
     SpvReflectEntryPoint* p_entry = &(p_module->entry_points[0]);
     p_module->entry_point_name = p_entry->name;
@@ -3978,6 +4028,7 @@ void spvReflectDestroyShaderModule(SpvReflectShaderModule* p_module)
     SafeFree(p_entry->used_push_constants);
     SafeFree(p_entry->execution_modes);
   }
+  SafeFree(p_module->capabilities);
   SafeFree(p_module->entry_points);
 // -- GODOT begin --
   SafeFree(p_module->specialization_constants);

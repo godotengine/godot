@@ -92,13 +92,17 @@ extern "C" {
  *                     <tt>sizeof(th_stripe_callback)</tt>.*/
 #define TH_DECCTL_SET_STRIPE_CB (7)
 
-/**Enables telemetry and sets the macroblock display mode */
+/**Sets the macroblock display mode. Set to 0 to disable displaying
+ * macroblocks.*/
 #define TH_DECCTL_SET_TELEMETRY_MBMODE (9)
-/**Enables telemetry and sets the motion vector display mode */
+/**Sets the motion vector display mode. Set to 0 to disable displaying motion
+ * vectors.*/
 #define TH_DECCTL_SET_TELEMETRY_MV (11)
-/**Enables telemetry and sets the adaptive quantization display mode */
+/**Sets the adaptive quantization display mode. Set to 0 to disable displaying
+ * adaptive quantization. */
 #define TH_DECCTL_SET_TELEMETRY_QI (13)
-/**Enables telemetry and sets the bitstream breakdown visualization mode */
+/**Sets the bitstream breakdown visualization mode. Set to 0 to disable
+ * displaying bitstream breakdown.*/
 #define TH_DECCTL_SET_TELEMETRY_BITS (15)
 /*@}*/
 
@@ -171,7 +175,7 @@ typedef struct th_setup_info th_setup_info;
 /**\defgroup decfuncs Functions for Decoding*/
 /*@{*/
 /**\name Functions for decoding
- * You must link to <tt>libtheoradec</tt> if you use any of the 
+ * You must link to <tt>libtheoradec</tt> if you use any of the
  * functions in this section.
  *
  * The functions are listed in the order they are used in a typical decode.
@@ -267,7 +271,10 @@ extern void th_setup_free(th_setup_info *_setup);
  *                See \ref decctlcodes "the list of available control codes"
  *                 for details.
  * \param _buf    The parameters for this control code.
- * \param _buf_sz The size of the parameter buffer.*/
+ * \param _buf_sz The size of the parameter buffer.
+ * \return Possible return values depend on the control code used.
+ *          See \ref decctlcodes "the list of control codes" for
+ *          specific values. Generally 0 indicates success.*/
 extern int th_decode_ctl(th_dec_ctx *_dec,int _req,void *_buf,
  size_t _buf_sz);
 /**Submits a packet containing encoded video data to the decoder.
@@ -283,7 +290,8 @@ extern int th_decode_ctl(th_dec_ctx *_dec,int _req,void *_buf,
  * \retval 0             Success.
  *                       A new decoded frame can be retrieved by calling
  *                        th_decode_ycbcr_out().
- * \retval TH_DUPFRAME   The packet represented a dropped (0-byte) frame.
+ * \retval TH_DUPFRAME   The packet represented a dropped frame (either a
+ *                        0-byte frame or an INTER frame with no coded blocks).
  *                       The player can skip the call to th_decode_ycbcr_out(),
  *                        as the contents of the decoded frame buffer have not
  *                        changed.

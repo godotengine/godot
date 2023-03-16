@@ -58,6 +58,8 @@ def make_editor_icons_action(target, source, env):
             thumb_medium_indices.append(str(index))
         if icon_name.endswith("BigThumb"):  # don't know a better way to handle this
             thumb_big_indices.append(str(index))
+        if icon_name.endswith("GodotFile"):  # don't know a better way to handle this
+            thumb_big_indices.append(str(index))
 
         s.write('\t"{0}"'.format(icon_name))
 

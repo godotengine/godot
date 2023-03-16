@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  polygon_path_finder.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  polygon_path_finder.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "polygon_path_finder.h"
 #include "core/math/geometry_2d.h"
@@ -325,7 +325,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 		}
 
 		const Point &np = points[least_cost_point];
-		//open the neighbours for search
+		//open the neighbors for search
 
 		for (const int &E : np.connections) {
 			Point &p = points.write[E];
@@ -339,7 +339,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 					p.distance = distance;
 				}
 			} else {
-				//add to open neighbours
+				//add to open neighbors
 
 				p.prev = least_cost_point;
 				p.distance = distance;
@@ -441,9 +441,9 @@ Dictionary PolygonPathFinder::_get_data() const {
 	Dictionary d;
 	Vector<Vector2> p;
 	Vector<int> ind;
-	Array connections;
+	Array path_connections;
 	p.resize(MAX(0, points.size() - 2));
-	connections.resize(MAX(0, points.size() - 2));
+	path_connections.resize(MAX(0, points.size() - 2));
 	ind.resize(edges.size() * 2);
 	Vector<real_t> penalties;
 	penalties.resize(MAX(0, points.size() - 2));
@@ -463,7 +463,7 @@ Dictionary PolygonPathFinder::_get_data() const {
 					cw[idx++] = E;
 				}
 			}
-			connections[i] = c;
+			path_connections[i] = c;
 		}
 	}
 	{
@@ -478,7 +478,7 @@ Dictionary PolygonPathFinder::_get_data() const {
 	d["bounds"] = bounds;
 	d["points"] = p;
 	d["penalties"] = penalties;
-	d["connections"] = connections;
+	d["connections"] = path_connections;
 	d["segments"] = ind;
 
 	return d;

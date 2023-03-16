@@ -14,9 +14,9 @@ namespace Godot.SourceGenerators
         {
             string message =
                 "Missing partial modifier on declaration of type '" +
-                $"{symbol.FullQualifiedName()}' which is a subclass of '{GodotClasses.Object}'";
+                $"{symbol.FullQualifiedNameOmitGlobal()}' which is a subclass of '{GodotClasses.GodotObject}'";
 
-            string description = $"{message}. Subclasses of '{GodotClasses.Object}' " +
+            string description = $"{message}. Subclasses of '{GodotClasses.GodotObject}' " +
                                  "must be declared with the partial modifier.";
 
             context.ReportDiagnostic(Diagnostic.Create(
@@ -41,14 +41,14 @@ namespace Godot.SourceGenerators
                 .GetDeclaredSymbol(outerTypeDeclSyntax);
 
             string fullQualifiedName = outerSymbol is INamedTypeSymbol namedTypeSymbol ?
-                namedTypeSymbol.FullQualifiedName() :
+                namedTypeSymbol.FullQualifiedNameOmitGlobal() :
                 "type not found";
 
             string message =
                 $"Missing partial modifier on declaration of type '{fullQualifiedName}', " +
-                $"which contains one or more subclasses of '{GodotClasses.Object}'";
+                $"which contains one or more subclasses of '{GodotClasses.GodotObject}'";
 
-            string description = $"{message}. Subclasses of '{GodotClasses.Object}' and their " +
+            string description = $"{message}. Subclasses of '{GodotClasses.GodotObject}' and their " +
                                  "containing types must be declared with the partial modifier.";
 
             context.ReportDiagnostic(Diagnostic.Create(
@@ -184,6 +184,32 @@ namespace Godot.SourceGenerators
 
             context.ReportDiagnostic(Diagnostic.Create(
                 new DiagnosticDescriptor(id: "GD0105",
+                    title: message,
+                    messageFormat: message,
+                    category: "Usage",
+                    DiagnosticSeverity.Error,
+                    isEnabledByDefault: true,
+                    description),
+                location,
+                location?.SourceTree?.FilePath));
+        }
+
+        public static void ReportExportedMemberIsExplicitInterfaceImplementation(
+            GeneratorExecutionContext context,
+            ISymbol exportedMemberSymbol
+        )
+        {
+            var locations = exportedMemberSymbol.Locations;
+            var location = locations.FirstOrDefault(l => l.SourceTree != null) ?? locations.FirstOrDefault();
+
+            string message = $"Attempted to export explicit interface property implementation: " +
+                             $"'{exportedMemberSymbol.ToDisplayString()}'";
+
+            string description = $"{message}. Explicit interface implementations can't be exported." +
+                                 " Remove the '[Export]' attribute.";
+
+            context.ReportDiagnostic(Diagnostic.Create(
+                new DiagnosticDescriptor(id: "GD0106",
                     title: message,
                     messageFormat: message,
                     category: "Usage",

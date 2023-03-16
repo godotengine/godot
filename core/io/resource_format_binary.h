@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  resource_format_binary.h                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  resource_format_binary.h                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef RESOURCE_FORMAT_BINARY_H
 #define RESOURCE_FORMAT_BINARY_H
@@ -65,6 +65,7 @@ class ResourceLoaderBinary {
 
 	bool using_named_scene_ids = false;
 	bool using_uids = false;
+	String script_class;
 	bool use_sub_threads = false;
 	float *progress = nullptr;
 	Vector<ExtResource> external_resources;
@@ -92,7 +93,6 @@ class ResourceLoaderBinary {
 	HashMap<String, Ref<Resource>> dependency_cache;
 
 public:
-	void set_local_path(const String &p_local_path);
 	Ref<Resource> get_resource();
 	Error load();
 	void set_translation_remapped(bool p_remapped);
@@ -100,6 +100,7 @@ public:
 	void set_remaps(const HashMap<String, String> &p_remaps) { remaps = p_remaps; }
 	void open(Ref<FileAccess> p_f, bool p_no_resources = false, bool p_keep_uuid_paths = false);
 	String recognize(Ref<FileAccess> p_f);
+	String recognize_script_class(Ref<FileAccess> p_f);
 	void get_dependencies(Ref<FileAccess> p_f, List<String> *p_dependencies, bool p_add_types);
 	void get_classes_used(Ref<FileAccess> p_f, HashSet<StringName> *p_classes);
 
@@ -113,6 +114,7 @@ public:
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
+	virtual String get_resource_script_class(const String &p_path) const;
 	virtual void get_classes_used(const String &p_path, HashSet<StringName> *r_classes);
 	virtual ResourceUID::ID get_resource_uid(const String &p_path) const;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
@@ -165,11 +167,13 @@ public:
 		FORMAT_FLAG_NAMED_SCENE_IDS = 1,
 		FORMAT_FLAG_UIDS = 2,
 		FORMAT_FLAG_REAL_T_IS_DOUBLE = 4,
+		FORMAT_FLAG_HAS_SCRIPT_CLASS = 8,
 
 		// Amount of reserved 32-bit fields in resource header
 		RESERVED_FIELDS = 11
 	};
 	Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags = 0);
+	Error set_uid(const String &p_path, ResourceUID::ID p_uid);
 	static void write_variant(Ref<FileAccess> f, const Variant &p_property, HashMap<Ref<Resource>, int> &resource_map, HashMap<Ref<Resource>, int> &external_resources, HashMap<StringName, int> &string_map, const PropertyInfo &p_hint = PropertyInfo());
 };
 
@@ -177,6 +181,7 @@ class ResourceFormatSaverBinary : public ResourceFormatSaver {
 public:
 	static ResourceFormatSaverBinary *singleton;
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0);
+	virtual Error set_uid(const String &p_path, ResourceUID::ID p_uid);
 	virtual bool recognize(const Ref<Resource> &p_resource) const;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
 

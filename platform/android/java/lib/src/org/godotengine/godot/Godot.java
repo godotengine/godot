@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  Godot.java                                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  Godot.java                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 package org.godotengine.godot;
 
@@ -74,15 +74,20 @@ import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Surface;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.ViewTreeObserver;
 import android.view.Window;
+import android.view.WindowInsets;
+import android.view.WindowInsetsAnimation;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.Keep;
@@ -175,6 +180,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	public GodotIO io;
 	public GodotNetUtils netUtils;
 	public GodotTTS tts;
+	DirectoryAccessHandler directoryAccessHandler;
 
 	public interface ResultCallback {
 		void callback(int requestCode, int resultCode, Intent data);
@@ -257,13 +263,13 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	 */
 	@Keep
 	private boolean onVideoInit() {
-		final Activity activity = getActivity();
+		final Activity activity = requireActivity();
 		containerLayout = new FrameLayout(activity);
 		containerLayout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
 		// GodotEditText layout
 		GodotEditText editText = new GodotEditText(activity);
-		editText.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT,
+		editText.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,
 				(int)getResources().getDimension(R.dimen.text_edit_height)));
 		// ...add to FrameLayout
 		containerLayout.addView(editText);
@@ -274,10 +280,13 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 			return false;
 		}
 
-		final String videoDriver = GodotLib.getGlobal("rendering/driver/driver_name");
-		if (videoDriver.equals("vulkan")) {
+		if (usesVulkan()) {
+			if (!meetsVulkanRequirements(activity.getPackageManager())) {
+				Log.w(TAG, "Missing requirements for vulkan support!");
+			}
 			mRenderView = new GodotVulkanRenderView(activity, this);
 		} else {
+			// Fallback to openGl
 			mRenderView = new GodotGLRenderView(activity, this, xrMode, use_debug_opengl);
 		}
 
@@ -286,20 +295,70 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		editText.setView(mRenderView);
 		io.setEdit(editText);
 
-		view.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
-			Point fullSize = new Point();
-			activity.getWindowManager().getDefaultDisplay().getSize(fullSize);
-			Rect gameSize = new Rect();
-			mRenderView.getView().getWindowVisibleDisplayFrame(gameSize);
-			final int keyboardHeight = fullSize.y - gameSize.bottom;
-			GodotLib.setVirtualKeyboardHeight(keyboardHeight);
-		});
+		// Listeners for keyboard height.
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+			// Report the height of virtual keyboard as it changes during the animation.
+			final View decorView = activity.getWindow().getDecorView();
+			decorView.setWindowInsetsAnimationCallback(new WindowInsetsAnimation.Callback(WindowInsetsAnimation.Callback.DISPATCH_MODE_STOP) {
+				int startBottom, endBottom;
+				@Override
+				public void onPrepare(@NonNull WindowInsetsAnimation animation) {
+					startBottom = decorView.getRootWindowInsets().getInsets(WindowInsets.Type.ime()).bottom;
+				}
+
+				@NonNull
+				@Override
+				public WindowInsetsAnimation.Bounds onStart(@NonNull WindowInsetsAnimation animation, @NonNull WindowInsetsAnimation.Bounds bounds) {
+					endBottom = decorView.getRootWindowInsets().getInsets(WindowInsets.Type.ime()).bottom;
+					return bounds;
+				}
+
+				@NonNull
+				@Override
+				public WindowInsets onProgress(@NonNull WindowInsets windowInsets, @NonNull List<WindowInsetsAnimation> list) {
+					// Find the IME animation.
+					WindowInsetsAnimation imeAnimation = null;
+					for (WindowInsetsAnimation animation : list) {
+						if ((animation.getTypeMask() & WindowInsets.Type.ime()) != 0) {
+							imeAnimation = animation;
+							break;
+						}
+					}
+					// Update keyboard height based on IME animation.
+					if (imeAnimation != null) {
+						float interpolatedFraction = imeAnimation.getInterpolatedFraction();
+						// Linear interpolation between start and end values.
+						float keyboardHeight = startBottom * (1.0f - interpolatedFraction) + endBottom * interpolatedFraction;
+						GodotLib.setVirtualKeyboardHeight((int)keyboardHeight);
+					}
+					return windowInsets;
+				}
+
+				@Override
+				public void onEnd(@NonNull WindowInsetsAnimation animation) {
+				}
+			});
+		} else {
+			// Infer the virtual keyboard height using visible area.
+			view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+				// Don't allocate a new Rect every time the callback is called.
+				final Rect visibleSize = new Rect();
+
+				@Override
+				public void onGlobalLayout() {
+					final SurfaceView view = mRenderView.getView();
+					view.getWindowVisibleDisplayFrame(visibleSize);
+					final int keyboardHeight = view.getHeight() - visibleSize.bottom;
+					GodotLib.setVirtualKeyboardHeight(keyboardHeight);
+				}
+			});
+		}
 
 		mRenderView.queueOnRenderThread(() -> {
 			for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
 				plugin.onRegisterPluginWithGodotNative();
 			}
-			setKeepScreenOn("True".equals(GodotLib.getGlobal("display/window/energy_saving/keep_screen_on")));
+			setKeepScreenOn(Boolean.parseBoolean(GodotLib.getGlobal("display/window/energy_saving/keep_screen_on")));
 		});
 
 		// Include the returned non-null views in the Godot view hierarchy.
@@ -314,6 +373,26 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Returns true if `Vulkan` is used for rendering.
+	 */
+	private boolean usesVulkan() {
+		final String renderer = GodotLib.getGlobal("rendering/renderer/rendering_method");
+		final String renderingDevice = GodotLib.getGlobal("rendering/rendering_device/driver");
+		return ("forward_plus".equals(renderer) || "mobile".equals(renderer)) && "vulkan".equals(renderingDevice);
+	}
+
+	/**
+	 * Returns true if the device meets the base requirements for Vulkan support, false otherwise.
+	 */
+	private boolean meetsVulkanRequirements(@Nullable PackageManager packageManager) {
+		if (packageManager == null) {
+			return false;
+		}
+
+		return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_LEVEL, 1);
 	}
 
 	public void setKeepScreenOn(final boolean p_enabled) {
@@ -347,11 +426,9 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	public void restart() {
-		runOnUiThread(() -> {
-			if (godotHost != null) {
-				godotHost.onGodotRestartRequested(this);
-			}
-		});
+		if (godotHost != null) {
+			godotHost.onGodotRestartRequested(this);
+		}
 	}
 
 	public void alert(final String message, final String title) {
@@ -488,7 +565,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		netUtils = new GodotNetUtils(activity);
 		tts = new GodotTTS(activity);
 		Context context = getContext();
-		DirectoryAccessHandler directoryAccessHandler = new DirectoryAccessHandler(context);
+		directoryAccessHandler = new DirectoryAccessHandler(context);
 		FileAccessHandler fileAccessHandler = new FileAccessHandler(context);
 		mSensorManager = (SensorManager)activity.getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -888,11 +965,20 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	private void forceQuit() {
 		// TODO: This is a temp solution. The proper fix will involve tracking down and properly shutting down each
 		// native Godot components that is started in Godot#onVideoInit.
-		runOnUiThread(() -> {
-			if (godotHost != null) {
-				godotHost.onGodotForceQuit(this);
-			}
-		});
+		forceQuit(0);
+	}
+
+	@Keep
+	private boolean forceQuit(int instanceId) {
+		if (godotHost == null) {
+			return false;
+		}
+		if (instanceId == 0) {
+			godotHost.onGodotForceQuit(this);
+			return true;
+		} else {
+			return godotHost.onGodotForceQuit(instanceId);
+		}
 	}
 
 	private boolean obbIsCorrupted(String f, String main_pack_md5) {
@@ -1051,11 +1137,10 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	@Keep
-	private void createNewGodotInstance(String[] args) {
-		runOnUiThread(() -> {
-			if (godotHost != null) {
-				godotHost.onNewGodotInstanceRequested(args);
-			}
-		});
+	private int createNewGodotInstance(String[] args) {
+		if (godotHost != null) {
+			return godotHost.onNewGodotInstanceRequested(args);
+		}
+		return 0;
 	}
 }

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  immediate_mesh.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  immediate_mesh.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "immediate_mesh.h"
 
@@ -41,8 +41,8 @@ void ImmediateMesh::surface_set_color(const Color &p_color) {
 
 	if (!uses_colors) {
 		colors.resize(vertices.size());
-		for (uint32_t i = 0; i < colors.size(); i++) {
-			colors[i] = p_color;
+		for (Color &color : colors) {
+			color = p_color;
 		}
 		uses_colors = true;
 	}
@@ -54,8 +54,8 @@ void ImmediateMesh::surface_set_normal(const Vector3 &p_normal) {
 
 	if (!uses_normals) {
 		normals.resize(vertices.size());
-		for (uint32_t i = 0; i < normals.size(); i++) {
-			normals[i] = p_normal;
+		for (Vector3 &normal : normals) {
+			normal = p_normal;
 		}
 		uses_normals = true;
 	}
@@ -66,8 +66,8 @@ void ImmediateMesh::surface_set_tangent(const Plane &p_tangent) {
 	ERR_FAIL_COND_MSG(!surface_active, "Not creating any surface. Use surface_begin() to do it.");
 	if (!uses_tangents) {
 		tangents.resize(vertices.size());
-		for (uint32_t i = 0; i < tangents.size(); i++) {
-			tangents[i] = p_tangent;
+		for (Plane &tangent : tangents) {
+			tangent = p_tangent;
 		}
 		uses_tangents = true;
 	}
@@ -78,8 +78,8 @@ void ImmediateMesh::surface_set_uv(const Vector2 &p_uv) {
 	ERR_FAIL_COND_MSG(!surface_active, "Not creating any surface. Use surface_begin() to do it.");
 	if (!uses_uvs) {
 		uvs.resize(vertices.size());
-		for (uint32_t i = 0; i < uvs.size(); i++) {
-			uvs[i] = p_uv;
+		for (Vector2 &uv : uvs) {
+			uv = p_uv;
 		}
 		uses_uvs = true;
 	}
@@ -90,8 +90,8 @@ void ImmediateMesh::surface_set_uv2(const Vector2 &p_uv2) {
 	ERR_FAIL_COND_MSG(!surface_active, "Not creating any surface. Use surface_begin() to do it.");
 	if (!uses_uv2s) {
 		uv2s.resize(vertices.size());
-		for (uint32_t i = 0; i < uv2s.size(); i++) {
-			uv2s[i] = p_uv2;
+		for (Vector2 &uv : uv2s) {
+			uv = p_uv2;
 		}
 		uses_uv2s = true;
 	}
@@ -194,25 +194,20 @@ void ImmediateMesh::surface_end() {
 			if (uses_normals) {
 				uint32_t *normal = (uint32_t *)&surface_vertex_ptr[i * vertex_stride + normal_offset];
 
-				Vector3 n = normals[i] * Vector3(0.5, 0.5, 0.5) + Vector3(0.5, 0.5, 0.5);
+				Vector2 n = normals[i].octahedron_encode();
 
 				uint32_t value = 0;
-				value |= CLAMP(int(n.x * 1023.0), 0, 1023);
-				value |= CLAMP(int(n.y * 1023.0), 0, 1023) << 10;
-				value |= CLAMP(int(n.z * 1023.0), 0, 1023) << 20;
+				value |= (uint16_t)CLAMP(n.x * 65535, 0, 65535);
+				value |= (uint16_t)CLAMP(n.y * 65535, 0, 65535) << 16;
 
 				*normal = value;
 			}
 			if (uses_tangents) {
 				uint32_t *tangent = (uint32_t *)&surface_vertex_ptr[i * vertex_stride + tangent_offset];
-				Plane t = tangents[i];
+				Vector2 t = tangents[i].normal.octahedron_tangent_encode(tangents[i].d);
 				uint32_t value = 0;
-				value |= CLAMP(int((t.normal.x * 0.5 + 0.5) * 1023.0), 0, 1023);
-				value |= CLAMP(int((t.normal.y * 0.5 + 0.5) * 1023.0), 0, 1023) << 10;
-				value |= CLAMP(int((t.normal.z * 0.5 + 0.5) * 1023.0), 0, 1023) << 20;
-				if (t.d > 0) {
-					value |= 3UL << 30;
-				}
+				value |= (uint16_t)CLAMP(t.x * 65535, 0, 65535);
+				value |= (uint16_t)CLAMP(t.y * 65535, 0, 65535) << 16;
 
 				*tangent = value;
 			}
@@ -346,7 +341,7 @@ TypedArray<Array> ImmediateMesh::surface_get_blend_shape_arrays(int p_surface) c
 Dictionary ImmediateMesh::surface_get_lods(int p_surface) const {
 	return Dictionary();
 }
-uint32_t ImmediateMesh::surface_get_format(int p_idx) const {
+BitField<Mesh::ArrayFormat> ImmediateMesh::surface_get_format(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, int(surfaces.size()), 0);
 	return surfaces[p_idx].format;
 }
@@ -410,5 +405,6 @@ ImmediateMesh::ImmediateMesh() {
 	mesh = RS::get_singleton()->mesh_create();
 }
 ImmediateMesh::~ImmediateMesh() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(mesh);
 }

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  resource_format_text.h                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  resource_format_text.h                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef RESOURCE_FORMAT_TEXT_H
 #define RESOURCE_FORMAT_TEXT_H
@@ -64,6 +64,7 @@ class ResourceLoaderText {
 	int resources_total = 0;
 	int resource_current = 0;
 	String resource_type;
+	String script_class;
 
 	VariantParser::Tag next_tag;
 
@@ -106,6 +107,7 @@ class ResourceLoaderText {
 	VariantParser::ResourceParser rp;
 
 	friend class ResourceFormatLoaderText;
+	friend class ResourceFormatSaverText;
 
 	Error error = OK;
 
@@ -114,15 +116,16 @@ class ResourceLoaderText {
 	Ref<PackedScene> _parse_node_tag(VariantParser::ResourceParser &parser);
 
 public:
-	void set_local_path(const String &p_local_path);
 	Ref<Resource> get_resource();
 	Error load();
+	Error set_uid(Ref<FileAccess> p_f, ResourceUID::ID p_uid);
 	int get_stage() const;
 	int get_stage_count() const;
 	void set_translation_remapped(bool p_remapped);
 
 	void open(Ref<FileAccess> p_f, bool p_skip_first_tag = false);
 	String recognize(Ref<FileAccess> p_f);
+	String recognize_script_class(Ref<FileAccess> p_f);
 	ResourceUID::ID get_uid(Ref<FileAccess> p_f);
 	void get_dependencies(Ref<FileAccess> p_f, List<String> *p_dependencies, bool p_add_types);
 	Error rename_dependencies(Ref<FileAccess> p_f, const String &p_path, const HashMap<String, String> &p_map);
@@ -142,6 +145,7 @@ public:
 	virtual void get_classes_used(const String &p_path, HashSet<StringName> *r_classes);
 
 	virtual String get_resource_type(const String &p_path) const;
+	virtual String get_resource_script_class(const String &p_path) const;
 	virtual ResourceUID::ID get_resource_uid(const String &p_path) const;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	virtual Error rename_dependencies(const String &p_path, const HashMap<String, String> &p_map);
@@ -195,6 +199,7 @@ class ResourceFormatSaverText : public ResourceFormatSaver {
 public:
 	static ResourceFormatSaverText *singleton;
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0);
+	virtual Error set_uid(const String &p_path, ResourceUID::ID p_uid);
 	virtual bool recognize(const Ref<Resource> &p_resource) const;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
 

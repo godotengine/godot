@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  dialogs.cpp                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  dialogs.cpp                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "dialogs.h"
 
@@ -136,7 +136,7 @@ void AcceptDialog::_cancel_pressed() {
 
 	call_deferred(SNAME("hide"));
 
-	emit_signal(SNAME("cancelled"));
+	emit_signal(SNAME("canceled"));
 
 	cancel_pressed();
 
@@ -208,24 +208,24 @@ void AcceptDialog::register_text_enter(Control *p_line_edit) {
 }
 
 void AcceptDialog::_update_child_rects() {
-	Size2 size = get_size();
+	Size2 dlg_size = get_size();
 	float h_margins = theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.panel_style->get_margin(SIDE_RIGHT);
 	float v_margins = theme_cache.panel_style->get_margin(SIDE_TOP) + theme_cache.panel_style->get_margin(SIDE_BOTTOM);
 
 	// Fill the entire size of the window with the background.
 	bg_panel->set_position(Point2());
-	bg_panel->set_size(size);
+	bg_panel->set_size(dlg_size);
 
 	// Place the buttons from the bottom edge to their minimum required size.
 	Size2 buttons_minsize = buttons_hbox->get_combined_minimum_size();
-	Size2 buttons_size = Size2(size.x - h_margins, buttons_minsize.y);
-	Point2 buttons_position = Point2(theme_cache.panel_style->get_margin(SIDE_LEFT), size.y - theme_cache.panel_style->get_margin(SIDE_BOTTOM) - buttons_size.y);
+	Size2 buttons_size = Size2(dlg_size.x - h_margins, buttons_minsize.y);
+	Point2 buttons_position = Point2(theme_cache.panel_style->get_margin(SIDE_LEFT), dlg_size.y - theme_cache.panel_style->get_margin(SIDE_BOTTOM) - buttons_size.y);
 	buttons_hbox->set_position(buttons_position);
 	buttons_hbox->set_size(buttons_size);
 
 	// Place the content from the top to fill the rest of the space (minus the separation).
 	Point2 content_position = Point2(theme_cache.panel_style->get_margin(SIDE_LEFT), theme_cache.panel_style->get_margin(SIDE_TOP));
-	Size2 content_size = Size2(size.x - h_margins, size.y - v_margins - buttons_size.y - theme_cache.buttons_separation);
+	Size2 content_size = Size2(dlg_size.x - h_margins, dlg_size.y - v_margins - buttons_size.y - theme_cache.buttons_separation);
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
@@ -276,10 +276,6 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 	// Plus there is a separation size added on top.
 	content_minsize.y += theme_cache.buttons_separation;
 
-	// Last, we make sure that we aren't below the minimum window size.
-	Size2 window_minsize = get_min_size();
-	content_minsize.x = MAX(window_minsize.x, content_minsize.x);
-	content_minsize.y = MAX(window_minsize.y, content_minsize.y);
 	return content_minsize;
 }
 
@@ -372,13 +368,13 @@ void AcceptDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ok_button_text"), &AcceptDialog::get_ok_button_text);
 
 	ADD_SIGNAL(MethodInfo("confirmed"));
-	ADD_SIGNAL(MethodInfo("cancelled"));
+	ADD_SIGNAL(MethodInfo("canceled"));
 	ADD_SIGNAL(MethodInfo("custom_action", PropertyInfo(Variant::STRING_NAME, "action")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "ok_button_text"), "set_ok_button_text", "get_ok_button_text");
 
-	ADD_GROUP("Dialog", "dialog");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "dialog_text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
+	ADD_GROUP("Dialog", "dialog_");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "dialog_text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_hide_on_ok"), "set_hide_on_ok", "get_hide_on_ok");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_close_on_escape"), "set_close_on_escape", "get_close_on_escape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_autowrap"), "set_autowrap", "has_autowrap");

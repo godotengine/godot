@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationRootNode" inherits="AnimationNode" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AnimationRootNode" inherits="AnimationNode" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		The [AnimationNode] which can be set as the root of an [AnimationTree].
 	</brief_description>
 	<description>
 	</description>

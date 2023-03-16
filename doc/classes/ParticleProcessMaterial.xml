@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ParticleProcessMaterial" inherits="Material" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ParticleProcessMaterial" inherits="Material" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Particle properties for [GPUParticles3D] and [GPUParticles2D] nodes.
 	</brief_description>
@@ -123,7 +123,8 @@
 		</member>
 		<member name="collision_mode" type="int" setter="set_collision_mode" getter="get_collision_mode" enum="ParticleProcessMaterial.CollisionMode" default="0">
 			The particles' collision mode.
-			[b]Note:[/b] Particles can only collide with [GPUParticlesCollision3D] nodes, not [PhysicsBody3D] nodes. To make particles collide with various objects, you can add [GPUParticlesCollision3D] nodes as children of [PhysicsBody3D] nodes.
+			[b]Note:[/b] 3D Particles can only collide with [GPUParticlesCollision3D] nodes, not [PhysicsBody3D] nodes. To make particles collide with various objects, you can add [GPUParticlesCollision3D] nodes as children of [PhysicsBody3D] nodes.
+			[b]Note:[/b] 2D Particles can only collide with [LightOccluder2D] nodes, not [PhysicsBody2D] nodes.
 		</member>
 		<member name="collision_use_scale" type="bool" setter="set_collision_use_scale" getter="is_collision_using_scale" default="false">
 			Should collision take scale into account.
@@ -217,7 +218,7 @@
 			Maximum linear acceleration applied to each particle in the direction of motion.
 		</member>
 		<member name="linear_accel_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
-			Minimum equivalent of [member linear_accel_min].
+			Minimum equivalent of [member linear_accel_max].
 		</member>
 		<member name="orbit_velocity_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's orbital velocity will vary along this [CurveTexture].
@@ -259,6 +260,10 @@
 		<member name="spread" type="float" setter="set_spread" getter="get_spread" default="45.0">
 			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] degrees.
 		</member>
+		<member name="sub_emitter_amount_at_collision" type="int" setter="set_sub_emitter_amount_at_collision" getter="get_sub_emitter_amount_at_collision">
+			Sub particle amount on collision.
+			Maximum amount set in the sub particles emitter.
+		</member>
 		<member name="sub_emitter_amount_at_end" type="int" setter="set_sub_emitter_amount_at_end" getter="get_sub_emitter_amount_at_end">
 		</member>
 		<member name="sub_emitter_frequency" type="float" setter="set_sub_emitter_frequency" getter="get_sub_emitter_frequency">
@@ -280,11 +285,11 @@
 			Enables and disables Turbulence for the particle system.
 		</member>
 		<member name="turbulence_influence_max" type="float" setter="set_param_max" getter="get_param_max" default="0.1">
-			Minimum turbulence influence on each particle.
-			 The actual amount of turbulence influence on each particle is calculated as a random value between [member turbulence_influence_min] and [member turbulence_influence_max] and multiplied by the amount of turbulence influence from [member turbulence_influence_over_life].
+			Maximum turbulence influence on each particle.
+			The actual amount of turbulence influence on each particle is calculated as a random value between [member turbulence_influence_min] and [member turbulence_influence_max] and multiplied by the amount of turbulence influence from [member turbulence_influence_over_life].
 		</member>
 		<member name="turbulence_influence_min" type="float" setter="set_param_min" getter="get_param_min" default="0.1">
-			Maximum turbulence influence on each particle.
+			Minimum turbulence influence on each particle.
 			The actual amount of turbulence influence on each particle is calculated as a random value between [member turbulence_influence_min] and [member turbulence_influence_max] and multiplied by the amount of turbulence influence from [member turbulence_influence_over_life].
 		</member>
 		<member name="turbulence_influence_over_life" type="Texture2D" setter="set_param_texture" getter="get_param_texture">

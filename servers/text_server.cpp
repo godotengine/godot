@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  text_server.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  text_server.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "servers/text_server.h"
 #include "core/variant/typed_array.h"
@@ -223,6 +223,12 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_set_style_name", "font_rid", "name"), &TextServer::font_set_style_name);
 	ClassDB::bind_method(D_METHOD("font_get_style_name", "font_rid"), &TextServer::font_get_style_name);
 
+	ClassDB::bind_method(D_METHOD("font_set_weight", "font_rid", "weight"), &TextServer::font_set_weight);
+	ClassDB::bind_method(D_METHOD("font_get_weight", "font_rid"), &TextServer::font_get_weight);
+
+	ClassDB::bind_method(D_METHOD("font_set_stretch", "font_rid", "weight"), &TextServer::font_set_stretch);
+	ClassDB::bind_method(D_METHOD("font_get_stretch", "font_rid"), &TextServer::font_get_stretch);
+
 	ClassDB::bind_method(D_METHOD("font_set_antialiasing", "font_rid", "antialiasing"), &TextServer::font_set_antialiasing);
 	ClassDB::bind_method(D_METHOD("font_get_antialiasing", "font_rid"), &TextServer::font_get_antialiasing);
 
@@ -240,6 +246,9 @@ void TextServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("font_set_fixed_size", "font_rid", "fixed_size"), &TextServer::font_set_fixed_size);
 	ClassDB::bind_method(D_METHOD("font_get_fixed_size", "font_rid"), &TextServer::font_get_fixed_size);
+
+	ClassDB::bind_method(D_METHOD("font_set_allow_system_fallback", "font_rid", "allow_system_fallback"), &TextServer::font_set_allow_system_fallback);
+	ClassDB::bind_method(D_METHOD("font_is_allow_system_fallback", "font_rid"), &TextServer::font_is_allow_system_fallback);
 
 	ClassDB::bind_method(D_METHOD("font_set_force_autohinter", "font_rid", "force_autohinter"), &TextServer::font_set_force_autohinter);
 	ClassDB::bind_method(D_METHOD("font_is_force_autohinter", "font_rid"), &TextServer::font_is_force_autohinter);
@@ -385,8 +394,8 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_get_spacing", "shaped", "spacing"), &TextServer::shaped_text_get_spacing);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_add_string", "shaped", "text", "fonts", "size", "opentype_features", "language", "meta"), &TextServer::shaped_text_add_string, DEFVAL(Dictionary()), DEFVAL(""), DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("shaped_text_add_object", "shaped", "key", "size", "inline_align", "length"), &TextServer::shaped_text_add_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(1));
-	ClassDB::bind_method(D_METHOD("shaped_text_resize_object", "shaped", "key", "size", "inline_align"), &TextServer::shaped_text_resize_object, DEFVAL(INLINE_ALIGNMENT_CENTER));
+	ClassDB::bind_method(D_METHOD("shaped_text_add_object", "shaped", "key", "size", "inline_align", "length", "baseline"), &TextServer::shaped_text_add_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(1), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("shaped_text_resize_object", "shaped", "key", "size", "inline_align", "baseline"), &TextServer::shaped_text_resize_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(0.0));
 
 	ClassDB::bind_method(D_METHOD("shaped_get_span_count", "shaped"), &TextServer::shaped_get_span_count);
 	ClassDB::bind_method(D_METHOD("shaped_get_span_meta", "shaped", "index"), &TextServer::shaped_get_span_meta);
@@ -445,7 +454,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("parse_number", "number", "language"), &TextServer::parse_number, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("percent_sign", "language"), &TextServer::percent_sign, DEFVAL(""));
 
-	ClassDB::bind_method(D_METHOD("string_get_word_breaks", "string", "language"), &TextServer::string_get_word_breaks, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("string_get_word_breaks", "string", "language", "chars_per_line"), &TextServer::string_get_word_breaks, DEFVAL(""), DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("is_confusable", "string", "dict"), &TextServer::is_confusable);
 	ClassDB::bind_method(D_METHOD("spoof_check", "string"), &TextServer::spoof_check);
@@ -468,11 +477,13 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FONT_LCD_SUBPIXEL_LAYOUT_HBGR);
 	BIND_ENUM_CONSTANT(FONT_LCD_SUBPIXEL_LAYOUT_VRGB);
 	BIND_ENUM_CONSTANT(FONT_LCD_SUBPIXEL_LAYOUT_VBGR);
+	BIND_ENUM_CONSTANT(FONT_LCD_SUBPIXEL_LAYOUT_MAX);
 
 	/* Direction */
 	BIND_ENUM_CONSTANT(DIRECTION_AUTO);
 	BIND_ENUM_CONSTANT(DIRECTION_LTR);
 	BIND_ENUM_CONSTANT(DIRECTION_RTL);
+	BIND_ENUM_CONSTANT(DIRECTION_INHERITED);
 
 	/* Orientation */
 	BIND_ENUM_CONSTANT(ORIENTATION_HORIZONTAL);
@@ -589,7 +600,7 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_FILE);
 	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_EMAIL);
 	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_LIST);
-	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_NONE);
+	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_GDSCRIPT);
 	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_CUSTOM);
 }
 
@@ -955,6 +966,11 @@ CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_posi
 		if (glyphs[i].count > 0) {
 			// Caret before grapheme (top / left).
 			if (p_position == glyphs[i].start && ((glyphs[i].flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL)) {
+				real_t advance = 0.f;
+				for (int j = 0; j < glyphs[i].count; j++) {
+					advance += glyphs[i + j].advance * glyphs[i + j].repeat;
+				}
+				real_t char_adv = advance / (real_t)(glyphs[i].end - glyphs[i].start);
 				Rect2 cr;
 				if (orientation == ORIENTATION_HORIZONTAL) {
 					if (glyphs[i].start == range.x) {
@@ -966,15 +982,11 @@ CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_posi
 					cr.position.x = off;
 					if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
 						caret.t_dir = DIRECTION_RTL;
-						for (int j = 0; j < glyphs[i].count; j++) {
-							cr.position.x += glyphs[i + j].advance * glyphs[i + j].repeat;
-							cr.size.x -= glyphs[i + j].advance * glyphs[i + j].repeat;
-						}
+						cr.position.x += advance;
+						cr.size.x = -char_adv;
 					} else {
 						caret.t_dir = DIRECTION_LTR;
-						for (int j = 0; j < glyphs[i].count; j++) {
-							cr.size.x += glyphs[i + j].advance * glyphs[i + j].repeat;
-						}
+						cr.size.x = char_adv;
 					}
 				} else {
 					if (glyphs[i].start == range.x) {
@@ -986,21 +998,22 @@ CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_posi
 					cr.position.y = off;
 					if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
 						caret.t_dir = DIRECTION_RTL;
-						for (int j = 0; j < glyphs[i].count; j++) {
-							cr.position.y += glyphs[i + j].advance * glyphs[i + j].repeat;
-							cr.size.y -= glyphs[i + j].advance * glyphs[i + j].repeat;
-						}
+						cr.position.y += advance;
+						cr.size.y = -char_adv;
 					} else {
 						caret.t_dir = DIRECTION_LTR;
-						for (int j = 0; j < glyphs[i].count; j++) {
-							cr.size.y += glyphs[i + j].advance * glyphs[i + j].repeat;
-						}
+						cr.size.y = char_adv;
 					}
 				}
 				caret.t_caret = cr;
 			}
 			// Caret after grapheme (bottom / right).
 			if (p_position == glyphs[i].end && ((glyphs[i].flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL)) {
+				real_t advance = 0.f;
+				for (int j = 0; j < glyphs[i].count; j++) {
+					advance += glyphs[i + j].advance * glyphs[i + j].repeat;
+				}
+				real_t char_adv = advance / (real_t)(glyphs[i].end - glyphs[i].start);
 				Rect2 cr;
 				if (orientation == ORIENTATION_HORIZONTAL) {
 					if (glyphs[i].end == range.y) {
@@ -1013,15 +1026,11 @@ CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_posi
 					cr.position.x = off;
 					if ((glyphs[i].flags & GRAPHEME_IS_RTL) != GRAPHEME_IS_RTL) {
 						caret.l_dir = DIRECTION_LTR;
-						for (int j = 0; j < glyphs[i].count; j++) {
-							cr.position.x += glyphs[i + j].advance * glyphs[i + j].repeat;
-							cr.size.x -= glyphs[i + j].advance * glyphs[i + j].repeat;
-						}
+						cr.position.x += advance;
+						cr.size.x = -char_adv;
 					} else {
 						caret.l_dir = DIRECTION_RTL;
-						for (int j = 0; j < glyphs[i].count; j++) {
-							cr.size.x += glyphs[i + j].advance * glyphs[i + j].repeat;
-						}
+						cr.size.x = char_adv;
 					}
 				} else {
 					cr.size.y = 1.0f;
@@ -1035,15 +1044,12 @@ CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_posi
 					cr.position.y = off;
 					if ((glyphs[i].flags & GRAPHEME_IS_RTL) != GRAPHEME_IS_RTL) {
 						caret.l_dir = DIRECTION_LTR;
-						for (int j = 0; j < glyphs[i].count; j++) {
-							cr.position.y += glyphs[i + j].advance * glyphs[i + j].repeat;
-							cr.size.y -= glyphs[i + j].advance * glyphs[i + j].repeat;
-						}
+						cr.position.y += advance;
+						cr.size.y = -char_adv;
 					} else {
 						caret.l_dir = DIRECTION_RTL;
-						for (int j = 0; j < glyphs[i].count; j++) {
-							cr.size.y += glyphs[i + j].advance * glyphs[i + j].repeat;
-						}
+						cr.position.x += advance;
+						cr.size.y = char_adv;
 					}
 				}
 				caret.l_caret = cr;
@@ -1057,22 +1063,24 @@ CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_posi
 				real_t char_adv = advance / (real_t)(glyphs[i].end - glyphs[i].start);
 				Rect2 cr;
 				if (orientation == ORIENTATION_HORIZONTAL) {
-					cr.size.x = 1.0f;
 					cr.size.y = height * 2;
 					cr.position.y = -ascent;
 					if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
 						cr.position.x = off + char_adv * (glyphs[i].end - p_position);
+						cr.size.x = -char_adv;
 					} else {
 						cr.position.x = off + char_adv * (p_position - glyphs[i].start);
+						cr.size.x = char_adv;
 					}
 				} else {
-					cr.size.y = 1.0f;
 					cr.size.x = height * 2;
 					cr.position.x = -ascent;
 					if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
 						cr.position.y = off + char_adv * (glyphs[i].end - p_position);
+						cr.size.y = -char_adv;
 					} else {
 						cr.position.y = off + char_adv * (p_position - glyphs[i].start);
+						cr.size.y = char_adv;
 					}
 				}
 				caret.t_caret = cr;
@@ -1685,22 +1693,22 @@ String TextServer::strip_diacritics(const String &p_string) const {
 	return result;
 }
 
-TypedArray<Vector2i> TextServer::parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
-	TypedArray<Vector2i> ret;
+TypedArray<Vector3i> TextServer::parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
+	TypedArray<Vector3i> ret;
 	switch (p_parser_type) {
 		case STRUCTURED_TEXT_URI: {
 			int prev = 0;
 			for (int i = 0; i < p_text.length(); i++) {
 				if ((p_text[i] == '\\') || (p_text[i] == '/') || (p_text[i] == '.') || (p_text[i] == ':') || (p_text[i] == '&') || (p_text[i] == '=') || (p_text[i] == '@') || (p_text[i] == '?') || (p_text[i] == '#')) {
 					if (prev != i) {
-						ret.push_back(Vector2i(prev, i));
+						ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
 					}
-					ret.push_back(Vector2i(i, i + 1));
+					ret.push_back(Vector3i(i, i + 1, TextServer::DIRECTION_LTR));
 					prev = i + 1;
 				}
 			}
 			if (prev != p_text.length()) {
-				ret.push_back(Vector2i(prev, p_text.length()));
+				ret.push_back(Vector3i(prev, p_text.length(), TextServer::DIRECTION_AUTO));
 			}
 		} break;
 		case STRUCTURED_TEXT_FILE: {
@@ -1708,14 +1716,14 @@ TypedArray<Vector2i> TextServer::parse_structured_text(StructuredTextParser p_pa
 			for (int i = 0; i < p_text.length(); i++) {
 				if ((p_text[i] == '\\') || (p_text[i] == '/') || (p_text[i] == ':')) {
 					if (prev != i) {
-						ret.push_back(Vector2i(prev, i));
+						ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
 					}
-					ret.push_back(Vector2i(i, i + 1));
+					ret.push_back(Vector3i(i, i + 1, TextServer::DIRECTION_LTR));
 					prev = i + 1;
 				}
 			}
 			if (prev != p_text.length()) {
-				ret.push_back(Vector2i(prev, p_text.length()));
+				ret.push_back(Vector3i(prev, p_text.length(), TextServer::DIRECTION_AUTO));
 			}
 		} break;
 		case STRUCTURED_TEXT_EMAIL: {
@@ -1724,19 +1732,19 @@ TypedArray<Vector2i> TextServer::parse_structured_text(StructuredTextParser p_pa
 			for (int i = 0; i < p_text.length(); i++) {
 				if ((p_text[i] == '@') && local) { // Add full "local" as single context.
 					local = false;
-					ret.push_back(Vector2i(prev, i));
-					ret.push_back(Vector2i(i, i + 1));
+					ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
+					ret.push_back(Vector3i(i, i + 1, TextServer::DIRECTION_LTR));
 					prev = i + 1;
 				} else if (!local && (p_text[i] == '.')) { // Add each dot separated "domain" part as context.
 					if (prev != i) {
-						ret.push_back(Vector2i(prev, i));
+						ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
 					}
-					ret.push_back(Vector2i(i, i + 1));
+					ret.push_back(Vector3i(i, i + 1, TextServer::DIRECTION_LTR));
 					prev = i + 1;
 				}
 			}
 			if (prev != p_text.length()) {
-				ret.push_back(Vector2i(prev, p_text.length()));
+				ret.push_back(Vector3i(prev, p_text.length(), TextServer::DIRECTION_AUTO));
 			}
 		} break;
 		case STRUCTURED_TEXT_LIST: {
@@ -1745,18 +1753,97 @@ TypedArray<Vector2i> TextServer::parse_structured_text(StructuredTextParser p_pa
 				int prev = 0;
 				for (int i = 0; i < tags.size(); i++) {
 					if (prev != i) {
-						ret.push_back(Vector2i(prev, prev + tags[i].length()));
+						ret.push_back(Vector3i(prev, prev + tags[i].length(), TextServer::DIRECTION_INHERITED));
 					}
-					ret.push_back(Vector2i(prev + tags[i].length(), prev + tags[i].length() + 1));
+					ret.push_back(Vector3i(prev + tags[i].length(), prev + tags[i].length() + 1, TextServer::DIRECTION_INHERITED));
 					prev = prev + tags[i].length() + 1;
 				}
 			}
 		} break;
+		case STRUCTURED_TEXT_GDSCRIPT: {
+			bool in_string_literal = false;
+			bool in_string_literal_single = false;
+			bool in_id = false;
+
+			int prev = 0;
+			for (int i = 0; i < p_text.length(); i++) {
+				char32_t c = p_text[i];
+				if (in_string_literal) {
+					if (c == '\\') {
+						i++;
+						continue; // Skip escaped chars.
+					} else if (c == '\"') {
+						// String literal end, push string and ".
+						if (prev != i) {
+							ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
+						}
+						prev = i + 1;
+						ret.push_back(Vector3i(i, i + 1, TextServer::DIRECTION_LTR));
+						in_string_literal = false;
+					}
+				} else if (in_string_literal_single) {
+					if (c == '\\') {
+						i++;
+						continue; // Skip escaped chars.
+					} else if (c == '\'') {
+						// String literal end, push string and '.
+						if (prev != i) {
+							ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
+						}
+						prev = i + 1;
+						ret.push_back(Vector3i(i, i + 1, TextServer::DIRECTION_LTR));
+						in_string_literal_single = false;
+					}
+				} else if (in_id) {
+					if (!is_unicode_identifier_continue(c)) {
+						// End of id, push id.
+						if (prev != i) {
+							ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
+						}
+						prev = i;
+						in_id = false;
+					}
+				} else if (is_unicode_identifier_start(c)) {
+					// Start of new id, push prev element.
+					if (prev != i) {
+						ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
+					}
+					prev = i;
+					in_id = true;
+				} else if (c == '\"') {
+					// String literal start, push prev element and ".
+					if (prev != i) {
+						ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
+					}
+					prev = i + 1;
+					ret.push_back(Vector3i(i, i + 1, TextServer::DIRECTION_LTR));
+					in_string_literal = true;
+				} else if (c == '\'') {
+					// String literal start, push prev element and '.
+					if (prev != i) {
+						ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
+					}
+					prev = i + 1;
+					ret.push_back(Vector3i(i, i + 1, TextServer::DIRECTION_LTR));
+					in_string_literal_single = true;
+				} else if (c == '#') {
+					// Start of comment, push prev element and #, skip the rest of the text.
+					if (prev != i) {
+						ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
+					}
+					prev = i + 1;
+					ret.push_back(Vector3i(i, i + 1, TextServer::DIRECTION_LTR));
+					break;
+				}
+			}
+			if (prev < p_text.length()) {
+				ret.push_back(Vector3i(prev, p_text.length(), TextServer::DIRECTION_AUTO));
+			}
+		} break;
 		case STRUCTURED_TEXT_CUSTOM:
-		case STRUCTURED_TEXT_NONE:
 		case STRUCTURED_TEXT_DEFAULT:
 		default: {
-			ret.push_back(Vector2i(0, p_text.length()));
+			ret.push_back(Vector3i(0, p_text.length(), TextServer::DIRECTION_INHERITED));
 		}
 	}
 	return ret;

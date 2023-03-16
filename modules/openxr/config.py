@@ -1,8 +1,6 @@
 def can_build(env, platform):
-    if (
-        platform == "linuxbsd" or platform == "windows"
-    ):  # or platform == "android" -- temporarily disabled android support
-        return env["openxr"]
+    if platform in ("linuxbsd", "windows", "android"):
+        return env["openxr"] and not env["disable_3d"]
     else:
         # not supported on these platforms
         return False
@@ -20,6 +18,7 @@ def get_doc_classes():
         "OpenXRActionMap",
         "OpenXRInteractionProfile",
         "OpenXRIPBinding",
+        "OpenXRHand",
     ]
 
 

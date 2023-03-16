@@ -284,7 +284,7 @@ static unsigned short getHeight(const float fx, const float fy, const float fz,
 enum EdgeValues
 {
 	EV_UNDEF = -1,
-	EV_HULL = -2,
+	EV_HULL = -2
 };
 
 static int findEdge(const int* edges, int nedges, int s, int t)

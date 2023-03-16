@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="bool" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="bool" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Boolean built-in type.
 	</brief_description>
@@ -60,7 +60,7 @@
 		        _can_shoot = false
 		        _cool_down.start()
 
-		func _on_CoolDownTimer_timeout():
+		func _on_cool_down_timer_timeout():
 		    _can_shoot = true
 		[/gdscript]
 		[csharp]

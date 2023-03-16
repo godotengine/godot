@@ -360,15 +360,15 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 	const float FXAA_SPAN_MAX = 8.0;
 
 #ifdef MULTIVIEW
-	vec3 rgbNW = textureLod(source_color, vec3(uv_interp + vec2(-1.0, -1.0) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
-	vec3 rgbNE = textureLod(source_color, vec3(uv_interp + vec2(1.0, -1.0) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
-	vec3 rgbSW = textureLod(source_color, vec3(uv_interp + vec2(-1.0, 1.0) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
-	vec3 rgbSE = textureLod(source_color, vec3(uv_interp + vec2(1.0, 1.0) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
+	vec3 rgbNW = textureLod(source_color, vec3(uv_interp + vec2(-0.5, -0.5) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
+	vec3 rgbNE = textureLod(source_color, vec3(uv_interp + vec2(0.5, -0.5) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
+	vec3 rgbSW = textureLod(source_color, vec3(uv_interp + vec2(-0.5, 0.5) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
+	vec3 rgbSE = textureLod(source_color, vec3(uv_interp + vec2(0.5, 0.5) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
 #else
-	vec3 rgbNW = textureLod(source_color, uv_interp + vec2(-1.0, -1.0) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
-	vec3 rgbNE = textureLod(source_color, uv_interp + vec2(1.0, -1.0) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
-	vec3 rgbSW = textureLod(source_color, uv_interp + vec2(-1.0, 1.0) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
-	vec3 rgbSE = textureLod(source_color, uv_interp + vec2(1.0, 1.0) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
+	vec3 rgbNW = textureLod(source_color, uv_interp + vec2(-0.5, -0.5) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
+	vec3 rgbNE = textureLod(source_color, uv_interp + vec2(0.5, -0.5) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
+	vec3 rgbSW = textureLod(source_color, uv_interp + vec2(-0.5, 0.5) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
+	vec3 rgbSE = textureLod(source_color, uv_interp + vec2(0.5, 0.5) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
 #endif
 	vec3 rgbM = color;
 	vec3 luma = vec3(0.299, 0.587, 0.114);
@@ -462,12 +462,6 @@ void main() {
 	}
 #endif
 
-	if (params.use_debanding) {
-		// For best results, debanding should be done before tonemapping.
-		// Otherwise, we're adding noise to an already-quantized image.
-		color.rgb += screen_space_dither(gl_FragCoord.xy);
-	}
-
 	color.rgb = apply_tonemapping(color.rgb, params.white);
 
 	color.rgb = linear_to_srgb(color.rgb); // regular linear -> SRGB conversion
@@ -496,6 +490,12 @@ void main() {
 
 	if (params.use_color_correction) {
 		color.rgb = apply_color_correction(color.rgb);
+	}
+
+	if (params.use_debanding) {
+		// Debanding should be done at the end of tonemapping, but before writing to the LDR buffer.
+		// Otherwise, we're adding noise to an already-quantized image.
+		color.rgb += screen_space_dither(gl_FragCoord.xy);
 	}
 
 	frag_color = color;

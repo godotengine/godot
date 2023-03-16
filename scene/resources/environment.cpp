@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  environment.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  environment.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "environment.h"
 
@@ -78,7 +78,7 @@ float Environment::get_sky_custom_fov() const {
 
 void Environment::set_sky_rotation(const Vector3 &p_rotation) {
 	bg_sky_rotation = p_rotation;
-	RS::get_singleton()->environment_set_sky_orientation(environment, Basis(p_rotation));
+	RS::get_singleton()->environment_set_sky_orientation(environment, Basis::from_euler(p_rotation));
 }
 
 Vector3 Environment::get_sky_rotation() const {
@@ -1043,6 +1043,18 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 		}
 	}
 
+	if (p_property.name == "ambient_light_color" || p_property.name == "ambient_light_energy") {
+		if (ambient_source == AMBIENT_SOURCE_DISABLED) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
+
+	if (p_property.name == "ambient_light_sky_contribution") {
+		if (ambient_source == AMBIENT_SOURCE_DISABLED || ambient_source == AMBIENT_SOURCE_COLOR) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
+
 	if (p_property.name == "fog_aerial_perspective") {
 		if (bg_mode != BG_SKY) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
@@ -1096,13 +1108,6 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 
 	};
 
-	static const char *high_end_prefixes[] = {
-		"ssr_",
-		"ssao_",
-		nullptr
-
-	};
-
 	const char **prefixes = hide_prefixes;
 	while (*prefixes) {
 		String prefix = String(*prefixes);
@@ -1114,20 +1119,6 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 		}
 
 		prefixes++;
-	}
-
-	if (RenderingServer::get_singleton()->is_low_end()) {
-		prefixes = high_end_prefixes;
-		while (*prefixes) {
-			String prefix = String(*prefixes);
-
-			if (p_property.name.begins_with(prefix)) {
-				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-				return;
-			}
-
-			prefixes++;
-		}
 	}
 }
 
@@ -1550,5 +1541,6 @@ Environment::Environment() {
 }
 
 Environment::~Environment() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(environment);
 }

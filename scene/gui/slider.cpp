@@ -1,39 +1,39 @@
-/*************************************************************************/
-/*  slider.cpp                                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  slider.cpp                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "slider.h"
 
 #include "core/os/keyboard.h"
 
 Size2 Slider::get_minimum_size() const {
-	Size2i ss = theme_cache.slider_style->get_minimum_size() + theme_cache.slider_style->get_center_size();
+	Size2i ss = theme_cache.slider_style->get_minimum_size();
 	Size2i rs = theme_cache.grabber_icon->get_size();
 
 	if (orientation == HORIZONTAL) {
@@ -138,10 +138,10 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 			}
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
-		} else if (p_event->is_action("ui_home") && p_event->is_pressed()) {
+		} else if (p_event->is_action("ui_home", true) && p_event->is_pressed()) {
 			set_value(get_min());
 			accept_event();
-		} else if (p_event->is_action("ui_end") && p_event->is_pressed()) {
+		} else if (p_event->is_action("ui_end", true) && p_event->is_pressed()) {
 			set_value(get_max());
 			accept_event();
 		}
@@ -212,7 +212,7 @@ void Slider::_notification(int p_what) {
 			}
 
 			if (orientation == VERTICAL) {
-				int widget_width = style->get_minimum_size().width + style->get_center_size().width;
+				int widget_width = style->get_minimum_size().width;
 				double areasize = size.height - grabber->get_size().height;
 				style->draw(ci, Rect2i(Point2i(size.width / 2 - widget_width / 2, 0), Size2i(widget_width, size.height)));
 				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, size.height - areasize * ratio - grabber->get_size().height / 2), Size2i(widget_width, areasize * ratio + grabber->get_size().height / 2)));
@@ -227,9 +227,9 @@ void Slider::_notification(int p_what) {
 						tick->draw(ci, Point2i((size.width - widget_width) / 2, ofs));
 					}
 				}
-				grabber->draw(ci, Point2i(size.width / 2 - grabber->get_size().width / 2, size.height - ratio * areasize - grabber->get_size().height));
+				grabber->draw(ci, Point2i(size.width / 2 - grabber->get_size().width / 2 + get_theme_constant(SNAME("grabber_offset")), size.height - ratio * areasize - grabber->get_size().height));
 			} else {
-				int widget_height = style->get_minimum_size().height + style->get_center_size().height;
+				int widget_height = style->get_minimum_size().height;
 				double areasize = size.width - grabber->get_size().width;
 
 				style->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(size.width, widget_height)));
@@ -245,7 +245,7 @@ void Slider::_notification(int p_what) {
 						tick->draw(ci, Point2i(ofs, (size.height - widget_height) / 2));
 					}
 				}
-				grabber->draw(ci, Point2i(ratio * areasize, size.height / 2 - grabber->get_size().height / 2));
+				grabber->draw(ci, Point2i(ratio * areasize, size.height / 2 - grabber->get_size().height / 2 + get_theme_constant(SNAME("grabber_offset"))));
 			}
 		} break;
 	}

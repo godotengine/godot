@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ResourceFormatLoader" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ResourceFormatLoader" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Loads a specific resource type from a file.
 	</brief_description>
@@ -38,6 +38,13 @@
 				Gets the list of extensions for files this loader is able to read.
 			</description>
 		</method>
+		<method name="_get_resource_script_class" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns the script class name associated with the [Resource] under the given [param path]. If the resource has no script or the script isn't a named class, it should return [code]""[/code].
+			</description>
+		</method>
 		<method name="_get_resource_type" qualifiers="virtual const">
 			<return type="String" />
 			<param index="0" name="path" type="String" />
@@ -71,8 +78,17 @@
 				The [param cache_mode] property defines whether and how the cache should be used or updated when loading the resource. See [enum CacheMode] for details.
 			</description>
 		</method>
+		<method name="_recognize_path" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="type" type="StringName" />
+			<description>
+				Tells whether or not this loader should load a resource from its resource path for a given type.
+				If it is not implemented, the default behavior returns whether the path's extension is within the ones provided by [method _get_recognized_extensions], and if the type is within the ones provided by [method _get_resource_type].
+			</description>
+		</method>
 		<method name="_rename_dependencies" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="renames" type="Dictionary" />
 			<description>

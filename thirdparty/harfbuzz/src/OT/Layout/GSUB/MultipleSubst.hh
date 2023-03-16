@@ -14,7 +14,7 @@ struct MultipleSubst
   union {
   HBUINT16				format;         /* Format identifier */
   MultipleSubstFormat1_2<SmallTypes>	format1;
-#ifndef HB_NO_BORING_EXPANSION
+#ifndef HB_NO_BEYOND_64K
   MultipleSubstFormat1_2<MediumTypes>	format2;
 #endif
   } u;
@@ -28,26 +28,24 @@ struct MultipleSubst
     if (unlikely (!c->may_dispatch (this, &u.format))) return_trace (c->no_dispatch_return_value ());
     switch (u.format) {
     case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
-#ifndef HB_NO_BORING_EXPANSION
+#ifndef HB_NO_BEYOND_64K
     case 2: return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
 #endif
     default:return_trace (c->default_return_value ());
     }
   }
 
-  /* TODO This function is unused and not updated to 24bit GIDs. Should be done by using
-   * iterators. While at it perhaps using iterator of arrays of hb_codepoint_t instead. */
+  template<typename Iterator,
+           hb_requires (hb_is_sorted_iterator (Iterator))>
   bool serialize (hb_serialize_context_t *c,
-                  hb_sorted_array_t<const HBGlyphID16> glyphs,
-                  hb_array_t<const unsigned int> substitute_len_list,
-                  hb_array_t<const HBGlyphID16> substitute_glyphs_list)
+		  Iterator it)
   {
     TRACE_SERIALIZE (this);
     if (unlikely (!c->extend_min (u.format))) return_trace (false);
     unsigned int format = 1;
     u.format = format;
     switch (u.format) {
-    case 1: return_trace (u.format1.serialize (c, glyphs, substitute_len_list, substitute_glyphs_list));
+    case 1: return_trace (u.format1.serialize (c, it));
     default:return_trace (false);
     }
   }

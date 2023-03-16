@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  area_3d.cpp                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  area_3d.cpp                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "area_3d.h"
 
@@ -51,13 +51,13 @@ bool Area3D::is_gravity_a_point() const {
 	return gravity_is_point;
 }
 
-void Area3D::set_gravity_point_distance_scale(real_t p_scale) {
-	gravity_distance_scale = p_scale;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_GRAVITY_DISTANCE_SCALE, p_scale);
+void Area3D::set_gravity_point_unit_distance(real_t p_scale) {
+	gravity_point_unit_distance = p_scale;
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE, p_scale);
 }
 
-real_t Area3D::get_gravity_point_distance_scale() const {
-	return gravity_distance_scale;
+real_t Area3D::get_gravity_point_unit_distance() const {
+	return gravity_point_unit_distance;
 }
 
 void Area3D::set_gravity_point_center(const Vector3 &p_center) {
@@ -230,6 +230,7 @@ void Area3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 		return; //likely removed from the tree
 	}
 
+	lock_callback();
 	locked = true;
 
 	if (body_in) {
@@ -279,6 +280,7 @@ void Area3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 	}
 
 	locked = false;
+	unlock_callback();
 }
 
 void Area3D::_clear_monitoring() {
@@ -417,6 +419,7 @@ void Area3D::_area_inout(int p_status, const RID &p_area, ObjectID p_instance, i
 		return; //likely removed from the tree
 	}
 
+	lock_callback();
 	locked = true;
 
 	if (area_in) {
@@ -466,6 +469,7 @@ void Area3D::_area_inout(int p_status, const RID &p_area, ObjectID p_instance, i
 	}
 
 	locked = false;
+	unlock_callback();
 }
 
 bool Area3D::is_monitoring() const {
@@ -578,11 +582,11 @@ bool Area3D::is_using_reverb_bus() const {
 	return use_reverb_bus;
 }
 
-void Area3D::set_reverb_bus(const StringName &p_audio_bus) {
+void Area3D::set_reverb_bus_name(const StringName &p_audio_bus) {
 	reverb_bus = p_audio_bus;
 }
 
-StringName Area3D::get_reverb_bus() const {
+StringName Area3D::get_reverb_bus_name() const {
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 		if (AudioServer::get_singleton()->get_bus_name(i) == reverb_bus) {
 			return reverb_bus;
@@ -651,8 +655,8 @@ void Area3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_gravity_is_point", "enable"), &Area3D::set_gravity_is_point);
 	ClassDB::bind_method(D_METHOD("is_gravity_a_point"), &Area3D::is_gravity_a_point);
 
-	ClassDB::bind_method(D_METHOD("set_gravity_point_distance_scale", "distance_scale"), &Area3D::set_gravity_point_distance_scale);
-	ClassDB::bind_method(D_METHOD("get_gravity_point_distance_scale"), &Area3D::get_gravity_point_distance_scale);
+	ClassDB::bind_method(D_METHOD("set_gravity_point_unit_distance", "distance_scale"), &Area3D::set_gravity_point_unit_distance);
+	ClassDB::bind_method(D_METHOD("get_gravity_point_unit_distance"), &Area3D::get_gravity_point_unit_distance);
 
 	ClassDB::bind_method(D_METHOD("set_gravity_point_center", "center"), &Area3D::set_gravity_point_center);
 	ClassDB::bind_method(D_METHOD("get_gravity_point_center"), &Area3D::get_gravity_point_center);
@@ -711,8 +715,8 @@ void Area3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_reverb_bus", "enable"), &Area3D::set_use_reverb_bus);
 	ClassDB::bind_method(D_METHOD("is_using_reverb_bus"), &Area3D::is_using_reverb_bus);
 
-	ClassDB::bind_method(D_METHOD("set_reverb_bus", "name"), &Area3D::set_reverb_bus);
-	ClassDB::bind_method(D_METHOD("get_reverb_bus"), &Area3D::get_reverb_bus);
+	ClassDB::bind_method(D_METHOD("set_reverb_bus_name", "name"), &Area3D::set_reverb_bus_name);
+	ClassDB::bind_method(D_METHOD("get_reverb_bus_name"), &Area3D::get_reverb_bus_name);
 
 	ClassDB::bind_method(D_METHOD("set_reverb_amount", "amount"), &Area3D::set_reverb_amount);
 	ClassDB::bind_method(D_METHOD("get_reverb_amount"), &Area3D::get_reverb_amount);
@@ -737,7 +741,7 @@ void Area3D::_bind_methods() {
 	ADD_GROUP("Gravity", "gravity_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gravity_space_override", PROPERTY_HINT_ENUM, "Disabled,Combine,Combine-Replace,Replace,Replace-Combine", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_gravity_space_override_mode", "get_gravity_space_override_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gravity_point", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_gravity_is_point", "is_gravity_a_point");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_point_distance_scale", PROPERTY_HINT_RANGE, "0,1024,0.001,or_greater,exp"), "set_gravity_point_distance_scale", "get_gravity_point_distance_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_point_unit_distance", PROPERTY_HINT_RANGE, "0,1024,0.001,or_greater,exp,suffix:m"), "set_gravity_point_unit_distance", "get_gravity_point_unit_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "gravity_point_center", PROPERTY_HINT_NONE, "suffix:m"), "set_gravity_point_center", "get_gravity_point_center");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "gravity_direction"), "set_gravity_direction", "get_gravity_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity", PROPERTY_HINT_RANGE, U"-32,32,0.001,or_less,or_greater,suffix:m/s\u00B2"), "set_gravity", "get_gravity");
@@ -760,8 +764,8 @@ void Area3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "audio_bus_name", PROPERTY_HINT_ENUM, ""), "set_audio_bus_name", "get_audio_bus_name");
 
 	ADD_GROUP("Reverb Bus", "reverb_bus_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reverb_bus_enable"), "set_use_reverb_bus", "is_using_reverb_bus");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "reverb_bus_name", PROPERTY_HINT_ENUM, ""), "set_reverb_bus", "get_reverb_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reverb_bus_enabled"), "set_use_reverb_bus", "is_using_reverb_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "reverb_bus_name", PROPERTY_HINT_ENUM, ""), "set_reverb_bus_name", "get_reverb_bus_name");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "reverb_bus_amount", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_reverb_amount", "get_reverb_amount");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "reverb_bus_uniformity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_reverb_uniformity", "get_reverb_uniformity");
 

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  line_edit.cpp                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  line_edit.cpp                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "line_edit.h"
 
@@ -84,6 +84,7 @@ void LineEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
 	}
 
 	shift_selection_check_post(p_select);
+	_reset_caret_blink_timer();
 }
 
 void LineEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
@@ -116,6 +117,7 @@ void LineEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 	}
 
 	shift_selection_check_post(p_select);
+	_reset_caret_blink_timer();
 }
 
 void LineEdit::_move_caret_start(bool p_select) {
@@ -247,7 +249,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 		if (b->is_pressed() && b->get_button_index() == MouseButton::RIGHT && context_menu_enabled) {
-			_ensure_menu();
+			_update_context_menu();
 			menu->set_position(get_screen_position() + get_local_mouse_position());
 			menu->reset_size();
 			menu->popup();
@@ -272,6 +274,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 			grab_focus();
+			accept_event();
 			return;
 		}
 
@@ -372,10 +375,16 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				selection.drag_attempt = false;
 			}
 
+			if (pending_select_all_on_focus) {
+				select_all();
+				pending_select_all_on_focus = false;
+			}
+
 			show_virtual_keyboard();
 		}
 
 		queue_redraw();
+		return;
 	}
 
 	Ref<InputEventMouseMotion> m = p_event;
@@ -389,7 +398,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if ((m->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
+		if (m->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
 			if (selection.creating) {
 				set_caret_at_pixel_pos(m->get_position().x);
 				selection_fill_at_caret();
@@ -400,6 +409,8 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			drag_caret_force_displayed = true;
 			set_caret_at_pixel_pos(m->get_position().x);
 		}
+
+		return;
 	}
 
 	Ref<InputEventKey> k = p_event;
@@ -447,12 +458,15 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (context_menu_enabled) {
 			if (k->is_action("ui_menu", true)) {
-				_ensure_menu();
+				_update_context_menu();
 				Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2);
 				menu->set_position(get_screen_position() + pos);
 				menu->reset_size();
 				menu->popup();
 				menu->grab_focus();
+
+				accept_event();
+				return;
 			}
 		}
 
@@ -462,6 +476,8 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 				DisplayServer::get_singleton()->virtual_keyboard_hide();
 			}
+			accept_event();
+			return;
 		}
 
 		if (is_shortcut_keys_enabled()) {
@@ -601,6 +617,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				_text_changed();
 			}
 			accept_event();
+			return;
 		}
 	}
 }
@@ -763,18 +780,18 @@ void LineEdit::_notification(int p_what) {
 
 		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
 			window_has_focus = true;
-			draw_caret = true;
+			_validate_caret_can_draw();
 			queue_redraw();
 		} break;
 
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
 			window_has_focus = false;
-			draw_caret = false;
+			_validate_caret_can_draw();
 			queue_redraw();
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (caret_blinking) {
+			if (caret_blink_enabled && caret_can_draw) {
 				caret_blink_timer += get_process_delta_time();
 
 				if (caret_blink_timer >= caret_blink_interval) {
@@ -785,10 +802,6 @@ void LineEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			if ((!has_focus() && !(menu && menu->has_focus()) && !caret_force_displayed) || !window_has_focus) {
-				draw_caret = false;
-			}
-
 			int width, height;
 			bool rtl = is_layout_rtl();
 
@@ -801,7 +814,6 @@ void LineEdit::_notification(int p_what) {
 			Ref<StyleBox> style = theme_cache.normal;
 			if (!is_editable()) {
 				style = theme_cache.read_only;
-				draw_caret = false;
 			}
 			Ref<Font> font = theme_cache.font;
 
@@ -822,7 +834,7 @@ void LineEdit::_notification(int p_what) {
 				case HORIZONTAL_ALIGNMENT_FILL:
 				case HORIZONTAL_ALIGNMENT_LEFT: {
 					if (rtl) {
-						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - style->get_margin(SIDE_RIGHT) - (text_width)));
+						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - Math::ceil(style->get_margin(SIDE_RIGHT) + (text_width))));
 					} else {
 						x_ofs = style->get_offset().x;
 					}
@@ -838,7 +850,7 @@ void LineEdit::_notification(int p_what) {
 					if (rtl) {
 						x_ofs = style->get_offset().x;
 					} else {
-						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - style->get_margin(SIDE_RIGHT) - (text_width)));
+						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - Math::ceil(style->get_margin(SIDE_RIGHT) + (text_width))));
 					}
 				} break;
 			}
@@ -948,30 +960,55 @@ void LineEdit::_notification(int p_what) {
 
 			// Draw carets.
 			ofs.x = x_ofs + scroll_offset;
-			if (draw_caret || drag_caret_force_displayed) {
+			if ((caret_can_draw && draw_caret) || drag_caret_force_displayed) {
 				// Prevent carets from disappearing at theme scales below 1.0 (if the caret width is 1).
 				const int caret_width = theme_cache.caret_width * MAX(1, theme_cache.base_scale);
 
-				if (ime_text.length() == 0) {
+				if (ime_text.is_empty() || ime_selection.y == 0) {
 					// Normal caret.
-					CaretInfo caret = TS->shaped_text_get_carets(text_rid, caret_column);
-
-					if (caret.l_caret == Rect2() && caret.t_caret == Rect2()) {
+					CaretInfo caret = TS->shaped_text_get_carets(text_rid, ime_text.is_empty() ? caret_column : caret_column + ime_selection.x);
+					if (using_placeholder || (caret.l_caret == Rect2() && caret.t_caret == Rect2())) {
 						// No carets, add one at the start.
 						int h = theme_cache.font->get_height(theme_cache.font_size);
 						int y = style->get_offset().y + (y_area - h) / 2;
-						if (rtl) {
-							caret.l_dir = TextServer::DIRECTION_RTL;
-							caret.l_caret = Rect2(Vector2(ofs_max, y), Size2(caret_width, h));
-						} else {
-							caret.l_dir = TextServer::DIRECTION_LTR;
-							caret.l_caret = Rect2(Vector2(x_ofs, y), Size2(caret_width, h));
+						caret.l_dir = (rtl) ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR;
+						switch (alignment) {
+							case HORIZONTAL_ALIGNMENT_FILL:
+							case HORIZONTAL_ALIGNMENT_LEFT: {
+								if (rtl) {
+									caret.l_caret = Rect2(Vector2(ofs_max, y), Size2(caret_width, h));
+								} else {
+									caret.l_caret = Rect2(Vector2(style->get_offset().x, y), Size2(caret_width, h));
+								}
+							} break;
+							case HORIZONTAL_ALIGNMENT_CENTER: {
+								caret.l_caret = Rect2(Vector2(size.x / 2, y), Size2(caret_width, h));
+							} break;
+							case HORIZONTAL_ALIGNMENT_RIGHT: {
+								if (rtl) {
+									caret.l_caret = Rect2(Vector2(style->get_offset().x, y), Size2(caret_width, h));
+								} else {
+									caret.l_caret = Rect2(Vector2(ofs_max, y), Size2(caret_width, h));
+								}
+							} break;
 						}
+
 						RenderingServer::get_singleton()->canvas_item_add_rect(ci, caret.l_caret, caret_color);
 					} else {
 						if (caret.l_caret != Rect2() && caret.l_dir == TextServer::DIRECTION_AUTO) {
 							// Draw extra marker on top of mid caret.
-							Rect2 trect = Rect2(caret.l_caret.position.x - 3 * caret_width, caret.l_caret.position.y, 6 * caret_width, caret_width);
+							Rect2 trect = Rect2(caret.l_caret.position.x - 2.5 * caret_width, caret.l_caret.position.y, 6 * caret_width, caret_width);
+							trect.position += ofs;
+							RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
+						} else if (caret.l_caret != Rect2() && caret.t_caret != Rect2() && caret.l_dir != caret.t_dir) {
+							// Draw extra direction marker on top of split caret.
+							float d = (caret.l_dir == TextServer::DIRECTION_LTR) ? 0.5 : -3;
+							Rect2 trect = Rect2(caret.l_caret.position.x + d * caret_width, caret.l_caret.position.y + caret.l_caret.size.y - caret_width, 3 * caret_width, caret_width);
+							trect.position += ofs;
+							RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
+
+							d = (caret.t_dir == TextServer::DIRECTION_LTR) ? 0.5 : -3;
+							trect = Rect2(caret.t_caret.position.x + d * caret_width, caret.t_caret.position.y, 3 * caret_width, caret_width);
 							trect.position += ofs;
 							RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
 						}
@@ -985,7 +1022,8 @@ void LineEdit::_notification(int p_what) {
 
 						RenderingServer::get_singleton()->canvas_item_add_rect(ci, caret.t_caret, caret_color);
 					}
-				} else {
+				}
+				if (!ime_text.is_empty()) {
 					{
 						// IME intermediate text range.
 						Vector<Vector2> sel = TS->shaped_text_get_selection(text_rid, caret_column, caret_column + ime_text.length());
@@ -1006,20 +1044,22 @@ void LineEdit::_notification(int p_what) {
 					}
 					{
 						// IME caret.
-						Vector<Vector2> sel = TS->shaped_text_get_selection(text_rid, caret_column + ime_selection.x, caret_column + ime_selection.x + ime_selection.y);
-						for (int i = 0; i < sel.size(); i++) {
-							Rect2 rect = Rect2(sel[i].x + ofs.x, ofs.y, sel[i].y - sel[i].x, text_height);
-							if (rect.position.x + rect.size.x <= x_ofs || rect.position.x > ofs_max) {
-								continue;
+						if (ime_selection.y > 0) {
+							Vector<Vector2> sel = TS->shaped_text_get_selection(text_rid, caret_column + ime_selection.x, caret_column + ime_selection.x + ime_selection.y);
+							for (int i = 0; i < sel.size(); i++) {
+								Rect2 rect = Rect2(sel[i].x + ofs.x, ofs.y, sel[i].y - sel[i].x, text_height);
+								if (rect.position.x + rect.size.x <= x_ofs || rect.position.x > ofs_max) {
+									continue;
+								}
+								if (rect.position.x < x_ofs) {
+									rect.size.x -= (x_ofs - rect.position.x);
+									rect.position.x = x_ofs;
+								} else if (rect.position.x + rect.size.x > ofs_max) {
+									rect.size.x = ofs_max - rect.position.x;
+								}
+								rect.size.y = caret_width * 3;
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, rect, caret_color);
 							}
-							if (rect.position.x < x_ofs) {
-								rect.size.x -= (x_ofs - rect.position.x);
-								rect.position.x = x_ofs;
-							} else if (rect.position.x + rect.size.x > ofs_max) {
-								rect.size.x = ofs_max - rect.position.x;
-							}
-							rect.size.y = caret_width * 3;
-							RenderingServer::get_singleton()->canvas_item_add_rect(ci, rect, caret_color);
 						}
 					}
 				}
@@ -1028,36 +1068,41 @@ void LineEdit::_notification(int p_what) {
 			if (has_focus()) {
 				if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
 					DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
-					DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + Point2(using_placeholder ? 0 : x_ofs, y_ofs + TS->shaped_text_get_size(text_rid).y), get_viewport()->get_window_id());
+					Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2) + get_global_position();
+					if (get_window()->get_embedder()) {
+						pos += get_viewport()->get_popup_base_transform().get_origin();
+					}
+					DisplayServer::get_singleton()->window_set_ime_position(pos, get_viewport()->get_window_id());
 				}
 			}
 		} break;
 
 		case NOTIFICATION_FOCUS_ENTER: {
-			if (!caret_force_displayed) {
-				if (caret_blink_enabled) {
-					if (!caret_blinking) {
-						caret_blinking = true;
-						caret_blink_timer = 0.0;
-					}
+			_validate_caret_can_draw();
+
+			if (select_all_on_focus) {
+				if (Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) {
+					// Select all when the mouse button is up.
+					pending_select_all_on_focus = true;
 				} else {
-					draw_caret = true;
+					select_all();
 				}
 			}
 
 			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
 				DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
-				Point2 caret_column = Point2(get_caret_column(), 1) * get_minimum_size().height;
-				DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + caret_column, get_viewport()->get_window_id());
+				Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2) + get_global_position();
+				if (get_window()->get_embedder()) {
+					pos += get_viewport()->get_popup_base_transform().get_origin();
+				}
+				DisplayServer::get_singleton()->window_set_ime_position(pos, get_viewport()->get_window_id());
 			}
 
 			show_virtual_keyboard();
 		} break;
 
 		case NOTIFICATION_FOCUS_EXIT: {
-			if (caret_blink_enabled && !caret_force_displayed) {
-				caret_blinking = false;
-			}
+			_validate_caret_can_draw();
 
 			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
 				DisplayServer::get_singleton()->window_set_ime_position(Point2(), get_viewport()->get_window_id());
@@ -1081,6 +1126,11 @@ void LineEdit::_notification(int p_what) {
 			if (has_focus()) {
 				ime_text = DisplayServer::get_singleton()->ime_get_text();
 				ime_selection = DisplayServer::get_singleton()->ime_get_selection();
+
+				if (!ime_text.is_empty()) {
+					selection_delete();
+				}
+
 				_shape();
 				set_caret_column(caret_column); // Update scroll_offset
 
@@ -1363,21 +1413,18 @@ bool LineEdit::is_caret_blink_enabled() const {
 }
 
 void LineEdit::set_caret_blink_enabled(const bool p_enabled) {
+	if (caret_blink_enabled == p_enabled) {
+		return;
+	}
+
 	caret_blink_enabled = p_enabled;
 	set_process_internal(p_enabled);
 
-	if (has_focus() || caret_force_displayed) {
-		if (p_enabled) {
-			if (!caret_blinking) {
-				caret_blinking = true;
-				caret_blink_timer = 0.0;
-			}
-		} else {
-			caret_blinking = false;
-		}
+	draw_caret = !caret_blink_enabled;
+	if (caret_blink_enabled) {
+		caret_blink_timer = 0.0;
 	}
-
-	draw_caret = true;
+	queue_redraw();
 
 	notify_property_list_changed();
 }
@@ -1387,8 +1434,13 @@ bool LineEdit::is_caret_force_displayed() const {
 }
 
 void LineEdit::set_caret_force_displayed(const bool p_enabled) {
+	if (caret_force_displayed == p_enabled) {
+		return;
+	}
+
 	caret_force_displayed = p_enabled;
-	set_caret_blink_enabled(caret_blink_enabled);
+	_validate_caret_can_draw();
+
 	queue_redraw();
 }
 
@@ -1404,7 +1456,7 @@ void LineEdit::set_caret_blink_interval(const float p_interval) {
 void LineEdit::_reset_caret_blink_timer() {
 	if (caret_blink_enabled) {
 		draw_caret = true;
-		if (has_focus()) {
+		if (caret_can_draw) {
 			caret_blink_timer = 0.0;
 			queue_redraw();
 		}
@@ -1413,9 +1465,17 @@ void LineEdit::_reset_caret_blink_timer() {
 
 void LineEdit::_toggle_draw_caret() {
 	draw_caret = !draw_caret;
-	if (is_visible_in_tree() && ((has_focus() && window_has_focus) || caret_force_displayed)) {
+	if (is_visible_in_tree() && caret_can_draw) {
 		queue_redraw();
 	}
+}
+
+void LineEdit::_validate_caret_can_draw() {
+	if (caret_blink_enabled) {
+		draw_caret = true;
+		caret_blink_timer = 0.0;
+	}
+	caret_can_draw = editable && (window_has_focus || (menu && menu->has_focus())) && (has_focus() || caret_force_displayed);
 }
 
 void LineEdit::delete_char() {
@@ -1682,6 +1742,10 @@ void LineEdit::insert_text_at_caret(String p_text) {
 		input_direction = (TextDirection)dir;
 	}
 	set_caret_column(caret_column + p_text.length());
+
+	if (!ime_text.is_empty()) {
+		_shape();
+	}
 }
 
 void LineEdit::clear_internal() {
@@ -1808,6 +1872,7 @@ void LineEdit::set_editable(bool p_editable) {
 	}
 
 	editable = p_editable;
+	_validate_caret_can_draw();
 
 	update_minimum_size();
 	queue_redraw();
@@ -2030,7 +2095,9 @@ bool LineEdit::is_menu_visible() const {
 }
 
 PopupMenu *LineEdit::get_menu() const {
-	const_cast<LineEdit *>(this)->_ensure_menu();
+	if (!menu) {
+		const_cast<LineEdit *>(this)->_generate_context_menu();
+	}
 	return menu;
 }
 
@@ -2153,6 +2220,18 @@ bool LineEdit::is_flat() const {
 	return flat;
 }
 
+void LineEdit::set_select_all_on_focus(bool p_enabled) {
+	select_all_on_focus = p_enabled;
+}
+
+bool LineEdit::is_select_all_on_focus() const {
+	return select_all_on_focus;
+}
+
+void LineEdit::clear_pending_select_all_on_focus() {
+	pending_select_all_on_focus = false;
+}
+
 void LineEdit::_text_changed() {
 	_emit_text_change();
 	_clear_redo();
@@ -2164,6 +2243,12 @@ void LineEdit::_emit_text_change() {
 }
 
 void LineEdit::_shape() {
+	const Ref<Font> &font = theme_cache.font;
+	int font_size = theme_cache.font_size;
+	if (font.is_null()) {
+		return;
+	}
+
 	Size2 old_size = TS->shaped_text_get_size(text_rid);
 	TS->shaped_text_clear(text_rid);
 
@@ -2186,9 +2271,6 @@ void LineEdit::_shape() {
 	}
 	TS->shaped_text_set_preserve_control(text_rid, draw_control_chars);
 
-	const Ref<Font> &font = theme_cache.font;
-	int font_size = theme_cache.font_size;
-	ERR_FAIL_COND(font.is_null());
 	TS->shaped_text_add_string(text_rid, t, font->get_rids(), font_size, font->get_opentype_features(), language);
 	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 		TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
@@ -2273,6 +2355,115 @@ Key LineEdit::_get_menu_action_accelerator(const String &p_action) {
 	}
 }
 
+void LineEdit::_generate_context_menu() {
+	menu = memnew(PopupMenu);
+	add_child(menu, false, INTERNAL_MODE_FRONT);
+
+	menu_dir = memnew(PopupMenu);
+	menu_dir->set_name("DirMenu");
+	menu_dir->add_radio_check_item(RTR("Same as Layout Direction"), MENU_DIR_INHERITED);
+	menu_dir->add_radio_check_item(RTR("Auto-Detect Direction"), MENU_DIR_AUTO);
+	menu_dir->add_radio_check_item(RTR("Left-to-Right"), MENU_DIR_LTR);
+	menu_dir->add_radio_check_item(RTR("Right-to-Left"), MENU_DIR_RTL);
+	menu->add_child(menu_dir, false, INTERNAL_MODE_FRONT);
+
+	menu_ctl = memnew(PopupMenu);
+	menu_ctl->set_name("CTLMenu");
+	menu_ctl->add_item(RTR("Left-to-Right Mark (LRM)"), MENU_INSERT_LRM);
+	menu_ctl->add_item(RTR("Right-to-Left Mark (RLM)"), MENU_INSERT_RLM);
+	menu_ctl->add_item(RTR("Start of Left-to-Right Embedding (LRE)"), MENU_INSERT_LRE);
+	menu_ctl->add_item(RTR("Start of Right-to-Left Embedding (RLE)"), MENU_INSERT_RLE);
+	menu_ctl->add_item(RTR("Start of Left-to-Right Override (LRO)"), MENU_INSERT_LRO);
+	menu_ctl->add_item(RTR("Start of Right-to-Left Override (RLO)"), MENU_INSERT_RLO);
+	menu_ctl->add_item(RTR("Pop Direction Formatting (PDF)"), MENU_INSERT_PDF);
+	menu_ctl->add_separator();
+	menu_ctl->add_item(RTR("Arabic Letter Mark (ALM)"), MENU_INSERT_ALM);
+	menu_ctl->add_item(RTR("Left-to-Right Isolate (LRI)"), MENU_INSERT_LRI);
+	menu_ctl->add_item(RTR("Right-to-Left Isolate (RLI)"), MENU_INSERT_RLI);
+	menu_ctl->add_item(RTR("First Strong Isolate (FSI)"), MENU_INSERT_FSI);
+	menu_ctl->add_item(RTR("Pop Direction Isolate (PDI)"), MENU_INSERT_PDI);
+	menu_ctl->add_separator();
+	menu_ctl->add_item(RTR("Zero-Width Joiner (ZWJ)"), MENU_INSERT_ZWJ);
+	menu_ctl->add_item(RTR("Zero-Width Non-Joiner (ZWNJ)"), MENU_INSERT_ZWNJ);
+	menu_ctl->add_item(RTR("Word Joiner (WJ)"), MENU_INSERT_WJ);
+	menu_ctl->add_item(RTR("Soft Hyphen (SHY)"), MENU_INSERT_SHY);
+	menu->add_child(menu_ctl, false, INTERNAL_MODE_FRONT);
+
+	menu->add_item(RTR("Cut"), MENU_CUT);
+	menu->add_item(RTR("Copy"), MENU_COPY);
+	menu->add_item(RTR("Paste"), MENU_PASTE);
+	menu->add_separator();
+	menu->add_item(RTR("Select All"), MENU_SELECT_ALL);
+	menu->add_item(RTR("Clear"), MENU_CLEAR);
+	menu->add_separator();
+	menu->add_item(RTR("Undo"), MENU_UNDO);
+	menu->add_item(RTR("Redo"), MENU_REDO);
+	menu->add_separator();
+	menu->add_submenu_item(RTR("Text Writing Direction"), "DirMenu", MENU_SUBMENU_TEXT_DIR);
+	menu->add_separator();
+	menu->add_check_item(RTR("Display Control Characters"), MENU_DISPLAY_UCC);
+	menu->add_submenu_item(RTR("Insert Control Character"), "CTLMenu", MENU_SUBMENU_INSERT_UCC);
+
+	menu->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
+	menu_dir->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
+	menu_ctl->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
+
+	menu->connect(SNAME("focus_entered"), callable_mp(this, &LineEdit::_validate_caret_can_draw));
+	menu->connect(SNAME("focus_exited"), callable_mp(this, &LineEdit::_validate_caret_can_draw));
+}
+
+void LineEdit::_update_context_menu() {
+	if (!menu) {
+		_generate_context_menu();
+	}
+
+	int idx = -1;
+
+#define MENU_ITEM_ACTION_DISABLED(m_menu, m_id, m_action, m_disabled)                                                  \
+	idx = m_menu->get_item_index(m_id);                                                                                \
+	if (idx >= 0) {                                                                                                    \
+		m_menu->set_item_accelerator(idx, shortcut_keys_enabled ? _get_menu_action_accelerator(m_action) : Key::NONE); \
+		m_menu->set_item_disabled(idx, m_disabled);                                                                    \
+	}
+
+#define MENU_ITEM_ACTION(m_menu, m_id, m_action)                                                                       \
+	idx = m_menu->get_item_index(m_id);                                                                                \
+	if (idx >= 0) {                                                                                                    \
+		m_menu->set_item_accelerator(idx, shortcut_keys_enabled ? _get_menu_action_accelerator(m_action) : Key::NONE); \
+	}
+
+#define MENU_ITEM_DISABLED(m_menu, m_id, m_disabled) \
+	idx = m_menu->get_item_index(m_id);              \
+	if (idx >= 0) {                                  \
+		m_menu->set_item_disabled(idx, m_disabled);  \
+	}
+
+#define MENU_ITEM_CHECKED(m_menu, m_id, m_checked) \
+	idx = m_menu->get_item_index(m_id);            \
+	if (idx >= 0) {                                \
+		m_menu->set_item_checked(idx, m_checked);  \
+	}
+
+	MENU_ITEM_ACTION_DISABLED(menu, MENU_CUT, "ui_cut", !editable)
+	MENU_ITEM_ACTION(menu, MENU_COPY, "ui_copy")
+	MENU_ITEM_ACTION_DISABLED(menu, MENU_PASTE, "ui_paste", !editable)
+	MENU_ITEM_ACTION_DISABLED(menu, MENU_SELECT_ALL, "ui_text_select_all", !selecting_enabled)
+	MENU_ITEM_DISABLED(menu, MENU_CLEAR, !editable)
+	MENU_ITEM_ACTION_DISABLED(menu, MENU_UNDO, "ui_undo", !editable || !has_undo())
+	MENU_ITEM_ACTION_DISABLED(menu, MENU_REDO, "ui_redo", !editable || !has_redo())
+	MENU_ITEM_CHECKED(menu_dir, MENU_DIR_INHERITED, text_direction == TEXT_DIRECTION_INHERITED)
+	MENU_ITEM_CHECKED(menu_dir, MENU_DIR_AUTO, text_direction == TEXT_DIRECTION_AUTO)
+	MENU_ITEM_CHECKED(menu_dir, MENU_DIR_LTR, text_direction == TEXT_DIRECTION_LTR)
+	MENU_ITEM_CHECKED(menu_dir, MENU_DIR_RTL, text_direction == TEXT_DIRECTION_RTL)
+	MENU_ITEM_CHECKED(menu, MENU_DISPLAY_UCC, draw_control_chars)
+	MENU_ITEM_DISABLED(menu, MENU_SUBMENU_INSERT_UCC, !editable)
+
+#undef MENU_ITEM_ACTION_DISABLED
+#undef MENU_ITEM_ACTION
+#undef MENU_ITEM_DISABLED
+#undef MENU_ITEM_CHECKED
+}
+
 void LineEdit::_validate_property(PropertyInfo &p_property) const {
 	if (!caret_blink_enabled && p_property.name == "caret_blink_interval") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
@@ -2353,6 +2544,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_right_icon"), &LineEdit::get_right_icon);
 	ClassDB::bind_method(D_METHOD("set_flat", "enabled"), &LineEdit::set_flat);
 	ClassDB::bind_method(D_METHOD("is_flat"), &LineEdit::is_flat);
+	ClassDB::bind_method(D_METHOD("set_select_all_on_focus", "enabled"), &LineEdit::set_select_all_on_focus);
+	ClassDB::bind_method(D_METHOD("is_select_all_on_focus"), &LineEdit::is_select_all_on_focus);
 
 	ADD_SIGNAL(MethodInfo("text_changed", PropertyInfo(Variant::STRING, "new_text")));
 	ADD_SIGNAL(MethodInfo("text_change_rejected", PropertyInfo(Variant::STRING, "rejected_substring")));
@@ -2365,11 +2558,13 @@ void LineEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(MENU_SELECT_ALL);
 	BIND_ENUM_CONSTANT(MENU_UNDO);
 	BIND_ENUM_CONSTANT(MENU_REDO);
+	BIND_ENUM_CONSTANT(MENU_SUBMENU_TEXT_DIR);
 	BIND_ENUM_CONSTANT(MENU_DIR_INHERITED);
 	BIND_ENUM_CONSTANT(MENU_DIR_AUTO);
 	BIND_ENUM_CONSTANT(MENU_DIR_LTR);
 	BIND_ENUM_CONSTANT(MENU_DIR_RTL);
 	BIND_ENUM_CONSTANT(MENU_DISPLAY_UCC);
+	BIND_ENUM_CONSTANT(MENU_SUBMENU_INSERT_UCC);
 	BIND_ENUM_CONSTANT(MENU_INSERT_LRM);
 	BIND_ENUM_CONSTANT(MENU_INSERT_RLM);
 	BIND_ENUM_CONSTANT(MENU_INSERT_LRE);
@@ -2416,6 +2611,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "right_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_right_icon", "get_right_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_control_chars"), "set_draw_control_chars", "get_draw_control_chars");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_all_on_focus"), "set_select_all_on_focus", "is_select_all_on_focus");
 
 	ADD_GROUP("Caret", "caret_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), "set_caret_blink_enabled", "is_caret_blink_enabled");
@@ -2429,84 +2625,6 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "structured_text_bidi_override", PROPERTY_HINT_ENUM, "Default,URI,File,Email,List,None,Custom"), "set_structured_text_bidi_override", "get_structured_text_bidi_override");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
-}
-
-void LineEdit::_ensure_menu() {
-	if (!menu) {
-		menu = memnew(PopupMenu);
-		add_child(menu, false, INTERNAL_MODE_FRONT);
-
-		menu_dir = memnew(PopupMenu);
-		menu_dir->set_name("DirMenu");
-		menu_dir->add_radio_check_item(RTR("Same as Layout Direction"), MENU_DIR_INHERITED);
-		menu_dir->add_radio_check_item(RTR("Auto-Detect Direction"), MENU_DIR_AUTO);
-		menu_dir->add_radio_check_item(RTR("Left-to-Right"), MENU_DIR_LTR);
-		menu_dir->add_radio_check_item(RTR("Right-to-Left"), MENU_DIR_RTL);
-		menu->add_child(menu_dir, false, INTERNAL_MODE_FRONT);
-
-		menu_ctl = memnew(PopupMenu);
-		menu_ctl->set_name("CTLMenu");
-		menu_ctl->add_item(RTR("Left-to-Right Mark (LRM)"), MENU_INSERT_LRM);
-		menu_ctl->add_item(RTR("Right-to-Left Mark (RLM)"), MENU_INSERT_RLM);
-		menu_ctl->add_item(RTR("Start of Left-to-Right Embedding (LRE)"), MENU_INSERT_LRE);
-		menu_ctl->add_item(RTR("Start of Right-to-Left Embedding (RLE)"), MENU_INSERT_RLE);
-		menu_ctl->add_item(RTR("Start of Left-to-Right Override (LRO)"), MENU_INSERT_LRO);
-		menu_ctl->add_item(RTR("Start of Right-to-Left Override (RLO)"), MENU_INSERT_RLO);
-		menu_ctl->add_item(RTR("Pop Direction Formatting (PDF)"), MENU_INSERT_PDF);
-		menu_ctl->add_separator();
-		menu_ctl->add_item(RTR("Arabic Letter Mark (ALM)"), MENU_INSERT_ALM);
-		menu_ctl->add_item(RTR("Left-to-Right Isolate (LRI)"), MENU_INSERT_LRI);
-		menu_ctl->add_item(RTR("Right-to-Left Isolate (RLI)"), MENU_INSERT_RLI);
-		menu_ctl->add_item(RTR("First Strong Isolate (FSI)"), MENU_INSERT_FSI);
-		menu_ctl->add_item(RTR("Pop Direction Isolate (PDI)"), MENU_INSERT_PDI);
-		menu_ctl->add_separator();
-		menu_ctl->add_item(RTR("Zero-Width Joiner (ZWJ)"), MENU_INSERT_ZWJ);
-		menu_ctl->add_item(RTR("Zero-Width Non-Joiner (ZWNJ)"), MENU_INSERT_ZWNJ);
-		menu_ctl->add_item(RTR("Word Joiner (WJ)"), MENU_INSERT_WJ);
-		menu_ctl->add_item(RTR("Soft Hyphen (SHY)"), MENU_INSERT_SHY);
-		menu->add_child(menu_ctl, false, INTERNAL_MODE_FRONT);
-
-		menu->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
-		menu_dir->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
-		menu_ctl->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
-	}
-
-	// Reorganize context menu.
-	menu->clear();
-	if (editable) {
-		menu->add_item(RTR("Cut"), MENU_CUT, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_cut") : Key::NONE);
-	}
-	menu->add_item(RTR("Copy"), MENU_COPY, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_copy") : Key::NONE);
-	if (editable) {
-		menu->add_item(RTR("Paste"), MENU_PASTE, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_paste") : Key::NONE);
-	}
-	menu->add_separator();
-	if (is_selecting_enabled()) {
-		menu->add_item(RTR("Select All"), MENU_SELECT_ALL, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_text_select_all") : Key::NONE);
-	}
-	if (editable) {
-		menu->add_item(RTR("Clear"), MENU_CLEAR);
-		menu->add_separator();
-		menu->add_item(RTR("Undo"), MENU_UNDO, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_undo") : Key::NONE);
-		menu->add_item(RTR("Redo"), MENU_REDO, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_redo") : Key::NONE);
-	}
-	menu->add_separator();
-	menu->add_submenu_item(RTR("Text Writing Direction"), "DirMenu");
-	menu->add_separator();
-	menu->add_check_item(RTR("Display Control Characters"), MENU_DISPLAY_UCC);
-	menu->set_item_checked(menu->get_item_index(MENU_DISPLAY_UCC), draw_control_chars);
-	if (editable) {
-		menu->add_submenu_item(RTR("Insert Control Character"), "CTLMenu");
-	}
-	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_INHERITED), text_direction == TEXT_DIRECTION_INHERITED);
-	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_AUTO), text_direction == TEXT_DIRECTION_AUTO);
-	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_LTR), text_direction == TEXT_DIRECTION_LTR);
-	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_RTL), text_direction == TEXT_DIRECTION_RTL);
-
-	if (editable) {
-		menu->set_item_disabled(menu->get_item_index(MENU_UNDO), !has_undo());
-		menu->set_item_disabled(menu->get_item_index(MENU_REDO), !has_redo());
-	}
 }
 
 LineEdit::LineEdit(const String &p_placeholder) {
@@ -2523,7 +2641,7 @@ LineEdit::LineEdit(const String &p_placeholder) {
 
 	set_placeholder(p_placeholder);
 
-	set_editable(true); // Initialise to opposite first, so we get past the early-out in set_editable.
+	set_editable(true); // Initialize to opposite first, so we get past the early-out in set_editable.
 }
 
 LineEdit::~LineEdit() {

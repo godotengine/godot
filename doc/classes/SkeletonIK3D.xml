@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SkeletonIK3D" inherits="Node" is_deprecated="true" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="SkeletonIK3D" inherits="Node" is_deprecated="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		SkeletonIK3D is used to place the end bone of a [Skeleton3D] bone chain at a certain point in 3D by rotating all bones in the chain accordingly.
 	</brief_description>

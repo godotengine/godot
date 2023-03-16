@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  skeleton_ik_3d.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  skeleton_ik_3d.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "skeleton_ik_3d.h"
 
@@ -249,6 +249,26 @@ void FabrikInverseKinematic::make_goal(Task *p_task, const Transform3D &p_invers
 	}
 }
 
+static Vector3 get_bone_axis_forward_vector(Skeleton3D *skeleton, int p_bone) {
+	// If it is a child/leaf bone...
+	if (skeleton->get_bone_parent(p_bone) > 0) {
+		return skeleton->get_bone_rest(p_bone).origin.normalized();
+	}
+	// If it has children...
+	Vector<int> child_bones = skeleton->get_bone_children(p_bone);
+	if (child_bones.size() == 0) {
+		WARN_PRINT_ONCE("Cannot calculate forward direction for bone " + itos(p_bone));
+		WARN_PRINT_ONCE("Assuming direction of (0, 1, 0) for bone");
+		return Vector3(0, 1, 0);
+	}
+	Vector3 combined_child_dir = Vector3(0, 0, 0);
+	for (int i = 0; i < child_bones.size(); i++) {
+		combined_child_dir += skeleton->get_bone_rest(child_bones[i]).origin.normalized();
+	}
+	combined_child_dir = combined_child_dir / child_bones.size();
+	return combined_child_dir.normalized();
+}
+
 void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool override_tip_basis, bool p_use_magnet, const Vector3 &p_magnet_position) {
 	if (blending_delta <= 0.01f) {
 		// Before skipping, make sure we undo the global pose overrides
@@ -287,8 +307,7 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 		new_bone_pose.origin = ci->current_pos;
 
 		if (!ci->children.is_empty()) {
-			p_task->skeleton->update_bone_rest_forward_vector(ci->bone);
-			Vector3 forward_vector = p_task->skeleton->get_bone_axis_forward_vector(ci->bone);
+			Vector3 forward_vector = get_bone_axis_forward_vector(p_task->skeleton, ci->bone);
 			// Rotate the bone towards the next bone in the chain:
 			new_bone_pose.basis.rotate_to_align(forward_vector, new_bone_pose.origin.direction_to(ci->children[0].current_pos));
 

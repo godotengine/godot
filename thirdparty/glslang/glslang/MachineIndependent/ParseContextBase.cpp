@@ -74,6 +74,9 @@ void C_DECL TParseContextBase::error(const TSourceLoc& loc, const char* szReason
 {
     if (messages & EShMsgOnlyPreprocessor)
         return;
+    // If enhanced msg readability, only print one error
+    if (messages & EShMsgEnhanced && numErrors > 0)
+        return;
     va_list args;
     va_start(args, szExtraInfoFormat);
     outputMessage(loc, szReason, szToken, szExtraInfoFormat, EPrefixError, args);

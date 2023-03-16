@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="BaseMaterial3D" inherits="Material" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="BaseMaterial3D" inherits="Material" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Default 3D rendering material.
 	</brief_description>
@@ -115,13 +115,13 @@
 			The color used by the backlight effect. Represents the light passing through an object.
 		</member>
 		<member name="backlight_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
-			If [code]true[/code], the backlight effect is enabled.
+			If [code]true[/code], the backlight effect is enabled. See also [member subsurf_scatter_transmittance_enabled].
 		</member>
 		<member name="backlight_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture used to control the backlight effect per-pixel. Added to [member backlight].
 		</member>
 		<member name="billboard_keep_scale" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], the shader will keep the scale set for the mesh. Otherwise, the scale is lost when billboarding. Only applies when [member billboard_mode] is [constant BILLBOARD_ENABLED].
+			If [code]true[/code], the shader will keep the scale set for the mesh. Otherwise, the scale is lost when billboarding. Only applies when [member billboard_mode] is not [constant BILLBOARD_DISABLED].
 		</member>
 		<member name="billboard_mode" type="int" setter="set_billboard_mode" getter="get_billboard_mode" enum="BaseMaterial3D.BillboardMode" default="0">
 			Controls how the object faces the camera. See [enum BillboardMode].
@@ -215,10 +215,11 @@
 			If [code]true[/code], the object is rendered at the same size regardless of distance.
 		</member>
 		<member name="grow" type="bool" setter="set_grow_enabled" getter="is_grow_enabled" default="false">
-			If [code]true[/code], enables the vertex grow setting. See [member grow_amount].
+			If [code]true[/code], enables the vertex grow setting. This can be used to create mesh-based outlines using a second material pass and its [member cull_mode] set to [constant CULL_FRONT]. See also [member grow_amount].
+			[b]Note:[/b] Vertex growth cannot create new vertices, which means that visible gaps may occur in sharp corners. This can be alleviated by designing the mesh to use smooth normals exclusively using [url=https://wiki.polycount.com/wiki/Face_weighted_normals]face weighted normals[/url] in the 3D authoring software. In this case, grow will be able to join every outline together, just like in the original mesh.
 		</member>
 		<member name="grow_amount" type="float" setter="set_grow" getter="get_grow" default="0.0">
-			Grows object vertices in the direction of their normals.
+			Grows object vertices in the direction of their normals. Only effective if [member grow] is [code]true[/code].
 		</member>
 		<member name="heightmap_deep_parallax" type="bool" setter="set_heightmap_deep_parallax" getter="is_heightmap_deep_parallax_enabled" default="false">
 			If [code]true[/code], uses parallax occlusion mapping to represent depth in the material instead of simple offset mapping (see [member heightmap_enabled]). This results in a more convincing depth effect, but is much more expensive on the GPU. Only enable this on materials where it makes a significant visual difference.
@@ -277,7 +278,7 @@
 			If [code]true[/code], depth testing is disabled and the object will be drawn in render order.
 		</member>
 		<member name="normal_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
-			If [code]true[/code], normal mapping is enabled.
+			If [code]true[/code], normal mapping is enabled. This has a slight performance cost, especially on mobile GPUs.
 		</member>
 		<member name="normal_scale" type="float" setter="set_normal_scale" getter="get_normal_scale" default="1.0">
 			The strength of the normal map's effect.
@@ -289,6 +290,7 @@
 			[b]Note:[/b] If [member detail_enabled] is [code]true[/code], the [member detail_albedo] texture is drawn [i]below[/i] the [member normal_texture]. To display a normal map [i]above[/i] the [member detail_albedo] texture, use [member detail_normal] instead.
 		</member>
 		<member name="orm_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			The Occlusion/Roughness/Metallic texture to use. This is a more efficient replacement of [member ao_texture], [member roughness_texture] and [member metallic_texture] in [ORMMaterial3D]. Ambient occlusion is stored in the red channel. Roughness map is stored in the green channel. Metallic map is stored in the blue channel. The alpha channel is ignored.
 		</member>
 		<member name="particles_anim_h_frames" type="int" setter="set_particles_anim_h_frames" getter="get_particles_anim_h_frames">
 			The number of horizontal frames in the particle sprite sheet. Only enabled when using [constant BILLBOARD_PARTICLES]. See [member billboard_mode].
@@ -305,7 +307,7 @@
 		<member name="proximity_fade_distance" type="float" setter="set_proximity_fade_distance" getter="get_proximity_fade_distance" default="1.0">
 			Distance over which the fade effect takes place. The larger the distance the longer it takes for an object to fade.
 		</member>
-		<member name="proximity_fade_enable" type="bool" setter="set_proximity_fade" getter="is_proximity_fade_enabled" default="false">
+		<member name="proximity_fade_enabled" type="bool" setter="set_proximity_fade_enabled" getter="is_proximity_fade_enabled" default="false">
 			If [code]true[/code], the proximity fade effect is enabled. The proximity fade effect fades out each pixel based on its distance to another object.
 		</member>
 		<member name="refraction_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
@@ -318,7 +320,7 @@
 			Texture that controls the strength of the refraction per-pixel. Multiplied by [member refraction_scale].
 		</member>
 		<member name="refraction_texture_channel" type="int" setter="set_refraction_texture_channel" getter="get_refraction_texture_channel" enum="BaseMaterial3D.TextureChannel" default="0">
-			Specifies the channel of the [member ao_texture] in which the ambient occlusion information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
+			Specifies the channel of the [member refraction_texture] in which the refraction information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored refraction in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
 		</member>
 		<member name="rim" type="float" setter="set_rim" getter="get_rim" default="1.0">
 			Sets the strength of the rim lighting effect.
@@ -340,23 +342,24 @@
 			Texture used to control the roughness per-pixel. Multiplied by [member roughness].
 		</member>
 		<member name="roughness_texture_channel" type="int" setter="set_roughness_texture_channel" getter="get_roughness_texture_channel" enum="BaseMaterial3D.TextureChannel" default="0">
-			Specifies the channel of the [member ao_texture] in which the ambient occlusion information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
+			Specifies the channel of the [member roughness_texture] in which the roughness information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
 		</member>
 		<member name="shading_mode" type="int" setter="set_shading_mode" getter="get_shading_mode" enum="BaseMaterial3D.ShadingMode" default="1">
-			Sets whether the shading takes place per-pixel or per-vertex. Per-vertex lighting is faster, making it the best choice for mobile applications, however it looks considerably worse than per-pixel.
+			Sets whether the shading takes place, per-pixel, per-vertex or unshaded. Per-vertex lighting is faster, making it the best choice for mobile applications, however it looks considerably worse than per-pixel. Unshaded rendering is the fastest, but disables all interactions with lights.
+			[b]Note:[/b] Setting the shading mode vertex shading currently has no effect, as vertex shading is not implemented yet.
 		</member>
 		<member name="shadow_to_opacity" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], enables the "shadow to opacity" render mode where lighting modifies the alpha so shadowed areas are opaque and non-shadowed areas are transparent. Useful for overlaying shadows onto a camera feed in AR.
 		</member>
 		<member name="specular_mode" type="int" setter="set_specular_mode" getter="get_specular_mode" enum="BaseMaterial3D.SpecularMode" default="0">
 			The method for rendering the specular blob. See [enum SpecularMode].
-			[b]Note:[/b] Only applies to the specular blob. Does not affect specular reflections from the Sky, SSR, or ReflectionProbes.
+			[b]Note:[/b] [member specular_mode] only applies to the specular blob. It does not affect specular reflections from the sky, screen-space reflections, [VoxelGI], SDFGI or [ReflectionProbe]s. To disable reflections from these sources as well, set [member metallic_specular] to [code]0.0[/code] instead.
 		</member>
 		<member name="subsurf_scatter_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], subsurface scattering is enabled. Emulates light that penetrates an object's surface, is scattered, and then emerges.
 		</member>
 		<member name="subsurf_scatter_skin_mode" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], subsurface scattering will use a special mode optimized for the color and density of human skin.
+			If [code]true[/code], subsurface scattering will use a special mode optimized for the color and density of human skin, such as boosting the intensity of the red channel in subsurface scattering.
 		</member>
 		<member name="subsurf_scatter_strength" type="float" setter="set_subsurface_scattering_strength" getter="get_subsurface_scattering_strength" default="0.0">
 			The strength of the subsurface scattering effect.
@@ -365,14 +368,19 @@
 			Texture used to control the subsurface scattering strength. Stored in the red texture channel. Multiplied by [member subsurf_scatter_strength].
 		</member>
 		<member name="subsurf_scatter_transmittance_boost" type="float" setter="set_transmittance_boost" getter="get_transmittance_boost" default="0.0">
+			The intensity of the subsurface scattering transmittance effect.
 		</member>
 		<member name="subsurf_scatter_transmittance_color" type="Color" setter="set_transmittance_color" getter="get_transmittance_color" default="Color(1, 1, 1, 1)">
+			The color to multiply the subsurface scattering transmittance effect with. Ignored if [member subsurf_scatter_skin_mode] is [code]true[/code].
 		</member>
 		<member name="subsurf_scatter_transmittance_depth" type="float" setter="set_transmittance_depth" getter="get_transmittance_depth" default="0.1">
+			The depth of the subsurface scattering transmittance effect.
 		</member>
 		<member name="subsurf_scatter_transmittance_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code], enables subsurface scattering transmittance. Only effective if [member subsurf_scatter_enabled] is [code]true[/code]. See also [member backlight_enabled].
 		</member>
 		<member name="subsurf_scatter_transmittance_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			The texture to use for multiplying the intensity of the subsurface scattering transmitteance intensity. See also [member subsurf_scatter_texture]. Ignored if [member subsurf_scatter_skin_mode] is [code]true[/code].
 		</member>
 		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="BaseMaterial3D.TextureFilter" default="3">
 			Filter flags for the texture. See [enum TextureFilter] for options.
@@ -382,9 +390,10 @@
 			Repeat flags for the texture. See [enum TextureFilter] for options.
 		</member>
 		<member name="transparency" type="int" setter="set_transparency" getter="get_transparency" enum="BaseMaterial3D.Transparency" default="0">
-			If [code]true[/code], transparency is enabled on the body. See also [member blend_mode].
+			If [code]true[/code], transparency is enabled on the body. Some transparency modes will disable shadow casting. Any transparency mode other than Disabled has a greater performance impact compared to opaque rendering. See also [member blend_mode].
 		</member>
 		<member name="use_particle_trails" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], enables parts of the shader required for [GPUParticles3D] trails to function. This also requires using a mesh with appropriate skinning, such as [RibbonTrailMesh] or [TubeTrailMesh]. Enabling this feature outside of materials used in [GPUParticles3D] meshes will break material rendering.
 		</member>
 		<member name="use_point_size" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], render point size can be changed.
@@ -424,7 +433,7 @@
 		</member>
 		<member name="vertex_color_is_srgb" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], vertex colors are considered to be stored in sRGB color space and are converted to linear color space during rendering. If [code]false[/code], vertex colors are considered to be stored in linear color space and are rendered as-is. See also [member albedo_texture_force_srgb].
-			[b]Note:[/b] Only effective when using the Vulkan Clustered or Vulkan Mobile backends.
+			[b]Note:[/b] Only effective when using the Forward+ and Mobile rendering methods, not Compatibility.
 		</member>
 		<member name="vertex_color_use_as_albedo" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the vertex color is used as albedo color.
@@ -516,31 +525,31 @@
 			Use [code]UV2[/code] with the detail texture.
 		</constant>
 		<constant name="TRANSPARENCY_DISABLED" value="0" enum="Transparency">
-			The material will not use transparency.
+			The material will not use transparency. This is the fastest to render.
 		</constant>
 		<constant name="TRANSPARENCY_ALPHA" value="1" enum="Transparency">
-			The material will use the texture's alpha values for transparency.
+			The material will use the texture's alpha values for transparency. This is the slowest to render, and disables shadow casting.
 		</constant>
 		<constant name="TRANSPARENCY_ALPHA_SCISSOR" value="2" enum="Transparency">
-			The material will cut off all values below a threshold, the rest will remain opaque.
+			The material will cut off all values below a threshold, the rest will remain opaque. The opaque portions will be rendered in the depth prepass. This is faster to render than alpha blending, but slower than opaque rendering. This also supports casting shadows.
 		</constant>
 		<constant name="TRANSPARENCY_ALPHA_HASH" value="3" enum="Transparency">
-			The material will cut off all values below a spatially-deterministic threshold, the rest will remain opaque.
+			The material will cut off all values below a spatially-deterministic threshold, the rest will remain opaque. This is faster to render than alpha blending, but slower than opaque rendering. This also supports casting shadows. Alpha hashing is suited for hair rendering.
 		</constant>
 		<constant name="TRANSPARENCY_ALPHA_DEPTH_PRE_PASS" value="4" enum="Transparency">
-			The material will use the texture's alpha value for transparency, but will still be rendered in the pre-pass.
+			The material will use the texture's alpha value for transparency, but will discard fragments with an alpha of less than 0.99 during the depth prepass and fragments with an alpha less than 0.1 during the shadow pass. This also supports casting shadows.
 		</constant>
 		<constant name="TRANSPARENCY_MAX" value="5" enum="Transparency">
 			Represents the size of the [enum Transparency] enum.
 		</constant>
 		<constant name="SHADING_MODE_UNSHADED" value="0" enum="ShadingMode">
-			The object will not receive shadows.
+			The object will not receive shadows. This is the fastest to render, but it disables all interactions with lights.
 		</constant>
 		<constant name="SHADING_MODE_PER_PIXEL" value="1" enum="ShadingMode">
-			The object will be shaded per pixel. Useful for realistic shading effect.
+			The object will be shaded per pixel. Useful for realistic shading effects.
 		</constant>
 		<constant name="SHADING_MODE_PER_VERTEX" value="2" enum="ShadingMode">
-			The object will be shaded per vertex. Useful when you want cheaper shaders and do not care about visual quality.
+			The object will be shaded per vertex. Useful when you want cheaper shaders and do not care about visual quality. Not implemented yet (this mode will act like [constant SHADING_MODE_PER_PIXEL]).
 		</constant>
 		<constant name="SHADING_MODE_MAX" value="3" enum="ShadingMode">
 			Represents the size of the [enum ShadingMode] enum.
@@ -606,32 +615,33 @@
 			Enables AlphaToCoverage and forces all non-zero alpha values to [code]1[/code]. Alpha values in the material are passed to the AntiAliasing sample mask.
 		</constant>
 		<constant name="DEPTH_DRAW_OPAQUE_ONLY" value="0" enum="DepthDrawMode">
-			Default depth draw mode. Depth is drawn only for opaque objects.
+			Default depth draw mode. Depth is drawn only for opaque objects during the opaque prepass (if any) and during the opaque pass.
 		</constant>
 		<constant name="DEPTH_DRAW_ALWAYS" value="1" enum="DepthDrawMode">
-			Depth draw is calculated for both opaque and transparent objects.
+			Objects will write to depth during the opaque and the transparent passes. Transparent objects that are close to the camera may obscure other transparent objects behind them.
+			[b]Note:[/b] This does not influence whether transparent objects are included in the depth prepass or not. For that, see [enum Transparency].
 		</constant>
 		<constant name="DEPTH_DRAW_DISABLED" value="2" enum="DepthDrawMode">
-			No depth draw.
+			Objects will not write their depth to the depth buffer, even during the depth prepass (if enabled).
 		</constant>
 		<constant name="CULL_BACK" value="0" enum="CullMode">
-			Default cull mode. The back of the object is culled when not visible. Back face triangles will be culled when facing the camera. This results in only the front side of triangles being drawn. For closed-surface meshes this means that only the exterior of the mesh will be visible.
+			Default cull mode. The back of the object is culled when not visible. Back face triangles will be culled when facing the camera. This results in only the front side of triangles being drawn. For closed-surface meshes, this means that only the exterior of the mesh will be visible.
 		</constant>
 		<constant name="CULL_FRONT" value="1" enum="CullMode">
-			Front face triangles will be culled when facing the camera. This results in only the back side of triangles being drawn. For closed-surface meshes this means that the interior of the mesh will be drawn instead of the exterior.
+			Front face triangles will be culled when facing the camera. This results in only the back side of triangles being drawn. For closed-surface meshes, this means that the interior of the mesh will be drawn instead of the exterior.
 		</constant>
 		<constant name="CULL_DISABLED" value="2" enum="CullMode">
-			No culling is performed.
+			No face culling is performed; both the front face and back face will be visible.
 		</constant>
 		<constant name="FLAG_DISABLE_DEPTH_TEST" value="0" enum="Flags">
-			Disables the depth test, so this object is drawn on top of all others. However, objects drawn after it in the draw order may cover it.
+			Disables the depth test, so this object is drawn on top of all others drawn before it. This puts the object in the transparent draw pass where it is sorted based on distance to camera. Objects drawn after it in the draw order may cover it. This also disables writing to depth.
 		</constant>
 		<constant name="FLAG_ALBEDO_FROM_VERTEX_COLOR" value="1" enum="Flags">
 			Set [code]ALBEDO[/code] to the per-vertex color specified in the mesh.
 		</constant>
 		<constant name="FLAG_SRGB_VERTEX_COLOR" value="2" enum="Flags">
 			Vertex colors are considered to be stored in sRGB color space and are converted to linear color space during rendering. See also [member vertex_color_is_srgb].
-			[b]Note:[/b] Only effective when using the Vulkan Clustered or Vulkan Mobile backends.
+			[b]Note:[/b] Only effective when using the Forward+ and Mobile rendering methods.
 		</constant>
 		<constant name="FLAG_USE_POINT_SIZE" value="3" enum="Flags">
 			Uses point size to alter the size of primitive points. Also changes the albedo texture lookup to use [code]POINT_COORD[/code] instead of [code]UV[/code].
@@ -682,6 +692,7 @@
 			Enables the skin mode for subsurface scattering which is used to improve the look of subsurface scattering when used for human skin.
 		</constant>
 		<constant name="FLAG_PARTICLE_TRAILS_MODE" value="19" enum="Flags">
+			Enables parts of the shader required for [GPUParticles3D] trails to function. This also requires using a mesh with appropriate skinning, such as [RibbonTrailMesh] or [TubeTrailMesh]. Enabling this feature outside of materials used in [GPUParticles3D] meshes will break material rendering.
 		</constant>
 		<constant name="FLAG_ALBEDO_TEXTURE_MSDF" value="20" enum="Flags">
 			Enables multichannel signed distance field rendering shader.
@@ -708,7 +719,7 @@
 			Toon blob which changes size based on roughness.
 		</constant>
 		<constant name="SPECULAR_DISABLED" value="2" enum="SpecularMode">
-			No specular blob.
+			No specular blob. This is slightly faster to render than other specular modes.
 		</constant>
 		<constant name="BILLBOARD_DISABLED" value="0" enum="BillboardMode">
 			Billboard mode is disabled.
@@ -751,10 +762,10 @@
 			Smoothly fades the object out based on each pixel's distance from the camera using the alpha channel.
 		</constant>
 		<constant name="DISTANCE_FADE_PIXEL_DITHER" value="2" enum="DistanceFadeMode">
-			Smoothly fades the object out based on each pixel's distance from the camera using a dither approach. Dithering discards pixels based on a set pattern to smoothly fade without enabling transparency. On certain hardware this can be faster than [constant DISTANCE_FADE_PIXEL_ALPHA].
+			Smoothly fades the object out based on each pixel's distance from the camera using a dithering approach. Dithering discards pixels based on a set pattern to smoothly fade without enabling transparency. On certain hardware, this can be faster than [constant DISTANCE_FADE_PIXEL_ALPHA].
 		</constant>
 		<constant name="DISTANCE_FADE_OBJECT_DITHER" value="3" enum="DistanceFadeMode">
-			Smoothly fades the object out based on the object's distance from the camera using a dither approach. Dithering discards pixels based on a set pattern to smoothly fade without enabling transparency. On certain hardware this can be faster than [constant DISTANCE_FADE_PIXEL_ALPHA].
+			Smoothly fades the object out based on the object's distance from the camera using a dithering approach. Dithering discards pixels based on a set pattern to smoothly fade without enabling transparency. On certain hardware, this can be faster than [constant DISTANCE_FADE_PIXEL_ALPHA] and [constant DISTANCE_FADE_PIXEL_DITHER].
 		</constant>
 	</constants>
 </class>

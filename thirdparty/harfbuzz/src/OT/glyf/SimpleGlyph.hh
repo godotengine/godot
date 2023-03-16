@@ -132,8 +132,8 @@ struct SimpleGlyph
 	if (unlikely (p + 1 > end)) return false;
 	unsigned int repeat_count = *p++;
 	unsigned stop = hb_min (i + repeat_count, count);
-	for (; i < stop;)
-	  points_.arrayZ[i++].flag = flag;
+	for (; i < stop; i++)
+	  points_.arrayZ[i].flag = flag;
       }
     }
     return true;
@@ -205,6 +205,129 @@ struct SimpleGlyph
 			FLAG_X_SHORT, FLAG_X_SAME)
 	&& read_points (p, points_, end, &contour_point_t::y,
 			FLAG_Y_SHORT, FLAG_Y_SAME);
+  }
+
+  static void encode_coord (int value,
+                            uint8_t &flag,
+                            const simple_glyph_flag_t short_flag,
+                            const simple_glyph_flag_t same_flag,
+                            hb_vector_t<uint8_t> &coords /* OUT */)
+  {
+    if (value == 0)
+    {
+      flag |= same_flag;
+    }
+    else if (value >= -255 && value <= 255)
+    {
+      flag |= short_flag;
+      if (value > 0) flag |= same_flag;
+      else value = -value;
+
+      coords.arrayZ[coords.length++] = (uint8_t) value;
+    }
+    else
+    {
+      int16_t val = value;
+      coords.arrayZ[coords.length++] = val >> 8;
+      coords.arrayZ[coords.length++] = val & 0xff;
+    }
+  }
+
+  static void encode_flag (uint8_t &flag,
+                           uint8_t &repeat,
+                           uint8_t lastflag,
+                           hb_vector_t<uint8_t> &flags /* OUT */)
+  {
+    if (flag == lastflag && repeat != 255)
+    {
+      repeat++;
+      if (repeat == 1)
+      {
+        /* We know there's room. */
+        flags.arrayZ[flags.length++] = flag;
+      }
+      else
+      {
+        unsigned len = flags.length;
+        flags.arrayZ[len-2] = flag | FLAG_REPEAT;
+        flags.arrayZ[len-1] = repeat;
+      }
+    }
+    else
+    {
+      repeat = 0;
+      flags.push (flag);
+    }
+  }
+
+  bool compile_bytes_with_deltas (const contour_point_vector_t &all_points,
+                                  bool no_hinting,
+                                  hb_bytes_t &dest_bytes /* OUT */)
+  {
+    if (header.numberOfContours == 0 || all_points.length <= 4)
+    {
+      dest_bytes = hb_bytes_t ();
+      return true;
+    }
+    unsigned num_points = all_points.length - 4;
+
+    hb_vector_t<uint8_t> flags, x_coords, y_coords;
+    if (unlikely (!flags.alloc (num_points))) return false;
+    if (unlikely (!x_coords.alloc (2*num_points))) return false;
+    if (unlikely (!y_coords.alloc (2*num_points))) return false;
+
+    uint8_t lastflag = 255, repeat = 0;
+    int prev_x = 0, prev_y = 0;
+
+    for (unsigned i = 0; i < num_points; i++)
+    {
+      uint8_t flag = all_points.arrayZ[i].flag;
+      flag &= FLAG_ON_CURVE + FLAG_OVERLAP_SIMPLE;
+
+      int cur_x = roundf (all_points.arrayZ[i].x);
+      int cur_y = roundf (all_points.arrayZ[i].y);
+      encode_coord (cur_x - prev_x, flag, FLAG_X_SHORT, FLAG_X_SAME, x_coords);
+      encode_coord (cur_y - prev_y, flag, FLAG_Y_SHORT, FLAG_Y_SAME, y_coords);
+      encode_flag (flag, repeat, lastflag, flags);
+
+      prev_x = cur_x;
+      prev_y = cur_y;
+      lastflag = flag;
+    }
+
+    unsigned len_before_instrs = 2 * header.numberOfContours + 2;
+    unsigned len_instrs = instructions_length ();
+    unsigned total_len = len_before_instrs + flags.length + x_coords.length + y_coords.length;
+
+    if (!no_hinting)
+      total_len += len_instrs;
+
+    char *p = (char *) hb_malloc (total_len);
+    if (unlikely (!p)) return false;
+
+    const char *src = bytes.arrayZ + GlyphHeader::static_size;
+    char *cur = p;
+    hb_memcpy (p, src, len_before_instrs);
+
+    cur += len_before_instrs;
+    src += len_before_instrs;
+
+    if (!no_hinting)
+    {
+      hb_memcpy (cur, src, len_instrs);
+      cur += len_instrs;
+    }
+
+    hb_memcpy (cur, flags.arrayZ, flags.length);
+    cur += flags.length;
+
+    hb_memcpy (cur, x_coords.arrayZ, x_coords.length);
+    cur += x_coords.length;
+
+    hb_memcpy (cur, y_coords.arrayZ, y_coords.length);
+
+    dest_bytes = hb_bytes_t (p, total_len);
+    return true;
   }
 };
 

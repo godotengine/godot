@@ -1,36 +1,39 @@
-/*************************************************************************/
-/*  gltf_state.cpp                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gltf_state.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "gltf_state.h"
 
+#include "gltf_template_convert.h"
+
 void GLTFState::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("add_used_extension", "extension_name", "required"), &GLTFState::add_used_extension);
 	ClassDB::bind_method(D_METHOD("get_json"), &GLTFState::get_json);
 	ClassDB::bind_method(D_METHOD("set_json", "json"), &GLTFState::set_json);
 	ClassDB::bind_method(D_METHOD("get_major_version"), &GLTFState::get_major_version);
@@ -63,6 +66,8 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root_nodes", "root_nodes"), &GLTFState::set_root_nodes);
 	ClassDB::bind_method(D_METHOD("get_textures"), &GLTFState::get_textures);
 	ClassDB::bind_method(D_METHOD("set_textures", "textures"), &GLTFState::set_textures);
+	ClassDB::bind_method(D_METHOD("get_texture_samplers"), &GLTFState::get_texture_samplers);
+	ClassDB::bind_method(D_METHOD("set_texture_samplers", "texture_samplers"), &GLTFState::set_texture_samplers);
 	ClassDB::bind_method(D_METHOD("get_images"), &GLTFState::get_images);
 	ClassDB::bind_method(D_METHOD("set_images", "images"), &GLTFState::set_images);
 	ClassDB::bind_method(D_METHOD("get_skins"), &GLTFState::get_skins);
@@ -77,13 +82,15 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_unique_animation_names", "unique_animation_names"), &GLTFState::set_unique_animation_names);
 	ClassDB::bind_method(D_METHOD("get_skeletons"), &GLTFState::get_skeletons);
 	ClassDB::bind_method(D_METHOD("set_skeletons", "skeletons"), &GLTFState::set_skeletons);
-	ClassDB::bind_method(D_METHOD("get_skeleton_to_node"), &GLTFState::get_skeleton_to_node);
-	ClassDB::bind_method(D_METHOD("set_skeleton_to_node", "skeleton_to_node"), &GLTFState::set_skeleton_to_node);
 	ClassDB::bind_method(D_METHOD("get_create_animations"), &GLTFState::get_create_animations);
 	ClassDB::bind_method(D_METHOD("set_create_animations", "create_animations"), &GLTFState::set_create_animations);
 	ClassDB::bind_method(D_METHOD("get_animations"), &GLTFState::get_animations);
 	ClassDB::bind_method(D_METHOD("set_animations", "animations"), &GLTFState::set_animations);
 	ClassDB::bind_method(D_METHOD("get_scene_node", "idx"), &GLTFState::get_scene_node);
+	ClassDB::bind_method(D_METHOD("get_additional_data", "extension_name"), &GLTFState::get_additional_data);
+	ClassDB::bind_method(D_METHOD("set_additional_data", "extension_name", "additional_data"), &GLTFState::set_additional_data);
+	ClassDB::bind_method(D_METHOD("get_handle_binary_image"), &GLTFState::get_handle_binary_image);
+	ClassDB::bind_method(D_METHOD("set_handle_binary_image", "method"), &GLTFState::set_handle_binary_image);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "json"), "set_json", "get_json"); // Dictionary
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "major_version"), "set_major_version", "get_major_version"); // int
@@ -100,6 +107,7 @@ void GLTFState::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_path"), "set_base_path", "get_base_path"); // String
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "root_nodes"), "set_root_nodes", "get_root_nodes"); // Vector<int>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "textures", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_textures", "get_textures"); // Vector<Ref<GLTFTexture>>
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "texture_samplers", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_texture_samplers", "get_texture_samplers"); //Vector<Ref<GLTFTextureSampler>>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "images", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_images", "get_images"); // Vector<Ref<Texture>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "skins", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_skins", "get_skins"); // Vector<Ref<GLTFSkin>>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "cameras", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_cameras", "get_cameras"); // Vector<Ref<GLTFCamera>>
@@ -107,9 +115,25 @@ void GLTFState::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "unique_names", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_unique_names", "get_unique_names"); // Set<String>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "unique_animation_names", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_unique_animation_names", "get_unique_animation_names"); // Set<String>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "skeletons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_skeletons", "get_skeletons"); // Vector<Ref<GLTFSkeleton>>
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "skeleton_to_node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_skeleton_to_node", "get_skeleton_to_node"); // RBMap<GLTFSkeletonIndex,
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "create_animations"), "set_create_animations", "get_create_animations"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_animations", "get_animations"); // Vector<Ref<GLTFAnimation>>
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "handle_binary_image", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed As Basis Universal,Embed as Uncompressed", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_handle_binary_image", "get_handle_binary_image"); // enum
+
+	BIND_CONSTANT(HANDLE_BINARY_DISCARD_TEXTURES);
+	BIND_CONSTANT(HANDLE_BINARY_EXTRACT_TEXTURES);
+	BIND_CONSTANT(HANDLE_BINARY_EMBED_AS_BASISU);
+	BIND_CONSTANT(HANDLE_BINARY_EMBED_AS_UNCOMPRESSED);
+}
+
+void GLTFState::add_used_extension(const String &p_extension_name, bool p_required) {
+	if (!extensions_used.has(p_extension_name)) {
+		extensions_used.push_back(p_extension_name);
+	}
+	if (p_required) {
+		if (!extensions_required.has(p_extension_name)) {
+			extensions_required.push_back(p_extension_name);
+		}
+	}
 }
 
 Dictionary GLTFState::get_json() {
@@ -192,11 +216,11 @@ void GLTFState::set_meshes(TypedArray<GLTFMesh> p_meshes) {
 	GLTFTemplateConvert::set_from_array(meshes, p_meshes);
 }
 
-TypedArray<BaseMaterial3D> GLTFState::get_materials() {
+TypedArray<Material> GLTFState::get_materials() {
 	return GLTFTemplateConvert::to_array(materials);
 }
 
-void GLTFState::set_materials(TypedArray<BaseMaterial3D> p_materials) {
+void GLTFState::set_materials(TypedArray<Material> p_materials) {
 	GLTFTemplateConvert::set_from_array(materials, p_materials);
 }
 
@@ -222,6 +246,14 @@ TypedArray<GLTFTexture> GLTFState::get_textures() {
 
 void GLTFState::set_textures(TypedArray<GLTFTexture> p_textures) {
 	GLTFTemplateConvert::set_from_array(textures, p_textures);
+}
+
+TypedArray<GLTFTextureSampler> GLTFState::get_texture_samplers() {
+	return GLTFTemplateConvert::to_array(texture_samplers);
+}
+
+void GLTFState::set_texture_samplers(TypedArray<GLTFTextureSampler> p_texture_samplers) {
+	GLTFTemplateConvert::set_from_array(texture_samplers, p_texture_samplers);
 }
 
 TypedArray<Texture2D> GLTFState::get_images() {
@@ -280,14 +312,6 @@ void GLTFState::set_skeletons(TypedArray<GLTFSkeleton> p_skeletons) {
 	GLTFTemplateConvert::set_from_array(skeletons, p_skeletons);
 }
 
-Dictionary GLTFState::get_skeleton_to_node() {
-	return GLTFTemplateConvert::to_dict(skeleton_to_node);
-}
-
-void GLTFState::set_skeleton_to_node(Dictionary p_skeleton_to_node) {
-	GLTFTemplateConvert::set_from_dict(skeleton_to_node, p_skeleton_to_node);
-}
-
 bool GLTFState::get_create_animations() {
 	return create_animations;
 }
@@ -334,4 +358,12 @@ String GLTFState::get_base_path() {
 
 void GLTFState::set_base_path(String p_base_path) {
 	base_path = p_base_path;
+}
+
+Variant GLTFState::get_additional_data(const StringName &p_extension_name) {
+	return additional_data[p_extension_name];
+}
+
+void GLTFState::set_additional_data(const StringName &p_extension_name, Variant p_additional_data) {
+	additional_data[p_extension_name] = p_additional_data;
 }

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  ustring.cpp                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  ustring.cpp                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "ustring.h"
 
@@ -161,6 +161,18 @@ bool CharString::operator<(const CharString &p_right) const {
 	return is_str_less(get_data(), p_right.get_data());
 }
 
+bool CharString::operator==(const CharString &p_right) const {
+	if (length() == 0) {
+		// True if both have length 0, false if only p_right has a length
+		return p_right.length() == 0;
+	} else if (p_right.length() == 0) {
+		// False due to unequal length
+		return false;
+	}
+
+	return strcmp(ptr(), p_right.ptr()) == 0;
+}
+
 CharString &CharString::operator+=(char p_char) {
 	const int lhs_len = length();
 	resize(lhs_len + 2);
@@ -207,37 +219,6 @@ void CharString::copy_from(const char *p_cstr) {
 /*************************************************************************/
 /*  String                                                               */
 /*************************************************************************/
-
-//kind of poor should be rewritten properly
-String String::word_wrap(int p_chars_per_line) const {
-	int from = 0;
-	int last_space = 0;
-	String ret;
-	for (int i = 0; i < length(); i++) {
-		if (i - from >= p_chars_per_line) {
-			if (last_space == -1) {
-				ret += substr(from, i - from + 1) + "\n";
-			} else {
-				ret += substr(from, last_space - from) + "\n";
-				i = last_space; //rewind
-			}
-			from = i + 1;
-			last_space = -1;
-		} else if (operator[](i) == ' ' || operator[](i) == '\t') {
-			last_space = i;
-		} else if (operator[](i) == '\n') {
-			ret += substr(from, i - from) + "\n";
-			from = i + 1;
-			last_space = -1;
-		}
-	}
-
-	if (from < length()) {
-		ret += substr(from, length());
-	}
-
-	return ret;
-}
 
 Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r_path) const {
 	// Splits the URL into scheme, host, port, path. Strip credentials when present.
@@ -1176,13 +1157,26 @@ Vector<String> String::split_spaces() const {
 
 Vector<String> String::split(const String &p_splitter, bool p_allow_empty, int p_maxsplit) const {
 	Vector<String> ret;
+
+	if (is_empty()) {
+		if (p_allow_empty) {
+			ret.push_back("");
+		}
+		return ret;
+	}
+
 	int from = 0;
 	int len = length();
 
 	while (true) {
-		int end = find(p_splitter, from);
-		if (end < 0) {
-			end = len;
+		int end;
+		if (p_splitter.is_empty()) {
+			end = from + 1;
+		} else {
+			end = find(p_splitter, from);
+			if (end < 0) {
+				end = len;
+			}
 		}
 		if (p_allow_empty || (end > from)) {
 			if (p_maxsplit <= 0) {
@@ -1223,7 +1217,15 @@ Vector<String> String::rsplit(const String &p_splitter, bool p_allow_empty, int 
 			break;
 		}
 
-		int left_edge = rfind(p_splitter, remaining_len - p_splitter.length());
+		int left_edge;
+		if (p_splitter.is_empty()) {
+			left_edge = remaining_len - 1;
+			if (left_edge == 0) {
+				left_edge--; // Skip to the < 0 condition.
+			}
+		} else {
+			left_edge = rfind(p_splitter, remaining_len - p_splitter.length());
+		}
 
 		if (left_edge < 0) {
 			// no more splitters, we're done
@@ -1243,8 +1245,8 @@ Vector<String> String::rsplit(const String &p_splitter, bool p_allow_empty, int 
 	return ret;
 }
 
-Vector<float> String::split_floats(const String &p_splitter, bool p_allow_empty) const {
-	Vector<float> ret;
+Vector<double> String::split_floats(const String &p_splitter, bool p_allow_empty) const {
+	Vector<double> ret;
 	int from = 0;
 	int len = length();
 
@@ -1447,15 +1449,25 @@ String String::num(double p_num, int p_decimals) {
 		fmt[5] = 'f';
 		fmt[6] = 0;
 	}
-	char buf[256];
+	// if we want to convert a double with as much decimal places as as
+	// DBL_MAX or DBL_MIN then we would theoretically need a buffer of at least
+	// DBL_MAX_10_EXP + 2 for DBL_MAX and DBL_MAX_10_EXP + 4 for DBL_MIN.
+	// BUT those values where still giving me exceptions, so I tested from
+	// DBL_MAX_10_EXP + 10 incrementing one by one and DBL_MAX_10_EXP + 17 (325)
+	// was the first buffer size not to throw an exception
+	char buf[325];
 
 #if defined(__GNUC__) || defined(_MSC_VER)
-	snprintf(buf, 256, fmt, p_num);
+	// PLEASE NOTE that, albeit vcrt online reference states that snprintf
+	// should safely truncate the output to the given buffer size, we have
+	// found a case where this is not true, so we should create a buffer
+	// as big as needed
+	snprintf(buf, 325, fmt, p_num);
 #else
 	sprintf(buf, fmt, p_num);
 #endif
 
-	buf[255] = 0;
+	buf[324] = 0;
 	//destroy trailing zeroes
 	{
 		bool period = false;
@@ -1567,10 +1579,11 @@ String String::num_real(double p_num, bool p_trailing) {
 #else
 	int decimals = 6;
 #endif
-	// We want to align the digits to the above sane default, so we only
-	// need to subtract log10 for numbers with a positive power of ten.
-	if (p_num > 10) {
-		decimals -= (int)floor(log10(p_num));
+	// We want to align the digits to the above sane default, so we only need
+	// to subtract log10 for numbers with a positive power of ten magnitude.
+	double abs_num = Math::abs(p_num);
+	if (abs_num > 10) {
+		decimals -= (int)floor(log10(abs_num));
 	}
 	return num(p_num, decimals);
 }
@@ -2624,10 +2637,11 @@ double String::to_float() const {
 
 uint32_t String::hash(const char *p_cstr) {
 	uint32_t hashv = 5381;
-	uint32_t c;
+	uint32_t c = *p_cstr++;
 
-	while ((c = *p_cstr++)) {
+	while (c) {
 		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
+		c = *p_cstr++;
 	}
 
 	return hashv;
@@ -2653,10 +2667,11 @@ uint32_t String::hash(const wchar_t *p_cstr, int p_len) {
 
 uint32_t String::hash(const wchar_t *p_cstr) {
 	uint32_t hashv = 5381;
-	uint32_t c;
+	uint32_t c = *p_cstr++;
 
-	while ((c = *p_cstr++)) {
+	while (c) {
 		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
+		c = *p_cstr++;
 	}
 
 	return hashv;
@@ -2673,10 +2688,11 @@ uint32_t String::hash(const char32_t *p_cstr, int p_len) {
 
 uint32_t String::hash(const char32_t *p_cstr) {
 	uint32_t hashv = 5381;
-	uint32_t c;
+	uint32_t c = *p_cstr++;
 
-	while ((c = *p_cstr++)) {
+	while (c) {
 		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
+		c = *p_cstr++;
 	}
 
 	return hashv;
@@ -2687,10 +2703,11 @@ uint32_t String::hash() const {
 
 	const char32_t *chr = get_data();
 	uint32_t hashv = 5381;
-	uint32_t c;
+	uint32_t c = *chr++;
 
-	while ((c = *chr++)) {
+	while (c) {
 		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
+		c = *chr++;
 	}
 
 	return hashv;
@@ -2701,10 +2718,11 @@ uint64_t String::hash64() const {
 
 	const char32_t *chr = get_data();
 	uint64_t hashv = 5381;
-	uint64_t c;
+	uint64_t c = *chr++;
 
-	while ((c = *chr++)) {
+	while (c) {
 		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
+		c = *chr++;
 	}
 
 	return hashv;
@@ -2810,7 +2828,7 @@ String String::substr(int p_from, int p_chars) const {
 		return String(*this);
 	}
 
-	String s = String();
+	String s;
 	s.copy_from_unchecked(&get_data()[p_from], p_chars);
 	return s;
 }
@@ -3662,29 +3680,43 @@ bool String::is_network_share_path() const {
 String String::simplify_path() const {
 	String s = *this;
 	String drive;
-	if (s.begins_with("local://")) {
-		drive = "local://";
-		s = s.substr(8, s.length());
-	} else if (s.begins_with("res://")) {
-		drive = "res://";
-		s = s.substr(6, s.length());
-	} else if (s.begins_with("user://")) {
-		drive = "user://";
-		s = s.substr(7, s.length());
-	} else if (is_network_share_path()) {
-		drive = s.substr(0, 2);
-		s = s.substr(2, s.length() - 2);
-	} else if (s.begins_with("/") || s.begins_with("\\")) {
-		drive = s.substr(0, 1);
-		s = s.substr(1, s.length() - 1);
-	} else {
-		int p = s.find(":/");
-		if (p == -1) {
-			p = s.find(":\\");
+
+	// Check if we have a special path (like res://) or a protocol identifier.
+	int p = s.find("://");
+	bool found = false;
+	if (p > 0) {
+		bool only_chars = true;
+		for (int i = 0; i < p; i++) {
+			if (!is_ascii_alphanumeric_char(s[i])) {
+				only_chars = false;
+				break;
+			}
 		}
-		if (p != -1 && p < s.find("/")) {
-			drive = s.substr(0, p + 2);
-			s = s.substr(p + 2, s.length());
+		if (only_chars) {
+			found = true;
+			drive = s.substr(0, p + 3);
+			s = s.substr(p + 3);
+		}
+	}
+	if (!found) {
+		if (is_network_share_path()) {
+			// Network path, beginning with // or \\.
+			drive = s.substr(0, 2);
+			s = s.substr(2);
+		} else if (s.begins_with("/") || s.begins_with("\\")) {
+			// Absolute path.
+			drive = s.substr(0, 1);
+			s = s.substr(1);
+		} else {
+			// Windows-style drive path, like C:/ or C:\.
+			p = s.find(":/");
+			if (p == -1) {
+				p = s.find(":\\");
+			}
+			if (p != -1 && p < s.find("/")) {
+				drive = s.substr(0, p + 2);
+				s = s.substr(p + 2);
+			}
 		}
 	}
 
@@ -3879,7 +3911,6 @@ String String::c_unescape() const {
 	escaped = escaped.replace("\\v", "\v");
 	escaped = escaped.replace("\\'", "\'");
 	escaped = escaped.replace("\\\"", "\"");
-	escaped = escaped.replace("\\?", "\?");
 	escaped = escaped.replace("\\\\", "\\");
 
 	return escaped;
@@ -3896,7 +3927,6 @@ String String::c_escape() const {
 	escaped = escaped.replace("\t", "\\t");
 	escaped = escaped.replace("\v", "\\v");
 	escaped = escaped.replace("\'", "\\'");
-	escaped = escaped.replace("\?", "\\?");
 	escaped = escaped.replace("\"", "\\\"");
 
 	return escaped;
@@ -4320,6 +4350,9 @@ bool String::is_valid_html_color() const {
 	return Color::html_is_valid(*this);
 }
 
+// Changes made to the set of invalid filename characters must also be reflected in the String documentation for is_valid_filename.
+static const char *invalid_filename_characters = ": / \\ ? * \" | % < >";
+
 bool String::is_valid_filename() const {
 	String stripped = strip_edges();
 	if (*this != stripped) {
@@ -4330,7 +4363,22 @@ bool String::is_valid_filename() const {
 		return false;
 	}
 
-	return !(find(":") != -1 || find("/") != -1 || find("\\") != -1 || find("?") != -1 || find("*") != -1 || find("\"") != -1 || find("|") != -1 || find("%") != -1 || find("<") != -1 || find(">") != -1);
+	Vector<String> chars = String(invalid_filename_characters).split(" ");
+	for (const String &ch : chars) {
+		if (contains(ch)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+String String::validate_filename() const {
+	Vector<String> chars = String(invalid_filename_characters).split(" ");
+	String name = strip_edges();
+	for (int i = 0; i < chars.size(); i++) {
+		name = name.replace(chars[i], "_");
+	}
+	return name;
 }
 
 bool String::is_valid_ip_address() const {
@@ -4646,15 +4694,18 @@ String String::sprintf(const Array &values, bool *error) const {
 					double value = values[value_index];
 					bool is_negative = (value < 0);
 					String str = String::num(ABS(value), min_decimals);
+					const bool is_finite = Math::is_finite(value);
 
 					// Pad decimals out.
-					str = str.pad_decimals(min_decimals);
+					if (is_finite) {
+						str = str.pad_decimals(min_decimals);
+					}
 
 					int initial_len = str.length();
 
 					// Padding. Leave room for sign later if required.
 					int pad_chars_count = (is_negative || show_sign) ? min_chars - 1 : min_chars;
-					String pad_char = pad_with_zeros ? String("0") : String(" ");
+					String pad_char = (pad_with_zeros && is_finite) ? String("0") : String(" "); // Never pad NaN or inf with zeros
 					if (left_justified) {
 						str = str.rpad(pad_chars_count, pad_char);
 					} else {
@@ -4704,14 +4755,19 @@ String String::sprintf(const Array &values, bool *error) const {
 					String str = "(";
 					for (int i = 0; i < count; i++) {
 						double val = vec[i];
+						String number_str = String::num(ABS(val), min_decimals);
+						const bool is_finite = Math::is_finite(val);
+
 						// Pad decimals out.
-						String number_str = String::num(ABS(val), min_decimals).pad_decimals(min_decimals);
+						if (is_finite) {
+							number_str = number_str.pad_decimals(min_decimals);
+						}
 
 						int initial_len = number_str.length();
 
 						// Padding. Leave room for sign later if required.
 						int pad_chars_count = val < 0 ? min_chars - 1 : min_chars;
-						String pad_char = pad_with_zeros ? String("0") : String(" ");
+						String pad_char = (pad_with_zeros && is_finite) ? String("0") : String(" "); // Never pad NaN or inf with zeros
 						if (left_justified) {
 							number_str = number_str.rpad(pad_chars_count, pad_char);
 						} else {

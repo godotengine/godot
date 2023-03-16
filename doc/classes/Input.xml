@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Input" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Input" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A singleton that deals with inputs.
 	</brief_description>
@@ -155,9 +155,9 @@
 			</description>
 		</method>
 		<method name="get_mouse_button_mask" qualifiers="const">
-			<return type="int" enum="MouseButton" />
+			<return type="int" enum="MouseButtonMask" />
 			<description>
-				Returns mouse buttons as a bitmask. If multiple mouse buttons are pressed at the same time, the bits are added together.
+				Returns mouse buttons as a bitmask. If multiple mouse buttons are pressed at the same time, the bits are added together. Equivalent to [method DisplayServer.mouse_get_button_state].
 			</description>
 		</method>
 		<method name="get_vector" qualifiers="const">
@@ -224,11 +224,18 @@
 				Returns [code]true[/code] if the system knows the specified device. This means that it sets all button and axis indices. Unknown joypads are not expected to match these constants, but you can still retrieve events from them.
 			</description>
 		</method>
+		<method name="is_key_label_pressed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="keycode" type="int" enum="Key" />
+			<description>
+				Returns [code]true[/code] if you are pressing the key with the [param keycode] printed on it. You can pass a [enum Key] constant or any Unicode character code.
+			</description>
+		</method>
 		<method name="is_key_pressed" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="keycode" type="int" enum="Key" />
 			<description>
-				Returns [code]true[/code] if you are pressing the key in the current keyboard layout. You can pass a [enum Key] constant.
+				Returns [code]true[/code] if you are pressing the Latin key in the current keyboard layout. You can pass a [enum Key] constant.
 				[method is_key_pressed] is only recommended over [method is_physical_key_pressed] in non-game applications. This ensures that shortcut keys behave as expected depending on the user's keyboard layout, as keyboard shortcuts are generally dependent on the keyboard layout in non-game applications. If in doubt, use [method is_physical_key_pressed].
 				[b]Note:[/b] Due to keyboard ghosting, [method is_key_pressed] may return [code]false[/code] even if one of the action's keys is pressed. See [url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input examples[/url] in the documentation for more information.
 			</description>
@@ -254,7 +261,7 @@
 			<param index="0" name="event" type="InputEvent" />
 			<description>
 				Feeds an [InputEvent] to the game. Can be used to artificially trigger input events from code. Also generates [method Node._input] calls.
-				Example:
+				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var cancel_event = InputEventAction.new()
@@ -297,6 +304,7 @@
 				[param hotspot] must be within [param image]'s size.
 				[b]Note:[/b] [AnimatedTexture]s aren't supported as custom mouse cursors. If using an [AnimatedTexture], only the first frame will be displayed.
 				[b]Note:[/b] Only images imported with the [b]Lossless[/b], [b]Lossy[/b] or [b]Uncompressed[/b] compression modes are supported. The [b]Video RAM[/b] compression mode can't be used for custom cursors.
+				[b]Note:[/b] On the web platform, the maximum allowed cursor image size is 128×128. Cursor images larger than 32×32 will also only be displayed if the mouse cursor image is entirely located within the page for [url=https://chromestatus.com/feature/5825971391299584]security reasons[/url].
 			</description>
 		</method>
 		<method name="set_default_cursor_shape">
@@ -339,7 +347,7 @@
 			<param index="2" name="strong_magnitude" type="float" />
 			<param index="3" name="duration" type="float" default="0" />
 			<description>
-				Starts to vibrate the joypad. Joypads usually come with two rumble motors, a strong and a weak one. [param weak_magnitude] is the strength of the weak motor (between 0 and 1) and [param strong_magnitude] is the strength of the strong motor (between 0 and 1). [param duration] is the duration of the effect in seconds (a duration of 0 will try to play the vibration indefinitely).
+				Starts to vibrate the joypad. Joypads usually come with two rumble motors, a strong and a weak one. [param weak_magnitude] is the strength of the weak motor (between 0 and 1) and [param strong_magnitude] is the strength of the strong motor (between 0 and 1). [param duration] is the duration of the effect in seconds (a duration of 0 will try to play the vibration indefinitely). The vibration can be stopped early by calling [method stop_joy_vibration].
 				[b]Note:[/b] Not every hardware is compatible with long effect durations; it is recommended to restart an effect if it has to be played for more than a few seconds.
 			</description>
 		</method>
@@ -347,18 +355,18 @@
 			<return type="void" />
 			<param index="0" name="device" type="int" />
 			<description>
-				Stops the vibration of the joypad.
+				Stops the vibration of the joypad started with [method start_joy_vibration].
 			</description>
 		</method>
 		<method name="vibrate_handheld">
 			<return type="void" />
 			<param index="0" name="duration_ms" type="int" default="500" />
 			<description>
-				Vibrate handheld devices.
-				[b]Note:[/b] This method is implemented on Android, iOS, and Web.
-				[b]Note:[/b] For Android, it requires enabling the [code]VIBRATE[/code] permission in the export preset.
-				[b]Note:[/b] For iOS, specifying the duration is supported in iOS 13 and later.
-				[b]Note:[/b] Some web browsers such as Safari and Firefox for Android do not support this method.
+				Vibrate the handheld device for the specified duration in milliseconds.
+				[b]Note:[/b] This method is implemented on Android, iOS, and Web. It has no effect on other platforms.
+				[b]Note:[/b] For Android, [method vibrate_handheld] requires enabling the [code]VIBRATE[/code] permission in the export preset. Otherwise, [method vibrate_handheld] will have no effect.
+				[b]Note:[/b] For iOS, specifying the duration is only supported in iOS 13 and later.
+				[b]Note:[/b] Some web browsers such as Safari and Firefox for Android do not support [method vibrate_handheld].
 			</description>
 		</method>
 		<method name="warp_mouse">
@@ -366,7 +374,8 @@
 			<param index="0" name="position" type="Vector2" />
 			<description>
 				Sets the mouse position to the specified vector, provided in pixels and relative to an origin at the upper left corner of the currently focused Window Manager game window.
-				Mouse position is clipped to the limits of the screen resolution, or to the limits of the game window if [enum MouseMode] is set to [code]MOUSE_MODE_CONFINED[/code] or [code]MOUSE_MODE_CONFINED_HIDDEN[/code].
+				Mouse position is clipped to the limits of the screen resolution, or to the limits of the game window if [enum MouseMode] is set to [constant MOUSE_MODE_CONFINED] or [constant MOUSE_MODE_CONFINED_HIDDEN].
+				[b]Note:[/b] [method warp_mouse] is only supported on Windows, macOS and Linux. It has no effect on Android, iOS and Web.
 			</description>
 		</method>
 	</methods>
@@ -397,7 +406,7 @@
 			Makes the mouse cursor hidden if it is visible.
 		</constant>
 		<constant name="MOUSE_MODE_CAPTURED" value="2" enum="MouseMode">
-			Captures the mouse. The mouse will be hidden and its position locked at the center of the screen.
+			Captures the mouse. The mouse will be hidden and its position locked at the center of the window manager's window.
 			[b]Note:[/b] If you want to process the mouse's movement in this mode, you need to use [member InputEventMouseMotion.relative].
 		</constant>
 		<constant name="MOUSE_MODE_CONFINED" value="3" enum="MouseMode">

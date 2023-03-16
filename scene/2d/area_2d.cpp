@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  area_2d.cpp                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  area_2d.cpp                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "area_2d.h"
 
@@ -51,13 +51,13 @@ bool Area2D::is_gravity_a_point() const {
 	return gravity_is_point;
 }
 
-void Area2D::set_gravity_point_distance_scale(real_t p_scale) {
-	gravity_distance_scale = p_scale;
-	PhysicsServer2D::get_singleton()->area_set_param(get_rid(), PhysicsServer2D::AREA_PARAM_GRAVITY_DISTANCE_SCALE, p_scale);
+void Area2D::set_gravity_point_unit_distance(real_t p_scale) {
+	gravity_point_unit_distance = p_scale;
+	PhysicsServer2D::get_singleton()->area_set_param(get_rid(), PhysicsServer2D::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE, p_scale);
 }
 
-real_t Area2D::get_gravity_point_distance_scale() const {
-	return gravity_distance_scale;
+real_t Area2D::get_gravity_point_unit_distance() const {
+	return gravity_point_unit_distance;
 }
 
 void Area2D::set_gravity_point_center(const Vector2 &p_center) {
@@ -175,6 +175,7 @@ void Area2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 		return; //does not exist because it was likely removed from the tree
 	}
 
+	lock_callback();
 	locked = true;
 
 	if (body_in) {
@@ -224,6 +225,7 @@ void Area2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 	}
 
 	locked = false;
+	unlock_callback();
 }
 
 void Area2D::_area_enter_tree(ObjectID p_id) {
@@ -268,6 +270,8 @@ void Area2D::_area_inout(int p_status, const RID &p_area, ObjectID p_instance, i
 	if (!area_in && !E) {
 		return; //likely removed from the tree
 	}
+
+	lock_callback();
 	locked = true;
 
 	if (area_in) {
@@ -317,6 +321,7 @@ void Area2D::_area_inout(int p_status, const RID &p_area, ObjectID p_instance, i
 	}
 
 	locked = false;
+	unlock_callback();
 }
 
 void Area2D::_clear_monitoring() {
@@ -552,8 +557,8 @@ void Area2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_gravity_is_point", "enable"), &Area2D::set_gravity_is_point);
 	ClassDB::bind_method(D_METHOD("is_gravity_a_point"), &Area2D::is_gravity_a_point);
 
-	ClassDB::bind_method(D_METHOD("set_gravity_point_distance_scale", "distance_scale"), &Area2D::set_gravity_point_distance_scale);
-	ClassDB::bind_method(D_METHOD("get_gravity_point_distance_scale"), &Area2D::get_gravity_point_distance_scale);
+	ClassDB::bind_method(D_METHOD("set_gravity_point_unit_distance", "distance_scale"), &Area2D::set_gravity_point_unit_distance);
+	ClassDB::bind_method(D_METHOD("get_gravity_point_unit_distance"), &Area2D::get_gravity_point_unit_distance);
 
 	ClassDB::bind_method(D_METHOD("set_gravity_point_center", "center"), &Area2D::set_gravity_point_center);
 	ClassDB::bind_method(D_METHOD("get_gravity_point_center"), &Area2D::get_gravity_point_center);
@@ -617,7 +622,7 @@ void Area2D::_bind_methods() {
 	ADD_GROUP("Gravity", "gravity_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gravity_space_override", PROPERTY_HINT_ENUM, "Disabled,Combine,Combine-Replace,Replace,Replace-Combine", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_gravity_space_override_mode", "get_gravity_space_override_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gravity_point", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_gravity_is_point", "is_gravity_a_point");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_point_distance_scale", PROPERTY_HINT_RANGE, "0,1024,0.001,or_greater,exp"), "set_gravity_point_distance_scale", "get_gravity_point_distance_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_point_unit_distance", PROPERTY_HINT_RANGE, "0,1024,0.001,or_greater,exp,suffix:px"), "set_gravity_point_unit_distance", "get_gravity_point_unit_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "gravity_point_center", PROPERTY_HINT_NONE, "suffix:px"), "set_gravity_point_center", "get_gravity_point_center");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "gravity_direction"), "set_gravity_direction", "get_gravity_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity", PROPERTY_HINT_RANGE, U"-4096,4096,0.001,or_less,or_greater,suffix:px/s\u00B2"), "set_gravity", "get_gravity");
@@ -647,6 +652,7 @@ Area2D::Area2D() :
 	set_gravity_direction(Vector2(0, 1));
 	set_monitoring(true);
 	set_monitorable(true);
+	set_hide_clip_children(true);
 }
 
 Area2D::~Area2D() {

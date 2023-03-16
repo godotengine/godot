@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  animation_state_machine_editor.cpp                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  animation_state_machine_editor.cpp                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "animation_state_machine_editor.h"
 
@@ -43,7 +43,10 @@
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/panel.h"
+#include "scene/gui/panel_container.h"
+#include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
@@ -76,7 +79,12 @@ void AnimationNodeStateMachineEditor::edit(const Ref<AnimationNode> &p_node) {
 }
 
 void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEvent> &p_event) {
-	Ref<AnimationNodeStateMachinePlayback> playback = AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
+	AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
+	if (!tree) {
+		return;
+	}
+
+	Ref<AnimationNodeStateMachinePlayback> playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 	if (playback.is_null()) {
 		return;
 	}
@@ -238,6 +246,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			Ref<AnimationNode> an = state_machine->get_node(selected_node);
 			updating = true;
 
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Move Node"));
 
 			for (int i = 0; i < node_rects.size(); i++) {
@@ -328,7 +337,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	// Pan window
-	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_MIDDLE) != MouseButton::NONE) {
+	if (mm.is_valid() && mm->get_button_mask().has_flag(MouseButtonMask::MIDDLE)) {
 		h_scroll->set_value(h_scroll->get_value() - mm->get_relative().x);
 		v_scroll->set_value(v_scroll->get_value() - mm->get_relative().y);
 	}
@@ -420,7 +429,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	if (mm.is_valid()) {
 		state_machine_draw->grab_focus();
 
-		String new_over_node = StringName();
+		String new_over_node;
 		int new_over_node_what = -1;
 		if (tool_select->is_pressed()) {
 			for (int i = node_rects.size() - 1; i >= 0; i--) { // Inverse to draw order.
@@ -534,6 +543,7 @@ void AnimationNodeStateMachineEditor::_group_selected_nodes() {
 		}
 
 		updating = true;
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action("Group");
 
 		// Move selected nodes to the new state machine
@@ -648,6 +658,7 @@ void AnimationNodeStateMachineEditor::_ungroup_selected_nodes() {
 			Vector<TransitionUR> transitions_ur;
 
 			updating = true;
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action("Ungroup");
 
 			// Move all child nodes to current state machine
@@ -730,6 +741,11 @@ void AnimationNodeStateMachineEditor::_ungroup_selected_nodes() {
 }
 
 void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
+	AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
+	if (!tree) {
+		return;
+	}
+
 	menu->clear();
 	animations_menu->clear();
 	animations_to_add.clear();
@@ -739,10 +755,8 @@ void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
 	ClassDB::get_inheriters_from_class("AnimationRootNode", &classes);
 	menu->add_submenu_item(TTR("Add Animation"), "animations");
 
-	AnimationTree *gp = AnimationTreeEditor::get_singleton()->get_tree();
-	ERR_FAIL_COND(!gp);
-	if (gp && gp->has_node(gp->get_animation_player())) {
-		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(gp->get_node(gp->get_animation_player()));
+	if (tree->has_node(tree->get_animation_player())) {
+		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(tree->get_node(tree->get_animation_player()));
 		if (ap) {
 			List<StringName> names;
 			ap->get_animation_list(&names);
@@ -921,6 +935,7 @@ void AnimationNodeStateMachineEditor::_stop_connecting() {
 
 void AnimationNodeStateMachineEditor::_delete_selected() {
 	TreeItem *item = delete_tree->get_next_selected(nullptr);
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	while (item) {
 		if (!updating) {
 			updating = true;
@@ -948,6 +963,7 @@ void AnimationNodeStateMachineEditor::_delete_all() {
 	selected_multi_transition = TransitionLine();
 
 	updating = true;
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action("Transition(s) Removed");
 	_erase_selected(true);
 	for (int i = 0; i < multi_transitions.size(); i++) {
@@ -974,6 +990,8 @@ void AnimationNodeStateMachineEditor::_file_opened(const String &p_file) {
 	file_loaded = ResourceLoader::load(p_file);
 	if (file_loaded.is_valid()) {
 		_add_menu_type(MENU_LOAD_FILE_CONFIRM);
+	} else {
+		EditorNode::get_singleton()->show_warning(TTR("This type of node can't be used. Only animation nodes are allowed."));
 	}
 }
 
@@ -1025,6 +1043,7 @@ void AnimationNodeStateMachineEditor::_add_menu_type(int p_index) {
 	}
 
 	updating = true;
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Node and Transition"));
 	undo_redo->add_do_method(state_machine.ptr(), "add_node", name, node, add_node_pos);
 	undo_redo->add_undo_method(state_machine.ptr(), "remove_node", name);
@@ -1051,6 +1070,7 @@ void AnimationNodeStateMachineEditor::_add_animation_type(int p_index) {
 	}
 
 	updating = true;
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Node and Transition"));
 	undo_redo->add_do_method(state_machine.ptr(), "add_node", name, anim, add_node_pos);
 	undo_redo->add_undo_method(state_machine.ptr(), "remove_node", name);
@@ -1077,8 +1097,10 @@ void AnimationNodeStateMachineEditor::_add_transition(const bool p_nested_action
 
 		Ref<AnimationNodeStateMachineTransition> tr;
 		tr.instantiate();
-		tr->set_switch_mode(AnimationNodeStateMachineTransition::SwitchMode(transition_mode->get_selected()));
+		tr->set_advance_mode(auto_advance->is_pressed() ? AnimationNodeStateMachineTransition::AdvanceMode::ADVANCE_MODE_AUTO : AnimationNodeStateMachineTransition::AdvanceMode::ADVANCE_MODE_ENABLED);
+		tr->set_switch_mode(AnimationNodeStateMachineTransition::SwitchMode(switch_mode->get_selected()));
 
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		if (!p_nested_action) {
 			updating = true;
 			undo_redo->create_action(TTR("Add Transition"));
@@ -1105,7 +1127,7 @@ void AnimationNodeStateMachineEditor::_add_transition(const bool p_nested_action
 	connecting = false;
 }
 
-void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, bool p_enabled, bool p_selected, bool p_travel, bool p_auto_advance, bool p_multi_transitions) {
+void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, bool p_enabled, bool p_selected, bool p_travel, float p_fade_ratio, bool p_auto_advance, bool p_multi_transitions) {
 	Color linecolor = get_theme_color(SNAME("font_color"), SNAME("Label"));
 	Color icon_color(1, 1, 1);
 	Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
@@ -1116,7 +1138,7 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 		accent.a *= 0.6;
 	}
 
-	const Ref<Texture2D> icons[6] = {
+	const Ref<Texture2D> icons[] = {
 		get_theme_icon(SNAME("TransitionImmediateBig"), SNAME("EditorIcons")),
 		get_theme_icon(SNAME("TransitionSyncBig"), SNAME("EditorIcons")),
 		get_theme_icon(SNAME("TransitionEndBig"), SNAME("EditorIcons")),
@@ -1124,6 +1146,7 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 		get_theme_icon(SNAME("TransitionSyncAutoBig"), SNAME("EditorIcons")),
 		get_theme_icon(SNAME("TransitionEndAutoBig"), SNAME("EditorIcons"))
 	};
+	const int ICON_COUNT = sizeof(icons) / sizeof(*icons);
 
 	if (p_selected) {
 		state_machine_draw->draw_line(p_from, p_to, accent, 6);
@@ -1131,12 +1154,18 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 
 	if (p_travel) {
 		linecolor = accent;
-		linecolor.set_hsv(1.0, linecolor.get_s(), linecolor.get_v());
 	}
 
 	state_machine_draw->draw_line(p_from, p_to, linecolor, 2);
 
-	Ref<Texture2D> icon = icons[p_mode + (p_auto_advance ? 3 : 0)];
+	if (p_fade_ratio > 0.0) {
+		Color fade_linecolor = accent;
+		fade_linecolor.set_hsv(1.0, fade_linecolor.get_s(), fade_linecolor.get_v());
+		state_machine_draw->draw_line(p_from, p_from.lerp(p_to, p_fade_ratio), fade_linecolor, 2);
+	}
+	int icon_index = p_mode + (p_auto_advance ? ICON_COUNT / 2 : 0);
+	ERR_FAIL_COND(icon_index >= ICON_COUNT);
+	Ref<Texture2D> icon = icons[icon_index];
 
 	Transform2D xf;
 	xf.columns[0] = (p_to - p_from).normalized();
@@ -1179,7 +1208,12 @@ void AnimationNodeStateMachineEditor::_clip_dst_line_to_rect(const Vector2 &p_fr
 }
 
 void AnimationNodeStateMachineEditor::_state_machine_draw() {
-	Ref<AnimationNodeStateMachinePlayback> playback = AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
+	AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
+	if (!tree) {
+		return;
+	}
+
+	Ref<AnimationNodeStateMachinePlayback> playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 
 	Ref<StyleBoxFlat> style = get_theme_stylebox(SNAME("state_machine_frame"), SNAME("GraphNode"));
 	Ref<StyleBoxFlat> style_selected = get_theme_stylebox(SNAME("state_machine_selected_frame"), SNAME("GraphNode"));
@@ -1210,7 +1244,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	if (playback.is_valid()) {
 		playing = playback->is_playing();
 		current = playback->get_current_node();
-		blend_from = playback->get_blend_from_node();
+		blend_from = playback->get_fading_from_node();
 		travel_path = playback->get_travel_path();
 	}
 
@@ -1300,7 +1334,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 			}
 		}
 
-		_connection_draw(from, to, AnimationNodeStateMachineTransition::SwitchMode(transition_mode->get_selected()), true, false, false, false, false);
+		_connection_draw(from, to, AnimationNodeStateMachineTransition::SwitchMode(switch_mode->get_selected()), true, false, false, 0.0, false, false);
 	}
 
 	Ref<Texture2D> tr_reference_icon = get_theme_icon(SNAME("TransitionImmediateBig"), SNAME("EditorIcons"));
@@ -1323,13 +1357,14 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		tl.to = (state_machine->get_node_position(local_to) * EDSCALE) + ofs_to - state_machine->get_graph_offset() * EDSCALE;
 
 		Ref<AnimationNodeStateMachineTransition> tr = state_machine->get_transition(i);
-		tl.disabled = tr->is_disabled();
-		tl.auto_advance = tr->has_auto_advance();
+		tl.disabled = bool(tr->get_advance_mode() == AnimationNodeStateMachineTransition::ADVANCE_MODE_DISABLED);
+		tl.auto_advance = bool(tr->get_advance_mode() == AnimationNodeStateMachineTransition::ADVANCE_MODE_AUTO);
 		tl.advance_condition_name = tr->get_advance_condition_name();
 		tl.advance_condition_state = false;
 		tl.mode = tr->get_switch_mode();
 		tl.width = tr_bidi_offset;
 		tl.travel = false;
+		tl.fade_ratio = 0.0;
 		tl.hidden = false;
 
 		if (state_machine->has_local_transition(local_to, local_from)) { //offset if same exists
@@ -1351,6 +1386,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 
 		if (blend_from == local_from && current == local_to) {
 			tl.travel = true;
+			tl.fade_ratio = MIN(1.0, fading_pos / fading_time);
 		}
 
 		if (travel_path.size()) {
@@ -1367,7 +1403,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		}
 
 		StringName fullpath = AnimationTreeEditor::get_singleton()->get_base_path() + String(tl.advance_condition_name);
-		if (tl.advance_condition_name != StringName() && bool(AnimationTreeEditor::get_singleton()->get_tree()->get(fullpath))) {
+		if (tl.advance_condition_name != StringName() && bool(tree->get(fullpath))) {
 			tl.advance_condition_state = true;
 			tl.auto_advance = true;
 		}
@@ -1391,7 +1427,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	for (int i = 0; i < transition_lines.size(); i++) {
 		TransitionLine tl = transition_lines[i];
 		if (!tl.hidden) {
-			_connection_draw(tl.from, tl.to, tl.mode, !tl.disabled, tl.selected, tl.travel, tl.auto_advance, !tl.multi_transitions.is_empty());
+			_connection_draw(tl.from, tl.to, tl.mode, !tl.disabled, tl.selected, tl.travel, tl.fade_ratio, tl.auto_advance, !tl.multi_transitions.is_empty());
 		}
 	}
 
@@ -1481,20 +1517,24 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	state_machine_play_pos->queue_redraw();
 }
 
-void AnimationNodeStateMachineEditor::_state_machine_pos_draw() {
-	Ref<AnimationNodeStateMachinePlayback> playback = AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
+void AnimationNodeStateMachineEditor::_state_machine_pos_draw_individual(String p_name, float p_ratio) {
+	AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
+	if (!tree) {
+		return;
+	}
 
+	Ref<AnimationNodeStateMachinePlayback> playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 	if (!playback.is_valid() || !playback->is_playing()) {
 		return;
 	}
 
-	if (playback->get_current_node() == state_machine->start_node || playback->get_current_node() == state_machine->end_node) {
+	if (p_name == state_machine->start_node || p_name == state_machine->end_node || p_name.is_empty()) {
 		return;
 	}
 
 	int idx = -1;
 	for (int i = 0; i < node_rects.size(); i++) {
-		if (node_rects[i].node_name == playback->get_current_node()) {
+		if (node_rects[i].node_name == p_name) {
 			idx = i;
 			break;
 		}
@@ -1518,10 +1558,7 @@ void AnimationNodeStateMachineEditor::_state_machine_pos_draw() {
 	}
 	to.y = from.y;
 
-	float len = MAX(0.0001, current_length);
-
-	float pos = CLAMP(play_pos, 0, len);
-	float c = pos / len;
+	float c = p_ratio;
 	Color fg = get_theme_color(SNAME("font_color"), SNAME("Label"));
 	Color bg = fg;
 	bg.a *= 0.3;
@@ -1531,6 +1568,32 @@ void AnimationNodeStateMachineEditor::_state_machine_pos_draw() {
 	to = from.lerp(to, c);
 
 	state_machine_play_pos->draw_line(from, to, fg, 2);
+}
+
+void AnimationNodeStateMachineEditor::_state_machine_pos_draw_all() {
+	AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
+	if (!tree) {
+		return;
+	}
+
+	Ref<AnimationNodeStateMachinePlayback> playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
+	if (!playback.is_valid() || !playback->is_playing()) {
+		return;
+	}
+
+	{
+		float len = MAX(0.0001, current_length);
+		float pos = CLAMP(current_play_pos, 0, len);
+		float c = pos / len;
+		_state_machine_pos_draw_individual(playback->get_current_node(), c);
+	}
+
+	{
+		float len = MAX(0.0001, fade_from_length);
+		float pos = CLAMP(fade_from_current_play_pos, 0, len);
+		float c = pos / len;
+		_state_machine_pos_draw_individual(playback->get_fading_from_node(), c);
+	}
 }
 
 void AnimationNodeStateMachineEditor::_update_graph() {
@@ -1559,10 +1622,12 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 			tool_create->set_icon(get_theme_icon(SNAME("ToolAddNode"), SNAME("EditorIcons")));
 			tool_connect->set_icon(get_theme_icon(SNAME("ToolConnect"), SNAME("EditorIcons")));
 
-			transition_mode->clear();
-			transition_mode->add_icon_item(get_theme_icon(SNAME("TransitionImmediate"), SNAME("EditorIcons")), TTR("Immediate"));
-			transition_mode->add_icon_item(get_theme_icon(SNAME("TransitionSync"), SNAME("EditorIcons")), TTR("Sync"));
-			transition_mode->add_icon_item(get_theme_icon(SNAME("TransitionEnd"), SNAME("EditorIcons")), TTR("At End"));
+			switch_mode->clear();
+			switch_mode->add_icon_item(get_theme_icon(SNAME("TransitionImmediate"), SNAME("EditorIcons")), TTR("Immediate"));
+			switch_mode->add_icon_item(get_theme_icon(SNAME("TransitionSync"), SNAME("EditorIcons")), TTR("Sync"));
+			switch_mode->add_icon_item(get_theme_icon(SNAME("TransitionEnd"), SNAME("EditorIcons")), TTR("At End"));
+
+			auto_advance->set_icon(get_theme_icon(SNAME("AutoPlay"), SNAME("EditorIcons")));
 
 			tool_erase->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			tool_group->set_icon(get_theme_icon(SNAME("Group"), SNAME("EditorIcons")));
@@ -1574,17 +1639,22 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PROCESS: {
+			AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
+			if (!tree) {
+				return;
+			}
+
 			String error;
 
-			Ref<AnimationNodeStateMachinePlayback> playback = AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
+			Ref<AnimationNodeStateMachinePlayback> playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 
 			if (error_time > 0) {
 				error = error_text;
 				error_time -= get_process_delta_time();
-			} else if (!AnimationTreeEditor::get_singleton()->get_tree()->is_active()) {
+			} else if (!tree->is_active()) {
 				error = TTR("AnimationTree is inactive.\nActivate to enable playback, check node warnings if activation fails.");
-			} else if (AnimationTreeEditor::get_singleton()->get_tree()->is_state_invalid()) {
-				error = AnimationTreeEditor::get_singleton()->get_tree()->get_invalid_state_reason();
+			} else if (tree->is_state_invalid()) {
+				error = tree->get_invalid_state_reason();
 				/*} else if (state_machine->get_parent().is_valid() && state_machine->get_parent()->is_class("AnimationNodeStateMachine")) {
 				if (state_machine->get_start_node() == StringName() || state_machine->get_end_node() == StringName()) {
 					error = TTR("Start and end nodes are needed for a sub-transition.");
@@ -1616,12 +1686,12 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 					break;
 				}
 
-				if (transition_lines[i].disabled != state_machine->get_transition(tidx)->is_disabled()) {
+				if (transition_lines[i].disabled != bool(state_machine->get_transition(tidx)->get_advance_mode() == AnimationNodeStateMachineTransition::ADVANCE_MODE_DISABLED)) {
 					state_machine_draw->queue_redraw();
 					break;
 				}
 
-				if (transition_lines[i].auto_advance != state_machine->get_transition(tidx)->has_auto_advance()) {
+				if (transition_lines[i].auto_advance != bool(state_machine->get_transition(tidx)->get_advance_mode() == AnimationNodeStateMachineTransition::ADVANCE_MODE_AUTO)) {
 					state_machine_draw->queue_redraw();
 					break;
 				}
@@ -1636,7 +1706,7 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 					break;
 				}
 
-				bool acstate = transition_lines[i].advance_condition_name != StringName() && bool(AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + String(transition_lines[i].advance_condition_name)));
+				bool acstate = transition_lines[i].advance_condition_name != StringName() && bool(tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + String(transition_lines[i].advance_condition_name)));
 
 				if (transition_lines[i].advance_condition_state != acstate) {
 					state_machine_draw->queue_redraw();
@@ -1648,17 +1718,28 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 			Vector<StringName> tp;
 			bool is_playing = false;
 			StringName current_node;
-			StringName blend_from_node;
-			play_pos = 0;
+			StringName fading_from_node;
+
+			current_play_pos = 0;
 			current_length = 0;
+
+			fade_from_current_play_pos = 0;
+			fade_from_length = 0;
+
+			fading_time = 0;
+			fading_pos = 0;
 
 			if (playback.is_valid()) {
 				tp = playback->get_travel_path();
 				is_playing = playback->is_playing();
 				current_node = playback->get_current_node();
-				blend_from_node = playback->get_blend_from_node();
-				play_pos = playback->get_current_play_pos();
+				fading_from_node = playback->get_fading_from_node();
+				current_play_pos = playback->get_current_play_pos();
 				current_length = playback->get_current_length();
+				fade_from_current_play_pos = playback->get_fade_from_play_pos();
+				fade_from_length = playback->get_fade_from_length();
+				fading_time = playback->get_fading_time();
+				fading_pos = playback->get_fading_pos();
 			}
 
 			{
@@ -1675,12 +1756,19 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 			}
 
 			//redraw if travel state changed
-			if (!same_travel_path || last_active != is_playing || last_current_node != current_node || last_blend_from_node != blend_from_node) {
+			if (!same_travel_path ||
+					last_active != is_playing ||
+					last_current_node != current_node ||
+					last_fading_from_node != fading_from_node ||
+					last_fading_time != fading_time ||
+					last_fading_pos != fading_pos) {
 				state_machine_draw->queue_redraw();
 				last_travel_path = tp;
 				last_current_node = current_node;
 				last_active = is_playing;
-				last_blend_from_node = blend_from_node;
+				last_fading_from_node = fading_from_node;
+				last_fading_time = fading_time;
+				last_fading_pos = fading_pos;
 				state_machine_play_pos->queue_redraw();
 			}
 
@@ -1691,21 +1779,22 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 					Ref<AnimationNodeStateMachinePlayback> current_node_playback;
 
 					while (anodesm.is_valid()) {
-						current_node_playback = AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + next + "/playback");
+						current_node_playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + next + "/playback");
 						next += "/" + current_node_playback->get_current_node();
 						anodesm = anodesm->get_node(current_node_playback->get_current_node());
 					}
 
 					// when current_node is a state machine, use playback of current_node to set play_pos
 					if (current_node_playback.is_valid()) {
-						play_pos = current_node_playback->get_current_play_pos();
+						current_play_pos = current_node_playback->get_current_play_pos();
 						current_length = current_node_playback->get_current_length();
 					}
 				}
 			}
 
-			if (last_play_pos != play_pos) {
-				last_play_pos = play_pos;
+			if (last_play_pos != current_play_pos || fade_from_last_play_pos != fade_from_current_play_pos) {
+				last_play_pos = current_play_pos;
+				fade_from_last_play_pos = fade_from_current_play_pos;
 				state_machine_play_pos->queue_redraw();
 			}
 		} break;
@@ -1719,10 +1808,6 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 
 void AnimationNodeStateMachineEditor::_open_editor(const String &p_name) {
 	AnimationTreeEditor::get_singleton()->enter_editor(p_name);
-}
-
-void AnimationNodeStateMachineEditor::_removed_from_graph() {
-	EditorNode::get_singleton()->edit_item(nullptr);
 }
 
 void AnimationNodeStateMachineEditor::_name_edited(const String &p_text) {
@@ -1743,6 +1828,7 @@ void AnimationNodeStateMachineEditor::_name_edited(const String &p_text) {
 	}
 
 	updating = true;
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Node Renamed"));
 	undo_redo->add_do_method(state_machine.ptr(), "rename_node", prev_name, name);
 	undo_redo->add_undo_method(state_machine.ptr(), "rename_node", name, prev_name);
@@ -1777,6 +1863,7 @@ void AnimationNodeStateMachineEditor::_erase_selected(const bool p_nested_action
 		if (!p_nested_action) {
 			updating = true;
 		}
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Node Removed"));
 
 		for (int i = 0; i < node_rects.size(); i++) {
@@ -1845,6 +1932,7 @@ void AnimationNodeStateMachineEditor::_erase_selected(const bool p_nested_action
 		if (!p_nested_action) {
 			updating = true;
 		}
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Transition Removed"));
 		undo_redo->add_do_method(state_machine.ptr(), "remove_transition", selected_transition_from, selected_transition_to);
 		undo_redo->add_undo_method(state_machine.ptr(), "add_transition", selected_transition_from, selected_transition_to, tr);
@@ -1865,7 +1953,7 @@ void AnimationNodeStateMachineEditor::_erase_selected(const bool p_nested_action
 
 void AnimationNodeStateMachineEditor::_update_mode() {
 	if (tool_select->is_pressed()) {
-		tool_erase_hb->show();
+		selection_tools_hb->show();
 		bool nothing_selected = selected_nodes.is_empty() && selected_transition_from == StringName() && selected_transition_to == StringName();
 		bool start_end_selected = selected_nodes.size() == 1 && (*selected_nodes.begin() == state_machine->start_node || *selected_nodes.begin() == state_machine->end_node);
 		tool_erase->set_disabled(nothing_selected || start_end_selected || read_only);
@@ -1888,13 +1976,18 @@ void AnimationNodeStateMachineEditor::_update_mode() {
 			}
 		}
 	} else {
-		tool_erase_hb->hide();
+		selection_tools_hb->hide();
+	}
+
+	if (tool_connect->is_pressed()) {
+		transition_tools_hb->show();
+	} else {
+		transition_tools_hb->hide();
 	}
 }
 
 void AnimationNodeStateMachineEditor::_bind_methods() {
 	ClassDB::bind_method("_update_graph", &AnimationNodeStateMachineEditor::_update_graph);
-	ClassDB::bind_method("_removed_from_graph", &AnimationNodeStateMachineEditor::_removed_from_graph);
 	ClassDB::bind_method("_open_editor", &AnimationNodeStateMachineEditor::_open_editor);
 	ClassDB::bind_method("_connect_to", &AnimationNodeStateMachineEditor::_connect_to);
 	ClassDB::bind_method("_stop_connecting", &AnimationNodeStateMachineEditor::_stop_connecting);
@@ -1939,35 +2032,48 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_connect->set_tooltip_text(TTR("Connect nodes."));
 	tool_connect->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), CONNECT_DEFERRED);
 
-	tool_erase_hb = memnew(HBoxContainer);
-	top_hb->add_child(tool_erase_hb);
-	tool_erase_hb->add_child(memnew(VSeparator));
+	// Context-sensitive selection tools:
+	selection_tools_hb = memnew(HBoxContainer);
+	top_hb->add_child(selection_tools_hb);
+	selection_tools_hb->add_child(memnew(VSeparator));
 
 	tool_group = memnew(Button);
 	tool_group->set_flat(true);
 	tool_group->set_tooltip_text(TTR("Group Selected Node(s)") + " (Ctrl+G)");
 	tool_group->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_group_selected_nodes));
 	tool_group->set_disabled(true);
-	tool_erase_hb->add_child(tool_group);
+	selection_tools_hb->add_child(tool_group);
 
 	tool_ungroup = memnew(Button);
 	tool_ungroup->set_flat(true);
 	tool_ungroup->set_tooltip_text(TTR("Ungroup Selected Node") + " (Ctrl+Shift+G)");
 	tool_ungroup->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_ungroup_selected_nodes));
 	tool_ungroup->set_visible(false);
-	tool_erase_hb->add_child(tool_ungroup);
+	selection_tools_hb->add_child(tool_ungroup);
 
 	tool_erase = memnew(Button);
 	tool_erase->set_flat(true);
 	tool_erase->set_tooltip_text(TTR("Remove selected node or transition."));
 	tool_erase->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_erase_selected).bind(false));
 	tool_erase->set_disabled(true);
-	tool_erase_hb->add_child(tool_erase);
+	selection_tools_hb->add_child(tool_erase);
 
-	top_hb->add_child(memnew(VSeparator));
-	top_hb->add_child(memnew(Label(TTR("Transition:"))));
-	transition_mode = memnew(OptionButton);
-	top_hb->add_child(transition_mode);
+	transition_tools_hb = memnew(HBoxContainer);
+	top_hb->add_child(transition_tools_hb);
+	transition_tools_hb->add_child(memnew(VSeparator));
+
+	transition_tools_hb->add_child(memnew(Label(TTR("Transition:"))));
+	switch_mode = memnew(OptionButton);
+	transition_tools_hb->add_child(switch_mode);
+
+	auto_advance = memnew(Button);
+	auto_advance->set_flat(true);
+	auto_advance->set_tooltip_text(TTR("New Transitions Should Auto Advance"));
+	auto_advance->set_toggle_mode(true);
+	auto_advance->set_pressed(true);
+	transition_tools_hb->add_child(auto_advance);
+
+	//
 
 	top_hb->add_spacer();
 
@@ -1992,7 +2098,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	state_machine_draw->add_child(state_machine_play_pos);
 	state_machine_play_pos->set_mouse_filter(MOUSE_FILTER_PASS); //pass all to parent
 	state_machine_play_pos->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-	state_machine_play_pos->connect("draw", callable_mp(this, &AnimationNodeStateMachineEditor::_state_machine_pos_draw));
+	state_machine_play_pos->connect("draw", callable_mp(this, &AnimationNodeStateMachineEditor::_state_machine_pos_draw_all));
 
 	v_scroll = memnew(VScrollBar);
 	state_machine_draw->add_child(v_scroll);
@@ -2010,8 +2116,6 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	error_label = memnew(Label);
 	error_panel->add_child(error_label);
 	error_panel->hide();
-
-	undo_redo = EditorNode::get_undo_redo();
 
 	set_custom_minimum_size(Size2(0, 300 * EDSCALE));
 
@@ -2053,7 +2157,6 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	open_file->set_title(TTR("Open Animation Node"));
 	open_file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	open_file->connect("file_selected", callable_mp(this, &AnimationNodeStateMachineEditor::_file_opened));
-	undo_redo = EditorNode::get_undo_redo();
 
 	delete_window = memnew(ConfirmationDialog);
 	delete_window->set_flag(Window::FLAG_RESIZE_DISABLED, true);

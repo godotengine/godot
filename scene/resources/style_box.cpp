@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  style_box.cpp                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  style_box.cpp                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "style_box.h"
 
@@ -34,86 +34,65 @@
 
 #include <limits.h>
 
-float StyleBox::get_style_margin(Side p_side) const {
-	float ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_style_margin, p_side, ret)) {
-		return ret;
-	}
-	return 0;
-}
+Size2 StyleBox::get_minimum_size() const {
+	Size2 min_size = Size2(get_margin(SIDE_LEFT) + get_margin(SIDE_RIGHT), get_margin(SIDE_TOP) + get_margin(SIDE_BOTTOM));
+	Size2 custom_size;
+	GDVIRTUAL_CALL(_get_minimum_size, custom_size);
 
-bool StyleBox::test_mask(const Point2 &p_point, const Rect2 &p_rect) const {
-	bool ret;
-	if (GDVIRTUAL_CALL(_test_mask, p_point, p_rect, ret)) {
-		return ret;
+	if (min_size.x < custom_size.x) {
+		min_size.x = custom_size.x;
+	}
+	if (min_size.y < custom_size.y) {
+		min_size.y = custom_size.y;
 	}
 
-	return true;
+	return min_size;
 }
 
-void StyleBox::draw(RID p_canvas_item, const Rect2 &p_rect) const {
-	if (GDVIRTUAL_REQUIRED_CALL(_draw, p_canvas_item, p_rect)) {
-		return;
-	}
-}
-
-void StyleBox::set_default_margin(Side p_side, float p_value) {
+void StyleBox::set_content_margin(Side p_side, float p_value) {
 	ERR_FAIL_INDEX((int)p_side, 4);
 
-	margin[p_side] = p_value;
+	content_margin[p_side] = p_value;
 	emit_changed();
 }
 
-void StyleBox::set_default_margin_all(float p_value) {
+void StyleBox::set_content_margin_all(float p_value) {
 	for (int i = 0; i < 4; i++) {
-		margin[i] = p_value;
+		content_margin[i] = p_value;
 	}
 	emit_changed();
 }
 
-void StyleBox::set_default_margin_individual(float p_left, float p_top, float p_right, float p_bottom) {
-	margin[SIDE_LEFT] = p_left;
-	margin[SIDE_TOP] = p_top;
-	margin[SIDE_RIGHT] = p_right;
-	margin[SIDE_BOTTOM] = p_bottom;
+void StyleBox::set_content_margin_individual(float p_left, float p_top, float p_right, float p_bottom) {
+	content_margin[SIDE_LEFT] = p_left;
+	content_margin[SIDE_TOP] = p_top;
+	content_margin[SIDE_RIGHT] = p_right;
+	content_margin[SIDE_BOTTOM] = p_bottom;
 	emit_changed();
 }
 
-float StyleBox::get_default_margin(Side p_side) const {
+float StyleBox::get_content_margin(Side p_side) const {
 	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
 
-	return margin[p_side];
+	return content_margin[p_side];
 }
 
 float StyleBox::get_margin(Side p_side) const {
 	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
 
-	if (margin[p_side] < 0) {
+	if (content_margin[p_side] < 0) {
 		return get_style_margin(p_side);
 	} else {
-		return margin[p_side];
+		return content_margin[p_side];
 	}
-}
-
-CanvasItem *StyleBox::get_current_item_drawn() const {
-	return CanvasItem::get_current_item_drawn();
-}
-
-Size2 StyleBox::get_minimum_size() const {
-	return Size2(get_margin(SIDE_LEFT) + get_margin(SIDE_RIGHT), get_margin(SIDE_TOP) + get_margin(SIDE_BOTTOM));
 }
 
 Point2 StyleBox::get_offset() const {
 	return Point2(get_margin(SIDE_LEFT), get_margin(SIDE_TOP));
 }
 
-Size2 StyleBox::get_center_size() const {
-	Size2 ret;
-	if (GDVIRTUAL_CALL(_get_center_size, ret)) {
-		return ret;
-	}
-
-	return Size2();
+void StyleBox::draw(RID p_canvas_item, const Rect2 &p_rect) const {
+	GDVIRTUAL_REQUIRED_CALL(_draw, p_canvas_item, p_rect);
 }
 
 Rect2 StyleBox::get_draw_rect(const Rect2 &p_rect) const {
@@ -124,37 +103,46 @@ Rect2 StyleBox::get_draw_rect(const Rect2 &p_rect) const {
 	return p_rect;
 }
 
-void StyleBox::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("test_mask", "point", "rect"), &StyleBox::test_mask);
+CanvasItem *StyleBox::get_current_item_drawn() const {
+	return CanvasItem::get_current_item_drawn();
+}
 
-	ClassDB::bind_method(D_METHOD("set_default_margin", "margin", "offset"), &StyleBox::set_default_margin);
-	ClassDB::bind_method(D_METHOD("set_default_margin_all", "offset"), &StyleBox::set_default_margin_all);
-	ClassDB::bind_method(D_METHOD("get_default_margin", "margin"), &StyleBox::get_default_margin);
+bool StyleBox::test_mask(const Point2 &p_point, const Rect2 &p_rect) const {
+	bool ret = true;
+	GDVIRTUAL_CALL(_test_mask, p_point, p_rect, ret);
+	return ret;
+}
+
+void StyleBox::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_minimum_size"), &StyleBox::get_minimum_size);
+
+	ClassDB::bind_method(D_METHOD("set_content_margin", "margin", "offset"), &StyleBox::set_content_margin);
+	ClassDB::bind_method(D_METHOD("set_content_margin_all", "offset"), &StyleBox::set_content_margin_all);
+	ClassDB::bind_method(D_METHOD("get_content_margin", "margin"), &StyleBox::get_content_margin);
 
 	ClassDB::bind_method(D_METHOD("get_margin", "margin"), &StyleBox::get_margin);
-	ClassDB::bind_method(D_METHOD("get_minimum_size"), &StyleBox::get_minimum_size);
-	ClassDB::bind_method(D_METHOD("get_center_size"), &StyleBox::get_center_size);
 	ClassDB::bind_method(D_METHOD("get_offset"), &StyleBox::get_offset);
-	ClassDB::bind_method(D_METHOD("get_current_item_drawn"), &StyleBox::get_current_item_drawn);
 
 	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "rect"), &StyleBox::draw);
+	ClassDB::bind_method(D_METHOD("get_current_item_drawn"), &StyleBox::get_current_item_drawn);
+
+	ClassDB::bind_method(D_METHOD("test_mask", "point", "rect"), &StyleBox::test_mask);
 
 	ADD_GROUP("Content Margins", "content_margin_");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_left", PROPERTY_HINT_RANGE, "-1,2048,1,suffix:px"), "set_default_margin", "get_default_margin", SIDE_LEFT);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_top", PROPERTY_HINT_RANGE, "-1,2048,1,suffix:px"), "set_default_margin", "get_default_margin", SIDE_TOP);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_right", PROPERTY_HINT_RANGE, "-1,2048,1,suffix:px"), "set_default_margin", "get_default_margin", SIDE_RIGHT);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_bottom", PROPERTY_HINT_RANGE, "-1,2048,1,suffix:px"), "set_default_margin", "get_default_margin", SIDE_BOTTOM);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_left", PROPERTY_HINT_RANGE, "-1,2048,1,suffix:px"), "set_content_margin", "get_content_margin", SIDE_LEFT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_top", PROPERTY_HINT_RANGE, "-1,2048,1,suffix:px"), "set_content_margin", "get_content_margin", SIDE_TOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_right", PROPERTY_HINT_RANGE, "-1,2048,1,suffix:px"), "set_content_margin", "get_content_margin", SIDE_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_bottom", PROPERTY_HINT_RANGE, "-1,2048,1,suffix:px"), "set_content_margin", "get_content_margin", SIDE_BOTTOM);
 
-	GDVIRTUAL_BIND(_get_style_margin, "side")
-	GDVIRTUAL_BIND(_test_mask, "point", "rect")
-	GDVIRTUAL_BIND(_get_center_size)
-	GDVIRTUAL_BIND(_get_draw_rect, "rect")
 	GDVIRTUAL_BIND(_draw, "to_canvas_item", "rect")
+	GDVIRTUAL_BIND(_get_draw_rect, "rect")
+	GDVIRTUAL_BIND(_get_minimum_size)
+	GDVIRTUAL_BIND(_test_mask, "point", "rect")
 }
 
 StyleBox::StyleBox() {
 	for (int i = 0; i < 4; i++) {
-		margin[i] = -1;
+		content_margin[i] = -1;
 	}
 }
 
@@ -163,11 +151,6 @@ void StyleBoxTexture::set_texture(Ref<Texture2D> p_texture) {
 		return;
 	}
 	texture = p_texture;
-	if (p_texture.is_null()) {
-		region_rect = Rect2(0, 0, 0, 0);
-	} else {
-		region_rect = Rect2(Point2(), texture->get_size());
-	}
 	emit_changed();
 }
 
@@ -175,38 +158,38 @@ Ref<Texture2D> StyleBoxTexture::get_texture() const {
 	return texture;
 }
 
-void StyleBoxTexture::set_margin_size(Side p_side, float p_size) {
+void StyleBoxTexture::set_texture_margin(Side p_side, float p_size) {
 	ERR_FAIL_INDEX((int)p_side, 4);
 
-	margin[p_side] = p_size;
+	texture_margin[p_side] = p_size;
 	emit_changed();
 }
 
-void StyleBoxTexture::set_margin_size_all(float p_size) {
+void StyleBoxTexture::set_texture_margin_all(float p_size) {
 	for (int i = 0; i < 4; i++) {
-		margin[i] = p_size;
+		texture_margin[i] = p_size;
 	}
 	emit_changed();
 }
 
-void StyleBoxTexture::set_margin_size_individual(float p_left, float p_top, float p_right, float p_bottom) {
-	margin[SIDE_LEFT] = p_left;
-	margin[SIDE_TOP] = p_top;
-	margin[SIDE_RIGHT] = p_right;
-	margin[SIDE_BOTTOM] = p_bottom;
+void StyleBoxTexture::set_texture_margin_individual(float p_left, float p_top, float p_right, float p_bottom) {
+	texture_margin[SIDE_LEFT] = p_left;
+	texture_margin[SIDE_TOP] = p_top;
+	texture_margin[SIDE_RIGHT] = p_right;
+	texture_margin[SIDE_BOTTOM] = p_bottom;
 	emit_changed();
 }
 
-float StyleBoxTexture::get_margin_size(Side p_side) const {
+float StyleBoxTexture::get_texture_margin(Side p_side) const {
 	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
 
-	return margin[p_side];
+	return texture_margin[p_side];
 }
 
 float StyleBoxTexture::get_style_margin(Side p_side) const {
 	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
 
-	return margin[p_side];
+	return texture_margin[p_side];
 }
 
 Rect2 StyleBoxTexture::get_draw_rect(const Rect2 &p_rect) const {
@@ -228,7 +211,10 @@ void StyleBoxTexture::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	rect.size.x += expand_margin[SIDE_LEFT] + expand_margin[SIDE_RIGHT];
 	rect.size.y += expand_margin[SIDE_TOP] + expand_margin[SIDE_BOTTOM];
 
-	RenderingServer::get_singleton()->canvas_item_add_nine_patch(p_canvas_item, rect, src_rect, texture->get_rid(), Vector2(margin[SIDE_LEFT], margin[SIDE_TOP]), Vector2(margin[SIDE_RIGHT], margin[SIDE_BOTTOM]), RS::NinePatchAxisMode(axis_h), RS::NinePatchAxisMode(axis_v), draw_center, modulate);
+	Vector2 start_offset = Vector2(texture_margin[SIDE_LEFT], texture_margin[SIDE_TOP]);
+	Vector2 end_offset = Vector2(texture_margin[SIDE_RIGHT], texture_margin[SIDE_BOTTOM]);
+
+	RenderingServer::get_singleton()->canvas_item_add_nine_patch(p_canvas_item, rect, src_rect, texture->get_rid(), start_offset, end_offset, RS::NinePatchAxisMode(axis_h), RS::NinePatchAxisMode(axis_v), draw_center, modulate);
 }
 
 void StyleBoxTexture::set_draw_center(bool p_enabled) {
@@ -240,21 +226,13 @@ bool StyleBoxTexture::is_draw_center_enabled() const {
 	return draw_center;
 }
 
-Size2 StyleBoxTexture::get_center_size() const {
-	if (texture.is_null()) {
-		return Size2();
-	}
-
-	return region_rect.size - get_minimum_size();
-}
-
-void StyleBoxTexture::set_expand_margin_size(Side p_side, float p_size) {
+void StyleBoxTexture::set_expand_margin(Side p_side, float p_size) {
 	ERR_FAIL_INDEX((int)p_side, 4);
 	expand_margin[p_side] = p_size;
 	emit_changed();
 }
 
-void StyleBoxTexture::set_expand_margin_size_individual(float p_left, float p_top, float p_right, float p_bottom) {
+void StyleBoxTexture::set_expand_margin_individual(float p_left, float p_top, float p_right, float p_bottom) {
 	expand_margin[SIDE_LEFT] = p_left;
 	expand_margin[SIDE_TOP] = p_top;
 	expand_margin[SIDE_RIGHT] = p_right;
@@ -262,14 +240,14 @@ void StyleBoxTexture::set_expand_margin_size_individual(float p_left, float p_to
 	emit_changed();
 }
 
-void StyleBoxTexture::set_expand_margin_size_all(float p_expand_margin_size) {
+void StyleBoxTexture::set_expand_margin_all(float p_expand_margin_size) {
 	for (int i = 0; i < 4; i++) {
 		expand_margin[i] = p_expand_margin_size;
 	}
 	emit_changed();
 }
 
-float StyleBoxTexture::get_expand_margin_size(Side p_side) const {
+float StyleBoxTexture::get_expand_margin(Side p_side) const {
 	ERR_FAIL_INDEX_V((int)p_side, 4, 0);
 	return expand_margin[p_side];
 }
@@ -323,13 +301,13 @@ void StyleBoxTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &StyleBoxTexture::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &StyleBoxTexture::get_texture);
 
-	ClassDB::bind_method(D_METHOD("set_margin_size", "margin", "size"), &StyleBoxTexture::set_margin_size);
-	ClassDB::bind_method(D_METHOD("set_margin_size_all", "size"), &StyleBoxTexture::set_margin_size_all);
-	ClassDB::bind_method(D_METHOD("get_margin_size", "margin"), &StyleBoxTexture::get_margin_size);
+	ClassDB::bind_method(D_METHOD("set_texture_margin", "margin", "size"), &StyleBoxTexture::set_texture_margin);
+	ClassDB::bind_method(D_METHOD("set_texture_margin_all", "size"), &StyleBoxTexture::set_texture_margin_all);
+	ClassDB::bind_method(D_METHOD("get_texture_margin", "margin"), &StyleBoxTexture::get_texture_margin);
 
-	ClassDB::bind_method(D_METHOD("set_expand_margin_size", "margin", "size"), &StyleBoxTexture::set_expand_margin_size);
-	ClassDB::bind_method(D_METHOD("set_expand_margin_all", "size"), &StyleBoxTexture::set_expand_margin_size_all);
-	ClassDB::bind_method(D_METHOD("get_expand_margin_size", "margin"), &StyleBoxTexture::get_expand_margin_size);
+	ClassDB::bind_method(D_METHOD("set_expand_margin", "margin", "size"), &StyleBoxTexture::set_expand_margin);
+	ClassDB::bind_method(D_METHOD("set_expand_margin_all", "size"), &StyleBoxTexture::set_expand_margin_all);
+	ClassDB::bind_method(D_METHOD("get_expand_margin", "margin"), &StyleBoxTexture::get_expand_margin);
 
 	ClassDB::bind_method(D_METHOD("set_region_rect", "region"), &StyleBoxTexture::set_region_rect);
 	ClassDB::bind_method(D_METHOD("get_region_rect"), &StyleBoxTexture::get_region_rect);
@@ -348,17 +326,17 @@ void StyleBoxTexture::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 
-	ADD_GROUP("Margins", "margin_");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "margin_left", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_margin_size", "get_margin_size", SIDE_LEFT);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "margin_top", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_margin_size", "get_margin_size", SIDE_TOP);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "margin_right", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_margin_size", "get_margin_size", SIDE_RIGHT);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "margin_bottom", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_margin_size", "get_margin_size", SIDE_BOTTOM);
+	ADD_GROUP("Texture Margins", "texture_margin_");
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "texture_margin_left", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_texture_margin", "get_texture_margin", SIDE_LEFT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "texture_margin_top", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_texture_margin", "get_texture_margin", SIDE_TOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "texture_margin_right", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_texture_margin", "get_texture_margin", SIDE_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "texture_margin_bottom", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_texture_margin", "get_texture_margin", SIDE_BOTTOM);
 
 	ADD_GROUP("Expand Margins", "expand_margin_");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "expand_margin_left", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_expand_margin_size", "get_expand_margin_size", SIDE_LEFT);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "expand_margin_top", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_expand_margin_size", "get_expand_margin_size", SIDE_TOP);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "expand_margin_right", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_expand_margin_size", "get_expand_margin_size", SIDE_RIGHT);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "expand_margin_bottom", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_expand_margin_size", "get_expand_margin_size", SIDE_BOTTOM);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "expand_margin_left", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_expand_margin", "get_expand_margin", SIDE_LEFT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "expand_margin_top", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_expand_margin", "get_expand_margin", SIDE_TOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "expand_margin_right", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_expand_margin", "get_expand_margin", SIDE_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "expand_margin_bottom", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_expand_margin", "get_expand_margin", SIDE_BOTTOM);
 
 	ADD_GROUP("Axis Stretch", "axis_stretch_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis_stretch_horizontal", PROPERTY_HINT_ENUM, "Stretch,Tile,Tile Fit"), "set_h_axis_stretch_mode", "get_h_axis_stretch_mode");
@@ -460,13 +438,13 @@ int StyleBoxFlat::get_corner_radius(const Corner p_corner) const {
 	return corner_radius[p_corner];
 }
 
-void StyleBoxFlat::set_expand_margin_size(Side p_side, float p_size) {
+void StyleBoxFlat::set_expand_margin(Side p_side, float p_size) {
 	ERR_FAIL_INDEX((int)p_side, 4);
 	expand_margin[p_side] = p_size;
 	emit_changed();
 }
 
-void StyleBoxFlat::set_expand_margin_size_individual(float p_left, float p_top, float p_right, float p_bottom) {
+void StyleBoxFlat::set_expand_margin_individual(float p_left, float p_top, float p_right, float p_bottom) {
 	expand_margin[SIDE_LEFT] = p_left;
 	expand_margin[SIDE_TOP] = p_top;
 	expand_margin[SIDE_RIGHT] = p_right;
@@ -474,14 +452,14 @@ void StyleBoxFlat::set_expand_margin_size_individual(float p_left, float p_top, 
 	emit_changed();
 }
 
-void StyleBoxFlat::set_expand_margin_size_all(float p_expand_margin_size) {
+void StyleBoxFlat::set_expand_margin_all(float p_expand_margin_size) {
 	for (int i = 0; i < 4; i++) {
 		expand_margin[i] = p_expand_margin_size;
 	}
 	emit_changed();
 }
 
-float StyleBoxFlat::get_expand_margin_size(Side p_side) const {
+float StyleBoxFlat::get_expand_margin(Side p_side) const {
 	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
 	return expand_margin[p_side];
 }
@@ -557,10 +535,6 @@ void StyleBoxFlat::set_corner_detail(const int &p_corner_detail) {
 
 int StyleBoxFlat::get_corner_detail() const {
 	return corner_detail;
-}
-
-Size2 StyleBoxFlat::get_center_size() const {
-	return Size2();
 }
 
 inline void set_inner_corner_radius(const Rect2 style_rect, const Rect2 inner_rect, const real_t corner_radius[4], real_t *inner_corner_radius) {
@@ -901,9 +875,9 @@ void StyleBoxFlat::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_corner_radius", "corner", "radius"), &StyleBoxFlat::set_corner_radius);
 	ClassDB::bind_method(D_METHOD("get_corner_radius", "corner"), &StyleBoxFlat::get_corner_radius);
 
-	ClassDB::bind_method(D_METHOD("set_expand_margin", "margin", "size"), &StyleBoxFlat::set_expand_margin_size);
-	ClassDB::bind_method(D_METHOD("set_expand_margin_all", "size"), &StyleBoxFlat::set_expand_margin_size_all);
-	ClassDB::bind_method(D_METHOD("get_expand_margin", "margin"), &StyleBoxFlat::get_expand_margin_size);
+	ClassDB::bind_method(D_METHOD("set_expand_margin", "margin", "size"), &StyleBoxFlat::set_expand_margin);
+	ClassDB::bind_method(D_METHOD("set_expand_margin_all", "size"), &StyleBoxFlat::set_expand_margin_all);
+	ClassDB::bind_method(D_METHOD("get_expand_margin", "margin"), &StyleBoxFlat::get_expand_margin);
 
 	ClassDB::bind_method(D_METHOD("set_draw_center", "draw_center"), &StyleBoxFlat::set_draw_center);
 	ClassDB::bind_method(D_METHOD("is_draw_center_enabled"), &StyleBoxFlat::is_draw_center_enabled);
@@ -1033,7 +1007,7 @@ void StyleBoxLine::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "grow_begin", PROPERTY_HINT_RANGE, "-300,300,1,suffix:px"), "set_grow_begin", "get_grow_begin");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "grow_end", PROPERTY_HINT_RANGE, "-300,300,1,suffix:px"), "set_grow_end", "get_grow_end");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "thickness", PROPERTY_HINT_RANGE, "0,10,suffix:px"), "set_thickness", "get_thickness");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "thickness", PROPERTY_HINT_RANGE, "0,100,suffix:px"), "set_thickness", "get_thickness");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertical"), "set_vertical", "is_vertical");
 }
 
@@ -1049,10 +1023,6 @@ float StyleBoxLine::get_style_margin(Side p_side) const {
 	}
 
 	return 0;
-}
-
-Size2 StyleBoxLine::get_center_size() const {
-	return Size2();
 }
 
 void StyleBoxLine::draw(RID p_canvas_item, const Rect2 &p_rect) const {

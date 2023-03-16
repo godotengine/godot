@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XRInterfaceExtension" inherits="XRInterface" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="XRInterfaceExtension" inherits="XRInterface" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for XR interface extensions (plugins).
 	</brief_description>
@@ -24,7 +24,7 @@
 		<method name="_get_camera_feed_id" qualifiers="virtual const">
 			<return type="int" />
 			<description>
-				Returns the camera feed id for the [CameraFeed] registered with the [CameraServer] that should be presented as the background on an AR capable device (if applicable).
+				Returns the camera feed ID for the [CameraFeed] registered with the [CameraServer] that should be presented as the background on an AR capable device (if applicable).
 			</description>
 		</method>
 		<method name="_get_camera_transform" qualifiers="virtual">
@@ -37,6 +37,18 @@
 			<return type="int" />
 			<description>
 				Returns the capabilities of this interface.
+			</description>
+		</method>
+		<method name="_get_color_texture" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+				Return color texture into which to render (if applicable).
+			</description>
+		</method>
+		<method name="_get_depth_texture" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+				Return depth texture into which to render (if applicable).
 			</description>
 		</method>
 		<method name="_get_name" qualifiers="virtual const">
@@ -52,7 +64,7 @@
 			</description>
 		</method>
 		<method name="_get_play_area_mode" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="XRInterface.PlayAreaMode" />
 			<description>
 				Returns the [enum XRInterface.PlayAreaMode] that sets up our play area.
 			</description>
@@ -87,7 +99,7 @@
 			</description>
 		</method>
 		<method name="_get_tracking_status" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="XRInterface.TrackingStatus" />
 			<description>
 				Returns a [enum XRInterface.TrackingStatus] specifying the current status of our tracking.
 			</description>
@@ -98,6 +110,12 @@
 			<param index="1" name="cam_transform" type="Transform3D" />
 			<description>
 				Returns a [Transform3D] for a given view.
+			</description>
+		</method>
+		<method name="_get_velocity_texture" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+				Return velocity texture into which to render (if applicable).
 			</description>
 		</method>
 		<method name="_get_view_count" qualifiers="virtual">
@@ -120,14 +138,7 @@
 		<method name="_is_initialized" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this interface has been initialised.
-			</description>
-		</method>
-		<method name="_notification" qualifiers="virtual">
-			<return type="void" />
-			<param index="0" name="what" type="int" />
-			<description>
-				Informs the interface of an applicable system notification.
+				Returns [code]true[/code] if this interface has been initialized.
 			</description>
 		</method>
 		<method name="_post_draw_viewport" qualifiers="virtual">
@@ -166,7 +177,7 @@
 		</method>
 		<method name="_set_play_area_mode" qualifiers="virtual const">
 			<return type="bool" />
-			<param index="0" name="mode" type="int" />
+			<param index="0" name="mode" type="int" enum="XRInterface.PlayAreaMode" />
 			<description>
 				Set the play area mode for this interface.
 			</description>
@@ -213,11 +224,26 @@
 				Blits our render results to screen optionally applying lens distortion. This can only be called while processing [code]_commit_views[/code].
 			</description>
 		</method>
+		<method name="get_color_texture">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="get_depth_texture">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="get_render_target_texture">
 			<return type="RID" />
 			<param index="0" name="render_target" type="RID" />
 			<description>
 				Returns a valid [RID] for a texture to which we should render the current frame if supported by the interface.
+			</description>
+		</method>
+		<method name="get_velocity_texture">
+			<return type="RID" />
+			<description>
 			</description>
 		</method>
 	</methods>

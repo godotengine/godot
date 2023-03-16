@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  material.cpp                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  material.cpp                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "material.h"
 
@@ -92,33 +92,31 @@ void Material::inspect_native_shader_code() {
 
 RID Material::get_shader_rid() const {
 	RID ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_shader_rid, ret)) {
-		return ret;
-	}
-	return RID();
+	GDVIRTUAL_REQUIRED_CALL(_get_shader_rid, ret);
+	return ret;
 }
 Shader::Mode Material::get_shader_mode() const {
-	Shader::Mode ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_shader_mode, ret)) {
-		return ret;
-	}
-
-	return Shader::MODE_MAX;
+	Shader::Mode ret = Shader::MODE_MAX;
+	GDVIRTUAL_REQUIRED_CALL(_get_shader_mode, ret);
+	return ret;
 }
 
 bool Material::_can_do_next_pass() const {
-	bool ret;
-	if (GDVIRTUAL_CALL(_can_do_next_pass, ret)) {
-		return ret;
-	}
-	return false;
+	bool ret = false;
+	GDVIRTUAL_CALL(_can_do_next_pass, ret);
+	return ret;
 }
+
 bool Material::_can_use_render_priority() const {
-	bool ret;
-	if (GDVIRTUAL_CALL(_can_use_render_priority, ret)) {
-		return ret;
-	}
-	return false;
+	bool ret = false;
+	GDVIRTUAL_CALL(_can_use_render_priority, ret);
+	return ret;
+}
+
+Ref<Resource> Material::create_placeholder() const {
+	Ref<PlaceholderMaterial> placeholder;
+	placeholder.instantiate();
+	return placeholder;
 }
 
 void Material::_bind_methods() {
@@ -130,6 +128,8 @@ void Material::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("inspect_native_shader_code"), &Material::inspect_native_shader_code);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("inspect_native_shader_code"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
+
+	ClassDB::bind_method(D_METHOD("create_placeholder"), &Material::create_placeholder);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RENDER_PRIORITY_MIN) + "," + itos(RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "next_pass", PROPERTY_HINT_RESOURCE_TYPE, "Material"), "set_next_pass", "get_next_pass");
@@ -149,6 +149,7 @@ Material::Material() {
 }
 
 Material::~Material() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free(material);
 }
 
@@ -156,11 +157,36 @@ Material::~Material() {
 
 bool ShaderMaterial::_set(const StringName &p_name, const Variant &p_value) {
 	if (shader.is_valid()) {
-		StringName pr = shader->remap_parameter(p_name);
-		if (pr) {
-			set_shader_parameter(pr, p_value);
+		const StringName *sn = remap_cache.getptr(p_name);
+		if (sn) {
+			set_shader_parameter(*sn, p_value);
 			return true;
 		}
+		String s = p_name;
+		if (s.begins_with("shader_parameter/")) {
+			String param = s.replace_first("shader_parameter/", "");
+			remap_cache[s] = param;
+			set_shader_parameter(param, p_value);
+			return true;
+		}
+#ifndef DISABLE_DEPRECATED
+		// Compatibility remaps are only needed here.
+		if (s.begins_with("param/")) {
+			s = s.replace_first("param/", "shader_parameter/");
+		} else if (s.begins_with("shader_param/")) {
+			s = s.replace_first("shader_param/", "shader_parameter/");
+		} else if (s.begins_with("shader_uniform/")) {
+			s = s.replace_first("shader_uniform/", "shader_parameter/");
+		} else {
+			return false; // Not a shader parameter.
+		}
+
+		WARN_PRINT("This material (containing shader with path: '" + shader->get_path() + "') uses an old deprecated parameter names. Consider re-saving this resource (or scene which contains it) in order for it to continue working in future versions.");
+		String param = s.replace_first("shader_parameter/", "");
+		remap_cache[s] = param;
+		set_shader_parameter(param, p_value);
+		return true;
+#endif
 	}
 
 	return false;
@@ -168,9 +194,10 @@ bool ShaderMaterial::_set(const StringName &p_name, const Variant &p_value) {
 
 bool ShaderMaterial::_get(const StringName &p_name, Variant &r_ret) const {
 	if (shader.is_valid()) {
-		StringName pr = shader->remap_parameter(p_name);
-		if (pr) {
-			r_ret = get_shader_parameter(pr);
+		const StringName *sn = remap_cache.getptr(p_name);
+		if (sn) {
+			// Only return a parameter if it was previously set.
+			r_ret = get_shader_parameter(*sn);
 			return true;
 		}
 	}
@@ -254,6 +281,12 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 
 			PropertyInfo info = E->get();
 			info.name = "shader_parameter/" + info.name;
+			if (!param_cache.has(E->get().name)) {
+				// Property has never been edited, retrieve with default value.
+				Variant default_value = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), E->get().name);
+				param_cache.insert(E->get().name, default_value);
+				remap_cache.insert(info.name, E->get().name);
+			}
 			groups[last_group][last_subgroup].push_back(info);
 		}
 
@@ -282,11 +315,10 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 
 bool ShaderMaterial::_property_can_revert(const StringName &p_name) const {
 	if (shader.is_valid()) {
-		StringName pr = shader->remap_parameter(p_name);
+		const StringName *pr = remap_cache.getptr(p_name);
 		if (pr) {
-			Variant default_value = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), pr);
-			Variant current_value;
-			_get(p_name, current_value);
+			Variant default_value = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), *pr);
+			Variant current_value = get_shader_parameter(*pr);
 			return default_value.get_type() != Variant::NIL && default_value != current_value;
 		}
 	}
@@ -295,9 +327,9 @@ bool ShaderMaterial::_property_can_revert(const StringName &p_name) const {
 
 bool ShaderMaterial::_property_get_revert(const StringName &p_name, Variant &r_property) const {
 	if (shader.is_valid()) {
-		StringName pr = shader->remap_parameter(p_name);
-		if (pr) {
-			r_property = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), pr);
+		const StringName *pr = remap_cache.getptr(p_name);
+		if (*pr) {
+			r_property = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), *pr);
 			return true;
 		}
 	}
@@ -337,7 +369,15 @@ void ShaderMaterial::set_shader_parameter(const StringName &p_param, const Varia
 		param_cache.erase(p_param);
 		RS::get_singleton()->material_set_param(_get_material(), p_param, Variant());
 	} else {
-		param_cache[p_param] = p_value;
+		Variant *v = param_cache.getptr(p_param);
+		if (!v) {
+			// Never assigned, also update the remap cache.
+			remap_cache["shader_parameter/" + p_param.operator String()] = p_param;
+			param_cache.insert(p_param, p_value);
+		} else {
+			*v = p_value;
+		}
+
 		if (p_value.get_type() == Variant::OBJECT) {
 			RID tex_rid = p_value;
 			if (tex_rid == RID()) {
@@ -798,6 +838,14 @@ void BaseMaterial3D::_update_shader() {
 		code += "uniform vec4 refraction_texture_channel;\n";
 	}
 
+	if (features[FEATURE_REFRACTION]) {
+		code += "uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_linear_mipmap;";
+	}
+
+	if (proximity_fade_enabled) {
+		code += "uniform sampler2D depth_texture : hint_depth_texture, repeat_disable, filter_nearest;";
+	}
+
 	if (features[FEATURE_NORMAL_MAPPING]) {
 		code += "uniform sampler2D texture_normal : hint_roughness_normal," + texfilter_str + ";\n";
 		code += "uniform float normal_scale : hint_range(-16,16);\n";
@@ -915,11 +963,14 @@ void BaseMaterial3D::_update_shader() {
 		} break;
 		case BILLBOARD_PARTICLES: {
 			//make billboard
-			code += "	mat4 mat_world = mat4(normalize(INV_VIEW_MATRIX[0]) * length(MODEL_MATRIX[0]), normalize(INV_VIEW_MATRIX[1]) * length(MODEL_MATRIX[0]),normalize(INV_VIEW_MATRIX[2]) * length(MODEL_MATRIX[2]), MODEL_MATRIX[3]);\n";
+			code += "	mat4 mat_world = mat4(normalize(INV_VIEW_MATRIX[0]), normalize(INV_VIEW_MATRIX[1]) ,normalize(INV_VIEW_MATRIX[2]), MODEL_MATRIX[3]);\n";
 			//rotate by rotation
 			code += "	mat_world = mat_world * mat4(vec4(cos(INSTANCE_CUSTOM.x), -sin(INSTANCE_CUSTOM.x), 0.0, 0.0), vec4(sin(INSTANCE_CUSTOM.x), cos(INSTANCE_CUSTOM.x), 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
 			//set modelview
 			code += "	MODELVIEW_MATRIX = VIEW_MATRIX * mat_world;\n";
+			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
+				code += "	MODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(MODEL_MATRIX[0].xyz), 0.0, 0.0, 0.0),vec4(0.0, length(MODEL_MATRIX[1].xyz), 0.0, 0.0), vec4(0.0, 0.0, length(MODEL_MATRIX[2].xyz), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
+			}
 			//set modelview normal
 			code += "	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);\n";
 
@@ -1235,7 +1286,7 @@ void BaseMaterial3D::_update_shader() {
 			code += "	vec2 ref_ofs = SCREEN_UV - ref_normal.xy * dot(texture(texture_refraction,base_uv),refraction_texture_channel) * refraction;\n";
 		}
 		code += "	float ref_amount = 1.0 - albedo.a * albedo_tex.a;\n";
-		code += "	EMISSION += textureLod(SCREEN_TEXTURE,ref_ofs,ROUGHNESS * 8.0).rgb * ref_amount;\n";
+		code += "	EMISSION += textureLod(screen_texture,ref_ofs,ROUGHNESS * 8.0).rgb * ref_amount;\n";
 		code += "	ALBEDO *= 1.0 - ref_amount;\n";
 		code += "	ALPHA = 1.0;\n";
 
@@ -1253,22 +1304,23 @@ void BaseMaterial3D::_update_shader() {
 	}
 
 	if (proximity_fade_enabled) {
-		code += "	float depth_tex = textureLod(DEPTH_TEXTURE,SCREEN_UV,0.0).r;\n";
+		code += "	float depth_tex = textureLod(depth_texture,SCREEN_UV,0.0).r;\n";
 		code += "	vec4 world_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV*2.0-1.0,depth_tex,1.0);\n";
 		code += "	world_pos.xyz/=world_pos.w;\n";
 		code += "	ALPHA*=clamp(1.0-smoothstep(world_pos.z+proximity_fade_distance,world_pos.z,VERTEX.z),0.0,1.0);\n";
 	}
 
 	if (distance_fade != DISTANCE_FADE_DISABLED) {
+		// Use the slightly more expensive circular fade (distance to the object) instead of linear
+		// (Z distance), so that the fade is always the same regardless of the camera angle.
 		if ((distance_fade == DISTANCE_FADE_OBJECT_DITHER || distance_fade == DISTANCE_FADE_PIXEL_DITHER)) {
 			if (!RenderingServer::get_singleton()->is_low_end()) {
 				code += "	{\n";
 
 				if (distance_fade == DISTANCE_FADE_OBJECT_DITHER) {
-					code += "		float fade_distance = abs((VIEW_MATRIX * MODEL_MATRIX[3]).z);\n";
-
+					code += "		float fade_distance = length((VIEW_MATRIX * MODEL_MATRIX[3]));\n";
 				} else {
-					code += "		float fade_distance = -VERTEX.z;\n";
+					code += "		float fade_distance = length(VERTEX);\n";
 				}
 				// Use interleaved gradient noise, which is fast but still looks good.
 				code += "		const vec3 magic = vec3(0.06711056f, 0.00583715f, 52.9829189f);";
@@ -1282,7 +1334,7 @@ void BaseMaterial3D::_update_shader() {
 			}
 
 		} else {
-			code += "	ALPHA*=clamp(smoothstep(distance_fade_min,distance_fade_max,-VERTEX.z),0.0,1.0);\n";
+			code += "	ALPHA *= clamp(smoothstep(distance_fade_min, distance_fade_max, length(VERTEX)), 0.0, 1.0);\n";
 		}
 	}
 
@@ -1862,12 +1914,6 @@ void BaseMaterial3D::_validate_feature(const String &text, Feature feature, Prop
 	}
 }
 
-void BaseMaterial3D::_validate_high_end(const String &text, PropertyInfo &property) const {
-	if (property.name.begins_with(text)) {
-		property.usage |= PROPERTY_USAGE_HIGH_END_GFX;
-	}
-}
-
 void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 	_validate_feature("normal", FEATURE_NORMAL_MAPPING, p_property);
 	_validate_feature("emission", FEATURE_EMISSION, p_property);
@@ -1880,10 +1926,6 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 	_validate_feature("backlight", FEATURE_BACKLIGHT, p_property);
 	_validate_feature("refraction", FEATURE_REFRACTION, p_property);
 	_validate_feature("detail", FEATURE_DETAIL, p_property);
-
-	_validate_high_end("refraction", p_property);
-	_validate_high_end("subsurf_scatter", p_property);
-	_validate_high_end("heightmap", p_property);
 
 	if (p_property.name == "emission_intensity" && !GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
 		p_property.usage = PROPERTY_USAGE_NONE;
@@ -2275,71 +2317,51 @@ BaseMaterial3D::TextureChannel BaseMaterial3D::get_refraction_texture_channel() 
 	return refraction_texture_channel;
 }
 
-Ref<Material> BaseMaterial3D::get_material_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard, bool p_billboard_y, bool p_msdf, bool p_no_depth, bool p_fixed_size, TextureFilter p_filter, RID *r_shader_rid) {
-	int64_t hash = 0;
-	if (p_shaded) {
-		hash |= 1 << 0;
-	}
-	if (p_transparent) {
-		hash |= 1 << 1;
-	}
-	if (p_cut_alpha) {
-		hash |= 1 << 2;
-	}
-	if (p_opaque_prepass) {
-		hash |= 1 << 3;
-	}
-	if (p_double_sided) {
-		hash |= 1 << 4;
-	}
-	if (p_billboard) {
-		hash |= 1 << 5;
-	}
-	if (p_billboard_y) {
-		hash |= 1 << 6;
-	}
-	if (p_msdf) {
-		hash |= 1 << 7;
-	}
-	if (p_no_depth) {
-		hash |= 1 << 8;
-	}
-	if (p_fixed_size) {
-		hash |= 1 << 9;
-	}
-	hash = hash_murmur3_one_64(p_filter, hash);
+Ref<Material> BaseMaterial3D::get_material_for_2d(bool p_shaded, Transparency p_transparency, bool p_double_sided, bool p_billboard, bool p_billboard_y, bool p_msdf, bool p_no_depth, bool p_fixed_size, TextureFilter p_filter, AlphaAntiAliasing p_alpha_antialiasing_mode, RID *r_shader_rid) {
+	uint64_t key = 0;
+	key |= ((int8_t)p_shaded & 0x01) << 0;
+	key |= ((int8_t)p_transparency & 0x07) << 1; // Bits 1-3.
+	key |= ((int8_t)p_double_sided & 0x01) << 4;
+	key |= ((int8_t)p_billboard & 0x01) << 5;
+	key |= ((int8_t)p_billboard_y & 0x01) << 6;
+	key |= ((int8_t)p_msdf & 0x01) << 7;
+	key |= ((int8_t)p_no_depth & 0x01) << 8;
+	key |= ((int8_t)p_fixed_size & 0x01) << 9;
+	key |= ((int8_t)p_filter & 0x07) << 10; // Bits 10-12.
+	key |= ((int8_t)p_alpha_antialiasing_mode & 0x07) << 13; // Bits 13-15.
 
-	if (materials_for_2d.has(hash)) {
+	if (materials_for_2d.has(key)) {
 		if (r_shader_rid) {
-			*r_shader_rid = materials_for_2d[hash]->get_shader_rid();
+			*r_shader_rid = materials_for_2d[key]->get_shader_rid();
 		}
-		return materials_for_2d[hash];
+		return materials_for_2d[key];
 	}
 
 	Ref<StandardMaterial3D> material;
 	material.instantiate();
 
 	material->set_shading_mode(p_shaded ? SHADING_MODE_PER_PIXEL : SHADING_MODE_UNSHADED);
-	material->set_transparency(p_transparent ? (p_opaque_prepass ? TRANSPARENCY_ALPHA_DEPTH_PRE_PASS : (p_cut_alpha ? TRANSPARENCY_ALPHA_SCISSOR : TRANSPARENCY_ALPHA)) : TRANSPARENCY_DISABLED);
+	material->set_transparency(p_transparency);
 	material->set_cull_mode(p_double_sided ? CULL_DISABLED : CULL_BACK);
 	material->set_flag(FLAG_SRGB_VERTEX_COLOR, true);
 	material->set_flag(FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	material->set_flag(FLAG_ALBEDO_TEXTURE_MSDF, p_msdf);
 	material->set_flag(FLAG_DISABLE_DEPTH_TEST, p_no_depth);
 	material->set_flag(FLAG_FIXED_SIZE, p_fixed_size);
+	material->set_alpha_antialiasing(p_alpha_antialiasing_mode);
 	material->set_texture_filter(p_filter);
 	if (p_billboard || p_billboard_y) {
 		material->set_flag(FLAG_BILLBOARD_KEEP_SCALE, true);
 		material->set_billboard_mode(p_billboard_y ? BILLBOARD_FIXED_Y : BILLBOARD_ENABLED);
 	}
 
-	materials_for_2d[hash] = material;
+	materials_for_2d[key] = material;
 
 	if (r_shader_rid) {
-		*r_shader_rid = materials_for_2d[hash]->get_shader_rid();
+		*r_shader_rid = materials_for_2d[key]->get_shader_rid();
 	}
 
-	return materials_for_2d[hash];
+	return materials_for_2d[key];
 }
 
 void BaseMaterial3D::set_on_top_of_alpha() {
@@ -2348,7 +2370,7 @@ void BaseMaterial3D::set_on_top_of_alpha() {
 	set_flag(FLAG_DISABLE_DEPTH_TEST, true);
 }
 
-void BaseMaterial3D::set_proximity_fade(bool p_enable) {
+void BaseMaterial3D::set_proximity_fade_enabled(bool p_enable) {
 	proximity_fade_enabled = p_enable;
 	_queue_shader_change();
 	notify_property_list_changed();
@@ -2624,7 +2646,7 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_refraction_texture_channel", "channel"), &BaseMaterial3D::set_refraction_texture_channel);
 	ClassDB::bind_method(D_METHOD("get_refraction_texture_channel"), &BaseMaterial3D::get_refraction_texture_channel);
 
-	ClassDB::bind_method(D_METHOD("set_proximity_fade", "enabled"), &BaseMaterial3D::set_proximity_fade);
+	ClassDB::bind_method(D_METHOD("set_proximity_fade_enabled", "enabled"), &BaseMaterial3D::set_proximity_fade_enabled);
 	ClassDB::bind_method(D_METHOD("is_proximity_fade_enabled"), &BaseMaterial3D::is_proximity_fade_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_proximity_fade_distance", "distance"), &BaseMaterial3D::set_proximity_fade_distance);
@@ -2808,7 +2830,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "point_size", PROPERTY_HINT_RANGE, "0.1,128,0.1,suffix:px"), "set_point_size", "get_point_size");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "use_particle_trails"), "set_flag", "get_flag", FLAG_PARTICLE_TRAILS_MODE);
 	ADD_GROUP("Proximity Fade", "proximity_fade_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "proximity_fade_enable"), "set_proximity_fade", "is_proximity_fade_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "proximity_fade_enabled"), "set_proximity_fade_enabled", "is_proximity_fade_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "proximity_fade_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,suffix:m"), "set_proximity_fade_distance", "get_proximity_fade_distance");
 	ADD_GROUP("MSDF", "msdf_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "msdf_pixel_range", PROPERTY_HINT_RANGE, "1,100,1"), "set_msdf_pixel_range", "get_msdf_pixel_range");
@@ -3012,6 +3034,7 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 }
 
 BaseMaterial3D::~BaseMaterial3D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	MutexLock lock(material_mutex);
 
 	if (shader_map.has(current_key)) {
@@ -3123,8 +3146,6 @@ bool StandardMaterial3D::_set(const StringName &p_name, const Variant &p_value) 
 		WARN_PRINT("Godot 3.x SpatialMaterial remapped parameter not found: " + String(p_name));
 		return true;
 	}
-
-	return false;
 }
 
 #endif // DISABLE_DEPRECATED

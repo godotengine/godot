@@ -59,6 +59,24 @@ struct ValueFormat : HBUINT16
   unsigned int get_len () const  { return hb_popcount ((unsigned int) *this); }
   unsigned int get_size () const { return get_len () * Value::static_size; }
 
+  hb_vector_t<unsigned> get_device_table_indices () const {
+    unsigned i = 0;
+    hb_vector_t<unsigned> result;
+    unsigned format = *this;
+
+    if (format & xPlacement) i++;
+    if (format & yPlacement) i++;
+    if (format & xAdvance)   i++;
+    if (format & yAdvance)   i++;
+
+    if (format & xPlaDevice) result.push (i++);
+    if (format & yPlaDevice) result.push (i++);
+    if (format & xAdvDevice) result.push (i++);
+    if (format & yAdvDevice) result.push (i++);
+
+    return result;
+  }
+
   bool apply_value (hb_ot_apply_context_t *c,
                     const void            *base,
                     const Value           *values,
@@ -145,30 +163,50 @@ struct ValueFormat : HBUINT16
                     unsigned int new_format,
                     const void *base,
                     const Value *values,
-                    const hb_map_t *layout_variation_idx_map) const
+                    const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map) const
   {
     unsigned int format = *this;
     if (!format) return;
 
-    if (format & xPlacement) copy_value (c, new_format, xPlacement, *values++);
-    if (format & yPlacement) copy_value (c, new_format, yPlacement, *values++);
-    if (format & xAdvance)   copy_value (c, new_format, xAdvance, *values++);
-    if (format & yAdvance)   copy_value (c, new_format, yAdvance, *values++);
+    HBINT16 *x_placement = nullptr, *y_placement = nullptr, *x_adv = nullptr, *y_adv = nullptr;
+    if (format & xPlacement) x_placement = copy_value (c, new_format, xPlacement, *values++);
+    if (format & yPlacement) y_placement = copy_value (c, new_format, yPlacement, *values++);
+    if (format & xAdvance)   x_adv = copy_value (c, new_format, xAdvance, *values++);
+    if (format & yAdvance)   y_adv = copy_value (c, new_format, yAdvance, *values++);
 
-    if (format & xPlaDevice) copy_device (c, base, values++, layout_variation_idx_map);
-    if (format & yPlaDevice) copy_device (c, base, values++, layout_variation_idx_map);
-    if (format & xAdvDevice) copy_device (c, base, values++, layout_variation_idx_map);
-    if (format & yAdvDevice) copy_device (c, base, values++, layout_variation_idx_map);
+    if (format & xPlaDevice)
+    {
+      add_delta_to_value (x_placement, base, values, layout_variation_idx_delta_map);
+      copy_device (c, base, values++, layout_variation_idx_delta_map, new_format, xPlaDevice);
+    }
+
+    if (format & yPlaDevice)
+    {
+      add_delta_to_value (y_placement, base, values, layout_variation_idx_delta_map);
+      copy_device (c, base, values++, layout_variation_idx_delta_map, new_format, yPlaDevice);
+    }
+
+    if (format & xAdvDevice)
+    {
+      add_delta_to_value (x_adv, base, values, layout_variation_idx_delta_map);
+      copy_device (c, base, values++, layout_variation_idx_delta_map, new_format, xAdvDevice);
+    }
+
+    if (format & yAdvDevice)
+    {
+      add_delta_to_value (y_adv, base, values, layout_variation_idx_delta_map);
+      copy_device (c, base, values++, layout_variation_idx_delta_map, new_format, yAdvDevice);
+    }
   }
 
-  void copy_value (hb_serialize_context_t *c,
-                   unsigned int new_format,
-                   Flags flag,
-                   Value value) const
+  HBINT16* copy_value (hb_serialize_context_t *c,
+                       unsigned int new_format,
+                       Flags flag,
+                       Value value) const
   {
     // Filter by new format.
-    if (!(new_format & flag)) return;
-    c->copy (value);
+    if (!(new_format & flag)) return nullptr;
+    return reinterpret_cast<HBINT16 *> (c->copy (value));
   }
 
   void collect_variation_indices (hb_collect_variation_indices_context_t *c,
@@ -183,29 +221,38 @@ struct ValueFormat : HBUINT16
     if (format & yAdvance) i++;
     if (format & xPlaDevice)
     {
-      (base + get_device (&(values[i]))).collect_variation_indices (c->layout_variation_indices);
+      (base + get_device (&(values[i]))).collect_variation_indices (c);
       i++;
     }
 
     if (format & ValueFormat::yPlaDevice)
     {
-      (base + get_device (&(values[i]))).collect_variation_indices (c->layout_variation_indices);
+      (base + get_device (&(values[i]))).collect_variation_indices (c);
       i++;
     }
 
     if (format & ValueFormat::xAdvDevice)
     {
 
-      (base + get_device (&(values[i]))).collect_variation_indices (c->layout_variation_indices);
+      (base + get_device (&(values[i]))).collect_variation_indices (c);
       i++;
     }
 
     if (format & ValueFormat::yAdvDevice)
     {
 
-      (base + get_device (&(values[i]))).collect_variation_indices (c->layout_variation_indices);
+      (base + get_device (&(values[i]))).collect_variation_indices (c);
       i++;
     }
+  }
+
+  unsigned drop_device_table_flags () const
+  {
+    unsigned format = *this;
+    for (unsigned flag = xPlaDevice; flag <= yAdvDevice; flag = flag << 1)
+      format = format & ~flag;
+
+    return format;
   }
 
   private:
@@ -236,9 +283,27 @@ struct ValueFormat : HBUINT16
     return *static_cast<const Offset16To<Device> *> (value);
   }
 
-  bool copy_device (hb_serialize_context_t *c, const void *base,
-                    const Value *src_value, const hb_map_t *layout_variation_idx_map) const
+  void add_delta_to_value (HBINT16 *value,
+                           const void *base,
+                           const Value *src_value,
+                           const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map) const
   {
+    if (!value) return;
+    unsigned varidx = (base + get_device (src_value)).get_variation_index ();
+    hb_pair_t<unsigned, int> *varidx_delta;
+    if (!layout_variation_idx_delta_map->has (varidx, &varidx_delta)) return;
+
+    *value += hb_second (*varidx_delta);
+  }
+
+  bool copy_device (hb_serialize_context_t *c, const void *base,
+                    const Value *src_value,
+                    const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map,
+                    unsigned int new_format, Flags flag) const
+  {
+    // Filter by new format.
+    if (!(new_format & flag)) return true;
+
     Value       *dst_value = c->copy (*src_value);
 
     if (!dst_value) return false;
@@ -246,7 +311,7 @@ struct ValueFormat : HBUINT16
 
     *dst_value = 0;
     c->push ();
-    if ((base + get_device (src_value)).copy (c, layout_variation_idx_map))
+    if ((base + get_device (src_value)).copy (c, layout_variation_idx_delta_map))
     {
       c->add_link (*dst_value, c->pop_pack ());
       return true;

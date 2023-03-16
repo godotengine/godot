@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationNodeAnimation" inherits="AnimationRootNode" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AnimationNodeAnimation" inherits="AnimationRootNode" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Input animation to use in an [AnimationNodeBlendTree].
 	</brief_description>
@@ -21,8 +21,10 @@
 	</members>
 	<constants>
 		<constant name="PLAY_MODE_FORWARD" value="0" enum="PlayMode">
+			Plays animation in forward direction.
 		</constant>
 		<constant name="PLAY_MODE_BACKWARD" value="1" enum="PlayMode">
+			Plays animation in backward direction.
 		</constant>
 	</constants>
 </class>

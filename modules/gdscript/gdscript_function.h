@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  gdscript_function.h                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gdscript_function.h                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef GDSCRIPT_FUNCTION_H
 #define GDSCRIPT_FUNCTION_H
@@ -105,9 +105,10 @@ public:
 					return false;
 				}
 
-				Object *obj = p_variant.get_validated_object();
+				bool was_freed = false;
+				Object *obj = p_variant.get_validated_object_with_check(was_freed);
 				if (!obj) {
-					return false;
+					return !was_freed;
 				}
 
 				if (!ClassDB::is_parent_class(obj->get_class_name(), native_type)) {
@@ -124,9 +125,10 @@ public:
 					return false;
 				}
 
-				Object *obj = p_variant.get_validated_object();
+				bool was_freed = false;
+				Object *obj = p_variant.get_validated_object_with_check(was_freed);
 				if (!obj) {
-					return false;
+					return !was_freed;
 				}
 
 				Ref<Script> base = obj && obj->get_script_instance() ? obj->get_script_instance()->get_script() : nullptr;
@@ -219,8 +221,10 @@ public:
 	enum Opcode {
 		OPCODE_OPERATOR,
 		OPCODE_OPERATOR_VALIDATED,
-		OPCODE_EXTENDS_TEST,
-		OPCODE_IS_BUILTIN,
+		OPCODE_TYPE_TEST_BUILTIN,
+		OPCODE_TYPE_TEST_ARRAY,
+		OPCODE_TYPE_TEST_NATIVE,
+		OPCODE_TYPE_TEST_SCRIPT,
 		OPCODE_SET_KEYED,
 		OPCODE_SET_KEYED_VALIDATED,
 		OPCODE_SET_INDEXED_VALIDATED,
@@ -405,6 +409,7 @@ public:
 		ADDR_TYPE_STACK = 0,
 		ADDR_TYPE_CONSTANT = 1,
 		ADDR_TYPE_MEMBER = 2,
+		ADDR_TYPE_MAX = 3,
 	};
 
 	enum FixedAddresses {
@@ -416,12 +421,6 @@ public:
 		ADDR_NIL = ADDR_STACK_NIL | (ADDR_TYPE_STACK << ADDR_BITS),
 	};
 
-	enum Instruction {
-		INSTR_BITS = 20,
-		INSTR_MASK = ((1 << INSTR_BITS) - 1),
-		INSTR_ARGS_MASK = ~INSTR_MASK,
-	};
-
 	struct StackDebug {
 		int line;
 		int pos;
@@ -430,6 +429,7 @@ public:
 	};
 
 private:
+	friend class GDScript;
 	friend class GDScriptCompiler;
 	friend class GDScriptByteCodeGenerator;
 
@@ -509,11 +509,20 @@ private:
 	Vector<Variant> default_arg_values;
 #endif
 
+#ifdef DEBUG_ENABLED
+	Vector<String> operator_names;
+	Vector<String> setter_names;
+	Vector<String> getter_names;
+	Vector<String> builtin_methods_names;
+	Vector<String> constructors_names;
+	Vector<String> utilities_names;
+	Vector<String> gds_utilities_names;
+#endif
+
 	List<StackDebug> stack_debug;
 
 	Variant _get_default_variant_for_data_type(const GDScriptDataType &p_data_type);
 
-	_FORCE_INLINE_ Variant *_get_variant(int p_address, GDScriptInstance *p_instance, Variant *p_stack, String &r_error) const;
 	_FORCE_INLINE_ String _get_call_error(const Callable::CallError &p_err, const String &p_where, const Variant **argptrs) const;
 
 	friend class GDScriptLanguage;
@@ -539,6 +548,8 @@ private:
 #endif
 
 public:
+	static constexpr int MAX_CALL_DEPTH = 2048; // Limit to try to avoid crash because of a stack overflow.
+
 	struct CallState {
 		GDScript *script = nullptr;
 		GDScriptInstance *instance = nullptr;
@@ -623,6 +634,7 @@ public:
 	Variant resume(const Variant &p_arg = Variant());
 
 	void _clear_stack();
+	void _clear_connections();
 
 	GDScriptFunctionState();
 	~GDScriptFunctionState();

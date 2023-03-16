@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  dir_access_windows.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  dir_access_windows.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #if defined(WINDOWS_ENABLED)
 
@@ -160,7 +160,7 @@ Error DirAccessWindows::make_dir(String p_dir) {
 		p_dir = current_dir.path_join(p_dir);
 	}
 
-	p_dir = p_dir.replace("/", "\\");
+	p_dir = p_dir.simplify_path().replace("/", "\\");
 
 	bool success;
 	int err;
@@ -200,9 +200,9 @@ String DirAccessWindows::get_current_dir(bool p_include_drive) const {
 		return current_dir;
 	} else {
 		if (_get_root_string().is_empty()) {
-			int p = current_dir.find(":");
-			if (p != -1) {
-				return current_dir.substr(p + 1);
+			int pos = current_dir.find(":");
+			if (pos != -1) {
+				return current_dir.substr(pos + 1);
 			}
 		}
 		return current_dir;
@@ -309,39 +309,13 @@ Error DirAccessWindows::remove(String p_path) {
 	}
 }
 
-/*
-
-FileType DirAccessWindows::get_file_type(const String& p_file) const {
-	WCHAR real_current_dir_name[2048];
-	GetCurrentDirectoryW(2048, real_current_dir_name);
-	String prev_dir = Strong::utf16((const char16_t *)real_current_dir_name);
-
-	bool worked = SetCurrentDirectoryW((LPCWSTR)(current_dir.utf16().get_data()));
-
-	DWORD attr;
-	if (worked) {
-		WIN32_FILE_ATTRIBUTE_DATA fileInfo;
-		attr = GetFileAttributesExW((LPCWSTR)(p_file.utf16().get_data()), GetFileExInfoStandard, &fileInfo);
-	}
-
-	SetCurrentDirectoryW((LPCWSTR)(prev_dir.utf16().get_data()));
-
-	if (!worked) {
-		return FILE_TYPE_NONE;
-	}
-
-	return (attr & FILE_ATTRIBUTE_DIRECTORY) ? FILE_TYPE_
-}
-
-*/
-
 uint64_t DirAccessWindows::get_space_left() {
 	uint64_t bytes = 0;
 	if (!GetDiskFreeSpaceEx(nullptr, (PULARGE_INTEGER)&bytes, nullptr, nullptr)) {
 		return 0;
 	}
 
-	//this is either 0 or a value in bytes.
+	// This is either 0 or a value in bytes.
 	return bytes;
 }
 

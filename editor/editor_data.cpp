@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  editor_data.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_data.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_data.h"
 
@@ -120,12 +120,6 @@ int EditorSelectionHistory::get_history_len() {
 
 int EditorSelectionHistory::get_history_pos() {
 	return current_elem_idx;
-}
-
-bool EditorSelectionHistory::is_history_obj_inspector_only(int p_obj) const {
-	ERR_FAIL_INDEX_V(p_obj, history.size(), false);
-	ERR_FAIL_INDEX_V(history[p_obj].level, history[p_obj].path.size(), false);
-	return history[p_obj].path[history[p_obj].level].inspector_only;
 }
 
 ObjectID EditorSelectionHistory::get_history_obj(int p_obj) const {
@@ -351,18 +345,6 @@ void EditorData::apply_changes_in_editors() {
 	}
 }
 
-void EditorData::save_editor_global_states() {
-	for (int i = 0; i < editor_plugins.size(); i++) {
-		editor_plugins[i]->save_global_state();
-	}
-}
-
-void EditorData::restore_editor_global_states() {
-	for (int i = 0; i < editor_plugins.size(); i++) {
-		editor_plugins[i]->restore_global_state();
-	}
-}
-
 void EditorData::paste_object_params(Object *p_object) {
 	ERR_FAIL_NULL(p_object);
 	undo_redo_manager->create_action(TTR("Paste Params"));
@@ -390,7 +372,7 @@ void EditorData::set_scene_as_saved(int p_idx) {
 	}
 	ERR_FAIL_INDEX(p_idx, edited_scene.size());
 
-	get_undo_redo()->set_history_as_saved(edited_scene[p_idx].history_id);
+	undo_redo_manager->set_history_as_saved(edited_scene[p_idx].history_id);
 }
 
 bool EditorData::is_scene_changed(int p_idx) {
@@ -399,7 +381,7 @@ bool EditorData::is_scene_changed(int p_idx) {
 	}
 	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), false);
 
-	uint64_t current_scene_version = get_undo_redo()->get_or_create_history(edited_scene[p_idx].history_id).undo_redo->get_version();
+	uint64_t current_scene_version = undo_redo_manager->get_or_create_history(edited_scene[p_idx].history_id).undo_redo->get_version();
 	bool is_changed = edited_scene[p_idx].last_checked_version != current_scene_version;
 	edited_scene.write[p_idx].last_checked_version = current_scene_version;
 	return is_changed;
@@ -423,10 +405,6 @@ int EditorData::get_current_edited_scene_history_id() const {
 
 int EditorData::get_scene_history_id(int p_idx) const {
 	return edited_scene[p_idx].history_id;
-}
-
-Ref<EditorUndoRedoManager> &EditorData::get_undo_redo() {
-	return undo_redo_manager;
 }
 
 void EditorData::add_undo_redo_inspector_hook_callback(Callable p_callable) {
@@ -457,12 +435,10 @@ Callable EditorData::get_move_array_element_function(const StringName &p_class) 
 }
 
 void EditorData::remove_editor_plugin(EditorPlugin *p_plugin) {
-	p_plugin->undo_redo = Ref<EditorUndoRedoManager>();
 	editor_plugins.erase(p_plugin);
 }
 
 void EditorData::add_editor_plugin(EditorPlugin *p_plugin) {
-	p_plugin->undo_redo = undo_redo_manager;
 	editor_plugins.push_back(p_plugin);
 }
 
@@ -488,7 +464,7 @@ void EditorData::add_custom_type(const String &p_type, const String &p_inherits,
 	custom_types[p_inherits].push_back(ct);
 }
 
-Variant EditorData::instance_custom_type(const String &p_type, const String &p_inherits) {
+Variant EditorData::instantiate_custom_type(const String &p_type, const String &p_inherits) {
 	if (get_custom_types().has(p_inherits)) {
 		for (int i = 0; i < get_custom_types()[p_inherits].size(); i++) {
 			if (get_custom_types()[p_inherits][i].name == p_type) {
@@ -947,11 +923,12 @@ StringName EditorData::script_class_get_base(const String &p_class) const {
 
 Variant EditorData::script_class_instance(const String &p_class) {
 	if (ScriptServer::is_global_class(p_class)) {
-		Variant obj = ClassDB::instantiate(ScriptServer::get_global_class_native_base(p_class));
-		if (obj) {
-			Ref<Script> script = script_class_load_script(p_class);
-			if (script.is_valid()) {
-				((Object *)obj)->set_script(script);
+		Ref<Script> script = script_class_load_script(p_class);
+		if (script.is_valid()) {
+			// Store in a variant to initialize the refcount if needed.
+			Variant obj = ClassDB::instantiate(script->get_instance_base_type());
+			if (obj) {
+				obj.operator Object *()->set_script(script);
 			}
 			return obj;
 		}
@@ -999,6 +976,8 @@ void EditorData::script_class_set_name(const String &p_path, const StringName &p
 }
 
 void EditorData::script_class_save_icon_paths() {
+	Array script_classes = ProjectSettings::get_singleton()->get_global_class_list();
+
 	Dictionary d;
 	for (const KeyValue<StringName, String> &E : _script_class_icon_paths) {
 		if (ScriptServer::is_global_class(E.key)) {
@@ -1006,29 +985,22 @@ void EditorData::script_class_save_icon_paths() {
 		}
 	}
 
-	Dictionary old;
-	if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
-		old = ProjectSettings::get_singleton()->get("_global_script_class_icons");
-	}
-	if ((!old.is_empty() || d.is_empty()) && d.hash() == old.hash()) {
-		return;
-	}
-
-	if (d.is_empty()) {
-		if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
-			ProjectSettings::get_singleton()->clear("_global_script_class_icons");
+	for (int i = 0; i < script_classes.size(); i++) {
+		Dictionary d2 = script_classes[i];
+		if (!d2.has("class")) {
+			continue;
 		}
-	} else {
-		ProjectSettings::get_singleton()->set("_global_script_class_icons", d);
+		d2["icon"] = d.get(d2["class"], "");
 	}
-	ProjectSettings::get_singleton()->save();
+	ProjectSettings::get_singleton()->store_global_class_list(script_classes);
 }
 
 void EditorData::script_class_load_icon_paths() {
 	script_class_clear_icon_paths();
 
+#ifndef DISABLE_DEPRECATED
 	if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
-		Dictionary d = ProjectSettings::get_singleton()->get("_global_script_class_icons");
+		Dictionary d = GLOBAL_GET("_global_script_class_icons");
 		List<Variant> keys;
 		d.get_key_list(&keys);
 
@@ -1039,13 +1011,31 @@ void EditorData::script_class_load_icon_paths() {
 			String path = ScriptServer::get_global_class_path(name);
 			script_class_set_name(path, name);
 		}
+		ProjectSettings::get_singleton()->clear("_global_script_class_icons");
+	}
+#endif
+
+	Array script_classes = ProjectSettings::get_singleton()->get_global_class_list();
+	for (int i = 0; i < script_classes.size(); i++) {
+		Dictionary d = script_classes[i];
+		if (!d.has("class") || !d.has("path") || !d.has("icon")) {
+			continue;
+		}
+
+		String name = d["class"];
+		_script_class_icon_paths[name] = d["icon"];
+		script_class_set_name(d["path"], name);
 	}
 }
 
 EditorData::EditorData() {
 	current_edited_scene = -1;
-	undo_redo_manager.instantiate();
+	undo_redo_manager = memnew(EditorUndoRedoManager);
 	script_class_load_icon_paths();
+}
+
+EditorData::~EditorData() {
+	memdelete(undo_redo_manager);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

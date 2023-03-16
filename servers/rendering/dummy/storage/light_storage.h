@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  light_storage.h                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  light_storage.h                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef LIGHT_STORAGE_DUMMY_H
 #define LIGHT_STORAGE_DUMMY_H
@@ -80,6 +80,16 @@ public:
 	virtual RS::LightBakeMode light_get_bake_mode(RID p_light) override { return RS::LIGHT_BAKE_DISABLED; }
 	virtual uint32_t light_get_max_sdfgi_cascade(RID p_light) override { return 0; }
 	virtual uint64_t light_get_version(RID p_light) const override { return 0; }
+	virtual uint32_t light_get_cull_mask(RID p_light) const override { return 0; }
+
+	/* LIGHT INSTANCE API */
+
+	RID light_instance_create(RID p_light) override { return RID(); }
+	void light_instance_free(RID p_light) override {}
+	void light_instance_set_transform(RID p_light_instance, const Transform3D &p_transform) override {}
+	void light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb) override {}
+	void light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) override {}
+	void light_instance_mark_visible(RID p_light_instance) override {}
 
 	/* PROBE API */
 	virtual RID reflection_probe_allocate() override { return RID(); }
@@ -92,7 +102,7 @@ public:
 	virtual void reflection_probe_set_ambient_color(RID p_probe, const Color &p_color) override {}
 	virtual void reflection_probe_set_ambient_energy(RID p_probe, float p_energy) override {}
 	virtual void reflection_probe_set_max_distance(RID p_probe, float p_distance) override {}
-	virtual void reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents) override {}
+	virtual void reflection_probe_set_size(RID p_probe, const Vector3 &p_size) override {}
 	virtual void reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset) override {}
 	virtual void reflection_probe_set_as_interior(RID p_probe, bool p_enable) override {}
 	virtual void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) override {}
@@ -105,12 +115,32 @@ public:
 	virtual AABB reflection_probe_get_aabb(RID p_probe) const override { return AABB(); }
 	virtual RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const override { return RenderingServer::REFLECTION_PROBE_UPDATE_ONCE; }
 	virtual uint32_t reflection_probe_get_cull_mask(RID p_probe) const override { return 0; }
-	virtual Vector3 reflection_probe_get_extents(RID p_probe) const override { return Vector3(); }
+	virtual Vector3 reflection_probe_get_size(RID p_probe) const override { return Vector3(); }
 	virtual Vector3 reflection_probe_get_origin_offset(RID p_probe) const override { return Vector3(); }
 	virtual float reflection_probe_get_origin_max_distance(RID p_probe) const override { return 0.0; }
 	virtual bool reflection_probe_renders_shadows(RID p_probe) const override { return false; }
 
+	/* REFLECTION ATLAS */
+
+	virtual RID reflection_atlas_create() override { return RID(); }
+	virtual void reflection_atlas_free(RID p_ref_atlas) override {}
+	virtual int reflection_atlas_get_size(RID p_ref_atlas) const override { return 0; }
+	virtual void reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count) override {}
+
+	/* REFLECTION PROBE INSTANCE */
+
+	virtual RID reflection_probe_instance_create(RID p_probe) override { return RID(); }
+	virtual void reflection_probe_instance_free(RID p_instance) override {}
+	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform3D &p_transform) override {}
+	virtual void reflection_probe_release_atlas_index(RID p_instance) override {}
+	virtual bool reflection_probe_instance_needs_redraw(RID p_instance) override { return false; }
+	virtual bool reflection_probe_instance_has_reflection(RID p_instance) override { return false; }
+	virtual bool reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) override { return false; }
+	virtual Ref<RenderSceneBuffers> reflection_probe_atlas_get_render_buffers(RID p_reflection_atlas) override { return Ref<RenderSceneBuffers>(); }
+	virtual bool reflection_probe_instance_postprocess_step(RID p_instance) override { return true; }
+
 	/* LIGHTMAP CAPTURE */
+
 	virtual RID lightmap_allocate() override { return RID(); }
 	virtual void lightmap_initialize(RID p_rid) override {}
 	virtual void lightmap_free(RID p_rid) override {}
@@ -129,6 +159,25 @@ public:
 	virtual bool lightmap_is_interior(RID p_lightmap) const override { return false; }
 	virtual void lightmap_set_probe_capture_update_speed(float p_speed) override {}
 	virtual float lightmap_get_probe_capture_update_speed() const override { return 0; }
+
+	/* LIGHTMAP INSTANCE */
+
+	RID lightmap_instance_create(RID p_lightmap) override { return RID(); }
+	void lightmap_instance_free(RID p_lightmap) override {}
+	void lightmap_instance_set_transform(RID p_lightmap, const Transform3D &p_transform) override {}
+
+	/* SHADOW ATLAS API */
+	virtual RID shadow_atlas_create() override { return RID(); }
+	virtual void shadow_atlas_free(RID p_atlas) override {}
+	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = true) override {}
+	virtual void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) override {}
+	virtual bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) override { return false; }
+
+	virtual void shadow_atlas_update(RID p_atlas) override {}
+
+	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) override {}
+	virtual int get_directional_light_shadow_size(RID p_light_intance) override { return 0; }
+	virtual void set_directional_shadow_count(int p_count) override {}
 };
 
 } // namespace RendererDummy

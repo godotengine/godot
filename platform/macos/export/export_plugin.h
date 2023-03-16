@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  export_plugin.h                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  export_plugin.h                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef MACOS_EXPORT_PLUGIN_H
 #define MACOS_EXPORT_PLUGIN_H
@@ -36,12 +36,10 @@
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
-#include "core/io/zip_io.h"
 #include "core/os/os.h"
 #include "core/version.h"
 #include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
-#include "platform/macos/logo.gen.h"
 
 #include <sys/stat.h>
 
@@ -52,8 +50,32 @@ class EditorExportPlatformMacOS : public EditorExportPlatform {
 
 	Ref<ImageTexture> logo;
 
+	struct SSHCleanupCommand {
+		String host;
+		String port;
+		Vector<String> ssh_args;
+		String cmd_args;
+		bool wait = false;
+
+		SSHCleanupCommand(){};
+		SSHCleanupCommand(const String &p_host, const String &p_port, const Vector<String> &p_ssh_arg, const String &p_cmd_args, bool p_wait = false) {
+			host = p_host;
+			port = p_port;
+			ssh_args = p_ssh_arg;
+			cmd_args = p_cmd_args;
+			wait = p_wait;
+		};
+	};
+
+	Ref<ImageTexture> run_icon;
+	Ref<ImageTexture> stop_icon;
+
+	Vector<SSHCleanupCommand> cleanup_commands;
+	OS::ProcessID ssh_pid = 0;
+	int menu_options = 0;
+
 	void _fix_plist(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist, const String &p_binary);
-	void _make_icon(const Ref<Image> &p_icon, Vector<uint8_t> &p_data);
+	void _make_icon(const Ref<EditorExportPreset> &p_preset, const Ref<Image> &p_icon, Vector<uint8_t> &p_data);
 
 	Error _notarize(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 	Error _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path, bool p_warn = true);
@@ -65,14 +87,17 @@ class EditorExportPlatformMacOS : public EditorExportPlatform {
 			Ref<DirAccess> &dir_access, bool p_sign_enabled, const Ref<EditorExportPreset> &p_preset,
 			const String &p_ent_path);
 	Error _create_dmg(const String &p_dmg_path, const String &p_pkg_name, const String &p_app_path_name);
-	void _zip_folder_recursive(zipFile &p_zip, const String &p_root_path, const String &p_folder, const String &p_pkg_name);
 	Error _export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path);
 
 	bool use_codesign() const { return true; }
 #ifdef MACOS_ENABLED
-	bool use_dmg() const { return true; }
+	bool use_dmg() const {
+		return true;
+	}
 #else
-	bool use_dmg() const { return false; }
+	bool use_dmg() const {
+		return false;
+	}
 #endif
 
 	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const {
@@ -97,6 +122,7 @@ class EditorExportPlatformMacOS : public EditorExportPlatform {
 
 		return true;
 	}
+	bool is_shebang(const String &p_path) const;
 
 protected:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
@@ -104,10 +130,17 @@ protected:
 	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
 
 public:
-	virtual String get_name() const override { return "macOS"; }
-	virtual String get_os_name() const override { return "macOS"; }
-	virtual Ref<Texture2D> get_logo() const override { return logo; }
+	virtual String get_name() const override {
+		return "macOS";
+	}
+	virtual String get_os_name() const override {
+		return "macOS";
+	}
+	virtual Ref<Texture2D> get_logo() const override {
+		return logo;
+	}
 
+	virtual bool is_executable(const String &p_path) const override;
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override {
 		List<String> list;
 		if (use_dmg()) {
@@ -131,8 +164,16 @@ public:
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override {
 	}
 
+	virtual Ref<Texture2D> get_run_icon() const override;
+	virtual bool poll_export() override;
+	virtual Ref<ImageTexture> get_option_icon(int p_index) const override;
+	virtual int get_options_count() const override;
+	virtual String get_option_label(int p_index) const override;
+	virtual String get_option_tooltip(int p_index) const override;
+	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) override;
+	virtual void cleanup() override;
+
 	EditorExportPlatformMacOS();
-	~EditorExportPlatformMacOS();
 };
 
 #endif // MACOS_EXPORT_PLUGIN_H

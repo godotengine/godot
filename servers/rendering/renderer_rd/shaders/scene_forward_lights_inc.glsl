@@ -134,7 +134,8 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 #endif
 
 #if defined(LIGHT_RIM_USED)
-		float rim_light = pow(max(0.0, 1.0 - cNdotV), max(0.0, (1.0 - roughness) * 16.0));
+		// Epsilon min to prevent pow(0, 0) singularity which results in undefined behavior.
+		float rim_light = pow(max(1e-4, 1.0 - cNdotV), max(0.0, (1.0 - roughness) * 16.0));
 		diffuse_light += rim_light * rim * mix(vec3(1.0), albedo, rim_tint) * light_color;
 #endif
 
@@ -202,7 +203,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 		float cLdotH5 = SchlickFresnel(cLdotH);
 		// Calculate Fresnel using specular occlusion term from Filament:
 		// https://google.github.io/filament/Filament.html#lighting/occlusion/specularocclusion
-		float f90 = clamp(dot(f0, vec3(50.0 * 0.33)), 0.0, 1.0);
+		float f90 = clamp(dot(f0, vec3(50.0 * 0.33)), metallic, 1.0);
 		vec3 F = f0 + (f90 - f0) * cLdotH5;
 
 		vec3 specular_brdf_NL = cNdotL * D * F * G;
@@ -793,8 +794,13 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 	float light_length = length(light_rel_vec);
 	float spot_attenuation = get_omni_attenuation(light_length, spot_lights.data[idx].inv_radius, spot_lights.data[idx].attenuation);
 	vec3 spot_dir = spot_lights.data[idx].direction;
-	float scos = max(dot(-normalize(light_rel_vec), spot_dir), spot_lights.data[idx].cone_angle);
-	float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - spot_lights.data[idx].cone_angle));
+
+	// This conversion to a highp float is crucial to prevent light leaking
+	// due to precision errors in the following calculations (cone angle is mediump).
+	highp float cone_angle = spot_lights.data[idx].cone_angle;
+	float scos = max(dot(-normalize(light_rel_vec), spot_dir), cone_angle);
+	float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - cone_angle));
+
 	spot_attenuation *= 1.0 - pow(spot_rim, spot_lights.data[idx].cone_attenuation);
 	float light_attenuation = spot_attenuation;
 	vec3 color = spot_lights.data[idx].color;

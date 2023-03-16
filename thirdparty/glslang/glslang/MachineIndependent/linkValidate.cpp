@@ -55,22 +55,28 @@ namespace glslang {
 //
 // Link-time error emitter.
 //
-void TIntermediate::error(TInfoSink& infoSink, const char* message)
+void TIntermediate::error(TInfoSink& infoSink, const char* message, EShLanguage unitStage)
 {
 #ifndef GLSLANG_WEB
     infoSink.info.prefix(EPrefixError);
-    infoSink.info << "Linking " << StageName(language) << " stage: " << message << "\n";
+    if (unitStage < EShLangCount)
+        infoSink.info << "Linking " << StageName(getStage()) << " and " << StageName(unitStage) << " stages: " << message << "\n";
+    else
+        infoSink.info << "Linking " << StageName(language) << " stage: " << message << "\n";
 #endif
 
     ++numErrors;
 }
 
 // Link-time warning.
-void TIntermediate::warn(TInfoSink& infoSink, const char* message)
+void TIntermediate::warn(TInfoSink& infoSink, const char* message, EShLanguage unitStage)
 {
 #ifndef GLSLANG_WEB
     infoSink.info.prefix(EPrefixWarning);
-    infoSink.info << "Linking " << StageName(language) << " stage: " << message << "\n";
+    if (unitStage < EShLangCount)
+        infoSink.info << "Linking " << StageName(language) << " and " << StageName(unitStage) << " stages: " << message << "\n";
+    else
+        infoSink.info << "Linking " << StageName(language) << " stage: " << message << "\n";
 #endif
 }
 
@@ -114,7 +120,7 @@ void TIntermediate::mergeUniformObjects(TInfoSink& infoSink, TIntermediate& unit
 }
 
 //
-// do error checking on the shader boundary in / out vars 
+// do error checking on the shader boundary in / out vars
 //
 void TIntermediate::checkStageIO(TInfoSink& infoSink, TIntermediate& unit) {
     if (unit.treeRoot == nullptr || treeRoot == nullptr)
@@ -206,7 +212,7 @@ void TIntermediate::mergeModes(TInfoSink& infoSink, TIntermediate& unit)
     if (vertices == TQualifier::layoutNotSet)
         vertices = unit.vertices;
     else if (unit.vertices != TQualifier::layoutNotSet && vertices != unit.vertices) {
-        if (language == EShLangGeometry || language == EShLangMeshNV)
+        if (language == EShLangGeometry || language == EShLangMesh)
             error(infoSink, "Contradictory layout max_vertices values");
         else if (language == EShLangTessControl)
             error(infoSink, "Contradictory layout vertices values");
@@ -216,7 +222,7 @@ void TIntermediate::mergeModes(TInfoSink& infoSink, TIntermediate& unit)
     if (primitives == TQualifier::layoutNotSet)
         primitives = unit.primitives;
     else if (primitives != unit.primitives) {
-        if (language == EShLangMeshNV)
+        if (language == EShLangMesh)
             error(infoSink, "Contradictory layout max_primitives values");
         else
             assert(0);
@@ -313,6 +319,7 @@ void TIntermediate::mergeModes(TInfoSink& infoSink, TIntermediate& unit)
     MERGE_TRUE(autoMapLocations);
     MERGE_TRUE(invertY);
     MERGE_TRUE(dxPositionW);
+    MERGE_TRUE(debugInfo);
     MERGE_TRUE(flattenUniformArrays);
     MERGE_TRUE(useUnknownFormat);
     MERGE_TRUE(hlslOffsets);
@@ -580,9 +587,6 @@ void TIntermediate::mergeGlobalUniformBlocks(TInfoSink& infoSink, TIntermediate&
 }
 
 void TIntermediate::mergeBlockDefinitions(TInfoSink& infoSink, TIntermSymbol* block, TIntermSymbol* unitBlock, TIntermediate* unit) {
-    if (block->getType() == unitBlock->getType()) {
-        return;
-    }
 
     if (block->getType().getTypeName() != unitBlock->getType().getTypeName() ||
         block->getType().getBasicType() != unitBlock->getType().getBasicType() ||
@@ -629,44 +633,42 @@ void TIntermediate::mergeBlockDefinitions(TInfoSink& infoSink, TIntermSymbol* bl
         }
     }
 
-    TType unitType;
-    unitType.shallowCopy(unitBlock->getType());
-
     // update symbol node in unit tree,
     // and other nodes that may reference it
     class TMergeBlockTraverser : public TIntermTraverser {
     public:
-        TMergeBlockTraverser(const glslang::TType &type, const glslang::TType& unitType,
-                             glslang::TIntermediate& unit,
-                             const std::map<unsigned int, unsigned int>& memberIdxUpdates) :
-            newType(type), unitType(unitType), unit(unit), memberIndexUpdates(memberIdxUpdates)
-        { }
-        virtual ~TMergeBlockTraverser() { }
+        TMergeBlockTraverser(const TIntermSymbol* newSym)
+            : newSymbol(newSym), newType(nullptr), unit(nullptr), memberIndexUpdates(nullptr)
+        {
+        }
+        TMergeBlockTraverser(const TIntermSymbol* newSym, const glslang::TType* unitType, glslang::TIntermediate* unit,
+                             const std::map<unsigned int, unsigned int>* memberIdxUpdates)
+            : TIntermTraverser(false, true), newSymbol(newSym), newType(unitType), unit(unit), memberIndexUpdates(memberIdxUpdates)
+        {
+        }
+        virtual ~TMergeBlockTraverser() {}
 
-        const glslang::TType& newType;          // type with modifications
-        const glslang::TType& unitType;         // copy of original type
-        glslang::TIntermediate& unit;           // intermediate that is being updated
-        const std::map<unsigned int, unsigned int>& memberIndexUpdates;
+        const TIntermSymbol* newSymbol;
+        const glslang::TType* newType; // shallow copy of the new type
+        glslang::TIntermediate* unit;   // intermediate that is being updated
+        const std::map<unsigned int, unsigned int>* memberIndexUpdates;
 
         virtual void visitSymbol(TIntermSymbol* symbol)
         {
-            glslang::TType& symType = symbol->getWritableType();
-
-            if (symType == unitType) {
-                // each symbol node has a local copy of the unitType
-                //  if merging involves changing properties that aren't shared objects
-                //  they should be updated in all instances
-
-                // e.g. the struct list is a ptr to an object, so it can be updated
-                // once, outside the traverser
-                //*symType.getWritableStruct() = *newType.getStruct();
+            if (newSymbol->getAccessName() == symbol->getAccessName() &&
+                newSymbol->getQualifier().getBlockStorage() == symbol->getQualifier().getBlockStorage()) {
+                // Each symbol node may have a local copy of the block structure.
+                // Update those structures to match the new one post-merge
+                *(symbol->getWritableType().getWritableStruct()) = *(newSymbol->getType().getStruct());
             }
-
         }
 
         virtual bool visitBinary(TVisit, glslang::TIntermBinary* node)
         {
-            if (node->getOp() == EOpIndexDirectStruct && node->getLeft()->getType() == unitType) {
+            if (!unit || !newType || !memberIndexUpdates || memberIndexUpdates->empty())
+                return true;
+
+            if (node->getOp() == EOpIndexDirectStruct && node->getLeft()->getType() == *newType) {
                 // this is a dereference to a member of the block since the
                 // member list changed, need to update this to point to the
                 // right index
@@ -674,8 +676,8 @@ void TIntermediate::mergeBlockDefinitions(TInfoSink& infoSink, TIntermSymbol* bl
 
                 glslang::TIntermConstantUnion* constNode = node->getRight()->getAsConstantUnion();
                 unsigned int memberIdx = constNode->getConstArray()[0].getUConst();
-                unsigned int newIdx = memberIndexUpdates.at(memberIdx);
-                TIntermTyped* newConstNode = unit.addConstantUnion(newIdx, node->getRight()->getLoc());
+                unsigned int newIdx = memberIndexUpdates->at(memberIdx);
+                TIntermTyped* newConstNode = unit->addConstantUnion(newIdx, node->getRight()->getLoc());
 
                 node->setRight(newConstNode);
                 delete constNode;
@@ -684,10 +686,20 @@ void TIntermediate::mergeBlockDefinitions(TInfoSink& infoSink, TIntermSymbol* bl
             }
             return true;
         }
-    } finalLinkTraverser(block->getType(), unitType, *unit, memberIndexUpdates);
+    };
 
-    // update the tree to use the new type
-    unit->getTreeRoot()->traverse(&finalLinkTraverser);
+    // 'this' may have symbols that are using the old block structure, so traverse the tree to update those
+    // in 'visitSymbol'
+    TMergeBlockTraverser finalLinkTraverser(block);
+    getTreeRoot()->traverse(&finalLinkTraverser);
+
+    // The 'unit' intermediate needs the block structures update, but also structure entry indices
+    // may have changed from the old block to the new one that it was merged into, so update those
+    // in 'visitBinary'
+    TType newType;
+    newType.shallowCopy(block->getType());
+    TMergeBlockTraverser unitFinalLinkTraverser(block, &newType, unit, &memberIndexUpdates);
+    unit->getTreeRoot()->traverse(&unitFinalLinkTraverser);
 
     // update the member list
     (*unitMemberList) = (*memberList);
@@ -819,6 +831,10 @@ void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& sy
 #if !defined(GLSLANG_WEB) && !defined(GLSLANG_ANGLE)
     bool crossStage = getStage() != unitStage;
     bool writeTypeComparison = false;
+    bool errorReported = false;
+    bool printQualifiers = false;
+    bool printPrecision = false;
+    bool printType = false;
 
     // Types have to match
     {
@@ -850,11 +866,48 @@ void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& sy
                 (symbol.getType().isUnsizedArray() || unitSymbol.getType().isUnsizedArray()));
         }
 
-        if (!symbol.getType().sameElementType(unitSymbol.getType()) ||
-            !symbol.getType().sameTypeParameters(unitSymbol.getType()) ||
-            !arraysMatch ) {
+        int lpidx = -1;
+        int rpidx = -1;
+        if (!symbol.getType().sameElementType(unitSymbol.getType(), &lpidx, &rpidx)) {
+            if (lpidx >= 0 && rpidx >= 0) {
+                error(infoSink, "Member names and types must match:", unitStage);
+                infoSink.info << "    Block: " << symbol.getType().getTypeName() << "\n";
+                infoSink.info << "        " << StageName(getStage()) << " stage: \""
+                              << (*symbol.getType().getStruct())[lpidx].type->getCompleteString(true, false, false, true,
+                                      (*symbol.getType().getStruct())[lpidx].type->getFieldName()) << "\"\n";
+                infoSink.info << "        " << StageName(unitStage) << " stage: \""
+                              << (*unitSymbol.getType().getStruct())[rpidx].type->getCompleteString(true, false, false, true,
+                                      (*unitSymbol.getType().getStruct())[rpidx].type->getFieldName()) << "\"\n";
+                errorReported = true;
+            } else if (lpidx >= 0 && rpidx == -1) {
+                  TString errmsg = StageName(getStage());
+                  errmsg.append(" block member has no corresponding member in ").append(StageName(unitStage)).append(" block:");
+                  error(infoSink, errmsg.c_str(), unitStage);
+                  infoSink.info << "    " << StageName(getStage()) << " stage: Block: " << symbol.getType().getTypeName() << ", Member: "
+                    << (*symbol.getType().getStruct())[lpidx].type->getFieldName() << "\n";
+                  infoSink.info << "    " << StageName(unitStage) << " stage: Block: " << unitSymbol.getType().getTypeName() << ", Member: n/a \n";
+                  errorReported = true;
+            } else if (lpidx == -1 && rpidx >= 0) {
+                  TString errmsg = StageName(unitStage);
+                  errmsg.append(" block member has no corresponding member in ").append(StageName(getStage())).append(" block:");
+                  error(infoSink, errmsg.c_str(), unitStage);
+                  infoSink.info << "    " << StageName(unitStage) << " stage: Block: " << unitSymbol.getType().getTypeName() << ", Member: "
+                    << (*unitSymbol.getType().getStruct())[rpidx].type->getFieldName() << "\n";
+                  infoSink.info << "    " << StageName(getStage()) << " stage: Block: " << symbol.getType().getTypeName() << ", Member: n/a \n";
+                  errorReported = true;
+            } else {
+                  error(infoSink, "Types must match:", unitStage);
+                  writeTypeComparison = true;
+                  printType = true;
+            }
+        } else if (!arraysMatch) {
+            error(infoSink, "Array sizes must be compatible:", unitStage);
             writeTypeComparison = true;
-            error(infoSink, "Types must match:");
+            printType = true;
+        } else if (!symbol.getType().sameTypeParameters(unitSymbol.getType())) {
+            error(infoSink, "Type parameters must match:", unitStage);
+            writeTypeComparison = true;
+            printType = true;
         }
     }
 
@@ -875,13 +928,35 @@ void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& sy
             }
             const TQualifier& qualifier = (*symbol.getType().getStruct())[li].type->getQualifier();
             const TQualifier & unitQualifier = (*unitSymbol.getType().getStruct())[ri].type->getQualifier();
-            if (qualifier.layoutMatrix     != unitQualifier.layoutMatrix ||
-                qualifier.layoutOffset     != unitQualifier.layoutOffset ||
-                qualifier.layoutAlign      != unitQualifier.layoutAlign ||
-                qualifier.layoutLocation   != unitQualifier.layoutLocation ||
-                qualifier.layoutComponent  != unitQualifier.layoutComponent) {
-                error(infoSink, "Interface block member layout qualifiers must match:");
-                writeTypeComparison = true;
+            bool layoutQualifierError = false;
+            if (qualifier.layoutMatrix != unitQualifier.layoutMatrix) {
+                error(infoSink, "Interface block member layout matrix qualifier must match:", unitStage);
+                layoutQualifierError = true;
+            }
+            if (qualifier.layoutOffset != unitQualifier.layoutOffset) {
+                error(infoSink, "Interface block member layout offset qualifier must match:", unitStage);
+                layoutQualifierError = true;
+            }
+            if (qualifier.layoutAlign != unitQualifier.layoutAlign) {
+                error(infoSink, "Interface block member layout align qualifier must match:", unitStage);
+                layoutQualifierError = true;
+            }
+            if (qualifier.layoutLocation != unitQualifier.layoutLocation) {
+                error(infoSink, "Interface block member layout location qualifier must match:", unitStage);
+                layoutQualifierError = true;
+            }
+            if (qualifier.layoutComponent != unitQualifier.layoutComponent) {
+                error(infoSink, "Interface block member layout component qualifier must match:", unitStage);
+                layoutQualifierError = true;
+            }
+            if (layoutQualifierError) {
+                infoSink.info << "    " << StageName(getStage()) << " stage: Block: " << symbol.getType().getTypeName() << ", Member: "
+                              << (*symbol.getType().getStruct())[li].type->getFieldName() << " \""
+                              << (*symbol.getType().getStruct())[li].type->getCompleteString(true, true, false, false) << "\"\n";
+                infoSink.info << "    " << StageName(unitStage) << " stage: Block: " << unitSymbol.getType().getTypeName() << ", Member: "
+                              << (*unitSymbol.getType().getStruct())[ri].type->getFieldName() << " \""
+                              << (*unitSymbol.getType().getStruct())[ri].type->getCompleteString(true, true, false, false) << "\"\n";
+                errorReported = true;
             }
             ++li;
             ++ri;
@@ -895,8 +970,9 @@ void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& sy
     // Qualifiers have to (almost) match
     // Storage...
     if (!isInOut && symbol.getQualifier().storage != unitSymbol.getQualifier().storage) {
-        error(infoSink, "Storage qualifiers must match:");
+        error(infoSink, "Storage qualifiers must match:", unitStage);
         writeTypeComparison = true;
+        printQualifiers = true;
     }
 
     // Uniform and buffer blocks must either both have an instance name, or
@@ -904,37 +980,40 @@ void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& sy
     if (symbol.getQualifier().isUniformOrBuffer() &&
         (IsAnonymous(symbol.getName()) != IsAnonymous(unitSymbol.getName()))) {
         error(infoSink, "Matched Uniform or Storage blocks must all be anonymous,"
-                        " or all be named:");
+                        " or all be named:", unitStage);
         writeTypeComparison = true;
     }
 
     if (symbol.getQualifier().storage == unitSymbol.getQualifier().storage &&
         (IsAnonymous(symbol.getName()) != IsAnonymous(unitSymbol.getName()) ||
          (!IsAnonymous(symbol.getName()) && symbol.getName() != unitSymbol.getName()))) {
-        warn(infoSink, "Matched shader interfaces are using different instance names.");
+        warn(infoSink, "Matched shader interfaces are using different instance names.", unitStage);
         writeTypeComparison = true;
     }
 
     // Precision...
     if (!isInOut && symbol.getQualifier().precision != unitSymbol.getQualifier().precision) {
-        error(infoSink, "Precision qualifiers must match:");
+        error(infoSink, "Precision qualifiers must match:", unitStage);
         writeTypeComparison = true;
+        printPrecision = true;
     }
 
     // Invariance...
     if (! crossStage && symbol.getQualifier().invariant != unitSymbol.getQualifier().invariant) {
-        error(infoSink, "Presence of invariant qualifier must match:");
+        error(infoSink, "Presence of invariant qualifier must match:", unitStage);
         writeTypeComparison = true;
+        printQualifiers = true;
     }
 
     // Precise...
     if (! crossStage && symbol.getQualifier().isNoContraction() != unitSymbol.getQualifier().isNoContraction()) {
-        error(infoSink, "Presence of precise qualifier must match:");
+        error(infoSink, "Presence of precise qualifier must match:", unitStage);
         writeTypeComparison = true;
+        printPrecision = true;
     }
 
     // Auxiliary and interpolation...
-    // "interpolation qualification (e.g., flat) and auxiliary qualification (e.g. centroid) may differ.  
+    // "interpolation qualification (e.g., flat) and auxiliary qualification (e.g. centroid) may differ.
     //  These mismatches are allowed between any pair of stages ...
     //  those provided in the fragment shader supersede those provided in previous stages."
     if (!crossStage &&
@@ -944,57 +1023,137 @@ void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& sy
         symbol.getQualifier().isSample()!= unitSymbol.getQualifier().isSample() ||
         symbol.getQualifier().isPatch() != unitSymbol.getQualifier().isPatch() ||
         symbol.getQualifier().isNonPerspective() != unitSymbol.getQualifier().isNonPerspective())) {
-        error(infoSink, "Interpolation and auxiliary storage qualifiers must match:");
+        error(infoSink, "Interpolation and auxiliary storage qualifiers must match:", unitStage);
         writeTypeComparison = true;
+        printQualifiers = true;
     }
 
     // Memory...
-    if (symbol.getQualifier().coherent          != unitSymbol.getQualifier().coherent ||
-        symbol.getQualifier().devicecoherent    != unitSymbol.getQualifier().devicecoherent ||
-        symbol.getQualifier().queuefamilycoherent  != unitSymbol.getQualifier().queuefamilycoherent ||
-        symbol.getQualifier().workgroupcoherent != unitSymbol.getQualifier().workgroupcoherent ||
-        symbol.getQualifier().subgroupcoherent  != unitSymbol.getQualifier().subgroupcoherent ||
-        symbol.getQualifier().shadercallcoherent!= unitSymbol.getQualifier().shadercallcoherent ||
-        symbol.getQualifier().nonprivate        != unitSymbol.getQualifier().nonprivate ||
-        symbol.getQualifier().volatil           != unitSymbol.getQualifier().volatil ||
-        symbol.getQualifier().restrict          != unitSymbol.getQualifier().restrict ||
-        symbol.getQualifier().readonly          != unitSymbol.getQualifier().readonly ||
-        symbol.getQualifier().writeonly         != unitSymbol.getQualifier().writeonly) {
-        error(infoSink, "Memory qualifiers must match:");
-        writeTypeComparison = true;
+    bool memoryQualifierError = false;
+    if (symbol.getQualifier().coherent != unitSymbol.getQualifier().coherent) {
+        error(infoSink, "Memory coherent qualifier must match:", unitStage);
+        memoryQualifierError = true;
+    }
+    if (symbol.getQualifier().devicecoherent != unitSymbol.getQualifier().devicecoherent) {
+        error(infoSink, "Memory devicecoherent qualifier must match:", unitStage);
+        memoryQualifierError = true;
+    }
+    if (symbol.getQualifier().queuefamilycoherent != unitSymbol.getQualifier().queuefamilycoherent) {
+        error(infoSink, "Memory queuefamilycoherent qualifier must match:", unitStage);
+        memoryQualifierError = true;
+    }
+    if (symbol.getQualifier().workgroupcoherent != unitSymbol.getQualifier().workgroupcoherent) {
+        error(infoSink, "Memory workgroupcoherent qualifier must match:", unitStage);
+        memoryQualifierError = true;
+    }
+    if (symbol.getQualifier().subgroupcoherent != unitSymbol.getQualifier().subgroupcoherent) {
+        error(infoSink, "Memory subgroupcoherent qualifier must match:", unitStage);
+        memoryQualifierError = true;
+    }
+    if (symbol.getQualifier().shadercallcoherent != unitSymbol.getQualifier().shadercallcoherent) {
+        error(infoSink, "Memory shadercallcoherent qualifier must match:", unitStage);
+        memoryQualifierError = true;
+    }
+    if (symbol.getQualifier().nonprivate != unitSymbol.getQualifier().nonprivate) {
+        error(infoSink, "Memory nonprivate qualifier must match:", unitStage);
+        memoryQualifierError = true;
+    }
+    if (symbol.getQualifier().volatil != unitSymbol.getQualifier().volatil) {
+        error(infoSink, "Memory volatil qualifier must match:", unitStage);
+        memoryQualifierError = true;
+    }
+    if (symbol.getQualifier().restrict != unitSymbol.getQualifier().restrict) {
+        error(infoSink, "Memory restrict qualifier must match:", unitStage);
+        memoryQualifierError = true;
+    }
+    if (symbol.getQualifier().readonly != unitSymbol.getQualifier().readonly) {
+        error(infoSink, "Memory readonly qualifier must match:", unitStage);
+        memoryQualifierError = true;
+    }
+    if (symbol.getQualifier().writeonly != unitSymbol.getQualifier().writeonly) {
+        error(infoSink, "Memory writeonly qualifier must match:", unitStage);
+        memoryQualifierError = true;
+    }
+    if (memoryQualifierError) {
+          writeTypeComparison = true;
+          printQualifiers = true;
     }
 
     // Layouts...
     // TODO: 4.4 enhanced layouts: Generalize to include offset/align: current spec
     //       requires separate user-supplied offset from actual computed offset, but
     //       current implementation only has one offset.
-    if (symbol.getQualifier().layoutMatrix    != unitSymbol.getQualifier().layoutMatrix ||
-        symbol.getQualifier().layoutPacking   != unitSymbol.getQualifier().layoutPacking ||
-        (symbol.getQualifier().hasLocation() && unitSymbol.getQualifier().hasLocation() && symbol.getQualifier().layoutLocation != unitSymbol.getQualifier().layoutLocation) ||
-        symbol.getQualifier().layoutComponent != unitSymbol.getQualifier().layoutComponent ||
-        symbol.getQualifier().layoutIndex     != unitSymbol.getQualifier().layoutIndex ||
-        (symbol.getQualifier().hasBinding() && unitSymbol.getQualifier().hasBinding() && symbol.getQualifier().layoutBinding != unitSymbol.getQualifier().layoutBinding) ||
-        (symbol.getQualifier().hasBinding() && (symbol.getQualifier().layoutOffset != unitSymbol.getQualifier().layoutOffset))) {
-        error(infoSink, "Layout qualification must match:");
+    bool layoutQualifierError = false;
+    if (symbol.getQualifier().layoutMatrix != unitSymbol.getQualifier().layoutMatrix) {
+        error(infoSink, "Layout matrix qualifier must match:", unitStage);
+        layoutQualifierError = true;
+    }
+    if (symbol.getQualifier().layoutPacking != unitSymbol.getQualifier().layoutPacking) {
+        error(infoSink, "Layout packing qualifier must match:", unitStage);
+        layoutQualifierError = true;
+    }
+    if (symbol.getQualifier().hasLocation() && unitSymbol.getQualifier().hasLocation() && symbol.getQualifier().layoutLocation != unitSymbol.getQualifier().layoutLocation) {
+        error(infoSink, "Layout location qualifier must match:", unitStage);
+        layoutQualifierError = true;
+    }
+    if (symbol.getQualifier().layoutComponent != unitSymbol.getQualifier().layoutComponent) {
+        error(infoSink, "Layout component qualifier must match:", unitStage);
+        layoutQualifierError = true;
+    }
+    if (symbol.getQualifier().layoutIndex != unitSymbol.getQualifier().layoutIndex) {
+        error(infoSink, "Layout index qualifier must match:", unitStage);
+        layoutQualifierError = true;
+    }
+    if (symbol.getQualifier().hasBinding() && unitSymbol.getQualifier().hasBinding() && symbol.getQualifier().layoutBinding != unitSymbol.getQualifier().layoutBinding) {
+        error(infoSink, "Layout binding qualifier must match:", unitStage);
+        layoutQualifierError = true;
+    }
+    if (symbol.getQualifier().hasBinding() && (symbol.getQualifier().layoutOffset != unitSymbol.getQualifier().layoutOffset)) {
+        error(infoSink, "Layout offset qualifier must match:", unitStage);
+        layoutQualifierError = true;
+    }
+    if (layoutQualifierError) {
         writeTypeComparison = true;
+        printQualifiers = true;
     }
 
     // Initializers have to match, if both are present, and if we don't already know the types don't match
-    if (! writeTypeComparison) {
+    if (! writeTypeComparison && ! errorReported) {
         if (! symbol.getConstArray().empty() && ! unitSymbol.getConstArray().empty()) {
             if (symbol.getConstArray() != unitSymbol.getConstArray()) {
-                error(infoSink, "Initializers must match:");
+                error(infoSink, "Initializers must match:", unitStage);
                 infoSink.info << "    " << symbol.getName() << "\n";
             }
         }
     }
 
     if (writeTypeComparison) {
-        infoSink.info << "    " << symbol.getName() << ": \"" << symbol.getType().getCompleteString() << "\" versus ";
-        if (symbol.getName() != unitSymbol.getName())
-            infoSink.info << unitSymbol.getName() << ": ";
-
-        infoSink.info << "\"" << unitSymbol.getType().getCompleteString() << "\"\n";
+        if (symbol.getType().getBasicType() == EbtBlock && unitSymbol.getType().getBasicType() == EbtBlock &&
+            symbol.getType().getStruct() && unitSymbol.getType().getStruct()) {
+          if (printType) {
+            infoSink.info << "    " << StageName(getStage()) << " stage: \"" << symbol.getType().getCompleteString(true, printQualifiers, printPrecision,
+                                                    printType, symbol.getName(), symbol.getType().getTypeName()) << "\"\n";
+            infoSink.info << "    " << StageName(unitStage) << " stage: \"" << unitSymbol.getType().getCompleteString(true, printQualifiers, printPrecision,
+                                                    printType, unitSymbol.getName(), unitSymbol.getType().getTypeName()) << "\"\n";
+          } else {
+            infoSink.info << "    " << StageName(getStage()) << " stage: Block: " << symbol.getType().getTypeName() << " Instance: " << symbol.getName()
+              << ": \"" << symbol.getType().getCompleteString(true, printQualifiers, printPrecision, printType) << "\"\n";
+            infoSink.info << "    " << StageName(unitStage) << " stage: Block: " << unitSymbol.getType().getTypeName() << " Instance: " << unitSymbol.getName()
+              << ": \"" << unitSymbol.getType().getCompleteString(true, printQualifiers, printPrecision, printType) << "\"\n";
+          }
+        } else {
+          if (printType) {
+            infoSink.info << "    " << StageName(getStage()) << " stage: \""
+              << symbol.getType().getCompleteString(true, printQualifiers, printPrecision, printType, symbol.getName()) << "\"\n";
+            infoSink.info << "    " << StageName(unitStage) << " stage: \""
+              << unitSymbol.getType().getCompleteString(true, printQualifiers, printPrecision, printType, unitSymbol.getName()) << "\"\n";
+          } else {
+            infoSink.info << "    " << StageName(getStage()) << " stage: " << symbol.getName() << " \""
+              << symbol.getType().getCompleteString(true, printQualifiers, printPrecision, printType) << "\"\n";
+            infoSink.info << "    " << StageName(unitStage) << " stage: " << unitSymbol.getName() << " \""
+              << unitSymbol.getType().getCompleteString(true, printQualifiers, printPrecision, printType) << "\"\n";
+          }
+        }
     }
 #endif
 }
@@ -1136,8 +1295,8 @@ void TIntermediate::finalCheck(TInfoSink& infoSink, bool keepUncalled)
             error(infoSink, "At least one shader must specify a layout(max_vertices = value)");
         break;
     case EShLangFragment:
-        // for GL_ARB_post_depth_coverage, EarlyFragmentTest is set automatically in 
-        // ParseHelper.cpp. So if we reach here, this must be GL_EXT_post_depth_coverage 
+        // for GL_ARB_post_depth_coverage, EarlyFragmentTest is set automatically in
+        // ParseHelper.cpp. So if we reach here, this must be GL_EXT_post_depth_coverage
         // requiring explicit early_fragment_tests
         if (getPostDepthCoverage() && !getEarlyFragmentTests())
             error(infoSink, "post_depth_coverage requires early_fragment_tests");
@@ -1154,7 +1313,7 @@ void TIntermediate::finalCheck(TInfoSink& infoSink, bool keepUncalled)
         if (numShaderRecordBlocks > 1)
             error(infoSink, "Only one shaderRecordNV buffer block is allowed per stage");
         break;
-    case EShLangMeshNV:
+    case EShLangMesh:
         // NV_mesh_shader doesn't allow use of both single-view and per-view builtins.
         if (inIoAccessed("gl_Position") && inIoAccessed("gl_PositionPerViewNV"))
             error(infoSink, "Can only use one of gl_Position or gl_PositionPerViewNV");
@@ -1173,9 +1332,11 @@ void TIntermediate::finalCheck(TInfoSink& infoSink, bool keepUncalled)
         if (primitives == TQualifier::layoutNotSet)
             error(infoSink, "At least one shader must specify a layout(max_primitives = value)");
         // fall through
-    case EShLangTaskNV:
+    case EShLangTask:
         if (numTaskNVBlocks > 1)
             error(infoSink, "Only one taskNV interface block is allowed per shader");
+        if (numTaskEXTPayloads > 1)
+            error(infoSink, "Only single variable of type taskPayloadSharedEXT is allowed per shader");
         sharedBlockCheck(infoSink);
         break;
     default:
@@ -2068,7 +2229,7 @@ int TIntermediate::getScalarAlignment(const TType& type, int& size, int& stride,
 
     if (type.isVector()) {
         int scalarAlign = getBaseAlignmentScalar(type, size);
-        
+
         size *= type.getVectorSize();
         return scalarAlign;
     }
@@ -2089,7 +2250,7 @@ int TIntermediate::getScalarAlignment(const TType& type, int& size, int& stride,
 
     assert(0);  // all cases should be covered above
     size = 1;
-    return 1;    
+    return 1;
 }
 
 int TIntermediate::getMemberAlignment(const TType& type, int& size, int& stride, TLayoutPacking layoutPacking, bool rowMajor)
@@ -2179,8 +2340,8 @@ bool TIntermediate::isIoResizeArray(const TType& type, EShLanguage language) {
                 ! type.getQualifier().patch) ||
             (language == EShLangTessEvaluation && type.getQualifier().storage == EvqVaryingIn) ||
             (language == EShLangFragment && type.getQualifier().storage == EvqVaryingIn &&
-                type.getQualifier().pervertexNV) ||
-            (language == EShLangMeshNV && type.getQualifier().storage == EvqVaryingOut &&
+             (type.getQualifier().pervertexNV || type.getQualifier().pervertexEXT)) ||
+            (language == EShLangMesh && type.getQualifier().storage == EvqVaryingOut &&
                 !type.getQualifier().perTaskNV));
 }
 #endif // not GLSLANG_WEB

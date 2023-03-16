@@ -32,11 +32,19 @@ namespace embree
       __forceinline void init(const Vec3vf<K>& ray_org, const Vec3vf<K>& ray_dir)
       {
         rdir = rcp_safe(ray_dir);
+#if defined(__aarch64__)
+        neg_org_rdir = -(ray_org * rdir);
+#else
         org_rdir = ray_org * rdir;
+#endif
       }
 
       Vec3vf<K> rdir;
+#if defined(__aarch64__)
+      Vec3vf<K> neg_org_rdir;
+#else
       Vec3vf<K> org_rdir;
+#endif
       vfloat<K> tnear;
       vfloat<K> tfar;
     };
@@ -87,12 +95,21 @@ namespace embree
       const vfloat<N> bmaxY = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farY));
       const vfloat<N> bmaxZ = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farZ));
 
+#if defined (__aarch64__)
+      const vfloat<N> rminX = madd(bminX, vfloat<N>(ray.rdir.x[k]), vfloat<N>(ray.neg_org_rdir.x[k]));
+      const vfloat<N> rminY = madd(bminY, vfloat<N>(ray.rdir.y[k]), vfloat<N>(ray.neg_org_rdir.y[k]));
+      const vfloat<N> rminZ = madd(bminZ, vfloat<N>(ray.rdir.z[k]), vfloat<N>(ray.neg_org_rdir.z[k]));
+      const vfloat<N> rmaxX = madd(bmaxX, vfloat<N>(ray.rdir.x[k]), vfloat<N>(ray.neg_org_rdir.x[k]));
+      const vfloat<N> rmaxY = madd(bmaxY, vfloat<N>(ray.rdir.y[k]), vfloat<N>(ray.neg_org_rdir.y[k]));
+      const vfloat<N> rmaxZ = madd(bmaxZ, vfloat<N>(ray.rdir.z[k]), vfloat<N>(ray.neg_org_rdir.z[k]));
+#else
       const vfloat<N> rminX = msub(bminX, vfloat<N>(ray.rdir.x[k]), vfloat<N>(ray.org_rdir.x[k]));
       const vfloat<N> rminY = msub(bminY, vfloat<N>(ray.rdir.y[k]), vfloat<N>(ray.org_rdir.y[k]));
       const vfloat<N> rminZ = msub(bminZ, vfloat<N>(ray.rdir.z[k]), vfloat<N>(ray.org_rdir.z[k]));
       const vfloat<N> rmaxX = msub(bmaxX, vfloat<N>(ray.rdir.x[k]), vfloat<N>(ray.org_rdir.x[k]));
       const vfloat<N> rmaxY = msub(bmaxY, vfloat<N>(ray.rdir.y[k]), vfloat<N>(ray.org_rdir.y[k]));
       const vfloat<N> rmaxZ = msub(bmaxZ, vfloat<N>(ray.rdir.z[k]), vfloat<N>(ray.org_rdir.z[k]));
+#endif
       const vfloat<N> rmin  = maxi(rminX, rminY, rminZ, vfloat<N>(ray.tnear[k]));
       const vfloat<N> rmax  = mini(rmaxX, rmaxY, rmaxZ, vfloat<N>(ray.tfar[k]));
 
@@ -113,12 +130,21 @@ namespace embree
       const vfloat<K> bmaxY = *(const float*)(ptr + nf.farY);
       const vfloat<K> bmaxZ = *(const float*)(ptr + nf.farZ);
 
+#if defined (__aarch64__)
+      const vfloat<K> rminX = madd(bminX, ray.rdir.x, ray.neg_org_rdir.x);
+      const vfloat<K> rminY = madd(bminY, ray.rdir.y, ray.neg_org_rdir.y);
+      const vfloat<K> rminZ = madd(bminZ, ray.rdir.z, ray.neg_org_rdir.z);
+      const vfloat<K> rmaxX = madd(bmaxX, ray.rdir.x, ray.neg_org_rdir.x);
+      const vfloat<K> rmaxY = madd(bmaxY, ray.rdir.y, ray.neg_org_rdir.y);
+      const vfloat<K> rmaxZ = madd(bmaxZ, ray.rdir.z, ray.neg_org_rdir.z);
+#else
       const vfloat<K> rminX = msub(bminX, ray.rdir.x, ray.org_rdir.x);
       const vfloat<K> rminY = msub(bminY, ray.rdir.y, ray.org_rdir.y);
       const vfloat<K> rminZ = msub(bminZ, ray.rdir.z, ray.org_rdir.z);
       const vfloat<K> rmaxX = msub(bmaxX, ray.rdir.x, ray.org_rdir.x);
       const vfloat<K> rmaxY = msub(bmaxY, ray.rdir.y, ray.org_rdir.y);
       const vfloat<K> rmaxZ = msub(bmaxZ, ray.rdir.z, ray.org_rdir.z);
+#endif
 
       const vfloat<K> rmin  = maxi(rminX, rminY, rminZ, ray.tnear);
       const vfloat<K> rmax  = mini(rmaxX, rmaxY, rmaxZ, ray.tfar);

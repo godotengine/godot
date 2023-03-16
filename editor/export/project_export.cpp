@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  project_export.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  project_export.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "project_export.h"
 
@@ -37,9 +37,17 @@
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
+#include "scene/gui/item_list.h"
 #include "scene/gui/link_button.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/gui/split_container.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
 void ProjectExportDialog::_theme_changed() {
@@ -94,7 +102,7 @@ void ProjectExportDialog::_add_preset(int p_platform) {
 	Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_export_platform(p_platform)->create_preset();
 	ERR_FAIL_COND(!preset.is_valid());
 
-	String name = EditorExport::get_singleton()->get_export_platform(p_platform)->get_name();
+	String preset_name = EditorExport::get_singleton()->get_export_platform(p_platform)->get_name();
 	bool make_runnable = true;
 	int attempt = 1;
 	while (true) {
@@ -105,7 +113,7 @@ void ProjectExportDialog::_add_preset(int p_platform) {
 			if (p->get_platform() == preset->get_platform() && p->is_runnable()) {
 				make_runnable = false;
 			}
-			if (p->get_name() == name) {
+			if (p->get_name() == preset_name) {
 				valid = false;
 				break;
 			}
@@ -116,10 +124,10 @@ void ProjectExportDialog::_add_preset(int p_platform) {
 		}
 
 		attempt++;
-		name = EditorExport::get_singleton()->get_export_platform(p_platform)->get_name() + " " + itos(attempt);
+		preset_name = EditorExport::get_singleton()->get_export_platform(p_platform)->get_name() + " " + itos(attempt);
 	}
 
-	preset->set_name(name);
+	preset->set_name(preset_name);
 	if (make_runnable) {
 		preset->set_runnable(make_runnable);
 	}
@@ -154,12 +162,12 @@ void ProjectExportDialog::_update_presets() {
 			current_idx = i;
 		}
 
-		String name = preset->get_name();
+		String preset_name = preset->get_name();
 		if (preset->is_runnable()) {
-			name += " (" + TTR("Runnable") + ")";
+			preset_name += " (" + TTR("Runnable") + ")";
 		}
-		preset->update_files_to_export();
-		presets->add_item(name, preset->get_platform()->get_logo());
+		preset->update_files();
+		presets->add_item(preset_name, preset->get_platform()->get_logo());
 	}
 
 	if (current_idx != -1) {
@@ -237,6 +245,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	export_filter->select(current->get_export_filter());
 	include_filters->set_text(current->get_include_filter());
 	exclude_filters->set_text(current->get_exclude_filter());
+	server_strip_message->set_visible(current->get_export_filter() == EditorExportPreset::EXPORT_CUSTOMIZED);
 
 	_fill_resource_tree();
 
@@ -309,9 +318,6 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 
 	bool enc_directory_mode = current->get_enc_directory();
 	enc_directory->set_pressed(enc_directory_mode);
-
-	int script_export_mode = current->get_script_export_mode();
-	script_mode->select(script_export_mode);
 
 	String key = current->get_script_encryption_key();
 	if (!updating_script_key) {
@@ -473,7 +479,7 @@ void ProjectExportDialog::_enc_filters_changed(const String &p_filters) {
 }
 
 void ProjectExportDialog::_open_key_help_link() {
-	OS::get_singleton()->shell_open(vformat("%s/development/compiling/compiling_with_script_encryption_key.html", VERSION_DOCS_URL));
+	OS::get_singleton()->shell_open(vformat("%s/contributing/development/compiling/compiling_with_script_encryption_key.html", VERSION_DOCS_URL));
 }
 
 void ProjectExportDialog::_enc_pck_changed(bool p_pressed) {
@@ -502,19 +508,6 @@ void ProjectExportDialog::_enc_directory_changed(bool p_pressed) {
 	ERR_FAIL_COND(current.is_null());
 
 	current->set_enc_directory(p_pressed);
-
-	_update_current_preset();
-}
-
-void ProjectExportDialog::_script_export_mode_changed(int p_mode) {
-	if (updating) {
-		return;
-	}
-
-	Ref<EditorExportPreset> current = get_current_preset();
-	ERR_FAIL_COND(current.is_null());
-
-	current->set_script_export_mode(p_mode);
 
 	_update_current_preset();
 }
@@ -552,7 +545,7 @@ void ProjectExportDialog::_duplicate_preset() {
 	Ref<EditorExportPreset> preset = current->get_platform()->create_preset();
 	ERR_FAIL_COND(!preset.is_valid());
 
-	String name = current->get_name() + " (copy)";
+	String preset_name = current->get_name() + " (copy)";
 	bool make_runnable = true;
 	while (true) {
 		bool valid = true;
@@ -562,7 +555,7 @@ void ProjectExportDialog::_duplicate_preset() {
 			if (p->get_platform() == preset->get_platform() && p->is_runnable()) {
 				make_runnable = false;
 			}
-			if (p->get_name() == name) {
+			if (p->get_name() == preset_name) {
 				valid = false;
 				break;
 			}
@@ -572,13 +565,14 @@ void ProjectExportDialog::_duplicate_preset() {
 			break;
 		}
 
-		name += " (copy)";
+		preset_name += " (copy)";
 	}
 
-	preset->set_name(name);
+	preset->set_name(preset_name);
 	if (make_runnable) {
 		preset->set_runnable(make_runnable);
 	}
+	preset->set_dedicated_server(current->is_dedicated_server());
 	preset->set_export_filter(current->get_export_filter());
 	preset->set_include_filter(current->get_include_filter());
 	preset->set_exclude_filter(current->get_exclude_filter());
@@ -701,7 +695,16 @@ void ProjectExportDialog::_export_type_changed(int p_which) {
 		return;
 	}
 
-	current->set_export_filter(EditorExportPreset::ExportFilter(p_which));
+	EditorExportPreset::ExportFilter filter_type = (EditorExportPreset::ExportFilter)p_which;
+	current->set_export_filter(filter_type);
+	current->set_dedicated_server(filter_type == EditorExportPreset::EXPORT_CUSTOMIZED);
+	server_strip_message->set_visible(filter_type == EditorExportPreset::EXPORT_CUSTOMIZED);
+
+	// Default to stripping everything when first switching to server build.
+	if (filter_type == EditorExportPreset::EXPORT_CUSTOMIZED && current->get_customized_files_count() == 0) {
+		current->set_file_export_mode("res://", EditorExportPreset::MODE_FILE_STRIP);
+	}
+
 	updating = true;
 	_fill_resource_tree();
 	updating = false;
@@ -737,25 +740,58 @@ void ProjectExportDialog::_fill_resource_tree() {
 		return;
 	}
 
+	TreeItem *root = include_files->create_item();
+
+	if (f == EditorExportPreset::EXPORT_CUSTOMIZED) {
+		include_files->set_columns(2);
+		include_files->set_column_expand(1, false);
+		include_files->set_column_custom_minimum_width(1, 250 * EDSCALE);
+	} else {
+		include_files->set_columns(1);
+	}
+
 	include_label->show();
 	include_margin->show();
 
-	TreeItem *root = include_files->create_item();
+	_fill_tree(EditorFileSystem::get_singleton()->get_filesystem(), root, current, f);
 
-	_fill_tree(EditorFileSystem::get_singleton()->get_filesystem(), root, current, f == EditorExportPreset::EXPORT_SELECTED_SCENES);
+	if (f == EditorExportPreset::EXPORT_CUSTOMIZED) {
+		_propagate_file_export_mode(include_files->get_root(), EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED);
+	}
 }
 
-bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem *p_item, Ref<EditorExportPreset> &current, bool p_only_scenes) {
+void ProjectExportDialog::_setup_item_for_file_mode(TreeItem *p_item, EditorExportPreset::FileExportMode p_mode) {
+	if (p_mode == EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED) {
+		p_item->set_checked(0, false);
+		p_item->set_cell_mode(1, TreeItem::CELL_MODE_STRING);
+		p_item->set_editable(1, false);
+		p_item->set_selectable(1, false);
+		p_item->set_custom_color(1, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+	} else {
+		p_item->set_checked(0, true);
+		p_item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM);
+		p_item->set_editable(1, true);
+		p_item->set_selectable(1, true);
+		p_item->clear_custom_color(1);
+	}
+	p_item->set_metadata(1, p_mode);
+}
+
+bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem *p_item, Ref<EditorExportPreset> &current, EditorExportPreset::ExportFilter p_export_filter) {
 	p_item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 	p_item->set_icon(0, presets->get_theme_icon(SNAME("folder"), SNAME("FileDialog")));
 	p_item->set_text(0, p_dir->get_name() + "/");
 	p_item->set_editable(0, true);
 	p_item->set_metadata(0, p_dir->get_path());
 
+	if (p_export_filter == EditorExportPreset::EXPORT_CUSTOMIZED) {
+		_setup_item_for_file_mode(p_item, current->get_file_export_mode(p_dir->get_path()));
+	}
+
 	bool used = false;
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
 		TreeItem *subdir = include_files->create_item(p_item);
-		if (_fill_tree(p_dir->get_subdir(i), subdir, current, p_only_scenes)) {
+		if (_fill_tree(p_dir->get_subdir(i), subdir, current, p_export_filter)) {
 			used = true;
 		} else {
 			memdelete(subdir);
@@ -764,7 +800,7 @@ bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem 
 
 	for (int i = 0; i < p_dir->get_file_count(); i++) {
 		String type = p_dir->get_file_type(i);
-		if (p_only_scenes && type != "PackedScene") {
+		if (p_export_filter == EditorExportPreset::EXPORT_SELECTED_SCENES && type != "PackedScene") {
 			continue;
 		}
 		if (type == "TextFile") {
@@ -779,13 +815,35 @@ bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem 
 
 		file->set_icon(0, EditorNode::get_singleton()->get_class_icon(type));
 		file->set_editable(0, true);
-		file->set_checked(0, current->has_export_file(path));
 		file->set_metadata(0, path);
-		file->propagate_check(0);
+
+		if (p_export_filter == EditorExportPreset::EXPORT_CUSTOMIZED) {
+			_setup_item_for_file_mode(file, current->get_file_export_mode(path));
+		} else {
+			file->set_checked(0, current->has_export_file(path));
+			file->propagate_check(0);
+		}
 
 		used = true;
 	}
 	return used;
+}
+
+void ProjectExportDialog::_propagate_file_export_mode(TreeItem *p_item, EditorExportPreset::FileExportMode p_inherited_export_mode) {
+	EditorExportPreset::FileExportMode file_export_mode = (EditorExportPreset::FileExportMode)(int)p_item->get_metadata(1);
+	if (file_export_mode == EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED) {
+		file_export_mode = p_inherited_export_mode;
+	}
+
+	if (file_export_mode == EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED) {
+		p_item->set_text(1, "");
+	} else {
+		p_item->set_text(1, file_mode_popup->get_item_text(file_mode_popup->get_item_index(file_export_mode)));
+	}
+
+	for (int i = 0; i < p_item->get_child_count(); i++) {
+		_propagate_file_export_mode(p_item->get_child(i), file_export_mode);
+	}
 }
 
 void ProjectExportDialog::_tree_changed() {
@@ -803,7 +861,20 @@ void ProjectExportDialog::_tree_changed() {
 		return;
 	}
 
-	item->propagate_check(0);
+	if (current->get_export_filter() == EditorExportPreset::EXPORT_CUSTOMIZED) {
+		EditorExportPreset::FileExportMode file_mode = EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED;
+		String path = item->get_metadata(0);
+
+		if (item->is_checked(0)) {
+			file_mode = current->get_file_export_mode(path, EditorExportPreset::MODE_FILE_STRIP);
+		}
+
+		current->set_file_export_mode(path, file_mode);
+		_setup_item_for_file_mode(item, file_mode);
+		_propagate_file_export_mode(include_files->get_root(), EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED);
+	} else {
+		item->propagate_check(0);
+	}
 }
 
 void ProjectExportDialog::_check_propagated_to_item(Object *p_obj, int column) {
@@ -821,6 +892,31 @@ void ProjectExportDialog::_check_propagated_to_item(Object *p_obj, int column) {
 			current->remove_export_file(path);
 		}
 	}
+}
+
+void ProjectExportDialog::_tree_popup_edited(bool p_arrow_clicked) {
+	Rect2 bounds = include_files->get_custom_popup_rect();
+	bounds.position += get_global_canvas_transform().get_origin();
+	bounds.size *= get_global_canvas_transform().get_scale();
+	if (!is_embedding_subwindows()) {
+		bounds.position += get_position();
+	}
+	file_mode_popup->popup(bounds);
+}
+
+void ProjectExportDialog::_set_file_export_mode(int p_id) {
+	Ref<EditorExportPreset> current = get_current_preset();
+	if (current.is_null()) {
+		return;
+	}
+
+	TreeItem *item = include_files->get_edited();
+	String path = item->get_metadata(0);
+
+	EditorExportPreset::FileExportMode file_export_mode = (EditorExportPreset::FileExportMode)p_id;
+	current->set_file_export_mode(path, file_export_mode);
+	item->set_metadata(1, file_export_mode);
+	_propagate_file_export_mode(include_files->get_root(), EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED);
 }
 
 void ProjectExportDialog::_export_pck_zip() {
@@ -847,8 +943,8 @@ void ProjectExportDialog::_export_pck_zip_selected(const String &p_path) {
 }
 
 void ProjectExportDialog::_open_export_template_manager() {
-	EditorNode::get_singleton()->open_export_template_manager();
 	hide();
+	EditorNode::get_singleton()->open_export_template_manager();
 }
 
 void ProjectExportDialog::_validate_export_path(const String &p_path) {
@@ -865,10 +961,10 @@ void ProjectExportDialog::_validate_export_path(const String &p_path) {
 
 	if (invalid_path) {
 		export_project->get_ok_button()->set_disabled(true);
-		export_project->get_line_edit()->disconnect("text_submitted", Callable(export_project, "_file_submitted"));
+		export_project->get_line_edit()->disconnect("text_submitted", callable_mp(export_project, &EditorFileDialog::_file_submitted));
 	} else {
 		export_project->get_ok_button()->set_disabled(false);
-		export_project->get_line_edit()->connect("text_submitted", Callable(export_project, "_file_submitted"));
+		export_project->get_line_edit()->connect("text_submitted", callable_mp(export_project, &EditorFileDialog::_file_submitted));
 	}
 }
 
@@ -901,9 +997,9 @@ void ProjectExportDialog::_export_project() {
 	// with _validate_export_path.
 	// FIXME: This is a hack, we should instead change EditorFileDialog to allow
 	// disabling validation by the "text_submitted" signal.
-	if (!export_project->get_line_edit()->is_connected("text_submitted", Callable(export_project, "_file_submitted"))) {
+	if (!export_project->get_line_edit()->is_connected("text_submitted", callable_mp(export_project, &EditorFileDialog::_file_submitted))) {
 		export_project->get_ok_button()->set_disabled(false);
-		export_project->get_line_edit()->connect("text_submitted", Callable(export_project, "_file_submitted"));
+		export_project->get_line_edit()->connect("text_submitted", callable_mp(export_project, &EditorFileDialog::_file_submitted));
 	}
 
 	export_project->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
@@ -945,8 +1041,8 @@ void ProjectExportDialog::_export_all_dialog_action(const String &p_str) {
 }
 
 void ProjectExportDialog::_export_all(bool p_debug) {
-	String mode = p_debug ? TTR("Debug") : TTR("Release");
-	EditorProgress ep("exportall", TTR("Exporting All") + " " + mode, EditorExport::get_singleton()->get_export_preset_count(), true);
+	String export_target = p_debug ? TTR("Debug") : TTR("Release");
+	EditorProgress ep("exportall", TTR("Exporting All") + " " + export_target, EditorExport::get_singleton()->get_export_preset_count(), true);
 
 	bool show_dialog = false;
 	result_dialog_log->clear();
@@ -972,9 +1068,6 @@ void ProjectExportDialog::_export_all(bool p_debug) {
 }
 
 void ProjectExportDialog::_bind_methods() {
-	ClassDB::bind_method("_get_drag_data_fw", &ProjectExportDialog::get_drag_data_fw);
-	ClassDB::bind_method("_can_drop_data_fw", &ProjectExportDialog::can_drop_data_fw);
-	ClassDB::bind_method("_drop_data_fw", &ProjectExportDialog::drop_data_fw);
 	ClassDB::bind_method("_export_all", &ProjectExportDialog::_export_all);
 	ClassDB::bind_method("set_export_path", &ProjectExportDialog::set_export_path);
 	ClassDB::bind_method("get_export_path", &ProjectExportDialog::get_export_path);
@@ -1015,10 +1108,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	preset_vb->add_child(mc);
 	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	presets = memnew(ItemList);
-#ifndef _MSC_VER
-#warning must reimplement drag forward
-#endif
-	//presets->set_drag_forwarding(this);
+	SET_DRAG_FORWARDING_GCD(presets, ProjectExportDialog);
 	mc->add_child(presets);
 	presets->connect("item_selected", callable_mp(this, &ProjectExportDialog::_edit_preset));
 	duplicate_preset = memnew(Button);
@@ -1083,6 +1173,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_filter->add_item(TTR("Export selected scenes (and dependencies)"));
 	export_filter->add_item(TTR("Export selected resources (and dependencies)"));
 	export_filter->add_item(TTR("Export all resources in the project except resources checked below"));
+	export_filter->add_item(TTR("Export as dedicated server"));
 	resources_vb->add_margin_child(TTR("Export Mode:"), export_filter);
 	export_filter->connect("item_selected", callable_mp(this, &ProjectExportDialog::_export_type_changed));
 
@@ -1097,6 +1188,36 @@ ProjectExportDialog::ProjectExportDialog() {
 	include_margin->add_child(include_files);
 	include_files->connect("item_edited", callable_mp(this, &ProjectExportDialog::_tree_changed));
 	include_files->connect("check_propagated_to_item", callable_mp(this, &ProjectExportDialog::_check_propagated_to_item));
+	include_files->connect("custom_popup_edited", callable_mp(this, &ProjectExportDialog::_tree_popup_edited));
+
+	server_strip_message = memnew(Label);
+	server_strip_message->set_visible(false);
+	server_strip_message->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	resources_vb->add_child(server_strip_message);
+
+	{
+		List<StringName> resource_names;
+		ClassDB::get_inheriters_from_class("Resource", &resource_names);
+
+		PackedStringArray strippable;
+		for (StringName resource_name : resource_names) {
+			if (ClassDB::has_method(resource_name, "create_placeholder", true)) {
+				strippable.push_back(resource_name);
+			}
+		}
+		strippable.sort();
+
+		String message = TTR("\"Strip Visuals\" will replace the following resources with placeholders:") + " ";
+		message += String(", ").join(strippable);
+		server_strip_message->set_text(message);
+	}
+
+	file_mode_popup = memnew(PopupMenu);
+	add_child(file_mode_popup);
+	file_mode_popup->add_item(TTR("Strip Visuals"), EditorExportPreset::MODE_FILE_STRIP);
+	file_mode_popup->add_item(TTR("Keep"), EditorExportPreset::MODE_FILE_KEEP);
+	file_mode_popup->add_item(TTR("Remove"), EditorExportPreset::MODE_FILE_REMOVE);
+	file_mode_popup->connect("id_pressed", callable_mp(this, &ProjectExportDialog::_set_file_export_mode));
 
 	include_filters = memnew(LineEdit);
 	resources_vb->add_margin_child(
@@ -1109,12 +1230,6 @@ ProjectExportDialog::ProjectExportDialog() {
 			TTR("Filters to exclude files/folders from project\n(comma-separated, e.g: *.json, *.txt, docs/*)"),
 			exclude_filters);
 	exclude_filters->connect("text_changed", callable_mp(this, &ProjectExportDialog::_filter_changed));
-
-	script_mode = memnew(OptionButton);
-	resources_vb->add_margin_child(TTR("GDScript Export Mode:"), script_mode);
-	script_mode->add_item(TTR("Text"), (int)EditorExportPreset::MODE_SCRIPT_TEXT);
-	script_mode->add_item(TTR("Compiled Bytecode (Faster Loading)"), (int)EditorExportPreset::MODE_SCRIPT_COMPILED);
-	script_mode->connect("item_selected", callable_mp(this, &ProjectExportDialog::_script_export_mode_changed));
 
 	// Feature tags.
 
@@ -1292,7 +1407,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	// If no default set, use project name
 	if (default_filename.is_empty()) {
 		// If no project name defined, use a sane default
-		default_filename = ProjectSettings::get_singleton()->get("application/config/name");
+		default_filename = GLOBAL_GET("application/config/name");
 		if (default_filename.is_empty()) {
 			default_filename = "UnnamedProject";
 		}

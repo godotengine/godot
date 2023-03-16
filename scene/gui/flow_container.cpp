@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  flow_container.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  flow_container.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "flow_container.h"
 
@@ -86,7 +86,7 @@ void FlowContainer::_resort() {
 			}
 
 			line_height = MAX(line_height, child_msc.x);
-			if (child->get_v_size_flags() & SIZE_EXPAND) {
+			if (child->get_v_size_flags().has_flag(SIZE_EXPAND)) {
 				line_stretch_ratio_total += child->get_stretch_ratio();
 			}
 			ofs.y += child_msc.y;
@@ -108,7 +108,7 @@ void FlowContainer::_resort() {
 			}
 
 			line_height = MAX(line_height, child_msc.y);
-			if (child->get_h_size_flags() & SIZE_EXPAND) {
+			if (child->get_h_size_flags().has_flag(SIZE_EXPAND)) {
 				line_stretch_ratio_total += child->get_stretch_ratio();
 			}
 			ofs.x += child_msc.x;
@@ -152,22 +152,44 @@ void FlowContainer::_resort() {
 			line_data = lines_data[current_line_idx];
 		}
 
+		// The first child of each line adds the offset caused by the alignment,
+		// but only if the line doesn't contain a child that expands.
+		if (child_idx_in_line == 0 && Math::is_equal_approx(line_data.stretch_ratio_total, 0)) {
+			int alignment_ofs = 0;
+			switch (alignment) {
+				case ALIGNMENT_CENTER:
+					alignment_ofs = line_data.stretch_avail / 2;
+					break;
+				case ALIGNMENT_END:
+					alignment_ofs = line_data.stretch_avail;
+					break;
+				default:
+					break;
+			}
+
+			if (vertical) { /* VERTICAL */
+				ofs.y += alignment_ofs;
+			} else { /* HORIZONTAL */
+				ofs.x += alignment_ofs;
+			}
+		}
+
 		if (vertical) { /* VERTICAL */
-			if (child->get_h_size_flags() & (SIZE_FILL | SIZE_SHRINK_CENTER | SIZE_SHRINK_END)) {
+			if (child->get_h_size_flags().has_flag(SIZE_FILL) || child->get_h_size_flags().has_flag(SIZE_SHRINK_CENTER) || child->get_h_size_flags().has_flag(SIZE_SHRINK_END)) {
 				child_size.width = line_data.min_line_height;
 			}
 
-			if (child->get_v_size_flags() & SIZE_EXPAND) {
+			if (child->get_v_size_flags().has_flag(SIZE_EXPAND)) {
 				int stretch = line_data.stretch_avail * child->get_stretch_ratio() / line_data.stretch_ratio_total;
 				child_size.height += stretch;
 			}
 
 		} else { /* HORIZONTAL */
-			if (child->get_v_size_flags() & (SIZE_FILL | SIZE_SHRINK_CENTER | SIZE_SHRINK_END)) {
+			if (child->get_v_size_flags().has_flag(SIZE_FILL) || child->get_v_size_flags().has_flag(SIZE_SHRINK_CENTER) || child->get_v_size_flags().has_flag(SIZE_SHRINK_END)) {
 				child_size.height = line_data.min_line_height;
 			}
 
-			if (child->get_h_size_flags() & SIZE_EXPAND) {
+			if (child->get_h_size_flags().has_flag(SIZE_EXPAND)) {
 				int stretch = line_data.stretch_avail * child->get_stretch_ratio() / line_data.stretch_ratio_total;
 				child_size.width += stretch;
 			}
@@ -282,6 +304,18 @@ int FlowContainer::get_line_count() const {
 	return cached_line_count;
 }
 
+void FlowContainer::set_alignment(AlignmentMode p_alignment) {
+	if (alignment == p_alignment) {
+		return;
+	}
+	alignment = p_alignment;
+	_resort();
+}
+
+FlowContainer::AlignmentMode FlowContainer::get_alignment() const {
+	return alignment;
+}
+
 void FlowContainer::set_vertical(bool p_vertical) {
 	ERR_FAIL_COND_MSG(is_fixed, "Can't change orientation of " + get_class() + ".");
 	vertical = p_vertical;
@@ -300,8 +334,15 @@ FlowContainer::FlowContainer(bool p_vertical) {
 void FlowContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_line_count"), &FlowContainer::get_line_count);
 
+	ClassDB::bind_method(D_METHOD("set_alignment", "alignment"), &FlowContainer::set_alignment);
+	ClassDB::bind_method(D_METHOD("get_alignment"), &FlowContainer::get_alignment);
 	ClassDB::bind_method(D_METHOD("set_vertical", "vertical"), &FlowContainer::set_vertical);
 	ClassDB::bind_method(D_METHOD("is_vertical"), &FlowContainer::is_vertical);
 
+	BIND_ENUM_CONSTANT(ALIGNMENT_BEGIN);
+	BIND_ENUM_CONSTANT(ALIGNMENT_CENTER);
+	BIND_ENUM_CONSTANT(ALIGNMENT_END);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_alignment", "get_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertical"), "set_vertical", "is_vertical");
 }

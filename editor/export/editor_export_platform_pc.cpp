@@ -1,38 +1,41 @@
-/*************************************************************************/
-/*  editor_export_platform_pc.cpp                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_export_platform_pc.cpp                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_export_platform_pc.h"
 
 #include "core/config/project_settings.h"
 
 void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
+	if (p_preset->get("texture_format/bptc")) {
+		r_features->push_back("bptc");
+	}
 	if (p_preset->get("texture_format/s3tc")) {
 		r_features->push_back("s3tc");
 	}
@@ -56,11 +59,10 @@ void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) {
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/embed_pck"), false));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/bptc"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/bptc"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/no_bptc_fallbacks"), true));
 }
 
 String EditorExportPlatformPC::get_name() const {
@@ -146,9 +148,16 @@ Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_
 		return ERR_FILE_NOT_FOUND;
 	}
 
+	String wrapper_template_path = template_path.get_basename() + "_console.exe";
+	int con_wrapper_mode = p_preset->get("debug/export_console_script");
+	bool copy_wrapper = (con_wrapper_mode == 1 && p_debug) || (con_wrapper_mode == 2);
+
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	da->make_dir_recursive(p_path.get_base_dir());
 	Error err = da->copy(template_path, p_path, get_chmod_flags());
+	if (err == OK && copy_wrapper && FileAccess::exists(wrapper_template_path)) {
+		err = da->copy(wrapper_template_path, p_path.get_basename() + ".console.exe", get_chmod_flags());
+	}
 	if (err != OK) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Template"), TTR("Failed to copy export template."));
 	}
@@ -185,10 +194,12 @@ Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> 
 			String src_path = ProjectSettings::get_singleton()->globalize_path(so_files[i].path);
 			String target_path;
 			if (so_files[i].target.is_empty()) {
-				target_path = p_path.get_base_dir().path_join(src_path.get_file());
+				target_path = p_path.get_base_dir();
 			} else {
-				target_path = p_path.get_base_dir().path_join(so_files[i].target).path_join(src_path.get_file());
+				target_path = p_path.get_base_dir().path_join(so_files[i].target);
+				da->make_dir_recursive(target_path);
 			}
+			target_path = target_path.path_join(src_path.get_file());
 
 			if (da->dir_exists(src_path)) {
 				err = da->make_dir_recursive(target_path);
@@ -230,11 +241,6 @@ void EditorExportPlatformPC::get_platform_features(List<String> *r_features) con
 }
 
 void EditorExportPlatformPC::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) {
-	if (p_features.has("bptc")) {
-		if (p_preset->has("texture_format/no_bptc_fallbacks")) {
-			p_features.erase("s3tc");
-		}
-	}
 }
 
 int EditorExportPlatformPC::get_chmod_flags() const {

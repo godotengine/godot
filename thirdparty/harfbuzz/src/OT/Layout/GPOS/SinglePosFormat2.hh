@@ -68,7 +68,7 @@ struct SinglePosFormat2
     unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint);
     if (likely (index == NOT_COVERED)) return_trace (false);
 
-    if (likely (index >= valueCount)) return_trace (false);
+    if (unlikely (index >= valueCount)) return_trace (false);
 
     if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
     {
@@ -92,6 +92,28 @@ struct SinglePosFormat2
     return_trace (true);
   }
 
+  bool
+  position_single (hb_font_t           *font,
+		   hb_direction_t       direction,
+		   hb_codepoint_t       gid,
+		   hb_glyph_position_t &pos) const
+  {
+    unsigned int index = (this+coverage).get_coverage  (gid);
+    if (likely (index == NOT_COVERED)) return false;
+    if (unlikely (index >= valueCount)) return false;
+
+    /* This is ugly... */
+    hb_buffer_t buffer;
+    buffer.props.direction = direction;
+    OT::hb_ot_apply_context_t c (1, font, &buffer);
+
+    valueFormat.apply_value (&c, this,
+                             &values[index * valueFormat.get_len ()],
+                             pos);
+    return true;
+  }
+
+
   template<typename Iterator,
       typename SrcLookup,
       hb_requires (hb_is_iterator (Iterator))>
@@ -99,7 +121,7 @@ struct SinglePosFormat2
                   const SrcLookup *src,
                   Iterator it,
                   ValueFormat newFormat,
-                  const hb_map_t *layout_variation_idx_map)
+                  const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map)
   {
     auto out = c->extend_min (this);
     if (unlikely (!out)) return;
@@ -109,7 +131,7 @@ struct SinglePosFormat2
     + it
     | hb_map (hb_second)
     | hb_apply ([&] (hb_array_t<const Value> _)
-    { src->get_value_format ().copy_values (c, newFormat, src, &_, layout_variation_idx_map); })
+    { src->get_value_format ().copy_values (c, newFormat, src, &_, layout_variation_idx_delta_map); })
     ;
 
     auto glyphs =
@@ -141,7 +163,7 @@ struct SinglePosFormat2
     ;
 
     bool ret = bool (it);
-    SinglePos_serialize (c->serializer, this, it, c->plan->layout_variation_idx_map);
+    SinglePos_serialize (c->serializer, this, it, c->plan->layout_variation_idx_delta_map, c->plan->all_axes_pinned);
     return_trace (ret);
   }
 };

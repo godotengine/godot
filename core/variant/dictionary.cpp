@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  dictionary.cpp                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  dictionary.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "dictionary.h"
 
@@ -42,7 +42,7 @@
 struct DictionaryPrivate {
 	SafeRefCount refcount;
 	Variant *read_only = nullptr; // If enabled, a pointer is used to a temporary value that is used to return read-only values.
-	HashMap<Variant, Variant, VariantHasher, VariantComparator> variant_map;
+	HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator> variant_map;
 };
 
 void Dictionary::get_key_list(List<Variant> *p_keys) const {
@@ -100,24 +100,12 @@ Variant &Dictionary::operator[](const Variant &p_key) {
 }
 
 const Variant &Dictionary::operator[](const Variant &p_key) const {
-	if (p_key.get_type() == Variant::STRING_NAME) {
-		const StringName *sn = VariantInternal::get_string_name(&p_key);
-		return _p->variant_map[sn->operator String()];
-	} else {
-		return _p->variant_map[p_key];
-	}
+	// Will not insert key, so no conversion is necessary.
+	return _p->variant_map[p_key];
 }
 
 const Variant *Dictionary::getptr(const Variant &p_key) const {
-	HashMap<Variant, Variant, VariantHasher, VariantComparator>::ConstIterator E;
-
-	if (p_key.get_type() == Variant::STRING_NAME) {
-		const StringName *sn = VariantInternal::get_string_name(&p_key);
-		E = ((const HashMap<Variant, Variant, VariantHasher, VariantComparator> *)&_p->variant_map)->find(sn->operator String());
-	} else {
-		E = ((const HashMap<Variant, Variant, VariantHasher, VariantComparator> *)&_p->variant_map)->find(p_key);
-	}
-
+	HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator>::ConstIterator E(_p->variant_map.find(p_key));
 	if (!E) {
 		return nullptr;
 	}
@@ -125,14 +113,7 @@ const Variant *Dictionary::getptr(const Variant &p_key) const {
 }
 
 Variant *Dictionary::getptr(const Variant &p_key) {
-	HashMap<Variant, Variant, VariantHasher, VariantComparator>::Iterator E;
-
-	if (p_key.get_type() == Variant::STRING_NAME) {
-		const StringName *sn = VariantInternal::get_string_name(&p_key);
-		E = ((HashMap<Variant, Variant, VariantHasher, VariantComparator> *)&_p->variant_map)->find(sn->operator String());
-	} else {
-		E = ((HashMap<Variant, Variant, VariantHasher, VariantComparator> *)&_p->variant_map)->find(p_key);
-	}
+	HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator>::Iterator E(_p->variant_map.find(p_key));
 	if (!E) {
 		return nullptr;
 	}
@@ -145,14 +126,7 @@ Variant *Dictionary::getptr(const Variant &p_key) {
 }
 
 Variant Dictionary::get_valid(const Variant &p_key) const {
-	HashMap<Variant, Variant, VariantHasher, VariantComparator>::ConstIterator E;
-
-	if (p_key.get_type() == Variant::STRING_NAME) {
-		const StringName *sn = VariantInternal::get_string_name(&p_key);
-		E = ((const HashMap<Variant, Variant, VariantHasher, VariantComparator> *)&_p->variant_map)->find(sn->operator String());
-	} else {
-		E = ((const HashMap<Variant, Variant, VariantHasher, VariantComparator> *)&_p->variant_map)->find(p_key);
-	}
+	HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator>::ConstIterator E(_p->variant_map.find(p_key));
 
 	if (!E) {
 		return Variant();
@@ -178,12 +152,7 @@ bool Dictionary::is_empty() const {
 }
 
 bool Dictionary::has(const Variant &p_key) const {
-	if (p_key.get_type() == Variant::STRING_NAME) {
-		const StringName *sn = VariantInternal::get_string_name(&p_key);
-		return _p->variant_map.has(sn->operator String());
-	} else {
-		return _p->variant_map.has(p_key);
-	}
+	return _p->variant_map.has(p_key);
 }
 
 bool Dictionary::has_all(const Array &p_keys) const {
@@ -206,12 +175,7 @@ Variant Dictionary::find_key(const Variant &p_value) const {
 
 bool Dictionary::erase(const Variant &p_key) {
 	ERR_FAIL_COND_V_MSG(_p->read_only, false, "Dictionary is in read-only state.");
-	if (p_key.get_type() == Variant::STRING_NAME) {
-		const StringName *sn = VariantInternal::get_string_name(&p_key);
-		return _p->variant_map.erase(sn->operator String());
-	} else {
-		return _p->variant_map.erase(p_key);
-	}
+	return _p->variant_map.erase(p_key);
 }
 
 bool Dictionary::operator==(const Dictionary &p_dictionary) const {
@@ -238,7 +202,7 @@ bool Dictionary::recursive_equal(const Dictionary &p_dictionary, int recursion_c
 	}
 	recursion_count++;
 	for (const KeyValue<Variant, Variant> &this_E : _p->variant_map) {
-		HashMap<Variant, Variant, VariantHasher, VariantComparator>::ConstIterator other_E = ((const HashMap<Variant, Variant, VariantHasher, VariantComparator> *)&p_dictionary._p->variant_map)->find(this_E.key);
+		HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator>::ConstIterator other_E(p_dictionary._p->variant_map.find(this_E.key));
 		if (!other_E || !this_E.value.hash_compare(other_E->value, recursion_count)) {
 			return false;
 		}
@@ -247,16 +211,6 @@ bool Dictionary::recursive_equal(const Dictionary &p_dictionary, int recursion_c
 }
 
 void Dictionary::_ref(const Dictionary &p_from) const {
-	if (unlikely(p_from._p->read_only != nullptr)) {
-		// If p_from is a read-only dictionary, just copy the contents to avoid further modification.
-		if (_p) {
-			_unref();
-		}
-		_p = memnew(DictionaryPrivate);
-		_p->refcount.init();
-		_p->variant_map = p_from._p->variant_map;
-		return;
-	}
 	//make a copy first (thread safe)
 	if (!p_from._p->refcount.ref()) {
 		return; // couldn't copy
@@ -360,7 +314,7 @@ const Variant *Dictionary::next(const Variant *p_key) const {
 		}
 		return nullptr;
 	}
-	HashMap<Variant, Variant, VariantHasher, VariantComparator>::Iterator E = _p->variant_map.find(*p_key);
+	HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator>::Iterator E = _p->variant_map.find(*p_key);
 
 	if (!E) {
 		return nullptr;
@@ -379,15 +333,9 @@ Dictionary Dictionary::duplicate(bool p_deep) const {
 	return recursive_duplicate(p_deep, 0);
 }
 
-void Dictionary::set_read_only(bool p_enable) {
-	if (p_enable == bool(_p->read_only != nullptr)) {
-		return;
-	}
-	if (p_enable) {
+void Dictionary::make_read_only() {
+	if (_p->read_only == nullptr) {
 		_p->read_only = memnew(Variant);
-	} else {
-		memdelete(_p->read_only);
-		_p->read_only = nullptr;
 	}
 }
 bool Dictionary::is_read_only() const {

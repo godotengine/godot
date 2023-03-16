@@ -28,6 +28,7 @@
 #define HB_SET_DIGEST_HH
 
 #include "hb.hh"
+#include "hb-machinery.hh"
 
 /*
  * The set-digests here implement various "filters" that support
@@ -75,6 +76,8 @@ struct hb_set_digest_bits_pattern_t
 
   void init () { mask = 0; }
 
+  void add (const hb_set_digest_bits_pattern_t &o) { mask |= o.mask; }
+
   void add (hb_codepoint_t g) { mask |= mask_for (g); }
 
   bool add_range (hb_codepoint_t a, hb_codepoint_t b)
@@ -95,7 +98,7 @@ struct hb_set_digest_bits_pattern_t
     for (unsigned int i = 0; i < count; i++)
     {
       add (*array);
-      array = (const T *) (stride + (const char *) array);
+      array = &StructAtOffsetUnaligned<T> ((const void *) array, stride);
     }
   }
   template <typename T>
@@ -103,15 +106,14 @@ struct hb_set_digest_bits_pattern_t
   template <typename T>
   bool add_sorted_array (const T *array, unsigned int count, unsigned int stride=sizeof(T))
   {
-    for (unsigned int i = 0; i < count; i++)
-    {
-      add (*array);
-      array = (const T *) (stride + (const char *) array);
-    }
+    add_array (array, count, stride);
     return true;
   }
   template <typename T>
   bool add_sorted_array (const hb_sorted_array_t<const T>& arr) { return add_sorted_array (&arr, arr.len ()); }
+
+  bool may_have (const hb_set_digest_bits_pattern_t &o) const
+  { return mask & o.mask; }
 
   bool may_have (hb_codepoint_t g) const
   { return mask & mask_for (g); }
@@ -132,6 +134,12 @@ struct hb_set_digest_combiner_t
     tail.init ();
   }
 
+  void add (const hb_set_digest_combiner_t &o)
+  {
+    head.add (o.head);
+    tail.add (o.tail);
+  }
+
   void add (hb_codepoint_t g)
   {
     head.add (g);
@@ -140,9 +148,8 @@ struct hb_set_digest_combiner_t
 
   bool add_range (hb_codepoint_t a, hb_codepoint_t b)
   {
-    head.add_range (a, b);
-    tail.add_range (a, b);
-    return true;
+    return head.add_range (a, b) &&
+	   tail.add_range (a, b);
   }
   template <typename T>
   void add_array (const T *array, unsigned int count, unsigned int stride=sizeof(T))
@@ -155,12 +162,16 @@ struct hb_set_digest_combiner_t
   template <typename T>
   bool add_sorted_array (const T *array, unsigned int count, unsigned int stride=sizeof(T))
   {
-    head.add_sorted_array (array, count, stride);
-    tail.add_sorted_array (array, count, stride);
-    return true;
+    return head.add_sorted_array (array, count, stride) &&
+	   tail.add_sorted_array (array, count, stride);
   }
   template <typename T>
   bool add_sorted_array (const hb_sorted_array_t<const T>& arr) { return add_sorted_array (&arr, arr.len ()); }
+
+  bool may_have (const hb_set_digest_combiner_t &o) const
+  {
+    return head.may_have (o.head) && tail.may_have (o.tail);
+  }
 
   bool may_have (hb_codepoint_t g) const
   {

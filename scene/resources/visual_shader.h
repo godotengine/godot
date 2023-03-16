@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  visual_shader.h                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  visual_shader.h                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef VISUAL_SHADER_H
 #define VISUAL_SHADER_H
@@ -80,6 +80,7 @@ public:
 	enum VaryingType {
 		VARYING_TYPE_FLOAT,
 		VARYING_TYPE_INT,
+		VARYING_TYPE_UINT,
 		VARYING_TYPE_VECTOR_2D,
 		VARYING_TYPE_VECTOR_3D,
 		VARYING_TYPE_VECTOR_4D,
@@ -90,11 +91,10 @@ public:
 
 	struct Varying {
 		String name;
-		VaryingMode mode;
-		VaryingType type;
+		VaryingMode mode = VARYING_MODE_MAX;
+		VaryingType type = VARYING_TYPE_MAX;
 
-		Varying() {
-		}
+		Varying() {}
 
 		Varying(String p_name, VaryingMode p_mode, VaryingType p_type) :
 				name(p_name), mode(p_mode), type(p_type) {}
@@ -122,7 +122,8 @@ private:
 	struct Node {
 		Ref<VisualShaderNode> node;
 		Vector2 position;
-		List<int> prev_connected_nodes;
+		LocalVector<int> prev_connected_nodes;
+		LocalVector<int> next_connected_nodes;
 	};
 
 	struct Graph {
@@ -157,7 +158,7 @@ private:
 		}
 	};
 
-	Error _write_node(Type p_type, StringBuilder *global_code, StringBuilder *global_code_per_node, HashMap<Type, StringBuilder> *global_code_per_func, StringBuilder &code, Vector<DefaultTextureParam> &def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &output_connections, int node, HashSet<int> &processed, bool for_preview, HashSet<StringName> &r_classes) const;
+	Error _write_node(Type p_type, StringBuilder *p_global_code, StringBuilder *p_global_code_per_node, HashMap<Type, StringBuilder> *p_global_code_per_func, StringBuilder &r_code, Vector<DefaultTextureParam> &r_def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &p_input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &p_output_connections, int p_node, HashSet<int> &r_processed, bool p_for_preview, HashSet<StringName> &r_classes) const;
 
 	void _input_type_changed(Type p_type, int p_id);
 	bool has_func_name(RenderingServer::ShaderMode p_mode, const String &p_func_name) const;
@@ -198,6 +199,16 @@ public: // internal methods
 
 	Vector2 get_node_position(Type p_type, int p_id) const;
 	Ref<VisualShaderNode> get_node(Type p_type, int p_id) const;
+
+	_FORCE_INLINE_ Ref<VisualShaderNode> get_node_unchecked(Type p_type, int p_id) const {
+		return graph[p_type].nodes[p_id].node;
+	}
+	_FORCE_INLINE_ void get_next_connected_nodes(Type p_type, int p_id, LocalVector<int> &r_list) const {
+		r_list = graph[p_type].nodes[p_id].next_connected_nodes;
+	}
+	_FORCE_INLINE_ void get_prev_connected_nodes(Type p_type, int p_id, LocalVector<int> &r_list) const {
+		r_list = graph[p_type].nodes[p_id].prev_connected_nodes;
+	}
 
 	Vector<int> get_node_list(Type p_type) const;
 	int get_valid_node_id(Type p_type) const;
@@ -261,6 +272,7 @@ public:
 	enum PortType {
 		PORT_TYPE_SCALAR,
 		PORT_TYPE_SCALAR_INT,
+		PORT_TYPE_SCALAR_UINT,
 		PORT_TYPE_VECTOR_2D,
 		PORT_TYPE_VECTOR_3D,
 		PORT_TYPE_VECTOR_4D,
@@ -368,12 +380,12 @@ protected:
 	GDVIRTUAL0RC(String, _get_name)
 	GDVIRTUAL0RC(String, _get_description)
 	GDVIRTUAL0RC(String, _get_category)
-	GDVIRTUAL0RC(int, _get_return_icon_type)
+	GDVIRTUAL0RC(PortType, _get_return_icon_type)
 	GDVIRTUAL0RC(int, _get_input_port_count)
-	GDVIRTUAL1RC(int, _get_input_port_type, int)
+	GDVIRTUAL1RC(PortType, _get_input_port_type, int)
 	GDVIRTUAL1RC(String, _get_input_port_name, int)
 	GDVIRTUAL0RC(int, _get_output_port_count)
-	GDVIRTUAL1RC(int, _get_output_port_type, int)
+	GDVIRTUAL1RC(PortType, _get_output_port_type, int)
 	GDVIRTUAL1RC(String, _get_output_port_name, int)
 	GDVIRTUAL4RC(String, _get_code, TypedArray<String>, TypedArray<String>, Shader::Mode, VisualShader::Type)
 	GDVIRTUAL2RC(String, _get_func_code, Shader::Mode, VisualShader::Type)
@@ -551,6 +563,7 @@ public:
 	enum ParameterType {
 		PARAMETER_TYPE_FLOAT,
 		PARAMETER_TYPE_INT,
+		PARAMETER_TYPE_UINT,
 		PARAMETER_TYPE_BOOLEAN,
 		PARAMETER_TYPE_VECTOR2,
 		PARAMETER_TYPE_VECTOR3,

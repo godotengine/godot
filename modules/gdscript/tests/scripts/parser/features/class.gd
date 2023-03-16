@@ -21,5 +21,5 @@ func test():
 	assert(test_sub.number == 25)  # From Test.
 	assert(test_sub.other_string == "bye")  # From TestSub.
 
-	TestConstructor.new()
-	TestConstructor.new(500)
+	var _test_constructor = TestConstructor.new()
+	_test_constructor = TestConstructor.new(500)

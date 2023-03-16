@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationLibrary" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AnimationLibrary" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Container for [Animation] resources.
 	</brief_description>
@@ -15,7 +15,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="animation" type="Animation" />
 			<description>
-				Adds the [param animation] to the library, accesible by the key [param name].
+				Adds the [param animation] to the library, accessible by the key [param name].
 			</description>
 		</method>
 		<method name="get_animation" qualifiers="const">
@@ -63,6 +63,13 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Emitted when an [Animation] is added, under the key [param name].
+			</description>
+		</signal>
+		<signal name="animation_changed">
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Emitted when there's a change in one of the animations, e.g. tracks are added, moved or have changed paths. [param name] is the key of the animation that was changed.
+				See also [signal Resource.changed], which this acts as a relay for.
 			</description>
 		</signal>
 		<signal name="animation_removed">

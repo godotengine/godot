@@ -29,11 +29,6 @@
 
 #include <string.h>
 
-#if ( defined(__ARMCC_VERSION) || defined(_MSC_VER) ) && \
-    !defined(inline) && !defined(__cplusplus)
-#define inline __inline
-#endif
-
 #if defined(MBEDTLS_MPS_ENABLE_TRACE)
 static int mbedtls_mps_trace_id = MBEDTLS_MPS_TRACE_BIT_READER;
 #endif /* MBEDTLS_MPS_ENABLE_TRACE */
@@ -535,7 +530,7 @@ int mbedtls_mps_reader_reclaim( mbedtls_mps_reader *rd,
          * of the accumulator. */
         memmove( acc, acc + acc_backup_offset, acc_backup_len );
 
-        /* Copy uncmmitted parts of the current fragment to the
+        /* Copy uncommitted parts of the current fragment to the
          * accumulator. */
         memcpy( acc + acc_backup_len,
                 frag + frag_backup_offset, frag_backup_len );

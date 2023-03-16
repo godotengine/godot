@@ -1,37 +1,38 @@
-/*************************************************************************/
-/*  shape_cast_3d.cpp                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  shape_cast_3d.cpp                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "shape_cast_3d.h"
 
-#include "collision_object_3d.h"
-#include "mesh_instance_3d.h"
+#include "core/core_string_names.h"
+#include "scene/3d/collision_object_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 
 void ShapeCast3D::_notification(int p_what) {
@@ -115,6 +116,7 @@ void ShapeCast3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("force_shapecast_update"), &ShapeCast3D::force_shapecast_update);
 
 	ClassDB::bind_method(D_METHOD("get_collider", "index"), &ShapeCast3D::get_collider);
+	ClassDB::bind_method(D_METHOD("get_collider_rid", "index"), &ShapeCast3D::get_collider_rid);
 	ClassDB::bind_method(D_METHOD("get_collider_shape", "index"), &ShapeCast3D::get_collider_shape);
 	ClassDB::bind_method(D_METHOD("get_collision_point", "index"), &ShapeCast3D::get_collision_point);
 	ClassDB::bind_method(D_METHOD("get_collision_normal", "index"), &ShapeCast3D::get_collision_normal);
@@ -167,8 +169,8 @@ void ShapeCast3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_shape_custom_color"), "set_debug_shape_custom_color", "get_debug_shape_custom_color");
 }
 
-TypedArray<String> ShapeCast3D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node3D::get_configuration_warnings();
+PackedStringArray ShapeCast3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node3D::get_configuration_warnings();
 
 	if (shape.is_null()) {
 		warnings.push_back(RTR("This node cannot interact with other objects unless a Shape3D is assigned."));
@@ -282,6 +284,11 @@ Object *ShapeCast3D::get_collider(int p_idx) const {
 	return ObjectDB::get_instance(result[p_idx].collider_id);
 }
 
+RID ShapeCast3D::get_collider_rid(int p_idx) const {
+	ERR_FAIL_INDEX_V_MSG(p_idx, result.size(), RID(), "No collider RID found.");
+	return result[p_idx].rid;
+}
+
 int ShapeCast3D::get_collider_shape(int p_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_idx, result.size(), -1, "No collider shape found.");
 	return result[p_idx].shape;
@@ -312,25 +319,35 @@ void ShapeCast3D::resource_changed(Ref<Resource> p_res) {
 	update_gizmos();
 }
 
+void ShapeCast3D::_shape_changed() {
+	update_gizmos();
+	bool is_editor = Engine::get_singleton()->is_editor_hint();
+	if (is_inside_tree() && (is_editor || get_tree()->is_debugging_collisions_hint())) {
+		_update_debug_shape();
+	}
+}
+
 void ShapeCast3D::set_shape(const Ref<Shape3D> &p_shape) {
 	if (p_shape == shape) {
 		return;
 	}
 	if (!shape.is_null()) {
+		shape->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &ShapeCast3D::_shape_changed));
 		shape->unregister_owner(this);
 	}
 	shape = p_shape;
 	if (!shape.is_null()) {
 		shape->register_owner(this);
+		shape->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &ShapeCast3D::_shape_changed));
 	}
 	if (p_shape.is_valid()) {
 		shape_rid = shape->get_rid();
 	}
 
-	if (is_inside_tree() && get_tree()->is_debugging_collisions_hint()) {
+	bool is_editor = Engine::get_singleton()->is_editor_hint();
+	if (is_inside_tree() && (is_editor || get_tree()->is_debugging_collisions_hint())) {
 		_update_debug_shape();
 	}
-
 	update_gizmos();
 	update_configuration_warnings();
 }
@@ -420,26 +437,18 @@ void ShapeCast3D::add_exception_rid(const RID &p_rid) {
 	exclude.insert(p_rid);
 }
 
-void ShapeCast3D::add_exception(const Object *p_object) {
-	ERR_FAIL_NULL(p_object);
-	const CollisionObject3D *co = Object::cast_to<CollisionObject3D>(p_object);
-	if (!co) {
-		return;
-	}
-	add_exception_rid(co->get_rid());
+void ShapeCast3D::add_exception(const CollisionObject3D *p_node) {
+	ERR_FAIL_NULL_MSG(p_node, "The passed Node must be an instance of CollisionObject3D.");
+	add_exception_rid(p_node->get_rid());
 }
 
 void ShapeCast3D::remove_exception_rid(const RID &p_rid) {
 	exclude.erase(p_rid);
 }
 
-void ShapeCast3D::remove_exception(const Object *p_object) {
-	ERR_FAIL_NULL(p_object);
-	const CollisionObject3D *co = Object::cast_to<CollisionObject3D>(p_object);
-	if (!co) {
-		return;
-	}
-	remove_exception_rid(co->get_rid());
+void ShapeCast3D::remove_exception(const CollisionObject3D *p_node) {
+	ERR_FAIL_NULL_MSG(p_node, "The passed Node must be an instance of CollisionObject3D.");
+	remove_exception_rid(p_node->get_rid());
 }
 
 void ShapeCast3D::clear_exceptions() {
@@ -619,7 +628,7 @@ void ShapeCast3D::_clear_debug_shape() {
 
 	MeshInstance3D *mi = static_cast<MeshInstance3D *>(debug_shape);
 	if (mi->is_inside_tree()) {
-		mi->queue_delete();
+		mi->queue_free();
 	} else {
 		memdelete(mi);
 	}

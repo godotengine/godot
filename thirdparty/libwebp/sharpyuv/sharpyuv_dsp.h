@@ -12,9 +12,8 @@
 #ifndef WEBP_SHARPYUV_SHARPYUV_DSP_H_
 #define WEBP_SHARPYUV_SHARPYUV_DSP_H_
 
-#include <stdint.h>
-
-#include "src/dsp/cpu.h"
+#include "sharpyuv/sharpyuv_cpu.h"
+#include "src/webp/types.h"
 
 extern uint64_t (*SharpYuvUpdateY)(const uint16_t* src, const uint16_t* ref,
                                    uint16_t* dst, int len, int bit_depth);
@@ -24,6 +23,6 @@ extern void (*SharpYuvFilterRow)(const int16_t* A, const int16_t* B, int len,
                                  const uint16_t* best_y, uint16_t* out,
                                  int bit_depth);
 
-void SharpYuvInitDsp(VP8CPUInfo cpu_info_func);
+void SharpYuvInitDsp(void);
 
 #endif  // WEBP_SHARPYUV_SHARPYUV_DSP_H_

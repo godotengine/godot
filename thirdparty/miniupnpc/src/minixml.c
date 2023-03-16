@@ -1,4 +1,4 @@
-/* $Id: minixml.c,v 1.10 2012/03/05 19:42:47 nanard Exp $ */
+/* $Id: minixml.c,v 1.12 2017/12/12 11:17:40 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * minixml.c : the minimum size a xml parser can be ! */
 /* Project : miniupnp

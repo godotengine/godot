@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  quick_hull.cpp                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  quick_hull.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "quick_hull.h"
 
@@ -369,7 +369,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 	for (List<Geometry3D::MeshData::Face>::Element *E = ret_faces.front(); E; E = E->next()) {
 		Geometry3D::MeshData::Face &f = E->get();
 
-		for (int i = 0; i < f.indices.size(); i++) {
+		for (uint32_t i = 0; i < f.indices.size(); i++) {
 			int a = E->get().indices[i];
 			int b = E->get().indices[(i + 1) % f.indices.size()];
 			Edge e(a, b);
@@ -383,15 +383,15 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 
 			if (O->get().plane.is_equal_approx(f.plane)) {
 				//merge and delete edge and contiguous face, while repointing edges (uuugh!)
-				int ois = O->get().indices.size();
+				int o_index_size = O->get().indices.size();
 
-				for (int j = 0; j < ois; j++) {
+				for (int j = 0; j < o_index_size; j++) {
 					//search a
 					if (O->get().indices[j] == a) {
 						//append the rest
-						for (int k = 0; k < ois; k++) {
-							int idx = O->get().indices[(k + j) % ois];
-							int idxn = O->get().indices[(k + j + 1) % ois];
+						for (int k = 0; k < o_index_size; k++) {
+							int idx = O->get().indices[(k + j) % o_index_size];
+							int idxn = O->get().indices[(k + j + 1) % o_index_size];
 							if (idx == b && idxn == a) { //already have b!
 								break;
 							}
@@ -436,17 +436,24 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 	r_mesh.faces.clear();
 	r_mesh.faces.resize(ret_faces.size());
 
+	HashMap<List<Geometry3D::MeshData::Face>::Element *, int> face_indices;
+
 	int idx = 0;
-	for (const Geometry3D::MeshData::Face &E : ret_faces) {
-		r_mesh.faces.write[idx++] = E;
+	for (List<Geometry3D::MeshData::Face>::Element *E = ret_faces.front(); E; E = E->next()) {
+		face_indices[E] = idx;
+		r_mesh.faces[idx++] = E->get();
 	}
 	r_mesh.edges.resize(ret_edges.size());
 	idx = 0;
 	for (const KeyValue<Edge, RetFaceConnect> &E : ret_edges) {
 		Geometry3D::MeshData::Edge e;
-		e.a = E.key.vertices[0];
-		e.b = E.key.vertices[1];
-		r_mesh.edges.write[idx++] = e;
+		e.vertex_a = E.key.vertices[0];
+		e.vertex_b = E.key.vertices[1];
+		ERR_CONTINUE(!face_indices.has(E.value.left));
+		ERR_CONTINUE(!face_indices.has(E.value.right));
+		e.face_a = face_indices[E.value.left];
+		e.face_b = face_indices[E.value.right];
+		r_mesh.edges[idx++] = e;
 	}
 
 	r_mesh.vertices = p_points;

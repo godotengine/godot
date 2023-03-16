@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  script_language.h                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  script_language.h                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef SCRIPT_LANGUAGE_H
 #define SCRIPT_LANGUAGE_H
@@ -56,10 +56,12 @@ class ScriptServer {
 	struct GlobalScriptClass {
 		StringName language;
 		String path;
-		String base;
+		StringName base;
 	};
 
 	static HashMap<StringName, GlobalScriptClass> global_classes;
+	static HashMap<StringName, Vector<StringName>> inheriters_cache;
+	static bool inheriters_cache_dirty;
 
 public:
 	static ScriptEditRequestFunction edit_request_func;
@@ -68,8 +70,8 @@ public:
 	static bool is_scripting_enabled();
 	_FORCE_INLINE_ static int get_language_count() { return _language_count; }
 	static ScriptLanguage *get_language(int p_idx);
-	static void register_language(ScriptLanguage *p_language);
-	static void unregister_language(const ScriptLanguage *p_language);
+	static Error register_language(ScriptLanguage *p_language);
+	static Error unregister_language(const ScriptLanguage *p_language);
 
 	static void set_reload_scripts_on_save(bool p_enable);
 	static bool is_reload_scripts_on_save_enabled();
@@ -80,13 +82,16 @@ public:
 	static void global_classes_clear();
 	static void add_global_class(const StringName &p_class, const StringName &p_base, const StringName &p_language, const String &p_path);
 	static void remove_global_class(const StringName &p_class);
+	static void remove_global_class_by_path(const String &p_path);
 	static bool is_global_class(const StringName &p_class);
 	static StringName get_global_class_language(const StringName &p_class);
 	static String get_global_class_path(const String &p_class);
 	static StringName get_global_class_base(const String &p_class);
 	static StringName get_global_class_native_base(const String &p_class);
 	static void get_global_class_list(List<StringName> *r_global_classes);
+	static void get_inheriters_list(const StringName &p_base_type, List<StringName> *r_classes);
 	static void save_global_classes();
+	static String get_global_class_cache_file_path();
 
 	static void init_languages();
 	static void finish_languages();
@@ -119,7 +124,7 @@ public:
 	virtual bool can_instantiate() const = 0;
 
 	virtual Ref<Script> get_base_script() const = 0; //for script inheritance
-
+	virtual StringName get_global_name() const = 0;
 	virtual bool inherits_script(const Ref<Script> &p_script) const = 0;
 
 	virtual StringName get_instance_base_type() const = 0; // this may not work in all scripts, will return empty if so
@@ -244,7 +249,6 @@ public:
 	virtual void init() = 0;
 	virtual String get_type() const = 0;
 	virtual String get_extension() const = 0;
-	virtual Error execute_file(const String &p_path) = 0;
 	virtual void finish() = 0;
 
 	/* EDITOR FUNCTIONS */
@@ -422,11 +426,6 @@ public:
 
 	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) = 0;
 	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) = 0;
-
-	virtual void *alloc_instance_binding_data(Object *p_object) { return nullptr; } //optional, not used by all languages
-	virtual void free_instance_binding_data(void *p_data) {} //optional, not used by all languages
-	virtual void refcount_incremented_instance_binding(Object *p_object) {} //optional, not used by all languages
-	virtual bool refcount_decremented_instance_binding(Object *p_object) { return true; } //return true if it can die //optional, not used by all languages
 
 	virtual void frame();
 

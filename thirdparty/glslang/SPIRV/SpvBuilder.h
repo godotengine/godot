@@ -50,6 +50,10 @@
 #include "Logger.h"
 #include "spirv.hpp"
 #include "spvIR.h"
+namespace spv {
+    #include "GLSL.ext.KHR.h"
+    #include "NonSemanticShaderDebugInfo100.h"
+}
 
 #include <algorithm>
 #include <map>
@@ -82,7 +86,7 @@ public:
 
     void setSource(spv::SourceLanguage lang, int version)
     {
-        source = lang;
+        sourceLang = lang;
         sourceVersion = version;
     }
     spv::Id getStringId(const std::string& str)
@@ -99,14 +103,32 @@ public:
         stringIds[file_c_str] = strId;
         return strId;
     }
+    spv::Id getSourceFile() const 
+    {
+        return sourceFileStringId;
+    }
     void setSourceFile(const std::string& file)
     {
         sourceFileStringId = getStringId(file);
+        currentFileId = sourceFileStringId;
     }
     void setSourceText(const std::string& text) { sourceText = text; }
     void addSourceExtension(const char* ext) { sourceExtensions.push_back(ext); }
     void addModuleProcessed(const std::string& p) { moduleProcesses.push_back(p.c_str()); }
     void setEmitOpLines() { emitOpLines = true; }
+    void setEmitNonSemanticShaderDebugInfo(bool const emit)
+    {
+        emitNonSemanticShaderDebugInfo = emit;
+
+        if(emit)
+        {
+            importNonSemanticShaderDebugInfoInstructions();
+        }
+    }
+    void setEmitNonSemanticShaderDebugSource(bool const src)
+    {
+        emitNonSemanticShaderDebugSource = src;
+    }
     void addExtension(const char* ext) { extensions.insert(ext); }
     void removeExtension(const char* ext)
     {
@@ -159,10 +181,11 @@ public:
     void setLine(int line, const char* filename);
     // Low-level OpLine. See setLine() for a layered helper.
     void addLine(Id fileName, int line, int column);
+    void addDebugScopeAndLine(Id fileName, int line, int column);
 
     // For creating new types (will return old type if the requested one was already made).
     Id makeVoidType();
-    Id makeBoolType();
+    Id makeBoolType(bool const compilerGenerated = true);
     Id makePointer(StorageClass, Id pointee);
     Id makeForwardPointer(StorageClass);
     Id makePointerFromForwardPointer(StorageClass, Id forwardPointerType, Id pointee);
@@ -170,7 +193,7 @@ public:
     Id makeIntType(int width) { return makeIntegerType(width, true); }
     Id makeUintType(int width) { return makeIntegerType(width, false); }
     Id makeFloatType(int width);
-    Id makeStructType(const std::vector<Id>& members, const char*);
+    Id makeStructType(const std::vector<Id>& members, const char* name, bool const compilerGenerated = true);
     Id makeStructResultType(Id type0, Id type1);
     Id makeVectorType(Id component, int size);
     Id makeMatrixType(Id component, int cols, int rows);
@@ -182,6 +205,36 @@ public:
     Id makeSampledImageType(Id imageType);
     Id makeCooperativeMatrixType(Id component, Id scope, Id rows, Id cols);
     Id makeGenericType(spv::Op opcode, std::vector<spv::IdImmediate>& operands);
+
+    // SPIR-V NonSemantic Shader DebugInfo Instructions
+    struct DebugTypeLoc {
+        std::string name {};
+        int line {0};
+        int column {0};
+    };
+    std::unordered_map<Id, DebugTypeLoc> debugTypeLocs;
+    Id makeDebugInfoNone();
+    Id makeBoolDebugType(int const size);
+    Id makeIntegerDebugType(int const width, bool const hasSign);
+    Id makeFloatDebugType(int const width);
+    Id makeSequentialDebugType(Id const baseType, Id const componentCount, NonSemanticShaderDebugInfo100Instructions const sequenceType);
+    Id makeArrayDebugType(Id const baseType, Id const componentCount);
+    Id makeVectorDebugType(Id const baseType, int const componentCount);
+    Id makeMatrixDebugType(Id const vectorType, int const vectorCount, bool columnMajor = true);
+    Id makeMemberDebugType(Id const memberType, DebugTypeLoc const& debugTypeLoc);
+    Id makeCompositeDebugType(std::vector<Id> const& memberTypes, char const*const name,
+        NonSemanticShaderDebugInfo100DebugCompositeType const tag, bool const isOpaqueType = false);
+    Id makeDebugSource(const Id fileName);
+    Id makeDebugCompilationUnit();
+    Id createDebugGlobalVariable(Id const type, char const*const name, Id const variable);
+    Id createDebugLocalVariable(Id type, char const*const name, size_t const argNumber = 0);
+    Id makeDebugExpression();
+    Id makeDebugDeclare(Id const debugLocalVariable, Id const localVariable);
+    Id makeDebugValue(Id const debugLocalVariable, Id const value);
+    Id makeDebugFunctionType(Id returnType, const std::vector<Id>& paramTypes);
+    Id makeDebugFunction(Function* function, Id nameId, Id funcTypeId);
+    Id makeDebugLexicalBlock(uint32_t line);
+    std::string unmangleFunctionName(std::string const& name) const;
 
     // accelerationStructureNV type
     Id makeAccelerationStructureType();
@@ -257,6 +310,8 @@ public:
     // See if a resultId is valid for use as an initializer.
     bool isValidInitializer(Id resultId) const { return isConstant(resultId) || isGlobalVariable(resultId); }
 
+    bool isRayTracingOpCode(Op opcode) const;
+
     int getScalarTypeWidth(Id typeId) const
     {
         Id scalarTypeId = getScalarTypeId(typeId);
@@ -318,6 +373,8 @@ public:
     Id makeFloat16Constant(float f16, bool specConstant = false);
     Id makeFpConstant(Id type, double d, bool specConstant = false);
 
+    Id importNonSemanticShaderDebugInfoInstructions();
+
     // Turn the array of constants into a proper spv constant of the requested type.
     Id makeCompositeConstant(Id type, const std::vector<Id>& comps, bool specConst = false);
 
@@ -340,7 +397,12 @@ public:
     void addMemberDecoration(Id, unsigned int member, Decoration, const std::vector<const char*>& strings);
 
     // At the end of what block do the next create*() instructions go?
-    void setBuildPoint(Block* bp) { buildPoint = bp; }
+    // Also reset current last DebugScope and current source line to unknown
+    void setBuildPoint(Block* bp) {
+        buildPoint = bp;
+        lastDebugScopeId = NoResult;
+        currentLine = 0;
+    }
     Block* getBuildPoint() const { return buildPoint; }
 
     // Make the entry-point function. The returned pointer is only valid
@@ -351,11 +413,21 @@ public:
     // Return the function, pass back the entry.
     // The returned pointer is only valid for the lifetime of this builder.
     Function* makeFunctionEntry(Decoration precision, Id returnType, const char* name,
-        const std::vector<Id>& paramTypes, const std::vector<std::vector<Decoration>>& precisions, Block **entry = 0);
+        const std::vector<Id>& paramTypes, const std::vector<char const*>& paramNames,
+        const std::vector<std::vector<Decoration>>& precisions, Block **entry = 0);
 
     // Create a return. An 'implicit' return is one not appearing in the source
     // code.  In the case of an implicit return, no post-return block is inserted.
     void makeReturn(bool implicit, Id retVal = 0);
+
+    // Initialize state and generate instructions for new lexical scope
+    void enterScope(uint32_t line);
+
+    // Set state and generate instructions to exit current lexical scope
+    void leaveScope();
+
+    // Prepare builder for generation of instructions for a function.
+    void enterFunction(Function const* function);
 
     // Generate all the code needed to finish up a function.
     void leaveFunction();
@@ -364,9 +436,13 @@ public:
     // discard, terminate-invocation, terminateRayEXT, or ignoreIntersectionEXT
     void makeStatementTerminator(spv::Op opcode, const char *name);
 
+    // Create block terminator instruction for statements that have input operands
+    // such as OpEmitMeshTasksEXT
+    void makeStatementTerminator(spv::Op opcode, const std::vector<Id>& operands, const char* name);
+
     // Create a global or function local or IO variable.
-    Id createVariable(Decoration precision, StorageClass, Id type, const char* name = nullptr,
-        Id initializer = NoResult);
+    Id createVariable(Decoration precision, StorageClass storageClass, Id type, const char* name = nullptr,
+        Id initializer = NoResult, bool const compilerGenerated = true);
 
     // Create an intermediate with an undefined value.
     Id createUndefined(Id type);
@@ -801,13 +877,23 @@ public:
         const;
 
     unsigned int spvVersion;     // the version of SPIR-V to emit in the header
-    SourceLanguage source;
+    SourceLanguage sourceLang;
     int sourceVersion;
     spv::Id sourceFileStringId;
+    spv::Id nonSemanticShaderCompilationUnitId {0};
+    spv::Id nonSemanticShaderDebugInfo {0};
+    spv::Id debugInfoNone {0};
+    spv::Id debugExpression {0}; // Debug expression with zero operations.
     std::string sourceText;
     int currentLine;
     const char* currentFile;
+    spv::Id currentFileId;
+    std::stack<spv::Id> currentDebugScopeId;
+    spv::Id lastDebugScopeId;
     bool emitOpLines;
+    bool emitNonSemanticShaderDebugInfo;
+    bool restoreNonSemanticShaderDebugInfo;
+    bool emitNonSemanticShaderDebugSource;
     std::set<std::string> extensions;
     std::vector<const char*> sourceExtensions;
     std::vector<const char*> moduleProcesses;
@@ -841,6 +927,8 @@ public:
     std::unordered_map<unsigned int, std::vector<Instruction*>> groupedStructConstants;
     // map type opcodes to type instructions
     std::unordered_map<unsigned int, std::vector<Instruction*>> groupedTypes;
+    // map type opcodes to debug type instructions
+    std::unordered_map<unsigned int, std::vector<Instruction*>> groupedDebugTypes;
     // list of OpConstantNull instructions
     std::vector<Instruction*> nullConstants;
 
@@ -855,6 +943,12 @@ public:
 
     // map from include file name ids to their contents
     std::map<spv::Id, const std::string*> includeFiles;
+
+    // map from core id to debug id
+    std::map <spv::Id, spv::Id> debugId;
+
+    // map from file name string id to DebugSource id
+    std::unordered_map<spv::Id, spv::Id> debugSourceId;
 
     // The stream for outputting warnings and errors.
     SpvBuildLogger* logger;

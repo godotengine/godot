@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  light_3d.cpp                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  light_3d.cpp                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "core/config/project_settings.h"
 
@@ -56,11 +56,8 @@ void Light3D::set_shadow(bool p_enable) {
 	shadow = p_enable;
 	RS::get_singleton()->light_set_shadow(light, p_enable);
 
-	if (type == RenderingServer::LIGHT_SPOT || type == RenderingServer::LIGHT_OMNI) {
-		update_configuration_warnings();
-	}
-
 	notify_property_list_changed();
+	update_configuration_warnings();
 }
 
 bool Light3D::has_shadow() const {
@@ -157,12 +154,33 @@ AABB Light3D::get_aabb() const {
 		return AABB(Vector3(-1, -1, -1) * param[PARAM_RANGE], Vector3(2, 2, 2) * param[PARAM_RANGE]);
 
 	} else if (type == RenderingServer::LIGHT_SPOT) {
-		real_t len = param[PARAM_RANGE];
-		real_t size = Math::tan(Math::deg_to_rad(param[PARAM_SPOT_ANGLE])) * len;
-		return AABB(Vector3(-size, -size, -len), Vector3(size * 2, size * 2, len));
+		real_t cone_slant_height = param[PARAM_RANGE];
+		real_t cone_angle_rad = Math::deg_to_rad(param[PARAM_SPOT_ANGLE]);
+
+		if (cone_angle_rad > Math_PI / 2.0) {
+			// Just return the AABB of an omni light if the spot angle is above 90 degrees.
+			return AABB(Vector3(-1, -1, -1) * cone_slant_height, Vector3(2, 2, 2) * cone_slant_height);
+		}
+
+		real_t size = Math::sin(cone_angle_rad) * cone_slant_height;
+		return AABB(Vector3(-size, -size, -cone_slant_height), Vector3(2 * size, 2 * size, cone_slant_height));
 	}
 
 	return AABB();
+}
+
+PackedStringArray Light3D::get_configuration_warnings() const {
+	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
+
+	if (has_shadow() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		warnings.push_back(RTR("Shadows are not supported when using the GL Compatibility backend yet. Support will be added in a future release."));
+	}
+
+	if (!get_scale().is_equal_approx(Vector3(1, 1, 1))) {
+		warnings.push_back(RTR("A light's scale does not affect the visual size of the light."));
+	}
+
+	return warnings;
 }
 
 void Light3D::set_bake_mode(BakeMode p_mode) {
@@ -451,7 +469,7 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 	set_param(PARAM_SHADOW_PANCAKE_SIZE, 20.0);
 	set_param(PARAM_SHADOW_OPACITY, 1.0);
 	set_param(PARAM_SHADOW_BLUR, 1.0);
-	set_param(PARAM_SHADOW_BIAS, 0.03);
+	set_param(PARAM_SHADOW_BIAS, 0.1);
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 1.0);
 	set_param(PARAM_TRANSMITTANCE_BIAS, 0.05);
 	set_param(PARAM_SHADOW_FADE_START, 1);
@@ -466,6 +484,7 @@ Light3D::Light3D() {
 }
 
 Light3D::~Light3D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->instance_set_base(get_instance(), RID());
 
 	if (light.is_valid()) {
@@ -561,8 +580,8 @@ DirectionalLight3D::DirectionalLight3D() :
 		Light3D(RenderingServer::LIGHT_DIRECTIONAL) {
 	set_param(PARAM_SHADOW_MAX_DISTANCE, 100);
 	set_param(PARAM_SHADOW_FADE_START, 0.8);
-	// Increase the default shadow bias to better suit most scenes.
-	set_param(PARAM_SHADOW_BIAS, 0.1);
+	// Increase the default shadow normal bias to better suit most scenes.
+	set_param(PARAM_SHADOW_NORMAL_BIAS, 2.0);
 	set_param(PARAM_INTENSITY, 100000.0); // Specified in Lux, approximate mid-day sun.
 	set_shadow_mode(SHADOW_PARALLEL_4_SPLITS);
 	blend_splits = false;
@@ -578,11 +597,15 @@ OmniLight3D::ShadowMode OmniLight3D::get_shadow_mode() const {
 	return shadow_mode;
 }
 
-TypedArray<String> OmniLight3D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray OmniLight3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Light3D::get_configuration_warnings();
 
 	if (!has_shadow() && get_projector().is_valid()) {
 		warnings.push_back(RTR("Projector texture only works with shadows active."));
+	}
+
+	if (get_projector().is_valid() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		warnings.push_back(RTR("Projector textures are not supported when using the GL Compatibility backend yet. Support will be added in a future release."));
 	}
 
 	return warnings;
@@ -604,12 +627,10 @@ void OmniLight3D::_bind_methods() {
 OmniLight3D::OmniLight3D() :
 		Light3D(RenderingServer::LIGHT_OMNI) {
 	set_shadow_mode(SHADOW_CUBE);
-	// Increase the default shadow biases to better suit most scenes.
-	set_param(PARAM_SHADOW_BIAS, 0.2);
 }
 
-TypedArray<String> SpotLight3D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray SpotLight3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Light3D::get_configuration_warnings();
 
 	if (has_shadow() && get_param(PARAM_SPOT_ANGLE) >= 90.0) {
 		warnings.push_back(RTR("A SpotLight3D with an angle wider than 90 degrees cannot cast shadows."));
@@ -617,6 +638,10 @@ TypedArray<String> SpotLight3D::get_configuration_warnings() const {
 
 	if (!has_shadow() && get_projector().is_valid()) {
 		warnings.push_back(RTR("Projector texture only works with shadows active."));
+	}
+
+	if (get_projector().is_valid() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		warnings.push_back(RTR("Projector textures are not supported when using the GL Compatibility backend yet. Support will be added in a future release."));
 	}
 
 	return warnings;
@@ -628,4 +653,10 @@ void SpotLight3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spot_attenuation", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_param", "get_param", PARAM_ATTENUATION);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spot_angle", PROPERTY_HINT_RANGE, "0,180,0.01,degrees"), "set_param", "get_param", PARAM_SPOT_ANGLE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spot_angle_attenuation", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_param", "get_param", PARAM_SPOT_ATTENUATION);
+}
+
+SpotLight3D::SpotLight3D() :
+		Light3D(RenderingServer::LIGHT_SPOT) {
+	// Decrease the default shadow bias to better suit most scenes.
+	set_param(PARAM_SHADOW_BIAS, 0.03);
 }

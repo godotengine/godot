@@ -1,59 +1,63 @@
-/*************************************************************************/
-/*  core_constants.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  core_constants.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "core_constants.h"
 
 #include "core/input/input_event.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/templates/hash_set.h"
 #include "core/variant/variant.h"
 
 struct _CoreConstant {
 #ifdef DEBUG_METHODS_ENABLED
-	StringName enum_name;
 	bool ignore_value_in_docs = false;
+	bool is_bitfield = false;
 #endif
+	StringName enum_name;
 	const char *name = nullptr;
 	int64_t value = 0;
 
 	_CoreConstant() {}
 
 #ifdef DEBUG_METHODS_ENABLED
-	_CoreConstant(const StringName &p_enum_name, const char *p_name, int64_t p_value, bool p_ignore_value_in_docs = false) :
-			enum_name(p_enum_name),
+	_CoreConstant(const StringName &p_enum_name, const char *p_name, int64_t p_value, bool p_ignore_value_in_docs = false, bool p_is_bitfield = false) :
 			ignore_value_in_docs(p_ignore_value_in_docs),
+			is_bitfield(p_is_bitfield),
+			enum_name(p_enum_name),
 			name(p_name),
 			value(p_value) {
 	}
 #else
-	_CoreConstant(const char *p_name, int64_t p_value) :
+	_CoreConstant(const StringName &p_enum_name, const char *p_name, int64_t p_value) :
+			enum_name(p_enum_name),
 			name(p_name),
 			value(p_value) {
 	}
@@ -61,66 +65,190 @@ struct _CoreConstant {
 };
 
 static Vector<_CoreConstant> _global_constants;
+static HashMap<StringName, int> _global_constants_map;
+static HashMap<StringName, Vector<_CoreConstant>> _global_enums;
 
 #ifdef DEBUG_METHODS_ENABLED
 
-#define BIND_CORE_CONSTANT(m_constant) \
-	_global_constants.push_back(_CoreConstant(StringName(), #m_constant, m_constant));
+#define BIND_CORE_CONSTANT(m_constant)                                                 \
+	_global_constants.push_back(_CoreConstant(StringName(), #m_constant, m_constant)); \
+	_global_constants_map[#m_constant] = _global_constants.size() - 1;
 
-#define BIND_CORE_ENUM_CONSTANT(m_constant) \
-	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_constant, #m_constant), #m_constant, m_constant));
+#define BIND_CORE_ENUM_CONSTANT(m_constant)                                                          \
+	{                                                                                                \
+		StringName enum_name = __constant_get_enum_name(m_constant, #m_constant);                    \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_constant, m_constant));              \
+		_global_constants_map[#m_constant] = _global_constants.size() - 1;                           \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
+
+#define BIND_CORE_BITFIELD_FLAG(m_constant)                                                          \
+	{                                                                                                \
+		StringName enum_name = __constant_get_bitfield_name(m_constant, #m_constant);                \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_constant, m_constant, false, true)); \
+		_global_constants_map[#m_constant] = _global_constants.size() - 1;                           \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
 
 // This just binds enum classes as if they were regular enum constants.
-#define BIND_CORE_ENUM_CLASS_CONSTANT(m_enum, m_prefix, m_member) \
-	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_enum::m_member, #m_prefix "_" #m_member), #m_prefix "_" #m_member, (int64_t)m_enum::m_member));
+#define BIND_CORE_ENUM_CLASS_CONSTANT(m_enum, m_prefix, m_member)                                                  \
+	{                                                                                                              \
+		StringName enum_name = __constant_get_enum_name(m_enum::m_member, #m_prefix "_" #m_member);                \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_prefix "_" #m_member, (int64_t)m_enum::m_member)); \
+		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1;                             \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]);               \
+	}
 
-#define BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(m_enum, m_name, m_member) \
-	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_enum::m_member, #m_name), #m_name, (int64_t)m_enum::m_member));
+#define BIND_CORE_BITFIELD_CLASS_FLAG(m_enum, m_prefix, m_member)                                                               \
+	{                                                                                                                           \
+		StringName enum_name = __constant_get_bitfield_name(m_enum::m_member, #m_prefix "_" #m_member);                         \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_prefix "_" #m_member, (int64_t)m_enum::m_member, false, true)); \
+		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1;                                          \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]);                            \
+	}
 
-#define BIND_CORE_ENUM_CLASS_CONSTANT_NO_VAL(m_enum, m_prefix, m_member) \
-	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_enum::m_member, #m_prefix "_" #m_member), #m_prefix "_" #m_member, (int64_t)m_enum::m_member, true));
+#define BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(m_enum, m_name, m_member)                               \
+	{                                                                                                \
+		StringName enum_name = __constant_get_enum_name(m_enum::m_member, #m_name);                  \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_name, (int64_t)m_enum::m_member));   \
+		_global_constants_map[#m_name] = _global_constants.size() - 1;                               \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
 
-#define BIND_CORE_ENUM_CONSTANT_CUSTOM(m_custom_name, m_constant) \
-	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_constant, #m_constant), m_custom_name, m_constant));
+#define BIND_CORE_BITFIELD_CLASS_FLAG_CUSTOM(m_enum, m_name, m_member)                                          \
+	{                                                                                                           \
+		StringName enum_name = __constant_get_bitfield_name(m_enum::m_member, #m_name);                         \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_name, (int64_t)m_enum::m_member, false, true)); \
+		_global_constants_map[#m_name] = _global_constants.size() - 1;                                          \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]);            \
+	}
 
-#define BIND_CORE_CONSTANT_NO_VAL(m_constant) \
-	_global_constants.push_back(_CoreConstant(StringName(), #m_constant, m_constant, true));
+#define BIND_CORE_ENUM_CLASS_CONSTANT_NO_VAL(m_enum, m_prefix, m_member)                                                 \
+	{                                                                                                                    \
+		StringName enum_name = __constant_get_enum_name(m_enum::m_member, #m_prefix "_" #m_member);                      \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_prefix "_" #m_member, (int64_t)m_enum::m_member, true)); \
+		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1;                                   \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]);                     \
+	}
 
-#define BIND_CORE_ENUM_CONSTANT_NO_VAL(m_constant) \
-	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_constant, #m_constant), #m_constant, m_constant, true));
+#define BIND_CORE_ENUM_CONSTANT_CUSTOM(m_custom_name, m_constant)                                    \
+	{                                                                                                \
+		StringName enum_name = __constant_get_enum_name(m_constant, #m_constant);                    \
+		_global_constants.push_back(_CoreConstant(enum_name, m_custom_name, m_constant));            \
+		_global_constants_map[m_custom_name] = _global_constants.size() - 1;                         \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
 
-#define BIND_CORE_ENUM_CONSTANT_CUSTOM_NO_VAL(m_custom_name, m_constant) \
-	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_constant, #m_constant), m_custom_name, m_constant, true));
+#define BIND_CORE_CONSTANT_NO_VAL(m_constant)                                                \
+	_global_constants.push_back(_CoreConstant(StringName(), #m_constant, m_constant, true)); \
+	_global_constants_map[#m_constant] = _global_constants.size() - 1;
+
+#define BIND_CORE_ENUM_CONSTANT_NO_VAL(m_constant)                                                   \
+	{                                                                                                \
+		StringName enum_name = __constant_get_enum_name(m_constant, #m_constant);                    \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_constant, m_constant, true));        \
+		_global_constants_map[#m_constant] = _global_constants.size() - 1;                           \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
+
+#define BIND_CORE_ENUM_CONSTANT_CUSTOM_NO_VAL(m_custom_name, m_constant)                             \
+	{                                                                                                \
+		StringName enum_name = __constant_get_enum_name(m_constant, #m_constant);                    \
+		_global_constants.push_back(_CoreConstant(enum_name, m_custom_name, m_constant, true));      \
+		_global_constants_map[m_custom_name] = _global_constants.size() - 1;                         \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
 
 #else
 
-#define BIND_CORE_CONSTANT(m_constant) \
-	_global_constants.push_back(_CoreConstant(#m_constant, m_constant));
+#define BIND_CORE_CONSTANT(m_constant)                                                 \
+	_global_constants.push_back(_CoreConstant(StringName(), #m_constant, m_constant)); \
+	_global_constants_map[#m_constant] = _global_constants.size() - 1;
 
-#define BIND_CORE_ENUM_CONSTANT(m_constant) \
-	_global_constants.push_back(_CoreConstant(#m_constant, m_constant));
+#define BIND_CORE_ENUM_CONSTANT(m_constant)                                                          \
+	{                                                                                                \
+		StringName enum_name = __constant_get_enum_name(m_constant, #m_constant);                    \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_constant, m_constant));              \
+		_global_constants_map[#m_constant] = _global_constants.size() - 1;                           \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
+
+#define BIND_CORE_BITFIELD_FLAG(m_constant)                                                          \
+	{                                                                                                \
+		StringName enum_name = __constant_get_bitfield_name(m_constant, #m_constant);                \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_constant, m_constant));              \
+		_global_constants_map[#m_constant] = _global_constants.size() - 1;                           \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
 
 // This just binds enum classes as if they were regular enum constants.
-#define BIND_CORE_ENUM_CLASS_CONSTANT(m_enum, m_prefix, m_member) \
-	_global_constants.push_back(_CoreConstant(#m_prefix "_" #m_member, (int64_t)m_enum::m_member));
+#define BIND_CORE_ENUM_CLASS_CONSTANT(m_enum, m_prefix, m_member)                                                  \
+	{                                                                                                              \
+		StringName enum_name = __constant_get_enum_name(m_enum::m_member, #m_prefix "_" #m_member);                \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_prefix "_" #m_member, (int64_t)m_enum::m_member)); \
+		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1;                             \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]);               \
+	}
 
-#define BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(m_enum, m_name, m_member) \
-	_global_constants.push_back(_CoreConstant(#m_name, (int64_t)m_enum::m_member));
+#define BIND_CORE_BITFIELD_CLASS_FLAG(m_enum, m_prefix, m_member)                                                  \
+	{                                                                                                              \
+		StringName enum_name = __constant_get_bitfield_name(m_enum::m_member, #m_prefix "_" #m_member);            \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_prefix "_" #m_member, (int64_t)m_enum::m_member)); \
+		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1;                             \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]);               \
+	}
 
-#define BIND_CORE_ENUM_CLASS_CONSTANT_NO_VAL(m_enum, m_prefix, m_member) \
-	_global_constants.push_back(_CoreConstant(#m_prefix "_" #m_member, (int64_t)m_enum::m_member));
+#define BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(m_enum, m_name, m_member)                               \
+	{                                                                                                \
+		StringName enum_name = __constant_get_enum_name(m_enum::m_member, #m_name);                  \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_name, (int64_t)m_enum::m_member));   \
+		_global_constants_map[#m_name] = _global_constants.size() - 1;                               \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
 
-#define BIND_CORE_ENUM_CONSTANT_CUSTOM(m_custom_name, m_constant) \
-	_global_constants.push_back(_CoreConstant(m_custom_name, m_constant));
+#define BIND_CORE_BITFIELD_CLASS_FLAG_CUSTOM(m_enum, m_name, m_member)                               \
+	{                                                                                                \
+		StringName enum_name = __constant_get_bitfield_name(m_enum::m_member, #m_name);              \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_name, (int64_t)m_enum::m_member));   \
+		_global_constants_map[#m_name] = _global_constants.size() - 1;                               \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
 
-#define BIND_CORE_CONSTANT_NO_VAL(m_constant) \
-	_global_constants.push_back(_CoreConstant(#m_constant, m_constant));
+#define BIND_CORE_ENUM_CLASS_CONSTANT_NO_VAL(m_enum, m_prefix, m_member)                                           \
+	{                                                                                                              \
+		StringName enum_name = __constant_get_enum_name(m_enum::m_member, #m_prefix "_" #m_member);                \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_prefix "_" #m_member, (int64_t)m_enum::m_member)); \
+		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1;                             \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]);               \
+	}
 
-#define BIND_CORE_ENUM_CONSTANT_NO_VAL(m_constant) \
-	_global_constants.push_back(_CoreConstant(#m_constant, m_constant));
+#define BIND_CORE_ENUM_CONSTANT_CUSTOM(m_custom_name, m_constant)                                    \
+	{                                                                                                \
+		StringName enum_name = __constant_get_enum_name(m_constant, #m_constant);                    \
+		_global_constants.push_back(_CoreConstant(enum_name, m_custom_name, m_constant));            \
+		_global_constants_map[m_custom_name] = _global_constants.size() - 1;                         \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
 
-#define BIND_CORE_ENUM_CONSTANT_CUSTOM_NO_VAL(m_custom_name, m_constant) \
-	_global_constants.push_back(_CoreConstant(m_custom_name, m_constant));
+#define BIND_CORE_CONSTANT_NO_VAL(m_constant)                                          \
+	_global_constants.push_back(_CoreConstant(StringName(), #m_constant, m_constant)); \
+	_global_constants_map[#m_constant] = _global_constants.size() - 1;
+
+#define BIND_CORE_ENUM_CONSTANT_NO_VAL(m_constant)                                                   \
+	{                                                                                                \
+		StringName enum_name = __constant_get_enum_name(m_constant, #m_constant);                    \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_constant, m_constant));              \
+		_global_constants_map[#m_constant] = _global_constants.size() - 1;                           \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
+
+#define BIND_CORE_ENUM_CONSTANT_CUSTOM_NO_VAL(m_custom_name, m_constant)                             \
+	{                                                                                                \
+		StringName enum_name = __constant_get_enum_name(m_constant, #m_constant);                    \
+		_global_constants.push_back(_CoreConstant(enum_name, m_custom_name, m_constant));            \
+		_global_constants_map[m_custom_name] = _global_constants.size() - 1;                         \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
 
 #endif
 
@@ -153,6 +281,7 @@ void register_global_constants() {
 
 	BIND_CORE_ENUM_CONSTANT(INLINE_ALIGNMENT_TOP_TO);
 	BIND_CORE_ENUM_CONSTANT(INLINE_ALIGNMENT_CENTER_TO);
+	BIND_CORE_ENUM_CONSTANT(INLINE_ALIGNMENT_BASELINE_TO);
 	BIND_CORE_ENUM_CONSTANT(INLINE_ALIGNMENT_BOTTOM_TO);
 
 	BIND_CORE_ENUM_CONSTANT(INLINE_ALIGNMENT_TO_TOP);
@@ -166,6 +295,13 @@ void register_global_constants() {
 
 	BIND_CORE_ENUM_CONSTANT(INLINE_ALIGNMENT_IMAGE_MASK);
 	BIND_CORE_ENUM_CONSTANT(INLINE_ALIGNMENT_TEXT_MASK);
+
+	BIND_CORE_ENUM_CLASS_CONSTANT(EulerOrder, EULER_ORDER, XYZ);
+	BIND_CORE_ENUM_CLASS_CONSTANT(EulerOrder, EULER_ORDER, XZY);
+	BIND_CORE_ENUM_CLASS_CONSTANT(EulerOrder, EULER_ORDER, YXZ);
+	BIND_CORE_ENUM_CLASS_CONSTANT(EulerOrder, EULER_ORDER, YZX);
+	BIND_CORE_ENUM_CLASS_CONSTANT(EulerOrder, EULER_ORDER, ZXY);
+	BIND_CORE_ENUM_CLASS_CONSTANT(EulerOrder, EULER_ORDER, ZYX);
 
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, NONE);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, SPECIAL);
@@ -246,14 +382,9 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KP_7);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KP_8);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KP_9);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, SUPER_L);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, SUPER_R);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, MENU);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, HYPER_L);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, HYPER_R);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, HYPER);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, HELP);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, DIRECTION_L);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, DIRECTION_R);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, BACK);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, FORWARD);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, STOP);
@@ -261,11 +392,6 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, VOLUMEDOWN);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, VOLUMEMUTE);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, VOLUMEUP);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, BASSBOOST);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, BASSUP);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, BASSDOWN);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, TREBLEUP);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, TREBLEDOWN);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, MEDIAPLAY);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, MEDIASTOP);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, MEDIAPREVIOUS);
@@ -364,82 +490,22 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, BAR);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, BRACERIGHT);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, ASCIITILDE);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, NOBREAKSPACE);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, EXCLAMDOWN);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, CENT);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, STERLING);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, CURRENCY);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, YEN);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, BROKENBAR);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, SECTION);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, DIAERESIS);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, COPYRIGHT);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, ORDFEMININE);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, GUILLEMOTLEFT);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, NOTSIGN);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, HYPHEN);
-	BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(Key, KEY_REGISTERED, KEY_REGISTERED);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, MACRON);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, DEGREE);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, PLUSMINUS);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, TWOSUPERIOR);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, THREESUPERIOR);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, ACUTE);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, MU);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, PARAGRAPH);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, PERIODCENTERED);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, CEDILLA);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, ONESUPERIOR);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, MASCULINE);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, GUILLEMOTRIGHT);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, ONEQUARTER);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, ONEHALF);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, THREEQUARTERS);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, QUESTIONDOWN);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, AGRAVE);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, AACUTE);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, ACIRCUMFLEX);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, ATILDE);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, ADIAERESIS);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, ARING);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, AE);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, CCEDILLA);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, EGRAVE);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, EACUTE);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, ECIRCUMFLEX);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, EDIAERESIS);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, IGRAVE);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, IACUTE);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, ICIRCUMFLEX);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, IDIAERESIS);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, ETH);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, NTILDE);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, OGRAVE);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, OACUTE);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, OCIRCUMFLEX);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, OTILDE);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, ODIAERESIS);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, MULTIPLY);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, OOBLIQUE);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, UGRAVE);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, UACUTE);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, UCIRCUMFLEX);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, UDIAERESIS);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, YACUTE);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, THORN);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, SSHARP);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, DIVISION);
-	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, YDIAERESIS);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, GLOBE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KEYBOARD);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, JIS_EISU);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, JIS_KANA);
 
-	BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(KeyModifierMask, KEY_CODE_MASK, CODE_MASK);
-	BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(KeyModifierMask, KEY_MODIFIER_MASK, MODIFIER_MASK);
-	BIND_CORE_ENUM_CLASS_CONSTANT(KeyModifierMask, KEY_MASK, CMD_OR_CTRL);
-	BIND_CORE_ENUM_CLASS_CONSTANT(KeyModifierMask, KEY_MASK, SHIFT);
-	BIND_CORE_ENUM_CLASS_CONSTANT(KeyModifierMask, KEY_MASK, ALT);
-	BIND_CORE_ENUM_CLASS_CONSTANT(KeyModifierMask, KEY_MASK, META);
-	BIND_CORE_ENUM_CLASS_CONSTANT(KeyModifierMask, KEY_MASK, CTRL);
-	BIND_CORE_ENUM_CLASS_CONSTANT(KeyModifierMask, KEY_MASK, KPAD);
-	BIND_CORE_ENUM_CLASS_CONSTANT(KeyModifierMask, KEY_MASK, GROUP_SWITCH);
+	BIND_CORE_BITFIELD_CLASS_FLAG_CUSTOM(KeyModifierMask, KEY_CODE_MASK, CODE_MASK);
+	BIND_CORE_BITFIELD_CLASS_FLAG_CUSTOM(KeyModifierMask, KEY_MODIFIER_MASK, MODIFIER_MASK);
+	BIND_CORE_BITFIELD_CLASS_FLAG(KeyModifierMask, KEY_MASK, CMD_OR_CTRL);
+	BIND_CORE_BITFIELD_CLASS_FLAG(KeyModifierMask, KEY_MASK, SHIFT);
+	BIND_CORE_BITFIELD_CLASS_FLAG(KeyModifierMask, KEY_MASK, ALT);
+	BIND_CORE_BITFIELD_CLASS_FLAG(KeyModifierMask, KEY_MASK, META);
+	BIND_CORE_BITFIELD_CLASS_FLAG(KeyModifierMask, KEY_MASK, CTRL);
+	BIND_CORE_BITFIELD_CLASS_FLAG(KeyModifierMask, KEY_MASK, KPAD);
+	BIND_CORE_BITFIELD_CLASS_FLAG(KeyModifierMask, KEY_MASK, GROUP_SWITCH);
 
 	BIND_CORE_ENUM_CLASS_CONSTANT(MouseButton, MOUSE_BUTTON, NONE);
 	BIND_CORE_ENUM_CLASS_CONSTANT(MouseButton, MOUSE_BUTTON, LEFT);
@@ -451,11 +517,12 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CLASS_CONSTANT(MouseButton, MOUSE_BUTTON, WHEEL_RIGHT);
 	BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(MouseButton, MOUSE_BUTTON_XBUTTON1, MB_XBUTTON1);
 	BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(MouseButton, MOUSE_BUTTON_XBUTTON2, MB_XBUTTON2);
-	BIND_CORE_ENUM_CLASS_CONSTANT(MouseButton, MOUSE_BUTTON, MASK_LEFT);
-	BIND_CORE_ENUM_CLASS_CONSTANT(MouseButton, MOUSE_BUTTON, MASK_RIGHT);
-	BIND_CORE_ENUM_CLASS_CONSTANT(MouseButton, MOUSE_BUTTON, MASK_MIDDLE);
-	BIND_CORE_ENUM_CLASS_CONSTANT(MouseButton, MOUSE_BUTTON, MASK_XBUTTON1);
-	BIND_CORE_ENUM_CLASS_CONSTANT(MouseButton, MOUSE_BUTTON, MASK_XBUTTON2);
+
+	BIND_CORE_BITFIELD_CLASS_FLAG(MouseButtonMask, MOUSE_BUTTON_MASK, LEFT);
+	BIND_CORE_BITFIELD_CLASS_FLAG(MouseButtonMask, MOUSE_BUTTON_MASK, RIGHT);
+	BIND_CORE_BITFIELD_CLASS_FLAG(MouseButtonMask, MOUSE_BUTTON_MASK, MIDDLE);
+	BIND_CORE_BITFIELD_CLASS_FLAG(MouseButtonMask, MOUSE_BUTTON_MASK, MB_XBUTTON1);
+	BIND_CORE_BITFIELD_CLASS_FLAG(MouseButtonMask, MOUSE_BUTTON_MASK, MB_XBUTTON2);
 
 	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, INVALID);
 	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, A);
@@ -588,20 +655,10 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_EXPRESSION);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_PLACEHOLDER_TEXT);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_COLOR_NO_ALPHA);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_IMAGE_COMPRESS_LOSSY);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_OBJECT_ID);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_TYPE_STRING);
 
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_METHOD_OF_VARIANT_TYPE);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_METHOD_OF_BASE_TYPE);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_METHOD_OF_INSTANCE);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_METHOD_OF_SCRIPT);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_PROPERTY_OF_BASE_TYPE);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_PROPERTY_OF_INSTANCE);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_PROPERTY_OF_SCRIPT);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_OBJECT_TOO_BIG);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_NODE_PATH_VALID_TYPES);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_SAVE_FILE);
@@ -616,50 +673,49 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_PASSWORD);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_MAX);
 
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_NONE);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_STORAGE);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_EDITOR);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_NONE);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_STORAGE);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_EDITOR);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_INTERNAL);
 
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_CHECKABLE);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_CHECKED);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_INTERNATIONALIZED);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_GROUP);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_CATEGORY);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_SUBGROUP);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_CLASS_IS_BITFIELD);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_NO_INSTANCE_STATE);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_RESTART_IF_CHANGED);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_SCRIPT_VARIABLE);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_CHECKABLE);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_CHECKED);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_GROUP);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_CATEGORY);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_SUBGROUP);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_CLASS_IS_BITFIELD);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_NO_INSTANCE_STATE);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_RESTART_IF_CHANGED);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_SCRIPT_VARIABLE);
 
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_STORE_IF_NULL);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_ANIMATE_AS_TRIGGER);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_CLASS_IS_ENUM);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_NIL_IS_VARIANT);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_INTERNAL);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_HIGH_END_GFX);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_KEYING_INCREMENTS);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_DEFERRED_SET_RESOURCE);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_EDITOR_BASIC_SETTING);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_ARRAY);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_STORE_IF_NULL);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_CLASS_IS_ENUM);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_NIL_IS_VARIANT);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_ARRAY);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_ALWAYS_DUPLICATE);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_NEVER_DUPLICATE);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_HIGH_END_GFX);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_KEYING_INCREMENTS);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_DEFERRED_SET_RESOURCE);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_EDITOR_BASIC_SETTING);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_READ_ONLY);
 
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_DEFAULT);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_DEFAULT_INTL);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_NO_EDITOR);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_DEFAULT);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_NO_EDITOR);
 
-	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_NORMAL);
-	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_EDITOR);
-	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_CONST);
-	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_VIRTUAL);
-	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_VARARG);
-	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_STATIC);
-	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_OBJECT_CORE);
-	BIND_CORE_ENUM_CONSTANT(METHOD_FLAGS_DEFAULT);
+	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_NORMAL);
+	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_EDITOR);
+	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_CONST);
+	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_VIRTUAL);
+	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_VARARG);
+	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_STATIC);
+	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_OBJECT_CORE);
+	BIND_CORE_BITFIELD_FLAG(METHOD_FLAGS_DEFAULT);
 
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_NIL", Variant::NIL);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_BOOL", Variant::BOOL);
@@ -742,17 +798,21 @@ int CoreConstants::get_global_constant_count() {
 	return _global_constants.size();
 }
 
-#ifdef DEBUG_METHODS_ENABLED
 StringName CoreConstants::get_global_constant_enum(int p_idx) {
 	return _global_constants[p_idx].enum_name;
+}
+
+#ifdef DEBUG_METHODS_ENABLED
+bool CoreConstants::is_global_constant_bitfield(int p_idx) {
+	return _global_constants[p_idx].is_bitfield;
 }
 
 bool CoreConstants::get_ignore_value_in_docs(int p_idx) {
 	return _global_constants[p_idx].ignore_value_in_docs;
 }
 #else
-StringName CoreConstants::get_global_constant_enum(int p_idx) {
-	return StringName();
+bool CoreConstants::is_global_constant_bitfield(int p_idx) {
+	return false;
 }
 
 bool CoreConstants::get_ignore_value_in_docs(int p_idx) {
@@ -766,4 +826,25 @@ const char *CoreConstants::get_global_constant_name(int p_idx) {
 
 int64_t CoreConstants::get_global_constant_value(int p_idx) {
 	return _global_constants[p_idx].value;
+}
+
+bool CoreConstants::is_global_constant(const StringName &p_name) {
+	return _global_constants_map.has(p_name);
+}
+
+int CoreConstants::get_global_constant_index(const StringName &p_name) {
+	ERR_FAIL_COND_V_MSG(!_global_constants_map.has(p_name), -1, "Trying to get index of non-existing constant.");
+	return _global_constants_map[p_name];
+}
+
+bool CoreConstants::is_global_enum(const StringName &p_enum) {
+	return _global_enums.has(p_enum);
+}
+
+void CoreConstants::get_enum_values(StringName p_enum, HashMap<StringName, int64_t> *p_values) {
+	ERR_FAIL_NULL_MSG(p_values, "Trying to get enum values with null map.");
+	ERR_FAIL_COND_MSG(!_global_enums.has(p_enum), "Trying to get values of non-existing enum.");
+	for (const _CoreConstant &constant : _global_enums[p_enum]) {
+		(*p_values)[constant.name] = constant.value;
+	}
 }

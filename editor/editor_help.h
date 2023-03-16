@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  editor_help.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_help.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef EDITOR_HELP_H
 #define EDITOR_HELP_H
@@ -71,8 +71,6 @@ protected:
 	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
 
 	bool _search(bool p_search_previous = false);
-
-	static void _bind_methods();
 
 public:
 	void set_rich_text_label(RichTextLabel *p_rich_text_label);
@@ -127,25 +125,33 @@ class EditorHelp : public VBoxContainer {
 
 	String base_path;
 
-	Color text_color;
-	Color title_color;
-	Color headline_color;
-	Color comment_color;
-	Color symbol_color;
-	Color value_color;
-	Color qualifier_color;
-	Color type_color;
+	struct ThemeCache {
+		Ref<StyleBox> background_style;
 
-	Ref<Font> doc_font;
-	Ref<Font> doc_bold_font;
-	Ref<Font> doc_title_font;
-	Ref<Font> doc_code_font;
+		Color text_color;
+		Color title_color;
+		Color headline_color;
+		Color comment_color;
+		Color symbol_color;
+		Color value_color;
+		Color qualifier_color;
+		Color type_color;
 
-	int doc_title_font_size;
+		Ref<Font> doc_font;
+		Ref<Font> doc_bold_font;
+		Ref<Font> doc_italic_font;
+		Ref<Font> doc_title_font;
+		Ref<Font> doc_code_font;
+		Ref<Font> doc_kbd_font;
+
+		int doc_font_size = 0;
+		int doc_title_font_size = 0;
+		int doc_code_font_size = 0;
+		int doc_kbd_font_size = 0;
+	} theme_cache;
 
 	int scroll_to = -1;
 
-	void _update_theme();
 	void _help_callback(const String &p_topic);
 
 	void _add_text(const String &p_bbcode);
@@ -158,6 +164,13 @@ class EditorHelp : public VBoxContainer {
 
 	void _add_bulletpoint();
 
+	void _push_normal_font();
+	void _pop_normal_font();
+	void _push_title_font();
+	void _pop_title_font();
+	void _push_code_font();
+	void _pop_code_font();
+
 	void _class_desc_finished();
 	void _class_list_select(const String &p_select);
 	void _class_desc_select(const String &p_select);
@@ -167,7 +180,7 @@ class EditorHelp : public VBoxContainer {
 
 	Error _goto_desc(const String &p_class, int p_vscr = -1);
 	//void _update_history_buttons();
-	void _update_method_list(const Vector<DocData::MethodDoc> p_methods, bool &r_method_descrpitons);
+	void _update_method_list(const Vector<DocData::MethodDoc> p_methods);
 	void _update_method_descriptions(const DocData::ClassDoc p_classdoc, const Vector<DocData::MethodDoc> p_methods, const String &p_method_type);
 	void _update_doc();
 
@@ -183,6 +196,8 @@ class EditorHelp : public VBoxContainer {
 	static void _gen_doc_thread(void *p_udata);
 
 protected:
+	virtual void _update_theme_item_cache() override;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 

@@ -1,2 +1,2 @@
 GDTEST_PARSER_ERROR
-"class_name" should be used before annotations (except @tool).
+Annotation "@icon" must be at the top of the script, before "extends" and "class_name".

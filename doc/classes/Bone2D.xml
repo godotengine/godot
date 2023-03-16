@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Bone2D" inherits="Node2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Bone2D" inherits="Node2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Joint used with [Skeleton2D] to control and animate other nodes.
 	</brief_description>
@@ -29,12 +29,6 @@
 			<description>
 				Returns the angle of the bone in the [code]Bone2D[/code] node.
 				[b]Note:[/b] This is different from the [code]Bone2D[/code]'s rotation. The bone angle is the rotation of the bone shown by the [code]Bone2D[/code] gizmo, and because [code]Bone2D[/code] bones are based on positions, this can vary from the actual rotation of the [code]Bone2D[/code] node.
-			</description>
-		</method>
-		<method name="get_default_length" qualifiers="const">
-			<return type="float" />
-			<description>
-				Deprecated. Please use  [code]get_length[/code] instead.
 			</description>
 		</method>
 		<method name="get_index_in_skeleton" qualifiers="const">
@@ -68,13 +62,6 @@
 			<description>
 				Sets the bone angle for the [code]Bone2D[/code] node. This is typically set to the rotation from the [code]Bone2D[/code] node to a child [code]Bone2D[/code] node.
 				[b]Note:[/b] This is different from the [code]Bone2D[/code]'s rotation. The bone angle is the rotation of the bone shown by the [code]Bone2D[/code] gizmo, and because [code]Bone2D[/code] bones are based on positions, this can vary from the actual rotation of the [code]Bone2D[/code] node.
-			</description>
-		</method>
-		<method name="set_default_length">
-			<return type="void" />
-			<param index="0" name="default_length" type="float" />
-			<description>
-				Deprecated. Please use [code]set_length[/code] instead.
 			</description>
 		</method>
 		<method name="set_length">

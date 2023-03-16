@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  editor_resource_picker.cpp                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_resource_picker.cpp                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_resource_picker.h"
 
@@ -42,17 +42,12 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
 
-HashMap<StringName, List<StringName>> EditorResourcePicker::allowed_types_cache;
-
-void EditorResourcePicker::clear_caches() {
-	allowed_types_cache.clear();
-}
-
 void EditorResourcePicker::_update_resource() {
 	String resource_path;
 	if (edited_resource.is_valid() && edited_resource->get_path().is_resource_file()) {
 		resource_path = edited_resource->get_path() + "\n";
 	}
+	String class_name = _get_resource_type(edited_resource);
 
 	if (preview_rect) {
 		preview_rect->set_texture(Ref<Texture2D>());
@@ -64,16 +59,20 @@ void EditorResourcePicker::_update_resource() {
 			assign_button->set_text(TTR("<empty>"));
 			assign_button->set_tooltip_text("");
 		} else {
-			assign_button->set_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), "Object"));
+			assign_button->set_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), SNAME("Object")));
 
 			if (!edited_resource->get_name().is_empty()) {
 				assign_button->set_text(edited_resource->get_name());
 			} else if (edited_resource->get_path().is_resource_file()) {
 				assign_button->set_text(edited_resource->get_path().get_file());
 			} else {
-				assign_button->set_text(edited_resource->get_class());
+				assign_button->set_text(class_name);
 			}
-			assign_button->set_tooltip_text(resource_path + TTR("Type:") + " " + edited_resource->get_class());
+
+			if (edited_resource->get_path().is_resource_file()) {
+				resource_path = edited_resource->get_path() + "\n";
+			}
+			assign_button->set_tooltip_text(resource_path + TTR("Type:") + " " + class_name);
 
 			// Preview will override the above, so called at the end.
 			EditorResourcePreview::get_singleton()->queue_edited_resource_preview(edited_resource, this, "_update_resource_preview", edited_resource->get_instance_id());
@@ -91,14 +90,14 @@ void EditorResourcePicker::_update_resource_preview(const String &p_path, const 
 	}
 
 	if (preview_rect) {
-		Ref<Script> script = edited_resource;
-		if (script.is_valid()) {
-			assign_button->set_text(script->get_path().get_file());
+		Ref<Script> scr = edited_resource;
+		if (scr.is_valid()) {
+			assign_button->set_text(scr->get_path().get_file());
 			return;
 		}
 
 		if (p_preview.is_valid()) {
-			preview_rect->set_offset(SIDE_LEFT, assign_button->get_icon()->get_width() + assign_button->get_theme_stylebox(SNAME("normal"))->get_default_margin(SIDE_LEFT) + get_theme_constant(SNAME("h_separation"), SNAME("Button")));
+			preview_rect->set_offset(SIDE_LEFT, assign_button->get_icon()->get_width() + assign_button->get_theme_stylebox(SNAME("normal"))->get_content_margin(SIDE_LEFT) + get_theme_constant(SNAME("h_separation"), SNAME("Button")));
 
 			// Resource-specific stretching.
 			if (Ref<GradientTexture1D>(edited_resource).is_valid() || Ref<Gradient>(edited_resource).is_valid()) {
@@ -106,7 +105,7 @@ void EditorResourcePicker::_update_resource_preview(const String &p_path, const 
 				assign_button->set_custom_minimum_size(assign_button_min_size);
 			} else {
 				preview_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
-				int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
+				int thumbnail_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 				thumbnail_size *= EDSCALE;
 				assign_button->set_custom_minimum_size(Size2(MAX(1, assign_button_min_size.x), MAX(thumbnail_size, assign_button_min_size.y)));
 			}
@@ -134,16 +133,29 @@ void EditorResourcePicker::_file_selected(const String &p_path) {
 	if (!base_type.is_empty()) {
 		bool any_type_matches = false;
 
+		String res_type = loaded_resource->get_class();
+		Ref<Script> res_script = loaded_resource->get_script();
+		bool is_global_class = false;
+		if (res_script.is_valid()) {
+			String script_type = EditorNode::get_editor_data().script_class_get_name(res_script->get_path());
+			if (!script_type.is_empty()) {
+				is_global_class = true;
+				res_type = script_type;
+			}
+		}
+
 		for (int i = 0; i < base_type.get_slice_count(","); i++) {
 			String base = base_type.get_slice(",", i);
-			if (loaded_resource->is_class(base)) {
-				any_type_matches = true;
+
+			any_type_matches = is_global_class ? EditorNode::get_editor_data().script_class_is_parent(res_type, base) : loaded_resource->is_class(base);
+
+			if (any_type_matches) {
 				break;
 			}
 		}
 
 		if (!any_type_matches) {
-			EditorNode::get_singleton()->show_warning(vformat(TTR("The selected resource (%s) does not match any type expected for this property (%s)."), loaded_resource->get_class(), base_type));
+			EditorNode::get_singleton()->show_warning(vformat(TTR("The selected resource (%s) does not match any type expected for this property (%s)."), res_type, base_type));
 			return;
 		}
 	}
@@ -227,16 +239,19 @@ void EditorResourcePicker::_update_menu_items() {
 	// Add options to copy/paste resource.
 	Ref<Resource> cb = EditorSettings::get_singleton()->get_resource_clipboard();
 	bool paste_valid = false;
-	if (is_editable()) {
-		if (cb.is_valid()) {
-			if (base_type.is_empty()) {
-				paste_valid = true;
-			} else {
-				for (int i = 0; i < base_type.get_slice_count(","); i++) {
-					if (ClassDB::is_parent_class(cb->get_class(), base_type.get_slice(",", i))) {
-						paste_valid = true;
-						break;
-					}
+	if (is_editable() && cb.is_valid()) {
+		if (base_type.is_empty()) {
+			paste_valid = true;
+		} else {
+			String res_type = _get_resource_type(cb);
+
+			for (int i = 0; i < base_type.get_slice_count(","); i++) {
+				String base = base_type.get_slice(",", i);
+
+				paste_valid = ClassDB::is_parent_class(res_type, base) || EditorNode::get_editor_data().script_class_is_parent(res_type, base);
+
+				if (paste_valid) {
+					break;
 				}
 			}
 		}
@@ -281,6 +296,9 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			for (int i = 0; i < base_type.get_slice_count(","); i++) {
 				String base = base_type.get_slice(",", i);
 				ResourceLoader::get_recognized_extensions_for_type(base, &extensions);
+				if (ScriptServer::is_global_class(base)) {
+					ResourceLoader::get_recognized_extensions_for_type(ScriptServer::get_global_class_native_base(base), &extensions);
+				}
 			}
 
 			HashSet<String> valid_extensions;
@@ -381,8 +399,12 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			file_system_dock->navigate_to_path(edited_resource->get_path());
 
 			// Ensure that the FileSystem dock is visible.
-			TabContainer *tab_container = (TabContainer *)file_system_dock->get_parent_control();
-			tab_container->set_current_tab(tab_container->get_tab_idx_from_control(file_system_dock));
+			if (file_system_dock->get_window() == get_tree()->get_root()) {
+				TabContainer *tab_container = (TabContainer *)file_system_dock->get_parent_control();
+				tab_container->set_current_tab(tab_container->get_tab_idx_from_control(file_system_dock));
+			} else {
+				file_system_dock->get_window()->grab_focus();
+			}
 		} break;
 
 		default: {
@@ -408,19 +430,13 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			Variant obj;
 
 			if (ScriptServer::is_global_class(intype)) {
-				obj = ClassDB::instantiate(ScriptServer::get_global_class_native_base(intype));
-				if (obj) {
-					Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(intype));
-					if (script.is_valid()) {
-						((Object *)obj)->set_script(script);
-					}
-				}
+				obj = EditorNode::get_editor_data().script_class_instance(intype);
 			} else {
 				obj = ClassDB::instantiate(intype);
 			}
 
 			if (!obj) {
-				obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
+				obj = EditorNode::get_editor_data().instantiate_custom_type(intype, "Resource");
 			}
 
 			Resource *resp = Object::cast_to<Resource>(obj);
@@ -446,7 +462,7 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 	if (!base_type.is_empty()) {
 		int idx = 0;
 
-		HashSet<String> allowed_types;
+		HashSet<StringName> allowed_types;
 		_get_allowed_types(false, &allowed_types);
 
 		Vector<EditorData::CustomType> custom_resources;
@@ -454,7 +470,7 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 			custom_resources = EditorNode::get_editor_data().get_custom_types()["Resource"];
 		}
 
-		for (const String &E : allowed_types) {
+		for (const StringName &E : allowed_types) {
 			const String &t = E;
 
 			bool is_custom_resource = false;
@@ -494,12 +510,9 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 }
 
 bool EditorResourcePicker::handle_menu_selected(int p_which) {
-	bool success;
-	if (GDVIRTUAL_CALL(_handle_menu_selected, p_which, success)) {
-		return success;
-	}
-
-	return false;
+	bool success = false;
+	GDVIRTUAL_CALL(_handle_menu_selected, p_which, success);
+	return success;
 }
 
 void EditorResourcePicker::_button_draw() {
@@ -512,60 +525,78 @@ void EditorResourcePicker::_button_draw() {
 void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid()) {
-		if (mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
-			// Only attempt to update and show the menu if we have
-			// a valid resource or the Picker is editable, as
-			// there will otherwise be nothing to display.
-			if (edited_resource.is_valid() || is_editable()) {
-				_update_menu_items();
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+		// Only attempt to update and show the menu if we have
+		// a valid resource or the Picker is editable, as
+		// there will otherwise be nothing to display.
+		if (edited_resource.is_valid() || is_editable()) {
+			_update_menu_items();
 
-				Vector2 pos = get_screen_position() + mb->get_position();
-				edit_menu->reset_size();
-				edit_menu->set_position(pos);
-				edit_menu->popup();
-			}
+			Vector2 pos = get_screen_position() + mb->get_position();
+			edit_menu->reset_size();
+			edit_menu->set_position(pos);
+			edit_menu->popup();
 		}
 	}
 }
 
-void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<String> *p_vector) const {
+String EditorResourcePicker::_get_resource_type(const Ref<Resource> &p_resource) const {
+	if (p_resource.is_null()) {
+		return String();
+	}
+	String res_type = p_resource->get_class();
+
+	Ref<Script> res_script = p_resource->get_script();
+	if (res_script.is_null()) {
+		return res_type;
+	}
+
+	// TODO: Replace with EditorFileSystem when PR #60606 is merged to use cached resource type.
+	String script_type = EditorNode::get_editor_data().script_class_get_name(res_script->get_path());
+	if (!script_type.is_empty()) {
+		res_type = script_type;
+	}
+	return res_type;
+}
+
+static void _add_allowed_type(const StringName &p_type, HashSet<StringName> *p_vector) {
+	if (p_vector->has(p_type)) {
+		// Already added
+		return;
+	}
+
+	if (ClassDB::class_exists(p_type)) {
+		// Engine class,
+
+		if (!ClassDB::is_virtual(p_type)) {
+			p_vector->insert(p_type);
+		}
+
+		List<StringName> inheriters;
+		ClassDB::get_inheriters_from_class(p_type, &inheriters);
+		for (const StringName &S : inheriters) {
+			_add_allowed_type(S, p_vector);
+		}
+	} else {
+		// Script class.
+		p_vector->insert(p_type);
+	}
+
+	List<StringName> inheriters;
+	ScriptServer::get_inheriters_list(p_type, &inheriters);
+	for (const StringName &S : inheriters) {
+		_add_allowed_type(S, p_vector);
+	}
+}
+
+void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<StringName> *p_vector) const {
 	Vector<String> allowed_types = base_type.split(",");
 	int size = allowed_types.size();
 
-	List<StringName> global_classes;
-	ScriptServer::get_global_class_list(&global_classes);
-
 	for (int i = 0; i < size; i++) {
 		String base = allowed_types[i].strip_edges();
-		p_vector->insert(base);
 
-		// If we hit a familiar base type, take all the data from cache.
-		if (allowed_types_cache.has(base)) {
-			List<StringName> allowed_subtypes = allowed_types_cache[base];
-			for (const StringName &subtype_name : allowed_subtypes) {
-				p_vector->insert(subtype_name);
-			}
-		} else {
-			List<StringName> allowed_subtypes;
-
-			List<StringName> inheriters;
-			ClassDB::get_inheriters_from_class(base, &inheriters);
-			for (const StringName &subtype_name : inheriters) {
-				p_vector->insert(subtype_name);
-				allowed_subtypes.push_back(subtype_name);
-			}
-
-			for (const StringName &subtype_name : global_classes) {
-				if (EditorNode::get_editor_data().script_class_is_parent(subtype_name, base)) {
-					p_vector->insert(subtype_name);
-					allowed_subtypes.push_back(subtype_name);
-				}
-			}
-
-			// Store the subtypes of the base type in the cache for future use.
-			allowed_types_cache[base] = allowed_subtypes;
-		}
+		_add_allowed_type(base, p_vector);
 
 		if (p_with_convert) {
 			if (base == "BaseMaterial3D") {
@@ -575,14 +606,6 @@ void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<Strin
 			} else if (base == "Texture2D") {
 				p_vector->insert("Image");
 			}
-		}
-	}
-
-	if (EditorNode::get_editor_data().get_custom_types().has("Resource")) {
-		Vector<EditorData::CustomType> custom_resources = EditorNode::get_editor_data().get_custom_types()["Resource"];
-
-		for (int i = 0; i < custom_resources.size(); i++) {
-			p_vector->insert(custom_resources[i].name);
 		}
 	}
 }
@@ -602,41 +625,38 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 		}
 	} else if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
 		res = drag_data["resource"];
-	}
+	} else if (drag_data.has("type") && String(drag_data["type"]) == "files") {
+		Vector<String> files = drag_data["files"];
 
-	HashSet<String> allowed_types;
-	_get_allowed_types(true, &allowed_types);
-
-	if (res.is_valid() && _is_type_valid(res->get_class(), allowed_types)) {
-		return true;
-	}
-
-	if (res.is_valid() && res->get_script()) {
-		StringName custom_class = EditorNode::get_singleton()->get_object_custom_type_name(res->get_script());
-		if (_is_type_valid(custom_class, allowed_types)) {
-			return true;
+		// TODO: Extract the typename of the dropped filepath's resource in a more performant way, without fully loading it.
+		if (files.size() == 1) {
+			String file = files[0];
+			res = ResourceLoader::load(file);
 		}
 	}
 
-	if (drag_data.has("type") && String(drag_data["type"]) == "files") {
-		Vector<String> files = drag_data["files"];
+	HashSet<StringName> allowed_types;
+	_get_allowed_types(true, &allowed_types);
 
-		if (files.size() == 1) {
-			String file = files[0];
+	if (res.is_valid()) {
+		String res_type = _get_resource_type(res);
 
-			String file_type = EditorFileSystem::get_singleton()->get_file_type(file);
-			if (!file_type.is_empty() && _is_type_valid(file_type, allowed_types)) {
-				return true;
-			}
+		if (_is_type_valid(res_type, allowed_types)) {
+			return true;
+		}
+
+		StringName custom_class = EditorNode::get_singleton()->get_object_custom_type_name(res.ptr());
+		if (_is_type_valid(custom_class, allowed_types)) {
+			return true;
 		}
 	}
 
 	return false;
 }
 
-bool EditorResourcePicker::_is_type_valid(const String p_type_name, HashSet<String> p_allowed_types) const {
-	for (const String &E : p_allowed_types) {
-		String at = E.strip_edges();
+bool EditorResourcePicker::_is_type_valid(const String p_type_name, HashSet<StringName> p_allowed_types) const {
+	for (const StringName &E : p_allowed_types) {
+		String at = E;
 		if (p_type_name == at || ClassDB::is_parent_class(p_type_name, at) || EditorNode::get_editor_data().script_class_is_parent(p_type_name, at)) {
 			return true;
 		}
@@ -682,13 +702,15 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 	}
 
 	if (dropped_resource.is_valid()) {
-		HashSet<String> allowed_types;
+		HashSet<StringName> allowed_types;
 		_get_allowed_types(false, &allowed_types);
 
+		String res_type = _get_resource_type(dropped_resource);
+
 		// If the accepted dropped resource is from the extended list, it requires conversion.
-		if (!_is_type_valid(dropped_resource->get_class(), allowed_types)) {
-			for (const String &E : allowed_types) {
-				String at = E.strip_edges();
+		if (!_is_type_valid(res_type, allowed_types)) {
+			for (const StringName &E : allowed_types) {
+				String at = E;
 
 				if (at == "BaseMaterial3D" && Ref<Texture2D>(dropped_resource).is_valid()) {
 					// Use existing resource if possible and only replace its data.
@@ -731,9 +753,6 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 
 void EditorResourcePicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_resource_preview"), &EditorResourcePicker::_update_resource_preview);
-	ClassDB::bind_method(D_METHOD("_get_drag_data_fw", "position", "from"), &EditorResourcePicker::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw", "position", "data", "from"), &EditorResourcePicker::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw", "position", "data", "from"), &EditorResourcePicker::drop_data_fw);
 
 	ClassDB::bind_method(D_METHOD("set_base_type", "base_type"), &EditorResourcePicker::set_base_type);
 	ClassDB::bind_method(D_METHOD("get_base_type"), &EditorResourcePicker::get_base_type);
@@ -794,7 +813,7 @@ void EditorResourcePicker::set_base_type(const String &p_base_type) {
 	// There is a possibility that the new base type is conflicting with the existing value.
 	// Keep the value, but warn the user that there is a potential mistake.
 	if (!base_type.is_empty() && edited_resource.is_valid()) {
-		HashSet<String> allowed_types;
+		HashSet<StringName> allowed_types;
 		_get_allowed_types(true, &allowed_types);
 
 		StringName custom_class;
@@ -808,10 +827,6 @@ void EditorResourcePicker::set_base_type(const String &p_base_type) {
 			String class_str = (custom_class == StringName() ? edited_resource->get_class() : vformat("%s (%s)", custom_class, edited_resource->get_class()));
 			WARN_PRINT(vformat("Value mismatch between the new base type of this EditorResourcePicker, '%s', and the type of the value it already has, '%s'.", base_type, class_str));
 		}
-	} else {
-		// Call the method to build the cache immediately.
-		HashSet<String> allowed_types;
-		_get_allowed_types(false, &allowed_types);
 	}
 }
 
@@ -820,7 +835,7 @@ String EditorResourcePicker::get_base_type() const {
 }
 
 Vector<String> EditorResourcePicker::get_allowed_types() const {
-	HashSet<String> allowed_types;
+	HashSet<StringName> allowed_types;
 	_get_allowed_types(false, &allowed_types);
 
 	Vector<String> types;
@@ -828,7 +843,7 @@ Vector<String> EditorResourcePicker::get_allowed_types() const {
 
 	int i = 0;
 	String *w = types.ptrw();
-	for (const String &E : allowed_types) {
+	for (const StringName &E : allowed_types) {
 		w[i] = E;
 		i++;
 	}
@@ -844,7 +859,7 @@ void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
 	}
 
 	if (!base_type.is_empty()) {
-		HashSet<String> allowed_types;
+		HashSet<StringName> allowed_types;
 		_get_allowed_types(true, &allowed_types);
 
 		StringName custom_class;
@@ -909,7 +924,7 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	assign_button->set_flat(true);
 	assign_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign_button->set_clip_text(true);
-	assign_button->set_drag_forwarding(this);
+	SET_DRAG_FORWARDING_GCD(assign_button, EditorResourcePicker);
 	add_child(assign_button);
 	assign_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_resource_selected));
 	assign_button->connect("draw", callable_mp(this, &EditorResourcePicker::_button_draw));
@@ -917,11 +932,12 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 
 	if (!p_hide_assign_button_controls) {
 		preview_rect = memnew(TextureRect);
-		preview_rect->set_ignore_texture_size(true);
+		preview_rect->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 		preview_rect->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 		preview_rect->set_offset(SIDE_TOP, 1);
 		preview_rect->set_offset(SIDE_BOTTOM, -1);
 		preview_rect->set_offset(SIDE_RIGHT, -1);
+		preview_rect->set_texture_filter(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
 		assign_button->add_child(preview_rect);
 	}
 
@@ -945,8 +961,8 @@ void EditorScriptPicker::set_create_options(Object *p_menu_node) {
 
 	menu_node->add_icon_item(get_theme_icon(SNAME("ScriptCreate"), SNAME("EditorIcons")), TTR("New Script"), OBJ_MENU_NEW_SCRIPT);
 	if (script_owner) {
-		Ref<Script> script = script_owner->get_script();
-		if (script.is_valid()) {
+		Ref<Script> scr = script_owner->get_script();
+		if (scr.is_valid()) {
 			menu_node->add_icon_item(get_theme_icon(SNAME("ScriptExtend"), SNAME("EditorIcons")), TTR("Extend Script"), OBJ_MENU_EXTEND_SCRIPT);
 		}
 	}
@@ -1004,12 +1020,12 @@ void EditorShaderPicker::set_create_options(Object *p_menu_node) {
 }
 
 bool EditorShaderPicker::handle_menu_selected(int p_which) {
-	Ref<ShaderMaterial> material = Ref<ShaderMaterial>(get_edited_material());
+	Ref<ShaderMaterial> ed_material = Ref<ShaderMaterial>(get_edited_material());
 
 	switch (p_which) {
 		case OBJ_MENU_NEW_SHADER: {
-			if (material.is_valid()) {
-				SceneTreeDock::get_singleton()->open_shader_dialog(material, preferred_mode);
+			if (ed_material.is_valid()) {
+				SceneTreeDock::get_singleton()->open_shader_dialog(ed_material, preferred_mode);
 				return true;
 			}
 		} break;

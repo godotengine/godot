@@ -4,6 +4,11 @@ import subprocess
 import sys
 from platform_methods import detect_arch
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from SCons import Environment
+
 # To match other platforms
 STACK_SIZE = 8388608
 
@@ -173,17 +178,7 @@ def get_opts():
             "Targeted Windows version, >= 0x0601 (Windows 7)",
             "0x0601",
         ),
-        BoolVariable(
-            "debug_symbols",
-            "Add debugging symbols to release/release_debug builds",
-            True,
-        ),
         EnumVariable("windows_subsystem", "Windows subsystem", "gui", ("gui", "console")),
-        BoolVariable(
-            "separate_debug_symbols",
-            "Create a separate file containing debugging symbols",
-            False,
-        ),
         (
             "msvc_version",
             "MSVC version to use. Ignored if VCINSTALLDIR is set in shell env.",
@@ -193,6 +188,7 @@ def get_opts():
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
         BoolVariable("use_static_cpp", "Link MinGW/MSVC C++ runtime libraries statically", True),
         BoolVariable("use_asan", "Use address sanitizer (ASAN)", False),
+        BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
     ]
 
 
@@ -330,32 +326,11 @@ def setup_mingw(env):
 def configure_msvc(env, vcvars_msvc_config):
     """Configure env to work with MSVC"""
 
-    # Build type
-    if env["target"] == "release":
-        if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Append(CCFLAGS=["/O2"])
-            env.Append(LINKFLAGS=["/OPT:REF"])
-        elif env["optimize"] == "size":  # optimize for size
-            env.Append(CCFLAGS=["/O1"])
-            env.Append(LINKFLAGS=["/OPT:REF"])
+    ## Build type
+
+    # TODO: Re-evaluate the need for this / streamline with common config.
+    if env["target"] == "template_release":
         env.Append(LINKFLAGS=["/ENTRY:mainCRTStartup"])
-
-    elif env["target"] == "release_debug":
-        if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Append(CCFLAGS=["/O2"])
-            env.Append(LINKFLAGS=["/OPT:REF"])
-        elif env["optimize"] == "size":  # optimize for size
-            env.Append(CCFLAGS=["/O1"])
-            env.Append(LINKFLAGS=["/OPT:REF"])
-
-    elif env["target"] == "debug":
-        env.AppendUnique(CCFLAGS=["/Zi", "/FS", "/Od", "/EHsc"])
-        # Allow big objects. Only needed for debug, see MinGW branch for rationale.
-        env.Append(LINKFLAGS=["/DEBUG"])
-
-    if env["debug_symbols"]:
-        env.AppendUnique(CCFLAGS=["/Zi", "/FS"])
-        env.AppendUnique(LINKFLAGS=["/DEBUG"])
 
     if env["windows_subsystem"] == "gui":
         env.Append(LINKFLAGS=["/SUBSYSTEM:WINDOWS"])
@@ -365,10 +340,14 @@ def configure_msvc(env, vcvars_msvc_config):
 
     ## Compile/link flags
 
-    if env["use_static_cpp"]:
-        env.AppendUnique(CCFLAGS=["/MT"])
+    if env["debug_crt"]:
+        # Always use dynamic runtime, static debug CRT breaks thread_local.
+        env.AppendUnique(CCFLAGS=["/MDd"])
     else:
-        env.AppendUnique(CCFLAGS=["/MD"])
+        if env["use_static_cpp"]:
+            env.AppendUnique(CCFLAGS=["/MT"])
+        else:
+            env.AppendUnique(CCFLAGS=["/MD"])
 
     if env["arch"] == "x86_32":
         env["x86_libtheora_opt_vc"] = True
@@ -427,6 +406,7 @@ def configure_msvc(env, vcvars_msvc_config):
         "Avrt",
         "dwmapi",
         "dwrite",
+        "wbemuuid",
     ]
 
     if env["vulkan"]:
@@ -447,6 +427,9 @@ def configure_msvc(env, vcvars_msvc_config):
             print("Missing environment variable: WindowsSdkDir")
 
     ## LTO
+
+    if env["lto"] == "auto":  # No LTO by default for MSVC, doesn't help.
+        env["lto"] = "none"
 
     if env["lto"] != "none":
         if env["lto"] == "thin":
@@ -489,31 +472,10 @@ def configure_mingw(env):
     if env["use_llvm"] and not try_cmd("clang --version", env["mingw_prefix"], env["arch"]):
         env["use_llvm"] = False
 
-    if env["target"] == "release":
+    # TODO: Re-evaluate the need for this / streamline with common config.
+    if env["target"] == "template_release":
         env.Append(CCFLAGS=["-msse2"])
-
-        if env["optimize"] == "speed":  # optimize for speed (default)
-            if env["arch"] == "x86_32":
-                env.Append(CCFLAGS=["-O2"])
-            else:
-                env.Append(CCFLAGS=["-O3"])
-        else:  # optimize for size
-            env.Prepend(CCFLAGS=["-Os"])
-
-        if env["debug_symbols"]:
-            env.Prepend(CCFLAGS=["-g2"])
-
-    elif env["target"] == "release_debug":
-        env.Append(CCFLAGS=["-O2"])
-        if env["debug_symbols"]:
-            env.Prepend(CCFLAGS=["-g2"])
-        if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Append(CCFLAGS=["-O2"])
-        else:  # optimize for size
-            env.Prepend(CCFLAGS=["-Os"])
-
-    elif env["target"] == "debug":
-        env.Append(CCFLAGS=["-g3"])
+    elif env.dev_build:
         # Allow big objects. It's supposed not to have drawbacks but seems to break
         # GCC LTO, so enabling for debug builds only (which are not built with LTO
         # and are the only ones with too big objects).
@@ -563,6 +525,11 @@ def configure_mingw(env):
             env["AR"] = mingw_bin_prefix + "gcc-ar"
         if try_cmd("gcc-ranlib --version", env["mingw_prefix"], env["arch"]):
             env["RANLIB"] = mingw_bin_prefix + "gcc-ranlib"
+
+    ## LTO
+
+    if env["lto"] == "auto":  # Full LTO for production with MinGW.
+        env["lto"] = "full"
 
     if env["lto"] != "none":
         if env["lto"] == "thin":
@@ -616,15 +583,18 @@ def configure_mingw(env):
             "uuid",
             "dwmapi",
             "dwrite",
+            "wbemuuid",
         ]
     )
 
-    env.Append(CPPDEFINES=["VULKAN_ENABLED"])
-    if not env["use_volk"]:
-        env.Append(LIBS=["vulkan"])
+    if env["vulkan"]:
+        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
+        if not env["use_volk"]:
+            env.Append(LIBS=["vulkan"])
 
-    env.Append(CPPDEFINES=["GLES3_ENABLED"])
-    env.Append(LIBS=["opengl32"])
+    if env["opengl3"]:
+        env.Append(CPPDEFINES=["GLES3_ENABLED"])
+        env.Append(LIBS=["opengl32"])
 
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])
 
@@ -632,7 +602,7 @@ def configure_mingw(env):
     env.Append(BUILDERS={"RES": env.Builder(action=build_res_file, suffix=".o", src_suffix=".rc")})
 
 
-def configure(env):
+def configure(env: "Environment"):
     # Validate arch.
     supported_arches = ["x86_32", "x86_64", "arm32", "arm64"]
     if env["arch"] not in supported_arches:

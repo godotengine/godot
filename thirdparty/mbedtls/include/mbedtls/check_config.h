@@ -525,6 +525,20 @@
 #error "MBEDTLS_PLATFORM_SNPRINTF_MACRO and MBEDTLS_PLATFORM_STD_SNPRINTF/MBEDTLS_PLATFORM_SNPRINTF_ALT cannot be defined simultaneously"
 #endif
 
+#if defined(MBEDTLS_PLATFORM_VSNPRINTF_ALT) && !defined(MBEDTLS_PLATFORM_C)
+#error "MBEDTLS_PLATFORM_VSNPRINTF_ALT defined, but not all prerequisites"
+#endif
+
+#if defined(MBEDTLS_PLATFORM_VSNPRINTF_MACRO) && !defined(MBEDTLS_PLATFORM_C)
+#error "MBEDTLS_PLATFORM_VSNPRINTF_MACRO defined, but not all prerequisites"
+#endif
+
+#if defined(MBEDTLS_PLATFORM_VSNPRINTF_MACRO) &&\
+    ( defined(MBEDTLS_PLATFORM_STD_VSNPRINTF) ||\
+        defined(MBEDTLS_PLATFORM_VSNPRINTF_ALT) )
+#error "MBEDTLS_PLATFORM_VSNPRINTF_MACRO and MBEDTLS_PLATFORM_STD_VSNPRINTF/MBEDTLS_PLATFORM_VSNPRINTF_ALT cannot be defined simultaneously"
+#endif
+
 #if defined(MBEDTLS_PLATFORM_STD_MEM_HDR) &&\
     !defined(MBEDTLS_PLATFORM_NO_STD_FUNCTIONS)
 #error "MBEDTLS_PLATFORM_STD_MEM_HDR defined, but not all prerequisites"
@@ -650,10 +664,9 @@
         MBEDTLS_ECDSA_C requires MBEDTLS_PK_WRITE_C to be defined."
 #endif
 
-#if defined(MBEDTLS_RSA_C) && defined(MBEDTLS_PKCS1_V15) && \
-    !defined(MBEDTLS_PK_WRITE_C) && defined(MBEDTLS_PSA_CRYPTO_C)
-#error "MBEDTLS_PSA_CRYPTO_C, MBEDTLS_RSA_C and  MBEDTLS_PKCS1_V15 defined, \
-        but not all prerequisites"
+#if defined(MBEDTLS_PSA_CRYPTO_C) && defined(MBEDTLS_RSA_C) && \
+    !( defined(MBEDTLS_PK_PARSE_C) && defined(MBEDTLS_PK_WRITE_C) )
+#error "MBEDTLS_PSA_CRYPTO_C with MBEDTLS_RSA_C requires MBEDTLS_PK_PARSE_C and MBEDTLS_PK_WRITE_C"
 #endif
 
 #if defined(MBEDTLS_RSA_C) && ( !defined(MBEDTLS_BIGNUM_C) ||         \
@@ -812,6 +825,11 @@
 #error "MBEDTLS_SSL_TICKET_C defined, but not all prerequisites"
 #endif
 
+#if defined(MBEDTLS_SSL_TICKET_C) && \
+    !( defined(MBEDTLS_GCM_C) || defined(MBEDTLS_CCM_C) || defined(MBEDTLS_CHACHAPOLY_C) )
+#error "MBEDTLS_SSL_TICKET_C defined, but not all prerequisites"
+#endif
+
 #if defined(MBEDTLS_SSL_CBC_RECORD_SPLITTING) && \
     !defined(MBEDTLS_SSL_PROTO_SSL3) && !defined(MBEDTLS_SSL_PROTO_TLS1)
 #error "MBEDTLS_SSL_CBC_RECORD_SPLITTING defined, but not all prerequisites"
@@ -924,6 +942,10 @@
 
 #if defined(MBEDTLS_SSL_VARIABLE_BUFFER_LENGTH) && ( !defined(MBEDTLS_SSL_MAX_FRAGMENT_LENGTH) )
 #error "MBEDTLS_SSL_VARIABLE_BUFFER_LENGTH defined, but not all prerequisites"
+#endif
+
+#if defined(MBEDTLS_SSL_CONTEXT_SERIALIZATION) && !( defined(MBEDTLS_GCM_C) || defined(MBEDTLS_CCM_C) || defined(MBEDTLS_CHACHAPOLY_C) )
+#error "MBEDTLS_SSL_CONTEXT_SERIALIZATION defined, but not all prerequisites"
 #endif
 
 /*

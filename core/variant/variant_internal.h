@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  variant_internal.h                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  variant_internal.h                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef VARIANT_INTERNAL_H
 #define VARIANT_INTERNAL_H
@@ -58,7 +58,13 @@ public:
 				init_basis(v);
 				break;
 			case Variant::TRANSFORM3D:
-				init_transform(v);
+				init_transform3d(v);
+				break;
+			case Variant::PROJECTION:
+				init_projection(v);
+				break;
+			case Variant::COLOR:
+				init_color(v);
 				break;
 			case Variant::STRING_NAME:
 				init_string_name(v);
@@ -209,13 +215,12 @@ public:
 
 	// Should be in the same order as Variant::Type for consistency.
 	// Those primitive and vector types don't need an `init_` method:
-	// Nil, bool, float, Vector2/i, Rect2/i, Vector3/i, Plane, Quat, Color, RID.
+	// Nil, bool, float, Vector2/i, Rect2/i, Vector3/i, Plane, Quat, RID.
 	// Object is a special case, handled via `object_assign_null`.
 	_FORCE_INLINE_ static void init_string(Variant *v) {
 		memnew_placement(v->_data._mem, String);
 		v->type = Variant::STRING;
 	}
-
 	_FORCE_INLINE_ static void init_transform2d(Variant *v) {
 		v->_data._transform2d = (Transform2D *)Variant::Pools::_bucket_small.alloc();
 		memnew_placement(v->_data._transform2d, Transform2D);
@@ -231,7 +236,7 @@ public:
 		memnew_placement(v->_data._basis, Basis);
 		v->type = Variant::BASIS;
 	}
-	_FORCE_INLINE_ static void init_transform(Variant *v) {
+	_FORCE_INLINE_ static void init_transform3d(Variant *v) {
 		v->_data._transform3d = (Transform3D *)Variant::Pools::_bucket_medium.alloc();
 		memnew_placement(v->_data._transform3d, Transform3D);
 		v->type = Variant::TRANSFORM3D;
@@ -240,6 +245,10 @@ public:
 		v->_data._projection = (Projection *)Variant::Pools::_bucket_large.alloc();
 		memnew_placement(v->_data._projection, Projection);
 		v->type = Variant::PROJECTION;
+	}
+	_FORCE_INLINE_ static void init_color(Variant *v) {
+		memnew_placement(v->_data._mem, Color);
+		v->type = Variant::COLOR;
 	}
 	_FORCE_INLINE_ static void init_string_name(Variant *v) {
 		memnew_placement(v->_data._mem, StringName);
@@ -824,9 +833,9 @@ VARIANT_ACCESSOR_NUMBER(Vector4i::Axis)
 VARIANT_ACCESSOR_NUMBER(Projection::Planes)
 
 template <>
-struct VariantInternalAccessor<Basis::EulerOrder> {
-	static _FORCE_INLINE_ Basis::EulerOrder get(const Variant *v) { return Basis::EulerOrder(*VariantInternal::get_int(v)); }
-	static _FORCE_INLINE_ void set(Variant *v, Basis::EulerOrder p_value) { *VariantInternal::get_int(v) = p_value; }
+struct VariantInternalAccessor<EulerOrder> {
+	static _FORCE_INLINE_ EulerOrder get(const Variant *v) { return EulerOrder(*VariantInternal::get_int(v)); }
+	static _FORCE_INLINE_ void set(Variant *v, EulerOrder p_value) { *VariantInternal::get_int(v) = (int64_t)p_value; }
 };
 
 template <>
@@ -1047,7 +1056,7 @@ struct VariantInternalAccessor<PackedColorArray> {
 template <>
 struct VariantInternalAccessor<Object *> {
 	static _FORCE_INLINE_ Object *get(const Variant *v) { return const_cast<Object *>(*VariantInternal::get_object(v)); }
-	static _FORCE_INLINE_ void set(Variant *v, const Object *p_value) { *VariantInternal::get_object(v) = const_cast<Object *>(p_value); }
+	static _FORCE_INLINE_ void set(Variant *v, const Object *p_value) { VariantInternal::object_assign(v, p_value); }
 };
 
 template <>
@@ -1191,7 +1200,7 @@ struct VariantInitializer<Basis> {
 
 template <>
 struct VariantInitializer<Transform3D> {
-	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_transform(v); }
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_transform3d(v); }
 };
 template <>
 struct VariantInitializer<Projection> {
@@ -1314,7 +1323,7 @@ struct VariantZeroAssigner<float> {
 
 template <>
 struct VariantZeroAssigner<String> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_string(v) = String(); }
 };
 
 template <>
@@ -1399,12 +1408,12 @@ struct VariantZeroAssigner<Color> {
 
 template <>
 struct VariantZeroAssigner<StringName> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_string_name(v) = StringName(); }
 };
 
 template <>
 struct VariantZeroAssigner<NodePath> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_node_path(v) = NodePath(); }
 };
 
 template <>
@@ -1414,12 +1423,12 @@ struct VariantZeroAssigner<::RID> {
 
 template <>
 struct VariantZeroAssigner<Callable> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_callable(v) = Callable(); }
 };
 
 template <>
 struct VariantZeroAssigner<Signal> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_signal(v) = Signal(); }
 };
 
 template <>
@@ -1434,47 +1443,47 @@ struct VariantZeroAssigner<Array> {
 
 template <>
 struct VariantZeroAssigner<PackedByteArray> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_byte_array(v) = PackedByteArray(); }
 };
 
 template <>
 struct VariantZeroAssigner<PackedInt32Array> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_int32_array(v) = PackedInt32Array(); }
 };
 
 template <>
 struct VariantZeroAssigner<PackedInt64Array> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_int64_array(v) = PackedInt64Array(); }
 };
 
 template <>
 struct VariantZeroAssigner<PackedFloat32Array> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_float32_array(v) = PackedFloat32Array(); }
 };
 
 template <>
 struct VariantZeroAssigner<PackedFloat64Array> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_float64_array(v) = PackedFloat64Array(); }
 };
 
 template <>
 struct VariantZeroAssigner<PackedStringArray> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_string_array(v) = PackedStringArray(); }
 };
 
 template <>
 struct VariantZeroAssigner<PackedVector2Array> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_vector2_array(v) = PackedVector2Array(); }
 };
 
 template <>
 struct VariantZeroAssigner<PackedVector3Array> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_vector3_array(v) = PackedVector3Array(); }
 };
 
 template <>
 struct VariantZeroAssigner<PackedColorArray> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_color_array(v) = PackedColorArray(); }
 };
 
 template <class T>
@@ -1517,7 +1526,7 @@ struct VariantTypeAdjust<Object *> {
 	}
 };
 
-// GDNative extension helpers.
+// GDExtension helpers.
 
 template <class T>
 struct VariantTypeConstructor {
@@ -1529,29 +1538,6 @@ struct VariantTypeConstructor {
 
 	_FORCE_INLINE_ static void type_from_variant(void *p_value, void *p_variant) {
 		*((T *)p_value) = VariantInternalAccessor<T>::get(reinterpret_cast<Variant *>(p_variant));
-	}
-};
-
-template <>
-struct VariantTypeConstructor<Object *> {
-	_FORCE_INLINE_ static void variant_from_type(void *p_variant, void *p_value) {
-		Variant *variant = reinterpret_cast<Variant *>(p_variant);
-		VariantInitializer<Object *>::init(variant);
-		Object *object = *(reinterpret_cast<Object **>(p_value));
-		if (object) {
-			if (object->is_ref_counted()) {
-				if (!VariantInternal::initialize_ref(object)) {
-					return;
-				}
-			}
-			VariantInternalAccessor<Object *>::set(variant, object);
-			VariantInternalAccessor<ObjectID>::set(variant, object->get_instance_id());
-		}
-	}
-
-	_FORCE_INLINE_ static void type_from_variant(void *p_value, void *p_variant) {
-		Object **value = reinterpret_cast<Object **>(p_value);
-		*value = VariantInternalAccessor<Object *>::get(reinterpret_cast<Variant *>(p_variant));
 	}
 };
 

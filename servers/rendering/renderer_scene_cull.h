@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  renderer_scene_cull.h                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  renderer_scene_cull.h                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef RENDERER_SCENE_CULL_H
 #define RENDERER_SCENE_CULL_H
@@ -39,13 +39,13 @@
 #include "core/templates/pass_func.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
-#include "servers/rendering/renderer_scene.h"
 #include "servers/rendering/renderer_scene_occlusion_cull.h"
 #include "servers/rendering/renderer_scene_render.h"
+#include "servers/rendering/rendering_method.h"
 #include "servers/rendering/storage/utilities.h"
 #include "servers/xr/xr_interface.h"
 
-class RendererSceneCull : public RendererScene {
+class RendererSceneCull : public RenderingMethod {
 public:
 	RendererSceneRender *scene_render = nullptr;
 
@@ -459,6 +459,10 @@ public:
 		float extra_margin;
 		ObjectID object_id;
 
+		// sorting
+		float sorting_offset = 0.0;
+		bool use_aabb_center = true;
+
 		Vector<Color> lightmap_target_sh; //target is used for incrementally changing the SH over time, this avoids pops in some corner cases and when going interior <-> exterior
 
 		uint64_t last_frame_pass;
@@ -476,10 +480,12 @@ public:
 			Instance *instance = (Instance *)tracker->userdata;
 			switch (p_notification) {
 				case Dependency::DEPENDENCY_CHANGED_SKELETON_DATA:
+				case Dependency::DEPENDENCY_CHANGED_SKELETON_BONES:
 				case Dependency::DEPENDENCY_CHANGED_AABB: {
 					singleton->_instance_queue_update(instance, true, false);
 
 				} break;
+				case Dependency::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES:
 				case Dependency::DEPENDENCY_CHANGED_MATERIAL: {
 					singleton->_instance_queue_update(instance, false, true);
 				} break;
@@ -490,10 +496,6 @@ public:
 				case Dependency::DEPENDENCY_CHANGED_LIGHT:
 				case Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE: {
 					singleton->_instance_queue_update(instance, true, true);
-				} break;
-				case Dependency::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES:
-				case Dependency::DEPENDENCY_CHANGED_SKELETON_BONES: {
-					//ignored
 				} break;
 				case Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR: {
 					//requires repairing
@@ -731,11 +733,12 @@ public:
 		DynamicBVH *bvh2 = nullptr; //some may need to cull in two
 		uint32_t pair_mask;
 		uint64_t pair_pass;
+		uint32_t cull_mask = 0xFFFFFFFF; // Needed for decals and lights in the mobile and compatibility renderers.
 
 		_FORCE_INLINE_ bool operator()(void *p_data) {
 			Instance *p_instance = (Instance *)p_data;
 
-			if (instance != p_instance && instance->transformed_aabb.intersects(p_instance->transformed_aabb) && (pair_mask & (1 << p_instance->base_type))) {
+			if (instance != p_instance && instance->transformed_aabb.intersects(p_instance->transformed_aabb) && (pair_mask & (1 << p_instance->base_type)) && (cull_mask & p_instance->layer_mask)) {
 				//test is more coarse in indexer
 				p_instance->pair_check = pair_pass;
 				InstancePair *pair = pair_allocator->alloc();
@@ -933,6 +936,7 @@ public:
 	virtual void instance_set_base(RID p_instance, RID p_base);
 	virtual void instance_set_scenario(RID p_instance, RID p_scenario);
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask);
+	virtual void instance_set_pivot_data(RID p_instance, float p_sorting_offset, bool p_use_aabb_center);
 	virtual void instance_set_transform(RID p_instance, const Transform3D &p_transform);
 	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id);
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight);
@@ -983,7 +987,7 @@ public:
 
 	void _light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect);
 
-	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_scren_mesh_lod_threshold);
+	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_scren_mesh_lod_threshold, uint32_t p_visible_layers = 0xFFFFFF);
 
 	RID _render_get_environment(RID p_camera, RID p_scenario);
 
@@ -1058,7 +1062,7 @@ public:
 	void _render_scene(const RendererSceneRender::CameraData *p_camera_data, const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, RID p_force_camera_attributes, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, bool p_using_shadows = true, RenderInfo *r_render_info = nullptr);
 	void render_empty_scene(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_scenario, RID p_shadow_atlas);
 
-	void render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, bool p_use_taa, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RendererScene::RenderInfo *r_render_info = nullptr);
+	void render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, bool p_use_taa, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RenderingMethod::RenderInfo *r_render_info = nullptr);
 	void update_dirty_instances();
 
 	void render_particle_colliders();
@@ -1076,7 +1080,6 @@ public:
 
 #define PASSBASE scene_render
 
-	PASS2(directional_shadow_atlas_set_size, int, bool)
 	PASS1(voxel_gi_set_quality, RS::VoxelGIQuality)
 
 	/* SKY API */
@@ -1174,7 +1177,6 @@ public:
 	PASS1RC(RID, environment_get_glow_map, RID)
 
 	PASS1(environment_glow_set_use_bicubic_upscale, bool)
-	PASS1(environment_glow_set_use_high_quality, bool)
 
 	// SSR
 	PASS6(environment_set_ssr, RID, bool, int, float, float, float)
@@ -1258,11 +1260,7 @@ public:
 	PASS0R(Ref<RenderSceneBuffers>, render_buffers_create)
 	PASS1(gi_set_use_half_resolution, bool)
 
-	/* Shadow Atlas */
-	PASS0R(RID, shadow_atlas_create)
-	PASS3(shadow_atlas_set_size, RID, int, bool)
-	PASS3(shadow_atlas_set_quadrant_subdivision, RID, int, int)
-
+	/* Misc */
 	PASS1(set_debug_draw_mode, RS::ViewportDebugDraw)
 
 	PASS1(decals_set_filter, RS::DecalFilter)

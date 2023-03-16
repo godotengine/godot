@@ -108,7 +108,9 @@ layout(set = 0, binding = 18, std140) uniform SceneData {
 }
 scene_data;
 
+#ifdef USE_VRS
 layout(r8ui, set = 0, binding = 19) uniform restrict readonly uimage2D vrs_buffer;
+#endif
 
 layout(push_constant, std430) uniform Params {
 	uint max_voxel_gi_instances;
@@ -661,6 +663,7 @@ void main() {
 	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
 
 	uint vrs_x, vrs_y;
+#ifdef USE_VRS
 	if (sc_use_vrs) {
 		ivec2 vrs_pos;
 
@@ -684,6 +687,7 @@ void main() {
 			return;
 		}
 	}
+#endif
 
 	if (sc_half_res) {
 		pos <<= 1;
@@ -708,6 +712,7 @@ void main() {
 	imageStore(ambient_buffer, pos, ambient_light);
 	imageStore(reflection_buffer, pos, reflection_light);
 
+#ifdef USE_VRS
 	if (sc_use_vrs) {
 		if (vrs_x > 1) {
 			imageStore(ambient_buffer, pos + ivec2(1, 0), ambient_light);
@@ -766,4 +771,5 @@ void main() {
 			imageStore(reflection_buffer, pos + ivec2(3, 3), reflection_light);
 		}
 	}
+#endif
 }

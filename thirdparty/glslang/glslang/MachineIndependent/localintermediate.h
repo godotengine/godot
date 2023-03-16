@@ -291,10 +291,13 @@ public:
         numEntryPoints(0), numErrors(0), numPushConstants(0), recursive(false),
         invertY(false),
         dxPositionW(false),
+        enhancedMsgs(false),
+        debugInfo(false),
         useStorageBuffer(false),
         invariantAll(false),
         nanMinMaxClamp(false),
         depthReplacing(false),
+        stencilReplacing(false),
         uniqueId(0),
         globalUniformBlockName(""),
         atomicCounterBlockName(""),
@@ -308,9 +311,9 @@ public:
         useVulkanMemoryModel(false),
         invocations(TQualifier::layoutNotSet), vertices(TQualifier::layoutNotSet),
         inputPrimitive(ElgNone), outputPrimitive(ElgNone),
-        pixelCenterInteger(false), originUpperLeft(false),
+        pixelCenterInteger(false), originUpperLeft(false),texCoordBuiltinRedeclared(false),
         vertexSpacing(EvsNone), vertexOrder(EvoNone), interlockOrdering(EioNone), pointMode(false), earlyFragmentTests(false),
-        postDepthCoverage(false), depthLayout(EldNone),
+        postDepthCoverage(false), earlyAndLateFragmentTestsAMD(false), depthLayout(EldNone), stencilLayout(ElsNone),
         hlslFunctionality1(false),
         blendEquations(0), xfbMode(false), multiStream(false),
         layoutOverrideCoverage(false),
@@ -320,6 +323,7 @@ public:
         primitives(TQualifier::layoutNotSet),
         numTaskNVBlocks(0),
         layoutPrimitiveCulling(false),
+        numTaskEXTPayloads(0),
         autoMapBindings(false),
         autoMapLocations(false),
         flattenUniformArrays(false),
@@ -459,6 +463,12 @@ public:
     const std::string& getEntryPointName() const { return entryPointName; }
     const std::string& getEntryPointMangledName() const { return entryPointMangledName; }
 
+    void setDebugInfo(bool debuginfo)
+    {
+        debugInfo = debuginfo;
+    }
+    bool getDebugInfo() const { return debugInfo; }
+
     void setInvertY(bool invert)
     {
         invertY = invert;
@@ -469,11 +479,17 @@ public:
 
     void setDxPositionW(bool dxPosW)
     {
-      dxPositionW = dxPosW;
-      if (dxPositionW)
-        processes.addProcess("dx-position-w");
+        dxPositionW = dxPosW;
+        if (dxPositionW)
+            processes.addProcess("dx-position-w");
     }
     bool getDxPositionW() const { return dxPositionW; }
+
+    void setEnhancedMsgs()
+    {
+        enhancedMsgs = true;
+    }
+    bool getEnhancedMsgs() const { return enhancedMsgs && getSource() == EShSourceGlsl; }
 
 #ifdef ENABLE_HLSL
     void setSource(EShSource s) { source = s; }
@@ -580,6 +596,8 @@ public:
     bool isInvariantAll() const { return invariantAll; }
     void setDepthReplacing() { depthReplacing = true; }
     bool isDepthReplacing() const { return depthReplacing; }
+    void setStencilReplacing() { stencilReplacing = true; }
+    bool isStencilReplacing() const { return stencilReplacing; }
     bool setLocalSize(int dim, int size)
     {
         if (localSizeNotDefault[dim])
@@ -629,6 +647,7 @@ public:
     int getNumPushConstants() const { return 0; }
     void addShaderRecordCount() { }
     void addTaskNVCount() { }
+    void addTaskPayloadEXTCount() { }
     void setUseVulkanMemoryModel() { }
     bool usingVulkanMemoryModel() const { return false; }
     bool usingPhysicalStorageBuffer() const { return false; }
@@ -746,6 +765,7 @@ public:
     int getNumPushConstants() const { return numPushConstants; }
     void addShaderRecordCount() { ++numShaderRecordBlocks; }
     void addTaskNVCount() { ++numTaskNVBlocks; }
+    void addTaskPayloadEXTCount() { ++numTaskEXTPayloads; }
 
     bool setInvocations(int i)
     {
@@ -814,7 +834,9 @@ public:
     void setPostDepthCoverage() { postDepthCoverage = true; }
     bool getPostDepthCoverage() const { return postDepthCoverage; }
     void setEarlyFragmentTests() { earlyFragmentTests = true; }
+    void setEarlyAndLateFragmentTestsAMD() { earlyAndLateFragmentTestsAMD = true; }
     bool getEarlyFragmentTests() const { return earlyFragmentTests; }
+    bool getEarlyAndLateFragmentTestsAMD() const { return earlyAndLateFragmentTestsAMD; }
     bool setDepth(TLayoutDepth d)
     {
         if (depthLayout != EldNone)
@@ -822,11 +844,21 @@ public:
         depthLayout = d;
         return true;
     }
+    bool setStencil(TLayoutStencil s)
+    {
+        if (stencilLayout != ElsNone)
+            return stencilLayout == s;
+        stencilLayout = s;
+        return true;
+    }
     TLayoutDepth getDepth() const { return depthLayout; }
+    TLayoutStencil getStencil() const { return stencilLayout; }
     void setOriginUpperLeft() { originUpperLeft = true; }
     bool getOriginUpperLeft() const { return originUpperLeft; }
     void setPixelCenterInteger() { pixelCenterInteger = true; }
     bool getPixelCenterInteger() const { return pixelCenterInteger; }
+    void setTexCoordRedeclared() { texCoordBuiltinRedeclared = true; }
+    bool getTexCoordRedeclared() const { return texCoordBuiltinRedeclared; }
     void addBlendEquation(TBlendEquationShift b) { blendEquations |= (1 << b); }
     unsigned int getBlendEquations() const { return blendEquations; }
     bool setXfbBufferStride(int buffer, unsigned stride)
@@ -1031,8 +1063,8 @@ public:
 
 protected:
     TIntermSymbol* addSymbol(long long Id, const TString&, const TType&, const TConstUnionArray&, TIntermTyped* subtree, const TSourceLoc&);
-    void error(TInfoSink& infoSink, const char*);
-    void warn(TInfoSink& infoSink, const char*);
+    void error(TInfoSink& infoSink, const char*, EShLanguage unitStage = EShLangCount);
+    void warn(TInfoSink& infoSink, const char*, EShLanguage unitStage = EShLangCount);
     void mergeCallGraphs(TInfoSink&, TIntermediate&);
     void mergeModes(TInfoSink&, TIntermediate&);
     void mergeTrees(TInfoSink&, TIntermediate&);
@@ -1086,10 +1118,13 @@ protected:
     bool recursive;
     bool invertY;
     bool dxPositionW;
+    bool enhancedMsgs;
+    bool debugInfo;
     bool useStorageBuffer;
     bool invariantAll;
     bool nanMinMaxClamp;            // true if desiring min/max/clamp to favor non-NaN over NaN
     bool depthReplacing;
+    bool stencilReplacing;
     int localSize[3];
     bool localSizeNotDefault[3];
     int localSizeSpecId[3];
@@ -1114,13 +1149,16 @@ protected:
     TLayoutGeometry outputPrimitive;
     bool pixelCenterInteger;
     bool originUpperLeft;
+    bool texCoordBuiltinRedeclared;
     TVertexSpacing vertexSpacing;
     TVertexOrder vertexOrder;
     TInterlockOrdering interlockOrdering;
     bool pointMode;
     bool earlyFragmentTests;
     bool postDepthCoverage;
+    bool earlyAndLateFragmentTestsAMD;
     TLayoutDepth depthLayout;
+    TLayoutStencil stencilLayout;
     bool hlslFunctionality1;
     int blendEquations;        // an 'or'ing of masks of shifts of TBlendEquationShift
     bool xfbMode;
@@ -1133,6 +1171,7 @@ protected:
     int primitives;
     int numTaskNVBlocks;
     bool layoutPrimitiveCulling;
+    int numTaskEXTPayloads;
 
     // Base shift values
     std::array<unsigned int, EResCount> shiftBinding;
@@ -1174,6 +1213,7 @@ protected:
                                             // for callableData/callableDataIn
     // set of names of statically read/written I/O that might need extra checking
     std::set<TString> ioAccessed;
+
     // source code of shader, useful as part of debug information
     std::string sourceFile;
     std::string sourceText;

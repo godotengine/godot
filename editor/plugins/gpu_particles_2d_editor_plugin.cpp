@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  gpu_particles_2d_editor_plugin.cpp                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gpu_particles_2d_editor_plugin.cpp                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "gpu_particles_2d_editor_plugin.h"
 
@@ -37,6 +37,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene_tree_dock.h"
 #include "scene/2d/cpu_particles_2d.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/particle_process_material.h"
 
@@ -112,7 +113,7 @@ void GPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 			cpu_particles->set_process_mode(particles->get_process_mode());
 			cpu_particles->set_z_index(particles->get_z_index());
 
-			Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 			ur->create_action(TTR("Convert to CPUParticles2D"));
 			ur->add_do_method(SceneTreeDock::get_singleton(), "replace_node", particles, cpu_particles, true, false);
 			ur->add_do_reference(cpu_particles);
@@ -160,6 +161,7 @@ void GPUParticles2DEditorPlugin::_generate_visibility_rect() {
 		particles->set_emitting(false);
 	}
 
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Generate Visibility Rect"));
 	undo_redo->add_do_method(particles, "set_visibility_rect", rect);
 	undo_redo->add_undo_method(particles, "set_visibility_rect", particles->get_visibility_rect());
@@ -207,8 +209,8 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 	int vpc = 0;
 
 	{
-		Vector<uint8_t> data = img->get_data();
-		const uint8_t *r = data.ptr();
+		Vector<uint8_t> img_data = img->get_data();
+		const uint8_t *r = img_data.ptr();
 
 		for (int i = 0; i < s.width; i++) {
 			for (int j = 0; j < s.height; j++) {
@@ -299,7 +301,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 	}
 
 	img.instantiate();
-	img->create(w, h, false, Image::FORMAT_RGF, texdata);
+	img->set_data(w, h, false, Image::FORMAT_RGF, texdata);
 	pm->set_emission_point_texture(ImageTexture::create_from_image(img));
 	pm->set_emission_point_count(vpc);
 
@@ -315,7 +317,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 		}
 
 		img.instantiate();
-		img->create(w, h, false, Image::FORMAT_RGBA8, colordata);
+		img->set_data(w, h, false, Image::FORMAT_RGBA8, colordata);
 		pm->set_emission_color_texture(ImageTexture::create_from_image(img));
 	}
 
@@ -335,7 +337,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 		}
 
 		img.instantiate();
-		img->create(w, h, false, Image::FORMAT_RGF, normdata);
+		img->set_data(w, h, false, Image::FORMAT_RGF, normdata);
 		pm->set_emission_normal_texture(ImageTexture::create_from_image(img));
 
 	} else {
@@ -359,7 +361,6 @@ void GPUParticles2DEditorPlugin::_bind_methods() {
 
 GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	particles = nullptr;
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	toolbar = memnew(HBoxContainer);
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);

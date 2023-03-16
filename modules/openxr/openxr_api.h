@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  openxr_api.h                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  openxr_api.h                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef OPENXR_API_H
 #define OPENXR_API_H
@@ -36,6 +36,7 @@
 #include "core/math/transform_3d.h"
 #include "core/math/vector2.h"
 #include "core/os/memory.h"
+#include "core/string/print_string.h"
 #include "core/string/ustring.h"
 #include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
@@ -50,7 +51,9 @@
 #include "extensions/openxr_composition_layer_provider.h"
 #include "extensions/openxr_extension_wrapper.h"
 
-// Note, OpenXR code that we wrote for our plugin makes use of C++20 notation for initialising structs which ensures zeroing out unspecified members.
+#include "util.h"
+
+// Note, OpenXR code that we wrote for our plugin makes use of C++20 notation for initializing structs which ensures zeroing out unspecified members.
 // Godot is currently restricted to C++17 which doesn't allow this notation. Make sure critical fields are set.
 
 // forward declarations, we don't want to include these fully
@@ -62,6 +65,9 @@ private:
 	// our singleton
 	static OpenXRAPI *singleton;
 
+	// Registered extension wrappers
+	static Vector<OpenXRExtensionWrapper *> registered_extension_wrappers;
+
 	// linked XR interface
 	OpenXRInterface *xr_interface = nullptr;
 
@@ -72,14 +78,7 @@ private:
 	// extensions
 	uint32_t num_supported_extensions = 0;
 	XrExtensionProperties *supported_extensions = nullptr;
-	Vector<OpenXRExtensionWrapper *> registered_extension_wrappers;
 	Vector<CharString> enabled_extensions;
-
-	bool ext_hp_mixed_reality_available = false;
-	bool ext_samsung_odyssey_available = false;
-	bool ext_vive_cosmos_available = false;
-	bool ext_vive_focus3_available = false;
-	bool ext_huawei_controller_available = false;
 
 	// composition layer providers
 	Vector<OpenXRCompositionLayerProvider *> composition_layer_providers;
@@ -100,7 +99,12 @@ private:
 	XrFormFactor form_factor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY;
 	XrViewConfigurationType view_configuration = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
 	XrReferenceSpaceType reference_space = XR_REFERENCE_SPACE_TYPE_STAGE;
+	bool submit_depth_buffer = false; // if set to true we submit depth buffers to OpenXR if a suitable extension is enabled.
+
+	// blend mode
 	XrEnvironmentBlendMode environment_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+	uint32_t num_supported_environment_blend_modes = 0;
+	XrEnvironmentBlendMode *supported_environment_blend_modes = nullptr;
 
 	// state
 	XrInstance instance = XR_NULL_HANDLE;
@@ -115,15 +119,28 @@ private:
 
 	OpenXRGraphicsExtensionWrapper *graphics_extension = nullptr;
 	XrSystemGraphicsProperties graphics_properties;
-	void *swapchain_graphics_data = nullptr;
-	uint32_t image_index = 0;
-	bool image_acquired = false;
 
 	uint32_t view_count = 0;
 	XrViewConfigurationView *view_configuration_views = nullptr;
 	XrView *views = nullptr;
 	XrCompositionLayerProjectionView *projection_views = nullptr;
-	XrSwapchain swapchain = XR_NULL_HANDLE;
+	XrCompositionLayerDepthInfoKHR *depth_views = nullptr; // Only used by Composition Layer Depth Extension if available
+
+	enum OpenXRSwapChainTypes {
+		OPENXR_SWAPCHAIN_COLOR,
+		OPENXR_SWAPCHAIN_DEPTH,
+		// OPENXR_SWAPCHAIN_VELOCITY,
+		OPENXR_SWAPCHAIN_MAX
+	};
+
+	struct OpenXRSwapChainInfo {
+		XrSwapchain swapchain = XR_NULL_HANDLE;
+		void *swapchain_graphics_data = nullptr;
+		uint32_t image_index = 0;
+		bool image_acquired = false;
+	};
+
+	OpenXRSwapChainInfo swapchains[OPENXR_SWAPCHAIN_MAX];
 
 	XrSpace play_space = XR_NULL_HANDLE;
 	XrSpace view_space = XR_NULL_HANDLE;
@@ -133,11 +150,72 @@ private:
 	bool load_layer_properties();
 	bool load_supported_extensions();
 	bool is_extension_supported(const String &p_extension) const;
+	bool is_extension_enabled(const String &p_extension) const;
+
+	bool openxr_loader_init();
+	bool resolve_instance_openxr_symbols();
+
+#ifdef ANDROID_ENABLED
+	// On Android we keep tracker of our external OpenXR loader
+	void *openxr_loader_library_handle = nullptr;
+#endif
+
+	// function pointers
+#ifdef ANDROID_ENABLED
+	// On non-Android platforms we use the OpenXR symbol linked into the engine binary.
+	PFN_xrGetInstanceProcAddr xrGetInstanceProcAddr = nullptr;
+#endif
+	EXT_PROTO_XRRESULT_FUNC3(xrAcquireSwapchainImage, (XrSwapchain), swapchain, (const XrSwapchainImageAcquireInfo *), acquireInfo, (uint32_t *), index)
+	EXT_PROTO_XRRESULT_FUNC3(xrApplyHapticFeedback, (XrSession), session, (const XrHapticActionInfo *), hapticActionInfo, (const XrHapticBaseHeader *), hapticFeedback)
+	EXT_PROTO_XRRESULT_FUNC2(xrAttachSessionActionSets, (XrSession), session, (const XrSessionActionSetsAttachInfo *), attachInfo)
+	EXT_PROTO_XRRESULT_FUNC2(xrBeginFrame, (XrSession), session, (const XrFrameBeginInfo *), frameBeginInfo)
+	EXT_PROTO_XRRESULT_FUNC2(xrBeginSession, (XrSession), session, (const XrSessionBeginInfo *), beginInfo)
+	EXT_PROTO_XRRESULT_FUNC3(xrCreateAction, (XrActionSet), actionSet, (const XrActionCreateInfo *), createInfo, (XrAction *), action)
+	EXT_PROTO_XRRESULT_FUNC3(xrCreateActionSet, (XrInstance), instance, (const XrActionSetCreateInfo *), createInfo, (XrActionSet *), actionSet)
+	EXT_PROTO_XRRESULT_FUNC3(xrCreateActionSpace, (XrSession), session, (const XrActionSpaceCreateInfo *), createInfo, (XrSpace *), space)
+	EXT_PROTO_XRRESULT_FUNC2(xrCreateInstance, (const XrInstanceCreateInfo *), createInfo, (XrInstance *), instance)
+	EXT_PROTO_XRRESULT_FUNC3(xrCreateReferenceSpace, (XrSession), session, (const XrReferenceSpaceCreateInfo *), createInfo, (XrSpace *), space)
+	EXT_PROTO_XRRESULT_FUNC3(xrCreateSession, (XrInstance), instance, (const XrSessionCreateInfo *), createInfo, (XrSession *), session)
+	EXT_PROTO_XRRESULT_FUNC3(xrCreateSwapchain, (XrSession), session, (const XrSwapchainCreateInfo *), createInfo, (XrSwapchain *), swapchain)
+	EXT_PROTO_XRRESULT_FUNC1(xrDestroyAction, (XrAction), action)
+	EXT_PROTO_XRRESULT_FUNC1(xrDestroyActionSet, (XrActionSet), actionSet)
+	EXT_PROTO_XRRESULT_FUNC1(xrDestroyInstance, (XrInstance), instance)
+	EXT_PROTO_XRRESULT_FUNC1(xrDestroySession, (XrSession), session)
+	EXT_PROTO_XRRESULT_FUNC1(xrDestroySpace, (XrSpace), space)
+	EXT_PROTO_XRRESULT_FUNC1(xrDestroySwapchain, (XrSwapchain), swapchain)
+	EXT_PROTO_XRRESULT_FUNC2(xrEndFrame, (XrSession), session, (const XrFrameEndInfo *), frameEndInfo)
+	EXT_PROTO_XRRESULT_FUNC1(xrEndSession, (XrSession), session)
+	EXT_PROTO_XRRESULT_FUNC3(xrEnumerateApiLayerProperties, (uint32_t), propertyCapacityInput, (uint32_t *), propertyCountOutput, (XrApiLayerProperties *), properties)
+	EXT_PROTO_XRRESULT_FUNC6(xrEnumerateEnvironmentBlendModes, (XrInstance), instance, (XrSystemId), systemId, (XrViewConfigurationType), viewConfigurationType, (uint32_t), environmentBlendModeCapacityInput, (uint32_t *), environmentBlendModeCountOutput, (XrEnvironmentBlendMode *), environmentBlendModes)
+	EXT_PROTO_XRRESULT_FUNC4(xrEnumerateInstanceExtensionProperties, (const char *), layerName, (uint32_t), propertyCapacityInput, (uint32_t *), propertyCountOutput, (XrExtensionProperties *), properties)
+	EXT_PROTO_XRRESULT_FUNC4(xrEnumerateReferenceSpaces, (XrSession), session, (uint32_t), spaceCapacityInput, (uint32_t *), spaceCountOutput, (XrReferenceSpaceType *), spaces)
+	EXT_PROTO_XRRESULT_FUNC4(xrEnumerateSwapchainFormats, (XrSession), session, (uint32_t), formatCapacityInput, (uint32_t *), formatCountOutput, (int64_t *), formats)
+	EXT_PROTO_XRRESULT_FUNC5(xrEnumerateViewConfigurations, (XrInstance), instance, (XrSystemId), systemId, (uint32_t), viewConfigurationTypeCapacityInput, (uint32_t *), viewConfigurationTypeCountOutput, (XrViewConfigurationType *), viewConfigurationTypes)
+	EXT_PROTO_XRRESULT_FUNC6(xrEnumerateViewConfigurationViews, (XrInstance), instance, (XrSystemId), systemId, (XrViewConfigurationType), viewConfigurationType, (uint32_t), viewCapacityInput, (uint32_t *), viewCountOutput, (XrViewConfigurationView *), views)
+	EXT_PROTO_XRRESULT_FUNC3(xrGetActionStateBoolean, (XrSession), session, (const XrActionStateGetInfo *), getInfo, (XrActionStateBoolean *), state)
+	EXT_PROTO_XRRESULT_FUNC3(xrGetActionStateFloat, (XrSession), session, (const XrActionStateGetInfo *), getInfo, (XrActionStateFloat *), state)
+	EXT_PROTO_XRRESULT_FUNC3(xrGetActionStateVector2f, (XrSession), session, (const XrActionStateGetInfo *), getInfo, (XrActionStateVector2f *), state)
+	EXT_PROTO_XRRESULT_FUNC3(xrGetCurrentInteractionProfile, (XrSession), session, (XrPath), topLevelUserPath, (XrInteractionProfileState *), interactionProfile)
+	EXT_PROTO_XRRESULT_FUNC2(xrGetInstanceProperties, (XrInstance), instance, (XrInstanceProperties *), instanceProperties)
+	EXT_PROTO_XRRESULT_FUNC3(xrGetSystem, (XrInstance), instance, (const XrSystemGetInfo *), getInfo, (XrSystemId *), systemId)
+	EXT_PROTO_XRRESULT_FUNC3(xrGetSystemProperties, (XrInstance), instance, (XrSystemId), systemId, (XrSystemProperties *), properties)
+	EXT_PROTO_XRRESULT_FUNC4(xrLocateSpace, (XrSpace), space, (XrSpace), baseSpace, (XrTime), time, (XrSpaceLocation *), location)
+	EXT_PROTO_XRRESULT_FUNC6(xrLocateViews, (XrSession), session, (const XrViewLocateInfo *), viewLocateInfo, (XrViewState *), viewState, (uint32_t), viewCapacityInput, (uint32_t *), viewCountOutput, (XrView *), views)
+	EXT_PROTO_XRRESULT_FUNC5(xrPathToString, (XrInstance), instance, (XrPath), path, (uint32_t), bufferCapacityInput, (uint32_t *), bufferCountOutput, (char *), buffer)
+	EXT_PROTO_XRRESULT_FUNC2(xrPollEvent, (XrInstance), instance, (XrEventDataBuffer *), eventData)
+	EXT_PROTO_XRRESULT_FUNC2(xrReleaseSwapchainImage, (XrSwapchain), swapchain, (const XrSwapchainImageReleaseInfo *), releaseInfo)
+	EXT_PROTO_XRRESULT_FUNC3(xrResultToString, (XrInstance), instance, (XrResult), value, (char *), buffer)
+	EXT_PROTO_XRRESULT_FUNC3(xrStringToPath, (XrInstance), instance, (const char *), pathString, (XrPath *), path)
+	EXT_PROTO_XRRESULT_FUNC2(xrSuggestInteractionProfileBindings, (XrInstance), instance, (const XrInteractionProfileSuggestedBinding *), suggestedBindings)
+	EXT_PROTO_XRRESULT_FUNC2(xrSyncActions, (XrSession), session, (const XrActionsSyncInfo *), syncInfo)
+	EXT_PROTO_XRRESULT_FUNC3(xrWaitFrame, (XrSession), session, (const XrFrameWaitInfo *), frameWaitInfo, (XrFrameState *), frameState)
+	EXT_PROTO_XRRESULT_FUNC2(xrWaitSwapchainImage, (XrSwapchain), swapchain, (const XrSwapchainImageWaitInfo *), waitInfo)
 
 	// instance
 	bool create_instance();
 	bool get_system_info();
 	bool load_supported_view_configuration_types();
+	bool load_supported_environmental_blend_modes();
 	bool is_view_configuration_supported(XrViewConfigurationType p_configuration_type) const;
 	bool load_supported_view_configuration_views(XrViewConfigurationType p_configuration_type);
 	void destroy_instance();
@@ -149,13 +227,13 @@ private:
 	bool setup_spaces();
 	bool load_supported_swapchain_formats();
 	bool is_swapchain_format_supported(int64_t p_swapchain_format);
-	bool create_main_swapchain();
+	bool create_swapchains();
 	void destroy_session();
 
 	// swapchains
-	bool create_swapchain(int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size, XrSwapchain &r_swapchain, void **r_swapchain_graphics_data);
-	bool acquire_image(XrSwapchain p_swapchain, uint32_t &r_image_index);
-	bool release_image(XrSwapchain p_swapchain);
+	bool create_swapchain(XrSwapchainUsageFlags p_usage_flags, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size, XrSwapchain &r_swapchain, void **r_swapchain_graphics_data);
+	bool acquire_image(OpenXRSwapChainInfo &p_swapchain);
+	bool release_image(OpenXRSwapChainInfo &p_swapchain);
 
 	// action map
 	struct Tracker { // Trackers represent tracked physical objects such as controllers, pucks, etc.
@@ -212,9 +290,7 @@ private:
 	// convencience
 	void copy_string_to_char_buffer(const String p_string, char *p_buffer, int p_buffer_len);
 
-protected:
-	friend class OpenXRVulkanExtension;
-
+public:
 	XrInstance get_instance() const { return instance; };
 	XrSystemId get_system_id() const { return system_id; };
 	XrSession get_session() const { return session; };
@@ -227,15 +303,36 @@ protected:
 	XRPose::TrackingConfidence transform_from_location(const XrHandJointLocationEXT &p_location, Transform3D &r_transform);
 	void parse_velocities(const XrSpaceVelocity &p_velocity, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
 
-public:
-	static bool openxr_is_enabled(bool p_check_run_in_editor = true);
-	static OpenXRAPI *get_singleton();
+	bool xr_result(XrResult result, const char *format, Array args = Array()) const;
+	bool is_top_level_path_supported(const String &p_toplevel_path);
+	bool is_interaction_profile_supported(const String &p_ip_path);
+	bool interaction_profile_supports_io_path(const String &p_ip_path, const String &p_io_path);
 
+	static bool openxr_is_enabled(bool p_check_run_in_editor = true);
+	_FORCE_INLINE_ static OpenXRAPI *get_singleton() { return singleton; }
+
+	XrResult try_get_instance_proc_addr(const char *p_name, PFN_xrVoidFunction *p_addr);
+	XrResult get_instance_proc_addr(const char *p_name, PFN_xrVoidFunction *p_addr);
 	String get_error_string(XrResult result);
 	String get_swapchain_format_name(int64_t p_swapchain_format) const;
 
 	void set_xr_interface(OpenXRInterface *p_xr_interface);
-	void register_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper);
+	static void register_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper);
+	static void unregister_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper);
+	static void register_extension_metadata();
+	static void cleanup_extension_wrappers();
+
+	void set_form_factor(XrFormFactor p_form_factor);
+	XrFormFactor get_form_factor() const { return form_factor; }
+
+	void set_view_configuration(XrViewConfigurationType p_view_configuration);
+	XrViewConfigurationType get_view_configuration() const { return view_configuration; }
+
+	void set_reference_space(XrReferenceSpaceType p_reference_space);
+	XrReferenceSpaceType get_reference_space() const { return reference_space; }
+
+	void set_submit_depth_buffer(bool p_submit_depth_buffer);
+	bool get_submit_depth_buffer() const { return submit_depth_buffer; }
 
 	bool is_initialized();
 	bool is_running();
@@ -243,8 +340,9 @@ public:
 	bool initialize_session();
 	void finish();
 
-	XrTime get_next_frame_time() { return frame_state.predictedDisplayTime + frame_state.predictedDisplayPeriod; };
-	bool can_render() { return instance != XR_NULL_HANDLE && session != XR_NULL_HANDLE && running && view_pose_valid && frame_state.shouldRender; };
+	XrSpace get_play_space() const { return play_space; }
+	XrTime get_next_frame_time() { return frame_state.predictedDisplayTime + frame_state.predictedDisplayPeriod; }
+	bool can_render() { return instance != XR_NULL_HANDLE && session != XR_NULL_HANDLE && running && view_pose_valid && frame_state.shouldRender; }
 
 	Size2 get_recommended_target_size();
 	XRPose::TrackingConfidence get_head_center(Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
@@ -254,8 +352,15 @@ public:
 
 	void pre_render();
 	bool pre_draw_viewport(RID p_render_target);
+	RID get_color_texture();
+	RID get_depth_texture();
 	void post_draw_viewport(RID p_render_target);
 	void end_frame();
+
+	// Display refresh rate
+	float get_display_refresh_rate() const;
+	void set_display_refresh_rate(float p_refresh_rate);
+	Array get_available_display_refresh_rates() const;
 
 	// action map
 	String get_default_action_map_resource_name();
@@ -287,6 +392,12 @@ public:
 	Vector2 get_action_vector2(RID p_action, RID p_tracker);
 	XRPose::TrackingConfidence get_action_pose(RID p_action, RID p_tracker, Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
 	bool trigger_haptic_pulse(RID p_action, RID p_tracker, float p_frequency, float p_amplitude, XrDuration p_duration_ns);
+
+	void register_composition_layer_provider(OpenXRCompositionLayerProvider *provider);
+	void unregister_composition_layer_provider(OpenXRCompositionLayerProvider *provider);
+
+	const XrEnvironmentBlendMode *get_supported_environment_blend_modes(uint32_t &count);
+	bool set_environment_blend_mode(XrEnvironmentBlendMode mode);
 
 	OpenXRAPI();
 	~OpenXRAPI();

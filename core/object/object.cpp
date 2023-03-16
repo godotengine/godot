@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  object.cpp                                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  object.cpp                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "object.h"
 
@@ -233,7 +233,7 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wignored-qualifiers"
 #endif
-		if (_extension->set(_extension_instance, (const GDNativeStringNamePtr)&p_name, (const GDNativeVariantPtr)&p_value)) {
+		if (_extension->set(_extension_instance, (const GDExtensionStringNamePtr)&p_name, (const GDExtensionVariantPtr)&p_value)) {
 			if (r_valid) {
 				*r_valid = true;
 			}
@@ -321,7 +321,7 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 #pragma GCC diagnostic ignored "-Wignored-qualifiers"
 #endif
 
-		if (_extension->get(_extension_instance, (const GDNativeStringNamePtr)&p_name, (GDNativeVariantPtr)&ret)) {
+		if (_extension->get(_extension_instance, (const GDExtensionStringNamePtr)&p_name, (GDExtensionVariantPtr)&ret)) {
 			if (r_valid) {
 				*r_valid = true;
 			}
@@ -477,7 +477,7 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 	}
 
 	if (_extension) {
-		const ObjectNativeExtension *current_extension = _extension;
+		const ObjectGDExtension *current_extension = _extension;
 		while (current_extension) {
 			p_list->push_back(PropertyInfo(Variant::NIL, current_extension->class_name, PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
 			ClassDB::get_property_list(current_extension->class_name, p_list, true, this);
@@ -487,7 +487,7 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 
 	if (_extension && _extension->get_property_list) {
 		uint32_t pcount;
-		const GDNativePropertyInfo *pinfo = _extension->get_property_list(_extension_instance, &pcount);
+		const GDExtensionPropertyInfo *pinfo = _extension->get_property_list(_extension_instance, &pcount);
 		for (uint32_t i = 0; i < pcount; i++) {
 			p_list->push_back(PropertyInfo(pinfo[i]));
 		}
@@ -499,7 +499,7 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 	_get_property_listv(p_list, p_reversed);
 
 	if (!is_class("Script")) { // can still be set, but this is for user-friendliness
-		p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NEVER_DUPLICATE));
 	}
 
 	if (script_instance && !p_reversed) {
@@ -533,7 +533,7 @@ bool Object::property_can_revert(const StringName &p_name) const {
 #pragma GCC diagnostic ignored "-Wignored-qualifiers"
 #endif
 	if (_extension && _extension->property_can_revert) {
-		if (_extension->property_can_revert(_extension_instance, (const GDNativeStringNamePtr)&p_name)) {
+		if (_extension->property_can_revert(_extension_instance, (const GDExtensionStringNamePtr)&p_name)) {
 			return true;
 		}
 	}
@@ -559,7 +559,7 @@ Variant Object::property_get_revert(const StringName &p_name) const {
 #pragma GCC diagnostic ignored "-Wignored-qualifiers"
 #endif
 	if (_extension && _extension->property_get_revert) {
-		if (_extension->property_get_revert(_extension_instance, (const GDNativeStringNamePtr)&p_name, (GDNativeVariantPtr)&ret)) {
+		if (_extension->property_get_revert(_extension_instance, (const GDExtensionStringNamePtr)&p_name, (GDExtensionVariantPtr)&ret)) {
 			return ret;
 		}
 	}
@@ -808,7 +808,8 @@ String Object::to_string() {
 	}
 	if (_extension && _extension->to_string) {
 		String ret;
-		_extension->to_string(_extension_instance, &ret);
+		GDExtensionBool is_valid;
+		_extension->to_string(_extension_instance, &is_valid, &ret);
 		return ret;
 	}
 	return "<" + get_class() + "#" + itos(get_instance_id()) + ">";
@@ -1468,10 +1469,12 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_class", "class"), &Object::is_class);
 	ClassDB::bind_method(D_METHOD("set", "property", "value"), &Object::_set_bind);
 	ClassDB::bind_method(D_METHOD("get", "property"), &Object::_get_bind);
-	ClassDB::bind_method(D_METHOD("set_indexed", "property", "value"), &Object::_set_indexed_bind);
-	ClassDB::bind_method(D_METHOD("get_indexed", "property"), &Object::_get_indexed_bind);
+	ClassDB::bind_method(D_METHOD("set_indexed", "property_path", "value"), &Object::_set_indexed_bind);
+	ClassDB::bind_method(D_METHOD("get_indexed", "property_path"), &Object::_get_indexed_bind);
 	ClassDB::bind_method(D_METHOD("get_property_list"), &Object::_get_property_list_bind);
 	ClassDB::bind_method(D_METHOD("get_method_list"), &Object::_get_method_list_bind);
+	ClassDB::bind_method(D_METHOD("property_can_revert", "property"), &Object::property_can_revert);
+	ClassDB::bind_method(D_METHOD("property_get_revert", "property"), &Object::property_get_revert);
 	ClassDB::bind_method(D_METHOD("notification", "what", "reversed"), &Object::notification, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("to_string"), &Object::to_string);
 	ClassDB::bind_method(D_METHOD("get_instance_id"), &Object::get_instance_id);
@@ -1546,7 +1549,9 @@ void Object::_bind_methods() {
 #define BIND_OBJ_CORE_METHOD(m_method) \
 	::ClassDB::add_virtual_method(get_class_static(), m_method, true, Vector<String>(), true);
 
-	BIND_OBJ_CORE_METHOD(MethodInfo("_notification", PropertyInfo(Variant::INT, "what")));
+	MethodInfo notification_mi("_notification", PropertyInfo(Variant::INT, "what"));
+	notification_mi.arguments_metadata.push_back(GodotTypeInfo::Metadata::METADATA_INT_IS_INT32);
+	BIND_OBJ_CORE_METHOD(notification_mi);
 	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::BOOL, "_set", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::NIL, "value")));
 #ifdef TOOLS_ENABLED
 	MethodInfo miget("_get", PropertyInfo(Variant::STRING_NAME, "property"));
@@ -1589,25 +1594,6 @@ void Object::set_block_signals(bool p_block) {
 
 bool Object::is_blocking_signals() const {
 	return _block_signals;
-}
-
-void Object::get_translatable_strings(List<String> *p_strings) const {
-	List<PropertyInfo> plist;
-	get_property_list(&plist);
-
-	for (const PropertyInfo &E : plist) {
-		if (!(E.usage & PROPERTY_USAGE_INTERNATIONALIZED)) {
-			continue;
-		}
-
-		String text = get(E.name);
-
-		if (text.is_empty()) {
-			continue;
-		}
-
-		p_strings->push_back(text);
-	}
 }
 
 Variant::Type Object::get_static_property_type(const StringName &p_property, bool *r_valid) const {
@@ -1698,7 +1684,7 @@ uint32_t Object::get_edited_version() const {
 }
 #endif
 
-void Object::set_instance_binding(void *p_token, void *p_binding, const GDNativeInstanceBindingCallbacks *p_callbacks) {
+void Object::set_instance_binding(void *p_token, void *p_binding, const GDExtensionInstanceBindingCallbacks *p_callbacks) {
 	// This is only meant to be used on creation by the binder.
 	ERR_FAIL_COND(_instance_bindings != nullptr);
 	_instance_bindings = (InstanceBinding *)memalloc(sizeof(InstanceBinding));
@@ -1709,7 +1695,7 @@ void Object::set_instance_binding(void *p_token, void *p_binding, const GDNative
 	_instance_binding_count = 1;
 }
 
-void *Object::get_instance_binding(void *p_token, const GDNativeInstanceBindingCallbacks *p_callbacks) {
+void *Object::get_instance_binding(void *p_token, const GDExtensionInstanceBindingCallbacks *p_callbacks) {
 	void *binding = nullptr;
 	_instance_binding_mutex.lock();
 	for (uint32_t i = 0; i < _instance_binding_count; i++) {
@@ -1856,6 +1842,46 @@ void ObjectDB::debug_objects(DebugFunc p_func) {
 }
 
 void Object::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	if (p_idx == 0) {
+		if (p_function == "connect" || p_function == "is_connected" || p_function == "disconnect" || p_function == "emit_signal" || p_function == "has_signal") {
+			List<MethodInfo> signals;
+			get_signal_list(&signals);
+			for (const MethodInfo &E : signals) {
+				r_options->push_back(E.name.quote());
+			}
+		} else if (p_function == "call" || p_function == "call_deferred" || p_function == "callv" || p_function == "has_method") {
+			List<MethodInfo> methods;
+			get_method_list(&methods);
+			for (const MethodInfo &E : methods) {
+				if (E.name.begins_with("_") && !(E.flags & METHOD_FLAG_VIRTUAL)) {
+					continue;
+				}
+				r_options->push_back(E.name.quote());
+			}
+		} else if (p_function == "set" || p_function == "set_deferred" || p_function == "get") {
+			List<PropertyInfo> properties;
+			get_property_list(&properties);
+			for (const PropertyInfo &E : properties) {
+				if (E.usage & PROPERTY_USAGE_DEFAULT && !(E.usage & PROPERTY_USAGE_INTERNAL)) {
+					r_options->push_back(E.name.quote());
+				}
+			}
+		} else if (p_function == "set_meta" || p_function == "get_meta" || p_function == "has_meta" || p_function == "remove_meta") {
+			for (const KeyValue<StringName, Variant> &K : metadata) {
+				r_options->push_back(String(K.key).quote());
+			}
+		}
+	} else if (p_idx == 2) {
+		if (p_function == "connect") {
+			// Ideally, the constants should be inferred by the parameter.
+			// But a parameter's PropertyInfo does not store the enum they come from, so this will do for now.
+			List<StringName> constants;
+			ClassDB::get_enum_constants("Object", "ConnectFlags", &constants);
+			for (const StringName &E : constants) {
+				r_options->push_back(String(E));
+			}
+		}
+	}
 }
 
 SpinLock ObjectDB::spin_lock;

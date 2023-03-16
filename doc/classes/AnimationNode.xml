@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationNode" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AnimationNode" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base resource for [AnimationTree] nodes.
 	</brief_description>
@@ -49,11 +49,18 @@
 				When inheriting from [AnimationRootNode], implement this virtual method to return whether the blend tree editor should display filter editing on this node.
 			</description>
 		</method>
+		<method name="_is_parameter_read_only" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="parameter" type="StringName" />
+			<description>
+				When inheriting from [AnimationRootNode], implement this virtual method to return whether the [param parameter] is read-only. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
+			</description>
+		</method>
 		<method name="_process" qualifiers="virtual const">
 			<return type="float" />
 			<param index="0" name="time" type="float" />
 			<param index="1" name="seek" type="bool" />
-			<param index="2" name="seek_root" type="bool" />
+			<param index="2" name="is_external_seeking" type="bool" />
 			<description>
 				When inheriting from [AnimationRootNode], implement this virtual method to run some code when this node is processed. The [param time] parameter is a relative delta, unless [param seek] is [code]true[/code], in which case it is absolute.
 				Here, call the [method blend_input], [method blend_node] or [method blend_animation] functions. You can also use [method get_parameter] and [method set_parameter] to modify local memory.
@@ -61,10 +68,10 @@
 			</description>
 		</method>
 		<method name="add_input">
-			<return type="void" />
+			<return type="bool" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Adds an input to the node. This is only useful for nodes created for use in an [AnimationNodeBlendTree].
+				Adds an input to the node. This is only useful for nodes created for use in an [AnimationNodeBlendTree]. If the addition fails, returns [code]false[/code].
 			</description>
 		</method>
 		<method name="blend_animation">
@@ -73,11 +80,12 @@
 			<param index="1" name="time" type="float" />
 			<param index="2" name="delta" type="float" />
 			<param index="3" name="seeked" type="bool" />
-			<param index="4" name="seek_root" type="bool" />
+			<param index="4" name="is_external_seeking" type="bool" />
 			<param index="5" name="blend" type="float" />
-			<param index="6" name="pingponged" type="int" default="0" />
+			<param index="6" name="looped_flag" type="int" enum="Animation.LoopedFlag" default="0" />
 			<description>
 				Blend an animation by [param blend] amount (name must be valid in the linked [AnimationPlayer]). A [param time] and [param delta] may be passed, as well as whether [param seeked] happened.
+				A [param looped_flag] is used by internal processing immediately after the loop. See also [enum Animation.LoopedFlag].
 			</description>
 		</method>
 		<method name="blend_input">
@@ -85,7 +93,7 @@
 			<param index="0" name="input_index" type="int" />
 			<param index="1" name="time" type="float" />
 			<param index="2" name="seek" type="bool" />
-			<param index="3" name="seek_root" type="bool" />
+			<param index="3" name="is_external_seeking" type="bool" />
 			<param index="4" name="blend" type="float" />
 			<param index="5" name="filter" type="int" enum="AnimationNode.FilterAction" default="0" />
 			<param index="6" name="sync" type="bool" default="true" />
@@ -99,12 +107,19 @@
 			<param index="1" name="node" type="AnimationNode" />
 			<param index="2" name="time" type="float" />
 			<param index="3" name="seek" type="bool" />
-			<param index="4" name="seek_root" type="bool" />
+			<param index="4" name="is_external_seeking" type="bool" />
 			<param index="5" name="blend" type="float" />
 			<param index="6" name="filter" type="int" enum="AnimationNode.FilterAction" default="0" />
 			<param index="7" name="sync" type="bool" default="true" />
 			<description>
 				Blend another animation node (in case this node contains children animation nodes). This function is only useful if you inherit from [AnimationRootNode] instead, else editors will not display your node for addition.
+			</description>
+		</method>
+		<method name="find_input" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Returns the input index which corresponds to [param name]. If not found, returns [code]-1[/code].
 			</description>
 		</method>
 		<method name="get_input_count" qualifiers="const">
@@ -113,7 +128,7 @@
 				Amount of inputs in this node, only useful for nodes that go into [AnimationNodeBlendTree].
 			</description>
 		</method>
-		<method name="get_input_name">
+		<method name="get_input_name" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="input" type="int" />
 			<description>
@@ -149,6 +164,14 @@
 				Adds or removes a path for the filter.
 			</description>
 		</method>
+		<method name="set_input_name">
+			<return type="bool" />
+			<param index="0" name="input" type="int" />
+			<param index="1" name="name" type="String" />
+			<description>
+				Sets the name of the input at the given [param input] index. If the setting fails, returns [code]false[/code].
+			</description>
+		</method>
 		<method name="set_parameter">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
@@ -164,14 +187,24 @@
 		</member>
 	</members>
 	<signals>
-		<signal name="removed_from_graph">
+		<signal name="animation_node_removed">
+			<param index="0" name="object_id" type="int" />
+			<param index="1" name="name" type="String" />
 			<description>
-				Emitted when the node was removed from the graph.
+				Emitted by nodes that inherit from this class and that have an internal tree when one of their nodes removes. The nodes that emit this signal are [AnimationNodeBlendSpace1D], [AnimationNodeBlendSpace2D], [AnimationNodeStateMachine], and [AnimationNodeBlendTree].
+			</description>
+		</signal>
+		<signal name="animation_node_renamed">
+			<param index="0" name="object_id" type="int" />
+			<param index="1" name="old_name" type="String" />
+			<param index="2" name="new_name" type="String" />
+			<description>
+				Emitted by nodes that inherit from this class and that have an internal tree when one of their node names changes. The nodes that emit this signal are [AnimationNodeBlendSpace1D], [AnimationNodeBlendSpace2D], [AnimationNodeStateMachine], and [AnimationNodeBlendTree].
 			</description>
 		</signal>
 		<signal name="tree_changed">
 			<description>
-				Emitted by nodes that inherit from this class and that have an internal tree when one of their nodes changes. The nodes that emit this signal are [AnimationNodeBlendSpace1D], [AnimationNodeBlendSpace2D], [AnimationNodeStateMachine], and [AnimationNodeBlendTree].
+				Emitted by nodes that inherit from this class and that have an internal tree when one of their nodes changes. The nodes that emit this signal are [AnimationNodeBlendSpace1D], [AnimationNodeBlendSpace2D], [AnimationNodeStateMachine], [AnimationNodeBlendTree] and [AnimationNodeTransition].
 			</description>
 		</signal>
 	</signals>

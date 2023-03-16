@@ -452,6 +452,10 @@ namespace embree
           const Vec3fa n1 = normal(index+1,itime);
           if (!isvalid(n0) || !isvalid(n1))
             return false;
+
+	  const BBox3fa b = getOrientedCurveScaledRadius(i,itime).accurateBounds();
+	  if (!isvalid(b))
+	    return false;
         }
       }
       
@@ -612,6 +616,10 @@ namespace embree
           const Vec3fa dn1 = dnormal(index+1,itime);
           if (!isvalid(dn0) || !isvalid(dn1))
             return false;
+
+	  const BBox3fa b = getOrientedCurveScaledRadius(i,itime).accurateBounds();
+	  if (!isvalid(b))
+	    return false;
         }
       }
       

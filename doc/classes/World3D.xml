@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="World3D" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="World3D" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Class that has everything pertaining to a world.
 	</brief_description>
@@ -14,7 +14,7 @@
 			The default [CameraAttributes] resource to use if none set on the [Camera3D].
 		</member>
 		<member name="direct_space_state" type="PhysicsDirectSpaceState3D" setter="" getter="get_direct_space_state">
-			Direct access to the world's physics 3D space state. Used for querying current and potential collisions.
+			Direct access to the world's physics 3D space state. Used for querying current and potential collisions. When using multi-threaded physics, access is limited to [method Node._physics_process] in the main thread.
 		</member>
 		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
 			The World3D's [Environment].

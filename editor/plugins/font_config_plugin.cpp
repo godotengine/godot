@@ -1,36 +1,37 @@
-/*************************************************************************/
-/*  font_config_plugin.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  font_config_plugin.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "font_config_plugin.h"
 
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/import/dynamic_font_import_settings.h"
 
 /*************************************************************************/
@@ -154,7 +155,7 @@ void EditorPropertyFontMetaOverride::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			if (Object::cast_to<Button>(button_add)) {
+			if (button_add) {
 				button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			}
 		} break;
@@ -260,7 +261,7 @@ void EditorPropertyFontMetaOverride::update_property() {
 		} else {
 			// Queue children for deletion, deleting immediately might cause errors.
 			for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
-				property_vbox->get_child(i)->queue_delete();
+				property_vbox->get_child(i)->queue_free();
 			}
 			button_add = nullptr;
 		}
@@ -309,7 +310,8 @@ void EditorPropertyFontMetaOverride::update_property() {
 		}
 
 		if (script_editor) {
-			button_add = EditorInspector::create_inspector_action_button(TTR("Add Script"));
+			// TRANSLATORS: Script refers to a writing system.
+			button_add = EditorInspector::create_inspector_action_button(TTR("Add Script", "Locale"));
 		} else {
 			button_add = EditorInspector::create_inspector_action_button(TTR("Add Locale"));
 		}
@@ -457,7 +459,7 @@ void EditorPropertyOTVariation::update_property() {
 		} else {
 			// Queue children for deletion, deleting immediately might cause errors.
 			for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
-				property_vbox->get_child(i)->queue_delete();
+				property_vbox->get_child(i)->queue_free();
 			}
 		}
 
@@ -482,7 +484,7 @@ void EditorPropertyOTVariation::update_property() {
 			Vector3i range = supported.get_value_at_index(i);
 
 			EditorPropertyInteger *prop = memnew(EditorPropertyInteger);
-			prop->setup(range.x, range.y, 1, false, false);
+			prop->setup(range.x, range.y, false, 1, false, false);
 			prop->set_object_and_property(object.ptr(), "keys/" + itos(name_tag));
 
 			String name = TS->tag_to_name(name_tag);
@@ -549,7 +551,7 @@ void EditorPropertyOTFeatures::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			if (Object::cast_to<Button>(button_add)) {
+			if (button_add) {
 				button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			}
 		} break;
@@ -622,6 +624,16 @@ void EditorPropertyOTFeatures::update_property() {
 		supported = fd->get_supported_feature_list();
 	}
 
+	if (supported.is_empty()) {
+		edit->set_text(vformat(TTR("No supported features")));
+		if (container) {
+			set_bottom_editor(nullptr);
+			memdelete(container);
+			button_add = nullptr;
+			container = nullptr;
+		}
+		return;
+	}
 	edit->set_text(vformat(TTR("Features (%d of %d set)"), dict.size(), supported.size()));
 
 	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
@@ -652,7 +664,7 @@ void EditorPropertyOTFeatures::update_property() {
 		} else {
 			// Queue children for deletion, deleting immediately might cause errors.
 			for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
-				property_vbox->get_child(i)->queue_delete();
+				property_vbox->get_child(i)->queue_free();
 			}
 			button_add = nullptr;
 		}
@@ -751,7 +763,7 @@ void EditorPropertyOTFeatures::update_property() {
 					} break;
 					case Variant::INT: {
 						EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
-						editor->setup(0, 255, 1, false, false);
+						editor->setup(0, 255, 1, false, false, false);
 						prop = editor;
 					} break;
 					default: {
@@ -863,7 +875,7 @@ bool EditorInspectorPluginFontVariation::can_handle(Object *p_object) {
 	return (Object::cast_to<FontVariation>(p_object) != nullptr) || (Object::cast_to<DynamicFontImportSettingsData>(p_object) != nullptr);
 }
 
-bool EditorInspectorPluginFontVariation::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
+bool EditorInspectorPluginFontVariation::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
 	if (p_path == "variation_opentype") {
 		add_property_editor(p_path, memnew(EditorPropertyOTVariation));
 		return true;
@@ -965,7 +977,7 @@ void EditorInspectorPluginFontPreview::parse_begin(Object *p_object) {
 	add_custom_control(editor);
 }
 
-bool EditorInspectorPluginFontPreview::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
+bool EditorInspectorPluginFontPreview::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
 	return false;
 }
 
@@ -1024,7 +1036,7 @@ bool EditorInspectorPluginSystemFont::can_handle(Object *p_object) {
 	return Object::cast_to<SystemFont>(p_object) != nullptr;
 }
 
-bool EditorInspectorPluginSystemFont::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
+bool EditorInspectorPluginSystemFont::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
 	if (p_path == "font_names") {
 		EditorPropertyFontNamesArray *editor = memnew(EditorPropertyFontNamesArray);
 		editor->setup(p_type, p_hint_text);

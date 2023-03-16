@@ -1,36 +1,36 @@
-/*************************************************************************/
-/*  dir_access_unix.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  dir_access_unix.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "dir_access_unix.h"
 
-#if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
+#if defined(UNIX_ENABLED)
 
 #include "core/os/memory.h"
 #include "core/os/os.h"
@@ -41,10 +41,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#ifndef ANDROID_ENABLED
 #include <sys/statvfs.h>
-#endif
 
 #ifdef HAVE_MNTENT
 #include <mntent.h>
@@ -74,7 +71,7 @@ bool DirAccessUnix::file_exists(String p_file) {
 
 	p_file = fix_path(p_file);
 
-	struct stat flags;
+	struct stat flags = {};
 	bool success = (stat(p_file.utf8().get_data(), &flags) == 0);
 
 	if (success && S_ISDIR(flags.st_mode)) {
@@ -93,7 +90,7 @@ bool DirAccessUnix::dir_exists(String p_dir) {
 
 	p_dir = fix_path(p_dir);
 
-	struct stat flags;
+	struct stat flags = {};
 	bool success = (stat(p_dir.utf8().get_data(), &flags) == 0);
 
 	return (success && S_ISDIR(flags.st_mode));
@@ -128,7 +125,7 @@ uint64_t DirAccessUnix::get_modified_time(String p_file) {
 
 	p_file = fix_path(p_file);
 
-	struct stat flags;
+	struct stat flags = {};
 	bool success = (stat(p_file.utf8().get_data(), &flags) == 0);
 
 	if (success) {
@@ -161,7 +158,7 @@ String DirAccessUnix::get_next() {
 	if (entry->d_type == DT_UNKNOWN || entry->d_type == DT_LNK) {
 		String f = current_dir.path_join(fname);
 
-		struct stat flags;
+		struct stat flags = {};
 		if (stat(f.utf8().get_data(), &flags) == 0) {
 			_cisdir = S_ISDIR(flags.st_mode);
 		} else {
@@ -192,7 +189,7 @@ void DirAccessUnix::list_dir_end() {
 	_cisdir = false;
 }
 
-#if defined(HAVE_MNTENT) && defined(X11_ENABLED)
+#if defined(HAVE_MNTENT) && defined(LINUXBSD_ENABLED)
 static bool _filter_drive(struct mntent *mnt) {
 	// Ignore devices that don't point to /dev
 	if (strncmp(mnt->mnt_fsname, "/dev", 4) != 0) {
@@ -216,7 +213,7 @@ static void _get_drives(List<String> *list) {
 	// Add root.
 	list->push_back("/");
 
-#if defined(HAVE_MNTENT) && defined(X11_ENABLED)
+#if defined(HAVE_MNTENT) && defined(LINUXBSD_ENABLED)
 	// Check /etc/mtab for the list of mounted partitions.
 	FILE *mtab = setmntent("/etc/mtab", "r");
 	if (mtab) {
@@ -415,7 +412,7 @@ Error DirAccessUnix::remove(String p_path) {
 
 	p_path = fix_path(p_path);
 
-	struct stat flags;
+	struct stat flags = {};
 	if ((stat(p_path.utf8().get_data(), &flags) != 0)) {
 		return FAILED;
 	}
@@ -434,7 +431,7 @@ bool DirAccessUnix::is_link(String p_file) {
 
 	p_file = fix_path(p_file);
 
-	struct stat flags;
+	struct stat flags = {};
 	if ((lstat(p_file.utf8().get_data(), &flags) != 0)) {
 		return FAILED;
 	}
@@ -475,17 +472,12 @@ Error DirAccessUnix::create_link(String p_source, String p_target) {
 }
 
 uint64_t DirAccessUnix::get_space_left() {
-#ifndef NO_STATVFS
 	struct statvfs vfs;
 	if (statvfs(current_dir.utf8().get_data(), &vfs) != 0) {
 		return 0;
 	}
 
 	return (uint64_t)vfs.f_bavail * (uint64_t)vfs.f_frsize;
-#else
-	// FIXME: Implement this.
-	return 0;
-#endif
 }
 
 String DirAccessUnix::get_filesystem_type() const {
@@ -516,4 +508,4 @@ DirAccessUnix::~DirAccessUnix() {
 	list_dir_end();
 }
 
-#endif // UNIX_ENABLED || LIBC_FILEIO_ENABLED
+#endif // UNIX_ENABLED

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  cpu_particles_3d.cpp                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  cpu_particles_3d.cpp                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "cpu_particles_3d.h"
 
@@ -188,8 +188,8 @@ bool CPUParticles3D::get_fractional_delta() const {
 	return fractional_delta;
 }
 
-TypedArray<String> CPUParticles3D::get_configuration_warnings() const {
-	TypedArray<String> warnings = GeometryInstance3D::get_configuration_warnings();
+PackedStringArray CPUParticles3D::get_configuration_warnings() const {
+	PackedStringArray warnings = GeometryInstance3D::get_configuration_warnings();
 
 	bool mesh_found = false;
 	bool anim_material_found = false;
@@ -867,7 +867,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 					real_t ring_random_angle = Math::randf() * Math_TAU;
 					real_t ring_random_radius = Math::randf() * (emission_ring_radius - emission_ring_inner_radius) + emission_ring_inner_radius;
 					Vector3 axis = emission_ring_axis.normalized();
-					Vector3 ortho_axis = Vector3();
+					Vector3 ortho_axis;
 					if (axis == Vector3(1.0, 0.0, 0.0)) {
 						ortho_axis = Vector3(0.0, 1.0, 0.0).cross(axis);
 					} else {
@@ -1207,7 +1207,7 @@ void CPUParticles3D::_update_particle_data_buffer() {
 			ptr[10] = t.basis.rows[2][2];
 			ptr[11] = t.origin.z;
 		} else {
-			memset(ptr, 0, sizeof(Transform3D));
+			memset(ptr, 0, sizeof(float) * 12);
 		}
 
 		Color c = r[idx].color;
@@ -1326,24 +1326,24 @@ void CPUParticles3D::_notification(int p_what) {
 }
 
 void CPUParticles3D::convert_from_particles(Node *p_particles) {
-	GPUParticles3D *particles = Object::cast_to<GPUParticles3D>(p_particles);
-	ERR_FAIL_COND_MSG(!particles, "Only GPUParticles3D nodes can be converted to CPUParticles3D.");
+	GPUParticles3D *gpu_particles = Object::cast_to<GPUParticles3D>(p_particles);
+	ERR_FAIL_COND_MSG(!gpu_particles, "Only GPUParticles3D nodes can be converted to CPUParticles3D.");
 
-	set_emitting(particles->is_emitting());
-	set_amount(particles->get_amount());
-	set_lifetime(particles->get_lifetime());
-	set_one_shot(particles->get_one_shot());
-	set_pre_process_time(particles->get_pre_process_time());
-	set_explosiveness_ratio(particles->get_explosiveness_ratio());
-	set_randomness_ratio(particles->get_randomness_ratio());
-	set_use_local_coordinates(particles->get_use_local_coordinates());
-	set_fixed_fps(particles->get_fixed_fps());
-	set_fractional_delta(particles->get_fractional_delta());
-	set_speed_scale(particles->get_speed_scale());
-	set_draw_order(DrawOrder(particles->get_draw_order()));
-	set_mesh(particles->get_draw_pass_mesh(0));
+	set_emitting(gpu_particles->is_emitting());
+	set_amount(gpu_particles->get_amount());
+	set_lifetime(gpu_particles->get_lifetime());
+	set_one_shot(gpu_particles->get_one_shot());
+	set_pre_process_time(gpu_particles->get_pre_process_time());
+	set_explosiveness_ratio(gpu_particles->get_explosiveness_ratio());
+	set_randomness_ratio(gpu_particles->get_randomness_ratio());
+	set_use_local_coordinates(gpu_particles->get_use_local_coordinates());
+	set_fixed_fps(gpu_particles->get_fixed_fps());
+	set_fractional_delta(gpu_particles->get_fractional_delta());
+	set_speed_scale(gpu_particles->get_speed_scale());
+	set_draw_order(DrawOrder(gpu_particles->get_draw_order()));
+	set_mesh(gpu_particles->get_draw_pass_mesh(0));
 
-	Ref<ParticleProcessMaterial> material = particles->get_process_material();
+	Ref<ParticleProcessMaterial> material = gpu_particles->get_process_material();
 	if (material.is_null()) {
 		return;
 	}
@@ -1588,8 +1588,8 @@ void CPUParticles3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "tangential_accel_max", PROPERTY_HINT_RANGE, "-100,100,0.01,or_less,or_greater"), "set_param_max", "get_param_max", PARAM_TANGENTIAL_ACCEL);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "tangential_accel_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_TANGENTIAL_ACCEL);
 	ADD_GROUP("Damping", "");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "damping_min", PROPERTY_HINT_RANGE, "0,100,0.01"), "set_param_min", "get_param_min", PARAM_DAMPING);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "damping_max", PROPERTY_HINT_RANGE, "0,100,0.01"), "set_param_max", "get_param_max", PARAM_DAMPING);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "damping_min", PROPERTY_HINT_RANGE, "0,100,0.01,or_greater"), "set_param_min", "get_param_min", PARAM_DAMPING);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "damping_max", PROPERTY_HINT_RANGE, "0,100,0.01,or_greater"), "set_param_max", "get_param_max", PARAM_DAMPING);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_DAMPING);
 	ADD_GROUP("Angle", "");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angle_min", PROPERTY_HINT_RANGE, "-720,720,0.1,or_less,or_greater,degrees"), "set_param_min", "get_param_min", PARAM_ANGLE);
@@ -1616,8 +1616,8 @@ void CPUParticles3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anim_speed_min", PROPERTY_HINT_RANGE, "0,128,0.01,or_greater,or_less"), "set_param_min", "get_param_min", PARAM_ANIM_SPEED);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anim_speed_max", PROPERTY_HINT_RANGE, "0,128,0.01,or_greater,or_less"), "set_param_max", "get_param_max", PARAM_ANIM_SPEED);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "anim_speed_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_ANIM_SPEED);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anim_offset_min", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_min", "get_param_min", PARAM_ANIM_OFFSET);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anim_offset_max", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_max", "get_param_max", PARAM_ANIM_OFFSET);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anim_offset_min", PROPERTY_HINT_RANGE, "0,1,0.0001"), "set_param_min", "get_param_min", PARAM_ANIM_OFFSET);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anim_offset_max", PROPERTY_HINT_RANGE, "0,1,0.0001"), "set_param_max", "get_param_max", PARAM_ANIM_OFFSET);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "anim_offset_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_ANIM_OFFSET);
 
 	BIND_ENUM_CONSTANT(PARAM_INITIAL_LINEAR_VELOCITY);
@@ -1701,5 +1701,6 @@ CPUParticles3D::CPUParticles3D() {
 }
 
 CPUParticles3D::~CPUParticles3D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(multimesh);
 }

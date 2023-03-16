@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AStar2D" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AStar2D" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		AStar class representation that uses 2D vectors as edges.
 	</brief_description>
@@ -175,7 +175,7 @@
 		<method name="get_point_capacity" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the capacity of the structure backing the points, useful in conjunction with [code]reserve_space[/code].
+				Returns the capacity of the structure backing the points, useful in conjunction with [method reserve_space].
 			</description>
 		</method>
 		<method name="get_point_connections">
@@ -271,7 +271,7 @@
 			<return type="void" />
 			<param index="0" name="num_nodes" type="int" />
 			<description>
-				Reserves space internally for [param num_nodes] points, useful if you're adding a known large number of points at once, for a grid for instance. New capacity must be greater or equals to old capacity.
+				Reserves space internally for [param num_nodes] points, useful if you're adding a known large number of points at once, such as points on a grid. New capacity must be greater or equals to old capacity.
 			</description>
 		</method>
 		<method name="set_point_disabled">

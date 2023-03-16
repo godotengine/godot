@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="float" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="float" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Float built-in type.
 	</brief_description>
 	<description>
 		The [float] built-in type is a 64-bit double-precision floating-point number, equivalent to [code]double[/code] in C++. This type has 14 reliable decimal digits of precision. The [float] type can be stored in [Variant], which is the generic type used by the engine. The maximum value of [float] is approximately [code]1.79769e308[/code], and the minimum is approximately [code]-1.79769e308[/code].
-		Many methods and properties in the engine use 32-bit single-precision floating-point numbers instead, equivalent to [code]float[/code] in C++, which have 6 reliable decimal digits of precision. For data structures such as [Vector2] and [Vector3], Godot uses 32-bit floating-point numbers by default, but it can be changed to use 64-bit doubles if Godot is compiled with the [code]float=64[/code] option.
+		Many methods and properties in the engine use 32-bit single-precision floating-point numbers instead, equivalent to [code]float[/code] in C++, which have 6 reliable decimal digits of precision. For data structures such as [Vector2] and [Vector3], Godot uses 32-bit floating-point numbers by default, but it can be changed to use 64-bit doubles if Godot is compiled with the [code]precision=double[/code] option.
 		Math done using the [float] type is not guaranteed to be exact or deterministic, and will often result in small errors. You should usually use the [method @GlobalScope.is_equal_approx] and [method @GlobalScope.is_zero_approx] methods instead of [code]==[/code] to compare [float] values for equality.
 	</description>
 	<tutorials>
@@ -24,6 +24,13 @@
 			<param index="0" name="from" type="float" />
 			<description>
 				Constructs a [float] as a copy of the given [float].
+			</description>
+		</constructor>
+		<constructor name="float">
+			<return type="float" />
+			<param index="0" name="from" type="String" />
+			<description>
+				Converts a [String] to a [float], following the same rules as [method String.to_float].
 			</description>
 		</constructor>
 		<constructor name="float">
@@ -114,12 +121,17 @@
 			<return type="Vector4" />
 			<param index="0" name="right" type="Vector4" />
 			<description>
+				Multiplies each component of the [Vector4] by the given [float].
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Vector4" />
 			<param index="0" name="right" type="Vector4i" />
 			<description>
+				Multiplies each component of the [Vector4i] by the given [float]. Returns a [Vector4].
+				[codeblock]
+				print(0.9 * Vector4i(10, 15, 20, -10)) # Prints "(9, 13.5, 18, -9)"
+				[/codeblock]
 			</description>
 		</operator>
 		<operator name="operator *">
@@ -140,12 +152,20 @@
 			<return type="float" />
 			<param index="0" name="right" type="float" />
 			<description>
+				Raises a [float] to a power of a [float].
+				[codeblock]
+				print(39.0625**0.25) # 2.5
+				[/codeblock]
 			</description>
 		</operator>
 		<operator name="operator **">
 			<return type="float" />
 			<param index="0" name="right" type="int" />
 			<description>
+				Raises a [float] to a power of an [int]. The result is a [float].
+				[codeblock]
+				print(0.9**3) # 0.729
+				[/codeblock]
 			</description>
 		</operator>
 		<operator name="operator +">
@@ -194,7 +214,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="float" />
 			<description>
-				Returns [code]true[/code] the left float is less than the right one.
+				Returns [code]true[/code] if the left float is less than the right one.
 			</description>
 		</operator>
 		<operator name="operator &lt;">
@@ -208,7 +228,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="float" />
 			<description>
-				Returns [code]true[/code] the left integer is less than or equal to the right one.
+				Returns [code]true[/code] if the left float is less than or equal to the right one.
 			</description>
 		</operator>
 		<operator name="operator &lt;=">
@@ -237,7 +257,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="float" />
 			<description>
-				Returns [code]true[/code] the left float is greater than the right one.
+				Returns [code]true[/code] if the left float is greater than the right one.
 			</description>
 		</operator>
 		<operator name="operator &gt;">
@@ -251,7 +271,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="float" />
 			<description>
-				Returns [code]true[/code] the left float is greater than or equal to the right one.
+				Returns [code]true[/code] if the left float is greater than or equal to the right one.
 			</description>
 		</operator>
 		<operator name="operator &gt;=">

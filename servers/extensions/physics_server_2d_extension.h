@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  physics_server_2d_extension.h                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  physics_server_2d_extension.h                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef PHYSICS_SERVER_2D_EXTENSION_H
 #define PHYSICS_SERVER_2D_EXTENSION_H
@@ -94,13 +94,13 @@ public:
 	EXBIND1RC(Vector2, get_contact_local_position, int)
 	EXBIND1RC(Vector2, get_contact_local_normal, int)
 	EXBIND1RC(int, get_contact_local_shape, int)
-
 	EXBIND1RC(RID, get_contact_collider, int)
 	EXBIND1RC(Vector2, get_contact_collider_position, int)
 	EXBIND1RC(ObjectID, get_contact_collider_id, int)
 	EXBIND1RC(Object *, get_contact_collider_object, int)
 	EXBIND1RC(int, get_contact_collider_shape, int)
 	EXBIND1RC(Vector2, get_contact_collider_velocity_at_position, int)
+	EXBIND1RC(Vector2, get_contact_impulse, int)
 
 	EXBIND0RC(real_t, get_step)
 	EXBIND0(integrate_forces)
@@ -127,12 +127,12 @@ protected:
 	static void _bind_methods();
 	bool is_body_excluded_from_query(const RID &p_body) const;
 
-	GDVIRTUAL7R(bool, _intersect_ray, const Vector2 &, const Vector2 &, uint32_t, bool, bool, bool, GDNativePtr<PhysicsServer2DExtensionRayResult>)
-	GDVIRTUAL7R(int, _intersect_point, const Vector2 &, ObjectID, uint32_t, bool, bool, GDNativePtr<PhysicsServer2DExtensionShapeResult>, int)
-	GDVIRTUAL9R(int, _intersect_shape, RID, const Transform2D &, const Vector2 &, real_t, uint32_t, bool, bool, GDNativePtr<PhysicsServer2DExtensionShapeResult>, int)
-	GDVIRTUAL9R(bool, _cast_motion, RID, const Transform2D &, const Vector2 &, real_t, uint32_t, bool, bool, GDNativePtr<real_t>, GDNativePtr<real_t>)
-	GDVIRTUAL10R(bool, _collide_shape, RID, const Transform2D &, const Vector2 &, real_t, uint32_t, bool, bool, GDNativePtr<Vector2>, int, GDNativePtr<int>)
-	GDVIRTUAL8R(bool, _rest_info, RID, const Transform2D &, const Vector2 &, real_t, uint32_t, bool, bool, GDNativePtr<PhysicsServer2DExtensionShapeRestInfo>)
+	GDVIRTUAL7R(bool, _intersect_ray, const Vector2 &, const Vector2 &, uint32_t, bool, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionRayResult>)
+	GDVIRTUAL7R(int, _intersect_point, const Vector2 &, ObjectID, uint32_t, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionShapeResult>, int)
+	GDVIRTUAL9R(int, _intersect_shape, RID, const Transform2D &, const Vector2 &, real_t, uint32_t, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionShapeResult>, int)
+	GDVIRTUAL9R(bool, _cast_motion, RID, const Transform2D &, const Vector2 &, real_t, uint32_t, bool, bool, GDExtensionPtr<real_t>, GDExtensionPtr<real_t>)
+	GDVIRTUAL10R(bool, _collide_shape, RID, const Transform2D &, const Vector2 &, real_t, uint32_t, bool, bool, GDExtensionPtr<Vector2>, int, GDExtensionPtr<int>)
+	GDVIRTUAL8R(bool, _rest_info, RID, const Transform2D &, const Vector2 &, real_t, uint32_t, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionShapeRestInfo>)
 
 public:
 	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) override {
@@ -183,13 +183,7 @@ public:
 
 typedef PhysicsServer2D::MotionResult PhysicsServer2DExtensionMotionResult;
 
-struct PhysicsServer2DExtensionStateCallback {
-	void *instance = nullptr;
-	void (*callback)(void *p_instance, PhysicsDirectBodyState2D *p_state);
-};
-
 GDVIRTUAL_NATIVE_PTR(PhysicsServer2DExtensionMotionResult)
-GDVIRTUAL_NATIVE_PTR(PhysicsServer2DExtensionStateCallback)
 
 class PhysicsServer2DExtension : public PhysicsServer2D {
 	GDCLASS(PhysicsServer2DExtension, PhysicsServer2D);
@@ -197,9 +191,9 @@ class PhysicsServer2DExtension : public PhysicsServer2D {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL9R(bool, _shape_collide, RID, const Transform2D &, const Vector2 &, RID, const Transform2D &, const Vector2 &, GDNativePtr<Vector2>, int, GDNativePtr<int>)
+	GDVIRTUAL9R(bool, _shape_collide, RID, const Transform2D &, const Vector2 &, RID, const Transform2D &, const Vector2 &, GDExtensionPtr<Vector2>, int, GDExtensionPtr<int>)
 
-	GDVIRTUAL8R(bool, _body_collide_shape, RID, int, RID, const Transform2D &, const Vector2 &, GDNativePtr<Vector2>, int, GDNativePtr<int>)
+	GDVIRTUAL8R(bool, _body_collide_shape, RID, int, RID, const Transform2D &, const Vector2 &, GDExtensionPtr<Vector2>, int, GDExtensionPtr<int>)
 
 public:
 	// The warning is valid, but unavoidable. If the function is not overridden it will error anyway.
@@ -275,8 +269,11 @@ public:
 	EXBIND2RC(Variant, area_get_param, RID, AreaParameter)
 	EXBIND1RC(Transform2D, area_get_transform, RID)
 
-	EXBIND2(area_set_collision_mask, RID, uint32_t)
 	EXBIND2(area_set_collision_layer, RID, uint32_t)
+	EXBIND1RC(uint32_t, area_get_collision_layer, RID)
+
+	EXBIND2(area_set_collision_mask, RID, uint32_t)
+	EXBIND1RC(uint32_t, area_get_collision_mask, RID)
 
 	EXBIND2(area_set_monitorable, RID, bool)
 	EXBIND2(area_set_pickable, RID, bool)
@@ -376,13 +373,7 @@ public:
 	EXBIND2(body_set_omit_force_integration, RID, bool)
 	EXBIND1RC(bool, body_is_omitting_force_integration, RID)
 
-	GDVIRTUAL2(_body_set_state_sync_callback, RID, GDNativePtr<PhysicsServer2DExtensionStateCallback>)
-	void body_set_state_sync_callback(RID p_body, void *p_instance, BodyStateCallback p_callback) override {
-		PhysicsServer2DExtensionStateCallback callback;
-		callback.callback = p_callback;
-		callback.instance = p_instance;
-		GDVIRTUAL_REQUIRED_CALL(_body_set_state_sync_callback, p_body, &callback);
-	}
+	EXBIND2(body_set_state_sync_callback, RID, const Callable &)
 	EXBIND3(body_set_force_integration_callback, RID, const Callable &, const Variant &)
 
 	virtual bool body_collide_shape(RID p_body, int p_body_shape, RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, Vector2 *r_results, int p_result_max, int &r_result_count) override {
@@ -395,7 +386,7 @@ public:
 
 	EXBIND1R(PhysicsDirectBodyState2D *, body_get_direct_state, RID)
 
-	GDVIRTUAL7RC(bool, _body_test_motion, RID, const Transform2D &, const Vector2 &, real_t, bool, bool, GDNativePtr<PhysicsServer2DExtensionMotionResult>)
+	GDVIRTUAL7RC(bool, _body_test_motion, RID, const Transform2D &, const Vector2 &, real_t, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionMotionResult>)
 
 	thread_local static const HashSet<RID> *exclude_bodies;
 	thread_local static const HashSet<ObjectID> *exclude_objects;

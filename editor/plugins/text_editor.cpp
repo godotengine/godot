@@ -1,38 +1,40 @@
-/*************************************************************************/
-/*  text_editor.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  text_editor.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "text_editor.h"
 
+#include "core/io/json.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "scene/gui/menu_button.h"
 
 void TextEditor::add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) {
 	ERR_FAIL_COND(p_highlighter.is_null());
@@ -66,12 +68,12 @@ void TextEditor::_load_theme_settings() {
 String TextEditor::get_name() {
 	String name;
 
-	name = text_file->get_path().get_file();
+	name = edited_res->get_path().get_file();
 	if (name.is_empty()) {
 		// This appears for newly created built-in text_files before saving the scene.
 		name = TTR("[unsaved]");
-	} else if (text_file->is_built_in()) {
-		const String &text_file_name = text_file->get_name();
+	} else if (edited_res->is_built_in()) {
+		const String &text_file_name = edited_res->get_name();
 		if (!text_file_name.is_empty()) {
 			// If the built-in text_file has a custom resource name defined,
 			// display the built-in text_file name as follows: `ResourceName (scene_file.tscn)`
@@ -87,20 +89,29 @@ String TextEditor::get_name() {
 }
 
 Ref<Texture2D> TextEditor::get_theme_icon() {
-	return EditorNode::get_singleton()->get_object_icon(text_file.ptr(), "");
+	return EditorNode::get_singleton()->get_object_icon(edited_res.ptr(), "TextFile");
 }
 
 Ref<Resource> TextEditor::get_edited_resource() const {
-	return text_file;
+	return edited_res;
 }
 
 void TextEditor::set_edited_resource(const Ref<Resource> &p_res) {
-	ERR_FAIL_COND(text_file.is_valid());
+	ERR_FAIL_COND(edited_res.is_valid());
 	ERR_FAIL_COND(p_res.is_null());
 
-	text_file = p_res;
+	edited_res = p_res;
 
-	code_editor->get_text_editor()->set_text(text_file->get_text());
+	Ref<TextFile> text_file = edited_res;
+	if (text_file != nullptr) {
+		code_editor->get_text_editor()->set_text(text_file->get_text());
+	}
+
+	Ref<JSON> json_file = edited_res;
+	if (json_file != nullptr) {
+		code_editor->get_text_editor()->set_text(json_file->get_parsed_text());
+	}
+
 	code_editor->get_text_editor()->clear_undo_history();
 	code_editor->get_text_editor()->tag_saved_version();
 
@@ -108,7 +119,7 @@ void TextEditor::set_edited_resource(const Ref<Resource> &p_res) {
 	code_editor->update_line_and_column();
 }
 
-void TextEditor::enable_editor() {
+void TextEditor::enable_editor(Control *p_shortcut_context) {
 	if (editor_enabled) {
 		return;
 	}
@@ -116,6 +127,17 @@ void TextEditor::enable_editor() {
 	editor_enabled = true;
 
 	_load_theme_settings();
+
+	_validate_script();
+
+	if (p_shortcut_context) {
+		for (int i = 0; i < edit_hb->get_child_count(); ++i) {
+			Control *c = cast_to<Control>(edit_hb->get_child(i));
+			if (c) {
+				c->set_shortcut_context(p_shortcut_context);
+			}
+		}
+	}
 }
 
 void TextEditor::add_callback(const String &p_function, PackedStringArray p_args) {
@@ -133,7 +155,7 @@ PackedInt32Array TextEditor::get_breakpoints() {
 }
 
 void TextEditor::reload_text() {
-	ERR_FAIL_COND(text_file.is_null());
+	ERR_FAIL_COND(edited_res.is_null());
 
 	CodeEdit *te = code_editor->get_text_editor();
 	int column = te->get_caret_column();
@@ -141,7 +163,16 @@ void TextEditor::reload_text() {
 	int h = te->get_h_scroll();
 	int v = te->get_v_scroll();
 
-	te->set_text(text_file->get_text());
+	Ref<TextFile> text_file = edited_res;
+	if (text_file != nullptr) {
+		te->set_text(text_file->get_text());
+	}
+
+	Ref<JSON> json_file = edited_res;
+	if (json_file != nullptr) {
+		te->set_text(json_file->get_parsed_text());
+	}
+
 	te->set_caret_line(row);
 	te->set_caret_column(column);
 	te->set_h_scroll(h);
@@ -150,11 +181,26 @@ void TextEditor::reload_text() {
 	te->tag_saved_version();
 
 	code_editor->update_line_and_column();
+	_validate_script();
 }
 
 void TextEditor::_validate_script() {
 	emit_signal(SNAME("name_changed"));
 	emit_signal(SNAME("edited_script_changed"));
+
+	Ref<JSON> json_file = edited_res;
+	if (json_file != nullptr) {
+		CodeEdit *te = code_editor->get_text_editor();
+
+		te->set_line_background_color(code_editor->get_error_pos().x, Color(0, 0, 0, 0));
+		code_editor->set_error("");
+
+		if (json_file->parse(te->get_text(), true) != OK) {
+			code_editor->set_error(json_file->get_error_message());
+			code_editor->set_error_pos(json_file->get_error_line(), 0);
+			te->set_line_background_color(code_editor->get_error_pos().x, EDITOR_GET("text_editor/theme/highlighting/mark_color"));
+		}
+	}
 }
 
 void TextEditor::_update_bookmark_list() {
@@ -193,13 +239,22 @@ void TextEditor::_bookmark_item_pressed(int p_idx) {
 }
 
 void TextEditor::apply_code() {
-	text_file->set_text(code_editor->get_text_editor()->get_text());
+	Ref<TextFile> text_file = edited_res;
+	if (text_file != nullptr) {
+		text_file->set_text(code_editor->get_text_editor()->get_text());
+	}
+
+	Ref<JSON> json_file = edited_res;
+	if (json_file != nullptr) {
+		json_file->parse(code_editor->get_text_editor()->get_text(), true);
+	}
+	code_editor->get_text_editor()->get_syntax_highlighter()->update_cache();
 }
 
 bool TextEditor::is_unsaved() {
 	const bool unsaved =
 			code_editor->get_text_editor()->get_version() != code_editor->get_text_editor()->get_saved_version() ||
-			text_file->get_path().is_empty(); // In memory.
+			edited_res->get_path().is_empty(); // In memory.
 	return unsaved;
 }
 
@@ -219,6 +274,10 @@ void TextEditor::set_edit_state(const Variant &p_state) {
 	}
 
 	ensure_focus();
+}
+
+Variant TextEditor::get_navigation_state() {
+	return code_editor->get_navigation_state();
 }
 
 void TextEditor::trim_trailing_whitespace() {
@@ -325,11 +384,11 @@ void TextEditor::_edit_option(int p_op) {
 		case EDIT_MOVE_LINE_DOWN: {
 			code_editor->move_lines_down();
 		} break;
-		case EDIT_INDENT_LEFT: {
-			tx->unindent_lines();
-		} break;
-		case EDIT_INDENT_RIGHT: {
+		case EDIT_INDENT: {
 			tx->indent_lines();
+		} break;
+		case EDIT_UNINDENT: {
+			tx->unindent_lines();
 		} break;
 		case EDIT_DELETE_LINE: {
 			code_editor->delete_lines();
@@ -338,7 +397,14 @@ void TextEditor::_edit_option(int p_op) {
 			code_editor->duplicate_selection();
 		} break;
 		case EDIT_TOGGLE_FOLD_LINE: {
-			tx->toggle_foldable_line(tx->get_caret_line());
+			int previous_line = -1;
+			for (int caret_idx : tx->get_caret_index_edit_order()) {
+				int line_idx = tx->get_caret_line(caret_idx);
+				if (line_idx != previous_line) {
+					tx->toggle_foldable_line(line_idx);
+					previous_line = line_idx;
+				}
+			}
 			tx->queue_redraw();
 		} break;
 		case EDIT_FOLD_ALL_LINES: {
@@ -414,7 +480,7 @@ void TextEditor::_convert_case(CodeTextEditor::CaseStyle p_case) {
 }
 
 static ScriptEditorBase *create_editor(const Ref<Resource> &p_resource) {
-	if (Object::cast_to<TextFile>(*p_resource)) {
+	if (Object::cast_to<TextFile>(*p_resource) || Object::cast_to<JSON>(*p_resource)) {
 		return memnew(TextEditor);
 	}
 	return nullptr;
@@ -435,11 +501,12 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 			int row = pos.y;
 			int col = pos.x;
 
-			tx->set_move_caret_on_right_click_enabled(EditorSettings::get_singleton()->get("text_editor/behavior/navigation/move_caret_on_right_click"));
+			tx->set_move_caret_on_right_click_enabled(EDITOR_GET("text_editor/behavior/navigation/move_caret_on_right_click"));
 			bool can_fold = tx->can_fold_line(row);
 			bool is_folded = tx->is_line_folded(row);
 
 			if (tx->is_move_caret_on_right_click_enabled()) {
+				tx->remove_secondary_carets();
 				if (tx->has_selection()) {
 					int from_line = tx->get_selection_from_line();
 					int to_line = tx->get_selection_to_line();
@@ -466,9 +533,9 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	Ref<InputEventKey> k = ev;
 	if (k.is_valid() && k->is_pressed() && k->is_action("ui_menu", true)) {
 		CodeEdit *tx = code_editor->get_text_editor();
-		int line = tx->get_caret_line();
-		tx->adjust_viewport_to_caret();
-		_make_context_menu(tx->has_selection(), tx->can_fold_line(line), tx->is_line_folded(line), (get_global_transform().inverse() * tx->get_global_transform()).xform(tx->get_caret_draw_pos()));
+		int line = tx->get_caret_line(0);
+		tx->adjust_viewport_to_caret(0);
+		_make_context_menu(tx->has_selection(0), tx->can_fold_line(line), tx->is_line_folded(line), (get_global_transform().inverse() * tx->get_global_transform()).xform(tx->get_caret_draw_pos(0)));
 		context_menu->grab_focus();
 	}
 }
@@ -493,8 +560,8 @@ void TextEditor::_make_context_menu(bool p_selection, bool p_can_fold, bool p_is
 	context_menu->add_shortcut(ED_GET_SHORTCUT("ui_undo"), EDIT_UNDO);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("ui_redo"), EDIT_REDO);
 	context_menu->add_separator();
-	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_left"), EDIT_INDENT_LEFT);
-	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_right"), EDIT_INDENT_RIGHT);
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent"), EDIT_INDENT);
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unindent"), EDIT_UNINDENT);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
 
 	if (p_selection) {
@@ -574,8 +641,8 @@ TextEditor::TextEditor() {
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/move_up"), EDIT_MOVE_LINE_UP);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/move_down"), EDIT_MOVE_LINE_DOWN);
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_left"), EDIT_INDENT_LEFT);
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_right"), EDIT_INDENT_RIGHT);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent"), EDIT_INDENT);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unindent"), EDIT_UNINDENT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/delete_line"), EDIT_DELETE_LINE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_fold_line"), EDIT_TOGGLE_FOLD_LINE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/fold_all_lines"), EDIT_FOLD_ALL_LINES);
@@ -631,8 +698,6 @@ TextEditor::TextEditor() {
 
 	goto_line_dialog = memnew(GotoLineDialog);
 	add_child(goto_line_dialog);
-
-	code_editor->get_text_editor()->set_drag_forwarding(this);
 }
 
 TextEditor::~TextEditor() {
@@ -640,4 +705,5 @@ TextEditor::~TextEditor() {
 }
 
 void TextEditor::validate() {
+	this->code_editor->validate_script();
 }

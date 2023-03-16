@@ -1,40 +1,40 @@
-/*************************************************************************/
-/*  quaternion.h                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  quaternion.h                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef QUATERNION_H
 #define QUATERNION_H
 
-#include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
 #include "core/math/vector3.h"
-#include "core/string/ustring.h"
+
+class String;
 
 struct _NO_DISCARD_ Quaternion {
 	union {
@@ -55,6 +55,7 @@ struct _NO_DISCARD_ Quaternion {
 	}
 	_FORCE_INLINE_ real_t length_squared() const;
 	bool is_equal_approx(const Quaternion &p_quaternion) const;
+	bool is_finite() const;
 	real_t length() const;
 	void normalize();
 	Quaternion normalized() const;
@@ -65,9 +66,8 @@ struct _NO_DISCARD_ Quaternion {
 	_FORCE_INLINE_ real_t dot(const Quaternion &p_q) const;
 	real_t angle_to(const Quaternion &p_to) const;
 
-	Vector3 get_euler_xyz() const;
-	Vector3 get_euler_yxz() const;
-	Vector3 get_euler() const { return get_euler_yxz(); };
+	Vector3 get_euler(EulerOrder p_order = EulerOrder::YXZ) const;
+	static Quaternion from_euler(const Vector3 &p_euler);
 
 	Quaternion slerp(const Quaternion &p_to, const real_t &p_weight) const;
 	Quaternion slerpni(const Quaternion &p_to, const real_t &p_weight) const;
@@ -127,8 +127,6 @@ struct _NO_DISCARD_ Quaternion {
 
 	Quaternion(const Vector3 &p_axis, real_t p_angle);
 
-	Quaternion(const Vector3 &p_euler);
-
 	Quaternion(const Quaternion &p_q) :
 			x(p_q.x),
 			y(p_q.y),
@@ -143,8 +141,7 @@ struct _NO_DISCARD_ Quaternion {
 		w = p_q.w;
 	}
 
-	Quaternion(const Vector3 &v0, const Vector3 &v1) // shortest arc
-	{
+	Quaternion(const Vector3 &v0, const Vector3 &v1) { // Shortest arc.
 		Vector3 c = v0.cross(v1);
 		real_t d = v0.dot(v1);
 

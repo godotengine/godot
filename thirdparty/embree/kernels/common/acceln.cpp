@@ -97,7 +97,7 @@ namespace embree
     for (size_t i=0; i<This->accels.size(); i++) {
       if (This->accels[i]->isEmpty()) continue;
       This->accels[i]->intersectors.occluded4(valid,ray,context);
-#if defined(__SSE2__)
+#if defined(__SSE2__) || defined(__ARM_NEON)
       vbool4 valid0 = asBool(((vint4*)valid)[0]);
       vbool4 hit0   = ((vfloat4*)ray.tfar)[0] >= vfloat4(zero);
       if (unlikely(none(valid0 & hit0))) break;
@@ -111,7 +111,7 @@ namespace embree
     for (size_t i=0; i<This->accels.size(); i++) {
       if (This->accels[i]->isEmpty()) continue;
       This->accels[i]->intersectors.occluded8(valid,ray,context);
-#if defined(__SSE2__) // FIXME: use higher ISA
+#if defined(__SSE2__) || defined(__ARM_NEON) // FIXME: use higher ISA
       vbool4 valid0 = asBool(((vint4*)valid)[0]);
       vbool4 hit0   = ((vfloat4*)ray.tfar)[0] >= vfloat4(zero);
       vbool4 valid1 = asBool(((vint4*)valid)[1]);
@@ -127,7 +127,7 @@ namespace embree
     for (size_t i=0; i<This->accels.size(); i++) {
       if (This->accels[i]->isEmpty()) continue;
       This->accels[i]->intersectors.occluded16(valid,ray,context);
-#if defined(__SSE2__) // FIXME: use higher ISA
+#if defined(__SSE2__) || defined(__ARM_NEON) // FIXME: use higher ISA
       vbool4 valid0 = asBool(((vint4*)valid)[0]);
       vbool4 hit0   = ((vfloat4*)ray.tfar)[0] >= vfloat4(zero);
       vbool4 valid1 = asBool(((vint4*)valid)[1]);

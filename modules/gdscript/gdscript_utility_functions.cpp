@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  gdscript_utility_functions.cpp                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gdscript_utility_functions.cpp                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "gdscript_utility_functions.h"
 
@@ -110,28 +110,6 @@ struct GDScriptUtilityFunctionsDefinitions {
 		VALIDATE_ARG_INT(0);
 		char32_t result[2] = { *p_args[0], 0 };
 		*r_ret = String(result);
-	}
-
-	static inline void str(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		if (p_arg_count < 1) {
-			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-			r_error.argument = 1;
-			r_error.expected = 1;
-			*r_ret = Variant();
-			return;
-		}
-
-		String str;
-		for (int i = 0; i < p_arg_count; i++) {
-			String os = p_args[i]->operator String();
-
-			if (i == 0) {
-				str = os;
-			} else {
-				str += os;
-			}
-		}
-		*r_ret = str;
 	}
 
 	static inline void range(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
@@ -294,6 +272,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 				}
 
 				GDScript *p = base.ptr();
+				String path = p->get_script_path();
 				Vector<StringName> sname;
 
 				while (p->_owner) {
@@ -302,7 +281,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 				}
 				sname.reverse();
 
-				if (!p->path.is_resource_file()) {
+				if (!path.is_resource_file()) {
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 					r_error.argument = 0;
 					r_error.expected = Variant::DICTIONARY;
@@ -317,7 +296,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 
 				Dictionary d;
 				d["@subpath"] = cp;
-				d["@path"] = p->get_path();
+				d["@path"] = path;
 
 				for (const KeyValue<StringName, GDScript::MemberInfo> &E : base->member_indices) {
 					if (!d.has(E.key)) {
@@ -544,6 +523,82 @@ struct GDScriptUtilityFunctionsDefinitions {
 			}
 		}
 	}
+
+	static inline void is_instance_of(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+		VALIDATE_ARG_COUNT(2);
+
+		if (p_args[1]->get_type() == Variant::INT) {
+			int builtin_type = *p_args[1];
+			if (builtin_type < 0 || builtin_type >= Variant::VARIANT_MAX) {
+				*r_ret = RTR("Invalid type argument for is_instance_of(), use TYPE_* constants for built-in types.");
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument = 1;
+				r_error.expected = Variant::NIL;
+				return;
+			}
+			*r_ret = p_args[0]->get_type() == builtin_type;
+			return;
+		}
+
+		bool was_type_freed = false;
+		Object *type_object = p_args[1]->get_validated_object_with_check(was_type_freed);
+		if (was_type_freed) {
+			*r_ret = RTR("Type argument is a previously freed instance.");
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 1;
+			r_error.expected = Variant::NIL;
+			return;
+		}
+		if (!type_object) {
+			*r_ret = RTR("Invalid type argument for is_instance_of(), should be a TYPE_* constant, a class or a script.");
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 1;
+			r_error.expected = Variant::NIL;
+			return;
+		}
+
+		bool was_value_freed = false;
+		Object *value_object = p_args[0]->get_validated_object_with_check(was_value_freed);
+		if (was_value_freed) {
+			*r_ret = RTR("Value argument is a previously freed instance.");
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::NIL;
+			return;
+		}
+		if (!value_object) {
+			*r_ret = false;
+			return;
+		}
+
+		GDScriptNativeClass *native_type = Object::cast_to<GDScriptNativeClass>(type_object);
+		if (native_type) {
+			*r_ret = ClassDB::is_parent_class(value_object->get_class_name(), native_type->get_name());
+			return;
+		}
+
+		Script *script_type = Object::cast_to<Script>(type_object);
+		if (script_type) {
+			bool result = false;
+			if (value_object->get_script_instance()) {
+				Script *script_ptr = value_object->get_script_instance()->get_script().ptr();
+				while (script_ptr) {
+					if (script_ptr == script_type) {
+						result = true;
+						break;
+					}
+					script_ptr = script_ptr->get_base_script().ptr();
+				}
+			}
+			*r_ret = result;
+			return;
+		}
+
+		*r_ret = RTR("Invalid type argument for is_instance_of(), should be a TYPE_* constant, a class or a script.");
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument = 1;
+		r_error.expected = Variant::NIL;
+	}
 };
 
 struct GDScriptUtilityFunctionInfo {
@@ -650,7 +705,6 @@ void GDScriptUtilityFunctions::register_functions() {
 	REGISTER_VARIANT_FUNC(convert, true, VARARG("what"), ARG("type", Variant::INT));
 	REGISTER_FUNC(type_exists, true, Variant::BOOL, ARG("type", Variant::STRING_NAME));
 	REGISTER_FUNC(_char, true, Variant::STRING, ARG("char", Variant::INT));
-	REGISTER_VARARG_FUNC(str, true, Variant::STRING);
 	REGISTER_VARARG_FUNC(range, false, Variant::ARRAY);
 	REGISTER_CLASS_FUNC(load, false, "Resource", ARG("path", Variant::STRING));
 	REGISTER_FUNC(inst_to_dict, false, Variant::DICTIONARY, ARG("instance", Variant::OBJECT));
@@ -660,6 +714,7 @@ void GDScriptUtilityFunctions::register_functions() {
 	REGISTER_FUNC_NO_ARGS(print_stack, false, Variant::NIL);
 	REGISTER_FUNC_NO_ARGS(get_stack, false, Variant::ARRAY);
 	REGISTER_FUNC(len, true, Variant::INT, VARARG("var"));
+	REGISTER_FUNC(is_instance_of, true, Variant::BOOL, VARARG("value"), VARARG("type"));
 }
 
 void GDScriptUtilityFunctions::unregister_functions() {

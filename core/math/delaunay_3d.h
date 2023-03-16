@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  delaunay_3d.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  delaunay_3d.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef DELAUNAY_3D_H
 #define DELAUNAY_3D_H
@@ -35,7 +35,6 @@
 #include "core/math/aabb.h"
 #include "core/math/projection.h"
 #include "core/math/vector3.h"
-#include "core/string/print_string.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/oa_hash_map.h"
 #include "core/templates/vector.h"
@@ -186,25 +185,25 @@ class Delaunay3D {
 
 		Projection cm;
 
-		cm.matrix[0][0] = p_points[p_simplex.points[0]].x;
-		cm.matrix[0][1] = p_points[p_simplex.points[1]].x;
-		cm.matrix[0][2] = p_points[p_simplex.points[2]].x;
-		cm.matrix[0][3] = p_points[p_simplex.points[3]].x;
+		cm.columns[0][0] = p_points[p_simplex.points[0]].x;
+		cm.columns[0][1] = p_points[p_simplex.points[1]].x;
+		cm.columns[0][2] = p_points[p_simplex.points[2]].x;
+		cm.columns[0][3] = p_points[p_simplex.points[3]].x;
 
-		cm.matrix[1][0] = p_points[p_simplex.points[0]].y;
-		cm.matrix[1][1] = p_points[p_simplex.points[1]].y;
-		cm.matrix[1][2] = p_points[p_simplex.points[2]].y;
-		cm.matrix[1][3] = p_points[p_simplex.points[3]].y;
+		cm.columns[1][0] = p_points[p_simplex.points[0]].y;
+		cm.columns[1][1] = p_points[p_simplex.points[1]].y;
+		cm.columns[1][2] = p_points[p_simplex.points[2]].y;
+		cm.columns[1][3] = p_points[p_simplex.points[3]].y;
 
-		cm.matrix[2][0] = p_points[p_simplex.points[0]].z;
-		cm.matrix[2][1] = p_points[p_simplex.points[1]].z;
-		cm.matrix[2][2] = p_points[p_simplex.points[2]].z;
-		cm.matrix[2][3] = p_points[p_simplex.points[3]].z;
+		cm.columns[2][0] = p_points[p_simplex.points[0]].z;
+		cm.columns[2][1] = p_points[p_simplex.points[1]].z;
+		cm.columns[2][2] = p_points[p_simplex.points[2]].z;
+		cm.columns[2][3] = p_points[p_simplex.points[3]].z;
 
-		cm.matrix[3][0] = 1.0;
-		cm.matrix[3][1] = 1.0;
-		cm.matrix[3][2] = 1.0;
-		cm.matrix[3][3] = 1.0;
+		cm.columns[3][0] = 1.0;
+		cm.columns[3][1] = 1.0;
+		cm.columns[3][2] = 1.0;
+		cm.columns[3][3] = 1.0;
 
 		return ABS(cm.determinant()) <= CMP_EPSILON;
 	}
@@ -314,20 +313,20 @@ public:
 					//remove simplex and continue
 					simplex_list.erase(simplex->SE);
 
-					for (uint32_t k = 0; k < simplex->grid_positions.size(); k++) {
-						Vector3i p = simplex->grid_positions[k].pos;
-						acceleration_grid[p.x][p.y][p.z].erase(simplex->grid_positions[k].E);
+					for (const GridPos &gp : simplex->grid_positions) {
+						Vector3i p = gp.pos;
+						acceleration_grid[p.x][p.y][p.z].erase(gp.E);
 					}
 					memdelete(simplex);
 				}
 				E = N;
 			}
 
-			for (uint32_t j = 0; j < triangles.size(); j++) {
-				if (triangles[j].bad) {
+			for (const Triangle &triangle : triangles) {
+				if (triangle.bad) {
 					continue;
 				}
-				Simplex *new_simplex = memnew(Simplex(triangles[j].triangle[0], triangles[j].triangle[1], triangles[j].triangle[2], i));
+				Simplex *new_simplex = memnew(Simplex(triangle.triangle[0], triangle.triangle[1], triangle.triangle[2], i));
 				circum_sphere_compute(points, new_simplex);
 				new_simplex->SE = simplex_list.push_back(new_simplex);
 				{

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  surface_tool.cpp                                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  surface_tool.cpp                                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "surface_tool.h"
 
@@ -46,7 +46,7 @@ void SurfaceTool::strip_mesh_arrays(PackedVector3Array &r_vertices, PackedInt32A
 
 	Vector<uint32_t> remap;
 	remap.resize(r_vertices.size());
-	uint32_t new_vertex_count = generate_remap_func(remap.ptrw(), (unsigned int *)r_indices.ptr(), r_indices.size(), (float *)r_vertices.ptr(), r_vertices.size(), sizeof(Vector3));
+	uint32_t new_vertex_count = generate_remap_func(remap.ptrw(), (unsigned int *)r_indices.ptr(), r_indices.size(), r_vertices.ptr(), r_vertices.size(), sizeof(Vector3));
 	remap_vertex_func(r_vertices.ptrw(), r_vertices.ptr(), r_vertices.size(), sizeof(Vector3), remap.ptr());
 	r_vertices.resize(new_vertex_count);
 	remap_index_func((unsigned int *)r_indices.ptrw(), (unsigned int *)r_indices.ptr(), r_indices.size(), remap.ptr());
@@ -141,6 +141,25 @@ uint32_t SurfaceTool::VertexHasher::hash(const Vertex &p_vtx) {
 	h = hash_djb2_buffer((const uint8_t *)p_vtx.bones.ptr(), p_vtx.bones.size() * sizeof(int), h);
 	h = hash_djb2_buffer((const uint8_t *)p_vtx.weights.ptr(), p_vtx.weights.size() * sizeof(float), h);
 	h = hash_djb2_buffer((const uint8_t *)&p_vtx.custom[0], sizeof(Color) * RS::ARRAY_CUSTOM_COUNT, h);
+	h = hash_murmur3_one_32(p_vtx.smooth_group, h);
+	h = hash_fmix32(h);
+	return h;
+}
+
+bool SurfaceTool::SmoothGroupVertex::operator==(const SmoothGroupVertex &p_vertex) const {
+	if (vertex != p_vertex.vertex) {
+		return false;
+	}
+
+	if (smooth_group != p_vertex.smooth_group) {
+		return false;
+	}
+
+	return true;
+}
+
+uint32_t SurfaceTool::SmoothGroupVertexHasher::hash(const SmoothGroupVertex &p_vtx) {
+	uint32_t h = hash_djb2_buffer((const uint8_t *)&p_vtx.vertex, sizeof(real_t) * 3);
 	h = hash_murmur3_one_32(p_vtx.smooth_group, h);
 	h = hash_fmix32(h);
 	return h;
@@ -629,7 +648,7 @@ Array SurfaceTool::commit_to_arrays() {
 				for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
 					const Vertex &v = vertex_array[idx];
 
-					if (v.bones.size() > count) {
+					if (v.bones.size() != count) {
 						ERR_PRINT_ONCE(vformat("Invalid bones size %d vs count %d", v.bones.size(), count));
 						continue;
 					}
@@ -653,7 +672,7 @@ Array SurfaceTool::commit_to_arrays() {
 				for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
 					const Vertex &v = vertex_array[idx];
 
-					if (v.weights.size() > count) {
+					if (v.weights.size() != count) {
 						ERR_PRINT_ONCE(vformat("Invalid weight size %d vs count %d", v.weights.size(), count));
 						continue;
 					}
@@ -732,13 +751,13 @@ void SurfaceTool::index() {
 	LocalVector<Vertex> old_vertex_array = vertex_array;
 	vertex_array.clear();
 
-	for (uint32_t i = 0; i < old_vertex_array.size(); i++) {
-		int *idxptr = indices.getptr(old_vertex_array[i]);
+	for (const Vertex &vertex : old_vertex_array) {
+		int *idxptr = indices.getptr(vertex);
 		int idx;
 		if (!idxptr) {
 			idx = indices.size();
-			vertex_array.push_back(old_vertex_array[i]);
-			indices[old_vertex_array[i]] = idx;
+			vertex_array.push_back(vertex);
+			indices[vertex] = idx;
 		} else {
 			idx = *idxptr;
 		}
@@ -756,9 +775,8 @@ void SurfaceTool::deindex() {
 
 	LocalVector<Vertex> old_vertex_array = vertex_array;
 	vertex_array.clear();
-	for (uint32_t i = 0; i < index_array.size(); i++) {
-		uint32_t index = index_array[i];
-		ERR_FAIL_COND(index >= old_vertex_array.size());
+	for (const int &index : index_array) {
+		ERR_FAIL_COND(uint32_t(index) >= old_vertex_array.size());
 		vertex_array.push_back(old_vertex_array[index]);
 	}
 	format &= ~Mesh::ARRAY_FORMAT_INDEX;
@@ -986,7 +1004,7 @@ void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const 
 		format = 0;
 	}
 
-	uint32_t nformat;
+	uint32_t nformat = 0;
 	LocalVector<Vertex> nvertices;
 	LocalVector<int> nindices;
 	_create_list(p_existing, p_surface, &nvertices, &nindices, nformat);
@@ -1000,8 +1018,7 @@ void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const 
 	}
 	int vfrom = vertex_array.size();
 
-	for (uint32_t vi = 0; vi < nvertices.size(); vi++) {
-		Vertex v = nvertices[vi];
+	for (Vertex &v : nvertices) {
 		v.vertex = p_xform.xform(v.vertex);
 		if (nformat & RS::ARRAY_FORMAT_NORMAL) {
 			v.normal = p_xform.basis.xform(v.normal);
@@ -1014,8 +1031,8 @@ void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const 
 		vertex_array.push_back(v);
 	}
 
-	for (uint32_t i = 0; i < nindices.size(); i++) {
-		int dst_index = nindices[i] + vfrom;
+	for (const int &index : nindices) {
+		int dst_index = index + vfrom;
 		index_array.push_back(dst_index);
 	}
 	if (index_array.size() % 3) {
@@ -1132,9 +1149,9 @@ void SurfaceTool::generate_tangents() {
 
 	TangentGenerationContextUserData triangle_data;
 	triangle_data.vertices = &vertex_array;
-	for (uint32_t i = 0; i < vertex_array.size(); i++) {
-		vertex_array[i].binormal = Vector3();
-		vertex_array[i].tangent = Vector3();
+	for (Vertex &vertex : vertex_array) {
+		vertex.binormal = Vector3();
+		vertex.tangent = Vector3();
 	}
 	triangle_data.indices = &index_array;
 	msc.m_pUserData = &triangle_data;
@@ -1154,7 +1171,7 @@ void SurfaceTool::generate_normals(bool p_flip) {
 
 	ERR_FAIL_COND((vertex_array.size() % 3) != 0);
 
-	HashMap<Vertex, Vector3, VertexHasher> vertex_hash;
+	HashMap<SmoothGroupVertex, Vector3, SmoothGroupVertexHasher> smooth_hash;
 
 	for (uint32_t vi = 0; vi < vertex_array.size(); vi += 3) {
 		Vertex *v = &vertex_array[vi];
@@ -1167,21 +1184,28 @@ void SurfaceTool::generate_normals(bool p_flip) {
 		}
 
 		for (int i = 0; i < 3; i++) {
-			Vector3 *lv = vertex_hash.getptr(v[i]);
-			if (!lv) {
-				vertex_hash.insert(v[i], normal);
+			// Add face normal to smooth vertex influence if vertex is member of a smoothing group
+			if (v[i].smooth_group != UINT32_MAX) {
+				Vector3 *lv = smooth_hash.getptr(v[i]);
+				if (!lv) {
+					smooth_hash.insert(v[i], normal);
+				} else {
+					(*lv) += normal;
+				}
 			} else {
-				(*lv) += normal;
+				v[i].normal = normal;
 			}
 		}
 	}
 
-	for (uint32_t vi = 0; vi < vertex_array.size(); vi++) {
-		Vector3 *lv = vertex_hash.getptr(vertex_array[vi]);
-		if (!lv) {
-			vertex_array[vi].normal = Vector3();
-		} else {
-			vertex_array[vi].normal = lv->normalized();
+	for (Vertex &vertex : vertex_array) {
+		if (vertex.smooth_group != UINT32_MAX) {
+			Vector3 *lv = smooth_hash.getptr(vertex);
+			if (!lv) {
+				vertex.normal = Vector3();
+			} else {
+				vertex.normal = lv->normalized();
+			}
 		}
 	}
 
@@ -1283,7 +1307,8 @@ Vector<int> SurfaceTool::generate_lod(float p_threshold, int p_target_index_coun
 	}
 
 	float error;
-	uint32_t index_count = simplify_func((unsigned int *)lod.ptrw(), (unsigned int *)index_array.ptr(), index_array.size(), vertices.ptr(), vertex_array.size(), sizeof(float) * 3, p_target_index_count, p_threshold, &error);
+	const int simplify_options = SIMPLIFY_LOCK_BORDER;
+	uint32_t index_count = simplify_func((unsigned int *)lod.ptrw(), (unsigned int *)index_array.ptr(), index_array.size(), vertices.ptr(), vertex_array.size(), sizeof(float) * 3, p_target_index_count, p_threshold, simplify_options, &error);
 	ERR_FAIL_COND_V(index_count == 0, lod);
 	lod.resize(index_count);
 

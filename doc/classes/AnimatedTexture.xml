@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimatedTexture" inherits="Texture2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AnimatedTexture" inherits="Texture2D" is_deprecated="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Proxy texture for simple frame-based animations.
 	</brief_description>
@@ -8,6 +8,7 @@
 		The playback of the animation is controlled by the [member speed_scale] property, as well as each frame's duration (see [method set_frame_duration]). The animation loops, i.e. it will restart at frame 0 automatically after playing the last frame.
 		[AnimatedTexture] currently requires all frame textures to have the same size, otherwise the bigger ones will be cropped to match the smallest one.
 		[b]Note:[/b] AnimatedTexture doesn't support using [AtlasTexture]s. Each frame needs to be a separate [Texture2D].
+		[b]Warning:[/b] AnimatedTexture is deprecated, and might be removed in a future release. Its current implementation is not efficient for the modern renderers.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -46,7 +47,7 @@
 	</methods>
 	<members>
 		<member name="current_frame" type="int" setter="set_current_frame" getter="get_current_frame">
-			Sets the currently visible frame of the texture.
+			Sets the currently visible frame of the texture. Setting this frame while playing resets the current frame time, so the newly selected frame plays for its whole configured frame duration.
 		</member>
 		<member name="frames" type="int" setter="set_frames" getter="get_frames" default="1">
 			Number of frames to use in the animation. While you can create the frames independently with [method set_frame_texture], you need to set this value for the animation to take new frames into account. The maximum number of frames is [constant MAX_FRAMES].
@@ -57,6 +58,7 @@
 		<member name="pause" type="bool" setter="set_pause" getter="get_pause" default="false">
 			If [code]true[/code], the animation will pause where it currently is (i.e. at [member current_frame]). The animation will continue from where it was paused when changing this property to [code]false[/code].
 		</member>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
 			The animation speed is multiplied by this value. If set to a negative value, the animation is played in reverse.
 		</member>

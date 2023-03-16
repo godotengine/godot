@@ -24,7 +24,7 @@ namespace embree
     BarrierSys& operator= (const BarrierSys& other) DELETED; // do not implement
 
   public:
-    /*! intializes the barrier with some number of threads */
+    /*! initializes the barrier with some number of threads */
     void init(size_t count);
 
     /*! lets calling thread wait in barrier */
@@ -94,7 +94,7 @@ namespace embree
     LinearBarrierActive& operator= (const LinearBarrierActive& other) DELETED; // do not implement
 
   public:
-    /*! intializes the barrier with some number of threads */
+    /*! initializes the barrier with some number of threads */
     void init(size_t threadCount);
     
     /*! thread with threadIndex waits in the barrier */

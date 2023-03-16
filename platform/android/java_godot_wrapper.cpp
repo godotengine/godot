@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  java_godot_wrapper.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  java_godot_wrapper.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "java_godot_wrapper.h"
 
@@ -60,7 +60,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	// get some Godot method pointers...
 	_on_video_init = p_env->GetMethodID(godot_class, "onVideoInit", "()Z");
 	_restart = p_env->GetMethodID(godot_class, "restart", "()V");
-	_finish = p_env->GetMethodID(godot_class, "forceQuit", "()V");
+	_finish = p_env->GetMethodID(godot_class, "forceQuit", "(I)Z");
 	_set_keep_screen_on = p_env->GetMethodID(godot_class, "setKeepScreenOn", "(Z)V");
 	_alert = p_env->GetMethodID(godot_class, "alert", "(Ljava/lang/String;Ljava/lang/String;)V");
 	_get_GLES_version_code = p_env->GetMethodID(godot_class, "getGLESVersionCode", "()I");
@@ -77,14 +77,24 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_get_input_fallback_mapping = p_env->GetMethodID(godot_class, "getInputFallbackMapping", "()Ljava/lang/String;");
 	_on_godot_setup_completed = p_env->GetMethodID(godot_class, "onGodotSetupCompleted", "()V");
 	_on_godot_main_loop_started = p_env->GetMethodID(godot_class, "onGodotMainLoopStarted", "()V");
-	_create_new_godot_instance = p_env->GetMethodID(godot_class, "createNewGodotInstance", "([Ljava/lang/String;)V");
+	_create_new_godot_instance = p_env->GetMethodID(godot_class, "createNewGodotInstance", "([Ljava/lang/String;)I");
+	_get_render_view = p_env->GetMethodID(godot_class, "getRenderView", "()Lorg/godotengine/godot/GodotRenderView;");
 
 	// get some Activity method pointers...
 	_get_class_loader = p_env->GetMethodID(activity_class, "getClassLoader", "()Ljava/lang/ClassLoader;");
 }
 
 GodotJavaWrapper::~GodotJavaWrapper() {
-	// nothing to do here for now
+	if (godot_view) {
+		delete godot_view;
+	}
+
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL(env);
+	env->DeleteGlobalRef(godot_instance);
+	env->DeleteGlobalRef(godot_class);
+	env->DeleteGlobalRef(activity);
+	env->DeleteGlobalRef(activity_class);
 }
 
 jobject GodotJavaWrapper::get_activity() {
@@ -115,14 +125,18 @@ jobject GodotJavaWrapper::get_class_loader() {
 }
 
 GodotJavaViewWrapper *GodotJavaWrapper::get_godot_view() {
-	if (_godot_view != nullptr) {
-		return _godot_view;
+	if (godot_view != nullptr) {
+		return godot_view;
 	}
-	JNIEnv *env = get_jni_env();
-	ERR_FAIL_NULL_V(env, nullptr);
-	jmethodID godot_view_getter = env->GetMethodID(godot_class, "getRenderView", "()Lorg/godotengine/godot/GodotRenderView;");
-	_godot_view = new GodotJavaViewWrapper(env->CallObjectMethod(godot_instance, godot_view_getter));
-	return _godot_view;
+	if (_get_render_view) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, nullptr);
+		jobject godot_render_view = env->CallObjectMethod(godot_instance, _get_render_view);
+		if (!env->IsSameObject(godot_render_view, nullptr)) {
+			godot_view = new GodotJavaViewWrapper(godot_render_view);
+		}
+	}
+	return godot_view;
 }
 
 bool GodotJavaWrapper::on_video_init(JNIEnv *p_env) {
@@ -165,14 +179,15 @@ void GodotJavaWrapper::restart(JNIEnv *p_env) {
 	}
 }
 
-void GodotJavaWrapper::force_quit(JNIEnv *p_env) {
+bool GodotJavaWrapper::force_quit(JNIEnv *p_env, int p_instance_id) {
 	if (_finish) {
 		if (p_env == nullptr) {
 			p_env = get_jni_env();
 		}
-		ERR_FAIL_NULL(p_env);
-		p_env->CallVoidMethod(godot_instance, _finish);
+		ERR_FAIL_NULL_V(p_env, false);
+		return p_env->CallBooleanMethod(godot_instance, _finish, p_instance_id);
 	}
+	return false;
 }
 
 void GodotJavaWrapper::set_keep_screen_on(bool p_enabled) {
@@ -331,14 +346,16 @@ void GodotJavaWrapper::vibrate(int p_duration_ms) {
 	}
 }
 
-void GodotJavaWrapper::create_new_godot_instance(List<String> args) {
+int GodotJavaWrapper::create_new_godot_instance(List<String> args) {
 	if (_create_new_godot_instance) {
 		JNIEnv *env = get_jni_env();
-		ERR_FAIL_NULL(env);
+		ERR_FAIL_NULL_V(env, 0);
 		jobjectArray jargs = env->NewObjectArray(args.size(), env->FindClass("java/lang/String"), env->NewStringUTF(""));
 		for (int i = 0; i < args.size(); i++) {
 			env->SetObjectArrayElement(jargs, i, env->NewStringUTF(args[i].utf8().get_data()));
 		}
-		env->CallVoidMethod(godot_instance, _create_new_godot_instance, jargs);
+		return env->CallIntMethod(godot_instance, _create_new_godot_instance, jargs);
+	} else {
+		return 0;
 	}
 }

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  marshalls.cpp                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  marshalls.cpp                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "marshalls.h"
 
@@ -503,7 +503,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 16, ERR_INVALID_DATA);
 				for (int i = 0; i < 4; i++) {
 					for (int j = 0; j < 4; j++) {
-						val.matrix[i][j] = decode_double(&buf[(i * 4 + j) * sizeof(double)]);
+						val.columns[i][j] = decode_double(&buf[(i * 4 + j) * sizeof(double)]);
 					}
 				}
 				if (r_len) {
@@ -513,7 +513,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				ERR_FAIL_COND_V((size_t)len < sizeof(float) * 16, ERR_INVALID_DATA);
 				for (int i = 0; i < 4; i++) {
 					for (int j = 0; j < 4; j++) {
-						val.matrix[i][j] = decode_float(&buf[(i * 4 + j) * sizeof(float)]);
+						val.columns[i][j] = decode_float(&buf[(i * 4 + j) * sizeof(float)]);
 					}
 				}
 
@@ -1450,7 +1450,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				Projection val = p_variant;
 				for (int i = 0; i < 4; i++) {
 					for (int j = 0; j < 4; j++) {
-						memcpy(&buf[(i * 4 + j) * sizeof(real_t)], &val.matrix[i][j], sizeof(real_t));
+						memcpy(&buf[(i * 4 + j) * sizeof(real_t)], &val.columns[i][j], sizeof(real_t));
 					}
 				}
 			}
@@ -1812,4 +1812,25 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 	}
 
 	return OK;
+}
+
+Vector<float> vector3_to_float32_array(const Vector3 *vecs, size_t count) {
+	// We always allocate a new array, and we don't memcpy.
+	// We also don't consider returning a pointer to the passed vectors when sizeof(real_t) == 4.
+	// One reason is that we could decide to put a 4th component in Vector3 for SIMD/mobile performance,
+	// which would cause trouble with these optimizations.
+	Vector<float> floats;
+	if (count == 0) {
+		return floats;
+	}
+	floats.resize(count * 3);
+	float *floats_w = floats.ptrw();
+	for (size_t i = 0; i < count; ++i) {
+		const Vector3 v = vecs[i];
+		floats_w[0] = v.x;
+		floats_w[1] = v.y;
+		floats_w[2] = v.z;
+		floats_w += 3;
+	}
+	return floats;
 }

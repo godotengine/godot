@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  mesh_instance_3d_editor_plugin.cpp                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  mesh_instance_3d_editor_plugin.cpp                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "mesh_instance_3d_editor_plugin.h"
 
@@ -38,6 +38,10 @@
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/menu_button.h"
+#include "scene/resources/concave_polygon_shape_3d.h"
+#include "scene/resources/convex_polygon_shape_3d.h"
+#include "scene/scene_string_names.h"
 
 void MeshInstance3DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -61,12 +65,12 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_OPTION_CREATE_STATIC_TRIMESH_BODY: {
 			EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
-			Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 
 			List<Node *> selection = editor_selection->get_selected_node_list();
 
 			if (selection.is_empty()) {
-				Ref<Shape3D> shape = mesh->create_trimesh_shape();
+				Ref<ConcavePolygonShape3D> shape = mesh->create_trimesh_shape();
 				if (shape.is_null()) {
 					err_dialog->set_text(TTR("Couldn't create a Trimesh collision shape."));
 					err_dialog->popup_centered();
@@ -84,8 +88,8 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				ur->add_do_method(node, "add_child", body, true);
 				ur->add_do_method(body, "set_owner", owner);
 				ur->add_do_method(cshape, "set_owner", owner);
-				ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", body);
-				ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", cshape);
+				ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, body);
+				ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, cshape);
 				ur->add_do_reference(body);
 				ur->add_undo_method(node, "remove_child", body);
 				ur->commit_action();
@@ -105,7 +109,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 					continue;
 				}
 
-				Ref<Shape3D> shape = m->create_trimesh_shape();
+				Ref<ConcavePolygonShape3D> shape = m->create_trimesh_shape();
 				if (shape.is_null()) {
 					continue;
 				}
@@ -120,8 +124,8 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				ur->add_do_method(instance, "add_child", body, true);
 				ur->add_do_method(body, "set_owner", owner);
 				ur->add_do_method(cshape, "set_owner", owner);
-				ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", body);
-				ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", cshape);
+				ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, body);
+				ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, cshape);
 				ur->add_do_reference(body);
 				ur->add_undo_method(instance, "remove_child", body);
 			}
@@ -137,7 +141,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			Ref<Shape3D> shape = mesh->create_trimesh_shape();
+			Ref<ConcavePolygonShape3D> shape = mesh->create_trimesh_shape();
 			if (shape.is_null()) {
 				return;
 			}
@@ -148,14 +152,14 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			Node *owner = get_tree()->get_edited_scene_root();
 
-			Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 
 			ur->create_action(TTR("Create Trimesh Static Shape"));
 
 			ur->add_do_method(node->get_parent(), "add_child", cshape, true);
 			ur->add_do_method(node->get_parent(), "move_child", cshape, node->get_index() + 1);
 			ur->add_do_method(cshape, "set_owner", owner);
-			ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", cshape);
+			ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, cshape);
 			ur->add_do_reference(cshape);
 			ur->add_undo_method(node->get_parent(), "remove_child", cshape);
 			ur->commit_action();
@@ -171,14 +175,14 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			bool simplify = (p_option == MENU_OPTION_CREATE_SIMPLIFIED_CONVEX_COLLISION_SHAPE);
 
-			Ref<Shape3D> shape = mesh->create_convex_shape(true, simplify);
+			Ref<ConvexPolygonShape3D> shape = mesh->create_convex_shape(true, simplify);
 
 			if (shape.is_null()) {
 				err_dialog->set_text(TTR("Couldn't create a single convex collision shape."));
 				err_dialog->popup_centered();
 				return;
 			}
-			Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 
 			if (simplify) {
 				ur->create_action(TTR("Create Simplified Convex Shape"));
@@ -195,7 +199,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			ur->add_do_method(node->get_parent(), "add_child", cshape, true);
 			ur->add_do_method(node->get_parent(), "move_child", cshape, node->get_index() + 1);
 			ur->add_do_method(cshape, "set_owner", owner);
-			ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", cshape);
+			ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, cshape);
 			ur->add_do_reference(cshape);
 			ur->add_undo_method(node->get_parent(), "remove_child", cshape);
 
@@ -218,7 +222,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				err_dialog->popup_centered();
 				return;
 			}
-			Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 
 			ur->create_action(TTR("Create Multiple Convex Shapes"));
 
@@ -234,7 +238,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				ur->add_do_method(node->get_parent(), "add_child", cshape);
 				ur->add_do_method(node->get_parent(), "move_child", cshape, node->get_index() + 1);
 				ur->add_do_method(cshape, "set_owner", owner);
-				ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", cshape);
+				ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, cshape);
 				ur->add_do_reference(cshape);
 				ur->add_undo_method(node->get_parent(), "remove_child", cshape);
 			}
@@ -255,12 +259,12 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			Node *owner = get_tree()->get_edited_scene_root();
 
-			Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 			ur->create_action(TTR("Create Navigation Mesh"));
 
 			ur->add_do_method(node, "add_child", nmi, true);
 			ur->add_do_method(nmi, "set_owner", owner);
-			ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", nmi);
+			ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, nmi);
 
 			ur->add_do_reference(nmi);
 			ur->add_undo_method(node, "remove_child", nmi);
@@ -269,6 +273,24 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 		case MENU_OPTION_CREATE_OUTLINE_MESH: {
 			outline_dialog->popup_centered(Vector2(200, 90));
+		} break;
+		case MENU_OPTION_CREATE_DEBUG_TANGENTS: {
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+			ur->create_action(TTR("Create Debug Tangents"));
+
+			MeshInstance3D *tangents = node->create_debug_tangents_node();
+
+			if (tangents) {
+				Node *owner = get_tree()->get_edited_scene_root();
+
+				ur->add_do_reference(tangents);
+				ur->add_do_method(node, "add_child", tangents, true);
+				ur->add_do_method(tangents, "set_owner", owner);
+
+				ur->add_undo_method(node, "remove_child", tangents);
+			}
+
+			ur->commit_action();
 		} break;
 		case MENU_OPTION_CREATE_UV2: {
 			Ref<ArrayMesh> mesh2 = node->get_mesh();
@@ -312,7 +334,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 			ur->create_action(TTR("Unwrap UV2"));
 
 			ur->add_do_method(node, "set_mesh", unwrapped_mesh);
@@ -438,7 +460,7 @@ void MeshInstance3DEditor::_debug_uv_draw() {
 	debug_uv->draw_rect(Rect2(Vector2(), debug_uv->get_size()), get_theme_color(SNAME("dark_color_3"), SNAME("Editor")));
 	debug_uv->draw_set_transform(Vector2(), 0, debug_uv->get_size());
 	// Use a translucent color to allow overlapping triangles to be visible.
-	debug_uv->draw_multiline(uv_lines, get_theme_color(SNAME("mono_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5), Math::round(EDSCALE));
+	debug_uv->draw_multiline(uv_lines, get_theme_color(SNAME("mono_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5));
 }
 
 void MeshInstance3DEditor::_create_outline_mesh() {
@@ -471,13 +493,13 @@ void MeshInstance3DEditor::_create_outline_mesh() {
 	mi->set_mesh(mesho);
 	Node *owner = get_tree()->get_edited_scene_root();
 
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 
 	ur->create_action(TTR("Create Outline"));
 
 	ur->add_do_method(node, "add_child", mi, true);
 	ur->add_do_method(mi, "set_owner", owner);
-	ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", mi);
+	ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, mi);
 
 	ur->add_do_reference(mi);
 	ur->add_undo_method(node, "remove_child", mi);
@@ -511,6 +533,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Outline Mesh..."), MENU_OPTION_CREATE_OUTLINE_MESH);
 	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a static outline mesh. The outline mesh will have its normals flipped automatically.\nThis can be used instead of the StandardMaterial Grow property when using that property isn't possible."));
+	options->get_popup()->add_item(TTR("Create Debug Tangents"), MENU_OPTION_CREATE_DEBUG_TANGENTS);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("View UV1"), MENU_OPTION_DEBUG_UV1);
 	options->get_popup()->add_item(TTR("View UV2"), MENU_OPTION_DEBUG_UV2);

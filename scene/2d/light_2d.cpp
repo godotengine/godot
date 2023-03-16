@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  light_2d.cpp                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  light_2d.cpp                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "light_2d.h"
 
@@ -172,6 +172,7 @@ void Light2D::set_shadow_filter(ShadowFilter p_filter) {
 	ERR_FAIL_INDEX(p_filter, SHADOW_FILTER_MAX);
 	shadow_filter = p_filter;
 	RS::get_singleton()->canvas_light_set_shadow_filter(canvas_light, RS::CanvasLightShadowFilter(p_filter));
+	notify_property_list_changed();
 }
 
 Light2D::ShadowFilter Light2D::get_shadow_filter() const {
@@ -229,6 +230,10 @@ real_t Light2D::get_shadow_smooth() const {
 
 void Light2D::_validate_property(PropertyInfo &p_property) const {
 	if (!shadow && (p_property.name == "shadow_color" || p_property.name == "shadow_filter" || p_property.name == "shadow_filter_smooth" || p_property.name == "shadow_item_cull_mask")) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (shadow && p_property.name == "shadow_filter_smooth" && shadow_filter == SHADOW_FILTER_NONE) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
@@ -316,6 +321,7 @@ Light2D::Light2D() {
 }
 
 Light2D::~Light2D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free(canvas_light);
 }
 
@@ -395,8 +401,8 @@ Vector2 PointLight2D::get_texture_offset() const {
 	return texture_offset;
 }
 
-TypedArray<String> PointLight2D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray PointLight2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (!texture.is_valid()) {
 		warnings.push_back(RTR("A texture with the shape of the light must be supplied to the \"Texture\" property."));
@@ -437,6 +443,7 @@ void PointLight2D::_bind_methods() {
 
 PointLight2D::PointLight2D() {
 	RS::get_singleton()->canvas_light_set_mode(_get_light(), RS::CANVAS_LIGHT_MODE_POINT);
+	set_hide_clip_children(true);
 }
 
 //////////
@@ -454,11 +461,12 @@ void DirectionalLight2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_distance", "pixels"), &DirectionalLight2D::set_max_distance);
 	ClassDB::bind_method(D_METHOD("get_max_distance"), &DirectionalLight2D::get_max_distance);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0,1,0.01,suffix:px"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,16384.0,1.0,or_greater,suffix:px"), "set_max_distance", "get_max_distance");
 }
 
 DirectionalLight2D::DirectionalLight2D() {
 	RS::get_singleton()->canvas_light_set_mode(_get_light(), RS::CANVAS_LIGHT_MODE_DIRECTIONAL);
 	set_max_distance(max_distance); // Update RenderingServer.
+	set_hide_clip_children(true);
 }

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  project_settings_editor.cpp                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  project_settings_editor.cpp                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "project_settings_editor.h"
 
@@ -36,6 +36,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "scene/gui/check_button.h"
 #include "servers/movie_writer/movie_writer.h"
 
 ProjectSettingsEditor *ProjectSettingsEditor::singleton = nullptr;
@@ -44,7 +45,7 @@ void ProjectSettingsEditor::connect_filesystem_dock_signals(FileSystemDock *p_fs
 	localization_editor->connect_filesystem_dock_signals(p_fs_dock);
 }
 
-void ProjectSettingsEditor::popup_project_settings() {
+void ProjectSettingsEditor::popup_project_settings(bool p_clear_filter) {
 	// Restore valid window bounds or pop up at default size.
 	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "project_settings", Rect2());
 	if (saved_size != Rect2()) {
@@ -61,6 +62,10 @@ void ProjectSettingsEditor::popup_project_settings() {
 	autoload_settings->update_autoload();
 	plugin_settings->update_plugins();
 	import_defaults_editor->clear();
+
+	if (p_clear_filter) {
+		search_box->clear();
+	}
 }
 
 void ProjectSettingsEditor::queue_save() {
@@ -70,6 +75,11 @@ void ProjectSettingsEditor::queue_save() {
 
 void ProjectSettingsEditor::set_plugins_page() {
 	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(plugin_settings));
+}
+
+void ProjectSettingsEditor::set_general_page(const String &p_category) {
+	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(general_editor));
+	general_settings_inspector->set_current_section(p_category);
 }
 
 void ProjectSettingsEditor::update_plugins() {
@@ -108,6 +118,7 @@ void ProjectSettingsEditor::_add_setting() {
 	Variant value;
 	Variant::construct(Variant::Type(type_box->get_selected_id()), value, nullptr, 0, ce);
 
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Project Setting"));
 	undo_redo->add_do_property(ps, setting, value);
 	undo_redo->add_undo_property(ps, setting, ps->has_setting(setting) ? ps->get(setting) : Variant());
@@ -127,6 +138,7 @@ void ProjectSettingsEditor::_delete_setting() {
 	Variant value = ps->get(setting);
 	int order = ps->get_order(setting);
 
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Delete Item"));
 
 	undo_redo->add_do_method(ps, "clear", setting);
@@ -215,9 +227,9 @@ void ProjectSettingsEditor::_select_type(Variant::Type p_type) {
 
 void ProjectSettingsEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
 	const Ref<InputEventKey> k = p_event;
-
 	if (k.is_valid() && k->is_pressed()) {
 		bool handled = false;
 
@@ -266,10 +278,14 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 	presets.insert("s3tc");
 	presets.insert("etc");
 	presets.insert("etc2");
+	presets.insert("editor");
+	presets.insert("template_debug");
+	presets.insert("template_release");
 	presets.insert("debug");
 	presets.insert("release");
-	presets.insert("editor");
-	presets.insert("standalone");
+	presets.insert("template");
+	presets.insert("double");
+	presets.insert("single");
 	presets.insert("32");
 	presets.insert("64");
 	presets.insert("movie");
@@ -333,6 +349,7 @@ void ProjectSettingsEditor::_action_added(const String &p_name) {
 	action["events"] = Array();
 	action["deadzone"] = 0.5f;
 
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Input Action"));
 	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, action);
 	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", name);
@@ -346,8 +363,9 @@ void ProjectSettingsEditor::_action_added(const String &p_name) {
 
 void ProjectSettingsEditor::_action_edited(const String &p_name, const Dictionary &p_action) {
 	const String property_name = "input/" + p_name;
-	Dictionary old_val = ProjectSettings::get_singleton()->get(property_name);
+	Dictionary old_val = GLOBAL_GET(property_name);
 
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (old_val["deadzone"] != p_action["deadzone"]) {
 		// Deadzone Changed
 		undo_redo->create_action(TTR("Change Action deadzone"));
@@ -356,17 +374,7 @@ void ProjectSettingsEditor::_action_edited(const String &p_name, const Dictionar
 
 	} else {
 		// Events changed
-		int event_count = ((Array)p_action["events"]).size();
-		int old_event_count = ((Array)old_val["events"]).size();
-
-		if (event_count == old_event_count) {
-			undo_redo->create_action(TTR("Edit Input Action Event"));
-		} else if (event_count > old_event_count) {
-			undo_redo->create_action(TTR("Add Input Action Event"));
-		} else {
-			undo_redo->create_action(TTR("Remove Input Action Event"));
-		}
-
+		undo_redo->create_action(TTR("Change Input Action Event(s)"));
 		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", property_name, p_action);
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", property_name, old_val);
 	}
@@ -381,9 +389,10 @@ void ProjectSettingsEditor::_action_edited(const String &p_name, const Dictionar
 void ProjectSettingsEditor::_action_removed(const String &p_name) {
 	const String property_name = "input/" + p_name;
 
-	Dictionary old_val = ProjectSettings::get_singleton()->get(property_name);
+	Dictionary old_val = GLOBAL_GET(property_name);
 	int order = ProjectSettings::get_singleton()->get_order(property_name);
 
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Erase Input Action"));
 	undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", property_name);
 	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", property_name, old_val);
@@ -404,9 +413,10 @@ void ProjectSettingsEditor::_action_renamed(const String &p_old_name, const Stri
 			"An action with this name already exists.");
 
 	int order = ProjectSettings::get_singleton()->get_order(old_property_name);
-	Dictionary action = ProjectSettings::get_singleton()->get(old_property_name);
+	Dictionary action = GLOBAL_GET(old_property_name);
 
-	undo_redo->create_action(TTR("Rename Input Action Event"));
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Rename Input Action"));
 	// Do: clear old, set new
 	undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", old_property_name);
 	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", new_property_name, action);
@@ -435,6 +445,7 @@ void ProjectSettingsEditor::_action_reordered(const String &p_action_name, const
 	HashMap<String, Variant> action_values;
 	ProjectSettings::get_singleton()->get_property_list(&props);
 
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Update Input Action Order"));
 
 	for (const PropertyInfo &prop : props) {
@@ -499,7 +510,7 @@ void ProjectSettingsEditor::_update_action_map_editor() {
 
 		// Strip the "input/" from the left.
 		String display_name = property_name.substr(String("input/").size() - 1);
-		Dictionary action = ProjectSettings::get_singleton()->get(property_name);
+		Dictionary action = GLOBAL_GET(property_name);
 
 		ActionMapEditor::ActionInfo action_info;
 		action_info.action = action;
@@ -510,6 +521,8 @@ void ProjectSettingsEditor::_update_action_map_editor() {
 		if (is_builtin_input) {
 			action_info.editable = false;
 			action_info.icon = builtin_icon;
+			action_info.has_initial = true;
+			action_info.action_initial = ProjectSettings::get_singleton()->property_get_revert(property_name);
 		}
 
 		actions.push_back(action_info);
@@ -534,6 +547,14 @@ void ProjectSettingsEditor::_update_theme() {
 		String type = Variant::get_type_name(Variant::Type(i));
 		type_box->add_icon_item(get_theme_icon(type, SNAME("EditorIcons")), type, i);
 	}
+}
+
+void ProjectSettingsEditor::_input_filter_focused() {
+	set_close_on_escape(false);
+}
+
+void ProjectSettingsEditor::_input_filter_unfocused() {
+	set_close_on_escape(true);
 }
 
 void ProjectSettingsEditor::_notification(int p_what) {
@@ -567,7 +588,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	set_title(TTR("Project Settings (project.godot)"));
 
 	ps = ProjectSettings::get_singleton();
-	undo_redo = p_data->get_undo_redo();
 	data = p_data;
 
 	tab_container = memnew(TabContainer);
@@ -575,7 +595,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	tab_container->set_theme_type_variation("TabContainerOdd");
 	add_child(tab_container);
 
-	VBoxContainer *general_editor = memnew(VBoxContainer);
+	general_editor = memnew(VBoxContainer);
 	general_editor->set_name(TTR("General"));
 	general_editor->set_alignment(BoxContainer::ALIGNMENT_BEGIN);
 	general_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -626,7 +646,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	custom_properties->add_child(del_button);
 
 	general_settings_inspector = memnew(SectionedInspector);
-	general_settings_inspector->get_inspector()->set_undo_redo(EditorNode::get_undo_redo());
 	general_settings_inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	general_settings_inspector->register_search_box(search_box);
 	general_settings_inspector->get_inspector()->set_use_filter(true);
@@ -668,6 +687,8 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	action_map_editor->connect("action_removed", callable_mp(this, &ProjectSettingsEditor::_action_removed));
 	action_map_editor->connect("action_renamed", callable_mp(this, &ProjectSettingsEditor::_action_renamed));
 	action_map_editor->connect("action_reordered", callable_mp(this, &ProjectSettingsEditor::_action_reordered));
+	action_map_editor->connect(SNAME("filter_focused"), callable_mp(this, &ProjectSettingsEditor::_input_filter_focused));
+	action_map_editor->connect(SNAME("filter_unfocused"), callable_mp(this, &ProjectSettingsEditor::_input_filter_unfocused));
 	tab_container->add_child(action_map_editor);
 
 	localization_editor = memnew(LocalizationEditor);

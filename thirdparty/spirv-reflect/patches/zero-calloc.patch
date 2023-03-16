@@ -1,8 +1,8 @@
 diff --git a/thirdparty/spirv-reflect/spirv_reflect.c b/thirdparty/spirv-reflect/spirv_reflect.c
-index c174ae1900..11ccbdee3a 100644
+index c5ed7ab07d..f2be1f8cae 100644
 --- a/thirdparty/spirv-reflect/spirv_reflect.c
 +++ b/thirdparty/spirv-reflect/spirv_reflect.c
-@@ -3322,12 +3322,18 @@ static SpvReflectResult ParseExecutionModes(
+@@ -3368,12 +3368,18 @@ static SpvReflectResult ParseExecutionModes(
      }
      for (size_t entry_point_idx = 0; entry_point_idx < p_module->entry_point_count; ++entry_point_idx) {
        SpvReflectEntryPoint* p_entry_point = &p_module->entry_points[entry_point_idx];

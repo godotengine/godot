@@ -90,7 +90,7 @@ int mbedtls_asn1_write_raw_buffer( unsigned char **p, unsigned char *start,
 
 #if defined(MBEDTLS_BIGNUM_C)
 /**
- * \brief           Write a arbitrary-precision number (#MBEDTLS_ASN1_INTEGER)
+ * \brief           Write an arbitrary-precision number (#MBEDTLS_ASN1_INTEGER)
  *                  in ASN.1 format.
  *
  * \note            This function works backwards in data buffer.

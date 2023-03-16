@@ -1,0 +1,17 @@
+#!/usr/bin/env python
+
+Import("env")
+
+# Thirdparty source files
+
+thirdparty_dir = "#thirdparty/spirv-reflect/"
+thirdparty_sources = [
+    "spirv_reflect.c",
+]
+
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+env_thirdparty = env.Clone()
+env_thirdparty.disable_warnings()
+
+env_thirdparty.add_source_files(env.servers_sources, thirdparty_sources)

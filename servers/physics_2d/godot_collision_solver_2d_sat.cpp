@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  godot_collision_solver_2d_sat.cpp                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  godot_collision_solver_2d_sat.cpp                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "godot_collision_solver_2d_sat.h"
 
@@ -234,7 +234,7 @@ public:
 			axis = Vector2(0.0, 1.0);
 		}
 
-		real_t min_A, max_A, min_B, max_B;
+		real_t min_A = 0.0, max_A = 0.0, min_B = 0.0, max_B = 0.0;
 
 		if (castA) {
 			shape_A->project_range_cast(motion_A, axis, *transform_A, min_A, max_A);
@@ -498,7 +498,7 @@ static void _collision_segment_rectangle(const GodotShape2D *p_a, const Transfor
 			return;
 		}
 
-		if (castA) {
+		if constexpr (castA) {
 			if (!separator.test_axis(rectangle_B->get_circle_axis(p_transform_b, inv, a + p_motion_a))) {
 				return;
 			}
@@ -507,7 +507,7 @@ static void _collision_segment_rectangle(const GodotShape2D *p_a, const Transfor
 			}
 		}
 
-		if (castB) {
+		if constexpr (castB) {
 			if (!separator.test_axis(rectangle_B->get_circle_axis(p_transform_b, inv, a - p_motion_b))) {
 				return;
 			}
@@ -516,7 +516,7 @@ static void _collision_segment_rectangle(const GodotShape2D *p_a, const Transfor
 			}
 		}
 
-		if (castA && castB) {
+		if constexpr (castA && castB) {
 			if (!separator.test_axis(rectangle_B->get_circle_axis(p_transform_b, inv, a - p_motion_b + p_motion_a))) {
 				return;
 			}
@@ -665,21 +665,21 @@ static void _collision_circle_rectangle(const GodotShape2D *p_a, const Transform
 		}
 	}
 
-	if (castA) {
+	if constexpr (castA) {
 		Vector2 sphereofs = sphere + p_motion_a;
 		if (!separator.test_axis(rectangle_B->get_circle_axis(p_transform_b, binv, sphereofs))) {
 			return;
 		}
 	}
 
-	if (castB) {
+	if constexpr (castB) {
 		Vector2 sphereofs = sphere - p_motion_b;
 		if (!separator.test_axis(rectangle_B->get_circle_axis(p_transform_b, binv, sphereofs))) {
 			return;
 		}
 	}
 
-	if (castA && castB) {
+	if constexpr (castA && castB) {
 		Vector2 sphereofs = sphere - p_motion_b + p_motion_a;
 		if (!separator.test_axis(rectangle_B->get_circle_axis(p_transform_b, binv, sphereofs))) {
 			return;
@@ -786,7 +786,7 @@ static void _collision_rectangle_rectangle(const GodotShape2D *p_a, const Transf
 		return;
 	}
 
-	if (withMargin) {
+	if constexpr (withMargin) {
 		Transform2D invA = p_transform_a.affine_inverse();
 		Transform2D invB = p_transform_b.affine_inverse();
 
@@ -794,29 +794,29 @@ static void _collision_rectangle_rectangle(const GodotShape2D *p_a, const Transf
 			return;
 		}
 
-		if (castA || castB) {
+		if constexpr (castA || castB) {
 			Transform2D aofs = p_transform_a;
 			aofs.columns[2] += p_motion_a;
 
 			Transform2D bofs = p_transform_b;
 			bofs.columns[2] += p_motion_b;
 
-			Transform2D aofsinv = aofs.affine_inverse();
-			Transform2D bofsinv = bofs.affine_inverse();
+			[[maybe_unused]] Transform2D aofsinv = aofs.affine_inverse();
+			[[maybe_unused]] Transform2D bofsinv = bofs.affine_inverse();
 
-			if (castA) {
+			if constexpr (castA) {
 				if (!separator.test_axis(rectangle_A->get_box_axis(aofs, aofsinv, rectangle_B, p_transform_b, invB))) {
 					return;
 				}
 			}
 
-			if (castB) {
+			if constexpr (castB) {
 				if (!separator.test_axis(rectangle_A->get_box_axis(p_transform_a, invA, rectangle_B, bofs, bofsinv))) {
 					return;
 				}
 			}
 
-			if (castA && castB) {
+			if constexpr (castA && castB) {
 				if (!separator.test_axis(rectangle_A->get_box_axis(aofs, aofsinv, rectangle_B, bofs, bofsinv))) {
 					return;
 				}
@@ -871,7 +871,7 @@ static void _collision_rectangle_capsule(const GodotShape2D *p_a, const Transfor
 			}
 		}
 
-		if (castA) {
+		if constexpr (castA) {
 			Vector2 capsule_endpoint = p_transform_b.get_origin() + p_transform_b.columns[1] * capsule_dir;
 			capsule_endpoint -= p_motion_a;
 
@@ -880,7 +880,7 @@ static void _collision_rectangle_capsule(const GodotShape2D *p_a, const Transfor
 			}
 		}
 
-		if (castB) {
+		if constexpr (castB) {
 			Vector2 capsule_endpoint = p_transform_b.get_origin() + p_transform_b.columns[1] * capsule_dir;
 			capsule_endpoint += p_motion_b;
 
@@ -889,7 +889,7 @@ static void _collision_rectangle_capsule(const GodotShape2D *p_a, const Transfor
 			}
 		}
 
-		if (castA && castB) {
+		if constexpr (castA && castB) {
 			Vector2 capsule_endpoint = p_transform_b.get_origin() + p_transform_b.columns[1] * capsule_dir;
 			capsule_endpoint -= p_motion_a;
 			capsule_endpoint += p_motion_b;
@@ -931,7 +931,7 @@ static void _collision_rectangle_convex_polygon(const GodotShape2D *p_a, const T
 
 	//convex faces
 	Transform2D boxinv;
-	if (withMargin) {
+	if constexpr (withMargin) {
 		boxinv = p_transform_a.affine_inverse();
 	}
 	for (int i = 0; i < convex_B->get_point_count(); i++) {
@@ -939,22 +939,22 @@ static void _collision_rectangle_convex_polygon(const GodotShape2D *p_a, const T
 			return;
 		}
 
-		if (withMargin) {
+		if constexpr (withMargin) {
 			//all points vs all points need to be tested if margin exist
 			if (!separator.test_axis(rectangle_A->get_circle_axis(p_transform_a, boxinv, p_transform_b.xform(convex_B->get_point(i))))) {
 				return;
 			}
-			if (castA) {
+			if constexpr (castA) {
 				if (!separator.test_axis(rectangle_A->get_circle_axis(p_transform_a, boxinv, p_transform_b.xform(convex_B->get_point(i)) - p_motion_a))) {
 					return;
 				}
 			}
-			if (castB) {
+			if constexpr (castB) {
 				if (!separator.test_axis(rectangle_A->get_circle_axis(p_transform_a, boxinv, p_transform_b.xform(convex_B->get_point(i)) + p_motion_b))) {
 					return;
 				}
 			}
-			if (castA && castB) {
+			if constexpr (castA && castB) {
 				if (!separator.test_axis(rectangle_A->get_circle_axis(p_transform_a, boxinv, p_transform_b.xform(convex_B->get_point(i)) + p_motion_b - p_motion_a))) {
 					return;
 				}

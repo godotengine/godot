@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  editor_export_preset.h                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_export_preset.h                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef EDITOR_EXPORT_PRESET_H
 #define EDITOR_EXPORT_PRESET_H
@@ -44,11 +44,14 @@ public:
 		EXPORT_SELECTED_SCENES,
 		EXPORT_SELECTED_RESOURCES,
 		EXCLUDE_SELECTED_RESOURCES,
+		EXPORT_CUSTOMIZED,
 	};
 
-	enum ScriptExportMode {
-		MODE_SCRIPT_TEXT,
-		MODE_SCRIPT_COMPILED,
+	enum FileExportMode {
+		MODE_FILE_NOT_CUSTOMIZED,
+		MODE_FILE_STRIP,
+		MODE_FILE_KEEP,
+		MODE_FILE_REMOVE,
 	};
 
 private:
@@ -60,7 +63,9 @@ private:
 
 	String exporter;
 	HashSet<String> selected_files;
+	HashMap<String, FileExportMode> customized_files;
 	bool runnable = false;
+	bool dedicated_server = false;
 
 	friend class EditorExport;
 	friend class EditorExportPlatform;
@@ -78,7 +83,6 @@ private:
 	bool enc_pck = false;
 	bool enc_directory = false;
 
-	int script_mode = MODE_SCRIPT_COMPILED;
 	String script_key;
 
 protected:
@@ -91,19 +95,28 @@ public:
 
 	bool has(const StringName &p_property) const { return values.has(p_property); }
 
-	void update_files_to_export();
+	void update_files();
 
 	Vector<String> get_files_to_export() const;
+	Dictionary get_customized_files() const;
+	int get_customized_files_count() const;
+	void set_customized_files(const Dictionary &p_files);
 
 	void add_export_file(const String &p_path);
 	void remove_export_file(const String &p_path);
 	bool has_export_file(const String &p_path);
+
+	void set_file_export_mode(const String &p_path, FileExportMode p_mode);
+	FileExportMode get_file_export_mode(const String &p_path, FileExportMode p_default = MODE_FILE_NOT_CUSTOMIZED) const;
 
 	void set_name(const String &p_name);
 	String get_name() const;
 
 	void set_runnable(bool p_enable);
 	bool is_runnable() const;
+
+	void set_dedicated_server(bool p_enable);
+	bool is_dedicated_server() const;
 
 	void set_export_filter(ExportFilter p_filter);
 	ExportFilter get_export_filter() const;
@@ -131,9 +144,6 @@ public:
 
 	void set_enc_directory(bool p_enabled);
 	bool get_enc_directory() const;
-
-	void set_script_export_mode(int p_mode);
-	int get_script_export_mode() const;
 
 	void set_script_encryption_key(const String &p_key);
 	String get_script_encryption_key() const;

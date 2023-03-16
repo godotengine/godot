@@ -30,13 +30,7 @@
 
 #if defined(MBEDTLS_SSL_TLS_C)
 
-#if defined(MBEDTLS_PLATFORM_C)
 #include "mbedtls/platform.h"
-#else
-#include <stdlib.h>
-#define mbedtls_calloc    calloc
-#define mbedtls_free      free
-#endif
 
 #include "mbedtls/ssl.h"
 #include "mbedtls/ssl_internal.h"
@@ -441,9 +435,12 @@ static void ssl_extract_add_data_from_record( unsigned char* add_data,
 
     unsigned char *cur = add_data;
 
+    int is_tls13 = 0;
 #if defined(MBEDTLS_SSL_PROTO_TLS1_3_EXPERIMENTAL)
-    if( minor_ver != MBEDTLS_SSL_MINOR_VERSION_4 )
+    if( minor_ver == MBEDTLS_SSL_MINOR_VERSION_4 )
+        is_tls13 = 1;
 #endif /* MBEDTLS_SSL_PROTO_TLS1_3_EXPERIMENTAL */
+    if( !is_tls13 )
     {
         ((void) minor_ver);
         memcpy( cur, rec->ctr, sizeof( rec->ctr ) );
@@ -1887,8 +1884,7 @@ int mbedtls_ssl_fetch_input( mbedtls_ssl_context *ssl, size_t nb_want )
 
     if( ssl->f_recv == NULL && ssl->f_recv_timeout == NULL )
     {
-        MBEDTLS_SSL_DEBUG_MSG( 1, ( "Bad usage of mbedtls_ssl_set_bio() "
-                            "or mbedtls_ssl_set_bio()" ) );
+        MBEDTLS_SSL_DEBUG_MSG( 1, ( "Bad usage of mbedtls_ssl_set_bio() " ) );
         return( MBEDTLS_ERR_SSL_BAD_INPUT_DATA );
     }
 
@@ -2103,8 +2099,7 @@ int mbedtls_ssl_flush_output( mbedtls_ssl_context *ssl )
 
     if( ssl->f_send == NULL )
     {
-        MBEDTLS_SSL_DEBUG_MSG( 1, ( "Bad usage of mbedtls_ssl_set_bio() "
-                            "or mbedtls_ssl_set_bio()" ) );
+        MBEDTLS_SSL_DEBUG_MSG( 1, ( "Bad usage of mbedtls_ssl_set_bio() " ) );
         return( MBEDTLS_ERR_SSL_BAD_INPUT_DATA );
     }
 
@@ -3950,8 +3945,8 @@ int mbedtls_ssl_read_record( mbedtls_ssl_context *ssl,
 
             if( ssl_record_is_in_progress( ssl ) == 0 )
             {
+                int dtls_have_buffered = 0;
 #if defined(MBEDTLS_SSL_PROTO_DTLS)
-                int have_buffered = 0;
 
                 /* We only check for buffered messages if the
                  * current datagram is fully consumed. */
@@ -3959,11 +3954,11 @@ int mbedtls_ssl_read_record( mbedtls_ssl_context *ssl,
                     ssl_next_record_is_in_datagram( ssl ) == 0 )
                 {
                     if( ssl_load_buffered_message( ssl ) == 0 )
-                        have_buffered = 1;
+                        dtls_have_buffered = 1;
                 }
 
-                if( have_buffered == 0 )
 #endif /* MBEDTLS_SSL_PROTO_DTLS */
+                if( dtls_have_buffered == 0 )
                 {
                     ret = ssl_get_next_record( ssl );
                     if( ret == MBEDTLS_ERR_SSL_CONTINUE_PROCESSING )
@@ -4037,7 +4032,7 @@ static int ssl_load_buffered_message( mbedtls_ssl_context *ssl )
     if( hs == NULL )
         return( -1 );
 
-    MBEDTLS_SSL_DEBUG_MSG( 2, ( "=> ssl_load_buffered_messsage" ) );
+    MBEDTLS_SSL_DEBUG_MSG( 2, ( "=> ssl_load_buffered_message" ) );
 
     if( ssl->state == MBEDTLS_SSL_CLIENT_CHANGE_CIPHER_SPEC ||
         ssl->state == MBEDTLS_SSL_SERVER_CHANGE_CIPHER_SPEC )

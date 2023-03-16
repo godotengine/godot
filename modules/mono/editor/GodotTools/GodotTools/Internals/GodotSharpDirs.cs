@@ -48,14 +48,7 @@ namespace GodotTools.Internals
             }
         }
 
-        public static void RegisterProjectSettings()
-        {
-            GlobalDef("dotnet/project/assembly_name", "");
-            GlobalDef("dotnet/project/solution_directory", "");
-            GlobalDef("dotnet/project/c#_project_directory", "");
-        }
-
-        private static void DetermineProjectLocation()
+        public static void DetermineProjectLocation()
         {
             static string DetermineProjectName()
             {
@@ -76,10 +69,11 @@ namespace GodotTools.Internals
             string slnParentDir = (string)ProjectSettings.GetSetting("dotnet/project/solution_directory");
             if (string.IsNullOrEmpty(slnParentDir))
                 slnParentDir = "res://";
+            else if (!slnParentDir.StartsWith("res://"))
+                slnParentDir = "res://" + slnParentDir;
 
-            string csprojParentDir = (string)ProjectSettings.GetSetting("dotnet/project/c#_project_directory");
-            if (string.IsNullOrEmpty(csprojParentDir))
-                csprojParentDir = "res://";
+            // The csproj should be in the same folder as project.godot.
+            string csprojParentDir = "res://";
 
             _projectSlnPath = Path.Combine(ProjectSettings.GlobalizePath(slnParentDir),
                 string.Concat(_projectAssemblyName, ".sln"));
@@ -121,5 +115,11 @@ namespace GodotTools.Internals
                 return _projectCsProjPath;
             }
         }
+
+        public static string LogsDirPathFor(string solution, string configuration)
+            => Path.Combine(BuildLogsDirs, $"{solution.Md5Text()}_{configuration}");
+
+        public static string LogsDirPathFor(string configuration)
+            => LogsDirPathFor(ProjectSlnPath, configuration);
     }
 }

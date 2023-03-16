@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  voxel_gi_editor_plugin.cpp                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  voxel_gi_editor_plugin.cpp                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "voxel_gi_editor_plugin.h"
 
@@ -35,7 +35,9 @@
 
 void VoxelGIEditorPlugin::_bake() {
 	if (voxel_gi) {
-		if (voxel_gi->get_probe_data().is_null()) {
+		Ref<VoxelGIData> voxel_gi_data = voxel_gi->get_probe_data();
+
+		if (voxel_gi_data.is_null()) {
 			String path = get_tree()->get_edited_scene_root()->get_scene_file_path();
 			if (path.is_empty()) {
 				path = "res://" + voxel_gi->get_name() + "_data.res";
@@ -46,7 +48,32 @@ void VoxelGIEditorPlugin::_bake() {
 			probe_file->set_current_path(path);
 			probe_file->popup_file_dialog();
 			return;
+		} else {
+			String path = voxel_gi_data->get_path();
+			if (!path.is_resource_file()) {
+				int srpos = path.find("::");
+				if (srpos != -1) {
+					String base = path.substr(0, srpos);
+					if (ResourceLoader::get_resource_type(base) == "PackedScene") {
+						if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
+							EditorNode::get_singleton()->show_warning(TTR("Voxel GI data is not local to the scene."));
+							return;
+						}
+					} else {
+						if (FileAccess::exists(base + ".import")) {
+							EditorNode::get_singleton()->show_warning(TTR("Voxel GI data is part of an imported resource."));
+							return;
+						}
+					}
+				}
+			} else {
+				if (FileAccess::exists(path + ".import")) {
+					EditorNode::get_singleton()->show_warning(TTR("Voxel GI data is an imported resource."));
+					return;
+				}
+			}
 		}
+
 		voxel_gi->bake();
 	}
 }
@@ -74,12 +101,12 @@ void VoxelGIEditorPlugin::_notification(int p_what) {
 			// Set information tooltip on the Bake button. This information is useful
 			// to optimize performance (video RAM size) and reduce light leaking (individual cell size).
 
-			const Vector3i size = voxel_gi->get_estimated_cell_size();
+			const Vector3i cell_size = voxel_gi->get_estimated_cell_size();
 
-			const Vector3 extents = voxel_gi->get_extents();
+			const Vector3 half_size = voxel_gi->get_size() / 2;
 
 			const int data_size = 4;
-			const double size_mb = size.x * size.y * size.z * data_size / (1024.0 * 1024.0);
+			const double size_mb = cell_size.x * cell_size.y * cell_size.z * data_size / (1024.0 * 1024.0);
 			// Add a qualitative measurement to help the user assess whether a VoxelGI node is using a lot of VRAM.
 			String size_quality;
 			if (size_mb < 16.0) {
@@ -91,8 +118,8 @@ void VoxelGIEditorPlugin::_notification(int p_what) {
 			}
 
 			String text;
-			text += vformat(TTR("Subdivisions: %s"), vformat(String::utf8("%d × %d × %d"), size.x, size.y, size.z)) + "\n";
-			text += vformat(TTR("Cell size: %s"), vformat(String::utf8("%.3f × %.3f × %.3f"), extents.x / size.x, extents.y / size.y, extents.z / size.z)) + "\n";
+			text += vformat(TTR("Subdivisions: %s"), vformat(String::utf8("%d × %d × %d"), cell_size.x, cell_size.y, cell_size.z)) + "\n";
+			text += vformat(TTR("Cell size: %s"), vformat(String::utf8("%.3f × %.3f × %.3f"), half_size.x / cell_size.x, half_size.y / cell_size.y, half_size.z / cell_size.z)) + "\n";
 			text += vformat(TTR("Video RAM size: %s MB (%s)"), String::num(size_mb, 2), size_quality);
 
 			// Only update the tooltip when needed to avoid constant redrawing.

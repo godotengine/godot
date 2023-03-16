@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  gdscript_workspace.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gdscript_workspace.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "gdscript_workspace.h"
 
@@ -55,14 +55,14 @@ void GDScriptWorkspace::_bind_methods() {
 }
 
 void GDScriptWorkspace::apply_new_signal(Object *obj, String function, PackedStringArray args) {
-	Ref<Script> script = obj->get_script();
+	Ref<Script> scr = obj->get_script();
 
-	if (script->get_language()->get_name() != "GDScript") {
+	if (scr->get_language()->get_name() != "GDScript") {
 		return;
 	}
 
 	String function_signature = "func " + function;
-	String source = script->get_source_code();
+	String source = scr->get_source_code();
 
 	if (source.contains(function_signature)) {
 		return;
@@ -98,7 +98,7 @@ void GDScriptWorkspace::apply_new_signal(Object *obj, String function, PackedStr
 
 	text_edit.newText = function_body;
 
-	String uri = get_file_uri(script->get_path());
+	String uri = get_file_uri(scr->get_path());
 
 	lsp::ApplyWorkspaceEditParams params;
 	params.edit.add_edit(uri, text_edit);
@@ -118,12 +118,12 @@ void GDScriptWorkspace::did_delete_files(const Dictionary &p_params) {
 
 void GDScriptWorkspace::remove_cache_parser(const String &p_path) {
 	HashMap<String, ExtendGDScriptParser *>::Iterator parser = parse_results.find(p_path);
-	HashMap<String, ExtendGDScriptParser *>::Iterator script = scripts.find(p_path);
-	if (parser && script) {
-		if (script->value && script->value == parser->value) {
-			memdelete(script->value);
+	HashMap<String, ExtendGDScriptParser *>::Iterator scr = scripts.find(p_path);
+	if (parser && scr) {
+		if (scr->value && scr->value == parser->value) {
+			memdelete(scr->value);
 		} else {
-			memdelete(script->value);
+			memdelete(scr->value);
 			memdelete(parser->value);
 		}
 		parse_results.erase(p_path);
@@ -131,8 +131,8 @@ void GDScriptWorkspace::remove_cache_parser(const String &p_path) {
 	} else if (parser) {
 		memdelete(parser->value);
 		parse_results.erase(p_path);
-	} else if (script) {
-		memdelete(script->value);
+	} else if (scr) {
+		memdelete(scr->value);
 		scripts.erase(p_path);
 	}
 }
@@ -587,8 +587,8 @@ void GDScriptWorkspace::completion(const lsp::CompletionParams &p_params, List<S
 
 			while (!stack.is_empty()) {
 				current = Object::cast_to<Node>(stack.pop_back());
-				Ref<GDScript> script = current->get_script();
-				if (script.is_valid() && script->get_path() == path) {
+				Ref<GDScript> scr = current->get_script();
+				if (scr.is_valid() && scr->get_path() == path) {
 					break;
 				}
 				for (int i = 0; i < current->get_child_count(); ++i) {
@@ -596,8 +596,8 @@ void GDScriptWorkspace::completion(const lsp::CompletionParams &p_params, List<S
 				}
 			}
 
-			Ref<GDScript> script = current->get_script();
-			if (!script.is_valid() || script->get_path() != path) {
+			Ref<GDScript> scr = current->get_script();
+			if (!scr.is_valid() || scr->get_path() != path) {
 				current = owner_scene_node;
 			}
 		}
@@ -691,13 +691,13 @@ void GDScriptWorkspace::resolve_related_symbols(const lsp::TextDocumentPositionP
 		}
 
 		for (const KeyValue<String, ExtendGDScriptParser *> &E : scripts) {
-			const ExtendGDScriptParser *script = E.value;
-			const ClassMembers &members = script->get_members();
+			const ExtendGDScriptParser *scr = E.value;
+			const ClassMembers &members = scr->get_members();
 			if (const lsp::DocumentSymbol *const *symbol = members.getptr(symbol_identifier)) {
 				r_list.push_back(*symbol);
 			}
 
-			for (const KeyValue<String, ClassMembers> &F : script->get_inner_classes()) {
+			for (const KeyValue<String, ClassMembers> &F : scr->get_inner_classes()) {
 				const ClassMembers *inner_class = &F.value;
 				if (const lsp::DocumentSymbol *const *symbol = inner_class->getptr(symbol_identifier)) {
 					r_list.push_back(*symbol);

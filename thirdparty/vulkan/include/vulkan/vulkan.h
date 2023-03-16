@@ -38,7 +38,6 @@
 
 
 #ifdef VK_USE_PLATFORM_WAYLAND_KHR
-#include <wayland-client.h>
 #include "vulkan_wayland.h"
 #endif
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorUndoRedoManager" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorUndoRedoManager" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Manages undo history of scenes opened in the editor.
 	</brief_description>
@@ -107,9 +107,24 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="history_changed">
+			<description>
+				Emitted when the list of actions in any history has changed, either when an action is committed or a history is cleared.
+			</description>
+		</signal>
+		<signal name="version_changed">
+			<description>
+				Emitted when the version of any history has changed as a result of undo or redo call.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="GLOBAL_HISTORY" value="0" enum="SpecialHistory">
 			Global history not associated with any scene, but with external resources etc.
+		</constant>
+		<constant name="REMOTE_HISTORY" value="-9" enum="SpecialHistory">
+			History associated with remote inspector. Used when live editing a running project.
 		</constant>
 		<constant name="INVALID_HISTORY" value="-99" enum="SpecialHistory">
 			Invalid "null" history. It's a special value, not associated with any object.

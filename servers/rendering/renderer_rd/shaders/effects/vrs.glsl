@@ -63,10 +63,18 @@ void main() {
 
 #ifdef MULTIVIEW
 	vec4 color = textureLod(source_color, uv, 0.0);
+	frag_color = uint(color.r * 255.0);
 #else /* MULTIVIEW */
 	vec4 color = textureLod(source_color, uv, 0.0);
-#endif /* MULTIVIEW */
 
-	// See if we can change the sampler to one that returns int...
-	frag_color = uint(color.r * 256.0);
+	// for user supplied VRS map we do a color mapping
+	color.r *= 3.0;
+	frag_color = int(color.r) << 2;
+
+	color.g *= 3.0;
+	frag_color += int(color.g);
+
+	// note 1x4, 4x1, 1x8, 8x1, 2x8 and 8x2 are not supported
+	// 4x8, 8x4 and 8x8 are only available on some GPUs
+#endif /* MULTIVIEW */
 }

@@ -40,14 +40,7 @@
 #include "mbedtls/aesni.h"
 #endif
 
-#if defined(MBEDTLS_SELF_TEST)
-#if defined(MBEDTLS_PLATFORM_C)
 #include "mbedtls/platform.h"
-#else
-#include <stdio.h>
-#define mbedtls_printf printf
-#endif /* MBEDTLS_PLATFORM_C */
-#endif /* MBEDTLS_SELF_TEST */
 
 #if !defined(MBEDTLS_AES_ALT)
 
@@ -1170,7 +1163,7 @@ int mbedtls_aes_crypt_xts( mbedtls_aes_xts_context *ctx,
         {
             /* We are on the last block in a decrypt operation that has
              * leftover bytes, so we need to use the next tweak for this block,
-             * and this tweak for the lefover bytes. Save the current tweak for
+             * and this tweak for the leftover bytes. Save the current tweak for
              * the leftovers and then update the current tweak for use on this,
              * the last full block. */
             memcpy( prev_tweak, tweak, sizeof( tweak ) );
@@ -1770,7 +1763,8 @@ int mbedtls_aes_self_test( int verbose )
     unsigned char key[32];
     unsigned char buf[64];
     const unsigned char *aes_tests;
-#if defined(MBEDTLS_CIPHER_MODE_CBC) || defined(MBEDTLS_CIPHER_MODE_CFB)
+#if defined(MBEDTLS_CIPHER_MODE_CBC) || defined(MBEDTLS_CIPHER_MODE_CFB) || \
+    defined(MBEDTLS_CIPHER_MODE_OFB)
     unsigned char iv[16];
 #endif
 #if defined(MBEDTLS_CIPHER_MODE_CBC)

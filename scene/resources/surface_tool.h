@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  surface_tool.h                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  surface_tool.h                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef SURFACE_TOOL_H
 #define SURFACE_TOOL_H
@@ -74,11 +74,16 @@ public:
 		SKIN_8_WEIGHTS
 	};
 
+	enum {
+		/* Do not move vertices that are located on the topological border (vertices on triangle edges that don't have a paired triangle). Useful for simplifying portions of the larger mesh. */
+		SIMPLIFY_LOCK_BORDER = 1 << 0, // From meshopt_SimplifyLockBorder
+	};
+
 	typedef void (*OptimizeVertexCacheFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, size_t vertex_count);
 	static OptimizeVertexCacheFunc optimize_vertex_cache_func;
-	typedef size_t (*SimplifyFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, float *r_error);
+	typedef size_t (*SimplifyFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, unsigned int options, float *r_error);
 	static SimplifyFunc simplify_func;
-	typedef size_t (*SimplifyWithAttribFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_data, size_t vertex_count, size_t vertex_stride, size_t target_index_count, float target_error, float *result_error, const float *attributes, const float *attribute_weights, size_t attribute_count);
+	typedef size_t (*SimplifyWithAttribFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_data, size_t vertex_count, size_t vertex_stride, size_t target_index_count, float target_error, unsigned int options, float *result_error, const float *attributes, const float *attribute_weights, size_t attribute_count);
 	static SimplifyWithAttribFunc simplify_with_attrib_func;
 	typedef float (*SimplifyScaleFunc)(const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride);
 	static SimplifyScaleFunc simplify_scale_func;
@@ -95,6 +100,21 @@ public:
 private:
 	struct VertexHasher {
 		static _FORCE_INLINE_ uint32_t hash(const Vertex &p_vtx);
+	};
+
+	struct SmoothGroupVertex {
+		Vector3 vertex;
+		uint32_t smooth_group = 0;
+		bool operator==(const SmoothGroupVertex &p_vertex) const;
+
+		SmoothGroupVertex(const Vertex &p_vertex) {
+			vertex = p_vertex.vertex;
+			smooth_group = p_vertex.smooth_group;
+		};
+	};
+
+	struct SmoothGroupVertexHasher {
+		static _FORCE_INLINE_ uint32_t hash(const SmoothGroupVertex &p_vtx);
 	};
 
 	struct TriangleHasher {

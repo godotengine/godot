@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  node.h                                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  node.h                                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef NODE_H
 #define NODE_H
@@ -37,6 +37,7 @@
 #include "scene/main/scene_tree.h"
 
 class Viewport;
+class Window;
 class SceneState;
 class Tween;
 class PropertyTweener;
@@ -57,7 +58,7 @@ public:
 		DUPLICATE_SIGNALS = 1,
 		DUPLICATE_GROUPS = 2,
 		DUPLICATE_SCRIPTS = 4,
-		DUPLICATE_USE_INSTANCING = 8,
+		DUPLICATE_USE_INSTANTIATION = 8,
 #ifdef TOOLS_ENABLED
 		DUPLICATE_FROM_EDITOR = 16,
 #endif
@@ -91,6 +92,7 @@ private:
 		SceneTree::Group *group = nullptr;
 	};
 
+	// This Data struct is to avoid namespace pollution in derived classes.
 	struct Data {
 		String scene_file_path;
 		Ref<SceneState> instance_state;
@@ -104,7 +106,7 @@ private:
 
 		int internal_children_front = 0;
 		int internal_children_back = 0;
-		int pos = -1;
+		int index = -1;
 		int depth = -1;
 		int blocked = 0; // Safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
 		StringName name;
@@ -172,7 +174,6 @@ private:
 	void _propagate_ready();
 	void _propagate_exit_tree();
 	void _propagate_after_exit_tree();
-	void _print_orphan_nodes();
 	void _propagate_process_owner(Node *p_owner, int p_pause_notification, int p_enabled_notification);
 	void _propagate_groups_dirty();
 	Array _get_node_and_resource(const NodePath &p_path);
@@ -186,8 +187,8 @@ private:
 	Error _rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Error _rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
-	_FORCE_INLINE_ bool _is_internal_front() const { return data.parent && data.pos < data.parent->data.internal_children_front; }
-	_FORCE_INLINE_ bool _is_internal_back() const { return data.parent && data.pos >= data.parent->data.children.size() - data.parent->data.internal_children_back; }
+	_FORCE_INLINE_ bool _is_internal_front() const { return data.parent && data.index < data.parent->data.internal_children_front; }
+	_FORCE_INLINE_ bool _is_internal_back() const { return data.parent && data.index >= data.parent->data.children.size() - data.parent->data.internal_children_back; }
 
 	friend class SceneTree;
 
@@ -269,6 +270,7 @@ public:
 		NOTIFICATION_POST_ENTER_TREE = 27,
 		NOTIFICATION_DISABLED = 28,
 		NOTIFICATION_ENABLED = 29,
+		NOTIFICATION_NODE_RECACHE_REQUESTED = 30,
 		//keep these linked to node
 
 		NOTIFICATION_WM_MOUSE_ENTER = 1002,
@@ -317,8 +319,11 @@ public:
 	bool has_node_and_resource(const NodePath &p_path) const;
 	Node *get_node_and_resource(const NodePath &p_path, Ref<Resource> &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property = true) const;
 
+	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true);
 	Node *get_parent() const;
 	Node *find_parent(const String &p_pattern) const;
+
+	Window *get_window() const;
 
 	_FORCE_INLINE_ SceneTree *get_tree() const {
 		ERR_FAIL_COND_V(!data.tree, nullptr);
@@ -331,7 +336,7 @@ public:
 	bool is_greater_than(const Node *p_node) const;
 
 	NodePath get_path() const;
-	NodePath get_path_to(const Node *p_node) const;
+	NodePath get_path_to(const Node *p_node, bool p_use_unique_path = false) const;
 	Node *find_common_parent_with(const Node *p_node) const;
 
 	void add_to_group(const StringName &p_identifier, bool p_persistent = false);
@@ -346,8 +351,8 @@ public:
 	void get_groups(List<GroupInfo> *p_groups) const;
 	int get_persistent_group_count() const;
 
-	void move_child(Node *p_child, int p_pos);
-	void _move_child(Node *p_child, int p_pos, bool p_ignore_end = false);
+	void move_child(Node *p_child, int p_index);
+	void _move_child(Node *p_child, int p_index, bool p_ignore_end = false);
 
 	void set_owner(Node *p_owner);
 	Node *get_owner() const;
@@ -459,7 +464,7 @@ public:
 #endif
 	static String adjust_name_casing(const String &p_name);
 
-	void queue_delete();
+	void queue_free();
 
 	//hacks for speed
 	static void init_node_hrcr();
@@ -477,7 +482,7 @@ public:
 
 	_FORCE_INLINE_ Viewport *get_viewport() const { return data.viewport; }
 
-	virtual TypedArray<String> get_configuration_warnings() const;
+	virtual PackedStringArray get_configuration_warnings() const;
 	String get_configuration_warnings_as_string() const;
 
 	void update_configuration_warnings();

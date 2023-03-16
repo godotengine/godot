@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RigidBody2D" inherits="PhysicsBody2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="RigidBody2D" inherits="PhysicsBody2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Physics Body which is moved by 2D physics simulation. Useful for objects that have gravity and can be pushed by other objects.
 	</brief_description>
@@ -87,6 +87,7 @@
 			<param index="0" name="torque" type="float" />
 			<description>
 				Applies a rotational force without affecting position. A force is time dependent and meant to be applied every physics update.
+				[b]Note:[/b] [member inertia] is required for this to work. To have [member inertia], an active [CollisionShape2D] must be a child of the node, or you can manually set [member inertia].
 			</description>
 		</method>
 		<method name="apply_torque_impulse">
@@ -95,6 +96,7 @@
 			<description>
 				Applies a rotational impulse to the body without affecting the position.
 				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
+				[b]Note:[/b] [member inertia] is required for this to work. To have [member inertia], an active [CollisionShape2D] must be a child of the node, or you can manually set [member inertia].
 			</description>
 		</method>
 		<method name="get_colliding_bodies" qualifiers="const">
@@ -174,6 +176,28 @@
 		<member name="inertia" type="float" setter="set_inertia" getter="get_inertia" default="0.0">
 			The body's moment of inertia. This is like mass, but for rotation: it determines how much torque it takes to rotate the body. The moment of inertia is usually computed automatically from the mass and the shapes, but this property allows you to set a custom value.
 			If set to [code]0[/code], inertia is automatically computed (default value).
+			[b]Note:[/b] This value does not change when inertia is automatically computed. Use [PhysicsServer2D] to get the computed inertia.
+			[codeblocks]
+			[gdscript]
+			@onready var ball = $Ball
+
+			func get_ball_inertia():
+			    return 1.0 / PhysicsServer2D.body_get_direct_state(ball.get_rid()).inverse_inertia
+			[/gdscript]
+			[csharp]
+			private RigidBody2D _ball;
+
+			public override void _Ready()
+			{
+			    _ball = GetNode&lt;RigidBody2D&gt;("Ball");
+			}
+
+			private float GetBallInertia()
+			{
+			    return 1.0f / PhysicsServer2D.BodyGetDirectState(_ball.GetRid()).InverseInertia;
+			}
+			[/csharp]
+			[/codeblocks]
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="0.0">
 			Damps the body's movement. By default, the body will use the [b]Default Linear Damp[/b] in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b] or any value override set by an [Area2D] the body is in. Depending on [member linear_damp_mode], you can set [member linear_damp] to be added to or to replace the body's damping value.

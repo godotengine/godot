@@ -374,7 +374,7 @@ namespace embree
 
             const size_t begin = set.begin();
             const size_t end   = set.end();
-            const size_t center = (begin + end)/2;
+            const size_t center = (begin + end + 1) / 2;
 
             PrimInfoMB linfo = empty;
             for (size_t i=begin; i<center; i++)
@@ -594,7 +594,7 @@ namespace embree
             /* spawn tasks */
             if (unlikely(current.size() > cfg.singleThreadThreshold))
             {
-              /*! parallel_for is faster than spawing sub-tasks */
+              /*! parallel_for is faster than spawning sub-tasks */
               parallel_for(size_t(0), children.size(), [&] (const range<size_t>& r) {
                   for (size_t i=r.begin(); i<r.end(); i++) {
                     values[i] = recurse(children[i],nullptr,true);

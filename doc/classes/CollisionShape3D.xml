@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CollisionShape3D" inherits="Node3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="CollisionShape3D" inherits="Node3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Node that represents collision shape data in 3D space.
 	</brief_description>
 	<description>
 		Editor facility for creating and editing collision shapes in 3D space. Set the [member shape] property to configure the shape. [b]IMPORTANT[/b]: this is an Editor-only helper to create shapes, use [method CollisionObject3D.shape_owner_get_shape] to get the actual shape.
 		You can use this node to represent all sorts of collision shapes, for example, add this to an [Area3D] to give it a detection shape, or add it to a [PhysicsBody3D] to create a solid object.
+		[b]Warning:[/b] A non-uniformly scaled CollisionShape3D node will probably not function as expected. Please make sure to keep its scale uniform (i.e. the same on all axes), and change the size of its [member shape] resource instead.
 	</description>
 	<tutorials>
 		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>

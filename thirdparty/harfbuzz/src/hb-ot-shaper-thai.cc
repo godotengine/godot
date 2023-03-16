@@ -98,9 +98,9 @@ static hb_codepoint_t
 thai_pua_shape (hb_codepoint_t u, thai_action_t action, hb_font_t *font)
 {
   struct thai_pua_mapping_t {
-    hb_codepoint_t u;
-    hb_codepoint_t win_pua;
-    hb_codepoint_t mac_pua;
+    uint16_t u;
+    uint16_t win_pua;
+    uint16_t mac_pua;
   } const *pua_mappings = nullptr;
   static const thai_pua_mapping_t SD_mappings[] = {
     {0x0E48u, 0xF70Au, 0xF88Bu}, /* MAI EK */

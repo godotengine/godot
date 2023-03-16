@@ -49,6 +49,7 @@ const hb_ot_shaper_t _hb_ot_shaper_default =
   true, /* fallback_position */
 };
 
+#ifndef HB_NO_AAT_SHAPE
 /* Same as default but no mark advance zeroing / fallback positioning.
  * Dumbest shaper ever, basically. */
 const hb_ot_shaper_t _hb_ot_shaper_dumber =
@@ -68,6 +69,7 @@ const hb_ot_shaper_t _hb_ot_shaper_dumber =
   HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE,
   false, /* fallback_position */
 };
+#endif
 
 
 #endif

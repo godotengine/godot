@@ -1,39 +1,39 @@
-/*************************************************************************/
-/*  method_bind.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  method_bind.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef METHOD_BIND_H
 #define METHOD_BIND_H
 
 #include "core/variant/binder_common.h"
 
-VARIANT_ENUM_CAST(MethodFlags)
+VARIANT_BITFIELD_CAST(MethodFlags)
 
 // some helpers
 
@@ -49,6 +49,7 @@ class MethodBind {
 	bool _static = false;
 	bool _const = false;
 	bool _returns = false;
+	bool _returns_raw_obj_ptr = false;
 
 protected:
 	Variant::Type *argument_types = nullptr;
@@ -110,8 +111,8 @@ public:
 
 	_FORCE_INLINE_ int get_argument_count() const { return argument_count; };
 
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) = 0;
-	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) = 0;
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const = 0;
+	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const = 0;
 
 	StringName get_name() const;
 	void set_name(const StringName &p_name);
@@ -120,6 +121,9 @@ public:
 	_FORCE_INLINE_ bool is_static() const { return _static; }
 	_FORCE_INLINE_ bool has_return() const { return _returns; }
 	virtual bool is_vararg() const { return false; }
+
+	_FORCE_INLINE_ bool is_return_type_raw_object_ptr() { return _returns_raw_obj_ptr; }
+	_FORCE_INLINE_ void set_return_type_is_raw_object_ptr(bool p_returns_raw_obj) { _returns_raw_obj_ptr = p_returns_raw_obj; }
 
 	void set_default_arguments(const Vector<Variant> &p_defargs);
 
@@ -158,7 +162,7 @@ public:
 	}
 #endif
 
-	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) override {
+	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {
 		ERR_FAIL(); // Can't call.
 	}
 
@@ -210,7 +214,7 @@ class MethodBindVarArgT : public MethodBindVarArgBase<MethodBindVarArgT<T>, T, v
 	friend class MethodBindVarArgBase<MethodBindVarArgT<T>, T, void, false>;
 
 public:
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) override {
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
 		(static_cast<T *>(p_object)->*MethodBindVarArgBase<MethodBindVarArgT<T>, T, void, false>::method)(p_args, p_arg_count, r_error);
 		return {};
 	}
@@ -241,9 +245,17 @@ class MethodBindVarArgTR : public MethodBindVarArgBase<MethodBindVarArgTR<T, R>,
 	friend class MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true>;
 
 public:
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) override {
+#if defined(SANITIZERS_ENABLED) && defined(__GNUC__) && !defined(__clang__)
+	// Workaround GH-66343 raised only with UBSAN, seems to be a false positive.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
 		return (static_cast<T *>(p_object)->*MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true>::method)(p_args, p_arg_count, r_error);
 	}
+#if defined(SANITIZERS_ENABLED) && defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 	MethodBindVarArgTR(
 			R (T::*p_method)(const Variant **, int, Callable::CallError &),
@@ -284,11 +296,6 @@ class MethodBindT : public MethodBind {
 	void (MB_T::*method)(P...);
 
 protected:
-// GCC raises warnings in the case P = {} as the comparison is always false...
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wlogical-op"
-#endif
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
@@ -296,9 +303,6 @@ protected:
 			return Variant::NIL;
 		}
 	}
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		PropertyInfo pi;
@@ -313,7 +317,7 @@ public:
 	}
 
 #endif
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) override {
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
 #ifdef TYPED_METHOD_BIND
 		call_with_variant_args_dv(static_cast<T *>(p_object), method, p_args, p_arg_count, r_error, get_default_arguments());
 #else
@@ -322,7 +326,7 @@ public:
 		return Variant();
 	}
 
-	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) override {
+	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {
 #ifdef TYPED_METHOD_BIND
 		call_with_ptr_args<T, P...>(static_cast<T *>(p_object), method, p_args);
 #else
@@ -359,11 +363,6 @@ class MethodBindTC : public MethodBind {
 	void (MB_T::*method)(P...) const;
 
 protected:
-// GCC raises warnings in the case P = {} as the comparison is always false...
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wlogical-op"
-#endif
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
@@ -371,9 +370,6 @@ protected:
 			return Variant::NIL;
 		}
 	}
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		PropertyInfo pi;
@@ -388,7 +384,7 @@ public:
 	}
 
 #endif
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) override {
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
 #ifdef TYPED_METHOD_BIND
 		call_with_variant_argsc_dv(static_cast<T *>(p_object), method, p_args, p_arg_count, r_error, get_default_arguments());
 #else
@@ -397,7 +393,7 @@ public:
 		return Variant();
 	}
 
-	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) override {
+	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {
 #ifdef TYPED_METHOD_BIND
 		call_with_ptr_argsc<T, P...>(static_cast<T *>(p_object), method, p_args);
 #else
@@ -436,11 +432,6 @@ class MethodBindTR : public MethodBind {
 	(P...);
 
 protected:
-// GCC raises warnings in the case P = {} as the comparison is always false...
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wlogical-op"
-#endif
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
@@ -458,9 +449,6 @@ protected:
 			return GetTypeInfo<R>::get_class_info();
 		}
 	}
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 public:
 #ifdef DEBUG_METHODS_ENABLED
@@ -473,7 +461,7 @@ public:
 	}
 #endif
 
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) override {
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
 		Variant ret;
 #ifdef TYPED_METHOD_BIND
 		call_with_variant_args_ret_dv(static_cast<T *>(p_object), method, p_args, p_arg_count, ret, r_error, get_default_arguments());
@@ -483,7 +471,7 @@ public:
 		return ret;
 	}
 
-	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) override {
+	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {
 #ifdef TYPED_METHOD_BIND
 		call_with_ptr_args_ret<T, R, P...>(static_cast<T *>(p_object), method, p_args, r_ret);
 #else
@@ -523,11 +511,6 @@ class MethodBindTRC : public MethodBind {
 	(P...) const;
 
 protected:
-// GCC raises warnings in the case P = {} as the comparison is always false...
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wlogical-op"
-#endif
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
@@ -545,9 +528,6 @@ protected:
 			return GetTypeInfo<R>::get_class_info();
 		}
 	}
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 public:
 #ifdef DEBUG_METHODS_ENABLED
@@ -560,7 +540,7 @@ public:
 	}
 #endif
 
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) override {
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
 		Variant ret;
 #ifdef TYPED_METHOD_BIND
 		call_with_variant_args_retc_dv(static_cast<T *>(p_object), method, p_args, p_arg_count, ret, r_error, get_default_arguments());
@@ -570,7 +550,7 @@ public:
 		return ret;
 	}
 
-	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) override {
+	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {
 #ifdef TYPED_METHOD_BIND
 		call_with_ptr_args_retc<T, R, P...>(static_cast<T *>(p_object), method, p_args, r_ret);
 #else
@@ -607,11 +587,6 @@ class MethodBindTS : public MethodBind {
 	void (*function)(P...);
 
 protected:
-// GCC raises warnings in the case P = {} as the comparison is always false...
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wlogical-op"
-#endif
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
@@ -619,9 +594,6 @@ protected:
 			return Variant::NIL;
 		}
 	}
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		PropertyInfo pi;
@@ -636,13 +608,13 @@ public:
 	}
 
 #endif
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) override {
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
 		(void)p_object; // unused
 		call_with_variant_args_static_dv(function, p_args, p_arg_count, r_error, get_default_arguments());
 		return Variant();
 	}
 
-	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) override {
+	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {
 		(void)p_object;
 		(void)r_ret;
 		call_with_ptr_args_static_method(function, p_args);
@@ -670,11 +642,6 @@ class MethodBindTRS : public MethodBind {
 	(P...);
 
 protected:
-// GCC raises warnings in the case P = {} as the comparison is always false...
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wlogical-op"
-#endif
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
@@ -682,9 +649,6 @@ protected:
 			return GetTypeInfo<R>::VARIANT_TYPE;
 		}
 	}
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
@@ -707,13 +671,13 @@ public:
 	}
 
 #endif
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) override {
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
 		Variant ret;
 		call_with_variant_args_static_ret_dv(function, p_args, p_arg_count, ret, r_error, get_default_arguments());
 		return ret;
 	}
 
-	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) override {
+	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {
 		(void)p_object;
 		call_with_ptr_args_static_method_ret(function, p_args, r_ret);
 	}

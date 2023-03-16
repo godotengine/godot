@@ -1,38 +1,37 @@
-/*************************************************************************/
-/*  gltf_state.h                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gltf_state.h                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef GLTF_STATE_H
 #define GLTF_STATE_H
 
 #include "extensions/gltf_light.h"
-#include "gltf_template_convert.h"
 #include "structures/gltf_accessor.h"
 #include "structures/gltf_animation.h"
 #include "structures/gltf_buffer_view.h"
@@ -42,10 +41,7 @@
 #include "structures/gltf_skeleton.h"
 #include "structures/gltf_skin.h"
 #include "structures/gltf_texture.h"
-
-#include "core/templates/rb_map.h"
-#include "scene/animation/animation_player.h"
-#include "scene/resources/texture.h"
+#include "structures/gltf_texture_sampler.h"
 
 class GLTFState : public Resource {
 	GDCLASS(GLTFState, Resource);
@@ -63,6 +59,8 @@ class GLTFState : public Resource {
 	bool discard_meshes_and_materials = false;
 	bool create_animations = true;
 
+	int handle_binary_image = HANDLE_BINARY_EXTRACT_TEXTURES;
+
 	Vector<Ref<GLTFNode>> nodes;
 	Vector<Vector<uint8_t>> buffers;
 	Vector<Ref<GLTFBufferView>> buffer_views;
@@ -71,13 +69,18 @@ class GLTFState : public Resource {
 	Vector<Ref<GLTFMesh>> meshes; // meshes are loaded directly, no reason not to.
 
 	Vector<AnimationPlayer *> animation_players;
-	HashMap<Ref<BaseMaterial3D>, GLTFMaterialIndex> material_cache;
-	Vector<Ref<BaseMaterial3D>> materials;
+	HashMap<Ref<Material>, GLTFMaterialIndex> material_cache;
+	Vector<Ref<Material>> materials;
 
 	String scene_name;
 	Vector<int> root_nodes;
 	Vector<Ref<GLTFTexture>> textures;
+	Vector<Ref<GLTFTextureSampler>> texture_samplers;
+	Ref<GLTFTextureSampler> default_texture_sampler;
 	Vector<Ref<Texture2D>> images;
+	Vector<String> extensions_used;
+	Vector<String> extensions_required;
+	Vector<Ref<Image>> source_images;
 
 	Vector<Ref<GLTFSkin>> skins;
 	Vector<Ref<GLTFCamera>> cameras;
@@ -86,17 +89,33 @@ class GLTFState : public Resource {
 	HashSet<String> unique_animation_names;
 
 	Vector<Ref<GLTFSkeleton>> skeletons;
-	HashMap<GLTFSkeletonIndex, GLTFNodeIndex> skeleton_to_node;
 	Vector<Ref<GLTFAnimation>> animations;
 	HashMap<GLTFNodeIndex, Node *> scene_nodes;
+	HashMap<GLTFNodeIndex, ImporterMeshInstance3D *> scene_mesh_instances;
 
 	HashMap<ObjectID, GLTFSkeletonIndex> skeleton3d_to_gltf_skeleton;
 	HashMap<ObjectID, HashMap<ObjectID, GLTFSkinIndex>> skin_and_skeleton3d_to_gltf_skin;
+	Dictionary additional_data;
 
 protected:
 	static void _bind_methods();
 
 public:
+	void add_used_extension(const String &p_extension, bool p_required = false);
+
+	enum GLTFHandleBinary {
+		HANDLE_BINARY_DISCARD_TEXTURES = 0,
+		HANDLE_BINARY_EXTRACT_TEXTURES,
+		HANDLE_BINARY_EMBED_AS_BASISU,
+		HANDLE_BINARY_EMBED_AS_UNCOMPRESSED, // if this value changes from 3, ResourceImporterScene::pre_import must be changed as well.
+	};
+	int32_t get_handle_binary_image() {
+		return handle_binary_image;
+	}
+	void set_handle_binary_image(int32_t p_handle_binary_image) {
+		handle_binary_image = p_handle_binary_image;
+	}
+
 	Dictionary get_json();
 	void set_json(Dictionary p_json);
 
@@ -111,6 +130,15 @@ public:
 
 	bool get_use_named_skin_binds();
 	void set_use_named_skin_binds(bool p_use_named_skin_binds);
+
+	bool get_discard_textures();
+	void set_discard_textures(bool p_discard_textures);
+
+	bool get_embed_as_basisu();
+	void set_embed_as_basisu(bool p_embed_as_basisu);
+
+	bool get_extract_textures();
+	void set_extract_textures(bool p_extract_textures);
 
 	bool get_discard_meshes_and_materials();
 	void set_discard_meshes_and_materials(bool p_discard_meshes_and_materials);
@@ -130,8 +158,8 @@ public:
 	TypedArray<GLTFMesh> get_meshes();
 	void set_meshes(TypedArray<GLTFMesh> p_meshes);
 
-	TypedArray<BaseMaterial3D> get_materials();
-	void set_materials(TypedArray<BaseMaterial3D> p_materials);
+	TypedArray<Material> get_materials();
+	void set_materials(TypedArray<Material> p_materials);
 
 	String get_scene_name();
 	void set_scene_name(String p_scene_name);
@@ -144,6 +172,9 @@ public:
 
 	TypedArray<GLTFTexture> get_textures();
 	void set_textures(TypedArray<GLTFTexture> p_textures);
+
+	TypedArray<GLTFTextureSampler> get_texture_samplers();
+	void set_texture_samplers(TypedArray<GLTFTextureSampler> p_texture_samplers);
 
 	TypedArray<Texture2D> get_images();
 	void set_images(TypedArray<Texture2D> p_images);
@@ -166,9 +197,6 @@ public:
 	TypedArray<GLTFSkeleton> get_skeletons();
 	void set_skeletons(TypedArray<GLTFSkeleton> p_skeletons);
 
-	Dictionary get_skeleton_to_node();
-	void set_skeleton_to_node(Dictionary p_skeleton_to_node);
-
 	bool get_create_animations();
 	void set_create_animations(bool p_create_animations);
 
@@ -176,25 +204,14 @@ public:
 	void set_animations(TypedArray<GLTFAnimation> p_animations);
 
 	Node *get_scene_node(GLTFNodeIndex idx);
+	ImporterMeshInstance3D *get_scene_mesh_instance(GLTFNodeIndex idx);
 
 	int get_animation_players_count(int idx);
 
 	AnimationPlayer *get_animation_player(int idx);
 
-	//void set_scene_nodes(RBMap<GLTFNodeIndex, Node *> p_scene_nodes) {
-	//	this->scene_nodes = p_scene_nodes;
-	//}
-
-	//void set_animation_players(Vector<AnimationPlayer *> p_animation_players) {
-	//	this->animation_players = p_animation_players;
-	//}
-
-	//RBMap<Ref<Material>, GLTFMaterialIndex> get_material_cache() {
-	//	return this->material_cache;
-	//}
-	//void set_material_cache(RBMap<Ref<Material>, GLTFMaterialIndex> p_material_cache) {
-	//	this->material_cache = p_material_cache;
-	//}
+	Variant get_additional_data(const StringName &p_extension_name);
+	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
 };
 
 #endif // GLTF_STATE_H

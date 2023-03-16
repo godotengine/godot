@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  gdscript_function.cpp                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gdscript_function.cpp                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "gdscript_function.h"
 
@@ -142,20 +142,27 @@ GDScriptFunction::GDScriptFunction() {
 	name = "<anonymous>";
 #ifdef DEBUG_ENABLED
 	{
-		MutexLock lock(GDScriptLanguage::get_singleton()->lock);
+		MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
 		GDScriptLanguage::get_singleton()->function_list.add(&function_list);
 	}
 #endif
 }
 
 GDScriptFunction::~GDScriptFunction() {
+	get_script()->member_functions.erase(name);
+
 	for (int i = 0; i < lambdas.size(); i++) {
 		memdelete(lambdas[i]);
 	}
 
+	for (int i = 0; i < argument_types.size(); i++) {
+		argument_types.write[i].script_type_ref = Ref<Script>();
+	}
+	return_type.script_type_ref = Ref<Script>();
+
 #ifdef DEBUG_ENABLED
 
-	MutexLock lock(GDScriptLanguage::get_singleton()->lock);
+	MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
 
 	GDScriptLanguage::get_singleton()->function_list.remove(&function_list);
 #endif
@@ -201,7 +208,7 @@ bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 	}
 
 	if (p_extended_check) {
-		MutexLock lock(GDScriptLanguage::get_singleton()->lock);
+		MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
 
 		// Script gone?
 		if (!scripts_list.in_list()) {
@@ -219,7 +226,7 @@ bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 	ERR_FAIL_COND_V(!function, Variant());
 	{
-		MutexLock lock(GDScriptLanguage::singleton->lock);
+		MutexLock lock(GDScriptLanguage::singleton->mutex);
 
 		if (!scripts_list.in_list()) {
 #ifdef DEBUG_ENABLED
@@ -289,6 +296,15 @@ void GDScriptFunctionState::_clear_stack() {
 	}
 }
 
+void GDScriptFunctionState::_clear_connections() {
+	List<Object::Connection> conns;
+	get_signals_connected_to_this(&conns);
+
+	for (Object::Connection &c : conns) {
+		c.signal.disconnect(c.callable);
+	}
+}
+
 void GDScriptFunctionState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("resume", "arg"), &GDScriptFunctionState::resume, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("is_valid", "extended_check"), &GDScriptFunctionState::is_valid, DEFVAL(false));
@@ -304,7 +320,7 @@ GDScriptFunctionState::GDScriptFunctionState() :
 
 GDScriptFunctionState::~GDScriptFunctionState() {
 	{
-		MutexLock lock(GDScriptLanguage::singleton->lock);
+		MutexLock lock(GDScriptLanguage::singleton->mutex);
 		scripts_list.remove_from_list();
 		instances_list.remove_from_list();
 	}

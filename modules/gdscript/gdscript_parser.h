@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  gdscript_parser.h                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gdscript_parser.h                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef GDSCRIPT_PARSER_H
 #define GDSCRIPT_PARSER_H
@@ -57,6 +57,7 @@ public:
 	struct AnnotationNode;
 	struct ArrayNode;
 	struct AssertNode;
+	struct AssignableNode;
 	struct AssignmentNode;
 	struct AwaitNode;
 	struct BinaryOpNode;
@@ -90,6 +91,7 @@ public:
 	struct SuiteNode;
 	struct TernaryOpNode;
 	struct TypeNode;
+	struct TypeTestNode;
 	struct UnaryOpNode;
 	struct VariableNode;
 	struct WhileNode;
@@ -107,6 +109,7 @@ public:
 			CLASS, // GDScript.
 			ENUM, // Enumeration.
 			VARIANT, // Can be any type.
+			RESOLVING, // Currently resolving.
 			UNRESOLVED,
 		};
 		Kind kind = UNRESOLVED;
@@ -120,7 +123,9 @@ public:
 		TypeSource type_source = UNDETECTED;
 
 		bool is_constant = false;
+		bool is_read_only = false;
 		bool is_meta_type = false;
+		bool is_pseudo_type = false; // For global names that can't be used standalone.
 		bool is_coroutine = false; // For function calls.
 
 		Variant::Type builtin_type = Variant::NIL;
@@ -131,11 +136,12 @@ public:
 		ClassNode *class_type = nullptr;
 
 		MethodInfo method_info; // For callable/signals.
-		HashMap<StringName, int> enum_values; // For enums.
+		HashMap<StringName, int64_t> enum_values; // For enums.
 
-		_FORCE_INLINE_ bool is_set() const { return kind != UNRESOLVED; }
+		_FORCE_INLINE_ bool is_set() const { return kind != RESOLVING && kind != UNRESOLVED; }
+		_FORCE_INLINE_ bool is_resolving() const { return kind == RESOLVING; }
 		_FORCE_INLINE_ bool has_no_type() const { return type_source == UNDETECTED; }
-		_FORCE_INLINE_ bool is_variant() const { return kind == VARIANT || kind == UNRESOLVED; }
+		_FORCE_INLINE_ bool is_variant() const { return kind == VARIANT || kind == RESOLVING || kind == UNRESOLVED; }
 		_FORCE_INLINE_ bool is_hard_type() const { return type_source > INFERRED; }
 		String to_string() const;
 
@@ -182,12 +188,13 @@ public:
 				case BUILTIN:
 					return builtin_type == p_other.builtin_type;
 				case NATIVE:
-				case ENUM:
-					return native_type == p_other.native_type && enum_type == p_other.enum_type;
+				case ENUM: // Enums use native_type to identify the enum and its base class.
+					return native_type == p_other.native_type;
 				case SCRIPT:
 					return script_type == p_other.script_type;
 				case CLASS:
-					return class_type == p_other.class_type;
+					return class_type == p_other.class_type || class_type->fqcn == p_other.class_type->fqcn;
+				case RESOLVING:
 				case UNRESOLVED:
 					break;
 			}
@@ -202,8 +209,10 @@ public:
 		void operator=(const DataType &p_other) {
 			kind = p_other.kind;
 			type_source = p_other.type_source;
+			is_read_only = p_other.is_read_only;
 			is_constant = p_other.is_constant;
 			is_meta_type = p_other.is_meta_type;
+			is_pseudo_type = p_other.is_pseudo_type;
 			is_coroutine = p_other.is_coroutine;
 			builtin_type = p_other.builtin_type;
 			native_type = p_other.native_type;
@@ -282,6 +291,7 @@ public:
 			SUITE,
 			TERNARY_OPERATOR,
 			TYPE,
+			TYPE_TEST,
 			UNARY_OPERATOR,
 			VARIABLE,
 			WHILE,
@@ -293,7 +303,9 @@ public:
 		int leftmost_column = 0, rightmost_column = 0;
 		Node *next = nullptr;
 		List<AnnotationNode *> annotations;
-		Vector<uint32_t> ignored_warnings;
+#ifdef DEBUG_ENABLED
+		Vector<GDScriptWarning::Code> ignored_warnings;
+#endif
 
 		DataType datatype;
 
@@ -325,8 +337,10 @@ public:
 
 		AnnotationInfo *info = nullptr;
 		PropertyInfo export_info;
+		bool is_resolved = false;
+		bool is_applied = false;
 
-		bool apply(GDScriptParser *p_this, Node *p_target) const;
+		bool apply(GDScriptParser *p_this, Node *p_target);
 		bool applies_to(uint32_t p_target_kinds) const;
 
 		AnnotationNode() {
@@ -349,6 +363,20 @@ public:
 		AssertNode() {
 			type = ASSERT;
 		}
+	};
+
+	struct AssignableNode : public Node {
+		IdentifierNode *identifier = nullptr;
+		ExpressionNode *initializer = nullptr;
+		TypeNode *datatype_specifier = nullptr;
+		bool infer_datatype = false;
+		bool use_conversion_assign = false;
+		int usages = 0;
+
+		virtual ~AssignableNode() {}
+
+	protected:
+		AssignableNode() {}
 	};
 
 	struct AssignmentNode : public ExpressionNode {
@@ -402,7 +430,6 @@ public:
 			OP_BIT_XOR,
 			OP_LOGIC_AND,
 			OP_LOGIC_OR,
-			OP_TYPE_TEST,
 			OP_CONTENT_TEST,
 			OP_COMP_EQUAL,
 			OP_COMP_NOT_EQUAL,
@@ -469,7 +496,7 @@ public:
 			EnumNode *parent_enum = nullptr;
 			int index = -1;
 			bool resolved = false;
-			int value = 0;
+			int64_t value = 0;
 			int line = 0;
 			int leftmost_column = 0;
 			int rightmost_column = 0;
@@ -480,6 +507,7 @@ public:
 
 		IdentifierNode *identifier = nullptr;
 		Vector<Value> values;
+		Variant dictionary;
 #ifdef TOOLS_ENABLED
 		String doc_description;
 #endif // TOOLS_ENABLED
@@ -515,6 +543,32 @@ public:
 				AnnotationNode *annotation;
 			};
 			EnumNode::Value enum_value;
+
+			String get_name() const {
+				switch (type) {
+					case UNDEFINED:
+						return "<undefined member>";
+					case CLASS:
+						// All class-type members have an id.
+						return m_class->identifier->name;
+					case CONSTANT:
+						return constant->identifier->name;
+					case FUNCTION:
+						return function->identifier->name;
+					case SIGNAL:
+						return signal->identifier->name;
+					case VARIABLE:
+						return variable->identifier->name;
+					case ENUM:
+						// All enum-type members have an id.
+						return m_enum->identifier->name;
+					case ENUM_VALUE:
+						return enum_value.identifier->name;
+					case GROUP:
+						return annotation->export_info.name;
+				}
+				return "";
+			}
 
 			String get_type_name() const {
 				switch (type) {
@@ -576,29 +630,40 @@ public:
 						return variable->get_datatype();
 					case ENUM:
 						return m_enum->get_datatype();
-					case ENUM_VALUE: {
-						// Always integer.
-						DataType type;
-						type.type_source = DataType::ANNOTATED_EXPLICIT;
-						type.kind = DataType::BUILTIN;
-						type.builtin_type = Variant::INT;
-						return type;
-					}
-					case SIGNAL: {
-						DataType type;
-						type.type_source = DataType::ANNOTATED_EXPLICIT;
-						type.kind = DataType::BUILTIN;
-						type.builtin_type = Variant::SIGNAL;
-						// TODO: Add parameter info.
-						return type;
-					}
-					case GROUP: {
+					case ENUM_VALUE:
+						return enum_value.identifier->get_datatype();
+					case SIGNAL:
+						return signal->get_datatype();
+					case GROUP:
 						return DataType();
-					}
 					case UNDEFINED:
 						return DataType();
 				}
 				ERR_FAIL_V_MSG(DataType(), "Reaching unhandled type.");
+			}
+
+			Node *get_source_node() const {
+				switch (type) {
+					case CLASS:
+						return m_class;
+					case CONSTANT:
+						return constant;
+					case FUNCTION:
+						return function;
+					case VARIABLE:
+						return variable;
+					case ENUM:
+						return m_enum;
+					case ENUM_VALUE:
+						return enum_value.identifier;
+					case SIGNAL:
+						return signal;
+					case GROUP:
+						return annotation;
+					case UNDEFINED:
+						return nullptr;
+				}
+				ERR_FAIL_V_MSG(nullptr, "Reaching unhandled type.");
 			}
 
 			Member() {}
@@ -691,12 +756,7 @@ public:
 		}
 	};
 
-	struct ConstantNode : public Node {
-		IdentifierNode *identifier = nullptr;
-		ExpressionNode *initializer = nullptr;
-		TypeNode *datatype_specifier = nullptr;
-		bool infer_datatype = false;
-		int usages = 0;
+	struct ConstantNode : public AssignableNode {
 #ifdef TOOLS_ENABLED
 		String doc_description;
 #endif // TOOLS_ENABLED
@@ -707,7 +767,6 @@ public:
 	};
 
 	struct ContinueNode : public Node {
-		bool is_for_match = false;
 		ContinueNode() {
 			type = CONTINUE;
 		}
@@ -786,6 +845,7 @@ public:
 			LOCAL_VARIABLE,
 			LOCAL_ITERATOR, // `for` loop iterator.
 			LOCAL_BIND, // Pattern bind.
+			MEMBER_SIGNAL,
 			MEMBER_VARIABLE,
 			MEMBER_CONSTANT,
 			INHERITED_VARIABLE,
@@ -860,13 +920,7 @@ public:
 		}
 	};
 
-	struct ParameterNode : public Node {
-		IdentifierNode *identifier = nullptr;
-		ExpressionNode *default_value = nullptr;
-		TypeNode *datatype_specifier = nullptr;
-		bool infer_datatype = false;
-		int usages = 0;
-
+	struct ParameterNode : public AssignableNode {
 		ParameterNode() {
 			type = PARAMETER;
 		}
@@ -925,6 +979,7 @@ public:
 
 	struct ReturnNode : public Node {
 		ExpressionNode *return_value = nullptr;
+		bool void_return = false;
 
 		ReturnNode() {
 			type = RETURN;
@@ -1054,12 +1109,12 @@ public:
 		HashMap<StringName, int> locals_indices;
 
 		FunctionNode *parent_function = nullptr;
-		ForNode *parent_for = nullptr;
 		IfNode *parent_if = nullptr;
 
 		bool has_return = false;
 		bool has_continue = false;
 		bool has_unreachable_code = false; // Just so warnings aren't given more than once per block.
+		bool is_loop = false;
 
 		bool has_local(const StringName &p_name) const;
 		const Local &get_local(const StringName &p_name) const;
@@ -1098,6 +1153,16 @@ public:
 		}
 	};
 
+	struct TypeTestNode : public ExpressionNode {
+		ExpressionNode *operand = nullptr;
+		TypeNode *test_type = nullptr;
+		DataType test_datatype;
+
+		TypeTestNode() {
+			type = TYPE_TEST;
+		}
+	};
+
 	struct UnaryOpNode : public ExpressionNode {
 		enum OpType {
 			OP_POSITIVE,
@@ -1115,17 +1180,12 @@ public:
 		}
 	};
 
-	struct VariableNode : public Node {
+	struct VariableNode : public AssignableNode {
 		enum PropertyStyle {
 			PROP_NONE,
 			PROP_INLINE,
 			PROP_SETGET,
 		};
-
-		IdentifierNode *identifier = nullptr;
-		ExpressionNode *initializer = nullptr;
-		TypeNode *datatype_specifier = nullptr;
-		bool infer_datatype = false;
 
 		PropertyStyle property = PROP_NONE;
 		union {
@@ -1142,8 +1202,6 @@ public:
 		bool onready = false;
 		PropertyInfo export_info;
 		int assignments = 0;
-		int usages = 0;
-		bool use_conversion_assign = false;
 #ifdef TOOLS_ENABLED
 		String doc_description;
 #endif // TOOLS_ENABLED
@@ -1215,17 +1273,16 @@ private:
 	bool panic_mode = false;
 	bool can_break = false;
 	bool can_continue = false;
-	bool is_continue_match = false; // Whether a `continue` will act on a `match`.
-	bool is_ignoring_warnings = false;
 	List<bool> multiline_stack;
 
 	ClassNode *head = nullptr;
 	Node *list = nullptr;
 	List<ParserError> errors;
+
 #ifdef DEBUG_ENABLED
+	bool is_ignoring_warnings = false;
 	List<GDScriptWarning> warnings;
-	HashSet<String> ignored_warnings;
-	HashSet<uint32_t> ignored_warning_codes;
+	HashSet<GDScriptWarning::Code> ignored_warnings;
 	HashSet<int> unsafe_lines;
 #endif
 
@@ -1321,8 +1378,11 @@ private:
 	void clear();
 	void push_error(const String &p_message, const Node *p_origin = nullptr);
 #ifdef DEBUG_ENABLED
-	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const String &p_symbol1 = String(), const String &p_symbol2 = String(), const String &p_symbol3 = String(), const String &p_symbol4 = String());
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols);
+	template <typename... Symbols>
+	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Symbols &...p_symbols) {
+		push_warning(p_source, p_code, Vector<String>{ p_symbols... });
+	}
 #endif
 
 	void make_completion_context(CompletionType p_type, Node *p_node, int p_argument = -1, bool p_force = false);
@@ -1413,6 +1473,7 @@ private:
 	ExpressionNode *parse_attribute(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_subscript(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_lambda(ExpressionNode *p_previous_operand, bool p_can_assign);
+	ExpressionNode *parse_type_test(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_yield(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_invalid_token(ExpressionNode *p_previous_operand, bool p_can_assign);
 	TypeNode *parse_type(bool p_allow_void = false);
@@ -1428,6 +1489,8 @@ public:
 	Error parse(const String &p_source_code, const String &p_script_path, bool p_for_completion);
 	ClassNode *get_tree() const { return head; }
 	bool is_tool() const { return _is_tool; }
+	ClassNode *find_class(const String &p_qualified_name) const;
+	bool has_class(const GDScriptParser::ClassNode *p_class) const;
 	static Variant::Type get_builtin_type(const StringName &p_type);
 
 	CompletionContext get_completion_context() const { return completion_context; }
@@ -1492,8 +1555,9 @@ public:
 		void print_statement(Node *p_statement);
 		void print_subscript(SubscriptNode *p_subscript);
 		void print_suite(SuiteNode *p_suite);
-		void print_type(TypeNode *p_type);
 		void print_ternary_op(TernaryOpNode *p_ternary_op);
+		void print_type(TypeNode *p_type);
+		void print_type_test(TypeTestNode *p_type_test);
 		void print_unary_op(UnaryOpNode *p_unary_op);
 		void print_variable(VariableNode *p_variable);
 		void print_while(WhileNode *p_while);

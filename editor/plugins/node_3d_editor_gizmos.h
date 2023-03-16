@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  node_3d_editor_gizmos.h                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  node_3d_editor_gizmos.h                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef NODE_3D_EDITOR_GIZMOS_H
 #define NODE_3D_EDITOR_GIZMOS_H
@@ -72,7 +72,7 @@ class EditorNode3DGizmo : public Node3DGizmo {
 	Vector<Instance> instances;
 	Node3D *spatial_node = nullptr;
 
-	void _set_spatial_node(Node *p_node) { set_spatial_node(Object::cast_to<Node3D>(p_node)); }
+	void _set_node_3d(Node *p_node) { set_node_3d(Object::cast_to<Node3D>(p_node)); }
 
 protected:
 	static void _bind_methods();
@@ -116,8 +116,8 @@ public:
 	void set_selected(bool p_selected) { selected = p_selected; }
 	bool is_selected() const { return selected; }
 
-	void set_spatial_node(Node3D *p_node);
-	Node3D *get_spatial_node() const { return spatial_node; }
+	void set_node_3d(Node3D *p_node);
+	Node3D *get_node_3d() const { return spatial_node; }
 	Ref<EditorNode3DGizmoPlugin> get_plugin() const { return gizmo_plugin; }
 	bool intersect_frustum(const Camera3D *p_camera, const Vector<Plane> &p_frustum);
 	void handles_intersect_ray(Camera3D *p_camera, const Vector2 &p_point, bool p_shift_pressed, int &r_id, bool &r_secondary);
@@ -264,6 +264,9 @@ public:
 class Camera3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(Camera3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
+private:
+	static Size2i _get_viewport_size(Camera3D *p_camera);
+
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
 	String get_gizmo_name() const override;
@@ -338,7 +341,6 @@ class Marker3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(Marker3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 	Ref<ArrayMesh> pos3d_mesh;
-	Vector<Vector3> cursor_points;
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;

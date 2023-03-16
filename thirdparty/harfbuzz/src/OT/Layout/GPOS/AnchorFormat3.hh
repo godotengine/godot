@@ -41,24 +41,54 @@ struct AnchorFormat3
       *y += (this+yDeviceTable).get_y_delta (font, c->var_store, c->var_store_cache);
   }
 
-  AnchorFormat3* copy (hb_serialize_context_t *c,
-                       const hb_map_t *layout_variation_idx_map) const
+  bool subset (hb_subset_context_t *c) const
   {
-    TRACE_SERIALIZE (this);
-    if (!layout_variation_idx_map) return_trace (nullptr);
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->start_embed (*this);
+    if (unlikely (!out)) return_trace (false);
+    if (unlikely (!c->serializer->embed (format))) return_trace (false);
+    if (unlikely (!c->serializer->embed (xCoordinate))) return_trace (false);
+    if (unlikely (!c->serializer->embed (yCoordinate))) return_trace (false);
 
-    auto *out = c->embed<AnchorFormat3> (this);
-    if (unlikely (!out)) return_trace (nullptr);
+    unsigned x_varidx = xDeviceTable ? (this+xDeviceTable).get_variation_index () : HB_OT_LAYOUT_NO_VARIATIONS_INDEX;
+    if (c->plan->layout_variation_idx_delta_map->has (x_varidx))
+    {
+      int delta = hb_second (c->plan->layout_variation_idx_delta_map->get (x_varidx));
+      if (delta != 0)
+      {
+        if (!c->serializer->check_assign (out->xCoordinate, xCoordinate + delta,
+                                          HB_SERIALIZE_ERROR_INT_OVERFLOW))
+          return_trace (false);
+      }
+    }
 
-    out->xDeviceTable.serialize_copy (c, xDeviceTable, this, 0, hb_serialize_context_t::Head, layout_variation_idx_map);
-    out->yDeviceTable.serialize_copy (c, yDeviceTable, this, 0, hb_serialize_context_t::Head, layout_variation_idx_map);
+    unsigned y_varidx = yDeviceTable ? (this+yDeviceTable).get_variation_index () : HB_OT_LAYOUT_NO_VARIATIONS_INDEX;
+    if (c->plan->layout_variation_idx_delta_map->has (y_varidx))
+    {
+      int delta = hb_second (c->plan->layout_variation_idx_delta_map->get (y_varidx));
+      if (delta != 0)
+      {
+        if (!c->serializer->check_assign (out->yCoordinate, yCoordinate + delta,
+                                          HB_SERIALIZE_ERROR_INT_OVERFLOW))
+          return_trace (false);
+      }
+    }
+
+    if (c->plan->all_axes_pinned)
+      return_trace (c->serializer->check_assign (out->format, 1, HB_SERIALIZE_ERROR_INT_OVERFLOW));
+
+    if (!c->serializer->embed (xDeviceTable)) return_trace (false);
+    if (!c->serializer->embed (yDeviceTable)) return_trace (false);
+
+    out->xDeviceTable.serialize_copy (c->serializer, xDeviceTable, this, 0, hb_serialize_context_t::Head, c->plan->layout_variation_idx_delta_map);
+    out->yDeviceTable.serialize_copy (c->serializer, yDeviceTable, this, 0, hb_serialize_context_t::Head, c->plan->layout_variation_idx_delta_map);
     return_trace (out);
   }
 
   void collect_variation_indices (hb_collect_variation_indices_context_t *c) const
   {
-    (this+xDeviceTable).collect_variation_indices (c->layout_variation_indices);
-    (this+yDeviceTable).collect_variation_indices (c->layout_variation_indices);
+    (this+xDeviceTable).collect_variation_indices (c);
+    (this+yDeviceTable).collect_variation_indices (c);
   }
 };
 

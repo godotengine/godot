@@ -298,7 +298,7 @@ namespace embree
             /* spawn tasks */
             if (current.size() > cfg.singleThreadThreshold)
             {
-              /*! parallel_for is faster than spawing sub-tasks */
+              /*! parallel_for is faster than spawning sub-tasks */
               parallel_for(size_t(0), numChildren, [&] (const range<size_t>& r) { // FIXME: no range here
                   for (size_t i=r.begin(); i<r.end(); i++) {
                     values[i] = recurse(children[i],nullptr,true);

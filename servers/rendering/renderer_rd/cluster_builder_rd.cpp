@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  cluster_builder_rd.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  cluster_builder_rd.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "cluster_builder_rd.h"
 #include "servers/rendering/rendering_device.h"
@@ -74,7 +74,7 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 		cluster_debug.shader_pipeline = RD::get_singleton()->compute_pipeline_create(cluster_debug.shader);
 	}
 
-	{ // SPHERE
+	{ // Sphere mesh data.
 		static const uint32_t icosphere_vertex_count = 42;
 		static const float icosphere_vertices[icosphere_vertex_count * 3] = {
 			0, 0, -1, 0.7236073, -0.5257253, -0.4472195, -0.276388, -0.8506492, -0.4472199, -0.8944262, 0, -0.4472156, -0.276388, 0.8506492, -0.4472199, 0.7236073, 0.5257253, -0.4472195, 0.276388, -0.8506492, 0.4472199, -0.7236073, -0.5257253, 0.4472195, -0.7236073, 0.5257253, 0.4472195, 0.276388, 0.8506492, 0.4472199, 0.8944262, 0, 0.4472156, 0, 0, 1, -0.1624555, -0.4999952, -0.8506544, 0.4253227, -0.3090114, -0.8506542, 0.2628688, -0.8090116, -0.5257377, 0.8506479, 0, -0.5257359, 0.4253227, 0.3090114, -0.8506542, -0.5257298, 0, -0.8506517, -0.6881894, -0.4999969, -0.5257362, -0.1624555, 0.4999952, -0.8506544, -0.6881894, 0.4999969, -0.5257362, 0.2628688, 0.8090116, -0.5257377, 0.9510579, -0.3090126, 0, 0.9510579, 0.3090126, 0, 0, -1, 0, 0.5877856, -0.8090167, 0, -0.9510579, -0.3090126, 0, -0.5877856, -0.8090167, 0, -0.5877856, 0.8090167, 0, -0.9510579, 0.3090126, 0, 0.5877856, 0.8090167, 0, 0, 1, 0, 0.6881894, -0.4999969, 0.5257362, -0.2628688, -0.8090116, 0.5257377, -0.8506479, 0, 0.5257359, -0.2628688, 0.8090116, 0.5257377, 0.6881894, 0.4999969, 0.5257362, 0.1624555, -0.4999952, 0.8506544, 0.5257298, 0, 0.8506517, -0.4253227, -0.3090114, 0.8506542, -0.4253227, 0.3090114, 0.8506542, 0.1624555, 0.4999952, 0.8506544
@@ -118,7 +118,7 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 		sphere_overfit = 1.0 / min_d;
 	}
 
-	{ // CONE
+	{ // Cone mesh data.
 		static const uint32_t cone_vertex_count = 99;
 		static const float cone_vertices[cone_vertex_count * 3] = {
 			0, 1, -1, 0.1950903, 0.9807853, -1, 0.3826835, 0.9238795, -1, 0.5555703, 0.8314696, -1, 0.7071068, 0.7071068, -1, 0.8314697, 0.5555702, -1, 0.9238795, 0.3826834, -1, 0.9807853, 0.1950903, -1, 1, 0, -1, 0.9807853, -0.1950902, -1, 0.9238796, -0.3826833, -1, 0.8314697, -0.5555702, -1, 0.7071068, -0.7071068, -1, 0.5555702, -0.8314697, -1, 0.3826833, -0.9238796, -1, 0.1950901, -0.9807853, -1, -3.25841e-7, -1, -1, -0.1950907, -0.9807852, -1, -0.3826839, -0.9238793, -1, -0.5555707, -0.8314693, -1, -0.7071073, -0.7071063, -1, -0.83147, -0.5555697, -1, -0.9238799, -0.3826827, -1, 0, 0, 0, -0.9807854, -0.1950894, -1, -1, 9.65599e-7, -1, -0.9807851, 0.1950913, -1, -0.9238791, 0.3826845, -1, -0.8314689, 0.5555713, -1, -0.7071059, 0.7071077, -1, -0.5555691, 0.8314704, -1, -0.3826821, 0.9238801, -1, -0.1950888, 0.9807856, -1
@@ -172,7 +172,7 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 		cone_overfit = 1.0 / min_d;
 	}
 
-	{ // BOX
+	{ // Box mesh data.
 		static const uint32_t box_vertex_count = 8;
 		static const float box_vertices[box_vertex_count * 3] = {
 			-1, -1, -1, -1, -1, 1, -1, 1, -1, -1, 1, 1, 1, -1, -1, 1, -1, 1, 1, 1, -1, 1, 1, 1
@@ -219,8 +219,9 @@ ClusterBuilderSharedDataRD::~ClusterBuilderSharedDataRD() {
 
 void ClusterBuilderRD::_clear() {
 	if (cluster_buffer.is_null()) {
-		return; //nothing to clear
+		return;
 	}
+
 	RD::get_singleton()->free(cluster_buffer);
 	RD::get_singleton()->free(cluster_render_buffer);
 	RD::get_singleton()->free(element_buffer);
@@ -254,7 +255,7 @@ void ClusterBuilderRD::setup(Size2i p_screen_size, uint32_t p_max_elements, RID 
 	cluster_screen_size.height = (p_screen_size.height - 1) / cluster_size + 1;
 
 	max_elements_by_type = p_max_elements;
-	if (max_elements_by_type % 32) { //need to be 32 aligned
+	if (max_elements_by_type % 32) { // Needs to be aligned to 32.
 		max_elements_by_type += 32 - (max_elements_by_type % 32);
 	}
 
@@ -264,7 +265,8 @@ void ClusterBuilderRD::setup(Size2i p_screen_size, uint32_t p_max_elements, RID 
 
 	uint32_t element_tag_bits_size = render_element_max / 32;
 	uint32_t element_tag_depth_bits_size = render_element_max;
-	cluster_render_buffer_size = cluster_screen_size.x * cluster_screen_size.y * (element_tag_bits_size + element_tag_depth_bits_size) * 4; // tag bits (element was used) and tag depth (depth range in which it was used)
+
+	cluster_render_buffer_size = cluster_screen_size.x * cluster_screen_size.y * (element_tag_bits_size + element_tag_depth_bits_size) * 4; // Tag bits (element was used) and tag depth (depth range in which it was used).
 
 	cluster_render_buffer = RD::get_singleton()->storage_buffer_create(cluster_render_buffer_size);
 	cluster_buffer = RD::get_singleton()->storage_buffer_create(cluster_buffer_size);
@@ -379,9 +381,9 @@ void ClusterBuilderRD::begin(const Transform3D &p_view_transform, const Projecti
 	projection = p_cam_projection;
 	z_near = projection.get_z_near();
 	z_far = projection.get_z_far();
-	orthogonal = p_cam_projection.is_orthogonal();
+	camera_orthogonal = p_cam_projection.is_orthogonal();
 	adjusted_projection = projection;
-	if (!orthogonal) {
+	if (!camera_orthogonal) {
 		adjusted_projection.adjust_perspective_znear(0.0001);
 	}
 
@@ -390,7 +392,7 @@ void ClusterBuilderRD::begin(const Transform3D &p_view_transform, const Projecti
 	projection = correction * projection;
 	adjusted_projection = correction * adjusted_projection;
 
-	//reset counts
+	// Reset counts.
 	render_element_count = 0;
 	for (uint32_t i = 0; i < ELEMENT_TYPE_MAX; i++) {
 		cluster_count_by_type[i] = 0;
@@ -402,14 +404,14 @@ void ClusterBuilderRD::bake_cluster() {
 
 	RD::get_singleton()->draw_command_begin_label("Bake Light Cluster");
 
-	//clear cluster buffer
+	// Clear cluster buffer.
 	RD::get_singleton()->buffer_clear(cluster_buffer, 0, cluster_buffer_size, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
 
 	if (render_element_count > 0) {
-		//clear render buffer
+		// Clear render buffer.
 		RD::get_singleton()->buffer_clear(cluster_render_buffer, 0, cluster_render_buffer_size, RD::BARRIER_MASK_RASTER);
 
-		{ //fill state uniform
+		{ // Fill state uniform.
 
 			StateUniform state;
 
@@ -425,13 +427,13 @@ void ClusterBuilderRD::bake_cluster() {
 			RD::get_singleton()->buffer_update(state_uniform, 0, sizeof(StateUniform), &state, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
 		}
 
-		//update instances
+		// Update instances.
 
 		RD::get_singleton()->buffer_update(element_buffer, 0, sizeof(RenderElementData) * render_element_count, render_elements, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
 
 		RENDER_TIMESTAMP("Render 3D Cluster Elements");
 
-		//render elements
+		// Render elements.
 		{
 			RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD);
 			ClusterBuilderSharedDataRD::ClusterRender::PushConstant push_constant = {};
@@ -447,8 +449,16 @@ void ClusterBuilderRD::bake_cluster() {
 						RD::get_singleton()->draw_list_bind_index_array(draw_list, shared->sphere_index_array);
 					} break;
 					case ELEMENT_TYPE_SPOT_LIGHT: {
-						RD::get_singleton()->draw_list_bind_vertex_array(draw_list, shared->cone_vertex_array);
-						RD::get_singleton()->draw_list_bind_index_array(draw_list, shared->cone_index_array);
+						// If the spot angle is above a certain threshold, use a sphere instead of a cone for building the clusters
+						// since the cone gets too flat/large (spot angle close to 90 degrees) or
+						// can't even cover the affected area of the light (spot angle above 90 degrees).
+						if (render_elements[i].has_wide_spot_angle) {
+							RD::get_singleton()->draw_list_bind_vertex_array(draw_list, shared->sphere_vertex_array);
+							RD::get_singleton()->draw_list_bind_index_array(draw_list, shared->sphere_index_array);
+						} else {
+							RD::get_singleton()->draw_list_bind_vertex_array(draw_list, shared->cone_vertex_array);
+							RD::get_singleton()->draw_list_bind_index_array(draw_list, shared->cone_index_array);
+						}
 					} break;
 					case ELEMENT_TYPE_DECAL:
 					case ELEMENT_TYPE_REFLECTION_PROBE: {
@@ -465,7 +475,7 @@ void ClusterBuilderRD::bake_cluster() {
 			}
 			RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_COMPUTE);
 		}
-		//store elements
+		// Store elements.
 		RENDER_TIMESTAMP("Pack 3D Cluster Elements");
 
 		{
@@ -509,7 +519,7 @@ void ClusterBuilderRD::debug(ElementType p_element) {
 	push_constant.cluster_screen_size[1] = cluster_screen_size.y;
 	push_constant.cluster_shift = get_shift_from_power_of_2(cluster_size);
 	push_constant.cluster_type = p_element;
-	push_constant.orthogonal = orthogonal;
+	push_constant.orthogonal = camera_orthogonal;
 	push_constant.z_far = z_far;
 	push_constant.z_near = z_near;
 	push_constant.max_cluster_element_count_div_32 = max_elements_by_type / 32;

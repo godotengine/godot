@@ -71,8 +71,8 @@ class TPPLPoly {
     return hole;
   }
 
-  void SetHole(bool hole) {
-    this->hole = hole;
+  void SetHole(bool p_hole) {
+    this->hole = p_hole;
   }
 
   TPPLPoint &GetPoint(long i) {
