@@ -294,7 +294,7 @@
 			Particle system's running speed scaling ratio. A value of [code]0[/code] can be used to pause the particles.
 		</member>
 		<member name="split_scale" type="bool" setter="set_split_scale" getter="get_split_scale" default="false">
-			If set to true, three different scale curves can be specified, one per scale axis.
+			If set to [code]true[/code], three different scale curves can be specified, one per scale axis.
 		</member>
 		<member name="spread" type="float" setter="set_spread" getter="get_spread" default="45.0">
 			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] degrees. Applied to X/Z plane and Y/Z planes.
