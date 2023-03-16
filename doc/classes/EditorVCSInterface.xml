@@ -124,7 +124,7 @@
 			<param index="0" name="remote" type="String" />
 			<param index="1" name="force" type="bool" />
 			<description>
-				Pushes changes to the [code]remote[/code]. Optionally, if [code]force[/code] is set to true, a force push will override the change history already present on the remote.
+				Pushes changes to the [param remote]. If [param force] is [code]true[/code], a force push will override the change history already present on the remote.
 			</description>
 		</method>
 		<method name="_remove_branch" qualifiers="virtual">
