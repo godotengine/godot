@@ -108,6 +108,10 @@
 
 #include "modules/modules_enabled.gen.h" // For mono.
 
+#if defined(MODULE_MONO_ENABLED) && defined(TOOLS_ENABLED)
+#include "modules/mono/editor/bindings_generator.h"
+#endif
+
 /* Static members */
 
 // Singletons
@@ -312,7 +316,6 @@ void finalize_navigation_server() {
 
 void initialize_theme_db() {
 	theme_db = memnew(ThemeDB);
-	theme_db->initialize_theme();
 }
 
 void finalize_theme_db() {
@@ -532,6 +535,7 @@ Error Main::test_setup() {
 
 	// Theme needs modules to be initialized so that sub-resources can be loaded.
 	initialize_theme_db();
+	theme_db->initialize_theme();
 	register_scene_singletons();
 
 	ERR_FAIL_COND_V(TextServerManager::get_singleton()->get_interface_count() == 0, ERR_CANT_CREATE);
@@ -2314,6 +2318,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	register_platform_apis();
 
 	// Theme needs modules to be initialized so that sub-resources can be loaded.
+	// Default theme is initialized later, after ScriptServer is ready.
 	initialize_theme_db();
 	register_scene_singletons();
 
@@ -2341,7 +2346,17 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	// This loads global classes, so it must happen before custom loaders and savers are registered
 	ScriptServer::init_languages();
 
+	theme_db->initialize_theme();
 	audio_server->load_default_bus_layout();
+
+#if defined(MODULE_MONO_ENABLED) && defined(TOOLS_ENABLED)
+	// Hacky to have it here, but we don't have good facility yet to let modules
+	// register command line options to call at the right time. This needs to happen
+	// after init'ing the ScriptServer, but also after init'ing the ThemeDB,
+	// for the C# docs generation in the bindings.
+	List<String> cmdline_args = OS::get_singleton()->get_cmdline_args();
+	BindingsGenerator::handle_cmdline_args(cmdline_args);
+#endif
 
 	if (use_debug_profiler && EngineDebugger::is_active()) {
 		// Start the "scripts" profiler, used in local debugging.

@@ -832,6 +832,8 @@ void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {
 	tex->is_render_target = false;
 	tex->is_proxy = true;
 	tex->proxies.clear();
+	tex->canvas_texture = nullptr;
+	tex->tex_id = 0;
 	proxy_to->proxies.push_back(p_texture);
 }
 

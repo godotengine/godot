@@ -188,6 +188,7 @@
 				GetTree().CreateTween().BindNode(this);
 				[/csharp]
 				[/codeblocks]
+				The Tween will start automatically on the next process frame or physics frame (depending on [enum Tween.TweenProcessMode]).
 			</description>
 		</method>
 		<method name="duplicate" qualifiers="const">

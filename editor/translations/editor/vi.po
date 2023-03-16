@@ -23,13 +23,14 @@
 # Paweł Fertyk <pfertyk@pfertyk.me>, 2022.
 # MInhTriet <luckyblockblack@gmail.com>, 2022.
 # Nhật Huy <nhat.huy.7996@gmail.com>, 2022.
+# Trần Trọng Hiếu <anhdaden50@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-11-30 15:16+0000\n"
-"Last-Translator: Nhật Huy <nhat.huy.7996@gmail.com>\n"
+"PO-Revision-Date: 2023-03-03 02:52+0000\n"
+"Last-Translator: Trần Trọng Hiếu <anhdaden50@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -37,10 +38,28 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.16.2-dev\n"
+
+msgid "Physical"
+msgstr "Vật Lí"
+
+msgid "Left Mouse Button"
+msgstr "Nút Chuột Trái"
+
+msgid "Right Mouse Button"
+msgstr "Nút Chuột Phải"
+
+msgid "Middle Mouse Button"
+msgstr "Nút Chuột Giữa"
 
 msgid "Button"
 msgstr "Button (nút, phím)"
+
+msgid "Double Click"
+msgstr "Nháy Đúp"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "Chuyển động chuột tại vị trị (%s) với vận tốc (%s)"
 
 msgid "Select"
 msgstr "Chọn"
@@ -593,6 +612,9 @@ msgstr "Bạn có chắc muốn xóa bỏ tất cả kết nối từ tín hiệ
 msgid "Disconnect All"
 msgstr "Hủy kết nối tất cả"
 
+msgid "Copy Name"
+msgstr "Sao chép tên"
+
 msgid "Edit..."
 msgstr "Chỉnh sửa..."
 
@@ -608,11 +630,23 @@ msgstr "Tạo %s mới"
 msgid "No results for \"%s\"."
 msgstr "Không tìm thấy kết quả cho \"%s\"."
 
+msgid "This class is marked as deprecated."
+msgstr "Lớp này được đánh dấu là không dùng nữa."
+
+msgid "This class is marked as experimental."
+msgstr "Lớp này được đánh dấu là thử nghiệm."
+
+msgid "No description available for %s."
+msgstr "Không có mô tả nào có sẵn cho %s."
+
 msgid "Favorites:"
 msgstr "Ưa thích:"
 
 msgid "Recent:"
 msgstr "Gần đây:"
+
+msgid "(Un)favorite selected item."
+msgstr "(Bỏ)yêu thích thư mục đã chọn."
 
 msgid "Search:"
 msgstr "Tìm kiếm:"
@@ -1373,6 +1407,9 @@ msgstr "Được thừa kế bởi:"
 msgid "Description"
 msgstr "Mô tả"
 
+msgid "There is currently no description for this class."
+msgstr "Hiện tại không có mô tả cho lớp này."
+
 msgid "Online Tutorials"
 msgstr "Hướng dẫn trực tuyến"
 
@@ -1396,6 +1433,9 @@ msgstr "Hằng"
 
 msgid "Fonts"
 msgstr "Phông chữ"
+
+msgid "Font Sizes"
+msgstr "Kích thước phông chữ"
 
 msgid "Icons"
 msgstr "Biểu tượng"

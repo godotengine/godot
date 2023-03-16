@@ -387,7 +387,6 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "get_unit_db", "get_volume_db" }, // AudioStreamPlayer3D
 	{ "get_unit_offset", "get_progress_ratio" }, // PathFollow2D, PathFollow3D
 	{ "get_use_in_baked_light", "is_baking_navigation" }, // GridMap
-	{ "get_used_cells_by_id", "get_used_cells" }, // TileMap
 	{ "get_v_scrollbar", "get_v_scroll_bar" }, // ScrollContainer
 	{ "get_visible_name", "_get_visible_name" }, // EditorImportPlugin
 	{ "get_window_layout", "_get_window_layout" }, // EditorPlugin
@@ -721,7 +720,7 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "GetEndianSwap", "IsBigEndian" }, // File
 	{ "GetErrorString", "GetErrorMessage" }, // JSON
 	{ "GetFocusNeighbour", "GetFocusNeighbor" }, // Control
-	{ "GetFollowSmoothing", "GetFollowSmoothingSpeed" }, // Camera2D
+	{ "GetFollowSmoothing", "GetPositionSmoothingSpeed" }, // Camera2D
 	{ "GetFontTypes", "GetFontTypeList" }, // Theme
 	{ "GetFrameColor", "GetColor" }, // ColorRect
 	{ "GetGlobalRateScale", "GetPlaybackSpeedScale" }, // AudioServer
@@ -795,7 +794,6 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "GetUnitDb", "GetVolumeDb" }, // AudioStreamPlayer3D
 	{ "GetUnitOffset", "GetProgressRatio" }, // PathFollow2D, PathFollow3D
 	{ "GetUseInBakedLight", "IsBakingNavigation" }, // GridMap
-	{ "GetUsedCellsById", "GetUsedCells" }, // TileMap
 	{ "GetVScrollbar", "GetVScrollBar" }, // ScrollContainer
 	{ "GetVisibleName", "_GetVisibleName" }, // EditorImportPlugin
 	{ "GetWindowLayout", "_GetWindowLayout" }, // EditorPlugin
@@ -907,12 +905,12 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "SetDepthBiasEnable", "SetDepthBiasEnabled" }, // RDPipelineRasterizationState
 	{ "SetDevice", "SetOutputDevice" }, // AudioServer
 	{ "SetDoubleclick", "SetDoubleClick" }, // InputEventMouseButton
-	{ "SetEnableFollowSmoothing", "SetFollowSmoothingEnabled" }, // Camera2D
+	{ "SetEnableFollowSmoothing", "SetPositionSmoothingEnabled" }, // Camera2D
 	{ "SetEnabledFocusMode", "SetFocusMode" }, // BaseButton
 	{ "SetEndianSwap", "SetBigEndian" }, // File
 	{ "SetExpandToTextLength", "SetExpandToTextLengthEnabled" }, // LineEdit
 	{ "SetFocusNeighbour", "SetFocusNeighbor" }, // Control
-	{ "SetFollowSmoothing", "SetFollowSmoothingSpeed" }, // Camera2D
+	{ "SetFollowSmoothing", "SetPositionSmoothingSpeed" }, // Camera2D
 	{ "SetFrameColor", "SetColor" }, // ColorRect
 	{ "SetGlobalRateScale", "SetPlaybackSpeedScale" }, // AudioServer
 	{ "SetGravityDistanceScale", "SetGravityPointDistanceScale" }, // Area2D
@@ -1084,6 +1082,7 @@ const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
 	{ "files_disabled", "file_disabled_color" }, // Theme
 	{ "folder_icon_modulate", "folder_icon_color" }, // Theme
 	{ "global_rate_scale", "playback_speed_scale" }, // AudioServer
+	{ "global_translation", "global_position" }, // Node3D
 	{ "gravity_distance_scale", "gravity_point_unit_distance" }, // Area(2D/3D)
 	{ "gravity_vec", "gravity_direction" }, // Area(2D/3D)
 	{ "hint_tooltip", "tooltip_text" }, // Control
@@ -1097,6 +1096,7 @@ const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
 	{ "margin_top", "offset_top" }, // Control -- Breaks NinePatchRect, StyleBox.
 	{ "mid_height", "height" }, // CapsuleMesh
 	{ "neighbor_dist", "neighbor_distance" }, // NavigationAgent2D, NavigationAgent3D
+	{ "octaves", "fractal_octaves" }, // OpenSimplexNoise -> FastNoiseLite
 	{ "offset_h", "drag_horizontal_offset" }, // Camera2D
 	{ "offset_v", "drag_vertical_offset" }, // Camera2D
 	{ "off_disabled", "unchecked_disabled" }, // Theme
@@ -1122,7 +1122,7 @@ const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
 	{ "selectedframe", "selected_frame" }, // Theme
 	{ "size_override_stretch", "size_2d_override_stretch" }, // SubViewport
 	{ "slips_on_slope", "slide_on_slope" }, // SeparationRayShape2D
-	{ "smoothing_enabled", "follow_smoothing_enabled" }, // Camera2D
+	{ "smoothing_enabled", "position_smoothing_enabled" }, // Camera2D
 	{ "smoothing_speed", "position_smoothing_speed" }, // Camera2D
 	{ "ss_reflections_depth_tolerance", "ssr_depth_tolerance" }, // Environment
 	{ "ss_reflections_enabled", "ssr_enabled" }, // Environment
@@ -1190,6 +1190,7 @@ const char *RenamesMap3To4::csharp_properties_renames[][2] = {
 	{ "MarginTop", "OffsetTop" }, // Control -- Breaks NinePatchRect, StyleBox.
 	{ "MidHeight", "Height" }, // CapsuleMesh
 	{ "NeighborDist", "NeighborDistance" }, // NavigationAgent2D, NavigationAgent3D
+	{ "Octaves", "FractalOctaves" }, // OpenSimplexNoise -> FastNoiseLite
 	{ "OffsetH", "DragHorizontalOffset" }, // Camera2D
 	{ "OffsetV", "DragVerticalOffset" }, // Camera2D
 	{ "OffDisabled", "UncheckedDisabled" }, // Theme
@@ -1215,8 +1216,8 @@ const char *RenamesMap3To4::csharp_properties_renames[][2] = {
 	{ "Selectedframe", "SelectedFrame" }, // Theme
 	{ "SizeOverrideStretch", "Size2dOverrideStretch" }, // SubViewport
 	{ "SlipsOnSlope", "SlideOnSlope" }, // SeparationRayShape2D
-	{ "SmoothingEnabled", "FollowSmoothingEnabled" }, // Camera2D
-	{ "SmoothingSpeed", "FollowSmoothingSpeed" }, // Camera2D
+	{ "SmoothingEnabled", "PositionSmoothingEnabled" }, // Camera2D
+	{ "SmoothingSpeed", "PositionSmoothingSpeed" }, // Camera2D
 	{ "SsReflectionsDepthTolerance", "SsrDepthTolerance" }, // Environment
 	{ "SsReflectionsEnabled", "SsrEnabled" }, // Environment
 	{ "SsReflectionsFadeIn", "SsrFadeIn" }, // Environment
@@ -1478,6 +1479,7 @@ const char *RenamesMap3To4::class_renames[][2] = {
 	{ "CubeMesh", "BoxMesh" },
 	{ "CylinderShape", "CylinderShape3D" },
 	{ "DirectionalLight", "DirectionalLight3D" },
+	{ "Directory", "DirAccess" },
 	{ "DynamicFont", "FontFile" },
 	{ "DynamicFontData", "FontFile" },
 	{ "EditorNavigationMeshGenerator", "NavigationMeshGenerator" },
@@ -1520,10 +1522,12 @@ const char *RenamesMap3To4::class_renames[][2] = {
 	{ "NavigationPolygonInstance", "NavigationRegion2D" },
 	{ "NavigationRegion", "NavigationRegion3D" },
 	{ "NavigationServer", "NavigationServer3D" },
+	{ "NetworkedMultiplayerCustom", "MultiplayerPeerExtension" },
 	{ "NetworkedMultiplayerENet", "ENetMultiplayerPeer" },
 	{ "NetworkedMultiplayerPeer", "MultiplayerPeer" },
 	{ "Occluder", "OccluderInstance3D" },
 	{ "OmniLight", "OmniLight3D" },
+	{ "OpenSimplexNoise", "FastNoiseLite" },
 	{ "PHashTranslation", "OptimizedTranslation" },
 	{ "PacketPeerGDNative", "PacketPeerExtension" },
 	{ "PanoramaSky", "Sky" },

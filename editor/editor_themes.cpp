@@ -231,11 +231,11 @@ static Ref<StyleBoxLine> make_line_stylebox(Color p_color, int p_thickness = 1, 
 	return style;
 }
 
-#ifdef MODULE_SVG_ENABLED
 // See also `generate_icon()` in `scene/resources/default_theme.cpp`.
 static Ref<ImageTexture> editor_generate_icon(int p_index, float p_scale, float p_saturation, const HashMap<Color, Color> &p_convert_colors = HashMap<Color, Color>()) {
 	Ref<Image> img = memnew(Image);
 
+#ifdef MODULE_SVG_ENABLED
 	// Upsample icon generation only if the editor scale isn't an integer multiplier.
 	// Generating upsampled icons is slower, and the benefit is hardly visible
 	// with integer editor scales.
@@ -246,13 +246,16 @@ static Ref<ImageTexture> editor_generate_icon(int p_index, float p_scale, float 
 	if (p_saturation != 1.0) {
 		img->adjust_bcs(1.0, 1.0, p_saturation);
 	}
+#else
+	// If the SVG module is disabled, we can't really display the UI well, but at least we won't crash.
+	// 16 pixels is used as it's the most common base size for Godot icons.
+	img = Image::create_empty(16 * p_scale, 16 * p_scale, false, Image::FORMAT_RGBA8);
+#endif
 
 	return ImageTexture::create_from_image(img);
 }
-#endif
 
 void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme, float p_icon_saturation, int p_thumb_size, bool p_only_thumbs = false) {
-#ifdef MODULE_SVG_ENABLED
 	// Before we register the icons, we adjust their colors and saturation.
 	// Most icons follow the standard rules for color conversion to follow the editor
 	// theme's polarity (dark/light). We also adjust the saturation for most icons,
@@ -379,9 +382,6 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme, f
 			p_theme->set_icon(editor_icons_names[index], SNAME("EditorIcons"), icon);
 		}
 	}
-#else
-	WARN_PRINT("SVG support disabled, editor icons won't be rendered.");
-#endif
 }
 
 Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
@@ -617,6 +617,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 		regenerate_thumb_icons = !Math::is_equal_approx(prev_thumb_size, thumb_size);
 	}
+
+#ifndef MODULE_SVG_ENABLED
+	WARN_PRINT("SVG support disabled, editor icons won't be rendered.");
+#endif
 
 	if (keep_old_icons) {
 		for (int i = 0; i < editor_icons_count; i++) {

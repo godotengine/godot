@@ -39,7 +39,7 @@
 
 #import <CoreMotion/CoreMotion.h>
 
-static const int max_touches = 8;
+static const int max_touches = 32;
 static const float earth_gravity = 9.80665;
 
 @interface GodotView () {

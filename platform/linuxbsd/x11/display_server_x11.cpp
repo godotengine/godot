@@ -2917,7 +2917,7 @@ BitField<MouseButtonMask> DisplayServerX11::_get_mouse_button_state(MouseButton 
 }
 
 void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo) {
-	WindowData wd = windows[p_window];
+	WindowData &wd = windows[p_window];
 	// X11 functions don't know what const is
 	XKeyEvent *xkeyevent = p_event;
 
@@ -4850,7 +4850,7 @@ DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, W
 					vformat("Your video card drivers seem not to support the required Vulkan version.\n\n"
 							"If possible, consider updating your video card drivers or using the OpenGL 3 driver.\n\n"
 							"You can enable the OpenGL 3 driver by starting the engine from the\n"
-							"command line with the command:\n'%s --rendering-driver opengl3'\n\n"
+							"command line with the command:\n\n    \"%s\" --rendering-driver opengl3\n\n"
 							"If you recently updated your video card drivers, try rebooting.",
 							executable_name),
 					"Unable to initialize Vulkan video driver");
@@ -4873,7 +4873,9 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 
 #ifdef GLES3_ENABLED
 	if (gl_manager) {
-		visualInfo = gl_manager->get_vi(x11_display);
+		Error err;
+		visualInfo = gl_manager->get_vi(x11_display, err);
+		ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't acquire visual info from display.");
 		vi_selected = true;
 	}
 #endif
@@ -5258,6 +5260,9 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 #ifdef XKB_ENABLED
 	xkb_loaded = (initialize_xkbcommon(dylibloader_verbose) == 0);
+	if (!xkb_context_new || !xkb_compose_table_new_from_locale || !xkb_compose_table_unref || !xkb_context_unref || !xkb_compose_state_feed || !xkb_compose_state_unref || !xkb_compose_state_new || !xkb_compose_state_get_status || !xkb_compose_state_get_utf8 || !xkb_keysym_to_utf32 || !xkb_keysym_to_upper) {
+		xkb_loaded = false;
+	}
 #endif
 	if (initialize_xext(dylibloader_verbose) != 0) {
 		r_error = ERR_UNAVAILABLE;

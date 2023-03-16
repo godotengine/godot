@@ -1,5 +1,5 @@
 #GDTEST_OK
-var prop : int = 0:
+var prop: int = 0:
 	get:
 		return prop
 	set(value):

@@ -757,7 +757,7 @@ COMMAND_1(free, RID, p_object) {
 		agent_owner.free(p_object);
 
 	} else {
-		ERR_FAIL_COND("Attempted to free a NavigationServer RID that did not exist (or was already freed).");
+		ERR_PRINT("Attempted to free a NavigationServer RID that did not exist (or was already freed).");
 	}
 }
 

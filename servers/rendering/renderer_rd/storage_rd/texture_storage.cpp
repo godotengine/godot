@@ -1193,6 +1193,9 @@ void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {
 		prev_tex->proxies.erase(p_texture);
 	}
 
+	// Copy canvas_texture so it doesn't leak.
+	CanvasTexture *canvas_texture = tex->canvas_texture;
+
 	*tex = *proxy_to;
 
 	tex->proxy_to = p_proxy_to;
@@ -1200,6 +1203,7 @@ void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {
 	tex->is_proxy = true;
 	tex->proxies.clear();
 	proxy_to->proxies.push_back(p_texture);
+	tex->canvas_texture = canvas_texture;
 
 	tex->rd_view.format_override = tex->rd_format;
 	tex->rd_texture = RD::get_singleton()->texture_create_shared(tex->rd_view, proxy_to->rd_texture);
@@ -2905,6 +2909,13 @@ RID TextureStorage::render_target_get_rd_texture_slice(RID p_render_target, uint
 		}
 		return rt->color_slices[p_layer];
 	}
+}
+
+RID TextureStorage::render_target_get_rd_texture_msaa(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+
+	return rt->color_multisample;
 }
 
 RID TextureStorage::render_target_get_rd_backbuffer(RID p_render_target) {

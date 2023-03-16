@@ -172,6 +172,9 @@ class EditorAudioBuses : public VBoxContainer {
 	Timer *save_timer = nullptr;
 	String edited_path;
 
+	bool renaming_buses = false;
+	void _set_renaming_buses(bool p_renaming);
+
 	void _add_bus();
 	void _update_buses();
 	void _update_bus(int p_index);

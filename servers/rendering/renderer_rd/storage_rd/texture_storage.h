@@ -741,6 +741,7 @@ public:
 	RID render_target_get_rd_framebuffer(RID p_render_target);
 	RID render_target_get_rd_texture(RID p_render_target);
 	RID render_target_get_rd_texture_slice(RID p_render_target, uint32_t p_layer);
+	RID render_target_get_rd_texture_msaa(RID p_render_target);
 	RID render_target_get_rd_backbuffer(RID p_render_target);
 	RID render_target_get_rd_backbuffer_framebuffer(RID p_render_target);
 

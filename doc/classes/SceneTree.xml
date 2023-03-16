@@ -88,7 +88,7 @@
 		<method name="create_tween">
 			<return type="Tween" />
 			<description>
-				Creates and returns a new [Tween].
+				Creates and returns a new [Tween]. The Tween will start automatically on the next process frame or physics frame (depending on [enum Tween.TweenProcessMode]).
 			</description>
 		</method>
 		<method name="get_first_node_in_group">

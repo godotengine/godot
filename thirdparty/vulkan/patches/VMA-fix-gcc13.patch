@@ -1,0 +1,26 @@
+From 29d492b60c84ca784ea0943efc7d2e6e0f3bdaac Mon Sep 17 00:00:00 2001
+From: Adam Sawicki <adam.sawicki@amd.com>
+Date: Thu, 19 Jan 2023 13:19:55 +0100
+Subject: [PATCH] Added missing #include <cstdio>
+
+For snprintf, for compatibility with GCC 13.
+Fixes #312 - thanks @marxin !
+---
+ thirdparty/vulkan/vk_mem_alloc.h | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/thirdparty/vulkan/vk_mem_alloc.h b/thirdparty/vulkan/vk_mem_alloc.h
+index b787c36..0fe459b 100644
+--- a/thirdparty/vulkan/vk_mem_alloc.h
++++ b/thirdparty/vulkan/vk_mem_alloc.h
+@@ -2614,6 +2614,10 @@ VMA_CALL_PRE void VMA_CALL_POST vmaFreeStatsString(
+     #include <bit> // For std::popcount
+ #endif
+ 
++#if VMA_STATS_STRING_ENABLED
++    #include <cstdio> // For snprintf
++#endif
++
+ /*******************************************************************************
+ CONFIGURATION SECTION
+ 

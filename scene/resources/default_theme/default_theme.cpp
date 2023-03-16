@@ -86,6 +86,10 @@ static Ref<ImageTexture> generate_icon(int p_index) {
 	ImageLoaderSVG img_loader;
 	Error err = img_loader.create_image_from_string(img, default_theme_icons_sources[p_index], scale, upsample, HashMap<Color, Color>());
 	ERR_FAIL_COND_V_MSG(err != OK, Ref<ImageTexture>(), "Failed generating icon, unsupported or invalid SVG data in default theme.");
+#else
+	// If the SVG module is disabled, we can't really display the UI well, but at least we won't crash.
+	// 16 pixels is used as it's the most common base size for Godot icons.
+	img = Image::create_empty(16 * scale, 16 * scale, false, Image::FORMAT_RGBA8);
 #endif
 
 	return ImageTexture::create_from_image(img);
@@ -720,7 +724,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("title_offset", "GraphNode", 26 * scale);
 	theme->set_constant("title_h_offset", "GraphNode", 0);
 	theme->set_constant("close_offset", "GraphNode", 22 * scale);
-	theme->set_constant("close_h_offset", "GraphNode", 22 * scale);
+	theme->set_constant("close_h_offset", "GraphNode", 12 * scale);
 	theme->set_constant("port_offset", "GraphNode", 0);
 
 	// Tree
