@@ -288,6 +288,7 @@
 			<return type="Vector2" />
 			<description>
 				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code]. See also [method is_normalized].
+				[b]Note:[/b] This function may return incorrect values if the initial vector length is near zero.
 			</description>
 		</method>
 		<method name="orthogonal" qualifiers="const">
