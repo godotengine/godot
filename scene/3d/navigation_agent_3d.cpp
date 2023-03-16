@@ -135,7 +135,7 @@ void NavigationAgent3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_enabled"), "set_debug_enabled", "get_debug_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_use_custom"), "set_debug_use_custom", "get_debug_use_custom");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_path_custom_color"), "set_debug_path_custom_color", "get_debug_path_custom_color");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "debug_path_custom_point_size", PROPERTY_HINT_RANGE, "1,50,1,suffix:px"), "set_debug_path_custom_point_size", "get_debug_path_custom_point_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "debug_path_custom_point_size", PROPERTY_HINT_RANGE, "0,50,0.01,or_greater,suffix:px"), "set_debug_path_custom_point_size", "get_debug_path_custom_point_size");
 }
 
 void NavigationAgent3D::_notification(int p_what) {
@@ -760,7 +760,7 @@ void NavigationAgent3D::set_debug_path_custom_point_size(float p_point_size) {
 		return;
 	}
 
-	debug_path_custom_point_size = p_point_size;
+	debug_path_custom_point_size = MAX(0.0, p_point_size);
 	debug_path_dirty = true;
 #endif // DEBUG_ENABLED
 }
@@ -828,28 +828,30 @@ void NavigationAgent3D::_update_debug_path() {
 		debug_path_mesh->surface_set_material(0, debug_agent_path_line_material);
 	}
 
-	Vector<Vector3> debug_path_points_vertex_array;
+	if (debug_path_custom_point_size > 0.0) {
+		Vector<Vector3> debug_path_points_vertex_array;
 
-	for (int i = 0; i < navigation_path.size(); i++) {
-		debug_path_points_vertex_array.push_back(navigation_path[i]);
-	}
-
-	Array debug_path_points_mesh_array;
-	debug_path_points_mesh_array.resize(Mesh::ARRAY_MAX);
-	debug_path_points_mesh_array[Mesh::ARRAY_VERTEX] = debug_path_lines_vertex_array;
-
-	debug_path_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_POINTS, debug_path_points_mesh_array);
-
-	Ref<StandardMaterial3D> debug_agent_path_point_material = NavigationServer3D::get_singleton()->get_debug_navigation_agent_path_point_material();
-	if (debug_use_custom) {
-		if (!debug_agent_path_point_custom_material.is_valid()) {
-			debug_agent_path_point_custom_material = debug_agent_path_point_material->duplicate();
+		for (int i = 0; i < navigation_path.size(); i++) {
+			debug_path_points_vertex_array.push_back(navigation_path[i]);
 		}
-		debug_agent_path_point_custom_material->set_albedo(debug_path_custom_color);
-		debug_agent_path_point_custom_material->set_point_size(debug_path_custom_point_size);
-		debug_path_mesh->surface_set_material(1, debug_agent_path_point_custom_material);
-	} else {
-		debug_path_mesh->surface_set_material(1, debug_agent_path_point_material);
+
+		Array debug_path_points_mesh_array;
+		debug_path_points_mesh_array.resize(Mesh::ARRAY_MAX);
+		debug_path_points_mesh_array[Mesh::ARRAY_VERTEX] = debug_path_points_vertex_array;
+
+		debug_path_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_POINTS, debug_path_points_mesh_array);
+
+		Ref<StandardMaterial3D> debug_agent_path_point_material = NavigationServer3D::get_singleton()->get_debug_navigation_agent_path_point_material();
+		if (debug_use_custom) {
+			if (!debug_agent_path_point_custom_material.is_valid()) {
+				debug_agent_path_point_custom_material = debug_agent_path_point_material->duplicate();
+			}
+			debug_agent_path_point_custom_material->set_albedo(debug_path_custom_color);
+			debug_agent_path_point_custom_material->set_point_size(debug_path_custom_point_size);
+			debug_path_mesh->surface_set_material(1, debug_agent_path_point_custom_material);
+		} else {
+			debug_path_mesh->surface_set_material(1, debug_agent_path_point_material);
+		}
 	}
 
 	RS::get_singleton()->instance_set_base(debug_path_instance, debug_path_mesh->get_rid());

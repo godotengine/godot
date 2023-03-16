@@ -25,7 +25,7 @@
 			<param index="1" name="bind_address" type="String" default="&quot;*&quot;" />
 			<param index="2" name="tls_server_options" type="TLSOptions" default="null" />
 			<description>
-				Starts a new multiplayer server listening on the given [param port]. You can optionally specify a [param bind_address], and provide valiid [param tls_server_options] to use TLS. See [method TLSOptions.server].
+				Starts a new multiplayer server listening on the given [param port]. You can optionally specify a [param bind_address], and provide valid [param tls_server_options] to use TLS. See [method TLSOptions.server].
 			</description>
 		</method>
 		<method name="get_peer" qualifiers="const">

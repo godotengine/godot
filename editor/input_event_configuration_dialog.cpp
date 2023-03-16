@@ -547,7 +547,7 @@ void InputEventConfigurationDialog::_notification(int p_what) {
 
 void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p_event) {
 	if (p_event.is_valid()) {
-		_set_event(p_event, p_event->duplicate());
+		_set_event(p_event->duplicate(), p_event);
 	} else {
 		// Clear Event
 		_set_event(Ref<InputEvent>(), Ref<InputEvent>());

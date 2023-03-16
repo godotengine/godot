@@ -190,7 +190,8 @@
 		<method name="normalized" qualifiers="const">
 			<return type="Vector4" />
 			<description>
-				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code].
+				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code]. See also [method is_normalized].
+				[b]Note:[/b] This function may return incorrect values if the input vector length is near zero.
 			</description>
 		</method>
 		<method name="posmod" qualifiers="const">
