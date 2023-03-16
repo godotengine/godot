@@ -1103,11 +1103,8 @@ struct _VariantCall {
 	}
 
 	static void Color_init3(Variant &r_ret, const Variant **p_args) {
-		r_ret = Color::html(*p_args[0]);
-	}
-
-	static void Color_init4(Variant &r_ret, const Variant **p_args) {
-		r_ret = Color::hex(*p_args[0]);
+		Color c = *p_args[0];
+		r_ret = Color(c.r, c.g, c.b, *p_args[1]);
 	}
 
 	static void AABB_init1(Variant &r_ret, const Variant **p_args) {
@@ -2212,6 +2209,7 @@ void register_variant_methods() {
 
 	_VariantCall::add_constructor(_VariantCall::Color_init1, Variant::COLOR, "r", Variant::REAL, "g", Variant::REAL, "b", Variant::REAL, "a", Variant::REAL);
 	_VariantCall::add_constructor(_VariantCall::Color_init2, Variant::COLOR, "r", Variant::REAL, "g", Variant::REAL, "b", Variant::REAL);
+	_VariantCall::add_constructor(_VariantCall::Color_init3, Variant::COLOR, "from", Variant::COLOR, "alpha", Variant::REAL);
 
 	_VariantCall::add_constructor(_VariantCall::AABB_init1, Variant::AABB, "position", Variant::VECTOR3, "size", Variant::VECTOR3);
 
