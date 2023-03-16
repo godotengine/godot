@@ -1103,6 +1103,16 @@ OS_LinuxBSD::OS_LinuxBSD() {
 	font_config_initialized = true;
 #endif
 	if (font_config_initialized) {
+		bool ver_ok = false;
+		int version = FcGetVersion();
+		ver_ok = ((version / 100 / 100) == 2 && (version / 100 % 100) >= 11) || ((version / 100 / 100) > 2); // 2.11.0
+		print_verbose(vformat("FontConfig %d.%d.%d detected.", version / 100 / 100, version / 100 % 100, version % 100));
+		if (!ver_ok) {
+			font_config_initialized = false;
+		}
+	}
+
+	if (font_config_initialized) {
 		config = FcInitLoadConfigAndFonts();
 		if (!config) {
 			font_config_initialized = false;
