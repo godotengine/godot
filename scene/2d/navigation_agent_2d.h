@@ -76,7 +76,7 @@ class NavigationAgent2D : public Node {
 	// Debug properties for exposed bindings
 	bool debug_enabled = false;
 	float debug_path_custom_point_size = 4.0;
-	float debug_path_custom_line_width = 1.0;
+	float debug_path_custom_line_width = -1.0;
 	bool debug_use_custom = false;
 	Color debug_path_custom_color = Color(1.0, 1.0, 1.0, 1.0);
 #ifdef DEBUG_ENABLED
