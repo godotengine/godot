@@ -248,6 +248,11 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			audio_server->init();
 			return;
 		}
+
+		if (name.find("[NavigationServer3D]") != -1) {
+			navigation_server_3d = NavigationServer3DManager::new_default_server();
+			return;
+		}
 	}
 
 	void test_case_end(const doctest::CurrentTestCaseStats &) override {
