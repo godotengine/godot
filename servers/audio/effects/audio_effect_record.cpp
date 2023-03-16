@@ -67,11 +67,6 @@ bool AudioEffectRecordInstance::process_silence() const {
 
 void AudioEffectRecordInstance::_io_thread_process() {
 	while (is_recording) {
-		//Check: The current recording has been requested to stop
-		if (!base->recording_active) {
-			is_recording = false;
-		}
-
 		_update_buffer();
 
 		if (is_recording) {
@@ -119,6 +114,7 @@ void AudioEffectRecordInstance::init() {
 }
 
 void AudioEffectRecordInstance::finish() {
+	is_recording = false;
 #ifdef NO_THREADS
 	AudioServer::get_singleton()->remove_update_callback(&AudioEffectRecordInstance::_update, this);
 #else
@@ -126,14 +122,9 @@ void AudioEffectRecordInstance::finish() {
 #endif
 }
 
-AudioEffectRecordInstance::~AudioEffectRecordInstance() {
-	finish();
-}
-
 Ref<AudioEffectInstance> AudioEffectRecord::instance() {
 	Ref<AudioEffectRecordInstance> ins;
 	ins.instance();
-	ins->base = Ref<AudioEffectRecord>(this);
 	ins->is_recording = false;
 
 	//Re-using the buffer size calculations from audio_effect_delay.cpp
@@ -159,16 +150,19 @@ Ref<AudioEffectInstance> AudioEffectRecord::instance() {
 	ins->ring_buffer_read_pos = 0;
 
 	ensure_thread_stopped();
-	current_instance = ins;
-	if (recording_active) {
+	bool is_currently_recording = false;
+	if (current_instance != nullptr) {
+		is_currently_recording = current_instance->is_recording;
+	}
+	if (is_currently_recording) {
 		ins->init();
 	}
+	current_instance = ins;
 
 	return ins;
 }
 
 void AudioEffectRecord::ensure_thread_stopped() {
-	recording_active = false;
 	if (current_instance != nullptr) {
 		current_instance->finish();
 	}
@@ -178,20 +172,24 @@ void AudioEffectRecord::set_recording_active(bool p_record) {
 	if (p_record) {
 		if (current_instance == nullptr) {
 			WARN_PRINT("Recording should not be set as active before Godot has initialized.");
-			recording_active = false;
 			return;
 		}
 
 		ensure_thread_stopped();
-		recording_active = true;
 		current_instance->init();
 	} else {
-		recording_active = false;
+		if (current_instance != nullptr) {
+			current_instance->is_recording = false;
+		}
 	}
 }
 
 bool AudioEffectRecord::is_recording_active() const {
-	return recording_active;
+	if (current_instance != nullptr) {
+		return current_instance->is_recording;
+	} else {
+		return false;
+	}
 }
 
 void AudioEffectRecord::set_format(AudioStreamSample::Format p_format) {
@@ -289,5 +287,8 @@ void AudioEffectRecord::_bind_methods() {
 
 AudioEffectRecord::AudioEffectRecord() {
 	format = AudioStreamSample::FORMAT_16_BITS;
-	recording_active = false;
+}
+
+AudioEffectRecord::~AudioEffectRecord() {
+	ensure_thread_stopped();
 }
