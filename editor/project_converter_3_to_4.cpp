@@ -839,6 +839,8 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 	valid = valid && test_conversion_gdscript_builtin("\tvar aa = roman(r.move_and_slide_with_snap( a, g, b, c, d, e, f )) # Roman", "\tr.set_velocity(a)\n\t# TODOConverter40 looks that snap in Godot 4.0 is float, not vector like in Godot 3 - previous value `g`\n\tr.set_up_direction(b)\n\tr.set_floor_stop_on_slope_enabled(c)\n\tr.set_max_slides(d)\n\tr.set_floor_max_angle(e)\n\t# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `f`\n\tr.move_and_slide()\n\tvar aa = roman(r.velocity) # Roman", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid && test_conversion_gdscript_builtin("\tmove_and_slide_with_snap( a, g, b, c, d, e, f ) # Roman", "\tset_velocity(a)\n\t# TODOConverter40 looks that snap in Godot 4.0 is float, not vector like in Godot 3 - previous value `g`\n\tset_up_direction(b)\n\tset_floor_stop_on_slope_enabled(c)\n\tset_max_slides(d)\n\tset_floor_max_angle(e)\n\t# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `f`\n\tmove_and_slide() # Roman", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
+	valid = valid && test_conversion_gdscript_builtin("remove_and_slide(a,b,c,d,e,f)", "remove_and_slide(a,b,c,d,e,f)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+
 	valid = valid && test_conversion_gdscript_builtin("list_dir_begin( a , b )", "list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid && test_conversion_gdscript_builtin("list_dir_begin( a )", "list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid && test_conversion_gdscript_builtin("list_dir_begin( )", "list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
@@ -926,6 +928,15 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 	valid = valid && test_conversion_gdscript_builtin("(connect(A,B,C,[D,E]) != OK):", "(connect(A, Callable(B, C).bind(D,E)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid && test_conversion_gdscript_builtin("(connect(A,B,C,[D,E],F) != OK):", "(connect(A, Callable(B, C).bind(D,E), F) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid && test_conversion_gdscript_builtin("(connect(A,B,C,D,E) != OK):", "(connect(A, Callable(B, C).bind(D), E) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+
+	valid = valid && test_conversion_gdscript_builtin(".connect(A,B,C)", ".connect(A, Callable(B, C))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("abc.connect(A,B,C)", "abc.connect(A, Callable(B, C))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tconnect(A,B,C)", "\tconnect(A, Callable(B, C))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin(" connect(A,B,C)", " connect(A, Callable(B, C))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("_connect(A,B,C)", "_connect(A,B,C)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("do_connect(A,B,C)", "do_connect(A,B,C)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("$connect(A,B,C)", "$connect(A,B,C)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("@connect(A,B,C)", "@connect(A,B,C)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
 	valid = valid && test_conversion_gdscript_builtin("(start(A,B) != OK):", "(start(Callable(A, B)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid && test_conversion_gdscript_builtin("func start(A,B):", "func start(A,B):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
@@ -1556,6 +1567,22 @@ Vector<String> ProjectConverter3To4::check_for_rename_gdscript_functions(Vector<
 	return found_renames;
 }
 
+bool ProjectConverter3To4::contains_function_call(String &line, String function) const {
+	// We want to convert the function only if it is completely standalone.
+	// For example, when we search for "connect(", we don't want to accidentally convert "reconnect(".
+	if (!line.contains(function)) {
+		return false;
+	}
+
+	int index = line.find(function);
+	if (index == 0) {
+		return true;
+	}
+
+	char32_t previous_char = line.get(index - 1);
+	return (previous_char < '0' || previous_char > '9') && (previous_char < 'a' || previous_char > 'z') && (previous_char < 'A' || previous_char > 'Z') && previous_char != '_' && previous_char != '$' && previous_char != '@';
+}
+
 // TODO, this function should run only on all ".gd" files and also on lines in ".tscn" files which are parts of built-in Scripts.
 void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContainer &reg_container, bool builtin) {
 	// In this and other functions, reg.sub() is used only after checking lines with str.contains().
@@ -1722,12 +1749,12 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	// Instantiate
-	if (line.contains("instance")) {
+	if (contains_function_call(line, "instance")) {
 		line = reg_container.reg_instantiate.sub(line, ".instantiate($1)", true);
 	}
 
 	// -- r.move_and_slide( a, b, c, d, e )  ->  r.set_velocity(a) ... r.move_and_slide()         KinematicBody
-	if (line.contains(("move_and_slide("))) {
+	if (contains_function_call(line, "move_and_slide(")) {
 		int start = line.find("move_and_slide(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -1778,7 +1805,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	// -- r.move_and_slide_with_snap( a, b, c, d, e )  ->  r.set_velocity(a) ... r.move_and_slide()         KinematicBody
-	if (line.contains("move_and_slide_with_snap(")) {
+	if (contains_function_call(line, "move_and_slide_with_snap(")) {
 		int start = line.find("move_and_slide_with_snap(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -1834,7 +1861,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	// -- sort_custom( a , b )  ->  sort_custom(Callable( a , b ))            Object
-	if (line.contains("sort_custom(")) {
+	if (contains_function_call(line, "sort_custom(")) {
 		int start = line.find("sort_custom(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -1846,7 +1873,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	// -- list_dir_begin( )  ->  list_dir_begin()            Object
-	if (line.contains("list_dir_begin(")) {
+	if (contains_function_call(line, "list_dir_begin(")) {
 		int start = line.find("list_dir_begin(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -1855,7 +1882,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	// -- draw_line(1,2,3,4,5) -> draw_line(1, 2, 3, 4)            CanvasItem
-	if (line.contains("draw_line(")) {
+	if (contains_function_call(line, "draw_line(")) {
 		int start = line.find("draw_line(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -1886,7 +1913,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	// -- yield(this, \"timeout\") -> await this.timeout         GDScript
-	if (line.contains("yield(")) {
+	if (contains_function_call(line, "yield(")) {
 		int start = line.find("yield(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -1902,7 +1929,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	// -- parse_json( AA ) -> TODO       Object
-	if (line.contains("parse_json(")) {
+	if (contains_function_call(line, "parse_json(")) {
 		int start = line.find("parse_json(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -1940,23 +1967,20 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	// -- "(connect(A,B,C,D,E) != OK):", "(connect(A, Callable(B, C).bind(D), E)      Object
-	if (line.contains("connect(")) {
+	if (contains_function_call(line, "connect(")) {
 		int start = line.find("connect(");
-		// Protection from disconnect
-		if (start == 0 || line.get(start - 1) != 's') {
-			int end = get_end_parenthesis(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 3) {
-					line = line.substr(0, start) + "connect(" + parts[0] + ", Callable(" + parts[1] + ", " + parts[2] + "))" + line.substr(end + start);
-				} else if (parts.size() >= 4) {
-					line = line.substr(0, start) + "connect(" + parts[0] + ", Callable(" + parts[1] + ", " + parts[2] + ").bind(" + parts[3].lstrip(" [").rstrip("] ") + ")" + connect_arguments(parts, 4) + ")" + line.substr(end + start);
-				}
+		int end = get_end_parenthesis(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 3) {
+				line = line.substr(0, start) + "connect(" + parts[0] + ", Callable(" + parts[1] + ", " + parts[2] + "))" + line.substr(end + start);
+			} else if (parts.size() >= 4) {
+				line = line.substr(0, start) + "connect(" + parts[0] + ", Callable(" + parts[1] + ", " + parts[2] + ").bind(" + parts[3].lstrip(" [").rstrip("] ") + ")" + connect_arguments(parts, 4) + ")" + line.substr(end + start);
 			}
 		}
 	}
 	// -- disconnect(a,b,c) -> disconnect(a,Callable(b,c))      Object
-	if (line.contains("disconnect(")) {
+	if (contains_function_call(line, "disconnect(")) {
 		int start = line.find("disconnect(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -1967,7 +1991,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 	}
 	// -- is_connected(a,b,c) -> is_connected(a,Callable(b,c))      Object
-	if (line.contains("is_connected(")) {
+	if (contains_function_call(line, "is_connected(")) {
 		int start = line.find("is_connected(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -1979,7 +2003,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 	// -- "(tween_method(A,B,C,D,E) != OK):", "(tween_method(Callable(A,B),C,D,E)      Object
 	// -- "(tween_method(A,B,C,D,E,[F,G]) != OK):", "(tween_method(Callable(A,B).bind(F,G),C,D,E)      Object
-	if (line.contains("tween_method(")) {
+	if (contains_function_call(line, "tween_method(")) {
 		int start = line.find("tween_method(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -1992,7 +2016,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 	}
 	// -- "(tween_callback(A,B,[C,D]) != OK):", "(connect(Callable(A,B).bind(C,D))      Object
-	if (line.contains("tween_callback(")) {
+	if (contains_function_call(line, "tween_callback(")) {
 		int start = line.find("tween_callback(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -2006,7 +2030,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 	// -- start(a,b) -> start(Callable(a, b))      Thread
 	// -- start(a,b,c,d) -> start(Callable(a, b).bind(c), d)      Thread
-	if (line.contains("start(")) {
+	if (contains_function_call(line, "start(")) {
 		int start = line.find("start(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		// Protection from 'func start'
@@ -2034,7 +2058,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	//  create_from_image(aa, bb)  ->   create_from_image(aa) #, bb   ImageTexture
-	if (line.contains("create_from_image(")) {
+	if (contains_function_call(line, "create_from_image(")) {
 		int start = line.find("create_from_image(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -2045,7 +2069,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 	}
 	//  set_cell_item(a, b, c, d ,e)  ->   set_cell_item(Vector3(a, b, c), d ,e)
-	if (line.contains("set_cell_item(")) {
+	if (contains_function_call(line, "set_cell_item(")) {
 		int start = line.find("set_cell_item(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -2056,7 +2080,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 	}
 	//  get_cell_item(a, b, c)  ->   get_cell_item(Vector3i(a, b, c))
-	if (line.contains("get_cell_item(")) {
+	if (contains_function_call(line, "get_cell_item(")) {
 		int start = line.find("get_cell_item(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -2067,7 +2091,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 	}
 	//  get_cell_item_orientation(a, b, c)  ->   get_cell_item_orientation(Vector3i(a, b, c))
-	if (line.contains("get_cell_item_orientation(")) {
+	if (contains_function_call(line, "get_cell_item_orientation(")) {
 		int start = line.find("get_cell_item_orientation(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -2078,7 +2102,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 	}
 	//  apply_impulse(A, B)  ->   apply_impulse(B, A)
-	if (line.contains("apply_impulse(")) {
+	if (contains_function_call(line, "apply_impulse(")) {
 		int start = line.find("apply_impulse(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -2089,7 +2113,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 	}
 	//  apply_force(A, B)  ->   apply_force(B, A)
-	if (line.contains("apply_force(")) {
+	if (contains_function_call(line, "apply_force(")) {
 		int start = line.find("apply_force(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -2100,7 +2124,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 	}
 	//  map_to_world(a, b, c)  ->   map_to_local(Vector3i(a, b, c))
-	if (line.contains("map_to_world(")) {
+	if (contains_function_call(line, "map_to_world(")) {
 		int start = line.find("map_to_world(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -2114,7 +2138,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	//  set_rotating(true)  ->   set_ignore_rotation(false)
-	if (line.contains("set_rotating(")) {
+	if (contains_function_call(line, "set_rotating(")) {
 		int start = line.find("set_rotating(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -2138,7 +2162,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 	}
 	//  draw_rect(a,b,c,d,e)  ->   draw_rect(a,b,c,d)#e) TODOGODOT4 Antialiasing argument is missing
-	if (line.contains("draw_rect(")) {
+	if (contains_function_call(line, "draw_rect(")) {
 		int start = line.find("draw_rect(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -2149,7 +2173,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 	}
 	// get_focus_owner() -> get_viewport().gui_get_focus_owner()
-	if (line.contains("get_focus_owner()")) {
+	if (contains_function_call(line, "get_focus_owner()")) {
 		line = line.replace("get_focus_owner()", "get_viewport().gui_get_focus_owner()");
 	}
 
@@ -2174,7 +2198,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	// rotating = true  ->   ignore_rotation = false # reversed "rotating" for Camera2D
-	if (line.contains("rotating")) {
+	if (contains_function_call(line, "rotating")) {
 		int start = line.find("rotating");
 		bool foundNextEqual = false;
 		String line_to_check = line.substr(start + String("rotating").length());

@@ -109,6 +109,7 @@ class ProjectConverter3To4 {
 	String connect_arguments(const Vector<String> &line, int from, int to = -1) const;
 	String get_starting_space(const String &line) const;
 	String get_object_of_execution(const String &line) const;
+	bool contains_function_call(String &line, String function) const;
 
 	String line_formatter(int current_line, String from, String to, String line);
 	String simple_line_formatter(int current_line, String old_line, String line);
