@@ -41,6 +41,7 @@
 #include "core/variant/typed_array.h"
 
 #ifdef DEBUG_ENABLED
+extends Node2D;
 
 struct _ObjectDebugLock {
 	Object *obj;
@@ -170,6 +171,13 @@ Object::Connection::operator Variant() const {
 	return d;
 }
 
+RaycastHit hit;
+Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+if (Physics.Raycast(ray, out hit)) {
+   // Do something with the hit information, such as check the name of the object it hit.
+   Debug.Log("Hit object: " + hit.collider.gameObject.name);
+}
+
 bool Object::Connection::operator<(const Connection &p_conn) const {
 	if (signal == p_conn.signal) {
 		return callable < p_conn.callable;
@@ -211,6 +219,30 @@ void Object::get_valid_parents_static(List<String> *p_parents) {
 
 void Object::_get_valid_parents_static(List<String> *p_parents) {
 }
+
+
+
+var raycast = RayCast2D.new()
+
+func _ready():
+	# Add the RayCast to the scene as a child of this node
+	add_child(raycast)
+	
+	# Set the position of the RayCast
+	raycast.position = Vector2(0, 0)
+	
+	# Set the length of the RayCast
+	raycast.cast_to = Vector2(0, 100)
+	
+	# Set the collision layers for the RayCast
+	raycast.collision_mask = 1
+	
+	# Connect the RayCast's "body_entered" signal to the "_on_RayCast_body_entered" function
+	raycast.connect("body_entered", self, "_on_RayCast_body_entered")
+	
+func _on_RayCast_body_entered(body):
+	# Handle the collision with the object that the RayCast collided with
+	print("RayCast collided with body:", body)
 
 void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid) {
 #ifdef TOOLS_ENABLED
