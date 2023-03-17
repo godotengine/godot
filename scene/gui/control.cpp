@@ -2912,6 +2912,13 @@ void Control::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
+#ifdef TOOLS_ENABLED
+			if (is_part_of_edited_scene()) {
+				// Don't translate Controls on scene when inside editor.
+				set_message_translation(false);
+				notification(NOTIFICATION_TRANSLATION_CHANGED);
+			}
+#endif
 			notification(NOTIFICATION_THEME_CHANGED);
 		} break;
 
