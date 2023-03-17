@@ -4734,7 +4734,7 @@ void TileSetScenesCollectionSource::_compute_next_alternative_id() {
 }
 
 int TileSetScenesCollectionSource::get_tiles_count() const {
-	return 1;
+	return scenes_ids.size();
 }
 
 Vector2i TileSetScenesCollectionSource::get_tile_id(int p_tile_index) const {
