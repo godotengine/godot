@@ -79,6 +79,12 @@ Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const Pa
 	float fw, fh;
 	picture->size(&fw, &fh);
 
+	// May in some web-based cases return zero size. Render 1x1 px image.
+	if (fw <= 0.0 || fh <= 0.0 ) {
+		fw = 1.0;
+		fh = 1.0;
+	}
+
 	uint32_t width = round(fw * p_scale);
 	uint32_t height = round(fh * p_scale);
 
