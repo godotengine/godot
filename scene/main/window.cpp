@@ -490,7 +490,7 @@ bool Window::is_embedded() const {
 
 bool Window::is_in_edited_scene_root() const {
 #ifdef TOOLS_ENABLED
-	return (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this));
+	return is_part_of_edited_scene();
 #else
 	return false;
 #endif
@@ -1138,6 +1138,13 @@ void Window::_notification(int p_what) {
 				RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
 			}
 
+#ifdef TOOLS_ENABLED
+			if (is_part_of_edited_scene()) {
+				// Don't translate Windows on scene when inside editor.
+				set_message_translation(false);
+				notification(NOTIFICATION_TRANSLATION_CHANGED);
+			}
+#endif
 			notification(NOTIFICATION_THEME_CHANGED);
 		} break;
 
