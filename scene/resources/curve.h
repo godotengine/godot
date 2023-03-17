@@ -78,6 +78,7 @@ public:
 
 	void set_point_count(int p_count);
 
+	int predict_insertion_index(Vector2 &p_position) const;
 	int add_point(Vector2 p_position,
 			real_t left_tangent = 0,
 			real_t right_tangent = 0,
