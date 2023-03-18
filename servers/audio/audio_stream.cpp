@@ -76,6 +76,22 @@ int AudioStreamPlayback::mix(AudioFrame *p_buffer, float p_rate_scale, int p_fra
 	return ret;
 }
 
+PackedVector2Array AudioStreamPlayback::_mix_bind(float p_rate_scale, int p_frames) {
+	Vector<AudioFrame> buffer;
+	buffer.resize(p_frames);
+
+	int frames_out = mix(buffer.ptrw(), p_rate_scale, p_frames);
+
+	PackedVector2Array ret;
+	ret.resize(frames_out);
+
+	for (int i = 0; i < frames_out; ++i) {
+		ret.write[i] = Vector2(buffer[i].l, buffer[i].r);
+	}
+
+	return ret;
+}
+
 void AudioStreamPlayback::tag_used_streams() {
 	GDVIRTUAL_CALL(_tag_used_streams);
 }
@@ -89,6 +105,14 @@ void AudioStreamPlayback::_bind_methods() {
 	GDVIRTUAL_BIND(_seek, "position")
 	GDVIRTUAL_BIND(_mix, "buffer", "rate_scale", "frames");
 	GDVIRTUAL_BIND(_tag_used_streams);
+
+	ClassDB::bind_method(D_METHOD("start", "from_position"), &AudioStreamPlayback::start, DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("stop"), &AudioStreamPlayback::stop);
+	ClassDB::bind_method(D_METHOD("is_playing"), &AudioStreamPlayback::is_playing);
+	ClassDB::bind_method(D_METHOD("get_loop_count"), &AudioStreamPlayback::get_loop_count);
+	ClassDB::bind_method(D_METHOD("get_playback_position"), &AudioStreamPlayback::get_playback_position);
+	ClassDB::bind_method(D_METHOD("seek", "position"), &AudioStreamPlayback::seek);
+	ClassDB::bind_method(D_METHOD("mix", "rate_scale", "frames"), &AudioStreamPlayback::_mix_bind);
 }
 //////////////////////////////
 

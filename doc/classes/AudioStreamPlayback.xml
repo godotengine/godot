@@ -55,5 +55,53 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_loop_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of times the stream has looped.
+			</description>
+		</method>
+		<method name="get_playback_position" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the current position in the stream, in seconds.
+			</description>
+		</method>
+		<method name="is_playing" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the stream is playing.
+			</description>
+		</method>
+		<method name="mix">
+			<return type="PackedVector2Array" />
+			<param index="0" name="rate_scale" type="float" />
+			<param index="1" name="frames" type="int" />
+			<description>
+				Mixes up to [param frames] of audio from the stream from the current position, at a rate of [param rate_scale], advancing the stream.
+				Returns a [PackedVector2Array] where each element holds the left and right channel volume levels of each frame.
+				[b]Note:[/b] Can return fewer frames than requested, make sure to use the size of the return value.
+			</description>
+		</method>
+		<method name="seek">
+			<return type="void" />
+			<param index="0" name="position" type="float" />
+			<description>
+				Sets the position from which stream will be played, in seconds.
+			</description>
+		</method>
+		<method name="start">
+			<return type="void" />
+			<param index="0" name="from_position" type="float" default="0.0" />
+			<description>
+				Starts the stream from the given [param from_position], in seconds.
+			</description>
+		</method>
+		<method name="stop">
+			<return type="void" />
+			<description>
+				Stops the stream.
+			</description>
+		</method>
 	</methods>
 </class>

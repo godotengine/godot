@@ -55,6 +55,9 @@ protected:
 	GDVIRTUAL1(_seek, double)
 	GDVIRTUAL3R(int, _mix, GDExtensionPtr<AudioFrame>, float, int)
 	GDVIRTUAL0(_tag_used_streams)
+
+	PackedVector2Array _mix_bind(float p_rate_scale, int p_frames);
+
 public:
 	virtual void start(double p_from_pos = 0.0);
 	virtual void stop();
