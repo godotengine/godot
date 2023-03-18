@@ -542,13 +542,17 @@ struct VariantUtilityFunctions {
 		}
 		Variant base = *p_args[0];
 		Variant ret;
-		for (int i = 1; i < p_argcount; i++) {
+
+		for (int i = 0; i < p_argcount; i++) {
 			Variant::Type arg_type = p_args[i]->get_type();
 			if (arg_type != Variant::INT && arg_type != Variant::FLOAT) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.expected = Variant::FLOAT;
 				r_error.argument = i;
 				return Variant();
+			}
+			if (i == 0) {
+				continue;
 			}
 			bool valid;
 			Variant::evaluate(Variant::OP_LESS, base, *p_args[i], ret, valid);
@@ -582,13 +586,17 @@ struct VariantUtilityFunctions {
 		}
 		Variant base = *p_args[0];
 		Variant ret;
-		for (int i = 1; i < p_argcount; i++) {
+
+		for (int i = 0; i < p_argcount; i++) {
 			Variant::Type arg_type = p_args[i]->get_type();
 			if (arg_type != Variant::INT && arg_type != Variant::FLOAT) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.expected = Variant::FLOAT;
 				r_error.argument = i;
 				return Variant();
+			}
+			if (i == 0) {
+				continue;
 			}
 			bool valid;
 			Variant::evaluate(Variant::OP_GREATER, base, *p_args[i], ret, valid);

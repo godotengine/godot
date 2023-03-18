@@ -10,13 +10,14 @@
 # Rihards Kubilis <oldcar@inbox.lv>, 2020.
 # M E <gruffy7932@gmail.com>, 2021, 2022.
 # D āvis <dlektauers@gmail.com>, 2022.
+# Agnis Aldiņš <agnis16@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-07 16:08+0000\n"
-"Last-Translator: D āvis <dlektauers@gmail.com>\n"
+"PO-Revision-Date: 2023-03-09 00:25+0000\n"
+"Last-Translator: Agnis Aldiņš <agnis16@gmail.com>\n"
 "Language-Team: Latvian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/lv/>\n"
 "Language: lv\n"
@@ -25,7 +26,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n % 10 == 0 || n % 100 >= 11 && n % 100 <= "
 "19) ? 0 : ((n % 10 == 1 && n % 100 != 11) ? 1 : 2);\n"
-"X-Generator: Weblate 4.12.1\n"
+"X-Generator: Weblate 4.16.2-dev\n"
 
 msgid "Select"
 msgstr "Izvēlēties"
@@ -1400,6 +1401,9 @@ msgstr "pārraksta %s:"
 msgid "default:"
 msgstr "pēc noklusējuma:"
 
+msgid "Operators"
+msgstr "Operātors"
+
 msgid "Theme Properties"
 msgstr "Motīva iestatījumi"
 
@@ -2008,7 +2012,7 @@ msgid "Send Docs Feedback"
 msgstr "Sūtīt dokumentu atsauksmi"
 
 msgid "Community"
-msgstr "Komūns"
+msgstr "Komūna"
 
 msgid "About Godot"
 msgstr "Par Godot"

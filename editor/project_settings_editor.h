@@ -116,7 +116,7 @@ protected:
 
 public:
 	static ProjectSettingsEditor *get_singleton() { return singleton; }
-	void popup_project_settings();
+	void popup_project_settings(bool p_clear_filter = false);
 	void set_plugins_page();
 	void set_general_page(const String &p_category);
 	void update_plugins();

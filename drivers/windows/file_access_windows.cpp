@@ -130,10 +130,16 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 
 	if (is_backup_save_enabled() && p_mode_flags == WRITE) {
 		save_path = path;
-		path = path + ".tmp";
+		// Create a temporary file in the same directory as the target file.
+		WCHAR tmpFileName[MAX_PATH];
+		if (GetTempFileNameW((LPCWSTR)(path.get_base_dir().utf16().get_data()), (LPCWSTR)(path.get_file().utf16().get_data()), 0, tmpFileName) == 0) {
+			last_error = ERR_FILE_CANT_OPEN;
+			return last_error;
+		}
+		path = tmpFileName;
 	}
 
-	f = _wfsopen((LPCWSTR)(path.utf16().get_data()), mode_string, _SH_DENYNO);
+	f = _wfsopen((LPCWSTR)(path.utf16().get_data()), mode_string, is_backup_save_enabled() ? _SH_SECURE : _SH_DENYNO);
 
 	if (f == nullptr) {
 		switch (errno) {
@@ -178,10 +184,10 @@ void FileAccessWindows::_close() {
 			if (!PathFileExistsW((LPCWSTR)(save_path.utf16().get_data()))) {
 #endif
 				// Creating new file
-				rename_error = _wrename((LPCWSTR)((save_path + ".tmp").utf16().get_data()), (LPCWSTR)(save_path.utf16().get_data())) != 0;
+				rename_error = _wrename((LPCWSTR)(path.utf16().get_data()), (LPCWSTR)(save_path.utf16().get_data())) != 0;
 			} else {
 				// Atomic replace for existing file
-				rename_error = !ReplaceFileW((LPCWSTR)(save_path.utf16().get_data()), (LPCWSTR)((save_path + ".tmp").utf16().get_data()), nullptr, 2 | 4, nullptr, nullptr);
+				rename_error = !ReplaceFileW((LPCWSTR)(save_path.utf16().get_data()), (LPCWSTR)(path.utf16().get_data()), nullptr, 2 | 4, nullptr, nullptr);
 			}
 			if (rename_error) {
 				attempts--;

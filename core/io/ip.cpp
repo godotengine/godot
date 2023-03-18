@@ -75,7 +75,7 @@ struct _IP_ResolverPrivate {
 	Semaphore sem;
 
 	Thread thread;
-	bool thread_abort = false;
+	SafeFlag thread_abort;
 
 	void resolve_queues() {
 		for (int i = 0; i < IP::RESOLVER_MAX_QUERIES; i++) {
@@ -111,7 +111,7 @@ struct _IP_ResolverPrivate {
 	static void _thread_function(void *self) {
 		_IP_ResolverPrivate *ipr = static_cast<_IP_ResolverPrivate *>(self);
 
-		while (!ipr->thread_abort) {
+		while (!ipr->thread_abort.is_set()) {
 			ipr->sem.wait();
 			ipr->resolve_queues();
 		}
@@ -343,12 +343,12 @@ IP::IP() {
 	singleton = this;
 	resolver = memnew(_IP_ResolverPrivate);
 
-	resolver->thread_abort = false;
+	resolver->thread_abort.clear();
 	resolver->thread.start(_IP_ResolverPrivate::_thread_function, resolver);
 }
 
 IP::~IP() {
-	resolver->thread_abort = true;
+	resolver->thread_abort.set();
 	resolver->sem.post();
 	resolver->thread.wait_to_finish();
 

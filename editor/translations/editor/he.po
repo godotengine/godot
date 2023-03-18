@@ -27,13 +27,15 @@
 # moshe mil <milgmoshe@gmail.com>, 2022.
 # Blawnode <blawnode@gmail.com>, 2022.
 # Yoni m <yoni.meirov08@gmail.com>, 2023.
+# Ronelo <Santatv9@gmail.com>, 2023.
+# BM Lapidus <boruchmendel.lapidus@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-08 07:34+0000\n"
-"Last-Translator: Ram Tourgeman <ramtorgeman@gmail.com>\n"
+"PO-Revision-Date: 2023-03-14 01:22+0000\n"
+"Last-Translator: BM Lapidus <boruchmendel.lapidus@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/"
 "godot/he/>\n"
 "Language: he\n"
@@ -42,7 +44,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && "
 "n % 10 == 0) ? 2 : 3));\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16.2-dev\n"
 
 msgid "Unset"
 msgstr "ביטול הגדרה"
@@ -50,17 +52,41 @@ msgstr "ביטול הגדרה"
 msgid "Physical"
 msgstr "פיזי"
 
-msgid "Left Mouse Button"
-msgstr "לחצן עכבר שמאלי"
-
 msgid "Right Mouse Button"
 msgstr "כפתור עכבר ימני"
+
+msgid "Middle Mouse Button"
+msgstr "כפתור עכבר אמצעי"
+
+msgid "Mouse Wheel Up"
+msgstr "גלגלת למעלה."
+
+msgid "Mouse Wheel Down"
+msgstr "גלגלת למטה."
 
 msgid "Button"
 msgstr "כפתור"
 
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "תנועת העכבר במיקום (%s) עם מהירות (%s)"
+
+msgid "D-pad Left"
+msgstr "כרית כיוונית שמאל"
+
+msgid "D-pad Right"
+msgstr "כרית כיוונית ימין"
+
+msgid "touched"
+msgstr "ננגע"
+
+msgid "released"
+msgstr "שוחרר"
+
 msgid "Select"
 msgstr "בחירה"
+
+msgid "Cancel"
+msgstr "ביטול"
 
 msgid "Up"
 msgstr "העלאה"
@@ -72,10 +98,10 @@ msgid "End"
 msgstr "סוף"
 
 msgid "Cut"
-msgstr "גזירה"
+msgstr "גזור"
 
 msgid "Copy"
-msgstr "העתקה"
+msgstr "העתק"
 
 msgid "Paste"
 msgstr "הדבק"
@@ -85,6 +111,12 @@ msgstr "ביטול"
 
 msgid "Redo"
 msgstr "ביצוע חוזר"
+
+msgid "New Blank Line"
+msgstr "שורה חדשה ריקה"
+
+msgid "New Line Above"
+msgstr "שורה חדשה מעל"
 
 msgid "Delete"
 msgstr "מחיקה"

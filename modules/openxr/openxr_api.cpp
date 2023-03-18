@@ -1815,6 +1815,10 @@ bool OpenXRAPI::pre_draw_viewport(RID p_render_target) {
 		}
 	}
 
+	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
+		wrapper->on_pre_draw_viewport(p_render_target);
+	}
+
 	return true;
 }
 
@@ -1839,7 +1843,9 @@ void OpenXRAPI::post_draw_viewport(RID p_render_target) {
 		return;
 	}
 
-	// Nothing to do here at this point in time...
+	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
+		wrapper->on_post_draw_viewport(p_render_target);
+	}
 };
 
 void OpenXRAPI::end_frame() {

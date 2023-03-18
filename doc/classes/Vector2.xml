@@ -143,7 +143,7 @@
 			<param index="2" name="post_b" type="Vector2" />
 			<param index="3" name="weight" type="float" />
 			<description>
-				Cubically interpolates between this vector and [param b] using [param pre_a] and [param post_b] as handles, and returns the result at position [param weight]. [param weight] is on the range of 0.0 to 1.0, representing the amount of interpolation.
+				Performs a cubic interpolation between this vector and [param b] using [param pre_a] and [param post_b] as handles, and returns the result at position [param weight]. [param weight] is on the range of 0.0 to 1.0, representing the amount of interpolation.
 			</description>
 		</method>
 		<method name="cubic_interpolate_in_time" qualifiers="const">
@@ -156,7 +156,7 @@
 			<param index="5" name="pre_a_t" type="float" />
 			<param index="6" name="post_b_t" type="float" />
 			<description>
-				Cubically interpolates between this vector and [param b] using [param pre_a] and [param post_b] as handles, and returns the result at position [param weight]. [param weight] is on the range of 0.0 to 1.0, representing the amount of interpolation.
+				Performs a cubic interpolation between this vector and [param b] using [param pre_a] and [param post_b] as handles, and returns the result at position [param weight]. [param weight] is on the range of 0.0 to 1.0, representing the amount of interpolation.
 				It can perform smoother interpolation than [code]cubic_interpolate()[/code] by the time values.
 			</description>
 		</method>
@@ -254,7 +254,7 @@
 			<param index="0" name="to" type="Vector2" />
 			<param index="1" name="weight" type="float" />
 			<description>
-				Returns the result of the linear interpolation between this vector and [param to] by amount [param weight]. [param weight] is on the range of 0.0 to 1.0, representing the amount of interpolation.
+				Returns the result of the linear interpolation between this vector and [param to] by amount [param weight]. [param weight] is on the range of [code]0.0[/code] to [code]1.0[/code], representing the amount of interpolation.
 			</description>
 		</method>
 		<method name="limit_length" qualifiers="const">
@@ -287,7 +287,8 @@
 		<method name="normalized" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns a new vector scaled to unit length. Equivalent to [code]v / v.length()[/code].
+				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code]. See also [method is_normalized].
+				[b]Note:[/b] This function may return incorrect values if the initial vector length is near zero.
 			</description>
 		</method>
 		<method name="orthogonal" qualifiers="const">

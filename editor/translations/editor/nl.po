@@ -62,13 +62,14 @@
 # Nnn <irri2020@outlook.com>, 2022.
 # Jasper <jasper@dj-dj.be>, 2023.
 # Kevin Nijmeijer <Kevinchrisnij@gmail.com>, 2023.
+# Mike Rombout <mike.rombout1@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-25 00:15+0000\n"
-"Last-Translator: Kevin Nijmeijer <Kevinchrisnij@gmail.com>\n"
+"PO-Revision-Date: 2023-03-03 23:47+0000\n"
+"Last-Translator: Mike Rombout <mike.rombout1@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -76,7 +77,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16.2-dev\n"
 
 msgid "Unset"
 msgstr "Niet ingesteld"
@@ -177,11 +178,56 @@ msgstr "Gids, Sony PS, Xbox Thuis"
 msgid "Start, Nintendo +"
 msgstr "Start, Nintendo +"
 
+msgid "Left Stick, Sony L3, Xbox L/LS"
+msgstr "Linker Joystick, Sony L3, Xbox L/LS"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "Rechter Joystick, Sony R3, Xbox R/RS"
+
+msgid "Left Shoulder, Sony L1, Xbox LB"
+msgstr "Linker Schouder, Sony L1, Xbox LB"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "Rechter Schouder, Sony R1, Xbox RB"
+
+msgid "D-pad Up"
+msgstr "D-pad Boven"
+
+msgid "D-pad Down"
+msgstr "D-pad Onder"
+
+msgid "D-pad Left"
+msgstr "D-pad Links"
+
+msgid "D-pad Right"
+msgstr "D-pad Rechts"
+
+msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "Xbox Delen, PS5 Microfoon, Nintendo Opname"
+
+msgid "Joypad Button %d"
+msgstr "Controllerknop %d"
+
+msgid "Accept"
+msgstr "Accepteren"
+
 msgid "Select"
 msgstr "Selecteer"
 
 msgid "Cancel"
 msgstr "Annuleer"
+
+msgid "Focus Next"
+msgstr "Focus Volgende"
+
+msgid "Focus Prev"
+msgstr "Focus Vorige"
+
+msgid "Left"
+msgstr "Links"
+
+msgid "Right"
+msgstr "Rechts"
 
 msgid "Up"
 msgstr "Omhoog"
@@ -191,6 +237,9 @@ msgstr "Omlaag"
 
 msgid "Page Up"
 msgstr "Pagina Omhoog"
+
+msgid "Page Down"
+msgstr "Pagina Omlaag"
 
 msgid "End"
 msgstr "Einde"
@@ -210,11 +259,26 @@ msgstr "Ongedaan maken"
 msgid "Redo"
 msgstr "Opnieuw"
 
+msgid "New Line"
+msgstr "Nieuwe regel"
+
+msgid "New Blank Line"
+msgstr "Nieuwe lege regel"
+
 msgid "Delete"
 msgstr "Verwijder"
 
+msgid "Delete Word"
+msgstr "Woord Verwijderen"
+
 msgid "Caret Page Up"
 msgstr "Caret Pagina Omhoog"
+
+msgid "Scroll Up"
+msgstr "Scroll Omhoog"
+
+msgid "Scroll Down"
+msgstr "Scroll Omlaag"
 
 msgid "Select All"
 msgstr "Alles selecteren"
@@ -224,6 +288,9 @@ msgstr "Knopen dupliceren"
 
 msgid "Delete Nodes"
 msgstr "VisualShader-knoop/knopen verwijderen"
+
+msgid "Go Up One Level"
+msgstr "Ga Een Niveau Omhoog"
 
 msgid "Refresh"
 msgstr "Verversen"
@@ -248,6 +315,12 @@ msgstr "Ongeldig argument in constructie '%s'"
 msgid "On call to '%s':"
 msgstr "Tijdens invocatie van '%s':"
 
+msgid "Built-in script"
+msgstr "Ingebouwd script"
+
+msgid "Built-in"
+msgstr "Ingebouwd"
+
 msgid "B"
 msgstr "B"
 
@@ -268,6 +341,9 @@ msgstr "PiB"
 
 msgid "EiB"
 msgstr "EiB"
+
+msgid "Example: %s"
+msgstr "Voorbeeld: %s"
 
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
@@ -1826,6 +1902,9 @@ msgstr "overschrijft %s:"
 msgid "default:"
 msgstr "standaard:"
 
+msgid "Constructors"
+msgstr "Constructors"
+
 msgid "Operators"
 msgstr "Operatoren"
 
@@ -1863,8 +1942,14 @@ msgstr ""
 "Er is momenteel geen beschrijving voor deze eigenschap. Help ons alstublieft "
 "door [color=$color][url=$url]een bijdrage te leveren[/url][/color]!"
 
+msgid "Constructor Descriptions"
+msgstr "Constructorbeschrijvingen"
+
 msgid "Method Descriptions"
 msgstr "Methodebeschrijvingen"
+
+msgid "Operator Descriptions"
+msgstr "Operatorbeschrijvingen"
 
 msgid "%d match."
 msgstr "%d overeenkomst(en) gevonden."

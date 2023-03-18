@@ -156,7 +156,7 @@
 			<param index="2" name="n" type="int" />
 			<param index="3" name="context" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns the current locale's translation for the given message (key), plural_message and context.
+				Returns the current locale's translation for the given message (key), plural message and context.
 				The number [param n] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
 			</description>
 		</method>

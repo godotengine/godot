@@ -93,7 +93,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-28 17:36+0000\n"
+"PO-Revision-Date: 2023-03-07 01:01+0000\n"
 "Last-Translator: ‎ <artism90@googlemail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/de/>\n"
@@ -102,7 +102,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.16-rc\n"
+"X-Generator: Weblate 4.16.2-dev\n"
 
 msgid "Application"
 msgstr "Anwendung"
@@ -221,23 +221,11 @@ msgstr "Stärke der 3D-Verschiebung"
 msgid "Editor"
 msgstr "Editor"
 
-msgid "Main Run Args"
-msgstr "Laufzeitargumente für Main"
-
 msgid "Script"
 msgstr "Skript"
 
 msgid "Search in File Extensions"
 msgstr "In Dateierweiterungen suchen"
-
-msgid "Templates Search Path"
-msgstr "Vorlagen-Suchpfad"
-
-msgid "Naming"
-msgstr "Namensgebung"
-
-msgid "Default Signal Callback Name"
-msgstr "Standardmäßiger Name für Signalcallbacks"
 
 msgid "Physics"
 msgstr "Physik"
@@ -826,6 +814,9 @@ msgstr "Szenenbaum"
 
 msgid "Start Create Dialog Fully Expanded"
 msgstr "Erstellen-Dialog beim Start wird vollständig aufgeklappt"
+
+msgid "Auto Expand to Selected"
+msgstr "Automatisch auf Auswahl vergrößern"
 
 msgid "Always Show Folders"
 msgstr "Verzeichnisse immer anzeigen"
@@ -1437,7 +1428,7 @@ msgid "Variation"
 msgstr "Variation"
 
 msgid "Transform"
-msgstr "Transformation"
+msgstr "Transform, Tranformation, Transformierung?"
 
 msgid "Collada"
 msgstr "Collada"
@@ -1581,7 +1572,7 @@ msgid "Roughness"
 msgstr "Rauheit"
 
 msgid "Process"
-msgstr "Verarbeiten"
+msgstr "Prozessverhalten"
 
 msgid "Fix Alpha Border"
 msgstr "Alpharand beheben"
@@ -1742,6 +1733,18 @@ msgstr "Pfad des öffentlichen SSH-Schlüssels"
 msgid "SSH Private Key Path"
 msgstr "Pfad des privaten SSH-Schlüssels"
 
+msgid "Main Run Args"
+msgstr "Laufzeitargumente für Main"
+
+msgid "Templates Search Path"
+msgstr "Vorlagen-Suchpfad"
+
+msgid "Naming"
+msgstr "Namensgebung"
+
+msgid "Default Signal Callback Name"
+msgstr "Standardmäßiger Name für Signalcallbacks"
+
 msgid "Show Scene Tree Root Selection"
 msgstr "Szenenbaumwurzelauswahl anzeigen"
 
@@ -1833,7 +1836,7 @@ msgid "Environment"
 msgstr "Umgebung"
 
 msgid "Default Clear Color"
-msgstr "Standard Löschfarbe"
+msgstr "Standard Clear Color"
 
 msgid "Show Image"
 msgstr "Bild anzeigen"
@@ -1873,6 +1876,9 @@ msgstr "Benutzerdefinierter Bild-Hotspot"
 
 msgid "Tooltip Position Offset"
 msgstr "Versatz des Tooltips"
+
+msgid "Minimum Display Time"
+msgstr "Minimale Anzeigedauer"
 
 msgid "Project"
 msgstr "Projekt"
@@ -3149,6 +3155,9 @@ msgstr "Einseitige Kollision"
 msgid "One Way Collision Margin"
 msgstr "Grenze für einseitige Kollisionen"
 
+msgid "Debug Color"
+msgstr "Debug-Farbe"
+
 msgid "Emitting"
 msgstr "Aussendend"
 
@@ -3343,6 +3352,9 @@ msgstr "Geschlossen"
 
 msgid "Cull Mode"
 msgstr "Aushöhlungsmodus"
+
+msgid "Occluder Light Mask"
+msgstr "Verdecker Lichtblende"
 
 msgid "Width Curve"
 msgstr "Breitenkurve"
@@ -3962,6 +3974,9 @@ msgstr "Agent Höhenversatz"
 msgid "Ignore Y"
 msgstr "Y ignorieren"
 
+msgid "Top Level"
+msgstr "Top-Level"
+
 msgid "Visibility"
 msgstr "Sichtbarkeit"
 
@@ -4379,6 +4394,9 @@ msgstr "Verzögerter Modus"
 msgid "Presets Visible"
 msgstr "Vorlagen sichtbar"
 
+msgid "Custom Minimum Size"
+msgstr "Benutzerdefinierte Minimalgröße"
+
 msgid "Grow Direction"
 msgstr "Wachstumsrichtung"
 
@@ -4701,7 +4719,7 @@ msgid "Center Offset"
 msgstr "Mitteversatz"
 
 msgid "Custom Minimum Height"
-msgstr "Benutzerdefinierte minimale Höhe"
+msgstr "Benutzerdefinierte Minimalhöhe"
 
 msgid "Column Titles Visible"
 msgstr "Spaltentitel sichtbar"
@@ -4731,10 +4749,13 @@ msgid "Buffering Msec"
 msgstr "Puffer ms"
 
 msgid "Self Modulate"
-msgstr "Selbst-Modulieren"
+msgstr "Eigenmodulation"
 
 msgid "Show Behind Parent"
-msgstr "Zeige hinter Eltern"
+msgstr "Zeichne hinter Elternelement"
+
+msgid "Clip Children"
+msgstr "Kindelemente auf Elternausschnitt begrenzen"
 
 msgid "Light Mask"
 msgstr "Lichtblende"
@@ -4752,7 +4773,7 @@ msgid "Repeat"
 msgstr "Wiederholen"
 
 msgid "Use Parent Material"
-msgstr "Benutze Eltern Material"
+msgstr "Benutze Eltern-Material"
 
 msgid "Diffuse"
 msgstr "Zerstreuen"
@@ -4832,6 +4853,9 @@ msgstr "Atlasgröße"
 msgid "Oversize"
 msgstr "Übergröße"
 
+msgid "Default Environment"
+msgstr "Standard-Umgebung"
+
 msgid "Enable Object Picking"
 msgstr "Objektauswahl aktivieren"
 
@@ -4864,6 +4888,9 @@ msgstr "3D-Skalierung-Modus"
 
 msgid "Scaling 3D Scale"
 msgstr "3D-Skalierung-Skalierung"
+
+msgid "FSR Sharpness"
+msgstr "FSR-Schärfe"
 
 msgid "Variable Rate Shading"
 msgstr "Variable Rate Shading"
@@ -5006,6 +5033,9 @@ msgstr "Leiste"
 msgid "Font Color"
 msgstr "Schriftfarbe"
 
+msgid "Font Outline Color"
+msgstr "Schriftfarbe Umriss"
+
 msgid "H Separation"
 msgstr "H-Trennung"
 
@@ -5042,6 +5072,9 @@ msgstr "Radioknopf unausgewählt"
 msgid "Radio Unchecked Disabled"
 msgstr "Radioknopf unausgewählt deaktiviert"
 
+msgid "Font Shadow Color"
+msgstr "Schriftfarbe Schatten"
+
 msgid "Shadow Offset X"
 msgstr "Schattenversatz X"
 
@@ -5053,6 +5086,9 @@ msgstr "Löschenknopffarbe"
 
 msgid "Clear Button Color Pressed"
 msgstr "Gedrückter Löschenknopf-Farbe"
+
+msgid "Minimum Character Width"
+msgstr "Minimale Zeichenbreite"
 
 msgid "Clear"
 msgstr "Löschen"
@@ -5179,6 +5215,9 @@ msgstr "Untermenü"
 
 msgid "Font Separator"
 msgstr "Schriftarten-Trennzeichen"
+
+msgid "Font Separator Outline Color"
+msgstr "Schriftfarbe Trennumriss"
 
 msgid "V Separation"
 msgstr "V-Trennung"
@@ -5777,6 +5816,9 @@ msgstr "B"
 msgid "Custom Solver Bias"
 msgstr "Eigenen Bias für Löser"
 
+msgid "Target Maximum Distance"
+msgstr "Maximale Zieldistanz"
+
 msgid "Bind Count"
 msgstr "Anzahl festlegen"
 
@@ -5794,6 +5836,9 @@ msgstr "Farbe oben"
 
 msgid "Horizon Color"
 msgstr "Horizontfarbe"
+
+msgid "Cover Modulate"
+msgstr "Cover-Modulation"
 
 msgid "Ground"
 msgstr "Boden"
@@ -6185,6 +6230,9 @@ msgstr "PNG erzwingen"
 msgid "Shadow Atlas"
 msgstr "Schattenatlas"
 
+msgid "Item Buffer Size"
+msgstr "Item-Puffergröße"
+
 msgid "Shader Compiler"
 msgstr "Shader-Compiler"
 
@@ -6208,6 +6256,9 @@ msgstr "Überschreibungen"
 
 msgid "Force Vertex Shading"
 msgstr "Vertex-Shading erzwingen"
+
+msgid "Force Lambert over Burley"
+msgstr "Lambert statt Burley erzwingen"
 
 msgid "Depth Prepass"
 msgstr "Tiefenvorpass"

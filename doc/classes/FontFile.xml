@@ -115,6 +115,14 @@
 				Returns thickness of the underline in pixels.
 			</description>
 		</method>
+		<method name="get_char_from_glyph_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="size" type="int" />
+			<param index="1" name="glyph_index" type="int" />
+			<description>
+				Returns character code associated with [param glyph_index], or [code]0[/code] if [param glyph_index] is invalid. See [method get_glyph_index].
+			</description>
+		</method>
 		<method name="get_embolden" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="cache_index" type="int" />

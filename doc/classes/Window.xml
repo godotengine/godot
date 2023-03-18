@@ -530,7 +530,7 @@
 			[b]Note:[/b] Fullscreen mode is not exclusive full screen on Windows and Linux.
 		</member>
 		<member name="mouse_passthrough" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], all mouse event as passed to the underlying window of the same application. See also [member mouse_passthrough_polygon].
+			If [code]true[/code], all mouse events will be passed to the underlying window of the same application. See also [member mouse_passthrough_polygon].
 			[b]Note:[/b] This property is implemented on Linux (X11), macOS and Windows.
 		</member>
 		<member name="mouse_passthrough_polygon" type="PackedVector2Array" setter="set_mouse_passthrough_polygon" getter="get_mouse_passthrough_polygon" default="PackedVector2Array()">
@@ -764,7 +764,7 @@
 			The content can be expanded horizontally. Scaling vertically will result in keeping the height ratio and then black bars on top and bottom sides.
 		</constant>
 		<constant name="CONTENT_SCALE_ASPECT_EXPAND" value="4" enum="ContentScaleAspect">
-			The content's aspect will be preserved. If the target size has different aspect from the base one, the content will stay in the to-left corner and add an extra visible area in the stretched space.
+			The content's aspect will be preserved. If the target size has different aspect from the base one, the content will stay in the top-left corner and add an extra visible area in the stretched space.
 		</constant>
 		<constant name="LAYOUT_DIRECTION_INHERITED" value="0" enum="LayoutDirection">
 			Automatic layout direction, determined from the parent window layout direction.

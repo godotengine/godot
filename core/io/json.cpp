@@ -91,9 +91,12 @@ String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_
 		case Variant::PACKED_FLOAT64_ARRAY:
 		case Variant::PACKED_STRING_ARRAY:
 		case Variant::ARRAY: {
+			Array a = p_var;
+			if (a.size() == 0) {
+				return "[]";
+			}
 			String s = "[";
 			s += end_statement;
-			Array a = p_var;
 
 			ERR_FAIL_COND_V_MSG(p_markers.has(a.id()), "\"[...]\"", "Converting circular structure to JSON.");
 			p_markers.insert(a.id());

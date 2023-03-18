@@ -188,7 +188,7 @@
 			<param index="0" name="from" type="Vector3" />
 			<param index="1" name="dir" type="Vector3" />
 			<description>
-				Returns [code]true[/code] if the given ray intersects with this [AABB]. Ray length is infinite.
+				Returns the point of intersection of the given ray with this [AABB] or [code]null[/code] if there is no intersection. Ray length is infinite.
 			</description>
 		</method>
 		<method name="intersects_segment" qualifiers="const">
@@ -196,7 +196,7 @@
 			<param index="0" name="from" type="Vector3" />
 			<param index="1" name="to" type="Vector3" />
 			<description>
-				Returns [code]true[/code] if the [AABB] intersects the line segment between [param from] and [param to].
+				Returns the point of intersection between [param from] and [param to] with this [AABB] or [code]null[/code] if there is no intersection.
 			</description>
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
@@ -237,7 +237,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="AABB" />
 			<description>
-				Returns [code]true[/code] if the vectors are not equal.
+				Returns [code]true[/code] if the AABBs are not equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>

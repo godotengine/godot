@@ -120,7 +120,7 @@
 			<return type="bool" />
 			<param index="0" name="xform" type="Transform2D" />
 			<description>
-				Returns [code]true[/code] if this transform and [code]transform[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
+				Returns [code]true[/code] if this transform and [param xform] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
 			</description>
 		</method>
 		<method name="is_finite" qualifiers="const">
@@ -133,7 +133,7 @@
 			<return type="Transform2D" />
 			<param index="0" name="target" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Returns a copy of the transform rotated such that it's rotation on the X-axis points towards the [param target] position.
+				Returns a copy of the transform rotated such that the rotated X-axis points towards the [param target] position.
 				Operations take place in global space.
 			</description>
 		</method>
@@ -148,8 +148,7 @@
 			<param index="0" name="angle" type="float" />
 			<description>
 				Returns a copy of the transform rotated by the given [param angle] (in radians).
-				This method is an optimized version of multiplying the given transform [code]X[/code]
-				with a corresponding rotation transform [code]R[/code] from the left, i.e., [code]R * X[/code].
+				This method is an optimized version of multiplying the given transform [code]X[/code] with a corresponding rotation transform [code]R[/code] from the left, i.e., [code]R * X[/code].
 				This can be seen as transforming with respect to the global/parent frame.
 			</description>
 		</method>
@@ -158,8 +157,7 @@
 			<param index="0" name="angle" type="float" />
 			<description>
 				Returns a copy of the transform rotated by the given [param angle] (in radians).
-				This method is an optimized version of multiplying the given transform [code]X[/code]
-				with a corresponding rotation transform [code]R[/code] from the right, i.e., [code]X * R[/code].
+				This method is an optimized version of multiplying the given transform [code]X[/code] with a corresponding rotation transform [code]R[/code] from the right, i.e., [code]X * R[/code].
 				This can be seen as transforming with respect to the local frame.
 			</description>
 		</method>
@@ -168,8 +166,7 @@
 			<param index="0" name="scale" type="Vector2" />
 			<description>
 				Returns a copy of the transform scaled by the given [param scale] factor.
-				This method is an optimized version of multiplying the given transform [code]X[/code]
-				with a corresponding scaling transform [code]S[/code] from the left, i.e., [code]S * X[/code].
+				This method is an optimized version of multiplying the given transform [code]X[/code] with a corresponding scaling transform [code]S[/code] from the left, i.e., [code]S * X[/code].
 				This can be seen as transforming with respect to the global/parent frame.
 			</description>
 		</method>
@@ -178,8 +175,7 @@
 			<param index="0" name="scale" type="Vector2" />
 			<description>
 				Returns a copy of the transform scaled by the given [param scale] factor.
-				This method is an optimized version of multiplying the given transform [code]X[/code]
-				with a corresponding scaling transform [code]S[/code] from the right, i.e., [code]X * S[/code].
+				This method is an optimized version of multiplying the given transform [code]X[/code] with a corresponding scaling transform [code]S[/code] from the right, i.e., [code]X * S[/code].
 				This can be seen as transforming with respect to the local frame.
 			</description>
 		</method>
@@ -188,8 +184,7 @@
 			<param index="0" name="offset" type="Vector2" />
 			<description>
 				Returns a copy of the transform translated by the given [param offset].
-				This method is an optimized version of multiplying the given transform [code]X[/code]
-				with a corresponding translation transform [code]T[/code] from the left, i.e., [code]T * X[/code].
+				This method is an optimized version of multiplying the given transform [code]X[/code] with a corresponding translation transform [code]T[/code] from the left, i.e., [code]T * X[/code].
 				This can be seen as transforming with respect to the global/parent frame.
 			</description>
 		</method>
@@ -198,8 +193,7 @@
 			<param index="0" name="offset" type="Vector2" />
 			<description>
 				Returns a copy of the transform translated by the given [param offset].
-				This method is an optimized version of multiplying the given transform [code]X[/code]
-				with a corresponding translation transform [code]T[/code] from the right, i.e., [code]X * T[/code].
+				This method is an optimized version of multiplying the given transform [code]X[/code] with a corresponding translation transform [code]T[/code] from the right, i.e., [code]X * T[/code].
 				This can be seen as transforming with respect to the local frame.
 			</description>
 		</method>

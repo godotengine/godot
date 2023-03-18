@@ -178,6 +178,7 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_get_kerning, "font_rid", "size", "glyph_pair");
 
 	GDVIRTUAL_BIND(_font_get_glyph_index, "font_rid", "size", "char", "variation_selector");
+	GDVIRTUAL_BIND(_font_get_char_from_glyph_index, "font_rid", "size", "glyph_index");
 
 	GDVIRTUAL_BIND(_font_has_char, "font_rid", "char");
 	GDVIRTUAL_BIND(_font_get_supported_chars, "font_rid");
@@ -822,6 +823,12 @@ Vector2 TextServerExtension::font_get_kerning(const RID &p_font_rid, int64_t p_s
 int64_t TextServerExtension::font_get_glyph_index(const RID &p_font_rid, int64_t p_size, int64_t p_char, int64_t p_variation_selector) const {
 	int64_t ret = 0;
 	GDVIRTUAL_CALL(_font_get_glyph_index, p_font_rid, p_size, p_char, p_variation_selector, ret);
+	return ret;
+}
+
+int64_t TextServerExtension::font_get_char_from_glyph_index(const RID &p_font_rid, int64_t p_size, int64_t p_glyph_index) const {
+	int64_t ret = 0;
+	GDVIRTUAL_CALL(_font_get_char_from_glyph_index, p_font_rid, p_size, p_glyph_index, ret);
 	return ret;
 }
 

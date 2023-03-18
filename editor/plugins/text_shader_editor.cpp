@@ -730,6 +730,8 @@ void TextShaderEditor::_editor_settings_changed() {
 	shader_editor->get_text_editor()->add_theme_constant_override("line_spacing", EDITOR_GET("text_editor/appearance/whitespace/line_spacing"));
 	shader_editor->get_text_editor()->set_draw_breakpoints_gutter(false);
 	shader_editor->get_text_editor()->set_draw_executing_lines_gutter(false);
+
+	trim_trailing_whitespace_on_save = EDITOR_GET("text_editor/behavior/files/trim_trailing_whitespace_on_save");
 }
 
 void TextShaderEditor::_show_warnings_panel(bool p_show) {
@@ -890,6 +892,10 @@ void TextShaderEditor::save_external_data(const String &p_str) {
 		return;
 	}
 
+	if (trim_trailing_whitespace_on_save) {
+		trim_trailing_whitespace();
+	}
+
 	apply_shaders();
 
 	Ref<Shader> edited_shader = shader_editor->get_edited_shader();
@@ -910,6 +916,10 @@ void TextShaderEditor::save_external_data(const String &p_str) {
 	shader_editor->get_text_editor()->tag_saved_version();
 
 	disk_changed->hide();
+}
+
+void TextShaderEditor::trim_trailing_whitespace() {
+	shader_editor->trim_trailing_whitespace();
 }
 
 void TextShaderEditor::validate_script() {
@@ -1169,6 +1179,7 @@ TextShaderEditor::TextShaderEditor() {
 	warnings_panel->set_h_size_flags(SIZE_EXPAND_FILL);
 	warnings_panel->set_meta_underline(true);
 	warnings_panel->set_selection_enabled(true);
+	warnings_panel->set_context_menu_enabled(true);
 	warnings_panel->set_focus_mode(FOCUS_CLICK);
 	warnings_panel->hide();
 	warnings_panel->connect("meta_clicked", callable_mp(this, &TextShaderEditor::_warning_clicked));
@@ -1192,6 +1203,8 @@ TextShaderEditor::TextShaderEditor() {
 
 	disk_changed->add_button(TTR("Resave"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
 	disk_changed->connect("custom_action", callable_mp(this, &TextShaderEditor::save_external_data));
+
+	trim_trailing_whitespace_on_save = EDITOR_GET("text_editor/behavior/files/trim_trailing_whitespace_on_save");
 
 	add_child(disk_changed);
 

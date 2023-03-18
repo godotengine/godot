@@ -22,6 +22,13 @@
 		GetNode("Label").AddThemeFontSizeOverride("font_size", 64);
 		[/csharp]
 		[/codeblocks]
+		To set the coordinate of multiple variation axes:
+		[codeblock]
+		var fv = FontVariation.new();
+		var ts = TextServerManager.get_primary_interface()
+		fv.base_font = load("res://BarlowCondensed-Regular.ttf")
+		fv.variation_opentype = { ts.name_to_tag("wght"): 900, ts.name_to_tag("custom_hght"): 900 }
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -40,7 +47,7 @@
 			Base font used to create a variation. If not set, default [Theme] font is used.
 		</member>
 		<member name="fallbacks" type="Font[]" setter="set_fallbacks" getter="get_fallbacks" default="[]">
-			Array of fallback [Font]s. If not set [member base_font] fallback are ussed.
+			Array of fallback [Font]s to use as a substitute if a glyph is not found in this [FontVariation]. If not set, [member base_font]'s fallbacks are used instead.
 		</member>
 		<member name="opentype_features" type="Dictionary" setter="set_opentype_features" getter="get_opentype_features" default="{}">
 			A set of OpenType feature tags. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
@@ -66,6 +73,8 @@
 		</member>
 		<member name="variation_opentype" type="Dictionary" setter="set_variation_opentype" getter="get_variation_opentype" default="{}">
 			Font OpenType variation coordinates. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/dvaraxisreg]OpenType variation tags[/url].
+			[b]Note:[/b] This [Dictionary] uses OpenType tags as keys. Variation axes can be identified both by tags([code]int[/code]) and names ([code]string[/code]). Some axes might be accessible by multiple names. For example, [code]wght[/code] refers to the same axis as [code]weight[/code]. Tags on the other hand are unique. To convert between names and tags, use [method TextServer.name_to_tag] and [method TextServer.tag_to_name].
+			[b]Note:[/b] To get available variation axes of a font, use [method Font.get_supported_variation_list].
 		</member>
 		<member name="variation_transform" type="Transform2D" setter="set_variation_transform" getter="get_variation_transform" default="Transform2D(1, 0, 0, 1, 0, 0)">
 			2D transform, applied to the font outlines, can be used for slanting, flipping and rotating glyphs.

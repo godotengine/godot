@@ -2116,22 +2116,39 @@ Window::LayoutDirection Window::get_layout_direction() const {
 
 bool Window::is_layout_rtl() const {
 	if (layout_dir == LAYOUT_DIRECTION_INHERITED) {
-		Window *parent_w = Object::cast_to<Window>(get_parent());
-		if (parent_w) {
-			return parent_w->is_layout_rtl();
-		} else {
-			if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
-				return true;
+		if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
+			return true;
+		}
+		Node *parent_node = get_parent();
+		while (parent_node) {
+			Control *parent_control = Object::cast_to<Control>(parent_node);
+			if (parent_control) {
+				return parent_control->is_layout_rtl();
 			}
+
+			Window *parent_window = Object::cast_to<Window>(parent_node);
+			if (parent_window) {
+				return parent_window->is_layout_rtl();
+			}
+			parent_node = parent_node->get_parent();
+		}
+
+		int root_dir = GLOBAL_GET(SNAME("internationalization/rendering/root_node_layout_direction"));
+		if (root_dir == 1) {
+			return false;
+		} else if (root_dir == 2) {
+			return true;
+		} else {
 			String locale = TranslationServer::get_singleton()->get_tool_locale();
 			return TS->is_locale_right_to_left(locale);
 		}
 	} else if (layout_dir == LAYOUT_DIRECTION_LOCALE) {
 		if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
 			return true;
+		} else {
+			String locale = TranslationServer::get_singleton()->get_tool_locale();
+			return TS->is_locale_right_to_left(locale);
 		}
-		String locale = TranslationServer::get_singleton()->get_tool_locale();
-		return TS->is_locale_right_to_left(locale);
 	} else {
 		return (layout_dir == LAYOUT_DIRECTION_RTL);
 	}

@@ -1286,6 +1286,7 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 		EditorNode::get_singleton()->add_io_error(TTR("Cannot move a folder into itself.") + "\n" + old_path + "\n");
 		return;
 	}
+	const_cast<FileSystemDock *>(this)->path = new_path;
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 
@@ -2588,27 +2589,39 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 			p_popup->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open"), FILE_OPEN);
 			p_popup->add_separator();
 		}
-	}
 
-	if (p_paths.size() >= 1) {
-		if (!all_favorites) {
-			p_popup->add_icon_item(get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons")), TTR("Add to Favorites"), FILE_ADD_FAVORITE);
-		}
-		if (!all_not_favorites) {
-			p_popup->add_icon_item(get_theme_icon(SNAME("NonFavorite"), SNAME("EditorIcons")), TTR("Remove from Favorites"), FILE_REMOVE_FAVORITE);
-		}
-		p_popup->add_separator();
-	}
-
-	if (all_files) {
 		if (filenames.size() == 1) {
 			p_popup->add_item(TTR("Edit Dependencies..."), FILE_DEPENDENCIES);
 			p_popup->add_item(TTR("View Owners..."), FILE_OWNERS);
 			p_popup->add_separator();
 		}
+	}
 
-	} else if (all_folders && foldernames.size() > 0) {
-		p_popup->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open"), FILE_OPEN);
+	if (p_paths.size() == 1 && p_display_path_dependent_options) {
+		PopupMenu *new_menu = memnew(PopupMenu);
+		new_menu->set_name("New");
+		new_menu->connect("id_pressed", callable_mp(this, &FileSystemDock::_tree_rmb_option));
+
+		p_popup->add_child(new_menu);
+		p_popup->add_submenu_item(TTR("Create New"), "New", FILE_NEW);
+		p_popup->set_item_icon(p_popup->get_item_index(FILE_NEW), get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+
+		new_menu->add_icon_item(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")), TTR("Folder..."), FILE_NEW_FOLDER);
+		new_menu->add_icon_item(get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")), TTR("Scene..."), FILE_NEW_SCENE);
+		new_menu->add_icon_item(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), TTR("Script..."), FILE_NEW_SCRIPT);
+		new_menu->add_icon_item(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")), TTR("Resource..."), FILE_NEW_RESOURCE);
+		new_menu->add_icon_item(get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons")), TTR("TextFile..."), FILE_NEW_TEXTFILE);
+		p_popup->add_separator();
+	}
+
+	if (all_folders && foldernames.size() > 0) {
+		p_popup->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Expand Folder"), FILE_OPEN);
+
+		if (foldernames.size() == 1) {
+			p_popup->add_icon_item(get_theme_icon(SNAME("GuiTreeArrowDown"), SNAME("EditorIcons")), TTR("Expand Hierarchy"), FOLDER_EXPAND_ALL);
+			p_popup->add_icon_item(get_theme_icon(SNAME("GuiTreeArrowRight"), SNAME("EditorIcons")), TTR("Collapse Hierarchy"), FOLDER_COLLAPSE_ALL);
+		}
+
 		p_popup->add_separator();
 	}
 
@@ -2628,29 +2641,23 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 		p_popup->add_icon_shortcut(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/delete"), FILE_REMOVE);
 	}
 
-	if (p_paths.size() == 1) {
-		p_popup->add_separator();
-		if (p_display_path_dependent_options) {
-			PopupMenu *new_menu = memnew(PopupMenu);
-			new_menu->set_name("New");
-			new_menu->connect("id_pressed", callable_mp(this, &FileSystemDock::_tree_rmb_option));
+	p_popup->add_separator();
 
-			p_popup->add_child(new_menu);
-			p_popup->add_submenu_item(TTR("New"), "New", FILE_NEW);
-
-			new_menu->add_icon_item(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")), TTR("Folder..."), FILE_NEW_FOLDER);
-			new_menu->add_icon_item(get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")), TTR("Scene..."), FILE_NEW_SCENE);
-			new_menu->add_icon_item(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), TTR("Script..."), FILE_NEW_SCRIPT);
-			new_menu->add_icon_item(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")), TTR("Resource..."), FILE_NEW_RESOURCE);
-			new_menu->add_icon_item(get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons")), TTR("TextFile..."), FILE_NEW_TEXTFILE);
-#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
-			p_popup->add_separator();
-#endif
+	if (p_paths.size() >= 1) {
+		if (!all_favorites) {
+			p_popup->add_icon_item(get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons")), TTR("Add to Favorites"), FILE_ADD_FAVORITE);
 		}
+		if (!all_not_favorites) {
+			p_popup->add_icon_item(get_theme_icon(SNAME("NonFavorite"), SNAME("EditorIcons")), TTR("Remove from Favorites"), FILE_REMOVE_FAVORITE);
+		}
+	}
 
+	if (p_paths.size() == 1) {
 		const String fpath = p_paths[0];
 
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+		p_popup->add_separator();
+
 		// Opening the system file manager is not supported on the Android and web editors.
 		const bool is_directory = fpath.ends_with("/");
 		const String item_text = is_directory ? TTR("Open in File Manager") : TTR("Show in File Manager");
@@ -2673,13 +2680,6 @@ void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos, MouseButton p_button
 	Vector<String> paths = _tree_get_selected(false);
 
 	tree_popup->clear();
-	if (paths.size() == 1) {
-		if (paths[0].ends_with("/")) {
-			tree_popup->add_icon_item(get_theme_icon(SNAME("GuiTreeArrowDown"), SNAME("EditorIcons")), TTR("Expand All"), FOLDER_EXPAND_ALL);
-			tree_popup->add_icon_item(get_theme_icon(SNAME("GuiTreeArrowRight"), SNAME("EditorIcons")), TTR("Collapse All"), FOLDER_COLLAPSE_ALL);
-			tree_popup->add_separator();
-		}
-	}
 
 	// Popup.
 	if (!paths.is_empty()) {

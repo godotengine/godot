@@ -144,7 +144,7 @@ def configure(env: "Environment"):
             env["CC"] = basecmd + "cc"
             env["CXX"] = basecmd + "c++"
         else:
-            # there aren't any ccache wrappers available for OS X cross-compile,
+            # there aren't any ccache wrappers available for macOS cross-compile,
             # to enable caching we need to prepend the path to the ccache binary
             env["CC"] = ccache_path + " " + basecmd + "cc"
             env["CXX"] = ccache_path + " " + basecmd + "c++"
@@ -242,17 +242,17 @@ def configure(env: "Environment"):
             env.Append(LINKFLAGS=["-lMoltenVK"])
             mvk_found = False
 
-            mkv_list = [get_mvk_sdk_path(), "/opt/homebrew/lib", "/usr/local/homebrew/lib", "/opt/local/lib"]
+            mvk_list = [get_mvk_sdk_path(), "/opt/homebrew/lib", "/usr/local/homebrew/lib", "/opt/local/lib"]
             if env["vulkan_sdk_path"] != "":
-                mkv_list.insert(0, os.path.expanduser(env["vulkan_sdk_path"]))
-                mkv_list.insert(
+                mvk_list.insert(0, os.path.expanduser(env["vulkan_sdk_path"]))
+                mvk_list.insert(
                     0,
                     os.path.join(
                         os.path.expanduser(env["vulkan_sdk_path"]), "MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/"
                     ),
                 )
 
-            for mvk_path in mkv_list:
+            for mvk_path in mvk_list:
                 if mvk_path and os.path.isfile(os.path.join(mvk_path, "libMoltenVK.a")):
                     mvk_found = True
                     print("MoltenVK found at: " + mvk_path)

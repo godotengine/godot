@@ -171,6 +171,8 @@ class TextShaderEditor : public MarginContainer {
 
 	uint32_t dependencies_version = 0xFFFFFFFF;
 
+	bool trim_trailing_whitespace_on_save;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -182,12 +184,14 @@ protected:
 
 public:
 	bool was_compilation_successful() const { return compilation_success; }
+	bool get_trim_trailing_whitespace_on_save() const { return trim_trailing_whitespace_on_save; }
 	void apply_shaders();
 	void ensure_select_current();
 	void edit(const Ref<Shader> &p_shader);
 	void edit(const Ref<ShaderInclude> &p_shader_inc);
 	void goto_line_selection(int p_line, int p_begin, int p_end);
 	void save_external_data(const String &p_str = "");
+	void trim_trailing_whitespace();
 	void validate_script();
 	bool is_unsaved() const;
 	void tag_saved_version();

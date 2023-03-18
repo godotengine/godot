@@ -190,7 +190,7 @@
 			<description>
 				Adds a new checkable item with text [param label] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
-				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using bitwise OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
@@ -213,7 +213,7 @@
 			<description>
 				Adds a new checkable item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
-				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using bitwise OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
@@ -236,7 +236,7 @@
 			<description>
 				Adds a new item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
-				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using bitwise OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
@@ -259,7 +259,7 @@
 			<description>
 				Adds a new radio-checkable item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
-				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using bitwise OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] Radio-checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method global_menu_set_item_checked] for more info on how to control it.
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
@@ -282,7 +282,7 @@
 			<description>
 				Adds a new item with text [param label] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
-				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using bitwise OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
@@ -307,7 +307,7 @@
 				Adds a new item with text [param label] to the global menu with ID [param menu_root].
 				Contrarily to normal binary items, multistate items can have more than two states, as defined by [param max_states]. Each press or activate of the item will increase the state by one. The default value is defined by [param default_state].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
-				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using bitwise OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] By default, there's no indication of the current item state, it should be changed manually.
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
@@ -330,7 +330,7 @@
 			<description>
 				Adds a new radio-checkable item with text [param label] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
-				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using bitwise OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] Radio-checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method global_menu_set_item_checked] for more info on how to control it.
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
@@ -507,7 +507,7 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
 			<description>
-				Returns the tooltip associated with the specified index index [param idx].
+				Returns the tooltip associated with the specified index [param idx].
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -565,7 +565,7 @@
 			<param index="1" name="idx" type="int" />
 			<param index="2" name="keycode" type="int" enum="Key" />
 			<description>
-				Sets the accelerator of the item at index [param idx]. [param keycode] can be a single [enum Key], or a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
+				Sets the accelerator of the item at index [param idx]. [param keycode] can be a single [enum Key], or a combination of [enum KeyModifierMask]s and [enum Key]s using bitwise OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -576,7 +576,7 @@
 			<param index="2" name="callback" type="Callable" />
 			<description>
 				Sets the callback of the item at index [param idx]. Callback is emitted when an item is pressed.
-				[b]Note:[/b] The [param callback] Callable needs to accept exactly one Variant parameter, the parameter passed to the Callable will be the value passed to the tag parameter when the menu item was created.
+				[b]Note:[/b] The [param callback] Callable needs to accept exactly one Variant parameter, the parameter passed to the Callable will be the value passed to the [code]tag[/code] parameter when the menu item was created.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -638,7 +638,7 @@
 			<param index="2" name="key_callback" type="Callable" />
 			<description>
 				Sets the callback of the item at index [param idx]. Callback is emitted when its accelerator is activated.
-				[b]Note:[/b] The [param key_callback] Callable needs to accept exactly one Variant parameter, the parameter passed to the Callable will be the value passed to the tag parameter when the menu item was created.
+				[b]Note:[/b] The [param key_callback] Callable needs to accept exactly one Variant parameter, the parameter passed to the Callable will be the value passed to the [code]tag[/code] parameter when the menu item was created.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -865,6 +865,15 @@
 				[b]Note:[/b] This method is implemented on Android and iOS.
 			</description>
 		</method>
+		<method name="screen_get_pixel" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="position" type="Vector2i" />
+			<description>
+				Returns color of the display pixel at the [param position].
+				[b]Note:[/b] This method is implemented on Linux (X11), macOS, and Windows.
+				[b]Note:[/b] On macOS, this method requires "Screen Recording" permission, if permission is not granted it will return desktop wallpaper color.
+			</description>
+		</method>
 		<method name="screen_get_position" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="screen" type="int" default="-1" />
@@ -943,7 +952,7 @@
 			<return type="void" />
 			<param index="0" name="image" type="Image" />
 			<description>
-				Sets the window icon (usually displayed in the top-left corner) in the operating system's [i]native[/i] format. To use icons in the operating system's native format, use [method set_native_icon] instead.
+				Sets the window icon (usually displayed in the top-left corner) with an [Image]. To use icons in the operating system's native format, use [method set_native_icon] instead.
 			</description>
 		</method>
 		<method name="set_native_icon">
@@ -991,7 +1000,7 @@
 				- [code]name[/code] is voice name.
 				- [code]id[/code] is voice identifier.
 				- [code]language[/code] is language code in [code]lang_Variant[/code] format. [code]lang[/code] part is a 2 or 3-letter code based on the ISO-639 standard, in lowercase. And [code]Variant[/code] part is an engine dependent string describing country, region or/and dialect.
-				Note that Godot depends on system libraries for text-to-speech functionality. These libraries are installed by default on Windows and MacOS, but not on all Linux distributions. If they are not present, this method will return an empty list. This applies to both Godot users on Linux, as well as end-users on Linux running Godot games that use text-to-speech.
+				Note that Godot depends on system libraries for text-to-speech functionality. These libraries are installed by default on Windows and macOS, but not on all Linux distributions. If they are not present, this method will return an empty list. This applies to both Godot users on Linux, as well as end-users on Linux running Godot games that use text-to-speech.
 				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
 			</description>
 		</method>
@@ -1037,8 +1046,8 @@
 			<param index="1" name="callable" type="Callable" />
 			<description>
 				Adds a callback, which is called when the utterance has started, finished, canceled or reached a text boundary.
-				- [constant TTS_UTTERANCE_STARTED], [constant TTS_UTTERANCE_ENDED], and [constant TTS_UTTERANCE_CANCELED] callable's method should take one [int] parameter, the utterance id.
-				- [constant TTS_UTTERANCE_BOUNDARY] callable's method should take two [int] parameters, the index of the character and the utterance id.
+				- [constant TTS_UTTERANCE_STARTED], [constant TTS_UTTERANCE_ENDED], and [constant TTS_UTTERANCE_CANCELED] callable's method should take one [int] parameter, the utterance ID.
+				- [constant TTS_UTTERANCE_BOUNDARY] callable's method should take two [int] parameters, the index of the character and the utterance ID.
 				[b]Note:[/b] The granularity of the boundary callbacks is engine dependent.
 				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
 			</description>
@@ -1543,6 +1552,9 @@
 		<constant name="FEATURE_EXTEND_TO_TITLE" value="20" enum="Feature">
 			Display server supports expanding window content to the title. See [constant WINDOW_FLAG_EXTEND_TO_TITLE]. [b]macOS[/b]
 		</constant>
+		<constant name="FEATURE_SCREEN_CAPTURE" value="21" enum="Feature">
+			Display server supports reading screen pixels. See [method screen_get_pixel].
+		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
 		</constant>
@@ -1788,7 +1800,7 @@
 			OpenGL context (only with the GL Compatibility renderer):
 			- Windows: [code]HGLRC[/code] for the window.
 			- Linux: [code]GLXContext*[/code] for the window.
-			- MacOS: [code]NSOpenGLContext*[/code] for the window.
+			- macOS: [code]NSOpenGLContext*[/code] for the window.
 			- Android: [code]EGLContext[/code] for the window.
 		</constant>
 		<constant name="TTS_UTTERANCE_STARTED" value="0" enum="TTSUtteranceEvent">

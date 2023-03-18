@@ -1709,8 +1709,11 @@ String VisualShaderNodeLinearSceneDepth::generate_code(Shader::Mode p_mode, Visu
 	code += "	{\n";
 
 	code += "		float __log_depth = textureLod(" + make_unique_id(p_type, p_id, "depth_tex") + ", SCREEN_UV, 0.0).x;\n";
-	code += "		vec3 __depth_ndc = vec3(SCREEN_UV * 2.0 - 1.0, __log_depth);\n";
-	code += "		vec4 __depth_view = INV_PROJECTION_MATRIX * vec4(__depth_ndc, 1.0);\n";
+	if (!RenderingServer::get_singleton()->is_low_end()) {
+		code += "	vec4 __depth_view = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, __log_depth, 1.0);\n";
+	} else {
+		code += "	vec4 __depth_view = INV_PROJECTION_MATRIX * vec4(vec3(SCREEN_UV, __log_depth) * 2.0 - 1.0, 1.0);\n";
+	}
 	code += "		__depth_view.xyz /= __depth_view.w;\n";
 	code += vformat("		%s = -__depth_view.z;\n", p_output_vars[0]);
 

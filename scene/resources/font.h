@@ -359,6 +359,7 @@ public:
 
 	// Base font properties.
 	virtual int32_t get_glyph_index(int p_size, char32_t p_char, char32_t p_variation_selector = 0x0000) const;
+	virtual char32_t get_char_from_glyph_index(int p_size, int32_t p_glyph_index) const;
 
 	FontFile();
 	~FontFile();

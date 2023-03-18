@@ -4,4 +4,4 @@ func test():
 	x.free()
 
 	var ok = x
-	var bad : Node = x
+	var bad: Node = x

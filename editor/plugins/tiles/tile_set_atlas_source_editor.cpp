@@ -648,7 +648,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	if (!tile_data_editors.has("texture_origin")) {
 		TileDataTextureOriginEditor *tile_data_texture_origin_editor = memnew(TileDataTextureOriginEditor);
 		tile_data_texture_origin_editor->hide();
-		tile_data_texture_origin_editor->setup_property_editor(Variant::VECTOR2, "texture_origin");
+		tile_data_texture_origin_editor->setup_property_editor(Variant::VECTOR2I, "texture_origin");
 		tile_data_texture_origin_editor->connect("needs_redraw", callable_mp((CanvasItem *)tile_atlas_control_unscaled, &Control::queue_redraw));
 		tile_data_texture_origin_editor->connect("needs_redraw", callable_mp((CanvasItem *)alternative_tiles_control_unscaled, &Control::queue_redraw));
 		tile_data_editors["texture_origin"] = tile_data_texture_origin_editor;
@@ -2561,7 +2561,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tools_settings_erase_button = memnew(Button);
 	tools_settings_erase_button->set_flat(true);
 	tools_settings_erase_button->set_toggle_mode(true);
-	tools_settings_erase_button->set_shortcut(ED_SHORTCUT("tiles_editor/eraser", "Eraser", Key::E));
+	tools_settings_erase_button->set_shortcut(ED_SHORTCUT("tiles_editor/eraser", TTR("Eraser"), Key::E));
 	tools_settings_erase_button->set_shortcut_context(this);
 	tool_settings->add_child(tools_settings_erase_button);
 

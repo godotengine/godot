@@ -1,8 +1,8 @@
 extends Node
 
 @onready var later_inferred := [1]
-@onready var later_static : Array
-@onready var later_static_with_init : Array = [1]
+@onready var later_static: Array
+@onready var later_static_with_init: Array = [1]
 @onready var later_untyped = [1]
 
 func test():

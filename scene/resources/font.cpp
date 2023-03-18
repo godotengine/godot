@@ -980,6 +980,7 @@ void FontFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_opentype_feature_overrides"), &FontFile::get_opentype_feature_overrides);
 
 	ClassDB::bind_method(D_METHOD("get_glyph_index", "size", "char", "variation_selector"), &FontFile::get_glyph_index);
+	ClassDB::bind_method(D_METHOD("get_char_from_glyph_index", "size", "glyph_index"), &FontFile::get_char_from_glyph_index);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_mipmaps", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_generate_mipmaps", "get_generate_mipmaps");
@@ -1458,6 +1459,9 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 						}
 						if (ch[i] == 1 && first_ol_ch == -1) {
 							first_ol_ch = i;
+							if (outline == 0) {
+								outline = 1;
+							}
 						}
 						if (ch[i] == 2 && first_cm_ch == -1) {
 							first_cm_ch = i;
@@ -1747,6 +1751,9 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 					}
 					if (ch[i] == 1 && first_ol_ch == -1) {
 						first_ol_ch = i;
+						if (outline == 0) {
+							outline = 1;
+						}
 					}
 					if (ch[i] == 2 && first_cm_ch == -1) {
 						first_cm_ch = i;
@@ -2583,6 +2590,11 @@ Dictionary FontFile::get_opentype_feature_overrides() const {
 int32_t FontFile::get_glyph_index(int p_size, char32_t p_char, char32_t p_variation_selector) const {
 	_ensure_rid(0);
 	return TS->font_get_glyph_index(cache[0], p_size, p_char, p_variation_selector);
+}
+
+char32_t FontFile::get_char_from_glyph_index(int p_size, int32_t p_glyph_index) const {
+	_ensure_rid(0);
+	return TS->font_get_char_from_glyph_index(cache[0], p_size, p_glyph_index);
 }
 
 FontFile::FontFile() {

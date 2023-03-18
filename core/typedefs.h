@@ -305,9 +305,9 @@ struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
 #endif
 
 // Macro GD_IS_DEFINED() allows to check if a macro is defined. It needs to be defined to anything (say 1) to work.
-#define __GDARG_PLACEHOLDER_1 0,
+#define __GDARG_PLACEHOLDER_1 false,
 #define __gd_take_second_arg(__ignored, val, ...) val
-#define ____gd_is_defined(arg1_or_junk) __gd_take_second_arg(arg1_or_junk 1, 0)
+#define ____gd_is_defined(arg1_or_junk) __gd_take_second_arg(arg1_or_junk true, false)
 #define ___gd_is_defined(val) ____gd_is_defined(__GDARG_PLACEHOLDER_##val)
 #define GD_IS_DEFINED(x) ___gd_is_defined(x)
 

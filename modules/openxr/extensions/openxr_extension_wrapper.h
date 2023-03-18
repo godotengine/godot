@@ -80,7 +80,9 @@ public:
 	// this happens right before physics process and normal processing is run.
 	// This is when controller data is queried and made available to game logic.
 	virtual void on_process() {}
-	virtual void on_pre_render() {} // `on_pre_render` is called right before we start rendering our XR viewport.
+	virtual void on_pre_render() {} // `on_pre_render` is called right before we start rendering our XR viewports.
+	virtual void on_pre_draw_viewport(RID p_render_target) {} // `on_pre_draw_viewport` is called right before we start rendering this viewport
+	virtual void on_post_draw_viewport(RID p_render_target) {} // `on_port_draw_viewport` is called right after we start rendering this viewport (note that on Vulkan draw commands may only be queued)
 
 	virtual void on_state_idle() {} // `on_state_idle` is called when the OpenXR session state is changed to idle.
 	virtual void on_state_ready() {} // `on_state_ready` is called when the OpenXR session state is changed to ready, this means OpenXR is ready to setup our session.

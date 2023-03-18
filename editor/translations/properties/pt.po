@@ -37,8 +37,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-28 22:26+0000\n"
-"Last-Translator: ssantos <ssantos@web.de>\n"
+"PO-Revision-Date: 2023-03-05 08:38+0000\n"
+"Last-Translator: Wesley PI <wesleypi2@hotmail.com.br>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/pt/>\n"
 "Language: pt\n"
@@ -46,7 +46,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.16-rc\n"
+"X-Generator: Weblate 4.16.2-dev\n"
 
 msgid "Application"
 msgstr "Aplicação"
@@ -56,6 +56,9 @@ msgstr "Configurações"
 
 msgid "Name"
 msgstr "Nome"
+
+msgid "Name Localized"
+msgstr "Nome Localizado"
 
 msgid "Description"
 msgstr "Descrição"
@@ -93,8 +96,23 @@ msgstr "Janela"
 msgid "Size"
 msgstr "Tamanho"
 
+msgid "Viewport Width"
+msgstr "Largura da Viewport"
+
+msgid "Viewport Height"
+msgstr "Altura da ViewportViewport"
+
 msgid "Mode"
 msgstr "Modo"
+
+msgid "Initial Position Type"
+msgstr "Tipo da Posição Inicial"
+
+msgid "Initial Position"
+msgstr "Posição Inicial"
+
+msgid "Initial Screen"
+msgstr "Tela Inicial"
 
 msgid "Resizable"
 msgstr "Redimensionável"
@@ -104,6 +122,18 @@ msgstr "Sem bordas"
 
 msgid "Transparent"
 msgstr "Transparente"
+
+msgid "Extend to Title"
+msgstr "Estende ao Titulo"
+
+msgid "No Focus"
+msgstr "Sem Foco"
+
+msgid "Window Width Override"
+msgstr "Sobrepõe a Largura da Janela"
+
+msgid "Window Height Override"
+msgstr "Sobrepõe a Altura da Janela"
 
 msgid "Energy Saving"
 msgstr "Economia de Energia"
@@ -116,9 +146,6 @@ msgstr "Áudio"
 
 msgid "Editor"
 msgstr "Editor"
-
-msgid "Main Run Args"
-msgstr "Argumentos da Execução Principal"
 
 msgid "Physics"
 msgstr "Física"
@@ -1433,6 +1460,9 @@ msgstr "Caminho da Chave Pública SSH"
 
 msgid "SSH Private Key Path"
 msgstr "Caminho da Chave Privada SSH"
+
+msgid "Main Run Args"
+msgstr "Argumentos da Execução Principal"
 
 msgid "Show Scene Tree Root Selection"
 msgstr "Mostrar seleção da hierarquia de cenas"

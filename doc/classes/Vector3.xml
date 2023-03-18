@@ -222,7 +222,7 @@
 			<param index="0" name="to" type="Vector3" />
 			<param index="1" name="weight" type="float" />
 			<description>
-				Returns the result of the linear interpolation between this vector and [param to] by amount [param weight]. [param weight] is on the range of 0.0 to 1.0, representing the amount of interpolation.
+				Returns the result of the linear interpolation between this vector and [param to] by amount [param weight]. [param weight] is on the range of [code]0.0[/code] to [code]1.0[/code], representing the amount of interpolation.
 			</description>
 		</method>
 		<method name="limit_length" qualifiers="const">
@@ -255,7 +255,8 @@
 		<method name="normalized" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns the vector scaled to unit length. Equivalent to [code]v / v.length()[/code]. See also [method is_normalized].
+				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code]. See also [method is_normalized].
+				[b]Note:[/b] This function may return incorrect values if the input vector length is near zero.
 			</description>
 		</method>
 		<method name="octahedron_decode" qualifiers="static">
