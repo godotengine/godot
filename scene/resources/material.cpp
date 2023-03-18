@@ -950,6 +950,10 @@ void BaseMaterial3D::_update_shader() {
 
 			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
 				code += "	MODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(MODEL_MATRIX[0].xyz), 0.0, 0.0, 0.0), vec4(0.0, length(MODEL_MATRIX[1].xyz), 0.0, 0.0), vec4(0.0, 0.0, length(MODEL_MATRIX[2].xyz), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
+			} else {
+				// Do not render if model affine matrix has an exactly zero first column: a completely 0 model matrix is used by particle system to indicate an inactive particle
+				code += "	float col_sum = abs(MODEL_MATRIX[0][0]) + abs(MODEL_MATRIX[0][1]) + abs(MODEL_MATRIX[0][2]);\n";
+				code += "	if (col_sum == 0.0) { MODELVIEW_MATRIX = mat4(0.0); }\n";
 			}
 			code += "	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);\n";
 		} break;
@@ -958,6 +962,10 @@ void BaseMaterial3D::_update_shader() {
 
 			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
 				code += "	MODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(MODEL_MATRIX[0].xyz), 0.0, 0.0, 0.0),vec4(0.0, length(MODEL_MATRIX[1].xyz), 0.0, 0.0), vec4(0.0, 0.0, length(MODEL_MATRIX[2].xyz), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
+			} else {
+				// Do not render if model affine matrix has an exactly zero first column: a completely 0 model matrix is used by particle system to indicate an inactive particle
+				code += "	float col_sum = abs(MODEL_MATRIX[0][0]) + abs(MODEL_MATRIX[0][1]) + abs(MODEL_MATRIX[0][2]);\n";
+				code += "	if (col_sum == 0.0) { MODELVIEW_MATRIX = mat4(0.0); }\n";
 			}
 			code += "	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);\n";
 		} break;
@@ -970,6 +978,10 @@ void BaseMaterial3D::_update_shader() {
 			code += "	MODELVIEW_MATRIX = VIEW_MATRIX * mat_world;\n";
 			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
 				code += "	MODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(MODEL_MATRIX[0].xyz), 0.0, 0.0, 0.0),vec4(0.0, length(MODEL_MATRIX[1].xyz), 0.0, 0.0), vec4(0.0, 0.0, length(MODEL_MATRIX[2].xyz), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
+			} else {
+				// Do not render if model affine matrix has an exactly zero first column: a completely 0 model matrix is used by particle system to indicate an inactive particle
+				code += "	float col_sum = abs(MODEL_MATRIX[0][0]) + abs(MODEL_MATRIX[0][1]) + abs(MODEL_MATRIX[0][2]);\n";
+				code += "	if (col_sum == 0.0) { MODELVIEW_MATRIX = mat4(0.0); }\n";
 			}
 			//set modelview normal
 			code += "	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);\n";
