@@ -45,6 +45,62 @@ Transform2D identity() {
 	return Transform2D();
 }
 
+Transform2D looking_at_old(Transform2D T, const Vector2 &p_target) {
+	Transform2D return_trans = Transform2D(T.get_rotation(), T.get_origin());
+	Vector2 target_position = T.affine_inverse().xform(p_target);
+	return_trans.set_rotation(return_trans.get_rotation() + (target_position * T.get_scale()).angle());
+	return return_trans;
+}
+
+TEST_CASE("[Transform2D] Looking at") {
+	Transform2D T = Transform2D(Vector2(1, 2), Vector2(3, 4), Vector2(5, 6));
+
+	Vector2 target = Vector2(0, 0);
+	Transform2D T_looking_target = T.looking_at(target);
+
+	// Check that the inverse maps target to the x-axis.
+	CHECK(Math::is_equal_approx(T_looking_target.affine_inverse().xform(target).y, 0));
+
+	target = Vector2(1, 0);
+	T_looking_target = T.looking_at(target);
+	CHECK(Math::is_equal_approx(T_looking_target.affine_inverse().xform(target).y, 0));
+
+	target = Vector2(0, 1);
+	T_looking_target = T.looking_at(target);
+	CHECK(Math::is_equal_approx(T_looking_target.affine_inverse().xform(target).y, 0));
+
+	target = Vector2(3, 9);
+	T_looking_target = T.looking_at(target);
+	CHECK(Math::is_equal_approx(T_looking_target.affine_inverse().xform(target).y, 0));
+
+	// Check that scale and skew is reset.
+	CHECK(T_looking_target.get_scale() == Size2(1, 1));
+	CHECK(Math::is_equal_approx(T_looking_target.get_skew(), 0));
+}
+
+TEST_CASE("[Transform2D] Looking at works the same as old for non-skew transformations") {
+	// Create a random transformation with no skew.
+	Transform2D T = Transform2D();
+	T.set_scale(Size2(2, 0.7));
+	T.set_rotation(1.3);
+	T.set_origin(Size2(3, 4));
+
+	Vector2 target = Vector2(0, 0);
+	Transform2D T_looking_target_new = T.looking_at(target);
+	Transform2D T_looking_target_old = looking_at_old(T, target);
+
+	CHECK(T_looking_target_new.is_equal_approx(T_looking_target_old));
+
+	target = Vector2(1, 0);
+	CHECK(T_looking_target_new.is_equal_approx(T_looking_target_old));
+
+	target = Vector2(0, 1);
+	CHECK(T_looking_target_new.is_equal_approx(T_looking_target_old));
+
+	target = Vector2(3, 9);
+	CHECK(T_looking_target_new.is_equal_approx(T_looking_target_old));
+}
+
 TEST_CASE("[Transform2D] translation") {
 	Vector2 offset = Vector2(1, 2);
 
