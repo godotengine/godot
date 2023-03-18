@@ -622,7 +622,7 @@
 			<description>
 				Linearly interpolates between two values by the factor defined in [param weight]. To perform interpolation, [param weight] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). However, values outside this range are allowed and can be used to perform [i]extrapolation[/i]. If this is not desired, use [method clampf] on the result of this function.
 				[codeblock]
-				lerp(0, 4, 0.75) # Returns 3.0
+				lerpf(0, 4, 0.75) # Returns 3.0
 				[/codeblock]
 				See also [method inverse_lerp] which performs the reverse of this operation. To perform eased interpolation with [method lerp], combine it with [method ease] or [method smoothstep].
 			</description>
@@ -1142,9 +1142,9 @@
 			<description>
 				Returns [code]-1.0[/code] if [param x] is negative, [code]1.0[/code] if [param x] is positive, and [code]0.0[/code] if [param x] is zero.
 				[codeblock]
-				sign(-6.5) # Returns -1.0
-				sign(0.0)  # Returns 0.0
-				sign(6.5)  # Returns 1.0
+				signf(-6.5) # Returns -1.0
+				signf(0.0)  # Returns 0.0
+				signf(6.5)  # Returns 1.0
 				[/codeblock]
 			</description>
 		</method>
@@ -1154,9 +1154,9 @@
 			<description>
 				Returns [code]-1[/code] if [param x] is negative, [code]1[/code] if [param x] is positive, and [code]0[/code] if if [param x] is zero.
 				[codeblock]
-				sign(-6) # Returns -1
-				sign(0)  # Returns 0
-				sign(6)  # Returns 1
+				signi(-6) # Returns -1
+				signi(0)  # Returns 0
+				signi(6)  # Returns 1
 				[/codeblock]
 			</description>
 		</method>
@@ -1226,8 +1226,8 @@
 				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating point number to an arbitrary number of decimals.
 				A type-safe version of [method snapped], returning a [float].
 				[codeblock]
-				snapped(32.0, 2.5)  # Returns 32.5
-				snapped(3.14159, 0.01)  # Returns 3.14
+				snappedf(32.0, 2.5)  # Returns 32.5
+				snappedf(3.14159, 0.01)  # Returns 3.14
 				[/codeblock]
 			</description>
 		</method>
@@ -1239,8 +1239,8 @@
 				Returns the multiple of [param step] that is the closest to [param x].
 				A type-safe version of [method snapped], returning an [int].
 				[codeblock]
-				snapped(53, 16)  # Returns 48
-				snapped(4096, 100)  # Returns 4100
+				snappedi(53, 16)  # Returns 48
+				snappedi(4096, 100)  # Returns 4100
 				[/codeblock]
 			</description>
 		</method>
