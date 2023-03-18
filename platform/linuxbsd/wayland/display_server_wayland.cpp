@@ -3299,6 +3299,13 @@ void DisplayServerWayland::cursor_set_custom_image(const Ref<Resource> &p_cursor
 			}
 
 			cursor.buffer_data[index] = image->get_pixel(column_index, row_index).to_argb32();
+
+			// Wayland buffers, unless specified, require associated alpha, so we'll just
+			// associate the alpha in-place.
+			uint8_t *pixel_data = (uint8_t *)&cursor.buffer_data[index];
+			pixel_data[0] = pixel_data[0] * pixel_data[3] / 255;
+			pixel_data[1] = pixel_data[2] * pixel_data[3] / 255;
+			pixel_data[2] = pixel_data[2] * pixel_data[3] / 255;
 		}
 	} else {
 		// Reset to default system cursor.
