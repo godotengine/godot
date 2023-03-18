@@ -224,6 +224,7 @@ public:
 #endif
 
 	ProjectSettings();
+	ProjectSettings(const String &p_path);
 	~ProjectSettings();
 };
 
