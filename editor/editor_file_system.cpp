@@ -1049,7 +1049,14 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 					fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
 					fi->import_valid = fi->type == "TextFile" ? true : ResourceLoader::is_import_valid(path);
 					fi->import_group_file = ResourceLoader::get_import_group_file(path);
-
+					ResourceUID::ID file_uid = ResourceLoader::get_resource_uid(path);
+					if (file_uid != ResourceUID::INVALID_ID) {
+						fi->uid = ResourceLoader::get_resource_uid(path);
+						if (ResourceUID::get_singleton()->has_id(file_uid)) {
+							ResourceUID::get_singleton()->set_id(file_uid, path);
+						}
+						fi->uid = file_uid;
+					}
 					{
 						ItemAction ia;
 						ia.action = ItemAction::ACTION_FILE_ADD;
