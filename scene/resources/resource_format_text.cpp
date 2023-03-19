@@ -939,7 +939,9 @@ void ResourceLoaderText::get_dependencies(Ref<FileAccess> p_f, List<String> *p_d
 					if (p_add_types) {
 						path += "::PackedScene"; // Probably not necessary
 					}
-					p_dependencies->push_back(path);
+					if (p_dependencies->find(path) == nullptr) {
+						p_dependencies->push_back(path);
+					}
 				}
 			}
 		}
