@@ -1161,7 +1161,14 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 				mb->set_button_index(test_button);
 				mb->set_pressed(pd.pressed_button_mask.has_flag(test_button_mask));
 
-				if (mb->is_pressed() && pd.last_button_pressed == old_pd.last_button_pressed && (pd.button_time - old_pd.button_time) < 400 && Vector2(pd.position).distance_to(Vector2(old_pd.position)) < 5) {
+				// We have to set the last position pressed here as we can't take for
+				// granted what the individual events might have seen due to them not having
+				// a garaunteed order.
+				if (mb->is_pressed()) {
+					pd.last_pressed_position = pd.position;
+				}
+
+				if (mb->is_pressed() && pd.last_button_pressed == old_pd.last_button_pressed && (pd.button_time - old_pd.button_time) < 400 && Vector2(old_pd.last_pressed_position).distance_to(Vector2(pd.last_pressed_position)) < 5) {
 					mb->set_double_click(true);
 				}
 
@@ -2095,7 +2102,14 @@ void DisplayServerWayland::_wp_tablet_tool_on_frame(void *data, struct zwp_table
 				mb->set_button_index(test_button);
 				mb->set_pressed(td.pressed_button_mask.has_flag(test_button_mask));
 
-				if (mb->is_pressed() && td.last_button_pressed == old_td.last_button_pressed && (td.button_time - old_td.button_time) < 400 && Vector2(td.position).distance_to(Vector2(old_td.position)) < 5) {
+				// We have to set the last position pressed here as we can't take for
+				// granted what the individual events might have seen due to them not having
+				// a garaunteed order.
+				if (mb->is_pressed()) {
+					td.last_pressed_position = td.position;
+				}
+
+				if (mb->is_pressed() && td.last_button_pressed == old_td.last_button_pressed && (td.button_time - old_td.button_time) < 400 && Vector2(td.last_pressed_position).distance_to(Vector2(old_td.last_pressed_position)) < 5) {
 					mb->set_double_click(true);
 				}
 

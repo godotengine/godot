@@ -272,6 +272,8 @@ class DisplayServerWayland : public DisplayServer {
 		BitField<MouseButtonMask> pressed_button_mask;
 
 		MouseButton last_button_pressed = MouseButton::NONE;
+		Point2i last_pressed_position;
+
 		uint32_t button_time = 0;
 		uint32_t button_serial = 0;
 
@@ -294,6 +296,7 @@ class DisplayServerWayland : public DisplayServer {
 		BitField<MouseButtonMask> pressed_button_mask;
 
 		MouseButton last_button_pressed = MouseButton::NONE;
+		Point2i last_pressed_position;
 
 		// Note: the protocol doesn't have it (I guess that this isn't really meant to
 		// be used as a mouse...), but we'll hack one in with the current ticks.
