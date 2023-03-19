@@ -4741,6 +4741,11 @@ void RichTextLabel::set_deselect_on_focus_loss_enabled(const bool p_enabled) {
 }
 
 Variant RichTextLabel::get_drag_data(const Point2 &p_point) {
+	Variant ret = Control::get_drag_data(p_point);
+	if (ret != Variant()) {
+		return ret;
+	}
+
 	if (selection.drag_attempt && selection.enabled) {
 		String t = get_selected_text();
 		Label *l = memnew(Label);

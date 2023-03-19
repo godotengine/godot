@@ -638,6 +638,11 @@ HorizontalAlignment LineEdit::get_horizontal_alignment() const {
 }
 
 Variant LineEdit::get_drag_data(const Point2 &p_point) {
+	Variant ret = Control::get_drag_data(p_point);
+	if (ret != Variant()) {
+		return ret;
+	}
+
 	if (selection.drag_attempt && selection.enabled) {
 		String t = text.substr(selection.begin, selection.end - selection.begin);
 		Label *l = memnew(Label);
