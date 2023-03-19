@@ -995,6 +995,7 @@ void DisplayServerWayland::_wl_pointer_on_button(void *data, struct wl_pointer *
 	if (state & WL_POINTER_BUTTON_STATE_PRESSED) {
 		pd.pressed_button_mask.set_flag(mask);
 		pd.last_button_pressed = button_pressed;
+		pd.double_click_begun = true;
 	} else {
 		pd.pressed_button_mask.clear_flag(mask);
 	}
@@ -1168,7 +1169,8 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 					pd.last_pressed_position = pd.position;
 				}
 
-				if (mb->is_pressed() && pd.last_button_pressed == old_pd.last_button_pressed && (pd.button_time - old_pd.button_time) < 400 && Vector2(old_pd.last_pressed_position).distance_to(Vector2(pd.last_pressed_position)) < 5) {
+				if (old_pd.double_click_begun && mb->is_pressed() && pd.last_button_pressed == old_pd.last_button_pressed && (pd.button_time - old_pd.button_time) < 400 && Vector2(old_pd.last_pressed_position).distance_to(Vector2(pd.last_pressed_position)) < 5) {
+					pd.double_click_begun = false;
 					mb->set_double_click(true);
 				}
 
@@ -1925,13 +1927,16 @@ void DisplayServerWayland::_wp_tablet_tool_on_down(void *data, struct zwp_tablet
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	ss->tablet_tool_data_buffer.touching = true;
-	ss->tablet_tool_data_buffer.pressed_button_mask.set_flag(mouse_button_to_mask(MouseButton::LEFT));
-	ss->tablet_tool_data_buffer.last_button_pressed = MouseButton::LEFT;
+	TabletToolData &td = ss->tablet_tool_data_buffer;
+
+	td.touching = true;
+	td.pressed_button_mask.set_flag(mouse_button_to_mask(MouseButton::LEFT));
+	td.last_button_pressed = MouseButton::LEFT;
+	td.double_click_begun = true;
 
 	// The protocol doesn't cover this, but we can use this funky hack to make
 	// double clicking work.
-	ss->tablet_tool_data_buffer.button_time = OS::get_singleton()->get_ticks_msec();
+	td.button_time = OS::get_singleton()->get_ticks_msec();
 
 	print_verbose(vformat("wp tablet tool %x on down serial %x", (size_t)zwp_tablet_tool_v2, serial));
 }
@@ -1993,6 +1998,8 @@ void DisplayServerWayland::_wp_tablet_tool_on_button(void *data, struct zwp_tabl
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
+	TabletToolData &td = ss->tablet_tool_data_buffer;
+
 	MouseButton mouse_button = MouseButton::NONE;
 
 	if (button == BTN_STYLUS) {
@@ -2007,15 +2014,16 @@ void DisplayServerWayland::_wp_tablet_tool_on_button(void *data, struct zwp_tabl
 		MouseButtonMask mask = mouse_button_to_mask(mouse_button);
 
 		if (state == ZWP_TABLET_TOOL_V2_BUTTON_STATE_PRESSED) {
-			ss->tablet_tool_data_buffer.pressed_button_mask.set_flag(mask);
-			ss->tablet_tool_data_buffer.last_button_pressed = mouse_button;
+			td.pressed_button_mask.set_flag(mask);
+			td.last_button_pressed = mouse_button;
+			td.double_click_begun = true;
 		} else {
-			ss->tablet_tool_data_buffer.pressed_button_mask.clear_flag(mask);
+			td.pressed_button_mask.clear_flag(mask);
 		}
 
 		// The protocol doesn't cover this, but we can use this funky hack to make
 		// double clicking work.
-		ss->tablet_tool_data_buffer.button_time = OS::get_singleton()->get_ticks_msec();
+		td.button_time = OS::get_singleton()->get_ticks_msec();
 	}
 }
 
@@ -2109,7 +2117,8 @@ void DisplayServerWayland::_wp_tablet_tool_on_frame(void *data, struct zwp_table
 					td.last_pressed_position = td.position;
 				}
 
-				if (mb->is_pressed() && td.last_button_pressed == old_td.last_button_pressed && (td.button_time - old_td.button_time) < 400 && Vector2(td.last_pressed_position).distance_to(Vector2(old_td.last_pressed_position)) < 5) {
+				if (old_td.double_click_begun && mb->is_pressed() && td.last_button_pressed == old_td.last_button_pressed && (td.button_time - old_td.button_time) < 400 && Vector2(td.last_pressed_position).distance_to(Vector2(old_td.last_pressed_position)) < 5) {
+					td.double_click_begun = false;
 					mb->set_double_click(true);
 				}
 

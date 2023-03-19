@@ -274,6 +274,9 @@ class DisplayServerWayland : public DisplayServer {
 		MouseButton last_button_pressed = MouseButton::NONE;
 		Point2i last_pressed_position;
 
+		// This is needed to check for a new double click every time.
+		bool double_click_begun = false; 
+
 		uint32_t button_time = 0;
 		uint32_t button_serial = 0;
 
@@ -297,6 +300,8 @@ class DisplayServerWayland : public DisplayServer {
 
 		MouseButton last_button_pressed = MouseButton::NONE;
 		Point2i last_pressed_position;
+
+		bool double_click_begun = false; 
 
 		// Note: the protocol doesn't have it (I guess that this isn't really meant to
 		// be used as a mouse...), but we'll hack one in with the current ticks.
