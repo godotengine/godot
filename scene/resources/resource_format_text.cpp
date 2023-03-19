@@ -825,7 +825,7 @@ Error ResourceLoaderText::load() {
 			return error;
 		}
 
-		for(List<String>::Element *E = placeholder_paths.front(); E; E = E->next()) {
+		for (List<String>::Element *E = placeholder_paths.front(); E; E = E->next()) {
 			String path = E->get();
 			if (!ResourceLoader::exists(path)) {
 				if (ResourceLoader::get_abort_on_missing_resources()) {
