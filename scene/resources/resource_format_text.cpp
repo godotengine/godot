@@ -187,7 +187,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 	return err;
 }
 
-Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourceParser &parser) {
+Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourceParser &parser, List<String> *p_placeholder_paths) {
 	Ref<PackedScene> packed_scene;
 	packed_scene.instantiate();
 
@@ -248,6 +248,9 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 				}
 
 				instance = path_v | SceneState::FLAG_INSTANCE_IS_PLACEHOLDER;
+				if (p_placeholder_paths) {
+					p_placeholder_paths->push_back(path);
+				}
 			}
 
 			if (next_tag.fields.has("owner")) {
@@ -815,10 +818,25 @@ Error ResourceLoaderText::load() {
 			return error;
 		}
 
-		Ref<PackedScene> packed_scene = _parse_node_tag(rp);
+		List<String> placeholder_paths;
+		Ref<PackedScene> packed_scene = _parse_node_tag(rp, &placeholder_paths);
 
 		if (!packed_scene.is_valid()) {
 			return error;
+		}
+
+		for(List<String>::Element *E = placeholder_paths.front(); E; E = E->next()) {
+			String path = E->get();
+			if (!ResourceLoader::exists(path)) {
+				if (ResourceLoader::get_abort_on_missing_resources()) {
+					error = ERR_FILE_CORRUPT;
+					error_text = "[node] placeholder referenced broken scene resource at: " + path;
+					_printerr();
+					return error;
+				} else {
+					ResourceLoader::notify_dependency_error(local_path, path, "PackedScene");
+				}
+			}
 		}
 
 		error = OK;

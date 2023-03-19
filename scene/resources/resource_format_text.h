@@ -113,7 +113,7 @@ class ResourceLoaderText {
 
 	Ref<Resource> resource;
 
-	Ref<PackedScene> _parse_node_tag(VariantParser::ResourceParser &parser);
+	Ref<PackedScene> _parse_node_tag(VariantParser::ResourceParser &parser, List<String> *p_placeholder_paths = nullptr);
 
 public:
 	Ref<Resource> get_resource();
