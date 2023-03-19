@@ -35,6 +35,7 @@
 #include "core/math/math_funcs.h"
 
 class String;
+struct Vector4i;
 
 struct _NO_DISCARD_ Vector4 {
 	static const int AXIS_COUNT = 4;

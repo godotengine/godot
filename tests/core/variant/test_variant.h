@@ -868,6 +868,90 @@ TEST_CASE("[Variant] Basic comparison") {
 	CHECK_NE(Variant(Dictionary()), Variant());
 }
 
+TEST_CASE("[Variant] Vector/Rect comparison") {
+	// vector2 - vector2i
+	CHECK_EQ(Vector2(1.0f, 1.0f), Vector2i(1, 1));
+	CHECK_NE(Vector2(1.0f, 1.0f), Vector2i(2, 2));
+	CHECK_FALSE(Vector2(1.0f, 1.0f) != Vector2i(1, 1));
+	CHECK(Vector2(1.0f, 1.0f) != Vector2i(2, 2));
+	CHECK(Vector2(1.1f, 1.1f) != Vector2i(1, 1));
+	CHECK(Vector2i(1, 1) != Vector2(1.1f, 1.1f));
+
+	CHECK_EQ(Vector2i(1, 1), Vector2(1.0f, 1.0f));
+	CHECK_NE(Vector2i(1, 1), Vector2(2.0f, 2.0f));
+	CHECK_FALSE(Vector2i(1, 1) != Vector2(1.0f, 1.0f));
+	CHECK(Vector2i(1, 1) != Vector2(2.0f, 2.0f));
+
+	CHECK_LT(Vector2(0.0f, 0.0f), Vector2i(1, 1));
+	CHECK_LE(Vector2(0.0f, 0.0f), Vector2i(1, 1));
+	CHECK_LT(Vector2i(0, 0), Vector2(1.0f, 1.0f));
+	CHECK_LE(Vector2i(0, 0), Vector2(1.0f, 1.0f));
+
+	CHECK_GT(Vector2(1.0f, 1.0f), Vector2i(0, 0));
+	CHECK_GE(Vector2(1.0f, 1.0f), Vector2i(0, 0));
+	CHECK_GT(Vector2i(1, 1), Vector2(0.0f, 0.0f));
+	CHECK_GE(Vector2i(1, 1), Vector2(0.0f, 0.0f));
+
+	// vector3 - vector3i
+	CHECK_EQ(Vector3(1.0f, 1.0f, 1.0f), Vector3i(1, 1, 1));
+	CHECK_NE(Vector3(1.0f, 1.0f, 1.0f), Vector3i(2, 2, 2));
+	CHECK_FALSE(Vector3(1.0f, 1.0f, 1.0f) != Vector3i(1, 1, 1));
+	CHECK(Vector3(1.0f, 1.0f, 1.0f) != Vector3i(2, 2, 2));
+	CHECK(Vector3(1.1f, 1.1f, 1.1f) != Vector3i(1, 1, 1));
+	CHECK(Vector3i(1, 1, 1) != Vector3(1.1f, 1.1f, 1.1f));
+
+	CHECK_EQ(Vector3i(1, 1, 1), Vector3(1.0f, 1.0f, 1.0f));
+	CHECK_NE(Vector3i(1, 1, 1), Vector3(2.0f, 2.0f, 2.0f));
+	CHECK_FALSE(Vector3i(1, 1, 1) != Vector3(1.0f, 1.0f, 1.0f));
+	CHECK(Vector3i(1, 1, 1) != Vector3(2.0f, 2.0f, 2.0f));
+
+	CHECK_LT(Vector3(0.0f, 0.0f, 0.0f), Vector3i(1, 1, 1));
+	CHECK_LE(Vector3(0.0f, 0.0f, 0.0f), Vector3i(1, 1, 1));
+	CHECK_LT(Vector3i(0, 0, 0), Vector3(1.0f, 1.0f, 1.0f));
+	CHECK_LE(Vector3i(0, 0, 0), Vector3(1.0f, 1.0f, 1.0f));
+
+	CHECK_GT(Vector3(1.0f, 1.0f, 1.0f), Vector3i(0, 0, 0));
+	CHECK_GE(Vector3(1.0f, 1.0f, 1.0f), Vector3i(0, 0, 0));
+	CHECK_GT(Vector3i(1, 1, 1), Vector3(0.0f, 0.0f, 0.0f));
+	CHECK_GE(Vector3i(1, 1, 1), Vector3(0.0f, 0.0f, 0.0f));
+
+	// vector4 - vector4i
+	CHECK_EQ(Vector4(1.0f, 1.0f, 1.0f, 1.0f), Vector4i(1, 1, 1, 1));
+	CHECK_NE(Vector4(1.0f, 1.0f, 1.0f, 1.0f), Vector4i(2, 2, 2, 2));
+	CHECK_FALSE(Vector4(1.0f, 1.0f, 1.0f, 1.0f) != Vector4i(1, 1, 1, 1));
+	CHECK(Vector4(1.0f, 1.0f, 1.0f, 1.0f) != Vector4i(2, 2, 2, 2));
+	CHECK(Vector4(1.1f, 1.1f, 1.1f, 1.1f) != Vector4i(1, 1, 1, 1));
+	CHECK(Vector4i(1, 1, 1, 1) != Vector4(1.1f, 1.1f, 1.1f, 1.1f));
+
+	CHECK_EQ(Vector4i(1, 1, 1, 1), Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+	CHECK_NE(Vector4i(1, 1, 1, 1), Vector4(2.0f, 2.0f, 2.0f, 2.0f));
+	CHECK_FALSE(Vector4i(1, 1, 1, 1) != Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+	CHECK(Vector4i(1, 1, 1, 1) != Vector4(2.0f, 2.0f, 2.0f, 2.0f));
+
+	CHECK_LT(Vector4(0.0f, 0.0f, 0.0f, 0.0f), Vector4i(1, 1, 1, 1));
+	CHECK_LE(Vector4(0.0f, 0.0f, 0.0f, 0.0f), Vector4i(1, 1, 1, 1));
+	CHECK_LT(Vector4i(0, 0, 0, 0), Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+	CHECK_LE(Vector4i(0, 0, 0, 0), Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+
+	CHECK_GT(Vector4(1.0f, 1.0f, 1.0f, 1.0f), Vector4i(0, 0, 0, 0));
+	CHECK_GE(Vector4(1.0f, 1.0f, 1.0f, 1.0f), Vector4i(0, 0, 0, 0));
+	CHECK_GT(Vector4i(1, 1, 1, 1), Vector4(0.0f, 0.0f, 0.0f, 0.0f));
+	CHECK_GE(Vector4i(1, 1, 1, 1), Vector4(0.0f, 0.0f, 0.0f, 0.0f));
+
+	// rect2 - rect2i
+	CHECK_EQ(Rect2(1.0f, 1.0f, 1.0f, 1.0f), Rect2i(1, 1, 1, 1));
+	CHECK_NE(Rect2(1.0f, 1.0f, 1.0f, 1.0f), Rect2i(2, 2, 2, 2));
+	CHECK_FALSE(Rect2(1.0f, 1.0f, 1.0f, 1.0f) != Rect2i(1, 1, 1, 1));
+	CHECK(Rect2(1.0f, 1.0f, 1.0f, 1.0f) != Rect2i(2, 2, 2, 2));
+	CHECK(Rect2(1.1f, 1.1f, 1.1f, 1.1f) != Rect2i(1, 1, 1, 1));
+	CHECK(Rect2i(1, 1, 1, 1) != Rect2(1.1f, 1.1f, 1.1f, 1.1f));
+
+	CHECK_EQ(Rect2i(1, 1, 1, 1), Rect2(1.0f, 1.0f, 1.0f, 1.0f));
+	CHECK_NE(Rect2i(1, 1, 1, 1), Rect2(2.0f, 2.0f, 2.0f, 2.0f));
+	CHECK_FALSE(Rect2i(1, 1, 1, 1) != Rect2(1.0f, 1.0f, 1.0f, 1.0f));
+	CHECK(Rect2i(1, 1, 1, 1) != Rect2(2.0f, 2.0f, 2.0f, 2.0f));
+}
+
 TEST_CASE("[Variant] Identity comparison") {
 	// Value types are compared by value
 	Variant aabb = AABB();
