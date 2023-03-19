@@ -33,7 +33,6 @@
 
 #include "core/self_list.h"
 #include "core/vset.h"
-#include "scene/2d/navigation_2d.h"
 #include "scene/2d/node_2d.h"
 #include "scene/resources/tile_set.h"
 
@@ -78,7 +77,7 @@ private:
 	bool use_parent;
 	CollisionObject2D *collision_parent;
 	bool use_kinematic;
-	Navigation2D *navigation;
+	RID map_override;
 	bool bake_navigation = false;
 	uint32_t navigation_layers = 1;
 	bool show_collision = false;
@@ -310,6 +309,9 @@ public:
 
 	void set_navigation_layers(uint32_t p_navigation_layers);
 	uint32_t get_navigation_layers();
+
+	void set_navigation_map(RID p_navigation_map);
+	RID get_navigation_map() const;
 
 	void set_mode(Mode p_mode);
 	Mode get_mode() const;

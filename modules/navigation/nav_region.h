@@ -31,12 +31,10 @@
 #ifndef NAV_REGION_H
 #define NAV_REGION_H
 
-#include "scene/3d/navigation.h"
+#include "scene/resources/navigation_mesh.h"
 
 #include "nav_rid.h"
 #include "nav_utils.h"
-
-#include <vector>
 
 class NavMap;
 class NavRegion;

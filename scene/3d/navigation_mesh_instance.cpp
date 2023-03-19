@@ -33,7 +33,6 @@
 #include "core/os/os.h"
 #include "core/os/thread.h"
 #include "mesh_instance.h"
-#include "navigation.h"
 #include "servers/navigation_server.h"
 
 void NavigationMeshInstance::set_enabled(bool p_enabled) {
@@ -49,11 +48,7 @@ void NavigationMeshInstance::set_enabled(bool p_enabled) {
 	if (!enabled) {
 		NavigationServer::get_singleton()->region_set_map(region, RID());
 	} else {
-		if (navigation) {
-			NavigationServer::get_singleton()->region_set_map(region, navigation->get_rid());
-		} else {
-			NavigationServer::get_singleton()->region_set_map(region, get_world()->get_navigation_map());
-		}
+		NavigationServer::get_singleton()->region_set_map(region, get_world()->get_navigation_map());
 	}
 
 	if (debug_view) {
@@ -79,6 +74,28 @@ void NavigationMeshInstance::set_navigation_layers(uint32_t p_navigation_layers)
 
 uint32_t NavigationMeshInstance::get_navigation_layers() const {
 	return navigation_layers;
+}
+
+void NavigationMeshInstance::set_navigation_layer_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Navigation layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Navigation layer number must be between 1 and 32 inclusive.");
+
+	uint32_t _navigation_layers = get_navigation_layers();
+
+	if (p_value) {
+		_navigation_layers |= 1 << (p_layer_number - 1);
+	} else {
+		_navigation_layers &= ~(1 << (p_layer_number - 1));
+	}
+
+	set_navigation_layers(_navigation_layers);
+}
+
+bool NavigationMeshInstance::get_navigation_layer_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Navigation layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Navigation layer number must be between 1 and 32 inclusive.");
+
+	return get_navigation_layers() & (1 << (p_layer_number - 1));
 }
 
 void NavigationMeshInstance::set_enter_cost(real_t p_enter_cost) {
@@ -110,21 +127,7 @@ RID NavigationMeshInstance::get_region_rid() const {
 void NavigationMeshInstance::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			Spatial *c = this;
-			while (c) {
-				navigation = Object::cast_to<Navigation>(c);
-				if (navigation) {
-					if (enabled) {
-						NavigationServer::get_singleton()->region_set_map(region, navigation->get_rid());
-					}
-					break;
-				}
-
-				c = c->get_parent_spatial();
-			}
-
-			if (enabled && navigation == nullptr) {
-				// did not find a valid navigation node parent, fallback to default navigation map on world resource
+			if (enabled) {
 				NavigationServer::get_singleton()->region_set_map(region, get_world()->get_navigation_map());
 			}
 
@@ -146,15 +149,12 @@ void NavigationMeshInstance::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			if (navigation) {
-				NavigationServer::get_singleton()->region_set_map(region, RID());
-			}
+			NavigationServer::get_singleton()->region_set_map(region, RID());
 
 			if (debug_view) {
 				debug_view->queue_delete();
 				debug_view = nullptr;
 			}
-			navigation = nullptr;
 		} break;
 	}
 }
@@ -267,6 +267,9 @@ void NavigationMeshInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_navigation_layers", "navigation_layers"), &NavigationMeshInstance::set_navigation_layers);
 	ClassDB::bind_method(D_METHOD("get_navigation_layers"), &NavigationMeshInstance::get_navigation_layers);
 
+	ClassDB::bind_method(D_METHOD("set_navigation_layer_value", "layer_number", "value"), &NavigationMeshInstance::set_navigation_layer_value);
+	ClassDB::bind_method(D_METHOD("get_navigation_layer_value", "layer_number"), &NavigationMeshInstance::get_navigation_layer_value);
+
 	ClassDB::bind_method(D_METHOD("get_region_rid"), &NavigationMeshInstance::get_region_rid);
 
 	ClassDB::bind_method(D_METHOD("set_enter_cost", "enter_cost"), &NavigationMeshInstance::set_enter_cost);
@@ -305,5 +308,6 @@ NavigationMeshInstance::~NavigationMeshInstance() {
 	if (navmesh.is_valid()) {
 		navmesh->remove_change_receptor(this);
 	}
+	ERR_FAIL_NULL(NavigationServer::get_singleton());
 	NavigationServer::get_singleton()->free(region);
 }

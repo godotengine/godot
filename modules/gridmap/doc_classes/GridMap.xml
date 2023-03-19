@@ -77,6 +77,13 @@
 				Returns an array of [Transform] and [Mesh] references corresponding to the non-empty cells in the grid. The transforms are specified in world space.
 			</description>
 		</method>
+		<method name="get_navigation_map" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the navigation map this GridMap node uses for its cell baked navigation meshes.
+				This function returns always the map set on the GridMap node and not the map on the NavigationServer. If the map is changed directly with the NavigationServer API the GridMap node will not be aware of the map change.
+			</description>
+		</method>
 		<method name="get_used_cells" qualifiers="const">
 			<return type="Array" />
 			<description>
@@ -148,6 +155,13 @@
 			<argument index="1" name="value" type="bool" />
 			<description>
 				Sets an individual bit on the [member collision_mask].
+			</description>
+		</method>
+		<method name="set_navigation_map">
+			<return type="void" />
+			<argument index="0" name="navigation_map" type="RID" />
+			<description>
+				Sets the [RID] of the navigation map this GridMap node should use for its cell baked navigation meshes.
 			</description>
 		</method>
 		<method name="world_to_map" qualifiers="const">

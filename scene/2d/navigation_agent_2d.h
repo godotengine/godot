@@ -35,13 +35,11 @@
 #include "scene/main/node.h"
 
 class Node2D;
-class Navigation2D;
 
 class NavigationAgent2D : public Node {
 	GDCLASS(NavigationAgent2D, Node);
 
 	Node2D *agent_parent = nullptr;
-	Navigation2D *navigation = nullptr;
 
 	RID agent;
 	RID map_before_pause;
@@ -50,15 +48,14 @@ class NavigationAgent2D : public Node {
 	bool avoidance_enabled = false;
 	uint32_t navigation_layers = 1;
 
-	real_t path_desired_distance = 1.0;
-	real_t target_desired_distance = 1.0;
-	real_t radius = 0.0;
-	real_t neighbor_dist = 0.0;
-	int max_neighbors = 0;
-	real_t time_horizon = 0.0;
-	real_t max_speed = 0.0;
-
-	real_t path_max_distance = 3.0;
+	real_t path_desired_distance = 20.0;
+	real_t target_desired_distance = 10.0;
+	real_t radius = 10.0;
+	real_t neighbor_dist = 500.0;
+	int max_neighbors = 10;
+	real_t time_horizon = 1.0;
+	real_t max_speed = 100.0;
+	real_t path_max_distance = 100.0;
 
 	Vector2 target_location;
 	Vector<Vector2> navigation_path;
@@ -80,14 +77,6 @@ public:
 	NavigationAgent2D();
 	virtual ~NavigationAgent2D();
 
-	void set_navigation(Navigation2D *p_nav);
-	const Navigation2D *get_navigation() const {
-		return navigation;
-	}
-
-	void set_navigation_node(Node *p_nav);
-	Node *get_navigation_node() const;
-
 	RID get_rid() const {
 		return agent;
 	}
@@ -99,6 +88,9 @@ public:
 
 	void set_navigation_layers(uint32_t p_navigation_layers);
 	uint32_t get_navigation_layers() const;
+
+	void set_navigation_layer_value(int p_layer_number, bool p_value);
+	bool get_navigation_layer_value(int p_layer_number) const;
 
 	void set_navigation_map(RID p_navigation_map);
 	RID get_navigation_map() const;

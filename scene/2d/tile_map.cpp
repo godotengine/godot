@@ -58,18 +58,6 @@ int TileMap::_get_quadrant_size() const {
 void TileMap::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			Node2D *c = this;
-			while (c) {
-				navigation = Object::cast_to<Navigation2D>(c);
-				if (navigation) {
-					// only for <3.5 backward compatibility
-					bake_navigation = true;
-					break;
-				}
-
-				c = Object::cast_to<Node2D>(c->get_parent());
-			}
-
 			if (use_parent) {
 				_clear_quadrants();
 				collision_parent = Object::cast_to<CollisionObject2D>(get_parent());
@@ -107,7 +95,6 @@ void TileMap::_notification(int p_what) {
 			}
 
 			collision_parent = nullptr;
-			navigation = nullptr;
 
 		} break;
 
@@ -155,15 +142,6 @@ void TileMap::_update_quadrant_transform() {
 		local_transform = get_transform();
 	}
 
-	Transform2D nav_rel;
-	if (bake_navigation) {
-		if (navigation) {
-			nav_rel = get_relative_transform_to_parent(navigation);
-		} else {
-			nav_rel = get_global_transform();
-		}
-	}
-
 	for (Map<PosKey, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
 		Quadrant &q = E->get();
 		Transform2D xform;
@@ -176,7 +154,7 @@ void TileMap::_update_quadrant_transform() {
 
 		if (bake_navigation) {
 			for (Map<PosKey, Quadrant::NavPoly>::Element *F = q.navpoly_ids.front(); F; F = F->next()) {
-				Navigation2DServer::get_singleton()->region_set_transform(F->get().region, nav_rel * F->get().xform);
+				Navigation2DServer::get_singleton()->region_set_transform(F->get().region, global_transform * F->get().xform);
 			}
 		}
 
@@ -341,14 +319,7 @@ void TileMap::update_dirty_quadrants() {
 	VisualServer *vs = VisualServer::get_singleton();
 	Physics2DServer *ps = Physics2DServer::get_singleton();
 	Vector2 tofs = get_cell_draw_offset();
-	Transform2D nav_rel;
-	if (bake_navigation) {
-		if (navigation) {
-			nav_rel = get_relative_transform_to_parent(navigation);
-		} else {
-			nav_rel = get_global_transform();
-		}
-	}
+	Transform2D global_transform = get_global_transform();
 
 	Vector2 qofs;
 
@@ -631,13 +602,13 @@ void TileMap::update_dirty_quadrants() {
 					_fix_cell_transform(xform, c, npoly_ofs, s);
 
 					RID region = Navigation2DServer::get_singleton()->region_create();
-					if (navigation) {
-						Navigation2DServer::get_singleton()->region_set_map(region, navigation->get_rid());
+					if (map_override.is_valid()) {
+						Navigation2DServer::get_singleton()->region_set_map(region, map_override);
 					} else {
 						Navigation2DServer::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
 					}
 					Navigation2DServer::get_singleton()->region_set_navigation_layers(region, navigation_layers);
-					Navigation2DServer::get_singleton()->region_set_transform(region, nav_rel * xform);
+					Navigation2DServer::get_singleton()->region_set_transform(region, global_transform * xform);
 					Navigation2DServer::get_singleton()->region_set_navpoly(region, navpoly);
 
 					Quadrant::NavPoly np;
@@ -1431,6 +1402,32 @@ uint32_t TileMap::get_navigation_layers() {
 	return navigation_layers;
 }
 
+void TileMap::set_navigation_map(RID p_navigation_map) {
+	if (map_override == p_navigation_map) {
+		return;
+	}
+
+	map_override = p_navigation_map;
+
+	if (bake_navigation) {
+		for (Map<PosKey, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
+			Quadrant &q = E->get();
+			for (Map<PosKey, Quadrant::NavPoly>::Element *F = q.navpoly_ids.front(); F; F = F->next()) {
+				Navigation2DServer::get_singleton()->region_set_map(F->get().region, map_override);
+			}
+		}
+	}
+}
+
+RID TileMap::get_navigation_map() const {
+	if (map_override.is_valid()) {
+		return map_override;
+	} else if (is_inside_tree()) {
+		return get_world_2d()->get_navigation_map();
+	}
+	return RID();
+}
+
 uint32_t TileMap::get_collision_layer() const {
 	return collision_layer;
 }
@@ -1962,7 +1959,6 @@ TileMap::TileMap() {
 	use_parent = false;
 	collision_parent = nullptr;
 	use_kinematic = false;
-	navigation = nullptr;
 	y_sort_mode = false;
 	compatibility_mode = false;
 	centered_textures = false;

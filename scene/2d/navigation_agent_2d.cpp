@@ -31,7 +31,6 @@
 #include "navigation_agent_2d.h"
 
 #include "core/engine.h"
-#include "scene/2d/navigation_2d.h"
 #include "servers/navigation_2d_server.h"
 
 void NavigationAgent2D::_bind_methods() {
@@ -48,9 +47,6 @@ void NavigationAgent2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &NavigationAgent2D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &NavigationAgent2D::get_radius);
-
-	ClassDB::bind_method(D_METHOD("set_navigation", "navigation"), &NavigationAgent2D::set_navigation_node);
-	ClassDB::bind_method(D_METHOD("get_navigation"), &NavigationAgent2D::get_navigation_node);
 
 	ClassDB::bind_method(D_METHOD("set_neighbor_dist", "neighbor_dist"), &NavigationAgent2D::set_neighbor_dist);
 	ClassDB::bind_method(D_METHOD("get_neighbor_dist"), &NavigationAgent2D::get_neighbor_dist);
@@ -69,6 +65,9 @@ void NavigationAgent2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_navigation_layers", "navigation_layers"), &NavigationAgent2D::set_navigation_layers);
 	ClassDB::bind_method(D_METHOD("get_navigation_layers"), &NavigationAgent2D::get_navigation_layers);
+
+	ClassDB::bind_method(D_METHOD("set_navigation_layer_value", "layer_number", "value"), &NavigationAgent2D::set_navigation_layer_value);
+	ClassDB::bind_method(D_METHOD("get_navigation_layer_value", "layer_number"), &NavigationAgent2D::get_navigation_layer_value);
 
 	ClassDB::bind_method(D_METHOD("set_navigation_map", "navigation_map"), &NavigationAgent2D::set_navigation_map);
 	ClassDB::bind_method(D_METHOD("get_navigation_map"), &NavigationAgent2D::get_navigation_map);
@@ -112,24 +111,15 @@ void NavigationAgent2D::_bind_methods() {
 void NavigationAgent2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POST_ENTER_TREE: {
-			// Search the navigation node and set it
-			{
-				Navigation2D *nav = nullptr;
-				Node *p = get_parent();
-				while (p != nullptr) {
-					nav = Object::cast_to<Navigation2D>(p);
-					if (nav != nullptr) {
-						p = nullptr;
-					} else {
-						p = p->get_parent();
-					}
-				}
-				set_navigation(nav);
-			}
 			// need to use POST_ENTER_TREE cause with normal ENTER_TREE not all required Nodes are ready.
-			// cannot use READY as ready does not get called if Node is readded to SceneTree
+			// cannot use READY as ready does not get called if Node is re-added to SceneTree
 			set_agent_parent(get_parent());
 			set_physics_process_internal(true);
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			set_agent_parent(nullptr);
+			set_physics_process_internal(false);
 		} break;
 
 		case NOTIFICATION_PARENTED: {
@@ -167,11 +157,7 @@ void NavigationAgent2D::_notification(int p_what) {
 				map_before_pause = RID();
 			}
 		} break;
-		case NOTIFICATION_EXIT_TREE: {
-			set_agent_parent(nullptr);
-			set_navigation(nullptr);
-			set_physics_process_internal(false);
-		} break;
+
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (agent_parent) {
 				if (avoidance_enabled) {
@@ -185,25 +171,17 @@ void NavigationAgent2D::_notification(int p_what) {
 	}
 }
 
-NavigationAgent2D::NavigationAgent2D() :
-		agent_parent(nullptr),
-		navigation(nullptr),
-		agent(RID()),
-		avoidance_enabled(false),
-		target_desired_distance(1.0),
-		path_max_distance(3.0),
-		velocity_submitted(false),
-		target_reached(false),
-		navigation_finished(true) {
+NavigationAgent2D::NavigationAgent2D() {
 	agent = Navigation2DServer::get_singleton()->agent_create();
-	set_neighbor_dist(500.0);
-	set_max_neighbors(10);
-	set_time_horizon(20.0);
-	set_radius(10.0);
-	set_max_speed(200.0);
+	Navigation2DServer::get_singleton()->agent_set_neighbor_dist(agent, neighbor_dist);
+	Navigation2DServer::get_singleton()->agent_set_max_neighbors(agent, max_neighbors);
+	Navigation2DServer::get_singleton()->agent_set_time_horizon(agent, time_horizon);
+	Navigation2DServer::get_singleton()->agent_set_radius(agent, radius);
+	Navigation2DServer::get_singleton()->agent_set_max_speed(agent, max_speed);
 }
 
 NavigationAgent2D::~NavigationAgent2D() {
+	ERR_FAIL_NULL(Navigation2DServer::get_singleton());
 	Navigation2DServer::get_singleton()->free(agent);
 	agent = RID(); // Pointless
 }
@@ -229,8 +207,6 @@ void NavigationAgent2D::set_agent_parent(Node *p_agent_parent) {
 		agent_parent = Object::cast_to<Node2D>(p_agent_parent);
 		if (map_override.is_valid()) {
 			Navigation2DServer::get_singleton()->agent_set_map(get_rid(), map_override);
-		} else if (navigation != nullptr) {
-			Navigation2DServer::get_singleton()->agent_set_map(get_rid(), navigation->get_rid());
 		} else {
 			// no navigation node found in parent nodes, use default navigation map from world resource
 			Navigation2DServer::get_singleton()->agent_set_map(get_rid(), agent_parent->get_world_2d()->get_navigation_map());
@@ -241,25 +217,6 @@ void NavigationAgent2D::set_agent_parent(Node *p_agent_parent) {
 		agent_parent = nullptr;
 		Navigation2DServer::get_singleton()->agent_set_map(get_rid(), RID());
 	}
-}
-
-void NavigationAgent2D::set_navigation(Navigation2D *p_nav) {
-	if (navigation == p_nav) {
-		return; // Pointless
-	}
-
-	navigation = p_nav;
-	Navigation2DServer::get_singleton()->agent_set_map(agent, navigation == nullptr ? RID() : navigation->get_rid());
-}
-
-void NavigationAgent2D::set_navigation_node(Node *p_nav) {
-	Navigation2D *nav = Object::cast_to<Navigation2D>(p_nav);
-	ERR_FAIL_NULL(nav);
-	set_navigation(nav);
-}
-
-Node *NavigationAgent2D::get_navigation_node() const {
-	return Object::cast_to<Node>(navigation);
 }
 
 void NavigationAgent2D::set_navigation_layers(uint32_t p_navigation_layers) {
@@ -274,8 +231,31 @@ uint32_t NavigationAgent2D::get_navigation_layers() const {
 	return navigation_layers;
 }
 
+void NavigationAgent2D::set_navigation_layer_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Navigation layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Navigation layer number must be between 1 and 32 inclusive.");
+	uint32_t _navigation_layers = get_navigation_layers();
+	if (p_value) {
+		_navigation_layers |= 1 << (p_layer_number - 1);
+	} else {
+		_navigation_layers &= ~(1 << (p_layer_number - 1));
+	}
+	set_navigation_layers(_navigation_layers);
+}
+
+bool NavigationAgent2D::get_navigation_layer_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Navigation layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Navigation layer number must be between 1 and 32 inclusive.");
+	return get_navigation_layers() & (1 << (p_layer_number - 1));
+}
+
 void NavigationAgent2D::set_navigation_map(RID p_navigation_map) {
+	if (map_override == p_navigation_map) {
+		return;
+	}
+
 	map_override = p_navigation_map;
+
 	Navigation2DServer::get_singleton()->agent_set_map(agent, map_override);
 	_request_repath();
 }
@@ -283,8 +263,6 @@ void NavigationAgent2D::set_navigation_map(RID p_navigation_map) {
 RID NavigationAgent2D::get_navigation_map() const {
 	if (map_override.is_valid()) {
 		return map_override;
-	} else if (navigation != nullptr) {
-		return navigation->get_rid();
 	} else if (agent_parent != nullptr) {
 		return agent_parent->get_world_2d()->get_navigation_map();
 	}
@@ -292,39 +270,76 @@ RID NavigationAgent2D::get_navigation_map() const {
 }
 
 void NavigationAgent2D::set_path_desired_distance(real_t p_dd) {
+	if (Math::is_equal_approx(path_desired_distance, p_dd)) {
+		return;
+	}
+
 	path_desired_distance = p_dd;
 }
 
 void NavigationAgent2D::set_target_desired_distance(real_t p_dd) {
+	if (Math::is_equal_approx(target_desired_distance, p_dd)) {
+		return;
+	}
+
 	target_desired_distance = p_dd;
 }
 
 void NavigationAgent2D::set_radius(real_t p_radius) {
+	if (Math::is_equal_approx(radius, p_radius)) {
+		return;
+	}
+
 	radius = p_radius;
+
 	Navigation2DServer::get_singleton()->agent_set_radius(agent, radius);
 }
 
 void NavigationAgent2D::set_neighbor_dist(real_t p_dist) {
+	if (Math::is_equal_approx(neighbor_dist, p_dist)) {
+		return;
+	}
+
 	neighbor_dist = p_dist;
+
 	Navigation2DServer::get_singleton()->agent_set_neighbor_dist(agent, neighbor_dist);
 }
 
 void NavigationAgent2D::set_max_neighbors(int p_count) {
+	if (max_neighbors == p_count) {
+		return;
+	}
+
 	max_neighbors = p_count;
+
 	Navigation2DServer::get_singleton()->agent_set_max_neighbors(agent, max_neighbors);
 }
 
 void NavigationAgent2D::set_time_horizon(real_t p_time) {
+	if (Math::is_equal_approx(time_horizon, p_time)) {
+		return;
+	}
+
 	time_horizon = p_time;
+
 	Navigation2DServer::get_singleton()->agent_set_time_horizon(agent, time_horizon);
 }
 
 void NavigationAgent2D::set_max_speed(real_t p_max_speed) {
+	if (Math::is_equal_approx(max_speed, p_max_speed)) {
+		return;
+	}
+
 	max_speed = p_max_speed;
+
 	Navigation2DServer::get_singleton()->agent_set_max_speed(agent, max_speed);
 }
 
 void NavigationAgent2D::set_path_max_distance(real_t p_pmd) {
+	if (Math::is_equal_approx(path_max_distance, p_pmd)) {
+		return;
+	}
+
 	path_max_distance = p_pmd;
 }
 
@@ -448,8 +463,6 @@ void NavigationAgent2D::update_navigation() {
 	if (reload_path) {
 		if (map_override.is_valid()) {
 			navigation_path = Navigation2DServer::get_singleton()->map_get_path(map_override, o, target_location, true, navigation_layers);
-		} else if (navigation != nullptr) {
-			navigation_path = Navigation2DServer::get_singleton()->map_get_path(navigation->get_rid(), o, target_location, true, navigation_layers);
 		} else {
 			navigation_path = Navigation2DServer::get_singleton()->map_get_path(agent_parent->get_world_2d()->get_navigation_map(), o, target_location, true, navigation_layers);
 		}

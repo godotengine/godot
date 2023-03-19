@@ -34,7 +34,7 @@
 #include "editor/editor_node.h"
 #include "scene/3d/collision_shape.h"
 #include "scene/3d/mesh_instance.h"
-#include "scene/3d/navigation.h"
+#include "scene/3d/navigation_mesh_instance.h"
 #include "scene/3d/physics_body.h"
 #include "scene/3d/vehicle_body.h"
 #include "scene/animation/animation_player.h"

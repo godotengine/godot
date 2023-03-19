@@ -35,13 +35,11 @@
 #include "scene/main/node.h"
 
 class Spatial;
-class Navigation;
 
 class NavigationAgent : public Node {
 	GDCLASS(NavigationAgent, Node);
 
 	Spatial *agent_parent = nullptr;
-	Navigation *navigation = nullptr;
 
 	RID agent;
 	RID map_before_pause;
@@ -52,15 +50,14 @@ class NavigationAgent : public Node {
 
 	real_t path_desired_distance = 1.0;
 	real_t target_desired_distance = 1.0;
-	real_t radius = 0.0;
+	real_t radius = 0.5;
 	real_t navigation_height_offset = 0.0;
-	bool ignore_y = false;
-	real_t neighbor_dist = 0.0;
-	int max_neighbors = 0;
-	real_t time_horizon = 0.0;
-	real_t max_speed = 0.0;
-
-	real_t path_max_distance = 3.0;
+	bool ignore_y = true;
+	real_t neighbor_dist = 50.0;
+	int max_neighbors = 10;
+	real_t time_horizon = 1.0;
+	real_t max_speed = 10.0;
+	real_t path_max_distance = 5.0;
 
 	Vector3 target_location;
 	Vector<Vector3> navigation_path;
@@ -82,14 +79,6 @@ public:
 	NavigationAgent();
 	virtual ~NavigationAgent();
 
-	void set_navigation(Navigation *p_nav);
-	const Navigation *get_navigation() const {
-		return navigation;
-	}
-
-	void set_navigation_node(Node *p_nav);
-	Node *get_navigation_node() const;
-
 	RID get_rid() const {
 		return agent;
 	}
@@ -101,6 +90,9 @@ public:
 
 	void set_navigation_layers(uint32_t p_navigation_layers);
 	uint32_t get_navigation_layers() const;
+
+	void set_navigation_layer_value(int p_layer_number, bool p_value);
+	bool get_navigation_layer_value(int p_layer_number) const;
 
 	void set_navigation_map(RID p_navigation_map);
 	RID get_navigation_map() const;

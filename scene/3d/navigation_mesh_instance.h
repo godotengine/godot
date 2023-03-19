@@ -35,8 +35,6 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/navigation_mesh.h"
 
-class Navigation;
-
 class NavigationMeshInstance : public Spatial {
 	GDCLASS(NavigationMeshInstance, Spatial);
 
@@ -48,7 +46,6 @@ class NavigationMeshInstance : public Spatial {
 	real_t travel_cost = 1.0;
 
 	uint32_t navigation_layers = 1;
-	Navigation *navigation = nullptr;
 	Node *debug_view = nullptr;
 	Thread bake_thread;
 
@@ -63,6 +60,9 @@ public:
 
 	void set_navigation_layers(uint32_t p_navigation_layers);
 	uint32_t get_navigation_layers() const;
+
+	void set_navigation_layer_value(int p_layer_number, bool p_value);
+	bool get_navigation_layer_value(int p_layer_number) const;
 
 	RID get_region_rid() const;
 

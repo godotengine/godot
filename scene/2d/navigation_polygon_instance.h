@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  navigation_2d.h                                                       */
+/*  navigation_polygon_instance.h                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,50 +28,61 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_2D_H
-#define NAVIGATION_2D_H
+#ifndef NAVIGATION_POLYGON_INSTANCE_H
+#define NAVIGATION_POLYGON_INSTANCE_H
 
-#include "scene/2d/navigation_polygon.h"
 #include "scene/2d/node_2d.h"
+#include "scene/resources/navigation_polygon.h"
 
-class Navigation2D : public Node2D {
-	GDCLASS(Navigation2D, Node2D);
+class NavigationPolygonInstance : public Node2D {
+	GDCLASS(NavigationPolygonInstance, Node2D);
 
-	RID map;
-	real_t cell_size = 1.0;
-	real_t edge_connection_margin = 1.0;
+	bool enabled = true;
+	RID region;
+	Ref<NavigationPolygon> navpoly;
+
+	real_t enter_cost = 0.0;
+	real_t travel_cost = 1.0;
+
 	uint32_t navigation_layers = 1;
 
+	void _navpoly_changed();
+	void _map_changed(RID p_map);
+
 protected:
-	static void _bind_methods();
 	void _notification(int p_what);
+	static void _bind_methods();
 
 public:
-	RID get_rid() const {
-		return map;
-	}
+#ifdef TOOLS_ENABLED
+	virtual Rect2 _edit_get_rect() const;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+#endif
 
-	void set_cell_size(float p_cell_size);
-	float get_cell_size() const {
-		return cell_size;
-	}
+	void set_enabled(bool p_enabled);
+	bool is_enabled() const;
 
 	void set_navigation_layers(uint32_t p_navigation_layers);
 	uint32_t get_navigation_layers() const;
 
-	void set_edge_connection_margin(float p_edge_connection_margin);
-	float get_edge_connection_margin() const {
-		return edge_connection_margin;
-	}
+	void set_navigation_layer_value(int p_layer_number, bool p_value);
+	bool get_navigation_layer_value(int p_layer_number) const;
 
-	Vector<Vector2> get_simple_path(const Vector2 &p_start, const Vector2 &p_end, bool p_optimize = true) const;
-	Vector2 get_closest_point(const Vector2 &p_point) const;
-	RID get_closest_point_owner(const Vector2 &p_point) const;
+	RID get_region_rid() const;
 
-	virtual String get_configuration_warning() const;
+	void set_enter_cost(real_t p_enter_cost);
+	real_t get_enter_cost() const;
 
-	Navigation2D();
-	~Navigation2D();
+	void set_travel_cost(real_t p_travel_cost);
+	real_t get_travel_cost() const;
+
+	void set_navigation_polygon(const Ref<NavigationPolygon> &p_navpoly);
+	Ref<NavigationPolygon> get_navigation_polygon() const;
+
+	String get_configuration_warning() const;
+
+	NavigationPolygonInstance();
+	~NavigationPolygonInstance();
 };
 
-#endif // NAVIGATION_2D_H
+#endif // NAVIGATION_POLYGON_INSTANCE_H

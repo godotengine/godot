@@ -222,6 +222,27 @@ bool GridMap::is_baking_navigation() {
 	return bake_navigation;
 }
 
+void GridMap::set_navigation_map(RID p_navigation_map) {
+	map_override = p_navigation_map;
+	for (Map<OctantKey, Octant *>::Element *E = octant_map.front(); E; E = E->next()) {
+		Octant *g = E->get();
+		for (Map<IndexKey, Octant::NavMesh>::Element *F = g->navmesh_ids.front(); F; F = F->next()) {
+			if (F->get().region.is_valid()) {
+				NavigationServer::get_singleton()->region_set_map(F->get().region, map_override);
+			}
+		}
+	}
+}
+
+RID GridMap::get_navigation_map() const {
+	if (map_override.is_valid()) {
+		return map_override;
+	} else if (is_inside_tree()) {
+		return get_world()->get_navigation_map();
+	}
+	return RID();
+}
+
 void GridMap::set_navigation_layers(uint32_t p_navigation_layers) {
 	navigation_layers = p_navigation_layers;
 	_recreate_octant_data();
@@ -479,6 +500,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		}
 		if (E->get().navmesh_debug_instance.is_valid()) {
 			VS::get_singleton()->free(E->get().navmesh_debug_instance);
+			E->get().navmesh_debug_instance = RID();
 		}
 	}
 	g.navmesh_ids.clear();
@@ -565,8 +587,8 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 				NavigationServer::get_singleton()->region_set_navmesh(region, navmesh);
 				NavigationServer::get_singleton()->region_set_transform(region, get_global_transform() * nm.xform);
 				if (is_inside_tree()) {
-					if (navigation) {
-						NavigationServer::get_singleton()->region_set_map(region, navigation->get_rid());
+					if (map_override.is_valid()) {
+						NavigationServer::get_singleton()->region_set_map(region, map_override);
 					} else {
 						NavigationServer::get_singleton()->region_set_map(region, get_world()->get_navigation_map());
 					}
@@ -681,8 +703,8 @@ void GridMap::_octant_enter_world(const OctantKey &p_key) {
 					NavigationServer::get_singleton()->region_set_navigation_layers(region, navigation_layers);
 					NavigationServer::get_singleton()->region_set_navmesh(region, nm);
 					NavigationServer::get_singleton()->region_set_transform(region, get_global_transform() * E->get().xform);
-					if (navigation) {
-						NavigationServer::get_singleton()->region_set_map(region, navigation->get_rid());
+					if (map_override.is_valid()) {
+						NavigationServer::get_singleton()->region_set_map(region, map_override);
 					} else {
 						NavigationServer::get_singleton()->region_set_map(region, get_world()->get_navigation_map());
 					}
@@ -765,16 +787,6 @@ void GridMap::_octant_clean_up(const OctantKey &p_key) {
 void GridMap::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_WORLD: {
-			Spatial *c = this;
-			while (c) {
-				navigation = Object::cast_to<Navigation>(c);
-				if (navigation) {
-					break;
-				}
-
-				c = Object::cast_to<Spatial>(c->get_parent());
-			}
-
 			last_transform = get_global_transform();
 
 			for (Map<OctantKey, Octant *>::Element *E = octant_map.front(); E; E = E->next()) {
@@ -808,8 +820,6 @@ void GridMap::_notification(int p_what) {
 			for (Map<OctantKey, Octant *>::Element *E = octant_map.front(); E; E = E->next()) {
 				_octant_exit_world(E->key());
 			}
-
-			navigation = nullptr;
 
 			//_queue_octants_dirty(MAP_DIRTY_INSTANCES|MAP_DIRTY_TRANSFORMS);
 			//_update_octants_callback();
@@ -927,6 +937,9 @@ void GridMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bake_navigation", "bake_navigation"), &GridMap::set_bake_navigation);
 	ClassDB::bind_method(D_METHOD("is_baking_navigation"), &GridMap::is_baking_navigation);
+
+	ClassDB::bind_method(D_METHOD("set_navigation_map", "navigation_map"), &GridMap::set_navigation_map);
+	ClassDB::bind_method(D_METHOD("get_navigation_map"), &GridMap::get_navigation_map);
 
 	ClassDB::bind_method(D_METHOD("set_navigation_layers", "navigation_layers"), &GridMap::set_navigation_layers);
 	ClassDB::bind_method(D_METHOD("get_navigation_layers"), &GridMap::get_navigation_layers);
@@ -1234,7 +1247,6 @@ GridMap::GridMap() {
 	clip_above = true;
 	cell_scale = 1.0;
 
-	navigation = nullptr;
 	set_notify_transform(true);
 	recreating_octants = false;
 

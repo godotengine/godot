@@ -31,7 +31,6 @@
 #include "navigation_agent.h"
 
 #include "core/engine.h"
-#include "scene/3d/navigation.h"
 #include "servers/navigation_server.h"
 
 void NavigationAgent::_bind_methods() {
@@ -55,9 +54,6 @@ void NavigationAgent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ignore_y", "ignore"), &NavigationAgent::set_ignore_y);
 	ClassDB::bind_method(D_METHOD("get_ignore_y"), &NavigationAgent::get_ignore_y);
 
-	ClassDB::bind_method(D_METHOD("set_navigation", "navigation"), &NavigationAgent::set_navigation_node);
-	ClassDB::bind_method(D_METHOD("get_navigation"), &NavigationAgent::get_navigation_node);
-
 	ClassDB::bind_method(D_METHOD("set_neighbor_dist", "neighbor_dist"), &NavigationAgent::set_neighbor_dist);
 	ClassDB::bind_method(D_METHOD("get_neighbor_dist"), &NavigationAgent::get_neighbor_dist);
 
@@ -75,6 +71,9 @@ void NavigationAgent::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_navigation_layers", "navigation_layers"), &NavigationAgent::set_navigation_layers);
 	ClassDB::bind_method(D_METHOD("get_navigation_layers"), &NavigationAgent::get_navigation_layers);
+
+	ClassDB::bind_method(D_METHOD("set_navigation_layer_value", "layer_number", "value"), &NavigationAgent::set_navigation_layer_value);
+	ClassDB::bind_method(D_METHOD("get_navigation_layer_value", "layer_number"), &NavigationAgent::get_navigation_layer_value);
 
 	ClassDB::bind_method(D_METHOD("set_navigation_map", "navigation_map"), &NavigationAgent::set_navigation_map);
 	ClassDB::bind_method(D_METHOD("get_navigation_map"), &NavigationAgent::get_navigation_map);
@@ -120,22 +119,8 @@ void NavigationAgent::_bind_methods() {
 void NavigationAgent::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POST_ENTER_TREE: {
-			// Search the navigation node and set it
-			{
-				Navigation *nav = nullptr;
-				Node *p = get_parent();
-				while (p != nullptr) {
-					nav = Object::cast_to<Navigation>(p);
-					if (nav != nullptr) {
-						p = nullptr;
-					} else {
-						p = p->get_parent();
-					}
-				}
-				set_navigation(nav);
-			}
 			// need to use POST_ENTER_TREE cause with normal ENTER_TREE not all required Nodes are ready.
-			// cannot use READY as ready does not get called if Node is readded to SceneTree
+			// cannot use READY as ready does not get called if Node is re-added to SceneTree
 			set_agent_parent(get_parent());
 			set_physics_process_internal(true);
 		} break;
@@ -159,7 +144,6 @@ void NavigationAgent::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			set_agent_parent(nullptr);
-			set_navigation(nullptr);
 			set_physics_process_internal(false);
 		} break;
 
@@ -198,21 +182,27 @@ void NavigationAgent::_notification(int p_what) {
 
 NavigationAgent::NavigationAgent() {
 	agent = NavigationServer::get_singleton()->agent_create();
-	set_neighbor_dist(50.0);
-	set_max_neighbors(10);
-	set_time_horizon(5.0);
-	set_radius(1.0);
-	set_max_speed(10.0);
-	set_ignore_y(true);
+	NavigationServer::get_singleton()->agent_set_neighbor_dist(agent, neighbor_dist);
+	NavigationServer::get_singleton()->agent_set_max_neighbors(agent, max_neighbors);
+	NavigationServer::get_singleton()->agent_set_time_horizon(agent, time_horizon);
+	NavigationServer::get_singleton()->agent_set_radius(agent, radius);
+	NavigationServer::get_singleton()->agent_set_max_speed(agent, max_speed);
+	NavigationServer::get_singleton()->agent_set_ignore_y(agent, ignore_y);
 }
 
 NavigationAgent::~NavigationAgent() {
+	ERR_FAIL_NULL(NavigationServer::get_singleton());
 	NavigationServer::get_singleton()->free(agent);
 	agent = RID(); // Pointless
 }
 
 void NavigationAgent::set_avoidance_enabled(bool p_enabled) {
+	if (avoidance_enabled == p_enabled) {
+		return;
+	}
+
 	avoidance_enabled = p_enabled;
+
 	if (avoidance_enabled) {
 		NavigationServer::get_singleton()->agent_set_callback(agent, get_instance_id(), "_avoidance_done");
 	} else {
@@ -224,26 +214,11 @@ bool NavigationAgent::get_avoidance_enabled() const {
 	return avoidance_enabled;
 }
 
-void NavigationAgent::set_navigation(Navigation *p_nav) {
-	if (navigation == p_nav) {
-		return; // Pointless
+void NavigationAgent::set_agent_parent(Node *p_agent_parent) {
+	if (agent_parent == p_agent_parent) {
+		return;
 	}
 
-	navigation = p_nav;
-	NavigationServer::get_singleton()->agent_set_map(agent, navigation == nullptr ? RID() : navigation->get_rid());
-}
-
-void NavigationAgent::set_navigation_node(Node *p_nav) {
-	Navigation *nav = Object::cast_to<Navigation>(p_nav);
-	ERR_FAIL_NULL(nav);
-	set_navigation(nav);
-}
-
-Node *NavigationAgent::get_navigation_node() const {
-	return Object::cast_to<Node>(navigation);
-}
-
-void NavigationAgent::set_agent_parent(Node *p_agent_parent) {
 	// remove agent from any avoidance map before changing parent or there will be leftovers on the RVO map
 	NavigationServer::get_singleton()->agent_set_callback(agent, ObjectID(), "_avoidance_done");
 	if (Object::cast_to<Spatial>(p_agent_parent) != nullptr) {
@@ -251,34 +226,60 @@ void NavigationAgent::set_agent_parent(Node *p_agent_parent) {
 		agent_parent = Object::cast_to<Spatial>(p_agent_parent);
 		if (map_override.is_valid()) {
 			NavigationServer::get_singleton()->agent_set_map(get_rid(), map_override);
-		} else if (navigation != nullptr) {
-			NavigationServer::get_singleton()->agent_set_map(get_rid(), navigation->get_rid());
 		} else {
 			// no navigation node found in parent nodes, use default navigation map from world resource
 			NavigationServer::get_singleton()->agent_set_map(get_rid(), agent_parent->get_world()->get_navigation_map());
 		}
+
 		// create new avoidance callback if enabled
-		set_avoidance_enabled(avoidance_enabled);
+		if (avoidance_enabled) {
+			NavigationServer::get_singleton()->agent_set_callback(agent, get_instance_id(), "_avoidance_done");
+		}
 	} else {
 		agent_parent = nullptr;
 		NavigationServer::get_singleton()->agent_set_map(get_rid(), RID());
 	}
 }
 
-void NavigationAgent::set_navigation_layers(uint32_t p_layers) {
-	bool _navigation_layers_changed = navigation_layers != p_layers;
-	navigation_layers = p_layers;
-	if (_navigation_layers_changed) {
-		_request_repath();
+void NavigationAgent::set_navigation_layers(uint32_t p_navigation_layers) {
+	if (navigation_layers == p_navigation_layers) {
+		return;
 	}
+
+	navigation_layers = p_navigation_layers;
+
+	_request_repath();
 }
 
 uint32_t NavigationAgent::get_navigation_layers() const {
 	return navigation_layers;
 }
 
+void NavigationAgent::set_navigation_layer_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Navigation layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Navigation layer number must be between 1 and 32 inclusive.");
+	uint32_t _navigation_layers = get_navigation_layers();
+	if (p_value) {
+		_navigation_layers |= 1 << (p_layer_number - 1);
+	} else {
+		_navigation_layers &= ~(1 << (p_layer_number - 1));
+	}
+	set_navigation_layers(_navigation_layers);
+}
+
+bool NavigationAgent::get_navigation_layer_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Navigation layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Navigation layer number must be between 1 and 32 inclusive.");
+	return get_navigation_layers() & (1 << (p_layer_number - 1));
+}
+
 void NavigationAgent::set_navigation_map(RID p_navigation_map) {
+	if (map_override == p_navigation_map) {
+		return;
+	}
+
 	map_override = p_navigation_map;
+
 	NavigationServer::get_singleton()->agent_set_map(agent, map_override);
 	_request_repath();
 }
@@ -293,48 +294,94 @@ RID NavigationAgent::get_navigation_map() const {
 }
 
 void NavigationAgent::set_path_desired_distance(real_t p_dd) {
+	if (Math::is_equal_approx(path_desired_distance, p_dd)) {
+		return;
+	}
+
 	path_desired_distance = p_dd;
 }
 
 void NavigationAgent::set_target_desired_distance(real_t p_dd) {
+	if (Math::is_equal_approx(target_desired_distance, p_dd)) {
+		return;
+	}
+
 	target_desired_distance = p_dd;
 }
 
 void NavigationAgent::set_radius(real_t p_radius) {
+	if (Math::is_equal_approx(radius, p_radius)) {
+		return;
+	}
+
 	radius = p_radius;
+
 	NavigationServer::get_singleton()->agent_set_radius(agent, radius);
 }
 
 void NavigationAgent::set_agent_height_offset(real_t p_hh) {
+	if (Math::is_equal_approx(navigation_height_offset, p_hh)) {
+		return;
+	}
+
 	navigation_height_offset = p_hh;
 }
 
 void NavigationAgent::set_ignore_y(bool p_ignore_y) {
+	if (ignore_y == p_ignore_y) {
+		return;
+	}
+
 	ignore_y = p_ignore_y;
+
 	NavigationServer::get_singleton()->agent_set_ignore_y(agent, ignore_y);
 }
 
 void NavigationAgent::set_neighbor_dist(real_t p_dist) {
+	if (Math::is_equal_approx(neighbor_dist, p_dist)) {
+		return;
+	}
+
 	neighbor_dist = p_dist;
+
 	NavigationServer::get_singleton()->agent_set_neighbor_dist(agent, neighbor_dist);
 }
 
 void NavigationAgent::set_max_neighbors(int p_count) {
+	if (max_neighbors == p_count) {
+		return;
+	}
+
 	max_neighbors = p_count;
+
 	NavigationServer::get_singleton()->agent_set_max_neighbors(agent, max_neighbors);
 }
 
 void NavigationAgent::set_time_horizon(real_t p_time) {
+	if (Math::is_equal_approx(time_horizon, p_time)) {
+		return;
+	}
+
 	time_horizon = p_time;
+
 	NavigationServer::get_singleton()->agent_set_time_horizon(agent, time_horizon);
 }
 
 void NavigationAgent::set_max_speed(real_t p_max_speed) {
+	if (Math::is_equal_approx(max_speed, p_max_speed)) {
+		return;
+	}
+
 	max_speed = p_max_speed;
+
 	NavigationServer::get_singleton()->agent_set_max_speed(agent, max_speed);
 }
 
 void NavigationAgent::set_path_max_distance(real_t p_pmd) {
+	if (Math::is_equal_approx(path_max_distance, p_pmd)) {
+		return;
+	}
+
 	path_max_distance = p_pmd;
 }
 
@@ -459,8 +506,6 @@ void NavigationAgent::update_navigation() {
 	if (reload_path) {
 		if (map_override.is_valid()) {
 			navigation_path = NavigationServer::get_singleton()->map_get_path(map_override, o, target_location, true, navigation_layers);
-		} else if (navigation != nullptr) {
-			navigation_path = NavigationServer::get_singleton()->map_get_path(navigation->get_rid(), o, target_location, true, navigation_layers);
 		} else {
 			navigation_path = NavigationServer::get_singleton()->map_get_path(agent_parent->get_world()->get_navigation_map(), o, target_location, true, navigation_layers);
 		}

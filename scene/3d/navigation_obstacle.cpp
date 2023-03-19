@@ -31,15 +31,15 @@
 #include "navigation_obstacle.h"
 
 #include "scene/3d/collision_shape.h"
-#include "scene/3d/navigation.h"
 #include "scene/3d/physics_body.h"
 #include "servers/navigation_server.h"
 
 void NavigationObstacle::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationObstacle::get_rid);
 
-	ClassDB::bind_method(D_METHOD("set_navigation", "navigation"), &NavigationObstacle::set_navigation_node);
-	ClassDB::bind_method(D_METHOD("get_navigation"), &NavigationObstacle::get_navigation_node);
+	ClassDB::bind_method(D_METHOD("set_navigation_map", "navigation_map"), &NavigationObstacle::set_navigation_map);
+	ClassDB::bind_method(D_METHOD("get_navigation_map"), &NavigationObstacle::get_navigation_map);
+
 	ClassDB::bind_method(D_METHOD("is_radius_estimated"), &NavigationObstacle::is_radius_estimated);
 	ClassDB::bind_method(D_METHOD("set_estimate_radius", "estimate_radius"), &NavigationObstacle::set_estimate_radius);
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &NavigationObstacle::set_radius);
@@ -59,27 +59,23 @@ void NavigationObstacle::_validate_property(PropertyInfo &p_property) const {
 
 void NavigationObstacle::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			parent_spatial = Object::cast_to<Spatial>(get_parent());
-			reevaluate_agent_radius();
-
-			// Search the navigation node and set it
-			{
-				Navigation *nav = nullptr;
-				Node *p = get_parent();
-				while (p != nullptr) {
-					nav = Object::cast_to<Navigation>(p);
-					if (nav != nullptr) {
-						p = nullptr;
-					} else {
-						p = p->get_parent();
-					}
-				}
-
-				set_navigation(nav);
-			}
-
+		case NOTIFICATION_POST_ENTER_TREE: {
+			set_agent_parent(get_parent());
 			set_physics_process_internal(true);
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			set_agent_parent(nullptr);
+			set_physics_process_internal(false);
+		} break;
+		case NOTIFICATION_PARENTED: {
+			if (is_inside_tree() && (get_parent() != parent_spatial)) {
+				set_agent_parent(get_parent());
+				set_physics_process_internal(true);
+			}
+		} break;
+		case NOTIFICATION_UNPARENTED: {
+			set_agent_parent(nullptr);
+			set_physics_process_internal(false);
 		} break;
 		case NOTIFICATION_PAUSED: {
 			if (parent_spatial && !parent_spatial->can_process()) {
@@ -99,68 +95,31 @@ void NavigationObstacle::_notification(int p_what) {
 				map_before_pause = RID();
 			}
 		} break;
-		case NOTIFICATION_EXIT_TREE: {
-			set_navigation(nullptr);
-			set_physics_process_internal(false);
-			request_ready(); // required to solve an issue with losing the navigation
-		} break;
-		case NOTIFICATION_PARENTED: {
-			parent_spatial = Object::cast_to<Spatial>(get_parent());
-			reevaluate_agent_radius();
-		} break;
-		case NOTIFICATION_UNPARENTED: {
-			parent_spatial = nullptr;
-		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (parent_spatial && parent_spatial->is_inside_tree()) {
 				NavigationServer::get_singleton()->agent_set_position(agent, parent_spatial->get_global_transform().origin);
-			}
 
-			PhysicsBody *rigid = Object::cast_to<PhysicsBody>(get_parent());
-			if (rigid) {
-				Vector3 v = rigid->get_linear_velocity();
-				NavigationServer::get_singleton()->agent_set_velocity(agent, v);
-				NavigationServer::get_singleton()->agent_set_target_velocity(agent, v);
+				PhysicsBody *rigid = Object::cast_to<PhysicsBody>(get_parent());
+				if (rigid) {
+					Vector3 v = rigid->get_linear_velocity();
+					NavigationServer::get_singleton()->agent_set_velocity(agent, v);
+					NavigationServer::get_singleton()->agent_set_target_velocity(agent, v);
+				}
 			}
 
 		} break;
 	}
 }
 
-NavigationObstacle::NavigationObstacle() :
-		navigation(nullptr),
-		agent(RID()) {
+NavigationObstacle::NavigationObstacle() {
 	agent = NavigationServer::get_singleton()->agent_create();
 	initialize_agent();
 }
 
 NavigationObstacle::~NavigationObstacle() {
+	ERR_FAIL_NULL(NavigationServer::get_singleton());
 	NavigationServer::get_singleton()->free(agent);
 	agent = RID(); // Pointless
-}
-
-void NavigationObstacle::set_navigation(Navigation *p_nav) {
-	if (navigation == p_nav && navigation != nullptr) {
-		return; // Pointless
-	}
-
-	navigation = p_nav;
-
-	if (navigation != nullptr) {
-		NavigationServer::get_singleton()->agent_set_map(agent, navigation->get_rid());
-	} else if (parent_spatial && parent_spatial->is_inside_tree()) {
-		NavigationServer::get_singleton()->agent_set_map(agent, parent_spatial->get_world()->get_navigation_map());
-	}
-}
-
-void NavigationObstacle::set_navigation_node(Node *p_nav) {
-	Navigation *nav = Object::cast_to<Navigation>(p_nav);
-	ERR_FAIL_NULL(nav);
-	set_navigation(nav);
-}
-
-Node *NavigationObstacle::get_navigation_node() const {
-	return Object::cast_to<Node>(navigation);
 }
 
 String NavigationObstacle::get_configuration_warning() const {
@@ -232,14 +191,62 @@ real_t NavigationObstacle::estimate_agent_radius() const {
 	return 1.0; // Never a 0 radius
 }
 
+void NavigationObstacle::set_agent_parent(Node *p_agent_parent) {
+	if (parent_spatial == p_agent_parent) {
+		return;
+	}
+
+	if (Object::cast_to<Spatial>(p_agent_parent) != nullptr) {
+		parent_spatial = Object::cast_to<Spatial>(p_agent_parent);
+		if (map_override.is_valid()) {
+			NavigationServer::get_singleton()->agent_set_map(get_rid(), map_override);
+		} else {
+			NavigationServer::get_singleton()->agent_set_map(get_rid(), parent_spatial->get_world()->get_navigation_map());
+		}
+		reevaluate_agent_radius();
+	} else {
+		parent_spatial = nullptr;
+		NavigationServer::get_singleton()->agent_set_map(get_rid(), RID());
+	}
+}
+
+void NavigationObstacle::set_navigation_map(RID p_navigation_map) {
+	if (map_override == p_navigation_map) {
+		return;
+	}
+
+	map_override = p_navigation_map;
+
+	NavigationServer::get_singleton()->agent_set_map(agent, map_override);
+}
+
+RID NavigationObstacle::get_navigation_map() const {
+	if (map_override.is_valid()) {
+		return map_override;
+	} else if (parent_spatial != nullptr) {
+		return parent_spatial->get_world()->get_navigation_map();
+	}
+	return RID();
+}
+
 void NavigationObstacle::set_estimate_radius(bool p_estimate_radius) {
+	if (estimate_radius == p_estimate_radius) {
+		return;
+	}
+
 	estimate_radius = p_estimate_radius;
+
 	_change_notify();
 	reevaluate_agent_radius();
 }
 
 void NavigationObstacle::set_radius(real_t p_radius) {
 	ERR_FAIL_COND_MSG(p_radius <= 0.0, "Radius must be greater than 0.");
+	if (Math::is_equal_approx(radius, p_radius)) {
+		return;
+	}
+
 	radius = p_radius;
+
 	reevaluate_agent_radius();
 }

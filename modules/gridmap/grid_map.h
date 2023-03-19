@@ -31,7 +31,6 @@
 #ifndef GRID_MAP_H
 #define GRID_MAP_H
 
-#include "scene/3d/navigation.h"
 #include "scene/3d/spatial.h"
 #include "scene/resources/mesh_library.h"
 #include "scene/resources/multimesh.h"
@@ -137,6 +136,7 @@ class GridMap : public Spatial {
 	uint32_t collision_mask;
 	Ref<PhysicsMaterial> physics_material;
 	bool bake_navigation = false;
+	RID map_override;
 	uint32_t navigation_layers = 1;
 
 	Transform last_transform;
@@ -146,7 +146,6 @@ class GridMap : public Spatial {
 	int octant_size;
 	bool center_x, center_y, center_z;
 	float cell_scale;
-	Navigation *navigation;
 
 	bool clip;
 	bool clip_above;
@@ -232,6 +231,9 @@ public:
 
 	void set_bake_navigation(bool p_bake_navigation);
 	bool is_baking_navigation();
+
+	void set_navigation_map(RID p_navigation_map);
+	RID get_navigation_map() const;
 
 	void set_navigation_layers(uint32_t p_navigation_layers);
 	uint32_t get_navigation_layers();

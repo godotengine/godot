@@ -50,9 +50,9 @@
 #include "scene/2d/listener_2d.h"
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/multimesh_instance_2d.h"
-#include "scene/2d/navigation_2d.h"
 #include "scene/2d/navigation_agent_2d.h"
 #include "scene/2d/navigation_obstacle_2d.h"
+#include "scene/2d/navigation_polygon_instance.h"
 #include "scene/2d/parallax_background.h"
 #include "scene/2d/parallax_layer.h"
 #include "scene/2d/particles_2d.h"
@@ -196,7 +196,6 @@
 #include "scene/3d/listener.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/multimesh_instance.h"
-#include "scene/3d/navigation.h"
 #include "scene/3d/navigation_agent.h"
 #include "scene/3d/navigation_mesh_instance.h"
 #include "scene/3d/navigation_obstacle.h"
@@ -459,7 +458,6 @@ void register_scene_types() {
 	ClassDB::register_class<Position3D>();
 	ClassDB::register_class<NavigationMeshInstance>();
 	ClassDB::register_class<NavigationMesh>();
-	ClassDB::register_class<Navigation>();
 	ClassDB::register_class<Room>();
 	ClassDB::register_class<RoomGroup>();
 	ClassDB::register_class<RoomManager>();
@@ -510,7 +508,6 @@ void register_scene_types() {
 	ClassDB::register_class<ConeTwistJoint>();
 	ClassDB::register_class<Generic6DOFJoint>();
 
-	ClassDB::register_class<Navigation>();
 	ClassDB::register_class<NavigationMeshInstance>();
 	ClassDB::register_class<NavigationAgent>();
 	ClassDB::register_class<NavigationObstacle>();
@@ -769,7 +766,6 @@ void register_scene_types() {
 	ClassDB::register_class<Path2D>();
 	ClassDB::register_class<PathFollow2D>();
 
-	ClassDB::register_class<Navigation2D>();
 	ClassDB::register_class<NavigationPolygon>();
 	ClassDB::register_class<NavigationPolygonInstance>();
 	ClassDB::register_class<NavigationAgent2D>();
@@ -787,6 +783,8 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("ImageSkyBox", "PanoramaSky");
 	ClassDB::add_compatibility_class("FixedSpatialMaterial", "SpatialMaterial");
 	ClassDB::add_compatibility_class("Mesh", "ArrayMesh");
+	ClassDB::add_compatibility_class("Navigation", "Spatial");
+	ClassDB::add_compatibility_class("Navigation2D", "Node2D");
 
 #endif
 

@@ -4,16 +4,16 @@
 		3D obstacle used in navigation for collision avoidance.
 	</brief_description>
 	<description>
-		3D obstacle used in navigation for collision avoidance. The obstacle needs navigation data to work correctly. This can be done by having the obstacle as a child of a [Navigation] node, or using [method set_navigation]. [NavigationObstacle] is physics safe.
+		3D obstacle used in navigation for collision avoidance. The obstacle needs navigation data to work correctly. [NavigationObstacle] is physics safe.
 		Obstacles [b]don't[/b] change the resulting path from the pathfinding, they only affect the navigation agent movement in a radius. Therefore, using obstacles for the static walls in your level won't work because those walls don't exist in the pathfinding. The navigation agent will be pushed in a semi-random direction away while moving inside that radius. Obstacles are intended as a last resort option for constantly moving objects that cannot be (re)baked to a navigation mesh efficiently.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_navigation" qualifiers="const">
-			<return type="Node" />
+		<method name="get_navigation_map" qualifiers="const">
+			<return type="RID" />
 			<description>
-				Returns the [Navigation] node that the obstacle is using for its navigation system.
+				Returns the [RID] of the navigation map for this NavigationObstacle node. This function returns always the map set on the NavigationObstacle node and not the map of the abstract agent on the NavigationServer. If the agent map is changed directly with the NavigationServer API the NavigationObstacle node will not be aware of the map change. Use [method set_navigation_map] to change the navigation map for the NavigationObstacle and also update the agent on the NavigationServer.
 			</description>
 		</method>
 		<method name="get_rid" qualifiers="const">
@@ -22,11 +22,11 @@
 				Returns the [RID] of this obstacle on the [NavigationServer].
 			</description>
 		</method>
-		<method name="set_navigation">
+		<method name="set_navigation_map">
 			<return type="void" />
-			<argument index="0" name="navigation" type="Node" />
+			<argument index="0" name="navigation_map" type="RID" />
 			<description>
-				Sets the [Navigation] node used by the obstacle. Useful when you don't want to make the obstacle a child of a [Navigation] node.
+				Sets the [RID] of the navigation map this NavigationObstacle node should use and also updates the [code]agent[/code] on the NavigationServer.
 			</description>
 		</method>
 	</methods>

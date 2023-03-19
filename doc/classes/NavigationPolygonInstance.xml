@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A region of the navigation map. It tells the [Navigation2DServer] what can be navigated and what cannot, based on its [NavigationPolygon] resource.
-		By default this node will register to the default [World2D] navigation map. If this node is a child of a [Navigation2D] node it will register to the navigation map of the navigation node.
+		By default this node will register to the default [World2D] navigation map.
 		Two regions can be connected to each other if they share a similar edge. You can set the minimum distance between two vertices required to connect two edges by using [method Navigation2DServer.map_set_edge_connection_margin].
 		[b]Note:[/b] Overlapping two regions' polygons is not enough for connecting two regions. They must share a similar edge.
 		The pathfinding cost of entering this region from another region can be controlled with the [member enter_cost] value.
@@ -15,10 +15,25 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_navigation_layer_value" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member navigation_layers] bitmask is enabled, given a [code]layer_number[/code] between 1 and 32.
+			</description>
+		</method>
 		<method name="get_region_rid" qualifiers="const">
 			<return type="RID" />
 			<description>
 				Returns the [RID] of this region on the [Navigation2DServer]. Combined with [method Navigation2DServer.map_get_closest_point_owner] can be used to identify the [NavigationPolygonInstance] closest to a point on the merged navigation map.
+			</description>
+		</method>
+		<method name="set_navigation_layer_value">
+			<return type="void" />
+			<argument index="0" name="layer_number" type="int" />
+			<argument index="1" name="value" type="bool" />
+			<description>
+				Based on [code]value[/code], enables or disables the specified layer in the [member navigation_layers] bitmask, given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 	</methods>
