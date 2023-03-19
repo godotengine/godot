@@ -1554,9 +1554,36 @@ void Window::popup(const Rect2i &p_screen_rect) {
 		ERR_PRINT(vformat("Window %d spawned at invalid position: %s.", get_window_id(), position));
 		set_position((parent_rect.size - size) / 2);
 	}
+	if (parent_rect != Rect2i() && is_clamped_to_embedder()) {
+		Rect2i new_rect = fit_rect_in_parent(Rect2i(position, size), parent_rect);
+		set_position(new_rect.position);
+		set_size(new_rect.size);
+	}
 
 	_post_popup();
 	notification(NOTIFICATION_POST_POPUP);
+}
+
+Rect2i Window::fit_rect_in_parent(Rect2i p_rect, const Rect2i &p_parent_rect) const {
+	Size2i limit = p_parent_rect.size;
+	if (p_rect.position.x + p_rect.size.x > limit.x) {
+		p_rect.position.x = limit.x - p_rect.size.x;
+	}
+	if (p_rect.position.y + p_rect.size.y > limit.y) {
+		p_rect.position.y = limit.y - p_rect.size.y;
+	}
+
+	if (p_rect.position.x < 0) {
+		p_rect.position.x = 0;
+	}
+
+	int title_height = get_flag(Window::FLAG_BORDERLESS) ? 0 : get_theme_constant(SNAME("title_height"));
+
+	if (p_rect.position.y < title_height) {
+		p_rect.position.y = title_height;
+	}
+
+	return p_rect;
 }
 
 Size2 Window::get_contents_minimum_size() const {
