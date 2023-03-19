@@ -45,6 +45,7 @@ class SceneState : public RefCounted {
 	mutable HashMap<int, int> base_scene_node_remap;
 
 	int base_scene_idx = -1;
+	int local_node_id_offset = 0;
 
 	enum {
 		NO_PARENT_SAVED = 0x7FFFFFFF,
@@ -59,6 +60,9 @@ class SceneState : public RefCounted {
 		int name = 0;
 		int instance = 0;
 		int index = 0;
+		int32_t local_id = 0;
+		int32_t parent_local_id = 0;
+		int32_t local_parent_owner_id = 0;
 
 		struct Property {
 			int name = 0;
@@ -135,6 +139,11 @@ public:
 		int node = -1;
 	};
 
+	struct NodePathRemapData {
+		NodePath original_path;
+		NodePath adjusted_path;
+	};
+
 	static void set_disable_placeholders(bool p_disable);
 	static Ref<Resource> get_remap_resource(const Ref<Resource> &p_resource, HashMap<Ref<Resource>, Ref<Resource>> &remap_cache, const Ref<Resource> &p_fallback, Node *p_for_scene);
 
@@ -155,6 +164,7 @@ public:
 	Error copy_from(const Ref<SceneState> &p_scene_state);
 
 	bool can_instantiate() const;
+
 	Node *instantiate(GenEditState p_edit_state) const;
 
 	Ref<SceneState> get_base_scene_state() const;
@@ -173,6 +183,12 @@ public:
 	bool is_node_instance_placeholder(int p_idx) const;
 	Vector<StringName> get_node_groups(int p_idx) const;
 	int get_node_index(int p_idx) const;
+
+	int32_t get_scene_local_id_offset() const;
+	void set_scene_local_id_offset(int32_t p_value);
+	int32_t get_node_local_id(int p_idx) const;
+	int32_t get_node_parent_local_id(int p_idx) const;
+	int32_t get_node_local_parent_owner_id(int p_idx) const;
 
 	int get_node_property_count(int p_idx) const;
 	StringName get_node_property_name(int p_idx, int p_prop) const;
@@ -197,7 +213,7 @@ public:
 	int add_name(const StringName &p_name);
 	int add_value(const Variant &p_value);
 	int add_node_path(const NodePath &p_path);
-	int add_node(int p_parent, int p_owner, int p_type, int p_name, int p_instance, int p_index);
+	int add_node(int p_parent, int p_owner, int p_type, int p_name, int p_instance, int p_index, int p_local_id, int p_parent_id, int p_parent_owner_id);
 	void add_node_property(int p_node, int p_name, int p_value, bool p_deferred_node_path = false);
 	void add_node_group(int p_node, int p_group);
 	void set_base_scene(int p_idx);
@@ -215,6 +231,12 @@ public:
 #endif
 
 	SceneState();
+
+private:
+	NodePath adjust_if_replaced_path(NodePath p_path, const NodePath *p_node_source_path, const List<NodePathRemapData> &p_remapped_paths) const;
+	bool adjust_if_replaced_path_recursive(const StringName *p_property_name, const NodePath *p_node_source_path, const List<NodePathRemapData> &p_remapped_paths, Variant &p_value, int p_current_depth) const;
+	Node *node_from_id(int p_idx, Node **p_ret_nodes, int p_ret_nodes_count, const List<NodePathRemapData> &p_remapped_paths) const;
+	Node *node_from_local_id(const NodeData &node_data, Node **ret_nodes, int p_node_count) const;
 };
 
 VARIANT_ENUM_CAST(SceneState::GenEditState)

@@ -145,6 +145,7 @@ private:
 	// This Data struct is to avoid namespace pollution in derived classes.
 	struct Data {
 		String scene_file_path;
+		int32_t scene_local_id = 0;
 		Ref<SceneState> instance_state;
 		Ref<SceneState> inherited_state;
 
@@ -386,6 +387,9 @@ public:
 	void set_name(const String &p_name);
 
 	InternalMode get_internal_mode() const;
+
+	int32_t get_local_id() const;
+	void set_local_id(int32_t value);
 
 	void add_child(Node *p_child, bool p_force_readable_name = false, InternalMode p_internal = INTERNAL_MODE_DISABLED);
 	void add_sibling(Node *p_sibling, bool p_force_readable_name = false);

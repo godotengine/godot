@@ -2645,6 +2645,27 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save animation to file '" + p_save_path + ".res'.");
 
 	} else {
+		// Ensure scene local ids for all contained nodes.
+		List<Node *> id_assign_queue; // Maybe another collection type (queue) might be better suited.
+		id_assign_queue.push_back(scene);
+		scene->set_local_id(INT_MAX); // As root is generated, it gets assigned a default id,
+		// which is unlikely to occur in post import scripts
+		while (!id_assign_queue.is_empty()) {
+			Node *item = id_assign_queue[0];
+			id_assign_queue.pop_front();
+			// Custom import scripts might be used to assign ids (which must be > 0)
+			// in which case this must be skipped.
+			if (item->get_local_id() == 0) { // if id is actually unassigned
+				// -1 is a special case as imported nodes cannot have a stable id
+				// so this marks them as ignored for orphan recovery
+				// and prevents trying to use invalid ids on every save.
+				item->set_local_id(-1);
+			}
+			for (int i = 0; i < item->get_child_count(); i++) {
+				id_assign_queue.push_back(item->get_child(i));
+			}
+		}
+
 		Ref<PackedScene> packer = memnew(PackedScene);
 		packer->pack(scene);
 		print_verbose("Saving scene to: " + p_save_path + ".scn");

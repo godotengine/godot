@@ -54,6 +54,7 @@ class ResourceLoaderText {
 	};
 
 	bool is_scene = false;
+	int32_t scene_local_node_id_offset = 0;
 	String res_type;
 
 	bool ignore_resource_parsing = false;

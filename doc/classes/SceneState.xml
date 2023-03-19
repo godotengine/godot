@@ -101,6 +101,18 @@
 				Returns the path to the represented scene file if the node at [param idx] is an [InstancePlaceholder].
 			</description>
 		</method>
+		<method name="get_node_local_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_node_local_parent_owner_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="idx" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="get_node_name" qualifiers="const">
 			<return type="StringName" />
 			<param index="0" name="idx" type="int" />
@@ -113,6 +125,12 @@
 			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the path to the owner of the node at [param idx], relative to the root node.
+			</description>
+		</method>
+		<method name="get_node_parent_local_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="idx" type="int" />
+			<description>
 			</description>
 		</method>
 		<method name="get_node_path" qualifiers="const">

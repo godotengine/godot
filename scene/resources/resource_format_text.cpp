@@ -199,6 +199,9 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 			int name = -1;
 			int instance = -1;
 			int index = -1;
+			int local_id = 0;
+			int parent_id = 0;
+			int parent_owner_id = 0;
 			//int base_scene=-1;
 
 			if (next_tag.fields.has("name")) {
@@ -215,6 +218,18 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 				type = packed_scene->get_state()->add_name(next_tag.fields["type"]);
 			} else {
 				type = SceneState::TYPE_INSTANTIATED; //no type? assume this was instantiated
+			}
+
+			if (next_tag.fields.has("local_id")) {
+				local_id = next_tag.fields["local_id"];
+			}
+
+			if (next_tag.fields.has("parent_id")) {
+				parent_id = next_tag.fields["parent_id"];
+			}
+
+			if (next_tag.fields.has("parent_owner_id")) {
+				parent_owner_id = next_tag.fields["parent_owner_id"];
 			}
 
 			HashSet<StringName> path_properties;
@@ -262,7 +277,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 				index = next_tag.fields["index"];
 			}
 
-			int node_id = packed_scene->get_state()->add_node(parent, owner, type, name, instance, index);
+			int node_id = packed_scene->get_state()->add_node(parent, owner, type, name, instance, index, local_id, parent_id, parent_owner_id);
 
 			if (next_tag.fields.has("groups")) {
 				Array groups = next_tag.fields["groups"];
@@ -795,6 +810,8 @@ Error ResourceLoaderText::load() {
 			return error;
 		}
 
+		packed_scene->get_state()->set_scene_local_id_offset(scene_local_node_id_offset);
+
 		error = OK;
 		//get it here
 		resource = packed_scene;
@@ -939,7 +956,7 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 				}
 
 				if (is_scene) {
-					fw->store_line("[gd_scene load_steps=" + itos(resources_total) + " format=" + itos(FORMAT_VERSION) + uid_text + "]\n");
+					fw->store_line("[gd_scene load_steps=" + itos(resources_total) + " format=" + itos(FORMAT_VERSION) + uid_text + " local_id_offset=" + itos(scene_local_node_id_offset) + "]\n");
 				} else {
 					String script_res_text;
 					if (!script_class.is_empty()) {
@@ -1060,6 +1077,13 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 
 	if (tag.name == "gd_scene") {
 		is_scene = true;
+		if (tag.fields.has("local_id_offset")) {
+			scene_local_node_id_offset = tag.fields["local_id_offset"];
+		} else {
+			// error_text = "Missing 'local_node_id_counter' field in 'gd_scene' tag";
+			// _printerr();
+			scene_local_node_id_offset = 0;
+		}
 
 	} else if (tag.name == "gd_resource") {
 		if (!tag.fields.has("type")) {
@@ -2017,6 +2041,13 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			title += " uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\"";
 		}
 
+		if (packed_scene.is_valid()) {
+			Ref<SceneState> state = packed_scene->get_state();
+			if (state.is_valid()) {
+				title += " local_id_offset=" + itos(state->get_scene_local_id_offset());
+			}
+		}
+
 		f->store_string(title);
 		f->store_line("]\n"); // One empty line.
 	}
@@ -2212,6 +2243,9 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			StringName type = state->get_node_type(i);
 			StringName name = state->get_node_name(i);
 			int index = state->get_node_index(i);
+			int local_id = state->get_node_local_id(i);
+			int parent_owner_id = state->get_node_local_parent_owner_id(i);
+			int parent_id = state->get_node_parent_local_id(i);
 			NodePath path = state->get_node_path(i, true);
 			NodePath owner = state->get_node_owner_path(i);
 			Ref<PackedScene> instance = state->get_node_instance(i);
@@ -2232,6 +2266,15 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			}
 			if (index >= 0) {
 				header += " index=\"" + itos(index) + "\"";
+			}
+			if (local_id != 0) {
+				header += " local_id=\"" + itos(local_id) + "\"";
+			}
+			if (parent_id != 0) {
+				header += " parent_id=\"" + itos(parent_id) + "\"";
+			}
+			if (parent_owner_id != 0) {
+				header += " parent_owner_id=\"" + itos(parent_owner_id) + "\"";
 			}
 
 			if (deferred_node_paths.size()) {

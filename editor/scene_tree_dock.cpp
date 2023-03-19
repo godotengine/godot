@@ -1495,6 +1495,9 @@ void SceneTreeDock::_notification(int p_what) {
 void SceneTreeDock::_node_replace_owner(Node *p_base, Node *p_node, Node *p_root, ReplaceOwnerMode p_mode) {
 	if (p_node->get_owner() == p_base && p_node != p_root) {
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		int previous_local_id = p_node->get_local_id();
+		undo_redo->add_do_method(p_node, "set_local_id", 0);
+		undo_redo->add_undo_method(p_node, "set_local_id", previous_local_id);
 		switch (p_mode) {
 			case MODE_BIDI: {
 				bool disable_unique = p_node->is_unique_name_in_owner() && p_root->get_node_or_null(UNIQUE_NODE_PREFIX + String(p_node->get_name())) != nullptr;

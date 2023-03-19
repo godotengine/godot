@@ -333,6 +333,13 @@
 				Returns the [Window] that contains this node, or the last exclusive child in a chain of windows starting with the one that contains this node.
 			</description>
 		</method>
+		<method name="get_local_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the scene-local id of the node. A return value of 0 means unassigned and that the node is not tracked for orphan recovery in nested scenes.
+				A value of -1 signifies the default for nodes of imported scenes, as those cannot meaningfully be assigned stable ids (with the exception of using custom scene import scripts, see [method set_local_id] for more info)
+			</description>
+		</method>
 		<method name="get_multiplayer_authority" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -783,6 +790,16 @@
 			<param index="1" name="is_editable" type="bool" />
 			<description>
 				Sets the editable children state of [param node] relative to this node. This method is only intended for use with editor tooling.
+			</description>
+		</method>
+		<method name="set_local_id">
+			<return type="void" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Sets the scene-local id of the node to [param value], which must be greater than 0. This id is used to track hierarchy dependencies and should only be modified when absolutely necessary.
+				One such case is for scene post import scripts. By using custom conditions (for example a name suffix, similar to how automatic collider generation is enabled) it's possible to assign ids to imported nodes which otherwise would not have any.
+				This then allows the contained nodes to also be tracked and benefit from orphan recovery in nested scenes.
+				See [url=$DOCS_URL/tutorials/assets_pipeline/importing_scenes.html#custom-script]Importing Scenes#custom-script[/url] for more info about custom import scripts
 			</description>
 		</method>
 		<method name="set_multiplayer_authority">

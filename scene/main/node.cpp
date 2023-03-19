@@ -1197,6 +1197,19 @@ String Node::get_description() const {
 	return description;
 }
 
+int32_t Node::get_local_id() const {
+	return data.scene_local_id;
+}
+
+void Node::set_local_id(int32_t value) {
+	data.scene_local_id = value;
+#ifdef DEBUG_ENABLED
+	if (get_name() != "") {
+		print_verbose(vformat("scene local id set to %d for node '%s'", value, get_name()));
+	}
+#endif
+}
+
 static SafeRefCount node_hrcr_count;
 
 void Node::init_node_hrcr() {
@@ -1850,6 +1863,20 @@ void Node::_set_owner_nocheck(Node *p_owner) {
 	data.owner = p_owner;
 	data.owner->data.owned.push_back(this);
 	data.OW = data.owner->data.owned.back();
+
+	if (get_local_id() > 0) { // Check for duplicates.
+		if (p_owner->get_local_id() == get_local_id()) {
+			print_verbose(vformat("The same scene local id %d is assigned to '%s' and '%s', resetting '%s'", get_local_id(), get_name(), p_owner->get_name(), get_name()));
+			set_local_id(0); // SceneState::_parse_node(..) will generate a new one.
+		} else {
+			for (Node *owned : p_owner->data.owned) {
+				if (owned != this && owned->get_local_id() == get_local_id()) {
+					print_verbose(vformat("The same scene local id %d is assigned to '%s' and '%s', resetting '%s'", get_local_id(), get_name(), owned->get_name(), get_name()));
+					set_local_id(0); // SceneState::_parse_node(..) will generate a new one.
+				}
+			}
+		}
+	}
 
 	owner_changed_notify();
 }
@@ -3266,6 +3293,8 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
+	ClassDB::bind_method(D_METHOD("get_local_id"), &Node::get_local_id);
+	ClassDB::bind_method(D_METHOD("set_local_id", "value"), &Node::set_local_id);
 	ClassDB::bind_method(D_METHOD("add_child", "node", "force_readable_name", "internal"), &Node::add_child, DEFVAL(false), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
 	ClassDB::bind_method(D_METHOD("reparent", "new_parent", "keep_global_transform"), &Node::reparent, DEFVAL(true));
