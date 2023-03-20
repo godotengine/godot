@@ -780,8 +780,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 		}
 		String segment;
 		if (list_items[i]->list_type == LIST_DOTS) {
-			static const char32_t _prefix[2] = { 0x25CF, 0 };
-			prefix = _prefix;
+			prefix = list_items[i]->bullet;
 			break;
 		} else if (list_items[i]->list_type == LIST_NUMBERS) {
 			segment = itos(list_index[i]);
@@ -3305,7 +3304,7 @@ void RichTextLabel::push_indent(int p_level) {
 	_add_item(item, true, true);
 }
 
-void RichTextLabel::push_list(int p_level, ListType p_list, bool p_capitalize) {
+void RichTextLabel::push_list(int p_level, ListType p_list, bool p_capitalize, const String &p_bullet) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
@@ -3317,6 +3316,7 @@ void RichTextLabel::push_list(int p_level, ListType p_list, bool p_capitalize) {
 	item->list_type = p_list;
 	item->level = p_level;
 	item->capitalize = p_capitalize;
+	item->bullet = p_bullet;
 	_add_item(item, true, true);
 }
 
@@ -4014,6 +4014,12 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			push_list(indent_level, LIST_DOTS, false);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
+		} else if (tag.begins_with("ul bullet=")) {
+			String bullet = tag.substr(10, 1);
+			indent_level++;
+			push_list(indent_level, LIST_DOTS, false, bullet);
+			pos = brk_end + 1;
+			tag_stack.push_front("ul");
 		} else if ((tag == "ol") || (tag == "ol type=1")) {
 			indent_level++;
 			push_list(indent_level, LIST_NUMBERS, false);
@@ -5344,7 +5350,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("push_outline_color", "color"), &RichTextLabel::push_outline_color);
 	ClassDB::bind_method(D_METHOD("push_paragraph", "alignment", "base_direction", "language", "st_parser"), &RichTextLabel::push_paragraph, DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(""), DEFVAL(TextServer::STRUCTURED_TEXT_DEFAULT));
 	ClassDB::bind_method(D_METHOD("push_indent", "level"), &RichTextLabel::push_indent);
-	ClassDB::bind_method(D_METHOD("push_list", "level", "type", "capitalize"), &RichTextLabel::push_list);
+	ClassDB::bind_method(D_METHOD("push_list", "level", "type", "capitalize", "bullet"), &RichTextLabel::push_list, DEFVAL(String::utf8("•")));
 	ClassDB::bind_method(D_METHOD("push_meta", "data"), &RichTextLabel::push_meta);
 	ClassDB::bind_method(D_METHOD("push_hint", "description"), &RichTextLabel::push_hint);
 	ClassDB::bind_method(D_METHOD("push_underline"), &RichTextLabel::push_underline);

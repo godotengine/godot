@@ -365,6 +365,7 @@
 			<param index="0" name="level" type="int" />
 			<param index="1" name="type" type="int" enum="RichTextLabel.ListType" />
 			<param index="2" name="capitalize" type="bool" />
+			<param index="3" name="bullet" type="String" default="&quot;•&quot;" />
 			<description>
 				Adds [code][ol][/code] or [code][ul][/code] tag to the tag stack. Multiplies [param level] by current [member tab_size] to determine new margin length.
 			</description>

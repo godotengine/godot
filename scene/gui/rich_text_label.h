@@ -252,6 +252,7 @@ private:
 		ListType list_type = LIST_DOTS;
 		bool capitalize = false;
 		int level = 0;
+		String bullet = String::utf8("•");
 		ItemList() { type = ITEM_LIST; }
 	};
 
@@ -592,7 +593,7 @@ public:
 	void push_strikethrough();
 	void push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", TextServer::StructuredTextParser p_st_parser = TextServer::STRUCTURED_TEXT_DEFAULT);
 	void push_indent(int p_level);
-	void push_list(int p_level, ListType p_list, bool p_capitalize);
+	void push_list(int p_level, ListType p_list, bool p_capitalize, const String &p_bullet = String::utf8("•"));
 	void push_meta(const Variant &p_meta);
 	void push_hint(const String &p_string);
 	void push_table(int p_columns, InlineAlignment p_alignment = INLINE_ALIGNMENT_TOP, int p_align_to_row = -1);
