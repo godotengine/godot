@@ -4,7 +4,7 @@
 		Group of Buttons.
 	</brief_description>
 	<description>
-		Group of [BaseButton]. The members of this group are treated like radio buttons in the sense that only one button can be pressed at the same time.
+		Group of [BaseButton]. The members of this group are treated like radio buttons in the sense that only one button can be pressed at the same time. Some types of buttons (such as [CheckBox]) may have a special appearance for this state.
 		Every member of the ButtonGroup should have [member BaseButton.toggle_mode] set to [code]true[/code].
 	</description>
 	<tutorials>
