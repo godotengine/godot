@@ -4,16 +4,19 @@
 		Concave polygon shape resource for 2D physics.
 	</brief_description>
 	<description>
-		2D concave polygon shape to be added as a [i]direct[/i] child of a [PhysicsBody2D] or [Area2D] using a [CollisionShape2D] node. It is made out of segments and is optimal for complex polygonal concave collisions. However, it is not advised to use for [RigidBody2D] nodes. A CollisionPolygon2D in convex decomposition mode (solids) or several convex objects are advised for that instead. Otherwise, a concave polygon 2D shape is better for static collisions.
-		The main difference between a [ConvexPolygonShape2D] and a [ConcavePolygonShape2D] is that a concave polygon assumes it is concave and uses a more complex method of collision detection, and a convex one forces itself to be convex to speed up collision detection.
-		[b]Performance:[/b] Due to its complexity, [ConcavePolygonShape2D] is the slowest collision shape to check collisions against. Its use should generally be limited to level geometry. For convex geometry, using [ConvexPolygonShape2D] will perform better. For dynamic physics bodies that need concave collision, several [ConvexPolygonShape2D]s can be used to represent its collision by using convex decomposition; see [ConvexPolygonShape2D]'s documentation for instructions. However, consider using primitive collision shapes such as [CircleShape2D] or [RectangleShape2D] first.
+		2D concave polygon shape to be added as a [i]direct[/i] child of a [PhysicsBody2D] or [Area2D] using a [CollisionShape2D] node.
+		The shape consists of a collection of line segments, and as such it does not include any "inside" that the segments might be enclosing. If the segments do enclose anything, then the shape is [i]hollow[/i], as opposed to a [ConvexPolygonShape2D] which is solid. See also [CollisionPolygon2D].
+		Being made out of line segments, this shape is the most freely configurable single 2D shape. It can be used to form (hollow) polygons of any nature, convex or concave.
+		[b]Note:[/b] When used for collision, [b]ConcavePolygonShape2D[/b] is intended to work with static [PhysicsBody2D] nodes like [StaticBody2D] and is not recommended to use with [RigidBody2D] nodes in a mode other than Static. A [CollisionPolygon2D] in convex decomposition mode (solids) or several convex objects are advised for that instead. Otherwise, a concave polygon 2D shape is better suited for static bodies.
+		[b]Warning:[/b] The nature of this shape makes it extra prone to being tunneled through by (small) fast physics bodies. For example, consider a (small) rigid body [i]Ball[/i] traveling toward a static body [i]Box[/i] at high speed. If the box uses a [b]ConcavePolygonShape2D[/b] consisting of four segments, then the ball might end up inside the box or tunnel all the way through the box, if it goes fast enough. This is (partly) because the ball can only collide against the individual segments of the hollow box. In interactions with rigid bodies tunneling can be avoided by enabling continuous collision detection on the rigid body.
 		[b]Warning:[/b] Using this shape for an [Area2D] (via a [CollisionShape2D] node) may give unexpected results: the area will only detect collisions with the segments in the [ConcavePolygonShape2D] (and not with any "inside" of the shape, for example).
+		[b]Performance:[/b] Due to its complexity, [ConcavePolygonShape2D] is the slowest collision shape to check collisions against. Its use should generally be limited to level geometry. For convex geometry, using [ConvexPolygonShape2D] will perform better. For dynamic physics bodies that need concave collision, several [ConvexPolygonShape2D]s can be used to represent its collision by using convex decomposition; see [ConvexPolygonShape2D]'s documentation for instructions. However, consider using primitive collision shapes such as [CircleShape2D] or [RectangleShape2D] first.
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
 		<member name="segments" type="PackedVector2Array" setter="set_segments" getter="get_segments" default="PackedVector2Array()">
-			The array of points that make up the [ConcavePolygonShape2D]'s line segments.
+			The array of points that make up the [ConcavePolygonShape2D]'s line segments. The array (of length divisible by two) is naturally divided into pairs (one pair for each segment); each pair consists of the starting point of a segment and the endpoint of a segment.
 		</member>
 	</members>
 </class>
