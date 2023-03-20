@@ -59,6 +59,8 @@ using namespace Windows::UI::ViewManagement;
 using namespace Windows::Devices::Input;
 using namespace Windows::Devices::Sensors;
 using namespace Windows::ApplicationModel::DataTransfer;
+using namespace Windows::System::Profile;
+using namespace Windows::Storage::Streams;
 using namespace concurrency;
 
 int OS_UWP::get_video_driver_count() const {
@@ -705,6 +707,36 @@ String OS_UWP::get_executable_path() const {
 }
 
 void OS_UWP::set_icon(const Ref<Image> &p_icon) {
+}
+
+String OS_UWP::get_unique_id() const {
+	// Get the hardware token and read it into an array of bytes.
+	HardwareToken ^ token = HardwareIdentification::GetPackageSpecificToken(nullptr);
+	IBuffer hwId = token->Id;
+	DataReader ^ dr = DataReader::FromBuffer(hwId);
+	uint8_t *data = new uint8_t[hwId->Length];
+	dr->ReadBytes(Platform::ArrayReference<uint8_t>(data, hwId->Length));
+
+	// Convert the byte array to hexadecimal.
+	String id;
+	char hexStr[3] = "00";
+
+	for (int i = 0; i < hwId->Length; i++) {
+		// Convert next byte to hexadecimal.
+		sprintf(hexStr, "%x", (int)data[i]);
+
+		if (data[i] < 16) {
+			hexStr[1] = hexStr[0];
+			hexStr[0] = '0';
+		}
+
+		// Add the next 2 hexits to the ID string.
+		id += hexStr;
+	}
+
+	// Free the temporary data array and return the device ID.
+	delete[] data;
+	return id;
 }
 
 bool OS_UWP::has_environment(const String &p_var) const {
