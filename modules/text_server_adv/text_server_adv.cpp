@@ -76,6 +76,8 @@ using namespace godot;
 #include "thorvg_svg_in_ot.h"
 #endif
 
+#include "unicode/utf16.h"
+
 /*************************************************************************/
 /*  bmp_font_t HarfBuzz Bitmap font interface                            */
 /*************************************************************************/
