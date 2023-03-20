@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="DirAccess" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="DirAccess" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Type used to handle the filesystem.
 	</brief_description>
@@ -290,7 +290,7 @@
 	</methods>
 	<members>
 		<member name="include_hidden" type="bool" setter="set_include_hidden" getter="get_include_hidden">
-			If [code]true[/code], hidden files are included when the navigating directory.
+			If [code]true[/code], hidden files are included when navigating the directory.
 			Affects [method list_dir_begin], [method get_directories] and [method get_files].
 		</member>
 		<member name="include_navigational" type="bool" setter="set_include_navigational" getter="get_include_navigational">

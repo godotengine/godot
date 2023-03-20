@@ -354,6 +354,7 @@ public:
 		PLATFORM_ON_LEAVE_DO_NOTHING,
 	};
 	bool move_and_slide();
+	void apply_floor_snap();
 
 	const Vector3 &get_velocity() const;
 	void set_velocity(const Vector3 &p_velocity);

@@ -65,7 +65,11 @@ void RendererCameraAttributes::camera_attributes_set_dof_blur_bokeh_shape(RS::DO
 void RendererCameraAttributes::camera_attributes_set_dof_blur(RID p_camera_attributes, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) {
 	CameraAttributes *cam_attributes = camera_attributes_owner.get_or_null(p_camera_attributes);
 	ERR_FAIL_COND(!cam_attributes);
-
+#ifdef DEBUG_ENABLED
+	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" && (p_far_enable || p_near_enable)) {
+		WARN_PRINT_ONCE_ED("DoF blur is only available when using the Forward+ or Mobile rendering backends.");
+	}
+#endif
 	cam_attributes->dof_blur_far_enabled = p_far_enable;
 	cam_attributes->dof_blur_far_distance = p_far_distance;
 	cam_attributes->dof_blur_far_transition = p_far_transition;
@@ -139,6 +143,11 @@ void RendererCameraAttributes::camera_attributes_set_auto_exposure(RID p_camera_
 	if (!cam_attributes->use_auto_exposure && p_enable) {
 		cam_attributes->auto_exposure_version = ++auto_exposure_counter;
 	}
+#ifdef DEBUG_ENABLED
+	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" && p_enable) {
+		WARN_PRINT_ONCE_ED("Auto exposure is only available when using the Forward+ or Mobile rendering backends.");
+	}
+#endif
 	cam_attributes->use_auto_exposure = p_enable;
 	cam_attributes->auto_exposure_min_sensitivity = p_min_sensitivity;
 	cam_attributes->auto_exposure_max_sensitivity = p_max_sensitivity;

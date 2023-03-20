@@ -237,17 +237,10 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 	Vector3 hitpos = p_xform_B.xform(segment_hit_local);
 
 	real_t newlen = hitpos.distance_to(supports_A[segment_support_idx]);
-	if (shape_B_ptr->is_concave()) {
-		// Subtracting 5% of body length from the distance between collision and support point
-		// should cause body A's support point to arrive just before a face of B next frame.
-		newlen = MAX(newlen - (max - min) * 0.05, 0.0);
-		// NOTE: This may stop body A completely, without a proper collision response.
-		// We consider this preferable to tunneling.
-	} else {
-		// Adding 1% of body length to the distance between collision and support point
-		// should cause body A's support point to arrive just within B's collider next frame.
-		newlen += (max - min) * 0.01;
-	}
+	// Adding 1% of body length to the distance between collision and support point
+	// should cause body A's support point to arrive just within B's collider next frame.
+	newlen += (max - min) * 0.01;
+	// FIXME: This doesn't always work well when colliding with a triangle face of a trimesh shape.
 
 	p_A->set_linear_velocity((mnormal * newlen) / p_step);
 

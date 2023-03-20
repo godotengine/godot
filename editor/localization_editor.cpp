@@ -576,20 +576,20 @@ void LocalizationEditor::update_translations() {
 	translation_pot_list->clear();
 	root = translation_pot_list->create_item(nullptr);
 	translation_pot_list->set_hide_root(true);
-	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translations_pot_files")) {
-		PackedStringArray pot_translations = GLOBAL_GET("internationalization/locale/translations_pot_files");
-		for (int i = 0; i < pot_translations.size(); i++) {
-			TreeItem *t = translation_pot_list->create_item(root);
-			t->set_editable(0, false);
-			t->set_text(0, pot_translations[i].replace_first("res://", ""));
-			t->set_tooltip_text(0, pot_translations[i]);
-			t->set_metadata(0, i);
-			t->add_button(0, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), 0, false, TTR("Remove"));
-		}
+	PackedStringArray pot_translations = GLOBAL_GET("internationalization/locale/translations_pot_files");
+	for (int i = 0; i < pot_translations.size(); i++) {
+		TreeItem *t = translation_pot_list->create_item(root);
+		t->set_editable(0, false);
+		t->set_text(0, pot_translations[i].replace_first("res://", ""));
+		t->set_tooltip_text(0, pot_translations[i]);
+		t->set_metadata(0, i);
+		t->add_button(0, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), 0, false, TTR("Remove"));
 	}
 
 	// New translation parser plugin might extend possible file extensions in POT generation.
 	_update_pot_file_extensions();
+
+	pot_generate_button->set_disabled(pot_translations.is_empty());
 
 	updating_translations = false;
 }
@@ -726,9 +726,9 @@ LocalizationEditor::LocalizationEditor() {
 		addtr->connect("pressed", callable_mp(this, &LocalizationEditor::_pot_file_open));
 		thb->add_child(addtr);
 
-		Button *generate = memnew(Button(TTR("Generate POT")));
-		generate->connect("pressed", callable_mp(this, &LocalizationEditor::_pot_generate_open));
-		thb->add_child(generate);
+		pot_generate_button = memnew(Button(TTR("Generate POT")));
+		pot_generate_button->connect("pressed", callable_mp(this, &LocalizationEditor::_pot_generate_open));
+		thb->add_child(pot_generate_button);
 
 		VBoxContainer *tmc = memnew(VBoxContainer);
 		tmc->set_v_size_flags(Control::SIZE_EXPAND_FILL);

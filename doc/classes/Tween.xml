@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Tween" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Tween" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Lightweight object used for general-purpose animation via script, using [Tweener]s.
 	</brief_description>
@@ -89,8 +89,8 @@
 		[/codeblocks]
 		Some [Tweener]s use transitions and eases. The first accepts a [enum TransitionType] constant, and refers to the way the timing of the animation is handled (see [url=https://easings.net/]easings.net[/url] for some examples). The second accepts an [enum EaseType] constant, and controls where the [code]trans_type[/code] is applied to the interpolation (in the beginning, the end, or both). If you don't know which transition and easing to pick, you can try different [enum TransitionType] constants with [constant EASE_IN_OUT], and use the one that looks best.
 		[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/tween_cheatsheet.png]Tween easing and transition types cheatsheet[/url]
-		[b]Note:[/b] All [Tween]s will automatically start by default. To prevent a [Tween] from autostarting, you can call [method stop] immediately after it is created.
-		[b]Note:[/b] [Tween]s are processing after all of nodes in the current frame, i.e. after [method Node._process] or [method Node._physics_process] (depending on [enum TweenProcessMode]).
+		[b]Note:[/b] Tweens are not designed to be re-used and trying to do so results in an undefined behavior. Create a new Tween for each animation and every time you replay an animation from start. Keep in mind that Tweens start immediately, so only create a Tween when you want to start animating.
+		[b]Note:[/b] Tweens are processing after all of nodes in the current frame, i.e. after [method Node._process] or [method Node._physics_process] (depending on [enum TweenProcessMode]).
 	</description>
 	<tutorials>
 	</tutorials>
@@ -129,7 +129,6 @@
 			<description>
 				Processes the [Tween] by the given [param delta] value, in seconds. This is mostly useful for manual control when the [Tween] is paused. It can also be used to end the [Tween] animation immediately, by setting [param delta] longer than the whole duration of the [Tween] animation.
 				Returns [code]true[/code] if the [Tween] still has [Tweener]s that haven't finished.
-				[b]Note:[/b] The [Tween] will become invalid in the next processing frame after its animation finishes. Calling [method stop] after performing [method custom_step] instead keeps and resets the [Tween].
 			</description>
 		</method>
 		<method name="get_total_elapsed_time" qualifiers="const">
@@ -214,6 +213,7 @@
 			<param index="0" name="ease" type="int" enum="Tween.EaseType" />
 			<description>
 				Sets the default ease type for [PropertyTweener]s and [MethodTweener]s animated by this [Tween].
+				If not specified, the default value is [constant EASE_IN_OUT].
 			</description>
 		</method>
 		<method name="set_loops">
@@ -260,6 +260,7 @@
 			<param index="0" name="trans" type="int" enum="Tween.TransitionType" />
 			<description>
 				Sets the default transition type for [PropertyTweener]s and [MethodTweener]s animated by this [Tween].
+				If not specified, the default value is [constant TRANS_LINEAR].
 			</description>
 		</method>
 		<method name="stop">
@@ -430,7 +431,6 @@
 		<signal name="finished">
 			<description>
 				Emitted when the [Tween] has finished all tweening. Never emitted when the [Tween] is set to infinite looping (see [method set_loops]).
-				[b]Note:[/b] The [Tween] is removed (invalidated) in the next processing frame after this signal is emitted. Calling [method stop] inside the signal callback will prevent the [Tween] from being removed.
 			</description>
 		</signal>
 		<signal name="loop_finished">

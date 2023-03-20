@@ -132,8 +132,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-13 07:39+0000\n"
-"Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
+"PO-Revision-Date: 2023-03-14 09:33+0000\n"
+"Last-Translator: Dima Koshel <form.eater@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ru/>\n"
 "Language: ru\n"
@@ -142,7 +142,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16.2-dev\n"
 
 msgid "Application"
 msgstr "Приложение"
@@ -152,6 +152,9 @@ msgstr "Конфигурация"
 
 msgid "Name"
 msgstr "Название"
+
+msgid "Name Localized"
+msgstr "Name Localized"
 
 msgid "Description"
 msgstr "Описание"
@@ -201,6 +204,9 @@ msgstr "Без границ"
 msgid "Transparent"
 msgstr "Прозрачный"
 
+msgid "Window Width Override"
+msgstr "Переопределение ширины окна"
+
 msgid "Energy Saving"
 msgstr "Энергосбережение"
 
@@ -212,9 +218,6 @@ msgstr "Аудио"
 
 msgid "Editor"
 msgstr "Редактор"
-
-msgid "Main Run Args"
-msgstr "Основные аргументы запуска"
 
 msgid "Physics"
 msgstr "Физика"
@@ -242,6 +245,9 @@ msgstr "Сообщение"
 
 msgid "Rendering"
 msgstr "Рендеринг"
+
+msgid "Memory"
+msgstr "Память"
 
 msgid "Limits"
 msgstr "Лимиты"
@@ -1333,7 +1339,7 @@ msgid "Nodes"
 msgstr "Узлы"
 
 msgid "Root Type"
-msgstr "Тип ветви"
+msgstr "Тип кореня"
 
 msgid "Root Name"
 msgstr "Имя ветви"
@@ -1526,6 +1532,9 @@ msgstr "Путь к открытому ключу SSH"
 
 msgid "SSH Private Key Path"
 msgstr "Путь к закрытому ключу SSH"
+
+msgid "Main Run Args"
+msgstr "Основные аргументы запуска"
 
 msgid "Show Scene Tree Root Selection"
 msgstr "Показывать выбор корня дерева сцены"

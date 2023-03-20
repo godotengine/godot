@@ -100,7 +100,7 @@ public:
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) = 0;
 
-	virtual RID texture_get_rd_texture_rid(RID p_texture, bool p_srgb = false) const = 0;
+	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const = 0;
 
 	/* Decal API */
 	virtual RID decal_allocate() = 0;

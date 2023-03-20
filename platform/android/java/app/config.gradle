@@ -189,6 +189,9 @@ ext.getGodotPublishVersion = { ->
     String versionName = ""
     int versionCode = 1
     (versionName, versionCode) = generateGodotLibraryVersion(requiredKeys)
+    if (!versionName.endsWith("stable")) {
+        versionName += "-SNAPSHOT"
+    }
     return versionName
 }
 

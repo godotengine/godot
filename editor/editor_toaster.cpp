@@ -90,10 +90,10 @@ void EditorToaster::_notification(int p_what) {
 				}
 
 				// Hide element if it is not visible anymore.
-				if (modulate_fade.a <= 0 && element.key->is_visible()) {
+				if (modulate_fade.a <= 0.0 && element.key->is_visible()) {
 					element.key->hide();
 					needs_update = true;
-				} else if (modulate_fade.a >= 0 && !element.key->is_visible()) {
+				} else if (modulate_fade.a > 0.0 && !element.key->is_visible()) {
 					element.key->show();
 					needs_update = true;
 				}

@@ -17,13 +17,14 @@
 # Joel Garcia Cascalló <jocsencat@gmail.com>, 2021.
 # DFC <damiafluixacanals28@gmail.com>, 2021.
 # Roger VC <rogervilarasau@gmail.com>, 2022.
+# Jordi Borràs <jborras@centrekepler.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-07-09 21:11+0000\n"
-"Last-Translator: Roger VC <rogervilarasau@gmail.com>\n"
+"PO-Revision-Date: 2023-03-09 22:27+0000\n"
+"Last-Translator: Jordi Borràs <jborras@centrekepler.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
 "Language: ca\n"
@@ -31,13 +32,184 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.13.1-dev\n"
+"X-Generator: Weblate 4.16.2-dev\n"
+
+msgid "Unset"
+msgstr "Desactiva"
 
 msgid "Physical"
 msgstr "Físic"
 
+msgid "Left Mouse Button"
+msgstr "Botó Esquerre del Ratolí"
+
+msgid "Right Mouse Button"
+msgstr "Botó Dret del Ratolí"
+
+msgid "Middle Mouse Button"
+msgstr "Botó Central del Ratolí"
+
+msgid "Mouse Wheel Up"
+msgstr "Roda del Ratolí cap Amunt"
+
+msgid "Mouse Wheel Down"
+msgstr "Roda del Ratolí cap Avall"
+
+msgid "Mouse Wheel Left"
+msgstr "Roda del Ratolí cap a l'Esquerra"
+
+msgid "Mouse Wheel Right"
+msgstr "Roda del Ratolí cap a la Dreta"
+
+msgid "Mouse Thumb Button 1"
+msgstr "Botó del Polze del Ratolí 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "Botó del Polze del Ratolí 2"
+
 msgid "Button"
 msgstr "Botó"
+
+msgid "Double Click"
+msgstr "Doble Clic"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "Moviment del ratolí a la posició (%s) amb velocitat (%s)"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Eix X de l'Stick Esquerre, eix X del Joystick 0"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "Eix Y de l'Stick Esquerre, Eix Y del Joystick 0"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "Eix X de l'Stick Dret, Eix X del Joystick 1"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "Eix Y de l'Stick Dret, Eix Y del Joystick 1"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "Eix X del Joystick 2, Gatell Esquerre, Sony L2, Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "Eix XYdel Joystick 2, Gatell Esquerre, Sony R2, Xbox RT"
+
+msgid "Joystick 3 X-Axis"
+msgstr "Eix X del Joystick 3"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "Eix Y del Joystick 3"
+
+msgid "Joystick 4 X-Axis"
+msgstr "Eix X del Joystick 4"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "Eix Y del Joystick 4"
+
+msgid "Unknown Joypad Axis"
+msgstr "Eix de Joypad Desconegut"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "Moviment del Joypad en l'Eix %d (%s) amb Valor %.2f"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "Acció Inferior, Sony Creu, Xbox A, Nintendo B"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "Acció dreta, Sony Cercle, Xbox B, Nintendo A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "Acció Esquerra, Sony Quadrat, Xbox X, Nintendo Y"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "Acció Superior, Sony Triangle, Xbox Y, Nintendo X"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "Enrere, Sony Select, Xbox Back, Nintendo -"
+
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "Guia, Sony PS, Xbox Home"
+
+msgid "Start, Nintendo +"
+msgstr "Start, Nintendo +"
+
+msgid "Left Stick, Sony L3, Xbox L/LS"
+msgstr "Stick Esquerre, Sony L3, Xbox L/LS"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "Stick Dret, Sony R3, Xbox R/RS"
+
+msgid "Left Shoulder, Sony L1, Xbox LB"
+msgstr "Espatlla Esquerra, Sony L1, Xbox LB"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "Espatlla Dreta, Sony R1, Xbox RB"
+
+msgid "D-pad Up"
+msgstr "Teclat de direcció Amunt"
+
+msgid "D-pad Down"
+msgstr "Teclat de direcció Avall"
+
+msgid "D-pad Left"
+msgstr "Teclat de direcció Esquerra"
+
+msgid "D-pad Right"
+msgstr "Teclat de direcció Dreta"
+
+msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "Xbox Comparteix, PS5 Micròfon, Nintendo Captura"
+
+msgid "Xbox Paddle 1"
+msgstr "Xbox Pala 1"
+
+msgid "Xbox Paddle 2"
+msgstr "Xbox Pala 2"
+
+msgid "Xbox Paddle 3"
+msgstr "Xbox Pala 3"
+
+msgid "Xbox Paddle 4"
+msgstr "Xbox Pala 4"
+
+msgid "PS4/5 Touchpad"
+msgstr "PS4/5 Touchpad"
+
+msgid "Joypad Button %d"
+msgstr "Botó del Joypad %d"
+
+msgid "Pressure:"
+msgstr "Pressió:"
+
+msgid "touched"
+msgstr "tocat"
+
+msgid "released"
+msgstr "deixat anar"
+
+msgid "Screen %s at (%s) with %s touch points"
+msgstr "Pantalla %s a (%s) amb %s punts de contacte"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr ""
+"Pantalla arrossegada amb %s punts de contacte a la posició (%s) amb una "
+"velocitat de (%s)"
+
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "Gest d'engrandiment a (%s) amb un factor %s"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "Gest de Desplaçament Panoràmic a (%s) amb delta (%s)"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "Entrada de MIDI al Canal=%s Missatge=%s"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "Esdeveniment d'Entrada amb drecera=%s"
+
+msgid "Accept"
+msgstr "Accepta"
 
 msgid "Select"
 msgstr "Selecciona"
@@ -45,11 +217,32 @@ msgstr "Selecciona"
 msgid "Cancel"
 msgstr "Cancel·la"
 
+msgid "Focus Next"
+msgstr "Focus Següent"
+
+msgid "Focus Prev"
+msgstr "Focus Previ"
+
+msgid "Left"
+msgstr "Esquerra"
+
+msgid "Right"
+msgstr "Dreta"
+
 msgid "Up"
 msgstr "Amunt"
 
 msgid "Down"
 msgstr "Avall"
+
+msgid "Page Up"
+msgstr "Pàgina Amunt"
+
+msgid "Page Down"
+msgstr "Pàgina Avall"
+
+msgid "Home"
+msgstr "Inici"
 
 msgid "End"
 msgstr "Final"
@@ -58,7 +251,7 @@ msgid "Cut"
 msgstr "Talla"
 
 msgid "Copy"
-msgstr "Copiar"
+msgstr "Copia"
 
 msgid "Paste"
 msgstr "Enganxa"
@@ -69,26 +262,134 @@ msgstr "Desfés"
 msgid "Redo"
 msgstr "Refés"
 
+msgid "Completion Query"
+msgstr "Consulta de Compleció"
+
+msgid "New Line"
+msgstr "Nova Línia"
+
+msgid "New Blank Line"
+msgstr "Nova línia en blanc"
+
+msgid "New Line Above"
+msgstr "Nova línia a sobre"
+
+msgid "Indent"
+msgstr "Augmenta el sagnat"
+
+msgid "Dedent"
+msgstr "Disminueix el sagnat"
+
+msgid "Backspace"
+msgstr "Retrocés"
+
+msgid "Backspace Word"
+msgstr "Retrocés de paraula"
+
+msgid "Backspace all to Left"
+msgstr "Retrocés del tot a l'esquerra"
+
 msgid "Delete"
 msgstr "Esborra"
+
+msgid "Delete Word"
+msgstr "Elimina una Paraula"
+
+msgid "Delete all to Right"
+msgstr "Elimina-ho tot a la dreta"
+
+msgid "Caret Left"
+msgstr "Cursor cap a l'Esquerra"
+
+msgid "Caret Word Left"
+msgstr "Cursor una paraula cap a l'esquerra"
+
+msgid "Caret Right"
+msgstr "Cursor cap a la dreta"
+
+msgid "Caret Word Right"
+msgstr "Cursor una paraula cap a la dreta"
+
+msgid "Caret Up"
+msgstr "Cursor cap amunt"
+
+msgid "Caret Down"
+msgstr "Cursor cap avall"
+
+msgid "Caret Line Start"
+msgstr "Cursor al principi de línia"
+
+msgid "Caret Line End"
+msgstr "Cursor al final de línia"
+
+msgid "Caret Page Up"
+msgstr "Cursor una pàgina amunt"
+
+msgid "Caret Page Down"
+msgstr "Cursor una pàgina avall"
+
+msgid "Caret Document Start"
+msgstr "Cursor al principi del document"
+
+msgid "Caret Document End"
+msgstr "Cursor al final del document"
+
+msgid "Caret Add Below"
+msgstr "Afegeix el cursor cap avall"
+
+msgid "Caret Add Above"
+msgstr "Afegeix el cursor cap amunt"
+
+msgid "Scroll Up"
+msgstr "Enrotlla-ho amunt"
+
+msgid "Scroll Down"
+msgstr "Enrotlla-ho avall"
 
 msgid "Select All"
 msgstr "Selecciona-ho Tot"
 
+msgid "Select Word Under Caret"
+msgstr "Selecciona la paraula sota el cursor"
+
+msgid "Add Selection for Next Occurrence"
+msgstr "Afegeix la selecció per la següent ocurrència"
+
+msgid "Clear Carets and Selection"
+msgstr "Esborra els cursors i la Selecció"
+
+msgid "Toggle Insert Mode"
+msgstr "Commuta el mode d'entrada"
+
+msgid "Submit Text"
+msgstr "Envia el text"
+
 msgid "Duplicate Nodes"
-msgstr "Duplicar Nodes"
+msgstr "Duplica Nodes"
 
 msgid "Delete Nodes"
-msgstr "Eliminar Nodes"
+msgstr "Elimina Nodes"
+
+msgid "Go Up One Level"
+msgstr "Puja un nivell"
 
 msgid "Refresh"
 msgstr "Refresca"
 
+msgid "Show Hidden"
+msgstr "Mostra els Fitxers Ocults"
+
+msgid "Swap Input Direction"
+msgstr "Inverteix la direcció d'entrada"
+
+msgid "Invalid input %d (not passed) in expression"
+msgstr "Entrada no vàlida %d (no transmesa) en l'expressió"
+
 msgid "self can't be used because instance is null (not passed)"
-msgstr "self no es pot utilitzar perquè la instància és nul·la (no aprovada)"
+msgstr "No es pot utilitzar 'self' perquè la instància és nul·la (no passada)"
 
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "Els operands de %s, %s i %s no són vàlids."
+msgstr "Els operands de l'operador %s: %s i %s no són vàlids."
 
 msgid "Invalid index of type %s for base type %s"
 msgstr "L'índex del tipus %s no és vàlid per al tipus base %s"
@@ -101,6 +402,12 @@ msgstr "Els arguments per a construir '%s' no són vàlids"
 
 msgid "On call to '%s':"
 msgstr "En la crida a '%s':"
+
+msgid "Built-in script"
+msgstr "Script integrat"
+
+msgid "Built-in"
+msgstr "Integrat"
 
 msgid "B"
 msgstr "B"
@@ -123,21 +430,59 @@ msgstr "PiB"
 msgid "EiB"
 msgstr "EiB"
 
+msgid "Example: %s"
+msgstr "Exemple: %s"
+
+msgid "%d item"
+msgid_plural "%d items"
+msgstr[0] "%d element"
+msgstr[1] "%d elements"
+
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
-"Nom d'acció no vàlid. No pot estar buit ni contenir '/', ':', '=', '\\' o "
-"'\"'"
+"El nom de l'acció no és vàlid. No pot ser buit ni contenir '/', ':', '=', "
+"'\\' o '\"'"
 
 msgid "An action with the name '%s' already exists."
 msgstr "Ja existeix una acció amb el nom '%s'."
 
+msgid "Cannot Revert - Action is same as initial"
+msgstr "No es pot revertir - l'acció és la mateixa que la inicial"
+
+msgid "Revert Action"
+msgstr "Reverteix l'acció"
+
 msgid "Add Event"
-msgstr "Afegeix una Incidència"
+msgstr "Afegeix un Esdeveniment"
+
+msgid "Remove Action"
+msgstr "Elimina l'Acció"
+
+msgid "Cannot Remove Action"
+msgstr "No es pot eliminar l'acció"
+
+msgid "Edit Event"
+msgstr "Afegeix un Esdeveniment"
+
+msgid "Remove Event"
+msgstr "Elimina Esdeveniment"
+
+msgid "Filter by name..."
+msgstr "Filtra pel nom..."
+
+msgid "Clear All"
+msgstr "Neteja-ho tot"
+
+msgid "Add New Action"
+msgstr "Afegeix una nova Acció"
 
 msgid "Add"
 msgstr "Afegeix"
+
+msgid "Show Built-in Actions"
+msgstr "Mostra les accions integrades"
 
 msgid "Action"
 msgstr "Acció"
@@ -151,6 +496,9 @@ msgstr "Temps:"
 msgid "Value:"
 msgstr "Valor:"
 
+msgid "Update Selected Key Handles"
+msgstr "Actualitza les nanses clau seleccionades"
+
 msgid "Insert Key Here"
 msgstr "Insereix una Clau aquí"
 
@@ -160,26 +508,102 @@ msgstr "Duplica les Claus seleccionades"
 msgid "Delete Selected Key(s)"
 msgstr "Elimina les Claus seleccionades"
 
+msgid "Make Handles Free"
+msgstr "Allibera les nanses"
+
+msgid "Make Handles Linear"
+msgstr "Fes lineals les nanses"
+
+msgid "Make Handles Balanced"
+msgstr "Equilibra les nanses"
+
+msgid "Make Handles Mirrored"
+msgstr "Fes simètriques les nanses"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "Equilibra les nanses (auto-tangent)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "Fes simètriques les nanses (auto-tangent)"
+
 msgid "Add Bezier Point"
-msgstr "Afegir punt Bezier"
+msgstr "Afegeix un punt de Bézier"
 
 msgid "Move Bezier Points"
-msgstr "Moure Punts Bezier"
+msgstr "Mou els Punts de Bézier"
+
+msgid "Animation Duplicate Keys"
+msgstr "Duplica les Claus de l'animació"
+
+msgid "Animation Delete Keys"
+msgstr "Esborra les Claus de l'animació"
+
+msgid "Focus"
+msgstr "Enfoca"
+
+msgid "Select All Keys"
+msgstr "Selecciona totes les claus"
+
+msgid "Deselect All Keys"
+msgstr "Desselecciona totes les claus"
+
+msgid "Animation Change Transition"
+msgstr "Modifica la Transició de l'Animació"
+
+msgid "Animation Change %s"
+msgstr "Canvi d'animació %s"
+
+msgid "Animation Change Keyframe Value"
+msgstr "Modifica el valor del fotograma clau de l'animació"
+
+msgid "Animation Change Call"
+msgstr "Canvia la crida de l'animació"
+
+msgid "Animation Multi Change Transition"
+msgstr "Modifica diverses transicions d'animació"
+
+msgid "Animation Multi Change %s"
+msgstr "Canvis múltiples %s de l'animació"
+
+msgid "Animation Multi Change Keyframe Value"
+msgstr "Modifica el valor de diversos fotogrames clau de l'animació"
 
 msgid "Change Animation Length"
-msgstr "Canviar la durada de l'Animació"
+msgstr "Canvia la durada de l'Animació"
 
 msgid "Change Animation Loop"
 msgstr "Modifica el bucle d'Animació"
 
+msgid "Can't change loop mode on animation instanced from imported scene."
+msgstr ""
+"No es pot canviar el mode de repetició d'animacions instanciades des d'una "
+"escena importada."
+
+msgid "Can't change loop mode on animation embedded in another scene."
+msgstr ""
+"No es pot canviar el mode de repetició d'animacions incrustades en una altra "
+"escena."
+
 msgid "Property Track"
 msgstr "Pista de Propietats"
+
+msgid "3D Position Track"
+msgstr "Pista de posició 3D"
+
+msgid "3D Rotation Track"
+msgstr "Pista de rotació 3D"
+
+msgid "3D Scale Track"
+msgstr "Pista de l'escala 3D"
+
+msgid "Blend Shape Track"
+msgstr "Pista de barreja de formes"
 
 msgid "Call Method Track"
 msgstr "Pista de Crida de Mètodes"
 
 msgid "Bezier Curve Track"
-msgstr "Pista de Corbes Bezier"
+msgstr "Pista de Corbes de Bézier"
 
 msgid "Audio Playback Track"
 msgstr "Pista de reproducció d'Àudio"
@@ -205,11 +629,17 @@ msgstr "Funcions:"
 msgid "Audio Clips:"
 msgstr "Talls d'Àudio:"
 
+msgid "Animation Clips:"
+msgstr "Clips d'animació:"
+
 msgid "Change Track Path"
-msgstr "Canviar el camí de la pista"
+msgstr "Canvia el camí de la pista"
 
 msgid "Toggle this track on/off."
 msgstr "Activa/Desactiva la Pista."
+
+msgid "Use Blend"
+msgstr "Utilitza la barreja"
 
 msgid "Update Mode (How this property is set)"
 msgstr "Mode d'Actualització (Configuració d'aquesta propietat)"
@@ -221,7 +651,7 @@ msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
 msgstr "Mode de Bucle Continu (Interpola el final amb l'inici del bucle)"
 
 msgid "Remove this track."
-msgstr "Treu la Pista."
+msgstr "Elimina aquesta pista."
 
 msgid "Time (s):"
 msgstr "Temps (s):"
@@ -235,11 +665,38 @@ msgstr "Rotació:"
 msgid "Scale:"
 msgstr "Escala:"
 
+msgid "Blend Shape:"
+msgstr "Forma de Barreja:"
+
 msgid "Type:"
 msgstr "Tipus:"
 
 msgid "(Invalid, expected type: %s)"
 msgstr "(No vàlid, tipus esperat: %s)"
+
+msgid "Easing:"
+msgstr "Transició d'entrada-sortida:"
+
+msgid "In-Handle:"
+msgstr "Nansa d'entrada:"
+
+msgid "Out-Handle:"
+msgstr "Nansa de sortida:"
+
+msgid "Handle mode: Free\n"
+msgstr "Mode de manipulació: Lliure\n"
+
+msgid "Handle mode: Linear\n"
+msgstr "Mode de manipulació: Lineal\n"
+
+msgid "Handle mode: Balanced\n"
+msgstr "Mode de manipulació: Equilibrat\n"
+
+msgid "Handle mode: Mirrored\n"
+msgstr "Mode de manipulació: Simètric\n"
+
+msgid "Stream:"
+msgstr "Flux:"
 
 msgid "Start (s):"
 msgstr "Inici (s):"

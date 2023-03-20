@@ -34,6 +34,7 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
+#include "servers/rendering/renderer_rd/effects/sort_effects.h"
 #include "servers/rendering/renderer_rd/shaders/particles.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/particles_copy.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
@@ -46,6 +47,9 @@ namespace RendererRD {
 class ParticlesStorage : public RendererParticlesStorage {
 private:
 	static ParticlesStorage *singleton;
+
+	/* EFFECTS */
+	SortEffects *sort_effects = nullptr;
 
 	/* PARTICLES */
 

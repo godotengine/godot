@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Expression" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Expression" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A class that stores an expression you can execute.
 	</brief_description>
@@ -65,7 +65,7 @@
 		<method name="get_error_text" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the error text if [method parse] has failed.
+				Returns the error text if [method parse] or [method execute] has failed.
 			</description>
 		</method>
 		<method name="has_execute_failed" qualifiers="const">

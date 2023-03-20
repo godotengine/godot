@@ -71,6 +71,7 @@ class CollisionShape2DEditor : public Control {
 	bool pressed;
 	Variant original;
 	Transform2D original_transform;
+	Vector2 original_point;
 	Point2 last_point;
 
 	Variant get_handle_value(int idx) const;

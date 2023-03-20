@@ -2926,6 +2926,12 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	code_completion_options.clear();
 	code_completion_base = string_to_complete;
 
+	/* Don't autocomplete setting numerical values. */
+	if (code_completion_base.is_numeric()) {
+		cancel_code_completion();
+		return;
+	}
+
 	Vector<ScriptLanguage::CodeCompletionOption> completion_options_casei;
 	Vector<ScriptLanguage::CodeCompletionOption> completion_options_substr;
 	Vector<ScriptLanguage::CodeCompletionOption> completion_options_substr_casei;

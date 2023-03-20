@@ -1914,12 +1914,6 @@ void BaseMaterial3D::_validate_feature(const String &text, Feature feature, Prop
 	}
 }
 
-void BaseMaterial3D::_validate_high_end(const String &text, PropertyInfo &property) const {
-	if (property.name.begins_with(text)) {
-		property.usage |= PROPERTY_USAGE_HIGH_END_GFX;
-	}
-}
-
 void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 	_validate_feature("normal", FEATURE_NORMAL_MAPPING, p_property);
 	_validate_feature("emission", FEATURE_EMISSION, p_property);
@@ -1932,10 +1926,6 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 	_validate_feature("backlight", FEATURE_BACKLIGHT, p_property);
 	_validate_feature("refraction", FEATURE_REFRACTION, p_property);
 	_validate_feature("detail", FEATURE_DETAIL, p_property);
-
-	_validate_high_end("refraction", p_property);
-	_validate_high_end("subsurf_scatter", p_property);
-	_validate_high_end("heightmap", p_property);
 
 	if (p_property.name == "emission_intensity" && !GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
 		p_property.usage = PROPERTY_USAGE_NONE;

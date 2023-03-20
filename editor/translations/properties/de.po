@@ -93,7 +93,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-23 22:17+0000\n"
+"PO-Revision-Date: 2023-03-07 01:01+0000\n"
 "Last-Translator: ‎ <artism90@googlemail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/de/>\n"
@@ -102,7 +102,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16.2-dev\n"
 
 msgid "Application"
 msgstr "Anwendung"
@@ -171,7 +171,7 @@ msgid "Initial Screen"
 msgstr "Anfangsbildschirm"
 
 msgid "Resizable"
-msgstr "Verstellbar"
+msgstr "Fenstergröße skalierbar"
 
 msgid "Borderless"
 msgstr "Rahmenlos"
@@ -221,23 +221,11 @@ msgstr "Stärke der 3D-Verschiebung"
 msgid "Editor"
 msgstr "Editor"
 
-msgid "Main Run Args"
-msgstr "Laufzeitargumente für Main"
-
 msgid "Script"
 msgstr "Skript"
 
 msgid "Search in File Extensions"
 msgstr "In Dateierweiterungen suchen"
-
-msgid "Templates Search Path"
-msgstr "Vorlagen-Suchpfad"
-
-msgid "Naming"
-msgstr "Namensgebung"
-
-msgid "Default Signal Callback Name"
-msgstr "Standardmäßiger Name für Signalcallbacks"
 
 msgid "Physics"
 msgstr "Physik"
@@ -540,7 +528,7 @@ msgid "Test"
 msgstr "Test"
 
 msgid "Fallback"
-msgstr "Ausweichlösung"
+msgstr "Fallback"
 
 msgid "Pseudolocalization"
 msgstr "Pseudo-Lokalisierung"
@@ -826,6 +814,9 @@ msgstr "Szenenbaum"
 
 msgid "Start Create Dialog Fully Expanded"
 msgstr "Erstellen-Dialog beim Start wird vollständig aufgeklappt"
+
+msgid "Auto Expand to Selected"
+msgstr "Automatisch auf Auswahl vergrößern"
 
 msgid "Always Show Folders"
 msgstr "Verzeichnisse immer anzeigen"
@@ -1142,8 +1133,11 @@ msgstr "Einfaches Schwenken"
 msgid "Display Grid"
 msgstr "Gitter anzeigen"
 
+msgid "Polygon Editor"
+msgstr "Polygon-Editor"
+
 msgid "Point Grab Radius"
-msgstr "Punktauswahlsradius"
+msgstr "Punktauswahlradius"
 
 msgid "Show Previous Outline"
 msgstr "Vorigen Umriss anzeigen"
@@ -1172,8 +1166,11 @@ msgstr "Visuelle Editoren"
 msgid "Minimap Opacity"
 msgstr "Deckkraft Minikarte"
 
+msgid "Visual Shader"
+msgstr "Visueller Shader"
+
 msgid "Window Placement"
-msgstr "Fensterplatzierung"
+msgstr "Fensterpositionierung"
 
 msgid "Rect"
 msgstr "Rechteck"
@@ -1217,6 +1214,9 @@ msgstr "Projektverwaltung"
 msgid "Sorting Order"
 msgstr "Sortierreihenfolge"
 
+msgid "Default Renderer"
+msgstr "Standard-Renderer"
+
 msgid "Highlighting"
 msgstr "Hervorhebung"
 
@@ -1258,6 +1258,9 @@ msgstr "Vervollständigung Existierend-Farbe"
 
 msgid "Completion Scroll Color"
 msgstr "Vervollständigung Scrollen-Farbe"
+
+msgid "Completion Scroll Hovered Color"
+msgstr "Vervollständigung Scrollen-Hover-Farbe"
 
 msgid "Completion Font Color"
 msgstr "Vervollständigung Schriftfarbe"
@@ -1337,11 +1340,17 @@ msgstr "Vergrößerung"
 msgid "Export"
 msgstr "Exportieren"
 
+msgid "Convert Text Resources to Binary"
+msgstr "Textressourcen in Binärformat konvertieren"
+
 msgid "Custom Template"
 msgstr "Eigene Vorlage"
 
 msgid "Release"
-msgstr "Veröffentlichung"
+msgstr "Release"
+
+msgid "Export Console Script"
+msgstr "Konsolenskript exportieren"
 
 msgid "Binary Format"
 msgstr "Binärformat"
@@ -1364,6 +1373,12 @@ msgstr "ETC"
 msgid "ETC2"
 msgstr "ETC2"
 
+msgid "SSH"
+msgstr "SSH"
+
+msgid "SCP"
+msgstr "SCP"
+
 msgid "Export Path"
 msgstr "Exportpfad"
 
@@ -1373,14 +1388,32 @@ msgstr "Dateiserver"
 msgid "Password"
 msgstr "Passwort"
 
+msgid "Antialiasing"
+msgstr "Kantenglättung"
+
+msgid "Generate Mipmaps"
+msgstr "Mipmaps generieren"
+
+msgid "Allow System Fallback"
+msgstr "System-Fallback erlauben"
+
+msgid "Force Autohinter"
+msgstr "Autohinter erzwingen"
+
 msgid "Hinting"
-msgstr "Hinweisen"
+msgstr "Hinting"
+
+msgid "Subpixel Positioning"
+msgstr "Subpixel-Positionierung"
 
 msgid "Oversampling"
 msgstr "Überabtastung"
 
 msgid "Metadata Overrides"
 msgstr "Metadaten-Überschreibungen"
+
+msgid "Fallbacks"
+msgstr "Fallbacks"
 
 msgid "Compress"
 msgstr "Komprimieren"
@@ -1395,7 +1428,7 @@ msgid "Variation"
 msgstr "Variation"
 
 msgid "Transform"
-msgstr "Transformation"
+msgstr "Transform, Tranformation, Transformierung?"
 
 msgid "Collada"
 msgstr "Collada"
@@ -1539,7 +1572,7 @@ msgid "Roughness"
 msgstr "Rauheit"
 
 msgid "Process"
-msgstr "Verarbeiten"
+msgstr "Prozessverhalten"
 
 msgid "Fix Alpha Border"
 msgstr "Alpharand beheben"
@@ -1700,6 +1733,18 @@ msgstr "Pfad des öffentlichen SSH-Schlüssels"
 msgid "SSH Private Key Path"
 msgstr "Pfad des privaten SSH-Schlüssels"
 
+msgid "Main Run Args"
+msgstr "Laufzeitargumente für Main"
+
+msgid "Templates Search Path"
+msgstr "Vorlagen-Suchpfad"
+
+msgid "Naming"
+msgstr "Namensgebung"
+
+msgid "Default Signal Callback Name"
+msgstr "Standardmäßiger Name für Signalcallbacks"
+
 msgid "Show Scene Tree Root Selection"
 msgstr "Szenenbaumwurzelauswahl anzeigen"
 
@@ -1791,7 +1836,7 @@ msgid "Environment"
 msgstr "Umgebung"
 
 msgid "Default Clear Color"
-msgstr "Standard Löschfarbe"
+msgstr "Standard Clear Color"
 
 msgid "Show Image"
 msgstr "Bild anzeigen"
@@ -1831,6 +1876,9 @@ msgstr "Benutzerdefinierter Bild-Hotspot"
 
 msgid "Tooltip Position Offset"
 msgstr "Versatz des Tooltips"
+
+msgid "Minimum Display Time"
+msgstr "Minimale Anzeigedauer"
 
 msgid "Project"
 msgstr "Projekt"
@@ -2264,6 +2312,9 @@ msgstr "K2"
 msgid "Spawn Limit"
 msgstr "Spawn-Limit"
 
+msgid "Auth Callback"
+msgstr "Auth-Callback"
+
 msgid "Allow Object Decoding"
 msgstr "Objektdekodierung erlauben"
 
@@ -2388,7 +2439,7 @@ msgid "Force System User"
 msgstr "Systemnutzer erzwingen"
 
 msgid "Launcher Icons"
-msgstr "Start Icon"
+msgstr "Startsymbole"
 
 msgid "Main 192 X 192"
 msgstr "Haupticon 192 x 192"
@@ -2436,7 +2487,7 @@ msgid "Code"
 msgstr "Code"
 
 msgid "Package"
-msgstr "Packet"
+msgstr "Paket"
 
 msgid "Unique Name"
 msgstr "Eindeutiger Name"
@@ -2447,8 +2498,11 @@ msgstr "Signiert"
 msgid "App Category"
 msgstr "Anwendungskategorie"
 
+msgid "Retain Data on Uninstall"
+msgstr "Daten beibehalten nach Deinstallation"
+
 msgid "Exclude From Recents"
-msgstr "Aus kürzliche Anwendungen ausschließen"
+msgstr "Aus Kürzliche Anwendungen ausschließen"
 
 msgid "Graphics"
 msgstr "Grafik"
@@ -2609,6 +2663,9 @@ msgstr "Signatur"
 msgid "Short Version"
 msgstr "Kurzversion"
 
+msgid "Icon Interpolation"
+msgstr "Symbol-Interpolation"
+
 msgid "Capabilities"
 msgstr "Fähigkeiten"
 
@@ -2667,7 +2724,10 @@ msgid "macOS"
 msgstr "macOS"
 
 msgid "Copyright"
-msgstr "Urheberrecht"
+msgstr "Copyright"
+
+msgid "Copyright Localized"
+msgstr "Copyright-Lokalisierung"
 
 msgid "High Res"
 msgstr "Hohe Auflösung"
@@ -2715,7 +2775,7 @@ msgid "Apple Events"
 msgstr "Apple-Ereignisse"
 
 msgid "Debugging"
-msgstr "Debuggen"
+msgstr "Debugging"
 
 msgid "App Sandbox"
 msgstr "Anwendungssandbox"
@@ -3095,6 +3155,9 @@ msgstr "Einseitige Kollision"
 msgid "One Way Collision Margin"
 msgstr "Grenze für einseitige Kollisionen"
 
+msgid "Debug Color"
+msgstr "Debug-Farbe"
+
 msgid "Emitting"
 msgstr "Aussendend"
 
@@ -3290,6 +3353,9 @@ msgstr "Geschlossen"
 msgid "Cull Mode"
 msgstr "Aushöhlungsmodus"
 
+msgid "Occluder Light Mask"
+msgstr "Verdecker Lichtblende"
+
 msgid "Width Curve"
 msgstr "Breitenkurve"
 
@@ -3364,6 +3430,12 @@ msgstr "Zeithorizont"
 
 msgid "Max Speed"
 msgstr "Max Geschw"
+
+msgid "Path Custom Point Size"
+msgstr "Pfad Benutzerdefinierte Punktgröße"
+
+msgid "Path Custom Line Width"
+msgstr "Pfad Benutzerdefinierte Linienbreite"
 
 msgid "Enter Cost"
 msgstr "Eintrittskosten"
@@ -3902,6 +3974,9 @@ msgstr "Agent Höhenversatz"
 msgid "Ignore Y"
 msgstr "Y ignorieren"
 
+msgid "Top Level"
+msgstr "Top-Level"
+
 msgid "Visibility"
 msgstr "Sichtbarkeit"
 
@@ -4319,6 +4394,9 @@ msgstr "Verzögerter Modus"
 msgid "Presets Visible"
 msgstr "Vorlagen sichtbar"
 
+msgid "Custom Minimum Size"
+msgstr "Benutzerdefinierte Minimalgröße"
+
 msgid "Grow Direction"
 msgstr "Wachstumsrichtung"
 
@@ -4641,7 +4719,7 @@ msgid "Center Offset"
 msgstr "Mitteversatz"
 
 msgid "Custom Minimum Height"
-msgstr "Benutzerdefinierte minimale Höhe"
+msgstr "Benutzerdefinierte Minimalhöhe"
 
 msgid "Column Titles Visible"
 msgstr "Spaltentitel sichtbar"
@@ -4671,10 +4749,13 @@ msgid "Buffering Msec"
 msgstr "Puffer ms"
 
 msgid "Self Modulate"
-msgstr "Selbst-Modulieren"
+msgstr "Eigenmodulation"
 
 msgid "Show Behind Parent"
-msgstr "Zeige hinter Eltern"
+msgstr "Zeichne hinter Elternelement"
+
+msgid "Clip Children"
+msgstr "Kindelemente auf Elternausschnitt begrenzen"
 
 msgid "Light Mask"
 msgstr "Lichtblende"
@@ -4692,7 +4773,7 @@ msgid "Repeat"
 msgstr "Wiederholen"
 
 msgid "Use Parent Material"
-msgstr "Benutze Eltern Material"
+msgstr "Benutze Eltern-Material"
 
 msgid "Diffuse"
 msgstr "Zerstreuen"
@@ -4733,6 +4814,9 @@ msgstr "Zeit übrig"
 msgid "Debug Collisions Hint"
 msgstr "Kollisionshinweise debuggen"
 
+msgid "Debug Paths Hint"
+msgstr "Pfadhinweise debuggen"
+
 msgid "Debug Navigation Hint"
 msgstr "Navigationshinweise debuggen"
 
@@ -4769,6 +4853,9 @@ msgstr "Atlasgröße"
 msgid "Oversize"
 msgstr "Übergröße"
 
+msgid "Default Environment"
+msgstr "Standard-Umgebung"
+
 msgid "Enable Object Picking"
 msgstr "Objektauswahl aktivieren"
 
@@ -4801,6 +4888,9 @@ msgstr "3D-Skalierung-Modus"
 
 msgid "Scaling 3D Scale"
 msgstr "3D-Skalierung-Skalierung"
+
+msgid "FSR Sharpness"
+msgstr "FSR-Schärfe"
 
 msgid "Variable Rate Shading"
 msgstr "Variable Rate Shading"
@@ -4943,6 +5033,9 @@ msgstr "Leiste"
 msgid "Font Color"
 msgstr "Schriftfarbe"
 
+msgid "Font Outline Color"
+msgstr "Schriftfarbe Umriss"
+
 msgid "H Separation"
 msgstr "H-Trennung"
 
@@ -4979,6 +5072,9 @@ msgstr "Radioknopf unausgewählt"
 msgid "Radio Unchecked Disabled"
 msgstr "Radioknopf unausgewählt deaktiviert"
 
+msgid "Font Shadow Color"
+msgstr "Schriftfarbe Schatten"
+
 msgid "Shadow Offset X"
 msgstr "Schattenversatz X"
 
@@ -4990,6 +5086,9 @@ msgstr "Löschenknopffarbe"
 
 msgid "Clear Button Color Pressed"
 msgstr "Gedrückter Löschenknopf-Farbe"
+
+msgid "Minimum Character Width"
+msgstr "Minimale Zeichenbreite"
 
 msgid "Clear"
 msgstr "Löschen"
@@ -5116,6 +5215,9 @@ msgstr "Untermenü"
 
 msgid "Font Separator"
 msgstr "Schriftarten-Trennzeichen"
+
+msgid "Font Separator Outline Color"
+msgstr "Schriftfarbe Trennumriss"
 
 msgid "V Separation"
 msgstr "V-Trennung"
@@ -5714,6 +5816,9 @@ msgstr "B"
 msgid "Custom Solver Bias"
 msgstr "Eigenen Bias für Löser"
 
+msgid "Target Maximum Distance"
+msgstr "Maximale Zieldistanz"
+
 msgid "Bind Count"
 msgstr "Anzahl festlegen"
 
@@ -5731,6 +5836,9 @@ msgstr "Farbe oben"
 
 msgid "Horizon Color"
 msgstr "Horizontfarbe"
+
+msgid "Cover Modulate"
+msgstr "Cover-Modulation"
 
 msgid "Ground"
 msgstr "Boden"
@@ -5881,6 +5989,9 @@ msgstr "Ebene"
 
 msgid "Default Theme Scale"
 msgstr "Standardthema Skalierung"
+
+msgid "Fallback values"
+msgstr "Fallback-Werte"
 
 msgid "Random Pitch"
 msgstr "Zufälliger Pitch"
@@ -6119,8 +6230,14 @@ msgstr "PNG erzwingen"
 msgid "Shadow Atlas"
 msgstr "Schattenatlas"
 
+msgid "Item Buffer Size"
+msgstr "Item-Puffergröße"
+
 msgid "Shader Compiler"
 msgstr "Shader-Compiler"
+
+msgid "Strip Debug"
+msgstr "Debuginformationen entfernen"
 
 msgid "Reflections"
 msgstr "Reflexionen"
@@ -6139,6 +6256,9 @@ msgstr "Überschreibungen"
 
 msgid "Force Vertex Shading"
 msgstr "Vertex-Shading erzwingen"
+
+msgid "Force Lambert over Burley"
+msgstr "Lambert statt Burley erzwingen"
 
 msgid "Depth Prepass"
 msgstr "Tiefenvorpass"

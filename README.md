@@ -56,7 +56,7 @@ To get started contributing to the project, see the [contributing guide](CONTRIB
 
 ## Documentation and demos
 
-The official documentation is hosted on [ReadTheDocs](https://docs.godotengine.org).
+The official documentation is hosted on [Read the Docs](https://docs.godotengine.org).
 It is maintained by the Godot community in its own [GitHub repository](https://github.com/godotengine/godot-docs).
 
 The [class reference](https://docs.godotengine.org/en/latest/classes/)

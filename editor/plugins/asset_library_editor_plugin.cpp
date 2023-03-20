@@ -245,6 +245,7 @@ void EditorAssetLibraryItemDescription::configure(const String &p_title, int p_a
 	description->add_text("\n" + TTR("Description:") + "\n\n");
 	description->append_text(p_description);
 	description->set_selection_enabled(true);
+	description->set_context_menu_enabled(true);
 	set_title(p_title);
 }
 
@@ -1398,7 +1399,7 @@ void EditorAssetLibrary::_asset_open() {
 }
 
 void EditorAssetLibrary::_manage_plugins() {
-	ProjectSettingsEditor::get_singleton()->popup_project_settings();
+	ProjectSettingsEditor::get_singleton()->popup_project_settings(true);
 	ProjectSettingsEditor::get_singleton()->set_plugins_page();
 }
 

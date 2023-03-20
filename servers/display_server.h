@@ -124,6 +124,7 @@ public:
 		FEATURE_CLIPBOARD_PRIMARY,
 		FEATURE_TEXT_TO_SPEECH,
 		FEATURE_EXTEND_TO_TITLE,
+		FEATURE_SCREEN_CAPTURE,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
@@ -275,6 +276,7 @@ public:
 		return scale;
 	}
 	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
+	virtual Color screen_get_pixel(const Point2i &p_position) const { return Color(); };
 	virtual bool is_touchscreen_available() const;
 
 	// Keep the ScreenOrientation enum values in sync with the `display/window/handheld/orientation`

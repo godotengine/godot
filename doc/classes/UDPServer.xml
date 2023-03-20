@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="UDPServer" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="UDPServer" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Helper class to implement a UDP server.
 	</brief_description>
@@ -22,7 +22,7 @@
 		func _process(delta):
 		    server.poll() # Important!
 		    if server.is_connection_available():
-		        var peer : PacketPeerUDP = server.take_connection()
+		        var peer: PacketPeerUDP = server.take_connection()
 		        var packet = peer.get_packet()
 		        print("Accepted peer: %s:%s" % [peer.get_packet_ip(), peer.get_packet_port()])
 		        print("Received data: %s" % [packet.get_string_from_utf8()])

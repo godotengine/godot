@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CompressedCubemapArray" inherits="CompressedTextureLayered" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="CompressedCubemapArray" inherits="CompressedTextureLayered" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Array of 6-sided textures typically used in 3D rendering, optionally compressed.
 	</brief_description>

@@ -327,7 +327,7 @@ bool KeyMappingMacOS::is_numpad_key(unsigned int p_key) {
 	return numpad_keys.has(p_key);
 }
 
-// Translates a OS X keycode to a Godot keycode.
+// Translates a macOS keycode to a Godot keycode.
 Key KeyMappingMacOS::translate_key(unsigned int p_key) {
 	const Key *key = keysym_map.getptr(p_key);
 	if (key) {

@@ -75,7 +75,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-23 00:30+0000\n"
+"PO-Revision-Date: 2023-03-14 01:22+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/pl/>\n"
@@ -85,7 +85,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16.2-dev\n"
 
 msgid "Application"
 msgstr "Aplikacja"
@@ -186,17 +186,26 @@ msgstr "Zachowaj włączony ekran"
 msgid "Audio"
 msgstr "Audio"
 
+msgid "Default Bus Layout"
+msgstr "Domyślny układ magistrali"
+
+msgid "3D Panning Strength"
+msgstr "Siła panoramy 3D"
+
 msgid "Editor"
 msgstr "Edytor"
 
-msgid "Main Run Args"
-msgstr "Główne argumenty włączania"
+msgid "Search in File Extensions"
+msgstr "Szukaj wśród rozszerzeń plików"
 
 msgid "Physics"
 msgstr "Fizyka"
 
 msgid "2D"
 msgstr "2D"
+
+msgid "Run on Separate Thread"
+msgstr "Uruchom na osobnym wątku"
 
 msgid "3D"
 msgstr "3D"
@@ -207,6 +216,9 @@ msgstr "Debugowanie"
 msgid "Settings"
 msgstr "Ustawienia"
 
+msgid "Profiler"
+msgstr "Profiler"
+
 msgid "Compression"
 msgstr "Kompresja"
 
@@ -215,6 +227,9 @@ msgstr "Wiadomość"
 
 msgid "Rendering"
 msgstr "Renderowanie"
+
+msgid "Memory"
+msgstr "Pamięć"
 
 msgid "Limits"
 msgstr "Limity"
@@ -644,6 +659,9 @@ msgstr "Drzewo sceny"
 
 msgid "Start Create Dialog Fully Expanded"
 msgstr "Rozpocznij tworzenie w pełni rozwiniętego okna dialogowego"
+
+msgid "Auto Expand to Selected"
+msgstr "Automatycznie rozwijaj do wybranego"
 
 msgid "Always Show Folders"
 msgstr "Zawsze pokazuj foldery"
@@ -1182,6 +1200,9 @@ msgstr "Serwer plików"
 msgid "Password"
 msgstr "Hasło"
 
+msgid "Multichannel Signed Distance Field"
+msgstr "Wielokanałowe Pole Odległości ze Znakiem"
+
 msgid "Hinting"
 msgstr "Hinting"
 
@@ -1392,6 +1413,9 @@ msgstr "Błąd"
 msgid "Particles"
 msgstr "Cząsteczki"
 
+msgid "Decal"
+msgstr "Naklejka"
+
 msgid "Manipulator Gizmo Size"
 msgstr "Regulacja wielkości uchwytu"
 
@@ -1440,8 +1464,20 @@ msgstr "ID"
 msgid "Speed"
 msgstr "Prędkość"
 
+msgid "Frames Count"
+msgstr "Liczba klatek"
+
+msgid "Duration"
+msgstr "Czas trwania"
+
 msgid "Version Control"
 msgstr "Kontrola wersji"
+
+msgid "Plugin Name"
+msgstr "Nazwa wtyczki"
+
+msgid "Autoload on Startup"
+msgstr "Automatyczne ładowanie podczas uruchamiania"
 
 msgid "Username"
 msgstr "Nazwa użytkownika"
@@ -1451,6 +1487,15 @@ msgstr "Ścieżka do publicznego klucza SSH"
 
 msgid "SSH Private Key Path"
 msgstr "Ścieżka do prywatnego klucza SSH"
+
+msgid "Main Run Args"
+msgstr "Główne argumenty włączania"
+
+msgid "Templates Search Path"
+msgstr "Ścieżka szukania szablonów"
+
+msgid "Naming"
+msgstr "Nazewnictwo"
 
 msgid "Common"
 msgstr "Pospolite"
@@ -1620,6 +1665,9 @@ msgstr "Materiały"
 msgid "Animations"
 msgstr "Animacje"
 
+msgid "Count"
+msgstr "Liczba"
+
 msgid "Loop"
 msgstr "Zapętl"
 
@@ -1734,8 +1782,23 @@ msgstr "Ikony"
 msgid "Location"
 msgstr "Lokalizacja"
 
+msgid "Notarization"
+msgstr "Poświadczenie notarialne"
+
+msgid "Tiles"
+msgstr "Kafelki"
+
 msgid "Variant"
 msgstr "Wariant"
+
+msgid "File Version"
+msgstr "Wersja pliku"
+
+msgid "Product Version"
+msgstr "Wersja produktu"
+
+msgid "Product Name"
+msgstr "Nazwa produktu"
 
 msgid "Frame"
 msgstr "Klatka"
@@ -1779,6 +1842,12 @@ msgstr "Kolory"
 msgid "Visibility Rect"
 msgstr "Prostokąt widoczności"
 
+msgid "Default Color"
+msgstr "Kolor domyślny"
+
+msgid "Fill"
+msgstr "Wypełnienie"
+
 msgid "Navigation Layers"
 msgstr "Warstwy nawigacji"
 
@@ -1809,6 +1878,9 @@ msgstr "Maska bitowa"
 msgid "Cull Mask"
 msgstr "Cull Mask"
 
+msgid "Modulate"
+msgstr "Moduluj"
+
 msgid "Flags"
 msgstr "Flagi"
 
@@ -1836,6 +1908,9 @@ msgstr "Przejdź"
 msgid "End"
 msgstr "Koniec"
 
+msgid "Pose"
+msgstr "Pozycja"
+
 msgid "Sync"
 msgstr "Synchronizuj"
 
@@ -1856,6 +1931,9 @@ msgstr "Węzeł główny"
 
 msgid "Button Group"
 msgstr "Grupa przycisków"
+
+msgid "Indentation"
+msgstr "Wcięcia"
 
 msgid "Localization"
 msgstr "Lokalizacja"
@@ -1887,6 +1965,9 @@ msgstr "Krok"
 msgid "Syntax Highlighter"
 msgstr "Podświetlacz składni"
 
+msgid "Expand"
+msgstr "Rozwiń"
+
 msgid "Z Index"
 msgstr "Indeks Z"
 
@@ -1895,6 +1976,9 @@ msgstr "Powtórz"
 
 msgid "Transfer Mode"
 msgstr "Tryb transferu"
+
+msgid "SDF"
+msgstr "SDF"
 
 msgid "Audio Listener"
 msgstr "Słuchacz dźwięku"
@@ -1935,8 +2019,23 @@ msgstr "Kursor"
 msgid "Node"
 msgstr "Węzeł"
 
+msgid "Sky"
+msgstr "Niebo"
+
 msgid "Source"
 msgstr "Źródło"
+
+msgid "Tonemap"
+msgstr "Mapa odcieni"
+
+msgid "SSAO"
+msgstr "SSAO"
+
+msgid "SSIL"
+msgstr "SSIL"
+
+msgid "Glow"
+msgstr "Blask"
 
 msgid "2"
 msgstr "2"
@@ -1962,6 +2061,9 @@ msgstr "Operator"
 msgid "Subsurface Scattering"
 msgstr "Rozpraszanie podpowierzchniowe"
 
+msgid "MSDF"
+msgstr "MSDF"
+
 msgid "Item"
 msgstr "Element"
 
@@ -1970,6 +2072,9 @@ msgstr "Podgląd"
 
 msgid "B"
 msgstr "B"
+
+msgid "Ground Color"
+msgstr "Kolor podłoża"
 
 msgid "Blend"
 msgstr "Mieszanie"
@@ -1986,14 +2091,38 @@ msgstr "Prawy dolny róg"
 msgid "Bottom Left"
 msgstr "Lewy dolny róg"
 
+msgid "Atlas"
+msgstr "Atlas"
+
+msgid "To"
+msgstr "Do"
+
+msgid "Terrains"
+msgstr "Tereny"
+
+msgid "Custom Data"
+msgstr "Własne dane"
+
 msgid "Transpose"
 msgstr "Transpozycja"
+
+msgid "Texture Origin"
+msgstr "Początek tekstury"
+
+msgid "Y Sort Origin"
+msgstr "Początek sortowania Y"
+
+msgid "Probability"
+msgstr "Prawdopodobieństwo"
 
 msgid "Constant"
 msgstr "Stała"
 
 msgid "Function"
 msgstr "Funkcja"
+
+msgid "Custom"
+msgstr "Niestandardowe"
 
 msgid "Pan"
 msgstr "Pan"
@@ -2022,11 +2151,20 @@ msgstr "Fragmenty"
 msgid "Cull"
 msgstr "Cull"
 
+msgid "Shadow Atlas"
+msgstr "Atlas cieni"
+
 msgid "Reflections"
 msgstr "Odbicia"
 
+msgid "GI"
+msgstr "GI"
+
 msgid "Overrides"
 msgstr "Nadpisuje"
+
+msgid "OpenGL"
+msgstr "OpenGL"
 
 msgid "Property"
 msgstr "Właściwość"

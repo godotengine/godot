@@ -58,27 +58,32 @@ static Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::
 		if (image->get_format() != Image::FORMAT_RGBA8) {
 			image->convert(Image::FORMAT_RGBA8);
 		}
-		Ref<Image> image_single = image->duplicate();
-		{
-			if (image_single->has_mipmaps()) {
-				image_single->clear_mipmaps();
-			}
-			basisu::image buimg(image_single->get_width(), image_single->get_height());
-			Vector<uint8_t> vec = image_single->get_data();
+		if (!image->has_mipmaps()) {
+			basisu::image buimg(image->get_width(), image->get_height());
+			Vector<uint8_t> vec = image->get_data();
 			const uint8_t *r = vec.ptr();
 			memcpy(buimg.get_ptr(), r, vec.size());
 			params.m_source_images.push_back(buimg);
+		} else {
+			{
+				Ref<Image> base_image = image->get_image_from_mipmap(0);
+				Vector<uint8_t> image_vec = base_image->get_data();
+				basisu::image buimg_image(base_image->get_width(), base_image->get_height());
+				const uint8_t *r = image_vec.ptr();
+				memcpy(buimg_image.get_ptr(), r, image_vec.size());
+				params.m_source_images.push_back(buimg_image);
+			}
+			basisu::vector<basisu::image> images;
+			for (int32_t mip_map_i = 1; mip_map_i <= image->get_mipmap_count(); mip_map_i++) {
+				Ref<Image> mip_map = image->get_image_from_mipmap(mip_map_i);
+				Vector<uint8_t> mip_map_vec = mip_map->get_data();
+				basisu::image buimg_mipmap(mip_map->get_width(), mip_map->get_height());
+				const uint8_t *r = mip_map_vec.ptr();
+				memcpy(buimg_mipmap.get_ptr(), r, mip_map_vec.size());
+				images.push_back(buimg_mipmap);
+			}
+			params.m_source_mipmap_images.push_back(images);
 		}
-		basisu::vector<basisu::image> source_images;
-		for (int32_t mipmap_i = 1; mipmap_i < image->get_mipmap_count(); mipmap_i++) {
-			Ref<Image> mip = image->get_image_from_mipmap(mipmap_i);
-			basisu::image buimg(mip->get_width(), mip->get_height());
-			Vector<uint8_t> vec = mip->get_data();
-			const uint8_t *r = vec.ptr();
-			memcpy(buimg.get_ptr(), r, vec.size());
-			source_images.push_back(buimg);
-		}
-
 		params.m_uastc = true;
 		params.m_quality_level = basisu::BASISU_QUALITY_MIN;
 
@@ -154,6 +159,7 @@ static Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size
 
 	const uint8_t *ptr = p_data;
 	int size = p_size;
+	ERR_FAIL_COND_V_MSG(p_data == nullptr, image, "Cannot unpack invalid basis universal data.");
 
 	basist::transcoder_texture_format format = basist::transcoder_texture_format::cTFTotalTextureFormats;
 	Image::Format imgfmt = Image::FORMAT_MAX;
@@ -228,35 +234,29 @@ static Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size
 
 	ERR_FAIL_COND_V(!tr.validate_header(ptr, size), image);
 
+	tr.start_transcoding(ptr, size);
+
 	basist::basisu_image_info info;
 	tr.get_image_info(ptr, size, info, 0);
-
-	int block_size = basist::basis_get_bytes_per_block_or_pixel(format);
 	Vector<uint8_t> gpudata;
-	gpudata.resize(info.m_total_blocks * block_size);
+	gpudata.resize(Image::get_image_data_size(info.m_width, info.m_height, imgfmt, info.m_total_levels > 1));
 
-	{
-		uint8_t *w = gpudata.ptrw();
-		uint8_t *dst = w;
-		for (int i = 0; i < gpudata.size(); i++) {
-			dst[i] = 0x00;
-		}
-
-		int ofs = 0;
-		tr.start_transcoding(ptr, size);
-		for (uint32_t i = 0; i < info.m_total_levels; i++) {
-			basist::basisu_image_level_info level;
-			tr.get_image_level_info(ptr, size, level, 0, i);
-
-			bool ret = tr.transcode_image_level(ptr, size, 0, i, dst + ofs, level.m_total_blocks - i, format);
-			if (!ret) {
-				printf("failed! on level %u\n", i);
-				break;
-			};
-
-			ofs += level.m_total_blocks * block_size;
+	uint8_t *w = gpudata.ptrw();
+	uint8_t *dst = w;
+	for (int i = 0; i < gpudata.size(); i++) {
+		dst[i] = 0x00;
+	}
+	uint32_t mip_count = Image::get_image_required_mipmaps(info.m_orig_width, info.m_orig_height, imgfmt);
+	for (uint32_t level_i = 0; level_i <= mip_count; level_i++) {
+		basist::basisu_image_level_info level;
+		tr.get_image_level_info(ptr, size, level, 0, level_i);
+		int ofs = Image::get_image_mipmap_offset(info.m_width, info.m_height, imgfmt, level_i);
+		bool ret = tr.transcode_image_level(ptr, size, 0, level_i, dst + ofs, level.m_total_blocks, format);
+		if (!ret) {
+			print_line(vformat("Basis universal cannot unpack level %d.", level_i));
+			break;
 		};
-	};
+	}
 
 	image = Image::create_from_data(info.m_width, info.m_height, info.m_total_levels > 1, imgfmt, gpudata);
 

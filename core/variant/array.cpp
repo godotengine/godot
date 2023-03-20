@@ -466,7 +466,7 @@ Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const {
 	ERR_FAIL_COND_V_MSG(p_step > 0 && begin > end, result, "Slice is positive, but bounds is decreasing.");
 	ERR_FAIL_COND_V_MSG(p_step < 0 && begin < end, result, "Slice is negative, but bounds is increasing.");
 
-	int result_size = (end - begin) / p_step;
+	int result_size = (end - begin) / p_step + (((end - begin) % p_step != 0) ? 1 : 0);
 	result.resize(result_size);
 
 	for (int src_idx = begin, dest_idx = 0; dest_idx < result_size; ++dest_idx) {

@@ -1056,6 +1056,14 @@ TEST_CASE("[Variant] Identity comparison") {
 	Variant obj_null_two_var = Variant((Object *)nullptr);
 	CHECK(obj_null_one_var.identity_compare(obj_null_one_var));
 	CHECK(obj_null_one_var.identity_compare(obj_null_two_var));
+
+	Object *freed_one = new Object();
+	Variant freed_one_var = freed_one;
+	delete freed_one;
+	Object *freed_two = new Object();
+	Variant freed_two_var = freed_two;
+	delete freed_two;
+	CHECK_FALSE(freed_one_var.identity_compare(freed_two_var));
 }
 
 TEST_CASE("[Variant] Nested array comparison") {

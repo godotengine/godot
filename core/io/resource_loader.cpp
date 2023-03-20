@@ -310,12 +310,6 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 			thread_load_mutex->unlock();
 			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "There is no thread loading source resource '" + p_source_resource + "'.");
 		}
-		//must be loading from this thread
-		if (thread_load_tasks[p_source_resource].loader_id != Thread::get_caller_id()) {
-			thread_load_mutex->unlock();
-			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Threading loading resource'" + local_path + " failed: Source specified: '" + p_source_resource + "' but was not called by it.");
-		}
-
 		//must not be already added as s sub tasks
 		if (thread_load_tasks[p_source_resource].sub_tasks.has(local_path)) {
 			thread_load_mutex->unlock();
@@ -447,15 +441,24 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 
 	ThreadLoadTask &load_task = thread_load_tasks[local_path];
 
-	if (!load_task.cond_var && load_task.status == THREAD_LOAD_IN_PROGRESS) {
-		// A condition variable was never created for this task.
-		// That happens when a load has been initiated with subthreads disabled,
-		// but now another load thread needs to interact with this one (either
-		// because of subthreads being used this time, or because it's simply a
-		// threaded load running on a different thread).
-		// Since we want to be notified when the load ends, we must create the
-		// condition variable now.
-		load_task.cond_var = memnew(ConditionVariable);
+	if (load_task.status == THREAD_LOAD_IN_PROGRESS) {
+		if (load_task.loader_id == Thread::get_caller_id()) {
+			// Load is in progress, but it's precisely this thread the one in charge.
+			// That means this is a cyclic load.
+			if (r_error) {
+				*r_error = ERR_BUSY;
+			}
+			return Ref<Resource>();
+		} else if (!load_task.cond_var) {
+			// Load is in progress, but a condition variable was never created for it.
+			// That happens when a load has been initiated with subthreads disabled,
+			// but now another load thread needs to interact with this one (either
+			// because of subthreads being used this time, or because it's simply a
+			// threaded load running on a different thread).
+			// Since we want to be notified when the load ends, we must create the
+			// condition variable now.
+			load_task.cond_var = memnew(ConditionVariable);
+		}
 	}
 
 	//cond var still exists, meaning it's still loading, request poll
@@ -483,13 +486,21 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 			print_lt("GET: load count: " + itos(thread_loading_count) + " / wait count: " + itos(thread_waiting_count) + " / suspended count: " + itos(thread_suspended_count) + " / active: " + itos(thread_loading_count - thread_suspended_count));
 		}
 
+		bool still_valid = true;
+		bool was_thread = load_task.thread;
 		do {
 			load_task.cond_var->wait(thread_load_lock);
+			if (!thread_load_tasks.has(local_path)) { //may have been erased during unlock and this was always an invalid call
+				still_valid = false;
+				break;
+			}
 		} while (load_task.cond_var); // In case of spurious wakeup.
 
-		thread_suspended_count--;
+		if (was_thread) {
+			thread_suspended_count--;
+		}
 
-		if (!thread_load_tasks.has(local_path)) { //may have been erased during unlock and this was always an invalid call
+		if (!still_valid) {
 			if (r_error) {
 				*r_error = ERR_INVALID_PARAMETER;
 			}

@@ -34,13 +34,14 @@
 # Lubomír Baloun <lubosbaloun@gmail.com>, 2022.
 # Ondřej Pavelka <flamekick97@gmail.com>, 2022, 2023.
 # ElisHoli <eliskaholz@seznam.cz>, 2023.
+# Bluie <hruza.ondrej@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-18 04:10+0000\n"
-"Last-Translator: Vojtěch Šamla <auzkok@seznam.cz>\n"
+"PO-Revision-Date: 2023-03-08 00:26+0000\n"
+"Last-Translator: Bluie <hruza.ondrej@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -48,7 +49,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16.2-dev\n"
+
+msgid "Physical"
+msgstr "Fyzická Klávesa"
 
 msgid "Left Mouse Button"
 msgstr "Levé tlačítko myši"
@@ -58,6 +62,9 @@ msgstr "Pravé tlačítko myši"
 
 msgid "Middle Mouse Button"
 msgstr "Prostřední tlačítko myši"
+
+msgid "Mouse Wheel Down"
+msgstr "Kolečko dolů"
 
 msgid "Button"
 msgstr "Tlačítko"

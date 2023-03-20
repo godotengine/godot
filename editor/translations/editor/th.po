@@ -11,7 +11,7 @@
 # Kongfa Waroros <gongpha@hotmail.com>, 2021.
 # Atirut Wattanamongkol <artjang301@gmail.com>, 2021.
 # PT 07 <porton555@gmail.com>, 2021.
-# SysError_ <ictsanook@hotmail.com>, 2021.
+# SysError_ <ictsanook@hotmail.com>, 2021, 2023.
 # Kanda Ninthfish <akkhaporn@gmail.com>, 2022.
 # Absurdnoobman <jakkalin91@gmail.com>, 2022.
 # Nuttapong Nut <nuttapong.510123@gmail.com>, 2023.
@@ -20,8 +20,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-18 07:45+0000\n"
-"Last-Translator: Nuttapong Nut <nuttapong.510123@gmail.com>\n"
+"PO-Revision-Date: 2023-03-06 00:25+0000\n"
+"Last-Translator: SysError_ <ictsanook@hotmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
 "Language: th\n"
@@ -29,7 +29,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16.2-dev\n"
 
 msgid "Unset"
 msgstr "ยกเลิกการตั้งค่า"
@@ -37,8 +37,174 @@ msgstr "ยกเลิกการตั้งค่า"
 msgid "Physical"
 msgstr "ทางกายภาพ"
 
+msgid "Left Mouse Button"
+msgstr "ปุ่มเมาส์ซ้าย"
+
+msgid "Right Mouse Button"
+msgstr "ปุ่มเมาส์ขวา"
+
+msgid "Middle Mouse Button"
+msgstr "ปุ่มเมาส์กลาง"
+
+msgid "Mouse Wheel Up"
+msgstr "เลื่อนล้อเมาส์ขึ้น"
+
+msgid "Mouse Wheel Down"
+msgstr "เลื่อนล้อเมาส์ลง"
+
+msgid "Mouse Wheel Left"
+msgstr "เลื่อนล้อเมาส์ซ้าย"
+
+msgid "Mouse Wheel Right"
+msgstr "เลื่อนล้อเมาส์ขวา"
+
+msgid "Mouse Thumb Button 1"
+msgstr "ปุ่มเมาส์นิ้วโป้ง 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "ปุ่มเมาส์นิ้วโป้ง 2"
+
 msgid "Button"
 msgstr "ปุ่ม"
+
+msgid "Double Click"
+msgstr "ดับเบิลคลิก"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "การเลื่อนเมาส์ที่ตำแหน่ง (%s) ด้วยอัตราเร็ว (%s)"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "จอยสติ๊กซ้าย แกน X, จอยสติ๊กที่ 0 แกน X"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "จอยสติ๊กซ้าย แกน Y, จอยสติ๊กที่ 0 แกน Y"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "จอยสติ๊กขวา แกน X, จอยสติ๊กที่ 1 แกน X"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "จอยสติ๊กขวา แกน Y, จอยสติ๊กที่ 1 แกน Y"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "จอยสติ๊กที่ 2 แกน X, ปุ่ม Left Trigger, จอย Sony L2, จอย Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "จอยสติ๊กที่ 2 แกน Y, ปุ่ม Right Trigger, จอย Sony R2, จอย Xbox RT"
+
+msgid "Joystick 3 X-Axis"
+msgstr "จอยสติ๊กที่ 3 แกน X"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "จอยสติ๊กที่ 3 แกน Y"
+
+msgid "Joystick 4 X-Axis"
+msgstr "จอยสติ๊กที่ 4 แกน X"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "จอยสติ๊กที่ 4 แกน Y"
+
+msgid "Unknown Joypad Axis"
+msgstr "ระนาบแกนของจอยที่ไม่รู้จัก"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "การเคลื่อนไหวของจอยที่แกน %d (%s) ด้วยค่า %.2f"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "ปุ่มจอยสั่งงานล่าง, จอย Sony X, จอย Xbox A, จอย Nintendo B"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "ปุ่มจอยสั่งงานขวา, จอย Sony O, จอย Xbox B, จอย Nintendo A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "ปุ่มจอยสั่งงานซ้าย, จอย Sony สี่เหลี่ยม, จอย Xbox X, จอย Nintendo Y"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "ปุ่มจอยสั่งงานบน, จอย Sony สามเหลี่ยม, จอย Xbox Y, จอย Nintendo X"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "ปุ่มจอยย้อนกลับ, จอย Sony Select, จอย Xbox ย้อนกลับ, จอย Nintendo -"
+
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "ปุ่มจอยนำทาง, จอย Sony ปุ่ม PS, จอย Xbox ปุ่ม Home"
+
+msgid "Start, Nintendo +"
+msgstr "ปุ่มจอยเริ่ม, จอย Nintendo +"
+
+msgid "Left Stick, Sony L3, Xbox L/LS"
+msgstr "ปุ่มข้างในจอยสติ๊กซ้าย, จอย Sony L3, จอย Xbox L/LS"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "ปุ่มข้างในจอยสติ๊กขวา, จอย Sony R3, จอย Xbox R/RS"
+
+msgid "Left Shoulder, Sony L1, Xbox LB"
+msgstr "ปุ่มจอยไหล่ซ้าย, จอย Sony L1, จอย Xbox LB"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "ปุ่มจอยไหล่ขวา, จอย Sony R1, จอย Xbox RB"
+
+msgid "D-pad Up"
+msgstr "ปุ่ม D-pad ลูกศรบน"
+
+msgid "D-pad Down"
+msgstr "ปุ่ม D-pad ลูกศรล่าง"
+
+msgid "D-pad Left"
+msgstr "ปุ่ม D-pad ลูกศรซ้าย"
+
+msgid "D-pad Right"
+msgstr "ปุ่ม D-pad ลูกศรขวา"
+
+msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "ปุ่ม Xbox Share, ปุ่มไมโครโฟน PS5, ปุ่ม Nintendo Capture"
+
+msgid "Xbox Paddle 1"
+msgstr "ปุ่มไม้พาย Xbox 1"
+
+msgid "Xbox Paddle 2"
+msgstr "ปุ่มไม้พาย Xbox 2"
+
+msgid "Xbox Paddle 3"
+msgstr "ปุ่มไม้พาย Xbox 3"
+
+msgid "Xbox Paddle 4"
+msgstr "ปุ่มไม้พาย Xbox 4"
+
+msgid "PS4/5 Touchpad"
+msgstr "ทัชแพดของ PS4/5"
+
+msgid "Joypad Button %d"
+msgstr "ปุ่มจอยที่ %d"
+
+msgid "Pressure:"
+msgstr "แรงกด:"
+
+msgid "touched"
+msgstr "แตะ"
+
+msgid "released"
+msgstr "ปล่อย"
+
+msgid "Screen %s at (%s) with %s touch points"
+msgstr "การสั่งงานหน้าจอ %s ที่ตำแหน่ง (s) ด้วยการแตะ %s จุด"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr "การลากที่หน้าจอด้วยจุดแตะ %s จุด ณ ตำแหน่ง (%s) ด้วยอัตราเร็ว (%s)"
+
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "การขยายหน้าจอที่ตำแหน่ง (%s) ด้วยอัตราขยาย %s"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "การเลื่อนหน้าจอที่ตำแหน่ง (%s) ด้วยอัตราส่วนต่าง (delta) ที่ (%s)"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "อุปกรณ์นำเข้า MIDI ที่ช่องสัญญาณ=%s รหัสข้อความ=%s"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "Input Event ด้วยทางลัด=%s"
+
+msgid "Accept"
+msgstr "ยอมรับ"
 
 msgid "Select"
 msgstr "เลือก"
@@ -46,14 +212,35 @@ msgstr "เลือก"
 msgid "Cancel"
 msgstr "ยกเลิก"
 
+msgid "Focus Next"
+msgstr "เลือกโฟกัสที่องค์ประกอบถัดไป"
+
+msgid "Focus Prev"
+msgstr "เลือกโฟกัสที่องค์ประกอบก่อนหน้า"
+
+msgid "Left"
+msgstr "ซ้าย"
+
+msgid "Right"
+msgstr "ขวา"
+
 msgid "Up"
-msgstr "ขึ้น"
+msgstr "บน"
 
 msgid "Down"
-msgstr "ลง"
+msgstr "ล่าง"
+
+msgid "Page Up"
+msgstr "ปุ่มเลื่อนหน้าขึ้น (PgUp)"
+
+msgid "Page Down"
+msgstr "ปุ่มเลื่อนหน้าขึ้น (PgDn)"
+
+msgid "Home"
+msgstr "ปุ่มเลื่อนไปบนสุด Home"
 
 msgid "End"
-msgstr "จบ"
+msgstr "ปุ่มเลื่อนไปล่างสุด (End)"
 
 msgid "Cut"
 msgstr "ตัด"
@@ -70,11 +257,104 @@ msgstr "ยกเลิกการกระทำ"
 msgid "Redo"
 msgstr "ทำซ้ำ"
 
+msgid "Completion Query"
+msgstr "ตัวช่วยเติมโค้ด"
+
+msgid "New Line"
+msgstr "บรรทัดใหม่"
+
+msgid "New Blank Line"
+msgstr "บรรทัดว่างใหม่"
+
+msgid "New Line Above"
+msgstr "บรรทัดใหม่ด้านบน"
+
+msgid "Indent"
+msgstr "ย่อหน้า"
+
+msgid "Backspace"
+msgstr "ลบไปทางซ้าย"
+
+msgid "Backspace Word"
+msgstr "ลบไปทางซ้ายทั้งคำ"
+
+msgid "Backspace all to Left"
+msgstr "ลบไปทางซ้ายจนสุดบรรทัด"
+
 msgid "Delete"
-msgstr "ลบ"
+msgstr "ลบไปทางขวา"
+
+msgid "Delete Word"
+msgstr "ลบไปทางขวาทั้งคำ"
+
+msgid "Delete all to Right"
+msgstr "ลบไปทางขวาจนสุดบรรทัด"
+
+msgid "Caret Left"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปทางซ้าย"
+
+msgid "Caret Word Left"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปทางซ้ายทั้งคำ"
+
+msgid "Caret Right"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปทางขวา"
+
+msgid "Caret Word Right"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปทางขวาทั้งคำ"
+
+msgid "Caret Up"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปด้านบน"
+
+msgid "Caret Down"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปด้านล่าง"
+
+msgid "Caret Line Start"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปทางซ้ายบรรทัด"
+
+msgid "Caret Line End"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปทางขวาบรรทัด"
+
+msgid "Caret Page Up"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปด้านบนหนึ่งหน้า"
+
+msgid "Caret Page Down"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปด้านล่างหนึ่งหน้า"
+
+msgid "Caret Document Start"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปบนสุดเอกสาร"
+
+msgid "Caret Document End"
+msgstr "เลื่อนเคอร์เซอร์พิมพ์ไปล่างสุดเอกสาร"
+
+msgid "Caret Add Below"
+msgstr "เพิ่มเคอร์เซอร์พิมพ์ไปด้านล่าง"
+
+msgid "Caret Add Above"
+msgstr "เพิ่มเคอร์เซอร์พิมพ์ไปด้านบน"
+
+msgid "Scroll Up"
+msgstr "เลื่อนไปด้านบน"
+
+msgid "Scroll Down"
+msgstr "เลื่อนไปด้านล่าง"
 
 msgid "Select All"
 msgstr "เลือกทั้งหมด"
+
+msgid "Select Word Under Caret"
+msgstr "เลือกคำใต้เคอร์เซอร์พิมพ์"
+
+msgid "Add Selection for Next Occurrence"
+msgstr "เพิ่มที่เลือกสำหรับการค้นคำจุดถัดไป"
+
+msgid "Clear Carets and Selection"
+msgstr "เคลียร์เคอร์เซอร์พิมพ์และที่เลือก"
+
+msgid "Toggle Insert Mode"
+msgstr "สลับโหมดแทรกข้อความ"
+
+msgid "Submit Text"
+msgstr "ส่งข้อความ"
 
 msgid "Duplicate Nodes"
 msgstr "ทำซ้ำโหนด"
@@ -82,26 +362,47 @@ msgstr "ทำซ้ำโหนด"
 msgid "Delete Nodes"
 msgstr "ลบโหนด"
 
+msgid "Go Up One Level"
+msgstr "เลื่อนขึ้นไปหนึ่งระดับ"
+
 msgid "Refresh"
 msgstr "รีเฟรช"
 
+msgid "Show Hidden"
+msgstr "แสดงที่ซ่อนอยู่"
+
+msgid "Swap Input Direction"
+msgstr "สลับทิศทางอินพุต"
+
+msgid "Invalid input %d (not passed) in expression"
+msgstr "อินพุต %d (ไม่ส่งผ่าน) ใน expression ไม่ถูกต้อง"
+
 msgid "self can't be used because instance is null (not passed)"
-msgstr "คีย์เวิร์ด self ไม่สามารถใช้งานได้เนื่องจากตัวอินสแตนซ์เป็นค่า null (ไม่ส่งผ่าน)"
+msgstr "คีย์เวิร์ด self ไม่สามารถใช้งานได้เนื่องจาก instance เป็น null (ไม่ส่งผ่าน)"
 
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "ตัวดำเนินการไม่ถูกต้องสำหรับโอเปอเรเตอร์ %s, %s และ %s"
+msgstr "ตัวถูกดำเนินการไม่ถูกต้องสำหรับตัวดำเนินการ %s, %s และ %s"
 
 msgid "Invalid index of type %s for base type %s"
-msgstr "ดัชนีของชนิดตัวแปร '%s' ไม่ถูกต้องสำหรับชนิดต้นแบบ %s"
+msgstr "ตำแหน่งดัชนี %s ไม่ถูกต้องสำหรับชนิดของ %s"
 
 msgid "Invalid named index '%s' for base type %s"
-msgstr "ชื่อสำหรับดัชนีของ '%s' ไม่ถูกต้องสำหรับชนิดต้นแบบ %s"
+msgstr "ดัชนีชื่อ '%s' ไม่ถูกต้องสำหรับชนิดของ %s"
 
 msgid "Invalid arguments to construct '%s'"
-msgstr "อาร์กิวเมนต์ของคอนสตรัค '%s' ผิดพลาด"
+msgstr "ค่า argument ไม่ถูกต้องสำหรับสร้าง '%s'"
+
+msgid "On call to '%s':"
+msgstr "ขณะเรียก '%s':"
+
+msgid "Built-in script"
+msgstr "สคริปต์แบบฝังโหนด"
+
+msgid "Built-in"
+msgstr "ตั้งให้เป็นสคริปต์แบบฝังโหนด"
 
 msgid "B"
-msgstr "B"
+msgstr "ไบต์"
 
 msgid "KiB"
 msgstr "KiB"
@@ -121,22 +422,61 @@ msgstr "PiB"
 msgid "EiB"
 msgstr "EiB"
 
+msgid "Example: %s"
+msgstr "ตัวอย่าง: %s"
+
+msgid "%d item"
+msgid_plural "%d items"
+msgstr[0] "%d หน่วย"
+
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
-msgstr "ชื่อผิดพลาด ไม่สามารถเป็นช่องว่างหรือประกอบด้วย '/', ':', '=', '\\' หรือ '\"'"
+msgstr ""
+"ชื่อ Action ไม่ถูกต้อง ไม่สามารถเป็นค่าว่างหรือประกอบด้วยสัญลักษณ์ '/', ':', '=', '\\' หรือ "
+"'\"'"
 
 msgid "An action with the name '%s' already exists."
-msgstr "มีการกระทำ '%s' อยู่แล้ว"
+msgstr "มีชื่อของ Action '%s' อยู่แล้ว"
+
+msgid "Cannot Revert - Action is same as initial"
+msgstr "ย้อนกลับไม่ได้ - Action เหมือนกับตอนเริ่มต้น"
+
+msgid "Revert Action"
+msgstr "ย้อนกลับ Action"
 
 msgid "Add Event"
-msgstr "เพิ่มปุ่มกด"
+msgstr "เพิ่ม Event"
+
+msgid "Remove Action"
+msgstr "ลบ Action"
+
+msgid "Cannot Remove Action"
+msgstr "ไม่สามารถลบ Action ได้"
+
+msgid "Edit Event"
+msgstr "แก้ไข Event"
+
+msgid "Remove Event"
+msgstr "ลบ Event"
+
+msgid "Filter by name..."
+msgstr "กรองด้วยชื่อ..."
+
+msgid "Clear All"
+msgstr "ล้างทั้งหมด"
+
+msgid "Add New Action"
+msgstr "เพิ่ม Action ใหม่"
 
 msgid "Add"
 msgstr "เพิ่ม"
 
+msgid "Show Built-in Actions"
+msgstr "แสดง Action ที่ติดตัวมา"
+
 msgid "Action"
-msgstr "การกระทำ"
+msgstr "Action"
 
 msgid "Deadzone"
 msgstr "Deadzone"
@@ -147,50 +487,131 @@ msgstr "เวลา:"
 msgid "Value:"
 msgstr "ค่า:"
 
+msgid "Update Selected Key Handles"
+msgstr "อัปเดต Key Handle ที่เลือก"
+
+msgid "Insert Key Here"
+msgstr "เพิ่ม Key ที่นี่"
+
 msgid "Duplicate Selected Key(s)"
-msgstr "คัดลอกคีย์ที่เลือก"
+msgstr "คัดลอก Key ที่เลือก"
 
 msgid "Delete Selected Key(s)"
-msgstr "ลบคีย์ที่เลือก"
+msgstr "ลบ Key ที่เลือก"
+
+msgid "Make Handles Free"
+msgstr "ทำให้ Handles เป็นอิสระ"
+
+msgid "Make Handles Linear"
+msgstr "ทำให้ Handles เป็นค่าเชิงเส้น"
+
+msgid "Make Handles Balanced"
+msgstr "ทำให้ Handles เป็นค่าสมดุล"
+
+msgid "Make Handles Mirrored"
+msgstr "ทำให้ Handles เป็นค่าสะท้อน"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "ทำให้ค่า Handles เป็นค่าสมดุล (Auto Tangent)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "ทำให้ Handles เป็นค่าสะท้อน (Auto Tangent)"
 
 msgid "Add Bezier Point"
-msgstr "เพิ่มจุดเบซิเยร์"
+msgstr "เพิ่มจุด Bezier"
 
 msgid "Move Bezier Points"
-msgstr "ย้ายจุดเบซิเยร์"
+msgstr "ย้ายจุด Bezier"
+
+msgid "Animation Duplicate Keys"
+msgstr "ทำซ้ำ Animation Key เหล่านี้"
+
+msgid "Animation Delete Keys"
+msgstr "ลบ Animation Key เหล่านี้"
+
+msgid "Focus"
+msgstr "โฟกัส"
+
+msgid "Select All Keys"
+msgstr "เลือก Key ทั้งหมด"
+
+msgid "Deselect All Keys"
+msgstr "ยกเลิกการเลือก Key ทั้งหมด"
+
+msgid "Animation Change Transition"
+msgstr "เปลี่ยนรูปแบบการเคลื่อนผ่าน (Transition) ของ Animation"
+
+msgid "Animation Change %s"
+msgstr "แก้ไขค่า Animation %s"
+
+msgid "Animation Change Keyframe Value"
+msgstr "แก้ไขค่า Keyframe ของ Animation"
+
+msgid "Animation Change Call"
+msgstr "แก้ไขค่าเรียกใช้ (Call) ของ Animation"
+
+msgid "Animation Multi Change Transition"
+msgstr "เปลี่ยนรูปแบบการเคลื่อนผ่าน (Transition) ของ Animation หลายตัว"
+
+msgid "Animation Multi Change %s"
+msgstr "แก้ไขค่า Animation หลายตัว %s"
+
+msgid "Animation Multi Change Keyframe Value"
+msgstr "แก้ไขค่า Keyframe ของ Animation หลายตัว"
+
+msgid "Animation Multi Change Call"
+msgstr "แก้ไขค่าเรียกใช้ (Call) ของ Animation หลายตัว"
 
 msgid "Change Animation Length"
-msgstr "แก้ไขความยาวแอนิเมชัน"
+msgstr "แก้ไขความยาวของ Animation"
 
 msgid "Change Animation Loop"
-msgstr "แก้ไขการวนซ้ำของแอนิเมชัน"
+msgstr "เปลี่ยนรูปแบบโหมดวนซ้ำ (Loop) ของ Animation"
+
+msgid "Can't change loop mode on animation instanced from imported scene."
+msgstr "ไม่สามารถแก้ไขโหมดวนซ้ำ (Loop) ของ Animation จากฉากที่นำเข้ามาได้"
+
+msgid "Can't change loop mode on animation embedded in another scene."
+msgstr "ไม่สามารถแก้ไขโหมดวนซ้ำ (Loop) ของ Animation ที่ฝังอยู่อีกฉากหนึ่งได้"
 
 msgid "Property Track"
-msgstr "แทร็กคุณสมบัติ"
+msgstr "Track คุณสมบัติ"
+
+msgid "3D Position Track"
+msgstr "Track ตำแหน่ง 3D"
+
+msgid "3D Rotation Track"
+msgstr "Track การหมุน 3D"
+
+msgid "3D Scale Track"
+msgstr "Track การเปลี่ยนขนาด 3D"
+
+msgid "Blend Shape Track"
+msgstr "Track รูปทรงการ Blend"
 
 msgid "Call Method Track"
-msgstr "เรียกแทร็กเมธอด"
+msgstr "Track การเรียกใช้ Method"
 
 msgid "Bezier Curve Track"
-msgstr "แทร็กเส้นโค้งเบซิเยร์"
+msgstr "Track เส้นโค้ง Bezier"
 
 msgid "Audio Playback Track"
-msgstr "แทร็กการเล่นเสียง"
+msgstr "Track การเล่นเสียง"
 
 msgid "Animation Playback Track"
-msgstr "แทร็กการเล่นแอนิเมชัน"
+msgstr "Track การเล่น Animation"
 
 msgid "Animation length (frames)"
-msgstr "ความยาวแอนิเมชัน (เฟรม)"
+msgstr "ความยาว Animation (เฟรม)"
 
 msgid "Animation length (seconds)"
-msgstr "ความยาวแอนิเมชัน (วินาที)"
+msgstr "ความยาว Animation (วินาที)"
 
 msgid "Add Track"
-msgstr "เพิ่มแทร็ก"
+msgstr "เพิ่ม Track"
 
 msgid "Animation Looping"
-msgstr "การวนซ้ำแอนิเมชัน"
+msgstr "การวนซ้ำ Animation"
 
 msgid "Functions:"
 msgstr "ฟังก์ชัน:"
@@ -198,32 +619,89 @@ msgstr "ฟังก์ชัน:"
 msgid "Audio Clips:"
 msgstr "คลิปเสียง:"
 
+msgid "Animation Clips:"
+msgstr "คลิป Animation:"
+
 msgid "Change Track Path"
-msgstr "เปลี่ยนที่อยู่แทร็ก"
+msgstr "เปลี่ยนตำแหน่งที่อยู่ Track"
 
 msgid "Toggle this track on/off."
-msgstr "เปิด/ปิดแทร็กนี้"
+msgstr "เปิด/ปิด Track นี้"
+
+msgid "Use Blend"
+msgstr "ใช้การ Blend"
 
 msgid "Update Mode (How this property is set)"
-msgstr "โหมดอัพเดท (คุณสมบัตินี้ถูกตั้งค่าได้อย่างไร)"
+msgstr "อัปเดตโหมด (ตามที่คุณสมบัตินี้ถูกตั้งค่าไว้)"
 
 msgid "Interpolation Mode"
-msgstr "โหมดการแก้ไข"
+msgstr "โหมดเหลื่อมค่า (Interpolation)"
 
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
-msgstr "โหมดวนลูป (เหลื่อมจุดสิ้นสุดด้วยจุดเริ่มต้นบนลูป)"
+msgstr "โหมดวนซ้ำแบบห่อหุ้ม (เหลื่อมจุดสิ้นสุดด้วยจุดเริ่มต้นบนลูป)"
 
 msgid "Remove this track."
-msgstr "ลบแทร็กนี้"
+msgstr "ลบ Track นี้"
+
+msgid "Time (s):"
+msgstr "เวลา (วินาที):"
+
+msgid "Position:"
+msgstr "ตำแหน่ง:"
+
+msgid "Rotation:"
+msgstr "การหมุน:"
 
 msgid "Scale:"
-msgstr "อัตราส่วน:"
+msgstr "ขนาด:"
+
+msgid "Blend Shape:"
+msgstr "รูปร่างการ Blend:"
 
 msgid "Type:"
-msgstr "ประเภท:"
+msgstr "ชนิด:"
+
+msgid "(Invalid, expected type: %s)"
+msgstr "(ไม่ถูกต้อง, ต้องการชนิดของ: %s)"
+
+msgid "Easing:"
+msgstr "ชนิดการ Ease:"
+
+msgid "In-Handle:"
+msgstr "In-Handle:"
+
+msgid "Out-Handle:"
+msgstr "Out-Handle:"
+
+msgid "Handle mode: Free\n"
+msgstr "โหมด Handle: อิสระ\n"
+
+msgid "Handle mode: Linear\n"
+msgstr "โหมด Handle: เชิงเส้น\n"
+
+msgid "Handle mode: Balanced\n"
+msgstr "โหมด Handle: สมดุล\n"
+
+msgid "Handle mode: Mirrored\n"
+msgstr "โหมด Handle: สะท้อน\n"
+
+msgid "Stream:"
+msgstr "การ Stream:"
+
+msgid "Start (s):"
+msgstr "เริ่ม (วิ):"
+
+msgid "End (s):"
+msgstr "สิ้นสุด (วิ):"
+
+msgid "Animation Clip:"
+msgstr "คลิป Animation:"
 
 msgid "Toggle Track Enabled"
-msgstr "เปิดการใช้งานการติดตามแทร็ก"
+msgstr "เปิด/ปิดการเปิดใช้ Track"
+
+msgid "Don't Use Blend"
+msgstr "ไม่ใช้โหมด Blend"
 
 msgid "Continuous"
 msgstr "ต่อเนื่อง"
@@ -238,10 +716,16 @@ msgid "Nearest"
 msgstr "ใกล้ที่สุด"
 
 msgid "Linear"
-msgstr "เส้นตรง"
+msgstr "เชิงเส้น"
 
 msgid "Cubic"
-msgstr "ลูกบาศก์"
+msgstr "สมการลูกบาศก์"
+
+msgid "Linear Angle"
+msgstr "เชิงเส้น (Angle)"
+
+msgid "Cubic Angle"
+msgstr "สมการลูกบาศก์ (Angle)"
 
 msgid "Clamp Loop Interp"
 msgstr "ค่าต่ำสุด/สูงสุดของการวนลูป"

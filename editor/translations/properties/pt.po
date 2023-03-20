@@ -37,16 +37,16 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-01-11 19:51+0000\n"
-"Last-Translator: ssantos <ssantos@web.de>\n"
+"PO-Revision-Date: 2023-03-05 08:38+0000\n"
+"Last-Translator: Wesley PI <wesleypi2@hotmail.com.br>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
-"godot/pt/>\n"
+"godot-properties/pt/>\n"
 "Language: pt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.15.1-dev\n"
+"X-Generator: Weblate 4.16.2-dev\n"
 
 msgid "Application"
 msgstr "Aplicação"
@@ -56,6 +56,9 @@ msgstr "Configurações"
 
 msgid "Name"
 msgstr "Nome"
+
+msgid "Name Localized"
+msgstr "Nome Localizado"
 
 msgid "Description"
 msgstr "Descrição"
@@ -93,8 +96,23 @@ msgstr "Janela"
 msgid "Size"
 msgstr "Tamanho"
 
+msgid "Viewport Width"
+msgstr "Largura da Viewport"
+
+msgid "Viewport Height"
+msgstr "Altura da ViewportViewport"
+
 msgid "Mode"
 msgstr "Modo"
+
+msgid "Initial Position Type"
+msgstr "Tipo da Posição Inicial"
+
+msgid "Initial Position"
+msgstr "Posição Inicial"
+
+msgid "Initial Screen"
+msgstr "Tela Inicial"
 
 msgid "Resizable"
 msgstr "Redimensionável"
@@ -104,6 +122,18 @@ msgstr "Sem bordas"
 
 msgid "Transparent"
 msgstr "Transparente"
+
+msgid "Extend to Title"
+msgstr "Estende ao Titulo"
+
+msgid "No Focus"
+msgstr "Sem Foco"
+
+msgid "Window Width Override"
+msgstr "Sobrepõe a Largura da Janela"
+
+msgid "Window Height Override"
+msgstr "Sobrepõe a Altura da Janela"
 
 msgid "Energy Saving"
 msgstr "Economia de Energia"
@@ -116,9 +146,6 @@ msgstr "Áudio"
 
 msgid "Editor"
 msgstr "Editor"
-
-msgid "Main Run Args"
-msgstr "Argumentos da Execução Principal"
 
 msgid "Physics"
 msgstr "Física"
@@ -152,6 +179,9 @@ msgstr "Limites"
 
 msgid "GUI"
 msgstr "Interface Gráfica"
+
+msgid "Vulkan"
+msgstr "Vulkan"
 
 msgid "Low Processor Usage Mode"
 msgstr "Modo de Baixa Utilização do Processador"
@@ -200,6 +230,9 @@ msgstr "Fator"
 
 msgid "Button Index"
 msgstr "Índice do Botão"
+
+msgid "Double Click"
+msgstr "Clique Duplo"
 
 msgid "Tilt"
 msgstr "Inclinar"
@@ -1125,6 +1158,9 @@ msgstr "Senha"
 msgid "Compress"
 msgstr "Comprimir"
 
+msgid "Language"
+msgstr "Idioma/Dialeto"
+
 msgid "Outline Size"
 msgstr "Tamanho do Contorno"
 
@@ -1332,6 +1368,9 @@ msgstr "Usar Threads"
 msgid "Available URLs"
 msgstr "URLs Disponíveis"
 
+msgid "Unset"
+msgstr "Desativar"
+
 msgid "Error"
 msgstr "Erro"
 
@@ -1422,6 +1461,9 @@ msgstr "Caminho da Chave Pública SSH"
 msgid "SSH Private Key Path"
 msgstr "Caminho da Chave Privada SSH"
 
+msgid "Main Run Args"
+msgstr "Argumentos da Execução Principal"
+
 msgid "Show Scene Tree Root Selection"
 msgstr "Mostrar seleção da hierarquia de cenas"
 
@@ -1487,6 +1529,9 @@ msgstr "iOS"
 
 msgid "Hide Home Indicator"
 msgstr "Esconder Indicador de Home"
+
+msgid "XR"
+msgstr "XR"
 
 msgid "Boot Splash"
 msgstr "Plano de Fundo de Inicialização"
@@ -2688,6 +2733,9 @@ msgstr "Emitindo"
 msgid "Time"
 msgstr "Tempo"
 
+msgid "One Shot"
+msgstr "Disparo Único"
+
 msgid "Preprocess"
 msgstr "Pré processamento"
 
@@ -3309,6 +3357,9 @@ msgstr "Deslocamento do Pivô"
 msgid "Localization"
 msgstr "Localização"
 
+msgid "Focus"
+msgstr "Foco"
+
 msgid "Next"
 msgstr "Próximo"
 
@@ -3393,6 +3444,9 @@ msgstr "Esconder Raiz"
 msgid "Paused"
 msgstr "Pausado"
 
+msgid "Expand"
+msgstr "Expandir"
+
 msgid "Self Modulate"
 msgstr "Auto Modular"
 
@@ -3458,6 +3512,12 @@ msgstr "Tamanho Mínimo"
 
 msgid "Max Size"
 msgstr "Tamanho Máximo"
+
+msgid "2D Physics"
+msgstr "Física 2D"
+
+msgid "3D Physics"
+msgstr "Física 3D"
 
 msgid "Format"
 msgstr "Formato"
@@ -3717,6 +3777,9 @@ msgstr "Usar HDR"
 msgid "From"
 msgstr "À Partir de"
 
+msgid "To"
+msgstr "Para"
+
 msgid "Frames"
 msgstr "Quadros"
 
@@ -3731,6 +3794,9 @@ msgstr "Função"
 
 msgid "Plane"
 msgstr "Plano"
+
+msgid "Custom"
+msgstr "Personalizar"
 
 msgid "Random Pitch"
 msgstr "Timbre Aleatório"

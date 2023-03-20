@@ -44,13 +44,14 @@
 # 오지훈 <jule1130@naver.com>, 2023.
 # 이정희 <daemul72@gmail.com>, 2023.
 # nulta <un5450@naver.com>, 2023.
+# jaehun choe <jayden.choe@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-24 12:28+0000\n"
-"Last-Translator: Myeongjin Lee <aranet100@gmail.com>\n"
+"PO-Revision-Date: 2023-03-05 01:38+0000\n"
+"Last-Translator: jaehun choe <jayden.choe@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -58,7 +59,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16.2-dev\n"
 
 msgid "Unset"
 msgstr "설정 해제"
@@ -210,6 +211,9 @@ msgstr "압력:"
 msgid "touched"
 msgstr "터치"
 
+msgid "released"
+msgstr "출시된"
+
 msgid "Screen %s at (%s) with %s touch points"
 msgstr "터치 포인트가 %s개인 (%s)의 %s 화면"
 
@@ -257,6 +261,15 @@ msgstr "위"
 msgid "Down"
 msgstr "아래"
 
+msgid "Page Up"
+msgstr "페이지 업"
+
+msgid "Page Down"
+msgstr "페이지 다운"
+
+msgid "Home"
+msgstr "홈"
+
 msgid "End"
 msgstr "끝"
 
@@ -275,11 +288,20 @@ msgstr "실행 취소"
 msgid "Redo"
 msgstr "다시 실행"
 
+msgid "New Line"
+msgstr "뉴라인"
+
 msgid "New Blank Line"
-msgstr "새로운 빈 줄"
+msgstr "뉴라인(Blank)"
+
+msgid "New Line Above"
+msgstr "뉴라인(위로)"
 
 msgid "Indent"
 msgstr "들여쓰기"
+
+msgid "Backspace"
+msgstr "백스페이스"
 
 msgid "Backspace Word"
 msgstr "백스페이스 단어"
@@ -289,6 +311,9 @@ msgstr "모두 왼쪽으로 백스페이스"
 
 msgid "Delete"
 msgstr "삭제"
+
+msgid "Delete Word"
+msgstr "단어 삭제"
 
 msgid "Caret Add Above"
 msgstr "위에 캐럿 추가"
@@ -453,7 +478,7 @@ msgstr "애니메이션 루프 바꾸기"
 
 msgid "Can't change loop mode on animation instanced from imported scene."
 msgstr ""
-"임포트된 씬에서 인스턴스화된 애니메이션의 루프 모드를 변경할 수 없습니다."
+"가져온 씬에서 인스턴스화된 애니메이션의 루프 모드를 변경할 수 없습니다."
 
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr "다른 장면에 임베드된 애니메이션의 루프 모드를 변경할 수 없습니다."
@@ -3651,7 +3676,7 @@ msgid ""
 "FBX2glTF is required for importing FBX files.\n"
 "Please download it and provide a valid path to the binary:"
 msgstr ""
-"FBX 파일을 임포트하려면 FBX2glTF가 필요합니다.\n"
+"FBX 파일을 가져오려면 FBX2glTF가 필요합니다.\n"
 "다운로드하고 바이너리의 유효한 경로를 제공하세요:"
 
 msgid "Click this link to download FBX2glTF"
@@ -4003,6 +4028,9 @@ msgstr "글꼴 텍스처를 로드할 수 없습니다:"
 msgid "Image margin too big."
 msgstr "이미지 여백이 너무 큽니다."
 
+msgid "Character margin too bit."
+msgstr "문자 여백이 너무 큽니다."
+
 msgid "Importing Scene..."
 msgstr "씬 가져오는 중..."
 
@@ -4025,17 +4053,97 @@ msgid "Saving..."
 msgstr "저장 중..."
 
 msgid ""
+"Error importing GLSL shader file: '%s'. Open the file in the filesystem dock "
+"in order to see the reason."
+msgstr ""
+"GLSL 셰이더 파일을 가져오는 동안 오류가 발생했습니다: '%s'. 파일 시스템 도크"
+"에서 파일을 열어 이유를 확인하세요."
+
+msgid ""
 "%s: Texture detected as used as a normal map in 3D. Enabling red-green "
 "texture compression to reduce memory usage (blue channel is discarded)."
 msgstr ""
 "%s: 텍스처가 3D에서 노멀 맵으로 사용되는 것으로 감지되었습니다. 메모리 사용량"
 "을 줄이기 위해 빨강-초록 텍스처 압축을 활성화합니다(파란색 채널은 버려짐)."
 
+msgid "2D/3D (Auto-Detect)"
+msgstr "2D/3D(자동 감지)"
+
 msgid "2D"
 msgstr "2D"
 
 msgid "3D"
 msgstr "3D"
+
+msgid ""
+"Type: %s\n"
+"Import ID: %s"
+msgstr ""
+"유형: %s\n"
+"가져오기 ID: %s"
+
+msgid "Advanced Import Settings for AnimationLibrary '%s'"
+msgstr "애니메이션 라이브러리 '%s'에 대한 고급 가져오기 설정"
+
+msgid "Advanced Import Settings for Scene '%s'"
+msgstr "씬 '%s'에 대한 고급 가져오기 설정"
+
+msgid "Select folder where mesh resources will save on import"
+msgstr "임포트 시 메시 리소스를 저장할 폴더를 선택합니다"
+
+msgid "Select folder where animations will save on import"
+msgstr "가져오기 시 애니메이션을 저장할 폴더를 선택합니다"
+
+msgid "Existing file with the same name will be replaced."
+msgstr "같은 이름의 기존 파일은 대체됩니다."
+
+msgid ""
+"This material already references an external file, no action will be taken.\n"
+"Disable the external property for it to be extracted again."
+msgstr ""
+"이 자료는 이미 외부 파일을 참조하고 있으므로 아무 조치도 취해지지 않습니다.\n"
+"외부 속성을 비활성화하면 다시 추출할 수 있습니다."
+
+msgid ""
+"Material has no name nor any other way to identify on re-import.\n"
+"Please name it or ensure it is exported with an unique ID."
+msgstr ""
+"재 가져오기 시 식별할 수 있는 이름이나 다른 방법이 없는 자료입니다.\n"
+"이름을 지정하거나 고유 ID로 내보내야 합니다."
+
+msgid "Extract Materials to Resource Files"
+msgstr "리소스 파일로 자료 추출"
+
+msgid ""
+"This mesh already saves to an external resource, no action will be taken."
+msgstr ""
+"이 메시가 이미 외부 리소스에 저장되어 있으므로 아무 작업도 수행되지 않습니다."
+
+msgid "Existing file with the same name will be replaced on import."
+msgstr "가져오기 시 같은 이름의 기존 파일이 대체됩니다."
+
+msgid ""
+"Mesh has no name nor any other way to identify on re-import.\n"
+"Please name it or ensure it is exported with an unique ID."
+msgstr ""
+"메시에는 다시 가져올 때 식별할 수 있는 이름이나 다른 방법이 없습니다.\n"
+"이름을 지정하거나 고유 ID로 내보내야 합니다."
+
+msgid "Set paths to save meshes as resource files on Reimport"
+msgstr "리임포트 시 메시를 리소스 파일로 저장할 경로 설정"
+
+msgid ""
+"This animation already saves to an external resource, no action will be "
+"taken."
+msgstr ""
+"이 애니메이션은 이미 외부 리소스에 저장되어 있으므로 아무 작업도 수행되지 않"
+"습니다."
+
+msgid "Can't make material external to file, write error:"
+msgstr "자료를 파일 외부로 만들 수 없음, 쓰기 오류가 발생했습니다:"
+
+msgid "Set Mesh Save Paths"
+msgstr "메시 저장 경로 설정"
 
 msgid "Meshes"
 msgstr "메쉬"
@@ -4097,8 +4205,20 @@ msgstr ""
 "파일 시스템 또는 검사기에서 리소스 파일을 선택하여 가져오기 설정을 조정하십시"
 "오."
 
+msgid "No Event Configured"
+msgstr "구성된 이벤트 없음"
+
+msgid "Keyboard Keys"
+msgstr "키보드 키"
+
 msgid "Device:"
 msgstr "기기:"
+
+msgid ""
+"Automatically remaps between 'Meta' ('Command') and 'Control' depending on "
+"current platform."
+msgstr ""
+"현재 플랫폼에 따라 '메타'('명령어')와 '제어' 사이를 자동으로 리매핑합니다."
 
 msgid "Failed to load resource."
 msgstr "리소스를 불러오지 못했습니다."
@@ -9130,6 +9250,9 @@ msgstr "식별자가 누락되어 있습니다."
 
 msgid "The character '%s' is not allowed in Identifier."
 msgstr "문자 '%s'은(는) 식별자에 쓸 수 없습니다."
+
+msgid "Stop and uninstall"
+msgstr "멈춤 및 설치 제거"
 
 msgid "Could not open icon file \"%s\"."
 msgstr "아이콘 파일 \"%s\"를 열 수 없습니다."

@@ -2941,7 +2941,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			return hash_one_uint64((uint64_t)_data._int);
 		} break;
 		case FLOAT: {
-			return hash_murmur3_one_float(_data._float);
+			return hash_murmur3_one_double(_data._float);
 		} break;
 		case STRING: {
 			return reinterpret_cast<const String *>(_data._mem)->hash();
@@ -3158,7 +3158,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 				}
 				return hash_fmix32(h);
 			} else {
-				return hash_murmur3_one_float(0.0);
+				return hash_murmur3_one_double(0.0);
 			}
 
 		} break;
@@ -3499,7 +3499,7 @@ bool Variant::identity_compare(const Variant &p_variant) const {
 
 	switch (type) {
 		case OBJECT: {
-			return _get_obj().obj == p_variant._get_obj().obj;
+			return _get_obj().id == p_variant._get_obj().id;
 		} break;
 
 		case DICTIONARY: {

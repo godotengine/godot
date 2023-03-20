@@ -100,10 +100,27 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 
 	if (is_backup_save_enabled() && (p_mode_flags == WRITE)) {
 		save_path = path;
-		path = path + ".tmp";
-	}
+		// Create a temporary file in the same directory as the target file.
+		path = path + "-XXXXXX";
+		CharString cs = path.utf8();
+		int fd = mkstemp(cs.ptrw());
+		if (fd == -1) {
+			last_error = ERR_FILE_CANT_OPEN;
+			return last_error;
+		}
+		path = String::utf8(cs.ptr());
 
-	f = fopen(path.utf8().get_data(), mode_string);
+		f = fdopen(fd, mode_string);
+		if (f == nullptr) {
+			// Delete temp file and close descriptor if open failed.
+			::unlink(cs.ptr());
+			::close(fd);
+			last_error = ERR_FILE_CANT_OPEN;
+			return last_error;
+		}
+	} else {
+		f = fopen(path.utf8().get_data(), mode_string);
+	}
 
 	if (f == nullptr) {
 		switch (errno) {
@@ -143,7 +160,7 @@ void FileAccessUnix::_close() {
 	}
 
 	if (!save_path.is_empty()) {
-		int rename_error = rename((save_path + ".tmp").utf8().get_data(), save_path.utf8().get_data());
+		int rename_error = rename(path.utf8().get_data(), save_path.utf8().get_data());
 
 		if (rename_error && close_fail_notify) {
 			close_fail_notify(save_path);
