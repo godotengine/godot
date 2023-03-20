@@ -1,13 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="InputEventFromWindow" inherits="InputEvent" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Base class for [InputEvent]s from a [Window].
 	</brief_description>
 	<description>
+		Contains a [Window]'s identifying number [member window_id] for an [InputEvent] emitted from a [Window].
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
 		<member name="window_id" type="int" setter="set_window_id" getter="get_window_id" default="0">
+			The [Window] id number for an [InputEvent] from a [Window].
+			By default the [member window_id] will be 0 for the main scene window.
+			Embedded subwindows (see [method Window.is_embedded]) will have the same [member window_id] based on their parent [SubViewport]'s [member Viewport.gui_embed_subwindows] setting.
+			Non-embedded subwindows will have a [member window_id] incremented by 1, with relation to the size of the display server's window list (see [method DisplayServer.get_window_list]).
+			[b]See:[/b] Embedded subwindow settings can be configured in the [SubViewport]'s [member Viewport.gui_embed_subwindows] property and the project's advanced settings, Project Settings -&gt; Display -&gt; Window -&gt; Subwindows -&gt; Embed Subwindows setting.
+			[b]Note:[/b] Setting the [member window_id] of the [InputEventFromWindow] will not change the originating [Window]'s [member window_id].
+			[b]Note:[/b] The [member window_id] should not be confused with the 'screen' a [Window] is displayed on (see [member Window.current_screen]).  There can be multiple [Window]s each with different [member window_id]s contained on the same screen.
 		</member>
 	</members>
 </class>
