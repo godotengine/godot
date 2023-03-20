@@ -152,6 +152,24 @@ StringName Callable::get_method() const {
 	return method;
 }
 
+bool Callable::get_method_info(MethodInfo *r_method_info) const {
+	if (r_method_info == nullptr) {
+		return false;
+	}
+	if (is_null()) {
+		return false;
+	}
+	if (is_custom()) {
+		return custom->get_method_info(r_method_info);
+	}
+	MethodInfo method_info;
+	if (!get_object()->get_method_info(method, &method_info)) {
+		return false;
+	}
+	*r_method_info = method_info;
+	return true;
+}
+
 int Callable::get_bound_arguments_count() const {
 	if (!is_null() && is_custom()) {
 		return custom->get_bound_arguments_count();
@@ -386,6 +404,10 @@ Error CallableCustom::rpc(int p_peer_id, const Variant **p_arguments, int p_argc
 
 const Callable *CallableCustom::get_base_comparator() const {
 	return nullptr;
+}
+
+bool CallableCustom::get_method_info(MethodInfo *r_method_info) const {
+	return false;
 }
 
 int CallableCustom::get_bound_arguments_count() const {

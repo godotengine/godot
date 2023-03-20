@@ -74,6 +74,10 @@ CallableCustom::CompareLessFunc CallableCustomMethodPointerBase::get_compare_les
 	return compare_less;
 }
 
+bool CallableCustomMethodPointerBase::get_method_info(MethodInfo *r_method_info) const {
+	return false; // Ignore for C++ method pointers
+}
+
 uint32_t CallableCustomMethodPointerBase::hash() const {
 	return h;
 }

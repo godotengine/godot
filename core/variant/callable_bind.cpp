@@ -87,6 +87,10 @@ const Callable *CallableCustomBind::get_base_comparator() const {
 	return &callable;
 }
 
+bool CallableCustomBind::get_method_info(MethodInfo *r_method_info) const {
+	return callable.get_method_info(r_method_info);
+}
+
 int CallableCustomBind::get_bound_arguments_count() const {
 	return callable.get_bound_arguments_count() + binds.size();
 }
@@ -203,6 +207,10 @@ ObjectID CallableCustomUnbind::get_object() const {
 
 const Callable *CallableCustomUnbind::get_base_comparator() const {
 	return &callable;
+}
+
+bool CallableCustomUnbind::get_method_info(MethodInfo *r_method_info) const {
+	return callable.get_method_info(r_method_info);
 }
 
 int CallableCustomUnbind::get_bound_arguments_count() const {
