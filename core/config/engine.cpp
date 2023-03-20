@@ -312,6 +312,14 @@ void Engine::set_write_movie_path(const String &p_path) {
 	write_movie_path = p_path;
 }
 
+int Engine::get_write_movie_subframes() const {
+	return write_movie_subframes;
+}
+
+void Engine::set_write_movie_subframes(int p_subframes) {
+	write_movie_subframes = p_subframes;
+}
+
 void Engine::set_shader_cache_path(const String &p_path) {
 	shader_cache_path = p_path;
 }

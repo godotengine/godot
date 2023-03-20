@@ -875,6 +875,9 @@
 		<member name="editor/movie_writer/speaker_mode" type="int" setter="" getter="" default="0">
 			The speaker mode to use in the recorded audio when writing a movie. See [enum AudioServer.SpeakerMode] for possible values.
 		</member>
+		<member name="editor/movie_writer/subframes" type="int" setter="" getter="" default="0">
+			If set to a value greater than [code]0[/code], enables sub-frame generation. This will render more frames than will be recorded in the given video by the factor [code]1 + subframes[/code]. For example, setting [member editor/movie_writer/subframes] to [code]3[/code] will render 4 times as many frames as will be present in the final video file. This will improve rendering quality in 3D by allowing temporal effects (TAA, volumetric fog, SDFGI) to converge faster and more accurately.
+		</member>
 		<member name="editor/naming/default_signal_callback_name" type="String" setter="" getter="" default="&quot;_on_{node_name}_{signal_name}&quot;">
 			The format of the default signal callback name (in the Signal Connection Dialog). The following substitutions are available: [code]{NodeName}[/code], [code]{nodeName}[/code], [code]{node_name}[/code], [code]{SignalName}[/code], [code]{signalName}[/code], and [code]{signal_name}[/code].
 		</member>

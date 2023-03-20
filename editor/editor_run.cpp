@@ -134,6 +134,10 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 		if (bool(GLOBAL_GET("editor/movie_writer/disable_vsync"))) {
 			args.push_back("--disable-vsync");
 		}
+		if (int(GLOBAL_GET("editor/movie_writer/subframes")) >= 1) {
+			args.push_back("--write-movie-subframes");
+			args.push_back(GLOBAL_GET("editor/movie_writer/subframes"));
+		}
 	}
 
 	int screen = EDITOR_GET("run/window_placement/screen");

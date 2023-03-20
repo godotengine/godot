@@ -205,7 +205,13 @@
 		<method name="get_write_movie_path" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the path to the [MovieWriter]'s output file, or an empty string if the engine wasn't started in Movie Maker mode. This path can be absolute or relative depending on how the user specified it.
+				Returns the path to the [MovieWriter]'s output file, or an empty string if the engine wasn't started in Movie Maker mode. This path can be absolute or relative depending on how the user specified it. See [member ProjectSettings.editor/movie_writer/movie_file].
+			</description>
+		</method>
+		<method name="get_write_movie_subframes" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of subframes will be rendered by the engine between every frame sent to the [MovieWriter] for saving. See [member ProjectSettings.editor/movie_writer/subframes].
 			</description>
 		</method>
 		<method name="has_singleton" qualifiers="const">

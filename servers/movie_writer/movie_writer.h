@@ -39,6 +39,7 @@ class MovieWriter : public Object {
 	GDCLASS(MovieWriter, Object);
 
 	uint64_t fps = 0;
+	uint32_t subframes = 0;
 	uint64_t mix_rate = 0;
 	uint32_t audio_channels = 0;
 
