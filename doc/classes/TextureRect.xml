@@ -35,17 +35,17 @@
 		<constant name="EXPAND_IGNORE_SIZE" value="1" enum="ExpandMode">
 			The size of the texture won't be considered for minimum size calculation, so the [TextureRect] can be shrunk down past the texture size.
 		</constant>
-		<constant name="EXPAND_FIT_WIDTH" value="2" enum="ExpandMode">
+		<constant name="EXPAND_FIT_HEIGHT" value="2" enum="ExpandMode">
 			The height of the texture will be ignored. Minimum width will be equal to the current height. Useful for horizontal layouts, e.g. inside [HBoxContainer].
 		</constant>
-		<constant name="EXPAND_FIT_WIDTH_PROPORTIONAL" value="3" enum="ExpandMode">
-			Same as [constant EXPAND_FIT_WIDTH], but keeps texture's aspect ratio.
+		<constant name="EXPAND_FIT_HEIGHT_PROPORTIONAL" value="3" enum="ExpandMode">
+			Same as [constant EXPAND_FIT_HEIGHT], but keeps texture's aspect ratio.
 		</constant>
-		<constant name="EXPAND_FIT_HEIGHT" value="4" enum="ExpandMode">
+		<constant name="EXPAND_FIT_WIDTH" value="4" enum="ExpandMode">
 			The width of the texture will be ignored. Minimum height will be equal to the current width. Useful for vertical layouts, e.g. inside [VBoxContainer].
 		</constant>
-		<constant name="EXPAND_FIT_HEIGHT_PROPORTIONAL" value="5" enum="ExpandMode">
-			Same as [constant EXPAND_FIT_HEIGHT], but keeps texture's aspect ratio.
+		<constant name="EXPAND_FIT_WIDTH_PROPORTIONAL" value="5" enum="ExpandMode">
+			Same as [constant EXPAND_FIT_WIDTH], but keeps texture's aspect ratio.
 		</constant>
 		<constant name="STRETCH_SCALE" value="0" enum="StretchMode">
 			Scale to fit the node's bounding rectangle.

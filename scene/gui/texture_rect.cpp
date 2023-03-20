@@ -125,17 +125,17 @@ Size2 TextureRect::get_minimum_size() const {
 			case EXPAND_IGNORE_SIZE: {
 				return Size2();
 			} break;
-			case EXPAND_FIT_WIDTH: {
+			case EXPAND_FIT_HEIGHT: {
 				return Size2(get_size().y, 0);
 			} break;
-			case EXPAND_FIT_WIDTH_PROPORTIONAL: {
+			case EXPAND_FIT_HEIGHT_PROPORTIONAL: {
 				real_t ratio = real_t(texture->get_width()) / texture->get_height();
 				return Size2(get_size().y * ratio, 0);
 			} break;
-			case EXPAND_FIT_HEIGHT: {
+			case EXPAND_FIT_WIDTH: {
 				return Size2(0, get_size().x);
 			} break;
-			case EXPAND_FIT_HEIGHT_PROPORTIONAL: {
+			case EXPAND_FIT_WIDTH_PROPORTIONAL: {
 				real_t ratio = real_t(texture->get_height()) / texture->get_width();
 				return Size2(0, get_size().x * ratio);
 			} break;
