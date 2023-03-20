@@ -76,6 +76,13 @@ internal enum class StorageScope {
 				return UNKNOWN
 			}
 
+			// If we have 'All Files Access' permission, we can access all directories without
+			// restriction.
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+				&& Environment.isExternalStorageManager()) {
+				return APP
+			}
+
 			val canonicalPathFile = pathFile.canonicalPath
 
 			if (internalAppDir != null && canonicalPathFile.startsWith(internalAppDir)) {
@@ -87,6 +94,11 @@ internal enum class StorageScope {
 			}
 
 			if (externalAppDir != null && canonicalPathFile.startsWith(externalAppDir)) {
+				return APP
+			}
+
+			val rootDir: String? = System.getenv("ANDROID_ROOT")
+			if (rootDir != null && canonicalPathFile.startsWith(rootDir)) {
 				return APP
 			}
 
