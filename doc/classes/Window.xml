@@ -782,13 +782,19 @@
 			Initial window position is determined by [member position].
 		</constant>
 		<constant name="WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN" value="1" enum="WindowInitialPosition">
-			Initial window position is a center of the primary screen.
+			Initial window position is the center of the primary screen.
 		</constant>
 		<constant name="WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN" value="2" enum="WindowInitialPosition">
-			Initial window position is a center of the main window screen.
+			Initial window position is the center of the main window screen.
 		</constant>
 		<constant name="WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN" value="3" enum="WindowInitialPosition">
-			Initial window position is a center of [member current_screen] screen.
+			Initial window position is the center of [member current_screen] screen.
+		</constant>
+		<constant name="WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS" value="4" enum="WindowInitialPosition">
+			Initial window position is the center of the screen containing the mouse pointer.
+		</constant>
+		<constant name="WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS" value="5" enum="WindowInitialPosition">
+			Initial window position is the center of the screen containing the window with the keyboard focus.
 		</constant>
 	</constants>
 	<theme_items>

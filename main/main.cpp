@@ -1969,6 +1969,53 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 #ifdef TOOLS_ENABLED
 	if (editor || project_manager || cmdline_tool) {
 		EditorPaths::create();
+
+		// Editor setting class is not available, load config directly.
+		if (!init_use_custom_screen && (editor || project_manager) && EditorPaths::get_singleton()->are_paths_valid()) {
+			Ref<DirAccess> dir = DirAccess::open(EditorPaths::get_singleton()->get_config_dir());
+			String config_file_name = "editor_settings-" + itos(VERSION_MAJOR) + ".tres";
+			String config_file_path = EditorPaths::get_singleton()->get_config_dir().path_join(config_file_name);
+			if (dir->file_exists(config_file_name)) {
+				Error err;
+				Ref<FileAccess> f = FileAccess::open(config_file_path, FileAccess::READ, &err);
+				if (f.is_valid()) {
+					VariantParser::StreamFile stream;
+					stream.f = f;
+
+					String assign;
+					Variant value;
+					VariantParser::Tag next_tag;
+
+					int lines = 0;
+					String error_text;
+
+					while (true) {
+						assign = Variant();
+						next_tag.fields.clear();
+						next_tag.name = String();
+
+						err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true);
+						if (err == ERR_FILE_EOF) {
+							break;
+						}
+						if (err == OK && !assign.is_empty()) {
+							if (project_manager) {
+								if (assign == "interface/editor/project_manager_screen") {
+									init_screen = value;
+									break;
+								}
+							} else if (editor) {
+								if (assign == "interface/editor/editor_screen") {
+									init_screen = value;
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
 		if (found_project && EditorPaths::get_singleton()->is_self_contained()) {
 			if (ProjectSettings::get_singleton()->get_resource_path() == OS::get_singleton()->get_executable_path().get_base_dir()) {
 				ERR_PRINT("You are trying to run a self-contained editor at the same location as a project. This is not allowed, since editor files will mix with project files.");

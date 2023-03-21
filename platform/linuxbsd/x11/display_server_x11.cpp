@@ -753,23 +753,56 @@ int DisplayServerX11::get_screen_count() const {
 }
 
 int DisplayServerX11::get_primary_screen() const {
-	return XDefaultScreen(x11_display);
+	int event_base, error_base;
+	if (XineramaQueryExtension(x11_display, &event_base, &error_base)) {
+		return 0;
+	} else {
+		return XDefaultScreen(x11_display);
+	}
+}
+
+int DisplayServerX11::get_keyboard_focus_screen() const {
+	int count = get_screen_count();
+	if (count < 2) {
+		// Early exit with single monitor.
+		return 0;
+	}
+
+	Window focus = 0;
+	int revert_to = 0;
+
+	XGetInputFocus(x11_display, &focus, &revert_to);
+	if (focus) {
+		Window focus_child = 0;
+		int x = 0, y = 0;
+		XTranslateCoordinates(x11_display, focus, DefaultRootWindow(x11_display), 0, 0, &x, &y, &focus_child);
+
+		XWindowAttributes xwa;
+		XGetWindowAttributes(x11_display, focus, &xwa);
+		Rect2i window_rect = Rect2i(x, y, xwa.width, xwa.height);
+
+		// Find which monitor has the largest overlap with the given window.
+		int screen_index = 0;
+		int max_area = 0;
+		for (int i = 0; i < count; i++) {
+			Rect2i screen_rect = _screen_get_rect(i);
+			Rect2i intersection = screen_rect.intersection(window_rect);
+			int area = intersection.get_area();
+			if (area > max_area) {
+				max_area = area;
+				screen_index = i;
+			}
+		}
+		return screen_index;
+	}
+
+	return get_primary_screen();
 }
 
 Rect2i DisplayServerX11::_screen_get_rect(int p_screen) const {
 	Rect2i rect(0, 0, 0, 0);
 
-	switch (p_screen) {
-		case SCREEN_PRIMARY: {
-			p_screen = get_primary_screen();
-		} break;
-		case SCREEN_OF_MAIN_WINDOW: {
-			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
-		} break;
-		default:
-			break;
-	}
-
+	p_screen = _get_screen_index(p_screen);
 	ERR_FAIL_COND_V(p_screen < 0, rect);
 
 	// Using Xinerama Extension.
@@ -834,17 +867,7 @@ int bad_window_error_handler(Display *display, XErrorEvent *error) {
 Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	switch (p_screen) {
-		case SCREEN_PRIMARY: {
-			p_screen = get_primary_screen();
-		} break;
-		case SCREEN_OF_MAIN_WINDOW: {
-			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
-		} break;
-		default:
-			break;
-	}
-
+	p_screen = _get_screen_index(p_screen);
 	int screen_count = get_screen_count();
 
 	// Check if screen is valid.
@@ -1121,18 +1144,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 int DisplayServerX11::screen_get_dpi(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	switch (p_screen) {
-		case SCREEN_PRIMARY: {
-			p_screen = get_primary_screen();
-		} break;
-		case SCREEN_OF_MAIN_WINDOW: {
-			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
-		} break;
-		default:
-			break;
-	}
-
-	//invalid screen?
+	p_screen = _get_screen_index(p_screen);
 	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), 0);
 
 	//Get physical monitor Dimensions through XRandR and calculate dpi
@@ -1196,18 +1208,7 @@ Color DisplayServerX11::screen_get_pixel(const Point2i &p_position) const {
 float DisplayServerX11::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	switch (p_screen) {
-		case SCREEN_PRIMARY: {
-			p_screen = get_primary_screen();
-		} break;
-		case SCREEN_OF_MAIN_WINDOW: {
-			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
-		} break;
-		default:
-			break;
-	}
-
-	//invalid screen?
+	p_screen = _get_screen_index(p_screen);
 	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), SCREEN_REFRESH_RATE_FALLBACK);
 
 	//Use xrandr to get screen refresh rate.
@@ -1570,18 +1571,7 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	switch (p_screen) {
-		case SCREEN_PRIMARY: {
-			p_screen = get_primary_screen();
-		} break;
-		case SCREEN_OF_MAIN_WINDOW: {
-			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
-		} break;
-		default:
-			break;
-	}
-
-	// Check if screen is valid
+	p_screen = _get_screen_index(p_screen);
 	ERR_FAIL_INDEX(p_screen, get_screen_count());
 
 	if (window_get_current_screen(p_window) == p_screen) {

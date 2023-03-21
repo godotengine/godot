@@ -253,14 +253,38 @@ public:
 	virtual Rect2i get_display_safe_area() const { return screen_get_usable_rect(); }
 
 	enum {
+		SCREEN_WITH_MOUSE_FOCUS = -4,
+		SCREEN_WITH_KEYBOARD_FOCUS = -3,
 		SCREEN_PRIMARY = -2,
 		SCREEN_OF_MAIN_WINDOW = -1, // Note: for the main window, determine screen from position.
 	};
 
 	const float SCREEN_REFRESH_RATE_FALLBACK = -1.0; // Returned by screen_get_refresh_rate if the method fails.
 
+	int _get_screen_index(int p_screen) const {
+		switch (p_screen) {
+			case SCREEN_WITH_MOUSE_FOCUS: {
+				const Rect2i rect = Rect2i(mouse_get_position(), Vector2i(1, 1));
+				return get_screen_from_rect(rect);
+			} break;
+			case SCREEN_WITH_KEYBOARD_FOCUS: {
+				return get_keyboard_focus_screen();
+			} break;
+			case SCREEN_PRIMARY: {
+				return get_primary_screen();
+			} break;
+			case SCREEN_OF_MAIN_WINDOW: {
+				return window_get_current_screen(MAIN_WINDOW_ID);
+			} break;
+			default: {
+				return p_screen;
+			} break;
+		}
+	}
+
 	virtual int get_screen_count() const = 0;
 	virtual int get_primary_screen() const = 0;
+	virtual int get_keyboard_focus_screen() const { return get_primary_screen(); }
 	virtual int get_screen_from_rect(const Rect2 &p_rect) const;
 	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
