@@ -75,7 +75,7 @@ void WebToolsEditorPlugin::_download_zip() {
 	const String project_name_safe = project_name.to_lower().replace(" ", "_");
 	const String datetime_safe =
 			Time::get_singleton()->get_datetime_string_from_system(false, true).replace(" ", "_");
-	const String output_name = OS::get_singleton()->get_safe_dir_name(vformat("%s_%s.zip"));
+	const String output_name = OS::get_singleton()->get_safe_dir_name(vformat("%s_%s.zip", project_name_safe, datetime_safe));
 	const String output_path = String("/tmp").path_join(output_name);
 
 	zipFile zip = zipOpen2(output_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io);
