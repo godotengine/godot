@@ -43,10 +43,17 @@
 				Returns the unique peer ID of this MultiplayerAPI's [member multiplayer_peer].
 			</description>
 		</method>
-		<method name="has_multiplayer_peer">
+		<method name="has_multiplayer_peer" is_deprecated="true">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if there is a [member multiplayer_peer] set.
+				Returns [code]true[/code] if there is a [member multiplayer_peer] set and it isn't [OfflineMultiplayerPeer].
+				This method is deprecated - use [method is_offline] instead.
+			</description>
+		</method>
+		<method name="is_offline">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if [member multiplayer_peer] is [code]null[/code], or if it is [OfflineMultiplayerPeer].
 			</description>
 		</method>
 		<method name="is_server">

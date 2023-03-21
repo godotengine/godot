@@ -72,7 +72,14 @@ public:
 	virtual Error object_configuration_add(Object *p_object, Variant p_config) = 0;
 	virtual Error object_configuration_remove(Object *p_object, Variant p_config) = 0;
 
-	bool has_multiplayer_peer() { return get_multiplayer_peer().is_valid(); }
+	bool has_multiplayer_peer() {
+		WARN_DEPRECATED_MSG("Use is_offline() instead.");
+		return !is_offline();
+	}
+	bool is_offline() {
+		Ref<MultiplayerPeer> multiplayer_peer = get_multiplayer_peer();
+		return multiplayer_peer.is_null() || Object::cast_to<OfflineMultiplayerPeer>(*multiplayer_peer) != nullptr;
+	}
 	bool is_server() { return get_unique_id() == MultiplayerPeer::TARGET_PEER_SERVER; }
 
 	MultiplayerAPI() {}

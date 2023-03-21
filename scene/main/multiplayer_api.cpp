@@ -300,6 +300,7 @@ void MultiplayerAPI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_multiplayer_peer"), &MultiplayerAPI::get_multiplayer_peer);
 	ClassDB::bind_method(D_METHOD("set_multiplayer_peer", "peer"), &MultiplayerAPI::set_multiplayer_peer);
 	ClassDB::bind_method(D_METHOD("get_unique_id"), &MultiplayerAPI::get_unique_id);
+	ClassDB::bind_method(D_METHOD("is_offline"), &MultiplayerAPI::is_offline);
 	ClassDB::bind_method(D_METHOD("is_server"), &MultiplayerAPI::is_server);
 	ClassDB::bind_method(D_METHOD("get_remote_sender_id"), &MultiplayerAPI::get_remote_sender_id);
 	ClassDB::bind_method(D_METHOD("poll"), &MultiplayerAPI::poll);
