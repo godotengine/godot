@@ -894,9 +894,9 @@ void NavMap::sync() {
 	if (agents_dirty) {
 		// cannot use LocalVector here as RVO library expects std::vector to build KdTree
 		std::vector<RVO::Agent *> raw_agents;
-		raw_agents.reserve(agents.size());
-		for (NavAgent *agent : agents) {
-			raw_agents.push_back(agent->get_agent());
+		raw_agents.reserve(controlled_agents.size());
+		for (NavAgent *controlled_agent : controlled_agents) {
+			raw_agents.push_back(controlled_agent->get_agent());
 		}
 		rvo.buildAgentTree(raw_agents);
 	}
