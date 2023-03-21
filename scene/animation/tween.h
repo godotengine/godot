@@ -160,6 +160,7 @@ public:
 
 	Ref<Tween> set_parallel(bool p_parallel);
 	Ref<Tween> set_loops(int p_loops);
+	int get_loops_left() const;
 	Ref<Tween> set_speed_scale(float p_speed);
 	Ref<Tween> set_trans(TransitionType p_trans);
 	TransitionType get_trans();
