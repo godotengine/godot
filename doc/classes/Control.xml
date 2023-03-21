@@ -399,7 +399,7 @@
 			<return type="float" />
 			<param index="0" name="offset" type="int" enum="Side" />
 			<description>
-				Returns the anchor for the specified [enum Side]. A getter method for [member offset_bottom], [member offset_left], [member offset_right] and [member offset_top].
+				Returns the offset for the specified [enum Side]. A getter method for [member offset_bottom], [member offset_left], [member offset_right] and [member offset_top].
 			</description>
 		</method>
 		<method name="get_parent_area_size" qualifiers="const">
@@ -840,7 +840,7 @@
 			<param index="0" name="side" type="int" enum="Side" />
 			<param index="1" name="neighbor" type="NodePath" />
 			<description>
-				Sets the anchor for the specified [enum Side] to the [Control] at [param neighbor] node path. A setter method for [member focus_neighbor_bottom], [member focus_neighbor_left], [member focus_neighbor_right] and [member focus_neighbor_top].
+				Sets the focus neighbor for the specified [enum Side] to the [Control] at [param neighbor] node path. A setter method for [member focus_neighbor_bottom], [member focus_neighbor_left], [member focus_neighbor_right] and [member focus_neighbor_top].
 			</description>
 		</method>
 		<method name="set_global_position">
