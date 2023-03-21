@@ -3439,9 +3439,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					gr_mem = alt_mem;
 				}
 			}
-			if (wParam == VK_LWIN || wParam == VK_RWIN) {
-				meta_mem = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
-			}
 
 			if (windows[window_id].ime_suppress_next_keyup && (uMsg == WM_KEYUP || uMsg == WM_SYSKEYUP)) {
 				windows[window_id].ime_suppress_next_keyup = false;
