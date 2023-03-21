@@ -754,7 +754,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + 3];
 				GD_ERR_BREAK(builtin_type < 0 || builtin_type >= Variant::VARIANT_MAX);
 
-				*dst = value->get_type() == builtin_type;
+				*dst = value->get_type() == builtin_type || (builtin_type == Variant::STRING && value->get_type() == Variant::STRING_NAME);
 				ip += 4;
 			}
 			DISPATCH_OPCODE;

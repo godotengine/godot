@@ -778,6 +778,35 @@ struct VariantIndexedSetGet_String {
 	static uint64_t get_indexed_size(const Variant *base) { return VariantInternal::get_string(base)->length(); }
 };
 
+struct VariantIndexedGet_StringName {
+	static void get(const Variant *base, int64_t index, Variant *value, bool *oob) {
+		const StringName &strname = *VariantGetInternalPtr<StringName>::get_ptr(base);
+		int64_t length = strname.length();
+		if (index < 0) {
+			index += length;
+		}
+		if (index < 0 || index >= length) {
+			*oob = true;
+			return;
+		}
+		char32_t result = strname[index];
+		*value = String(&result, 1);
+		*oob = false;
+	}
+	static void ptr_get(const void *base, int64_t index, void *member) {
+		/* avoid ptrconvert for performance*/
+		const StringName &v = *reinterpret_cast<const StringName *>(base);
+		if (index < 0) {
+			index += v.length();
+		}
+		OOB_TEST(index, v.length());
+		char32_t c = v[index];
+		PtrToArg<String>::encode(String(&c, 1), member);
+	}
+	static Variant::Type get_index_type() { return Variant::STRING; }
+	static uint64_t get_indexed_size(const Variant *base) { return VariantInternal::get_string_name(base)->length(); }
+};
+
 #define INDEXED_SETGET_STRUCT_DICT(m_base_type)                                                                                     \
 	struct VariantIndexedSetGet_##m_base_type {                                                                                     \
 		static void get(const Variant *base, int64_t index, Variant *value, bool *oob) {                                            \
@@ -887,10 +916,26 @@ static void register_indexed_member(Variant::Type p_type) {
 	sgi.valid = true;
 }
 
+template <class T>
+static void register_indexed_const_member(Variant::Type p_type) {
+	VariantIndexedSetterGetterInfo &sgi = variant_indexed_setters_getters[p_type];
+
+	sgi.getter = T::get;
+	sgi.validated_getter = T::get;
+	sgi.ptr_getter = T::ptr_get;
+
+	sgi.index_type = T::get_index_type();
+	sgi.get_indexed_size = T::get_indexed_size;
+
+	sgi.valid = true;
+}
+
 void register_indexed_setters_getters() {
 #define REGISTER_INDEXED_MEMBER(m_base_type) register_indexed_member<VariantIndexedSetGet_##m_base_type>(GetTypeInfo<m_base_type>::VARIANT_TYPE)
+#define REGISTER_INDEXED_CONST_MEMBER(m_base_type) register_indexed_const_member<VariantIndexedGet_##m_base_type>(GetTypeInfo<m_base_type>::VARIANT_TYPE)
 
 	REGISTER_INDEXED_MEMBER(String);
+	REGISTER_INDEXED_CONST_MEMBER(StringName);
 	REGISTER_INDEXED_MEMBER(Vector2);
 	REGISTER_INDEXED_MEMBER(Vector2i);
 	REGISTER_INDEXED_MEMBER(Vector3);
@@ -1354,6 +1399,14 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			r_iter = 0;
 			return true;
 		} break;
+		case STRING_NAME: {
+			const StringName *strname = reinterpret_cast<const StringName *>(_data._mem);
+			if (strname->is_empty()) {
+				return false;
+			}
+			r_iter = Vector2i(0, strname->length());
+			return true;
+		} break;
 		case DICTIONARY: {
 			const Dictionary *dic = reinterpret_cast<const Dictionary *>(_data._mem);
 			if (dic->is_empty()) {
@@ -1584,6 +1637,17 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			r_iter = idx;
 			return true;
 		} break;
+		case STRING_NAME: {
+			Vector2i iter = r_iter;
+			int &idx = iter.x;
+			int length = iter.y;
+			idx++;
+			if (idx >= length) {
+				return false;
+			}
+			r_iter = iter;
+			return true;
+		} break;
 		case DICTIONARY: {
 			const Dictionary *dic = reinterpret_cast<const Dictionary *>(_data._mem);
 			const Variant *next = dic->next(&r_iter);
@@ -1759,6 +1823,12 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 		case STRING: {
 			const String *str = reinterpret_cast<const String *>(_data._mem);
 			return str->substr(r_iter, 1);
+		} break;
+		case STRING_NAME: {
+			const StringName &strname = *reinterpret_cast<const StringName *>(_data._mem);
+			Vector2i iter = r_iter;
+			int idx = iter.x;
+			return String::chr(strname[idx]);
 		} break;
 		case DICTIONARY: {
 			return r_iter; //iterator is the same as the key

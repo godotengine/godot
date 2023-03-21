@@ -1248,8 +1248,10 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 				codegen.generator->write_or_left_operand(p_previous_test);
 			}
 
-			// Get literal type into constant map.
-			GDScriptCodeGenerator::Address literal_type_addr = codegen.add_constant((int)p_pattern->literal->value.get_type());
+			GDScriptDataType literal_pt_type;
+			literal_pt_type.has_type = true;
+			literal_pt_type.kind = GDScriptDataType::BUILTIN;
+			literal_pt_type.builtin_type = p_pattern->literal->value.get_type();
 
 			// Equality is always a boolean.
 			GDScriptDataType equality_type;
@@ -1257,31 +1259,10 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 			equality_type.kind = GDScriptDataType::BUILTIN;
 			equality_type.builtin_type = Variant::BOOL;
 
-			GDScriptCodeGenerator::Address type_string_addr = codegen.add_constant(Variant::STRING);
-			GDScriptCodeGenerator::Address type_string_name_addr = codegen.add_constant(Variant::STRING_NAME);
-
 			// Check type equality.
-			GDScriptCodeGenerator::Address type_equality_addr = codegen.add_temporary(equality_type);
-			codegen.generator->write_binary_operator(type_equality_addr, Variant::OP_EQUAL, p_type_addr, literal_type_addr);
-
-			// Check if StringName <-> String comparison is possible.
-			GDScriptCodeGenerator::Address type_comp_addr_1 = codegen.add_temporary(equality_type);
-			GDScriptCodeGenerator::Address type_comp_addr_2 = codegen.add_temporary(equality_type);
-
-			codegen.generator->write_binary_operator(type_comp_addr_1, Variant::OP_EQUAL, p_type_addr, type_string_addr);
-			codegen.generator->write_binary_operator(type_comp_addr_2, Variant::OP_EQUAL, literal_type_addr, type_string_name_addr);
-			codegen.generator->write_binary_operator(type_comp_addr_1, Variant::OP_AND, type_comp_addr_1, type_comp_addr_2);
-			codegen.generator->write_binary_operator(type_equality_addr, Variant::OP_OR, type_equality_addr, type_comp_addr_1);
-
-			codegen.generator->write_binary_operator(type_comp_addr_1, Variant::OP_EQUAL, p_type_addr, type_string_name_addr);
-			codegen.generator->write_binary_operator(type_comp_addr_2, Variant::OP_EQUAL, literal_type_addr, type_string_addr);
-			codegen.generator->write_binary_operator(type_comp_addr_1, Variant::OP_AND, type_comp_addr_1, type_comp_addr_2);
-			codegen.generator->write_binary_operator(type_equality_addr, Variant::OP_OR, type_equality_addr, type_comp_addr_1);
-
-			codegen.generator->pop_temporary(); // Remove type_comp_addr_2 from stack.
-			codegen.generator->pop_temporary(); // Remove type_comp_addr_1 from stack.
-
-			codegen.generator->write_and_left_operand(type_equality_addr);
+			GDScriptCodeGenerator::Address result_addr = codegen.add_temporary(equality_type);
+			codegen.generator->write_type_test(result_addr, p_value_addr, literal_pt_type);
+			codegen.generator->write_and_left_operand(result_addr);
 
 			// Get literal.
 			GDScriptCodeGenerator::Address literal_addr = _parse_expression(codegen, r_error, p_pattern->literal);
@@ -1295,69 +1276,13 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 			codegen.generator->write_and_right_operand(equality_addr);
 
 			// AND both together (reuse temporary location).
-			codegen.generator->write_end_and(type_equality_addr);
+			codegen.generator->write_end_and(result_addr);
 
 			codegen.generator->pop_temporary(); // Remove equality_addr from stack.
 
 			if (literal_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 				codegen.generator->pop_temporary();
 			}
-
-			// If this isn't the first, we need to OR with the previous pattern. If it's nested, we use AND instead.
-			if (p_is_nested) {
-				// Use the previous value as target, since we only need one temporary variable.
-				codegen.generator->write_and_right_operand(type_equality_addr);
-				codegen.generator->write_end_and(p_previous_test);
-			} else if (!p_is_first) {
-				// Use the previous value as target, since we only need one temporary variable.
-				codegen.generator->write_or_right_operand(type_equality_addr);
-				codegen.generator->write_end_or(p_previous_test);
-			} else {
-				// Just assign this value to the accumulator temporary.
-				codegen.generator->write_assign(p_previous_test, type_equality_addr);
-			}
-			codegen.generator->pop_temporary(); // Remove type_equality_addr.
-
-			return p_previous_test;
-		} break;
-		case GDScriptParser::PatternNode::PT_EXPRESSION: {
-			if (p_is_nested) {
-				codegen.generator->write_and_left_operand(p_previous_test);
-			} else if (!p_is_first) {
-				codegen.generator->write_or_left_operand(p_previous_test);
-			}
-			// Create the result temps first since it's the last to go away.
-			GDScriptCodeGenerator::Address result_addr = codegen.add_temporary();
-			GDScriptCodeGenerator::Address equality_test_addr = codegen.add_temporary();
-
-			// Evaluate expression.
-			GDScriptCodeGenerator::Address expr_addr;
-			expr_addr = _parse_expression(codegen, r_error, p_pattern->expression);
-			if (r_error) {
-				return GDScriptCodeGenerator::Address();
-			}
-
-			// Evaluate expression type.
-			Vector<GDScriptCodeGenerator::Address> typeof_args;
-			typeof_args.push_back(expr_addr);
-			codegen.generator->write_call_utility(result_addr, "typeof", typeof_args);
-
-			// Check type equality.
-			codegen.generator->write_binary_operator(result_addr, Variant::OP_EQUAL, p_type_addr, result_addr);
-			codegen.generator->write_and_left_operand(result_addr);
-
-			// Check value equality.
-			codegen.generator->write_binary_operator(equality_test_addr, Variant::OP_EQUAL, p_value_addr, expr_addr);
-			codegen.generator->write_and_right_operand(equality_test_addr);
-
-			// AND both type and value equality.
-			codegen.generator->write_end_and(result_addr);
-
-			// We don't need the expression temporary anymore.
-			if (expr_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-				codegen.generator->pop_temporary();
-			}
-			codegen.generator->pop_temporary(); // Remove type equality temporary.
 
 			// If this isn't the first, we need to OR with the previous pattern. If it's nested, we use AND instead.
 			if (p_is_nested) {
@@ -1372,7 +1297,88 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 				// Just assign this value to the accumulator temporary.
 				codegen.generator->write_assign(p_previous_test, result_addr);
 			}
-			codegen.generator->pop_temporary(); // Remove temp result addr.
+			codegen.generator->pop_temporary(); // Remove result_addr.
+
+			return p_previous_test;
+		} break;
+		case GDScriptParser::PatternNode::PT_EXPRESSION: {
+			if (p_is_nested) {
+				codegen.generator->write_and_left_operand(p_previous_test);
+			} else if (!p_is_first) {
+				codegen.generator->write_or_left_operand(p_previous_test);
+			}
+
+			// Equality is always a boolean.
+			GDScriptDataType equality_type;
+			equality_type.has_type = true;
+			equality_type.kind = GDScriptDataType::BUILTIN;
+			equality_type.builtin_type = Variant::BOOL;
+
+			GDScriptDataType string_type;
+			string_type.has_type = true;
+			string_type.kind = GDScriptDataType::BUILTIN;
+			string_type.builtin_type = Variant::STRING;
+
+			// Create the result temps first since it's the last to go away.
+			GDScriptCodeGenerator::Address result_addr = codegen.add_temporary();
+			GDScriptCodeGenerator::Address equality_test_addr = codegen.add_temporary(equality_type);
+
+			// Evaluate expression.
+			GDScriptCodeGenerator::Address expr_addr;
+			expr_addr = _parse_expression(codegen, r_error, p_pattern->expression);
+			if (r_error) {
+				return GDScriptCodeGenerator::Address();
+			}
+
+			// Evaluate expression type.
+			Vector<GDScriptCodeGenerator::Address> typeof_args;
+			typeof_args.push_back(expr_addr);
+			codegen.generator->write_call_utility(result_addr, "typeof", typeof_args);
+
+			// Check if String-like comparison is possible.
+			GDScriptCodeGenerator::Address type_comp_addr = codegen.add_temporary(equality_type);
+			GDScriptCodeGenerator::Address type_comp_addr_2 = codegen.add_temporary(equality_type);
+
+			codegen.generator->write_type_test(type_comp_addr, p_value_addr, string_type);
+			codegen.generator->write_type_test(type_comp_addr_2, expr_addr, string_type);
+			codegen.generator->write_binary_operator(type_comp_addr, Variant::OP_AND, type_comp_addr, type_comp_addr_2);
+
+			// Check type equality.
+			codegen.generator->write_binary_operator(result_addr, Variant::OP_EQUAL, p_type_addr, result_addr);
+			codegen.generator->write_binary_operator(result_addr, Variant::OP_OR, result_addr, type_comp_addr);
+
+			codegen.generator->pop_temporary(); // Remove type_comp_addr_2 from stack.
+			codegen.generator->pop_temporary(); // Remove type_comp_addr from stack.
+
+			codegen.generator->write_and_left_operand(result_addr);
+
+			// Check value equality.
+			codegen.generator->write_binary_operator(equality_test_addr, Variant::OP_EQUAL, p_value_addr, expr_addr);
+			codegen.generator->write_and_right_operand(equality_test_addr);
+
+			// AND both type and value equality.
+			codegen.generator->write_end_and(result_addr);
+
+			// We don't need the expression temporary anymore.
+			if (expr_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+				codegen.generator->pop_temporary();
+			}
+			codegen.generator->pop_temporary(); // Remove equality_test_addr from stack.
+
+			// If this isn't the first, we need to OR with the previous pattern. If it's nested, we use AND instead.
+			if (p_is_nested) {
+				// Use the previous value as target, since we only need one temporary variable.
+				codegen.generator->write_and_right_operand(result_addr);
+				codegen.generator->write_end_and(p_previous_test);
+			} else if (!p_is_first) {
+				// Use the previous value as target, since we only need one temporary variable.
+				codegen.generator->write_or_right_operand(result_addr);
+				codegen.generator->write_end_or(p_previous_test);
+			} else {
+				// Just assign this value to the accumulator temporary.
+				codegen.generator->write_assign(p_previous_test, result_addr);
+			}
+			codegen.generator->pop_temporary(); // Remove result_addr from stack.
 
 			return p_previous_test;
 		} break;

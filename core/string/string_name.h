@@ -104,6 +104,10 @@ public:
 	bool operator!=(const String &p_name) const;
 	bool operator!=(const char *p_name) const;
 
+	char32_t operator[](int p_index) const;
+	int length() const;
+	bool is_empty() const;
+
 	_FORCE_INLINE_ bool is_node_unique_name() const {
 		if (!_data) {
 			return false;

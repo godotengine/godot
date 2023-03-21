@@ -150,19 +150,27 @@ void StringName::unref() {
 }
 
 bool StringName::operator==(const String &p_name) const {
-	if (!_data) {
-		return (p_name.length() == 0);
+	if (_data) {
+		if (_data->cname) {
+			return p_name == _data->cname;
+		} else {
+			return _data->name == p_name;
+		}
 	}
 
-	return (_data->get_name() == p_name);
+	return p_name.is_empty();
 }
 
 bool StringName::operator==(const char *p_name) const {
-	if (!_data) {
-		return (p_name[0] == 0);
+	if (_data) {
+		if (_data->cname) {
+			return strcmp(_data->cname, p_name) == 0;
+		} else {
+			return _data->name == p_name;
+		}
 	}
 
-	return (_data->get_name() == p_name);
+	return p_name[0] == 0;
 }
 
 bool StringName::operator!=(const String &p_name) const {
@@ -177,6 +185,45 @@ bool StringName::operator!=(const StringName &p_name) const {
 	// the real magic of all this mess happens here.
 	// this is why path comparisons are very fast
 	return _data != p_name._data;
+}
+
+char32_t StringName::operator[](int p_index) const {
+	if (_data) {
+		if (_data->cname) {
+#ifdef DEBUG_ENABLED
+			CRASH_BAD_INDEX(static_cast<unsigned long>(p_index), strlen(_data->cname));
+#endif
+			return _data->cname[p_index];
+		} else {
+			return _data->name[p_index];
+		}
+	}
+
+	return true;
+}
+
+int StringName::length() const {
+	if (_data) {
+		if (_data->cname) {
+			return strlen(_data->cname);
+		} else {
+			return _data->name.length();
+		}
+	}
+
+	return 0;
+}
+
+bool StringName::is_empty() const {
+	if (_data) {
+		if (_data->cname) {
+			return _data->cname[0] == 0;
+		} else {
+			return _data->name.is_empty();
+		}
+	}
+
+	return true;
 }
 
 void StringName::operator=(const StringName &p_name) {
@@ -478,15 +525,15 @@ StringName StringName::search(const String &p_name) {
 }
 
 bool operator==(const String &p_name, const StringName &p_string_name) {
-	return p_name == p_string_name.operator String();
+	return p_string_name.operator==(p_name);
 }
 bool operator!=(const String &p_name, const StringName &p_string_name) {
-	return p_name != p_string_name.operator String();
+	return p_string_name.operator!=(p_name);
 }
 
 bool operator==(const char *p_name, const StringName &p_string_name) {
-	return p_name == p_string_name.operator String();
+	return p_string_name.operator==(p_name);
 }
 bool operator!=(const char *p_name, const StringName &p_string_name) {
-	return p_name != p_string_name.operator String();
+	return p_string_name.operator!=(p_name);
 }
