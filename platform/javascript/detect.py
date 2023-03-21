@@ -30,6 +30,9 @@ def get_opts():
 
     return [
         ("initial_memory", "Initial WASM memory (in MiB)", 32),
+        # Matches default values from before Emscripten 3.1.27. New defaults are too low for Godot.
+        ("stack_size", "WASM stack size (in KiB)", 5120),
+        ("default_pthread_stack_size", "WASM pthread default stack size (in KiB)", 2048),
         BoolVariable("use_assertions", "Use Emscripten runtime assertions", False),
         BoolVariable("use_ubsan", "Use Emscripten undefined behavior sanitizer (UBSAN)", False),
         BoolVariable("use_asan", "Use Emscripten address sanitizer (ASAN)", False),
@@ -178,20 +181,21 @@ def configure(env):
     env.Prepend(CPPPATH=["#platform/javascript"])
     env.Append(CPPDEFINES=["JAVASCRIPT_ENABLED", "UNIX_ENABLED"])
 
-    if cc_semver >= (3, 1, 25):
-        env.Append(LINKFLAGS=["-s", "STACK_SIZE=5MB"])
-    else:
-        env.Append(LINKFLAGS=["-s", "TOTAL_STACK=5MB"])
-
     if env["javascript_eval"]:
         env.Append(CPPDEFINES=["JAVASCRIPT_EVAL_ENABLED"])
 
+    stack_size_opt = "STACK_SIZE" if cc_semver >= (3, 1, 25) else "TOTAL_STACK"
+    env.Append(LINKFLAGS=["-s", "%s=%sKB" % (stack_size_opt, env["stack_size"])])
+
     # Thread support (via SharedArrayBuffer).
     if env["threads_enabled"]:
+        stack_size_opt = "STACK_SIZE" if cc_semver >= (3, 1, 25) else "TOTAL_STACK"
+        env.Append(LINKFLAGS=["-s", "%s=%sKB" % (stack_size_opt, env["stack_size"])])
+
         env.Append(CPPDEFINES=["PTHREAD_NO_RENAME"])
         env.Append(CCFLAGS=["-s", "USE_PTHREADS=1"])
         env.Append(LINKFLAGS=["-s", "USE_PTHREADS=1"])
-        env.Append(LINKFLAGS=["-s", "DEFAULT_PTHREAD_STACK_SIZE=2MB"])
+        env.Append(LINKFLAGS=["-s", "DEFAULT_PTHREAD_STACK_SIZE=%sKB" % env["default_pthread_stack_size"]])
         env.Append(LINKFLAGS=["-s", "PTHREAD_POOL_SIZE=8"])
         env.Append(LINKFLAGS=["-s", "WASM_MEM_MAX=2048MB"])
         env.extra_suffix = ".threads" + env.extra_suffix
