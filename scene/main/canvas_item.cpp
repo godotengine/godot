@@ -289,11 +289,12 @@ void CanvasItem::_notification(int p_what) {
 				}
 			}
 
+			_enter_canvas();
+
 			RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, is_visible_in_tree()); // The visibility of the parent may change.
 			if (is_visible_in_tree()) {
 				notification(NOTIFICATION_VISIBILITY_CHANGED); // Considered invisible until entered.
 			}
-			_enter_canvas();
 
 			_update_texture_filter_changed(false);
 			_update_texture_repeat_changed(false);
