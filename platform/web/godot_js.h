@@ -41,6 +41,20 @@ extern "C" {
 extern void godot_js_config_locale_get(char *p_ptr, int p_ptr_max);
 extern void godot_js_config_canvas_id_get(char *p_ptr, int p_ptr_max);
 
+// UA
+extern void godot_js_ua_get_user_agent_string(char **r_ua_string);
+extern void godot_js_ua_get_browser_name(char **r_browser_string);
+extern void godot_js_ua_get_browser_version(char **r_browser_version);
+extern void godot_js_ua_get_device_model(char **r_device_model);
+extern void godot_js_ua_get_device_type(char **r_device_type);
+extern void godot_js_ua_get_device_vendor(char **r_device_vendor);
+extern void godot_js_ua_get_cpu_arch(char **r_cpu_arch);
+extern void godot_js_ua_get_engine_name(char **r_engine_name);
+extern void godot_js_ua_get_engine_version(char **r_engine_version);
+extern void godot_js_ua_get_os_name(char **r_os_string);
+extern void godot_js_ua_get_os_version(char **r_os_version);
+extern int godot_js_ua_is_desktop_client();
+
 // OS
 extern void godot_js_os_finish_async(void (*p_callback)());
 extern void godot_js_os_request_quit_cb(void (*p_callback)());

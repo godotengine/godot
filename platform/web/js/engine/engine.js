@@ -161,7 +161,7 @@ const Engine = (function () {
 					}
 					// Godot configuration.
 					me.rtenv['initConfig'](config);
-
+					me.rtenv['initUA']();
 					// Preload GDExtension libraries.
 					const libs = [];
 					me.config.gdextensionLibs.forEach(function (lib) {

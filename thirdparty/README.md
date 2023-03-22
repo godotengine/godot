@@ -695,6 +695,18 @@ See `thorvg/update-thorvg.sh` for extraction instructions. Set the version
 number and run the script.
 
 
+## ua-parser-js
+
+- Upstream: https://github.com/faisalman/ua-parser-js
+- Version: 1.1.34 (33df5dc698ee62034ae7fa1ffa4497d0280d0d56, 2023)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `src/ua-parser.js`
+- `license.md`
+
+
 ## vhacd
 
 - Upstream: https://github.com/kmammou/v-hacd

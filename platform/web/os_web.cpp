@@ -153,6 +153,32 @@ String OS_Web::get_name() const {
 	return "Web";
 }
 
+String OS_Web::get_distribution_name() const {
+	char *browser_name = nullptr;
+	godot_js_ua_get_browser_name(&browser_name);
+	return String(browser_name);
+}
+
+String OS_Web::get_version() const {
+	char *browser_version = nullptr;
+	godot_js_ua_get_browser_version(&browser_version);
+	return String(browser_version);
+}
+
+String OS_Web::get_model_name() const {
+	char *model_name = nullptr;
+	godot_js_ua_get_device_model(&model_name);
+	String model = String(model_name);
+	if (model.is_empty()) {
+		if (godot_js_ua_is_desktop_client()) {
+			model = "Desktop";
+		} else {
+			model = "GenericDevice";
+		}
+	}
+	return model;
+}
+
 void OS_Web::vibrate_handheld(int p_duration_ms) {
 	godot_js_input_vibrate_handheld(p_duration_ms);
 }

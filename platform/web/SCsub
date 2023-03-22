@@ -27,6 +27,7 @@ web_files = [
 ]
 
 sys_env = env.Clone()
+sys_env.AddJSPre(["#thirdparty/ua-parser-js/ua-parser.js"])
 sys_env.AddJSLibraries(
     [
         "js/libs/library_godot_audio.js",

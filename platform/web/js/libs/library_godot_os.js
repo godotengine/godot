@@ -223,6 +223,96 @@ const GodotFS = {
 };
 mergeInto(LibraryManager.library, GodotFS);
 
+const GodotUA = {
+	$GodotUA__deps: ['$GodotRuntime'],
+	$GodotUA__postset: [
+		'Module["initUA"] = GodotUA.init;',
+	],
+	$GodotUA: {
+		_ua_string_ptr: null,
+		_ua_browser_name_ptr: null,
+		_ua_browser_version_ptr: null,
+		_ua_cpu_arch_ptr: null,
+		_ua_device_model_ptr: null,
+		_ua_device_type_ptr: null,
+		_ua_device_vendor_ptr: null,
+		_ua_engine_name_ptr: null,
+		_ua_engine_version_ptr: null,
+		_ua_os_name_ptr: null,
+		_ua_os_version_ptr: null,
+		_ua_obj: null,
+		init: function () {
+			GodotUA._ua_obj = window.UAParser() || {};
+			GodotUA._ua_string_ptr = GodotRuntime.allocString(GodotUA._ua_obj.ua || '');
+			GodotUA._ua_browser_name_ptr = GodotRuntime.allocString(GodotUA._ua_obj.browser.name || '');
+			GodotUA._ua_browser_version_ptr = GodotRuntime.allocString(GodotUA._ua_obj.browser.version || '');
+			GodotUA._ua_device_model_ptr = GodotRuntime.allocString(GodotUA._ua_obj.device.model || '');
+			GodotUA._ua_device_type_ptr = GodotRuntime.allocString(GodotUA._ua_obj.device.type || '');
+			GodotUA._ua_device_vendor_ptr = GodotRuntime.allocString(GodotUA._ua_obj.device.vendor || '');
+			GodotUA._ua_cpu_arch_ptr = GodotRuntime.allocString(GodotUA._ua_obj.cpu.architecture || '');
+			GodotUA._ua_engine_name_ptr = GodotRuntime.allocString(GodotUA._ua_obj.engine.name || '');
+			GodotUA._ua_engine_version_ptr = GodotRuntime.allocString(GodotUA._ua_obj.engine.version || '');
+			GodotUA._ua_os_name_ptr = GodotRuntime.allocString(GodotUA._ua_obj.os.name || '');
+			GodotUA._ua_os_version_ptr = GodotRuntime.allocString(GodotUA._ua_obj.os.version || '');
+		},
+		isDesktopClient: function () {
+			// empty device type means desktop
+			return !GodotUA._ua_obj.device.type ? 1 : 0;
+		},
+	},
+
+	godot_js_ua_get_user_agent_string__sig: 'vi',
+	godot_js_ua_get_user_agent_string: function (r_user_agent) {
+		GodotRuntime.setHeapValue(r_user_agent, GodotUA._ua_string_ptr, '*');
+	},
+	godot_js_ua_get_browser_name__sig: 'vi',
+	godot_js_ua_get_browser_name: function (r_browser_name) {
+		GodotRuntime.setHeapValue(r_browser_name, GodotUA._ua_browser_name_ptr, '*');
+	},
+	godot_js_ua_get_browser_version__sig: 'vi',
+	godot_js_ua_get_browser_version: function (r_browser_version) {
+		GodotRuntime.setHeapValue(r_browser_version, GodotUA._ua_browser_version_ptr, '*');
+	},
+	godot_js_ua_get_device_model__sig: 'vi',
+	godot_js_ua_get_device_model: function (r_device_model) {
+		GodotRuntime.setHeapValue(r_device_model, GodotUA._ua_device_model_ptr, '*');
+	},
+	godot_js_ua_get_device_type__sig: 'vi',
+	godot_js_ua_get_device_type: function (r_device_type) {
+		GodotRuntime.setHeapValue(r_device_type, GodotUA._ua_device_type_ptr, '*');
+	},
+	godot_js_ua_get_device_vendor__sig: 'vi',
+	godot_js_ua_get_device_vendor: function (r_device_vendor) {
+		GodotRuntime.setHeapValue(r_device_vendor, GodotUA._ua_device_vendor_ptr, '*');
+	},
+	godot_js_ua_get_cpu_arch__sig: 'vi',
+	godot_js_ua_get_cpu_arch: function (r_cpu_arch) {
+		GodotRuntime.setHeapValue(r_cpu_arch, GodotUA._ua_cpu_arch_ptr, '*');
+	},
+	godot_js_ua_get_engine_name__sig: 'vi',
+	godot_js_ua_get_engine_name: function (r_engine_name) {
+		GodotRuntime.setHeapValue(r_engine_name, GodotUA._ua_engine_name_ptr, '*');
+	},
+	godot_js_ua_get_engine_version__sig: 'vi',
+	godot_js_ua_get_engine_version: function (r_engine_version) {
+		GodotRuntime.setHeapValue(r_engine_version, GodotUA._ua_engine_version_ptr, '*');
+	},
+	godot_js_ua_get_os_name__sig: 'vi',
+	godot_js_ua_get_os_name: function (r_os_name) {
+		GodotRuntime.setHeapValue(r_os_name, GodotUA._ua_os_name_ptr, '*');
+	},
+	godot_js_ua_get_os_version__sig: 'vi',
+	godot_js_ua_get_os_version: function (r_os_version) {
+		GodotRuntime.setHeapValue(r_os_version, GodotUA._ua_os_version_ptr, '*');
+	},
+	godot_js_ua_is_desktop_client__sig: 'i',
+	godot_js_ua_is_desktop_client: function () {
+		return GodotUA.isDesktopClient();
+	},
+};
+autoAddDeps(GodotUA, '$GodotUA');
+mergeInto(LibraryManager.library, GodotUA);
+
 const GodotOS = {
 	$GodotOS__deps: ['$GodotRuntime', '$GodotConfig', '$GodotFS'],
 	$GodotOS__postset: [
@@ -231,7 +321,7 @@ const GodotOS = {
 		'GodotOS._fs_sync_promise = Promise.resolve();',
 	].join(''),
 	$GodotOS: {
-		request_quit: function () {},
+		request_quit: function () { },
 		_async_cbs: [],
 		_fs_sync_promise: null,
 
