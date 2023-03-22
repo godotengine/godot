@@ -153,6 +153,7 @@ void Gradient::reverse() {
 		points.write[i].offset = 1.0 - points[i].offset;
 	}
 
+	is_sorted = false;
 	_update_sorting();
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
