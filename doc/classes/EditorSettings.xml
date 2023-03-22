@@ -182,8 +182,21 @@
 		</method>
 	</methods>
 	<members>
+		<member name="debugger/auto_switch_to_remote_scene_tree" type="bool" setter="" getter="">
+			If [code]true[/code], automatically switches to the [b]Remote[/b] scene tree when running the project from the editor. If [code]false[/code], stays on the [b]Local[/b] scene tree when running the project from the editor.
+		</member>
 		<member name="debugger/profiler_frame_history_size" type="int" setter="" getter="">
 			The size of the profiler's frame history. The default value (3600) allows seeing up to 60 seconds of profiling if the project renders at a constant 60 FPS. Higher values allow viewing longer periods of profiling in the graphs, especially when the project is running at high framerates.
+		</member>
+		<member name="debugger/profiler_frame_max_functions" type="int" setter="" getter="">
+			The maximum number of script functions that can be displayed per frame in the profiler. If there are more script functions called in a given profiler frame, these functions will be discarded from the profiling results entirely.
+			[b]Note:[/b] This setting is only read when the profiler is first started, so changing it during profiling will have no effect.
+		</member>
+		<member name="debugger/remote_inspect_refresh_interval" type="float" setter="" getter="">
+			The refresh interval for the remote inspector's properties (in seconds). Lower values are more reactive, but may cause stuttering while the project is running from the editor and the [b]Remote[/b] scene tree is selected in the Scene tree dock.
+		</member>
+		<member name="debugger/remote_scene_tree_refresh_interval" type="float" setter="" getter="">
+			The refresh interval for the remote scene tree (in seconds). Lower values are more reactive, but may cause stuttering while the project is running from the editor and the [b]Remote[/b] scene tree is selected in the Scene tree dock.
 		</member>
 		<member name="docks/filesystem/always_show_folders" type="bool" setter="" getter="">
 			If [code]true[/code], displays folders in the FileSystem dock's bottom pane when split mode is enabled. If [code]false[/code], only files will be displayed in the bottom pane. Split mode can be toggled by pressing the icon next to the [code]res://[/code] folder path.
