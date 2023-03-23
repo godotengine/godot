@@ -21,7 +21,7 @@
 			</description>
 		</method>
 		<method name="collide_shape">
-			<return type="PackedVector3Array[]" />
+			<return type="Vector3[]" />
 			<param index="0" name="parameters" type="PhysicsShapeQueryParameters3D" />
 			<param index="1" name="max_results" type="int" default="32" />
 			<description>
