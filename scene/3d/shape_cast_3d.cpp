@@ -331,16 +331,14 @@ void ShapeCast3D::set_shape(const Ref<Shape3D> &p_shape) {
 	if (p_shape == shape) {
 		return;
 	}
-	if (!shape.is_null()) {
+	if (shape.is_valid()) {
 		shape->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &ShapeCast3D::_shape_changed));
 		shape->unregister_owner(this);
 	}
 	shape = p_shape;
-	if (!shape.is_null()) {
+	if (shape.is_valid()) {
 		shape->register_owner(this);
 		shape->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &ShapeCast3D::_shape_changed));
-	}
-	if (p_shape.is_valid()) {
 		shape_rid = shape->get_rid();
 	}
 
