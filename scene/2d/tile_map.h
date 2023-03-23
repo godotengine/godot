@@ -203,6 +203,7 @@ private:
 	struct TileMapLayer {
 		String name;
 		bool enabled = true;
+		bool collision_enabled = true;
 		Color modulate = Color(1, 1, 1, 1);
 		bool y_sort_enabled = false;
 		int y_sort_origin = 0;
@@ -324,6 +325,8 @@ public:
 	bool is_layer_enabled(int p_layer) const;
 	void set_layer_modulate(int p_layer, Color p_modulate);
 	Color get_layer_modulate(int p_layer) const;
+	void set_layer_collision_enabled(int p_layer, bool p_collision_enabled);
+	bool is_layer_collision_enabled(int p_layer) const;
 	void set_layer_y_sort_enabled(int p_layer, bool p_enabled);
 	bool is_layer_y_sort_enabled(int p_layer) const;
 	void set_layer_y_sort_origin(int p_layer, int p_y_sort_origin);

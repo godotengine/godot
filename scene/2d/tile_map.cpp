@@ -678,6 +678,23 @@ Color TileMap::get_layer_modulate(int p_layer) const {
 	return layers[p_layer].modulate;
 }
 
+void TileMap::set_layer_collision_enabled(int p_layer, bool p_collision_enabled) {
+	if (p_layer < 0) {
+		p_layer = layers.size() + p_layer;
+	}
+	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+
+	if (layers[p_layer].collision_enabled == p_collision_enabled) {
+		return;
+	}
+	layers[p_layer].collision_enabled = p_collision_enabled;
+	emit_signal(SNAME("changed"));
+}
+bool TileMap::is_layer_collision_enabled(int p_layer) const {
+	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), true);
+	return layers[p_layer].collision_enabled;
+}
+
 void TileMap::set_layer_y_sort_enabled(int p_layer, bool p_y_sort_enabled) {
 	if (p_layer < 0) {
 		p_layer = layers.size() + p_layer;
@@ -901,7 +918,15 @@ void TileMap::_update_dirty_quadrants() {
 
 		// Call the update_dirty_quadrant method on plugins.
 		_rendering_update_dirty_quadrants(dirty_quadrant_list);
-		_physics_update_dirty_quadrants(dirty_quadrant_list);
+		if (layers[layer].collision_enabled) {
+			_physics_update_dirty_quadrants(dirty_quadrant_list);
+		} else {
+			SelfList<TileMapQuadrant> *q_list_element = dirty_quadrant_list.first();
+			while (q_list_element) {
+				_physics_cleanup_quadrant(q_list_element->self());
+				q_list_element = q_list_element->next();
+			}
+		}
 		_navigation_update_dirty_quadrants(dirty_quadrant_list);
 		_scenes_update_dirty_quadrants(dirty_quadrant_list);
 
@@ -3142,6 +3167,9 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (components[1] == "modulate") {
 			set_layer_modulate(index, p_value);
 			return true;
+		} else if (components[1] == "collision_enabled") {
+			set_layer_collision_enabled(index, p_value);
+			return true;
 		} else if (components[1] == "y_sort_enabled") {
 			set_layer_y_sort_enabled(index, p_value);
 			return true;
@@ -3184,6 +3212,9 @@ bool TileMap::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (components[1] == "y_sort_enabled") {
 			r_ret = is_layer_y_sort_enabled(index);
 			return true;
+		} else if (components[1] == "collision_enabled") {
+			r_ret = is_layer_collision_enabled(index);
+			return true;
 		} else if (components[1] == "y_sort_origin") {
 			r_ret = get_layer_y_sort_origin(index);
 			return true;
@@ -3208,6 +3239,7 @@ void TileMap::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("layer_%d/enabled", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::COLOR, vformat("layer_%d/modulate", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("layer_%d/y_sort_enabled", i), PROPERTY_HINT_NONE));
+		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("layer_%d/collision_enabled", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("layer_%d/y_sort_origin", i), PROPERTY_HINT_NONE, "suffix:px"));
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("layer_%d/z_index", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("layer_%d/tile_data", i), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
@@ -4130,6 +4162,8 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_layer_modulate", "layer"), &TileMap::get_layer_modulate);
 	ClassDB::bind_method(D_METHOD("set_layer_y_sort_enabled", "layer", "y_sort_enabled"), &TileMap::set_layer_y_sort_enabled);
 	ClassDB::bind_method(D_METHOD("is_layer_y_sort_enabled", "layer"), &TileMap::is_layer_y_sort_enabled);
+	ClassDB::bind_method(D_METHOD("set_layer_collision_enabled", "layer", "collision_enabled"), &TileMap::set_layer_collision_enabled);
+	ClassDB::bind_method(D_METHOD("is_layer_collision_enabled", "layer"), &TileMap::is_layer_collision_enabled);
 	ClassDB::bind_method(D_METHOD("set_layer_y_sort_origin", "layer", "y_sort_origin"), &TileMap::set_layer_y_sort_origin);
 	ClassDB::bind_method(D_METHOD("get_layer_y_sort_origin", "layer"), &TileMap::get_layer_y_sort_origin);
 	ClassDB::bind_method(D_METHOD("set_layer_z_index", "layer", "z_index"), &TileMap::set_layer_z_index);

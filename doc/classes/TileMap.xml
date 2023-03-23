@@ -225,6 +225,13 @@
 				Returns a rectangle enclosing the used (non-empty) tiles of the map, including all layers.
 			</description>
 		</method>
+		<method name="is_layer_collision_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer" type="int" />
+			<description>
+				Returns if a layer has collision enabled.
+			</description>
+		</method>
 		<method name="is_layer_enabled" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer" type="int" />
@@ -317,6 +324,15 @@
 				Update all the cells in the [param path] coordinates array so that they use the given [param terrain] for the given [param terrain_set]. The function will also connect two successive cell in the path with the same terrain. This function might update neighboring tiles if needed to create correct terrain transitions.
 				If [param ignore_empty_terrains] is true, empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
 				[b]Note:[/b] To work correctly, [code]set_cells_terrain_path[/code] requires the TileMap's TileSet to have terrains set up with all required terrain combinations. Otherwise, it may produce unexpected results.
+			</description>
+		</method>
+		<method name="set_layer_collision_enabled">
+			<return type="void" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="collision_enabled" type="bool" />
+			<description>
+				Enables or disables collision for the layer [param layer]. A layer with disabled collision will not instanciate physic bodies.
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="set_layer_enabled">
