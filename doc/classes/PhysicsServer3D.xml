@@ -119,6 +119,13 @@
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="callback" type="Callable" />
 			<description>
+				Sets the area's area monitor callback. This callback will be called when any other (shape of an) area enters or exits (a shape of) the given area, and must take the following five parameters:
+				1. an integer [code]status[/code]: either [constant AREA_BODY_ADDED] or [constant AREA_BODY_REMOVED] depending on whether the other area's shape entered or exited the area,
+				2. an [RID] [code]area_rid[/code]: the [RID] of the other area that entered or exited the area,
+				3. an integer [code]instance_id[/code]: the [code]ObjectID[/code] attached to the other area,
+				4. an integer [code]area_shape_idx[/code]: the index of the shape of the other area that entered or exited the area,
+				5. an integer [code]self_shape_idx[/code]: the index of the shape of the area where the other area entered or exited.
+				By counting (or keeping track of) the shapes that enter and exit, it can be determined if an area (with all its shapes) is entering for the first time or exiting for the last time.
 			</description>
 		</method>
 		<method name="area_set_collision_layer">
@@ -142,12 +149,13 @@
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="callback" type="Callable" />
 			<description>
-				Sets the function to call when any body/area enters or exits the area. This callback will be called for any object interacting with the area, and takes five parameters:
-				1: [constant AREA_BODY_ADDED] or [constant AREA_BODY_REMOVED], depending on whether the object entered or exited the area.
-				2: [RID] of the object that entered/exited the area.
-				3: Instance ID of the object that entered/exited the area.
-				4: The shape index of the object that entered/exited the area.
-				5: The shape index of the area where the object entered/exited.
+				Sets the area's body monitor callback. This callback will be called when any other (shape of a) body enters or exits (a shape of) the given area, and must take the following five parameters:
+				1. an integer [code]status[/code]: either [constant AREA_BODY_ADDED] or [constant AREA_BODY_REMOVED] depending on whether the other body shape entered or exited the area,
+				2. an [RID] [code]body_rid[/code]: the [RID] of the body that entered or exited the area,
+				3. an integer [code]instance_id[/code]: the [code]ObjectID[/code] attached to the body,
+				4. an integer [code]body_shape_idx[/code]: the index of the shape of the body that entered or exited the area,
+				5. an integer [code]self_shape_idx[/code]: the index of the shape of the area where the body entered or exited.
+				By counting (or keeping track of) the shapes that enter and exit, it can be determined if a body (with all its shapes) is entering for the first time or exiting for the last time.
 			</description>
 		</method>
 		<method name="area_set_monitorable">
