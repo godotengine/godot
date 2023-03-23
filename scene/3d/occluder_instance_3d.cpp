@@ -760,6 +760,8 @@ void OccluderInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_is_editable_3d_polygon"), &OccluderInstance3D::_is_editable_3d_polygon);
 	ClassDB::bind_method(D_METHOD("_get_editable_3d_polygon_resource"), &OccluderInstance3D::_get_editable_3d_polygon_resource);
 
+	ClassDB::bind_method(D_METHOD("bake", "node"), &OccluderInstance3D::bake);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "occluder", PROPERTY_HINT_RESOURCE_TYPE, "Occluder3D"), "set_occluder", "get_occluder");
 	ADD_GROUP("Bake", "bake_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_bake_mask", "get_bake_mask");
