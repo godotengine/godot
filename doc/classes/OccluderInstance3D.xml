@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OccluderInstance3D" inherits="Node3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="OccluderInstance3D" inherits="VisualInstance3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Provides occlusion culling for 3D nodes, which improves performance in closed areas.
 	</brief_description>
@@ -13,6 +13,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="bake">
+			<return type="int" enum="OccluderInstance3D.BakeError" />
+			<param index="0" name="node" type="Node" />
+			<description>
+			</description>
+		</method>
 		<method name="get_bake_mask_value" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />
@@ -46,4 +52,10 @@
 			Alternatively, you can select a primitive occluder to use: [QuadOccluder3D], [BoxOccluder3D] or [SphereOccluder3D].
 		</member>
 	</members>
+	<constants>
+		<constant name="BAKE_ERROR_OK" value="0" enum="BakeError">
+		</constant>
+		<constant name="BAKE_ERROR_NO_MESHES" value="2" enum="BakeError">
+		</constant>
+	</constants>
 </class>
