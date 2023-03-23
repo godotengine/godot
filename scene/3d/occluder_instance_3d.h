@@ -161,7 +161,7 @@ public:
 };
 
 class OccluderInstance3D : public VisualInstance3D {
-	GDCLASS(OccluderInstance3D, Node3D);
+	GDCLASS(OccluderInstance3D, VisualInstance3D);
 
 private:
 	Ref<Occluder3D> occluder;
