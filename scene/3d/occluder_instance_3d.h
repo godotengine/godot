@@ -204,6 +204,7 @@ public:
 	void set_bake_mask_value(int p_layer_number, bool p_enable);
 	bool get_bake_mask_value(int p_layer_number) const;
 
+	BakeError bake(Node *p_node);
 	BakeError bake_scene(Node *p_from_node, String p_occluder_path = "");
 	static void bake_single_node(const Node3D *p_node, float p_simplification_distance, PackedVector3Array &r_vertices, PackedInt32Array &r_indices);
 

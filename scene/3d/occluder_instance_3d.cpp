@@ -650,21 +650,15 @@ void OccluderInstance3D::bake_single_node(const Node3D *p_node, float p_simplifi
 	}
 }
 
-OccluderInstance3D::BakeError OccluderInstance3D::bake_scene(Node *p_from_node, String p_occluder_path) {
-	if (p_occluder_path.is_empty()) {
-		if (get_occluder().is_null()) {
-			return BAKE_ERROR_NO_SAVE_PATH;
-		}
-		p_occluder_path = get_occluder()->get_path();
-		if (!p_occluder_path.is_resource_file()) {
-			return BAKE_ERROR_NO_SAVE_PATH;
-		}
+OccluderInstance3D::BakeError OccluderInstance3D::bake(Node *p_node) {
+	if (p_node == nullptr) {
+		return BAKE_ERROR_NO_MESHES;
 	}
 
 	PackedVector3Array vertices;
 	PackedInt32Array indices;
 
-	_bake_node(p_from_node, vertices, indices);
+	_bake_node(p_node, vertices, indices);
 
 	if (vertices.is_empty() || indices.is_empty()) {
 		return BAKE_ERROR_NO_MESHES;
@@ -681,15 +675,36 @@ OccluderInstance3D::BakeError OccluderInstance3D::bake_scene(Node *p_from_node, 
 	}
 
 	occ->set_arrays(vertices, indices);
+	set_occluder(occ);
 
-	Error err = ResourceSaver::save(occ, p_occluder_path);
+	return BAKE_ERROR_OK;
+}
+
+OccluderInstance3D::BakeError OccluderInstance3D::bake_scene(Node *p_from_node, String p_occluder_path) {
+	if (p_occluder_path.is_empty()) {
+		if (get_occluder().is_null()) {
+			return BAKE_ERROR_NO_SAVE_PATH;
+		}
+		p_occluder_path = get_occluder()->get_path();
+		if (!p_occluder_path.is_resource_file()) {
+			return BAKE_ERROR_NO_SAVE_PATH;
+		}
+	}
+
+	BakeError bake_err = bake(p_from_node);
+
+	if (bake_err != BAKE_ERROR_OK) {
+		return bake_err;
+	}
+
+	Error err = ResourceSaver::save(occluder, p_occluder_path);
 
 	if (err != OK) {
+		set_occluder(Ref<Occluder3D>()); // clear
 		return BAKE_ERROR_CANT_SAVE;
 	}
 
-	occ->set_path(p_occluder_path);
-	set_occluder(occ);
+	occluder->set_path(p_occluder_path);
 
 	return BAKE_ERROR_OK;
 }
