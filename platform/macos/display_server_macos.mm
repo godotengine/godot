@@ -3521,14 +3521,16 @@ void DisplayServerMacOS::process_events() {
 	}
 
 	// Process "menu_callback"s.
-	for (MenuCall &E : deferred_menu_calls) {
-		Variant tag = E.tag;
+	while (List<MenuCall>::Element *call_p = deferred_menu_calls.front()) {
+		MenuCall call = call_p->get();
+		deferred_menu_calls.pop_front(); // Remove before call to avoid infinite loop in case callback is using `process_events` (e.g. EditorProgress).
+
+		Variant tag = call.tag;
 		Variant *tagp = &tag;
 		Variant ret;
 		Callable::CallError ce;
-		E.callback.callp((const Variant **)&tagp, 1, ret, ce);
+		call.callback.callp((const Variant **)&tagp, 1, ret, ce);
 	}
-	deferred_menu_calls.clear();
 
 	if (!drop_events) {
 		_process_key_events();
