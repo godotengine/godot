@@ -404,11 +404,12 @@ void TextServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("shaped_text_substr", "shaped", "start", "length"), &TextServer::shaped_text_substr);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_parent", "shaped"), &TextServer::shaped_text_get_parent);
-	ClassDB::bind_method(D_METHOD("shaped_text_fit_to_width", "shaped", "width", "jst_flags"), &TextServer::shaped_text_fit_to_width, DEFVAL(JUSTIFICATION_WORD_BOUND | JUSTIFICATION_KASHIDA));
+	ClassDB::bind_method(D_METHOD("shaped_text_fit_to_width", "shaped", "width", "justification_flags"), &TextServer::shaped_text_fit_to_width, DEFVAL(JUSTIFICATION_WORD_BOUND | JUSTIFICATION_KASHIDA));
 	ClassDB::bind_method(D_METHOD("shaped_text_tab_align", "shaped", "tab_stops"), &TextServer::shaped_text_tab_align);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_shape", "shaped"), &TextServer::shaped_text_shape);
 	ClassDB::bind_method(D_METHOD("shaped_text_is_ready", "shaped"), &TextServer::shaped_text_is_ready);
+	ClassDB::bind_method(D_METHOD("shaped_text_has_visible_chars", "shaped"), &TextServer::shaped_text_has_visible_chars);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_get_glyphs", "shaped"), &TextServer::_shaped_text_get_glyphs_wrapper);
 	ClassDB::bind_method(D_METHOD("shaped_text_sort_logical", "shaped"), &TextServer::_shaped_text_sort_logical_wrapper);
@@ -497,6 +498,9 @@ void TextServer::_bind_methods() {
 	BIND_BITFIELD_FLAG(JUSTIFICATION_TRIM_EDGE_SPACES);
 	BIND_BITFIELD_FLAG(JUSTIFICATION_AFTER_LAST_TAB);
 	BIND_BITFIELD_FLAG(JUSTIFICATION_CONSTRAIN_ELLIPSIS);
+	BIND_BITFIELD_FLAG(JUSTIFICATION_SKIP_LAST_LINE);
+	BIND_BITFIELD_FLAG(JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS);
+	BIND_BITFIELD_FLAG(JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE);
 
 	/* AutowrapMode */
 	BIND_ENUM_CONSTANT(AUTOWRAP_OFF);
@@ -682,6 +686,21 @@ void TextServer::draw_hex_code_box(const RID &p_canvas, int64_t p_size, const Ve
 		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(6, 8) * sz, b, p_color);
 		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(10, 8) * sz, a, p_color);
 	}
+}
+
+bool TextServer::shaped_text_has_visible_chars(const RID &p_shaped) const {
+	int v_size = shaped_text_get_glyph_count(p_shaped);
+	if (v_size == 0) {
+		return false;
+	}
+
+	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
+	for (int i = 0; i < v_size; i++) {
+		if (glyphs[i].index != 0 && (glyphs[i].flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL) {
+			return true;
+		}
+	}
+	return false;
 }
 
 PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped, const PackedFloat32Array &p_width, int64_t p_start, bool p_once, BitField<TextServer::LineBreakFlag> p_break_flags) const {
