@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Editor (tests=yes)
+          - name: Editor
             cache-name: macos-editor
             target: editor
             tests: true
