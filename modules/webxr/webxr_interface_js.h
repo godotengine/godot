@@ -108,6 +108,7 @@ public:
 	virtual bool is_initialized() const override;
 	virtual bool initialize() override;
 	virtual void uninitialize() override;
+	virtual Dictionary get_system_info() override;
 
 	virtual Size2 get_render_target_size() override;
 	virtual uint32_t get_view_count() override;
