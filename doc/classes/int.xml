@@ -397,10 +397,10 @@
 		<operator name="operator ~">
 			<return type="int" />
 			<description>
-				Returns the result of bitwise [code]NOT[/code] operation for the integer. It's effectively equal to [code]-int + 1[/code].
+				Returns the result of bitwise [code]NOT[/code] operation for the integer. Due to [url=https://en.wikipedia.org/wiki/Two%27s_complement/]2's complement[/url], it's effectively equal to [code]-(int + 1)[/code].
 				[codeblock]
-				print(~4) # -3
-				print(~7) # -6
+				print(~4)  # -0b000100 ( 4) = 0b111011 (-5)
+				print(~-7) # -0b111001 (-7) = 0b000110 ( 6)
 				[/codeblock]
 			</description>
 		</operator>
