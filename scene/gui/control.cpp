@@ -2876,6 +2876,10 @@ String Control::get_tooltip_text() const {
 }
 
 String Control::get_tooltip(const Point2 &p_pos) const {
+	String ret;
+	if (GDVIRTUAL_CALL(_get_tooltip, p_pos, ret)) {
+		return ret;
+	}
 	return data.tooltip;
 }
 
@@ -3417,6 +3421,7 @@ void Control::_bind_methods() {
 	GDVIRTUAL_BIND(_has_point, "point");
 	GDVIRTUAL_BIND(_structured_text_parser, "args", "text");
 	GDVIRTUAL_BIND(_get_minimum_size);
+	GDVIRTUAL_BIND(_get_tooltip, "at_position");
 
 	GDVIRTUAL_BIND(_get_drag_data, "at_position");
 	GDVIRTUAL_BIND(_can_drop_data, "at_position", "data");
