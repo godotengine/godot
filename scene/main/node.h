@@ -382,6 +382,7 @@ public:
 	void set_property_pinned(const String &p_property, bool p_pinned);
 	bool is_property_pinned(const StringName &p_property) const;
 	virtual StringName get_property_store_alias(const StringName &p_property) const;
+	bool is_part_of_edited_scene() const;
 #endif
 	void get_storable_properties(HashSet<StringName> &r_storable_properties) const;
 

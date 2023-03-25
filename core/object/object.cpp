@@ -1378,7 +1378,12 @@ String Object::tr(const StringName &p_message, const StringName &p_context) cons
 	if (!_can_translate || !TranslationServer::get_singleton()) {
 		return p_message;
 	}
-	return TranslationServer::get_singleton()->translate(p_message, p_context);
+
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return TranslationServer::get_singleton()->tool_translate(p_message, p_context);
+	} else {
+		return TranslationServer::get_singleton()->translate(p_message, p_context);
+	}
 }
 
 String Object::tr_n(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
@@ -1389,7 +1394,12 @@ String Object::tr_n(const StringName &p_message, const StringName &p_message_plu
 		}
 		return p_message_plural;
 	}
-	return TranslationServer::get_singleton()->translate_plural(p_message, p_message_plural, p_n, p_context);
+
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return TranslationServer::get_singleton()->tool_translate_plural(p_message, p_message_plural, p_n, p_context);
+	} else {
+		return TranslationServer::get_singleton()->translate_plural(p_message, p_message_plural, p_n, p_context);
+	}
 }
 
 void Object::_clear_internal_resource_paths(const Variant &p_var) {

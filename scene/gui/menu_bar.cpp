@@ -249,9 +249,11 @@ void MenuBar::_update_submenu(const String &p_menu_name, PopupMenu *p_child) {
 }
 
 bool MenuBar::is_native_menu() const {
-	if (Engine::get_singleton()->is_editor_hint() && is_inside_tree() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this)) {
+#ifdef TOOLS_ENABLED
+	if (is_part_of_edited_scene()) {
 		return false;
 	}
+#endif
 
 	return (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU) && is_native);
 }
