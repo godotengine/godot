@@ -3973,6 +3973,19 @@ void TileMap::set_texture_repeat(CanvasItem::TextureRepeat p_texture_repeat) {
 	}
 }
 
+void TileMap::set_self_modulate(const Color &p_self_modulate) {
+	CanvasItem::set_self_modulate(p_self_modulate);
+
+	// Update self_modulate for the whole tilemap.
+	for (unsigned int layer = 0; layer < layers.size(); layer++) {
+		for (const KeyValue<Vector2i, TileMapQuadrant> &E : layers[layer].quadrant_map) {
+			for (const RID &ci : E.value.canvas_items) {
+				RenderingServer::get_singleton()->canvas_item_set_self_modulate(ci, get_self_modulate());
+			}
+		}
+		_rendering_update_layer(layer);
+	}
+}
 TypedArray<Vector2i> TileMap::get_surrounding_cells(const Vector2i &coords) {
 	if (!tile_set.is_valid()) {
 		return TypedArray<Vector2i>();
