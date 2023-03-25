@@ -1,0 +1,38 @@
+name: Pipeline
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-pipeline
+  cancel-in-progress: true
+
+jobs:
+
+  static:
+    name: 📊 Static Checks
+    uses: ./.github/workflows/static_checks.yml
+
+  android:
+    name: 🤖 Android Builds
+    uses: ./.github/workflows/android_builds.yml
+
+  ios:
+    name: 🍏 iOS Builds
+    uses: ./.github/workflows/ios_builds.yml
+
+  linux:
+    name: 🐧 Linux Builds
+    uses: ./.github/workflows/linux_builds.yml
+
+  macos:
+    name: 🍎 macOS Builds
+    uses: ./.github/workflows/macos_builds.yml
+
+  web:
+    name: 🌐 Web Builds
+    uses: ./.github/workflows/web_builds.yml
+
+  windows:
+    name: 🏁 Windows Builds
+    uses: ./.github/workflows/windows_builds.yml
