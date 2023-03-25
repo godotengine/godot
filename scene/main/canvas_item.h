@@ -233,7 +233,7 @@ public:
 	Color get_modulate() const;
 	Color get_modulate_in_tree() const;
 
-	void set_self_modulate(const Color &p_self_modulate);
+	virtual void set_self_modulate(const Color &p_self_modulate);
 	Color get_self_modulate() const;
 
 	void set_visibility_layer(uint32_t p_visibility_layer);
