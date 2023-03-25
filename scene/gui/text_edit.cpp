@@ -5792,7 +5792,7 @@ void TextEdit::merge_gutters(int p_from_line, int p_to_line) {
 			text.set_line_gutter_item_color(p_to_line, i, text.get_line_gutter_item_color(p_from_line, i));
 		}
 
-		if (text.get_line_gutter_metadata(p_from_line, i) != "") {
+		if (text.get_line_gutter_metadata(p_from_line, i) != Variant("")) {
 			text.set_line_gutter_metadata(p_to_line, i, text.get_line_gutter_metadata(p_from_line, i));
 		}
 

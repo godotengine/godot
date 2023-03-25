@@ -905,7 +905,7 @@ bool Viewport::_is_size_allocated() const {
 Rect2 Viewport::get_visible_rect() const {
 	Rect2 r;
 
-	if (size == Size2()) {
+	if (size == Size2i()) {
 		r = Rect2(Point2(), DisplayServer::get_singleton()->window_get_size());
 	} else {
 		r = Rect2(Point2(), size);

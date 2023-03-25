@@ -1051,11 +1051,11 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			bool got_bracket_token = false;
 			if (builtin_types.has(token.value)) {
 				array.set_typed(builtin_types.get(token.value), StringName(), Variant());
-			} else if (token.value == "Resource" || token.value == "SubResource" || token.value == "ExtResource") {
+			} else if (token.value == Variant("Resource") || token.value == Variant("SubResource") || token.value == Variant("ExtResource")) {
 				Variant resource;
 				err = parse_value(token, resource, p_stream, line, r_err_str, p_res_parser);
 				if (err) {
-					if (token.value == "Resource" && err == ERR_PARSE_ERROR && r_err_str == "Expected '('" && token.type == TK_BRACKET_CLOSE) {
+					if (token.value == Variant("Resource") && err == ERR_PARSE_ERROR && r_err_str == "Expected '('" && token.type == TK_BRACKET_CLOSE) {
 						err = OK;
 						r_err_str = String();
 						array.set_typed(Variant::OBJECT, token.value, Variant());

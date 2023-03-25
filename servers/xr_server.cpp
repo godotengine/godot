@@ -264,7 +264,7 @@ void XRServer::add_tracker(Ref<XRPositionalTracker> p_tracker) {
 
 	StringName tracker_name = p_tracker->get_tracker_name();
 	if (trackers.has(tracker_name)) {
-		if (trackers[tracker_name] != p_tracker) {
+		if (trackers[tracker_name] != Variant(p_tracker)) {
 			// We already have a tracker with this name, we're going to replace it
 			trackers[tracker_name] = p_tracker;
 			emit_signal(SNAME("tracker_updated"), tracker_name, p_tracker->get_tracker_type());

@@ -5797,7 +5797,7 @@ Ref<RichTextEffect> RichTextLabel::_get_custom_effect_by_code(String p_bbcode_id
 			continue;
 		}
 
-		if (effect->get_bbcode() == p_bbcode_identifier) {
+		if (effect->get_bbcode() == Variant(p_bbcode_identifier)) {
 			return effect;
 		}
 	}

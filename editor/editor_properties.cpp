@@ -3426,7 +3426,7 @@ void EditorPropertyColor::_set_read_only(bool p_read_only) {
 
 void EditorPropertyColor::_color_changed(const Color &p_color) {
 	// Cancel the color change if the current color is identical to the new one.
-	if (get_edited_object()->get(get_edited_property()) == p_color) {
+	if (get_edited_object()->get(get_edited_property()) == Variant(p_color)) {
 		return;
 	}
 
@@ -3590,7 +3590,7 @@ void EditorPropertyNodePath::drop_data_fw(const Point2 &p_point, const Variant &
 }
 
 bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const {
-	if (p_drag_data["type"] != "nodes") {
+	if (p_drag_data["type"] != Variant("nodes")) {
 		return false;
 	}
 	Array nodes = p_drag_data["nodes"];

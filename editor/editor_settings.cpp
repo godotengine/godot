@@ -945,7 +945,7 @@ void EditorSettings::setup_network() {
 	List<IPAddress> local_ip;
 	IP::get_singleton()->get_local_addresses(&local_ip);
 	String hint;
-	String current = has_setting("network/debug/remote_host") ? get("network/debug/remote_host") : "";
+	IPAddress current = has_setting("network/debug/remote_host") ? get("network/debug/remote_host") : "";
 	String selected = "127.0.0.1";
 
 	// Check that current remote_host is a valid interface address and populate hints.

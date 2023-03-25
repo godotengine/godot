@@ -887,7 +887,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 						start_ofs += p_time - a->track_get_key_time(i, idx);
 					}
 
-					if (aa->object->call(SNAME("get_stream")) != aa->audio_stream) {
+					if (aa->object->call(SNAME("get_stream")) != Variant(aa->audio_stream)) {
 						aa->object->call(SNAME("set_stream"), aa->audio_stream);
 						aa->audio_stream_playback.unref();
 						if (!playing_audio_stream_players.has(asp)) {

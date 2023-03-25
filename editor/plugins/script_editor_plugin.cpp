@@ -2766,7 +2766,7 @@ void ScriptEditor::_file_removed(const String &p_removed_file) {
 		if (!se) {
 			continue;
 		}
-		if (se->get_meta("_edit_res_path") == p_removed_file) {
+		if (se->get_meta("_edit_res_path") == Variant(p_removed_file)) {
 			// The script is deleted with no undo, so just close the tab.
 			_close_tab(i, false, false);
 		}

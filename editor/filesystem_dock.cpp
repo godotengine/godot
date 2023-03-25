@@ -586,7 +586,7 @@ void FileSystemDock::_file_list_thumbnail_done(const String &p_path, const Ref<T
 		Array uarr = p_udata;
 		int idx = uarr[0];
 		String file = uarr[1];
-		if (idx < files->get_item_count() && files->get_item_text(idx) == file && files->get_item_metadata(idx) == p_path) {
+		if (idx < files->get_item_count() && files->get_item_text(idx) == file && files->get_item_metadata(idx) == Variant(p_path)) {
 			if (file_list_display_mode == FILE_LIST_DISPLAY_LIST) {
 				if (p_small_preview.is_valid()) {
 					files->set_item_icon(idx, p_small_preview);
@@ -1062,7 +1062,7 @@ void FileSystemDock::_tree_activate_file() {
 	if (selected) {
 		String file_path = selected->get_metadata(0);
 		TreeItem *parent = selected->get_parent();
-		bool is_favorite = parent != nullptr && parent->get_metadata(0) == "Favorites";
+		bool is_favorite = parent != nullptr && parent->get_metadata(0) == Variant("Favorites");
 
 		if ((!is_favorite && file_path.ends_with("/")) || file_path == "Favorites") {
 			bool collapsed = selected->is_collapsed();
@@ -1080,7 +1080,7 @@ void FileSystemDock::_file_list_activate_file(int p_idx) {
 void FileSystemDock::_preview_invalidated(const String &p_path) {
 	if (file_list_display_mode == FILE_LIST_DISPLAY_THUMBNAILS && p_path.get_base_dir() == path && searched_string.length() == 0 && file_list_vb->is_visible_in_tree()) {
 		for (int i = 0; i < files->get_item_count(); i++) {
-			if (files->get_item_metadata(i) == p_path) {
+			if (files->get_item_metadata(i) == Variant(p_path)) {
 				// Re-request preview.
 				Array udata;
 				udata.resize(2);
@@ -2577,7 +2577,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 			if (filenames.size() == 1) {
 				p_popup->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open Scene"), FILE_OPEN);
 				p_popup->add_icon_item(get_theme_icon(SNAME("CreateNewSceneFrom"), SNAME("EditorIcons")), TTR("New Inherited Scene"), FILE_INHERIT);
-				if (GLOBAL_GET("application/run/main_scene") != filenames[0]) {
+				if (GLOBAL_GET("application/run/main_scene") != Variant(filenames[0])) {
 					p_popup->add_icon_item(get_theme_icon(SNAME("PlayScene"), SNAME("EditorIcons")), TTR("Set As Main Scene"), FILE_MAIN_SCENE);
 				}
 			} else {

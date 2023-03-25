@@ -290,7 +290,7 @@ void FileDialog::_action_pressed() {
 		TreeItem *item = tree->get_selected();
 		if (item) {
 			Dictionary d = item->get_metadata(0);
-			if (d["dir"] && d["name"] != "..") {
+			if (d["dir"] && d["name"] != Variant("..")) {
 				path = path.path_join(d["name"]);
 			}
 		}

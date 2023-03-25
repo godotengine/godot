@@ -2448,7 +2448,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		scene->set_script(Variant(root_script));
 	}
 
-	if (p_options["nodes/root_name"] != "Scene Root") {
+	if (p_options["nodes/root_name"] != Variant("Scene Root")) {
 		scene->set_name(p_options["nodes/root_name"]);
 	} else {
 		scene->set_name(p_save_path.get_file().get_basename());

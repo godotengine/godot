@@ -185,7 +185,7 @@ RID XRInterface::get_vrs_texture() {
 	real_t radius = vrs_size.length() * 0.5;
 	Size2 vrs_sizei = vrs_size;
 
-	if (vrs.size != vrs_sizei) {
+	if (vrs.size != Size2i(vrs_sizei)) {
 		const uint8_t densities[] = {
 			0, // 1x1
 			1, // 1x2

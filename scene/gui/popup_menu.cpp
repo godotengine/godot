@@ -254,7 +254,7 @@ void PopupMenu::_parent_focused() {
 
 		Rect2 safe_area = DisplayServer::get_singleton()->window_get_popup_safe_rect(get_window_id());
 		Point2 pos = DisplayServer::get_singleton()->mouse_get_position() - mouse_pos_adjusted;
-		if (safe_area == Rect2i() || !safe_area.has_point(pos)) {
+		if (safe_area == Rect2() || !safe_area.has_point(pos)) {
 			Popup::_parent_focused();
 		} else {
 			grab_focus();

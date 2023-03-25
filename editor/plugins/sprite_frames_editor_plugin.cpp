@@ -1390,7 +1390,7 @@ void SpriteFramesEditor::_fetch_sprite_node() {
 	AnimatedSprite2D *as2d = Object::cast_to<AnimatedSprite2D>(selected);
 	AnimatedSprite3D *as3d = Object::cast_to<AnimatedSprite3D>(selected);
 	if (as2d || as3d) {
-		if (frames != selected->call("get_sprite_frames")) {
+		if (frames != Ref<SpriteFrames>(selected->call("get_sprite_frames"))) {
 			_remove_sprite_node();
 		} else {
 			animated_sprite = selected;
