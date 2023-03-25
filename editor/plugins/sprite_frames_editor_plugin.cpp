@@ -747,6 +747,7 @@ void SpriteFramesEditor::_select_animation(const String &p_name, bool p_update_n
 	if (!selected) {
 		return;
 	};
+	animations->scroll_to_item(selected);
 
 	edited_anim = selected->get_text(0);
 
