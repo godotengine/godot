@@ -1150,6 +1150,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					rtm = OS::RENDER_THREAD_UNSAFE;
 				} else if (I->next()->get() == "separate") {
 					rtm = OS::RENDER_SEPARATE_THREAD;
+				} else {
+					OS::get_singleton()->print("Unknown render thread mode, aborting.\nValid options are 'unsafe', 'safe' and 'separate'.\n");
+					goto error;
 				}
 
 				N = I->next()->next();
@@ -1875,7 +1878,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (rtm >= 0 && rtm < 3) {
-		if (editor) {
+		if (editor || project_manager) {
+			// Editor and project manager cannot run with rendering in a separate thread (they will crash on startup).
 			rtm = OS::RENDER_THREAD_SAFE;
 		}
 		OS::get_singleton()->_render_thread_mode = OS::RenderThreadMode(rtm);
@@ -2207,6 +2211,10 @@ Error Main::setup2() {
 				print_line("Requested V-Sync mode: Mailbox");
 				break;
 		}
+	}
+
+	if (OS::get_singleton()->_render_thread_mode == OS::RENDER_SEPARATE_THREAD) {
+		WARN_PRINT("The Multi-Threaded rendering thread model is experimental, and has known issues which can lead to project crashes. Use the Single-Safe option in the project settings instead.");
 	}
 
 	/* Initialize Pen Tablet Driver */

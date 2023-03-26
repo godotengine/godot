@@ -2226,7 +2226,8 @@
 			[b]Note:[/b] Depth prepass is only supported when using the Forward+ or Compatibility rendering method. When using the Mobile rendering method, there is no depth prepass performed.
 		</member>
 		<member name="rendering/driver/threads/thread_model" type="int" setter="" getter="" default="1">
-			Thread model for rendering. Rendering on a thread can vastly improve performance, but synchronizing to the main thread can cause a bit more jitter.
+			The thread model to use for rendering. Rendering on a thread may improve performance, but synchronizing to the main thread can cause a bit more jitter.
+			[b]Note:[/b] The [b]Multi-Threaded[/b] option is experimental, and has several known bugs which can lead to crashing, especially when using particles or resizing the window. Not recommended for use in production at this stage.
 		</member>
 		<member name="rendering/environment/defaults/default_clear_color" type="Color" setter="" getter="" default="Color(0.3, 0.3, 0.3, 1)">
 			Default background clear color. Overridable per [Viewport] using its [Environment]. See [member Environment.background_mode] and [member Environment.background_color] in particular. To change this default color programmatically, use [method RenderingServer.set_default_clear_color].
