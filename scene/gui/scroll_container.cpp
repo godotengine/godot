@@ -471,6 +471,8 @@ void ScrollContainer::_scroll_moved(float) {
 void ScrollContainer::set_h_scroll(int p_pos) {
 	h_scroll->set_value(p_pos);
 	_cancel_drag();
+	emit_signal(SNAME("scroll_ended"));
+	propagate_notification(NOTIFICATION_SCROLL_END);
 }
 
 int ScrollContainer::get_h_scroll() const {
@@ -480,6 +482,8 @@ int ScrollContainer::get_h_scroll() const {
 void ScrollContainer::set_v_scroll(int p_pos) {
 	v_scroll->set_value(p_pos);
 	_cancel_drag();
+	emit_signal(SNAME("scroll_ended"));
+	propagate_notification(NOTIFICATION_SCROLL_END);
 }
 
 int ScrollContainer::get_v_scroll() const {
