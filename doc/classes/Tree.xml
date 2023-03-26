@@ -100,6 +100,13 @@
 				Returns the column's title.
 			</description>
 		</method>
+		<method name="get_column_title_alignment" qualifiers="const">
+			<return type="int" enum="HorizontalAlignment" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the column title alignment.
+			</description>
+		</method>
 		<method name="get_column_title_direction" qualifiers="const">
 			<return type="int" enum="Control.TextDirection" />
 			<param index="0" name="column" type="int" />
@@ -286,6 +293,14 @@
 			<param index="1" name="title" type="String" />
 			<description>
 				Sets the title of a column.
+			</description>
+		</method>
+		<method name="set_column_title_alignment">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="title_alignment" type="int" enum="HorizontalAlignment" />
+			<description>
+				Sets the column title alignment. Note that [constant @GlobalScope.HORIZONTAL_ALIGNMENT_FILL] is not supported for column titles.
 			</description>
 		</method>
 		<method name="set_column_title_direction">
