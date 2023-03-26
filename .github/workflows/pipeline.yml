@@ -10,29 +10,41 @@ concurrency:
 jobs:
 
   static:
-    name: 📊 Static
+    name: '📊 Static'
     uses: ./.github/workflows/static_checks.yml
 
   android:
-    name: 🤖 Android
+    name: '🤖 Android'
     uses: ./.github/workflows/android_builds.yml
 
   ios:
-    name: 🍏 iOS
+    name: '🍏 iOS'
     uses: ./.github/workflows/ios_builds.yml
 
   linux:
-    name: 🐧 Linux
+    name: '🐧 Linux'
     uses: ./.github/workflows/linux_builds.yml
 
   macos:
-    name: 🍎 macOS
+    name: '🍎 macOS'
     uses: ./.github/workflows/macos_builds.yml
 
   web:
-    name: 🌐 Web
+    name: '🌐 Web'
     uses: ./.github/workflows/web_builds.yml
 
   windows:
-    name: 🏁 Windows
+    name: '🏁 Windows'
     uses: ./.github/workflows/windows_builds.yml
+
+  tip:
+    if: (github.event_name != 'pull_request') && (github.ref == 'refs/heads/master')
+    name: '🚀 Update tip'
+    needs:
+      - android
+      - ios
+      - linux
+      - macos
+      - web
+      - windows
+    uses: ./.github/workflows/tip.yml

@@ -1,0 +1,58 @@
+name: '🚀 Update tip'
+on:
+  workflow_call:
+
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-tip
+  cancel-in-progress: true
+
+jobs:
+
+  tip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: '📥 Download artifacts'
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+
+      - name: Prepare assets
+        run: |
+          sudo apt update -qq
+          sudo apt install -y coreutils
+
+          mkdir tip
+          cd artifacts
+          tree
+
+          for pkg in \
+            android-template \
+            linux-editor-mono \
+            web-template \
+            windows-editor \
+            windows-template \
+          ; do
+            tar czvf ../tip/"$pkg".tar.gz -C "$pkg" .
+          done
+
+          cp \
+            ios-template/libgodot.ios.template_release.arm64.a \
+            linux-template-minimal/godot.linuxbsd.template_release.x86_64 \
+            linux-template-mono/godot.linuxbsd.template_release.x86_64.mono \
+            macos-editor/godot.macos.editor.x86_64 \
+            macos-template/godot.macos.template_release.x86_64 \
+            ../tip/
+
+          cd ../tip
+          sha256sum * > sha256sums.txt
+          cat sha256sums.txt
+
+      - name: Upload artifacts as assets of pre-release 'tip'
+        run: GITHUB_TOKEN='${{ github.token }}' gh release upload --clobber tip tip/*
+
+      - name: Push tag 'tip' forward
+        run: |
+          git tag tip
+          git push origin +tip
