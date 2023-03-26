@@ -95,7 +95,9 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 			}
 		}
 
+		merged->set_name(p_atlas_sources[0]->get_name());
 		merged->set_texture(ImageTexture::create_from_image(output_image));
+		merged->set_texture_region_size(new_texture_region_size);
 
 		// Copy the tiles to the merged TileSetAtlasSource.
 		for (int source_index = 0; source_index < p_atlas_sources.size(); source_index++) {
@@ -130,9 +132,6 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 				}
 			}
 		}
-
-		merged->set_name(p_atlas_sources[0]->get_name());
-		merged->set_texture_region_size(new_texture_region_size);
 	}
 }
 
