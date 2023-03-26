@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "display_server_x11.h"
+#include <X11/Xlib.h>
 
 #ifdef X11_ENABLED
 
@@ -3514,9 +3515,11 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 		//the position in xconfigure is not useful here, obtain it manually
 		int x = 0, y = 0;
 		Window child;
+		XWindowAttributes xwa;
 		XTranslateCoordinates(x11_display, wd.x11_window, DefaultRootWindow(x11_display), 0, 0, &x, &y, &child);
-		new_rect.position.x = x;
-		new_rect.position.y = y;
+		XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
+		new_rect.position.x = x - xwa.x;
+		new_rect.position.y = y - xwa.y;
 
 		new_rect.size.width = event->xconfigure.width;
 		new_rect.size.height = event->xconfigure.height;
