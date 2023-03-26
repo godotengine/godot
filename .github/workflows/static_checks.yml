@@ -11,6 +11,7 @@ jobs:
     name: Static Checks
     runs-on: ubuntu-20.04
     steps:
+      - run: "echo 'INFO: clang-format, black format, file format, documentation checks'"
       - name: Checkout
         uses: actions/checkout@v3
 

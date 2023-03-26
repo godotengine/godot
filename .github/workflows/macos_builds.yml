@@ -21,6 +21,7 @@ jobs:
       matrix:
         include:
           - name: Editor
+            info: 'tests=yes'
             cache-name: macos-editor
             target: editor
             tests: true
@@ -33,6 +34,7 @@ jobs:
             sconsflags: debug_symbols=no
 
     steps:
+      - run: "echo 'INFO: ${{ matrix.info }}'"
       - uses: actions/checkout@v3
 
       - name: Setup Godot build cache

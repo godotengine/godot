@@ -34,6 +34,7 @@ jobs:
             artifact: true
 
           - name: Editor with doubles and GCC sanitizers
+            info: 'tests=yes, dev_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=gold'
             cache-name: linux-editor-double-sanitizers
             target: editor
             tests: true
@@ -49,6 +50,7 @@ jobs:
             artifact: false
 
           - name: Editor with clang sanitizers
+            info: 'tests=yes, dev_build=yes, use_asan=yes, use_ubsan=yes, use_llvm=yes, linker=lld'
             cache-name: linux-editor-llvm-sanitizers
             target: editor
             tests: true
@@ -67,6 +69,7 @@ jobs:
             artifact: true
 
           - name: Minimal template
+            info: 'everything disabled'
             cache-name: linux-template-minimal
             target: template_release
             tests: false
@@ -74,6 +77,7 @@ jobs:
             artifact: true
 
     steps:
+      - run: "echo 'INFO: ${{ matrix.info }}'"
       - uses: actions/checkout@v3
 
       # Need newer mesa for lavapipe to work properly.
