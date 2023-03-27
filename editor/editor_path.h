@@ -61,6 +61,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual Size2 get_minimum_size() const override;
+
 	void update_path();
 	void clear_path();
 	void enable_path();

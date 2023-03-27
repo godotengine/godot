@@ -4,9 +4,11 @@
 		Convex polygon shape resource for 2D physics.
 	</brief_description>
 	<description>
-		2D convex polygon shape to be added as a [i]direct[/i] child of a [PhysicsBody2D] or [Area2D] using a [CollisionShape2D] node. A convex polygon, whatever its shape, is internally decomposed into as many convex polygons as needed to ensure all collision checks against it are always done on convex polygons (which are faster to check). See also [CollisionPolygon2D].
-		The main difference between a [ConvexPolygonShape2D] and a [ConcavePolygonShape2D] is that a concave polygon assumes it is concave and uses a more complex method of collision detection, and a convex one forces itself to be convex to speed up collision detection.
-		[b]Performance:[/b] [ConvexPolygonShape2D] is faster to check collisions against compared to [ConcavePolygonShape2D], but it is slower than primitive collision shapes such as [CircleShape2D] or [RectangleShape2D]. Its use should generally be limited to medium-sized objects that cannot have their collision accurately represented by a primitive shape.
+		2D convex polygon shape to be added as a [i]direct[/i] child of a [PhysicsBody2D] or [Area2D] using a [CollisionShape2D] node.
+		The shape is a [i]solid[/i] that includes all the points that it encloses, as opposed to [ConcavePolygonShape2D] which is hollow if it encloses anything. See also [CollisionPolygon2D].
+		The solid nature of the shape makes it well-suited for both detection and physics; in physics body interactions this allows depenetrating even those shapes which end up (e.g. due to high speed) fully inside the convex shape (similarly to primitive shapes, but unlike [ConcavePolygonShape2D]). The convexity limits the possible geometric shape of a single [ConvexPolygonShape2D]: it cannot be concave.
+		[b]Convex decomposition:[/b] Concave objects' collisions can be represented accurately using [i]several[/i] convex shapes. This allows dynamic physics bodies to have complex concave collisions (at a performance cost). It can be achieved using several [ConvexPolygonShape2D] nodes or by using the [CollisionPolygon2D] node in Solids build mode. To generate a collision polygon from a sprite, select the [Sprite2D] node, go to the [b]Sprite2D[/b] menu that appears above the viewport, and choose [b]Create Polygon2D Sibling[/b].
+		[b]Performance:[/b] [ConvexPolygonShape2D] is faster to check collisions against compared to [ConcavePolygonShape2D], but it is slower than primitive collision shapes such as [CircleShape2D] or [RectangleShape2D]. Its use should generally be limited to medium-sized objects that cannot have their collision accurately represented by primitive shapes.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,13 +17,14 @@
 			<return type="void" />
 			<param index="0" name="point_cloud" type="PackedVector2Array" />
 			<description>
-				Based on the set of points provided, this creates and assigns the [member points] property using the convex hull algorithm. Removing all unneeded points. See [method Geometry2D.convex_hull] for details.
+				Based on the set of points provided, this assigns the [member points] property using the convex hull algorithm, removing all unneeded points. See [method Geometry2D.convex_hull] for details.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="points" type="PackedVector2Array" setter="set_points" getter="get_points" default="PackedVector2Array()">
-			The polygon's list of vertices. Can be in either clockwise or counterclockwise order. Only set this property with convex hull points, use [method set_point_cloud] to generate a convex hull shape from concave shape points.
+			The polygon's list of vertices that form a convex hull. Can be in either clockwise or counterclockwise order.
+			[b]Warning:[/b] Only set this property to a list of points that actually form a convex hull. Use [method set_point_cloud] to generate the convex hull of an arbitrary set of points.
 		</member>
 	</members>
 </class>

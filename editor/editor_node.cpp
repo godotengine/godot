@@ -356,12 +356,13 @@ void EditorNode::_update_scene_tabs() {
 		scene_tabs->set_current_tab(editor_data.get_edited_scene());
 	}
 
+	const Size2 add_button_size = Size2(0, scene_tabs->get_size().y);
 	if (scene_tabs->get_offset_buttons_visible()) {
 		// Move the add button to a fixed position.
 		if (scene_tab_add->get_parent() == scene_tabs) {
 			scene_tabs->remove_child(scene_tab_add);
 			scene_tab_add_ph->add_child(scene_tab_add);
-			scene_tab_add->set_position(Point2());
+			scene_tab_add->set_rect(Rect2(Point2(), add_button_size));
 		}
 	} else {
 		// Move the add button to be after the last tab.
@@ -371,16 +372,16 @@ void EditorNode::_update_scene_tabs() {
 		}
 
 		if (scene_tabs->get_tab_count() == 0) {
-			scene_tab_add->set_position(Point2());
+			scene_tab_add->set_rect(Rect2(Point2(), add_button_size));
 			return;
 		}
 
 		Rect2 last_tab = scene_tabs->get_tab_rect(scene_tabs->get_tab_count() - 1);
 		int hsep = scene_tabs->get_theme_constant(SNAME("h_separation"));
 		if (scene_tabs->is_layout_rtl()) {
-			scene_tab_add->set_position(Point2(last_tab.position.x - scene_tab_add->get_size().x - hsep, last_tab.position.y));
+			scene_tab_add->set_rect(Rect2(Point2(last_tab.position.x - scene_tab_add->get_size().x - hsep, last_tab.position.y), add_button_size));
 		} else {
-			scene_tab_add->set_position(Point2(last_tab.position.x + last_tab.size.width + hsep, last_tab.position.y));
+			scene_tab_add->set_rect(Rect2(Point2(last_tab.position.x + last_tab.size.width + hsep, last_tab.position.y), add_button_size));
 		}
 	}
 
@@ -3533,6 +3534,10 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor, bool p_config_chan
 	singleton->editor_plugins_force_input_forwarding->remove_plugin(p_editor);
 	singleton->remove_child(p_editor);
 	singleton->editor_data.remove_editor_plugin(p_editor);
+
+	for (KeyValue<ObjectID, HashSet<EditorPlugin *>> &kv : singleton->active_plugins) {
+		kv.value.erase(p_editor);
+	}
 }
 
 void EditorNode::_update_addon_config() {

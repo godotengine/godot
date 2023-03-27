@@ -408,6 +408,7 @@ class BindingsGenerator {
 		List<PropertyInterface> properties;
 		List<MethodInterface> methods;
 		List<SignalInterface> signals_;
+		HashSet<String> ignored_members;
 
 		bool has_virtual_methods = false;
 
@@ -469,6 +470,10 @@ class BindingsGenerator {
 			}
 
 			return nullptr;
+		}
+
+		bool is_intentionally_ignored(const String &p_name) const {
+			return ignored_members.has(p_name);
 		}
 
 	private:

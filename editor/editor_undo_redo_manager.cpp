@@ -248,12 +248,32 @@ void EditorUndoRedoManager::commit_action(bool p_execute) {
 	}
 
 	if (!history.undo_stack.is_empty()) {
-		const Action &prev_action = history.undo_stack.back()->get();
-		if (pending_action.merge_mode != UndoRedo::MERGE_DISABLE && pending_action.merge_mode == prev_action.merge_mode && pending_action.action_name == prev_action.action_name) {
-			// Discard action if it should be merged (UndoRedo handles merging internally).
-			pending_action = Action();
-			is_committing = false;
-			return;
+		// Discard action if it should be merged (UndoRedo handles merging internally).
+		switch (pending_action.merge_mode) {
+			case UndoRedo::MERGE_DISABLE:
+				break; // Nothing to do here.
+			case UndoRedo::MERGE_ENDS: {
+				if (history.undo_stack.size() < 2) {
+					break;
+				}
+
+				const Action &prev_action = history.undo_stack.back()->get();
+				const Action &pre_prev_action = history.undo_stack.back()->prev()->get();
+				if (pending_action.merge_mode == prev_action.merge_mode && pending_action.merge_mode == pre_prev_action.merge_mode &&
+						pending_action.action_name == prev_action.action_name && pending_action.action_name == pre_prev_action.action_name) {
+					pending_action = Action();
+					is_committing = false;
+					return;
+				}
+			} break;
+			case UndoRedo::MERGE_ALL: {
+				const Action &prev_action = history.undo_stack.back()->get();
+				if (pending_action.merge_mode == prev_action.merge_mode && pending_action.action_name == prev_action.action_name) {
+					pending_action = Action();
+					is_committing = false;
+					return;
+				}
+			} break;
 		}
 	}
 

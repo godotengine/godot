@@ -70,7 +70,7 @@ def configure(env: "Environment"):
             'Unsupported CPU architecture "%s" for Linux / *BSD. Supported architectures are: %s.'
             % (env["arch"], ", ".join(supported_arches))
         )
-        sys.exit()
+        sys.exit(255)
 
     ## Build type
 
@@ -208,7 +208,7 @@ def configure(env: "Environment"):
             "freetype, libpng, zlib, graphite, harfbuzz.\n"
             "Please specify `builtin_<name>=no` for all of them, or none."
         )
-        sys.exit()
+        sys.exit(255)
 
     if not env["builtin_freetype"]:
         env.ParseConfig("pkg-config freetype2 --cflags --libs")
@@ -307,11 +307,12 @@ def configure(env: "Environment"):
         if not env["use_sowrap"]:
             if os.system("pkg-config --exists libpulse") == 0:  # 0 means found
                 env.ParseConfig("pkg-config libpulse --cflags --libs")
-                env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED", "_REENTRANT"])
+                env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED"])
             else:
                 print("Warning: PulseAudio development libraries not found. Disabling the PulseAudio audio driver.")
                 env["pulseaudio"] = False
-        env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED", "_REENTRANT"])
+        else:
+            env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED", "_REENTRANT"])
 
     if env["dbus"]:
         if not env["use_sowrap"]:
