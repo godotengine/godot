@@ -927,7 +927,7 @@
 			Anchors the top edge of the node to the origin, the center or the end of its parent control. It changes how the top offset updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
 		</member>
 		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" default="true">
-			Toggles if any text should automatically change to its translated version depending on the current locale. Note that this will not affect any internal nodes (e.g. the popup of a [MenuButton]).
+			Toggles if any text should automatically change to its translated version depending on the current locale.
 			Also decides if the node's strings should be parsed for POT generation.
 		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" default="false">
