@@ -815,7 +815,7 @@ public:
 			_test_path();
 		}
 
-		popup_centered(Size2(500, 0) * EDSCALE);
+		popup_centered(Size2(480, 0) * EDSCALE);
 	}
 
 	ProjectDialog() {
@@ -1440,7 +1440,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	ProjectListItemControl *hb = memnew(ProjectListItemControl);
 	hb->connect("draw", callable_mp(this, &ProjectList::_panel_draw).bind(hb));
 	hb->connect("gui_input", callable_mp(this, &ProjectList::_panel_input).bind(hb));
-	hb->add_theme_constant_override("separation", 10 * EDSCALE);
+	hb->add_theme_constant_override("separation", 8 * EDSCALE);
 	hb->set_tooltip_text(item.description);
 
 	VBoxContainer *favorite_box = memnew(VBoxContainer);
@@ -1495,14 +1495,15 @@ void ProjectList::create_project_item_control(int p_index) {
 		int length = unsupported_features_str.length();
 		if (length > 0) {
 			Label *unsupported_label = memnew(Label(unsupported_features_str));
-			unsupported_label->set_custom_minimum_size(Size2(length * 15, 10) * EDSCALE);
+			unsupported_label->set_custom_minimum_size(Size2(length * 16, 8) * EDSCALE);
 			unsupported_label->add_theme_font_override("font", get_theme_font(SNAME("title"), SNAME("EditorFonts")));
 			unsupported_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 			unsupported_label->set_clip_text(true);
 			unsupported_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 			title_hb->add_child(unsupported_label);
+
 			Control *spacer = memnew(Control());
-			spacer->set_custom_minimum_size(Size2(10, 10));
+			spacer->set_custom_minimum_size(Size2(8, 8));
 			title_hb->add_child(spacer);
 		}
 	}
@@ -1515,7 +1516,6 @@ void ProjectList::create_project_item_control(int p_index) {
 		Button *show = memnew(Button);
 		// Display a folder icon if the project directory can be opened, or a "broken file" icon if it can't.
 		show->set_icon(get_theme_icon(!item.missing ? SNAME("Load") : SNAME("FileBroken"), SNAME("EditorIcons")));
-		show->set_flat(true);
 		if (!item.grayed) {
 			// Don't make the icon less prominent if the parent is already grayed out.
 			show->set_modulate(Color(1, 1, 1, 0.5));
@@ -1959,9 +1959,6 @@ void ProjectManager::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-			search_box->set_clear_button_enabled(true);
-
 			create_btn->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			import_btn->set_icon(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")));
 			scan_btn->set_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
@@ -1970,6 +1967,12 @@ void ProjectManager::_notification(int p_what) {
 			rename_btn->set_icon(get_theme_icon(SNAME("Rename"), SNAME("EditorIcons")));
 			erase_btn->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			erase_missing_btn->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
+
+			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			search_box->set_clear_button_enabled(true);
+
+			language_btn->set_icon(get_theme_icon(SNAME("Environment"), SNAME("EditorIcons")));
+			about_btn->set_icon(get_theme_icon(SNAME("Godot"), SNAME("EditorIcons")));
 
 			Engine::get_singleton()->set_editor_hint(false);
 		} break;
@@ -2692,18 +2695,17 @@ ProjectManager::ProjectManager() {
 
 	Ref<Theme> theme = create_custom_theme();
 	set_theme(theme);
+	set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), SNAME("Editor")));
 
-	set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-
 	Panel *panel = memnew(Panel);
-	add_child(panel);
 	panel->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("Background"), SNAME("EditorStyles")));
+		add_child(panel);
 
 	VBoxContainer *vb = memnew(VBoxContainer);
-	panel->add_child(vb);
 	vb->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 8 * EDSCALE);
+	panel->add_child(vb);
 
 	Control *center_box = memnew(Control);
 	center_box->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -2718,206 +2720,140 @@ ProjectManager::ProjectManager() {
 	local_projects_hb->set_name(TTR("Local Projects"));
 	tabs->add_child(local_projects_hb);
 
-	{
-		// Projects + search bar
-		VBoxContainer *search_tree_vb = memnew(VBoxContainer);
-		local_projects_hb->add_child(search_tree_vb);
-		search_tree_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	VBoxContainer *search_tree_vb = memnew(VBoxContainer);
+	search_tree_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	local_projects_hb->add_child(search_tree_vb);
 
-		HBoxContainer *hb = memnew(HBoxContainer);
-		hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		search_tree_vb->add_child(hb);
+	HBoxContainer *hb = memnew(HBoxContainer);
+	hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	search_tree_vb->add_child(hb);
 
-		search_box = memnew(LineEdit);
-		search_box->set_placeholder(TTR("Filter Projects"));
-		search_box->set_tooltip_text(TTR("This field filters projects by name and last path component.\nTo filter projects by name and full path, the query must contain at least one `/` character."));
-		search_box->connect("text_changed", callable_mp(this, &ProjectManager::_on_search_term_changed));
-		search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		hb->add_child(search_box);
+	create_btn = memnew(Button);
+	create_btn->set_shortcut(ED_SHORTCUT("project_manager/new_project", TTR("New Project"), KeyModifierMask::CMD_OR_CTRL | Key::N));
+	create_btn->connect("pressed", callable_mp(this, &ProjectManager::_new_project));
+	hb->add_child(create_btn);
 
-		loading_label = memnew(Label(TTR("Loading, please wait...")));
-		loading_label->add_theme_font_override("font", get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
-		loading_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		hb->add_child(loading_label);
-		// The loading label is shown later.
-		loading_label->hide();
+	import_btn = memnew(Button);
+	import_btn->set_shortcut(ED_SHORTCUT("project_manager/import_project", TTR("Import Project"), KeyModifierMask::CMD_OR_CTRL | Key::I));
+	import_btn->connect("pressed", callable_mp(this, &ProjectManager::_import_project));
+	hb->add_child(import_btn);
 
-		Label *sort_label = memnew(Label);
-		sort_label->set_text(TTR("Sort:"));
-		hb->add_child(sort_label);
+	scan_btn = memnew(Button);
+	scan_btn->set_shortcut(ED_SHORTCUT("project_manager/scan_projects", TTR("Scan Projects"), KeyModifierMask::CMD_OR_CTRL | Key::S));
+	scan_btn->connect("pressed", callable_mp(this, &ProjectManager::_scan_projects));
+	hb->add_child(scan_btn);
 
-		filter_option = memnew(OptionButton);
-		filter_option->set_clip_text(true);
-		filter_option->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		filter_option->connect("item_selected", callable_mp(this, &ProjectManager::_on_order_option_changed));
-		hb->add_child(filter_option);
+	hb->add_child(memnew(VSeparator));
 
-		Vector<String> sort_filter_titles;
-		sort_filter_titles.push_back(TTR("Last Edited"));
-		sort_filter_titles.push_back(TTR("Name"));
-		sort_filter_titles.push_back(TTR("Path"));
+	open_btn = memnew(Button);
+	open_btn->set_shortcut(ED_SHORTCUT("project_manager/edit_project", TTR("Edit Project"), KeyModifierMask::CMD_OR_CTRL | Key::E));
+	open_btn->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects_ask));
+	hb->add_child(open_btn);
 
-		for (int i = 0; i < sort_filter_titles.size(); i++) {
-			filter_option->add_item(sort_filter_titles[i]);
-		}
+	run_btn = memnew(Button);
+	run_btn->set_shortcut(ED_SHORTCUT("project_manager/run_project", TTR("Run Project"), KeyModifierMask::CMD_OR_CTRL | Key::R));
+	run_btn->connect("pressed", callable_mp(this, &ProjectManager::_run_project));
+	hb->add_child(run_btn);
 
-		PanelContainer *pc = memnew(PanelContainer);
-		pc->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
-		pc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		search_tree_vb->add_child(pc);
+	rename_btn = memnew(Button);
+	// The F2 shortcut isn't overridden with Enter on macOS as Enter is already used to edit a project.
+	rename_btn->set_shortcut(ED_SHORTCUT("project_manager/rename_project", TTR("Rename Project"), Key::F2));
+	rename_btn->connect("pressed", callable_mp(this, &ProjectManager::_rename_project));
+	hb->add_child(rename_btn);
 
-		_project_list = memnew(ProjectList);
-		_project_list->connect(ProjectList::SIGNAL_SELECTION_CHANGED, callable_mp(this, &ProjectManager::_update_project_buttons));
-		_project_list->connect(ProjectList::SIGNAL_PROJECT_ASK_OPEN, callable_mp(this, &ProjectManager::_open_selected_projects_ask));
-		_project_list->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
-		pc->add_child(_project_list);
+	erase_btn = memnew(Button);
+	erase_btn->set_shortcut(ED_SHORTCUT("project_manager/remove_project", TTR("Remove Project"), Key::KEY_DELETE));
+	erase_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_project));
+	hb->add_child(erase_btn);
+
+	erase_missing_btn = memnew(Button);
+	erase_missing_btn->set_tooltip_text(TTR("Remove Missing"));
+	erase_missing_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects));
+	hb->add_child(erase_missing_btn);
+
+	hb->add_child(memnew(VSeparator));
+
+	search_box = memnew(LineEdit);
+	search_box->set_placeholder(TTR("Filter Projects"));
+	search_box->set_tooltip_text(TTR("This field filters projects by name and last path component.\nTo filter projects by name and full path, the query must contain at least one `/` character."));
+	search_box->connect("text_changed", callable_mp(this, &ProjectManager::_on_search_term_changed));
+	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	hb->add_child(search_box);
+
+	loading_label = memnew(Label(TTR("Loading, please wait...")));
+	loading_label->add_theme_font_override("font", get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
+	loading_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	loading_label->hide(); // The loading label is shown later.
+	hb->add_child(loading_label);
+
+	filter_option = memnew(OptionButton);
+	filter_option->set_clip_text(true);
+	filter_option->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	filter_option->connect("item_selected", callable_mp(this, &ProjectManager::_on_order_option_changed));
+	hb->add_child(filter_option);
+
+	Vector<String> sort_filter_titles;
+	sort_filter_titles.push_back(TTR("Last Edited"));
+	sort_filter_titles.push_back(TTR("Name"));
+	sort_filter_titles.push_back(TTR("Path"));
+
+	for (int i = 0; i < sort_filter_titles.size(); i++) {
+		filter_option->add_item(sort_filter_titles[i]);
 	}
 
-	{
-		// Project tab side bar
-		VBoxContainer *tree_vb = memnew(VBoxContainer);
-		tree_vb->set_custom_minimum_size(Size2(120, 120));
-		local_projects_hb->add_child(tree_vb);
+	hb->add_spacer();
 
-		const int btn_h_separation = int(6 * EDSCALE);
-
-		create_btn = memnew(Button);
-		create_btn->set_text(TTR("New Project"));
-		create_btn->add_theme_constant_override("h_separation", btn_h_separation);
-		create_btn->set_shortcut(ED_SHORTCUT("project_manager/new_project", TTR("New Project"), KeyModifierMask::CMD_OR_CTRL | Key::N));
-		create_btn->connect("pressed", callable_mp(this, &ProjectManager::_new_project));
-		tree_vb->add_child(create_btn);
-
-		import_btn = memnew(Button);
-		import_btn->set_text(TTR("Import"));
-		import_btn->add_theme_constant_override("h_separation", btn_h_separation);
-		import_btn->set_shortcut(ED_SHORTCUT("project_manager/import_project", TTR("Import Project"), KeyModifierMask::CMD_OR_CTRL | Key::I));
-		import_btn->connect("pressed", callable_mp(this, &ProjectManager::_import_project));
-		tree_vb->add_child(import_btn);
-
-		scan_btn = memnew(Button);
-		scan_btn->set_text(TTR("Scan"));
-		scan_btn->add_theme_constant_override("h_separation", btn_h_separation);
-		scan_btn->set_shortcut(ED_SHORTCUT("project_manager/scan_projects", TTR("Scan Projects"), KeyModifierMask::CMD_OR_CTRL | Key::S));
-		scan_btn->connect("pressed", callable_mp(this, &ProjectManager::_scan_projects));
-		tree_vb->add_child(scan_btn);
-
-		tree_vb->add_child(memnew(HSeparator));
-
-		open_btn = memnew(Button);
-		open_btn->set_text(TTR("Edit"));
-		open_btn->add_theme_constant_override("h_separation", btn_h_separation);
-		open_btn->set_shortcut(ED_SHORTCUT("project_manager/edit_project", TTR("Edit Project"), KeyModifierMask::CMD_OR_CTRL | Key::E));
-		open_btn->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects_ask));
-		tree_vb->add_child(open_btn);
-
-		run_btn = memnew(Button);
-		run_btn->set_text(TTR("Run"));
-		run_btn->add_theme_constant_override("h_separation", btn_h_separation);
-		run_btn->set_shortcut(ED_SHORTCUT("project_manager/run_project", TTR("Run Project"), KeyModifierMask::CMD_OR_CTRL | Key::R));
-		run_btn->connect("pressed", callable_mp(this, &ProjectManager::_run_project));
-		tree_vb->add_child(run_btn);
-
-		rename_btn = memnew(Button);
-		rename_btn->set_text(TTR("Rename"));
-		rename_btn->add_theme_constant_override("h_separation", btn_h_separation);
-		// The F2 shortcut isn't overridden with Enter on macOS as Enter is already used to edit a project.
-		rename_btn->set_shortcut(ED_SHORTCUT("project_manager/rename_project", TTR("Rename Project"), Key::F2));
-		rename_btn->connect("pressed", callable_mp(this, &ProjectManager::_rename_project));
-		tree_vb->add_child(rename_btn);
-
-		erase_btn = memnew(Button);
-		erase_btn->set_text(TTR("Remove"));
-		erase_btn->add_theme_constant_override("h_separation", btn_h_separation);
-		erase_btn->set_shortcut(ED_SHORTCUT("project_manager/remove_project", TTR("Remove Project"), Key::KEY_DELETE));
-		erase_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_project));
-		tree_vb->add_child(erase_btn);
-
-		erase_missing_btn = memnew(Button);
-		erase_missing_btn->set_text(TTR("Remove Missing"));
-		erase_missing_btn->add_theme_constant_override("h_separation", btn_h_separation);
-		erase_missing_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects));
-		tree_vb->add_child(erase_missing_btn);
-
-		tree_vb->add_spacer();
-
-		about_btn = memnew(Button);
-		about_btn->set_text(TTR("About"));
-		about_btn->connect("pressed", callable_mp(this, &ProjectManager::_show_about));
-		tree_vb->add_child(about_btn);
-	}
-
-	{
-		// Version info and language options
-		settings_hb = memnew(HBoxContainer);
-		settings_hb->set_alignment(BoxContainer::ALIGNMENT_END);
-		settings_hb->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
-		settings_hb->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT);
-
-		// A VBoxContainer that contains a dummy Control node to adjust the LinkButton's vertical position.
-		VBoxContainer *spacer_vb = memnew(VBoxContainer);
-		settings_hb->add_child(spacer_vb);
-
-		Control *v_spacer = memnew(Control);
-		spacer_vb->add_child(v_spacer);
-
-		version_btn = memnew(LinkButton);
-		String hash = String(VERSION_HASH);
-		if (hash.length() != 0) {
-			hash = " " + vformat("[%s]", hash.left(9));
-		}
-		version_btn->set_text("v" VERSION_FULL_BUILD + hash);
-		// Fade the version label to be less prominent, but still readable.
-		version_btn->set_self_modulate(Color(1, 1, 1, 0.6));
-		version_btn->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-		version_btn->set_tooltip_text(TTR("Click to copy."));
-		version_btn->connect("pressed", callable_mp(this, &ProjectManager::_version_button_pressed));
-		spacer_vb->add_child(version_btn);
-
-		// Add a small horizontal spacer between the version and language buttons
-		// to distinguish them.
-		Control *h_spacer = memnew(Control);
-		settings_hb->add_child(h_spacer);
-
-		language_btn = memnew(OptionButton);
-		language_btn->set_icon(get_theme_icon(SNAME("Environment"), SNAME("EditorIcons")));
-		language_btn->set_focus_mode(Control::FOCUS_NONE);
-		language_btn->set_fit_to_longest_item(false);
-		language_btn->set_flat(true);
-		language_btn->connect("item_selected", callable_mp(this, &ProjectManager::_language_selected));
+	language_btn = memnew(OptionButton);
+	language_btn->set_focus_mode(Control::FOCUS_NONE);
+	language_btn->set_fit_to_longest_item(false);
+	language_btn->connect("item_selected", callable_mp(this, &ProjectManager::_language_selected));
 #ifdef ANDROID_ENABLED
-		// The language selection dropdown doesn't work on Android (as the setting isn't saved), see GH-60353.
-		// Also, the dropdown it spawns is very tall and can't be scrolled without a hardware mouse.
-		// Hiding the language selection dropdown also leaves more space for the version label to display.
-		language_btn->hide();
+	// The language selection dropdown doesn't work on Android (as the setting isn't saved), see GH-60353.
+	// Also, the dropdown it spawns is very tall and can't be scrolled without a hardware mouse.
+	// Hiding the language selection dropdown also leaves more space for the version label to display.
+	language_btn->hide();
 #endif
 
-		Vector<String> editor_languages;
-		List<PropertyInfo> editor_settings_properties;
-		EditorSettings::get_singleton()->get_property_list(&editor_settings_properties);
-		for (const PropertyInfo &pi : editor_settings_properties) {
-			if (pi.name == "interface/editor/editor_language") {
-				editor_languages = pi.hint_string.split(",");
-				break;
-			}
+	Vector<String> editor_languages;
+	List<PropertyInfo> editor_settings_properties;
+	EditorSettings::get_singleton()->get_property_list(&editor_settings_properties);
+	for (const PropertyInfo &pi : editor_settings_properties) {
+		if (pi.name == "interface/editor/editor_language") {
+			editor_languages = pi.hint_string.split(",");
+			break;
 		}
-
-		String current_lang = EDITOR_GET("interface/editor/editor_language");
-		language_btn->set_text(current_lang);
-
-		for (int i = 0; i < editor_languages.size(); i++) {
-			String lang = editor_languages[i];
-			String lang_name = TranslationServer::get_singleton()->get_locale_name(lang);
-			language_btn->add_item(vformat("[%s] %s", lang, lang_name), i);
-			language_btn->set_item_metadata(i, lang);
-			if (current_lang == lang) {
-				language_btn->select(i);
-			}
-		}
-
-		settings_hb->add_child(language_btn);
-		center_box->add_child(settings_hb);
 	}
+
+	String current_lang = EDITOR_GET("interface/editor/editor_language");
+
+	language_btn->set_text(current_lang);
+	for (int i = 0; i < editor_languages.size(); i++) {
+		String lang = editor_languages[i];
+		String lang_name = TranslationServer::get_singleton()->get_locale_name(lang);
+		language_btn->add_item(vformat("%s [%s]", lang_name, lang), i);
+		language_btn->set_item_metadata(i, lang);
+		if (current_lang == lang) {
+			language_btn->select(i);
+		}
+	}
+
+	hb->add_child(language_btn);
+
+	about_btn = memnew(Button);
+	about_btn->set_tooltip_text(TTR("About Godot"));
+	about_btn->connect("pressed", callable_mp(this, &ProjectManager::_show_about));
+	hb->add_child(about_btn);
+
+	PanelContainer *pc = memnew(PanelContainer);
+	pc->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+	pc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	search_tree_vb->add_child(pc);
+
+	_project_list = memnew(ProjectList);
+	_project_list->connect(ProjectList::SIGNAL_SELECTION_CHANGED, callable_mp(this, &ProjectManager::_update_project_buttons));
+	_project_list->connect(ProjectList::SIGNAL_PROJECT_ASK_OPEN, callable_mp(this, &ProjectManager::_open_selected_projects_ask));
+	_project_list->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+	pc->add_child(_project_list);
 
 	if (AssetLibraryEditorPlugin::is_available()) {
 		asset_library = memnew(EditorAssetLibrary(true));
