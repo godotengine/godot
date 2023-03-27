@@ -513,6 +513,8 @@ public:
 	int get_script_language_count();
 	ScriptLanguage *get_script_language(int p_index) const;
 
+	void add_extension_class_doc(PackedByteArray p_compressed_data, int p_uncompressed_size);
+
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;
 

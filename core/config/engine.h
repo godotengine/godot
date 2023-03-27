@@ -49,6 +49,11 @@ public:
 		Singleton(const StringName &p_name = StringName(), Object *p_ptr = nullptr, const StringName &p_class_name = StringName());
 	};
 
+	struct ExtensionClassDoc {
+		PackedByteArray compressed_data;
+		int uncompressed_size = 0;
+	};
+
 private:
 	friend class Main;
 
@@ -74,6 +79,8 @@ private:
 
 	List<Singleton> singletons;
 	HashMap<StringName, Object *> singleton_ptrs;
+
+	Vector<ExtensionClassDoc> extensions_class_doc;
 
 	bool editor_hint = false;
 	bool project_manager_hint = false;
@@ -124,6 +131,9 @@ public:
 	Object *get_singleton_object(const StringName &p_name) const;
 	void remove_singleton(const StringName &p_name);
 	bool is_singleton_user_created(const StringName &p_name) const;
+
+	void add_extension_class_doc(PackedByteArray p_compressed_data, int p_uncompressed_size);
+	const Vector<ExtensionClassDoc> &get_extensions_class_doc() const;
 
 #ifdef TOOLS_ENABLED
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) { editor_hint = p_enabled; }

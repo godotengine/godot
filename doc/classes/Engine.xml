@@ -9,6 +9,15 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="add_extension_class_doc">
+			<return type="void" />
+			<param index="0" name="compressed_data" type="PackedByteArray" />
+			<param index="1" name="uncompressed_size" type="int" />
+			<description>
+				Registers additional class reference data for use in the editor help. The data should be UTF-8 encoded [url=$DOCS_URL/contributing/documentation/updating_the_class_reference.html]XML class reference[/url] compressed with zlib.
+				This method is meant for use in GDExtension plugins to add API documentation for the new classes exposed by the extension.
+			</description>
+		</method>
 		<method name="get_architecture_name" qualifiers="const">
 			<return type="String" />
 			<description>

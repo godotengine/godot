@@ -292,6 +292,17 @@ void Engine::get_singletons(List<Singleton> *p_singletons) {
 	}
 }
 
+void Engine::add_extension_class_doc(PackedByteArray p_compressed_data, int p_uncompressed_size) {
+	ExtensionClassDoc doc;
+	doc.compressed_data = p_compressed_data;
+	doc.uncompressed_size = p_uncompressed_size;
+	extensions_class_doc.push_back(doc);
+}
+
+const Vector<Engine::ExtensionClassDoc> &Engine::get_extensions_class_doc() const {
+	return extensions_class_doc;
+}
+
 String Engine::get_write_movie_path() const {
 	return write_movie_path;
 }

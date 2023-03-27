@@ -30,6 +30,7 @@
 
 #include "editor_help.h"
 
+#include "core/config/engine.h"
 #include "core/core_constants.h"
 #include "core/input/input.h"
 #include "core/object/script_language.h"
@@ -2289,7 +2290,13 @@ void EditorHelp::_load_doc_thread(void *p_udata) {
 
 void EditorHelp::_gen_doc_thread(void *p_udata) {
 	DocTools compdoc;
+	// Load core docs.
 	compdoc.load_compressed(_doc_data_compressed, _doc_data_compressed_size, _doc_data_uncompressed_size);
+	// Load user-registered extension docs.
+	const Vector<Engine::ExtensionClassDoc> &ext_doc = Engine::get_singleton()->get_extensions_class_doc();
+	for (int i = 0; i < ext_doc.size(); i++) {
+		compdoc.load_compressed(ext_doc[i].compressed_data.ptr(), ext_doc[i].compressed_data.size(), ext_doc[i].uncompressed_size, true);
+	}
 	doc->merge_from(compdoc); // Ensure all is up to date.
 
 	Ref<DocCache> cache_res;

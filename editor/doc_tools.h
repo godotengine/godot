@@ -50,7 +50,7 @@ public:
 	Error save_classes(const String &p_default_path, const HashMap<String, String> &p_class_path, bool p_include_xml_schema = true);
 
 	Error _load(Ref<XMLParser> parser);
-	Error load_compressed(const uint8_t *p_data, int p_compressed_size, int p_uncompressed_size);
+	Error load_compressed(const uint8_t *p_data, int p_compressed_size, int p_uncompressed_size, bool p_append = false);
 };
 
 #endif // DOC_TOOLS_H
