@@ -824,6 +824,7 @@
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
 		</member>
 		<member name="gui/common/snap_controls_to_pixels" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], snaps [Control] node vertices to the nearest pixel to ensure they remain crisp even when the camera moves or zooms.
 		</member>
 		<member name="gui/common/swap_cancel_ok" type="bool" setter="" getter="">
 			If [code]true[/code], swaps [b]Cancel[/b] and [b]OK[/b] buttons in dialogs on Windows and UWP to follow interface conventions. [method DisplayServer.get_swap_cancel_ok] can be used to query whether buttons are swapped at run-time.
@@ -1955,23 +1956,34 @@
 			[b]Note:[/b] Only [member physics/common/max_physics_steps_per_frame] physics ticks may be simulated per rendered frame at most. If more physics ticks have to be simulated per rendered frame to keep up with rendering, the project will appear to slow down (even if [code]delta[/code] is used consistently in physics calculations). Therefore, it is recommended to also increase [member physics/common/max_physics_steps_per_frame] if increasing [member physics/common/physics_ticks_per_second] significantly above its default value.
 		</member>
 		<member name="rendering/2d/sdf/oversize" type="int" setter="" getter="" default="1">
+			Controls how much of the original viewport size should be covered by the 2D signed distance field. This SDF can be sampled in [CanvasItem] shaders and is used for [GPUParticles2D] collision. Higher values allow portions of occluders located outside the viewport to still be taken into account in the generated signed distance field, at the cost of performance. If you notice particles falling through [LightOccluder2D]s as the occluders leave the viewport, increase this setting.
+			The percentage specified is added on each axis and on both sides. For example, with the default setting of 120%, the signed distance field will cover 20% of the viewport's size outside the viewport on each side (top, right, bottom, left).
+			[b]Note:[/b] This property is only read when the project starts. To change the 2D SDF oversizing percentage at runtime, use [method RenderingServer.viewport_set_sdf_oversize_and_scale] instead.
 		</member>
 		<member name="rendering/2d/sdf/scale" type="int" setter="" getter="" default="1">
+			The resolution scale to use for the 2D signed distance field. Higher values lead to a more precise and more stable signed distance field as the camera moves, at the cost of performance. The default value (50%) renders at half the resolution of the viewport size on each axis, which means the SDF is generated with 25% of the viewport's pixel count.
+			[b]Note:[/b] This property is only read when the project starts. To change the 2D SDF resolution scale at runtime, use [method RenderingServer.viewport_set_sdf_oversize_and_scale] instead.
 		</member>
 		<member name="rendering/2d/shadow_atlas/size" type="int" setter="" getter="" default="2048">
+			The size of the 2D shadow atlas in pixels. Higher values result in more precise [Light2D] shadows, at the cost of performance and video memory usage. The specified value is rounded up to the nearest power of 2.
+			[b]Note:[/b] This property is only read when the project starts. To change the 2D shadow atlas size at runtime, use [method RenderingServer.canvas_set_shadow_texture_size] instead.
 		</member>
 		<member name="rendering/2d/snap/snap_2d_transforms_to_pixel" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], [CanvasItem] nodes will internally snap to full pixels. Their position can still be sub-pixel, but the decimals will not have effect.
+			If [code]true[/code], [CanvasItem] nodes will internally snap to full pixels. Their position can still be sub-pixel, but the decimals will not have effect. This can lead to a crisper appearance at the cost of less smooth movement, especially when [Camera2D] smoothing is enabled.
+			[b]Note:[/b] This property is only read when the project starts. To toggle 2D transform snapping at runtime, use [method RenderingServer.viewport_set_snap_2d_transforms_to_pixel] on the root [Viewport] instead.
+			[b]Note:[/b] [Control] nodes are snapped to the nearest pixel by default. This is controlled by [member gui/common/snap_controls_to_pixels].
 		</member>
 		<member name="rendering/2d/snap/snap_2d_vertices_to_pixel" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], vertices of [CanvasItem] nodes will snap to full pixels. Only affects the final vertex positions, not the transforms.
+			If [code]true[/code], vertices of [CanvasItem] nodes will snap to full pixels. Only affects the final vertex positions, not the transforms. This can lead to a crisper appearance at the cost of less smooth movement, especially when [Camera2D] smoothing is enabled.
+			[b]Note:[/b] This property is only read when the project starts. To toggle 2D vertex snapping at runtime, use [method RenderingServer.viewport_set_snap_2d_vertices_to_pixel] on the root [Viewport] instead.
+			[b]Note:[/b] [Control] nodes are snapped to the nearest pixel by default. This is controlled by [member gui/common/snap_controls_to_pixels].
 		</member>
 		<member name="rendering/anti_aliasing/quality/msaa_2d" type="int" setter="" getter="" default="0">
-			Sets the number of MSAA samples to use for 2D/Canvas rendering (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware. This has no effect on shader-induced aliasing or texture aliasing.
+			Sets the number of MSAA samples to use for 2D/Canvas rendering (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware, especially integrated graphics due to their limited memory bandwidth. This has no effect on shader-induced aliasing or texture aliasing.
 			[b]Note:[/b] MSAA is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 		</member>
 		<member name="rendering/anti_aliasing/quality/msaa_3d" type="int" setter="" getter="" default="0">
-			Sets the number of MSAA samples to use for 3D rendering (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware. See also bilinear scaling 3d [member rendering/scaling_3d/mode] for supersampling, which provides higher quality but is much more expensive. This has no effect on shader-induced aliasing or texture aliasing.
+			Sets the number of MSAA samples to use for 3D rendering (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware, especially integrated graphics due to their limited memory bandwidth. See also [member rendering/scaling_3d/mode] for supersampling, which provides higher quality but is much more expensive. This has no effect on shader-induced aliasing or texture aliasing.
 			[b]Note:[/b] MSAA is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 		</member>
 		<member name="rendering/anti_aliasing/quality/screen_space_aa" type="int" setter="" getter="" default="0">
@@ -1990,12 +2002,15 @@
 			[b]Note:[/b] TAA is only supported in the Forward+ rendering method, not Mobile or Compatibility.
 		</member>
 		<member name="rendering/anti_aliasing/screen_space_roughness_limiter/amount" type="float" setter="" getter="" default="0.25">
+			[b]Note:[/b] This property is only read when the project starts. To control the screen-space roughness limiter at runtime, call [method RenderingServer.screen_space_roughness_limiter_set_active] instead.
 		</member>
 		<member name="rendering/anti_aliasing/screen_space_roughness_limiter/enabled" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables a spatial filter to limit roughness in areas with high-frequency detail. This can help reduce specular aliasing to an extent, though not as much as enabling [member rendering/anti_aliasing/quality/use_taa]. This filter has a small performance cost, so consider disabling it if it doesn't benefit your scene noticeably.
-			[b]Note:[/b] TAA is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
+			[b]Note:[/b] The screen-space roughness limiter is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
+			[b]Note:[/b] This property is only read when the project starts. To control the screen-space roughness limiter at runtime, call [method RenderingServer.screen_space_roughness_limiter_set_active] instead.
 		</member>
 		<member name="rendering/anti_aliasing/screen_space_roughness_limiter/limit" type="float" setter="" getter="" default="0.18">
+			[b]Note:[/b] This property is only read when the project starts. To control the screen-space roughness limiter at runtime, call [method RenderingServer.screen_space_roughness_limiter_set_active] instead.
 		</member>
 		<member name="rendering/camera/depth_of_field/depth_of_field_bokeh_quality" type="int" setter="" getter="" default="1">
 			Sets the quality of the depth of field effect. Higher quality takes more samples, which is slower but looks smoother.
@@ -2068,13 +2083,16 @@
 			Sets the quality of the screen-space indirect lighting effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]Ultra[/code] will use the [member rendering/environment/ssil/adaptive_target] setting.
 		</member>
 		<member name="rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale" type="float" setter="" getter="" default="0.01">
-			Scales the depth over which the subsurface scattering effect is applied. A high value may allow light to scatter into a part of the mesh or another mesh that is close in screen space but far in depth.
+			Scales the depth over which the subsurface scattering effect is applied. A high value may allow light to scatter into a part of the mesh or another mesh that is close in screen space but far in depth. See also [member rendering/environment/subsurface_scattering/subsurface_scattering_scale].
+			[b]Note:[/b] This property is only read when the project starts. To set the subsurface scattering depth scale at runtime, call [method RenderingServer.sub_surface_scattering_set_scale] instead.
 		</member>
 		<member name="rendering/environment/subsurface_scattering/subsurface_scattering_quality" type="int" setter="" getter="" default="1">
-			Sets the quality of the subsurface scattering effect. Higher values are slower but look nicer.
+			Sets the quality of the subsurface scattering effect. Higher values are slower but look nicer. This affects the rendering of materials that have [member BaseMaterial3D.subsurf_scatter_enabled] set to [code]true[/code], along with [ShaderMaterial]s that set [code]SSS_STRENGTH[/code].
+			[b]Note:[/b] This property is only read when the project starts. To set the subsurface scattering quality at runtime, call [method RenderingServer.sub_surface_scattering_set_quality] instead.
 		</member>
 		<member name="rendering/environment/subsurface_scattering/subsurface_scattering_scale" type="float" setter="" getter="" default="0.05">
-			Scales the distance over which samples are taken for subsurface scattering effect. Changing this does not impact performance, but higher values will result in significant artifacts as the samples will become obviously spread out. A lower value results in a smaller spread of scattered light.
+			Scales the distance over which samples are taken for subsurface scattering effect. Changing this does not impact performance, but higher values will result in significant artifacts as the samples will become obviously spread out. A lower value results in a smaller spread of scattered light. See also [member rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale].
+			[b]Note:[/b] This property is only read when the project starts. To set the subsurface scattering scale at runtime, call [method RenderingServer.sub_surface_scattering_set_scale] instead.
 		</member>
 		<member name="rendering/environment/volumetric_fog/use_filter" type="int" setter="" getter="" default="1">
 			Enables filtering of the volumetric fog effect prior to integration. This substantially blurs the fog which reduces fine details but also smooths out harsh edges and aliasing artifacts. Disable when more detail is required.
@@ -2114,12 +2132,21 @@
 			[b]Note:[/b] This property is only read when the project starts. To set half-resolution GI at run-time, call [method RenderingServer.gi_set_use_half_resolution] instead.
 		</member>
 		<member name="rendering/global_illumination/sdfgi/frames_to_converge" type="int" setter="" getter="" default="5">
+			The number of frames to use for converging signed distance field global illumination. Higher values lead to a less noisy result, at the cost of taking a longer time to fully converge. This means the scene's global illumination will be too dark for a longer period of time, especially when the camera moves fast. The actual convergence speed depends on rendered framerate. For example, with the default setting of 30 frames, rendering at 60 FPS will make SDFGI fully converge after 0.5 seconds. See also [member rendering/global_illumination/sdfgi/frames_to_update_lights] and [member rendering/global_illumination/sdfgi/probe_ray_count].
+			[b]Note:[/b] This property is only read when the project starts. To control SDFGI convergence speed at runtime, call [method RenderingServer.environment_set_sdfgi_frames_to_converge] instead.
 		</member>
 		<member name="rendering/global_illumination/sdfgi/frames_to_update_lights" type="int" setter="" getter="" default="2">
+			The number of frames over which dynamic lights should be updated in signed distance field global illumination. Higher values take more time to update indirect lighting coming from dynamic lights, but result in better performance when many dynamic lights are present. See also [member rendering/global_illumination/sdfgi/frames_to_converge] and [member rendering/global_illumination/sdfgi/probe_ray_count].
+			[b]Note:[/b] This only affects [Light3D] nodes whose [member Light3D.light_bake_mode] is [constant Light3D.BAKE_DYNAMIC] (which is the default). Consider making non-moving lights use the [constant Light3D.BAKE_STATIC] bake mode to improve performance.
+			[b]Note:[/b] This property is only read when the project starts. To control SDFGI light update speed at runtime, call [method RenderingServer.environment_set_sdfgi_frames_to_update_light] instead.
 		</member>
 		<member name="rendering/global_illumination/sdfgi/probe_ray_count" type="int" setter="" getter="" default="1">
+			The number of rays to throw per frame when computing signed distance field global illumination. Higher values lead to a less noisy result, at the cost of performance. See also [member rendering/global_illumination/sdfgi/frames_to_converge] and [member rendering/global_illumination/sdfgi/frames_to_update_lights].
+			[b]Note:[/b] This property is only read when the project starts. To control SDFGI quality at runtime, call [method RenderingServer.environment_set_sdfgi_ray_count] instead.
 		</member>
 		<member name="rendering/global_illumination/voxel_gi/quality" type="int" setter="" getter="" default="0">
+			The VoxelGI quality to use. High quality leads to more precise lighting and better reflections, but is slower to render. This setting does not affect the baked data and doesn't require baking the [VoxelGI] again to apply.
+			[b]Note:[/b] This property is only read when the project starts. To control VoxelGI quality at runtime, call [method RenderingServer.voxel_gi_set_quality] instead.
 		</member>
 		<member name="rendering/lightmapping/bake_performance/max_rays_per_pass" type="int" setter="" getter="" default="32">
 			The maximum number of rays that can be thrown per pass when baking lightmaps with [LightmapGI]. Depending on the scene, adjusting this value may result in higher GPU utilization when baking lightmaps, leading to faster bake times.
@@ -2161,10 +2188,10 @@
 			The framerate-independent update speed when representing dynamic object lighting from [LightmapProbe]s. Higher values make dynamic object lighting update faster. Higher values can prevent fast-moving objects from having "outdated" indirect lighting displayed on them, at the cost of possible flickering when an object moves from a bright area to a shaded area.
 		</member>
 		<member name="rendering/lights_and_shadows/directional_shadow/16_bits" type="bool" setter="" getter="" default="true">
-			Use 16 bits for shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.
+			Use 16 bits for the directional shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.
 		</member>
 		<member name="rendering/lights_and_shadows/directional_shadow/size" type="int" setter="" getter="" default="4096">
-			The directional shadow's size in pixels. Higher values will result in sharper shadows, at the cost of performance. The value will be rounded up to the nearest power of 2.
+			The directional shadow's size in pixels. Higher values will result in sharper shadows, at the cost of performance. The value is rounded up to the nearest power of 2.
 		</member>
 		<member name="rendering/lights_and_shadows/directional_shadow/size.mobile" type="int" setter="" getter="" default="2048">
 			Lower-end override for [member rendering/lights_and_shadows/directional_shadow/size] on mobile devices, due to performance concerns or driver support.
@@ -2178,7 +2205,7 @@
 			Lower-end override for [member rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality] on mobile devices, due to performance concerns or driver support.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_16_bits" type="bool" setter="" getter="" default="true">
-			Use 16 bits for shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.
+			Use 16 bits for the omni/spot shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_0_subdiv" type="int" setter="" getter="" default="2">
 			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
@@ -2242,10 +2269,12 @@
 			[b]Note:[/b] This property is only read when the project starts. To adjust the automatic LOD threshold at runtime, set [member Viewport.mesh_lod_threshold] on the root [Viewport].
 		</member>
 		<member name="rendering/occlusion_culling/bvh_build_quality" type="int" setter="" getter="" default="2">
-			The [url=https://en.wikipedia.org/wiki/Bounding_volume_hierarchy]BVH[/url] quality to use when rendering the occlusion culling buffer. Higher values will result in more accurate occlusion culling, at the cost of higher CPU usage.
+			The [url=https://en.wikipedia.org/wiki/Bounding_volume_hierarchy]Bounding Volume Hierarchy[/url] quality to use when rendering the occlusion culling buffer. Higher values will result in more accurate occlusion culling, at the cost of higher CPU usage. See also [member rendering/occlusion_culling/occlusion_rays_per_thread].
+			[b]Note:[/b] This property is only read when the project starts. To adjust the BVH build quality at runtime, use [method RenderingServer.viewport_set_occlusion_culling_build_quality].
 		</member>
 		<member name="rendering/occlusion_culling/occlusion_rays_per_thread" type="int" setter="" getter="" default="512">
-			Higher values will result in more accurate occlusion culling, at the cost of higher CPU usage. The occlusion culling buffer's pixel count is roughly equal to [code]occlusion_rays_per_thread * number_of_logical_cpu_cores[/code], so it will depend on the system's CPU. Therefore, CPUs with fewer cores will use a lower resolution to attempt keeping performance costs even across devices.
+			The number of occlusion rays traced per CPU thread. Higher values will result in more accurate occlusion culling, at the cost of higher CPU usage. The occlusion culling buffer's pixel count is roughly equal to [code]occlusion_rays_per_thread * number_of_logical_cpu_cores[/code], so it will depend on the system's CPU. Therefore, CPUs with fewer cores will use a lower resolution to attempt keeping performance costs even across devices. See also [member rendering/occlusion_culling/bvh_build_quality].
+			[b]Note:[/b] This property is only read when the project starts. To adjust the number of occlusion rays traced per thread at runtime, use [method RenderingServer.viewport_set_occlusion_rays_per_thread].
 		</member>
 		<member name="rendering/occlusion_culling/use_occlusion_culling" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], [OccluderInstance3D] nodes will be usable for occlusion culling in 3D in the root viewport. In custom viewports, [member Viewport.use_occlusion_culling] must be set to [code]true[/code] instead.

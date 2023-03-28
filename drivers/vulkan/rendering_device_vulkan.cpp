@@ -2462,10 +2462,10 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 	}
 
 	ERR_FAIL_COND_V_MSG(texture->bound, ERR_CANT_ACQUIRE_RESOURCE,
-			"Texture can't be updated while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
+			"Texture can't be updated while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to `RenderingDevice.FINAL_ACTION_CONTINUE`) to update this texture.");
 
 	ERR_FAIL_COND_V_MSG(!(texture->usage_flags & TEXTURE_USAGE_CAN_UPDATE_BIT), ERR_INVALID_PARAMETER,
-			"Texture requires the TEXTURE_USAGE_CAN_UPDATE_BIT in order to be updatable.");
+			"Texture requires the `RenderingDevice.TEXTURE_USAGE_CAN_UPDATE_BIT` to be set to be updatable.");
 
 	uint32_t layer_count = texture->layers;
 	if (texture->type == TEXTURE_TYPE_CUBE || texture->type == TEXTURE_TYPE_CUBE_ARRAY) {
@@ -2738,9 +2738,9 @@ Vector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint32_t 
 	ERR_FAIL_COND_V(!tex, Vector<uint8_t>());
 
 	ERR_FAIL_COND_V_MSG(tex->bound, Vector<uint8_t>(),
-			"Texture can't be retrieved while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
+			"Texture can't be retrieved while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to `RenderingDevice.FINAL_ACTION_CONTINUE`) to retrieve this texture.");
 	ERR_FAIL_COND_V_MSG(!(tex->usage_flags & TEXTURE_USAGE_CAN_COPY_FROM_BIT), Vector<uint8_t>(),
-			"Texture requires the TEXTURE_USAGE_CAN_COPY_FROM_BIT in order to be retrieved.");
+			"Texture requires the `RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT` to be set to be retrieved.");
 
 	uint32_t layer_count = tex->layers;
 	if (tex->type == TEXTURE_TYPE_CUBE || tex->type == TEXTURE_TYPE_CUBE_ARRAY) {
@@ -2888,9 +2888,9 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 	ERR_FAIL_COND_V(!src_tex, ERR_INVALID_PARAMETER);
 
 	ERR_FAIL_COND_V_MSG(src_tex->bound, ERR_INVALID_PARAMETER,
-			"Source texture can't be copied while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
+			"Source texture can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to `RenderingDevice.FINAL_ACTION_CONTINUE`) to copy this texture.");
 	ERR_FAIL_COND_V_MSG(!(src_tex->usage_flags & TEXTURE_USAGE_CAN_COPY_FROM_BIT), ERR_INVALID_PARAMETER,
-			"Source texture requires the TEXTURE_USAGE_CAN_COPY_FROM_BIT in order to be retrieved.");
+			"Source texture requires the `RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT` to be set to be retrieved.");
 
 	uint32_t src_layer_count = src_tex->layers;
 	uint32_t src_width, src_height, src_depth;
@@ -2909,9 +2909,9 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 	ERR_FAIL_COND_V(!dst_tex, ERR_INVALID_PARAMETER);
 
 	ERR_FAIL_COND_V_MSG(dst_tex->bound, ERR_INVALID_PARAMETER,
-			"Destination texture can't be copied while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
+			"Destination texture can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to `RenderingDevice.FINAL_ACTION_CONTINUE`) to copy this texture.");
 	ERR_FAIL_COND_V_MSG(!(dst_tex->usage_flags & TEXTURE_USAGE_CAN_COPY_TO_BIT), ERR_INVALID_PARAMETER,
-			"Destination texture requires the TEXTURE_USAGE_CAN_COPY_TO_BIT in order to be retrieved.");
+			"Destination texture requires the `RenderingDevice.TEXTURE_USAGE_CAN_COPY_TO_BIT` to be set to be retrieved.");
 
 	uint32_t dst_layer_count = dst_tex->layers;
 	uint32_t dst_width, dst_height, dst_depth;
@@ -3083,9 +3083,9 @@ Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID
 	ERR_FAIL_COND_V(!src_tex, ERR_INVALID_PARAMETER);
 
 	ERR_FAIL_COND_V_MSG(src_tex->bound, ERR_INVALID_PARAMETER,
-			"Source texture can't be copied while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
+			"Source texture can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to `RenderingDevice.FINAL_ACTION_CONTINUE`) to copy this texture.");
 	ERR_FAIL_COND_V_MSG(!(src_tex->usage_flags & TEXTURE_USAGE_CAN_COPY_FROM_BIT), ERR_INVALID_PARAMETER,
-			"Source texture requires the TEXTURE_USAGE_CAN_COPY_FROM_BIT in order to be retrieved.");
+			"Source texture requires the `RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT` to be set to be retrieved.");
 
 	ERR_FAIL_COND_V_MSG(src_tex->type != TEXTURE_TYPE_2D, ERR_INVALID_PARAMETER, "Source texture must be 2D (or a slice of a 3D/Cube texture)");
 	ERR_FAIL_COND_V_MSG(src_tex->samples == TEXTURE_SAMPLES_1, ERR_INVALID_PARAMETER, "Source texture must be multisampled.");
@@ -3094,9 +3094,9 @@ Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID
 	ERR_FAIL_COND_V(!dst_tex, ERR_INVALID_PARAMETER);
 
 	ERR_FAIL_COND_V_MSG(dst_tex->bound, ERR_INVALID_PARAMETER,
-			"Destination texture can't be copied while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
+			"Destination texture can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to `RenderingDevice.FINAL_ACTION_CONTINUE`) to copy this texture.");
 	ERR_FAIL_COND_V_MSG(!(dst_tex->usage_flags & TEXTURE_USAGE_CAN_COPY_TO_BIT), ERR_INVALID_PARAMETER,
-			"Destination texture requires the TEXTURE_USAGE_CAN_COPY_TO_BIT in order to be retrieved.");
+			"Destination texture requires the `RenderingDevice.TEXTURE_USAGE_CAN_COPY_TO_BIT` to be set to be retrieved.");
 
 	ERR_FAIL_COND_V_MSG(dst_tex->type != TEXTURE_TYPE_2D, ERR_INVALID_PARAMETER, "Destination texture must be 2D (or a slice of a 3D/Cube texture).");
 	ERR_FAIL_COND_V_MSG(dst_tex->samples != TEXTURE_SAMPLES_1, ERR_INVALID_PARAMETER, "Destination texture must not be multisampled.");
@@ -3254,13 +3254,13 @@ Error RenderingDeviceVulkan::texture_clear(RID p_texture, const Color &p_color, 
 	ERR_FAIL_COND_V(!src_tex, ERR_INVALID_PARAMETER);
 
 	ERR_FAIL_COND_V_MSG(src_tex->bound, ERR_INVALID_PARAMETER,
-			"Source texture can't be cleared while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
+			"Source texture can't be cleared while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to `RenderingDevice.FINAL_ACTION_CONTINUE`) to clear this texture.");
 
 	ERR_FAIL_COND_V(p_layers == 0, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_mipmaps == 0, ERR_INVALID_PARAMETER);
 
 	ERR_FAIL_COND_V_MSG(!(src_tex->usage_flags & TEXTURE_USAGE_CAN_COPY_TO_BIT), ERR_INVALID_PARAMETER,
-			"Source texture requires the TEXTURE_USAGE_CAN_COPY_TO_BIT in order to be cleared.");
+			"Source texture requires the `RenderingDevice.TEXTURE_USAGE_CAN_COPY_TO_BIT` to be set to be cleared.");
 
 	uint32_t src_layer_count = src_tex->layers;
 	if (src_tex->type == TEXTURE_TYPE_CUBE || src_tex->type == TEXTURE_TYPE_CUBE_ARRAY) {
