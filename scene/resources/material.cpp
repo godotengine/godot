@@ -211,6 +211,7 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 		shader->get_shader_uniform_list(&list, true);
 
 		HashMap<String, HashMap<String, List<PropertyInfo>>> groups;
+		LocalVector<Pair<String, LocalVector<String>>> vgroups;
 		{
 			HashMap<String, List<PropertyInfo>> none_subgroup;
 			none_subgroup.insert("<None>", List<PropertyInfo>());
@@ -248,6 +249,7 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 						subgroup_map.insert("<None>", none_subgroup);
 
 						groups.insert(last_group, subgroup_map);
+						vgroups.push_back(Pair<String, LocalVector<String>>(last_group, { "<None>" }));
 					}
 
 					if (!groups[last_group].has(last_subgroup)) {
@@ -260,6 +262,12 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 						subgroup.push_back(info);
 
 						groups[last_group].insert(last_subgroup, subgroup);
+						for (Pair<String, LocalVector<String>> &group : vgroups) {
+							if (group.first == last_group) {
+								group.second.push_back(last_subgroup);
+								break;
+							}
+						}
 					}
 				} else {
 					last_group = "<None>";
@@ -277,6 +285,8 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 				info.name = "Shader Parameters";
 				info.hint_string = "shader_parameter/";
 				groups["<None>"]["<None>"].push_back(info);
+
+				vgroups.push_back(Pair<String, LocalVector<String>>("<None>", { "<None>" }));
 			}
 
 			PropertyInfo info = E->get();
@@ -290,21 +300,10 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 			groups[last_group][last_subgroup].push_back(info);
 		}
 
-		List<String> group_names;
-		for (HashMap<String, HashMap<String, List<PropertyInfo>>>::Iterator group = groups.begin(); group; ++group) {
-			group_names.push_back(group->key);
-		}
-		group_names.sort();
-
-		for (const String &group_name : group_names) {
-			List<String> subgroup_names;
-			HashMap<String, List<PropertyInfo>> &subgroups = groups[group_name];
-			for (HashMap<String, List<PropertyInfo>>::Iterator subgroup = subgroups.begin(); subgroup; ++subgroup) {
-				subgroup_names.push_back(subgroup->key);
-			}
-			subgroup_names.sort();
-			for (const String &subgroup_name : subgroup_names) {
-				List<PropertyInfo> &prop_infos = subgroups[subgroup_name];
+		for (const Pair<String, LocalVector<String>> &group_pair : vgroups) {
+			String group = group_pair.first;
+			for (const String &subgroup : group_pair.second) {
+				List<PropertyInfo> &prop_infos = groups[group][subgroup];
 				for (List<PropertyInfo>::Element *item = prop_infos.front(); item; item = item->next()) {
 					p_list->push_back(item->get());
 				}
