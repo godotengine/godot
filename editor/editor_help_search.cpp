@@ -182,6 +182,7 @@ void EditorHelpSearch::popup_dialog(const String &p_term) {
 
 EditorHelpSearch::EditorHelpSearch() {
 	set_hide_on_ok(false);
+	set_clamp_to_embedder(true);
 
 	set_title(TTR("Search Help"));
 

@@ -457,7 +457,7 @@ void CreateDialog::_notification(int p_what) {
 				search_box->call_deferred(SNAME("grab_focus")); // still not visible
 				search_box->select_all();
 			} else {
-				EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "create_new_node", Rect2(get_position(), get_size()));
+				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "create_new_node", Rect2(get_position(), get_size()));
 			}
 		} break;
 
@@ -805,4 +805,5 @@ CreateDialog::CreateDialog() {
 
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
+	set_clamp_to_embedder(true);
 }
