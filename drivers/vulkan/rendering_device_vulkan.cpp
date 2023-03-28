@@ -8633,7 +8633,7 @@ VkSampleCountFlagBits RenderingDeviceVulkan::_ensure_supported_sample_count(Text
 	return VK_SAMPLE_COUNT_1_BIT;
 }
 
-void RenderingDeviceVulkan::swap_buffers() {
+void RenderingDeviceVulkan::swap_buffers(bool p_swap_buffers) {
 	ERR_FAIL_COND_MSG(local_device.is_valid(), "Local devices can't swap buffers.");
 	_THREAD_SAFE_METHOD_
 
@@ -8641,7 +8641,7 @@ void RenderingDeviceVulkan::swap_buffers() {
 
 	screen_prepared = false;
 	// Swap buffers.
-	context->swap_buffers();
+	context->swap_buffers(p_swap_buffers);
 
 	frame = (frame + 1) % frame_count;
 

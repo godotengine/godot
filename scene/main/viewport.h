@@ -633,6 +633,8 @@ public:
 	void set_default_canvas_item_texture_repeat(DefaultCanvasItemTextureRepeat p_repeat);
 	DefaultCanvasItemTextureRepeat get_default_canvas_item_texture_repeat() const;
 
+	void force_draw_viewport(bool p_swap_buffers = false, double frame_step = 0.0);
+
 	// VRS
 
 	void set_vrs_mode(VRSMode p_vrs_mode);

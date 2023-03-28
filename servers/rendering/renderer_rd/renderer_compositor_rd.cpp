@@ -102,8 +102,7 @@ void RendererCompositorRD::begin_frame(double frame_step) {
 }
 
 void RendererCompositorRD::end_frame(bool p_swap_buffers) {
-	// TODO: Likely pass a bool to swap buffers to avoid display?
-	RD::get_singleton()->swap_buffers();
+	RD::get_singleton()->swap_buffers(p_swap_buffers);
 }
 
 void RendererCompositorRD::initialize() {
@@ -243,7 +242,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 
 	RD::get_singleton()->draw_list_end();
 
-	RD::get_singleton()->swap_buffers();
+	RD::get_singleton()->swap_buffers(true);
 
 	texture_storage->texture_free(texture);
 	RD::get_singleton()->free(sampler);

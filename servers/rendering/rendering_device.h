@@ -1273,7 +1273,7 @@ public:
 	//methods below not exposed, used by RenderingDeviceRD
 	virtual void prepare_screen_for_drawing() = 0;
 
-	virtual void swap_buffers() = 0;
+	virtual void swap_buffers(bool p_swap_buffers) = 0;
 
 	virtual uint32_t get_frame_delay() const = 0;
 

@@ -323,7 +323,7 @@ public:
 	void resize_notify();
 	void flush(bool p_flush_setup = false, bool p_flush_pending = false);
 	Error prepare_buffers();
-	Error swap_buffers();
+	Error swap_buffers(bool p_swap_buffers);
 	Error initialize();
 
 	void command_begin_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color);

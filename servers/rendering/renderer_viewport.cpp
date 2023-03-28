@@ -74,11 +74,6 @@ static Transform2D _canvas_get_transform(RendererViewport::Viewport *p_viewport,
 }
 
 Vector<RendererViewport::Viewport *> RendererViewport::_sort_active_viewports() {
-	// We need to sort the viewports in a "topological order", children first and
-	// parents last. We also need to keep sibling viewports in the original order
-	// from top to bottom.
-
-	Vector<Viewport *> result;
 	List<Viewport *> nodes;
 
 	for (int i = active_viewports.size() - 1; i >= 0; --i) {
@@ -88,10 +83,29 @@ Vector<RendererViewport::Viewport *> RendererViewport::_sort_active_viewports() 
 		}
 
 		nodes.push_back(viewport);
-		result.insert(0, viewport);
 	}
 
+	return _sort_active_viewports_of_viewports(nodes);
+}
+
+Vector<RendererViewport::Viewport *> RendererViewport::_sort_active_viewports_of_viewport(Viewport *node) {
+	List<Viewport *> nodes;
+
+	nodes.push_back(node);
+
+	return _sort_active_viewports_of_viewports(nodes);
+}
+
+Vector<RendererViewport::Viewport *> RendererViewport::_sort_active_viewports_of_viewports(List<Viewport *> &nodes) {
+	// We need to sort the viewports in a "topological order", children first and
+	// parents last. We also need to keep sibling viewports in the original order
+	// from top to bottom.
+
+	Vector<Viewport *> result;
+
 	while (!nodes.is_empty()) {
+		result.insert(0, nodes[0]);
+
 		const Viewport *node = nodes[0];
 		nodes.pop_front();
 
@@ -103,7 +117,6 @@ Vector<RendererViewport::Viewport *> RendererViewport::_sort_active_viewports() 
 
 			if (!nodes.find(child)) {
 				nodes.push_back(child);
-				result.insert(0, child);
 			}
 		}
 	}
@@ -586,7 +599,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 	}
 }
 
-void RendererViewport::draw_viewports() {
+void RendererViewport::draw_viewports(RID *p_viewport) {
 	timestamp_vp_map.clear();
 
 	// get our xr interface in case we need it
@@ -604,9 +617,17 @@ void RendererViewport::draw_viewports() {
 		set_default_clear_color(GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
 	}
 
-	if (sorted_active_viewports_dirty) {
-		sorted_active_viewports = _sort_active_viewports();
-		sorted_active_viewports_dirty = false;
+	Vector<Viewport *> viewports_to_render;
+
+	if (p_viewport) {
+		Viewport *viewport = viewport_owner.get_or_null(*p_viewport);
+		viewports_to_render = _sort_active_viewports_of_viewport(viewport);
+	} else {
+		if (sorted_active_viewports_dirty) {
+			sorted_active_viewports = _sort_active_viewports();
+			sorted_active_viewports_dirty = false;
+		}
+		viewports_to_render = sorted_active_viewports;
 	}
 
 	HashMap<DisplayServer::WindowID, Vector<BlitToScreen>> blit_to_screen_list;
@@ -616,9 +637,9 @@ void RendererViewport::draw_viewports() {
 	//determine what is visible
 	draw_viewports_pass++;
 
-	for (int i = sorted_active_viewports.size() - 1; i >= 0; i--) { //to compute parent dependency, must go in reverse draw order
+	for (int i = viewports_to_render.size() - 1; i >= 0; i--) { //to compute parent dependency, must go in reverse draw order
 
-		Viewport *vp = sorted_active_viewports[i];
+		Viewport *vp = viewports_to_render[i];
 
 		if (vp->update_mode == RS::VIEWPORT_UPDATE_DISABLED) {
 			continue;
@@ -672,8 +693,8 @@ void RendererViewport::draw_viewports() {
 	int objects_drawn = 0;
 	int draw_calls_used = 0;
 
-	for (int i = 0; i < sorted_active_viewports.size(); i++) {
-		Viewport *vp = sorted_active_viewports[i];
+	for (int i = 0; i < viewports_to_render.size(); i++) {
+		Viewport *vp = viewports_to_render[i];
 
 		if (vp->last_pass != draw_viewports_pass) {
 			continue; //should not draw

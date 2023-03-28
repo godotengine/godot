@@ -85,6 +85,7 @@ class RenderingServerDefault : public RenderingServer {
 	bool create_thread;
 
 	void _thread_draw(bool p_swap_buffers, double frame_step);
+	void _thread_draw_viewport(RID *p_viewport, bool p_swap_buffers, double frame_step);
 	void _thread_flush();
 
 	void _thread_exit();
@@ -92,6 +93,7 @@ class RenderingServerDefault : public RenderingServer {
 	Mutex alloc_mutex;
 
 	void _draw(bool p_swap_buffers, double frame_step);
+	void _draw_viewport(RID *p_viewport, bool p_swap_buffers, double frame_step);
 	void _init();
 	void _finish();
 
@@ -965,6 +967,7 @@ public:
 	virtual void request_frame_drawn_callback(const Callable &p_callable) override;
 
 	virtual void draw(bool p_swap_buffers, double frame_step) override;
+	virtual void draw_viewport(RID *p_viewport, bool p_swap_buffers, double frame_step) override;
 	virtual void sync() override;
 	virtual bool has_changed() const override;
 	virtual void init() override;

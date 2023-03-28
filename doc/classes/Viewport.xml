@@ -33,6 +33,14 @@
 				Returns the first valid [World3D] for this viewport, searching the [member world_3d] property of itself and any Viewport ancestor.
 			</description>
 		</method>
+		<method name="force_draw">
+			<return type="void" />
+			<param index="0" name="swap_buffers" type="bool" default="false" />
+			<param index="1" name="frame_step" type="float" default="0.0" />
+			<description>
+				Draws this viewport and all of it's child viewports.
+			</description>
+		</method>
 		<method name="get_camera_2d" qualifiers="const">
 			<return type="Camera2D" />
 			<description>
