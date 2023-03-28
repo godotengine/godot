@@ -46,15 +46,24 @@ public:
 	};
 
 private:
+	struct Watcher {
+		NodePath prop;
+		uint64_t last_change_usec = 0;
+		Variant value;
+	};
+
 	Ref<SceneReplicationConfig> replication_config;
 	NodePath root_path = NodePath(".."); // Start with parent, like with AnimationPlayer.
-	uint64_t interval_msec = 0;
+	uint64_t sync_interval_usec = 0;
+	uint64_t delta_interval_usec = 0;
 	VisibilityUpdateMode visibility_update_mode = VISIBILITY_PROCESS_IDLE;
 	HashSet<Callable> visibility_filters;
 	HashSet<int> peer_visibility;
+	Vector<Watcher> watchers;
+	uint64_t last_watch_usec = 0;
 
 	ObjectID root_node_cache;
-	uint64_t last_sync_msec = 0;
+	uint64_t last_sync_usec = 0;
 	uint16_t last_inbound_sync = 0;
 	uint32_t net_id = 0;
 
@@ -62,6 +71,7 @@ private:
 	void _start();
 	void _stop();
 	void _update_process();
+	Error _watch_changes(uint64_t p_usec);
 
 protected:
 	static void _bind_methods();
@@ -77,13 +87,16 @@ public:
 	uint32_t get_net_id() const;
 	void set_net_id(uint32_t p_net_id);
 
-	bool update_outbound_sync_time(uint64_t p_msec);
+	bool update_outbound_sync_time(uint64_t p_usec);
 	bool update_inbound_sync_time(uint16_t p_network_time);
 
 	PackedStringArray get_configuration_warnings() const override;
 
 	void set_replication_interval(double p_interval);
 	double get_replication_interval() const;
+
+	void set_delta_interval(double p_interval);
+	double get_delta_interval() const;
 
 	void set_replication_config(Ref<SceneReplicationConfig> p_config);
 	Ref<SceneReplicationConfig> get_replication_config();
@@ -102,6 +115,9 @@ public:
 	void add_visibility_filter(Callable p_callback);
 	void remove_visibility_filter(Callable p_callback);
 	VisibilityUpdateMode get_visibility_update_mode() const;
+
+	List<Variant> get_delta_state(uint64_t p_cur_usec, uint64_t p_last_usec, uint64_t &r_indexes);
+	List<NodePath> get_delta_properties(uint64_t p_indexes);
 
 	MultiplayerSynchronizer();
 };

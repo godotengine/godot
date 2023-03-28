@@ -50,6 +50,13 @@
 				Returns whether the property identified by the given [param path] is configured to be synchronized on process.
 			</description>
 		</method>
+		<method name="property_get_watch">
+			<return type="bool" />
+			<param index="0" name="path" type="NodePath" />
+			<description>
+				Returns whether the property identified by the given [code]path[/code] is configured to be reliably synchronized when changes are detected on process.
+			</description>
+		</method>
 		<method name="property_set_spawn">
 			<return type="void" />
 			<param index="0" name="path" type="NodePath" />
@@ -64,6 +71,14 @@
 			<param index="1" name="enabled" type="bool" />
 			<description>
 				Sets whether the property identified by the given [param path] is configured to be synchronized on process.
+			</description>
+		</method>
+		<method name="property_set_watch">
+			<return type="void" />
+			<param index="0" name="path" type="NodePath" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Sets whether the property identified by the given [code]path[/code] is configured to be reliably synchronized when changes are detected on process.
 			</description>
 		</method>
 		<method name="remove_property">
