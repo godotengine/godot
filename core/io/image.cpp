@@ -372,10 +372,12 @@ Image::Image3DValidateError Image::validate_3d_image(Image::Format p_format, int
 
 	int arr_ofs = 0;
 
+	const int num_images = p_images.size();
+
 	while (true) {
 		for (int i = 0; i < d; i++) {
 			int idx = i + arr_ofs;
-			if (idx >= p_images.size()) {
+			if (idx >= num_images) {
 				return VALIDATE_3D_ERR_MISSING_IMAGES;
 			}
 			if (p_images[idx].is_null() || p_images[idx]->is_empty()) {
@@ -407,7 +409,7 @@ Image::Image3DValidateError Image::validate_3d_image(Image::Format p_format, int
 		d = MAX(1, d >> 1);
 	}
 
-	if (arr_ofs != p_images.size()) {
+	if (arr_ofs != num_images) {
 		return VALIDATE_3D_ERR_EXTRA_IMAGES;
 	}
 
