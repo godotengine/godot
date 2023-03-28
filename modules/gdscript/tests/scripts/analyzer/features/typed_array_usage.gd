@@ -116,8 +116,8 @@ func test():
 	assert(duplicated_floats.get_typed_builtin() == TYPE_FLOAT)
 
 
-	var b_objects: Array[B] = [B.new(), null]
-	assert(b_objects.size() == 2)
+	var b_objects: Array[B] = [B.new(), B.new() as A, null]
+	assert(b_objects.size() == 3)
 	assert(b_objects.get_typed_builtin() == TYPE_OBJECT)
 	assert(b_objects.get_typed_script() == B)
 

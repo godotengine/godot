@@ -1,0 +1,7 @@
+GDTEST_RUNTIME_ERROR
+>> ERROR
+>> on function: assign()
+>> core/variant/array.cpp
+>> 222
+>> Method/function failed.
+not ok
