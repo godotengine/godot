@@ -296,6 +296,40 @@ GCHandleIntPtr godotsharp_internal_unmanaged_instance_binding_create_managed(Obj
 	return gchandle.get_intptr();
 }
 
+void godotsharp_internal_instance_binding_ensure_weakref(Object *p_unmanaged, GCHandleIntPtr p_old_gchandle) {
+#ifdef DEBUG_ENABLED
+	CRASH_COND(!p_unmanaged);
+#endif
+
+	void *data = CSharpLanguage::get_instance_binding(p_unmanaged);
+	ERR_FAIL_NULL(data);
+	CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->value();
+	ERR_FAIL_COND(!script_binding.inited);
+
+	MonoGCHandleData &gchandle = script_binding.gchandle;
+
+	// TODO: Possible data race?
+	CRASH_COND(gchandle.get_intptr().value != p_old_gchandle.value);
+
+	if (gchandle.is_weak()) {
+		return;
+	}
+
+	GCHandleIntPtr old_gchandle = gchandle.get_intptr();
+	gchandle.handle = { nullptr }; // No longer owns the handle (released by swap function)
+
+	GCHandleIntPtr new_gchandle = { nullptr };
+	bool create_weak = true;
+	bool target_alive = GDMonoCache::managed_callbacks.ScriptManagerBridge_SwapGCHandleForType(
+			old_gchandle, &new_gchandle, create_weak);
+
+	// When this was called the managed object was alive and the managed side has a strong reference to the object for
+	// the whole duration of this call, so if the object somehow managed to die anyways, something is very wrong
+	CRASH_COND(!target_alive);
+
+	gchandle = MonoGCHandleData(new_gchandle, gdmono::GCHandleType::WEAK_HANDLE);
+}
+
 void godotsharp_internal_tie_native_managed_to_unmanaged(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged, const StringName *p_native_name, bool p_ref_counted) {
 	CSharpLanguage::tie_native_managed_to_unmanaged(p_gchandle_intptr, p_unmanaged, p_native_name, p_ref_counted);
 }
@@ -1432,6 +1466,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_internal_unmanaged_get_script_instance_managed,
 	(void *)godotsharp_internal_unmanaged_get_instance_binding_managed,
 	(void *)godotsharp_internal_unmanaged_instance_binding_create_managed,
+	(void *)godotsharp_internal_instance_binding_ensure_weakref,
 	(void *)godotsharp_internal_new_csharp_script,
 	(void *)godotsharp_internal_script_load,
 	(void *)godotsharp_internal_reload_registered_script,

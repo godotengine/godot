@@ -90,6 +90,9 @@ namespace Godot.NativeInterop
         internal static partial IntPtr godotsharp_internal_unmanaged_instance_binding_create_managed(IntPtr p_unmanaged,
             IntPtr oldGCHandlePtr);
 
+        internal static partial void godotsharp_internal_instance_binding_ensure_weakref(IntPtr p_unmanaged,
+            IntPtr oldGCHandlePtr);
+
         internal static partial void godotsharp_internal_new_csharp_script(godot_ref* r_dest);
 
         internal static partial godot_bool godotsharp_internal_script_load(in godot_string p_path, godot_ref* r_dest);

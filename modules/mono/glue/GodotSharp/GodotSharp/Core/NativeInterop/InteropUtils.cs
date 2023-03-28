@@ -37,14 +37,25 @@ namespace Godot.NativeInterop
             object target = gcHandlePtr != IntPtr.Zero ? GCHandle.FromIntPtr(gcHandlePtr).Target : null;
 
             if (target != null)
+            {
+                NativeFuncs.godotsharp_internal_instance_binding_ensure_weakref(unmanaged, gcHandlePtr);
                 return (GodotObject)target;
+            }
 
             // If the native instance binding GC handle target was collected, create a new one
 
             gcHandlePtr = NativeFuncs.godotsharp_internal_unmanaged_instance_binding_create_managed(
                 unmanaged, gcHandlePtr);
 
-            return gcHandlePtr != IntPtr.Zero ? (GodotObject)GCHandle.FromIntPtr(gcHandlePtr).Target : null;
+            target = gcHandlePtr != IntPtr.Zero ? GCHandle.FromIntPtr(gcHandlePtr).Target : null;
+            if (target != null)
+            {
+                NativeFuncs.godotsharp_internal_instance_binding_ensure_weakref(unmanaged, gcHandlePtr);
+                return (GodotObject)target;
+            }
+
+            // This should be unreachable
+            throw new InvalidOperationException("Failed to get managed instance for unmanaged object.");
         }
 
         public static void TieManagedToUnmanaged(GodotObject managed, IntPtr unmanaged,
