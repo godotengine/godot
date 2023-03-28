@@ -263,17 +263,16 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 							}
 
 						} else {
-							if (Engine::get_singleton()->is_editor_hint()) {
-								// If editor, just set the metadata and be it.
-								node->set(PackedScene::META_POINTER_PROPERTY_BASE + String(prop_name), prop_variant);
-								continue;
+							node->set(PackedScene::META_POINTER_PROPERTY_BASE + String(prop_name), prop_variant);
+
+							if (!Engine::get_singleton()->is_editor_hint()) {
+								// If not editor, do an actual deferred sed of the property path.
+								DeferredNodePathProperties dnp;
+								dnp.path = prop_variant;
+								dnp.base = node;
+								dnp.property = prop_name;
+								deferred_node_paths.push_back(dnp);
 							}
-							// Do an actual deferred sed of the property path.
-							DeferredNodePathProperties dnp;
-							dnp.path = prop_variant;
-							dnp.base = node;
-							dnp.property = prop_name;
-							deferred_node_paths.push_back(dnp);
 						}
 						continue;
 					}
