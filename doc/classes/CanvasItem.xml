@@ -237,7 +237,7 @@
 			<param index="2" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
 			<param index="3" name="texture" type="Texture2D" default="null" />
 			<description>
-				Draws a solid polygon of any number of points, convex or concave. Unlike [method draw_colored_polygon], each point's color can be changed individually. See also [method draw_polyline] and [method draw_polyline_colors].
+				Draws a solid polygon of any number of points, convex or concave. Unlike [method draw_colored_polygon], each point's color can be changed individually. See also [method draw_polyline] and [method draw_polyline_colors]. If you need more flexibility (such as being able to use bones), use [method RenderingServer.canvas_item_add_triangle_array] instead.
 			</description>
 		</method>
 		<method name="draw_polyline">
@@ -279,7 +279,7 @@
 			<param index="2" name="filled" type="bool" default="true" />
 			<param index="3" name="width" type="float" default="-1.0" />
 			<description>
-				Draws a rectangle. If [param filled] is [code]true[/code], the rectangle will be filled with the [param color] specified. If [param filled] is [code]false[/code], the rectangle will be drawn as a stroke with the [param color] and [param width] specified.
+				Draws a rectangle. If [param filled] is [code]true[/code], the rectangle will be filled with the [param color] specified. If [param filled] is [code]false[/code], the rectangle will be drawn as a stroke with the [param color] and [param width] specified. See also [method draw_texture_rect].
 				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 				[b]Note:[/b] [param width] is only effective if [param filled] is [code]false[/code].
 				[b]Note:[/b] Unfilled rectangles drawn with a negative [param width] may not display perfectly. For example, corners may be missing or brighter due to overlapping lines (for a translucent [param color]).
@@ -380,7 +380,7 @@
 			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="4" name="transpose" type="bool" default="false" />
 			<description>
-				Draws a textured rectangle at a given position, optionally modulated by a color. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped.
+				Draws a textured rectangle at a given position, optionally modulated by a color. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped. See also [method draw_rect] and [method draw_texture_rect_region].
 			</description>
 		</method>
 		<method name="draw_texture_rect_region">
@@ -392,7 +392,7 @@
 			<param index="4" name="transpose" type="bool" default="false" />
 			<param index="5" name="clip_uv" type="bool" default="true" />
 			<description>
-				Draws a textured rectangle region at a given position, optionally modulated by a color. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped.
+				Draws a textured rectangle from a texture's region (specified by [param src_rect]) at a given position, optionally modulated by a color. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped. See also [method draw_texture_rect].
 			</description>
 		</method>
 		<method name="force_update_transform">
