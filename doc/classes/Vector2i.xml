@@ -31,7 +31,7 @@
 			<return type="Vector2i" />
 			<param index="0" name="from" type="Vector2" />
 			<description>
-				Constructs a new [Vector2i] from [Vector2]. The floating point coordinates will be truncated.
+				Constructs a new [Vector2i] from the given [Vector2] by truncating components' fractional parts (rounding towards zero). For a different behavior consider passing the result of [method Vector2.ceil], [method Vector2.floor] or [method Vector2.round] to this constructor instead.
 			</description>
 		</constructor>
 		<constructor name="Vector2i">
