@@ -464,6 +464,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["MODELVIEW_MATRIX"] = "modelview";
 		actions.renames["MODELVIEW_NORMAL_MATRIX"] = "modelview_normal";
 		actions.renames["MAIN_CAM_INV_VIEW_MATRIX"] = "scene_data.main_cam_inv_view_matrix";
+		actions.renames["TRIPLANAR_MATRIX"] = "triplanar_matrix";
 
 		actions.renames["VERTEX"] = "vertex";
 		actions.renames["NORMAL"] = "normal";
@@ -530,6 +531,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
 
 		actions.renames["NODE_POSITION_WORLD"] = "read_model_matrix[3].xyz";
+		actions.renames["TRIPLANAR_POSITION"] = "triplanar_position";
 		actions.renames["CAMERA_POSITION_WORLD"] = "scene_data.inv_view_matrix[3].xyz";
 		actions.renames["CAMERA_DIRECTION_WORLD"] = "scene_data.view_matrix[3].xyz";
 		actions.renames["CAMERA_VISIBLE_LAYERS"] = "scene_data.camera_visible_layers";
@@ -590,6 +592,8 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.usage_defines["IRRADIANCE"] = "#define CUSTOM_IRRADIANCE_USED\n";
 
 		actions.usage_defines["MODEL_MATRIX"] = "#define MODEL_MATRIX_USED\n";
+		actions.usage_defines["TRIPLANAR_POSITION"] = "#define TRIPLANAR_POSITION_USED\n";
+		actions.usage_defines["TRIPLANAR_MATRIX"] = "#define TRIPLANAR_MATRIX_USED\n";
 
 		actions.render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 		actions.render_mode_defines["world_vertex_coords"] = "#define VERTEX_WORLD_COORDS_USED\n";

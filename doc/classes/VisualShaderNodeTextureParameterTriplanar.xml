@@ -8,4 +8,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<members>
+		<member name="world_triplanar_enabled" type="bool" setter="set_world_triplanar_enabled" getter="is_world_triplanar_enabled" default="false">
+			If [code]true[/code], triplanar mapping is calculated in world space rather than object local space. See also [member BaseMaterial3D.uv1_world_triplanar].
+		</member>
+	</members>
 </class>

@@ -548,6 +548,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 				String ucode;
 
+				// 'hint_triplanar_matrix' requires a custom #define with the uniform name
+				if (uniform.type == ShaderLanguage::TYPE_MAT4 && uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_TRIPLANAR_MAT) {
+					r_gen_code.defines.push_back("#define TRIPLANAR_MATRIX " + _mkid(uniform_name) + "\n");
+				}
+
 				if (uniform.scope == SL::ShaderNode::Uniform::SCOPE_INSTANCE) {
 					//insert, but don't generate any code.
 					p_actions.uniforms->insert(uniform_name, uniform);

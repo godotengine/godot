@@ -390,6 +390,52 @@ void vertex_shader(vec3 vertex_input,
 	mat4 read_view_matrix = scene_data.view_matrix;
 	vec2 read_viewport_size = scene_data.viewport_size;
 
+#if defined(TRIPLANAR_POSITION_USED) || defined(TRIPLANAR_MATRIX_USED)
+	mat4 triplanar_matrix;
+
+#ifdef TRIPLANAR_POSITION_USED
+	vec3 triplanar_position = vertex;
+#endif
+
+	{
+#ifdef TRIPLANAR_MATRIX
+		triplanar_matrix = material.TRIPLANAR_MATRIX;
+#else
+		triplanar_matrix = model_matrix;
+#endif
+
+#ifdef TRIPLANAR_POSITION_USED
+
+#ifdef USE_DOUBLE_PRECISION
+		vec3 triplanar_matrix_precision;
+
+#ifdef TRIPLANAR_MATRIX
+		triplanar_matrix_precision = vec3(triplanar_matrix[0][3], triplanar_matrix[1][3], triplanar_matrix[2][3]);
+		triplanar_matrix[0][3] = 0.0;
+		triplanar_matrix[1][3] = 0.0;
+		triplanar_matrix[2][3] = 0.0;
+#else
+		triplanar_matrix_precision = model_precision;
+#endif
+
+		// We separate the basis from the origin because the basis is fine with single point precision.
+		// We add the result to the triplanar_position and ignore the final lost precision.
+		vec3 model_origin = triplanar_matrix[3].xyz;
+		if (is_multimesh) {
+			triplanar_position = (matrix * vec4(triplanar_position, 1.0)).xyz;
+		}
+		triplanar_position = mat3(triplanar_matrix) * triplanar_position;
+		vec3 temp_precision; // Will be ignored.
+		triplanar_position += double_add_vec3(model_origin, triplanar_matrix_precision, -vec3(ceil(model_origin.x), ceil(model_origin.y), ceil(model_origin.z)), vec3(0.0), temp_precision);
+#else
+		triplanar_position = (triplanar_matrix * vec4(triplanar_position, 1.0)).xyz;
+#endif
+
+#endif
+	}
+
+#endif
+
 	{
 #CODE : VERTEX
 	}

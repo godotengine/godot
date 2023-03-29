@@ -2412,6 +2412,12 @@ void VisualShader::_update_shader() const {
 			if (parameter_ref.is_valid()) {
 				used_parameter_names.insert(parameter_ref->get_parameter_name());
 			}
+			// Given the side effects "hint_triplanar_mat" has, we can save our users
+			// some trouble and code_gen this even if it's not directly used.
+			Ref<VisualShaderNodeTransformParameter> transform_parameter_ref = E.value.node;
+			if (transform_parameter_ref.is_valid() && transform_parameter_ref->is_hint_triplanar_enabled()) {
+				used_parameter_names.insert(transform_parameter_ref->get_parameter_name());
+			}
 			Ref<VisualShaderNodeParameter> parameter = E.value.node;
 			if (parameter.is_valid()) {
 				parameters.push_back(parameter.ptr());
@@ -2891,6 +2897,8 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR_INT, "view_right", "VIEW_RIGHT" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_3D, "eye_offset", "EYE_OFFSET" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_3D, "node_position_world", "NODE_POSITION_WORLD" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_3D, "triplanar_position", "TRIPLANAR_POSITION" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_TRANSFORM, "triplanar_matrix", "TRIPLANAR_MATRIX" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_3D, "camera_position_world", "CAMERA_POSITION_WORLD" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_3D, "camera_direction_world", "CAMERA_DIRECTION_WORLD" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR_UINT, "camera_visible_layers", "CAMERA_VISIBLE_LAYERS" },

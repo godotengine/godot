@@ -1089,8 +1089,8 @@ void BaseMaterial3D::_update_shader() {
 
 	if (flags[FLAG_UV1_USE_TRIPLANAR]) {
 		if (flags[FLAG_UV1_USE_WORLD_TRIPLANAR]) {
-			code += "	uv1_power_normal=pow(abs(normal),vec3(uv1_blend_sharpness));\n";
-			code += "	uv1_triplanar_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0f)).xyz * uv1_scale + uv1_offset;\n";
+			code += "	uv1_power_normal=pow(abs(mat3(TRIPLANAR_MATRIX) * normal),vec3(uv1_blend_sharpness));\n";
+			code += "	uv1_triplanar_pos = TRIPLANAR_POSITION * uv1_scale + uv1_offset;\n";
 		} else {
 			code += "	uv1_power_normal=pow(abs(NORMAL),vec3(uv1_blend_sharpness));\n";
 			code += "	uv1_triplanar_pos = VERTEX * uv1_scale + uv1_offset;\n";
@@ -1101,8 +1101,8 @@ void BaseMaterial3D::_update_shader() {
 
 	if (flags[FLAG_UV2_USE_TRIPLANAR]) {
 		if (flags[FLAG_UV2_USE_WORLD_TRIPLANAR]) {
-			code += "	uv2_power_normal=pow(abs(mat3(MODEL_MATRIX) * NORMAL), vec3(uv2_blend_sharpness));\n";
-			code += "	uv2_triplanar_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0f)).xyz * uv2_scale + uv2_offset;\n";
+			code += "	uv2_power_normal=pow(abs(mat3(TRIPLANAR_MATRIX) * NORMAL), vec3(uv2_blend_sharpness));\n";
+			code += "	uv2_triplanar_pos = TRIPLANAR_POSITION * uv2_scale + uv2_offset;\n";
 		} else {
 			code += "	uv2_power_normal=pow(abs(NORMAL), vec3(uv2_blend_sharpness));\n";
 			code += "	uv2_triplanar_pos = VERTEX * uv2_scale + uv2_offset;\n";

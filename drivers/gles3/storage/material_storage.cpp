@@ -1210,6 +1210,7 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["MODELVIEW_MATRIX"] = "modelview";
 		actions.renames["MODELVIEW_NORMAL_MATRIX"] = "modelview_normal";
 		actions.renames["MAIN_CAM_INV_VIEW_MATRIX"] = "scene_data.main_cam_inv_view_matrix";
+		actions.renames["TRIPLANAR_MATRIX"] = "triplanar_matrix";
 
 		actions.renames["VERTEX"] = "vertex";
 		actions.renames["NORMAL"] = "normal";
@@ -1276,6 +1277,7 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
 
 		actions.renames["NODE_POSITION_WORLD"] = "model_matrix[3].xyz";
+		actions.renames["TRIPLANAR_POSITION"] = "triplanar_position";
 		actions.renames["CAMERA_POSITION_WORLD"] = "scene_data.inv_view_matrix[3].xyz";
 		actions.renames["CAMERA_DIRECTION_WORLD"] = "scene_data.view_matrix[3].xyz";
 		actions.renames["CAMERA_VISIBLE_LAYERS"] = "scene_data.camera_visible_layers";
@@ -1320,6 +1322,8 @@ MaterialStorage::MaterialStorage() {
 		actions.usage_defines["COLOR"] = "#define COLOR_USED\n";
 		actions.usage_defines["INSTANCE_CUSTOM"] = "#define ENABLE_INSTANCE_CUSTOM\n";
 		actions.usage_defines["POSITION"] = "#define OVERRIDE_POSITION\n";
+		actions.usage_defines["TRIPLANAR_POSITION"] = "#define TRIPLANAR_POSITION_USED\n";
+		actions.usage_defines["TRIPLANAR_MATRIX"] = "#define TRIPLANAR_MATRIX_USED\n";
 
 		actions.usage_defines["ALPHA_SCISSOR_THRESHOLD"] = "#define ALPHA_SCISSOR_USED\n";
 		actions.usage_defines["ALPHA_HASH_SCALE"] = "#define ALPHA_HASH_USED\n";

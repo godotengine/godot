@@ -432,6 +432,21 @@ void main() {
 
 	float point_size = 1.0;
 
+#if defined(TRIPLANAR_MATRIX_USED) || defined(TRIPLANAR_POSITION_USED)
+	mat4 triplanar_matrix;
+
+#ifdef TRIPLANAR_MATRIX
+	triplanar_matrix = TRIPLANAR_MATRIX;
+#else
+	triplanar_matrix = model_matrix;
+#endif
+
+#ifdef TRIPLANAR_POSITION_USED
+	vec3 triplanar_position = (triplanar_matrix * vec4(vertex, 1.0)).xyz;
+#endif
+
+#endif
+
 	{
 #CODE : VERTEX
 	}

@@ -6180,6 +6180,15 @@ bool VisualShaderNodeTransformParameter::is_default_value_enabled() const {
 	return default_value_enabled;
 }
 
+void VisualShaderNodeTransformParameter::set_hint_triplanar_enabled(bool p_enabled) {
+	hint_triplanar_enabled = p_enabled;
+	emit_changed();
+}
+
+bool VisualShaderNodeTransformParameter::is_hint_triplanar_enabled() const {
+	return hint_triplanar_enabled;
+}
+
 void VisualShaderNodeTransformParameter::set_default_value(const Transform3D &p_value) {
 	default_value = p_value;
 	emit_changed();
@@ -6191,6 +6200,9 @@ Transform3D VisualShaderNodeTransformParameter::get_default_value() const {
 
 String VisualShaderNodeTransformParameter::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code = _get_qual_str() + "uniform mat4 " + get_parameter_name();
+	if (hint_triplanar_enabled) {
+		code += " : hint_triplanar_mat";
+	}
 	if (default_value_enabled) {
 		Vector3 row0 = default_value.basis.rows[0];
 		Vector3 row1 = default_value.basis.rows[1];
@@ -6210,10 +6222,14 @@ void VisualShaderNodeTransformParameter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_value_enabled", "enabled"), &VisualShaderNodeTransformParameter::set_default_value_enabled);
 	ClassDB::bind_method(D_METHOD("is_default_value_enabled"), &VisualShaderNodeTransformParameter::is_default_value_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_hint_triplanar_enabled", "enabled"), &VisualShaderNodeTransformParameter::set_hint_triplanar_enabled);
+	ClassDB::bind_method(D_METHOD("is_hint_triplanar_enabled"), &VisualShaderNodeTransformParameter::is_hint_triplanar_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_default_value", "value"), &VisualShaderNodeTransformParameter::set_default_value);
 	ClassDB::bind_method(D_METHOD("get_default_value"), &VisualShaderNodeTransformParameter::get_default_value);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "default_value_enabled"), "set_default_value_enabled", "is_default_value_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hint_triplanar_enabled"), "set_hint_triplanar_enabled", "is_hint_triplanar_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "default_value"), "set_default_value", "get_default_value");
 }
 
@@ -6238,6 +6254,7 @@ bool VisualShaderNodeTransformParameter::is_convertible_to_constant() const {
 
 Vector<StringName> VisualShaderNodeTransformParameter::get_editable_properties() const {
 	Vector<StringName> props = VisualShaderNodeParameter::get_editable_properties();
+	props.push_back("hint_triplanar_enabled");
 	props.push_back("default_value_enabled");
 	if (default_value_enabled) {
 		props.push_back("default_value");
@@ -6687,9 +6704,14 @@ String VisualShaderNodeTextureParameterTriplanar::generate_global_per_func(Shade
 	if (p_type == VisualShader::TYPE_VERTEX) {
 		code += "// " + get_caption() + "\n";
 		code += "	{\n";
-		code += "		triplanar_power_normal = pow(abs(NORMAL), vec3(triplanar_sharpness));\n";
+		if (world_triplanar_enabled) {
+			code += "		triplanar_power_normal = pow(abs(mat3(TRIPLANAR_MATRIX) * NORMAL), vec3(triplanar_sharpness));\n";
+			code += "		triplanar_pos = TRIPLANAR_POSITION * triplanar_scale + triplanar_offset;\n";
+		} else {
+			code += "		triplanar_power_normal = pow(abs(NORMAL), vec3(triplanar_sharpness));\n";
+			code += "		triplanar_pos = VERTEX * triplanar_scale + triplanar_offset;\n";
+		}
 		code += "		triplanar_power_normal /= dot(triplanar_power_normal, vec3(1.0));\n";
-		code += "		triplanar_pos = VERTEX * triplanar_scale + triplanar_offset;\n";
 		code += "		triplanar_pos *= vec3(1.0, -1.0, 1.0);\n";
 		code += "	}\n";
 	}
@@ -6721,6 +6743,18 @@ String VisualShaderNodeTextureParameterTriplanar::generate_code(Shader::Mode p_m
 	return code;
 }
 
+Vector<StringName> VisualShaderNodeTextureParameterTriplanar::get_editable_properties() const {
+	auto props = VisualShaderNodeTextureParameter::get_editable_properties();
+	props.push_back("world_triplanar_enabled");
+	return props;
+}
+
+HashMap<StringName, String> VisualShaderNodeTextureParameterTriplanar::get_editable_properties_names() const {
+	auto names = VisualShaderNodeTextureParameter::get_editable_properties_names();
+	names.insert("world_triplanar_enabled", RTR("World Triplanar"));
+	return names;
+}
+
 bool VisualShaderNodeTextureParameterTriplanar::is_input_port_default(int p_port, Shader::Mode p_mode) const {
 	if (p_port == 0) {
 		return true;
@@ -6728,6 +6762,22 @@ bool VisualShaderNodeTextureParameterTriplanar::is_input_port_default(int p_port
 		return true;
 	}
 	return false;
+}
+
+void VisualShaderNodeTextureParameterTriplanar::set_world_triplanar_enabled(bool p_enabled) {
+	world_triplanar_enabled = p_enabled;
+	emit_changed();
+}
+
+bool VisualShaderNodeTextureParameterTriplanar::is_world_triplanar_enabled() const {
+	return world_triplanar_enabled;
+}
+
+void VisualShaderNodeTextureParameterTriplanar::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_world_triplanar_enabled", "p_enabled"), &VisualShaderNodeTextureParameterTriplanar::set_world_triplanar_enabled);
+	ClassDB::bind_method(D_METHOD("is_world_triplanar_enabled"), &VisualShaderNodeTextureParameterTriplanar::is_world_triplanar_enabled);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "world_triplanar_enabled"), "set_world_triplanar_enabled", "is_world_triplanar_enabled");
 }
 
 VisualShaderNodeTextureParameterTriplanar::VisualShaderNodeTextureParameterTriplanar() {
