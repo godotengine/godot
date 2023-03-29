@@ -2514,6 +2514,9 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 				case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS:
 					splits = 2;
 					break;
+				case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_3_SPLITS:
+					splits = 3;
+					break;
 				case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS:
 					splits = 4;
 					break;
