@@ -47,25 +47,26 @@ void VRPoke::_notification(int p_notification) {
 			VRCollision *collision = nullptr;
 			Vector3 col_position;
 			float col_distance = 0.0;
-			bool col_is_pressed[2] = { false, false };
-			float col_pressure[2] = { 0.0, 0.0 };
+			bool col_is_pressed[3] = { false, false, false };
+			float col_pressure[3] = { 0.0, 0.0, 0.0 };
 			Vector2 col_scroll;
 
 			if (touch_enabled || ray_enabled) {
 				Transform3D poke_transform = get_global_transform();
 				Vector3 poke_position = poke_transform.origin;
 				Vector3 poke_direction = -poke_transform.basis.get_column(2);
-				bool poke_is_pressed[2];
-				poke_is_pressed[0] = is_select();
-				poke_is_pressed[1] = is_alt_select();
+				bool poke_is_pressed[3];
+				poke_is_pressed[0] = is_left_click();
+				poke_is_pressed[1] = is_right_click();
+				poke_is_pressed[2] = is_middle_click();
 
 				Vector<VRCollision *> collisions = VRCollision::get_hit_tests(true, false);
 				for (int i = 0; i < collisions.size(); i++) {
 					VRCollision *test_collision = collisions[i];
 					Vector3 test_position;
 					float test_distance = 9999.99;
-					bool test_is_pressed[2] = { false, false };
-					float test_pressure[2] = { 0.0, 0.0 };
+					bool test_is_pressed[3] = { false, false, false };
+					float test_pressure[3] = { 0.0, 0.0, 0.0 };
 					Vector2 test_scroll;
 
 					if (touch_enabled && test_collision->within_sphere(poke_position, radius, test_position)) {
@@ -75,7 +76,7 @@ void VRPoke::_notification(int p_notification) {
 						test_pressure[0] = CLAMP(1.0 - (Math::sqrt(test_distance) / radius), 0.0, 1.0);
 					} else if (ray_enabled && test_collision->raycast(poke_position, poke_direction, test_position)) {
 						test_distance = (test_position - poke_position).length_squared();
-						for (int j = 0; j < 2; j++) {
+						for (int j = 0; j < 3; j++) {
 							test_is_pressed[j] = poke_is_pressed[j];
 							test_pressure[j] = poke_is_pressed[j] ? 1.0 : 0.0;
 						}
@@ -90,7 +91,7 @@ void VRPoke::_notification(int p_notification) {
 						col_position = test_position;
 						col_distance = test_distance;
 						col_scroll = test_scroll;
-						for (int j = 0; j < 2; j++) {
+						for (int j = 0; j < 3; j++) {
 							col_is_pressed[j] = test_is_pressed[j];
 							col_pressure[j] = test_pressure[j];
 						}
@@ -101,6 +102,10 @@ void VRPoke::_notification(int p_notification) {
 			// Last collision no longer relevant?
 			if (last_collision && last_collision != collision) {
 				// Might want to leave first and forego on the releases?
+				if (last_was_pressed[2]) {
+					last_collision->_on_interact_released(last_position, MouseButton::MIDDLE);
+					last_was_pressed[2] = false;
+				}
 				if (last_was_pressed[1]) {
 					last_collision->_on_interact_released(last_position, MouseButton::RIGHT);
 					last_was_pressed[1] = false;
@@ -126,7 +131,7 @@ void VRPoke::_notification(int p_notification) {
 					collision->_on_interact_enter(col_position);
 				}
 
-				for (int i = 0; i < 2; i++) {
+				for (int i = 0; i < 3; i++) {
 					if (col_is_pressed[i] && !last_was_pressed[i]) {
 						collision->_on_interact_pressed(col_position, MouseButton(i + 1));
 					} else if (!col_is_pressed[i] && last_was_pressed[i]) {
@@ -139,7 +144,7 @@ void VRPoke::_notification(int p_notification) {
 				}
 
 				last_position = col_position;
-				for (int i = 0; i < 2; i++) {
+				for (int i = 0; i < 3; i++) {
 					last_was_pressed[i] = col_is_pressed[i];
 				}
 
@@ -179,22 +184,31 @@ Vector2 VRPoke::get_scroll() {
 	return controller->get_vector2("scroll");
 }
 
-bool VRPoke::is_select() {
-	// Returns true if our select action is triggered on the controller we're a child off.
+bool VRPoke::is_left_click() {
+	// Returns true if our left_click action is triggered on the controller we're a child off.
 
 	XRController3D *controller = Object::cast_to<XRController3D>(get_parent());
 	ERR_FAIL_NULL_V(controller, false);
 
-	return controller->is_button_pressed("select");
+	return controller->is_button_pressed("left_click");
 }
 
-bool VRPoke::is_alt_select() {
-	// Returns true if our alternative select action is triggered on the controller we're a child off.
+bool VRPoke::is_middle_click() {
+	// Returns true if the middle_click action is triggered on the controller we're a child off.
 
 	XRController3D *controller = Object::cast_to<XRController3D>(get_parent());
 	ERR_FAIL_NULL_V(controller, false);
 
-	return controller->is_button_pressed("alt_select");
+	return controller->is_button_pressed("middle_click");
+}
+
+bool VRPoke::is_right_click() {
+	// Returns true if our right_click action is triggered on the controller we're a child off.
+
+	XRController3D *controller = Object::cast_to<XRController3D>(get_parent());
+	ERR_FAIL_NULL_V(controller, false);
+
+	return controller->is_button_pressed("right_click");
 }
 
 VRPoke::VRPoke() {
@@ -312,7 +326,7 @@ void VREditorAvatar::set_ray_active_on_hand(VRHand::Hands p_hand) {
 }
 
 void VREditorAvatar::_on_button_pressed_on_hand(const String p_action, int p_hand) {
-	if (p_action == "select") {
+	if (p_action == "left_click") {
 		set_ray_active_on_hand(VRHand::Hands(p_hand));
 	}
 }
@@ -372,7 +386,7 @@ VREditorAvatar::VREditorAvatar() {
 	right_hand->connect("button_pressed", callable_mp(this, &VREditorAvatar::_on_button_pressed_on_hand).bind(int(VRHand::HAND_RIGHT)));
 	add_child(right_hand);
 
-	// TODO add callback for select so we can activate ray on last used hand
+	// TODO add callback for left_click so we can activate ray on last used hand
 
 	set_ray_active_on_hand(ray_active_on_hand);
 

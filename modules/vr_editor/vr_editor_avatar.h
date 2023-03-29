@@ -61,7 +61,7 @@ private:
 
 	VRCollision *last_collision = nullptr;
 	Vector3 last_position;
-	bool last_was_pressed[2] = { false, false };
+	bool last_was_pressed[3] = { false, false, false };
 
 	void _set_ray_visible_length(float p_length);
 
@@ -76,8 +76,9 @@ public:
 	bool get_ray_enabled() const { return ray_enabled; }
 
 	Vector2 get_scroll();
-	bool is_select();
-	bool is_alt_select();
+	bool is_left_click();
+	bool is_middle_click();
+	bool is_right_click();
 
 	VRPoke();
 	~VRPoke();
