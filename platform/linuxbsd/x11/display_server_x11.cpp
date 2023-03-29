@@ -2848,7 +2848,7 @@ Key DisplayServerX11::keyboard_get_keycode_from_physical(Key p_keycode) const {
 	Key modifiers = p_keycode & KeyModifierMask::MODIFIER_MASK;
 	Key keycode_no_mod = p_keycode & KeyModifierMask::CODE_MASK;
 	unsigned int xkeycode = KeyMappingX11::get_xlibcode(keycode_no_mod);
-	KeySym xkeysym = XkbKeycodeToKeysym(x11_display, xkeycode, 0, 0);
+	KeySym xkeysym = XkbKeycodeToKeysym(x11_display, xkeycode, keyboard_get_current_layout(), 0);
 	if (is_ascii_lower_case(xkeysym)) {
 		xkeysym -= ('a' - 'A');
 	}
