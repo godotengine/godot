@@ -10,6 +10,8 @@
 		- If the object is a built-in resource, use the scene from its path;
 		- If the object is external resource or anything else, use global history.
 		This guessing can sometimes yield false results, so you can provide a custom context object when creating an action.
+		[EditorUndoRedoManager] is intended to be used by Godot editor plugins. You can obtain it using [method EditorPlugin.get_undo_redo]. For non-editor uses or plugins that don't need to integrate with the editor's undo history, use [UndoRedo] instead.
+		The manager's API is mostly the same as in [UndoRedo], so you can refer to its documentation for more examples. The main difference is that [EditorUndoRedoManager] uses object + method name for actions, instead of [Callable].
 	</description>
 	<tutorials>
 	</tutorials>
