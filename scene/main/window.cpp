@@ -1564,7 +1564,7 @@ void Window::popup(const Rect2i &p_screen_rect) {
 		ERR_PRINT(vformat("Window %d spawned at invalid position: %s.", get_window_id(), position));
 		set_position((parent_rect.size - size) / 2);
 	}
-	if (parent_rect != Rect2i() && is_clamped_to_embedder()) {
+	if (parent_rect != Rect2i() && is_clamped_to_embedder() && is_embedded()) {
 		Rect2i new_rect = fit_rect_in_parent(Rect2i(position, size), parent_rect);
 		set_position(new_rect.position);
 		set_size(new_rect.size);
