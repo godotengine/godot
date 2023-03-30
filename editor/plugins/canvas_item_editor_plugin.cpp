@@ -697,6 +697,10 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 	CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
 	Node *scene = EditorNode::get_singleton()->get_edited_scene();
 
+	if (p_node != scene && !p_node->get_owner()) {
+		return;
+	}
+
 	bool editable = p_node == scene || p_node->get_owner() == scene || p_node == scene->get_deepest_editable_node(p_node);
 	bool lock_children = p_node->get_meta("_edit_group_", false);
 	bool locked = _is_node_locked(p_node);
@@ -2357,7 +2361,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 
 	if (drag_type == DRAG_BOX_SELECTION) {
 		if (b.is_valid() && !b->is_pressed() && b->get_button_index() == MouseButton::LEFT) {
-			// Confirms box selection
+			// Confirms box selection.
 			Node *scene = EditorNode::get_singleton()->get_edited_scene();
 			if (scene) {
 				List<CanvasItem *> selitems;
@@ -2386,14 +2390,14 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 		}
 
 		if (b.is_valid() && b->is_pressed() && b->get_button_index() == MouseButton::RIGHT) {
-			// Cancel box selection
+			// Cancel box selection.
 			_reset_drag();
 			viewport->queue_redraw();
 			return true;
 		}
 
 		if (m.is_valid()) {
-			// Update box selection
+			// Update box selection.
 			box_selecting_to = transform.affine_inverse().xform(m->get_position());
 			viewport->queue_redraw();
 			return true;
