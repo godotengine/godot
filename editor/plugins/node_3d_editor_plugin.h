@@ -213,7 +213,7 @@ private:
 
 	EditorSelection *editor_selection = nullptr;
 
-	CheckBox *preview_camera = nullptr;
+	CheckBox *preview_node3d_checkbox = nullptr;
 	SubViewportContainer *subviewport_container = nullptr;
 
 	MenuButton *view_menu = nullptr;
@@ -406,7 +406,7 @@ private:
 	bool previewing_cinema;
 	bool _is_node_locked(const Node *p_node);
 	void _preview_exited_scene();
-	void _toggle_camera_preview(bool);
+	void _toggle_node3d_preview(bool);
 	void _toggle_cinema_preview(bool);
 	void _init_gizmo_instance(int p_idx);
 	void _finish_gizmo_instances();

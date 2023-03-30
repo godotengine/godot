@@ -28,6 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include <iostream>
+#include <string>
+using namespace std;
+
 #include "node_3d_editor_plugin.h"
 
 #include "core/config/project_settings.h"
@@ -2896,7 +2900,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			view_menu->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
-			preview_camera->set_icon(get_theme_icon(SNAME("Camera3D"), SNAME("EditorIcons")));
+			preview_node3d_checkbox->set_icon(get_theme_icon(SNAME("Camera3D"), SNAME("EditorIcons")));
 			Control *gui_base = EditorNode::get_singleton()->get_gui_base();
 
 			view_menu->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
@@ -2905,11 +2909,11 @@ void Node3DEditorViewport::_notification(int p_what) {
 			view_menu->add_theme_style_override("focus", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
 			view_menu->add_theme_style_override("disabled", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
 
-			preview_camera->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-			preview_camera->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-			preview_camera->add_theme_style_override("pressed", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-			preview_camera->add_theme_style_override("focus", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-			preview_camera->add_theme_style_override("disabled", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+			preview_node3d_checkbox->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+			preview_node3d_checkbox->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+			preview_node3d_checkbox->add_theme_style_override("pressed", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+			preview_node3d_checkbox->add_theme_style_override("focus", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+			preview_node3d_checkbox->add_theme_style_override("disabled", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
 
 			frame_time_gradient->set_color(0, get_theme_color(SNAME("success_color"), SNAME("Editor")));
 			frame_time_gradient->set_color(1, get_theme_color(SNAME("warning_color"), SNAME("Editor")));
@@ -3327,12 +3331,14 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			view_menu->get_popup()->set_item_checked(idx, current);
 			previewing_cinema = true;
 			_toggle_cinema_preview(current);
+			std::cout << "Node3DEditorViewport::menu_option cinematic preview" << std::endl;
+
 
 			if (current) {
-				preview_camera->hide();
+				preview_node3d_checkbox->hide();
 			} else {
 				if (previewing != nullptr) {
-					preview_camera->show();
+					preview_node3d_checkbox->show();
 				}
 			}
 		} break;
@@ -3477,10 +3483,12 @@ void Node3DEditorViewport::_set_auto_orthogonal() {
 }
 
 void Node3DEditorViewport::_preview_exited_scene() {
-	preview_camera->disconnect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
-	preview_camera->set_pressed(false);
-	_toggle_camera_preview(false);
-	preview_camera->connect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
+	std::cout << "Node3DEditorViewport::preview_existed_scene called" << std::endl;
+
+	preview_node3d_checkbox->disconnect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_node3d_preview));
+	preview_node3d_checkbox->set_pressed(false);
+	_toggle_node3d_preview(false);
+	preview_node3d_checkbox->connect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_node3d_preview));
 	view_menu->show();
 }
 
@@ -3568,10 +3576,10 @@ void Node3DEditorViewport::_finish_gizmo_instances() {
 	RS::get_singleton()->free(rotate_gizmo_instance[3]);
 }
 
-void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
+void Node3DEditorViewport::_toggle_node3d_preview(bool p_activate) {
 	ERR_FAIL_COND(p_activate && !preview);
 	ERR_FAIL_COND(!p_activate && !previewing);
-
+	std::cout << "  Node3DEditorViewport::_toggle_node3d_preview " << std::endl;
 	previewing_camera = p_activate;
 	_update_navigation_controls_visibility();
 
@@ -3580,7 +3588,7 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 		previewing = nullptr;
 		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), camera->get_camera()); //restore
 		if (!preview) {
-			preview_camera->hide();
+			preview_node3d_checkbox->hide();
 		}
 		surface->queue_redraw();
 
@@ -3595,6 +3603,8 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 void Node3DEditorViewport::_toggle_cinema_preview(bool p_activate) {
 	previewing_cinema = p_activate;
 	_update_navigation_controls_visibility();
+	std::cout << "Node3DEditorViewport::_toggle_cinema_preview to " << p_activate << std::endl;
+
 
 	if (!previewing_cinema) {
 		if (previewing != nullptr) {
@@ -3603,11 +3613,11 @@ void Node3DEditorViewport::_toggle_cinema_preview(bool p_activate) {
 
 		previewing = nullptr;
 		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), camera->get_camera()); //restore
-		preview_camera->set_pressed(false);
+		preview_node3d_checkbox->set_pressed(false);
 		if (!preview) {
-			preview_camera->hide();
+			preview_node3d_checkbox->hide();
 		} else {
-			preview_camera->show();
+			preview_node3d_checkbox->show();
 		}
 		view_menu->show();
 		surface->queue_redraw();
@@ -3636,9 +3646,11 @@ void Node3DEditorViewport::_selection_menu_hide() {
 
 void Node3DEditorViewport::set_can_preview(Camera3D *p_preview) {
 	preview = p_preview;
+	std::cout << "  Node3DEditorViewport::set_can_previews with camera ["<< p_preview << "]" <<std::endl;;
 
-	if (!preview_camera->is_pressed() && !previewing_cinema) {
-		preview_camera->set_visible(p_preview);
+	if (!preview_node3d_checkbox->is_pressed() && !previewing_cinema) {
+		std::cout << "   toggle checkbox" << std::endl;
+		preview_node3d_checkbox->set_visible(p_preview);
 	}
 }
 
@@ -3839,21 +3851,22 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 		view_menu->get_popup()->set_item_checked(idx, previewing_cinema);
 	}
 
-	if (preview_camera->is_connected("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview))) {
-		preview_camera->disconnect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
+	if (preview_node3d_checkbox->is_connected("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_node3d_preview))) {
+		preview_node3d_checkbox->disconnect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_node3d_preview));
 	}
 	if (p_state.has("previewing")) {
+		std::cout << "Node3DEditorViewport::set_state is previewing" << std::endl;
 		Node *pv = EditorNode::get_singleton()->get_edited_scene()->get_node(p_state["previewing"]);
 		if (Object::cast_to<Camera3D>(pv)) {
 			previewing = Object::cast_to<Camera3D>(pv);
 			previewing->connect("tree_exiting", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
 			RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), previewing->get_camera()); //replace
 			surface->queue_redraw();
-			preview_camera->set_pressed(true);
-			preview_camera->show();
+			preview_node3d_checkbox->set_pressed(true);
+			preview_node3d_checkbox->show();
 		}
 	}
-	preview_camera->connect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
+	preview_node3d_checkbox->connect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_node3d_preview));
 }
 
 Dictionary Node3DEditorViewport::get_state() const {
@@ -5074,13 +5087,15 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	ED_SHORTCUT("spatial_editor/instant_rotate", TTR("Begin Rotate Transformation"));
 	ED_SHORTCUT("spatial_editor/instant_scale", TTR("Begin Scale Transformation"));
 
-	preview_camera = memnew(CheckBox);
-	preview_camera->set_text(TTR("Preview"));
-	preview_camera->set_shortcut(ED_SHORTCUT("spatial_editor/toggle_camera_preview", TTR("Toggle Camera Preview"), KeyModifierMask::CMD_OR_CTRL | Key::P));
-	vbox->add_child(preview_camera);
-	preview_camera->set_h_size_flags(0);
-	preview_camera->hide();
-	preview_camera->connect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
+	std::cout << "Node3DEditorViewport::__init__" << std::endl;
+
+	preview_node3d_checkbox = memnew(CheckBox);
+	preview_node3d_checkbox->set_text(TTR("Preview"));
+	preview_node3d_checkbox->set_shortcut(ED_SHORTCUT("spatial_editor/toggle_camera_preview", TTR("Toggle Camera Preview"), KeyModifierMask::CMD_OR_CTRL | Key::P));
+	vbox->add_child(preview_node3d_checkbox);
+	preview_node3d_checkbox->set_h_size_flags(0);
+	preview_node3d_checkbox->hide();
+	preview_node3d_checkbox->connect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_node3d_preview));
 	previewing = nullptr;
 	gizmo_scale = 1.0;
 

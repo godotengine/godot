@@ -28,6 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include <iostream>
+#include <string>
+using namespace std;
+
+
 #include "camera_3d_editor_plugin.h"
 
 #include "editor/editor_node.h"
@@ -51,6 +56,7 @@ void Camera3DEditor::_bind_methods() {
 
 void Camera3DEditor::edit(Node *p_camera) {
 	node = p_camera;
+	std::cout << "Camera3DEditor:edit calls with camera at [" << p_camera << "]" << std::endl;
 
 	if (!node) {
 		preview->set_pressed(false);
@@ -80,7 +86,9 @@ Camera3DEditor::Camera3DEditor() {
 }
 
 void Camera3DEditorPlugin::edit(Object *p_object) {
+	std::cout << "Camera3DEditorPlugin:edit called with camera objecct [" << p_object << "]" << std::endl;
 	Node3DEditor::get_singleton()->set_can_preview(Object::cast_to<Camera3D>(p_object));
+
 	//camera_editor->edit(Object::cast_to<Node>(p_object));
 }
 
