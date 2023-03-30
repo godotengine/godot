@@ -158,6 +158,14 @@
 				Returns [code]true[/code] if the string ends with the given [param text]. See also [method begins_with].
 			</description>
 		</method>
+		<method name="erase" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="position" type="int" />
+			<param index="1" name="chars" type="int" default="1" />
+			<description>
+				Returns a string with [param chars] characters erased starting from [param position]. If [param chars] goes beyond the string's length given the specified [param position], fewer characters will be erased from the returned string. Returns an empty string if either [code]position[/code] or [code]chars[/code] is negative. Returns the original string unmodified if [param chars] is [code]0[/code].
+			</description>
+		</method>
 		<method name="find" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="what" type="String" />
