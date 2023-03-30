@@ -569,8 +569,6 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "shortcut_match", "is_match" }, // InputEvent
 	{ "skeleton_allocate", "skeleton_allocate_data" }, // RenderingServer
 	{ "surface_update_region", "surface_update_attribute_region" }, // ArrayMesh
-	{ "targeting_method", "tween_method" }, // Tween
-	{ "targeting_property", "tween_property" }, // Tween
 	{ "track_remove_key_at_position", "track_remove_key_at_time" }, // Animation
 	{ "triangulate_delaunay_2d", "triangulate_delaunay" }, // Geometry2D
 	{ "unselect", "deselect" }, // ItemList
@@ -968,8 +966,6 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "ShortcutMatch", "IsMatch" }, // InputEvent
 	{ "SkeletonAllocate", "SkeletonAllocateData" }, // RenderingServer
 	{ "SurfaceUpdateRegion", "SurfaceUpdateAttributeRegion" }, // ArrayMesh
-	{ "TargetingMethod", "TweenMethod" }, // Tween
-	{ "TargetingProperty", "TweenProperty" }, // Tween
 	{ "TrackRemoveKeyAtPosition", "TrackRemoveKeyAtTime" }, // Animation
 	{ "TriangulateDelaunay2d", "TriangulateDelaunay" }, // Geometry2D
 	{ "UnbindChildNodeFromBone", "RemoveBoneChild" }, // Skeleton3D
@@ -1265,8 +1261,6 @@ const char *RenamesMap3To4::gdscript_signals_renames[][2] = {
 	{ "tab_close", "tab_closed" }, // TextEdit
 	{ "tab_hover", "tab_hovered" }, // TextEdit
 	{ "text_entered", "text_submitted" }, // LineEdit
-	{ "tween_completed", "finished" }, // Tween
-	{ "tween_step", "step_finished" }, // Tween
 
 	{ nullptr, nullptr },
 };
@@ -1286,8 +1280,6 @@ const char *RenamesMap3To4::csharp_signals_renames[][2] = {
 	{ "TabClose", "TabClosed" }, // TextEdit
 	{ "TabHover", "TabHovered" }, // TextEdit
 	{ "TextEntered", "TextSubmitted" }, // LineEdit
-	{ "TweenCompleted", "Finished" }, // Tween
-	{ "TweenStep", "StepFinished" }, // Tween
 
 	{ nullptr, nullptr },
 };

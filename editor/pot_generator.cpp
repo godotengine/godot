@@ -55,15 +55,15 @@ void POTGenerator::_print_all_translation_strings() {
 #endif
 
 void POTGenerator::generate_pot(const String &p_file) {
-	if (!ProjectSettings::get_singleton()->has_setting("internationalization/locale/translations_pot_files")) {
+	Vector<String> files = GLOBAL_GET("internationalization/locale/translations_pot_files");
+
+	if (files.is_empty()) {
 		WARN_PRINT("No files selected for POT generation.");
 		return;
 	}
 
 	// Clear all_translation_strings of the previous round.
 	all_translation_strings.clear();
-
-	Vector<String> files = GLOBAL_GET("internationalization/locale/translations_pot_files");
 
 	// Collect all translatable strings according to files order in "POT Generation" setting.
 	for (int i = 0; i < files.size(); i++) {
