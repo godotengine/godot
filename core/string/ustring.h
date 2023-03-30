@@ -304,6 +304,7 @@ public:
 	String replacen(const String &p_key, const String &p_with) const;
 	String repeat(int p_count) const;
 	String insert(int p_at_pos, const String &p_string) const;
+	String erase(int p_pos, int p_chars = 1) const;
 	String pad_decimals(int p_digits) const;
 	String pad_zeros(int p_digits) const;
 	String trim_prefix(const String &p_prefix) const;

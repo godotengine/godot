@@ -1659,6 +1659,7 @@ static void _register_variant_builtin_methods() {
 	bind_string_method(replacen, sarray("what", "forwhat"), varray());
 	bind_string_method(repeat, sarray("count"), varray());
 	bind_string_method(insert, sarray("position", "what"), varray());
+	bind_string_method(erase, sarray("position", "chars"), varray(1));
 	bind_string_method(capitalize, sarray(), varray());
 	bind_string_method(to_camel_case, sarray(), varray());
 	bind_string_method(to_pascal_case, sarray(), varray());
