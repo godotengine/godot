@@ -20,7 +20,7 @@
 #define TRACESTATS(i) (void)0
 #endif
 
-#define ATTRIBUTES 3
+#define ATTRIBUTES 20
 
 // This work is based on:
 // Michael Garland and Paul S. Heckbert. Surface simplification using quadric error metrics. 1997

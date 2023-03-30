@@ -269,7 +269,7 @@ void ImporterMesh::set_surface_material(int p_surface, const Ref<Material> &p_ma
 	}                                                                                                              \
 	write_array[vert_idx] = transformed_vert;
 
-void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_split_angle, Array p_bone_transform_array) {
+void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_split_angle, Array p_bone_transform_array, int32_t p_minimum_index_count, float p_max_mesh_error) {
 	if (!SurfaceTool::simplify_scale_func) {
 		return;
 	}
@@ -299,6 +299,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		Vector<Vector2> uv2s = surfaces[i].arrays[RS::ARRAY_TEX_UV2];
 		Vector<int> bones = surfaces[i].arrays[RS::ARRAY_BONES];
 		Vector<float> weights = surfaces[i].arrays[RS::ARRAY_WEIGHTS];
+		Vector<Color> colors = surfaces[i].arrays[RS::ARRAY_COLOR];
 
 		unsigned int index_count = indices.size();
 		unsigned int vertex_count = vertices.size();
@@ -350,11 +351,39 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		LocalVector<int> vertex_remap;
 		LocalVector<int> vertex_inverse_remap;
 		LocalVector<Vector3> merged_vertices;
-		LocalVector<Vector3> merged_normals;
-		LocalVector<int> merged_normals_counts;
+		const int bone_weight_length = surfaces[i].flags & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS ? 8 : 4;
+		const int ATTRIBUTE_NORMAL = 3;
+		const int ATTRIBUTE_UV = ATTRIBUTE_NORMAL + 2;
+		const int ATTRIBUTE_UV2 = ATTRIBUTE_UV + 2;
+		const int ATTRIBUTE_COLOR = ATTRIBUTE_UV2 + 4;
+		const int ATTRIBUTE_BONE = ATTRIBUTE_COLOR + bone_weight_length;
+		const int ATTRIBUTE_WEIGHT = ATTRIBUTE_BONE + bone_weight_length;
+		const int ATTRIBUTE_MAX = ATTRIBUTE_WEIGHT + 1;
+		struct Attribute {
+			float normals[3] = { 0, 0, 0 };
+			float uvs[2] = { 0, 0 };
+			float uv2s[2] = { 0, 0 };
+			float colors[4] = { 0, 0, 0, 0 };
+			Vector<float> bones;
+			Vector<float> weights;
+			Attribute(int32_t p_bone_weight_length = 0) {
+				// Always use 8 bone weights for now.
+				bones.resize(p_bone_weight_length);
+				bones.fill(0);
+				weights.resize(bones.size());
+				weights.fill(p_bone_weight_length);
+			}
+		};
+		LocalVector<Attribute> merged_attributes;
+		LocalVector<int> merged_attributes_counts;
 		const Vector2 *uvs_ptr = uvs.ptr();
 		const Vector2 *uv2s_ptr = uv2s.ptr();
-
+		const Color *color_ptr = colors.ptr();
+		const int *bones_ptr = bones.ptr();
+		const float *weights_ptr = weights.ptr();
+		bool has_uv2 = uv2s.size() > 0;
+		bool has_color = colors.size() > 0;
+		bool has_bones = bones.size() > 0;
 		for (unsigned int j = 0; j < vertex_count; j++) {
 			const Vector3 &v = vertices_ptr[j];
 			const Vector3 &n = normals_ptr[j];
@@ -368,12 +397,31 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 				for (const Pair<int, int> &idx : close_verts) {
 					bool is_uvs_close = (!uvs_ptr || uvs_ptr[j].distance_squared_to(uvs_ptr[idx.second]) < CMP_EPSILON2);
 					bool is_uv2s_close = (!uv2s_ptr || uv2s_ptr[j].distance_squared_to(uv2s_ptr[idx.second]) < CMP_EPSILON2);
+					bool is_colors_close = true;
+					if (color_ptr) {
+						Vector4 color_a = Vector4(color_ptr[j].r, color_ptr[j].g, color_ptr[j].b, color_ptr[j].a);
+						Vector4 color_b = Vector4(color_ptr[idx.second].r, color_ptr[idx.second].g, color_ptr[idx.second].b, color_ptr[idx.second].a);
+						is_colors_close = color_a.distance_squared_to(color_b) < CMP_EPSILON2;
+					}
+					bool is_bones_close = true;
+					if (bones_ptr) {
+						for (int32_t k = 0; k < bone_weight_length; k++) {
+							Vector2 bone_a = Vector2(bones_ptr[j * bone_weight_length + k], weights_ptr[j * bone_weight_length + k]);
+							Vector2 bone_b = Vector2(bones_ptr[idx.second * bone_weight_length + k], weights_ptr[idx.second * bone_weight_length + k]);
+							is_bones_close = (bone_a.distance_squared_to(bone_b) < CMP_EPSILON2) && is_bones_close;
+							if (!is_bones_close) {
+								break;
+							}
+						}
+					}
 					ERR_FAIL_INDEX(idx.second, normals.size());
 					bool is_normals_close = normals[idx.second].dot(n) > normal_merge_threshold;
-					if (is_uvs_close && is_uv2s_close && is_normals_close) {
+					if (is_uvs_close && is_uv2s_close && is_normals_close && is_colors_close && is_bones_close) {
 						vertex_remap.push_back(idx.first);
-						merged_normals[idx.first] += normals[idx.second];
-						merged_normals_counts[idx.first]++;
+						for (int32_t normal_i = 0; normal_i < 3; normal_i++) {
+							merged_attributes[idx.first].normals[normal_i] += normals[idx.second][normal_i];
+						}
+						merged_attributes_counts[idx.first]++;
 						found = true;
 						break;
 					}
@@ -385,8 +433,41 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 					vertex_inverse_remap.push_back(j);
 					merged_vertices.push_back(v);
 					vertex_remap.push_back(vcount);
-					merged_normals.push_back(normals_ptr[j]);
-					merged_normals_counts.push_back(1);
+					Attribute attribute(bone_weight_length);
+					if (normals_ptr) {
+						for (int32_t normal_i = 0; normal_i < 3; normal_i++) {
+							Vector3 normal = normals_ptr[j];
+							attribute.normals[normal_i] = normal[normal_i];
+						}
+					}
+					if (uvs_ptr) {
+						for (int32_t uv_i = 0; uv_i < 2; uv_i++) {
+							Vector2 uv = uvs_ptr[j];
+							attribute.uvs[uv_i] = uv[uv_i];
+						}
+					}
+					if (has_uv2) {
+						for (int32_t uv_i = 0; uv_i < 2; uv_i++) {
+							Vector2 uv2 = uv2s_ptr[j];
+							attribute.uv2s[uv_i] = uv2[uv_i];
+						}
+					}
+					if (has_color) {
+						for (int32_t color_i = 0; color_i < 4; color_i++) {
+							Color color = color_ptr[j];
+							attribute.colors[color_i] = color[color_i];
+						}
+					}
+					if (has_bones && bones_ptr && weights_ptr) {
+						for (int32_t k = 0; k < bone_weight_length; k++) {
+							float bone = bones_ptr[j * bone_weight_length + k];
+							attribute.bones.write[k] = bone;
+							float weight = weights_ptr[j * bone_weight_length + k];
+							attribute.weights.write[k] = weight;
+						}
+					}
+					merged_attributes.push_back(attribute);
+					merged_attributes_counts.push_back(1);
 				}
 			} else {
 				int vcount = merged_vertices.size();
@@ -395,8 +476,37 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 				vertex_inverse_remap.push_back(j);
 				merged_vertices.push_back(v);
 				vertex_remap.push_back(vcount);
-				merged_normals.push_back(normals_ptr[j]);
-				merged_normals_counts.push_back(1);
+				Attribute attribute(bone_weight_length);
+				if (normals_ptr) {
+					for (int32_t normal_i = 0; normal_i < 3; normal_i++) {
+						Vector3 normal = normals_ptr[j];
+						attribute.normals[normal_i] = normal[normal_i];
+					}
+				}
+				if (uvs_ptr) {
+					for (int32_t uv_i = 0; uv_i < 2; uv_i++) {
+						Vector2 uv = uvs_ptr[j];
+						attribute.uvs[uv_i] = uv[uv_i];
+					}
+				}
+				if (has_uv2) {
+					for (int32_t uv_i = 0; uv_i < 2; uv_i++) {
+						attribute.uv2s[uv_i] = uv2s_ptr[j][uv_i];
+					}
+				}
+				if (has_color) {
+					for (int32_t color_i = 0; color_i < 4; color_i++) {
+						attribute.colors[color_i] = color_ptr[j][color_i];
+					}
+				}
+				if (has_bones && bones_ptr && weights_ptr) {
+					for (int32_t k = 0; k < bone_weight_length; k++) {
+						attribute.bones.write[k] = bones_ptr[j * bone_weight_length + k];
+						attribute.weights.write[k] = weights_ptr[j * bone_weight_length + k];
+					}
+				}
+				merged_attributes.push_back(attribute);
+				merged_attributes_counts.push_back(1);
 			}
 		}
 
@@ -411,23 +521,25 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		const int32_t *merged_indices_ptr = merged_indices.ptr();
 
 		{
-			const int *counts_ptr = merged_normals_counts.ptr();
-			Vector3 *merged_normals_ptrw = merged_normals.ptr();
+			const int *counts_ptr = merged_attributes_counts.ptr();
+			Attribute *merged_attributes_ptrw = merged_attributes.ptr();
 			for (unsigned int j = 0; j < merged_vertex_count; j++) {
-				merged_normals_ptrw[j] /= counts_ptr[j];
+				for (int32_t normal_i = 0; normal_i < 3; normal_i++) {
+					merged_attributes_ptrw[j].normals[normal_i] /= counts_ptr[j];
+				}
 			}
 		}
 
-		LocalVector<float> normal_weights;
-		normal_weights.resize(merged_vertex_count);
+		LocalVector<float> attribute_weights;
+		attribute_weights.resize(merged_vertex_count);
 		for (unsigned int j = 0; j < merged_vertex_count; j++) {
-			normal_weights[j] = 2.0; // Give some weight to normal preservation, may be worth exposing as an import setting
+			attribute_weights[j] = ATTRIBUTE_MAX; // Give some weight to normal preservation, may be worth exposing as an import setting
 		}
 
 		Vector<float> merged_vertices_f32 = vector3_to_float32_array(merged_vertices_ptr, merged_vertex_count);
 		float scale = SurfaceTool::simplify_scale_func(merged_vertices_f32.ptr(), merged_vertex_count, sizeof(float) * 3);
 
-		unsigned int index_target = 12; // Start with the smallest target, 4 triangles
+		unsigned int index_target = p_minimum_index_count;
 		unsigned int last_index_count = 0;
 
 		int split_vertex_count = vertex_count;
@@ -445,14 +557,12 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			raycaster->commit();
 		}
 
-		const float max_mesh_error = FLT_MAX; // We don't want to limit by error, just by index target
+		float max_mesh_error = p_max_mesh_error; // Use the default error from the upstream mesh optimizer.
 		float mesh_error = 0.0f;
 
 		while (index_target < index_count) {
 			PackedInt32Array new_indices;
 			new_indices.resize(index_count);
-
-			Vector<float> merged_normals_f32 = vector3_to_float32_array(merged_normals.ptr(), merged_normals.size());
 			const int simplify_options = SurfaceTool::SIMPLIFY_LOCK_BORDER;
 
 			size_t new_index_count = SurfaceTool::simplify_with_attrib_func(
@@ -464,15 +574,17 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 					max_mesh_error,
 					simplify_options,
 					&mesh_error,
-					merged_normals_f32.ptr(),
-					normal_weights.ptr(), 3);
-
+					(float *)merged_attributes.ptr(),
+					attribute_weights.ptr(),
+					ATTRIBUTE_MAX);
+			if (new_index_count < size_t(p_minimum_index_count)) {
+				break;
+			}
 			if (new_index_count < last_index_count * 1.5f) {
 				index_target = index_target * 1.5f;
 				continue;
 			}
-
-			if (new_index_count == 0 || (new_index_count >= (index_count * 0.75f))) {
+			if (new_index_count == 0 || new_index_count < size_t(p_minimum_index_count) || (new_index_count >= (index_count * 0.75f))) {
 				break;
 			}
 
@@ -1346,7 +1458,7 @@ void ImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_surface_name", "surface_idx", "name"), &ImporterMesh::set_surface_name);
 	ClassDB::bind_method(D_METHOD("set_surface_material", "surface_idx", "material"), &ImporterMesh::set_surface_material);
 
-	ClassDB::bind_method(D_METHOD("generate_lods", "normal_merge_angle", "normal_split_angle", "bone_transform_array"), &ImporterMesh::generate_lods);
+	ClassDB::bind_method(D_METHOD("generate_lods", "normal_merge_angle", "normal_split_angle", "bone_transform_array", "minimum_index_count", "maximum_mesh_error"), &ImporterMesh::generate_lods);
 	ClassDB::bind_method(D_METHOD("get_mesh", "base_mesh"), &ImporterMesh::get_mesh, DEFVAL(Ref<ArrayMesh>()));
 	ClassDB::bind_method(D_METHOD("clear"), &ImporterMesh::clear);
 

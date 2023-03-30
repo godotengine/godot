@@ -1644,6 +1644,8 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/lods", PROPERTY_HINT_ENUM, "Default,Enable,Disable"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "lods/normal_split_angle", PROPERTY_HINT_RANGE, "0,180,0.1,degrees"), 25.0f));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "lods/normal_merge_angle", PROPERTY_HINT_RANGE, "0,180,0.1,degrees"), 60.0f));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "lods/minimum_triangle_count", PROPERTY_HINT_RANGE, "0,65536,1,or_greater,suffix:triangles"), 3));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "lods/maximum_mesh_error", PROPERTY_HINT_RANGE, "0.0001,999999999,0.0001"), 999'999'999.0f));
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_MATERIAL: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "use_external/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
@@ -1952,10 +1954,12 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 				//do mesh processing
 
 				bool generate_lods = p_generate_lods;
+				float maximum_mesh_error = 999'999'999.0f;
 				float split_angle = 25.0f;
 				float merge_angle = 60.0f;
 				bool create_shadow_meshes = p_create_shadow_meshes;
 				bool bake_lightmaps = p_light_bake_mode == LIGHT_BAKE_STATIC_LIGHTMAPS;
+				int32_t minimum_triangle_count = 3;
 				String save_to_file;
 
 				String mesh_id = src_mesh_node->get_mesh()->get_meta("import_id", src_mesh_node->get_mesh()->get_name());
@@ -2008,6 +2012,14 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 						merge_angle = mesh_settings["lods/normal_merge_angle"];
 					}
 
+					if (mesh_settings.has("lods/minimum_triangle_count")) {
+						minimum_triangle_count = mesh_settings["lods/minimum_triangle_count"];
+					}
+
+					if (mesh_settings.has("lods/maximum_mesh_error")) {
+						maximum_mesh_error = mesh_settings["lods/maximum_mesh_error"];
+					}
+
 					if (mesh_settings.has("save_to_file/enabled") && bool(mesh_settings["save_to_file/enabled"]) && mesh_settings.has("save_to_file/path")) {
 						save_to_file = mesh_settings["save_to_file/path"];
 						if (!save_to_file.is_resource_file()) {
@@ -2054,7 +2066,7 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 
 				if (generate_lods) {
 					Array skin_pose_transform_array = _get_skinned_pose_transforms(src_mesh_node);
-					src_mesh_node->get_mesh()->generate_lods(merge_angle, split_angle, skin_pose_transform_array);
+					src_mesh_node->get_mesh()->generate_lods(merge_angle, split_angle, skin_pose_transform_array, minimum_triangle_count * 3, maximum_mesh_error);
 				}
 
 				if (create_shadow_meshes) {
