@@ -25,7 +25,7 @@
 class RawLoader : public LoadModule
 {
 public:
-    const uint32_t* content = nullptr;
+    uint32_t* content = nullptr;
     bool copy = false;
 
     ~RawLoader();
@@ -35,7 +35,7 @@ public:
     bool read() override;
     bool close() override;
 
-    unique_ptr<Surface> bitmap() override;
+    unique_ptr<Surface> bitmap(uint32_t colorSpace) override;
 };
 
 

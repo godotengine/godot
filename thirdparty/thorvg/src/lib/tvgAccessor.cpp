@@ -72,7 +72,7 @@ Accessor::~Accessor()
 }
 
 
-Accessor::Accessor()
+Accessor::Accessor() : pImpl(nullptr)
 {
 
 }
