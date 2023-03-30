@@ -148,6 +148,17 @@ Size2 LinkButton::get_minimum_size() const {
 
 void LinkButton::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_LINK);
+			if (!xl_text.is_empty() && get_accessibility_name().is_empty()) {
+				DisplayServer::get_singleton()->accessibility_update_set_name(ae, xl_text);
+			}
+			DisplayServer::get_singleton()->accessibility_update_set_url(ae, uri);
+		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			xl_text = atr(text);
 			_shape();
@@ -289,7 +300,7 @@ void LinkButton::_bind_methods() {
 
 LinkButton::LinkButton(const String &p_text) {
 	text_buf.instantiate();
-	set_focus_mode(FOCUS_NONE);
+	set_focus_mode(FOCUS_ACCESSIBILITY);
 	set_default_cursor_shape(CURSOR_POINTING_HAND);
 
 	set_text(p_text);

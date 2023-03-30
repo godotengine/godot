@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "button.h"
+#include "dialogs.h"
 
 #include "core/string/translation.h"
 #include "scene/theme/theme_db.h"
@@ -105,6 +106,19 @@ Ref<StyleBox> Button::_get_current_stylebox() const {
 
 void Button::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			if (!xl_text.is_empty() && get_accessibility_name().is_empty()) {
+				DisplayServer::get_singleton()->accessibility_update_set_name(ae, xl_text);
+			}
+			AcceptDialog *dlg = Object::cast_to<AcceptDialog>(get_parent());
+			if (dlg && dlg->get_ok_button() == this) {
+				DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_DEFAULT_BUTTON);
+			}
+		} break;
+
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			queue_redraw();
 		} break;
@@ -495,6 +509,7 @@ void Button::_shape(Ref<TextParagraph> p_paragraph, String p_text) {
 	}
 	p_paragraph->add_string(p_text, font, font_size, language);
 	p_paragraph->set_text_overrun_behavior(overrun_behavior);
+	queue_accessibility_update();
 }
 
 void Button::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
@@ -520,7 +535,6 @@ void Button::set_text(const String &p_text) {
 		text = p_text;
 		xl_text = atr(text);
 		_shape();
-
 		queue_redraw();
 		update_minimum_size();
 	}
@@ -637,6 +651,7 @@ bool Button::get_clip_text() const {
 void Button::set_text_alignment(HorizontalAlignment p_alignment) {
 	if (alignment != p_alignment) {
 		alignment = p_alignment;
+		queue_accessibility_update();
 		queue_redraw();
 	}
 }

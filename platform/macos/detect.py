@@ -186,6 +186,15 @@ def configure(env: "SConsEnvironment"):
 
     ## Dependencies
 
+    if env["ACCESSKIT_SDK_PATH"] != "":
+        env.Prepend(CPPPATH=[env["ACCESSKIT_SDK_PATH"] + "/include"])
+        if env["arch"] == "arm64" or env["arch"] == "universal":
+            env.Append(LINKFLAGS=["-L" + env["ACCESSKIT_SDK_PATH"] + "/lib/macos/arm64/static/"])
+        if env["arch"] == "x86_64" or env["arch"] == "universal":
+            env.Append(LINKFLAGS=["-L" + env["ACCESSKIT_SDK_PATH"] + "/lib/macos/x86_64/static/"])
+        env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+        env.Append(LINKFLAGS=["-laccesskit"])
+
     if env["builtin_libtheora"] and env["arch"] == "x86_64":
         env["x86_libtheora_opt_gcc"] = True
 

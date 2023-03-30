@@ -1064,6 +1064,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		case TOOL_CENTER_PARENT: {
 			EditorSettings::get_singleton()->set("docks/scene_tree/center_node_on_reparent", !EDITOR_GET("docks/scene_tree/center_node_on_reparent"));
 		} break;
+		case TOOL_ACCESSIBILITY_WARNINGS: {
+			scene_tree->set_accessibility_warnings(!EDITOR_GET("docks/scene_tree/accessibility_warnings"), true);
+		} break;
 		case TOOL_SCENE_EDITABLE_CHILDREN: {
 			if (!profile_allow_editing) {
 				break;
@@ -1480,6 +1483,7 @@ void SceneTreeDock::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			clear_inherit_confirm->connect("confirmed", callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_SCENE_CLEAR_INHERITANCE_CONFIRM, false));
 			scene_tree->set_auto_expand_selected(EDITOR_GET("docks/scene_tree/auto_expand_to_selected"), false);
+			scene_tree->set_accessibility_warnings(EDITOR_GET("docks/scene_tree/accessibility_warnings"), false);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -1489,6 +1493,7 @@ void SceneTreeDock::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("docks/scene_tree")) {
 				scene_tree->set_auto_expand_selected(EDITOR_GET("docks/scene_tree/auto_expand_to_selected"), false);
+				scene_tree->set_accessibility_warnings(EDITOR_GET("docks/scene_tree/accessibility_warnings"), false);
 			}
 		} break;
 
@@ -3509,6 +3514,10 @@ void SceneTreeDock::_update_tree_menu() {
 	tree_menu->add_check_item(TTR("Center Node on Reparent"), TOOL_CENTER_PARENT);
 	tree_menu->set_item_checked(tree_menu->get_item_index(TOOL_CENTER_PARENT), EDITOR_GET("docks/scene_tree/center_node_on_reparent"));
 	tree_menu->set_item_tooltip(tree_menu->get_item_index(TOOL_CENTER_PARENT), TTR("If enabled, Reparent to New Node will create the new node in the center of the selected nodes, if possible."));
+
+	tree_menu->add_separator();
+	tree_menu->add_check_item(TTR("Show Accessibility Warnings"), TOOL_ACCESSIBILITY_WARNINGS);
+	tree_menu->set_item_checked(tree_menu->get_item_index(TOOL_ACCESSIBILITY_WARNINGS), EDITOR_GET("docks/scene_tree/accessibility_warnings"));
 
 	PopupMenu *resource_list = memnew(PopupMenu);
 	resource_list->connect("about_to_popup", callable_mp(this, &SceneTreeDock::_list_all_subresources).bind(resource_list));

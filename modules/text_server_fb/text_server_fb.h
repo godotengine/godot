@@ -392,6 +392,13 @@ class TextServerFallback : public TextServerExtension {
 		Vector<Glyph> ellipsis_glyph_buf;
 	};
 
+	struct TextRun {
+		Vector2i range;
+		RID font_rid;
+		int font_size = 0;
+		int64_t span_index = -1;
+	};
+
 	struct ShapedTextDataFallback {
 		Mutex mutex;
 
@@ -420,6 +427,9 @@ class TextServerFallback : public TextServerExtension {
 			Variant meta;
 		};
 		Vector<Span> spans;
+
+		Vector<TextRun> runs;
+		bool runs_dirty = true;
 
 		struct EmbeddedObject {
 			int start = -1;
@@ -563,6 +573,7 @@ class TextServerFallback : public TextServerExtension {
 	mutable HashMap<SystemFontKey, SystemFontCache, SystemFontKeyHasher> system_fonts;
 	mutable HashMap<String, PackedByteArray> system_font_data;
 
+	void _generate_runs(ShapedTextDataFallback *p_sd) const;
 	void _realign(ShapedTextDataFallback *p_sd) const;
 	_FORCE_INLINE_ RID _find_sys_font_for_text(const RID &p_fdef, const String &p_script_code, const String &p_language, const String &p_text);
 
@@ -800,10 +811,22 @@ public:
 	MODBIND7R(bool, shaped_text_add_string, const RID &, const String &, const TypedArray<RID> &, int64_t, const Dictionary &, const String &, const Variant &);
 	MODBIND6R(bool, shaped_text_add_object, const RID &, const Variant &, const Size2 &, InlineAlignment, int64_t, double);
 	MODBIND5R(bool, shaped_text_resize_object, const RID &, const Variant &, const Size2 &, InlineAlignment, double);
+	MODBIND1RC(String, shaped_get_text, const RID &);
 
 	MODBIND1RC(int64_t, shaped_get_span_count, const RID &);
 	MODBIND2RC(Variant, shaped_get_span_meta, const RID &, int64_t);
+	MODBIND2RC(String, shaped_get_span_text, const RID &, int64_t);
+	MODBIND2RC(Variant, shaped_get_span_object, const RID &, int64_t);
 	MODBIND5(shaped_set_span_update_font, const RID &, int64_t, const TypedArray<RID> &, int64_t, const Dictionary &);
+
+	MODBIND1RC(int64_t, shaped_get_run_count, const RID &);
+	MODBIND2RC(String, shaped_get_run_text, const RID &, int64_t);
+	MODBIND2RC(Vector2i, shaped_get_run_range, const RID &, int64_t);
+	MODBIND2RC(RID, shaped_get_run_font_rid, const RID &, int64_t);
+	MODBIND2RC(int, shaped_get_run_font_size, const RID &, int64_t);
+	MODBIND2RC(String, shaped_get_run_language, const RID &, int64_t);
+	MODBIND2RC(Direction, shaped_get_run_direction, const RID &, int64_t);
+	MODBIND2RC(Variant, shaped_get_run_object, const RID &, int64_t);
 
 	MODBIND3RC(RID, shaped_text_substr, const RID &, int64_t, int64_t);
 	MODBIND1RC(RID, shaped_text_get_parent, const RID &);

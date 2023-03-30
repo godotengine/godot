@@ -57,12 +57,14 @@ private:
 	friend class Tree;
 
 	struct Cell {
+		mutable RID accessibility_cell_element;
 		TreeCellMode mode = TreeItem::CELL_MODE_STRING;
 
 		Ref<Texture2D> icon;
 		Rect2i icon_region;
 		String text;
 		String xl_text;
+		String alt_text;
 		bool edit_multiline = false;
 		String suffix;
 		Ref<TextParagraph> text_buf;
@@ -103,12 +105,14 @@ private:
 		Callable custom_draw_callback;
 
 		struct Button {
+			mutable RID accessibility_button_element;
 			int id = 0;
 			bool disabled = false;
 			Ref<Texture2D> texture;
 			Color color = Color(1, 1, 1, 1);
 			String tooltip;
 			Rect2i rect;
+			String alt_text;
 		};
 
 		Vector<Button> buttons;
@@ -124,6 +128,9 @@ private:
 		Size2 get_icon_size() const;
 		void draw_icon(const RID &p_where, const Point2 &p_pos, const Size2 &p_size = Size2(), const Color &p_color = Color()) const;
 	};
+
+	mutable RID accessibility_row_element;
+	mutable bool accessibility_row_dirty = true;
 
 	Vector<Cell> cells;
 
@@ -164,6 +171,22 @@ private:
 	}
 
 	_FORCE_INLINE_ void _unlink_from_tree() {
+		if (accessibility_row_element.is_valid()) {
+			DisplayServer::get_singleton()->accessibility_free_element(accessibility_row_element);
+			accessibility_row_element = RID();
+		}
+		for (Cell &cell : cells) {
+			if (cell.accessibility_cell_element.is_valid()) {
+				DisplayServer::get_singleton()->accessibility_free_element(cell.accessibility_cell_element);
+				cell.accessibility_cell_element = RID();
+			}
+			for (Cell::Button &btn : cell.buttons) {
+				if (btn.accessibility_button_element.is_valid()) {
+					DisplayServer::get_singleton()->accessibility_free_element(btn.accessibility_button_element);
+					btn.accessibility_button_element = RID();
+				}
+			}
+		}
 		TreeItem *p = get_prev();
 		if (p) {
 			p->next = next;
@@ -185,6 +208,11 @@ private:
 
 protected:
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	void _add_button_76829(int p_column, const Ref<Texture2D> &p_button, int p_id, bool p_disabled, const String &p_tooltip);
+	static void _bind_compatibility_methods();
+#endif
 
 	// Bind helpers
 	Dictionary _get_range_config(int p_column) {
@@ -230,6 +258,9 @@ public:
 	void set_text(int p_column, String p_text);
 	String get_text(int p_column) const;
 
+	void set_alt_text(int p_column, String p_text);
+	String get_alt_text(int p_column) const;
+
 	void set_text_direction(int p_column, Control::TextDirection p_text_direction);
 	Control::TextDirection get_text_direction(int p_column) const;
 
@@ -263,7 +294,7 @@ public:
 	void set_icon_max_width(int p_column, int p_max);
 	int get_icon_max_width(int p_column) const;
 
-	void add_button(int p_column, const Ref<Texture2D> &p_button, int p_id = -1, bool p_disabled = false, const String &p_tooltip = "");
+	void add_button(int p_column, const Ref<Texture2D> &p_button, int p_id = -1, bool p_disabled = false, const String &p_tooltip = "", const String &p_alt_text = "");
 	int get_button_count(int p_column) const;
 	String get_button_tooltip_text(int p_column, int p_index) const;
 	Ref<Texture2D> get_button(int p_column, int p_index) const;
@@ -273,6 +304,7 @@ public:
 	Color get_button_color(int p_column, int p_index) const;
 	void set_button_tooltip_text(int p_column, int p_index, const String &p_tooltip);
 	void set_button(int p_column, int p_index, const Ref<Texture2D> &p_button);
+	void set_button_alt_text(int p_column, int p_index, const String &p_alt_text);
 	void set_button_color(int p_column, int p_index, const Color &p_color);
 	void set_button_disabled(int p_column, int p_index, bool p_disabled);
 	bool is_button_disabled(int p_column, int p_index) const;
@@ -448,6 +480,7 @@ private:
 	Rect2 custom_popup_rect;
 	int edited_col = -1;
 	int selected_col = -1;
+	int selected_button = -1;
 	int popup_edited_item_col = -1;
 	bool hide_root = false;
 	SelectMode select_mode = SELECT_SINGLE;
@@ -457,6 +490,7 @@ private:
 	int drop_mode_flags = 0;
 
 	struct ColumnInfo {
+		mutable RID accessibility_col_element;
 		int custom_min_width = 0;
 		int expand_ratio = 1;
 		bool expand = true;
@@ -479,6 +513,8 @@ private:
 	bool show_column_titles = false;
 
 	VBoxContainer *popup_editor_vb = nullptr;
+
+	RID accessibility_scroll_element;
 
 	Popup *popup_editor = nullptr;
 	LineEdit *line_editor = nullptr;
@@ -535,6 +571,7 @@ private:
 		Ref<StyleBox> cursor;
 		Ref<StyleBox> cursor_unfocus;
 		Ref<StyleBox> button_pressed;
+		Ref<StyleBox> button_hover;
 		Ref<StyleBox> title_button;
 		Ref<StyleBox> title_button_hover;
 		Ref<StyleBox> title_button_pressed;
@@ -604,7 +641,6 @@ private:
 			CLICK_NONE,
 			CLICK_TITLE,
 			CLICK_BUTTON,
-
 		};
 
 		ClickType click_type = Cache::CLICK_NONE;
@@ -685,13 +721,38 @@ private:
 	Rect2 _get_scrollbar_layout_rect() const;
 	Rect2 _get_content_rect() const; // Considering the background stylebox and scrollbars.
 
+	void _check_item_accessibility(TreeItem *p_item, PackedStringArray &r_warnings, int &r_row) const;
+
+	void _accessibility_clean_info(TreeItem *p_item);
+	void _accessibility_update_item(Point2 &r_ofs, TreeItem *p_item, int &r_row, int p_level);
+
 protected:
 	virtual void _update_theme_item_cache() override;
 
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	void _accessibility_action_scroll_down(const Variant &p_data);
+	void _accessibility_action_scroll_left(const Variant &p_data);
+	void _accessibility_action_scroll_right(const Variant &p_data);
+	void _accessibility_action_scroll_up(const Variant &p_data);
+	void _accessibility_action_scroll_set(const Variant &p_data);
+	void _accessibility_action_scroll_into_view(const Variant &p_data, TreeItem *p_item, int p_col);
+	void _accessibility_action_focus(const Variant &p_data, TreeItem *p_item, int p_col);
+	void _accessibility_action_blur(const Variant &p_data, TreeItem *p_item, int p_col);
+	void _accessibility_action_collapse(const Variant &p_data, TreeItem *p_item);
+	void _accessibility_action_expand(const Variant &p_data, TreeItem *p_item);
+	void _accessibility_action_set_text_value(const Variant &p_data, TreeItem *p_item, int p_col);
+	void _accessibility_action_set_num_value(const Variant &p_data, TreeItem *p_item, int p_col);
+	void _accessibility_action_set_bool_value(const Variant &p_data, TreeItem *p_item, int p_col);
+	void _accessibility_action_set_inc(const Variant &p_data, TreeItem *p_item, int p_col);
+	void _accessibility_action_set_dec(const Variant &p_data, TreeItem *p_item, int p_col);
+	void _accessibility_action_button_press(const Variant &p_data, TreeItem *p_item, int p_col, int p_btn);
+
 public:
+	PackedStringArray get_accessibility_configuration_warnings() const override;
+	virtual RID get_focused_accessibility_element() const override;
+
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 	virtual String get_tooltip(const Point2 &p_pos) const override;

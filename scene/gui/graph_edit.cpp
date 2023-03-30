@@ -260,6 +260,14 @@ PackedStringArray GraphEdit::get_configuration_warnings() const {
 	return warnings;
 }
 
+PackedStringArray GraphEdit::get_accessibility_configuration_warnings() const {
+	PackedStringArray warnings = Control::get_accessibility_configuration_warnings();
+
+	warnings.push_back(RTR("GraphEdit and GraphNode currently are not accessible."));
+
+	return warnings;
+}
+
 Error GraphEdit::connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port) {
 	if (is_node_connected(p_from, p_from_port, p_to, p_to_port)) {
 		return OK;

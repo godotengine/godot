@@ -69,6 +69,7 @@ class SceneTreeEditor : public Control {
 	AcceptDialog *warning = nullptr;
 
 	bool auto_expand_selected = true;
+	bool accessibility_warnings = false;
 	bool connect_to_script_mode = false;
 	bool connecting_signal = false;
 
@@ -170,6 +171,7 @@ public:
 	void update_tree() { _update_tree(); }
 
 	void set_auto_expand_selected(bool p_auto, bool p_update_settings);
+	void set_accessibility_warnings(bool p_enable, bool p_update_settings);
 	void set_connect_to_script_mode(bool p_enable);
 	void set_connecting_signal(bool p_enable);
 

@@ -54,6 +54,9 @@ public:
 
 private:
 	struct Tab {
+		mutable RID accessibility_item_element;
+		mutable bool accessibility_item_dirty = true;
+
 		String text;
 
 		String language;

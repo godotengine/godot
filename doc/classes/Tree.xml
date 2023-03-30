@@ -645,6 +645,9 @@
 		<theme_item name="updown" data_type="icon" type="Texture2D">
 			The updown arrow icon to display for the [constant TreeItem.CELL_MODE_RANGE] mode cell.
 		</theme_item>
+		<theme_item name="button_hover" data_type="style" type="StyleBox">
+			[StyleBox] used when a button is selected (when using with assistive apps).
+		</theme_item>
 		<theme_item name="button_pressed" data_type="style" type="StyleBox">
 			[StyleBox] used when a button in the tree is pressed.
 		</theme_item>

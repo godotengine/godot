@@ -39,6 +39,7 @@
 #include "core/math/math_funcs.h"
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
+#include "core/version.h"
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
 
@@ -48,6 +49,10 @@
 
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
+#endif
+
+#ifdef ACCESSKIT_ENABLED
+#include "drivers/accesskit/accessibility_driver_accesskit.h"
 #endif
 
 #include <dlfcn.h>
@@ -139,6 +144,11 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 		case FEATURE_TEXT_TO_SPEECH:
 		case FEATURE_SCREEN_CAPTURE:
 			return true;
+#ifdef ACCESSKIT_ENABLED
+		case FEATURE_ACCESSIBILITY_SCREEN_READER: {
+			return (accessibility_driver != nullptr);
+		} break;
+#endif
 		default: {
 		}
 	}
@@ -1748,6 +1758,12 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	}
 #endif
 
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_driver) {
+		accessibility_driver->window_destroy(p_id);
+	}
+#endif
+
 	if (wd.xic) {
 		XDestroyIC(wd.xic);
 		wd.xic = nullptr;
@@ -3014,6 +3030,22 @@ void DisplayServerX11::window_set_ime_position(const Point2i &p_pos, WindowID p_
 		}
 	}
 }
+
+int DisplayServerX11::accessibility_should_increase_contrast() const {
+#ifdef DBUS_ENABLED
+	return portal_desktop->get_high_contrast();
+#endif
+	return -1;
+}
+
+int DisplayServerX11::accessibility_screen_reader_active() const {
+#ifdef DBUS_ENABLED
+	if (atspi_monitor->is_supported()) {
+		return atspi_monitor->is_active();
+	}
+#endif
+	return -1;
+};
 
 Point2i DisplayServerX11::ime_get_selection() const {
 	return im_selection;
@@ -5475,6 +5507,17 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 			wd.xkb_state = xkb_compose_state_new(dead_tbl, XKB_COMPOSE_STATE_NO_FLAGS);
 		}
 #endif
+#ifdef ACCESSKIT_ENABLED
+		if (accessibility_driver) {
+			if (!accessibility_driver->window_create(id, nullptr)) {
+				if (OS::get_singleton()->is_stdout_verbose()) {
+					ERR_PRINT("Can't create an accessibility adapter for window, accessibility support disabled!");
+				}
+				memdelete(accessibility_driver);
+				accessibility_driver = nullptr;
+			}
+		}
+#endif
 		// Enable receiving notification when the window is initialized (MapNotify)
 		// so the focus can be set at the right time.
 		if (!wd.no_focus && !wd.is_popup) {
@@ -6048,6 +6091,16 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 #endif
 
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_get_mode() != DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) {
+		accessibility_driver = memnew(AccessibilityDriverAccessKit);
+		if (accessibility_driver->init() != OK) {
+			memdelete(accessibility_driver);
+			accessibility_driver = nullptr;
+		}
+	}
+#endif
+
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//TODO - do Vulkan and OpenGL support checks, driver selection and fallback
 	rendering_driver = p_rendering_driver;
@@ -6336,6 +6389,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 
 	portal_desktop = memnew(FreeDesktopPortalDesktop);
+	atspi_monitor = memnew(FreeDesktopAtSPIMonitor);
 #endif
 	XSetErrorHandler(&default_window_error_handler);
 
@@ -6450,7 +6504,11 @@ DisplayServerX11::~DisplayServerX11() {
 	if (xmbstring) {
 		memfree(xmbstring);
 	}
-
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_driver) {
+		memdelete(accessibility_driver);
+	}
+#endif
 #ifdef SPEECHD_ENABLED
 	if (tts) {
 		memdelete(tts);
@@ -6460,6 +6518,7 @@ DisplayServerX11::~DisplayServerX11() {
 #ifdef DBUS_ENABLED
 	memdelete(screensaver);
 	memdelete(portal_desktop);
+	memdelete(atspi_monitor);
 #endif
 }
 
