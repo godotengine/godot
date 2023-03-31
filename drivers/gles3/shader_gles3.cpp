@@ -242,7 +242,7 @@ static void _display_error_with_code(const String &p_error, const String &p_code
 	ERR_PRINT(p_error);
 }
 
-void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_t p_variant, Version *p_version, uint64_t p_specialization) {
+void ShaderGLES3::_setup_program(Version::Specialization &spec, uint32_t p_variant, Version *p_version, uint64_t p_specialization) {
 	spec.id = glCreateProgram();
 	spec.ok = false;
 	GLint status;
@@ -401,8 +401,13 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 
 		ERR_FAIL();
 	}
+}
 
+void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_t p_variant, Version *p_version, uint64_t p_specialization) {
 	// get uniform locations
+
+	if (glIsProgram(spec.id) != GL_TRUE)
+		_setup_program(spec, p_variant, p_version, p_specialization);
 
 	glUseProgram(spec.id);
 

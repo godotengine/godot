@@ -113,6 +113,7 @@ private:
 
 	Mutex variant_set_mutex;
 
+	void _setup_program(Version::Specialization &spec, uint32_t p_variant, Version *p_version, uint64_t p_specialization);
 	void _compile_specialization(Version::Specialization &spec, uint32_t p_variant, Version *p_version, uint64_t p_specialization);
 
 	void _clear_version(Version *p_version);
