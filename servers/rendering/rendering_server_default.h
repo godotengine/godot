@@ -606,6 +606,7 @@ public:
 
 	FUNC2(viewport_set_update_mode, RID, ViewportUpdateMode)
 
+	FUNC1RC(RID, viewport_get_render_target, RID)
 	FUNC1RC(RID, viewport_get_texture, RID)
 
 	FUNC2(viewport_set_disable_2d, RID, bool)

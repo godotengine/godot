@@ -3179,6 +3179,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="viewport_get_render_target" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="viewport" type="RID" />
+			<description>
+				Returns the render target for the viewport.
+			</description>
+		</method>
 		<method name="viewport_get_texture" qualifiers="const">
 			<return type="RID" />
 			<param index="0" name="viewport" type="RID" />
