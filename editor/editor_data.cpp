@@ -32,9 +32,11 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
+#include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "scene/resources/packed_scene.h"
@@ -457,10 +459,10 @@ void EditorData::add_custom_type(const String &p_type, const String &p_inherits,
 	ct.name = p_type;
 	ct.icon = p_icon;
 	ct.script = p_script;
+
 	if (!custom_types.has(p_inherits)) {
 		custom_types[p_inherits] = Vector<CustomType>();
 	}
-
 	custom_types[p_inherits].push_back(ct);
 }
 
@@ -1028,8 +1030,57 @@ void EditorData::script_class_load_icon_paths() {
 	}
 }
 
+Ref<ImageTexture> EditorData::_load_script_icon(const String &p_path) const {
+	if (p_path.length()) {
+		Ref<Image> img = memnew(Image);
+		Error err = ImageLoader::load_image(p_path, img);
+		if (err == OK) {
+			img->resize(16 * EDSCALE, 16 * EDSCALE, Image::INTERPOLATE_LANCZOS);
+			return ImageTexture::create_from_image(img);
+		}
+	}
+	return nullptr;
+}
+
+Ref<Texture2D> EditorData::get_script_icon(const Ref<Script> &p_script) {
+	// Take from the local cache, if available.
+	if (_script_icon_cache.has(p_script) && _script_icon_cache[p_script].is_valid()) {
+		return _script_icon_cache[p_script];
+	}
+
+	Ref<Script> base_scr = p_script;
+	while (base_scr.is_valid()) {
+		// Check for scripted classes.
+		StringName name = script_class_get_name(base_scr->get_path());
+		String icon_path = script_class_get_icon_path(name);
+		Ref<ImageTexture> icon = _load_script_icon(icon_path);
+		if (icon.is_valid()) {
+			_script_icon_cache[p_script] = icon;
+			return icon;
+		}
+
+		// Check for legacy custom classes defined by plugins.
+		// TODO: Should probably be deprecated in 4.x
+		const EditorData::CustomType *ctype = get_custom_type_by_path(base_scr->get_path());
+		if (ctype && ctype->icon.is_valid()) {
+			_script_icon_cache[p_script] = ctype->icon;
+			return ctype->icon;
+		}
+
+		// Move to the base class.
+		base_scr = base_scr->get_base_script();
+	}
+
+	// If no icon found, cache it as null.
+	_script_icon_cache[p_script] = Ref<Texture>();
+	return nullptr;
+}
+
+void EditorData::clear_script_icon_cache() {
+	_script_icon_cache.clear();
+}
+
 EditorData::EditorData() {
-	current_edited_scene = -1;
 	undo_redo_manager = memnew(EditorUndoRedoManager);
 	script_class_load_icon_paths();
 }
