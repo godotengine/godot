@@ -31,6 +31,7 @@
 #include "editor_data.h"
 
 #include "core/config/project_settings.h"
+#include "core/extension/gdextension_manager.h"
 #include "core/io/file_access.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
@@ -1028,6 +1029,17 @@ void EditorData::script_class_load_icon_paths() {
 		_script_class_icon_paths[name] = d["icon"];
 		script_class_set_name(d["path"], name);
 	}
+}
+
+Ref<Texture2D> EditorData::extension_class_get_icon(const String &p_class) const {
+	if (GDExtensionManager::get_singleton()->class_has_icon_path(p_class)) {
+		String icon_path = GDExtensionManager::get_singleton()->class_get_icon_path(p_class);
+		Ref<Texture2D> icon = _load_script_icon(icon_path);
+		if (icon.is_valid()) {
+			return icon;
+		}
+	}
+	return nullptr;
 }
 
 Ref<Texture2D> EditorData::_load_script_icon(const String &p_path) const {

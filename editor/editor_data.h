@@ -243,6 +243,8 @@ public:
 	void script_class_save_icon_paths();
 	void script_class_load_icon_paths();
 
+	Ref<Texture2D> extension_class_get_icon(const String &p_class) const;
+
 	Ref<Texture2D> get_script_icon(const Ref<Script> &p_script);
 	void clear_script_icon_cache();
 
