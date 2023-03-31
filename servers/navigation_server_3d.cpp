@@ -43,6 +43,8 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("map_get_up", "map"), &NavigationServer3D::map_get_up);
 	ClassDB::bind_method(D_METHOD("map_set_cell_size", "map", "cell_size"), &NavigationServer3D::map_set_cell_size);
 	ClassDB::bind_method(D_METHOD("map_get_cell_size", "map"), &NavigationServer3D::map_get_cell_size);
+	ClassDB::bind_method(D_METHOD("map_set_use_edge_connections", "map", "enabled"), &NavigationServer3D::map_set_use_edge_connections);
+	ClassDB::bind_method(D_METHOD("map_get_use_edge_connections", "map"), &NavigationServer3D::map_get_use_edge_connections);
 	ClassDB::bind_method(D_METHOD("map_set_edge_connection_margin", "map", "margin"), &NavigationServer3D::map_set_edge_connection_margin);
 	ClassDB::bind_method(D_METHOD("map_get_edge_connection_margin", "map"), &NavigationServer3D::map_get_edge_connection_margin);
 	ClassDB::bind_method(D_METHOD("map_set_link_connection_radius", "map", "radius"), &NavigationServer3D::map_set_link_connection_radius);
@@ -63,6 +65,8 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("query_path", "parameters", "result"), &NavigationServer3D::query_path);
 
 	ClassDB::bind_method(D_METHOD("region_create"), &NavigationServer3D::region_create);
+	ClassDB::bind_method(D_METHOD("region_set_use_edge_connections", "region", "enabled"), &NavigationServer3D::region_set_use_edge_connections);
+	ClassDB::bind_method(D_METHOD("region_get_use_edge_connections", "region"), &NavigationServer3D::region_get_use_edge_connections);
 	ClassDB::bind_method(D_METHOD("region_set_enter_cost", "region", "enter_cost"), &NavigationServer3D::region_set_enter_cost);
 	ClassDB::bind_method(D_METHOD("region_get_enter_cost", "region"), &NavigationServer3D::region_get_enter_cost);
 	ClassDB::bind_method(D_METHOD("region_set_travel_cost", "region", "travel_cost"), &NavigationServer3D::region_set_travel_cost);
@@ -165,10 +169,12 @@ NavigationServer3D::NavigationServer3D() {
 	singleton = this;
 
 	GLOBAL_DEF_BASIC("navigation/2d/default_cell_size", 1);
+	GLOBAL_DEF("navigation/2d/use_edge_connections", true);
 	GLOBAL_DEF_BASIC("navigation/2d/default_edge_connection_margin", 1);
 	GLOBAL_DEF_BASIC("navigation/2d/default_link_connection_radius", 4);
 
 	GLOBAL_DEF_BASIC("navigation/3d/default_cell_size", 0.25);
+	GLOBAL_DEF("navigation/3d/use_edge_connections", true);
 	GLOBAL_DEF_BASIC("navigation/3d/default_edge_connection_margin", 0.25);
 	GLOBAL_DEF_BASIC("navigation/3d/default_link_connection_radius", 1.0);
 

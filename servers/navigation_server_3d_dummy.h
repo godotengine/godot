@@ -45,6 +45,8 @@ public:
 	Vector3 map_get_up(RID p_map) const override { return Vector3(); }
 	void map_set_cell_size(RID p_map, real_t p_cell_size) override {}
 	real_t map_get_cell_size(RID p_map) const override { return 0; }
+	void map_set_use_edge_connections(RID p_map, bool p_enabled) override {}
+	bool map_get_use_edge_connections(RID p_map) const override { return false; }
 	void map_set_edge_connection_margin(RID p_map, real_t p_connection_margin) override {}
 	real_t map_get_edge_connection_margin(RID p_map) const override { return 0; }
 	void map_set_link_connection_radius(RID p_map, real_t p_connection_radius) override {}
@@ -60,6 +62,8 @@ public:
 	TypedArray<RID> map_get_obstacles(RID p_map) const override { return TypedArray<RID>(); }
 	void map_force_update(RID p_map) override {}
 	RID region_create() override { return RID(); }
+	void region_set_use_edge_connections(RID p_region, bool p_enabled) override {}
+	bool region_get_use_edge_connections(RID p_region) const override { return false; }
 	void region_set_enter_cost(RID p_region, real_t p_enter_cost) override {}
 	real_t region_get_enter_cost(RID p_region) const override { return 0; }
 	void region_set_travel_cost(RID p_region, real_t p_travel_cost) override {}
