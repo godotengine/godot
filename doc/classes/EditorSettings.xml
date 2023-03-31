@@ -565,6 +565,9 @@
 			If [code]true[/code], editor main menu is using embedded [MenuBar] instead of system global menu.
 			Specific to the macOS platform.
 		</member>
+		<member name="interface/inspector/enable_vector_property_linking_by_default" type="bool" setter="" getter="">
+			If [code]true[/code], properties with [constant @GlobalScope.PROPERTY_HINT_LINK] will be linked by default.
+		</member>
 		<member name="interface/inspector/max_array_dictionary_items_per_page" type="int" setter="" getter="">
 			The number of [Array] or [Dictionary] items to display on each "page" in the inspector. Higher values allow viewing more values per page, but take more time to load. This increased load time is noticeable when selecting nodes that have array or dictionary properties in the editor.
 		</member>

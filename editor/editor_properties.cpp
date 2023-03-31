@@ -1751,7 +1751,7 @@ void EditorPropertyVector2::setup(double p_min, double p_max, double p_step, boo
 	if (!p_link) {
 		linked->hide();
 	} else {
-		linked->set_pressed(true);
+		linked->set_pressed(EDITOR_GET("interface/inspector/enable_vector_property_linking_by_default"));
 	}
 }
 
@@ -2033,7 +2033,7 @@ void EditorPropertyVector3::setup(double p_min, double p_max, double p_step, boo
 	if (!p_link) {
 		linked->hide();
 	} else {
-		linked->set_pressed(true);
+		linked->set_pressed(EDITOR_GET("interface/inspector/enable_vector_property_linking_by_default"));
 	}
 }
 
@@ -2163,7 +2163,7 @@ void EditorPropertyVector2i::setup(int p_min, int p_max, bool p_link, const Stri
 	if (!p_link) {
 		linked->hide();
 	} else {
-		linked->set_pressed(true);
+		linked->set_pressed(EDITOR_GET("interface/inspector/enable_vector_property_linking_by_default"));
 	}
 }
 
@@ -2416,7 +2416,7 @@ void EditorPropertyVector3i::setup(int p_min, int p_max, bool p_link, const Stri
 	if (!p_link) {
 		linked->hide();
 	} else {
-		linked->set_pressed(true);
+		linked->set_pressed(EDITOR_GET("interface/inspector/enable_vector_property_linking_by_default"));
 	}
 }
 
