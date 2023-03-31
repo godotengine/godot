@@ -89,7 +89,10 @@ private:
 		Ref<Texture2D> icon;
 
 		int h_separation = 0;
+		int icon_max_width = 0;
 	} theme_cache;
+
+	Size2 _fit_icon_size(const Size2 &p_size) const;
 
 	void _shape(Ref<TextParagraph> p_paragraph = Ref<TextParagraph>(), String p_text = "");
 

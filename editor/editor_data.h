@@ -146,7 +146,7 @@ private:
 	HashMap<String, StringName> _script_class_file_to_path;
 	HashMap<Ref<Script>, Ref<Texture>> _script_icon_cache;
 
-	Ref<ImageTexture> _load_script_icon(const String &p_path) const;
+	Ref<Texture2D> _load_script_icon(const String &p_path) const;
 
 public:
 	EditorPlugin *get_editor(Object *p_object);

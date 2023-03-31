@@ -1030,13 +1030,11 @@ void EditorData::script_class_load_icon_paths() {
 	}
 }
 
-Ref<ImageTexture> EditorData::_load_script_icon(const String &p_path) const {
-	if (p_path.length()) {
-		Ref<Image> img = memnew(Image);
-		Error err = ImageLoader::load_image(p_path, img);
-		if (err == OK) {
-			img->resize(16 * EDSCALE, 16 * EDSCALE, Image::INTERPOLATE_LANCZOS);
-			return ImageTexture::create_from_image(img);
+Ref<Texture2D> EditorData::_load_script_icon(const String &p_path) const {
+	if (!p_path.is_empty() && ResourceLoader::exists(p_path)) {
+		Ref<Texture2D> icon = ResourceLoader::load(p_path);
+		if (icon.is_valid()) {
+			return icon;
 		}
 	}
 	return nullptr;
@@ -1051,9 +1049,9 @@ Ref<Texture2D> EditorData::get_script_icon(const Ref<Script> &p_script) {
 	Ref<Script> base_scr = p_script;
 	while (base_scr.is_valid()) {
 		// Check for scripted classes.
-		StringName name = script_class_get_name(base_scr->get_path());
-		String icon_path = script_class_get_icon_path(name);
-		Ref<ImageTexture> icon = _load_script_icon(icon_path);
+		StringName class_name = script_class_get_name(base_scr->get_path());
+		String icon_path = script_class_get_icon_path(class_name);
+		Ref<Texture2D> icon = _load_script_icon(icon_path);
 		if (icon.is_valid()) {
 			_script_icon_cache[p_script] = icon;
 			return icon;

@@ -62,6 +62,8 @@ private:
 
 		Ref<TextLine> text_buf;
 		Ref<Texture2D> icon;
+		int icon_max_width = 0;
+
 		bool disabled = false;
 		bool hidden = false;
 		int ofs_cache = 0;
@@ -106,6 +108,7 @@ private:
 
 	struct ThemeCache {
 		int h_separation = 0;
+		int icon_max_width = 0;
 
 		Ref<StyleBox> tab_unselected_style;
 		Ref<StyleBox> tab_selected_style;
@@ -133,6 +136,7 @@ private:
 	} theme_cache;
 
 	int get_tab_width(int p_idx) const;
+	Size2 _get_tab_icon_size(int p_idx) const;
 	void _ensure_no_over_offset();
 
 	void _update_hover();
@@ -170,6 +174,9 @@ public:
 
 	void set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_tab_icon(int p_tab) const;
+
+	void set_tab_icon_max_width(int p_tab, int p_width);
+	int get_tab_icon_max_width(int p_tab) const;
 
 	void set_tab_disabled(int p_tab, bool p_disabled);
 	bool is_tab_disabled(int p_tab) const;

@@ -784,6 +784,7 @@ void EditorResourcePicker::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
+			assign_button->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), SNAME("Editor")));
 			edit_button->set_icon(get_theme_icon(SNAME("select_arrow"), SNAME("Tree")));
 		} break;
 
@@ -923,6 +924,7 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	assign_button = memnew(Button);
 	assign_button->set_flat(true);
 	assign_button->set_h_size_flags(SIZE_EXPAND_FILL);
+	assign_button->set_expand_icon(true);
 	assign_button->set_clip_text(true);
 	assign_button->set_auto_translate(false);
 	SET_DRAG_FORWARDING_GCD(assign_button, EditorResourcePicker);

@@ -668,7 +668,7 @@ void EditorHelp::_update_doc() {
 		String inherits = cd.inherits;
 
 		while (!inherits.is_empty()) {
-			_add_type_icon(inherits, 0, "ArrowRight");
+			_add_type_icon(inherits, theme_cache.doc_font_size, "ArrowRight");
 			class_desc->add_text(non_breaking_space); // Otherwise icon borrows hyperlink from _add_type().
 			_add_type(inherits);
 
@@ -701,7 +701,7 @@ void EditorHelp::_update_doc() {
 				if (prev) {
 					class_desc->add_text(" , ");
 				}
-				_add_type_icon(E.value.name, 0, "ArrowRight");
+				_add_type_icon(E.value.name, theme_cache.doc_font_size, "ArrowRight");
 				class_desc->add_text(non_breaking_space); // Otherwise icon borrows hyperlink from _add_type().
 				_add_type(E.value.name);
 				prev = true;
