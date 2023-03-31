@@ -488,15 +488,31 @@ bool GDMono::_load_project_assembly() {
 #endif
 
 #ifdef GD_MONO_HOT_RELOAD
+void GDMono::reload_failure() {
+	if (++project_load_failure_count >= (int)GLOBAL_GET("dotnet/project/assembly_reload_attempts")) {
+		// After reloading a project has failed n times in a row, update the path and modification time
+		// to stop any further attempts at loading this assembly, which probably is never going to work anyways.
+		project_load_failure_count = 0;
+
+		ERR_PRINT_ED(".NET: Giving up on assembly reloading. Please restart the editor if unloading was failing.");
+
+		String assembly_name = path::get_csharp_project_name();
+		String assembly_path = GodotSharpDirs::get_res_temp_assemblies_dir().path_join(assembly_name + ".dll");
+		assembly_path = ProjectSettings::get_singleton()->globalize_path(assembly_path);
+		project_assembly_path = assembly_path.simplify_path();
+		project_assembly_modified_time = FileAccess::get_modified_time(assembly_path);
+	}
+}
+
 Error GDMono::reload_project_assemblies() {
 	ERR_FAIL_COND_V(!runtime_initialized, ERR_BUG);
 
 	finalizing_scripts_domain = true;
 
-	CSharpLanguage::get_singleton()->_on_scripts_domain_about_to_unload();
-
 	if (!get_plugin_callbacks().UnloadProjectPluginCallback()) {
-		ERR_FAIL_V_MSG(Error::FAILED, ".NET: Failed to unload assemblies.");
+		ERR_PRINT_ED(".NET: Failed to unload assemblies. Please check https://github.com/godotengine/godot/issues/78513 for more information.");
+		reload_failure();
+		return FAILED;
 	}
 
 	finalizing_scripts_domain = false;
@@ -504,8 +520,14 @@ Error GDMono::reload_project_assemblies() {
 	// Load the project's main assembly. Here, during hot-reloading, we do
 	// consider failing to load the project's main assembly to be an error.
 	if (!_load_project_assembly()) {
-		print_error(".NET: Failed to load project assembly.");
+		ERR_PRINT_ED(".NET: Failed to load project assembly.");
+		reload_failure();
 		return ERR_CANT_OPEN;
+	}
+
+	if (project_load_failure_count > 0) {
+		project_load_failure_count = 0;
+		ERR_PRINT_ED(".NET: Assembly reloading succeeded after failures.");
 	}
 
 	return OK;

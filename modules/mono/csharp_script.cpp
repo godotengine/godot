@@ -120,6 +120,7 @@ void CSharpLanguage::init() {
 	GLOBAL_DEF("dotnet/project/assembly_name", "");
 #ifdef TOOLS_ENABLED
 	GLOBAL_DEF("dotnet/project/solution_directory", "");
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "dotnet/project/assembly_reload_attempts", PROPERTY_HINT_RANGE, "1,16,1,or_greater"), 3);
 #endif
 
 	gdmono = memnew(GDMono);
@@ -770,10 +771,6 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		return;
 	}
 
-	// TODO:
-	//  Currently, this reloads all scripts, including those whose class is not part of the
-	//  assembly load context being unloaded. As such, we unnecessarily reload GodotTools.
-
 	print_verbose(".NET: Reloading assemblies...");
 
 	// There is no soft reloading with Mono. It's always hard reloading.
@@ -784,8 +781,19 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		MutexLock lock(script_instances_mutex);
 
 		for (SelfList<CSharpScript> *elem = script_list.first(); elem; elem = elem->next()) {
-			// Cast to CSharpScript to avoid being erased by accident
-			scripts.push_back(Ref<CSharpScript>(elem->self()));
+			bool is_reloadable = false;
+			for (Object *obj : elem->self()->instances) {
+				ERR_CONTINUE(!obj->get_script_instance());
+				CSharpInstance *csi = static_cast<CSharpInstance *>(obj->get_script_instance());
+				if (GDMonoCache::managed_callbacks.GCHandleBridge_GCHandleIsTargetCollectible(csi->get_gchandle_intptr())) {
+					is_reloadable = true;
+					break;
+				}
+			}
+			if (is_reloadable) {
+				// Cast to CSharpScript to avoid being erased by accident.
+				scripts.push_back(Ref<CSharpScript>(elem->self()));
+			}
 		}
 	}
 
@@ -799,6 +807,10 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 			ManagedCallable *managed_callable = elem->self();
 
 			ERR_CONTINUE(managed_callable->delegate_handle.value == nullptr);
+
+			if (!GDMonoCache::managed_callbacks.GCHandleBridge_GCHandleIsTargetCollectible(managed_callable->delegate_handle)) {
+				continue;
+			}
 
 			Array serialized_data;
 
@@ -905,6 +917,15 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 		scr->was_tool_before_reload = scr->tool;
 		scr->_clear();
+	}
+
+	// Release the delegates that were serialized earlier.
+	{
+		MutexLock lock(ManagedCallable::instances_mutex);
+
+		for (KeyValue<ManagedCallable *, Array> &kv : ManagedCallable::instances_pending_reload) {
+			kv.key->release_delegate_handle();
+		}
 	}
 
 	// Do domain reload
@@ -1156,19 +1177,6 @@ bool CSharpLanguage::debug_break(const String &p_error, bool p_allow_continue) {
 	} else {
 		return false;
 	}
-}
-
-void CSharpLanguage::_on_scripts_domain_about_to_unload() {
-#ifdef GD_MONO_HOT_RELOAD
-	{
-		MutexLock lock(ManagedCallable::instances_mutex);
-
-		for (SelfList<ManagedCallable> *elem = ManagedCallable::instances.first(); elem; elem = elem->next()) {
-			ManagedCallable *managed_callable = elem->self();
-			managed_callable->release_delegate_handle();
-		}
-	}
-#endif
 }
 
 #ifdef TOOLS_ENABLED
