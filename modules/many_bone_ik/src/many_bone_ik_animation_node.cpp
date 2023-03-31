@@ -498,7 +498,7 @@ void AnimationNodeIK::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stabilization_passes"), "set_stabilization_passes", "get_stabilization_passes");
 }
 
-AnimationNodeIK::AnimationNodeIK() {	
+AnimationNodeIK::AnimationNodeIK() {
 	add_input("in");
 	add_input("target");
 }
@@ -930,7 +930,7 @@ void AnimationNodeIK::set_skeleton_node_path(NodePath p_skeleton_node_path) {
 }
 
 void AnimationNodeIK::_notification(int p_what) {
-	switch (p_what) {		
+	switch (p_what) {
 		// FIXME: fire 2023-31-2023 Fix this, it's not working.
 		// case NOTIFICATION_READY: {
 		// 	set_physics_process_internal(true);
