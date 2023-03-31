@@ -121,8 +121,8 @@ void AnimationNodeIK::update_skeleton_bones_transform() {
 void AnimationNodeIK::_get_property_list(List<PropertyInfo> *p_list) const {
 	RBSet<String> existing_pins;
 	for (int32_t pin_i = 0; pin_i < get_pin_count(); pin_i++) {
-		const String name = get_pin_bone_name(pin_i);
-		existing_pins.insert(name);
+		const String bone_name = get_pin_bone_name(pin_i);
+		existing_pins.insert(bone_name);
 	}
 	p_list->push_back(
 			PropertyInfo(Variant::INT, "pin_count",
