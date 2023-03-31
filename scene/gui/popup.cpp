@@ -36,7 +36,7 @@
 
 void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> key = p_event;
-	if (get_flag(FLAG_POPUP) && key.is_valid() && key->is_pressed() && key->get_keycode() == Key::ESCAPE) {
+	if (get_flag(FLAG_POPUP) && key.is_valid() && key->is_pressed() && key->is_action_pressed("ui_cancel") && Input::get_singleton()->is_action_just_pressed("ui_cancel")) {
 		_close_pressed();
 	}
 }
