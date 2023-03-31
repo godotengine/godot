@@ -1116,6 +1116,7 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	add_options.push_back(AddOption("BlendSpace1D", "AnimationNodeBlendSpace1D"));
 	add_options.push_back(AddOption("BlendSpace2D", "AnimationNodeBlendSpace2D"));
 	add_options.push_back(AddOption("StateMachine", "AnimationNodeStateMachine"));
+	add_options.push_back(AddOption("IK", "AnimationNodeIK", 3));
 	_update_options_menu();
 
 	error_panel = memnew(PanelContainer);

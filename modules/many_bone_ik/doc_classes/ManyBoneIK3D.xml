@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ManyBoneIK3D" inherits="Node3D" is_experimental="true" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A general inverse kinematics system with constraints.
+	</brief_description>
+	<description>
+		An general inverse kinematic system useful for many purposes.
+		Can also support as many end effector tracking targets as the performance allows.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="find_constraint" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="name" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="get_bone_count" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_bone_direction_transform" qualifiers="const">
+			<return type="Transform3D" />
+			<param index="0" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_constraint_count" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_constraint_name" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_constraint_orientation_transform" qualifiers="const">
+			<return type="Transform3D" />
+			<param index="0" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_constraint_twist_transform" qualifiers="const">
+			<return type="Transform3D" />
+			<param index="0" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_kusudama_limit_cone_center" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="cone_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_kusudama_limit_cone_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_kusudama_limit_cone_radius" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="cone_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_kusudama_twist" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_pin_bone_name" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_pin_count" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_pin_direction_priorities" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_pin_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_pin_nodepath" qualifiers="const">
+			<return type="NodePath" />
+			<param index="0" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_pin_passthrough_factor" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_pin_weight" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="queue_print_skeleton">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="register_skeleton">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_constraint">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="reset_constraints">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="set_bone_direction_transform">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="transform" type="Transform3D" />
+			<description>
+			</description>
+		</method>
+		<method name="set_constraint_orientation_transform">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="transform" type="Transform3D" />
+			<description>
+			</description>
+		</method>
+		<method name="set_constraint_twist_transform">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="transform" type="Transform3D" />
+			<description>
+			</description>
+		</method>
+		<method name="set_dirty">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="set_kusudama_limit_cone_center">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="cone_index" type="int" />
+			<param index="2" name="center" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="set_kusudama_limit_cone_count">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="count" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_kusudama_limit_cone_radius">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="cone_index" type="int" />
+			<param index="2" name="radius" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="set_kusudama_twist">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="limit" type="Vector2" />
+			<description>
+			</description>
+		</method>
+		<method name="set_pin_direction_priorities">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="priority" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="set_pin_nodepath">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="nodepath" type="NodePath" />
+			<description>
+			</description>
+		</method>
+		<method name="set_pin_passthrough_factor">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="falloff" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="set_pin_weight">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="weight" type="float" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="constraint_mode" type="bool" setter="set_constraint_mode" getter="get_constraint_mode" default="false">
+		</member>
+		<member name="default_damp" type="float" setter="set_default_damp" getter="get_default_damp" default="-1.0">
+			The default maximum number of radians a bone is allowed to rotate per solver iteration. The lower this value, the more natural the pose results. However, this will increase the number of iterations_per_frame the solver requires to converge.
+		</member>
+		<member name="iterations_per_frame" type="float" setter="set_iterations_per_frame" getter="get_iterations_per_frame" default="20.0">
+		</member>
+		<member name="skeleton_node_path" type="NodePath" setter="set_skeleton_node_path" getter="get_skeleton_node_path" default="NodePath(&quot;..&quot;)">
+		</member>
+		<member name="ui_selected_bone" type="int" setter="set_ui_selected_bone" getter="get_ui_selected_bone" default="-1">
+		</member>
+	</members>
+</class>

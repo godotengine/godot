@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="IKEffectorTemplate3D" inherits="Resource" is_experimental="true" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="direction_priorities" type="Vector3" setter="set_direction_priorities" getter="get_direction_priorities" default="Vector3(0.2, 0, 0.2)">
+		</member>
+		<member name="passthrough_factor" type="float" setter="set_passthrough_factor" getter="get_passthrough_factor" default="0.0">
+		</member>
+		<member name="target_node" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
+		</member>
+		<member name="weight" type="float" setter="set_weight" getter="get_weight" default="1.0">
+		</member>
+	</members>
+</class>

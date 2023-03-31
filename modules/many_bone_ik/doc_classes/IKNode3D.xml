@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="IKNode3D" inherits="RefCounted" is_experimental="true" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_global_transform" qualifiers="const">
+			<return type="Transform3D" />
+			<description>
+			</description>
+		</method>
+		<method name="get_transform" qualifiers="const">
+			<return type="Transform3D" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

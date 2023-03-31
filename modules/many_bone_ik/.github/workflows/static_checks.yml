@@ -1,0 +1,22 @@
+name: 📊 Static Checks
+on: [push, pull_request]
+
+jobs:
+  static-checks:
+    name: Formatting (clang-format, file format)
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get install -qq dos2unix recode clang-format
+
+      - name: File formatting checks (file_format.sh)
+        run: |
+          bash ./.github/workflows/scripts/file_format.sh
+
+      - name: Style checks via clang-format (clang_format.sh)
+        run: |
+          bash ./.github/workflows/scripts/clang_format.sh
