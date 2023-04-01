@@ -593,6 +593,7 @@ void NavMap::set_agent_as_controlled(NavAgent *agent) {
 	if (!exist) {
 		ERR_FAIL_COND(!has_agent(agent));
 		controlled_agents.push_back(agent);
+		agents_dirty = true;
 	}
 }
 
