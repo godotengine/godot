@@ -48,7 +48,7 @@
 			When this property is enabled, text that is too large to fit the button is clipped, when disabled the Button will always be wide enough to hold the text.
 		</member>
 		<member name="expand_icon" type="bool" setter="set_expand_icon" getter="is_expand_icon" default="false">
-			When enabled, the button's icon will expand/shrink to fit the button's size while keeping its aspect.
+			When enabled, the button's icon will expand/shrink to fit the button's size while keeping its aspect. See also [theme_item icon_max_width].
 		</member>
 		<member name="flat" type="bool" setter="set_flat" getter="is_flat" default="false">
 			Flat buttons don't display decoration.
@@ -115,6 +115,9 @@
 		</theme_item>
 		<theme_item name="h_separation" data_type="constant" type="int" default="2">
 			The horizontal space between [Button]'s icon and text. Negative values will be treated as [code]0[/code] when used.
+		</theme_item>
+		<theme_item name="icon_max_width" data_type="constant" type="int" default="0">
+			The maximum allowed width of the [Button]'s icon. This limit is applied on top of the default size of the icon, or its expanded size if [member expand_icon] is [code]true[/code]. The height is adjusted according to the icon's ratio.
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.

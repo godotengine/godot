@@ -1134,17 +1134,21 @@ void EditorInspectorCategory::_notification(int p_what) {
 			int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
 
 			int hs = get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
+			int icon_size = get_theme_constant(SNAME("class_icon_size"), SNAME("Editor"));
 
 			int w = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 			if (icon.is_valid()) {
-				w += hs + icon->get_width();
+				w += hs + icon_size;
 			}
 
 			int ofs = (get_size().width - w) / 2;
 
 			if (icon.is_valid()) {
-				draw_texture(icon, Point2(ofs, (get_size().height - icon->get_height()) / 2).floor());
-				ofs += hs + icon->get_width();
+				Size2 rect_size = Size2(icon_size, icon_size);
+				Point2 rect_pos = Point2(ofs, (get_size().height - icon_size) / 2).floor();
+				draw_texture_rect(icon, Rect2(rect_pos, rect_size));
+
+				ofs += hs + icon_size;
 			}
 
 			Color color = get_theme_color(SNAME("font_color"), SNAME("Tree"));
@@ -2753,46 +2757,28 @@ void EditorInspector::update_tree() {
 			String label = p.name;
 			doc_name = p.name;
 
-			// Set the category icon.
+			// Use category's owner script to update some of its information.
 			if (!EditorNode::get_editor_data().is_type_recognized(type) && p.hint_string.length() && FileAccess::exists(p.hint_string)) {
-				// If we have a category inside a script, search for the first script with a valid icon.
+				StringName script_name;
+
 				Ref<Script> scr = ResourceLoader::load(p.hint_string, "Script");
-				StringName base_type;
-				StringName name;
 				if (scr.is_valid()) {
-					base_type = scr->get_instance_base_type();
-					name = EditorNode::get_editor_data().script_class_get_name(scr->get_path());
+					script_name = EditorNode::get_editor_data().script_class_get_name(scr->get_path());
+
+					// Update the docs reference and the label based on the script.
 					Vector<DocData::ClassDoc> docs = scr->get_documentation();
 					if (!docs.is_empty()) {
 						doc_name = docs[0].name;
 					}
-					if (name != StringName() && label != name) {
-						label = name;
+					if (script_name != StringName() && label != script_name) {
+						label = script_name;
 					}
 				}
-				while (scr.is_valid()) {
-					name = EditorNode::get_editor_data().script_class_get_name(scr->get_path());
-					String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(name);
-					if (name != StringName() && !icon_path.is_empty()) {
-						category->icon = ResourceLoader::load(icon_path, "Texture");
-						break;
-					}
 
-					const EditorData::CustomType *ctype = EditorNode::get_editor_data().get_custom_type_by_path(scr->get_path());
-					if (ctype) {
-						category->icon = ctype->icon;
-						break;
-					}
-					scr = scr->get_base_script();
-				}
-				if (category->icon.is_null() && has_theme_icon(base_type, SNAME("EditorIcons"))) {
-					category->icon = get_theme_icon(base_type, SNAME("EditorIcons"));
-				}
-			}
-			if (category->icon.is_null()) {
-				if (!type.is_empty()) { // Can happen for built-in scripts.
-					category->icon = EditorNode::get_singleton()->get_class_icon(type, "Object");
-				}
+				// Find the corresponding icon.
+				category->icon = EditorNode::get_singleton()->get_class_icon(script_name, "Object");
+			} else if (!type.is_empty()) {
+				category->icon = EditorNode::get_singleton()->get_class_icon(type, "Object");
 			}
 
 			// Set the category label.

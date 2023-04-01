@@ -202,6 +202,13 @@
 				Returns the icon of the item at the given [param index].
 			</description>
 		</method>
+		<method name="get_item_icon_max_width" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the maximum allowed width of the icon for the item at the given [param index].
+			</description>
+		</method>
 		<method name="get_item_id" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="index" type="int" />
@@ -397,6 +404,14 @@
 				Replaces the [Texture2D] icon of the item at the given [param index].
 			</description>
 		</method>
+		<method name="set_item_icon_max_width">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="width" type="int" />
+			<description>
+				Sets the maximum allowed width of the icon for the item at the given [param index]. This limit is applied on top of the default size of the icon and on top of [theme_item icon_max_width]. The height is adjusted according to the icon's ratio.
+			</description>
+		</method>
 		<method name="set_item_id">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
@@ -572,6 +587,9 @@
 		</theme_item>
 		<theme_item name="h_separation" data_type="constant" type="int" default="4">
 			The horizontal space between the item's elements.
+		</theme_item>
+		<theme_item name="icon_max_width" data_type="constant" type="int" default="0">
+			The maximum allowed width of the item's icon. This limit is applied on top of the default size of the icon, but before the value set with [method set_item_icon_max_width]. The height is adjusted according to the icon's ratio.
 		</theme_item>
 		<theme_item name="indent" data_type="constant" type="int" default="10">
 			Width of the single indentation level.

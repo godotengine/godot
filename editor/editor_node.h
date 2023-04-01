@@ -513,7 +513,6 @@ private:
 	PrintHandlerList print_handler;
 
 	HashMap<String, Ref<Texture2D>> icon_type_cache;
-	HashMap<Ref<Script>, Ref<Texture>> script_icon_cache;
 
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
@@ -697,7 +696,8 @@ private:
 
 	void _feature_profile_changed();
 	bool _is_class_editor_disabled_by_feature_profile(const StringName &p_class);
-	Ref<ImageTexture> _load_custom_class_icon(const String &p_path) const;
+
+	Ref<Texture2D> _get_class_or_script_icon(const String &p_class, const Ref<Script> &p_script, const String &p_fallback = "Object");
 
 	void _pick_main_scene_custom_action(const String &p_custom_action_name);
 
@@ -879,7 +879,7 @@ public:
 	Ref<Script> get_object_custom_type_base(const Object *p_object) const;
 	StringName get_object_custom_type_name(const Object *p_object) const;
 	Ref<Texture2D> get_object_icon(const Object *p_object, const String &p_fallback = "Object");
-	Ref<Texture2D> get_class_icon(const String &p_class, const String &p_fallback = "Object") const;
+	Ref<Texture2D> get_class_icon(const String &p_class, const String &p_fallback = "Object");
 
 	bool is_object_of_custom_type(const Object *p_object, const StringName &p_class);
 

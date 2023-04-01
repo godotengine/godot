@@ -69,10 +69,9 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 	for (int i = 0; i < p_efsd->get_file_count(); i++) {
 		String file = p_efsd->get_file_path(i);
 		String engine_type = p_efsd->get_file_type(i);
-
 		String script_type = p_efsd->get_file_resource_script_class(i);
-
 		String actual_type = script_type.is_empty() ? engine_type : script_type;
+
 		// Iterate all possible base types.
 		for (String &parent_type : base_types) {
 			if (ClassDB::is_parent_class(engine_type, parent_type) || EditorNode::get_editor_data().script_class_is_parent(script_type, parent_type)) {
@@ -81,7 +80,7 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 				// Store refs to used icons.
 				String ext = file.get_extension();
 				if (!icons.has(ext)) {
-					icons.insert(ext, get_theme_icon((has_theme_icon(actual_type, SNAME("EditorIcons")) ? actual_type : "Object"), SNAME("EditorIcons")));
+					icons.insert(ext, EditorNode::get_singleton()->get_class_icon(actual_type, "Object"));
 				}
 
 				// Stop testing base types as soon as we got a match.

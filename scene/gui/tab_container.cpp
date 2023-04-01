@@ -146,6 +146,7 @@ void TabContainer::_update_theme_item_cache() {
 
 	// TabBar overrides.
 	theme_cache.icon_separation = get_theme_constant(SNAME("icon_separation"));
+	theme_cache.icon_max_width = get_theme_constant(SNAME("icon_max_width"));
 	theme_cache.outline_size = get_theme_constant(SNAME("outline_size"));
 
 	theme_cache.tab_unselected_style = get_theme_stylebox(SNAME("tab_unselected"));
@@ -245,6 +246,7 @@ void TabContainer::_on_theme_changed() {
 	tab_bar->add_theme_font_size_override(SNAME("font_size"), theme_cache.tab_font_size);
 
 	tab_bar->add_theme_constant_override(SNAME("h_separation"), theme_cache.icon_separation);
+	tab_bar->add_theme_constant_override(SNAME("icon_max_width"), theme_cache.icon_max_width);
 	tab_bar->add_theme_constant_override(SNAME("outline_size"), theme_cache.outline_size);
 
 	_update_margins();

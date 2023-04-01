@@ -34,7 +34,6 @@
 #include "core/input/input.h"
 #include "core/io/config_file.h"
 #include "core/io/file_access.h"
-#include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/class_db.h"
@@ -682,10 +681,6 @@ void EditorNode::_notification(int p_what) {
 			editor_data.clear_edited_scenes();
 		} break;
 
-		case Control::NOTIFICATION_THEME_CHANGED: {
-			scene_tab_add_ph->set_custom_minimum_size(scene_tab_add->get_minimum_size());
-		} break;
-
 		case NOTIFICATION_READY: {
 			{
 				_initializing_plugins = true;
@@ -772,6 +767,9 @@ void EditorNode::_notification(int p_what) {
 				scene_root_parent->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("Content"), SNAME("EditorStyles")));
 				bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("BottomPanel"), SNAME("EditorStyles")));
 				tabbar_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("tabbar_background"), SNAME("TabContainer")));
+
+				scene_tabs->add_theme_constant_override("icon_max_width", gui_base->get_theme_constant(SNAME("class_icon_size"), SNAME("Editor")));
+				scene_tab_add_ph->set_custom_minimum_size(scene_tab_add->get_minimum_size());
 
 				main_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
 			}
@@ -3682,7 +3680,7 @@ void EditorNode::_remove_edited_scene(bool p_change_tab) {
 
 void EditorNode::_remove_scene(int index, bool p_change_tab) {
 	// Clear icon cache in case some scripts are no longer needed.
-	script_icon_cache.clear();
+	editor_data.clear_script_icon_cache();
 
 	if (editor_data.get_edited_scene() == index) {
 		// Scene to remove is current scene.
@@ -4446,18 +4444,6 @@ StringName EditorNode::get_object_custom_type_name(const Object *p_object) const
 	return StringName();
 }
 
-Ref<ImageTexture> EditorNode::_load_custom_class_icon(const String &p_path) const {
-	if (p_path.length()) {
-		Ref<Image> img = memnew(Image);
-		Error err = ImageLoader::load_image(p_path, img);
-		if (err == OK) {
-			img->resize(16 * EDSCALE, 16 * EDSCALE, Image::INTERPOLATE_LANCZOS);
-			return ImageTexture::create_from_image(img);
-		}
-	}
-	return nullptr;
-}
-
 void EditorNode::_pick_main_scene_custom_action(const String &p_custom_action_name) {
 	if (p_custom_action_name == "select_current") {
 		Node *scene = editor_data.get_edited_scene_root();
@@ -4480,106 +4466,86 @@ void EditorNode::_pick_main_scene_custom_action(const String &p_custom_action_na
 	}
 }
 
+Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, const Ref<Script> &p_script, const String &p_fallback) {
+	ERR_FAIL_COND_V_MSG(p_class.is_empty(), nullptr, "Class name cannot be empty.");
+	EditorData &ed = EditorNode::get_editor_data();
+
+	// Check for a script icon first.
+	if (p_script.is_valid()) {
+		Ref<Texture2D> script_icon = ed.get_script_icon(p_script);
+		if (script_icon.is_valid()) {
+			return script_icon;
+		}
+
+		// No custom icon was found in the inheritance chain, so check the base
+		// class of the script instead.
+		String base_type;
+		p_script->get_language()->get_global_class_name(p_script->get_path(), &base_type);
+
+		// Check if the base type is an extension-defined type.
+		Ref<Texture2D> ext_icon = ed.extension_class_get_icon(base_type);
+		if (ext_icon.is_valid()) {
+			return ext_icon;
+		}
+
+		// Look for the base type in the editor theme.
+		// This is only relevant for built-in classes.
+		if (gui_base && gui_base->has_theme_icon(base_type, "EditorIcons")) {
+			return gui_base->get_theme_icon(base_type, "EditorIcons");
+		}
+	}
+
+	// Script was not valid or didn't yield any useful values, try the class name
+	// directly.
+
+	// Check if the class name is an extension-defined type.
+	Ref<Texture2D> ext_icon = ed.extension_class_get_icon(p_class);
+	if (ext_icon.is_valid()) {
+		return ext_icon;
+	}
+
+	// Check if the class name is a custom type.
+	// TODO: Should probably be deprecated in 4.x
+	const EditorData::CustomType *ctype = ed.get_custom_type_by_name(p_class);
+	if (ctype && ctype->icon.is_valid()) {
+		return ctype->icon;
+	}
+
+	// Look up the class name or the fallback name in the editor theme.
+	// This is only relevant for built-in classes.
+	if (gui_base) {
+		if (gui_base->has_theme_icon(p_class, SNAME("EditorIcons"))) {
+			return gui_base->get_theme_icon(p_class, SNAME("EditorIcons"));
+		}
+
+		if (p_fallback.length() && gui_base->has_theme_icon(p_fallback, SNAME("EditorIcons"))) {
+			return gui_base->get_theme_icon(p_fallback, SNAME("EditorIcons"));
+		}
+	}
+
+	return nullptr;
+}
+
 Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String &p_fallback) {
-	ERR_FAIL_COND_V(!p_object || !gui_base, nullptr);
+	ERR_FAIL_NULL_V_MSG(p_object, nullptr, "Object cannot be null.");
 
 	Ref<Script> scr = p_object->get_script();
 	if (scr.is_null() && p_object->is_class("Script")) {
 		scr = p_object;
 	}
 
-	if (scr.is_valid() && !script_icon_cache.has(scr)) {
-		Ref<Script> base_scr = scr;
-		while (base_scr.is_valid()) {
-			StringName name = EditorNode::get_editor_data().script_class_get_name(base_scr->get_path());
-			String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(name);
-			Ref<ImageTexture> icon = _load_custom_class_icon(icon_path);
-			if (icon.is_valid()) {
-				script_icon_cache[scr] = icon;
-				return icon;
-			}
-
-			// TODO: should probably be deprecated in 4.x
-			StringName base = base_scr->get_instance_base_type();
-			if (base != StringName() && EditorNode::get_editor_data().get_custom_types().has(base)) {
-				const Vector<EditorData::CustomType> &types = EditorNode::get_editor_data().get_custom_types()[base];
-				for (int i = 0; i < types.size(); ++i) {
-					if (types[i].script == base_scr && types[i].icon.is_valid()) {
-						script_icon_cache[scr] = types[i].icon;
-						return types[i].icon;
-					}
-				}
-			}
-			base_scr = base_scr->get_base_script();
-		}
-
-		// If no icon found, cache it as null.
-		script_icon_cache[scr] = Ref<Texture>();
-	} else if (scr.is_valid() && script_icon_cache.has(scr) && script_icon_cache[scr].is_valid()) {
-		return script_icon_cache[scr];
-	}
-
-	// TODO: Should probably be deprecated in 4.x.
-	if (p_object->has_meta("_editor_icon")) {
-		return p_object->get_meta("_editor_icon");
-	}
-
-	if (gui_base->has_theme_icon(p_object->get_class(), SNAME("EditorIcons"))) {
-		return gui_base->get_theme_icon(p_object->get_class(), SNAME("EditorIcons"));
-	}
-
-	if (p_fallback.length()) {
-		return gui_base->get_theme_icon(p_fallback, SNAME("EditorIcons"));
-	}
-
-	return nullptr;
+	return _get_class_or_script_icon(p_object->get_class(), scr, p_fallback);
 }
 
-Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p_fallback) const {
+Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p_fallback) {
 	ERR_FAIL_COND_V_MSG(p_class.is_empty(), nullptr, "Class name cannot be empty.");
 
+	Ref<Script> scr;
 	if (ScriptServer::is_global_class(p_class)) {
-		String class_name = p_class;
-		Ref<Script> scr = EditorNode::get_editor_data().script_class_load_script(class_name);
-
-		while (true) {
-			String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(class_name);
-			Ref<Texture> icon = _load_custom_class_icon(icon_path);
-			if (icon.is_valid()) {
-				return icon; // Current global class has icon.
-			}
-
-			// Find next global class along the inheritance chain.
-			do {
-				Ref<Script> base_scr = scr->get_base_script();
-				if (base_scr.is_null()) {
-					// We've reached a native class, use its icon.
-					String base_type;
-					scr->get_language()->get_global_class_name(scr->get_path(), &base_type);
-					if (gui_base->has_theme_icon(base_type, "EditorIcons")) {
-						return gui_base->get_theme_icon(base_type, "EditorIcons");
-					}
-					return gui_base->get_theme_icon(p_fallback, "EditorIcons");
-				}
-				scr = base_scr;
-				class_name = EditorNode::get_editor_data().script_class_get_name(scr->get_path());
-			} while (class_name.is_empty());
-		}
+		scr = EditorNode::get_editor_data().script_class_load_script(p_class);
 	}
 
-	if (const EditorData::CustomType *ctype = EditorNode::get_editor_data().get_custom_type_by_name(p_class)) {
-		return ctype->icon;
-	}
-
-	if (gui_base->has_theme_icon(p_class, SNAME("EditorIcons"))) {
-		return gui_base->get_theme_icon(p_class, SNAME("EditorIcons"));
-	}
-
-	if (p_fallback.length() && gui_base->has_theme_icon(p_fallback, SNAME("EditorIcons"))) {
-		return gui_base->get_theme_icon(p_fallback, SNAME("EditorIcons"));
-	}
-
-	return nullptr;
+	return _get_class_or_script_icon(p_class, scr, p_fallback);
 }
 
 bool EditorNode::is_object_of_custom_type(const Object *p_object, const StringName &p_class) {
@@ -7159,6 +7125,7 @@ EditorNode::EditorNode() {
 	scene_tabs->set_select_with_rmb(true);
 	scene_tabs->add_tab("unsaved");
 	scene_tabs->set_tab_close_display_policy((TabBar::CloseButtonDisplayPolicy)EDITOR_GET("interface/scene_tabs/display_close_button").operator int());
+	scene_tabs->add_theme_constant_override("icon_max_width", gui_base->get_theme_constant(SNAME("class_icon_size"), SNAME("Editor")));
 	scene_tabs->set_max_tab_width(int(EDITOR_GET("interface/scene_tabs/maximum_width")) * EDSCALE);
 	scene_tabs->set_drag_to_rearrange_enabled(true);
 	scene_tabs->set_auto_translate(false);

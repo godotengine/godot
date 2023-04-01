@@ -549,6 +549,15 @@ Ref<Resource> GDExtensionResourceLoader::load(const String &p_path, const String
 		return Ref<Resource>();
 	}
 
+	// Handle icons if any are specified.
+	if (config->has_section("icons")) {
+		List<String> keys;
+		config->get_section_keys("icons", &keys);
+		for (const String &key : keys) {
+			lib->class_icon_paths[key] = config->get_value("icons", key);
+		}
+	}
+
 	return lib;
 }
 
