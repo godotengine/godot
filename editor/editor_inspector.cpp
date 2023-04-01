@@ -3134,47 +3134,56 @@ void EditorInspector::update_tree() {
 			bool found = false;
 
 			// Search for the property description in the cache.
-			HashMap<StringName, HashMap<StringName, PropertyDocInfo>>::Iterator E = doc_info_cache.find(classname);
-			if (E) {
-				HashMap<StringName, PropertyDocInfo>::Iterator F = E->value.find(propname);
-				if (F) {
-					found = true;
-					doc_info = F->value;
+			for (int h = 0; h < 2; h++) {
+				HashMap<StringName, HashMap<StringName, PropertyDocInfo>>::Iterator E = doc_info_cache.find(classname);
+				if (E) {
+					HashMap<StringName, PropertyDocInfo>::Iterator F = E->value.find(propname);
+					if (F) {
+						found = true;
+						doc_info = F->value;
+					}
 				}
-			}
 
-			if (!found) {
-				// Build the property description String and add it to the cache.
-				DocTools *dd = EditorHelp::get_doc_data();
-				HashMap<String, DocData::ClassDoc>::Iterator F = dd->class_list.find(classname);
-				while (F && doc_info.description.is_empty()) {
-					for (int i = 0; i < F->value.properties.size(); i++) {
-						if (F->value.properties[i].name == propname.operator String()) {
-							doc_info.description = DTR(F->value.properties[i].description);
-							doc_info.path = "class_property:" + F->value.name + ":" + F->value.properties[i].name;
+				if (!found) {
+					// Build the property description String and add it to the cache.
+					DocTools *dd = EditorHelp::get_doc_data();
+					HashMap<String, DocData::ClassDoc>::Iterator F = dd->class_list.find(classname);
+					while (F && doc_info.description.is_empty()) {
+						for (int i = 0; i < F->value.properties.size(); i++) {
+							if (F->value.properties[i].name == propname.operator String()) {
+								doc_info.description = DTR(F->value.properties[i].description);
+								doc_info.path = "class_property:" + F->value.name + ":" + F->value.properties[i].name;
+								break;
+							}
+						}
+
+						Vector<String> slices = propname.operator String().split("/");
+						if (slices.size() == 2 && slices[0].begins_with("theme_override_")) {
+							for (int i = 0; i < F->value.theme_properties.size(); i++) {
+								if (F->value.theme_properties[i].name == slices[1]) {
+									doc_info.description = DTR(F->value.theme_properties[i].description);
+									doc_info.path = "class_theme_item:" + F->value.name + ":" + F->value.theme_properties[i].name;
+									break;
+								}
+							}
+						}
+
+						if (!F->value.inherits.is_empty()) {
+							F = dd->class_list.find(F->value.inherits);
+						} else {
 							break;
 						}
 					}
 
-					Vector<String> slices = propname.operator String().split("/");
-					if (slices.size() == 2 && slices[0].begins_with("theme_override_")) {
-						for (int i = 0; i < F->value.theme_properties.size(); i++) {
-							if (F->value.theme_properties[i].name == slices[1]) {
-								doc_info.description = DTR(F->value.theme_properties[i].description);
-								doc_info.path = "class_theme_item:" + F->value.name + ":" + F->value.theme_properties[i].name;
-								break;
-							}
-						}
-					}
-
-					if (!F->value.inherits.is_empty()) {
-						F = dd->class_list.find(F->value.inherits);
-					} else {
-						break;
-					}
+					doc_info_cache[classname][propname] = doc_info;
 				}
 
-				doc_info_cache[classname][propname] = doc_info;
+				if (!found && classname == "Control") {
+					// Small hack for theme_overrides. They are listed under Control, but come from another class.
+					classname = get_edited_object()->get_class();
+				} else {
+					break;
+				}
 			}
 		}
 
