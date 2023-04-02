@@ -42,6 +42,24 @@ static void _premultiply(uint32_t* data, uint32_t w, uint32_t h)
 }
 
 
+static inline uint32_t CHANGE_COLORSPACE(uint32_t c)
+{
+    return (c & 0xff000000) + ((c & 0x00ff0000)>>16) + (c & 0x0000ff00) + ((c & 0x000000ff)<<16);
+}
+
+
+static void _changeColorSpace(uint32_t* data, uint32_t w, uint32_t h)
+{
+    auto buffer = data;
+    for (uint32_t y = 0; y < h; ++y, buffer += w) {
+        auto src = buffer;
+        for (uint32_t x = 0; x < w; ++x, ++src) {
+            *src = CHANGE_COLORSPACE(*src);
+        }
+    }
+}
+
+
 PngLoader::PngLoader()
 {
     image = static_cast<png_imagep>(calloc(1, sizeof(png_image)));
@@ -110,16 +128,21 @@ bool PngLoader::close()
     return true;
 }
 
-unique_ptr<Surface> PngLoader::bitmap()
+unique_ptr<Surface> PngLoader::bitmap(uint32_t colorSpace)
 {
     if (!content) return nullptr;
+    if (this->colorSpace != colorSpace) {
+        this->colorSpace = colorSpace;
+        _changeColorSpace(content, w, h);
+    }
 
     auto surface = static_cast<Surface*>(malloc(sizeof(Surface)));
-    surface->buffer = (uint32_t*)(content);
+    surface->buffer = content;
     surface->stride = w;
     surface->w = w;
     surface->h = h;
-    surface->cs = SwCanvas::ARGB8888;
+    surface->cs = colorSpace;
 
     return unique_ptr<Surface>(surface);
 }
+
