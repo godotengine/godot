@@ -42,6 +42,18 @@
 				The elements in the array returned from this method are displayed as warnings in the Scene dock if the script that overrides it is a [code]tool[/code] script.
 				Returning an empty array produces no warnings.
 				Call [method update_configuration_warnings] when the warnings need to be updated for this node.
+				[codeblock]
+				@export var energy = 0:
+				    set(value):
+				        energy = value
+				        update_configuration_warnings()
+
+				func _get_configuration_warnings():
+				    if energy &lt; 0:
+				        return ["Energy must be 0 or greater."]
+				    else:
+				        return []
+				[/codeblock]
 			</description>
 		</method>
 		<method name="_input" qualifiers="virtual">
