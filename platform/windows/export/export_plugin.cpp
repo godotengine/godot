@@ -386,20 +386,25 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 		args.push_back("--set-product-version");
 		args.push_back(product_version);
 	}
+	//Having a standard naming fallback preventing showing up as Godot Engine
+	args.push_back("--set-version-string");
+	args.push_back("ProductName");
+	if (product_name.is_empty())
+		args.push_back(GLOBAL_GET("application/config/name"));
+	else
+		args.push_back(product_name);
+
+	args.push_back("--set-version-string");
+	args.push_back("FileDescription");
+	if (file_description.is_empty())
+		args.push_back(GLOBAL_GET("application/config/name"));
+	else
+		args.push_back(file_description);
+
 	if (!company_name.is_empty()) {
 		args.push_back("--set-version-string");
 		args.push_back("CompanyName");
 		args.push_back(company_name);
-	}
-	if (!product_name.is_empty()) {
-		args.push_back("--set-version-string");
-		args.push_back("ProductName");
-		args.push_back(product_name);
-	}
-	if (!file_description.is_empty()) {
-		args.push_back("--set-version-string");
-		args.push_back("FileDescription");
-		args.push_back(file_description);
 	}
 	if (!copyright.is_empty()) {
 		args.push_back("--set-version-string");
