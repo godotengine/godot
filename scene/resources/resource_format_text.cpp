@@ -480,6 +480,11 @@ Error ResourceLoaderText::load() {
 				}
 			}
 
+			// resources_total accounts for external resources too,
+			// but in case of subthreads their progress will be collected
+			// separately, so main load thread should only report internal
+			// resources progress. Thus adjust total for all external resources.
+			resources_total--;
 		} else {
 			Ref<Resource> res = ResourceLoader::load(path, type);
 
@@ -500,23 +505,24 @@ Error ResourceLoaderText::load() {
 			}
 
 			er.cache = res;
+
+			resource_current++;
+
+			if (progress && resources_total > 0) {
+				*progress = resource_current / float(resources_total);
+			}
 		}
 
 		ext_resources[id] = er;
 
+		// Parse next tag
 		error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp);
 
 		if (error) {
 			_printerr();
 			return error;
 		}
-
-		resource_current++;
 	}
-
-	//these are the ones that count
-	resources_total -= resource_current;
-	resource_current = 0;
 
 	while (true) {
 		if (next_tag.name != "sub_resource") {

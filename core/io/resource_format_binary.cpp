@@ -671,6 +671,9 @@ Error ResourceLoaderBinary::load() {
 		return error;
 	}
 
+	int resource_current = 0;
+	int resources_total = internal_resources.size() + (use_sub_threads ? 0 : external_resources.size());
+
 	for (int i = 0; i < external_resources.size(); i++) {
 		String path = external_resources[i].path;
 
@@ -695,6 +698,11 @@ Error ResourceLoaderBinary::load() {
 					error = ERR_FILE_MISSING_DEPENDENCIES;
 					ERR_FAIL_V_MSG(error, "Can't load dependency: " + path + ".");
 				}
+			}
+
+			resource_current++;
+			if (progress) {
+				*progress = resource_current / float(resources_total);
 			}
 
 		} else {
@@ -861,8 +869,9 @@ Error ResourceLoaderBinary::load() {
 		res->set_edited(false);
 #endif
 
+		resource_current++;
 		if (progress) {
-			*progress = (i + 1) / float(internal_resources.size());
+			*progress = resource_current / float(resources_total);
 		}
 
 		resource_cache.push_back(res);
