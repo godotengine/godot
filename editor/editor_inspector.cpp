@@ -741,6 +741,9 @@ void EditorProperty::shortcut_input(const Ref<InputEvent> &p_event) {
 		} else if (ED_IS_SHORTCUT("property_editor/paste_value", p_event) && !is_read_only()) {
 			menu_option(MENU_PASTE_VALUE);
 			accept_event();
+		} else if (ED_IS_SHORTCUT("property_editor/copy_value_as_text", p_event)) {
+			menu_option(MENU_COPY_VALUE_AS_TEXT);
+			accept_event();
 		} else if (ED_IS_SHORTCUT("property_editor/copy_property_path", p_event)) {
 			menu_option(MENU_COPY_PROPERTY_PATH);
 			accept_event();
@@ -940,6 +943,9 @@ void EditorProperty::menu_option(int p_option) {
 		case MENU_PASTE_VALUE: {
 			emit_changed(property, InspectorDock::get_inspector_singleton()->get_property_clipboard());
 		} break;
+		case MENU_COPY_VALUE_AS_TEXT: {
+			DisplayServer::get_singleton()->clipboard_set(object->get(property).get_construct_string());
+		} break;
 		case MENU_COPY_PROPERTY_PATH: {
 			DisplayServer::get_singleton()->clipboard_set(property_path);
 		} break;
@@ -1034,6 +1040,7 @@ void EditorProperty::_update_popup() {
 	}
 	menu->add_icon_shortcut(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), ED_GET_SHORTCUT("property_editor/copy_value"), MENU_COPY_VALUE);
 	menu->add_icon_shortcut(get_theme_icon(SNAME("ActionPaste"), SNAME("EditorIcons")), ED_GET_SHORTCUT("property_editor/paste_value"), MENU_PASTE_VALUE);
+	menu->add_icon_shortcut(get_theme_icon(SNAME("RichTextEffect"), SNAME("EditorIcons")), ED_GET_SHORTCUT("property_editor/copy_value_as_text"), MENU_COPY_VALUE_AS_TEXT);
 	menu->add_icon_shortcut(get_theme_icon(SNAME("CopyNodePath"), SNAME("EditorIcons")), ED_GET_SHORTCUT("property_editor/copy_property_path"), MENU_COPY_PROPERTY_PATH);
 	menu->set_item_disabled(MENU_PASTE_VALUE, is_read_only());
 	if (!pin_hidden) {
@@ -4110,5 +4117,6 @@ EditorInspector::EditorInspector() {
 
 	ED_SHORTCUT("property_editor/copy_value", TTR("Copy Value"), KeyModifierMask::CMD_OR_CTRL | Key::C);
 	ED_SHORTCUT("property_editor/paste_value", TTR("Paste Value"), KeyModifierMask::CMD_OR_CTRL | Key::V);
+	ED_SHORTCUT("property_editor/copy_value_as_text", TTR("Copy Value as Text"));
 	ED_SHORTCUT("property_editor/copy_property_path", TTR("Copy Property Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
 }
