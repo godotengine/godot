@@ -4,7 +4,7 @@
 		Operating System functions.
 	</brief_description>
 	<description>
-		Operating System functions. [OS] wraps the most common functionality to communicate with the host operating system, such as the clipboard, video driver, delays, environment variables, execution of binaries, command line, etc.
+		Operating System functions. [OS] wraps the most common functionality to communicate with the host operating system, such as the video driver, delays, environment variables, execution of binaries, command line, etc.
 		[b]Note:[/b] In Godot 4, [OS] functions related to window management were moved to the [DisplayServer] singleton.
 	</description>
 	<tutorials>
