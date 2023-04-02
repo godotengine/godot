@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ScriptSearchReplace" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_scanner">
+			<return type="void" />
+			<param index="0" name="scanner" type="ScriptScanner" />
+			<param index="1" name="at_front" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+		<method name="assemble_scan_location">
+			<return type="Dictionary" />
+			<param index="0" name="line_number" type="int" />
+			<param index="1" name="begin" type="int" />
+			<param index="2" name="end" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="assemble_scan_match">
+			<return type="Dictionary" />
+			<param index="0" name="file_path" type="String" />
+			<param index="1" name="display_text" type="String" />
+			<param index="2" name="line_number" type="int" />
+			<param index="3" name="begin" type="int" />
+			<param index="4" name="end" type="int" />
+			<param index="5" name="line" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="get_singleton" qualifiers="static">
+			<return type="ScriptSearchReplace" />
+			<description>
+			</description>
+		</method>
+		<method name="get_suitable_scanner" qualifiers="const">
+			<return type="ScriptScanner" />
+			<param index="0" name="extension" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_scanner">
+			<return type="void" />
+			<param index="0" name="scanner" type="ScriptScanner" />
+			<description>
+			</description>
+		</method>
+		<method name="replace" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="file_path" type="String" />
+			<param index="1" name="display_path" type="String" />
+			<param index="2" name="locations" type="Dictionary[]" />
+			<param index="3" name="match_case" type="bool" />
+			<param index="4" name="whole_words" type="bool" />
+			<param index="5" name="search_text" type="String" />
+			<param index="6" name="new_text" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="scan" qualifiers="const">
+			<return type="Dictionary[]" />
+			<param index="0" name="file_path" type="String" />
+			<param index="1" name="display_path" type="String" />
+			<param index="2" name="pattern" type="String" />
+			<param index="3" name="match_case" type="bool" />
+			<param index="4" name="whole_words" type="bool" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

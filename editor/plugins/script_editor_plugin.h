@@ -481,7 +481,7 @@ class ScriptEditor : public PanelContainer {
 
 	void _on_find_in_files_requested(String text);
 	void _on_replace_in_files_requested(String text);
-	void _on_find_in_files_result_selected(String fpath, int line_number, int begin, int end);
+	void _on_find_in_files_result_selected(String relative_path, String absolute_path, int line_number, int begin, int end);
 	void _start_find_in_files(bool with_replace);
 	void _on_find_in_files_modified_files(PackedStringArray paths);
 

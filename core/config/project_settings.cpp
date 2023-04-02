@@ -1348,6 +1348,7 @@ ProjectSettings::ProjectSettings() {
 		extensions.push_back("cs");
 	}
 	extensions.push_back("gdshader");
+	extensions.push_back("tscn");
 
 	GLOBAL_DEF(PropertyInfo(Variant::PACKED_STRING_ARRAY, "editor/script/search_in_file_extensions"), extensions);
 

@@ -3643,88 +3643,32 @@ void ScriptEditor::_on_replace_in_files_requested(String text) {
 	find_in_files_dialog->popup_centered();
 }
 
-void ScriptEditor::_on_find_in_files_result_selected(String fpath, int line_number, int begin, int end) {
-	if (ResourceLoader::exists(fpath)) {
-		Ref<Resource> res = ResourceLoader::load(fpath);
+void ScriptEditor::_on_find_in_files_result_selected(String relative_path, String absolute_path, int line_number, int begin, int end) {
+	if (ResourceLoader::exists(absolute_path)) {
+		Ref<Resource> res = ResourceLoader::load(absolute_path);
 
-		if (fpath.get_extension() == "gdshader") {
-			ShaderEditorPlugin *shader_editor = Object::cast_to<ShaderEditorPlugin>(EditorNode::get_editor_data().get_editor_by_name("Shader"));
+		if (absolute_path.get_extension() == "gdshader") {
+			ShaderEditorPlugin *shader_editor = Object::cast_to<ShaderEditorPlugin>(EditorNode::get_singleton()->get_editor_data().get_editor_by_name("Shader"));
 			shader_editor->edit(res.ptr());
 			shader_editor->make_visible(true);
 			shader_editor->get_shader_editor(res)->goto_line_selection(line_number - 1, begin, end);
 			return;
-		} else if (fpath.get_extension() == "tscn") {
-			Ref<FileAccess> f = FileAccess::open(fpath, FileAccess::READ);
-			bool is_script_found = false;
+		} else if (absolute_path.get_extension() == "tscn") {
+			EditorNode::get_singleton()->load_scene(absolute_path);
 
-			// Starting from top of the tscn file.
-			int scr_start_line = 1;
+			Ref<Script> scr = ResourceLoader::load(relative_path, "Script");
+			if (scr.is_valid()) {
+				edit(scr);
+				ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(_get_current_editor());
 
-			String scr_header = "[sub_resource type=\"GDScript\" id=\"";
-			String scr_id = "";
-			String line = "";
-
-			int l = 0;
-
-			while (!f->eof_reached()) {
-				line = f->get_line();
-				l++;
-
-				if (!line.begins_with(scr_header)) {
-					continue;
+				if (ste) {
+					ste->goto_line_selection(line_number - 1, begin, end);
 				}
-
-				// Found the end of the script.
-				scr_id = line.get_slice(scr_header, 1);
-				scr_id = scr_id.get_slice("\"", 0);
-
-				scr_start_line = l + 1;
-				int scr_line_count = 0;
-
-				do {
-					line = f->get_line();
-					l++;
-					String strline = line.strip_edges();
-
-					if (strline.ends_with("\"") && !strline.ends_with("\\\"")) {
-						// Found the end of script.
-						break;
-					}
-					scr_line_count++;
-
-				} while (!f->eof_reached());
-
-				if (line_number > scr_start_line + scr_line_count) {
-					// Find in another built-in GDScript.
-					continue;
-				}
-
-				// Real line number of the built-in script.
-				line_number = line_number - scr_start_line;
-
-				is_script_found = true;
-				break;
+				return;
 			}
-
-			EditorNode::get_singleton()->load_scene(fpath);
-
-			if (is_script_found && !scr_id.is_empty()) {
-				Ref<Script> scr = ResourceLoader::load(fpath + "::" + scr_id, "Script");
-				if (scr.is_valid()) {
-					edit(scr);
-					ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(_get_current_editor());
-
-					if (ste) {
-						ste->goto_line_selection(line_number, begin, end);
-					}
-				}
-			}
-
-			return;
 		} else {
 			Ref<Script> scr = res;
-			Ref<JSON> json = res;
-			if (scr.is_valid() || json.is_valid()) {
+			if (scr.is_valid()) {
 				edit(scr);
 
 				ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(_get_current_editor());
@@ -3738,7 +3682,7 @@ void ScriptEditor::_on_find_in_files_result_selected(String fpath, int line_numb
 
 	// If the file is not a valid resource/script, load it as a text file.
 	Error err;
-	Ref<TextFile> text_file = _load_text_file(fpath, &err);
+	Ref<TextFile> text_file = _load_text_file(absolute_path, &err);
 	if (text_file.is_valid()) {
 		edit(text_file);
 

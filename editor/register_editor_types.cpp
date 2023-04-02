@@ -127,6 +127,7 @@
 #include "editor/plugins/visual_shader_editor_plugin.h"
 #include "editor/plugins/voxel_gi_editor_plugin.h"
 #include "editor/register_exporters.h"
+#include "editor/script_search_replace.h"
 
 void register_editor_types() {
 	OS::get_singleton()->benchmark_begin_measure("register_editor_types");
@@ -197,6 +198,9 @@ void register_editor_types() {
 	GDREGISTER_CLASS(ResourceImporterTexture);
 	GDREGISTER_CLASS(ResourceImporterTextureAtlas);
 	GDREGISTER_CLASS(ResourceImporterWAV);
+
+	GDREGISTER_CLASS(ScriptSearchReplace);
+	GDREGISTER_CLASS(ScriptScanner);
 
 	// This list is alphabetized, and plugins that depend on Node2D are in their own section below.
 	EditorPlugins::add_by_type<AnimationTreeEditorPlugin>();

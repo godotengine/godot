@@ -36,6 +36,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_string_names.h"
+#include "editor/script_search_replace.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
@@ -53,33 +54,6 @@ const char *FindInFiles::SIGNAL_FINISHED = "finished";
 template <typename T>
 inline void pop_back(T &container) {
 	container.resize(container.size() - 1);
-}
-
-static bool find_next(const String &line, String pattern, int from, bool match_case, bool whole_words, int &out_begin, int &out_end) {
-	int end = from;
-
-	while (true) {
-		int begin = match_case ? line.find(pattern, end) : line.findn(pattern, end);
-
-		if (begin == -1) {
-			return false;
-		}
-
-		end = begin + pattern.length();
-		out_begin = begin;
-		out_end = end;
-
-		if (whole_words) {
-			if (begin > 0 && (is_ascii_identifier_char(line[begin - 1]))) {
-				continue;
-			}
-			if (end < line.size() && (is_ascii_identifier_char(line[end]))) {
-				continue;
-			}
-		}
-
-		return true;
-	}
 }
 
 //--------------------------------------------------------------------------------
@@ -190,11 +164,15 @@ void FindInFiles::_iterate() {
 
 	} else if (_files_to_scan.size() != 0) {
 		// Then scan files.
-
-		String fpath = _files_to_scan[_files_to_scan.size() - 1];
+		String file_path = _files_to_scan[_files_to_scan.size() - 1];
 		pop_back(_files_to_scan);
-		_scan_file(fpath);
 
+		// Delegate scanning the file to ScriptSearchReplace.
+		TypedArray<Dictionary> matches = ScriptSearchReplace::get_singleton()->scan(file_path, file_path, _pattern, _match_case, _whole_words);
+		for (int i = 0; i < matches.size(); i++) {
+			ScriptSearchReplace::ScanMatch match = ScriptSearchReplace::ScanMatch::from_dict(matches[i]);
+			emit_signal(SNAME(SIGNAL_RESULT_FOUND), match.display_text, match.file_path, file_path, match.line_number, match.begin, match.end, match.line);
+		}
 	} else {
 		print_verbose("Search complete");
 		set_process(false);
@@ -253,33 +231,11 @@ void FindInFiles::_scan_dir(String path, PackedStringArray &out_folders) {
 	}
 }
 
-void FindInFiles::_scan_file(String fpath) {
-	Ref<FileAccess> f = FileAccess::open(fpath, FileAccess::READ);
-	if (f.is_null()) {
-		print_verbose(String("Cannot open file ") + fpath);
-		return;
-	}
-
-	int line_number = 0;
-
-	while (!f->eof_reached()) {
-		// Line number starts at 1.
-		++line_number;
-
-		int begin = 0;
-		int end = 0;
-
-		String line = f->get_line();
-
-		while (find_next(line, _pattern, end, _match_case, _whole_words, begin, end)) {
-			emit_signal(SNAME(SIGNAL_RESULT_FOUND), fpath, line_number, begin, end, line);
-		}
-	}
-}
-
 void FindInFiles::_bind_methods() {
 	ADD_SIGNAL(MethodInfo(SIGNAL_RESULT_FOUND,
-			PropertyInfo(Variant::STRING, "path"),
+			PropertyInfo(Variant::STRING, "display_text"),
+			PropertyInfo(Variant::STRING, "relative_file_path"),
+			PropertyInfo(Variant::STRING, "absolute_file_path"),
 			PropertyInfo(Variant::INT, "line_number"),
 			PropertyInfo(Variant::INT, "begin"),
 			PropertyInfo(Variant::INT, "end"),
@@ -703,21 +659,24 @@ void FindInFilesPanel::_notification(int p_what) {
 	}
 }
 
-void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin, int end, String text) {
+void FindInFilesPanel::_on_result_found(String display_text, String relative_file_path, String absolute_file_path, int line_number, int begin, int end, String text) {
 	TreeItem *file_item;
-	HashMap<String, TreeItem *>::Iterator E = _file_items.find(fpath);
+	HashMap<String, TreeItem *>::Iterator E = _file_items.find(absolute_file_path);
 
 	if (!E) {
 		file_item = _results_display->create_item();
-		file_item->set_text(0, fpath);
-		file_item->set_metadata(0, fpath);
+		file_item->set_text(0, display_text);
+		Vector<String> item_metadata;
+		item_metadata.append(relative_file_path);
+		item_metadata.append(absolute_file_path);
+		file_item->set_metadata(0, item_metadata);
 
 		// The width of this column is restrained to checkboxes,
 		// but that doesn't make sense for the parent items,
 		// so we override their width so they can expand to full width.
 		file_item->set_expand_right(0, true);
 
-		_file_items[fpath] = file_item;
+		_file_items[absolute_file_path] = file_item;
 	} else {
 		file_item = E->value;
 	}
@@ -832,9 +791,9 @@ void FindInFilesPanel::_on_result_selected() {
 	Result r = E->value;
 
 	TreeItem *file_item = item->get_parent();
-	String fpath = file_item->get_metadata(0);
+	Vector<String> item_metadata = file_item->get_metadata(0);
 
-	emit_signal(SNAME(SIGNAL_RESULT_SELECTED), fpath, r.line_number, r.begin, r.end);
+	emit_signal(SNAME(SIGNAL_RESULT_SELECTED), item_metadata.get(0), item_metadata.get(1), r.line_number, r.begin, r.end);
 }
 
 void FindInFilesPanel::_on_replace_text_changed(String text) {
@@ -848,7 +807,7 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 
 	for (KeyValue<String, TreeItem *> &E : _file_items) {
 		TreeItem *file_item = E.value;
-		String fpath = file_item->get_metadata(0);
+		Vector<String> item_metadata = file_item->get_metadata(0);
 
 		Vector<Result> locations;
 		for (TreeItem *item = file_item->get_first_child(); item; item = item->get_next()) {
@@ -863,8 +822,12 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 
 		if (locations.size() != 0) {
 			// Results are sorted by file, so we can batch replaces.
-			apply_replaces_in_file(fpath, locations, replace_text);
-			modified_files.push_back(fpath);
+			TypedArray<Dictionary> mapped_locations;
+			for (const FindInFilesPanel::Result &location : locations) {
+				mapped_locations.push_back(ScriptSearchReplace::ScanLocation{ location.line_number, location.begin, location.end }.to_dict());
+			}
+			ScriptSearchReplace::get_singleton()->replace(item_metadata.get(1), item_metadata.get(0), mapped_locations, _finder->is_match_case(), _finder->is_whole_words(), _finder->get_search_text(), replace_text);
+			modified_files.push_back(item_metadata.get(0));
 		}
 	}
 
@@ -872,96 +835,6 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 	_replace_container->hide();
 
 	emit_signal(SNAME(SIGNAL_FILES_MODIFIED), modified_files);
-}
-
-// Same as get_line, but preserves line ending characters.
-class ConservativeGetLine {
-public:
-	String get_line(Ref<FileAccess> f) {
-		_line_buffer.clear();
-
-		char32_t c = f->get_8();
-
-		while (!f->eof_reached()) {
-			if (c == '\n') {
-				_line_buffer.push_back(c);
-				_line_buffer.push_back(0);
-				return String::utf8(_line_buffer.ptr());
-
-			} else if (c == '\0') {
-				_line_buffer.push_back(c);
-				return String::utf8(_line_buffer.ptr());
-
-			} else if (c != '\r') {
-				_line_buffer.push_back(c);
-			}
-
-			c = f->get_8();
-		}
-
-		_line_buffer.push_back(0);
-		return String::utf8(_line_buffer.ptr());
-	}
-
-private:
-	Vector<char> _line_buffer;
-};
-
-void FindInFilesPanel::apply_replaces_in_file(String fpath, const Vector<Result> &locations, String new_text) {
-	// If the file is already open, I assume the editor will reload it.
-	// If there are unsaved changes, the user will be asked on focus,
-	// however that means either losing changes or losing replaces.
-
-	Ref<FileAccess> f = FileAccess::open(fpath, FileAccess::READ);
-	ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file from path '" + fpath + "'.");
-
-	String buffer;
-	int current_line = 1;
-
-	ConservativeGetLine conservative;
-
-	String line = conservative.get_line(f);
-	String search_text = _finder->get_search_text();
-
-	int offset = 0;
-
-	for (int i = 0; i < locations.size(); ++i) {
-		int repl_line_number = locations[i].line_number;
-
-		while (current_line < repl_line_number) {
-			buffer += line;
-			line = conservative.get_line(f);
-			++current_line;
-			offset = 0;
-		}
-
-		int repl_begin = locations[i].begin + offset;
-		int repl_end = locations[i].end + offset;
-
-		int _;
-		if (!find_next(line, search_text, repl_begin, _finder->is_match_case(), _finder->is_whole_words(), _, _)) {
-			// Make sure the replace is still valid in case the file was tampered with.
-			print_verbose(String("Occurrence no longer matches, replace will be ignored in {0}: line {1}, col {2}").format(varray(fpath, repl_line_number, repl_begin)));
-			continue;
-		}
-
-		line = line.left(repl_begin) + new_text + line.substr(repl_end);
-		// Keep an offset in case there are successive replaces in the same line.
-		offset += new_text.length() - (repl_end - repl_begin);
-	}
-
-	buffer += line;
-
-	while (!f->eof_reached()) {
-		buffer += conservative.get_line(f);
-	}
-
-	// Now the modified contents are in the buffer, rewrite the file with our changes.
-
-	Error err = f->reopen(fpath, FileAccess::WRITE);
-	ERR_FAIL_COND_MSG(err != OK, "Cannot create file in path '" + fpath + "'.");
-
-	f->store_string(buffer);
 }
 
 String FindInFilesPanel::get_replace_text() {
@@ -984,7 +857,8 @@ void FindInFilesPanel::_bind_methods() {
 	ClassDB::bind_method("_draw_result_text", &FindInFilesPanel::draw_result_text);
 
 	ADD_SIGNAL(MethodInfo(SIGNAL_RESULT_SELECTED,
-			PropertyInfo(Variant::STRING, "path"),
+			PropertyInfo(Variant::STRING, "display_text"),
+			PropertyInfo(Variant::STRING, "absolute_file_path"),
 			PropertyInfo(Variant::INT, "line_number"),
 			PropertyInfo(Variant::INT, "begin"),
 			PropertyInfo(Variant::INT, "end")));
