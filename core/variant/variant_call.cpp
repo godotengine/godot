@@ -700,6 +700,19 @@ struct _VariantCall {
 		return s;
 	}
 
+	static String func_PackedByteArray_get_string_from_wchar(PackedByteArray *p_instance) {
+		String s;
+		if (p_instance->size() > 0) {
+			const uint8_t *r = p_instance->ptr();
+#ifdef WINDOWS_ENABLED
+			s.parse_utf16((const char16_t *)r, floor((double)p_instance->size() / (double)sizeof(char16_t)));
+#else
+			s = String((const char32_t *)r, floor((double)p_instance->size() / (double)sizeof(char32_t)));
+#endif
+		}
+		return s;
+	}
+
 	static PackedByteArray func_PackedByteArray_compress(PackedByteArray *p_instance, int p_mode) {
 		PackedByteArray compressed;
 
@@ -1721,6 +1734,7 @@ static void _register_variant_builtin_methods() {
 	bind_string_method(to_utf8_buffer, sarray(), varray());
 	bind_string_method(to_utf16_buffer, sarray(), varray());
 	bind_string_method(to_utf32_buffer, sarray(), varray());
+	bind_string_method(to_wchar_buffer, sarray(), varray());
 
 	bind_static_method(String, num_scientific, sarray("number"), varray());
 	bind_static_method(String, num, sarray("number", "decimals"), varray(-1));
@@ -2258,6 +2272,7 @@ static void _register_variant_builtin_methods() {
 	bind_function(PackedByteArray, get_string_from_utf8, _VariantCall::func_PackedByteArray_get_string_from_utf8, sarray(), varray());
 	bind_function(PackedByteArray, get_string_from_utf16, _VariantCall::func_PackedByteArray_get_string_from_utf16, sarray(), varray());
 	bind_function(PackedByteArray, get_string_from_utf32, _VariantCall::func_PackedByteArray_get_string_from_utf32, sarray(), varray());
+	bind_function(PackedByteArray, get_string_from_wchar, _VariantCall::func_PackedByteArray_get_string_from_wchar, sarray(), varray());
 	bind_function(PackedByteArray, hex_encode, _VariantCall::func_PackedByteArray_hex_encode, sarray(), varray());
 	bind_function(PackedByteArray, compress, _VariantCall::func_PackedByteArray_compress, sarray("compression_mode"), varray(0));
 	bind_function(PackedByteArray, decompress, _VariantCall::func_PackedByteArray_decompress, sarray("buffer_size", "compression_mode"), varray(0));

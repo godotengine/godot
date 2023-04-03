@@ -5034,6 +5034,14 @@ Vector<uint8_t> String::to_utf32_buffer() const {
 	return retval;
 }
 
+Vector<uint8_t> String::to_wchar_buffer() const {
+#ifdef WINDOWS_ENABLED
+	return to_utf16_buffer();
+#else
+	return to_utf32_buffer();
+#endif
+}
+
 #ifdef TOOLS_ENABLED
 /**
  * "Tools TRanslate". Performs string replacement for internationalization

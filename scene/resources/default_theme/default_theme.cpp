@@ -180,6 +180,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("icon_disabled_color", "Button", Color(1, 1, 1, 0.4));
 
 	theme->set_constant("h_separation", "Button", 2 * scale);
+	theme->set_constant("icon_max_width", "Button", 0);
 
 	// MenuBar
 	theme->set_stylebox("normal", "MenuBar", button_normal);
@@ -688,6 +689,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("separator_outline_size", "PopupMenu", 0);
 	theme->set_constant("item_start_padding", "PopupMenu", 2 * scale);
 	theme->set_constant("item_end_padding", "PopupMenu", 2 * scale);
+	theme->set_constant("icon_max_width", "PopupMenu", 0);
 
 	// GraphNode
 	Ref<StyleBoxFlat> graphnode_normal = make_flat_stylebox(style_normal_color, 18, 42, 18, 12);
@@ -780,6 +782,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("scroll_border", "Tree", 4);
 	theme->set_constant("scroll_speed", "Tree", 12);
 	theme->set_constant("outline_size", "Tree", 0);
+	theme->set_constant("icon_max_width", "Tree", 0);
 
 	// ItemList
 
@@ -842,6 +845,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("side_margin", "TabContainer", 8 * scale);
 	theme->set_constant("icon_separation", "TabContainer", 4 * scale);
+	theme->set_constant("icon_max_width", "TabContainer", 0);
 	theme->set_constant("outline_size", "TabContainer", 0);
 
 	// TabBar
@@ -869,6 +873,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("drop_mark_color", "TabBar", Color(1, 1, 1));
 
 	theme->set_constant("h_separation", "TabBar", 4 * scale);
+	theme->set_constant("icon_max_width", "TabBar", 0);
 	theme->set_constant("outline_size", "TabBar", 0);
 
 	// Separators

@@ -301,6 +301,16 @@ void WebXRInterfaceJS::uninitialize() {
 	};
 };
 
+Dictionary WebXRInterfaceJS::get_system_info() {
+	Dictionary dict;
+
+	// TODO get actual information from WebXR to return here
+	dict[SNAME("XRRuntimeName")] = String("WebXR");
+	dict[SNAME("XRRuntimeVersion")] = String("");
+
+	return dict;
+}
+
 Transform3D WebXRInterfaceJS::_js_matrix_to_transform(float *p_js_matrix) {
 	Transform3D transform;
 

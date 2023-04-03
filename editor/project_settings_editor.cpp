@@ -586,6 +586,7 @@ void ProjectSettingsEditor::_bind_methods() {
 ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	singleton = this;
 	set_title(TTR("Project Settings (project.godot)"));
+	set_clamp_to_embedder(true);
 
 	ps = ProjectSettings::get_singleton();
 	data = p_data;

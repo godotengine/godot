@@ -108,7 +108,7 @@ private:
 
 	/* Line numbers */
 	int line_number_gutter = -1;
-	int line_number_digits = 0;
+	int line_number_digits = 1;
 	String line_number_padding = " ";
 	Color line_number_color = Color(1, 1, 1);
 	void _line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region);
@@ -211,6 +211,7 @@ private:
 	bool code_completion_active = false;
 	bool is_code_completion_scroll_hovered = false;
 	bool is_code_completion_scroll_pressed = false;
+	bool is_code_completion_drag_started = false;
 	Vector<ScriptLanguage::CodeCompletionOption> code_completion_options;
 	int code_completion_line_ofs = 0;
 	int code_completion_current_selected = 0;

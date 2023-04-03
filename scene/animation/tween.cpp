@@ -228,6 +228,14 @@ Ref<Tween> Tween::set_loops(int p_loops) {
 	return this;
 }
 
+int Tween::get_loops_left() const {
+	if (loops <= 0) {
+		return -1; // Infinite loop.
+	} else {
+		return loops - loops_done;
+	}
+}
+
 Ref<Tween> Tween::set_speed_scale(float p_speed) {
 	speed_scale = p_speed;
 	return this;
@@ -442,6 +450,7 @@ void Tween::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_parallel", "parallel"), &Tween::set_parallel, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("set_loops", "loops"), &Tween::set_loops, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_loops_left"), &Tween::get_loops_left);
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "speed"), &Tween::set_speed_scale);
 	ClassDB::bind_method(D_METHOD("set_trans", "trans"), &Tween::set_trans);
 	ClassDB::bind_method(D_METHOD("set_ease", "ease"), &Tween::set_ease);

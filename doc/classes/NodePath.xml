@@ -141,7 +141,7 @@
 			<return type="StringName" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Gets the resource or property name indicated by [param idx] (0 to [method get_subname_count]).
+				Gets the resource or property name indicated by [param idx] (0 to [method get_subname_count] - 1).
 				[codeblocks]
 				[gdscript]
 				var node_path = NodePath("Path2D/PathFollow2D/Sprite2D:texture:load_path")

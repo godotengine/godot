@@ -530,21 +530,24 @@ private:
 		Color font_outline_color;
 
 		float base_scale = 1.0;
+		int font_outline_size = 0;
 
 		int h_separation = 0;
 		int v_separation = 0;
 		int item_margin = 0;
 		int button_margin = 0;
+		int icon_max_width = 0;
 		Point2 offset;
+
 		int draw_relationship_lines = 0;
 		int relationship_line_width = 0;
 		int parent_hl_line_width = 0;
 		int children_hl_line_width = 0;
 		int parent_hl_line_margin = 0;
 		int draw_guides = 0;
+
 		int scroll_border = 0;
 		int scroll_speed = 0;
-		int font_outline_size = 0;
 	} theme_cache;
 
 	struct Cache {
@@ -573,6 +576,7 @@ private:
 	} cache;
 
 	int _get_title_button_height() const;
+	Size2 _get_cell_icon_size(const TreeItem::Cell &p_cell) const;
 
 	void _scroll_moved(float p_value);
 	HScrollBar *h_scroll = nullptr;

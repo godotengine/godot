@@ -113,6 +113,8 @@ private:
 	Color tint_progress = Color(1, 1, 1);
 	Color tint_over = Color(1, 1, 1);
 
+	void _set_texture(Ref<Texture2D> *p_destination, const Ref<Texture2D> &p_texture);
+	void _texture_changed();
 	Point2 unit_val_to_uv(float val);
 	Point2 get_relative_center();
 	void draw_nine_patch_stretched(const Ref<Texture2D> &p_texture, FillMode p_mode, double p_ratio, const Color &p_modulate);

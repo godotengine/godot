@@ -1163,7 +1163,7 @@
 			<param index="1" name="width" type="float" />
 			<param index="2" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
 			<description>
-				Adjusts text with to fit to specified width, returns new text width.
+				Adjusts text width to fit to specified width, returns new text width.
 			</description>
 		</method>
 		<method name="shaped_text_get_ascent" qualifiers="const">

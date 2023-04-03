@@ -209,6 +209,9 @@
 		<theme_item name="font_unselected_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 1)">
 			Font color of the other, unselected tabs.
 		</theme_item>
+		<theme_item name="icon_max_width" data_type="constant" type="int" default="0">
+			The maximum allowed width of the tab's icon. This limit is applied on top of the default size of the icon, but before the value set with [method TabBar.set_tab_icon_max_width]. The height is adjusted according to the icon's ratio.
+		</theme_item>
 		<theme_item name="icon_separation" data_type="constant" type="int" default="4">
 			Space between tab's name and its icon.
 		</theme_item>

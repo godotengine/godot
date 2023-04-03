@@ -28,6 +28,23 @@
 /* Internal Class Implementation                                        */
 /************************************************************************/
 
+static inline uint32_t CHANGE_COLORSPACE(uint32_t c)
+{
+    return (c & 0xff000000) + ((c & 0x00ff0000)>>16) + (c & 0x0000ff00) + ((c & 0x000000ff)<<16);
+}
+
+
+static void _changeColorSpace(uint32_t* data, uint32_t w, uint32_t h)
+{
+    auto buffer = data;
+    for (uint32_t y = 0; y < h; ++y, buffer += w) {
+        auto src = buffer;
+        for (uint32_t x = 0; x < w; ++x, ++src) {
+            *src = CHANGE_COLORSPACE(*src);
+        }
+    }
+}
+
 /************************************************************************/
 /* External Class Implementation                                        */
 /************************************************************************/
@@ -54,7 +71,7 @@ bool RawLoader::open(const uint32_t* data, uint32_t w, uint32_t h, bool copy)
         if (!content) return false;
         memcpy((void*)content, data, sizeof(uint32_t) * w * h);
     }
-    else content = data;
+    else content = const_cast<uint32_t*>(data);
 
     return true;
 }
@@ -72,16 +89,20 @@ bool RawLoader::close()
 }
 
 
-unique_ptr<Surface> RawLoader::bitmap()
+unique_ptr<Surface> RawLoader::bitmap(uint32_t colorSpace)
 {
     if (!content) return nullptr;
+    if (this->colorSpace != colorSpace) {
+        this->colorSpace = colorSpace;
+        _changeColorSpace(content, w, h);
+    }
 
     auto surface = static_cast<Surface*>(malloc(sizeof(Surface)));
-    surface->buffer = (uint32_t*)(content);
-    surface->stride = (uint32_t)w;
-    surface->w = (uint32_t)w;
-    surface->h = (uint32_t)h;
-    surface->cs = SwCanvas::ARGB8888;
+    surface->buffer = content;
+    surface->stride = static_cast<uint32_t>(w);
+    surface->w = static_cast<uint32_t>(w);
+    surface->h = static_cast<uint32_t>(h);
+    surface->cs = colorSpace;
 
     return unique_ptr<Surface>(surface);
 }

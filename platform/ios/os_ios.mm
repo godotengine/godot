@@ -302,7 +302,7 @@ Error OS_IOS::shell_open(String p_uri) {
 		return ERR_CANT_OPEN;
 	}
 
-	printf("opening url %s\n", p_uri.utf8().get_data());
+	print_verbose(vformat("Opening URL %s", p_uri));
 
 	[[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
 

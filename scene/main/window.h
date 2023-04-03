@@ -310,6 +310,7 @@ public:
 	void popup_centered(const Size2i &p_minsize = Size2i());
 	void popup_centered_clamped(const Size2i &p_size = Size2i(), float p_fallback_ratio = 0.75);
 
+	Rect2i fit_rect_in_parent(Rect2i p_rect, const Rect2i &p_parent_rect) const;
 	Size2 get_contents_minimum_size() const;
 	Size2 get_clamped_minimum_size() const;
 

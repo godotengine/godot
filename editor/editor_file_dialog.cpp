@@ -593,8 +593,8 @@ void EditorFileDialog::_item_dc_selected(int p_item) {
 
 	if (d["dir"]) {
 		dir_access->change_dir(d["name"]);
-		call_deferred(SNAME("_update_file_list"));
-		call_deferred(SNAME("_update_dir"));
+		callable_mp(this, &EditorFileDialog::update_file_list).call_deferred();
+		callable_mp(this, &EditorFileDialog::update_dir).call_deferred();
 
 		_push_history();
 
@@ -1146,14 +1146,24 @@ void EditorFileDialog::set_access(Access p_access) {
 }
 
 void EditorFileDialog::invalidate() {
-	if (is_visible()) {
-		update_file_list();
-		_update_favorites();
-		_update_recent();
-		invalidated = false;
-	} else {
-		invalidated = true;
+	if (!is_visible() || is_invalidating) {
+		return;
 	}
+
+	is_invalidating = true;
+	callable_mp(this, &EditorFileDialog::_invalidate).call_deferred();
+}
+
+void EditorFileDialog::_invalidate() {
+	if (!is_invalidating) {
+		return;
+	}
+
+	update_file_list();
+	_update_favorites();
+	_update_recent();
+
+	is_invalidating = false;
 }
 
 EditorFileDialog::Access EditorFileDialog::get_access() const {
@@ -1599,9 +1609,6 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_access"), &EditorFileDialog::get_access);
 	ClassDB::bind_method(D_METHOD("set_show_hidden_files", "show"), &EditorFileDialog::set_show_hidden_files);
 	ClassDB::bind_method(D_METHOD("is_showing_hidden_files"), &EditorFileDialog::is_showing_hidden_files);
-	ClassDB::bind_method(D_METHOD("_update_file_name"), &EditorFileDialog::update_file_name);
-	ClassDB::bind_method(D_METHOD("_update_dir"), &EditorFileDialog::update_dir);
-	ClassDB::bind_method(D_METHOD("_update_file_list"), &EditorFileDialog::update_file_list);
 	ClassDB::bind_method(D_METHOD("_thumbnail_done"), &EditorFileDialog::_thumbnail_done);
 	ClassDB::bind_method(D_METHOD("set_display_mode", "mode"), &EditorFileDialog::set_display_mode);
 	ClassDB::bind_method(D_METHOD("get_display_mode"), &EditorFileDialog::get_display_mode);

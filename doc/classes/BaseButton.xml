@@ -49,6 +49,7 @@
 		</member>
 		<member name="button_group" type="ButtonGroup" setter="set_button_group" getter="get_button_group">
 			The [ButtonGroup] associated with the button. Not to be confused with node groups.
+			[b]Note:[/b] The button will be configured as a radio button if a [ButtonGroup] is assigned to it.
 		</member>
 		<member name="button_mask" type="int" setter="set_button_mask" getter="get_button_mask" enum="MouseButtonMask" default="1">
 			Binary mask to choose which mouse buttons this button will respond to.
