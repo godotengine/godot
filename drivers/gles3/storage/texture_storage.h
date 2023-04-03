@@ -39,7 +39,7 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/storage/texture_storage.h"
 
-#include "../shaders/canvas_sdf.glsl.gen.h"
+#include "drivers/gles3/shaders/canvas_sdf.glsl.gen.h"
 
 // This must come first to avoid windows.h mess
 #include "platform_config.h"

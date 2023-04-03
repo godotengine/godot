@@ -114,11 +114,17 @@ def include_file_in_rd_header(filename: str, header_data: RDHeaderStruct, depth:
     return header_data
 
 
-def build_rd_header(filename: str, header_data: Optional[RDHeaderStruct] = None) -> None:
+def build_rd_header(
+    filename: str, optional_output_filename: str = None, header_data: Optional[RDHeaderStruct] = None
+) -> None:
     header_data = header_data or RDHeaderStruct()
     include_file_in_rd_header(filename, header_data, 0)
 
-    out_file = filename + ".gen.h"
+    if optional_output_filename is None:
+        out_file = filename + ".gen.h"
+    else:
+        out_file = optional_output_filename
+
     out_file_base = out_file
     out_file_base = out_file_base[out_file_base.rfind("/") + 1 :]
     out_file_base = out_file_base[out_file_base.rfind("\\") + 1 :]
@@ -165,7 +171,7 @@ public:
 
 def build_rd_headers(target, source, env):
     for x in source:
-        build_rd_header(str(x))
+        build_rd_header(filename=str(x))
 
 
 class RAWHeaderStruct:
@@ -193,11 +199,17 @@ def include_file_in_raw_header(filename: str, header_data: RAWHeaderStruct, dept
     fs.close()
 
 
-def build_raw_header(filename: str, header_data: Optional[RAWHeaderStruct] = None):
+def build_raw_header(
+    filename: str, optional_output_filename: str = None, header_data: Optional[RAWHeaderStruct] = None
+):
     header_data = header_data or RAWHeaderStruct()
     include_file_in_raw_header(filename, header_data, 0)
 
-    out_file = filename + ".gen.h"
+    if optional_output_filename is None:
+        out_file = filename + ".gen.h"
+    else:
+        out_file = optional_output_filename
+
     out_file_base = out_file.replace(".glsl.gen.h", "_shader_glsl")
     out_file_base = out_file_base[out_file_base.rfind("/") + 1 :]
     out_file_base = out_file_base[out_file_base.rfind("\\") + 1 :]
@@ -219,7 +231,7 @@ static const char {out_file_base}[] = {{
 
 def build_raw_headers(target, source, env):
     for x in source:
-        build_raw_header(str(x))
+        build_raw_header(filename=str(x))
 
 
 if __name__ == "__main__":
