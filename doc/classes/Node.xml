@@ -954,8 +954,10 @@
 			Specific to the Android platform.
 		</constant>
 		<constant name="NOTIFICATION_WM_SIZE_CHANGED" value="1008">
+			Notification received from the OS when the window is resized.
 		</constant>
 		<constant name="NOTIFICATION_WM_DPI_CHANGE" value="1009">
+			Notification received from the OS when the screen's DPI has been changed. Only implemented on macOS.
 		</constant>
 		<constant name="NOTIFICATION_VP_MOUSE_ENTER" value="1010">
 			Notification received when the mouse enters the viewport.
