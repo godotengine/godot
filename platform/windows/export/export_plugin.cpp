@@ -389,18 +389,29 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 	//Having a standard naming fallback preventing showing up as Godot Engine
 	args.push_back("--set-version-string");
 	args.push_back("ProductName");
-	if (product_name.is_empty())
-		args.push_back(GLOBAL_GET("application/config/name"));
-	else
+	if (product_name.is_empty()) {
+		String app_name = GLOBAL_GET("application/config/name");
+		if (app_name.is_empty()) {
+			args.push_back("Unnamed Project");
+		} else {
+			args.push_back(app_name);
+		}
+	} else {
 		args.push_back(product_name);
-
+	}
 	args.push_back("--set-version-string");
 	args.push_back("FileDescription");
-	if (file_description.is_empty())
-		args.push_back(GLOBAL_GET("application/config/name"));
-	else
+	if (file_description.is_empty()) {
+		String app_name = GLOBAL_GET("application/config/name");
+		if (app_name.is_empty()) {
+			args.push_back("Unnamed Project");
+		} else {
+			args.push_back(app_name);
+		}
+	} else {
 		args.push_back(file_description);
-
+	}
+	
 	if (!company_name.is_empty()) {
 		args.push_back("--set-version-string");
 		args.push_back("CompanyName");
