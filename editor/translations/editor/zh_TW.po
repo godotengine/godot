@@ -40,13 +40,14 @@
 # nitenook <admin@alterbaum.net>, 2022.
 # Edison Lee <edisonlee@edisonlee55.com>, 2023.
 # abcabcc <xmmandxpp@outlook.com>, 2023.
+# leo <leowong1220@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-18 17:29+0000\n"
-"Last-Translator: Eric K <eric900601@gmail.com>\n"
+"PO-Revision-Date: 2023-03-31 00:59+0000\n"
+"Last-Translator: leo <leowong1220@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -54,7 +55,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.17-dev\n"
 
 msgid "Unset"
 msgstr "未設定"
@@ -381,6 +382,9 @@ msgstr "清除光標和選區"
 msgid "Toggle Insert Mode"
 msgstr "開關插入模式"
 
+msgid "Submit Text"
+msgstr "編輯文本 :"
+
 msgid "Duplicate Nodes"
 msgstr "重複節點"
 
@@ -537,11 +541,17 @@ msgstr "改爲鏡像控制柄"
 msgid "Make Handles Balanced (Auto Tangent)"
 msgstr "改爲平衡控制柄 (自動切綫)"
 
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "使用反轉手柄(自動切線)"
+
 msgid "Add Bezier Point"
 msgstr "新增貝茲曲線控制點"
 
 msgid "Move Bezier Points"
 msgstr "移動貝茲曲線控制點"
+
+msgid "Animation Delete Keys"
+msgstr "刪除動畫關鍵畫格"
 
 msgid "Animation Change %s"
 msgstr "修改動畫 %s"

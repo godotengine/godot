@@ -47,8 +47,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-05 01:38+0000\n"
-"Last-Translator: jaehun choe <jayden.choe@gmail.com>\n"
+"PO-Revision-Date: 2023-04-01 13:00+0000\n"
+"Last-Translator: Rocream <kbg4660@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ko/>\n"
 "Language: ko\n"
@@ -56,7 +56,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.16.2-dev\n"
+"X-Generator: Weblate 4.17-dev\n"
 
 msgid "Application"
 msgstr "어플리케이션"
@@ -96,6 +96,12 @@ msgstr "사용자 지정 디렉토리 이름"
 
 msgid "Project Settings Override"
 msgstr "프로젝트 설정 덮어쓰기"
+
+msgid "Main Loop Type"
+msgstr "메인 루프 유형"
+
+msgid "Auto Accept Quit"
+msgstr "자동 수락 종료"
 
 msgid "Display"
 msgstr "표시"
@@ -184,6 +190,15 @@ msgstr "2D"
 msgid "3D"
 msgstr "3D"
 
+msgid "Stretch"
+msgstr "스트레치"
+
+msgid "Aspect"
+msgstr "양상"
+
+msgid "Scale"
+msgstr "크기"
+
 msgid "Debug"
 msgstr "디버그"
 
@@ -226,6 +241,18 @@ msgstr "GUI"
 msgid "Timers"
 msgstr "타이머"
 
+msgid "Common"
+msgstr "일반"
+
+msgid "Fonts"
+msgstr "글꼴"
+
+msgid "Dynamic Fonts"
+msgstr "동적 글꼴"
+
+msgid "Use Oversampling"
+msgstr "오버샘플링 사용"
+
 msgid "Block Size (KB)"
 msgstr "블록 크기 (KB)"
 
@@ -234,6 +261,9 @@ msgstr "최대 크기(MB)"
 
 msgid "Vulkan"
 msgstr "벌칸"
+
+msgid "Textures"
+msgstr "텍스처"
 
 msgid "Low Processor Usage Mode"
 msgstr "저사양 모드"
@@ -451,9 +481,6 @@ msgstr "오버라이드"
 msgid "Rotation"
 msgstr "회전"
 
-msgid "Scale"
-msgstr "크기"
-
 msgid "Value"
 msgstr "값"
 
@@ -519,12 +546,6 @@ msgstr "숨김 파일 표시"
 
 msgid "Disable Overwrite Warning"
 msgstr "덮어쓰기 경고 비활성화"
-
-msgid "Import"
-msgstr "가져오기"
-
-msgid "Reimport Missing Imported Files"
-msgstr "누락된 가져온 파일 다시 가져오기"
 
 msgid "Text Editor"
 msgstr "텍스트 에디터"
@@ -1285,9 +1306,6 @@ msgstr "슬라이더 숨기기"
 msgid "Zoom"
 msgstr "줌"
 
-msgid "Export"
-msgstr "내보내기"
-
 msgid "Custom Template"
 msgstr "커스텀 템플릿"
 
@@ -1314,6 +1332,9 @@ msgstr "ETC"
 
 msgid "ETC2"
 msgstr "ETC2"
+
+msgid "Export"
+msgstr "내보내기"
 
 msgid "SSH"
 msgstr "SSH"
@@ -1398,6 +1419,9 @@ msgstr "스케일 메쉬"
 
 msgid "Offset Mesh"
 msgstr "오프셋 메시"
+
+msgid "Import"
+msgstr "가져오기"
 
 msgid "Advanced"
 msgstr "고급"
@@ -1636,6 +1660,9 @@ msgstr "SSH 개인 키 경로"
 msgid "Main Run Args"
 msgstr "메인 실행 인자"
 
+msgid "Reimport Missing Imported Files"
+msgstr "누락된 가져온 파일 다시 가져오기"
+
 msgid "Show Scene Tree Root Selection"
 msgstr "장면 트리 루트 선택 표시"
 
@@ -1680,9 +1707,6 @@ msgstr "오리엔테이션"
 
 msgid "V-Sync"
 msgstr "수직동기화"
-
-msgid "Common"
-msgstr "일반"
 
 msgid "stdout"
 msgstr "표준 출력"
@@ -1770,30 +1794,6 @@ msgstr "어셈블리 이름"
 
 msgid "Solution Directory"
 msgstr "솔루션 디렉토리"
-
-msgid "Main Loop Type"
-msgstr "메인 루프 유형"
-
-msgid "Stretch"
-msgstr "스트레치"
-
-msgid "Aspect"
-msgstr "양상"
-
-msgid "Auto Accept Quit"
-msgstr "자동 수락 종료"
-
-msgid "Fonts"
-msgstr "글꼴"
-
-msgid "Dynamic Fonts"
-msgstr "동적 글꼴"
-
-msgid "Use Oversampling"
-msgstr "오버샘플링 사용"
-
-msgid "Textures"
-msgstr "텍스처"
 
 msgid "Operation"
 msgstr "오퍼레이션"
@@ -2308,6 +2308,9 @@ msgstr "개정"
 msgid "Landscape"
 msgstr "풍경"
 
+msgid "Tiles"
+msgstr "타일"
+
 msgid "Variant"
 msgstr "변종"
 
@@ -2445,6 +2448,9 @@ msgstr "텍스트"
 
 msgid "Uppercase"
 msgstr "대문자로"
+
+msgid "Blur"
+msgstr "흐림"
 
 msgid "Quality"
 msgstr "품질"
@@ -2631,6 +2637,9 @@ msgstr "오른쪽 아래"
 
 msgid "Bottom Left"
 msgstr "왼쪽 아래"
+
+msgid "Scene"
+msgstr "씬"
 
 msgid "Transpose"
 msgstr "행렬 맞바꾸기"

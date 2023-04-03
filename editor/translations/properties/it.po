@@ -132,6 +132,12 @@ msgstr "Nome Personalizzato del Percorso Utente"
 msgid "Project Settings Override"
 msgstr "Sovrascrittura Impostazioni del Progetto"
 
+msgid "Main Loop Type"
+msgstr "Tipo di Loop Principale"
+
+msgid "Auto Accept Quit"
+msgstr "Auto-Accetta Uscita"
+
 msgid "Display"
 msgstr "Schermo"
 
@@ -198,6 +204,15 @@ msgstr "Esegui su un Thread Separato"
 msgid "3D"
 msgstr "3D"
 
+msgid "Stretch"
+msgstr "Allarga"
+
+msgid "Aspect"
+msgstr "Aspetto"
+
+msgid "Scale"
+msgstr "Scala"
+
 msgid "Debug"
 msgstr "Debug"
 
@@ -246,11 +261,26 @@ msgstr "Lingue"
 msgid "GUI"
 msgstr "Interfaccia Grafica"
 
+msgid "Common"
+msgstr "Comune"
+
+msgid "Fonts"
+msgstr "Font"
+
+msgid "Dynamic Fonts"
+msgstr "Font Dinamici"
+
+msgid "Use Oversampling"
+msgstr "Usa Oversampling"
+
 msgid "Rendering Device"
 msgstr "Dispositivo per il Rendering"
 
 msgid "Vulkan"
 msgstr "Vulkan"
+
+msgid "Textures"
+msgstr "Textures"
 
 msgid "Low Processor Usage Mode"
 msgstr "Modalità Processore a Basso Consumo"
@@ -417,9 +447,6 @@ msgstr "Fallback"
 msgid "Rotation"
 msgstr "Rotazione"
 
-msgid "Scale"
-msgstr "Scala"
-
 msgid "Value"
 msgstr "Valore"
 
@@ -485,12 +512,6 @@ msgstr "Mostra File Nascosti"
 
 msgid "Disable Overwrite Warning"
 msgstr "Disabilita Avviso di Sovrascrittura"
-
-msgid "Import"
-msgstr "Importa"
-
-msgid "Reimport Missing Imported Files"
-msgstr "Reimporta Files Importati Mancanti"
 
 msgid "Text Editor"
 msgstr "Editor di Testo"
@@ -1167,9 +1188,6 @@ msgstr "Flat"
 msgid "Hide Slider"
 msgstr "Nascondi Slider"
 
-msgid "Export"
-msgstr "Esporta"
-
 msgid "Custom Template"
 msgstr "Modello Personalizzato"
 
@@ -1196,6 +1214,9 @@ msgstr "ETC"
 
 msgid "ETC2"
 msgstr "ETC2"
+
+msgid "Export"
+msgstr "Esporta"
 
 msgid "Export Path"
 msgstr "Percorso di Esportazione"
@@ -1268,6 +1289,9 @@ msgstr "Ridimensiona Mesh"
 
 msgid "Offset Mesh"
 msgstr "Offset Mesh"
+
+msgid "Import"
+msgstr "Importa"
 
 msgid "Advanced"
 msgstr "Opzioni avanzate"
@@ -1494,6 +1518,9 @@ msgstr "Percorso Chiave SSH Privata"
 msgid "Main Run Args"
 msgstr "Parametri Principali Eseguiti"
 
+msgid "Reimport Missing Imported Files"
+msgstr "Reimporta Files Importati Mancanti"
+
 msgid "Show Scene Tree Root Selection"
 msgstr "Mostra Selezione del Tree Root di Scena"
 
@@ -1538,9 +1565,6 @@ msgstr "Orientazione"
 
 msgid "V-Sync"
 msgstr "Sincronizzazione Verticale"
-
-msgid "Common"
-msgstr "Comune"
 
 msgid "stdout"
 msgstr "stdout"
@@ -1622,30 +1646,6 @@ msgstr "Progetto"
 
 msgid "Solution Directory"
 msgstr "Cartella di Soluzione"
-
-msgid "Main Loop Type"
-msgstr "Tipo di Loop Principale"
-
-msgid "Stretch"
-msgstr "Allarga"
-
-msgid "Aspect"
-msgstr "Aspetto"
-
-msgid "Auto Accept Quit"
-msgstr "Auto-Accetta Uscita"
-
-msgid "Fonts"
-msgstr "Font"
-
-msgid "Dynamic Fonts"
-msgstr "Font Dinamici"
-
-msgid "Use Oversampling"
-msgstr "Usa Oversampling"
-
-msgid "Textures"
-msgstr "Textures"
 
 msgid "Operation"
 msgstr "Operazione"
