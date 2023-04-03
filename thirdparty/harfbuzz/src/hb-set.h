@@ -98,6 +98,9 @@ HB_EXTERN void
 hb_set_invert (hb_set_t *set);
 
 HB_EXTERN hb_bool_t
+hb_set_is_inverted (const hb_set_t *set);
+
+HB_EXTERN hb_bool_t
 hb_set_has (const hb_set_t *set,
 	    hb_codepoint_t  codepoint);
 

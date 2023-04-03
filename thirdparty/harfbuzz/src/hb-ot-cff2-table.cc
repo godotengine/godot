@@ -124,8 +124,8 @@ bool OT::cff2::accelerator_t::get_extents (hb_font_t *font,
   }
   else
   {
-    extents->x_bearing = font->em_scalef_x (param.min_x.to_real ());
-    extents->width = font->em_scalef_x (param.max_x.to_real ()) - extents->x_bearing;
+    extents->x_bearing = roundf (param.min_x.to_real ());
+    extents->width = roundf (param.max_x.to_real () - extents->x_bearing);
   }
   if (param.min_y >= param.max_y)
   {
@@ -134,9 +134,20 @@ bool OT::cff2::accelerator_t::get_extents (hb_font_t *font,
   }
   else
   {
-    extents->y_bearing = font->em_scalef_y (param.max_y.to_real ());
-    extents->height = font->em_scalef_y (param.min_y.to_real ()) - extents->y_bearing;
+    extents->y_bearing = roundf (param.max_y.to_real ());
+    extents->height = roundf (param.min_y.to_real () - extents->y_bearing);
   }
+
+  font->scale_glyph_extents (extents);
+
+  return true;
+}
+
+bool OT::cff2::accelerator_t::paint_glyph (hb_font_t *font, hb_codepoint_t glyph, hb_paint_funcs_t *funcs, void *data, hb_color_t foreground) const
+{
+  funcs->push_clip_glyph (data, glyph, font);
+  funcs->color (data, true, foreground);
+  funcs->pop_clip (data);
 
   return true;
 }

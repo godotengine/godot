@@ -34,14 +34,24 @@
 /* Compiler-assisted vectorization. */
 
 /* Type behaving similar to vectorized vars defined using __attribute__((vector_size(...))),
- * basically a fixed-size bitset. */
+ * basically a fixed-size bitset. We can't use the compiler type because hb_vector_t cannot
+ * guarantee alignment requirements. */
 template <typename elt_t, unsigned int byte_size>
 struct hb_vector_size_t
 {
   elt_t& operator [] (unsigned int i) { return v[i]; }
   const elt_t& operator [] (unsigned int i) const { return v[i]; }
 
-  void clear (unsigned char v = 0) { hb_memset (this, v, sizeof (*this)); }
+  void init0 ()
+  {
+    for (unsigned int i = 0; i < ARRAY_LENGTH (v); i++)
+      v[i] = 0;
+  }
+  void init1 ()
+  {
+    for (unsigned int i = 0; i < ARRAY_LENGTH (v); i++)
+      v[i] = (elt_t) -1;
+  }
 
   template <typename Op>
   hb_vector_size_t process (const Op& op) const
@@ -79,10 +89,10 @@ struct hb_vector_size_t
 
 struct hb_bit_page_t
 {
-  void init0 () { v.clear (); }
-  void init1 () { v.clear (0xFF); }
+  void init0 () { v.init0 (); }
+  void init1 () { v.init1 (); }
 
-  constexpr unsigned len () const
+  static inline constexpr unsigned len ()
   { return ARRAY_LENGTH_CONST (v); }
 
   bool is_empty () const
@@ -300,10 +310,10 @@ struct hb_bit_page_t
   static constexpr hb_codepoint_t INVALID = HB_SET_VALUE_INVALID;
 
   typedef unsigned long long elt_t;
-  static constexpr unsigned PAGE_BITS = 512;
-  static_assert ((PAGE_BITS & ((PAGE_BITS) - 1)) == 0, "");
-  static constexpr unsigned PAGE_BITS_LOG_2 = 9;
+  static constexpr unsigned PAGE_BITS_LOG_2 = 9; // 512 bits
+  static constexpr unsigned PAGE_BITS = 1 << PAGE_BITS_LOG_2;
   static_assert (1 << PAGE_BITS_LOG_2 == PAGE_BITS, "");
+  static_assert ((PAGE_BITS & ((PAGE_BITS) - 1)) == 0, "");
   static constexpr unsigned PAGE_BITMASK = PAGE_BITS - 1;
 
   static unsigned int elt_get_min (const elt_t &elt) { return hb_ctz (elt); }

@@ -65,7 +65,7 @@ struct hb_multimap_t
 
   hb_array_t<const hb_codepoint_t> get (hb_codepoint_t k) const
   {
-    hb_codepoint_t *v;
+    const hb_codepoint_t *v;
     if (singulars.has (k, &v))
       return hb_array (v, 1);
 
@@ -73,7 +73,7 @@ struct hb_multimap_t
     if (multiples_indices.has (k, &i))
       return multiples_values[*i].as_array ();
 
-    return hb_array_t<hb_codepoint_t> ();
+    return hb_array_t<const hb_codepoint_t> ();
   }
 
   bool in_error () const
