@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="UndoRedo" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Helper to manage undo/redo operations in the editor or custom tools.
+		General-purpose helper to manage undo/redo operations.
 	</brief_description>
 	<description>
-		Helper to manage undo/redo operations in the editor or custom tools. It works by registering methods and property changes inside "actions".
+		UndoRedo works by registering methods and property changes inside "actions".
 		Common behavior is to create an action, then add do/undo calls to functions or property changes, then committing the action.
-		Here's an example on how to add an action to the Godot editor's own [UndoRedo], from a plugin:
+		Here's an example on how to add an UndoRedo action:
 		[codeblocks]
 		[gdscript]
-		var undo_redo = get_undo_redo() # Method of EditorPlugin.
+		var undo_redo = UndoRedo.new()
 
 		func do_something():
 		    pass # Put your code here.
@@ -20,8 +20,8 @@
 		func _on_my_button_pressed():
 		    var node = get_node("MyNode2D")
 		    undo_redo.create_action("Move the node")
-		    undo_redo.add_do_method(self, "do_something")
-		    undo_redo.add_undo_method(self, "undo_something")
+		    undo_redo.add_do_method(do_something)
+		    undo_redo.add_undo_method(undo_something)
 		    undo_redo.add_do_property(node, "position", Vector2(100,100))
 		    undo_redo.add_undo_property(node, "position", node.position)
 		    undo_redo.commit_action()
@@ -31,7 +31,7 @@
 
 		public override void _Ready()
 		{
-		    _undoRedo = GetUndoRedo(); // Method of EditorPlugin.
+		    _undoRedo = new UndoRedo();
 		}
 
 		public void DoSomething()
@@ -58,6 +58,7 @@
 		[/codeblocks]
 		[method create_action], [method add_do_method], [method add_undo_method], [method add_do_property], [method add_undo_property], and [method commit_action] should be called one after the other, like in the example. Not doing so could lead to crashes.
 		If you don't need to register a method, you can leave [method add_do_method] and [method add_undo_method] out; the same goes for properties. You can also register more than one method/property.
+		If you are making an [EditorPlugin] and want to integrate into the editor's undo history, use [EditorUndoRedoManager] instead.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -83,6 +84,14 @@
 			<param index="0" name="object" type="Object" />
 			<description>
 				Register a reference for "do" that will be erased if the "do" history is lost. This is useful mostly for new nodes created for the "do" call. Do not use for resources.
+				[codeblock]
+				var node = Node2D.new()
+				undo_redo.create_action("Add node")
+				undo_redo.add_do_method(add_child.bind(node))
+				undo_redo.add_do_reference(node)
+				undo_redo.add_undo_method(remove_child.bind(node))
+				undo_redo.commit_action()
+				[/codeblock]
 			</description>
 		</method>
 		<method name="add_undo_method">
@@ -106,6 +115,14 @@
 			<param index="0" name="object" type="Object" />
 			<description>
 				Register a reference for "undo" that will be erased if the "undo" history is lost. This is useful mostly for nodes removed with the "do" call (not the "undo" call!).
+				[codeblock]
+				var node = $Node2D
+				undo_redo.create_action("Remove node")
+				undo_redo.add_do_method(remove_child.bind(node))
+				undo_redo.add_undo_method(add_child.bind(node))
+				undo_redo.add_undo_reference(node)
+				undo_redo.commit_action()
+				[/codeblock]
 			</description>
 		</method>
 		<method name="clear_history">

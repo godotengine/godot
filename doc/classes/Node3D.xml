@@ -344,10 +344,13 @@
 			In order for [constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED] to work, users first need to ask for it, with [method set_notify_local_transform].
 		</constant>
 		<constant name="ROTATION_EDIT_MODE_EULER" value="0" enum="RotationEditMode">
+			The rotation is edited using [Vector3] Euler angles.
 		</constant>
 		<constant name="ROTATION_EDIT_MODE_QUATERNION" value="1" enum="RotationEditMode">
+			The rotation is edited using a [Quaternion].
 		</constant>
 		<constant name="ROTATION_EDIT_MODE_BASIS" value="2" enum="RotationEditMode">
+			The rotation is edited using a [Basis]. In this mode, [member scale] can't be edited separately.
 		</constant>
 	</constants>
 </class>

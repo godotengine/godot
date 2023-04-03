@@ -4,6 +4,7 @@
 		Base class for touch control gestures.
 	</brief_description>
 	<description>
+		InputEventGesture is sent when a user performs a supported gesture on a touch screen. Gestures can't be emulated using mouse, because they typically require multi-touch.
 	</description>
 	<tutorials>
 	</tutorials>
