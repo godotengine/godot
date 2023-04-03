@@ -92,6 +92,18 @@ private:
 		SceneTree::Group *group = nullptr;
 	};
 
+	struct ComparatorByIndex {
+		bool operator()(const Node *p_left, const Node *p_right) const {
+			static const uint32_t order[3] = { 1, 0, 2 };
+			uint32_t order_left = order[p_left->data.internal_mode];
+			uint32_t order_right = order[p_right->data.internal_mode];
+			if (order_left == order_right) {
+				return p_left->data.index < p_right->data.index;
+			}
+			return order_left < order_right;
+		}
+	};
+
 	// This Data struct is to avoid namespace pollution in derived classes.
 	struct Data {
 		String scene_file_path;
@@ -100,13 +112,16 @@ private:
 
 		Node *parent = nullptr;
 		Node *owner = nullptr;
-		Vector<Node *> children;
+		HashMap<StringName, Node *> children;
+		mutable bool children_cache_dirty = true;
+		mutable LocalVector<Node *> children_cache;
 		HashMap<StringName, Node *> owned_unique_nodes;
 		bool unique_name_in_owner = false;
-
-		int internal_children_front = 0;
-		int internal_children_back = 0;
-		int index = -1;
+		InternalMode internal_mode = INTERNAL_MODE_DISABLED;
+		mutable int internal_children_front_count_cache = 0;
+		mutable int internal_children_back_count_cache = 0;
+		mutable int external_children_count_cache = 0;
+		mutable int index = -1; // relative to front, normal or back.
 		int depth = -1;
 		int blocked = 0; // Safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
 		StringName name;
@@ -187,9 +202,6 @@ private:
 	Error _rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Error _rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
-	_FORCE_INLINE_ bool _is_internal_front() const { return data.parent && data.index < data.parent->data.internal_children_front; }
-	_FORCE_INLINE_ bool _is_internal_back() const { return data.parent && data.index >= data.parent->data.children.size() - data.parent->data.internal_children_back; }
-
 	friend class SceneTree;
 
 	void _set_tree(SceneTree *p_tree);
@@ -200,6 +212,14 @@ private:
 
 	void _release_unique_name_in_owner();
 	void _acquire_unique_name_in_owner();
+
+	_FORCE_INLINE_ void _update_children_cache() const {
+		if (unlikely(data.children_cache_dirty)) {
+			_update_children_cache_impl();
+		}
+	}
+
+	void _update_children_cache_impl() const;
 
 protected:
 	void _block() { data.blocked++; }
@@ -219,7 +239,7 @@ protected:
 
 	friend class SceneState;
 
-	void _add_child_nocheck(Node *p_child, const StringName &p_name);
+	void _add_child_nocheck(Node *p_child, const StringName &p_name, InternalMode p_internal_mode = INTERNAL_MODE_DISABLED);
 	void _set_owner_nocheck(Node *p_owner);
 	void _set_name_nocheck(const StringName &p_name);
 
@@ -361,7 +381,31 @@ public:
 	void set_unique_name_in_owner(bool p_enabled);
 	bool is_unique_name_in_owner() const;
 
-	int get_index(bool p_include_internal = true) const;
+	_FORCE_INLINE_ int get_index(bool p_include_internal = true) const {
+		// p_include_internal = false doesn't make sense if the node is internal.
+		ERR_FAIL_COND_V_MSG(!p_include_internal && data.internal_mode != INTERNAL_MODE_DISABLED, -1, "Node is internal. Can't get index with 'include_internal' being false.");
+		if (!data.parent) {
+			return data.index;
+		}
+		data.parent->_update_children_cache();
+
+		if (!p_include_internal) {
+			return data.index;
+		} else {
+			switch (data.internal_mode) {
+				case INTERNAL_MODE_DISABLED: {
+					return data.parent->data.internal_children_front_count_cache + data.index;
+				} break;
+				case INTERNAL_MODE_FRONT: {
+					return data.index;
+				} break;
+				case INTERNAL_MODE_BACK: {
+					return data.parent->data.internal_children_front_count_cache + data.parent->data.external_children_count_cache + data.index;
+				} break;
+			}
+			return -1;
+		}
+	}
 
 	Ref<Tween> create_tween();
 
