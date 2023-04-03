@@ -435,6 +435,7 @@ private:
 		bool expand = true;
 		bool clip_content = false;
 		String title;
+		HorizontalAlignment title_alignment = HORIZONTAL_ALIGNMENT_CENTER;
 		Ref<TextLine> text_buf;
 		String language;
 		Control::TextDirection text_direction = Control::TEXT_DIRECTION_INHERITED;
@@ -683,6 +684,9 @@ public:
 
 	void set_column_title(int p_column, const String &p_title);
 	String get_column_title(int p_column) const;
+
+	void set_column_title_alignment(int p_column, HorizontalAlignment p_alignment);
+	HorizontalAlignment get_column_title_alignment(int p_column) const;
 
 	void set_column_title_direction(int p_column, Control::TextDirection p_text_direction);
 	Control::TextDirection get_column_title_direction(int p_column) const;
