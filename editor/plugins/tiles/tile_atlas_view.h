@@ -110,7 +110,14 @@ private:
 
 	Size2i _compute_alternative_tiles_control_size();
 
+	struct ThemeCache {
+		Ref<Texture2D> center_view_icon;
+		Ref<Texture2D> checkerboard;
+	} theme_cache;
+
 protected:
+	virtual void _update_theme_item_cache() override;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 
