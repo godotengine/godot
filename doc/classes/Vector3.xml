@@ -417,6 +417,7 @@
 			<description>
 				Returns [code]true[/code] if the vectors are not equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
 			</description>
 		</operator>
 		<operator name="operator *">
@@ -513,6 +514,7 @@
 			<param index="0" name="right" type="Vector3" />
 			<description>
 				Compares two [Vector3] vectors by first checking if the X value of the left vector is less than the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, and then with the Z values. This operator is useful for sorting vectors.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
 			</description>
 		</operator>
 		<operator name="operator &lt;=">
@@ -520,6 +522,7 @@
 			<param index="0" name="right" type="Vector3" />
 			<description>
 				Compares two [Vector3] vectors by first checking if the X value of the left vector is less than or equal to the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, and then with the Z values. This operator is useful for sorting vectors.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
 			</description>
 		</operator>
 		<operator name="operator ==">
@@ -528,6 +531,7 @@
 			<description>
 				Returns [code]true[/code] if the vectors are exactly equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
 			</description>
 		</operator>
 		<operator name="operator &gt;">
@@ -535,6 +539,7 @@
 			<param index="0" name="right" type="Vector3" />
 			<description>
 				Compares two [Vector3] vectors by first checking if the X value of the left vector is greater than the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, and then with the Z values. This operator is useful for sorting vectors.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
 			</description>
 		</operator>
 		<operator name="operator &gt;=">
@@ -542,6 +547,7 @@
 			<param index="0" name="right" type="Vector3" />
 			<description>
 				Compares two [Vector3] vectors by first checking if the X value of the left vector is greater than or equal to the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, and then with the Z values. This operator is useful for sorting vectors.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
 			</description>
 		</operator>
 		<operator name="operator []">
