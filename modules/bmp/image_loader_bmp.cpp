@@ -32,6 +32,16 @@
 
 #include "core/io/file_access_memory.h"
 
+static uint8_t get_mask_width(uint16_t mask) {
+	// Returns number of ones in the binary value of the parameter: mask.
+	// Uses a Simple pop_count.
+	uint8_t c = 0u;
+	for (; mask != 0u; mask &= mask - 1u) {
+		c++;
+	}
+	return c;
+}
+
 Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 		const uint8_t *p_buffer,
 		const uint8_t *p_color_buffer,
@@ -71,9 +81,6 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 					vformat("4-bpp BMP images must have a width that is a multiple of 2, but the imported BMP is %d pixels wide.", int(width)));
 			ERR_FAIL_COND_V_MSG(height % 2 != 0, ERR_UNAVAILABLE,
 					vformat("4-bpp BMP images must have a height that is a multiple of 2, but the imported BMP is %d pixels tall.", int(height)));
-
-		} else if (bits_per_pixel == 16) {
-			ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "16-bpp BMP images are not supported.");
 		}
 
 		// Image data (might be indexed)
@@ -96,7 +103,7 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 
 		// The actual data traversal is determined by
 		// the data width in case of 8/4/2/1 bit images
-		const uint32_t w = bits_per_pixel >= 24 ? width : width_bytes;
+		const uint32_t w = bits_per_pixel >= 16 ? width : width_bytes;
 		const uint8_t *line = p_buffer + (line_width * (height - 1));
 		const uint8_t *end_buffer = p_buffer + p_header.bmp_file_header.bmp_file_size - p_header.bmp_file_header.bmp_file_offset;
 
@@ -148,6 +155,34 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 
 						index += 1;
 						line_ptr += 1;
+					} break;
+					case 16: {
+						uint16_t rgb = (static_cast<uint16_t>(line_ptr[1]) << 8) | line_ptr[0];
+						// A1R5G5B5/X1R5G5B5 => uint16_t
+						// [A/X]1R5G2 | G3B5 => uint8_t | uint8_t
+						uint8_t ba = (rgb & p_header.bmp_bitfield.alpha_mask) >> p_header.bmp_bitfield.alpha_offset; // Alpha 0b 1000 ...
+						uint8_t b0 = (rgb & p_header.bmp_bitfield.red_mask) >> p_header.bmp_bitfield.red_offset; // Red   0b 0111 1100 ...
+						uint8_t b1 = (rgb & p_header.bmp_bitfield.green_mask) >> p_header.bmp_bitfield.green_offset; // Green 0b 0000 0011 1110 ...
+						uint8_t b2 = (rgb & p_header.bmp_bitfield.blue_mask); // >> p_header.bmp_bitfield.blue_offset; // Blue  0b  ... 0001 1111
+
+						// Next we apply some color scaling going from a variable value space to a 256 value space.
+						// This may be simplified some but left as is for legibility.
+						// float scaled_value = unscaled_value * byte_max_value / color_channel_maxium_value + rounding_offset;
+						float f0 = b0 * 255.0f / static_cast<float>(p_header.bmp_bitfield.red_max) + 0.5f;
+						float f1 = b1 * 255.0f / static_cast<float>(p_header.bmp_bitfield.green_max) + 0.5f;
+						float f2 = b2 * 255.0f / static_cast<float>(p_header.bmp_bitfield.blue_max) + 0.5f;
+						write_buffer[index + 0] = static_cast<uint8_t>(f0); // R
+						write_buffer[index + 1] = static_cast<uint8_t>(f1); // G
+						write_buffer[index + 2] = static_cast<uint8_t>(f2); // B
+
+						if (p_header.bmp_bitfield.alpha_mask_width > 0) {
+							write_buffer[index + 3] = ba * 0xFF; // Alpha value(Always true or false so no scaling)
+						} else {
+							write_buffer[index + 3] = 0xFF; // No Alpha channel, Show everything.
+						}
+
+						index += 4;
+						line_ptr += 2;
 					} break;
 					case 24: {
 						write_buffer[index + 2] = line_ptr[0];
@@ -253,13 +288,32 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField
 			bmp_header.bmp_info_header.bmp_important_colors = f->get_32();
 
 			switch (bmp_header.bmp_info_header.bmp_compression) {
+				case BI_BITFIELDS: {
+					bmp_header.bmp_bitfield.red_mask = f->get_32();
+					bmp_header.bmp_bitfield.green_mask = f->get_32();
+					bmp_header.bmp_bitfield.blue_mask = f->get_32();
+					bmp_header.bmp_bitfield.alpha_mask = f->get_32();
+
+					bmp_header.bmp_bitfield.red_mask_width = get_mask_width(bmp_header.bmp_bitfield.red_mask);
+					bmp_header.bmp_bitfield.green_mask_width = get_mask_width(bmp_header.bmp_bitfield.green_mask);
+					bmp_header.bmp_bitfield.blue_mask_width = get_mask_width(bmp_header.bmp_bitfield.blue_mask);
+					bmp_header.bmp_bitfield.alpha_mask_width = get_mask_width(bmp_header.bmp_bitfield.alpha_mask);
+
+					bmp_header.bmp_bitfield.alpha_offset = bmp_header.bmp_bitfield.red_mask_width + bmp_header.bmp_bitfield.green_mask_width + bmp_header.bmp_bitfield.blue_mask_width;
+					bmp_header.bmp_bitfield.red_offset = bmp_header.bmp_bitfield.green_mask_width + bmp_header.bmp_bitfield.blue_mask_width;
+					bmp_header.bmp_bitfield.green_offset = bmp_header.bmp_bitfield.blue_mask_width;
+
+					bmp_header.bmp_bitfield.red_max = (1 << bmp_header.bmp_bitfield.red_mask_width) - 1;
+					bmp_header.bmp_bitfield.green_max = (1 << bmp_header.bmp_bitfield.green_mask_width) - 1;
+					bmp_header.bmp_bitfield.blue_max = (1 << bmp_header.bmp_bitfield.blue_mask_width) - 1;
+				} break;
 				case BI_RLE8:
 				case BI_RLE4:
 				case BI_CMYKRLE8:
 				case BI_CMYKRLE4: {
 					// Stop parsing.
 					ERR_FAIL_V_MSG(ERR_UNAVAILABLE,
-							vformat("Compressed BMP files are not supported: %s", f->get_path()));
+							vformat("RLE compressed BMP files are not yet supported: %s", f->get_path()));
 				} break;
 			}
 			// Don't rely on sizeof(bmp_file_header) as structure padding
