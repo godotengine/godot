@@ -54,6 +54,7 @@
 			<param index="0" name="right" type="float" />
 			<description>
 				Returns [code]true[/code] if two floats are different from each other.
+				[b]Note:[/b] [constant @GDScript.NAN] doesn't behave the same as other numbers. Therefore, the results from this operator may not be accurate if NaNs are included.
 			</description>
 		</operator>
 		<operator name="operator !=">
@@ -215,6 +216,7 @@
 			<param index="0" name="right" type="float" />
 			<description>
 				Returns [code]true[/code] if the left float is less than the right one.
+				[b]Note:[/b] [constant @GDScript.NAN] doesn't behave the same as other numbers. Therefore, the results from this operator may not be accurate if NaNs are included.
 			</description>
 		</operator>
 		<operator name="operator &lt;">
@@ -229,6 +231,7 @@
 			<param index="0" name="right" type="float" />
 			<description>
 				Returns [code]true[/code] if the left float is less than or equal to the right one.
+				[b]Note:[/b] [constant @GDScript.NAN] doesn't behave the same as other numbers. Therefore, the results from this operator may not be accurate if NaNs are included.
 			</description>
 		</operator>
 		<operator name="operator &lt;=">
@@ -244,6 +247,7 @@
 			<description>
 				Returns [code]true[/code] if both floats are exactly equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method @GlobalScope.is_equal_approx] or [method @GlobalScope.is_zero_approx] instead, which are more reliable.
+				[b]Note:[/b] [constant @GDScript.NAN] doesn't behave the same as other numbers. Therefore, the results from this operator may not be accurate if NaNs are included.
 			</description>
 		</operator>
 		<operator name="operator ==">
@@ -258,6 +262,7 @@
 			<param index="0" name="right" type="float" />
 			<description>
 				Returns [code]true[/code] if the left float is greater than the right one.
+				[b]Note:[/b] [constant @GDScript.NAN] doesn't behave the same as other numbers. Therefore, the results from this operator may not be accurate if NaNs are included.
 			</description>
 		</operator>
 		<operator name="operator &gt;">
@@ -272,6 +277,7 @@
 			<param index="0" name="right" type="float" />
 			<description>
 				Returns [code]true[/code] if the left float is greater than or equal to the right one.
+				[b]Note:[/b] [constant @GDScript.NAN] doesn't behave the same as other numbers. Therefore, the results from this operator may not be accurate if NaNs are included.
 			</description>
 		</operator>
 		<operator name="operator &gt;=">
