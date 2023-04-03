@@ -75,7 +75,9 @@ public:
 	String get_selected_path();
 	ObjectID get_selected_object();
 	int get_current_debugger(); // Would love to have one tree for every debugger.
+#ifdef DEBUG_ENABLED
 	void update_scene_tree(const SceneDebuggerTree *p_tree, int p_debugger);
+#endif
 	EditorDebuggerTree();
 };
 

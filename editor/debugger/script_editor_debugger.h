@@ -139,7 +139,9 @@ private:
 	Tree *stack_dump = nullptr;
 	LineEdit *search = nullptr;
 	EditorDebuggerInspector *inspector = nullptr;
+#ifdef DEBUG_ENABLED
 	SceneDebuggerTree *scene_tree = nullptr;
+#endif
 
 	Ref<RemoteDebuggerPeer> peer;
 
@@ -226,7 +228,9 @@ public:
 	void set_editor_remote_tree(const Tree *p_tree) { editor_remote_tree = p_tree; }
 
 	void request_remote_tree();
+#ifdef DEBUG_ENABLED
 	const SceneDebuggerTree *get_remote_tree();
+#endif
 
 	void start(Ref<RemoteDebuggerPeer> p_peer);
 	void stop();

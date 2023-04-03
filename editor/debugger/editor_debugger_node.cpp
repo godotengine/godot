@@ -593,7 +593,9 @@ void EditorDebuggerNode::_remote_tree_updated(int p_debugger) {
 		return;
 	}
 	remote_scene_tree->clear();
+#ifdef DEBUG_ENABLED
 	remote_scene_tree->update_scene_tree(get_current_debugger()->get_remote_tree(), p_debugger);
+#endif
 }
 
 void EditorDebuggerNode::_remote_tree_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {

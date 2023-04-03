@@ -125,6 +125,7 @@ void EditorDebuggerInspector::_object_selected(ObjectID p_object) {
 }
 
 ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
+#ifdef DEBUG_ENABLED
 	EditorDebuggerRemoteObject *debug_obj = nullptr;
 
 	SceneDebuggerObject obj;
@@ -202,6 +203,10 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 		debug_obj->update();
 	}
 	return obj.id;
+
+#else // DEBUG_ENABLED
+	return ObjectID();
+#endif
 }
 
 void EditorDebuggerInspector::clear_cache() {

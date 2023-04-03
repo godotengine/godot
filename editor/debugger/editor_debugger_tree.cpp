@@ -136,6 +136,7 @@ void EditorDebuggerTree::_scene_tree_rmb_selected(const Vector2 &p_position, Mou
 /// |
 /// |-E
 ///
+#ifdef DEBUG_ENABLED
 void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int p_debugger) {
 	updating_scene_tree = true;
 	const String last_path = get_selected_path();
@@ -258,6 +259,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 	last_filter = filter;
 	updating_scene_tree = false;
 }
+#endif // DEBUG_ENABLED
 
 Variant EditorDebuggerTree::get_drag_data(const Point2 &p_point) {
 	if (get_button_id_at_position(p_point) != -1) {

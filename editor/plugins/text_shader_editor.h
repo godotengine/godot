@@ -57,15 +57,21 @@ class ShaderTextEditor : public CodeTextEditor {
 
 	Color marked_line_color = Color(1, 1, 1);
 
+#ifdef DEBUG_ENABLED
 	struct WarningsComparator {
 		_ALWAYS_INLINE_ bool operator()(const ShaderWarning &p_a, const ShaderWarning &p_b) const { return (p_a.get_line() < p_b.get_line()); }
 	};
+#endif // DEBUG_ENABLED
 
 	Ref<GDShaderSyntaxHighlighter> syntax_highlighter;
 	RichTextLabel *warnings_panel = nullptr;
 	Ref<Shader> shader;
 	Ref<ShaderInclude> shader_inc;
+#ifdef DEBUG_ENABLED
 	List<ShaderWarning> warnings;
+#else // DEBUG_ENABLED
+	List<int> warnings;
+#endif // DEBUG_ENABLED
 	Error last_compile_result = Error::OK;
 
 	void _check_shader_mode();

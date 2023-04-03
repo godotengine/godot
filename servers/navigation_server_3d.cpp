@@ -152,7 +152,7 @@ NavigationServer3D::NavigationServer3D() {
 	GLOBAL_DEF("navigation/3d/default_edge_connection_margin", 0.25);
 	GLOBAL_DEF("navigation/3d/default_link_connection_radius", 1.0);
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	debug_navigation_edge_connection_color = GLOBAL_DEF("debug/shapes/navigation/edge_connection_color", Color(1.0, 0.0, 1.0, 1.0));
 	debug_navigation_geometry_edge_color = GLOBAL_DEF("debug/shapes/navigation/geometry_edge_color", Color(0.5, 1.0, 1.0, 1.0));
 	debug_navigation_geometry_face_color = GLOBAL_DEF("debug/shapes/navigation/geometry_face_color", Color(0.5, 1.0, 1.0, 0.4));
@@ -180,7 +180,7 @@ NavigationServer3D::NavigationServer3D() {
 		// on runtime tests SceneTree has "Visible Navigation" set and main iteration takes care of this
 		set_debug_enabled(true);
 	}
-#endif // DEBUG_ENABLED
+#endif // defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 }
 
 NavigationServer3D::~NavigationServer3D() {
@@ -188,7 +188,7 @@ NavigationServer3D::~NavigationServer3D() {
 }
 
 void NavigationServer3D::set_debug_enabled(bool p_enabled) {
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	if (debug_enabled != p_enabled) {
 		debug_dirty = true;
 	}
@@ -198,23 +198,21 @@ void NavigationServer3D::set_debug_enabled(bool p_enabled) {
 	if (debug_dirty) {
 		call_deferred("_emit_navigation_debug_changed_signal");
 	}
-#endif // DEBUG_ENABLED
+#endif // defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 }
 
 bool NavigationServer3D::get_debug_enabled() const {
 	return debug_enabled;
 }
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 void NavigationServer3D::_emit_navigation_debug_changed_signal() {
 	if (debug_dirty) {
 		debug_dirty = false;
 		emit_signal(SNAME("navigation_debug_changed"));
 	}
 }
-#endif // DEBUG_ENABLED
 
-#ifdef DEBUG_ENABLED
 Ref<StandardMaterial3D> NavigationServer3D::get_debug_navigation_geometry_face_material() {
 	if (debug_navigation_geometry_face_material.is_valid()) {
 		return debug_navigation_geometry_face_material;
@@ -584,7 +582,7 @@ bool NavigationServer3D::get_debug_navigation_enable_agent_paths_xray() const {
 	return debug_navigation_enable_agent_paths_xray;
 }
 
-#endif // DEBUG_ENABLED
+#endif // defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 
 void NavigationServer3D::query_path(const Ref<NavigationPathQueryParameters3D> &p_query_parameters, Ref<NavigationPathQueryResult3D> p_query_result) const {
 	ERR_FAIL_COND(!p_query_parameters.is_valid());

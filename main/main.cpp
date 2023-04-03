@@ -2584,10 +2584,13 @@ bool Main::start() {
 		GDExtensionInterfaceDump::generate_gdextension_interface_file("gdextension_interface.h");
 	}
 
+#endif // TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	if (dump_extension_api) {
 		GDExtensionAPIDump::generate_extension_json_file("extension_api.json");
 	}
-
+#endif // DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 	if (dump_gdextension_interface || dump_extension_api) {
 		OS::get_singleton()->set_exit_code(EXIT_SUCCESS);
 		return false;

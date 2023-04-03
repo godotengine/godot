@@ -961,7 +961,7 @@ void ClassDB::set_property_default_value(const StringName &p_class, const String
 }
 
 void ClassDB::add_linked_property(const StringName &p_class, const String &p_property, const String &p_linked_property) {
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_METHODS_ENABLED
 	OBJTYPE_WLOCK;
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_COND(!type);
@@ -1002,7 +1002,7 @@ void ClassDB::get_property_list(const StringName &p_class, List<PropertyInfo> *p
 }
 
 void ClassDB::get_linked_properties_info(const StringName &p_class, const StringName &p_property, List<StringName> *r_properties, bool p_no_inheritance) {
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_METHODS_ENABLED
 	ClassInfo *check = classes.getptr(p_class);
 	while (check) {
 		if (!check->linked_properties.has(p_property)) {
