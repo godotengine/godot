@@ -463,6 +463,9 @@ def configure(env: "Environment"):
             else:
                 env.Append(LINKFLAGS=["-T", "platform/linuxbsd/pck_embed.legacy.ld"])
 
+    if platform.system() == "FreeBSD":
+        env.Append(LINKFLAGS=["-lkvm"])
+
     ## Cross-compilation
     # TODO: Support cross-compilation on architectures other than x86.
     host_is_64_bit = sys.maxsize > 2**32

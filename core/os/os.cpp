@@ -295,8 +295,15 @@ Error OS::set_cwd(const String &p_cwd) {
 	return ERR_CANT_OPEN;
 }
 
-uint64_t OS::get_free_static_memory() const {
-	return Memory::get_mem_available();
+Dictionary OS::get_memory_info() const {
+	Dictionary meminfo;
+
+	meminfo["physical"] = -1;
+	meminfo["free"] = -1;
+	meminfo["available"] = -1;
+	meminfo["stack"] = -1;
+
+	return meminfo;
 }
 
 void OS::yield() {
