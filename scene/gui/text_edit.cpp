@@ -2008,14 +2008,14 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		// If a modifier has been pressed, and nothing else, return.
-		if (k->get_keycode() == Key::CTRL || k->get_keycode() == Key::ALT || k->get_keycode() == Key::SHIFT || k->get_keycode() == Key::META) {
+		if (k->get_keycode() == Key::CTRL || k->get_keycode() == Key::ALT || k->get_keycode() == Key::SHIFT || k->get_keycode() == Key::META || k->get_keycode() == Key::CAPSLOCK) {
 			return;
 		}
 
 		_reset_caret_blink_timer();
 
 		// Allow unicode handling if:
-		// * No Modifiers are pressed (except shift)
+		// * No modifiers are pressed (except Shift and CapsLock)
 		bool allow_unicode_handling = !(k->is_command_or_control_pressed() || k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
 
 		// Check and handle all built in shortcuts.
