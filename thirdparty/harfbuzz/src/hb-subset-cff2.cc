@@ -240,7 +240,8 @@ struct cff2_subset_plan {
     orig_fdcount = acc.fdArray->count;
 
     drop_hints = plan->flags & HB_SUBSET_FLAGS_NO_HINTING;
-    desubroutinize = plan->flags & HB_SUBSET_FLAGS_DESUBROUTINIZE;
+    desubroutinize = plan->flags & HB_SUBSET_FLAGS_DESUBROUTINIZE ||
+		     plan->normalized_coords; // For instancing we need this path
 
     if (desubroutinize)
     {

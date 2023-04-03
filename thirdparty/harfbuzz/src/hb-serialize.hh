@@ -81,11 +81,11 @@ struct hb_serialize_context_t
       head = o.head;
       tail = o.tail;
       next = nullptr;
-      real_links.alloc (o.num_real_links);
+      real_links.alloc (o.num_real_links, true);
       for (unsigned i = 0 ; i < o.num_real_links; i++)
         real_links.push (o.real_links[i]);
 
-      virtual_links.alloc (o.num_virtual_links);
+      virtual_links.alloc (o.num_virtual_links, true);
       for (unsigned i = 0; i < o.num_virtual_links; i++)
         virtual_links.push (o.virtual_links[i]);
     }

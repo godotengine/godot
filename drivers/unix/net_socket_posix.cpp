@@ -71,7 +71,7 @@
 #define SOCK_CONNECT(p_sock, p_addr, p_addr_len) ::connect(p_sock, p_addr, p_addr_len)
 
 /* Windows */
-#elif defined(WINDOWS_ENABLED)
+#elif defined(WIN32)
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
@@ -153,7 +153,7 @@ NetSocket *NetSocketPosix::_create_func() {
 }
 
 void NetSocketPosix::make_default() {
-#if defined(WINDOWS_ENABLED)
+#if defined(WIN32)
 	if (_create == nullptr) {
 		WSADATA data;
 		WSAStartup(MAKEWORD(2, 2), &data);
@@ -163,7 +163,7 @@ void NetSocketPosix::make_default() {
 }
 
 void NetSocketPosix::cleanup() {
-#if defined(WINDOWS_ENABLED)
+#if defined(WIN32)
 	if (_create != nullptr) {
 		WSACleanup();
 	}
@@ -187,7 +187,7 @@ NetSocketPosix::~NetSocketPosix() {
 #endif
 
 NetSocketPosix::NetError NetSocketPosix::_get_socket_error() const {
-#if defined(WINDOWS_ENABLED)
+#if defined(WIN32)
 	int err = WSAGetLastError();
 	if (err == WSAEISCONN) {
 		return ERR_NET_IS_CONNECTED;
@@ -305,7 +305,7 @@ void NetSocketPosix::_set_socket(SOCKET_TYPE p_sock, IP::Type p_ip_type, bool p_
 }
 
 void NetSocketPosix::_set_close_exec_enabled(bool p_enabled) {
-#ifndef WINDOWS_ENABLED
+#ifndef WIN32
 	// Enable close on exec to avoid sharing with subprocesses. Off by default on Windows.
 	int opts = fcntl(_sock, F_GETFD);
 	fcntl(_sock, F_SETFD, opts | FD_CLOEXEC);
@@ -355,7 +355,7 @@ Error NetSocketPosix::open(Type p_sock_type, IP::Type &ip_type) {
 	// Disable descriptor sharing with subprocesses.
 	_set_close_exec_enabled(true);
 
-#if defined(WINDOWS_ENABLED)
+#if defined(WIN32)
 	if (!_is_stream) {
 		// Disable windows feature/bug reporting WSAECONNRESET/WSAENETRESET when
 		// recv/recvfrom and an ICMP reply was received from a previous send/sendto.
@@ -450,7 +450,7 @@ Error NetSocketPosix::connect_to_host(IPAddress p_host, uint16_t p_port) {
 Error NetSocketPosix::poll(PollType p_type, int p_timeout) const {
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
 
-#if defined(WINDOWS_ENABLED)
+#if defined(WIN32)
 	bool ready = false;
 	fd_set rd, wr, ex;
 	fd_set *rdp = nullptr;
@@ -651,7 +651,7 @@ void NetSocketPosix::set_blocking_enabled(bool p_enabled) {
 	ERR_FAIL_COND(!is_open());
 
 	int ret = 0;
-#if defined(WINDOWS_ENABLED)
+#if defined(WIN32)
 	unsigned long par = p_enabled ? 0 : 1;
 	ret = SOCK_IOCTL(_sock, FIONBIO, &par);
 #else
@@ -694,7 +694,7 @@ void NetSocketPosix::set_reuse_address_enabled(bool p_enabled) {
 
 // On Windows, enabling SO_REUSEADDR actually would also enable reuse port, very bad on TCP. Denying...
 // Windows does not have this option, SO_REUSEADDR in this magical world means SO_REUSEPORT
-#ifndef WINDOWS_ENABLED
+#ifndef WIN32
 	int par = p_enabled ? 1 : 0;
 	if (setsockopt(_sock, SOL_SOCKET, SO_REUSEADDR, SOCK_CBUF(&par), sizeof(int)) < 0) {
 		WARN_PRINT("Unable to set socket REUSEADDR option!");
@@ -706,7 +706,7 @@ void NetSocketPosix::set_reuse_port_enabled(bool p_enabled) {
 	ERR_FAIL_COND(!is_open());
 
 // See comment above...
-#ifdef WINDOWS_ENABLED
+#ifdef WIN32
 #define SO_REUSEPORT SO_REUSEADDR
 #endif
 	int par = p_enabled ? 1 : 0;

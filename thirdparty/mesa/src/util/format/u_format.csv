@@ -1,0 +1,586 @@
+###########################################################################
+#
+# Copyright 2009-2010 VMware, Inc.
+# All Rights Reserved.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sub license, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice (including the
+# next paragraph) shall be included in all copies or substantial portions
+# of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+# OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+###########################################################################
+
+# This CSV file has the input data for u_format.h's struct
+# util_format_description. It is also used as input for radeonsi's format
+# mapping.
+#
+# Each format entry contains:
+# - name, per enum pipe_format
+# - layout, per enum util_format_layout, in shortened lower caps
+# - pixel block's width
+# - pixel block's height
+# - pixel block's depth, in number of pixels
+# - channel encoding (only meaningful for plain layout), containing for each
+#   channel the following information:
+#   - type, one of
+#     - 'x': void
+#     - 'u': unsigned
+#     - 's': signed
+#     - 'h': fixed
+#     - 'f': FLOAT
+#   - optionally followed by 'n' if it is normalized
+#   - optionally followed by 'p' if it is pure
+#   - number of bits
+# - channel swizzle
+# - color space: rgb, srgb, yuv, zs
+# - (optional) channel encoding for big-endian targets
+# - (optional) channel swizzle for big-endian targets
+#
+# See also:
+# - http://msdn.microsoft.com/en-us/library/bb172558.aspx (D3D9)
+# - http://msdn.microsoft.com/en-us/library/bb205073.aspx#mapping_texture_formats (D3D9 -> D3D10)
+# - http://msdn.microsoft.com/en-us/library/bb173059.aspx (D3D10)
+#
+# Note that GL doesn't really specify the layout of internal formats. See
+# OpenGL 2.1 specification, Table 3.16, on the "Correspondence of sized
+# internal formats to base in- ternal formats, and desired component
+# resolutions for each sized internal format."
+
+# None
+# Described as regular uint_8 bytes, i.e. PIPE_FORMAT_R8_USCALED
+PIPE_FORMAT_NONE                    , plain, 1, 1, 1, u8  ,     ,     ,     , x001, rgb
+
+# Typical rendertarget formats
+PIPE_FORMAT_B8G8R8A8_UNORM          , plain, 1, 1, 1, un8 , un8 , un8 , un8 , zyxw, rgb
+PIPE_FORMAT_B8G8R8X8_UNORM          , plain, 1, 1, 1, un8 , un8 , un8 , x8  , zyx1, rgb
+PIPE_FORMAT_B8G8R8X8_SNORM          , plain, 1, 1, 1, sn8 , sn8 , sn8 , x8  , zyx1, rgb
+PIPE_FORMAT_B8G8R8X8_UINT           , plain, 1, 1, 1, up8 , up8 , up8 , x8  , zyx1, rgb
+PIPE_FORMAT_B8G8R8X8_SINT           , plain, 1, 1, 1, sp8 , sp8 , sp8 , x8  , zyx1, rgb
+PIPE_FORMAT_A8R8G8B8_UNORM          , plain, 1, 1, 1, un8 , un8 , un8 , un8 , yzwx, rgb
+PIPE_FORMAT_A8R8G8B8_SNORM          , plain, 1, 1, 1, sn8 , sn8 , sn8 , sn8 , yzwx, rgb
+PIPE_FORMAT_A8R8G8B8_SINT           , plain, 1, 1, 1, sp8 , sp8 , sp8 , sp8 , yzwx, rgb
+PIPE_FORMAT_X8R8G8B8_UNORM          , plain, 1, 1, 1, x8  , un8 , un8 , un8 , yzw1, rgb
+PIPE_FORMAT_X8R8G8B8_SNORM          , plain, 1, 1, 1, x8  , sn8 , sn8 , sn8 , yzw1, rgb
+PIPE_FORMAT_X8R8G8B8_SINT           , plain, 1, 1, 1, x8  , sp8 , sp8 , sp8 , yzw1, rgb
+PIPE_FORMAT_A8B8G8R8_UNORM          , plain, 1, 1, 1, un8 , un8 , un8 , un8 , wzyx, rgb
+PIPE_FORMAT_X8B8G8R8_UNORM          , plain, 1, 1, 1, x8  , un8 , un8 , un8 , wzy1, rgb
+# PIPE_FORMAT_R8G8B8A8_UNORM is below
+PIPE_FORMAT_R8G8B8X8_UNORM          , plain, 1, 1, 1, un8 , un8 , un8 , x8  , xyz1, rgb
+PIPE_FORMAT_R5G5B5A1_UNORM          , plain, 1, 1, 1, un5 , un5 , un5 , un1 , xyzw, rgb
+PIPE_FORMAT_R5G5B5X1_UNORM          , plain, 1, 1, 1, un5 , un5 , un5 , x1  , xyz1, rgb
+PIPE_FORMAT_B5G5R5X1_UNORM          , plain, 1, 1, 1, un5 , un5 , un5 , x1  , zyx1, rgb
+PIPE_FORMAT_B5G5R5A1_UNORM          , plain, 1, 1, 1, un5 , un5 , un5 , un1 , zyxw, rgb
+PIPE_FORMAT_X1B5G5R5_UNORM          , plain, 1, 1, 1, x1  , un5 , un5 , un5 , wzy1, rgb
+PIPE_FORMAT_A1R5G5B5_UNORM          , plain, 1, 1, 1, un1 , un5 , un5 , un5 , yzwx, rgb
+PIPE_FORMAT_X1R5G5B5_UNORM          , plain, 1, 1, 1, x1  , un5 , un5 , un5 , yzw1, rgb
+PIPE_FORMAT_A1B5G5R5_UNORM          , plain, 1, 1, 1, un1 , un5 , un5 , un5 , wzyx, rgb
+PIPE_FORMAT_R4G4B4A4_UNORM          , plain, 1, 1, 1, un4 , un4 , un4 , un4 , xyzw, rgb
+PIPE_FORMAT_R4G4B4X4_UNORM          , plain, 1, 1, 1, un4 , un4 , un4 , x4  , xyz1, rgb
+PIPE_FORMAT_B4G4R4A4_UNORM          , plain, 1, 1, 1, un4 , un4 , un4 , un4 , zyxw, rgb
+PIPE_FORMAT_B4G4R4X4_UNORM          , plain, 1, 1, 1, un4 , un4 , un4 , x4  , zyx1, rgb
+PIPE_FORMAT_A4R4G4B4_UNORM          , plain, 1, 1, 1, un4 , un4 , un4 , un4 , yzwx, rgb
+PIPE_FORMAT_A4B4G4R4_UNORM          , plain, 1, 1, 1, un4 , un4 , un4 , un4 , wzyx, rgb
+PIPE_FORMAT_R5G6B5_UNORM            , plain, 1, 1, 1, un5 , un6 , un5 ,     , xyz1, rgb
+PIPE_FORMAT_B5G6R5_UNORM            , plain, 1, 1, 1, un5 , un6 , un5 ,     , zyx1, rgb
+PIPE_FORMAT_R10G10B10A2_UNORM       , plain, 1, 1, 1, un10, un10, un10, un2 , xyzw, rgb
+PIPE_FORMAT_R10G10B10X2_UNORM       , plain, 1, 1, 1, un10, un10, un10, x2,   xyz1, rgb
+PIPE_FORMAT_B10G10R10A2_UNORM       , plain, 1, 1, 1, un10, un10, un10, un2 , zyxw, rgb
+PIPE_FORMAT_A2R10G10B10_UNORM       , plain, 1, 1, 1, un2 , un10, un10, un10, yzwx, rgb
+PIPE_FORMAT_A2B10G10R10_UNORM       , plain, 1, 1, 1, un2 , un10, un10, un10, wzyx, rgb
+PIPE_FORMAT_R3G3B2_UNORM            , plain, 1, 1, 1, un3 , un3 , un2 ,     , xyz1, rgb
+PIPE_FORMAT_B2G3R3_UNORM            , plain, 1, 1, 1, un2 , un3 , un3 ,     , zyx1, rgb
+
+# Luminance/Intensity/Alpha formats
+PIPE_FORMAT_L8_UNORM                , plain, 1, 1, 1, un8 ,     ,     ,     , xxx1, rgb
+PIPE_FORMAT_A8_UNORM                , plain, 1, 1, 1, un8 ,     ,     ,     , 000x, rgb
+PIPE_FORMAT_I8_UNORM                , plain, 1, 1, 1, un8 ,     ,     ,     , xxxx, rgb
+PIPE_FORMAT_L4A4_UNORM              , plain, 1, 1, 1, un4 , un4 ,     ,     , xxxy, rgb
+PIPE_FORMAT_L8A8_UNORM              , plain, 1, 1, 1, un8 , un8 ,     ,     , xxxy, rgb
+PIPE_FORMAT_L16_UNORM               , plain, 1, 1, 1, un16,     ,     ,     , xxx1, rgb
+PIPE_FORMAT_A16_UNORM               , plain, 1, 1, 1, un16,     ,     ,     , 000x, rgb
+PIPE_FORMAT_I16_UNORM               , plain, 1, 1, 1, un16,     ,     ,     , xxxx, rgb
+PIPE_FORMAT_L16A16_UNORM            , plain, 1, 1, 1, un16, un16,     ,     , xxxy, rgb
+PIPE_FORMAT_A8_SNORM                , plain, 1, 1, 1, sn8 ,     ,     ,     , 000x, rgb
+PIPE_FORMAT_L8_SNORM                , plain, 1, 1, 1, sn8 ,     ,     ,     , xxx1, rgb
+PIPE_FORMAT_L8A8_SNORM              , plain, 1, 1, 1, sn8 , sn8 ,     ,     , xxxy, rgb
+PIPE_FORMAT_I8_SNORM                , plain, 1, 1, 1, sn8 ,     ,     ,     , xxxx, rgb
+PIPE_FORMAT_A16_SNORM               , plain, 1, 1, 1, sn16,     ,     ,     , 000x, rgb
+PIPE_FORMAT_L16_SNORM               , plain, 1, 1, 1, sn16,     ,     ,     , xxx1, rgb
+PIPE_FORMAT_L16A16_SNORM            , plain, 1, 1, 1, sn16, sn16,     ,     , xxxy, rgb
+PIPE_FORMAT_I16_SNORM               , plain, 1, 1, 1, sn16,     ,     ,     , xxxx, rgb
+PIPE_FORMAT_A16_FLOAT               , plain, 1, 1, 1, f16 ,     ,     ,     , 000x, rgb
+PIPE_FORMAT_L16_FLOAT               , plain, 1, 1, 1, f16 ,     ,     ,     , xxx1, rgb
+PIPE_FORMAT_L16A16_FLOAT            , plain, 1, 1, 1, f16 , f16 ,     ,     , xxxy, rgb
+PIPE_FORMAT_I16_FLOAT               , plain, 1, 1, 1, f16 ,     ,     ,     , xxxx, rgb
+PIPE_FORMAT_A32_FLOAT               , plain, 1, 1, 1, f32 ,     ,     ,     , 000x, rgb
+PIPE_FORMAT_L32_FLOAT               , plain, 1, 1, 1, f32 ,     ,     ,     , xxx1, rgb
+PIPE_FORMAT_L32A32_FLOAT            , plain, 1, 1, 1, f32 , f32 ,     ,     , xxxy, rgb
+PIPE_FORMAT_I32_FLOAT               , plain, 1, 1, 1, f32 ,     ,     ,     , xxxx, rgb
+
+# SRGB formats
+PIPE_FORMAT_L8_SRGB                 , plain, 1, 1, 1, un8 ,     ,     ,     , xxx1, srgb
+PIPE_FORMAT_R8_SRGB                 , plain, 1, 1, 1, un8 ,     ,     ,     , x001, srgb
+PIPE_FORMAT_L8A8_SRGB               , plain, 1, 1, 1, un8 , un8 ,     ,     , xxxy, srgb
+PIPE_FORMAT_R8G8_SRGB               , plain, 1, 1, 1, un8 , un8 ,     ,     , xy01, srgb
+PIPE_FORMAT_R8G8B8_SRGB             , plain, 1, 1, 1, un8 , un8 , un8 ,     , xyz1, srgb
+PIPE_FORMAT_B8G8R8_SRGB             , plain, 1, 1, 1, un8 , un8 , un8 ,     , zyx1, srgb
+PIPE_FORMAT_R8G8B8A8_SRGB           , plain, 1, 1, 1, un8 , un8 , un8 , un8 , xyzw, srgb
+PIPE_FORMAT_A8B8G8R8_SRGB           , plain, 1, 1, 1, un8 , un8 , un8 , un8 , wzyx, srgb
+PIPE_FORMAT_X8B8G8R8_SRGB           , plain, 1, 1, 1, x8  , un8 , un8 , un8 , wzy1, srgb
+PIPE_FORMAT_B8G8R8A8_SRGB           , plain, 1, 1, 1, un8 , un8 , un8 , un8 , zyxw, srgb
+PIPE_FORMAT_B8G8R8X8_SRGB           , plain, 1, 1, 1, un8 , un8 , un8 , x8  , zyx1, srgb
+PIPE_FORMAT_A8R8G8B8_SRGB           , plain, 1, 1, 1, un8 , un8 , un8 , un8 , yzwx, srgb
+PIPE_FORMAT_X8R8G8B8_SRGB           , plain, 1, 1, 1, x8  , un8 , un8 , un8 , yzw1, srgb
+
+# Mixed-sign formats (typically used for bump map textures)
+PIPE_FORMAT_R8SG8SB8UX8U_NORM       , plain, 1, 1, 1, sn8 , sn8 , un8 , x8  , xyz1, rgb
+PIPE_FORMAT_R10SG10SB10SA2U_NORM    , plain, 1, 1, 1, sn10, sn10, sn10, un2 , xyzw, rgb
+PIPE_FORMAT_R5SG5SB6U_NORM          , plain, 1, 1, 1, sn5 , sn5 , un6 ,     , xyz1, rgb
+
+# Depth-stencil formats
+PIPE_FORMAT_S8_UINT                 , plain, 1, 1, 1, up8 ,     ,     ,     , _x__, zs
+PIPE_FORMAT_Z16_UNORM               , plain, 1, 1, 1, un16,     ,     ,     , x___, zs
+PIPE_FORMAT_Z16_UNORM_S8_UINT       , plain, 1, 1, 1, un16, up8 ,     ,     , xy__, zs
+PIPE_FORMAT_Z32_UNORM               , plain, 1, 1, 1, un32,     ,     ,     , x___, zs
+PIPE_FORMAT_Z32_FLOAT               , plain, 1, 1, 1, f32 ,     ,     ,     , x___, zs
+PIPE_FORMAT_Z24_UNORM_S8_UINT       , plain, 1, 1, 1, un24, up8 ,     ,     , xy__, zs
+PIPE_FORMAT_S8_UINT_Z24_UNORM       , plain, 1, 1, 1, up8 , un24,     ,     , yx__, zs
+PIPE_FORMAT_X24S8_UINT              , plain, 1, 1, 1, x24 , up8 ,     ,     , _y__, zs
+PIPE_FORMAT_S8X24_UINT              , plain, 1, 1, 1, up8 , x24 ,     ,     , _x__, zs
+PIPE_FORMAT_Z24X8_UNORM             , plain, 1, 1, 1, un24, x8  ,     ,     , x___, zs
+PIPE_FORMAT_X8Z24_UNORM             , plain, 1, 1, 1, x8  , un24,     ,     , y___, zs
+PIPE_FORMAT_Z32_FLOAT_S8X24_UINT    , plain, 1, 1, 1, f32 , up8 ,  x24,     , xy__, zs,    f32 , x24 ,  up8,     , xz__
+PIPE_FORMAT_X32_S8X24_UINT          , plain, 1, 1, 1, x32 , up8 ,  x24,     , _y__, zs,    x32 , x24 ,  up8,     , _z__
+
+# Depth-stencil formats equivalent to blitting PIPE_FORMAT_Z24_UNORM_S8_UINT
+# as PIPE_FORMAT_R8G8B8A8_*, in that it is an equivalent size to the z/s
+# format.  This is mainly for hw that has some sort of bandwidth compressed
+# format where the compression for z24s8 is not equivalent to r8g8b8a8,
+# and therefore some special handling is required for blits.
+PIPE_FORMAT_Z24_UNORM_S8_UINT_AS_R8G8B8A8 , plain, 1, 1, 1, un8 , un8 , un8 , un8 , xyzw, rgb
+
+# YUV formats
+# http://www.fourcc.org/yuv.php#UYVY
+PIPE_FORMAT_UYVY                     , subsampled, 2, 1, 1, un8 , un8 , un8 , un8 , xyz1, yuv
+# http://www.fourcc.org/yuv.php#YUYV (a.k.a http://www.fourcc.org/yuv.php#YUY2)
+PIPE_FORMAT_YUYV                     , subsampled, 2, 1, 1, un8 , un8 , un8 , un8 , xyz1, yuv
+
+PIPE_FORMAT_AYUV                    , other, 4, 4, 1, un8 ,     ,     ,     , xyzw, yuv
+PIPE_FORMAT_XYUV                    , other, 4, 4, 1, un8 ,     ,     ,     , xyz1, yuv
+
+# same subsampling but with rgb channels
+PIPE_FORMAT_R8G8_B8G8_UNORM         , subsampled, 2, 1, 1, x32 ,     ,     ,     , xyz1, rgb
+PIPE_FORMAT_G8R8_G8B8_UNORM         , subsampled, 2, 1, 1, x32 ,     ,     ,     , xyz1, rgb
+PIPE_FORMAT_G8R8_B8R8_UNORM         , subsampled, 2, 1, 1, x32 ,     ,     ,     , yxz1, rgb
+PIPE_FORMAT_R8G8_R8B8_UNORM         , subsampled, 2, 1, 1, x32 ,     ,     ,     , yxz1, rgb
+
+# some special formats not fitting anywhere else
+PIPE_FORMAT_R11G11B10_FLOAT         , other,     1, 1, 1, f11 , f11 , f10 ,     , xyz1, rgb
+PIPE_FORMAT_R9G9B9E5_FLOAT          , other,     1, 1, 1, f9  , f9  , f9  , x5  , xyz1, rgb
+PIPE_FORMAT_R1_UNORM                , other,     8, 1, 1, x8  ,     ,     ,     , x001, rgb
+# A.k.a. D3DFMT_CxV8U8
+PIPE_FORMAT_R8G8Bx_SNORM            , other,     1, 1, 1, sn8 , sn8 ,     ,     , xyz1, rgb
+
+# Compressed formats
+# - http://en.wikipedia.org/wiki/S3_Texture_Compression
+# - http://www.opengl.org/registry/specs/EXT/texture_compression_s3tc.txt
+# - http://www.opengl.org/registry/specs/ARB/texture_compression_rgtc.txt
+# - http://www.opengl.org/registry/specs/EXT/texture_compression_latc.txt
+# - http://www.opengl.org/registry/specs/ARB/texture_compression_bptc.txt
+# - http://www.khronos.org/registry/gles/extensions/OES/OES_compressed_ETC1_RGB8_texture.txt
+# - http://msdn.microsoft.com/en-us/library/bb694531.aspx
+PIPE_FORMAT_DXT1_RGB                , s3tc, 4, 4, 1, x64 ,     ,     ,     , xyz1, rgb
+PIPE_FORMAT_DXT1_RGBA               , s3tc, 4, 4, 1, x64 ,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_DXT3_RGBA               , s3tc, 4, 4, 1, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_DXT5_RGBA               , s3tc, 4, 4, 1, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_DXT1_SRGB               , s3tc, 4, 4, 1, x64 ,     ,     ,     , xyz1, srgb
+PIPE_FORMAT_DXT1_SRGBA              , s3tc, 4, 4, 1, x64 ,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_DXT3_SRGBA              , s3tc, 4, 4, 1, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_DXT5_SRGBA              , s3tc, 4, 4, 1, x128,     ,     ,     , xyzw, srgb
+
+# FXT1 compressed formats
+PIPE_FORMAT_FXT1_RGB              , fxt1, 8, 4, 1, x128,     ,     ,     , xyz1, rgb
+PIPE_FORMAT_FXT1_RGBA             , fxt1, 8, 4, 1, x128,     ,     ,     , xyzw, rgb
+
+PIPE_FORMAT_RGTC1_UNORM             , rgtc, 4, 4, 1, x64,      ,     ,     , x001, rgb
+PIPE_FORMAT_RGTC1_SNORM             , rgtc, 4, 4, 1, x64,      ,     ,     , x001, rgb
+PIPE_FORMAT_RGTC2_UNORM             , rgtc, 4, 4, 1, x128,     ,     ,     , xy01, rgb
+PIPE_FORMAT_RGTC2_SNORM             , rgtc, 4, 4, 1, x128,     ,     ,     , xy01, rgb
+
+PIPE_FORMAT_LATC1_UNORM             , rgtc, 4, 4, 1, x64,      ,     ,     , xxx1, rgb
+PIPE_FORMAT_LATC1_SNORM             , rgtc, 4, 4, 1, x64,      ,     ,     , xxx1, rgb
+PIPE_FORMAT_LATC2_UNORM             , rgtc, 4, 4, 1, x128,     ,     ,     , xxxy, rgb
+PIPE_FORMAT_LATC2_SNORM             , rgtc, 4, 4, 1, x128,     ,     ,     , xxxy, rgb
+
+PIPE_FORMAT_ETC1_RGB8               ,  etc, 4, 4, 1, x64,      ,     ,     , xyz1, rgb
+
+PIPE_FORMAT_ETC2_RGB8               ,  etc, 4, 4, 1, x64,      ,     ,     , xyz1, rgb
+PIPE_FORMAT_ETC2_SRGB8              ,  etc, 4, 4, 1, x64,      ,     ,     , xyz1, srgb
+PIPE_FORMAT_ETC2_RGB8A1             ,  etc, 4, 4, 1, x64,      ,     ,     , xyzw, rgb
+PIPE_FORMAT_ETC2_SRGB8A1            ,  etc, 4, 4, 1, x64,      ,     ,     , xyzw, srgb
+PIPE_FORMAT_ETC2_RGBA8              ,  etc, 4, 4, 1, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ETC2_SRGBA8             ,  etc, 4, 4, 1, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_ETC2_R11_UNORM          ,  etc, 4, 4, 1, x64,      ,     ,     , x001, rgb
+PIPE_FORMAT_ETC2_R11_SNORM          ,  etc, 4, 4, 1, x64,      ,     ,     , x001, rgb
+PIPE_FORMAT_ETC2_RG11_UNORM         ,  etc, 4, 4, 1, x128,     ,     ,     , xy01, rgb
+PIPE_FORMAT_ETC2_RG11_SNORM         ,  etc, 4, 4, 1, x128,     ,     ,     , xy01, rgb
+
+PIPE_FORMAT_BPTC_RGBA_UNORM         , bptc, 4, 4, 1, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_BPTC_SRGBA              , bptc, 4, 4, 1, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_BPTC_RGB_FLOAT          , bptc, 4, 4, 1, x128,     ,     ,     , xyz1, rgb
+PIPE_FORMAT_BPTC_RGB_UFLOAT         , bptc, 4, 4, 1, x128,     ,     ,     , xyz1, rgb
+
+PIPE_FORMAT_ASTC_4x4                , astc, 4, 4, 1, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ASTC_5x4                , astc, 5, 4, 1, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ASTC_5x5                , astc, 5, 5, 1, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ASTC_6x5                , astc, 6, 5, 1, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ASTC_6x6                , astc, 6, 6, 1, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ASTC_8x5                , astc, 8, 5, 1, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ASTC_8x6                , astc, 8, 6, 1, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ASTC_8x8                , astc, 8, 8, 1, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ASTC_10x5               , astc,10, 5, 1, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ASTC_10x6               , astc,10, 6, 1, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ASTC_10x8               , astc,10, 8, 1, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ASTC_10x10              , astc,10,10, 1, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ASTC_12x10              , astc,12,10, 1, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ASTC_12x12              , astc,12,12, 1, x128,     ,     ,     , xyzw, rgb
+
+PIPE_FORMAT_ASTC_4x4_SRGB           , astc, 4, 4, 1, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_ASTC_5x4_SRGB           , astc, 5, 4, 1, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_ASTC_5x5_SRGB           , astc, 5, 5, 1, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_ASTC_6x5_SRGB           , astc, 6, 5, 1, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_ASTC_6x6_SRGB           , astc, 6, 6, 1, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_ASTC_8x5_SRGB           , astc, 8, 5, 1, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_ASTC_8x6_SRGB           , astc, 8, 6, 1, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_ASTC_8x8_SRGB           , astc, 8, 8, 1, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_ASTC_10x5_SRGB          , astc,10, 5, 1, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_ASTC_10x6_SRGB          , astc,10, 6, 1, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_ASTC_10x8_SRGB          , astc,10, 8, 1, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_ASTC_10x10_SRGB         , astc,10,10, 1, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_ASTC_12x10_SRGB         , astc,12,10, 1, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_ASTC_12x12_SRGB         , astc,12,12, 1, x128,     ,     ,     , xyzw, srgb
+
+PIPE_FORMAT_ASTC_3x3x3              , astc, 3, 3, 3, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ASTC_4x3x3              , astc, 4, 3, 3, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ASTC_4x4x3              , astc, 4, 4, 3, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ASTC_4x4x4              , astc, 4, 4, 4, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ASTC_5x4x4              , astc, 5, 4, 4, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ASTC_5x5x4              , astc, 5, 5, 4, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ASTC_5x5x5              , astc, 5, 5, 5, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ASTC_6x5x5              , astc, 6, 5, 5, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ASTC_6x6x5              , astc, 6, 6, 5, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ASTC_6x6x6              , astc, 6, 6, 6, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ASTC_3x3x3_SRGB         , astc, 3, 3, 3, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_ASTC_4x3x3_SRGB         , astc, 4, 3, 3, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_ASTC_4x4x3_SRGB         , astc, 4, 4, 3, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_ASTC_4x4x4_SRGB         , astc, 4, 4, 4, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_ASTC_5x4x4_SRGB         , astc, 5, 4, 4, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_ASTC_5x5x4_SRGB         , astc, 5, 5, 4, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_ASTC_5x5x5_SRGB         , astc, 5, 5, 5, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_ASTC_6x5x5_SRGB         , astc, 6, 5, 5, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_ASTC_6x6x5_SRGB         , astc, 6, 6, 5, x128,     ,     ,     , xyzw, srgb
+PIPE_FORMAT_ASTC_6x6x6_SRGB         , astc, 6, 6, 6, x128,     ,     ,     , xyzw, srgb
+
+PIPE_FORMAT_ATC_RGB                 ,  atc, 4, 4, 1, x64,      ,     ,     , xyz1, rgb
+PIPE_FORMAT_ATC_RGBA_EXPLICIT       ,  atc, 4, 4, 1, x128,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_ATC_RGBA_INTERPOLATED   ,  atc, 4, 4, 1, x128,     ,     ,     , xyzw, rgb
+
+# Straightforward D3D10-like formats (also used for
+# vertex buffer element description)
+#
+# See also:
+# - src/gallium/auxiliary/translate/translate_generic.c
+# - src/mesa/state_tracker/st_draw.c
+PIPE_FORMAT_R64_FLOAT               , plain, 1, 1, 1, f64 ,     ,     ,     , x001, rgb
+PIPE_FORMAT_R64G64_FLOAT            , plain, 1, 1, 1, f64 , f64 ,     ,     , xy01, rgb
+PIPE_FORMAT_R64G64B64_FLOAT         , plain, 1, 1, 1, f64 , f64 , f64 ,     , xyz1, rgb
+PIPE_FORMAT_R64G64B64A64_FLOAT      , plain, 1, 1, 1, f64 , f64 , f64 , f64 , xyzw, rgb
+PIPE_FORMAT_R32_FLOAT               , plain, 1, 1, 1, f32 ,     ,     ,     , x001, rgb
+PIPE_FORMAT_R32G32_FLOAT            , plain, 1, 1, 1, f32 , f32 ,     ,     , xy01, rgb
+PIPE_FORMAT_R32G32B32_FLOAT         , plain, 1, 1, 1, f32 , f32 , f32 ,     , xyz1, rgb
+PIPE_FORMAT_R32G32B32A32_FLOAT      , plain, 1, 1, 1, f32 , f32 , f32 , f32 , xyzw, rgb
+PIPE_FORMAT_R32_UNORM               , plain, 1, 1, 1, un32,     ,     ,     , x001, rgb
+PIPE_FORMAT_R32G32_UNORM            , plain, 1, 1, 1, un32, un32,     ,     , xy01, rgb
+PIPE_FORMAT_R32G32B32_UNORM         , plain, 1, 1, 1, un32, un32, un32,     , xyz1, rgb
+PIPE_FORMAT_R32G32B32A32_UNORM      , plain, 1, 1, 1, un32, un32, un32, un32, xyzw, rgb
+PIPE_FORMAT_R32_USCALED             , plain, 1, 1, 1, u32 ,     ,     ,     , x001, rgb
+PIPE_FORMAT_R32G32_USCALED          , plain, 1, 1, 1, u32 , u32 ,     ,     , xy01, rgb
+PIPE_FORMAT_R32G32B32_USCALED       , plain, 1, 1, 1, u32 , u32 , u32 ,     , xyz1, rgb
+PIPE_FORMAT_R32G32B32A32_USCALED    , plain, 1, 1, 1, u32 , u32 , u32 , u32 , xyzw, rgb
+PIPE_FORMAT_R32_SNORM               , plain, 1, 1, 1, sn32,     ,     ,     , x001, rgb
+PIPE_FORMAT_R32G32_SNORM            , plain, 1, 1, 1, sn32, sn32,     ,     , xy01, rgb
+PIPE_FORMAT_R32G32B32_SNORM         , plain, 1, 1, 1, sn32, sn32, sn32,     , xyz1, rgb
+PIPE_FORMAT_R32G32B32A32_SNORM      , plain, 1, 1, 1, sn32, sn32, sn32, sn32, xyzw, rgb
+PIPE_FORMAT_R32_SSCALED             , plain, 1, 1, 1, s32 ,     ,     ,     , x001, rgb
+PIPE_FORMAT_R32G32_SSCALED          , plain, 1, 1, 1, s32 , s32 ,     ,     , xy01, rgb
+PIPE_FORMAT_R32G32B32_SSCALED       , plain, 1, 1, 1, s32 , s32 , s32 ,     , xyz1, rgb
+PIPE_FORMAT_R32G32B32A32_SSCALED    , plain, 1, 1, 1, s32 , s32 , s32 , s32 , xyzw, rgb
+PIPE_FORMAT_R16_FLOAT               , plain, 1, 1, 1, f16 ,     ,     ,     , x001, rgb
+PIPE_FORMAT_R16G16_FLOAT            , plain, 1, 1, 1, f16 , f16 ,     ,     , xy01, rgb
+PIPE_FORMAT_R16G16B16_FLOAT         , plain, 1, 1, 1, f16 , f16 , f16 ,     , xyz1, rgb
+PIPE_FORMAT_R16G16B16A16_FLOAT      , plain, 1, 1, 1, f16 , f16 , f16 , f16 , xyzw, rgb
+PIPE_FORMAT_R16_UNORM               , plain, 1, 1, 1, un16,     ,     ,     , x001, rgb
+PIPE_FORMAT_R16G16_UNORM            , plain, 1, 1, 1, un16, un16,     ,     , xy01, rgb
+PIPE_FORMAT_R16G16B16_UNORM         , plain, 1, 1, 1, un16, un16, un16,     , xyz1, rgb
+PIPE_FORMAT_R16G16B16A16_UNORM      , plain, 1, 1, 1, un16, un16, un16, un16, xyzw, rgb
+PIPE_FORMAT_R16_USCALED             , plain, 1, 1, 1, u16 ,     ,     ,     , x001, rgb
+PIPE_FORMAT_R16G16_USCALED          , plain, 1, 1, 1, u16 , u16 ,     ,     , xy01, rgb
+PIPE_FORMAT_R16G16B16_USCALED       , plain, 1, 1, 1, u16 , u16 , u16 ,     , xyz1, rgb
+PIPE_FORMAT_R16G16B16A16_USCALED    , plain, 1, 1, 1, u16 , u16 , u16 , u16 , xyzw, rgb
+PIPE_FORMAT_R16_SNORM               , plain, 1, 1, 1, sn16,     ,     ,     , x001, rgb
+PIPE_FORMAT_R16G16_SNORM            , plain, 1, 1, 1, sn16, sn16,     ,     , xy01, rgb
+PIPE_FORMAT_R16G16B16_SNORM         , plain, 1, 1, 1, sn16, sn16, sn16,     , xyz1, rgb
+PIPE_FORMAT_R16G16B16A16_SNORM      , plain, 1, 1, 1, sn16, sn16, sn16, sn16, xyzw, rgb
+PIPE_FORMAT_R16_SSCALED             , plain, 1, 1, 1, s16 ,     ,     ,     , x001, rgb
+PIPE_FORMAT_R16G16_SSCALED          , plain, 1, 1, 1, s16 , s16 ,     ,     , xy01, rgb
+PIPE_FORMAT_R16G16B16_SSCALED       , plain, 1, 1, 1, s16 , s16 , s16 ,     , xyz1, rgb
+PIPE_FORMAT_R16G16B16A16_SSCALED    , plain, 1, 1, 1, s16 , s16 , s16 , s16 , xyzw, rgb
+PIPE_FORMAT_R8_UNORM                , plain, 1, 1, 1, un8 ,     ,     ,     , x001, rgb
+PIPE_FORMAT_R8G8_UNORM              , plain, 1, 1, 1, un8 , un8 ,     ,     , xy01, rgb
+PIPE_FORMAT_R8G8B8_UNORM            , plain, 1, 1, 1, un8 , un8 , un8 ,     , xyz1, rgb
+PIPE_FORMAT_B8G8R8_UNORM            , plain, 1, 1, 1, un8 , un8 , un8 ,     , zyx1, rgb
+PIPE_FORMAT_R8G8B8A8_UNORM          , plain, 1, 1, 1, un8 , un8 , un8 , un8 , xyzw, rgb
+PIPE_FORMAT_R8_USCALED              , plain, 1, 1, 1, u8  ,     ,     ,     , x001, rgb
+PIPE_FORMAT_R8G8_USCALED            , plain, 1, 1, 1, u8  , u8  ,     ,     , xy01, rgb
+PIPE_FORMAT_R8G8B8_USCALED          , plain, 1, 1, 1, u8  , u8  , u8  ,     , xyz1, rgb
+PIPE_FORMAT_B8G8R8_USCALED          , plain, 1, 1, 1, u8  , u8  , u8  ,     , zyx1, rgb
+PIPE_FORMAT_R8G8B8A8_USCALED        , plain, 1, 1, 1, u8  , u8  , u8  , u8  , xyzw, rgb
+PIPE_FORMAT_B8G8R8A8_USCALED        , plain, 1, 1, 1, u8  , u8  , u8  , u8  , zyxw, rgb
+PIPE_FORMAT_A8B8G8R8_USCALED        , plain, 1, 1, 1, u8  , u8  , u8  , u8  , wzyx, rgb
+PIPE_FORMAT_R8_SNORM                , plain, 1, 1, 1, sn8 ,     ,     ,     , x001, rgb
+PIPE_FORMAT_R8G8_SNORM              , plain, 1, 1, 1, sn8 , sn8 ,     ,     , xy01, rgb
+PIPE_FORMAT_R8G8B8_SNORM            , plain, 1, 1, 1, sn8 , sn8 , sn8 ,     , xyz1, rgb
+PIPE_FORMAT_B8G8R8_SNORM            , plain, 1, 1, 1, sn8 , sn8 , sn8 ,     , zyx1, rgb
+PIPE_FORMAT_R8G8B8A8_SNORM          , plain, 1, 1, 1, sn8 , sn8 , sn8 , sn8 , xyzw, rgb
+PIPE_FORMAT_B8G8R8A8_SNORM          , plain, 1, 1, 1, sn8 , sn8 , sn8 , sn8 , zyxw, rgb
+PIPE_FORMAT_R8_SSCALED              , plain, 1, 1, 1, s8  ,     ,     ,     , x001, rgb
+PIPE_FORMAT_R8G8_SSCALED            , plain, 1, 1, 1, s8  , s8  ,     ,     , xy01, rgb
+PIPE_FORMAT_R8G8B8_SSCALED          , plain, 1, 1, 1, s8  , s8  , s8  ,     , xyz1, rgb
+PIPE_FORMAT_B8G8R8_SSCALED          , plain, 1, 1, 1, s8  , s8  , s8  ,     , zyx1, rgb
+PIPE_FORMAT_R8G8B8A8_SSCALED        , plain, 1, 1, 1, s8  , s8  , s8  , s8  , xyzw, rgb
+PIPE_FORMAT_B8G8R8A8_SSCALED        , plain, 1, 1, 1, s8  , s8  , s8  , s8  , zyxw, rgb
+PIPE_FORMAT_A8B8G8R8_SSCALED        , plain, 1, 1, 1, s8  , s8  , s8  , s8  , wzyx, rgb
+
+# GL-specific vertex buffer element formats
+# A.k.a. GL_FIXED
+PIPE_FORMAT_R32_FIXED               , plain, 1, 1, 1, h32 ,     ,     ,     , x001, rgb
+PIPE_FORMAT_R32G32_FIXED            , plain, 1, 1, 1, h32 , h32 ,     ,     , xy01, rgb
+PIPE_FORMAT_R32G32B32_FIXED         , plain, 1, 1, 1, h32 , h32 , h32 ,     , xyz1, rgb
+PIPE_FORMAT_R32G32B32A32_FIXED      , plain, 1, 1, 1, h32 , h32 , h32 , h32 , xyzw, rgb
+
+# D3D9-specific vertex buffer element formats
+# See also:
+# - http://msdn.microsoft.com/en-us/library/bb172533.aspx
+# A.k.a. D3DDECLTYPE_UDEC3
+PIPE_FORMAT_R10G10B10X2_USCALED     , plain, 1, 1, 1, u10 , u10 , u10  , x2 , xyz1, rgb
+# A.k.a. D3DDECLTYPE_DEC3N
+PIPE_FORMAT_R10G10B10X2_SNORM       , plain, 1, 1, 1, sn10, sn10, sn10 , x2 , xyz1, rgb
+PIPE_FORMAT_R10G10B10X2_SINT        , plain, 1, 1, 1, sp10, sp10, sp10 , x2 , xyz1, rgb
+
+PIPE_FORMAT_YV12                  , planar3, 1, 1, 1,     ,     ,     ,     , xyzw, yuv
+PIPE_FORMAT_YV16                  , planar3, 1, 1, 1,     ,     ,     ,     , xyzw, yuv
+PIPE_FORMAT_IYUV                  , planar3, 1, 1, 1,     ,     ,     ,     , xyzw, yuv
+PIPE_FORMAT_NV12                  , planar2, 1, 1, 1,     ,     ,     ,     , xyzw, yuv
+PIPE_FORMAT_NV21                  , planar2, 1, 1, 1,     ,     ,     ,     , xyzw, yuv
+PIPE_FORMAT_Y8_400_UNORM          , other  , 1, 1, 1,  un8,     ,     ,     , x001, yuv
+
+# RGB version of NV12 and YV12 for hardware that supports sampling from
+# multiplane textures but needs color-space conversion in the shader.
+PIPE_FORMAT_R8_G8B8_420_UNORM     , planar2, 1, 1, 1,  un8,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_G8_B8R8_420_UNORM     , planar2, 1, 1, 1,  un8,     ,     ,     , xyzw, rgb
+PIPE_FORMAT_G8_B8_R8_420_UNORM    , planar3, 1, 1, 1,  un8,     ,     ,     , xyzw, rgb
+
+# While most of Mesa uses R8 for Y, U, and V planes, freedreno requires distinguishing
+# between tiled Y8 data and tiled R8 data.
+PIPE_FORMAT_Y8_UNORM              , other,   1, 1, 1,  un8,     ,     ,     , x001, yuv
+
+PIPE_FORMAT_Y8_U8_V8_422_UNORM    , planar3, 1, 1, 1,     ,     ,     ,     , xyzw, yuv
+PIPE_FORMAT_Y8_U8V8_422_UNORM     , planar2, 1, 1, 1,     ,     ,     ,     , xyzw, yuv
+PIPE_FORMAT_Y8_U8_V8_444_UNORM    , planar3, 1, 1, 1,     ,     ,     ,     , xyzw, yuv
+
+PIPE_FORMAT_Y16_U16_V16_420_UNORM , planar3, 1, 1, 1,     ,     ,     ,     , xyzw, yuv
+PIPE_FORMAT_Y16_U16_V16_422_UNORM , planar3, 1, 1, 1,     ,     ,     ,     , xyzw, yuv
+PIPE_FORMAT_Y16_U16V16_422_UNORM  , planar2, 1, 1, 1,     ,     ,     ,     , xyzw, yuv
+PIPE_FORMAT_Y16_U16_V16_444_UNORM , planar3, 1, 1, 1,     ,     ,     ,     , xyzw, yuv
+
+PIPE_FORMAT_P010                  , planar2, 1, 1, 1,     ,     ,     ,     , xyzw, yuv
+PIPE_FORMAT_P012                  , planar2, 1, 1, 1,     ,     ,     ,     , xyzw, yuv
+PIPE_FORMAT_P016                  , planar2, 1, 1, 1,     ,     ,     ,     , xyzw, yuv
+PIPE_FORMAT_P030                  , planar2, 1, 1, 1,     ,     ,     ,     , xyzw, yuv
+
+PIPE_FORMAT_Y210                  , subsampled, 2, 1, 1, x64 ,     ,     ,     , xyz1, yuv
+PIPE_FORMAT_Y212                  , subsampled, 2, 1, 1, x64 ,     ,     ,     , xyz1, yuv
+PIPE_FORMAT_Y216                  , subsampled, 2, 1, 1, x64 ,     ,     ,     , xyz1, yuv
+
+PIPE_FORMAT_Y410                  , other,   1, 1, 1, un10, un10, un10, un2 , yzxw, yuv
+PIPE_FORMAT_Y412                  , other,   1, 1, 1, un16, un16, un16, un16, yzxw, yuv
+PIPE_FORMAT_Y416                  , other,   1, 1, 1, un16, un16, un16, un16, yzxw, yuv
+
+# Usually used to implement IA44 and AI44 formats in video decoding
+PIPE_FORMAT_A4R4_UNORM              , plain, 1, 1, 1, un4 , un4 ,     ,     , y00x, rgb
+PIPE_FORMAT_R4A4_UNORM              , plain, 1, 1, 1, un4 , un4 ,     ,     , x00y, rgb
+PIPE_FORMAT_R8A8_UNORM              , plain, 1, 1, 1, un8 , un8 ,     ,     , x00y, rgb
+PIPE_FORMAT_A8R8_UNORM              , plain, 1, 1, 1, un8 , un8 ,     ,     , y00x, rgb
+
+# ARB_vertex_type_10_10_10_2_REV
+PIPE_FORMAT_R10G10B10A2_USCALED     , plain, 1, 1, 1, u10 , u10 , u10 , u2  , xyzw, rgb
+PIPE_FORMAT_R10G10B10A2_SSCALED     , plain, 1, 1, 1, s10 , s10 , s10 , s2  , xyzw, rgb
+PIPE_FORMAT_R10G10B10A2_SNORM       , plain, 1, 1, 1, sn10, sn10, sn10, sn2 , xyzw, rgb
+PIPE_FORMAT_B10G10R10A2_USCALED     , plain, 1, 1, 1, u10 , u10 , u10 , u2  , zyxw, rgb
+PIPE_FORMAT_B10G10R10A2_SSCALED     , plain, 1, 1, 1, s10 , s10 , s10 , s2  , zyxw, rgb
+PIPE_FORMAT_B10G10R10A2_SNORM       , plain, 1, 1, 1, sn10, sn10, sn10, sn2 , zyxw, rgb
+
+PIPE_FORMAT_R8_UINT                 , plain, 1, 1, 1, up8, , , , x001, rgb
+PIPE_FORMAT_R8G8_UINT               , plain, 1, 1, 1, up8, up8, , , xy01, rgb
+PIPE_FORMAT_R8G8B8_UINT             , plain, 1, 1, 1, up8, up8, up8, , xyz1, rgb
+PIPE_FORMAT_R8G8B8A8_UINT           , plain, 1, 1, 1, up8, up8, up8, up8, xyzw, rgb
+
+PIPE_FORMAT_R8_SINT                 , plain, 1, 1, 1, sp8, , , , x001, rgb
+PIPE_FORMAT_R8G8_SINT               , plain, 1, 1, 1, sp8, sp8, , , xy01, rgb
+PIPE_FORMAT_R8G8B8_SINT             , plain, 1, 1, 1, sp8, sp8, sp8, , xyz1, rgb
+PIPE_FORMAT_R8G8B8A8_SINT           , plain, 1, 1, 1, sp8, sp8, sp8, sp8, xyzw, rgb
+
+PIPE_FORMAT_R16_UINT                , plain, 1, 1, 1, up16, , , , x001, rgb
+PIPE_FORMAT_R16G16_UINT             , plain, 1, 1, 1, up16, up16, , , xy01, rgb
+PIPE_FORMAT_R16G16B16_UINT          , plain, 1, 1, 1, up16, up16, up16, , xyz1, rgb
+PIPE_FORMAT_R16G16B16A16_UINT       , plain, 1, 1, 1, up16, up16, up16, up16, xyzw, rgb
+
+PIPE_FORMAT_R16_SINT                , plain, 1, 1, 1, sp16, , , , x001, rgb
+PIPE_FORMAT_R16G16_SINT             , plain, 1, 1, 1, sp16, sp16, , , xy01, rgb
+PIPE_FORMAT_R16G16B16_SINT          , plain, 1, 1, 1, sp16, sp16, sp16, , xyz1, rgb
+PIPE_FORMAT_R16G16B16A16_SINT       , plain, 1, 1, 1, sp16, sp16, sp16, sp16, xyzw, rgb
+
+PIPE_FORMAT_R32_UINT                , plain, 1, 1, 1, up32, , , , x001, rgb
+PIPE_FORMAT_R32G32_UINT             , plain, 1, 1, 1, up32, up32, , , xy01, rgb
+PIPE_FORMAT_R32G32B32_UINT          , plain, 1, 1, 1, up32, up32, up32, , xyz1, rgb
+PIPE_FORMAT_R32G32B32A32_UINT       , plain, 1, 1, 1, up32, up32, up32, up32, xyzw, rgb
+
+PIPE_FORMAT_R32_SINT                , plain, 1, 1, 1, sp32, , , , x001, rgb
+PIPE_FORMAT_R32G32_SINT             , plain, 1, 1, 1, sp32, sp32, , , xy01, rgb
+PIPE_FORMAT_R32G32B32_SINT          , plain, 1, 1, 1, sp32, sp32, sp32, , xyz1, rgb
+PIPE_FORMAT_R32G32B32A32_SINT       , plain, 1, 1, 1, sp32, sp32, sp32, sp32, xyzw, rgb
+
+PIPE_FORMAT_R64_UINT                , plain, 1, 1, 1, up64, , , , x001, rgb
+PIPE_FORMAT_R64G64_UINT             , plain, 1, 1, 1, up64, up64, , , xy01, rgb
+PIPE_FORMAT_R64G64B64_UINT          , plain, 1, 1, 1, up64, up64, up64, , xyz1, rgb
+PIPE_FORMAT_R64G64B64A64_UINT       , plain, 1, 1, 1, up64, up64, up64, up64, xyzw, rgb
+
+PIPE_FORMAT_R64_SINT                , plain, 1, 1, 1, sp64, , , , x001, rgb
+PIPE_FORMAT_R64G64_SINT             , plain, 1, 1, 1, sp64, sp64, , , xy01, rgb
+PIPE_FORMAT_R64G64B64_SINT          , plain, 1, 1, 1, sp64, sp64, sp64, , xyz1, rgb
+PIPE_FORMAT_R64G64B64A64_SINT       , plain, 1, 1, 1, sp64, sp64, sp64, sp64, xyzw, rgb
+
+PIPE_FORMAT_A8_UINT                 , plain, 1, 1, 1, up8, , , , 000x, rgb
+PIPE_FORMAT_I8_UINT                 , plain, 1, 1, 1, up8, , , , xxxx, rgb
+PIPE_FORMAT_L8_UINT                 , plain, 1, 1, 1, up8, , , , xxx1, rgb
+PIPE_FORMAT_L8A8_UINT               , plain, 1, 1, 1, up8, up8, , , xxxy, rgb
+
+PIPE_FORMAT_A8_SINT                 , plain, 1, 1, 1, sp8, , , , 000x, rgb
+PIPE_FORMAT_I8_SINT                 , plain, 1, 1, 1, sp8, , , , xxxx, rgb
+PIPE_FORMAT_L8_SINT                 , plain, 1, 1, 1, sp8, , , , xxx1, rgb
+PIPE_FORMAT_L8A8_SINT               , plain, 1, 1, 1, sp8, sp8, , , xxxy, rgb
+
+PIPE_FORMAT_A16_UINT                , plain, 1, 1, 1, up16, , , , 000x, rgb
+PIPE_FORMAT_I16_UINT                , plain, 1, 1, 1, up16, , , , xxxx, rgb
+PIPE_FORMAT_L16_UINT                , plain, 1, 1, 1, up16, , , , xxx1, rgb
+PIPE_FORMAT_L16A16_UINT             , plain, 1, 1, 1, up16, up16, , , xxxy, rgb
+
+PIPE_FORMAT_A16_SINT                , plain, 1, 1, 1, sp16, , , , 000x, rgb
+PIPE_FORMAT_I16_SINT                , plain, 1, 1, 1, sp16, , , , xxxx, rgb
+PIPE_FORMAT_L16_SINT                , plain, 1, 1, 1, sp16, , , , xxx1, rgb
+PIPE_FORMAT_L16A16_SINT             , plain, 1, 1, 1, sp16, sp16, , , xxxy, rgb
+
+PIPE_FORMAT_A32_UINT                , plain, 1, 1, 1, up32, , , , 000x, rgb
+PIPE_FORMAT_I32_UINT                , plain, 1, 1, 1, up32, , , , xxxx, rgb
+PIPE_FORMAT_L32_UINT                , plain, 1, 1, 1, up32, , , , xxx1, rgb
+PIPE_FORMAT_L32A32_UINT             , plain, 1, 1, 1, up32, up32, , , xxxy, rgb
+
+PIPE_FORMAT_A32_SINT                , plain, 1, 1, 1, sp32, , , , 000x, rgb
+PIPE_FORMAT_I32_SINT                , plain, 1, 1, 1, sp32, , , , xxxx, rgb
+PIPE_FORMAT_L32_SINT                , plain, 1, 1, 1, sp32, , , , xxx1, rgb
+PIPE_FORMAT_L32A32_SINT             , plain, 1, 1, 1, sp32, sp32, , , xxxy, rgb
+
+PIPE_FORMAT_B8G8R8_UINT             , plain, 1, 1, 1, up8 , up8 , up8 ,     , zyx1, rgb
+PIPE_FORMAT_B8G8R8A8_UINT           , plain, 1, 1, 1, up8 , up8 , up8 , up8 , zyxw, rgb
+
+PIPE_FORMAT_B8G8R8_SINT             , plain, 1, 1, 1, sp8 , sp8 , sp8 ,     , zyx1, rgb
+PIPE_FORMAT_B8G8R8A8_SINT           , plain, 1, 1, 1, sp8 , sp8 , sp8 , sp8 , zyxw, rgb
+
+PIPE_FORMAT_A8R8G8B8_UINT           , plain, 1, 1, 1, up8 , up8 , up8 , up8 , yzwx, rgb
+PIPE_FORMAT_A8B8G8R8_UINT           , plain, 1, 1, 1, up8 , up8 , up8 , up8 , wzyx, rgb
+PIPE_FORMAT_A2R10G10B10_UINT        , plain, 1, 1, 1, up2 , up10, up10, up10, yzwx, rgb
+PIPE_FORMAT_A2B10G10R10_UINT        , plain, 1, 1, 1, up2 , up10, up10, up10, wzyx, rgb
+PIPE_FORMAT_B10G10R10A2_UINT        , plain, 1, 1, 1, up10, up10, up10, up2, zyxw, rgb
+PIPE_FORMAT_B10G10R10A2_SINT        , plain, 1, 1, 1, sp10, sp10, sp10, sp2, zyxw, rgb
+PIPE_FORMAT_R5G6B5_UINT             , plain, 1, 1, 1, up5 , up6 , up5 ,     , xyz1, rgb
+PIPE_FORMAT_B5G6R5_UINT             , plain, 1, 1, 1, up5 , up6 , up5 ,     , zyx1, rgb
+PIPE_FORMAT_R3G3B2_UINT             , plain, 1, 1, 1, up3 , up3 , up2 ,     , xyz1, rgb
+PIPE_FORMAT_B2G3R3_UINT             , plain, 1, 1, 1, up2 , up3 , up3 ,     , zyx1, rgb
+PIPE_FORMAT_R4G4B4A4_UINT           , plain, 1, 1, 1, up4 , up4 , up4 , up4 , xyzw, rgb
+PIPE_FORMAT_B4G4R4A4_UINT           , plain, 1, 1, 1, up4 , up4 , up4 , up4 , zyxw, rgb
+PIPE_FORMAT_A4R4G4B4_UINT           , plain, 1, 1, 1, up4 , up4 , up4 , up4 , yzwx, rgb
+PIPE_FORMAT_A4B4G4R4_UINT           , plain, 1, 1, 1, up4 , up4 , up4 , up4 , wzyx, rgb
+PIPE_FORMAT_A1R5G5B5_UINT           , plain, 1, 1, 1, up1 , up5 , up5 , up5 , yzwx, rgb
+PIPE_FORMAT_A1B5G5R5_UINT           , plain, 1, 1, 1, up1 , up5 , up5 , up5 , wzyx, rgb
+PIPE_FORMAT_R5G5B5A1_UINT           , plain, 1, 1, 1, up5 , up5 , up5 , up1 , xyzw, rgb
+PIPE_FORMAT_B5G5R5A1_UINT           , plain, 1, 1, 1, up5 , up5 , up5 , up1 , zyxw, rgb
+
+PIPE_FORMAT_R8G8B8X8_SNORM          , plain, 1, 1, 1, sn8,  sn8,  sn8,  x8,  xyz1, rgb
+PIPE_FORMAT_R8G8B8X8_SRGB           , plain, 1, 1, 1, un8,  un8,  un8,  x8,  xyz1, srgb
+PIPE_FORMAT_R8G8B8X8_UINT           , plain, 1, 1, 1, up8,  up8,  up8,  x8,  xyz1, rgb
+PIPE_FORMAT_R8G8B8X8_SINT           , plain, 1, 1, 1, sp8,  sp8,  sp8,  x8,  xyz1, rgb
+PIPE_FORMAT_B10G10R10X2_UNORM       , plain, 1, 1, 1, un10, un10, un10, x2,  zyx1, rgb
+PIPE_FORMAT_B10G10R10X2_SNORM       , plain, 1, 1, 1, sn10, sn10, sn10, x2,  zyx1, rgb
+PIPE_FORMAT_B10G10R10X2_SINT        , plain, 1, 1, 1, sp10, sp10, sp10, x2,  zyx1, rgb
+PIPE_FORMAT_R16G16B16X16_UNORM      , plain, 1, 1, 1, un16, un16, un16, x16, xyz1, rgb
+PIPE_FORMAT_R16G16B16X16_SNORM      , plain, 1, 1, 1, sn16, sn16, sn16, x16, xyz1, rgb
+PIPE_FORMAT_R16G16B16X16_FLOAT      , plain, 1, 1, 1, f16,  f16,  f16,  x16, xyz1, rgb
+PIPE_FORMAT_R16G16B16X16_UINT       , plain, 1, 1, 1, up16, up16, up16, x16, xyz1, rgb
+PIPE_FORMAT_R16G16B16X16_SINT       , plain, 1, 1, 1, sp16, sp16, sp16, x16, xyz1, rgb
+PIPE_FORMAT_R32G32B32X32_FLOAT      , plain, 1, 1, 1, f32,  f32,  f32,  x32, xyz1, rgb
+PIPE_FORMAT_R32G32B32X32_UINT       , plain, 1, 1, 1, up32, up32, up32, x32, xyz1, rgb
+PIPE_FORMAT_R32G32B32X32_SINT       , plain, 1, 1, 1, sp32, sp32, sp32, x32, xyz1, rgb
+
+PIPE_FORMAT_R8A8_SNORM              , plain, 1, 1, 1, sn8  ,  sn8 ,     ,     , x00y, rgb
+PIPE_FORMAT_R16A16_UNORM            , plain, 1, 1, 1, un16 , un16 ,     ,     , x00y, rgb
+PIPE_FORMAT_R16A16_SNORM            , plain, 1, 1, 1, sn16 , sn16 ,     ,     , x00y, rgb
+PIPE_FORMAT_R16A16_FLOAT            , plain, 1, 1, 1, f16  , f16  ,     ,     , x00y, rgb
+PIPE_FORMAT_R32A32_FLOAT            , plain, 1, 1, 1, f32  , f32  ,     ,     , x00y, rgb
+PIPE_FORMAT_R8A8_UINT               , plain, 1, 1, 1, up8  , up8  ,     ,     , x00y, rgb
+PIPE_FORMAT_R8A8_SINT               , plain, 1, 1, 1, sp8  , sp8  ,     ,     , x00y, rgb
+PIPE_FORMAT_R16A16_UINT             , plain, 1, 1, 1, up16 , up16 ,     ,     , x00y, rgb
+PIPE_FORMAT_R16A16_SINT             , plain, 1, 1, 1, sp16 , sp16 ,     ,     , x00y, rgb
+PIPE_FORMAT_R32A32_UINT             , plain, 1, 1, 1, up32 , up32 ,     ,     , x00y, rgb
+PIPE_FORMAT_R32A32_SINT             , plain, 1, 1, 1, sp32 , sp32 ,     ,     , x00y, rgb
+PIPE_FORMAT_R10G10B10A2_UINT        , plain, 1, 1, 1, up10 , up10 , up10, up2 , xyzw, rgb
+PIPE_FORMAT_R10G10B10A2_SINT        , plain, 1, 1, 1, sp10 , sp10 , sp10, sp2 , xyzw, rgb
+
+PIPE_FORMAT_B5G6R5_SRGB             , plain, 1, 1, 1, un5 , un6 , un5 ,     , zyx1, srgb
+PIPE_FORMAT_R5G6B5_SRGB             , plain, 1, 1, 1, un5 , un6 , un5 ,     , xyz1, srgb
+
+PIPE_FORMAT_G8R8_UNORM              , plain, 1, 1, 1, un8 , un8 , , , yx01, rgb
+PIPE_FORMAT_G8R8_SNORM              , plain, 1, 1, 1, sn8 , sn8 , , , yx01, rgb
+PIPE_FORMAT_G8R8_SINT               , plain, 1, 1, 1, sp8 , sp8 , , , yx01, rgb
+PIPE_FORMAT_G16R16_UNORM            , plain, 1, 1, 1, un16, un16, , , yx01, rgb
+PIPE_FORMAT_G16R16_SNORM            , plain, 1, 1, 1, sn16, sn16, , , yx01, rgb
+PIPE_FORMAT_G16R16_SINT             , plain, 1, 1, 1, sp16, sp16, , , yx01, rgb
+
+PIPE_FORMAT_A8B8G8R8_SNORM          , plain, 1, 1, 1, sn8 , sn8 , sn8 , sn8 , wzyx, rgb
+PIPE_FORMAT_A8B8G8R8_SINT           , plain, 1, 1, 1, sp8 , sp8 , sp8 , sp8 , wzyx, rgb
+PIPE_FORMAT_X8B8G8R8_SNORM          , plain, 1, 1, 1, x8,   sn8,  sn8,  sn8,  wzy1, rgb
+PIPE_FORMAT_X8B8G8R8_SINT           , plain, 1, 1, 1, x8,   sp8,  sp8,  sp8,  wzy1, rgb

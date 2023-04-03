@@ -1,0 +1,44 @@
+# To use this config on you editor, follow the instructions at:
+# http://editorconfig.org
+
+root = true
+
+[*]
+charset = utf-8
+insert_final_newline = true
+tab_width = 8
+
+[*.{c,h,cpp,hpp,cc,hh,y,yy}]
+indent_style = space
+indent_size = 3
+max_line_length = 78
+
+[{Makefile*,*.mk}]
+indent_style = tab
+
+[*.py]
+indent_style = space
+indent_size = 4
+
+[*.yml]
+indent_style = space
+indent_size = 2
+
+[*.rst]
+indent_style = space
+indent_size = 3
+
+[*.patch]
+trim_trailing_whitespace = false
+
+[{meson.build,meson_options.txt}]
+indent_style = space
+indent_size = 2
+
+[*.ps1]
+indent_style = space
+indent_size = 2
+
+[*.rs]
+indent_style = space
+indent_size = 4

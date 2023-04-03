@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import methods
+
 Import("env")
 Import("env_modules")
 
@@ -53,16 +55,19 @@ if env["builtin_harfbuzz"]:
         "src/hb-buffer-serialize.cc",
         "src/hb-buffer-verify.cc",
         "src/hb-buffer.cc",
+        # "src/hb-cairo-utils.cc",
+        # "src/hb-cairo.cc",
         "src/hb-common.cc",
-        #'src/hb-coretext.cc',
-        #'src/hb-directwrite.cc',
+        # "src/hb-coretext.cc",
+        # "src/hb-directwrite.cc",
         "src/hb-draw.cc",
+        "src/hb-face-builder.cc",
         "src/hb-face.cc",
         "src/hb-fallback-shape.cc",
         "src/hb-font.cc",
-        #'src/hb-gdi.cc',
-        #'src/hb-glib.cc',
-        #'src/hb-gobject-structs.cc',
+        # "src/hb-gdi.cc",
+        # "src/hb-glib.cc",
+        # "src/hb-gobject-structs.cc",
         "src/hb-icu.cc",
         "src/hb-map.cc",
         "src/hb-number.cc",
@@ -94,6 +99,9 @@ if env["builtin_harfbuzz"]:
         "src/hb-ot-shape.cc",
         "src/hb-ot-tag.cc",
         "src/hb-ot-var.cc",
+        "src/hb-outline.cc",
+        "src/hb-paint-extents.cc",
+        "src/hb-paint.cc",
         "src/hb-set.cc",
         "src/hb-shape-plan.cc",
         "src/hb-shape.cc",
@@ -104,12 +112,13 @@ if env["builtin_harfbuzz"]:
         "src/hb-subset-cff1.cc",
         "src/hb-subset-cff2.cc",
         "src/hb-subset-input.cc",
+        "src/hb-subset-instancer-solver.cc",
         "src/hb-subset-plan.cc",
         "src/hb-subset-repacker.cc",
         "src/hb-subset.cc",
         "src/hb-ucd.cc",
         "src/hb-unicode.cc",
-        #'src/hb-uniscribe.cc'
+        # "src/hb-uniscribe.cc",
     ]
 
     if freetype_enabled:
@@ -486,6 +495,10 @@ if env["builtin_icu4c"]:
             "-DICU_DATA_NAME=" + icu_data_name,
         ]
     )
+    # Flavors of Win32 other than pure Windows (i.e., Microsoft GDK) doesn't provide _tzset).
+    if methods.get_env_dict_like_value(env["CPPDEFINES"], "WIN32") is not None and env["platform"] != "windows":
+        env_icu.Append(CPPDEFINES=[("U_TZSET", "[](){}")])
+        env_text_server_adv.Append(CPPDEFINES=[("U_TZSET", "[](){}")])
     if env.editor_build:
         env_text_server_adv.Append(CXXFLAGS=["-DICU_STATIC_DATA"])
 

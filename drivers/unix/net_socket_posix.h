@@ -33,7 +33,7 @@
 
 #include "core/io/net_socket.h"
 
-#if defined(WINDOWS_ENABLED)
+#if defined(WIN32)
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #define SOCKET_TYPE SOCKET

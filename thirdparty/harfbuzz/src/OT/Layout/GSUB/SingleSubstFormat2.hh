@@ -87,7 +87,7 @@ struct SingleSubstFormat2_4
     {
       c->buffer->sync_so_far ();
       c->buffer->message (c->font,
-			  "replacing glyph at %d (single substitution)",
+			  "replacing glyph at %u (single substitution)",
 			  c->buffer->idx);
     }
 
@@ -96,8 +96,8 @@ struct SingleSubstFormat2_4
     if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
     {
       c->buffer->message (c->font,
-			  "replaced glyph at %d (single substitution)",
-			  c->buffer->idx - 1);
+			  "replaced glyph at %u (single substitution)",
+			  c->buffer->idx - 1u);
     }
 
     return_trace (true);

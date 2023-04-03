@@ -100,20 +100,37 @@ struct MarkLigPosFormat1_2
     if (likely (mark_index == NOT_COVERED)) return_trace (false);
 
     /* Now we search backwards for a non-mark glyph */
+
     hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
-    skippy_iter.reset (buffer->idx, 1);
     skippy_iter.set_lookup_props (LookupFlag::IgnoreMarks);
-    unsigned unsafe_from;
-    if (!skippy_iter.prev (&unsafe_from))
+
+    if (c->last_base_until > buffer->idx)
     {
-      buffer->unsafe_to_concat_from_outbuffer (unsafe_from, buffer->idx + 1);
+      c->last_base_until = 0;
+      c->last_base = -1;
+    }
+    unsigned j;
+    for (j = buffer->idx; j > c->last_base_until; j--)
+    {
+      auto match = skippy_iter.match (buffer->info[j - 1]);
+      if (match == skippy_iter.MATCH)
+      {
+	c->last_base = (signed) j - 1;
+	break;
+      }
+    }
+    c->last_base_until = buffer->idx;
+    if (c->last_base == -1)
+    {
+      buffer->unsafe_to_concat_from_outbuffer (0, buffer->idx + 1);
       return_trace (false);
     }
 
-    /* Checking that matched glyph is actually a ligature by GDEF is too strong; disabled */
-    //if (!_hb_glyph_info_is_ligature (&buffer->info[skippy_iter.idx])) { return_trace (false); }
+    j = (unsigned) c->last_base;
 
-    unsigned int j = skippy_iter.idx;
+    /* Checking that matched glyph is actually a ligature by GDEF is too strong; disabled */
+    //if (!_hb_glyph_info_is_ligature (&buffer->info[j])) { return_trace (false); }
+
     unsigned int lig_index = (this+ligatureCoverage).get_coverage  (buffer->info[j].codepoint);
     if (lig_index == NOT_COVERED)
     {

@@ -56,6 +56,9 @@ def try_cmd(test, prefix, arch):
 def can_build():
     if os.name == "nt":
         # Building natively on Windows
+        # Avoid confusing GDK environment with pure Windows.
+        if os.getenv("Platform", "").startswith("Gaming."):
+            return False
         # If VCINSTALLDIR is set in the OS environ, use traditional Godot logic to set up MSVC
         if os.getenv("VCINSTALLDIR"):  # MSVC, manual setup
             return True
@@ -184,6 +187,8 @@ def get_opts():
             "MSVC version to use. Ignored if VCINSTALLDIR is set in shell env.",
             None,
         ),
+        ("DXC_PATH", "Path to the DirectX Shader Compiler distribution (required for D3D12)", ""),
+        ("PIX_PATH", "Path to the PIX runtime distribution (optional for D3D12)", ""),
         BoolVariable("use_mingw", "Use the Mingw compiler, even if MSVC is installed.", False),
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
         BoolVariable("use_static_cpp", "Link MinGW/MSVC C++ runtime libraries statically", True),
@@ -371,6 +376,7 @@ def configure_msvc(env, vcvars_msvc_config):
             "WINDOWS_ENABLED",
             "WASAPI_ENABLED",
             "WINMIDI_ENABLED",
+            "DWRITE_ENABLED",
             "TYPED_METHOD_BIND",
             "WIN32",
             "MSVC",
@@ -413,6 +419,28 @@ def configure_msvc(env, vcvars_msvc_config):
         env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
         if not env["use_volk"]:
             LIBS += ["vulkan"]
+
+    if env["d3d12"]:
+        if env["DXC_PATH"] == "":
+            print("The Direct3D 12 rendering driver requires DXC_PATH to be set.")
+            sys.exit(255)
+
+        env.AppendUnique(CPPDEFINES=["D3D12_ENABLED"])
+        LIBS += ["d3d12", "dxgi", "dxguid"]
+        LIBS += ["version"]  # Mesa dependency.
+
+        # Needed for avoiding C1128.
+        if env["target"] == "release_debug":
+            env.Append(CXXFLAGS=["/bigobj"])
+
+        arch_subdir = "arm64" if env["arch"] == "arm64" else "x64"
+
+        # PIX
+        if env["PIX_PATH"] != "" and env["target"] != "release":
+            env.AppendUnique(CPPDEFINES=["PIX_ENABLED"])
+            env.Append(CPPPATH=[env["PIX_PATH"] + "/Include"])
+            env.Append(LIBPATH=[env["PIX_PATH"] + "/bin/" + arch_subdir])
+            LIBS += ["WinPixEventRuntime"]
 
     if env["opengl3"]:
         env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
@@ -591,6 +619,18 @@ def configure_mingw(env):
         env.Append(CPPDEFINES=["VULKAN_ENABLED"])
         if not env["use_volk"]:
             env.Append(LIBS=["vulkan"])
+
+    if env["d3d12"]:
+        env.AppendUnique(CPPDEFINES=["D3D12_ENABLED"])
+        env.Append(LIBS=["d3d12", "dxgi", "dxguid"])
+        env.Append(LIBS=["version"])  # Mesa dependency.
+
+        arch_subdir = "arm64" if env["arch"] == "arm64" else "x64"
+
+        # PIX
+        if env["PIX_PATH"] != "" and env["target"] != "release":
+            print("PIX runtime is not supported with MinGW.")
+            sys.exit(255)
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED"])

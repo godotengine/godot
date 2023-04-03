@@ -76,6 +76,31 @@ have been removed as they caused massive quality regressions. Apply the patches
 in the `patches/` folder when syncing on newer upstream commits.
 
 
+## d3d12ma
+
+- Upstream: https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator
+- Version: 2.0.1 (6a61103936dfadedca584e1a521fab6943d3b5ad, 2022)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `src/D3D12MemAlloc.cpp`, `src/D3D12MemAlloc.natvis`
+- `include/D3D12MemAlloc.h`
+- `LICENSE.txt`, `NOTICES.txt`
+
+
+## directx_headers
+
+- Upstream: https://github.com/microsoft/DirectX-Headers
+- Version: 1.606.3 (fd329244e62201bf959331d28514928fc1d45005, 2022)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `include/directx/*.h`
+- `LICENSE`
+
+
 ## doctest
 
 - Upstream: https://github.com/onqtam/doctest
@@ -248,13 +273,15 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 6.0.0 (afcae83a064843d71d47624bc162e121cc56c08b, 2022)
+- Version: 7.0.0 (8bdaeddfcd86aa66f560ff1ae1ae71b1e1723463, 2023)
 - License: MIT
 
 Files extracted from upstream source:
 
-- the `src` folder
 - `AUTHORS`, `COPYING`, `THANKS`
+- from the `src` folder, recursively
+  - all the `*.c`, `*.cc`, `*.h`, `*.hh` files
+  - _except_ `main.cc`, `harfbuzz*.cc`, `failing-alloc.c`, `test*.cc`
 
 
 ## icu4c
@@ -376,6 +403,25 @@ File extracted from upstream release tarball:
   Applied the patch in `patches/windows-arm64-hardclock.diff`
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core.
+
+
+## mesa
+
+- Upstream: https://gitlab.freedesktop.org/mesa/mesa
+- Version: 23.0.0-devel (_TODO: Write commit hash when stable_, 2022)
+- License: MIT
+
+Only the portions of Mesa needed for the Direct3D 12 rendering driver are used; namely,
+those needed to translate SPIR-V into DXIL. There's a script to reconstruct our `thirdparty/mesa/`
+directory from a clone of the Mesa repo. It's advised to read its contents for details on
+how that process can be approached in case it's wished to upgrade Mesa.
+
+On a Bash-like shell, run:
+```
+$ cd <godot_repo>/drivers/d3d12/
+$ export MESA_PATH=<path_to_mesa_repo>
+$ ./update_mesa.sh
+```
 
 
 ## meshoptimizer

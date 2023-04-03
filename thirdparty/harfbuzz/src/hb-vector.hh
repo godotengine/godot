@@ -45,7 +45,7 @@ struct hb_vector_t
   hb_vector_t () = default;
   hb_vector_t (std::initializer_list<Type> lst) : hb_vector_t ()
   {
-    alloc (lst.size ());
+    alloc (lst.size (), true);
     for (auto&& item : lst)
       push (item);
   }
@@ -55,12 +55,12 @@ struct hb_vector_t
   {
     auto iter = hb_iter (o);
     if (iter.is_random_access_iterator)
-      alloc (hb_len (iter));
+      alloc (hb_len (iter), true);
     hb_copy (iter, *this);
   }
   hb_vector_t (const hb_vector_t &o) : hb_vector_t ()
   {
-    alloc (o.length);
+    alloc (o.length, true);
     if (unlikely (in_error ())) return;
     copy_vector (o);
   }
@@ -116,7 +116,7 @@ struct hb_vector_t
   hb_vector_t& operator = (const hb_vector_t &o)
   {
     reset ();
-    alloc (o.length);
+    alloc (o.length, true);
     if (unlikely (in_error ())) return *this;
 
     copy_vector (o);
@@ -233,6 +233,11 @@ struct hb_vector_t
   Type *
   realloc_vector (unsigned new_allocated)
   {
+    if (!new_allocated)
+    {
+      hb_free (arrayZ);
+      return nullptr;
+    }
     return (Type *) hb_realloc (arrayZ, new_allocated * sizeof (Type));
   }
   template <typename T = Type,
@@ -240,6 +245,11 @@ struct hb_vector_t
   Type *
   realloc_vector (unsigned new_allocated)
   {
+    if (!new_allocated)
+    {
+      hb_free (arrayZ);
+      return nullptr;
+    }
     Type *new_array = (Type *) hb_malloc (new_allocated * sizeof (Type));
     if (likely (new_array))
     {
@@ -337,30 +347,53 @@ struct hb_vector_t
   }
 
   /* Allocate for size but don't adjust length. */
-  bool alloc (unsigned int size)
+  bool alloc (unsigned int size, bool exact=false)
   {
     if (unlikely (in_error ()))
       return false;
 
-    if (likely (size <= (unsigned) allocated))
-      return true;
+    unsigned int new_allocated;
+    if (exact)
+    {
+      /* If exact was specified, we allow shrinking the storage. */
+      size = hb_max (size, length);
+      if (size <= (unsigned) allocated &&
+	  size >= (unsigned) allocated >> 2)
+	return true;
+
+      new_allocated = size;
+    }
+    else
+    {
+      if (likely (size <= (unsigned) allocated))
+	return true;
+
+      new_allocated = allocated;
+      while (size > new_allocated)
+	new_allocated += (new_allocated >> 1) + 8;
+    }
+
 
     /* Reallocate */
 
-    unsigned int new_allocated = allocated;
-    while (size >= new_allocated)
-      new_allocated += (new_allocated >> 1) + 8;
-
-    Type *new_array = nullptr;
     bool overflows =
       (int) in_error () ||
-      (new_allocated < (unsigned) allocated) ||
+      (new_allocated < size) ||
       hb_unsigned_mul_overflows (new_allocated, sizeof (Type));
-    if (likely (!overflows))
-      new_array = realloc_vector (new_allocated);
 
-    if (unlikely (!new_array))
+    if (unlikely (overflows))
     {
+      allocated = -1;
+      return false;
+    }
+
+    Type *new_array = realloc_vector (new_allocated);
+
+    if (unlikely (new_allocated && !new_array))
+    {
+      if (new_allocated <= (unsigned) allocated)
+        return true; // shrinking failed; it's okay; happens in our fuzzer
+
       allocated = -1;
       return false;
     }
@@ -371,10 +404,10 @@ struct hb_vector_t
     return true;
   }
 
-  bool resize (int size_, bool initialize = true)
+  bool resize (int size_, bool initialize = true, bool exact = false)
   {
     unsigned int size = size_ < 0 ? 0u : (unsigned int) size_;
-    if (!alloc (size))
+    if (!alloc (size, exact))
       return false;
 
     if (size > length)
@@ -390,6 +423,10 @@ struct hb_vector_t
 
     length = size;
     return true;
+  }
+  bool resize_exact (int size_, bool initialize = true)
+  {
+    return resize (size_, initialize, true);
   }
 
   Type pop ()
@@ -422,13 +459,16 @@ struct hb_vector_t
     length--;
   }
 
-  void shrink (int size_)
+  void shrink (int size_, bool shrink_memory = true)
   {
     unsigned int size = size_ < 0 ? 0u : (unsigned int) size_;
     if (size >= length)
       return;
 
     shrink_vector (size);
+
+    if (shrink_memory)
+      alloc (size, true); /* To force shrinking memory if needed. */
   }
 
 

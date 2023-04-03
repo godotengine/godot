@@ -30,11 +30,11 @@
 
 #include "ip_unix.h"
 
-#if defined(UNIX_ENABLED) || defined(WINDOWS_ENABLED)
+#if defined(UNIX_ENABLED) || defined(WIN32)
 
 #include <string.h>
 
-#ifdef WINDOWS_ENABLED
+#ifdef WIN32
 #include <stdio.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -124,7 +124,7 @@ void IPUnix::_resolve_hostname(List<IPAddress> &r_addresses, const String &p_hos
 	freeaddrinfo(result);
 }
 
-#if defined(WINDOWS_ENABLED)
+#if defined(WIN32)
 
 #if defined(UWP_ENABLED)
 
