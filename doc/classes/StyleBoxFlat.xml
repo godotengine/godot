@@ -5,7 +5,8 @@
 	</brief_description>
 	<description>
 		This [StyleBox] can be used to achieve all kinds of looks without the need of a texture. The following properties are customizable:
-		- Color
+		- Fill color and style (solid or 2-point gradient)
+		- Border color and style (solid, 2-point gradient, 4-corner gradient, bevel/inset, individual colors for each border, join styles)
 		- Border width (individual width for each border)
 		- Rounded corners (individual radius for each corner)
 		- Shadow (with blur and offset)
@@ -25,6 +26,30 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_border_side_color" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="side" type="int" enum="Side" />
+			<description>
+			</description>
+		</method>
+		<method name="get_border_side_color_defined" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="side" type="int" enum="Side" />
+			<description>
+			</description>
+		</method>
+		<method name="get_border_side_coloring_style" qualifiers="const">
+			<return type="int" enum="StyleBoxFlat.BorderSideColoringStyle" />
+			<param index="0" name="side" type="int" enum="Side" />
+			<description>
+			</description>
+		</method>
+		<method name="get_border_side_secondary_color" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="side" type="int" enum="Side" />
+			<description>
+			</description>
+		</method>
 		<method name="get_border_width" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="margin" type="int" enum="Side" />
@@ -36,6 +61,18 @@
 			<return type="int" />
 			<description>
 				Returns the smallest border width out of all four borders.
+			</description>
+		</method>
+		<method name="get_corner_color_join_angle" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="corner" type="int" enum="Corner" />
+			<description>
+				If the border join style is sharp, returns the angle of the point where both borders are joined.
+				[code]0[/code] corresponds to having the joint closest to the horizontal side; [code]1[/code]
+				brings it closest to the vertical side.
+
+				Actual rendering depends on the detail level set; it corresponds to the nearest edge between two
+				polygons used to render the corner.
 			</description>
 		</method>
 		<method name="get_corner_radius" qualifiers="const">
@@ -52,6 +89,51 @@
 				Returns the size of the specified [enum Side]'s expand margin.
 			</description>
 		</method>
+		<method name="set_border_side_color">
+			<return type="void" />
+			<param index="0" name="side" type="int" enum="Side" />
+			<param index="1" name="color" type="Color" />
+			<description>
+				Sets the main color of this border side, or the leftmost / topmost color if it is a gradient.
+			</description>
+		</method>
+		<method name="set_border_side_color_all">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>
+			</description>
+		</method>
+		<method name="set_border_side_color_defined">
+			<return type="void" />
+			<param index="0" name="side" type="int" enum="Side" />
+			<param index="1" name="defined" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_border_side_coloring_style">
+			<return type="void" />
+			<param index="0" name="side" type="int" enum="Side" />
+			<param index="1" name="coloring_style" type="int" enum="StyleBoxFlat.BorderSideColoringStyle" />
+			<description>
+				Defines the coloring style of the border side. Can be solid or a 2-point gradient.
+			</description>
+		</method>
+		<method name="set_border_side_secondary_color">
+			<return type="void" />
+			<param index="0" name="side" type="int" enum="Side" />
+			<param index="1" name="color" type="Color" />
+			<description>
+				If the border side coloring style is set to gradient, defines the ending color of the gradient 
+				(rightmost or bottommost point).
+			</description>
+		</method>
+		<method name="set_border_side_secondary_color_all">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>
+				Sets the secondary color of all 4 borders at the same time
+			</description>
+		</method>
 		<method name="set_border_width">
 			<return type="void" />
 			<param index="0" name="margin" type="int" enum="Side" />
@@ -65,6 +147,19 @@
 			<param index="0" name="width" type="int" />
 			<description>
 				Sets the border width to [param width] pixels for all sides.
+			</description>
+		</method>
+		<method name="set_corner_color_join_angle">
+			<return type="void" />
+			<param index="0" name="corner" type="int" enum="Corner" />
+			<param index="1" name="angle" type="float" />
+			<description>
+				If the border join style is sharp, defines the angle of the point where both borders are joined.
+				[code]0[/code] corresponds to having the joint closest to the horizontal side; [code]1[/code]
+				brings it closest to the vertical side.
+
+				Actual rendering depends on the detail level set; it corresponds to the nearest edge between two
+				polygons used to render the corner.
 			</description>
 		</method>
 		<method name="set_corner_radius">
@@ -110,11 +205,106 @@
 		<member name="bg_color" type="Color" setter="set_bg_color" getter="get_bg_color" default="Color(0.6, 0.6, 0.6, 1)">
 			The background color of the stylebox.
 		</member>
+		<member name="bg_fill_style" type="int" setter="set_center_fill_style" getter="get_center_fill_style" enum="StyleBoxFlat.FillStyle" default="0">
+			The background fill style. Can be solid or a two-point gradient.
+		</member>
+		<member name="bg_gradient_orientation" type="int" setter="set_bg_simple_gradient_orientation" getter="get_bg_simple_gradient_orientation" enum="StyleBoxFlat.SimpleGradientOrientation" default="0">
+			Orientation of the gradient for the gradient fill style. Horizontal or vertical gradients are supported only.
+		</member>
+		<member name="bg_secondary_color" type="Color" setter="set_bg_secondary_color" getter="get_bg_secondary_color" default="Color(0.4, 0.4, 0.4, 1)">
+			Color of the other end of the gradient. Applies if fill style is set to gradient.
+		</member>
+		<member name="border_bevel_darkening_color" type="Color" setter="set_border_bevel_darkening_color" getter="get_border_bevel_darkening_color" default="Color(0, 0, 0, 1)">
+			The shadow color used to darken the edge on the opposite direction from the light source. Applies to outset and inset border styles.
+		</member>
+		<member name="border_bevel_darkening_intensity" type="float" setter="set_border_bevel_darkening_intensity" getter="get_border_bevel_darkening_intensity" default="0.3">
+			The force of the darkening effect on inset/outset borders. Applies to Outset and Inset border styles.
+		</member>
+		<member name="border_bevel_lighting_angle" type="float" setter="set_border_bevel_lighting_angle" getter="get_border_bevel_lighting_angle" default="135.0">
+			The angle from which the light comes from to light up the outset or inset border. Applies to outset and inset border styles.
+			Most classic operating system user interfaces of the 90s simulate the light coming from the top left, equal to a [code]135[/code] degrees angle.
+		</member>
+		<member name="border_bevel_lighting_color" type="Color" setter="set_border_bevel_lighting_color" getter="get_border_bevel_lighting_color" default="Color(1, 1, 1, 1)">
+			The color used to lighten the edge exposed to the light source. Applies to outset and inset border styles.
+		</member>
+		<member name="border_bevel_lighting_intensity" type="float" setter="set_border_bevel_lighting_intensity" getter="get_border_bevel_lighting_intensity" default="0.3">
+			The force of the lighting effect on inset/outset borders. Applies to outset and inset border styles.
+		</member>
+		<member name="border_bevel_max_intensity_angle_ratio" type="float" setter="set_border_bevel_max_intensity_angle_ratio" getter="get_border_bevel_max_intensity_angle_ratio" default="0.5">
+			The width of the "light cone" or angle range from which the simulated light is supposed to light up the border. Applies to Outset and Inset border styles.
+		</member>
 		<member name="border_blend" type="bool" setter="set_border_blend" getter="get_border_blend" default="false">
 			If [code]true[/code], the border will fade into the background color.
+
+			Undesired artifacts may be seen when used together with gradient options and specific combinations
+			of colors and sizes, such as diagonal shearing of the gradients.
+		</member>
+		<member name="border_bottom_color" type="Color" setter="set_border_side_color" getter="get_border_side_color" default="Color(1, 1, 1, 1)">
+			Bottom border color. Applies if [member border_bottom_specify_color] is enabled.
+		</member>
+		<member name="border_bottom_coloring_style" type="int" setter="set_border_side_coloring_style" getter="get_border_side_coloring_style" enum="StyleBoxFlat.BorderSideColoringStyle" default="0">
+			Bottom border coloring style. Choice between solid or two-point gradient. In the latter case, the secondary color is used for the other end of the gradient. Applies if [member border_bottom_specify_color] is enabled.
+		</member>
+		<member name="border_bottom_secondary_color" type="Color" setter="set_border_side_secondary_color" getter="get_border_side_secondary_color" default="Color(1, 1, 1, 1)">
+			Bottom border gradient secondary color. Applies if [member border_bottom_specify_color] is enabled and [member border_bottom_coloring_style] is set to gradient.
+		</member>
+		<member name="border_bottom_specify_color" type="bool" setter="set_border_side_color_defined" getter="get_border_side_color_defined" default="false">
+			Enable specific styling for the bottom border. Else, it follows the base border styling.
 		</member>
 		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color" default="Color(0.8, 0.8, 0.8, 1)">
 			Sets the color of the border.
+		</member>
+		<member name="border_coloring_style" type="int" setter="set_border_coloring_style" getter="get_border_coloring_style" enum="StyleBoxFlat.BorderColoringStyle" default="0">
+			Sets the border coloring style.
+		</member>
+		<member name="border_fourth_color" type="Color" setter="set_border_fourth_color" getter="get_border_fourth_color" default="Color(0.5, 0.5, 0.5, 1)">
+			Fourth point color. Used for the 2d gradient border coloring style.
+		</member>
+		<member name="border_gradient_algorithm" type="int" setter="set_border_simple_gradient_algorithm" getter="get_border_simple_gradient_algorithm" enum="StyleBoxFlat.SimpleGradientColoringAlgorithm" default="0">
+			Gradient algorithm used to colorize the border. Applies for Gradient and 2D Gradient styles.
+		</member>
+		<member name="border_gradient_orientation" type="int" setter="set_border_simple_gradient_orientation" getter="get_border_simple_gradient_orientation" enum="StyleBoxFlat.SimpleGradientOrientation" default="0">
+			Border gradient orientation. Horizontal or vertical gradients are supported only.
+		</member>
+		<member name="border_left_color" type="Color" setter="set_border_side_color" getter="get_border_side_color" default="Color(1, 1, 1, 1)">
+			Left border color. Applies if [member border_left_specify_color] is enabled.
+		</member>
+		<member name="border_left_coloring_style" type="int" setter="set_border_side_coloring_style" getter="get_border_side_coloring_style" enum="StyleBoxFlat.BorderSideColoringStyle" default="0">
+			Coloring style of the left border. Choice between solid or two-point gradient. In the latter case, the secondary color is used for the other end of the gradient.
+		</member>
+		<member name="border_left_secondary_color" type="Color" setter="set_border_side_secondary_color" getter="get_border_side_secondary_color" default="Color(1, 1, 1, 1)">
+			Gradient secondary color.
+		</member>
+		<member name="border_left_specify_color" type="bool" setter="set_border_side_color_defined" getter="get_border_side_color_defined" default="false">
+			Enable specific styling for the left border. Else, it follows the base border styling.
+		</member>
+		<member name="border_right_color" type="Color" setter="set_border_side_color" getter="get_border_side_color" default="Color(1, 1, 1, 1)">
+			Right border color. Applies if [member border_right_specify_color] is enabled.
+		</member>
+		<member name="border_right_coloring_style" type="int" setter="set_border_side_coloring_style" getter="get_border_side_coloring_style" enum="StyleBoxFlat.BorderSideColoringStyle" default="0">
+			Coloring style of the right border. Choice between solid or two-point gradient. In the latter case, the secondary color is used for the other end of the gradient.
+		</member>
+		<member name="border_right_secondary_color" type="Color" setter="set_border_side_secondary_color" getter="get_border_side_secondary_color" default="Color(1, 1, 1, 1)">
+			Gradient secondary color.
+		</member>
+		<member name="border_right_specify_color" type="bool" setter="set_border_side_color_defined" getter="get_border_side_color_defined" default="false">
+			Enable specific styling for the right border. Else, it follows the base border styling.
+		</member>
+		<member name="border_secondary_color" type="Color" setter="set_border_secondary_color" getter="get_border_secondary_color" default="Color(0.7, 0.7, 0.7, 1)">
+			Secondary point color. Used for the gradient or 2d gradient border coloring styles.
+		</member>
+		<member name="border_third_color" type="Color" setter="set_border_third_color" getter="get_border_third_color" default="Color(0.6, 0.6, 0.6, 1)">
+			Third point color. Used for the 2d gradient border coloring style.
+		</member>
+		<member name="border_top_color" type="Color" setter="set_border_side_color" getter="get_border_side_color" default="Color(1, 1, 1, 1)">
+			Top border color. Applies if [member border_top_specify_color] is enabled.
+		</member>
+		<member name="border_top_coloring_style" type="int" setter="set_border_side_coloring_style" getter="get_border_side_coloring_style" enum="StyleBoxFlat.BorderSideColoringStyle" default="0">
+		</member>
+		<member name="border_top_secondary_color" type="Color" setter="set_border_side_secondary_color" getter="get_border_side_secondary_color" default="Color(1, 1, 1, 1)">
+		</member>
+		<member name="border_top_specify_color" type="bool" setter="set_border_side_color_defined" getter="get_border_side_color_defined" default="false">
+			Enable specific styling for the top border. Else, it follows the base border styling.
 		</member>
 		<member name="border_width_bottom" type="int" setter="set_border_width" getter="get_border_width" default="0">
 			Border width for the bottom border.
@@ -127,6 +317,29 @@
 		</member>
 		<member name="border_width_top" type="int" setter="set_border_width" getter="get_border_width" default="0">
 			Border width for the top border.
+		</member>
+		<member name="corner_color_join_angle_bottom_left" type="float" setter="set_corner_color_join_angle" getter="get_corner_color_join_angle" default="0.5">
+			The angle of the point where bottom and left borders are joined. Applies if [member corner_color_join_style] is sharp.
+			[code]0[/code] corresponds to having the joint closest to the vertical side; [code]1[/code] brings it closest to the horizontal side.
+			Actual rendering depends on the detail level set; it corresponds to the nearest edge between two polygons used to render the corner. See [enum Corner] for possible values.
+		</member>
+		<member name="corner_color_join_angle_bottom_right" type="float" setter="set_corner_color_join_angle" getter="get_corner_color_join_angle" default="0.5">
+			The angle of the point where top and right borders are joined. Applies if [member corner_color_join_style] is sharp.
+			[code]0[/code] corresponds to having the joint closest to the vertical side; [code]1[/code] brings it closest to the horizontal side.
+			Actual rendering depends on the detail level set; it corresponds to the nearest edge between two polygons used to render the corner. See [enum Corner] for possible values.
+		</member>
+		<member name="corner_color_join_angle_top_left" type="float" setter="set_corner_color_join_angle" getter="get_corner_color_join_angle" default="0.5">
+			The angle of the point where top and left borders are joined. Applies if [member corner_color_join_style] is sharp.
+			[code]0[/code] corresponds to having the joint closest to the vertical side; [code]1[/code] brings it closest to the horizontal side.
+			Actual rendering depends on the detail level set; it corresponds to the nearest edge between two polygons used to render the corner. See [enum Corner] for possible values.
+		</member>
+		<member name="corner_color_join_angle_top_right" type="float" setter="set_corner_color_join_angle" getter="get_corner_color_join_angle" default="0.5">
+			The angle of the point where top and right borders are joined. Applies if [member corner_color_join_style] is sharp.
+			[code]0[/code] corresponds to having the joint closest to the vertical side; [code]1[/code] brings it closest to the horizontal side.
+			Actual rendering depends on the detail level set; it corresponds to the nearest edge between two polygons used to render the corner. See [enum Corner] for possible values.
+		</member>
+		<member name="corner_color_join_style" type="int" setter="set_border_color_join_style" getter="get_border_color_join_style" enum="StyleBoxFlat.BorderColorJoinStyle" default="0">
+			Corner join style between two adjacent borders.
 		</member>
 		<member name="corner_detail" type="int" setter="set_corner_detail" getter="get_corner_detail" default="8">
 			This sets the number of vertices used for each corner. Higher values result in rounder corners but take more processing power to compute. When choosing a value, you should take the corner radius ([method set_corner_radius_all]) into account.
@@ -178,4 +391,58 @@
 			[b]Note:[/b] To ensure text does not touch the StyleBox's edges, consider increasing the [StyleBox]'s content margin (see [member StyleBox.content_margin_bottom]). It is preferable to increase the content margin instead of the expand margin (see [member expand_margin_bottom]), as increasing the expand margin does not increase the size of the clickable area for [Control]s.
 		</member>
 	</members>
+	<constants>
+		<constant name="BORDER_COLOR_JOIN_STYLE_GRADIENT" value="0" enum="BorderColorJoinStyle">
+			Gradient going from the color of one edge to the color of the other edge.
+		</constant>
+		<constant name="BORDER_COLOR_JOIN_STYLE_SHARP" value="1" enum="BorderColorJoinStyle">
+			Sharp cut between the two border colors.
+		</constant>
+		<constant name="BORDER_SIDE_COLORING_STYLE_SOLID" value="0" enum="BorderSideColoringStyle">
+			Solid color.
+		</constant>
+		<constant name="BORDER_SIDE_COLORING_STYLE_SIMPLE_GRADIENT" value="1" enum="BorderSideColoringStyle">
+			Simple gradient with two color points, horizontal or vertical.
+		</constant>
+		<constant name="BORDER_COLORING_STYLE_SOLID" value="0" enum="BorderColoringStyle">
+			Solid color.
+		</constant>
+		<constant name="BORDER_COLORING_STYLE_SIMPLE_GRADIENT" value="1" enum="BorderColoringStyle">
+			Simple gradient with two color points, horizontal or vertical.
+		</constant>
+		<constant name="BORDER_COLORING_STYLE_SIMPLE_2D_GRADIENT" value="2" enum="BorderColoringStyle">
+			Simple two-dimensional gradient with four color points blended together, placed at each corner.
+		</constant>
+		<constant name="BORDER_COLORING_STYLE_OUTSET" value="3" enum="BorderColoringStyle">
+			Raised appearance, similar to buttons represented in most user interfaces of the 90s before the advent of flat design.
+		</constant>
+		<constant name="BORDER_COLORING_STYLE_INSET" value="4" enum="BorderColoringStyle">
+			Sunken appearance
+		</constant>
+		<constant name="FILL_STYLE_SOLID" value="0" enum="FillStyle">
+			Solid color.
+		</constant>
+		<constant name="FILL_STYLE_SIMPLE_GRADIENT" value="1" enum="FillStyle">
+			Simple gradient with two color points, horizontal or vertical.
+		</constant>
+		<constant name="SIMPLE_GRADIENT_ORIENTATION_LEFT_TO_RIGHT" value="0" enum="SimpleGradientOrientation">
+			Horizontal gradient orientation towards right.
+		</constant>
+		<constant name="SIMPLE_GRADIENT_ORIENTATION_TOP_TO_BOTTOM" value="1" enum="SimpleGradientOrientation">
+			Vertical gradient orientation towards bottom.
+		</constant>
+		<constant name="SIMPLE_GRADIENT_ORIENTATION_RIGHT_TO_LEFT" value="2" enum="SimpleGradientOrientation">
+			Horizontal gradient orientation towards left.
+		</constant>
+		<constant name="SIMPLE_GRADIENT_ORIENTATION_BOTTOM_TO_TOP" value="3" enum="SimpleGradientOrientation">
+			Vertical gradient orientation towards top.
+		</constant>
+		<constant name="GRADIENT_ALGO_INTERPOLATE_CORNER_LIMITS" value="0" enum="SimpleGradientColoringAlgorithm">
+			Colors are interpolated according to the entire draw rectangle, then assigned to all edges of the corners (8 in total). The border colors are interpolated in turn from there.
+		</constant>
+		<constant name="GRADIENT_ALGO_FULL_CORNER_LIMITS" value="1" enum="SimpleGradientColoringAlgorithm">
+			Gradient end colors are assigned to the border edges without initial interpolation. Border colors are interpolated from there. It means that the actual gradient starts from outside the corner zone, and the difference is more visible with larger corners. Requires a little less computation.
+			If corner sizes are uneven, the gradient may not look perfectly horizontal in some situations. Can be used on purpose for some artistic effects.
+		</constant>
+	</constants>
 </class>
