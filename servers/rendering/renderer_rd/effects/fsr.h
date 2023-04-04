@@ -32,8 +32,8 @@
 #define FSR_RD_H
 
 #include "../pipeline_cache_rd.h"
-#include "../shaders/effects/fsr_upscale.glsl.gen.h"
 #include "../storage_rd/render_scene_buffers_rd.h"
+#include "servers/rendering/renderer_rd/shaders/effects/fsr_upscale.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering_server.h"
 

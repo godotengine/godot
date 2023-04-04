@@ -62,7 +62,7 @@ struct hb_priority_queue_t
     item_t result = heap.arrayZ[0];
 
     heap.arrayZ[0] = heap.arrayZ[heap.length - 1];
-    heap.shrink (heap.length - 1);
+    heap.resize (heap.length - 1);
 
     if (!is_empty ())
       bubble_down (0);

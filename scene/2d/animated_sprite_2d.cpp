@@ -301,13 +301,13 @@ void AnimatedSprite2D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 		frames->get_animation_list(&al);
 		if (al.size() == 0) {
 			set_animation(StringName());
-			set_autoplay(String());
+			autoplay = String();
 		} else {
 			if (!frames->has_animation(animation)) {
 				set_animation(al[0]);
 			}
 			if (!frames->has_animation(autoplay)) {
-				set_autoplay(String());
+				autoplay = String();
 			}
 		}
 	}

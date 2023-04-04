@@ -134,6 +134,7 @@ const char *RenamesMap3To4::enum_renames[][2] = {
 	{ "PAUSE_MODE_STOP", "PROCESS_MODE_PAUSABLE" }, // Node
 	{ "RENDER_DRAW_CALLS_IN_FRAME", "RENDER_TOTAL_DRAW_CALLS_IN_FRAME" }, // Performance
 	{ "RENDER_OBJECTS_IN_FRAME", "RENDER_TOTAL_OBJECTS_IN_FRAME" }, // Performance
+	{ "SOURCE_GEOMETRY_NAVMESH_CHILDREN", "SOURCE_GEOMETRY_ROOT_NODE_CHILDREN" }, // NavigationMesh
 	{ "TEXTURE_TYPE_2D_ARRAY", "TEXTURE_LAYERED_2D_ARRAY" }, // RenderingServer
 	{ "TEXTURE_TYPE_CUBEMAP", "TEXTURE_LAYERED_CUBEMAP_ARRAY" }, // RenderingServer
 	{ "TRACKER_LEFT_HAND", "TRACKER_HAND_LEFT" }, // XRPositionalTracker
@@ -309,6 +310,7 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "get_endian_swap", "is_big_endian" }, // File
 	{ "get_error_string", "get_error_message" }, // JSON
 	{ "get_filename", "get_scene_file_path" }, // Node -- WARNING: This may be used in a lot of other places.
+	{ "get_final_location", "get_final_position" }, // NavigationAgent2D, NavigationAgent3D
 	{ "get_focus_neighbour", "get_focus_neighbor" }, // Control
 	{ "get_follow_smoothing", "get_position_smoothing_speed" }, // Camera2D
 	{ "get_font_types", "get_font_type_list" }, // Theme
@@ -328,6 +330,8 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "get_importer_name", "_get_importer_name" }, // EditorImportPlugin
 	{ "get_interior_ambient", "get_ambient_color" }, // ReflectionProbe
 	{ "get_interior_ambient_energy", "get_ambient_color_energy" }, // ReflectionProbe
+	{ "get_item_navmesh", "get_item_navigation_mesh" }, // MeshLibrary
+	{ "get_item_navmesh_transform", "get_item_navigation_mesh_transform" }, // MeshLibrary
 	{ "get_iterations_per_second", "get_physics_ticks_per_second" }, // Engine
 	{ "get_last_mouse_speed", "get_last_mouse_velocity" }, // Input
 	{ "get_layer_mask_bit", "get_layer_mask_value" }, // VisualInstance3D
@@ -336,11 +340,14 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "get_metakey", "is_meta_pressed" }, // InputEventWithModifiers
 	{ "get_mid_height", "get_height" }, // CapsuleMesh
 	{ "get_motion_remainder", "get_remainder" }, // PhysicsTestMotionResult2D
+	{ "get_nav_path", "get_current_navigation_path" }, // NavigationAgent2D, NavigationAgent3D
+	{ "get_nav_path_index", "get_current_navigation_path_index" }, // NavigationAgent2D, NavigationAgent3D
 	{ "get_neighbor_dist", "get_neighbor_distance" }, // NavigationAgent2D, NavigationAgent3D
 	{ "get_network_connected_peers", "get_peers" }, // Multiplayer API
 	{ "get_network_master", "get_multiplayer_authority" }, // Node
 	{ "get_network_peer", "get_multiplayer_peer" }, // Multiplayer API
 	{ "get_network_unique_id", "get_unique_id" }, // Multiplayer API
+	{ "get_next_location", "get_next_path_position" }, // NavigationAgent2D, NavigationAgent3D
 	{ "get_ok", "get_ok_button" }, // AcceptDialog
 	{ "get_oneshot", "get_one_shot" }, // AnimatedTexture
 	{ "get_option_visibility", "_get_option_visibility" }, // EditorImportPlugin
@@ -379,6 +386,7 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "get_surface_material_count", "get_surface_override_material_count" }, // MeshInstance3D
 	{ "get_tab_disabled", "is_tab_disabled" }, // Tab
 	{ "get_tab_hidden", "is_tab_hidden" }, // Tab
+	{ "get_target_location", "get_target_position" }, // NavigationAgent2D, NavigationAgent3D
 	{ "get_text_align", "get_text_alignment" }, // Button
 	{ "get_theme_item_types", "get_theme_item_type_list" }, // Theme
 	{ "get_timer_process_mode", "get_timer_process_callback" }, // Timer
@@ -387,6 +395,7 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "get_unit_db", "get_volume_db" }, // AudioStreamPlayer3D
 	{ "get_unit_offset", "get_progress_ratio" }, // PathFollow2D, PathFollow3D
 	{ "get_use_in_baked_light", "is_baking_navigation" }, // GridMap
+	{ "get_verts_per_poly", "get_vertices_per_polygon" }, // NavigationMesh
 	{ "get_v_scrollbar", "get_v_scroll_bar" }, // ScrollContainer
 	{ "get_visible_name", "_get_visible_name" }, // EditorImportPlugin
 	{ "get_window_layout", "_get_window_layout" }, // EditorPlugin
@@ -467,6 +476,9 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "property_list_changed_notify", "notify_property_list_changed" }, // Object
 	{ "recognize", "_recognize" }, // ResourceFormatLoader
 	{ "regen_normalmaps", "regen_normal_maps" }, // ArrayMesh
+	{ "region_bake_navmesh", "region_bake_navigation_mesh" }, // Navigation3DServer
+	{ "region_set_navmesh", "region_set_navigation_mesh" }, // Navigation3DServer
+	{ "region_set_navpoly", "region_set_navigation_polygon" }, // Navigation2DServer
 	{ "remove_animation", "remove_animation_library" }, // AnimationPlayer
 	{ "remove_color_override", "remove_theme_color_override" }, // Control
 	{ "remove_constant_override", "remove_theme_constant_override" }, // Control
@@ -522,6 +534,8 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "set_invert_faces", "set_flip_faces" }, // CSGPrimitive3D
 	{ "set_is_initialized", "_is_initialized" }, // XRInterface
 	{ "set_is_primary", "set_primary" }, // XRInterface
+	{ "set_item_navmesh", "set_item_navigation_mesh" }, // MeshLibrary
+	{ "set_item_navmesh_transform", "set_item_navigation_mesh_transform" }, // MeshLibrary
 	{ "set_iterations_per_second", "set_physics_ticks_per_second" }, // Engine
 	{ "set_layer_mask_bit", "set_layer_mask_value" }, // VisualInstance3D
 	{ "set_margins_preset", "set_offsets_preset" }, //  Control
@@ -554,6 +568,7 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "set_surface_material", "set_surface_override_material" }, // MeshInstance3D -- Breaks ImporterMesh.
 	{ "set_tab_align", "set_tab_alignment" }, // TabContainer
 	{ "set_tangent", "surface_set_tangent" }, // ImmediateGeometry -- Breaks SurfaceTool.
+	{ "set_target_location", "set_target_position" }, // NavigationAgent2D, NavigationAgent3D
 	{ "set_text_align", "set_text_alignment" }, // Button
 	{ "set_timer_process_mode", "set_timer_process_callback" }, // Timer
 	{ "set_translation", "set_position" }, // Node3D -- This breaks GLTFNode, but it is used rarely.
@@ -561,6 +576,7 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "set_unit_db", "set_volume_db" }, // AudioStreamPlayer3D
 	{ "set_unit_offset", "set_progress_ratio" }, // PathFollow2D, PathFollow3D
 	{ "set_uv2", "surface_set_uv2" }, // ImmediateMesh -- Breaks SurfaceTool.
+	{ "set_verts_per_poly", "set_vertices_per_polygon" }, // NavigationMesh
 	{ "set_v_drag_enabled", "set_drag_vertical_enabled" }, // Camera2D
 	{ "set_valign", "set_vertical_alignment" }, // Label
 	{ "set_window_layout", "_set_window_layout" }, // EditorPlugin
@@ -569,8 +585,6 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "shortcut_match", "is_match" }, // InputEvent
 	{ "skeleton_allocate", "skeleton_allocate_data" }, // RenderingServer
 	{ "surface_update_region", "surface_update_attribute_region" }, // ArrayMesh
-	{ "targeting_method", "tween_method" }, // Tween
-	{ "targeting_property", "tween_property" }, // Tween
 	{ "track_remove_key_at_position", "track_remove_key_at_time" }, // Animation
 	{ "triangulate_delaunay_2d", "triangulate_delaunay" }, // Geometry2D
 	{ "unselect", "deselect" }, // ItemList
@@ -595,6 +609,7 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "find_last", "rfind" }, // Array, String
 	{ "to_ascii", "to_ascii_buffer" }, // String
 	{ "to_utf8", "to_utf8_buffer" }, // String
+	{ "to_wchar", "to_wchar_buffer" }, // String
 
 	// @GlobalScope
 	// Remember to add them to the builtin_types_excluded_functions variable, because for now these functions cannot be listed.
@@ -719,6 +734,7 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "GetEnabledFocusMode", "GetFocusMode" }, // BaseButton
 	{ "GetEndianSwap", "IsBigEndian" }, // File
 	{ "GetErrorString", "GetErrorMessage" }, // JSON
+	{ "GetFinalLocation", "GetFinalPosition" }, // NavigationAgent2D, NavigationAgent3D
 	{ "GetFocusNeighbour", "GetFocusNeighbor" }, // Control
 	{ "GetFollowSmoothing", "GetPositionSmoothingSpeed" }, // Camera2D
 	{ "GetFontTypes", "GetFontTypeList" }, // Theme
@@ -738,6 +754,8 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "GetImporterName", "_GetImporterName" }, // EditorImportPlugin
 	{ "GetInteriorAmbient", "GetAmbientColor" }, // ReflectionProbe
 	{ "GetInteriorAmbientEnergy", "GetAmbientColorEnergy" }, // ReflectionProbe
+	{ "GetItemNavmesh", "GetItemMavigationMesh" }, // MeshLibrary
+	{ "GetItemNavmeshTransform", "GetItemNavigationMeshTransform" }, // MeshLibrary
 	{ "GetIterationsPerSecond", "GetPhysicsTicksPerSecond" }, // Engine
 	{ "GetLastMouseSpeed", "GetLastMouseVelocity" }, // Input
 	{ "GetLayerMaskBit", "GetLayerMaskValue" }, // VisualInstance3D
@@ -746,11 +764,14 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "GetMetakey", "IsMetaPressed" }, // InputEventWithModifiers
 	{ "GetMidHeight", "GetHeight" }, // CapsuleMesh
 	{ "GetMotionRemainder", "GetRemainder" }, // PhysicsTestMotionResult2D
+	{ "GetNavPath", "GetCurrentNavigationPath" }, // NavigationAgent2D, NavigationAgent3D
+	{ "GetNavPathIndex", "GetCurrentNavigationPathIndex" }, // NavigationAgent2D, NavigationAgent3D
 	{ "GetNeighborDist", "GetNeighborDistance" }, // NavigationAgent2D, NavigationAgent3D
 	{ "GetNetworkConnectedPeers", "GetPeers" }, // Multiplayer API
 	{ "GetNetworkMaster", "GetMultiplayerAuthority" }, // Node
 	{ "GetNetworkPeer", "GetMultiplayerPeer" }, // Multiplayer API
 	{ "GetNetworkUniqueId", "GetUniqueId" }, // Multiplayer API
+	{ "GetNextLocation", "GetNextPathPosition" }, // NavigationAgent2D, NavigationAgent3D
 	{ "GetOneshot", "GetOneShot" }, // AnimatedTexture
 	{ "GetOk", "GetOkButton" }, // AcceptDialog
 	{ "GetOptionVisibility", "_GetOptionVisibility" }, // EditorImportPlugin
@@ -786,6 +807,7 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "GetSurfaceMaterialCount", "GetSurfaceOverrideMaterialCount" }, // MeshInstance3D
 	{ "GetTabDisabled", "IsTabDisabled" }, // Tab
 	{ "GetTabHidden", "IsTabHidden" }, // Tab
+	{ "GetTargetLocation", "GetTargetPosition" }, // NavigationAgent2D, NavigationAgent3D
 	{ "GetTextAlign", "GetTextAlignment" }, // Button
 	{ "GetThemeItemTypes", "GetThemeItemTypeList" }, // Theme
 	{ "GetTimerProcessMode", "GetTimerProcessCallback" }, // Timer
@@ -794,6 +816,7 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "GetUnitDb", "GetVolumeDb" }, // AudioStreamPlayer3D
 	{ "GetUnitOffset", "GetProgressRatio" }, // PathFollow2D, PathFollow3D
 	{ "GetUseInBakedLight", "IsBakingNavigation" }, // GridMap
+	{ "GetVertsPerPoly", "GetVerticesPerPolygon" }, // NavigationMesh
 	{ "GetVScrollbar", "GetVScrollBar" }, // ScrollContainer
 	{ "GetVisibleName", "_GetVisibleName" }, // EditorImportPlugin
 	{ "GetWindowLayout", "_GetWindowLayout" }, // EditorPlugin
@@ -870,6 +893,9 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "PropertyListChangedNotify", "NotifyPropertyListChanged" }, // Object
 	{ "Recognize", "_Recognize" }, // ResourceFormatLoader
 	{ "RegenNormalmaps", "RegenNormalMaps" }, // ArrayMesh
+	{ "RegionBakeNavmesh", "region_bake_navigation_mesh" }, // Navigation3DServer
+	{ "RegionSetNavmesh", "RegionSetNavigationMesh" }, // Navigation3DServer
+	{ "RegionSetNavpoly", "RegionSetNavigationPolygon" }, // Navigation2DServer
 	{ "RemoveAnimation", "RemoveAnimationLibrary" }, // AnimationPlayer
 	{ "RemoveColorOverride", "RemoveThemeColorOverride" }, // Control
 	{ "RemoveConstantOverride", "RemoveThemeConstantOverride" }, // Control
@@ -921,6 +947,8 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "SetInteriorAmbientEnergy", "SetAmbientColorEnergy" }, // ReflectionProbe
 	{ "SetIsInitialized", "_IsInitialized" }, // XRInterface
 	{ "SetIsPrimary", "SetPrimary" }, // XRInterface
+	{ "SetItemNavmesh", "SetItemNavigationMesh" }, // MeshLibrary
+	{ "SetItemNavmeshTransform", "SetItemNavigationMeshTransform" }, // MeshLibrary
 	{ "SetIterationsPerSecond", "SetPhysicsTicksPerSecond" }, // Engine
 	{ "SetLayerMaskBit", "SetLayerMaskValue" }, // VisualInstance3D
 	{ "SetMarginsPreset", "SetOffsetsPreset" }, // Control
@@ -952,6 +980,7 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "SetSurfaceMaterial", "SetSurfaceOverrideMaterial" }, // MeshInstance3D -- Breaks ImporterMesh.
 	{ "SetTabAlign", "SetTabAlignment" }, // TabContainer
 	{ "SetTangent", "SurfaceSetTangent" }, // ImmediateGeometry -- Breaks SurfaceTool.
+	{ "SetTargetLocation", "SetTargetPosition" }, // NavigationAgent2D, NavigationAgent3D
 	{ "SetTextAlign", "SetTextAlignment" }, // Button
 	{ "SetTimerProcessMode", "SetTimerProcessCallback" }, // Timer
 	{ "SetTonemapAutoExposure", "SetTonemapAutoExposureEnabled" }, // Environment
@@ -960,6 +989,7 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "SetUnitDb", "SetVolumeDb" }, // AudioStreamPlayer3D
 	{ "SetUnitOffset", "SetProgressRatio" }, // PathFollow2D, PathFollow3D
 	{ "SetUv2", "SurfaceSetUv2" }, // ImmediateMesh -- Breaks SurfaceTool.
+	{ "SetVertsPerPoly", "SetVerticesPerPolygon" }, // NavigationMesh
 	{ "SetVDragEnabled", "SetDragVerticalEnabled" }, // Camera2D
 	{ "SetValign", "SetVerticalAlignment" }, // Label
 	{ "SetWindowLayout", "_SetWindowLayout" }, // EditorPlugin
@@ -968,8 +998,6 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "ShortcutMatch", "IsMatch" }, // InputEvent
 	{ "SkeletonAllocate", "SkeletonAllocateData" }, // RenderingServer
 	{ "SurfaceUpdateRegion", "SurfaceUpdateAttributeRegion" }, // ArrayMesh
-	{ "TargetingMethod", "TweenMethod" }, // Tween
-	{ "TargetingProperty", "TweenProperty" }, // Tween
 	{ "TrackRemoveKeyAtPosition", "TrackRemoveKeyAtTime" }, // Animation
 	{ "TriangulateDelaunay2d", "TriangulateDelaunay" }, // Geometry2D
 	{ "UnbindChildNodeFromBone", "RemoveBoneChild" }, // Skeleton3D
@@ -1095,6 +1123,8 @@ const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
 	{ "margin_right", "offset_right" }, // Control -- Breaks NinePatchRect, StyleBox.
 	{ "margin_top", "offset_top" }, // Control -- Breaks NinePatchRect, StyleBox.
 	{ "mid_height", "height" }, // CapsuleMesh
+	{ "navpoly", "navigation_polygon" }, // NavigationRegion2D
+	{ "navmesh", "navigation_mesh" }, // NavigationRegion3D
 	{ "neighbor_dist", "neighbor_distance" }, // NavigationAgent2D, NavigationAgent3D
 	{ "octaves", "fractal_octaves" }, // OpenSimplexNoise -> FastNoiseLite
 	{ "offset_h", "drag_horizontal_offset" }, // Camera2D
@@ -1105,6 +1135,7 @@ const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
 	{ "out_of_range_mode", "max_polyphony" }, // AudioStreamPlayer3D
 	{ "pause_mode", "process_mode" }, // Node
 	{ "physical_scancode", "physical_keycode" }, // InputEventKey
+	{ "polygon_verts_per_poly", "polygon_vertices_per_polyon" }, // NavigationMesh
 	{ "popup_exclusive", "exclusive" }, // Window
 	{ "proximity_fade_enable", "proximity_fade_enabled" }, // Material
 	{ "rect_position", "position" }, // Control
@@ -1135,6 +1166,7 @@ const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
 	{ "table_hseparation", "table_h_separation" }, // Theme
 	{ "table_vseparation", "table_v_separation" }, // Theme
 	{ "tangent", "orthogonal" }, // Vector2
+	{ "target_location", "target_position" }, // NavigationAgent2D, NavigationAgent3D
 	{ "toplevel", "top_level" }, // Node
 	{ "translation", "position" }, // Node3D
 	{ "unit_db", "volume_db" }, // AudioStreamPlayer3D
@@ -1190,6 +1222,8 @@ const char *RenamesMap3To4::csharp_properties_renames[][2] = {
 	{ "MarginRight", "OffsetRight" }, // Control -- Breaks NinePatchRect, StyleBox.
 	{ "MarginTop", "OffsetTop" }, // Control -- Breaks NinePatchRect, StyleBox.
 	{ "MidHeight", "Height" }, // CapsuleMesh
+	{ "Navpoly", "NavigationPolygon" }, // NavigationRegion2D
+	{ "Navmesh", "NavigationMesh" }, // NavigationRegion3D
 	{ "NeighborDist", "NeighborDistance" }, // NavigationAgent2D, NavigationAgent3D
 	{ "Octaves", "FractalOctaves" }, // OpenSimplexNoise -> FastNoiseLite
 	{ "OffsetH", "DragHorizontalOffset" }, // Camera2D
@@ -1231,6 +1265,7 @@ const char *RenamesMap3To4::csharp_properties_renames[][2] = {
 	{ "TableHseparation", "TableHSeparation" }, // Theme
 	{ "TableVseparation", "TableVSeparation" }, // Theme
 	{ "Tangent", "Orthogonal" }, // Vector2
+	{ "TargetLocation", "TargetPosition" }, // NavigationAgent2D, NavigationAgent3D
 	{ "Toplevel", "TopLevel" }, // Node
 	{ "Translation", "Position" }, // Node3D
 	{ "UnitDb", "VolumeDb" }, // AudioStreamPlayer3D
@@ -1265,8 +1300,6 @@ const char *RenamesMap3To4::gdscript_signals_renames[][2] = {
 	{ "tab_close", "tab_closed" }, // TextEdit
 	{ "tab_hover", "tab_hovered" }, // TextEdit
 	{ "text_entered", "text_submitted" }, // LineEdit
-	{ "tween_completed", "finished" }, // Tween
-	{ "tween_step", "step_finished" }, // Tween
 
 	{ nullptr, nullptr },
 };
@@ -1286,8 +1319,6 @@ const char *RenamesMap3To4::csharp_signals_renames[][2] = {
 	{ "TabClose", "TabClosed" }, // TextEdit
 	{ "TabHover", "TabHovered" }, // TextEdit
 	{ "TextEntered", "TextSubmitted" }, // LineEdit
-	{ "TweenCompleted", "Finished" }, // Tween
-	{ "TweenStep", "StepFinished" }, // Tween
 
 	{ nullptr, nullptr },
 };

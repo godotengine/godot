@@ -1,6 +1,6 @@
-VERSION=0.8.3
+VERSION=0.8.4
 rm -rf AUTHORS inc LICENSE src *.zip
-curl -L -O https://github.com/Samsung/thorvg/archive/v$VERSION.zip
+curl -L -O https://github.com/thorvg/thorvg/archive/v$VERSION.zip
 bsdtar --strip-components=1 -xvf *.zip
 rm *.zip
 rm -rf .github docs pc res test tools tvgcompat .git* *.md *.txt wasm_build.sh

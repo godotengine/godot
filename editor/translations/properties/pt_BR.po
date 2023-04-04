@@ -162,7 +162,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2023-03-12 22:47+0000\n"
+"PO-Revision-Date: 2023-04-02 22:43+0000\n"
 "Last-Translator: Elizandro Baldin <ejbaldin@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/pt_BR/>\n"
@@ -171,7 +171,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.16.2-dev\n"
+"X-Generator: Weblate 4.17-dev\n"
 
 msgid "Application"
 msgstr "Aplicação"
@@ -212,6 +212,12 @@ msgstr "Nome do Diretório de Usuário Personalizado"
 msgid "Project Settings Override"
 msgstr "Substituição de Configurações do Projeto"
 
+msgid "Main Loop Type"
+msgstr "Tipo de Loop Principal"
+
+msgid "Auto Accept Quit"
+msgstr "Aceitar Sair Automaticamente"
+
 msgid "Display"
 msgstr "Exibição"
 
@@ -245,6 +251,9 @@ msgstr "Redimensionável"
 msgid "Borderless"
 msgstr "Sem Bordas"
 
+msgid "Always on Top"
+msgstr "Sempre no topo"
+
 msgid "Transparent"
 msgstr "Transparente"
 
@@ -273,7 +282,7 @@ msgid "Buses"
 msgstr "Barramento"
 
 msgid "Default Bus Layout"
-msgstr "Layout de barramento padrão"
+msgstr "Layout Padrão de Barramento"
 
 msgid "General"
 msgstr "Geral"
@@ -290,6 +299,15 @@ msgstr "Editor"
 msgid "Script"
 msgstr "Script"
 
+msgid "Search in File Extensions"
+msgstr "Pesquisar em Extensões de Arquivo"
+
+msgid "Subwindows"
+msgstr "Subjanelas"
+
+msgid "Embed Subwindows"
+msgstr "Subjanelas embutidas"
+
 msgid "Physics"
 msgstr "Física"
 
@@ -301,6 +319,15 @@ msgstr "Rodar em Thread separada"
 
 msgid "3D"
 msgstr "3D"
+
+msgid "Stretch"
+msgstr "Esticar"
+
+msgid "Aspect"
+msgstr "Aspecto"
+
+msgid "Scale"
+msgstr "Escala"
 
 msgid "Debug"
 msgstr "Depuração"
@@ -369,7 +396,7 @@ msgid "Internationalization"
 msgstr "Internacionalização"
 
 msgid "Force Right to Left Layout Direction"
-msgstr "Forçar direção de layout Direita para Esquerda"
+msgstr "Forçar Direção de Layout Direita para Esquerda"
 
 msgid "GUI"
 msgstr "GUI (Interface Gráfica de Usuário)"
@@ -379,6 +406,18 @@ msgstr "Temporizadores"
 
 msgid "Incremental Search Max Interval Msec"
 msgstr "Máximo intervalo de busca incremental Msec"
+
+msgid "Common"
+msgstr "Comum"
+
+msgid "Fonts"
+msgstr "Fontes"
+
+msgid "Dynamic Fonts"
+msgstr "Fontes Dinâmicas"
+
+msgid "Use Oversampling"
+msgstr "Utilizar Oversampling"
 
 msgid "Rendering Device"
 msgstr "Aparato de Renderização"
@@ -400,6 +439,18 @@ msgstr "Vulkan"
 
 msgid "Max Descriptors per Pool"
 msgstr "Máximo de descritores por pool"
+
+msgid "Textures"
+msgstr "Texturas"
+
+msgid "Canvas Textures"
+msgstr "Texturas de Canvas"
+
+msgid "Default Texture Filter"
+msgstr "Filtro de Textura Padrão"
+
+msgid "Default Texture Repeat"
+msgstr "Padrão de repetição de textura"
 
 msgid "Low Processor Usage Mode"
 msgstr "Modo de Baixo Uso de Processador"
@@ -426,7 +477,7 @@ msgid "Physics Jitter Fix"
 msgstr "Correção de Jitter de Física"
 
 msgid "Mouse Mode"
-msgstr "Modo do cursor"
+msgstr "Modo do Mouse"
 
 msgid "Use Accumulated Input"
 msgstr "Usar entrada acumulada"
@@ -609,7 +660,7 @@ msgid "Default Estimate Heuristic"
 msgstr "Heurística Estimada Padrão"
 
 msgid "Diagonal Mode"
-msgstr "Modo diagonal"
+msgstr "Modo Diagonal"
 
 msgid "Seed"
 msgstr "Semente"
@@ -695,9 +746,6 @@ msgstr "Escapar espaços reservados"
 msgid "Rotation"
 msgstr "Rotação"
 
-msgid "Scale"
-msgstr "Escala"
-
 msgid "Value"
 msgstr "Valor"
 
@@ -717,7 +765,7 @@ msgid "Out Handle"
 msgstr "Fora do controle"
 
 msgid "Handle Mode"
-msgstr "Modo de manuseio"
+msgstr "Modo de Manuseio"
 
 msgid "Stream"
 msgstr "Fluxo"
@@ -775,15 +823,6 @@ msgstr "Mostrar Arquivos Ocultos"
 
 msgid "Disable Overwrite Warning"
 msgstr "Desativar aviso de substituição"
-
-msgid "Import"
-msgstr "Importar"
-
-msgid "Reimport Missing Imported Files"
-msgstr "Reimportar arquivos importados perdidos"
-
-msgid "Use Multiple Threads"
-msgstr "Usar Threads Múltiplas"
 
 msgid "Text Editor"
 msgstr "Editor de Texto"
@@ -1604,9 +1643,6 @@ msgstr "Esconder Rolagem"
 msgid "Zoom"
 msgstr "Zoom"
 
-msgid "Export"
-msgstr "Exportar"
-
 msgid "Custom Template"
 msgstr "Modelo Customizado"
 
@@ -1636,6 +1672,9 @@ msgstr "ETC"
 
 msgid "ETC2"
 msgstr "ETC2"
+
+msgid "Export"
+msgstr "Exportar"
 
 msgid "SSH"
 msgstr "SSH"
@@ -1713,7 +1752,7 @@ msgid "Face Index"
 msgstr "Índice da Face da fonte"
 
 msgid "Transform"
-msgstr "Transformada"
+msgstr "Transformar"
 
 msgid "Collada"
 msgstr "Collada"
@@ -1847,6 +1886,9 @@ msgstr "Redimensionar Malha"
 msgid "Offset Mesh"
 msgstr "Malha de Deslocamento"
 
+msgid "Import"
+msgstr "Importar"
+
 msgid "NavMesh"
 msgstr "NavMesh"
 
@@ -1935,7 +1977,7 @@ msgid "Use External"
 msgstr "Usar Externo"
 
 msgid "Loop Mode"
-msgstr "Modo de Loop"
+msgstr "Modo Repetição"
 
 msgid "Keep Custom Tracks"
 msgstr "Manter Faixas Personalizadas"
@@ -1999,6 +2041,9 @@ msgstr "Utilizar Peles com Nome"
 
 msgid "FPS"
 msgstr "FPS"
+
+msgid "Trimming"
+msgstr "Aparar"
 
 msgid "Remove Immutable Tracks"
 msgstr "Remover Trilhas Sem mudança"
@@ -2261,9 +2306,6 @@ msgstr "Duração"
 msgid "Version Control"
 msgstr "Controle de Versão"
 
-msgid "Plugin Name"
-msgstr "Nome do Plugin"
-
 msgid "Username"
 msgstr "Nome do Usuário"
 
@@ -2290,6 +2332,15 @@ msgstr "Padrão de \"Self Name\" do Callback"
 
 msgid "Scene Name Casing"
 msgstr "Caixa do Nome da Cena"
+
+msgid "Reimport Missing Imported Files"
+msgstr "Reimportar arquivos importados perdidos"
+
+msgid "Use Multiple Threads"
+msgstr "Usar Threads Múltiplas"
+
+msgid "Plugin Name"
+msgstr "Nome do Plugin"
 
 msgid "Show Scene Tree Root Selection"
 msgstr "Mostrar seleção da hierarquia de cenas"
@@ -2362,9 +2413,6 @@ msgstr "Sincronização Vertical (V-Sync)"
 
 msgid "V-Sync Mode"
 msgstr "Modo V-Sync"
-
-msgid "Common"
-msgstr "Comum"
 
 msgid "stdout"
 msgstr "stdout"
@@ -2500,45 +2548,6 @@ msgstr "Nome de Montagem"
 
 msgid "Solution Directory"
 msgstr "Diretório da Solução"
-
-msgid "Main Loop Type"
-msgstr "Tipo de Loop Principal"
-
-msgid "Subwindows"
-msgstr "Subjanelas"
-
-msgid "Embed Subwindows"
-msgstr "Subjanelas embutidas"
-
-msgid "Stretch"
-msgstr "Esticar"
-
-msgid "Aspect"
-msgstr "Aspecto"
-
-msgid "Auto Accept Quit"
-msgstr "Aceitar Sair Automaticamente"
-
-msgid "Fonts"
-msgstr "Fontes"
-
-msgid "Dynamic Fonts"
-msgstr "Fontes Dinâmicas"
-
-msgid "Use Oversampling"
-msgstr "Utilizar Oversampling"
-
-msgid "Textures"
-msgstr "Texturas"
-
-msgid "Canvas Textures"
-msgstr "Texturas de Canvas"
-
-msgid "Default Texture Filter"
-msgstr "Filtro de Textura Padrão"
-
-msgid "Default Texture Repeat"
-msgstr "Padrão de repetição de textura"
 
 msgid "Operation"
 msgstr "Operação"
@@ -3981,7 +3990,7 @@ msgid "Area Mask"
 msgstr "Máscara de Área"
 
 msgid "Copy Mode"
-msgstr "Mode de Cópia"
+msgstr "Modo de Cópia"
 
 msgid "Anchor Mode"
 msgstr "Modo de Âncora"
@@ -3993,13 +4002,13 @@ msgid "Left"
 msgstr "Esquerda"
 
 msgid "Top"
-msgstr "Início"
+msgstr "Superior"
 
 msgid "Right"
 msgstr "Direita"
 
 msgid "Bottom"
-msgstr "Embaixo"
+msgstr "Inferior"
 
 msgid "Smoothed"
 msgstr "Suavizado"
@@ -4018,6 +4027,9 @@ msgstr "Limites de Desenho"
 
 msgid "Tweaks"
 msgstr "Ajustes"
+
+msgid "Disable Mode"
+msgstr "Desativar Modo"
 
 msgid "Input"
 msgstr "Entrada"
@@ -4580,6 +4592,9 @@ msgstr "Limiar Tesoura Alfa"
 msgid "Text"
 msgstr "Texto"
 
+msgid "Outline Modulate"
+msgstr "Contorno Modular"
+
 msgid "Font"
 msgstr "Fonte"
 
@@ -4682,11 +4697,17 @@ msgstr "Quaternio"
 msgid "Basis"
 msgstr "Base"
 
+msgid "Top Level"
+msgstr "Nível Superior"
+
 msgid "Visibility"
 msgstr "Visibilidade"
 
 msgid "Visible"
 msgstr "Visível"
+
+msgid "Visibility Parent"
+msgstr "Visibilidade do Pai"
 
 msgid "Rotation Mode"
 msgstr "Modo de Rotação"
@@ -4935,19 +4956,67 @@ msgid "Pairs"
 msgstr "Pares"
 
 msgid "Can Add Swatches"
-msgstr "Pode adicionar amostras"
+msgstr "Pode Ad. Amostras"
+
+msgid "Clip Contents"
+msgstr "Recortar Conteúdos"
+
+msgid "Custom Minimum Size"
+msgstr "Tam. Mín. Personalizado"
+
+msgid "Layout Direction"
+msgstr "Direção do Layout"
+
+msgid "Layout Mode"
+msgstr "Modo do Layout"
+
+msgid "Anchors Preset"
+msgstr "Âncoras Predefinidas"
+
+msgid "Anchor Points"
+msgstr "Pontos de Ancoragem"
+
+msgid "Anchor Offsets"
+msgstr "Deslocamento de Ancoragem"
+
+msgid "Grow Direction"
+msgstr "Direção do Aumento"
 
 msgid "Pivot Offset"
 msgstr "Deslocamento do Pivô"
 
+msgid "Container Sizing"
+msgstr "Dimensionamento do Contêiner"
+
+msgid "Stretch Ratio"
+msgstr "Taxa de Estiramento"
+
 msgid "Localization"
 msgstr "Localização"
+
+msgid "Auto Translate"
+msgstr "Auto Traduzir"
 
 msgid "Localize Numeral System"
 msgstr "Localizar Sistema Numérico"
 
+msgid "Tooltip"
+msgstr "Dica de Ferramenta"
+
 msgid "Focus"
 msgstr "Foco"
+
+msgid "Neighbor Left"
+msgstr "Vizinho Esquerdo"
+
+msgid "Neighbor Top"
+msgstr "Vizinho Superior"
+
+msgid "Neighbor Right"
+msgstr "Vizinho Direito"
+
+msgid "Neighbor Bottom"
+msgstr "Vizinho Inferior"
 
 msgid "Next"
 msgstr "Próximo"
@@ -4959,10 +5028,16 @@ msgid "Mouse"
 msgstr "Mouse"
 
 msgid "Force Pass Scroll Events"
-msgstr "Forçar passagem de eventos de rolagem"
+msgstr "Forçar Eventos de Rolagem"
 
 msgid "Default Cursor Shape"
 msgstr "Forma do Cursor Padrão"
+
+msgid "Shortcut Context"
+msgstr "Atalho de Contexto"
+
+msgid "Type Variation"
+msgstr "Variação de Tipo"
 
 msgid "Root Subfolder"
 msgstr "Subpasta Raiz"
@@ -5159,11 +5234,26 @@ msgstr "Auto Modular"
 msgid "Show Behind Parent"
 msgstr "Mostrar Atrás do Pai"
 
+msgid "Clip Children"
+msgstr "Fixar Filhos"
+
 msgid "Light Mask"
-msgstr "Máscara de Luz"
+msgstr "Máscara Leve"
+
+msgid "Visibility Layer"
+msgstr "Camada Visível"
+
+msgid "Ordering"
+msgstr "Ordenação"
 
 msgid "Z Index"
 msgstr "Índice Z"
+
+msgid "Z as Relative"
+msgstr "Z Relativo"
+
+msgid "Y Sort Enabled"
+msgstr "Ordenação Y"
 
 msgid "Repeat"
 msgstr "Repetir"
@@ -5194,6 +5284,9 @@ msgstr "Separador Num. de Nome de Nó"
 
 msgid "Node Name Casing"
 msgstr "Nome do Nós (Maiúsculas/Minúsculas)"
+
+msgid "Editor Description"
+msgstr "Descrição do Editor"
 
 msgid "Multiplayer Poll"
 msgstr "Registrador Multiplayer"
@@ -5327,6 +5420,9 @@ msgstr "Separação Horizontal"
 msgid "Arrow"
 msgstr "Seta"
 
+msgid "Modulate Arrow"
+msgstr "Modular Seta"
+
 msgid "Radio Unchecked"
 msgstr "Radio não selecionado"
 
@@ -5377,6 +5473,9 @@ msgstr "De cima para baixo"
 
 msgid "Embedded Border"
 msgstr "Borda Integrada"
+
+msgid "Title Outline Modulate"
+msgstr "Modular Contorno do Título"
 
 msgid "Close"
 msgstr "Fechar"
@@ -5777,6 +5876,9 @@ msgstr "Cor do Horizonte"
 msgid "Cover"
 msgstr "Capa"
 
+msgid "Cover Modulate"
+msgstr "Modular Capa"
+
 msgid "Panorama"
 msgstr "'Panorama'"
 
@@ -5849,6 +5951,9 @@ msgstr "Dados Personalizados"
 msgid "Alternative Level"
 msgstr "Nível Alternativo"
 
+msgid "Tile Layout"
+msgstr "Layout do Tile"
+
 msgid "UV Clipping"
 msgstr "Corte UV"
 
@@ -5875,6 +5980,9 @@ msgstr "Probabilidade"
 
 msgid "Output Port for Preview"
 msgstr "Porta de Saída para Preview"
+
+msgid "Modes"
+msgstr "Modos"
 
 msgid "Parameter Name"
 msgstr "Nome do Parâmetro"
@@ -5905,6 +6013,9 @@ msgstr "Personalizar"
 
 msgid "Default Font Multichannel Signed Distance Field"
 msgstr "MSDF Fonte Default"
+
+msgid "LCD Subpixel Layout"
+msgstr "Layout de Subpixel LCD"
 
 msgid "Playback Mode"
 msgstr "Modo de Reprodução"
@@ -6058,6 +6169,9 @@ msgstr "GI"
 
 msgid "Overrides"
 msgstr "Sobrescreve"
+
+msgid "Use Nearest Mipmap Filter"
+msgstr "Usar Filtro Mipmap Mais Próximo"
 
 msgid "OpenGL"
 msgstr "OpenGL"

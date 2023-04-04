@@ -194,7 +194,7 @@
 		<method name="is_normalized" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the vector is [method normalized], [code]false[/code] otherwise.
+				Returns [code]true[/code] if the vector is normalized, i.e. its length is approximately equal to 1.
 			</description>
 		</method>
 		<method name="is_zero_approx" qualifiers="const">

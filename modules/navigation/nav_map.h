@@ -108,18 +108,18 @@ public:
 		return up;
 	}
 
-	void set_cell_size(float p_cell_size);
-	float get_cell_size() const {
+	void set_cell_size(real_t p_cell_size);
+	real_t get_cell_size() const {
 		return cell_size;
 	}
 
-	void set_edge_connection_margin(float p_edge_connection_margin);
-	float get_edge_connection_margin() const {
+	void set_edge_connection_margin(real_t p_edge_connection_margin);
+	real_t get_edge_connection_margin() const {
 		return edge_connection_margin;
 	}
 
-	void set_link_connection_radius(float p_link_connection_radius);
-	float get_link_connection_radius() const {
+	void set_link_connection_radius(real_t p_link_connection_radius);
+	real_t get_link_connection_radius() const {
 		return link_connection_radius;
 	}
 

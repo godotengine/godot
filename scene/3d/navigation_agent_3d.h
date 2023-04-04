@@ -48,6 +48,8 @@ class NavigationAgent3D : public Node {
 
 	bool avoidance_enabled = false;
 	uint32_t navigation_layers = 1;
+	NavigationPathQueryParameters3D::PathfindingAlgorithm pathfinding_algorithm = NavigationPathQueryParameters3D::PathfindingAlgorithm::PATHFINDING_ALGORITHM_ASTAR;
+	NavigationPathQueryParameters3D::PathPostProcessing path_postprocessing = NavigationPathQueryParameters3D::PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL;
 	BitField<NavigationPathQueryParameters3D::PathMetadataFlags> path_metadata_flags = NavigationPathQueryParameters3D::PathMetadataFlags::PATH_METADATA_INCLUDE_ALL;
 
 	real_t path_desired_distance = 1.0;
@@ -115,6 +117,16 @@ public:
 
 	void set_navigation_layer_value(int p_layer_number, bool p_value);
 	bool get_navigation_layer_value(int p_layer_number) const;
+
+	void set_pathfinding_algorithm(const NavigationPathQueryParameters3D::PathfindingAlgorithm p_pathfinding_algorithm);
+	NavigationPathQueryParameters3D::PathfindingAlgorithm get_pathfinding_algorithm() const {
+		return pathfinding_algorithm;
+	}
+
+	void set_path_postprocessing(const NavigationPathQueryParameters3D::PathPostProcessing p_path_postprocessing);
+	NavigationPathQueryParameters3D::PathPostProcessing get_path_postprocessing() const {
+		return path_postprocessing;
+	}
 
 	void set_path_metadata_flags(BitField<NavigationPathQueryParameters3D::PathMetadataFlags> p_flags);
 	BitField<NavigationPathQueryParameters3D::PathMetadataFlags> get_path_metadata_flags() const {

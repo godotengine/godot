@@ -1408,6 +1408,10 @@ SceneTree::SceneTree() {
 	root->set_name("root");
 	root->set_title(GLOBAL_GET("application/config/name"));
 
+	if (Engine::get_singleton()->is_editor_hint()) {
+		root->set_wrap_controls(true);
+	}
+
 #ifndef _3D_DISABLED
 	if (!root->get_world_3d().is_valid()) {
 		root->set_world_3d(Ref<World3D>(memnew(World3D)));

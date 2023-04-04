@@ -109,7 +109,7 @@
 	</methods>
 	<members>
 		<member name="avoidance_enabled" type="bool" setter="set_avoidance_enabled" getter="get_avoidance_enabled" default="false">
-			If [code]true[/code] the agent is registered for an RVO avoidance callback on the [NavigationServer2D]. When [method NavigationAgent2D.set_velocity] is used and the processing is completed a [code]safe_velocity[/code] Vector2 is received with a signal connection to [signal velocity_computed]. Avoidance processing with many registered agents has a significant performance cost and should only be enabled on agents that currently require it.
+			If [code]true[/code] the agent is registered for an RVO avoidance callback on the [NavigationServer2D]. When [method set_velocity] is used and the processing is completed a [code]safe_velocity[/code] Vector2 is received with a signal connection to [signal velocity_computed]. Avoidance processing with many registered agents has a significant performance cost and should only be enabled on agents that currently require it.
 		</member>
 		<member name="debug_enabled" type="bool" setter="set_debug_enabled" getter="get_debug_enabled" default="false">
 			If [code]true[/code] shows debug visuals for this agent.
@@ -146,6 +146,12 @@
 		</member>
 		<member name="path_metadata_flags" type="int" setter="set_path_metadata_flags" getter="get_path_metadata_flags" enum="NavigationPathQueryParameters2D.PathMetadataFlags" default="7">
 			Additional information to return with the navigation path.
+		</member>
+		<member name="path_postprocessing" type="int" setter="set_path_postprocessing" getter="get_path_postprocessing" enum="NavigationPathQueryParameters2D.PathPostProcessing" default="0">
+			The path postprocessing applied to the raw path corridor found by the [member pathfinding_algorithm].
+		</member>
+		<member name="pathfinding_algorithm" type="int" setter="set_pathfinding_algorithm" getter="get_pathfinding_algorithm" enum="NavigationPathQueryParameters2D.PathfindingAlgorithm" default="0">
+			The pathfinding algorithm used in the path query.
 		</member>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="10.0">
 			The radius of the avoidance agent. This is the "body" of the avoidance agent and not the avoidance maneuver starting radius (which is controlled by [member neighbor_distance]).
@@ -193,7 +199,7 @@
 		<signal name="velocity_computed">
 			<param index="0" name="safe_velocity" type="Vector2" />
 			<description>
-				Notifies when the collision avoidance velocity is calculated. Emitted by [method set_velocity]. Only emitted when [member avoidance_enabled] is true.
+				Notifies when the collision avoidance velocity is calculated. Emitted at the end of the physics frame in which [method set_velocity] is called. Only emitted when [member avoidance_enabled] is true.
 			</description>
 		</signal>
 		<signal name="waypoint_reached">

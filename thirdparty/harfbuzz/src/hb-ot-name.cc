@@ -181,4 +181,6 @@ hb_ot_name_get_utf32 (hb_face_t       *face,
   return hb_ot_name_get_utf<hb_utf32_t> (face, name_id, language, text_size, text);
 }
 
+#include "hb-ot-name-language-static.hh"
+
 #endif

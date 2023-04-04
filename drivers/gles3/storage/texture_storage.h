@@ -39,7 +39,7 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/storage/texture_storage.h"
 
-#include "../shaders/canvas_sdf.glsl.gen.h"
+#include "drivers/gles3/shaders/canvas_sdf.glsl.gen.h"
 
 // This must come first to avoid windows.h mess
 #include "platform_config.h"
@@ -345,6 +345,7 @@ struct RenderTarget {
 	GLuint depth = 0;
 	GLuint backbuffer_fbo = 0;
 	GLuint backbuffer = 0;
+	GLuint backbuffer_depth = 0;
 
 	GLuint color_internal_format = GL_RGBA8;
 	GLuint color_format = GL_RGBA;
@@ -603,6 +604,8 @@ public:
 
 	RenderTarget *get_render_target(RID p_rid) { return render_target_owner.get_or_null(p_rid); };
 	bool owns_render_target(RID p_rid) { return render_target_owner.owns(p_rid); };
+
+	void copy_scene_to_backbuffer(RenderTarget *rt, const bool uses_screen_texture, const bool uses_depth_texture);
 
 	virtual RID render_target_create() override;
 	virtual void render_target_free(RID p_rid) override;

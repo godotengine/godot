@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="InputEventFromWindow" inherits="InputEvent" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base class for [InputEvent]s from a [Window].
+		Base class for [Viewport]-based [InputEvent]s from a [Window].
 	</brief_description>
 	<description>
-		Contains a [Window]'s identifying number [member window_id] for an [InputEvent] emitted from a [Window].
+		[InputEventFromWindow] represents [InputEvent]s received by [Window]s. This includes mouse events, touch screen actions, and keyboard events in focused [Window]s.
 	</description>
 	<tutorials>
 	</tutorials>

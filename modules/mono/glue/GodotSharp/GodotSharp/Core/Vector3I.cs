@@ -559,16 +559,15 @@ namespace Godot
         }
 
         /// <summary>
-        /// Converts a <see cref="Vector3"/> to a <see cref="Vector3I"/>.
+        /// Converts a <see cref="Vector3"/> to a <see cref="Vector3I"/> by truncating
+        /// components' fractional parts (rounding towards zero). For a different
+        /// behavior consider passing the result of <see cref="Vector3.Ceil"/>,
+        /// <see cref="Vector3.Floor"/> or <see cref="Vector3.Round"/> to this conversion operator instead.
         /// </summary>
         /// <param name="value">The vector to convert.</param>
         public static explicit operator Vector3I(Vector3 value)
         {
-            return new Vector3I(
-                Mathf.RoundToInt(value.X),
-                Mathf.RoundToInt(value.Y),
-                Mathf.RoundToInt(value.Z)
-            );
+            return new Vector3I((int)value.X, (int)value.Y, (int)value.Z);
         }
 
         /// <summary>

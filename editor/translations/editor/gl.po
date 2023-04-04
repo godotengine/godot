@@ -7,22 +7,116 @@
 # PokeGalaico <abloodyfreaks@gmail.com>, 2021.
 # Kkai <kaieltroll@gmail.com>, 2021.
 # davidrogel <david.rogel.pernas@icloud.com>, 2021.
+# David Salcas <davisalcas@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-08-12 21:32+0000\n"
-"Last-Translator: davidrogel <david.rogel.pernas@icloud.com>\n"
+"PO-Revision-Date: 2023-04-02 22:43+0000\n"
+"Last-Translator: David Salcas <davisalcas@gmail.com>\n"
 "Language-Team: Galician <https://hosted.weblate.org/projects/godot-engine/"
 "godot/gl/>\n"
 "Language: gl\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.8-dev\n"
+"X-Generator: Weblate 4.17-dev\n"
+
+msgid "Unset"
+msgstr "Desactivar"
+
+msgid "Physical"
+msgstr "Físico"
+
+msgid "Left Mouse Button"
+msgstr "Botón Esquerdo do Rato"
+
+msgid "Right Mouse Button"
+msgstr "Botón Dereito do Rato"
+
+msgid "Middle Mouse Button"
+msgstr "Botón Central do Rato"
+
+msgid "Mouse Wheel Up"
+msgstr "Roda do Rato Cara Arriba"
+
+msgid "Mouse Wheel Down"
+msgstr "Roda do Rato Cara Abaixo"
+
+msgid "Mouse Wheel Left"
+msgstr "Roda do Rato Cara a Esquerda"
+
+msgid "Mouse Wheel Right"
+msgstr "Roda do Rato Cara a Dereita"
+
+msgid "Mouse Thumb Button 1"
+msgstr "Botón do Rato Polgar 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "Botón do Rato Polgar 2"
 
 msgid "Button"
 msgstr "Botón"
+
+msgid "Double Click"
+msgstr "Dobre clic"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "Movemento do rato na posición (%s) con velocidade (%s)"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Eixe X da Panca Esquerda, Eixe X do Joystick 0"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "Eixe Y da Panca Esquerda, Eixe Y do Joystick 0"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "Eixe X da Panca Dereita, Eixe X do Joystick 1"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "Eixe Y da Panca Dereita, Eixe Y do Joystick 1"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "Eixe X do Joystick 2, Gatillo Esquerdo, Sony L2, Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "Eixe Y do Joystick 2, Gatillo Dereito, Sony R2, Xbox RT"
+
+msgid "Joystick 3 X-Axis"
+msgstr "Eixe X do Joystick 3"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "Eixe Y do Joystick 3"
+
+msgid "Joystick 4 X-Axis"
+msgstr "Eixe X do Joystick 4"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "Eixe Y do Joystick 4"
+
+msgid "Unknown Joypad Axis"
+msgstr "Eixe do Joypad Descoñecido"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "Movemento do Joypad no Eixe (%s) con valor %.2f"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "Acción Inferior, Sony Cruz, Xbox A, Nintendo B"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "Acción Dereita, Sony Círculo, Xbox B, Nintendo A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "Acción Esquerda, Sony Cadrado, Xbox X, Nintendo Y"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "Acción Superior, Sony Triángulo, Xbox Y, Nintendo X"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "Atrás, Sony Select, Xbox Atrás, Nintendo -"
+
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "Guía, Sony PS, Xbox Inicio"
 
 msgid "Select"
 msgstr "Elixir"

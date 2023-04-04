@@ -587,9 +587,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	} else {
 		theme->set_color("highend_color", "Editor", Color(1.0, 0.0, 0.0));
 	}
+
 	const int thumb_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 	theme->set_constant("scale", "Editor", EDSCALE);
 	theme->set_constant("thumb_size", "Editor", thumb_size);
+	theme->set_constant("class_icon_size", "Editor", 16 * EDSCALE);
 	theme->set_constant("dark_theme", "Editor", dark_theme);
 	theme->set_constant("color_picker_button_height", "Editor", 28 * EDSCALE);
 
@@ -1887,6 +1889,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	Ref<StyleBoxEmpty> vshader_label_style = make_empty_stylebox(2, 1, 2, 1);
 	theme->set_stylebox("label_style", "VShaderEditor", vshader_label_style);
+
+	// Project manager.
+	theme->set_stylebox("search_panel", "ProjectManager", style_tree_bg);
+	theme->set_constant("sidebar_button_icon_separation", "ProjectManager", int(6 * EDSCALE));
 
 	// adaptive script theme constants
 	// for comments and elements with lower relevance

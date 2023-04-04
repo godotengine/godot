@@ -74,6 +74,11 @@ struct hb_bit_set_invertible_t
       inverted = !inverted;
   }
 
+  bool is_inverted () const
+  {
+    return inverted;
+  }
+
   bool is_empty () const
   {
     hb_codepoint_t v = INVALID;

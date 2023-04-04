@@ -34,6 +34,10 @@
 #include "scene/main/node.h"
 #include "scene/resources/animation.h"
 
+#define CHECK_VALID()                                                                                      \
+	ERR_FAIL_COND_V_MSG(!valid, nullptr, "Tween invalid. Either finished or created outside scene tree."); \
+	ERR_FAIL_COND_V_MSG(started, nullptr, "Can't append to a Tween that has started. Use stop() first.");
+
 Tween::interpolater Tween::interpolaters[Tween::TRANS_MAX][Tween::EASE_MAX] = {
 	{ &linear::in, &linear::in, &linear::in, &linear::in }, // Linear is the same for each easing.
 	{ &sine::in, &sine::out, &sine::in_out, &sine::out_in },
@@ -48,7 +52,7 @@ Tween::interpolater Tween::interpolaters[Tween::TRANS_MAX][Tween::EASE_MAX] = {
 	{ &back::in, &back::out, &back::in_out, &back::out_in },
 };
 
-void Tweener::set_tween(Ref<Tween> p_tween) {
+void Tweener::set_tween(const Ref<Tween> &p_tween) {
 	tween = p_tween;
 }
 
@@ -94,41 +98,38 @@ void Tween::_stop_internal(bool p_reset) {
 	}
 }
 
-Ref<PropertyTweener> Tween::tween_property(Object *p_target, NodePath p_property, Variant p_to, double p_duration) {
+Ref<PropertyTweener> Tween::tween_property(const Object *p_target, const NodePath &p_property, Variant p_to, double p_duration) {
 	ERR_FAIL_NULL_V(p_target, nullptr);
-	ERR_FAIL_COND_V_MSG(!valid, nullptr, "Tween invalid. Either finished or created outside scene tree.");
-	ERR_FAIL_COND_V_MSG(started, nullptr, "Can't append to a Tween that has started. Use stop() first.");
+	CHECK_VALID();
 
-	if (!_validate_type_match(p_target->get_indexed(p_property.get_as_property_path().get_subnames()), p_to)) {
+	Vector<StringName> property_subnames = p_property.get_as_property_path().get_subnames();
+	if (!_validate_type_match(p_target->get_indexed(property_subnames), p_to)) {
 		return nullptr;
 	}
 
-	Ref<PropertyTweener> tweener = memnew(PropertyTweener(p_target, p_property, p_to, p_duration));
+	Ref<PropertyTweener> tweener = memnew(PropertyTweener(p_target, property_subnames, p_to, p_duration));
 	append(tweener);
 	return tweener;
 }
 
 Ref<IntervalTweener> Tween::tween_interval(double p_time) {
-	ERR_FAIL_COND_V_MSG(!valid, nullptr, "Tween invalid. Either finished or created outside scene tree.");
-	ERR_FAIL_COND_V_MSG(started, nullptr, "Can't append to a Tween that has started. Use stop() first.");
+	CHECK_VALID();
 
 	Ref<IntervalTweener> tweener = memnew(IntervalTweener(p_time));
 	append(tweener);
 	return tweener;
 }
 
-Ref<CallbackTweener> Tween::tween_callback(Callable p_callback) {
-	ERR_FAIL_COND_V_MSG(!valid, nullptr, "Tween invalid. Either finished or created outside scene tree.");
-	ERR_FAIL_COND_V_MSG(started, nullptr, "Can't append to a Tween that has started. Use stop() first.");
+Ref<CallbackTweener> Tween::tween_callback(const Callable &p_callback) {
+	CHECK_VALID();
 
 	Ref<CallbackTweener> tweener = memnew(CallbackTweener(p_callback));
 	append(tweener);
 	return tweener;
 }
 
-Ref<MethodTweener> Tween::tween_method(Callable p_callback, Variant p_from, Variant p_to, double p_duration) {
-	ERR_FAIL_COND_V_MSG(!valid, nullptr, "Tween invalid. Either finished or created outside scene tree.");
-	ERR_FAIL_COND_V_MSG(started, nullptr, "Can't append to a Tween that has started. Use stop() first.");
+Ref<MethodTweener> Tween::tween_method(const Callable &p_callback, const Variant p_from, Variant p_to, double p_duration) {
+	CHECK_VALID();
 
 	if (!_validate_type_match(p_from, p_to)) {
 		return nullptr;
@@ -191,7 +192,7 @@ void Tween::clear() {
 	tweeners.clear();
 }
 
-Ref<Tween> Tween::bind_node(Node *p_node) {
+Ref<Tween> Tween::bind_node(const Node *p_node) {
 	ERR_FAIL_NULL_V(p_node, this);
 
 	bound_node = p_node->get_instance_id();
@@ -226,6 +227,14 @@ Ref<Tween> Tween::set_parallel(bool p_parallel) {
 Ref<Tween> Tween::set_loops(int p_loops) {
 	loops = p_loops;
 	return this;
+}
+
+int Tween::get_loops_left() const {
+	if (loops <= 0) {
+		return -1; // Infinite loop.
+	} else {
+		return loops - loops_done;
+	}
 }
 
 Ref<Tween> Tween::set_speed_scale(float p_speed) {
@@ -398,7 +407,7 @@ real_t Tween::run_equation(TransitionType p_trans_type, EaseType p_ease_type, re
 	return func(p_time, p_initial, p_delta, p_duration);
 }
 
-Variant Tween::interpolate_variant(Variant p_initial_val, Variant p_delta_val, double p_time, double p_duration, TransitionType p_trans, EaseType p_ease) {
+Variant Tween::interpolate_variant(const Variant &p_initial_val, const Variant &p_delta_val, double p_time, double p_duration, TransitionType p_trans, EaseType p_ease) {
 	ERR_FAIL_INDEX_V(p_trans, TransitionType::TRANS_MAX, Variant());
 	ERR_FAIL_INDEX_V(p_ease, EaseType::EASE_MAX, Variant());
 
@@ -442,6 +451,7 @@ void Tween::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_parallel", "parallel"), &Tween::set_parallel, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("set_loops", "loops"), &Tween::set_loops, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_loops_left"), &Tween::get_loops_left);
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "speed"), &Tween::set_speed_scale);
 	ClassDB::bind_method(D_METHOD("set_trans", "trans"), &Tween::set_trans);
 	ClassDB::bind_method(D_METHOD("set_ease", "ease"), &Tween::set_ease);
@@ -488,7 +498,7 @@ Tween::Tween(bool p_valid) {
 	valid = p_valid;
 }
 
-Ref<PropertyTweener> PropertyTweener::from(Variant p_value) {
+Ref<PropertyTweener> PropertyTweener::from(const Variant &p_value) {
 	ERR_FAIL_COND_V(tween.is_null(), nullptr);
 	if (!tween->_validate_type_match(p_value, final_val)) {
 		return nullptr;
@@ -576,7 +586,7 @@ bool PropertyTweener::step(double &r_delta) {
 	}
 }
 
-void PropertyTweener::set_tween(Ref<Tween> p_tween) {
+void PropertyTweener::set_tween(const Ref<Tween> &p_tween) {
 	tween = p_tween;
 	if (trans_type == Tween::TRANS_MAX) {
 		trans_type = tween->get_trans();
@@ -595,9 +605,9 @@ void PropertyTweener::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_delay", "delay"), &PropertyTweener::set_delay);
 }
 
-PropertyTweener::PropertyTweener(Object *p_target, NodePath p_property, Variant p_to, double p_duration) {
+PropertyTweener::PropertyTweener(const Object *p_target, const Vector<StringName> &p_property, const Variant &p_to, double p_duration) {
 	target = p_target->get_instance_id();
-	property = p_property.get_as_property_path().get_subnames();
+	property = p_property;
 	initial_val = p_target->get_indexed(property);
 	base_final_val = p_to;
 	final_val = base_final_val;
@@ -681,7 +691,7 @@ void CallbackTweener::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_delay", "delay"), &CallbackTweener::set_delay);
 }
 
-CallbackTweener::CallbackTweener(Callable p_callback) {
+CallbackTweener::CallbackTweener(const Callable &p_callback) {
 	callback = p_callback;
 
 	Object *callback_instance = p_callback.get_object();
@@ -754,7 +764,7 @@ bool MethodTweener::step(double &r_delta) {
 	}
 }
 
-void MethodTweener::set_tween(Ref<Tween> p_tween) {
+void MethodTweener::set_tween(const Ref<Tween> &p_tween) {
 	tween = p_tween;
 	if (trans_type == Tween::TRANS_MAX) {
 		trans_type = tween->get_trans();
@@ -770,7 +780,7 @@ void MethodTweener::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ease", "ease"), &MethodTweener::set_ease);
 }
 
-MethodTweener::MethodTweener(Callable p_callback, Variant p_from, Variant p_to, double p_duration) {
+MethodTweener::MethodTweener(const Callable &p_callback, const Variant &p_from, const Variant &p_to, double p_duration) {
 	callback = p_callback;
 	initial_val = p_from;
 	delta_val = Animation::subtract_variant(p_to, p_from);
