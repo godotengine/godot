@@ -3805,6 +3805,15 @@ void VisualShaderEditor::_delete_nodes_request(const TypedArray<StringName> &p_n
 	undo_redo->commit_action();
 }
 
+void VisualShaderEditor::_select_all_nodes() {
+	for (int i = 0; i < graph->get_child_count(false); i++) {
+		GraphNode *child = Object::cast_to<GraphNode>(graph->get_child(i, false));
+		if (child) {
+			child->set_selected(true);
+		}
+	}
+}
+
 void VisualShaderEditor::_node_selected(Object *p_node) {
 	VisualShader::Type type = get_current_shader_type();
 
@@ -5058,6 +5067,24 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_is_available", &VisualShaderEditor::_is_available);
 }
 
+void VisualShaderEditor::shortcut_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	if (!p_event->is_pressed() || p_event->is_echo()) {
+		return;
+	}
+
+	const Ref<InputEventKey> k = p_event;
+
+	if (ED_IS_SHORTCUT("visual_shader_editor/select_all", p_event)) {
+		_select_all_nodes();
+		accept_event();
+	} else if (ED_IS_SHORTCUT("visual_shader_editor/add_node", p_event)) {
+		_show_members_dialog(false, VisualShaderNode::PORT_TYPE_MAX, VisualShaderNode::PORT_TYPE_MAX);
+		accept_event();
+	}
+}
+
 VisualShaderEditor::VisualShaderEditor() {
 	ShaderLanguage::get_keyword_list(&keyword_list);
 	EditorNode::get_singleton()->connect("resource_saved", callable_mp(this, &VisualShaderEditor::_resource_saved));
@@ -6106,6 +6133,11 @@ VisualShaderEditor::VisualShaderEditor() {
 	custom_node_option_idx = add_options.size();
 
 	/////////////////////////////////////////////////////////////////////
+
+	ED_SHORTCUT("visual_shader_editor/select_all", TTR("Select All"), KeyModifierMask::CMD_OR_CTRL | Key::A);
+	ED_SHORTCUT("visual_shader_editor/add_node", TTR("Add Node"), KeyModifierMask::SHIFT | Key::A);
+	set_process_shortcut_input(true);
+	set_shortcut_context(this);
 
 	_update_options_menu();
 
