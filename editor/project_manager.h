@@ -249,18 +249,22 @@ private:
 	ConfigFile _config;
 	String _config_path;
 
-	void _panel_draw(Node *p_hb);
 	void _panel_input(const Ref<InputEvent> &p_ev, Node *p_hb);
 	void _favorite_pressed(Node *p_hb);
 	void _show_project(const String &p_path);
 
-	void select_range(int p_begin, int p_end);
-	void toggle_select(int p_index);
-	void create_project_item_control(int p_index);
-	void remove_project(int p_index, bool p_update_settings);
-	void update_icons_async();
-	void load_project_icon(int p_index);
+	void _clear_project_selection();
+	void _toggle_project(int p_index);
+	void _select_project_nocheck(int p_index);
+	void _deselect_project_nocheck(int p_index);
+	void _select_project_range(int p_begin, int p_end);
+
+	void _create_project_item_control(int p_index);
+	void _remove_project(int p_index, bool p_update_settings);
+
 	static Item load_project_data(const String &p_property_key, bool p_favorite);
+	void _update_icons_async();
+	void _load_project_icon(int p_index);
 
 	void _global_menu_new_window(const Variant &p_tag);
 	void _global_menu_open_project(const Variant &p_tag);
@@ -381,7 +385,6 @@ class ProjectManager : public Control {
 	void _language_selected(int p_id);
 	void _restart_confirm();
 	void _confirm_update_settings();
-	void _nonempty_confirmation_ok_pressed();
 
 	void _load_recent_projects();
 	void _on_project_created(const String &dir);
