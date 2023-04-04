@@ -35,6 +35,12 @@
 #include "editor/editor_scale.h"
 #include "editor/multi_node_edit.h"
 
+Size2 EditorPath::get_minimum_size() const {
+	Ref<Font> font = get_theme_font(SNAME("font"));
+	int font_size = get_theme_font_size(SNAME("font_size"));
+	return Button::get_minimum_size() + Size2(0, font->get_height(font_size));
+}
+
 void EditorPath::_add_children_to_popup(Object *p_obj, int p_depth) {
 	if (p_depth > 8) {
 		return;
@@ -195,8 +201,12 @@ void EditorPath::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			update_path();
 
-			sub_objects_icon->set_texture(get_theme_icon(SNAME("arrow"), SNAME("OptionButton")));
+			int icon_size = get_theme_constant(SNAME("class_icon_size"), SNAME("Editor"));
+
+			current_object_icon->set_custom_minimum_size(Size2(icon_size, icon_size));
 			current_object_label->add_theme_font_override("font", get_theme_font(SNAME("main"), SNAME("EditorFonts")));
+			sub_objects_icon->set_texture(get_theme_icon(SNAME("arrow"), SNAME("OptionButton")));
+			sub_objects_menu->add_theme_constant_override("icon_max_width", icon_size);
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -221,12 +231,14 @@ EditorPath::EditorPath(EditorSelectionHistory *p_history) {
 	main_mc->add_child(main_hb);
 
 	current_object_icon = memnew(TextureRect);
-	current_object_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+	current_object_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+	current_object_icon->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	main_hb->add_child(current_object_icon);
 
 	current_object_label = memnew(Label);
 	current_object_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	current_object_label->set_h_size_flags(SIZE_EXPAND_FILL);
+	current_object_label->set_auto_translate(false);
 	main_hb->add_child(current_object_label);
 
 	sub_objects_icon = memnew(TextureRect);
@@ -235,6 +247,7 @@ EditorPath::EditorPath(EditorSelectionHistory *p_history) {
 	main_hb->add_child(sub_objects_icon);
 
 	sub_objects_menu = memnew(PopupMenu);
+	sub_objects_menu->set_auto_translate(false);
 	add_child(sub_objects_menu);
 	sub_objects_menu->connect("about_to_popup", callable_mp(this, &EditorPath::_about_to_show));
 	sub_objects_menu->connect("id_pressed", callable_mp(this, &EditorPath::_id_pressed));

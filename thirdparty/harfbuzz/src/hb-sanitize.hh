@@ -228,6 +228,18 @@ struct hb_sanitize_context_t :
 
   unsigned get_edit_count () { return edit_count; }
 
+
+  bool check_ops(unsigned count)
+  {
+    /* Avoid underflow */
+    if (unlikely (this->max_ops < 0 || count >= (unsigned) this->max_ops))
+    {
+      this->max_ops = -1;
+      return false;
+    }
+    return (this->max_ops -= (int) count) > 0;
+  }
+
   bool check_range (const void *base,
 		    unsigned int len) const
   {
@@ -240,7 +252,7 @@ struct hb_sanitize_context_t :
 
     DEBUG_MSG_LEVEL (SANITIZE, p, this->debug_depth+1, 0,
 		     "check_range [%p..%p]"
-		     " (%d bytes) in [%p..%p] -> %s",
+		     " (%u bytes) in [%p..%p] -> %s",
 		     p, p + len, len,
 		     this->start, this->end,
 		     ok ? "OK" : "OUT-OF-RANGE");
@@ -308,7 +320,7 @@ struct hb_sanitize_context_t :
     this->edit_count++;
 
     DEBUG_MSG_LEVEL (SANITIZE, p, this->debug_depth+1, 0,
-       "may_edit(%u) [%p..%p] (%d bytes) in [%p..%p] -> %s",
+       "may_edit(%u) [%p..%p] (%u bytes) in [%p..%p] -> %s",
        this->edit_count,
        p, p + len, len,
        this->start, this->end,
@@ -353,13 +365,13 @@ struct hb_sanitize_context_t :
     {
       if (edit_count)
       {
-	DEBUG_MSG_FUNC (SANITIZE, start, "passed first round with %d edits; going for second round", edit_count);
+	DEBUG_MSG_FUNC (SANITIZE, start, "passed first round with %u edits; going for second round", edit_count);
 
 	/* sanitize again to ensure no toe-stepping */
 	edit_count = 0;
 	sane = t->sanitize (this);
 	if (edit_count) {
-	  DEBUG_MSG_FUNC (SANITIZE, start, "requested %d edits in second round; FAILLING", edit_count);
+	  DEBUG_MSG_FUNC (SANITIZE, start, "requested %u edits in second round; FAILLING", edit_count);
 	  sane = false;
 	}
       }

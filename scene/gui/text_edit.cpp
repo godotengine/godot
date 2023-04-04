@@ -1385,7 +1385,7 @@ void TextEdit::_notification(int p_what) {
 													ts_caret.l_caret.position.y += ts_caret.l_caret.size.y;
 													ts_caret.l_caret.size.y = caret_width;
 												}
-												if (ts_caret.l_caret.position.x >= TS->shaped_text_get_size(rid).x) {
+												if (Math::ceil(ts_caret.l_caret.position.x) >= TS->shaped_text_get_size(rid).x) {
 													ts_caret.l_caret.size.x = font->get_char_size('m', font_size).x;
 												} else {
 													ts_caret.l_caret.size.x = 3 * caret_width;
@@ -2008,14 +2008,14 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		// If a modifier has been pressed, and nothing else, return.
-		if (k->get_keycode() == Key::CTRL || k->get_keycode() == Key::ALT || k->get_keycode() == Key::SHIFT || k->get_keycode() == Key::META) {
+		if (k->get_keycode() == Key::CTRL || k->get_keycode() == Key::ALT || k->get_keycode() == Key::SHIFT || k->get_keycode() == Key::META || k->get_keycode() == Key::CAPSLOCK) {
 			return;
 		}
 
 		_reset_caret_blink_timer();
 
 		// Allow unicode handling if:
-		// * No Modifiers are pressed (except shift)
+		// * No modifiers are pressed (except Shift and CapsLock)
 		bool allow_unicode_handling = !(k->is_command_or_control_pressed() || k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
 
 		// Check and handle all built in shortcuts.
@@ -3035,6 +3035,11 @@ bool TextEdit::is_text_field() const {
 }
 
 Variant TextEdit::get_drag_data(const Point2 &p_point) {
+	Variant ret = Control::get_drag_data(p_point);
+	if (ret != Variant()) {
+		return ret;
+	}
+
 	if (has_selection() && selection_drag_attempt) {
 		String t = get_selected_text();
 		Label *l = memnew(Label);

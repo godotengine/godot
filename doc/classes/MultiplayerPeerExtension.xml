@@ -49,6 +49,18 @@
 				Called when a packet needs to be received by the [MultiplayerAPI], with [param r_buffer_size] being the size of the binary [param r_buffer] in bytes.
 			</description>
 		</method>
+		<method name="_get_packet_channel" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Called to get the channel over which the next available packet was received. See [method MultiplayerPeer.get_packet_channel].
+			</description>
+		</method>
+		<method name="_get_packet_mode" qualifiers="virtual const">
+			<return type="int" enum="MultiplayerPeer.TransferMode" />
+			<description>
+				Called to get the [enum MultiplayerPeer.TransferMode] the remote peer used to send the next available packet. See [method MultiplayerPeer.get_packet_mode].
+			</description>
+		</method>
 		<method name="_get_packet_peer" qualifiers="virtual const">
 			<return type="int" />
 			<description>
@@ -76,7 +88,7 @@
 		<method name="_get_unique_id" qualifiers="virtual const">
 			<return type="int" />
 			<description>
-				Called when the unique ID of this [MultiplayerPeer] is requested (see [method MultiplayerPeer.get_unique_id]).
+				Called when the unique ID of this [MultiplayerPeer] is requested (see [method MultiplayerPeer.get_unique_id]). The value must be between [code]1[/code] and [code]2147483647[/code].
 			</description>
 		</method>
 		<method name="_is_refusing_new_connections" qualifiers="virtual const">
@@ -89,6 +101,12 @@
 			<return type="bool" />
 			<description>
 				Called when the "is server" status is requested on the [MultiplayerAPI]. See [method MultiplayerAPI.is_server].
+			</description>
+		</method>
+		<method name="_is_server_relay_supported" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Called to check if the server can act as a relay in the current configuration. See [method MultiplayerPeer.is_server_relay_supported].
 			</description>
 		</method>
 		<method name="_poll" qualifiers="virtual">

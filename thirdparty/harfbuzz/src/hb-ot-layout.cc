@@ -500,8 +500,8 @@ hb_ot_layout_table_find_script (hb_face_t    *face,
  * @face: #hb_face_t to work upon
  * @table_tag: #HB_OT_TAG_GSUB or #HB_OT_TAG_GPOS
  * @script_tags: Array of #hb_tag_t script tags
- * @script_index: (out): The index of the requested script tag
- * @chosen_script: (out): #hb_tag_t of the script tag requested
+ * @script_index: (out): The index of the chosen script
+ * @chosen_script: (out): #hb_tag_t of the chosen script
  *
  * Deprecated since 2.0.0
  **/
@@ -531,8 +531,8 @@ hb_ot_layout_table_choose_script (hb_face_t      *face,
  *
  * If the table does not have any of the requested scripts, then `DFLT`,
  * `dflt`, and `latn` tags are tried in that order. If the table still does not
- * have any of these scripts, @script_index and @chosen_script are set to
- * #HB_OT_LAYOUT_NO_SCRIPT_INDEX.
+ * have any of these scripts, @script_index is set to
+ * #HB_OT_LAYOUT_NO_SCRIPT_INDEX and @chosen_script is set to #HB_TAG_NONE.
  *
  * Return value:
  * `true` if one of the requested scripts is selected, `false` if a fallback
@@ -586,7 +586,7 @@ hb_ot_layout_table_select_script (hb_face_t      *face,
 
   if (script_index) *script_index = HB_OT_LAYOUT_NO_SCRIPT_INDEX;
   if (chosen_script)
-    *chosen_script = HB_OT_LAYOUT_NO_SCRIPT_INDEX;
+    *chosen_script = HB_TAG_NONE;
   return false;
 }
 
@@ -727,6 +727,66 @@ hb_ot_layout_script_find_language (hb_face_t    *face,
 
 
 /**
+ * hb_ot_layout_script_select_language2:
+ * @face: #hb_face_t to work upon
+ * @table_tag: #HB_OT_TAG_GSUB or #HB_OT_TAG_GPOS
+ * @script_index: The index of the requested script tag
+ * @language_count: The number of languages in the specified script
+ * @language_tags: The array of language tags
+ * @language_index: (out): The index of the chosen language
+ * @chosen_language: (out): #hb_tag_t of the chosen language
+ *
+ * Fetches the index of the first language tag fom @language_tags that is present
+ * in the specified face's GSUB or GPOS table, underneath the specified script
+ * index.
+ *
+ * If none of the given language tags is found, `false` is returned and
+ * @language_index is set to #HB_OT_LAYOUT_DEFAULT_LANGUAGE_INDEX and
+ * @chosen_language is set to #HB_TAG_NONE.
+ *
+ * Return value: `true` if one of the given language tags is found, `false` otherwise
+ *
+ * Since: 7.0.0
+ **/
+hb_bool_t
+hb_ot_layout_script_select_language2 (hb_face_t      *face,
+				     hb_tag_t        table_tag,
+				     unsigned int    script_index,
+				     unsigned int    language_count,
+				     const hb_tag_t *language_tags,
+				     unsigned int   *language_index /* OUT */,
+				     hb_tag_t       *chosen_language /* OUT */)
+{
+  static_assert ((OT::Index::NOT_FOUND_INDEX == HB_OT_LAYOUT_DEFAULT_LANGUAGE_INDEX), "");
+  const OT::Script &s = get_gsubgpos_table (face, table_tag).get_script (script_index);
+  unsigned int i;
+
+  for (i = 0; i < language_count; i++)
+  {
+    if (s.find_lang_sys_index (language_tags[i], language_index))
+    {
+      if (chosen_language)
+        *chosen_language = language_tags[i];
+      return true;
+    }
+  }
+
+  /* try finding 'dflt' */
+  if (s.find_lang_sys_index (HB_OT_TAG_DEFAULT_LANGUAGE, language_index))
+  {
+    if (chosen_language)
+      *chosen_language = HB_OT_TAG_DEFAULT_LANGUAGE;
+    return false;
+  }
+
+  if (language_index)
+    *language_index = HB_OT_LAYOUT_DEFAULT_LANGUAGE_INDEX;
+  if (chosen_language)
+    *chosen_language = HB_TAG_NONE;
+  return false;
+}
+
+/**
  * hb_ot_layout_script_select_language:
  * @face: #hb_face_t to work upon
  * @table_tag: #HB_OT_TAG_GSUB or #HB_OT_TAG_GPOS
@@ -754,25 +814,11 @@ hb_ot_layout_script_select_language (hb_face_t      *face,
 				     const hb_tag_t *language_tags,
 				     unsigned int   *language_index /* OUT */)
 {
-  static_assert ((OT::Index::NOT_FOUND_INDEX == HB_OT_LAYOUT_DEFAULT_LANGUAGE_INDEX), "");
-  const OT::Script &s = get_gsubgpos_table (face, table_tag).get_script (script_index);
-  unsigned int i;
-
-  for (i = 0; i < language_count; i++)
-  {
-    if (s.find_lang_sys_index (language_tags[i], language_index))
-      return true;
-  }
-
-  /* try finding 'dflt' */
-  if (s.find_lang_sys_index (HB_OT_TAG_DEFAULT_LANGUAGE, language_index))
-    return false;
-
-  if (language_index)
-    *language_index = HB_OT_LAYOUT_DEFAULT_LANGUAGE_INDEX;
-  return false;
+  return hb_ot_layout_script_select_language2 (face, table_tag,
+					       script_index,
+					       language_count, language_tags,
+					       language_index, nullptr);
 }
-
 
 /**
  * hb_ot_layout_language_get_required_feature_index:
@@ -1441,11 +1487,13 @@ hb_ot_layout_lookup_would_substitute (hb_face_t            *face,
 				      unsigned int          glyphs_length,
 				      hb_bool_t             zero_context)
 {
-  if (unlikely (lookup_index >= face->table.GSUB->lookup_count)) return false;
+  auto &gsub = face->table.GSUB;
+  if (unlikely (lookup_index >= gsub->lookup_count)) return false;
   OT::hb_would_apply_context_t c (face, glyphs, glyphs_length, (bool) zero_context);
 
-  const OT::SubstLookup& l = face->table.GSUB->table->get_lookup (lookup_index);
-  return l.would_apply (&c, &face->table.GSUB->accels[lookup_index]);
+  const OT::SubstLookup& l = gsub->table->get_lookup (lookup_index);
+  auto *accel = gsub->get_accel (lookup_index);
+  return accel && l.would_apply (&c, accel);
 }
 
 
@@ -1784,11 +1832,9 @@ struct GSUBProxy
   typedef OT::SubstLookup Lookup;
 
   GSUBProxy (hb_face_t *face) :
-    table (*face->table.GSUB->table),
-    accels (face->table.GSUB->accels) {}
+    accel (*face->table.GSUB) {}
 
-  const GSUB &table;
-  const OT::hb_ot_layout_lookup_accelerator_t *accels;
+  const GSUB::accelerator_t &accel;
 };
 
 struct GPOSProxy
@@ -1798,17 +1844,16 @@ struct GPOSProxy
   typedef OT::PosLookup Lookup;
 
   GPOSProxy (hb_face_t *face) :
-    table (*face->table.GPOS->table),
-    accels (face->table.GPOS->accels) {}
+    accel (*face->table.GPOS) {}
 
-  const GPOS &table;
-  const OT::hb_ot_layout_lookup_accelerator_t *accels;
+  const GPOS::accelerator_t &accel;
 };
 
 
 static inline bool
 apply_forward (OT::hb_ot_apply_context_t *c,
-	       const OT::hb_ot_layout_lookup_accelerator_t &accel)
+	       const OT::hb_ot_layout_lookup_accelerator_t &accel,
+	       unsigned subtable_count)
 {
   bool use_cache = accel.cache_enter (c);
 
@@ -1821,7 +1866,7 @@ apply_forward (OT::hb_ot_apply_context_t *c,
 	(buffer->cur().mask & c->lookup_mask) &&
 	c->check_glyph_property (&buffer->cur(), c->lookup_props))
      {
-       applied = accel.apply (c, use_cache);
+       applied = accel.apply (c, subtable_count, use_cache);
      }
 
     if (applied)
@@ -1838,7 +1883,8 @@ apply_forward (OT::hb_ot_apply_context_t *c,
 
 static inline bool
 apply_backward (OT::hb_ot_apply_context_t *c,
-	       const OT::hb_ot_layout_lookup_accelerator_t &accel)
+	       const OT::hb_ot_layout_lookup_accelerator_t &accel,
+	       unsigned subtable_count)
 {
   bool ret = false;
   hb_buffer_t *buffer = c->buffer;
@@ -1847,7 +1893,7 @@ apply_backward (OT::hb_ot_apply_context_t *c,
     if (accel.digest.may_have (buffer->cur().codepoint) &&
 	(buffer->cur().mask & c->lookup_mask) &&
 	c->check_glyph_property (&buffer->cur(), c->lookup_props))
-     ret |= accel.apply (c, false);
+     ret |= accel.apply (c, subtable_count, false);
 
     /* The reverse lookup doesn't "advance" cursor (for good reason). */
     buffer->idx--;
@@ -1863,11 +1909,13 @@ apply_string (OT::hb_ot_apply_context_t *c,
 	      const typename Proxy::Lookup &lookup,
 	      const OT::hb_ot_layout_lookup_accelerator_t &accel)
 {
-  bool ret = false;
   hb_buffer_t *buffer = c->buffer;
+  unsigned subtable_count = lookup.get_subtable_count ();
 
   if (unlikely (!buffer->len || !c->lookup_mask))
-    return ret;
+    return false;
+
+  bool ret = false;
 
   c->set_lookup_props (lookup.get_props ());
 
@@ -1878,7 +1926,7 @@ apply_string (OT::hb_ot_apply_context_t *c,
       buffer->clear_output ();
 
     buffer->idx = 0;
-    ret = apply_forward (c, accel);
+    ret = apply_forward (c, accel, subtable_count);
 
     if (!Proxy::always_inplace)
       buffer->sync ();
@@ -1888,7 +1936,7 @@ apply_string (OT::hb_ot_apply_context_t *c,
     /* in-place backward substitution/positioning */
     assert (!buffer->have_output);
     buffer->idx = buffer->len - 1;
-    ret = apply_backward (c, accel);
+    ret = apply_backward (c, accel, subtable_count);
   }
 
   return ret;
@@ -1913,13 +1961,18 @@ inline void hb_ot_map_t::apply (const Proxy &proxy,
       auto &lookup = lookups[table_index][i];
 
       unsigned int lookup_index = lookup.index;
-      if (!buffer->message (font, "start lookup %d feature '%c%c%c%c'", lookup_index, HB_UNTAG (lookup.feature_tag))) continue;
+
+      auto *accel = proxy.accel.get_accel (lookup_index);
+      if (unlikely (!accel)) continue;
+
+      if (buffer->messaging () &&
+	  !buffer->message (font, "start lookup %u feature '%c%c%c%c'", lookup_index, HB_UNTAG (lookup.feature_tag))) continue;
 
       /* c.digest is a digest of all the current glyphs in the buffer
        * (plus some past glyphs).
        *
        * Only try applying the lookup if there is any overlap. */
-      if (proxy.accels[lookup_index].digest.may_have (c.digest))
+      if (accel->digest.may_have (c.digest))
       {
 	c.set_lookup_index (lookup_index);
 	c.set_lookup_mask (lookup.mask);
@@ -1929,13 +1982,14 @@ inline void hb_ot_map_t::apply (const Proxy &proxy,
 	c.set_per_syllable (lookup.per_syllable);
 
 	apply_string<Proxy> (&c,
-			     proxy.table.get_lookup (lookup_index),
-			     proxy.accels[lookup_index]);
+			     proxy.accel.table->get_lookup (lookup_index),
+			     *accel);
       }
-      else
-	(void) buffer->message (font, "skipped lookup %d feature '%c%c%c%c' because no glyph matches", lookup_index, HB_UNTAG (lookup.feature_tag));
+      else if (buffer->messaging ())
+	(void) buffer->message (font, "skipped lookup %u feature '%c%c%c%c' because no glyph matches", lookup_index, HB_UNTAG (lookup.feature_tag));
 
-      (void) buffer->message (font, "end lookup %d feature '%c%c%c%c'", lookup_index, HB_UNTAG (lookup.feature_tag));
+      if (buffer->messaging ())
+	(void) buffer->message (font, "end lookup %u feature '%c%c%c%c'", lookup_index, HB_UNTAG (lookup.feature_tag));
     }
 
     if (stage->pause_func)
@@ -1952,17 +2006,21 @@ inline void hb_ot_map_t::apply (const Proxy &proxy,
 void hb_ot_map_t::substitute (const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer) const
 {
   GSUBProxy proxy (font->face);
-  if (!buffer->message (font, "start table GSUB")) return;
+  if (buffer->messaging () &&
+      !buffer->message (font, "start table GSUB")) return;
   apply (proxy, plan, font, buffer);
-  (void) buffer->message (font, "end table GSUB");
+  if (buffer->messaging ())
+    (void) buffer->message (font, "end table GSUB");
 }
 
 void hb_ot_map_t::position (const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer) const
 {
   GPOSProxy proxy (font->face);
-  if (!buffer->message (font, "start table GPOS")) return;
+  if (buffer->messaging () &&
+      !buffer->message (font, "start table GPOS")) return;
   apply (proxy, plan, font, buffer);
-  (void) buffer->message (font, "end table GPOS");
+  if (buffer->messaging ())
+    (void) buffer->message (font, "end table GPOS");
 }
 
 void

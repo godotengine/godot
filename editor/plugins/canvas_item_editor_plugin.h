@@ -211,15 +211,15 @@ private:
 
 	bool selected_from_canvas = false;
 
+	// Defaults are defined in clear().
 	Point2 grid_offset;
-	// A power-of-two value works better as a default grid size.
-	Point2 grid_step = Point2(8, 8);
-	int primary_grid_steps = 8;
+	Point2 grid_step;
+	int primary_grid_steps = 0;
 	int grid_step_multiplier = 0;
 
-	real_t snap_rotation_step = Math::deg_to_rad(15.0);
+	real_t snap_rotation_step = 0.0;
 	real_t snap_rotation_offset = 0.0;
-	real_t snap_scale_step = 0.1f;
+	real_t snap_scale_step = 0.0;
 	bool smart_snap_active = false;
 	bool grid_snap_active = false;
 
@@ -526,6 +526,7 @@ public:
 	static CanvasItemEditor *get_singleton() { return singleton; }
 	Dictionary get_state() const;
 	void set_state(const Dictionary &p_state);
+	void clear();
 
 	void add_control_to_menu_panel(Control *p_control);
 	void remove_control_from_menu_panel(Control *p_control);
@@ -575,6 +576,7 @@ public:
 	virtual void make_visible(bool p_visible) override;
 	virtual Dictionary get_state() const override;
 	virtual void set_state(const Dictionary &p_state) override;
+	virtual void clear() override;
 
 	CanvasItemEditor *get_canvas_item_editor() { return canvas_item_editor; }
 

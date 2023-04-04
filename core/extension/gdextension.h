@@ -67,6 +67,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	HashMap<String, String> class_icon_paths;
+
 	static String get_extension_list_config_file();
 	static String find_extension_library(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature, PackedStringArray *r_tags = nullptr);
 

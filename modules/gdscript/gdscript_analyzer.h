@@ -131,7 +131,7 @@ class GDScriptAnalyzer {
 	Ref<GDScriptParserRef> get_parser_for(const String &p_path);
 	void reduce_identifier_from_base_set_class(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType p_identifier_datatype);
 #ifdef DEBUG_ENABLED
-	bool is_shadowing(GDScriptParser::IdentifierNode *p_local, const String &p_context);
+	void is_shadowing(GDScriptParser::IdentifierNode *p_local, const String &p_context);
 #endif
 
 public:

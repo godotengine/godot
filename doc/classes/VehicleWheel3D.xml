@@ -61,7 +61,7 @@
 		<member name="suspension_stiffness" type="float" setter="set_suspension_stiffness" getter="get_suspension_stiffness" default="5.88">
 			This value defines the stiffness of the suspension. Use a value lower than 50 for an off-road car, a value between 50 and 100 for a race car and try something around 200 for something like a Formula 1 car.
 		</member>
-		<member name="suspension_travel" type="float" setter="set_suspension_travel" getter="get_suspension_travel" default="5.0">
+		<member name="suspension_travel" type="float" setter="set_suspension_travel" getter="get_suspension_travel" default="0.2">
 			This is the distance the suspension can travel. As Godot units are equivalent to meters, keep this setting relatively low. Try a value between 0.1 and 0.3 depending on the type of car.
 		</member>
 		<member name="use_as_steering" type="bool" setter="set_use_as_steering" getter="is_used_as_steering" default="false">

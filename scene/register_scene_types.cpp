@@ -385,6 +385,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(FlowContainer);
 	GDREGISTER_CLASS(HFlowContainer);
 	GDREGISTER_CLASS(VFlowContainer);
+	GDREGISTER_CLASS(MarginContainer);
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -419,7 +420,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AcceptDialog);
 	GDREGISTER_CLASS(ConfirmationDialog);
 
-	GDREGISTER_CLASS(MarginContainer);
 	GDREGISTER_CLASS(SubViewportContainer);
 	GDREGISTER_CLASS(SplitContainer);
 	GDREGISTER_CLASS(HSplitContainer);

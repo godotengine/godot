@@ -1782,7 +1782,64 @@ void TextureStorage::_create_render_target_backbuffer(RenderTarget *rt) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
 }
+void GLES3::TextureStorage::copy_scene_to_backbuffer(RenderTarget *rt, const bool uses_screen_texture, const bool uses_depth_texture) {
+	if (rt->backbuffer != 0 && rt->backbuffer_depth != 0) {
+		return;
+	}
 
+	Config *config = Config::get_singleton();
+	bool use_multiview = rt->view_count > 1 && config->multiview_supported;
+	GLenum texture_target = use_multiview ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D;
+	if (rt->backbuffer_fbo == 0) {
+		glGenFramebuffers(1, &rt->backbuffer_fbo);
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, rt->backbuffer_fbo);
+	if (rt->backbuffer == 0 && uses_screen_texture) {
+		glGenTextures(1, &rt->backbuffer);
+		glBindTexture(texture_target, rt->backbuffer);
+		if (use_multiview) {
+			glTexImage3D(texture_target, 0, rt->color_internal_format, rt->size.x, rt->size.y, rt->view_count, 0, rt->color_format, rt->color_type, nullptr);
+		} else {
+			glTexImage2D(texture_target, 0, rt->color_internal_format, rt->size.x, rt->size.y, 0, rt->color_format, rt->color_type, nullptr);
+		}
+
+		glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+#ifndef IOS_ENABLED
+		if (use_multiview) {
+			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rt->backbuffer, 0, 0, rt->view_count);
+		} else {
+#else
+		{
+#endif
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->backbuffer, 0);
+		}
+	}
+	if (rt->backbuffer_depth == 0 && uses_depth_texture) {
+		glGenTextures(1, &rt->backbuffer_depth);
+		glBindTexture(texture_target, rt->backbuffer_depth);
+		if (use_multiview) {
+			glTexImage3D(texture_target, 0, GL_DEPTH_COMPONENT24, rt->size.x, rt->size.y, rt->view_count, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+		} else {
+			glTexImage2D(texture_target, 0, GL_DEPTH_COMPONENT24, rt->size.x, rt->size.y, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+		}
+		glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+#ifndef IOS_ENABLED
+		if (use_multiview) {
+			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, rt->backbuffer_depth, 0, 0, rt->view_count);
+		} else {
+#else
+		{
+#endif
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->backbuffer_depth, 0);
+		}
+	}
+}
 void TextureStorage::_clear_render_target(RenderTarget *rt) {
 	// there is nothing to clear when DIRECT_TO_SCREEN is used
 	if (rt->direct_to_screen) {
@@ -1847,6 +1904,10 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 		glDeleteTextures(1, &rt->backbuffer);
 		rt->backbuffer = 0;
 		rt->backbuffer_fbo = 0;
+	}
+	if (rt->backbuffer_depth != 0) {
+		glDeleteTextures(1, &rt->backbuffer_depth);
+		rt->backbuffer_depth = 0;
 	}
 	_render_target_clear_sdf(rt);
 }

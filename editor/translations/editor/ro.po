@@ -22,13 +22,15 @@
 # Andres Ene <grassiscomplex420@gmail.com>, 2022.
 # Claudiu Ceia <claudiu.ceia@gmail.com>, 2022.
 # Random Videos <istudordanadenis@gmail.com>, 2023.
+# Vlad Cuciureanu <vlad.cuciureanu@pm.me>, 2023.
+# "Hash Volt[ing]" <hashvolting@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-01-13 03:04+0000\n"
-"Last-Translator: Random Videos <istudordanadenis@gmail.com>\n"
+"PO-Revision-Date: 2023-03-29 00:11+0000\n"
+"Last-Translator: \"Hash Volt[ing]\" <hashvolting@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -37,7 +39,25 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 4.15.1-dev\n"
+"X-Generator: Weblate 4.17-dev\n"
+
+msgid "Unset"
+msgstr "Nesetat"
+
+msgid "Left Mouse Button"
+msgstr "Clic stânga"
+
+msgid "Right Mouse Button"
+msgstr "Clic dreapta"
+
+msgid "Middle Mouse Button"
+msgstr "Clic la mijloc"
+
+msgid "Button"
+msgstr "Buton"
+
+msgid "Double Click"
+msgstr "Dublu clic"
 
 msgid "Select"
 msgstr "Selectează"
@@ -1325,6 +1345,9 @@ msgstr ""
 
 msgid "(Re)Importing Assets"
 msgstr "(Re)Importând Asset-uri"
+
+msgid "Experimental"
+msgstr "Experimental"
 
 msgid "Top"
 msgstr "Sus"
@@ -3432,6 +3455,9 @@ msgstr "Eroare la importare"
 
 msgid "Could not load file at:"
 msgstr "Nu s-a putut încărca fișierul la:"
+
+msgid "File"
+msgstr "Fișier"
 
 msgid "Open..."
 msgstr "Deschide..."

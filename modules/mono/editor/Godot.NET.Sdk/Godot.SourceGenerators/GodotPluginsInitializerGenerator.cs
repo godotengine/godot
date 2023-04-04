@@ -13,7 +13,7 @@ namespace Godot.SourceGenerators
 
         public void Execute(GeneratorExecutionContext context)
         {
-            if (context.IsGodotToolsProject())
+            if (context.IsGodotToolsProject() || context.IsGodotSourceGeneratorDisabled("GodotPluginsInitializer"))
                 return;
 
             string source =

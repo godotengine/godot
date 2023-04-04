@@ -698,6 +698,7 @@ void EditorSettingsDialog::_bind_methods() {
 
 EditorSettingsDialog::EditorSettingsDialog() {
 	set_title(TTR("Editor Settings"));
+	set_clamp_to_embedder(true);
 
 	tabs = memnew(TabContainer);
 	tabs->set_theme_type_variation("TabContainerOdd");

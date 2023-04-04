@@ -455,6 +455,7 @@ public:
 	Vector<uint8_t> to_utf8_buffer() const;
 	Vector<uint8_t> to_utf16_buffer() const;
 	Vector<uint8_t> to_utf32_buffer() const;
+	Vector<uint8_t> to_wchar_buffer() const;
 
 	String(const char *p_str);
 	String(const wchar_t *p_str);

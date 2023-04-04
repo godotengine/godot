@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="InputEventPanGesture" inherits="InputEventGesture" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		[InputEvent] that represents a panning touch gesture.
 	</brief_description>
 	<description>
+		Pan gesture is performed when the user swipes the touch screen with two fingers. It's typically used for panning/scrolling.
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
 		<member name="delta" type="Vector2" setter="set_delta" getter="get_delta" default="Vector2(0, 0)">
+			Panning amount since last pan event.
 		</member>
 	</members>
 </class>

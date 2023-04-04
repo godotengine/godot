@@ -252,10 +252,6 @@ Error PCKPacker::flush(bool p_verbose) {
 		}
 	}
 
-	if (p_verbose) {
-		printf("\n");
-	}
-
 	file.unref();
 	memdelete_arr(buf);
 

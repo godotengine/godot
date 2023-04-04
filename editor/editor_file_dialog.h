@@ -143,7 +143,7 @@ private:
 	DisplayMode display_mode;
 
 	bool disable_overwrite_warning = false;
-	bool invalidated = true;
+	bool is_invalidating = false;
 
 	struct ThemeCache {
 		Ref<Texture2D> parent_folder;
@@ -215,6 +215,8 @@ private:
 	void _go_up();
 	void _go_back();
 	void _go_forward();
+
+	void _invalidate();
 
 	virtual void _post_popup() override;
 

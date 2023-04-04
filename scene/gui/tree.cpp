@@ -1340,10 +1340,7 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 			size.width += parent_tree->theme_cache.checked->get_width() + parent_tree->theme_cache.h_separation;
 		}
 		if (cell.icon.is_valid()) {
-			Size2i icon_size = cell.get_icon_size();
-			if (cell.icon_max_w > 0 && icon_size.width > cell.icon_max_w) {
-				icon_size.width = cell.icon_max_w;
-			}
+			Size2i icon_size = parent_tree->_get_cell_icon_size(cell);
 			size.width += icon_size.width + parent_tree->theme_cache.h_separation;
 			size.height = MAX(size.height, icon_size.height);
 		}
@@ -1628,6 +1625,7 @@ void Tree::_update_theme_item_cache() {
 	theme_cache.v_separation = get_theme_constant(SNAME("v_separation"));
 	theme_cache.item_margin = get_theme_constant(SNAME("item_margin"));
 	theme_cache.button_margin = get_theme_constant(SNAME("button_margin"));
+	theme_cache.icon_max_width = get_theme_constant(SNAME("icon_max_width"));
 
 	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
 	theme_cache.font_outline_size = get_theme_constant(SNAME("outline_size"));
@@ -1652,6 +1650,25 @@ void Tree::_update_theme_item_cache() {
 	theme_cache.title_button_color = get_theme_color(SNAME("title_button_color"));
 
 	theme_cache.base_scale = get_theme_default_base_scale();
+}
+
+Size2 Tree::_get_cell_icon_size(const TreeItem::Cell &p_cell) const {
+	Size2i icon_size = p_cell.get_icon_size();
+
+	int max_width = 0;
+	if (theme_cache.icon_max_width > 0) {
+		max_width = theme_cache.icon_max_width;
+	}
+	if (p_cell.icon_max_w > 0 && (max_width == 0 || p_cell.icon_max_w < max_width)) {
+		max_width = p_cell.icon_max_w;
+	}
+
+	if (max_width > 0 && icon_size.width > max_width) {
+		icon_size.height = icon_size.height * max_width / icon_size.width;
+		icon_size.width = max_width;
+	}
+
+	return icon_size;
 }
 
 int Tree::compute_item_height(TreeItem *p_item) const {
@@ -1688,10 +1705,7 @@ int Tree::compute_item_height(TreeItem *p_item) const {
 			case TreeItem::CELL_MODE_ICON: {
 				Ref<Texture2D> icon = p_item->cells[i].icon;
 				if (!icon.is_null()) {
-					Size2i s = p_item->cells[i].get_icon_size();
-					if (p_item->cells[i].icon_max_w > 0 && s.width > p_item->cells[i].icon_max_w) {
-						s.height = s.height * p_item->cells[i].icon_max_w / s.width;
-					}
+					Size2i s = _get_cell_icon_size(p_item->cells[i]);
 					if (s.height > height) {
 						height = s.height;
 					}
@@ -1745,10 +1759,7 @@ void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Co
 
 	int w = 0;
 	if (!p_cell.icon.is_null()) {
-		Size2i bmsize = p_cell.get_icon_size();
-		if (p_cell.icon_max_w > 0 && bmsize.width > p_cell.icon_max_w) {
-			bmsize.width = p_cell.icon_max_w;
-		}
+		Size2i bmsize = _get_cell_icon_size(p_cell);
 		w += bmsize.width + theme_cache.h_separation;
 		if (rect.size.width > 0 && (w + ts.width) > rect.size.width) {
 			ts.width = rect.size.width - w;
@@ -1788,12 +1799,7 @@ void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Co
 	}
 
 	if (!p_cell.icon.is_null()) {
-		Size2i bmsize = p_cell.get_icon_size();
-
-		if (p_cell.icon_max_w > 0 && bmsize.width > p_cell.icon_max_w) {
-			bmsize.height = bmsize.height * p_cell.icon_max_w / bmsize.width;
-			bmsize.width = p_cell.icon_max_w;
-		}
+		Size2i bmsize = _get_cell_icon_size(p_cell);
 
 		p_cell.draw_icon(ci, rect.position + Size2i(0, Math::floor((real_t)(rect.size.y - bmsize.y) / 2)), bmsize, p_icon_color);
 		rect.position.x += bmsize.x + theme_cache.h_separation;
@@ -2206,12 +2212,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					if (p_item->cells[i].icon.is_null()) {
 						break;
 					}
-					Size2i icon_size = p_item->cells[i].get_icon_size();
-					if (p_item->cells[i].icon_max_w > 0 && icon_size.width > p_item->cells[i].icon_max_w) {
-						icon_size.height = icon_size.height * p_item->cells[i].icon_max_w / icon_size.width;
-						icon_size.width = p_item->cells[i].icon_max_w;
-					}
-
+					Size2i icon_size = _get_cell_icon_size(p_item->cells[i]);
 					Point2i icon_ofs = (item_rect.size - icon_size) / 2;
 					icon_ofs += item_rect.position;
 
@@ -3795,8 +3796,9 @@ bool Tree::edit_selected() {
 		popup_rect.size = rect.size;
 
 		// Account for icon.
-		popup_rect.position.x += c.get_icon_size().x;
-		popup_rect.size.x -= c.get_icon_size().x;
+		Size2 icon_size = _get_cell_icon_size(c);
+		popup_rect.position.x += icon_size.x;
+		popup_rect.size.x -= icon_size.x;
 
 		text_editor->clear();
 		text_editor->set_text(c.mode == TreeItem::CELL_MODE_STRING ? c.text : String::num(c.val, Math::range_step_decimals(c.step)));
@@ -4045,7 +4047,24 @@ void Tree::_notification(int p_what) {
 					int clip_w = tbrect.size.width - sb->get_minimum_size().width;
 					columns.write[i].text_buf->set_width(clip_w);
 
-					Vector2 text_pos = tbrect.position + Point2i(sb->get_offset().x + (tbrect.size.width - columns[i].text_buf->get_size().x) / 2, (tbrect.size.height - columns[i].text_buf->get_size().y) / 2);
+					Vector2 text_pos = Point2i(tbrect.position.x, tbrect.position.y + (tbrect.size.height - columns[i].text_buf->get_size().y) / 2);
+					switch (columns[i].title_alignment) {
+						case HorizontalAlignment::HORIZONTAL_ALIGNMENT_LEFT: {
+							text_pos.x += cache.rtl ? tbrect.size.width - (sb->get_offset().x + columns[i].text_buf->get_size().x) : sb->get_offset().x;
+							break;
+						}
+
+						case HorizontalAlignment::HORIZONTAL_ALIGNMENT_RIGHT: {
+							text_pos.x += cache.rtl ? sb->get_offset().x : tbrect.size.width - (sb->get_offset().x + columns[i].text_buf->get_size().x);
+							break;
+						}
+
+						default: {
+							text_pos.x += sb->get_offset().x + (tbrect.size.width - columns[i].text_buf->get_size().x) / 2;
+							break;
+						}
+					}
+
 					if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
 						columns[i].text_buf->draw_outline(ci, text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 					}
@@ -4219,14 +4238,20 @@ Tree::SelectMode Tree::get_select_mode() const {
 }
 
 void Tree::deselect_all() {
-	TreeItem *item = get_next_selected(get_root());
-	while (item) {
-		for (int i = 0; i < columns.size(); i++) {
-			item->deselect(i);
+	if (root) {
+		TreeItem *item = root;
+		while (item) {
+			if (select_mode == SELECT_ROW) {
+				item->deselect(0);
+			} else {
+				for (int i = 0; i < columns.size(); i++) {
+					item->deselect(i);
+				}
+			}
+			TreeItem *prev_item = item;
+			item = get_next_selected(root);
+			ERR_FAIL_COND(item == prev_item);
 		}
-		TreeItem *prev_item = item;
-		item = get_next_selected(get_root());
-		ERR_FAIL_COND(item == prev_item);
 	}
 
 	selected_item = nullptr;
@@ -4679,6 +4704,27 @@ void Tree::set_column_title(int p_column, const String &p_title) {
 String Tree::get_column_title(int p_column) const {
 	ERR_FAIL_INDEX_V(p_column, columns.size(), "");
 	return columns[p_column].title;
+}
+
+void Tree::set_column_title_alignment(int p_column, HorizontalAlignment p_alignment) {
+	ERR_FAIL_INDEX(p_column, columns.size());
+
+	if (p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
+		WARN_PRINT("HORIZONTAL_ALIGNMENT_FILL is not supported for column titles.");
+	}
+
+	if (columns[p_column].title_alignment == p_alignment) {
+		return;
+	}
+
+	columns.write[p_column].title_alignment = p_alignment;
+	update_column(p_column);
+	queue_redraw();
+}
+
+HorizontalAlignment Tree::get_column_title_alignment(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, columns.size(), HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
+	return columns[p_column].title_alignment;
 }
 
 void Tree::set_column_title_direction(int p_column, Control::TextDirection p_text_direction) {
@@ -5210,6 +5256,9 @@ void Tree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_column_title", "column", "title"), &Tree::set_column_title);
 	ClassDB::bind_method(D_METHOD("get_column_title", "column"), &Tree::get_column_title);
+
+	ClassDB::bind_method(D_METHOD("set_column_title_alignment", "column", "title_alignment"), &Tree::set_column_title_alignment);
+	ClassDB::bind_method(D_METHOD("get_column_title_alignment", "column"), &Tree::get_column_title_alignment);
 
 	ClassDB::bind_method(D_METHOD("set_column_title_direction", "column", "direction"), &Tree::set_column_title_direction);
 	ClassDB::bind_method(D_METHOD("get_column_title_direction", "column"), &Tree::get_column_title_direction);

@@ -57,6 +57,13 @@
 				Returns the an array of supported environment blend modes, see [enum XRInterface.EnvironmentBlendMode].
 			</description>
 		</method>
+		<method name="get_system_info">
+			<return type="Dictionary" />
+			<description>
+				Returns a [Dictionary] with extra system info. Interfaces are expected to return [code]XRRuntimeName[/code] and [code]XRRuntimeVersion[/code] providing info about the used XR runtime. Additional entries may be provided specific to an interface.
+				[b]Note:[/b]This information may only be available after [method initialize] was successfully called.
+			</description>
+		</method>
 		<method name="get_tracking_status" qualifiers="const">
 			<return type="int" enum="XRInterface.TrackingStatus" />
 			<description>

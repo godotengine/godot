@@ -128,7 +128,10 @@ void OptionButton::_notification(int p_what) {
 			theme_cache.arrow_icon->draw(ci, ofs, clr);
 		} break;
 
-		case NOTIFICATION_TRANSLATION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			popup->set_auto_translate(is_auto_translating());
+			[[fallthrough]];
+		}
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			popup->set_layout_direction((Window::LayoutDirection)get_layout_direction());
 			[[fallthrough]];
@@ -383,6 +386,14 @@ bool OptionButton::is_fit_to_longest_item() const {
 	return fit_to_longest_item;
 }
 
+void OptionButton::set_allow_reselect(bool p_allow) {
+	allow_reselect = p_allow;
+}
+
+bool OptionButton::get_allow_reselect() const {
+	return allow_reselect;
+}
+
 void OptionButton::add_separator(const String &p_text) {
 	popup->add_separator(p_text);
 }
@@ -395,7 +406,7 @@ void OptionButton::clear() {
 }
 
 void OptionButton::_select(int p_which, bool p_emit) {
-	if (p_which == current) {
+	if (p_which == current && !allow_reselect) {
 		return;
 	}
 
@@ -562,11 +573,14 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_selectable_item", "from_last"), &OptionButton::get_selectable_item, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_fit_to_longest_item", "fit"), &OptionButton::set_fit_to_longest_item);
 	ClassDB::bind_method(D_METHOD("is_fit_to_longest_item"), &OptionButton::is_fit_to_longest_item);
+	ClassDB::bind_method(D_METHOD("set_allow_reselect", "allow"), &OptionButton::set_allow_reselect);
+	ClassDB::bind_method(D_METHOD("get_allow_reselect"), &OptionButton::get_allow_reselect);
 
 	// "selected" property must come after "item_count", otherwise GH-10213 occurs.
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_to_longest_item"), "set_fit_to_longest_item", "is_fit_to_longest_item");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));
 	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "index")));
 }

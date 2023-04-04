@@ -131,6 +131,12 @@
 				Returns [code]true[/code] if the [Tween] still has [Tweener]s that haven't finished.
 			</description>
 		</method>
+		<method name="get_loops_left" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of remaining loops for this [Tween] (see [method set_loops]). A return value of [code]-1[/code] indicates an infinitely looping [Tween], and a return value of [code]0[/code] indicates that the [Tween] has already finished.
+			</description>
+		</method>
 		<method name="get_total_elapsed_time" qualifiers="const">
 			<return type="float" />
 			<description>

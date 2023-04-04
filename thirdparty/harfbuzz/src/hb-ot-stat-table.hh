@@ -112,7 +112,7 @@ struct AxisValueFormat1
                const hb_array_t<const StatAxisRecord> axis_records) const
   {
     TRACE_SUBSET (this);
-    const hb_hashmap_t<hb_tag_t, float>*  user_axes_location = c->plan->user_axes_location;
+    const hb_hashmap_t<hb_tag_t, float>* user_axes_location = &c->plan->user_axes_location;
 
     if (keep_axis_value (axis_records, user_axes_location))
       return_trace (c->serializer->embed (this));
@@ -171,7 +171,7 @@ struct AxisValueFormat2
                const hb_array_t<const StatAxisRecord> axis_records) const
   {
     TRACE_SUBSET (this);
-    const hb_hashmap_t<hb_tag_t, float>*  user_axes_location = c->plan->user_axes_location;
+    const hb_hashmap_t<hb_tag_t, float>* user_axes_location = &c->plan->user_axes_location;
 
     if (keep_axis_value (axis_records, user_axes_location))
       return_trace (c->serializer->embed (this));
@@ -234,7 +234,7 @@ struct AxisValueFormat3
                const hb_array_t<const StatAxisRecord> axis_records) const
   {
     TRACE_SUBSET (this);
-    const hb_hashmap_t<hb_tag_t, float>* user_axes_location = c->plan->user_axes_location;
+    const hb_hashmap_t<hb_tag_t, float>* user_axes_location = &c->plan->user_axes_location;
 
     if (keep_axis_value (axis_records, user_axes_location))
       return_trace (c->serializer->embed (this));
@@ -313,7 +313,7 @@ struct AxisValueFormat4
                const hb_array_t<const StatAxisRecord> axis_records) const
   {
     TRACE_SUBSET (this);
-    const hb_hashmap_t<hb_tag_t, float> *user_axes_location = c->plan->user_axes_location;
+    const hb_hashmap_t<hb_tag_t, float> *user_axes_location = &c->plan->user_axes_location;
     if (!keep_axis_value (axis_records, user_axes_location))
       return_trace (false);
 
@@ -390,8 +390,8 @@ struct AxisValue
   template <typename context_t, typename ...Ts>
   typename context_t::return_t dispatch (context_t *c, Ts&&... ds) const
   {
+    if (unlikely (!c->may_dispatch (this, &u.format))) return c->no_dispatch_return_value ();
     TRACE_DISPATCH (this, u.format);
-    if (unlikely (!c->may_dispatch (this, &u.format))) return_trace (c->no_dispatch_return_value ());
     switch (u.format) {
     case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
     case 2: return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));

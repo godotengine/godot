@@ -908,6 +908,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	HBoxContainer *profiles_hbc = memnew(HBoxContainer);
 	profile_list = memnew(OptionButton);
 	profile_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	profile_list->set_auto_translate(false);
 	profiles_hbc->add_child(profile_list);
 	profile_list->connect("item_selected", callable_mp(this, &EditorFeatureProfileManager::_profile_selected));
 

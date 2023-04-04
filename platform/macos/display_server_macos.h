@@ -188,7 +188,7 @@ private:
 		Variant tag;
 		Callable callback;
 	};
-	Vector<MenuCall> deferred_menu_calls;
+	List<MenuCall> deferred_menu_calls;
 
 	const NSMenu *_get_menu_root(const String &p_menu_root) const;
 	NSMenu *_get_menu_root(const String &p_menu_root);

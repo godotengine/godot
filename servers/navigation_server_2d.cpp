@@ -257,11 +257,11 @@ bool NavigationServer2D::get_debug_navigation_enable_agent_paths() const {
 	return NavigationServer3D::get_singleton()->get_debug_navigation_enable_agent_paths();
 }
 
-void NavigationServer2D::set_debug_navigation_agent_path_point_size(float p_point_size) {
+void NavigationServer2D::set_debug_navigation_agent_path_point_size(real_t p_point_size) {
 	NavigationServer3D::get_singleton()->set_debug_navigation_agent_path_point_size(p_point_size);
 }
 
-float NavigationServer2D::get_debug_navigation_agent_path_point_size() const {
+real_t NavigationServer2D::get_debug_navigation_agent_path_point_size() const {
 	return NavigationServer3D::get_singleton()->get_debug_navigation_agent_path_point_size();
 }
 #endif // DEBUG_ENABLED

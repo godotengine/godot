@@ -328,6 +328,12 @@
 				Converts UTF-8 encoded array to [String]. Slower than [method get_string_from_ascii] but supports UTF-8 encoded data. Use this function if you are unsure about the source of the data. For user input this function should always be preferred. Returns empty string if source array is not valid UTF-8 string.
 			</description>
 		</method>
+		<method name="get_string_from_wchar" qualifiers="const">
+			<return type="String" />
+			<description>
+				Converts wide character ([code]wchar_t[/code], UTF-16 on Windows, UTF-32 on other platforms) encoded array to [String]. Returns empty string if source array is not valid wide string.
+			</description>
+		</method>
 		<method name="has" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="value" type="int" />

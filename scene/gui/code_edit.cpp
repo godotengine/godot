@@ -261,7 +261,6 @@ void CodeEdit::_notification(int p_what) {
 
 void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	Ref<InputEventMouseButton> mb = p_gui_input;
-
 	if (mb.is_valid()) {
 		/* Ignore mouse clicks in IME input mode. */
 		if (has_ime_text()) {
@@ -270,14 +269,24 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 		if (is_code_completion_scroll_pressed && mb->get_button_index() == MouseButton::LEFT) {
 			is_code_completion_scroll_pressed = false;
+			accept_event();
+			queue_redraw();
+			return;
+		}
+
+		if (is_code_completion_drag_started && !mb->is_pressed()) {
+			is_code_completion_drag_started = false;
+			accept_event();
 			queue_redraw();
 			return;
 		}
 
 		if (code_completion_active && code_completion_rect.has_point(mb->get_position())) {
 			if (!mb->is_pressed()) {
+				accept_event();
 				return;
 			}
+			is_code_completion_drag_started = true;
 
 			switch (mb->get_button_index()) {
 				case MouseButton::WHEEL_UP: {
@@ -309,19 +318,23 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					break;
 			}
 
+			accept_event();
 			return;
 		} else if (code_completion_active && code_completion_scroll_rect.has_point(mb->get_position())) {
 			if (mb->get_button_index() != MouseButton::LEFT) {
+				accept_event();
 				return;
 			}
 
 			if (mb->is_pressed()) {
+				is_code_completion_drag_started = true;
 				is_code_completion_scroll_pressed = true;
 
 				_update_scroll_selected_line(mb->get_position().y);
 				queue_redraw();
 			}
 
+			accept_event();
 			return;
 		}
 
@@ -394,12 +407,19 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		bool scroll_hovered = code_completion_scroll_rect.has_point(mpos);
 		if (is_code_completion_scroll_hovered != scroll_hovered) {
 			is_code_completion_scroll_hovered = scroll_hovered;
+			accept_event();
 			queue_redraw();
 		}
 
 		if (is_code_completion_scroll_pressed) {
 			_update_scroll_selected_line(mpos.y);
+			accept_event();
 			queue_redraw();
+			return;
+		}
+
+		if (code_completion_active && code_completion_rect.has_point(mm->get_position())) {
+			accept_event();
 			return;
 		}
 	}
@@ -412,7 +432,11 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 	bool update_code_completion = false;
 	if (!k.is_valid()) {
-		TextEdit::gui_input(p_gui_input);
+		// MouseMotion events should not be handled by TextEdit logic if we're
+		// currently clicking and dragging from the code completion panel.
+		if (!mm.is_valid() || !is_code_completion_drag_started) {
+			TextEdit::gui_input(p_gui_input);
+		}
 		return;
 	}
 
@@ -436,12 +460,12 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 
 	/* If a modifier has been pressed, and nothing else, return. */
-	if (!k->is_pressed() || k->get_keycode() == Key::CTRL || k->get_keycode() == Key::ALT || k->get_keycode() == Key::SHIFT || k->get_keycode() == Key::META) {
+	if (!k->is_pressed() || k->get_keycode() == Key::CTRL || k->get_keycode() == Key::ALT || k->get_keycode() == Key::SHIFT || k->get_keycode() == Key::META || k->get_keycode() == Key::CAPSLOCK) {
 		return;
 	}
 
-	/* Allow unicode handling if:              */
-	/* No Modifiers are pressed (except shift) */
+	// Allow unicode handling if:
+	// No modifiers are pressed (except Shift and CapsLock)
 	bool allow_unicode_handling = !(k->is_command_or_control_pressed() || k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
 
 	/* AUTO-COMPLETE */
@@ -2084,6 +2108,7 @@ void CodeEdit::cancel_code_completion() {
 	}
 	code_completion_forced = false;
 	code_completion_active = false;
+	is_code_completion_drag_started = false;
 	queue_redraw();
 }
 

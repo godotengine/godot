@@ -42,7 +42,8 @@
 void GotoLineDialog::popup_find_line(CodeEdit *p_edit) {
 	text_editor = p_edit;
 
-	line->set_text(itos(text_editor->get_caret_line()));
+	// Add 1 because text_editor->get_caret_line() starts from 0, but the editor user interface starts from 1.
+	line->set_text(itos(text_editor->get_caret_line() + 1));
 	line->select_all();
 	popup_centered(Size2(180, 80) * EDSCALE);
 	line->grab_focus();
@@ -53,12 +54,14 @@ int GotoLineDialog::get_line() const {
 }
 
 void GotoLineDialog::ok_pressed() {
-	if (get_line() < 1 || get_line() > text_editor->get_line_count()) {
+	// Subtract 1 because the editor user interface starts from 1, but text_editor->set_caret_line(n) starts from 0.
+	const int line_number = get_line() - 1;
+	if (line_number < 0 || line_number >= text_editor->get_line_count()) {
 		return;
 	}
 	text_editor->remove_secondary_carets();
-	text_editor->unfold_line(get_line() - 1);
-	text_editor->set_caret_line(get_line() - 1);
+	text_editor->unfold_line(line_number);
+	text_editor->set_caret_line(line_number);
 	hide();
 }
 
@@ -1092,13 +1095,13 @@ void CodeTextEditor::remove_find_replace_bar() {
 }
 
 void CodeTextEditor::trim_trailing_whitespace() {
-	bool trimed_whitespace = false;
+	bool trimmed_whitespace = false;
 	for (int i = 0; i < text_editor->get_line_count(); i++) {
 		String line = text_editor->get_line(i);
 		if (line.ends_with(" ") || line.ends_with("\t")) {
-			if (!trimed_whitespace) {
+			if (!trimmed_whitespace) {
 				text_editor->begin_complex_operation();
-				trimed_whitespace = true;
+				trimmed_whitespace = true;
 			}
 
 			int end = 0;
@@ -1112,7 +1115,7 @@ void CodeTextEditor::trim_trailing_whitespace() {
 		}
 	}
 
-	if (trimed_whitespace) {
+	if (trimmed_whitespace) {
 		text_editor->merge_overlapping_carets();
 		text_editor->end_complex_operation();
 		text_editor->queue_redraw();
@@ -1584,11 +1587,17 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 	Vector<int> caret_edit_order = text_editor->get_caret_index_edit_order();
 	caret_edit_order.reverse();
 	int last_line = -1;
+	int folded_to = 0;
 	for (const int &c1 : caret_edit_order) {
 		int from = _get_affected_lines_from(c1);
-		from += from == last_line ? 1 : 0;
+		from += from == last_line ? 1 + folded_to : 0;
 		int to = _get_affected_lines_to(c1);
 		last_line = to;
+		// If last line is folded, extends to the end of the folded section
+		if (text_editor->is_line_folded(to)) {
+			folded_to = text_editor->get_next_visible_line_offset_from(to + 1, 1) - 1;
+			to += folded_to;
+		}
 		// Check first if there's any uncommented lines in selection.
 		bool is_commented = true;
 		for (int line = from; line <= to; line++) {

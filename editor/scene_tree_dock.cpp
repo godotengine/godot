@@ -1278,13 +1278,6 @@ void SceneTreeDock::_notification(int p_what) {
 			spatial_editor_plugin->get_spatial_editor()->connect("item_lock_status_changed", callable_mp(scene_tree, &SceneTreeEditor::_update_tree).bind(false));
 			spatial_editor_plugin->get_spatial_editor()->connect("item_group_status_changed", callable_mp(scene_tree, &SceneTreeEditor::_update_tree).bind(false));
 
-			button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-			button_instance->set_icon(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
-			button_create_script->set_icon(get_theme_icon(SNAME("ScriptCreate"), SNAME("EditorIcons")));
-			button_detach_script->set_icon(get_theme_icon(SNAME("ScriptRemove"), SNAME("EditorIcons")));
-			button_tree_menu->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
-
-			filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			filter->set_clear_button_enabled(true);
 
 			// create_root_dialog
@@ -1366,19 +1359,35 @@ void SceneTreeDock::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			scene_tree->set_auto_expand_selected(EDITOR_GET("docks/scene_tree/auto_expand_to_selected"), false);
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
 			button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			button_instance->set_icon(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
 			button_create_script->set_icon(get_theme_icon(SNAME("ScriptCreate"), SNAME("EditorIcons")));
 			button_detach_script->set_icon(get_theme_icon(SNAME("ScriptRemove"), SNAME("EditorIcons")));
 			button_tree_menu->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
-			button_2d->set_icon(get_theme_icon(SNAME("Node2D"), SNAME("EditorIcons")));
-			button_3d->set_icon(get_theme_icon(SNAME("Node3D"), SNAME("EditorIcons")));
-			button_ui->set_icon(get_theme_icon(SNAME("Control"), SNAME("EditorIcons")));
-			button_custom->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-			button_clipboard->set_icon(get_theme_icon(SNAME("ActionPaste"), SNAME("EditorIcons")));
 
 			filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-			filter->set_clear_button_enabled(true);
+
+			// These buttons are created on READY, because reasons...
+			if (button_2d) {
+				button_2d->set_icon(get_theme_icon(SNAME("Node2D"), SNAME("EditorIcons")));
+			}
+			if (button_3d) {
+				button_3d->set_icon(get_theme_icon(SNAME("Node3D"), SNAME("EditorIcons")));
+			}
+			if (button_ui) {
+				button_ui->set_icon(get_theme_icon(SNAME("Control"), SNAME("EditorIcons")));
+			}
+			if (button_custom) {
+				button_custom->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			}
+			if (button_clipboard) {
+				button_clipboard->set_icon(get_theme_icon(SNAME("ActionPaste"), SNAME("EditorIcons")));
+			}
+
+			menu_subresources->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), SNAME("Editor")));
 		} break;
 
 		case NOTIFICATION_PROCESS: {

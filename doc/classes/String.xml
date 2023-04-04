@@ -946,6 +946,12 @@
 				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-8]UTF-8[/url] encoded [PackedByteArray]. This method is slightly slower than [method to_ascii_buffer], but supports all UTF-8 characters. For most cases, prefer using this method.
 			</description>
 		</method>
+		<method name="to_wchar_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Converts the string to a [url=https://en.wikipedia.org/wiki/Wide_character]wide character[/url] ([code]wchar_t[/code], UTF-16 on Windows, UTF-32 on other platforms) encoded [PackedByteArray].
+			</description>
+		</method>
 		<method name="trim_prefix" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="prefix" type="String" />

@@ -31,10 +31,12 @@
 #ifndef EDITOR_DIR_DIALOG_H
 #define EDITOR_DIR_DIALOG_H
 
-#include "core/io/dir_access.h"
-#include "editor/editor_file_system.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/tree.h"
+
+class CheckBox;
+class EditorFileSystemDirectory;
+class Tree;
+class TreeItem;
 
 class EditorDirDialog : public ConfirmationDialog {
 	GDCLASS(EditorDirDialog, ConfirmationDialog);
@@ -48,7 +50,9 @@ class EditorDirDialog : public ConfirmationDialog {
 
 	Tree *tree = nullptr;
 	bool updating = false;
+	CheckBox *copy = nullptr;
 
+	void _copy_toggled(bool p_pressed);
 	void _item_collapsed(Object *p_item);
 	void _item_activated();
 	void _update_dir(TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path = String());
@@ -66,6 +70,8 @@ protected:
 
 public:
 	void reload(const String &p_path = "");
+	bool is_copy_pressed() const;
+
 	EditorDirDialog();
 };
 

@@ -66,6 +66,7 @@ struct Picture::Impl
     void* rdata = nullptr;            //engine data
     float w = 0, h = 0;
     bool resizing = false;
+    uint32_t rendererColorSpace = 0;
 
     ~Impl()
     {
@@ -100,7 +101,7 @@ struct Picture::Impl
                 }
             }
             free(surface);
-            if ((surface = loader->bitmap().release())) {
+            if ((surface = loader->bitmap(rendererColorSpace).release())) {
                 loader->close();
                 return RenderUpdateFlag::Image;
             }
@@ -124,6 +125,7 @@ struct Picture::Impl
 
     void* update(RenderMethod &renderer, const RenderTransform* pTransform, uint32_t opacity, Array<RenderData>& clips, RenderUpdateFlag pFlag)
     {
+        rendererColorSpace = renderer.colorSpace();
         auto flag = reload();
 
         if (surface) {

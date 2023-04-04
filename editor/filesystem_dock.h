@@ -104,6 +104,12 @@ private:
 		FILE_NEW_SCENE,
 	};
 
+	enum Overwrite {
+		OVERWRITE_UNDECIDED,
+		OVERWRITE_REPLACE,
+		OVERWRITE_RENAME,
+	};
+
 	FileSortOption file_sort = FILE_SORT_NAME;
 
 	VBoxContainer *scanning_vb = nullptr;
@@ -173,6 +179,7 @@ private:
 	FileOrFolder to_duplicate;
 	Vector<FileOrFolder> to_move;
 	String to_move_path;
+	bool to_move_or_copy = false;
 
 	Vector<String> history;
 	int history_pos;
@@ -227,6 +234,7 @@ private:
 	void _save_scenes_after_move(const HashMap<String, String> &p_renames) const;
 	void _update_favorites_list_after_move(const HashMap<String, String> &p_files_renames, const HashMap<String, String> &p_folders_renames) const;
 	void _update_project_settings_after_move(const HashMap<String, String> &p_renames) const;
+	String _get_unique_name(const FileOrFolder &p_entry, const String &p_at_path);
 
 	void _resource_removed(const Ref<Resource> &p_resource);
 	void _file_removed(String p_file);
@@ -237,9 +245,10 @@ private:
 	void _make_scene_confirm();
 	void _rename_operation_confirm();
 	void _duplicate_operation_confirm();
-	void _move_with_overwrite();
+	void _overwrite_dialog_action(bool p_overwrite);
 	Vector<String> _check_existing();
-	void _move_operation_confirm(const String &p_to_path, bool p_overwrite = false);
+	void _move_dialog_confirm(const String &p_path);
+	void _move_operation_confirm(const String &p_to_path, bool p_copy = false, Overwrite p_overwrite = OVERWRITE_UNDECIDED);
 
 	void _tree_rmb_option(int p_option);
 	void _file_list_rmb_option(int p_option);

@@ -42,6 +42,7 @@ class OptionButton : public Button {
 	bool fit_to_longest_item = true;
 	Vector2 _cached_size;
 	bool cache_refresh_pending = false;
+	bool allow_reselect = false;
 
 	struct ThemeCache {
 		Ref<StyleBox> normal;
@@ -110,6 +111,9 @@ public:
 	int get_item_count() const;
 	void set_fit_to_longest_item(bool p_fit);
 	bool is_fit_to_longest_item() const;
+
+	void set_allow_reselect(bool p_allow);
+	bool get_allow_reselect() const;
 
 	void add_separator(const String &p_text = "");
 

@@ -409,17 +409,17 @@ Vector<real_t> PhysicsDirectSpaceState2D::_cast_motion(const Ref<PhysicsShapeQue
 	return ret;
 }
 
-TypedArray<PackedVector2Array> PhysicsDirectSpaceState2D::_collide_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results) {
-	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Array());
+TypedArray<Vector2> PhysicsDirectSpaceState2D::_collide_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results) {
+	ERR_FAIL_COND_V(!p_shape_query.is_valid(), TypedArray<Vector2>());
 
 	Vector<Vector2> ret;
 	ret.resize(p_max_results * 2);
 	int rc = 0;
 	bool res = collide_shape(p_shape_query->get_parameters(), ret.ptrw(), p_max_results, rc);
 	if (!res) {
-		return TypedArray<PackedVector2Array>();
+		return TypedArray<Vector2>();
 	}
-	TypedArray<PackedVector2Array> r;
+	TypedArray<Vector2> r;
 	r.resize(rc * 2);
 	for (int i = 0; i < rc * 2; i++) {
 		r[i] = ret[i];

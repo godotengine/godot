@@ -46,14 +46,21 @@
 			<return type="Texture2D" />
 			<param index="0" name="tab_idx" type="int" />
 			<description>
-				Returns the [Texture2D] for the right button of the tab at index [param tab_idx] or [code]null[/code] if the button has no [Texture2D].
+				Returns the icon for the right button of the tab at index [param tab_idx] or [code]null[/code] if the right button has no icon.
 			</description>
 		</method>
 		<method name="get_tab_icon" qualifiers="const">
 			<return type="Texture2D" />
 			<param index="0" name="tab_idx" type="int" />
 			<description>
-				Returns the [Texture2D] for the tab at index [param tab_idx] or [code]null[/code] if the tab has no [Texture2D].
+				Returns the icon for the tab at index [param tab_idx] or [code]null[/code] if the tab has no icon.
+			</description>
+		</method>
+		<method name="get_tab_icon_max_width" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Returns the maximum allowed width of the icon for the tab at index [param tab_idx].
 			</description>
 		</method>
 		<method name="get_tab_idx_at_point" qualifiers="const">
@@ -156,6 +163,14 @@
 			<param index="1" name="icon" type="Texture2D" />
 			<description>
 				Sets an [param icon] for the tab at index [param tab_idx].
+			</description>
+		</method>
+		<method name="set_tab_icon_max_width">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="width" type="int" />
+			<description>
+				Sets the maximum allowed width of the icon for the tab at index [param tab_idx]. This limit is applied on top of the default size of the icon and on top of [theme_item icon_max_width]. The height is adjusted according to the icon's ratio.
 			</description>
 		</method>
 		<method name="set_tab_language">
@@ -322,6 +337,9 @@
 		</theme_item>
 		<theme_item name="h_separation" data_type="constant" type="int" default="4">
 			The horizontal separation between the elements inside tabs.
+		</theme_item>
+		<theme_item name="icon_max_width" data_type="constant" type="int" default="0">
+			The maximum allowed width of the tab's icon. This limit is applied on top of the default size of the icon, but before the value set with [method set_tab_icon_max_width]. The height is adjusted according to the icon's ratio.
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the tab text outline.

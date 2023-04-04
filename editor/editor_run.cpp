@@ -261,11 +261,12 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 	VariantWriter::write_to_string(ED_GET_SHORTCUT("editor/stop_running_project"), shortcut);
 	OS::get_singleton()->set_environment("__GODOT_EDITOR_STOP_SHORTCUT__", shortcut);
 
-	printf("Running: %s", exec.utf8().get_data());
-	for (const String &E : args) {
-		printf(" %s", E.utf8().get_data());
-	};
-	printf("\n");
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		print_line(vformat("Running: %s", exec));
+		for (const String &E : args) {
+			print_line(" %s", E);
+		}
+	}
 
 	int instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
 	for (int i = 0; i < instances; i++) {

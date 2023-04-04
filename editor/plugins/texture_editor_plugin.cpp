@@ -152,11 +152,15 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 }
 
 bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
-	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<CompressedTexture2D>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr;
+	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<CompressedTexture2D>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr || Object::cast_to<Image>(p_object) != nullptr;
 }
 
 void EditorInspectorPluginTexture::parse_begin(Object *p_object) {
 	Ref<Texture> texture(Object::cast_to<Texture>(p_object));
+	if (texture.is_null()) {
+		Ref<Image> image(Object::cast_to<Image>(p_object));
+		texture = ImageTexture::create_from_image(image);
+	}
 
 	add_custom_control(memnew(TexturePreview(texture, true)));
 }

@@ -564,7 +564,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
 		has_mouse = true;
-		Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform();
+		Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform_with_canvas();
 		Vector2 mpos = xform.affine_inverse().xform(mm->get_position());
 
 		switch (drag_type) {
@@ -613,7 +613,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
 		has_mouse = true;
-		Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform();
+		Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform_with_canvas();
 		Vector2 mpos = xform.affine_inverse().xform(mb->get_position());
 
 		if (mb->get_button_index() == MouseButton::LEFT || mb->get_button_index() == MouseButton::RIGHT) {
@@ -736,14 +736,14 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 		return;
 	}
 
-	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform();
+	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform_with_canvas();
 	Vector2i tile_shape_size = tile_set->get_tile_size();
 
 	// Draw the selection.
 	if ((tiles_bottom_panel->is_visible_in_tree() || patterns_bottom_panel->is_visible_in_tree()) && tool_buttons_group->get_pressed_button() == select_tool_button) {
 		// In select mode, we only draw the current selection if we are modifying it (pressing control or shift).
 		if (drag_type == DRAG_TYPE_MOVE || (drag_type == DRAG_TYPE_SELECT && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL) && !Input::get_singleton()->is_key_pressed(Key::SHIFT))) {
-			// Do nothing
+			// Do nothing.
 		} else {
 			Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 			Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
@@ -839,10 +839,11 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 
 			// Expand the grid if needed
 			if (expand_grid && !preview.is_empty()) {
-				drawn_grid_rect = Rect2i(preview.begin()->key, Vector2i(1, 1));
+				drawn_grid_rect = Rect2i(preview.begin()->key, Vector2i(0, 0));
 				for (const KeyValue<Vector2i, TileMapCell> &E : preview) {
 					drawn_grid_rect.expand_to(E.key);
 				}
+				drawn_grid_rect.size += Vector2i(1, 1);
 			}
 		}
 
@@ -910,8 +911,6 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 								dest_rect.position = (tile_map->map_to_local(E.key) - dest_rect.size / 2 - tile_offset);
 							}
 
-							dest_rect = xform.xform(dest_rect);
-
 							if (tile_data->get_flip_h()) {
 								dest_rect.size.x = -dest_rect.size.x;
 							}
@@ -927,7 +926,9 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 							modulate *= tile_map->get_layer_modulate(tile_map_layer);
 
 							// Draw the tile.
+							p_overlay->draw_set_transform_matrix(xform);
 							p_overlay->draw_texture_rect_region(atlas_source->get_texture(), dest_rect, source_rect, modulate * Color(1.0, 1.0, 1.0, 0.5), transpose, tile_set->is_uv_clipping());
+							p_overlay->draw_set_transform_matrix(Transform2D());
 						} else {
 							tile_set->draw_tile_shape(p_overlay, xform * tile_xform, Color(1.0, 1.0, 1.0, 0.5), true);
 						}
@@ -1237,7 +1238,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 		return;
 	}
 
-	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform();
+	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform_with_canvas();
 	Vector2 mpos = xform.affine_inverse().xform(CanvasItemEditor::get_singleton()->get_viewport_control()->get_local_mouse_position());
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -2649,7 +2650,7 @@ void TileMapEditorTerrainsPlugin::_stop_dragging() {
 		return;
 	}
 
-	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform();
+	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform_with_canvas();
 	Vector2 mpos = xform.affine_inverse().xform(CanvasItemEditor::get_singleton()->get_viewport_control()->get_local_mouse_position());
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -2845,7 +2846,7 @@ bool TileMapEditorTerrainsPlugin::forward_canvas_gui_input(const Ref<InputEvent>
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
 		has_mouse = true;
-		Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform();
+		Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform_with_canvas();
 		Vector2 mpos = xform.affine_inverse().xform(mm->get_position());
 
 		switch (drag_type) {
@@ -2872,7 +2873,7 @@ bool TileMapEditorTerrainsPlugin::forward_canvas_gui_input(const Ref<InputEvent>
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
 		has_mouse = true;
-		Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform();
+		Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform_with_canvas();
 		Vector2 mpos = xform.affine_inverse().xform(mb->get_position());
 
 		if (mb->get_button_index() == MouseButton::LEFT || mb->get_button_index() == MouseButton::RIGHT) {
@@ -2976,7 +2977,7 @@ void TileMapEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control *p_o
 		return;
 	}
 
-	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform();
+	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform_with_canvas();
 	Vector2i tile_shape_size = tile_set->get_tile_size();
 
 	// Handle the preview of the tiles to be placed.
@@ -3817,7 +3818,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 		return;
 	}
 
-	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform();
+	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform_with_canvas();
 	Transform2D xform_inv = xform.affine_inverse();
 	Vector2i tile_shape_size = tile_set->get_tile_size();
 

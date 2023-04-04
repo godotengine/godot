@@ -102,13 +102,25 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 		save_path = path;
 		// Create a temporary file in the same directory as the target file.
 		path = path + "-XXXXXX";
-		if (!mkstemp(path.utf8().ptrw())) {
-			return ERR_FILE_CANT_OPEN;
+		CharString cs = path.utf8();
+		int fd = mkstemp(cs.ptrw());
+		if (fd == -1) {
+			last_error = ERR_FILE_CANT_OPEN;
+			return last_error;
 		}
-		path = path + ".tmp";
-	}
+		path = String::utf8(cs.ptr());
 
-	f = fopen(path.utf8().get_data(), mode_string);
+		f = fdopen(fd, mode_string);
+		if (f == nullptr) {
+			// Delete temp file and close descriptor if open failed.
+			::unlink(cs.ptr());
+			::close(fd);
+			last_error = ERR_FILE_CANT_OPEN;
+			return last_error;
+		}
+	} else {
+		f = fopen(path.utf8().get_data(), mode_string);
+	}
 
 	if (f == nullptr) {
 		switch (errno) {

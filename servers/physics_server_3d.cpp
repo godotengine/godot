@@ -429,17 +429,17 @@ Vector<real_t> PhysicsDirectSpaceState3D::_cast_motion(const Ref<PhysicsShapeQue
 	return ret;
 }
 
-TypedArray<PackedVector3Array> PhysicsDirectSpaceState3D::_collide_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results) {
-	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Array());
+TypedArray<Vector3> PhysicsDirectSpaceState3D::_collide_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results) {
+	ERR_FAIL_COND_V(!p_shape_query.is_valid(), TypedArray<Vector3>());
 
 	Vector<Vector3> ret;
 	ret.resize(p_max_results * 2);
 	int rc = 0;
 	bool res = collide_shape(p_shape_query->get_parameters(), ret.ptrw(), p_max_results, rc);
 	if (!res) {
-		return TypedArray<PackedVector3Array>();
+		return TypedArray<Vector3>();
 	}
-	TypedArray<PackedVector3Array> r;
+	TypedArray<Vector3> r;
 	r.resize(rc * 2);
 	for (int i = 0; i < rc * 2; i++) {
 		r[i] = ret[i];
