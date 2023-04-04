@@ -362,7 +362,7 @@ void SkyRD::ReflectionData::update_reflection_data(int p_size, int p_mipmaps, bo
 			mm.size.height = mmh;
 			mm.view = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), downsampled_radiance_cubemap, 0, j, 1, RD::TEXTURE_SLICE_CUBEMAP);
 			RD::get_singleton()->set_resource_name(mm.view, "Downsampled Radiance Cubemap Mip " + itos(j) + " ");
-			if (render_buffers_can_be_storage) {
+			if (!render_buffers_can_be_storage) {
 				// we need a framebuffer for each side of our cubemap
 
 				for (int k = 0; k < 6; k++) {
