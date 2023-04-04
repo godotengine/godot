@@ -14,6 +14,9 @@
 		print(array[-1]) # Four.
 		array[2] = "Three"
 		print(array[-2]) # Three.
+		var multi-dimensional-array = [["One", 2], [3, "Four"]]
+		print(multi-dimensional-array[0][0]) # One
+		print(multi-dimensional-array[1][-1]) # Four
 		[/gdscript]
 		[csharp]
 		var array = new Godot.Collections.Array{"One", 2, 3, "Four"};
@@ -22,6 +25,10 @@
 		GD.Print(array[array.Count - 1]); // Four.
 		array[2] = "Three";
 		GD.Print(array[array.Count - 2]); // Three.
+		var multi-dimensional-array = new Godot.Collections.Array{{"One", 2}, {3, "Four"}};
+		GD.Print(multi-dimensional-array[0][0]); // One
+		GD.Print(multi-dimensional-array[1][-1]); // Four
+		[/csharp]
 		[/csharp]
 		[/codeblocks]
 		Arrays can be concatenated using the [code]+[/code] operator:
