@@ -1208,7 +1208,7 @@ void ProjectList::_notification(int p_what) {
 			if (_icon_load_index < _projects.size()) {
 				Item &item = _projects.write[_icon_load_index];
 				if (item.control->should_load_project_icon()) {
-					load_project_icon(_icon_load_index);
+					_load_project_icon(_icon_load_index);
 				}
 				_icon_load_index++;
 
@@ -1219,12 +1219,12 @@ void ProjectList::_notification(int p_what) {
 	}
 }
 
-void ProjectList::update_icons_async() {
+void ProjectList::_update_icons_async() {
 	_icon_load_index = 0;
 	set_process(true);
 }
 
-void ProjectList::load_project_icon(int p_index) {
+void ProjectList::_load_project_icon(int p_index) {
 	Item &item = _projects.write[p_index];
 
 	Ref<Texture2D> default_icon = get_theme_icon(SNAME("DefaultProjectIcon"), SNAME("EditorIcons"));
@@ -1357,16 +1357,14 @@ void ProjectList::load_projects() {
 
 	// Create controls
 	for (int i = 0; i < _projects.size(); ++i) {
-		create_project_item_control(i);
+		_create_project_item_control(i);
 	}
 
 	sort_projects();
+	_update_icons_async();
+	update_dock_menu();
 
 	set_v_scroll(0);
-
-	update_icons_async();
-
-	update_dock_menu();
 }
 
 void ProjectList::update_dock_menu() {
@@ -1414,7 +1412,7 @@ void ProjectList::_global_menu_open_project(const Variant &p_tag) {
 	}
 }
 
-void ProjectList::create_project_item_control(int p_index) {
+void ProjectList::_create_project_item_control(int p_index) {
 	// Will be added last in the list, so make sure indexes match
 	ERR_FAIL_COND(p_index != _scroll_children->get_child_count());
 
@@ -1489,8 +1487,7 @@ void ProjectList::sort_projects() {
 	}
 
 	// Rewind the coroutine because order of projects changed
-	update_icons_async();
-
+	_update_icons_async();
 	update_dock_menu();
 }
 
@@ -1542,7 +1539,7 @@ int ProjectList::get_single_selected_index() const {
 	return 0;
 }
 
-void ProjectList::remove_project(int p_index, bool p_update_config) {
+void ProjectList::_remove_project(int p_index, bool p_update_config) {
 	const Item item = _projects[p_index]; // Take a copy
 
 	_selected_project_paths.erase(item.path);
@@ -1583,7 +1580,7 @@ void ProjectList::erase_missing_projects() {
 		const Item &item = _projects[i];
 
 		if (item.missing) {
-			remove_project(i, true);
+			_remove_project(i, true);
 			--i;
 			++deleted_count;
 
@@ -1611,7 +1608,7 @@ int ProjectList::refresh_project(const String &dir_path) {
 	for (int i = 0; i < _projects.size(); ++i) {
 		const Item &existing_item = _projects[i];
 		if (existing_item.path == dir_path) {
-			remove_project(i, false);
+			_remove_project(i, false);
 			break;
 		}
 	}
@@ -1623,7 +1620,7 @@ int ProjectList::refresh_project(const String &dir_path) {
 		Item item = load_project_data(dir_path, is_favourite);
 
 		_projects.push_back(item);
-		create_project_item_control(_projects.size() - 1);
+		_create_project_item_control(_projects.size() - 1);
 
 		sort_projects();
 
@@ -1633,7 +1630,7 @@ int ProjectList::refresh_project(const String &dir_path) {
 					select_project(i);
 					ensure_project_visible(i);
 				}
-				load_project_icon(i);
+				_load_project_icon(i);
 
 				index = i;
 				break;
@@ -1667,35 +1664,57 @@ int ProjectList::get_project_count() const {
 	return _projects.size();
 }
 
-void ProjectList::select_project(int p_index) {
+void ProjectList::_clear_project_selection() {
 	Vector<Item> previous_selected_items = get_selected_projects();
 	_selected_project_paths.clear();
 
 	for (int i = 0; i < previous_selected_items.size(); ++i) {
-		previous_selected_items[i].control->queue_redraw();
+		previous_selected_items[i].control->set_selected(false);
 	}
+}
 
-	toggle_select(p_index);
+void ProjectList::_toggle_project(int p_index) {
+	// This methods adds to the selection or removes from the
+	// selection.
+	Item &item = _projects.write[p_index];
+
+	if (_selected_project_paths.has(item.path)) {
+		_deselect_project_nocheck(p_index);
+	} else {
+		_select_project_nocheck(p_index);
+	}
+}
+
+void ProjectList::_select_project_nocheck(int p_index) {
+	Item &item = _projects.write[p_index];
+	_selected_project_paths.insert(item.path);
+	item.control->set_selected(true);
+}
+
+void ProjectList::_deselect_project_nocheck(int p_index) {
+	Item &item = _projects.write[p_index];
+	_selected_project_paths.erase(item.path);
+	item.control->set_selected(false);
+}
+
+void ProjectList::select_project(int p_index) {
+	// This method keeps only one project selected.
+	_clear_project_selection();
+	_select_project_nocheck(p_index);
 }
 
 void ProjectList::select_first_visible_project() {
-	bool found = false;
+	_clear_project_selection();
 
 	for (int i = 0; i < _projects.size(); i++) {
 		if (_projects[i].control->is_visible()) {
-			select_project(i);
-			found = true;
+			_select_project_nocheck(i);
 			break;
 		}
 	}
-
-	if (!found) {
-		// Deselect all projects if there are no visible projects in the list.
-		_selected_project_paths.clear();
-	}
 }
 
-inline void sort(int &a, int &b) {
+inline void _sort_project_range(int &a, int &b) {
 	if (a > b) {
 		int temp = a;
 		a = b;
@@ -1703,22 +1722,12 @@ inline void sort(int &a, int &b) {
 	}
 }
 
-void ProjectList::select_range(int p_begin, int p_end) {
-	sort(p_begin, p_end);
-	select_project(p_begin);
-	for (int i = p_begin + 1; i <= p_end; ++i) {
-		toggle_select(i);
-	}
-}
+void ProjectList::_select_project_range(int p_begin, int p_end) {
+	_clear_project_selection();
 
-void ProjectList::toggle_select(int p_index) {
-	Item &item = _projects.write[p_index];
-	if (_selected_project_paths.has(item.path)) {
-		_selected_project_paths.erase(item.path);
-		item.control->set_selected(false);
-	} else {
-		_selected_project_paths.insert(item.path);
-		item.control->set_selected(true);
+	_sort_project_range(p_begin, p_end);
+	for (int i = p_begin; i <= p_end; ++i) {
+		_select_project_nocheck(i);
 	}
 }
 
@@ -1768,10 +1777,10 @@ void ProjectList::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 				}
 			}
 			CRASH_COND(anchor_index == -1);
-			select_range(anchor_index, clicked_index);
+			_select_project_range(anchor_index, clicked_index);
 
 		} else if (mb->is_ctrl_pressed()) {
-			toggle_select(clicked_index);
+			_toggle_project(clicked_index);
 
 		} else {
 			_last_clicked = clicked_project.path;
