@@ -1,5 +1,6 @@
 name: 🏁 Windows Builds
-on: [push, pull_request]
+on:
+  workflow_call:
 
 # Global Settings
 # SCONS_CACHE for windows must be set in the build environment
