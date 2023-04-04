@@ -861,6 +861,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_pressed_color", "Button", icon_pressed_color);
 	theme->set_color("icon_disabled_color", "Button", icon_disabled_color);
 
+	theme->set_constant("h_separation", "Button", 2 * EDSCALE);
 	theme->set_constant("outline_size", "Button", 0 * EDSCALE);
 
 	const float ACTION_BUTTON_EXTRA_MARGIN = 32 * EDSCALE;
@@ -917,6 +918,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_pressed_color", "MenuBar", icon_pressed_color);
 	theme->set_color("icon_disabled_color", "MenuBar", icon_disabled_color);
 
+	theme->set_constant("h_separation", "MenuBar", 4 * EDSCALE);
 	theme->set_constant("outline_size", "MenuBar", 0 * EDSCALE);
 
 	// OptionButton
@@ -1452,6 +1454,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_outline_color", "TextEdit", font_outline_color);
 	theme->set_color("caret_color", "TextEdit", font_color);
 	theme->set_color("selection_color", "TextEdit", selection_color);
+	theme->set_color("background_color", "TextEdit", Color(0, 0, 0, 0));
+
 	theme->set_constant("line_spacing", "TextEdit", 4 * EDSCALE);
 	theme->set_constant("outline_size", "TextEdit", 0 * EDSCALE);
 
