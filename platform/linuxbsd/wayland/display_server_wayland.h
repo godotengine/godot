@@ -454,6 +454,8 @@ class DisplayServerWayland : public DisplayServer {
 
 	Thread events_thread;
 
+	Context context;
+
 #ifdef VULKAN_ENABLED
 	VulkanContextWayland *context_vulkan = nullptr;
 	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
@@ -484,6 +486,8 @@ class DisplayServerWayland : public DisplayServer {
 	static bool _seat_state_configure_key_event(SeatState &p_seat, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool p_pressed);
 
 	static void _wayland_state_update_cursor(WaylandState &p_wls);
+
+	static String _get_app_id_from_context(Context context);
 
 	void _send_window_event(WindowEvent p_event);
 
@@ -904,6 +908,8 @@ public:
 	virtual void release_rendering_thread() override;
 	virtual void make_rendering_thread() override;
 	virtual void swap_buffers() override;
+
+	virtual void set_context(Context p_context) override;
 
 	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();

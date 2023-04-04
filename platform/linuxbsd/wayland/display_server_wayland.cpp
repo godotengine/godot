@@ -362,6 +362,32 @@ void DisplayServerWayland::_wayland_state_update_cursor(WaylandState &p_wls) {
 	}
 }
 
+String DisplayServerWayland::_get_app_id_from_context(Context context) {
+	String app_id;
+
+	switch (context) {
+		case CONTEXT_EDITOR: {
+			app_id = "godot-editor";
+		} break;
+
+		case CONTEXT_PROJECTMAN: {
+			app_id = "godot-project-manager";
+		} break;
+
+		case CONTEXT_ENGINE:
+		default: {
+			String config_name = GLOBAL_GET("application/config/name");
+			if (config_name.length() != 0) {
+				app_id = config_name;
+			} else {
+				app_id = "godot-engine";
+			}
+		}
+	}
+
+	return app_id;
+}
+
 void DisplayServerWayland::_send_window_event(WindowEvent p_event) {
 	WindowData &wd = wls.main_window;
 
@@ -2604,12 +2630,15 @@ void DisplayServerWayland::_show_window() {
 
 		bool decorated = false;
 
+		String app_id = _get_app_id_from_context(context);
+
 #ifdef LIBDECOR_ENABLED
 		if (!decorated && wls.libdecor_context) {
 			wd.libdecor_frame = libdecor_decorate(wls.libdecor_context, wd.wl_surface, (struct libdecor_frame_interface *)&libdecor_frame_interface, &wd);
 
 			libdecor_frame_set_max_content_size(wd.libdecor_frame, wd.max_size.width, wd.max_size.height);
 			libdecor_frame_set_min_content_size(wd.libdecor_frame, wd.min_size.width, wd.max_size.height);
+			libdecor_frame_set_app_id(wd.libdecor_frame, app_id.utf8().ptrw());
 
 			libdecor_frame_map(wd.libdecor_frame);
 
@@ -2629,6 +2658,7 @@ void DisplayServerWayland::_show_window() {
 
 			xdg_toplevel_set_max_size(wd.xdg_toplevel, wd.max_size.width, wd.max_size.height);
 			xdg_toplevel_set_min_size(wd.xdg_toplevel, wd.min_size.width, wd.min_size.height);
+			xdg_toplevel_set_app_id(wd.xdg_toplevel, app_id.utf8().ptrw());
 
 			if (!window_get_flag(WINDOW_FLAG_BORDERLESS) && wls.globals.xdg_decoration_manager) {
 				wd.xdg_toplevel_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(wls.globals.xdg_decoration_manager, wd.xdg_toplevel);
@@ -3546,6 +3576,30 @@ void DisplayServerWayland::swap_buffers() {
 		egl_manager->swap_buffers();
 	}
 #endif
+}
+
+void DisplayServerWayland::set_context(Context p_context) {
+	MutexLock mutex_lock(wls.mutex);
+
+	DEBUG_LOG_WAYLAND(vformat("Setting context %d", p_context));
+
+	context = p_context;
+
+	WindowData &wd = wls.main_window;
+
+#ifdef LIBDECOR_ENABLED
+	if (wd.libdecor_frame) {
+		String app_id = _get_app_id_from_context(p_context);
+		libdecor_frame_set_app_id(wd.libdecor_frame, app_id.utf8().ptrw());
+		return;
+	}
+#endif
+
+	if (wd.xdg_toplevel) {
+		String app_id = _get_app_id_from_context(p_context);
+		xdg_toplevel_set_app_id(wd.xdg_toplevel, app_id.utf8().ptrw());
+		return;
+	}
 }
 
 Vector<String> DisplayServerWayland::get_rendering_drivers_func() {
