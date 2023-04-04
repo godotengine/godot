@@ -1318,13 +1318,25 @@ int AnimationTimelineEdit::get_name_limit() const {
 	return limit;
 }
 
+void AnimationTimelineEdit::_update_theme_item_cache() {
+	Range::_update_theme_item_cache();
+
+	theme_cache.loop_linear_icon = get_theme_icon(SNAME("Loop"), SNAME("EditorIcons"));
+	theme_cache.loop_pingpong_icon = get_theme_icon(SNAME("PingPongLoop"), SNAME("EditorIcons"));
+}
+
 void AnimationTimelineEdit::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 			add_track->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-			loop->set_icon(get_theme_icon(SNAME("Loop"), SNAME("EditorIcons")));
+
+			if (animation.is_valid() && !editing && animation->get_loop_mode() == Animation::LOOP_PINGPONG) {
+				loop->set_icon(theme_cache.loop_pingpong_icon);
+			} else {
+				loop->set_icon(theme_cache.loop_linear_icon);
+			}
+
 			time_icon->set_texture(get_theme_icon(SNAME("Time"), SNAME("EditorIcons")));
 
 			add_track->get_popup()->clear();
@@ -1594,15 +1606,15 @@ void AnimationTimelineEdit::update_values() {
 
 	switch (animation->get_loop_mode()) {
 		case Animation::LOOP_NONE: {
-			loop->set_icon(get_theme_icon(SNAME("Loop"), SNAME("EditorIcons")));
+			loop->set_icon(theme_cache.loop_linear_icon);
 			loop->set_pressed(false);
 		} break;
 		case Animation::LOOP_LINEAR: {
-			loop->set_icon(get_theme_icon(SNAME("Loop"), SNAME("EditorIcons")));
+			loop->set_icon(theme_cache.loop_linear_icon);
 			loop->set_pressed(true);
 		} break;
 		case Animation::LOOP_PINGPONG: {
-			loop->set_icon(get_theme_icon(SNAME("PingPongLoop"), SNAME("EditorIcons")));
+			loop->set_icon(theme_cache.loop_pingpong_icon);
 			loop->set_pressed(true);
 		} break;
 		default:

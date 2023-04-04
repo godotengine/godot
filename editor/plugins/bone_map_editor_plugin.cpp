@@ -40,26 +40,6 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 
-void BoneMapperButton::fetch_textures() {
-	if (selected) {
-		set_texture_normal(get_theme_icon(SNAME("BoneMapperHandleSelected"), SNAME("EditorIcons")));
-	} else {
-		set_texture_normal(get_theme_icon(SNAME("BoneMapperHandle"), SNAME("EditorIcons")));
-	}
-	set_offset(SIDE_LEFT, 0);
-	set_offset(SIDE_RIGHT, 0);
-	set_offset(SIDE_TOP, 0);
-	set_offset(SIDE_BOTTOM, 0);
-
-	// Hack to avoid handle color darkening...
-	set_modulate(EditorSettings::get_singleton()->is_dark_theme() ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25));
-
-	circle = memnew(TextureRect);
-	circle->set_texture(get_theme_icon(SNAME("BoneMapperHandleCircle"), SNAME("EditorIcons")));
-	add_child(circle);
-	set_state(BONE_MAP_STATE_UNSET);
-}
-
 StringName BoneMapperButton::get_profile_bone_name() const {
 	return profile_bone_name;
 }
@@ -87,10 +67,28 @@ bool BoneMapperButton::is_require() const {
 	return require;
 }
 
+void BoneMapperButton::_update_theme_item_cache() {
+	TextureButton::_update_theme_item_cache();
+
+	theme_cache.handle_circle_icon = get_theme_icon(SNAME("BoneMapperHandleCircle"), SNAME("EditorIcons"));
+	theme_cache.handle_selected_icon = get_theme_icon(SNAME("BoneMapperHandleSelected"), SNAME("EditorIcons"));
+	theme_cache.handle_default_icon = get_theme_icon(SNAME("BoneMapperHandle"), SNAME("EditorIcons"));
+
+	theme_cache.is_dark_theme = (bool)get_theme_constant(SNAME("dark_theme"), SNAME("Editor"));
+}
+
 void BoneMapperButton::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			fetch_textures();
+		case NOTIFICATION_THEME_CHANGED: {
+			// Hack to avoid handle color darkening...
+			set_modulate(theme_cache.is_dark_theme ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25));
+
+			if (selected) {
+				set_texture_normal(theme_cache.handle_selected_icon);
+			} else {
+				set_texture_normal(theme_cache.handle_default_icon);
+			}
+			circle->set_texture(theme_cache.handle_circle_icon);
 		} break;
 	}
 }
@@ -99,6 +97,15 @@ BoneMapperButton::BoneMapperButton(const StringName p_profile_bone_name, bool p_
 	profile_bone_name = p_profile_bone_name;
 	require = p_require;
 	selected = p_selected;
+
+	set_offset(SIDE_LEFT, 0);
+	set_offset(SIDE_RIGHT, 0);
+	set_offset(SIDE_TOP, 0);
+	set_offset(SIDE_BOTTOM, 0);
+
+	circle = memnew(TextureRect);
+	add_child(circle);
+	set_state(BONE_MAP_STATE_UNSET);
 }
 
 BoneMapperButton::~BoneMapperButton() {
@@ -118,7 +125,7 @@ void BoneMapperItem::create_editor() {
 	hbox->add_child(skeleton_bone_selector);
 
 	picker_button = memnew(Button);
-	picker_button->set_icon(get_theme_icon(SNAME("ClassList"), SNAME("EditorIcons")));
+	picker_button->set_icon(theme_cache.picker_icon);
 	picker_button->connect("pressed", callable_mp(this, &BoneMapperItem::_open_picker));
 	hbox->add_child(picker_button);
 
@@ -139,6 +146,12 @@ void BoneMapperItem::_value_changed(const String &p_property, Variant p_value, c
 	bone_map->set(p_property, p_value);
 }
 
+void BoneMapperItem::_update_theme_item_cache() {
+	VBoxContainer::_update_theme_item_cache();
+
+	theme_cache.picker_icon = get_theme_icon(SNAME("ClassList"), SNAME("EditorIcons"));
+}
+
 void BoneMapperItem::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -148,6 +161,11 @@ void BoneMapperItem::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			if (!bone_map.is_null() && bone_map->is_connected("bone_map_updated", callable_mp(this, &BoneMapperItem::_update_property))) {
 				bone_map->disconnect("bone_map_updated", callable_mp(this, &BoneMapperItem::_update_property));
+			}
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			if (picker_button) {
+				picker_button->set_icon(theme_cache.picker_icon);
 			}
 		} break;
 	}
@@ -189,12 +207,8 @@ void BonePicker::create_bones_tree(Skeleton3D *p_skeleton) {
 	}
 
 	TreeItem *root = bones->create_item();
-
 	HashMap<int, TreeItem *> items;
-
 	items.insert(-1, root);
-
-	Ref<Texture> bone_icon = get_theme_icon(SNAME("BoneAttachment3D"), SNAME("EditorIcons"));
 
 	Vector<int> bones_to_process = p_skeleton->get_parentless_bones();
 	bool is_first = true;
@@ -215,7 +229,7 @@ void BonePicker::create_bones_tree(Skeleton3D *p_skeleton) {
 		items.insert(current_bone_idx, joint_item);
 
 		joint_item->set_text(0, p_skeleton->get_bone_name(current_bone_idx));
-		joint_item->set_icon(0, bone_icon);
+		joint_item->set_icon(0, theme_cache.bone_icon);
 		joint_item->set_selectable(0, true);
 		joint_item->set_metadata(0, "bones/" + itos(current_bone_idx));
 		if (is_first) {
@@ -250,6 +264,12 @@ StringName BonePicker::get_selected_bone() {
 	return selected->get_text(0);
 }
 
+void BonePicker::_update_theme_item_cache() {
+	AcceptDialog::_update_theme_item_cache();
+
+	theme_cache.bone_icon = get_theme_icon(SNAME("BoneAttachment3D"), SNAME("EditorIcons"));
+}
+
 void BonePicker::_bind_methods() {
 }
 
@@ -257,6 +277,17 @@ void BonePicker::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			create_editors();
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			TreeItem *ti = bones->get_root();
+			while (ti) {
+				String key = ti->get_metadata(0);
+				if (key.begins_with("bones/")) {
+					ti->set_icon(0, theme_cache.bone_icon);
+				}
+
+				ti = ti->get_next();
+			}
 		} break;
 	}
 }
@@ -297,7 +328,7 @@ void BoneMapper::create_editor() {
 	group_hbox->add_child(profile_group_selector);
 
 	clear_mapping_button = memnew(Button);
-	clear_mapping_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
+	clear_mapping_button->set_icon(theme_cache.clear_icon);
 	clear_mapping_button->set_tooltip_text(TTR("Clear mappings in current group."));
 	clear_mapping_button->connect("pressed", callable_mp(this, &BoneMapper::_clear_mapping_current_group));
 	group_hbox->add_child(clear_mapping_button);
@@ -392,27 +423,9 @@ void BoneMapper::recreate_editor() {
 		bone_mapper_items[i]->set_visible(current_bone_idx == i);
 	}
 
-	Ref<SkeletonProfile> profile = bone_map->get_profile();
-	if (profile.is_valid()) {
-		SkeletonProfileHumanoid *hmn = Object::cast_to<SkeletonProfileHumanoid>(profile.ptr());
-		if (hmn) {
-			StringName hmn_group_name = profile->get_group_name(current_group_idx);
-			if (hmn_group_name == "Body") {
-				profile_texture->set_texture(get_theme_icon(SNAME("BoneMapHumanBody"), SNAME("EditorIcons")));
-			} else if (hmn_group_name == "Face") {
-				profile_texture->set_texture(get_theme_icon(SNAME("BoneMapHumanFace"), SNAME("EditorIcons")));
-			} else if (hmn_group_name == "LeftHand") {
-				profile_texture->set_texture(get_theme_icon(SNAME("BoneMapHumanLeftHand"), SNAME("EditorIcons")));
-			} else if (hmn_group_name == "RightHand") {
-				profile_texture->set_texture(get_theme_icon(SNAME("BoneMapHumanRightHand"), SNAME("EditorIcons")));
-			}
-		} else {
-			profile_texture->set_texture(profile->get_texture(current_group_idx));
-		}
-	} else {
-		profile_texture->set_texture(Ref<Texture2D>());
-	}
+	_update_profile_texture();
 
+	Ref<SkeletonProfile> profile = bone_map->get_profile();
 	if (!profile.is_valid()) {
 		return;
 	}
@@ -514,6 +527,34 @@ void BoneMapper::_update_state() {
 				bone_mapper_buttons[i]->set_state(BoneMapperButton::BONE_MAP_STATE_UNSET);
 			}
 		}
+	}
+}
+
+void BoneMapper::_update_profile_texture() {
+	if (bone_map.is_null()) {
+		profile_texture->set_texture(Ref<Texture2D>());
+		return;
+	}
+
+	Ref<SkeletonProfile> profile = bone_map->get_profile();
+	if (profile.is_valid()) {
+		SkeletonProfileHumanoid *hmn = Object::cast_to<SkeletonProfileHumanoid>(profile.ptr());
+		if (hmn) {
+			StringName hmn_group_name = profile->get_group_name(current_group_idx);
+			if (hmn_group_name == "Body") {
+				profile_texture->set_texture(theme_cache.human_body_icon);
+			} else if (hmn_group_name == "Face") {
+				profile_texture->set_texture(theme_cache.human_face_icon);
+			} else if (hmn_group_name == "LeftHand") {
+				profile_texture->set_texture(theme_cache.human_left_hand_icon);
+			} else if (hmn_group_name == "RightHand") {
+				profile_texture->set_texture(theme_cache.human_right_hand_icon);
+			}
+		} else {
+			profile_texture->set_texture(profile->get_texture(current_group_idx));
+		}
+	} else {
+		profile_texture->set_texture(Ref<Texture2D>());
 	}
 }
 
@@ -1263,6 +1304,16 @@ void BoneMapper::_profile_changed(const String &p_property, Variant p_value, con
 	}
 }
 
+void BoneMapper::_update_theme_item_cache() {
+	VBoxContainer::_update_theme_item_cache();
+
+	theme_cache.clear_icon = get_theme_icon(SNAME("Clear"), SNAME("EditorIcons"));
+	theme_cache.human_body_icon = get_theme_icon(SNAME("BoneMapHumanBody"), SNAME("EditorIcons"));
+	theme_cache.human_face_icon = get_theme_icon(SNAME("BoneMapHumanFace"), SNAME("EditorIcons"));
+	theme_cache.human_left_hand_icon = get_theme_icon(SNAME("BoneMapHumanLeftHand"), SNAME("EditorIcons"));
+	theme_cache.human_right_hand_icon = get_theme_icon(SNAME("BoneMapHumanRightHand"), SNAME("EditorIcons"));
+}
+
 void BoneMapper::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_current_group_idx", "current_group_idx"), &BoneMapper::set_current_group_idx);
 	ClassDB::bind_method(D_METHOD("get_current_group_idx"), &BoneMapper::get_current_group_idx);
@@ -1289,7 +1340,14 @@ void BoneMapper::_notification(int p_what) {
 					bone_map->disconnect("profile_updated", callable_mp(this, &BoneMapper::recreate_items));
 				}
 			}
-		}
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			if (clear_mapping_button) {
+				clear_mapping_button->set_icon(theme_cache.clear_icon);
+			}
+
+			_update_profile_texture();
+		} break;
 	}
 }
 

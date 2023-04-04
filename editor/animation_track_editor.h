@@ -148,6 +148,11 @@ class AnimationTimelineEdit : public Range {
 	Control *play_position = nullptr; //separate control used to draw so updates for only position changed are much faster
 	HScrollBar *hscroll = nullptr;
 
+	struct ThemeCache {
+		Ref<Texture2D> loop_linear_icon;
+		Ref<Texture2D> loop_pingpong_icon;
+	} theme_cache;
+
 	void _zoom_changed(double);
 	void _anim_length_changed(double p_new_len);
 	void _anim_loop_pressed();
@@ -171,6 +176,8 @@ class AnimationTimelineEdit : public Range {
 	void _track_added(int p_track);
 
 protected:
+	virtual void _update_theme_item_cache() override;
+
 	static void _bind_methods();
 	void _notification(int p_what);
 

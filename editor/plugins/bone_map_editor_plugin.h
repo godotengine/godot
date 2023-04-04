@@ -67,10 +67,18 @@ private:
 
 	TextureRect *circle = nullptr;
 
-	void fetch_textures();
+	struct ThemeCache {
+		Ref<Texture2D> handle_circle_icon;
+		Ref<Texture2D> handle_default_icon;
+		Ref<Texture2D> handle_selected_icon;
+
+		bool is_dark_theme = false;
+	} theme_cache;
 
 protected:
 	void _notification(int p_what);
+
+	virtual void _update_theme_item_cache() override;
 
 public:
 	StringName get_profile_bone_name() const;
@@ -90,6 +98,10 @@ class BoneMapperItem : public VBoxContainer {
 
 	Ref<BoneMap> bone_map;
 
+	struct ThemeCache {
+		Ref<Texture2D> picker_icon;
+	} theme_cache;
+
 	EditorPropertyText *skeleton_bone_selector = nullptr;
 	Button *picker_button = nullptr;
 
@@ -99,6 +111,9 @@ class BoneMapperItem : public VBoxContainer {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	virtual void _update_theme_item_cache() override;
+
 	virtual void _value_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing);
 	virtual void create_editor();
 
@@ -112,6 +127,10 @@ public:
 class BonePicker : public AcceptDialog {
 	GDCLASS(BonePicker, AcceptDialog);
 
+	struct ThemeCache {
+		Ref<Texture2D> bone_icon;
+	} theme_cache;
+
 	Skeleton3D *skeleton = nullptr;
 	Tree *bones = nullptr;
 
@@ -123,6 +142,8 @@ public:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	virtual void _update_theme_item_cache() override;
 
 	void _confirm();
 
@@ -140,6 +161,14 @@ class BoneMapper : public VBoxContainer {
 
 	Skeleton3D *skeleton = nullptr;
 	Ref<BoneMap> bone_map;
+
+	struct ThemeCache {
+		Ref<Texture2D> clear_icon;
+		Ref<Texture2D> human_body_icon;
+		Ref<Texture2D> human_face_icon;
+		Ref<Texture2D> human_left_hand_icon;
+		Ref<Texture2D> human_right_hand_icon;
+	} theme_cache;
 
 	EditorPropertyResource *profile_selector = nullptr;
 
@@ -164,6 +193,7 @@ class BoneMapper : public VBoxContainer {
 	void recreate_items();
 	void update_group_idx();
 	void _update_state();
+	void _update_profile_texture();
 
 	/* Bone picker */
 	BonePicker *picker = nullptr;
@@ -188,6 +218,9 @@ class BoneMapper : public VBoxContainer {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	virtual void _update_theme_item_cache() override;
+
 	virtual void _value_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing);
 	virtual void _profile_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing);
 
