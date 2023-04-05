@@ -367,11 +367,11 @@ String DisplayServerWayland::_get_app_id_from_context(Context context) {
 
 	switch (context) {
 		case CONTEXT_EDITOR: {
-			app_id = "godot-editor";
+			app_id = "org.godotengine.Editor";
 		} break;
 
 		case CONTEXT_PROJECTMAN: {
-			app_id = "godot-project-manager";
+			app_id = "org.godotengine.ProjectManager";
 		} break;
 
 		case CONTEXT_ENGINE:
@@ -380,7 +380,7 @@ String DisplayServerWayland::_get_app_id_from_context(Context context) {
 			if (config_name.length() != 0) {
 				app_id = config_name;
 			} else {
-				app_id = "godot-engine";
+				app_id = "org.godotengine.Godot";
 			}
 		}
 	}
