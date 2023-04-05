@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #ifndef _TVG_SCENE_IMPL_H_
 #define _TVG_SCENE_IMPL_H_
 
@@ -101,7 +102,7 @@ struct Scene::Impl
         return false;
     }
 
-    void* update(RenderMethod &renderer, const RenderTransform* transform, uint32_t opacity, Array<RenderData>& clips, RenderUpdateFlag flag)
+    void* update(RenderMethod &renderer, const RenderTransform* transform, uint32_t opacity, Array<RenderData>& clips, RenderUpdateFlag flag, bool clipper)
     {
         /* Overriding opacity value. If this scene is half-translucent,
            It must do intermeidate composition with that opacity value. */
@@ -109,7 +110,7 @@ struct Scene::Impl
         if (needComposition(opacity)) opacity = 255;
 
         for (auto paint = paints.data; paint < (paints.data + paints.count); ++paint) {
-            (*paint)->pImpl->update(renderer, transform, opacity, clips, static_cast<uint32_t>(flag));
+            (*paint)->pImpl->update(renderer, transform, opacity, clips, static_cast<uint32_t>(flag), clipper);
         }
 
         /* FXIME: it requires to return list of children engine data

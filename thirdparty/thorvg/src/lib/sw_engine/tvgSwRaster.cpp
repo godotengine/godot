@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+/*
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -683,6 +683,22 @@ static bool _transformedRGBAImage(SwSurface* surface, const SwImage* image, cons
         }
     } else {
         return _rasterTexmapPolygon(surface, image, transform, &region, opacity, nullptr);
+    }
+    return false;
+}
+
+static bool _transformedRGBAImageMesh(SwSurface* surface, const SwImage* image, const Polygon* triangles, const uint32_t count, const Matrix* transform, const SwBBox* region, uint32_t opacity)
+{
+    if (_compositing(surface)) {
+        if (surface->compositor->method == CompositeMethod::AlphaMask) {
+            return _rasterTexmapPolygonMesh(surface, image, triangles, count, transform, region, opacity, _alpha);
+        } else if (surface->compositor->method == CompositeMethod::InvAlphaMask) {
+            return _rasterTexmapPolygonMesh(surface, image, triangles, count, transform, region, opacity, _ialpha);
+        } else if (surface->compositor->method == CompositeMethod::LumaMask) {
+            return _rasterTexmapPolygonMesh(surface, image, triangles, count, transform, region, opacity, surface->blender.lumaValue);
+        }
+    } else {
+        return _rasterTexmapPolygonMesh(surface, image, triangles, count, transform, region, opacity, nullptr);
     }
     return false;
 }
@@ -1555,4 +1571,16 @@ bool rasterImage(SwSurface* surface, SwImage* image, const Matrix* transform, co
     //TODO: case: _rasterGrayscaleImage()
     //TODO: case: _rasterAlphaImage()
     return _rasterRGBAImage(surface, image, transform, bbox, opacity);
+}
+
+bool rasterImageMesh(SwSurface* surface, SwImage* image, const Polygon* triangles, const uint32_t count, const Matrix* transform, const SwBBox& bbox, uint32_t opacity)
+{
+    //Verify Boundary
+    if (bbox.max.x < 0 || bbox.max.y < 0 || bbox.min.x >= static_cast<SwCoord>(surface->w) || bbox.min.y >= static_cast<SwCoord>(surface->h)) return false;
+
+    //TOOD: switch (image->format)
+    //TODO: case: _rasterRGBImageMesh()
+    //TODO: case: _rasterGrayscaleImageMesh()
+    //TODO: case: _rasterAlphaImageMesh()
+    return _transformedRGBAImageMesh(surface, image, triangles, count, transform, &bbox, opacity);
 }

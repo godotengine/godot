@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ constexpr auto PATH_KAPPA = 0.552284f;
 /* External Class Implementation                                        */
 /************************************************************************/
 
-Shape :: Shape() : pImpl(new Impl(this))
+Shape :: Shape() : pImpl(new Impl())
 {
     Paint::pImpl->id = TVG_CLASS_ID_SHAPE;
     Paint::pImpl->method(new PaintMethod<Shape::Impl>(pImpl));
@@ -59,8 +59,7 @@ uint32_t Shape::identifier() noexcept
 
 Result Shape::reset() noexcept
 {
-    pImpl->path.reset();
-    pImpl->flag = RenderUpdateFlag::Path;
+    pImpl->reset();
 
     return Result::Success;
 }
@@ -70,9 +69,9 @@ uint32_t Shape::pathCommands(const PathCommand** cmds) const noexcept
 {
     if (!cmds) return 0;
 
-    *cmds = pImpl->path.cmds;
+    *cmds = pImpl->rs.path.cmds;
 
-    return pImpl->path.cmdCnt;
+    return pImpl->rs.path.cmdCnt;
 }
 
 
@@ -80,9 +79,9 @@ uint32_t Shape::pathCoords(const Point** pts) const noexcept
 {
     if (!pts) return 0;
 
-    *pts = pImpl->path.pts;
+    *pts = pImpl->rs.path.pts;
 
-    return pImpl->path.ptsCnt;
+    return pImpl->rs.path.ptsCnt;
 }
 
 
@@ -90,10 +89,8 @@ Result Shape::appendPath(const PathCommand *cmds, uint32_t cmdCnt, const Point* 
 {
     if (cmdCnt == 0 || ptsCnt == 0 || !cmds || !pts) return Result::InvalidArguments;
 
-    pImpl->path.grow(cmdCnt, ptsCnt);
-    pImpl->path.append(cmds, cmdCnt, pts, ptsCnt);
-
-    pImpl->flag |= RenderUpdateFlag::Path;
+    pImpl->grow(cmdCnt, ptsCnt);
+    pImpl->append(cmds, cmdCnt, pts, ptsCnt);
 
     return Result::Success;
 }
@@ -101,9 +98,7 @@ Result Shape::appendPath(const PathCommand *cmds, uint32_t cmdCnt, const Point* 
 
 Result Shape::moveTo(float x, float y) noexcept
 {
-    pImpl->path.moveTo(x, y);
-
-    pImpl->flag |= RenderUpdateFlag::Path;
+    pImpl->moveTo(x, y);
 
     return Result::Success;
 }
@@ -111,9 +106,7 @@ Result Shape::moveTo(float x, float y) noexcept
 
 Result Shape::lineTo(float x, float y) noexcept
 {
-    pImpl->path.lineTo(x, y);
-
-    pImpl->flag |= RenderUpdateFlag::Path;
+    pImpl->lineTo(x, y);
 
     return Result::Success;
 }
@@ -121,9 +114,7 @@ Result Shape::lineTo(float x, float y) noexcept
 
 Result Shape::cubicTo(float cx1, float cy1, float cx2, float cy2, float x, float y) noexcept
 {
-    pImpl->path.cubicTo(cx1, cy1, cx2, cy2, x, y);
-
-    pImpl->flag |= RenderUpdateFlag::Path;
+    pImpl->cubicTo(cx1, cy1, cx2, cy2, x, y);
 
     return Result::Success;
 }
@@ -131,9 +122,7 @@ Result Shape::cubicTo(float cx1, float cy1, float cx2, float cy2, float x, float
 
 Result Shape::close() noexcept
 {
-    pImpl->path.close();
-
-    pImpl->flag |= RenderUpdateFlag::Path;
+    pImpl->close();
 
     return Result::Success;
 }
@@ -144,15 +133,13 @@ Result Shape::appendCircle(float cx, float cy, float rx, float ry) noexcept
     auto rxKappa = rx * PATH_KAPPA;
     auto ryKappa = ry * PATH_KAPPA;
 
-    pImpl->path.grow(6, 13);
-    pImpl->path.moveTo(cx, cy - ry);
-    pImpl->path.cubicTo(cx + rxKappa, cy - ry, cx + rx, cy - ryKappa, cx + rx, cy);
-    pImpl->path.cubicTo(cx + rx, cy + ryKappa, cx + rxKappa, cy + ry, cx, cy + ry);
-    pImpl->path.cubicTo(cx - rxKappa, cy + ry, cx - rx, cy + ryKappa, cx - rx, cy);
-    pImpl->path.cubicTo(cx - rx, cy - ryKappa, cx - rxKappa, cy - ry, cx, cy - ry);
-    pImpl->path.close();
-
-    pImpl->flag |= RenderUpdateFlag::Path;
+    pImpl->grow(6, 13);
+    pImpl->moveTo(cx, cy - ry);
+    pImpl->cubicTo(cx + rxKappa, cy - ry, cx + rx, cy - ryKappa, cx + rx, cy);
+    pImpl->cubicTo(cx + rx, cy + ryKappa, cx + rxKappa, cy + ry, cx, cy + ry);
+    pImpl->cubicTo(cx - rxKappa, cy + ry, cx - rx, cy + ryKappa, cx - rx, cy);
+    pImpl->cubicTo(cx - rx, cy - ryKappa, cx - rxKappa, cy - ry, cx, cy - ry);
+    pImpl->close();
 
     return Result::Success;
 }
@@ -174,10 +161,10 @@ Result Shape::appendArc(float cx, float cy, float radius, float startAngle, floa
     Point start = {radius * cosf(startAngle), radius * sinf(startAngle)};
 
     if (pie) {
-        pImpl->path.moveTo(cx, cy);
-        pImpl->path.lineTo(start.x + cx, start.y + cy);
+        pImpl->moveTo(cx, cy);
+        pImpl->lineTo(start.x + cx, start.y + cy);
     } else {
-        pImpl->path.moveTo(start.x + cx, start.y + cy);
+        pImpl->moveTo(start.x + cx, start.y + cy);
     }
 
     for (int i = 0; i < nCurves; ++i) {
@@ -204,14 +191,12 @@ Result Shape::appendArc(float cx, float cy, float radius, float startAngle, floa
         Point ctrl1 = {ax - k2 * ay + cx, ay + k2 * ax + cy};
         Point ctrl2 = {bx + k2 * by + cx, by - k2 * bx + cy};
 
-        pImpl->path.cubicTo(ctrl1.x, ctrl1.y, ctrl2.x, ctrl2.y, end.x, end.y);
+        pImpl->cubicTo(ctrl1.x, ctrl1.y, ctrl2.x, ctrl2.y, end.x, end.y);
 
         startAngle = endAngle;
     }
 
-    if (pie) pImpl->path.close();
-
-    pImpl->flag |= RenderUpdateFlag::Path;
+    if (pie) pImpl->close();
 
     return Result::Success;
 }
@@ -228,32 +213,30 @@ Result Shape::appendRect(float x, float y, float w, float h, float rx, float ry)
 
     //rectangle
     if (rx == 0 && ry == 0) {
-        pImpl->path.grow(5, 4);
-        pImpl->path.moveTo(x, y);
-        pImpl->path.lineTo(x + w, y);
-        pImpl->path.lineTo(x + w, y + h);
-        pImpl->path.lineTo(x, y + h);
-        pImpl->path.close();
+        pImpl->grow(5, 4);
+        pImpl->moveTo(x, y);
+        pImpl->lineTo(x + w, y);
+        pImpl->lineTo(x + w, y + h);
+        pImpl->lineTo(x, y + h);
+        pImpl->close();
     //circle
     } else if (mathEqual(rx, halfW) && mathEqual(ry, halfH)) {
         return appendCircle(x + (w * 0.5f), y + (h * 0.5f), rx, ry);
     } else {
         auto hrx = rx * 0.5f;
         auto hry = ry * 0.5f;
-        pImpl->path.grow(10, 17);
-        pImpl->path.moveTo(x + rx, y);
-        pImpl->path.lineTo(x + w - rx, y);
-        pImpl->path.cubicTo(x + w - rx + hrx, y, x + w, y + ry - hry, x + w, y + ry);
-        pImpl->path.lineTo(x + w, y + h - ry);
-        pImpl->path.cubicTo(x + w, y + h - ry + hry, x + w - rx + hrx, y + h, x + w - rx, y + h);
-        pImpl->path.lineTo(x + rx, y + h);
-        pImpl->path.cubicTo(x + rx - hrx, y + h, x, y + h - ry + hry, x, y + h - ry);
-        pImpl->path.lineTo(x, y + ry);
-        pImpl->path.cubicTo(x, y + ry - hry, x + rx - hrx, y, x + rx, y);
-        pImpl->path.close();
+        pImpl->grow(10, 17);
+        pImpl->moveTo(x + rx, y);
+        pImpl->lineTo(x + w - rx, y);
+        pImpl->cubicTo(x + w - rx + hrx, y, x + w, y + ry - hry, x + w, y + ry);
+        pImpl->lineTo(x + w, y + h - ry);
+        pImpl->cubicTo(x + w, y + h - ry + hry, x + w - rx + hrx, y + h, x + w - rx, y + h);
+        pImpl->lineTo(x + rx, y + h);
+        pImpl->cubicTo(x + rx - hrx, y + h, x, y + h - ry + hry, x, y + h - ry);
+        pImpl->lineTo(x, y + ry);
+        pImpl->cubicTo(x, y + ry - hry, x + rx - hrx, y, x + rx, y);
+        pImpl->close();
     }
-
-    pImpl->flag |= RenderUpdateFlag::Path;
 
     return Result::Success;
 }
@@ -261,15 +244,15 @@ Result Shape::appendRect(float x, float y, float w, float h, float rx, float ry)
 
 Result Shape::fill(uint8_t r, uint8_t g, uint8_t b, uint8_t a) noexcept
 {
-    pImpl->color[0] = r;
-    pImpl->color[1] = g;
-    pImpl->color[2] = b;
-    pImpl->color[3] = a;
+    pImpl->rs.color[0] = r;
+    pImpl->rs.color[1] = g;
+    pImpl->rs.color[2] = b;
+    pImpl->rs.color[3] = a;
     pImpl->flag |= RenderUpdateFlag::Color;
 
-    if (pImpl->fill) {
-        delete(pImpl->fill);
-        pImpl->fill = nullptr;
+    if (pImpl->rs.fill) {
+        delete(pImpl->rs.fill);
+        pImpl->rs.fill = nullptr;
         pImpl->flag |= RenderUpdateFlag::Gradient;
     }
 
@@ -282,8 +265,8 @@ Result Shape::fill(unique_ptr<Fill> f) noexcept
     auto p = f.release();
     if (!p) return Result::MemoryCorruption;
 
-    if (pImpl->fill && pImpl->fill != p) delete(pImpl->fill);
-    pImpl->fill = p;
+    if (pImpl->rs.fill && pImpl->rs.fill != p) delete(pImpl->rs.fill);
+    pImpl->rs.fill = p;
     pImpl->flag |= RenderUpdateFlag::Gradient;
 
     return Result::Success;
@@ -292,17 +275,15 @@ Result Shape::fill(unique_ptr<Fill> f) noexcept
 
 Result Shape::fillColor(uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* a) const noexcept
 {
-    if (r) *r = pImpl->color[0];
-    if (g) *g = pImpl->color[1];
-    if (b) *b = pImpl->color[2];
-    if (a) *a = pImpl->color[3];
+    pImpl->rs.fillColor(r, g, b, a);
 
     return Result::Success;
 }
 
+
 const Fill* Shape::fill() const noexcept
 {
-    return pImpl->fill;
+    return pImpl->rs.fill;
 }
 
 
@@ -316,8 +297,7 @@ Result Shape::stroke(float width) noexcept
 
 float Shape::strokeWidth() const noexcept
 {
-    if (!pImpl->stroke) return 0;
-    return pImpl->stroke->width;
+    return pImpl->rs.strokeWidth();
 }
 
 
@@ -331,12 +311,7 @@ Result Shape::stroke(uint8_t r, uint8_t g, uint8_t b, uint8_t a) noexcept
 
 Result Shape::strokeColor(uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* a) const noexcept
 {
-    if (!pImpl->stroke) return Result::InsufficientCondition;
-
-    if (r) *r = pImpl->stroke->color[0];
-    if (g) *g = pImpl->stroke->color[1];
-    if (b) *b = pImpl->stroke->color[2];
-    if (a) *a = pImpl->stroke->color[3];
+    if (!pImpl->rs.strokeColor(r, g, b, a)) return Result::InsufficientCondition;
 
     return Result::Success;
 }
@@ -350,9 +325,7 @@ Result Shape::stroke(unique_ptr<Fill> f) noexcept
 
 const Fill* Shape::strokeFill() const noexcept
 {
-    if (!pImpl->stroke) return nullptr;
-
-    return pImpl->stroke->fill;
+    return pImpl->rs.strokeFill();
 }
 
 
@@ -373,11 +346,7 @@ Result Shape::stroke(const float* dashPattern, uint32_t cnt) noexcept
 
 uint32_t Shape::strokeDash(const float** dashPattern) const noexcept
 {
-    if (!pImpl->stroke) return 0;
-
-    if (dashPattern) *dashPattern = pImpl->stroke->dashPattern;
-
-    return pImpl->stroke->dashCnt;
+    return pImpl->rs.strokeDash(dashPattern);
 }
 
 
@@ -399,23 +368,19 @@ Result Shape::stroke(StrokeJoin join) noexcept
 
 StrokeCap Shape::strokeCap() const noexcept
 {
-    if (!pImpl->stroke) return StrokeCap::Square;
-
-    return pImpl->stroke->cap;
+    return pImpl->rs.strokeCap();
 }
 
 
 StrokeJoin Shape::strokeJoin() const noexcept
 {
-    if (!pImpl->stroke) return StrokeJoin::Bevel;
-
-    return pImpl->stroke->join;
+    return pImpl->rs.strokeJoin();
 }
 
 
 Result Shape::fill(FillRule r) noexcept
 {
-    pImpl->rule = r;
+    pImpl->rs.rule = r;
 
     return Result::Success;
 }
@@ -423,5 +388,5 @@ Result Shape::fill(FillRule r) noexcept
 
 FillRule Shape::fillRule() const noexcept
 {
-    return pImpl->rule;
+    return pImpl->rs.rule;
 }

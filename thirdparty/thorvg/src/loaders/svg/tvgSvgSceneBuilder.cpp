@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -65,7 +65,6 @@ struct Box
 {
     float x, y, w, h;
 };
-
 
 static bool _appendShape(SvgNode* node, Shape* shape, const Box& vBox, const string& svgPath);
 static unique_ptr<Scene> _sceneBuildHelper(const SvgNode* node, const Box& vBox, const string& svgPath, bool mask, int depth, bool* isMaskWhite = nullptr);
@@ -755,11 +754,22 @@ static unique_ptr<Scene> _sceneBuildHelper(const SvgNode* node, const Box& vBox,
 }
 
 
+static void _applySvgViewFlag(const Scene* scene, float& vx, float& vy, float& vw, float& vh, float& w, float& h, SvgViewFlag viewFlag)
+{
+    if (!((uint32_t)viewFlag & (uint32_t)SvgViewFlag::Viewbox)) {
+        scene->bounds(&vx, &vy, &vw, &vh, false);
+        if ((uint32_t)viewFlag & (uint32_t)SvgViewFlag::Width) vw = w;
+        if ((uint32_t)viewFlag & (uint32_t)SvgViewFlag::Height) vh = h;
+    }
+    if (!((uint32_t)viewFlag & (uint32_t)SvgViewFlag::Width)) w = vw;
+    if (!((uint32_t)viewFlag & (uint32_t)SvgViewFlag::Height)) h = vh;
+}
+
 /************************************************************************/
 /* External Class Implementation                                        */
 /************************************************************************/
 
-unique_ptr<Scene> svgSceneBuild(SvgNode* node, float vx, float vy, float vw, float vh, float w, float h, AspectRatioAlign align, AspectRatioMeetOrSlice meetOrSlice, const string& svgPath)
+unique_ptr<Scene> svgSceneBuild(SvgNode* node, float& vx, float& vy, float& vw, float& vh, float& w, float& h, AspectRatioAlign align, AspectRatioMeetOrSlice meetOrSlice, const string& svgPath, SvgViewFlag viewFlag)
 {
     //TODO: aspect ratio is valid only if viewBox was set
 
@@ -767,9 +777,10 @@ unique_ptr<Scene> svgSceneBuild(SvgNode* node, float vx, float vy, float vw, flo
 
     Box vBox = {vx, vy, vw, vh};
     auto docNode = _sceneBuildHelper(node, vBox, svgPath, false, 0);
+    _applySvgViewFlag(docNode.get(), vx, vy, vw, vh, w, h, viewFlag);
 
     if (!mathEqual(w, vw) || !mathEqual(h, vh)) {
-        Matrix m = _calculateAspectRatioMatrix(align, meetOrSlice, w, h, vBox);
+        Matrix m = _calculateAspectRatioMatrix(align, meetOrSlice, w, h, {vx, vy, vw, vh});
         docNode->transform(m);
     } else if (!mathZero(vx) || !mathZero(vy)) {
         docNode->translate(-vx, -vy);

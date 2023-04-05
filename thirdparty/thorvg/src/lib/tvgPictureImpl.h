@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #ifndef _TVG_PICTURE_IMPL_H_
 #define _TVG_PICTURE_IMPL_H_
 
@@ -63,6 +64,8 @@ struct Picture::Impl
 
     Paint* paint = nullptr;           //vector picture uses
     Surface* surface = nullptr;       //bitmap picture uses
+    Polygon* triangles = nullptr;     //mesh data
+    uint32_t triangleCnt = 0;       //mesh triangle count
     void* rdata = nullptr;            //engine data
     float w = 0, h = 0;
     bool resizing = false;
@@ -71,6 +74,7 @@ struct Picture::Impl
     ~Impl()
     {
         if (paint) delete(paint);
+        free(triangles);
         free(surface);
     }
 
@@ -94,6 +98,10 @@ struct Picture::Impl
                     paint = p.release();
                     loader->close();
                     if (w != loader->w || h != loader->h) {
+                        if (!resizing) {
+                            w = loader->w;
+                            h = loader->h;
+                        }
                         loader->resize(paint, w, h);
                         resizing = false;
                     }
@@ -123,32 +131,35 @@ struct Picture::Impl
         else return RenderTransform(pTransform, &tmp);
     }
 
-    void* update(RenderMethod &renderer, const RenderTransform* pTransform, uint32_t opacity, Array<RenderData>& clips, RenderUpdateFlag pFlag)
+    void* update(RenderMethod &renderer, const RenderTransform* pTransform, uint32_t opacity, Array<RenderData>& clips, RenderUpdateFlag pFlag, bool clipper)
     {
         rendererColorSpace = renderer.colorSpace();
         auto flag = reload();
 
         if (surface) {
             auto transform = resizeTransform(pTransform);
-            rdata = renderer.prepare(surface, rdata, &transform, opacity, clips, static_cast<RenderUpdateFlag>(pFlag | flag));
+            rdata = renderer.prepare(surface, triangles, triangleCnt, rdata, &transform, opacity, clips, static_cast<RenderUpdateFlag>(pFlag | flag));
         } else if (paint) {
             if (resizing) {
                 loader->resize(paint, w, h);
                 resizing = false;
             }
-            rdata = paint->pImpl->update(renderer, pTransform, opacity, clips, static_cast<RenderUpdateFlag>(pFlag | flag));
+            rdata = paint->pImpl->update(renderer, pTransform, opacity, clips, static_cast<RenderUpdateFlag>(pFlag | flag), clipper);
         }
         return rdata;
     }
 
     bool render(RenderMethod &renderer)
     {
-        if (surface) return renderer.renderImage(rdata);
+        if (surface) {
+            if (triangles) return renderer.renderImageMesh(rdata);
+            else return renderer.renderImage(rdata);
+        }
         else if (paint) return paint->pImpl->render(renderer);
         return false;
     }
 
-    bool viewbox(float* x, float* y, float* w, float* h) const
+    bool viewbox(float* x, float* y, float* w, float* h)
     {
         if (!loader) return false;
         if (x) *x = loader->vx;
@@ -168,11 +179,36 @@ struct Picture::Impl
 
     bool bounds(float* x, float* y, float* w, float* h)
     {
-        if (x) *x = 0;
-        if (y) *y = 0;
-        if (w) *w = this->w;
-        if (h) *h = this->h;
- 
+        if (triangleCnt > 0) {
+            Point min = { triangles[0].vertex[0].pt.x, triangles[0].vertex[0].pt.y };
+            Point max = { triangles[0].vertex[0].pt.x, triangles[0].vertex[0].pt.y };
+
+            for (uint32_t i = 0; i < triangleCnt; ++i) {
+                if (triangles[i].vertex[0].pt.x < min.x) min.x = triangles[i].vertex[0].pt.x;
+                else if (triangles[i].vertex[0].pt.x > max.x) max.x = triangles[i].vertex[0].pt.x;
+                if (triangles[i].vertex[0].pt.y < min.y) min.y = triangles[i].vertex[0].pt.y;
+                else if (triangles[i].vertex[0].pt.y > max.y) max.y = triangles[i].vertex[0].pt.y;
+
+                if (triangles[i].vertex[1].pt.x < min.x) min.x = triangles[i].vertex[1].pt.x;
+                else if (triangles[i].vertex[1].pt.x > max.x) max.x = triangles[i].vertex[1].pt.x;
+                if (triangles[i].vertex[1].pt.y < min.y) min.y = triangles[i].vertex[1].pt.y;
+                else if (triangles[i].vertex[1].pt.y > max.y) max.y = triangles[i].vertex[1].pt.y;
+
+                if (triangles[i].vertex[2].pt.x < min.x) min.x = triangles[i].vertex[2].pt.x;
+                else if (triangles[i].vertex[2].pt.x > max.x) max.x = triangles[i].vertex[2].pt.x;
+                if (triangles[i].vertex[2].pt.y < min.y) min.y = triangles[i].vertex[2].pt.y;
+                else if (triangles[i].vertex[2].pt.y > max.y) max.y = triangles[i].vertex[2].pt.y;
+            }
+            if (x) *x = min.x;
+            if (y) *y = min.y;
+            if (w) *w = max.x - min.x;
+            if (h) *h = max.y - min.y;
+        } else {
+            if (x) *x = 0;
+            if (y) *y = 0;
+            if (w) *w = this->w;
+            if (h) *h = this->h;
+        }
         return true;
     }
 
@@ -222,6 +258,19 @@ struct Picture::Impl
         return Result::Success;
     }
 
+    void mesh(const Polygon* triangles, const uint32_t triangleCnt)
+    {
+        if (triangles && triangleCnt > 0) {
+            this->triangleCnt = triangleCnt;
+            this->triangles = (Polygon*)malloc(sizeof(Polygon) * triangleCnt);
+            memcpy(this->triangles, triangles, sizeof(Polygon) * triangleCnt);
+        } else {
+            free(this->triangles);
+            this->triangles = nullptr;
+            this->triangleCnt = 0;
+        }
+    }
+
     Paint* duplicate()
     {
         reload();
@@ -239,6 +288,12 @@ struct Picture::Impl
         dup->w = w;
         dup->h = h;
         dup->resizing = resizing;
+
+        if (triangleCnt > 0) {
+            dup->triangleCnt = triangleCnt;
+            dup->triangles = (Polygon*)malloc(sizeof(Polygon) * triangleCnt);
+            memcpy(dup->triangles, triangles, sizeof(Polygon) * triangleCnt);
+        }
 
         return ret.release();
     }

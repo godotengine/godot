@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2021 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,17 +19,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
-struct Vertex
-{
-   Point pt;
-   Point uv;
-};
-
-struct Polygon
-{
-   Vertex vertex[3];
-};
 
 struct AALine
 {
@@ -287,18 +276,10 @@ static void _rasterPolygonImage(SwSurface* surface, const SwImage* image, const 
 }
 
 
-static AASpans* _AASpans(const Vertex* vertices, const SwImage* image, const SwBBox* region)
+static AASpans* _AASpans(float ymin, float ymax, const SwImage* image, const SwBBox* region)
 {
-    //Initialize Y range
-    float ys = FLT_MAX, ye = -1.0f;
-
-    for (int i = 0; i < 4; i++) {
-        if (vertices[i].pt.y < ys) ys = vertices[i].pt.y;
-        if (vertices[i].pt.y > ye) ye = vertices[i].pt.y;
-    }
-
-    auto yStart = static_cast<int32_t>(ys);
-    auto yEnd = static_cast<int32_t>(ye);
+    auto yStart = static_cast<int32_t>(ymin);
+    auto yEnd = static_cast<int32_t>(ymax);
 
     if (!_arrange(image, region, yStart, yEnd)) return nullptr;
 
@@ -536,7 +517,7 @@ static bool _apply(SwSurface* surface, AASpans* aaSpans)
             dst = surface->buffer + (offset + line->x[1] - 1);
             if (line->x[1] < (int32_t)(surface->w - 1)) pixel = *(dst + 1);
             else pixel = *dst;
-            
+
             pos = width;
             while ((int32_t)(width - line->length[1]) < pos) {
                 *dst = INTERPOLATE(255 - (line->coverage[1] * (line->length[1] - (width - pos))), *dst, pixel);
@@ -562,12 +543,12 @@ static bool _apply(SwSurface* surface, AASpans* aaSpans)
     0 -- 1
     |  / |
     | /  |
-    3 -- 2 
+    3 -- 2
 */
 static bool _rasterTexmapPolygon(SwSurface* surface, const SwImage* image, const Matrix* transform, const SwBBox* region, uint32_t opacity, uint32_t (*blendMethod)(uint32_t))
 {
     //Exceptions: No dedicated drawing area?
-    if (!region && image->rle->size == 0) return false;
+    if ((!image->rle && !region) || (image->rle && image->rle->size == 0)) return false;
 
    /* Prepare vertices.
       shift XY coordinates to match the sub-pixeling technique. */
@@ -577,9 +558,15 @@ static bool _rasterTexmapPolygon(SwSurface* surface, const SwImage* image, const
     vertices[2] = {{float(image->w), float(image->h)}, {float(image->w), float(image->h)}};
     vertices[3] = {{0.0f, float(image->h)}, {0.0f, float(image->h)}};
 
-    for (int i = 0; i < 4; i++) mathMultiply(&vertices[i].pt, transform);
+    float ys = FLT_MAX, ye = -1.0f;
+    for (int i = 0; i < 4; i++) {
+        mathMultiply(&vertices[i].pt, transform);
 
-    auto aaSpans = _AASpans(vertices, image, region);
+        if (vertices[i].pt.y < ys) ys = vertices[i].pt.y;
+        if (vertices[i].pt.y > ye) ye = vertices[i].pt.y;
+    }
+
+    auto aaSpans = _AASpans(ys, ye, image, region);
     if (!aaSpans) return true;
 
     Polygon polygon;
@@ -599,4 +586,62 @@ static bool _rasterTexmapPolygon(SwSurface* surface, const SwImage* image, const
     _rasterPolygonImage(surface, image, region, opacity, polygon, blendMethod, aaSpans);
 
     return _apply(surface, aaSpans);
+}
+
+
+/*
+    Provide any number of triangles to draw a mesh using the supplied image.
+    Indexes are not used, so each triangle (Polygon) vertex has to be defined, even if they copy the previous one.
+    Example:
+
+      0 -- 1       0 -- 1   0
+      |  / |  -->  |  /   / |
+      | /  |       | /   /  |
+      2 -- 3       2   1 -- 2
+
+      Should provide two Polygons, one for each triangle.
+      // TODO: region?
+*/
+static bool _rasterTexmapPolygonMesh(SwSurface* surface, const SwImage* image, const Polygon* triangles, const uint32_t triangleCount, const Matrix* transform, const SwBBox* region, uint32_t opacity, uint32_t (*blendMethod)(uint32_t))
+{
+    //Exceptions: No dedicated drawing area?
+    if ((!image->rle && !region) || (image->rle && image->rle->size == 0)) return false;
+
+    // Step polygons once to transform
+    auto transformedTris = (Polygon*)malloc(sizeof(Polygon) * triangleCount);
+    float ys = FLT_MAX, ye = -1.0f;
+    for (uint32_t i = 0; i < triangleCount; i++) {
+        transformedTris[i] = triangles[i];
+        mathMultiply(&transformedTris[i].vertex[0].pt, transform);
+        mathMultiply(&transformedTris[i].vertex[1].pt, transform);
+        mathMultiply(&transformedTris[i].vertex[2].pt, transform);
+
+        if (transformedTris[i].vertex[0].pt.y < ys) ys = transformedTris[i].vertex[0].pt.y;
+        else if (transformedTris[i].vertex[0].pt.y > ye) ye = transformedTris[i].vertex[0].pt.y;
+        if (transformedTris[i].vertex[1].pt.y < ys) ys = transformedTris[i].vertex[1].pt.y;
+        else if (transformedTris[i].vertex[1].pt.y > ye) ye = transformedTris[i].vertex[1].pt.y;
+        if (transformedTris[i].vertex[2].pt.y < ys) ys = transformedTris[i].vertex[2].pt.y;
+        else if (transformedTris[i].vertex[2].pt.y > ye) ye = transformedTris[i].vertex[2].pt.y;
+
+        // Convert normalized UV coordinates to image coordinates
+        transformedTris[i].vertex[0].uv.x *= (float)image->w;
+        transformedTris[i].vertex[0].uv.y *= (float)image->h;
+        transformedTris[i].vertex[1].uv.x *= (float)image->w;
+        transformedTris[i].vertex[1].uv.y *= (float)image->h;
+        transformedTris[i].vertex[2].uv.x *= (float)image->w;
+        transformedTris[i].vertex[2].uv.y *= (float)image->h;
+    }
+
+    // Get AA spans and step polygons again to draw
+    auto aaSpans = _AASpans(ys, ye, image, region);
+    if (aaSpans) {
+        for (uint32_t i = 0; i < triangleCount; i++) {
+            _rasterPolygonImage(surface, image, region, opacity, transformedTris[i], blendMethod, aaSpans);
+        }
+        // Apply to surface (note: frees the AA spans)
+        _apply(surface, aaSpans);
+    }
+    free(transformedTris);
+
+    return true;
 }

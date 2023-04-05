@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+/*
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #ifndef _TVG_SW_COMMON_H_
 #define _TVG_SW_COMMON_H_
 
@@ -301,12 +302,12 @@ bool mathUpdateOutlineBBox(const SwOutline* outline, const SwBBox& clipRegion, S
 bool mathClipBBox(const SwBBox& clipper, SwBBox& clipee);
 
 void shapeReset(SwShape* shape);
-bool shapePrepare(SwShape* shape, const Shape* sdata, const Matrix* transform, const SwBBox& clipRegion, SwBBox& renderRegion, SwMpool* mpool, unsigned tid, bool hasComposite);
+bool shapePrepare(SwShape* shape, const RenderShape* rshape, const Matrix* transform, const SwBBox& clipRegion, SwBBox& renderRegion, SwMpool* mpool, unsigned tid, bool hasComposite);
 bool shapePrepared(const SwShape* shape);
-bool shapeGenRle(SwShape* shape, const Shape* sdata, bool antiAlias);
+bool shapeGenRle(SwShape* shape, const RenderShape* rshape, bool antiAlias);
 void shapeDelOutline(SwShape* shape, SwMpool* mpool, uint32_t tid);
-void shapeResetStroke(SwShape* shape, const Shape* sdata, const Matrix* transform);
-bool shapeGenStrokeRle(SwShape* shape, const Shape* sdata, const Matrix* transform, const SwBBox& clipRegion, SwBBox& renderRegion, SwMpool* mpool, unsigned tid);
+void shapeResetStroke(SwShape* shape, const RenderShape* rshape, const Matrix* transform);
+bool shapeGenStrokeRle(SwShape* shape, const RenderShape* rshape, const Matrix* transform, const SwBBox& clipRegion, SwBBox& renderRegion, SwMpool* mpool, unsigned tid);
 void shapeFree(SwShape* shape);
 void shapeDelStroke(SwShape* shape);
 bool shapeGenFillColors(SwShape* shape, const Fill* fill, const Matrix* transform, SwSurface* surface, uint32_t opacity, bool ctable);
@@ -316,12 +317,12 @@ void shapeResetStrokeFill(SwShape* shape);
 void shapeDelFill(SwShape* shape);
 void shapeDelStrokeFill(SwShape* shape);
 
-void strokeReset(SwStroke* stroke, const Shape* shape, const Matrix* transform);
+void strokeReset(SwStroke* stroke, const RenderShape* shape, const Matrix* transform);
 bool strokeParseOutline(SwStroke* stroke, const SwOutline& outline);
 SwOutline* strokeExportOutline(SwStroke* stroke, SwMpool* mpool, unsigned tid);
 void strokeFree(SwStroke* stroke);
 
-bool imagePrepare(SwImage* image, const Matrix* transform, const SwBBox& clipRegion, SwBBox& renderRegion, SwMpool* mpool, unsigned tid);
+bool imagePrepare(SwImage* image, Polygon* triangles, uint32_t triangleCount, const Matrix* transform, const SwBBox& clipRegion, SwBBox& renderRegion, SwMpool* mpool, unsigned tid);
 bool imageGenRle(SwImage* image, const SwBBox& renderRegion, bool antiAlias);
 void imageDelOutline(SwImage* image, SwMpool* mpool, uint32_t tid);
 void imageReset(SwImage* image);
@@ -351,6 +352,7 @@ bool rasterCompositor(SwSurface* surface);
 bool rasterGradientShape(SwSurface* surface, SwShape* shape, unsigned id);
 bool rasterShape(SwSurface* surface, SwShape* shape, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 bool rasterImage(SwSurface* surface, SwImage* image, const Matrix* transform, const SwBBox& bbox, uint32_t opacity);
+bool rasterImageMesh(SwSurface* surface, SwImage* image, const Polygon* triangles, const uint32_t triangleCount, const Matrix* transform, const SwBBox& bbox, uint32_t opacity);
 bool rasterStroke(SwSurface* surface, SwShape* shape, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 bool rasterGradientStroke(SwSurface* surface, SwShape* shape, unsigned id);
 bool rasterClear(SwSurface* surface);

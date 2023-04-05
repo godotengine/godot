@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #include "tvgMath.h"
 #include "tvgSwCommon.h"
 #include "tvgTaskScheduler.h"
@@ -71,23 +72,22 @@ struct SwTask : Task
 struct SwShapeTask : SwTask
 {
     SwShape shape;
-    const Shape* sdata = nullptr;
+    const RenderShape* rshape = nullptr;
     bool cmpStroking = false;
+    bool clipper = false;
 
     void run(unsigned tid) override
-    {
-        auto compMethod = CompositeMethod::None;
-        auto usedAsClip = (sdata->composite(nullptr, &compMethod) == Result::Success) && (compMethod == CompositeMethod::ClipPath);
-        if (opacity == 0 && !usedAsClip) return;  //Invisible
+    {    
+        if (opacity == 0 && !clipper) return;  //Invisible
 
         uint8_t strokeAlpha = 0;
         auto visibleStroke = false;
         bool visibleFill = false;
         auto clipRegion = bbox;
 
-        if (HALF_STROKE(sdata->strokeWidth()) > 0) {
-            sdata->strokeColor(nullptr, nullptr, nullptr, &strokeAlpha);
-            visibleStroke = sdata->strokeFill() || (static_cast<uint32_t>(strokeAlpha * opacity / 255) > 0);
+        if (HALF_STROKE(rshape->strokeWidth()) > 0) {
+            rshape->strokeColor(nullptr, nullptr, nullptr, &strokeAlpha);
+            visibleStroke = rshape->strokeFill() || (static_cast<uint32_t>(strokeAlpha * opacity / 255) > 0);
         }
 
         //This checks also for the case, if the invisible shape turned to visible by alpha.
@@ -97,12 +97,12 @@ struct SwShapeTask : SwTask
         //Shape
         if (flags & (RenderUpdateFlag::Path | RenderUpdateFlag::Transform) || prepareShape) {
             uint8_t alpha = 0;
-            sdata->fillColor(nullptr, nullptr, nullptr, &alpha);
+            rshape->fillColor(nullptr, nullptr, nullptr, &alpha);
             alpha = static_cast<uint8_t>(static_cast<uint32_t>(alpha) * opacity / 255);
-            visibleFill = (alpha > 0 || sdata->fill());
-            if (visibleFill || visibleStroke || usedAsClip) {
+            visibleFill = (alpha > 0 || rshape->fill);
+            if (visibleFill || visibleStroke || clipper) {
                 shapeReset(&shape);
-                if (!shapePrepare(&shape, sdata, transform, clipRegion, bbox, mpool, tid, clips.count > 0 ? true : false)) goto err;
+                if (!shapePrepare(&shape, rshape, transform, clipRegion, bbox, mpool, tid, clips.count > 0 ? true : false)) goto err;
             }
         }
 
@@ -112,16 +112,16 @@ struct SwShapeTask : SwTask
 
         //Fill
         if (flags & (RenderUpdateFlag::Gradient | RenderUpdateFlag::Transform | RenderUpdateFlag::Color)) {
-            if (visibleFill || usedAsClip) {
+            if (visibleFill || clipper) {
                 /* We assume that if stroke width is bigger than 2,
                    shape outline below stroke could be full covered by stroke drawing.
                    Thus it turns off antialising in that condition.
                    Also, it shouldn't be dash style. */
-                auto antiAlias = (strokeAlpha == 255 && sdata->strokeWidth() > 2 && sdata->strokeDash(nullptr) == 0) ? false : true;
+                auto antiAlias = (strokeAlpha == 255 && rshape->strokeWidth() > 2 && rshape->strokeDash(nullptr) == 0) ? false : true;
 
-                if (!shapeGenRle(&shape, sdata, antiAlias)) goto err;
+                if (!shapeGenRle(&shape, rshape, antiAlias)) goto err;
             }
-            if (auto fill = sdata->fill()) {
+            if (auto fill = rshape->fill) {
                 auto ctable = (flags & RenderUpdateFlag::Gradient) ? true : false;
                 if (ctable) shapeResetFill(&shape);
                 if (!shapeGenFillColors(&shape, fill, transform, surface, cmpStroking ? 255 : opacity, ctable)) goto err;
@@ -133,10 +133,10 @@ struct SwShapeTask : SwTask
         //Stroke
         if (flags & (RenderUpdateFlag::Stroke | RenderUpdateFlag::Transform)) {
             if (visibleStroke) {
-                shapeResetStroke(&shape, sdata, transform);
-                if (!shapeGenStrokeRle(&shape, sdata, transform, clipRegion, bbox, mpool, tid)) goto err;
+                shapeResetStroke(&shape, rshape, transform);
+                if (!shapeGenStrokeRle(&shape, rshape, transform, clipRegion, bbox, mpool, tid)) goto err;
 
-                if (auto fill = sdata->strokeFill()) {
+                if (auto fill = rshape->strokeFill()) {
                     auto ctable = (flags & RenderUpdateFlag::GradientStroke) ? true : false;
                     if (ctable) shapeResetStrokeFill(&shape);
                     if (!shapeGenStrokeFillColors(&shape, fill, transform, surface, cmpStroking ? 255 : opacity, ctable)) goto err;
@@ -183,6 +183,8 @@ struct SwShapeTask : SwTask
 struct SwImageTask : SwTask
 {
     SwImage image;
+    Polygon* triangles;
+    uint32_t triangleCnt;
 
     void run(unsigned tid) override
     {
@@ -193,9 +195,10 @@ struct SwImageTask : SwTask
             imageReset(&image);
             if (!image.data || image.w == 0 || image.h == 0) goto end;
 
-            if (!imagePrepare(&image, transform, clipRegion, bbox, mpool, tid)) goto end;
+            if (!imagePrepare(&image, triangles, triangleCnt, transform, clipRegion, bbox, mpool, tid)) goto end;
 
-            if (clips.count > 0) {
+            // TODO: How do we clip the triangle mesh? Only clip non-meshed images for now
+            if (triangleCnt == 0 && clips.count > 0) {
                 if (!imageGenRle(&image, bbox, false)) goto end;
                 if (image.rle) {
                     for (auto clip = clips.data; clip < (clips.data + clips.count); ++clip) {
@@ -358,6 +361,17 @@ bool SwRenderer::renderImage(RenderData data)
 }
 
 
+bool SwRenderer::renderImageMesh(RenderData data)
+{
+    auto task = static_cast<SwImageTask*>(data);
+    task->done();
+
+    if (task->opacity == 0) return true;
+
+    return rasterImageMesh(surface, &task->image, task->triangles, task->triangleCnt, task->transform, task->bbox, task->opacity);
+}
+
+
 bool SwRenderer::renderShape(RenderData data)
 {
     auto task = static_cast<SwShapeTask*>(data);
@@ -383,18 +397,18 @@ bool SwRenderer::renderShape(RenderData data)
     //Main raster stage
     uint8_t r, g, b, a;
 
-    if (auto fill = task->sdata->fill()) {
+    if (auto fill = task->rshape->fill) {
         rasterGradientShape(surface, &task->shape, fill->identifier());
     } else {
-        task->sdata->fillColor(&r, &g, &b, &a);
+        task->rshape->fillColor(&r, &g, &b, &a);
         a = static_cast<uint8_t>((opacity * (uint32_t) a) / 255);
         if (a > 0) rasterShape(surface, &task->shape, r, g, b, a);
     }
 
-    if (auto strokeFill = task->sdata->strokeFill()) {
+    if (auto strokeFill = task->rshape->strokeFill()) {
         rasterGradientStroke(surface, &task->shape, strokeFill->identifier());
     } else {
-        if (task->sdata->strokeColor(&r, &g, &b, &a) == Result::Success) {
+        if (task->rshape->strokeColor(&r, &g, &b, &a)) {
             a = static_cast<uint8_t>((opacity * (uint32_t) a) / 255);
             if (a > 0) rasterStroke(surface, &task->shape, r, g, b, a);
         }
@@ -612,30 +626,31 @@ void* SwRenderer::prepareCommon(SwTask* task, const RenderTransform* transform, 
 }
 
 
-RenderData SwRenderer::prepare(Surface* image, RenderData data, const RenderTransform* transform, uint32_t opacity, Array<RenderData>& clips, RenderUpdateFlag flags)
+RenderData SwRenderer::prepare(Surface* image, Polygon* triangles, uint32_t triangleCnt, RenderData data, const RenderTransform* transform, uint32_t opacity, Array<RenderData>& clips, RenderUpdateFlag flags)
 {
     //prepare task
     auto task = static_cast<SwImageTask*>(data);
-    if (!task) {
-        task = new SwImageTask;
-        if (flags & RenderUpdateFlag::Image) {
-            task->image.data = image->buffer;
-            task->image.w = image->w;
-            task->image.h = image->h;
-            task->image.stride = image->stride;
-        }
+    if (!task) task = new SwImageTask;
+    if (flags & RenderUpdateFlag::Image) {
+        task->image.data = image->buffer;
+        task->image.w = image->w;
+        task->image.h = image->h;
+        task->image.stride = image->stride;
+        task->triangles = triangles;
+        task->triangleCnt = triangleCnt;
     }
     return prepareCommon(task, transform, opacity, clips, flags);
 }
 
 
-RenderData SwRenderer::prepare(const Shape& sdata, RenderData data, const RenderTransform* transform, uint32_t opacity, Array<RenderData>& clips, RenderUpdateFlag flags)
+RenderData SwRenderer::prepare(const RenderShape& rshape, RenderData data, const RenderTransform* transform, uint32_t opacity, Array<RenderData>& clips, RenderUpdateFlag flags, bool clipper)
 {
     //prepare task
     auto task = static_cast<SwShapeTask*>(data);
     if (!task) {
         task = new SwShapeTask;
-        task->sdata = &sdata;
+        task->rshape = &rshape;
+        task->clipper = clipper;
     }
     return prepareCommon(task, transform, opacity, clips, flags);
 }

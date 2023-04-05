@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -118,4 +118,21 @@ const uint32_t* Picture::data(uint32_t* w, uint32_t* h) const noexcept
     }
     if (pImpl->surface) return pImpl->surface->buffer;
     else return nullptr;
+}
+
+
+Result Picture::mesh(const Polygon* triangles, const uint32_t triangleCnt) noexcept
+{
+    if (!triangles && triangleCnt > 0) return Result::InvalidArguments;
+    if (triangles && triangleCnt == 0) return Result::InvalidArguments;
+
+    pImpl->mesh(triangles, triangleCnt);
+    return Result::Success;
+}
+
+
+uint32_t Picture::mesh(const Polygon** triangles) const noexcept
+{
+    if (triangles) *triangles = pImpl->triangles;
+    return pImpl->triangleCnt;
 }
