@@ -127,10 +127,11 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 				xml_body += vformat("</%s>", parser->get_node_name());
 			}
 		}
-		String temp_xml = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 0 0\">" + xml_body;
+		String temp_xml_str = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 0 0\">" + xml_body;
+		CharString temp_xml = temp_xml_str.utf8();
 
 		std::unique_ptr<tvg::Picture> picture = tvg::Picture::gen();
-		tvg::Result result = picture->load(temp_xml.utf8().get_data(), temp_xml.utf8().length(), "svg+xml", false);
+		tvg::Result result = picture->load(temp_xml.get_data(), temp_xml.length(), "svg+xml", false);
 		if (result != tvg::Result::Success) {
 			ERR_FAIL_V_MSG(FT_Err_Invalid_SVG_Document, "Failed to load SVG document (bounds detection).");
 		}
@@ -147,10 +148,11 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 			new_h = (new_w / aspect);
 		}
 
-		gl_state.xml_code = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"" + rtos(min_x) + " " + rtos(min_y) + " " + rtos(new_w) + " " + rtos(new_h) + "\">" + xml_body;
+		String xml_code_str = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"" + rtos(min_x) + " " + rtos(min_y) + " " + rtos(new_w) + " " + rtos(new_h) + "\">" + xml_body;
+		gl_state.xml_code = xml_code_str.utf8();
 
 		picture = tvg::Picture::gen();
-		result = picture->load(gl_state.xml_code.utf8().get_data(), gl_state.xml_code.utf8().length(), "svg+xml", false);
+		result = picture->load(gl_state.xml_code.get_data(), gl_state.xml_code.length(), "svg+xml", false);
 		if (result != tvg::Result::Success) {
 			ERR_FAIL_V_MSG(FT_Err_Invalid_SVG_Document, "Failed to load SVG document (glyph metrics).");
 		}
@@ -238,7 +240,7 @@ FT_Error tvg_svg_in_ot_render(FT_GlyphSlot p_slot, FT_Pointer *p_state) {
 	ERR_FAIL_COND_V_MSG(!gl_state.ready, FT_Err_Invalid_SVG_Document, "SVG glyph not ready.");
 
 	std::unique_ptr<tvg::Picture> picture = tvg::Picture::gen();
-	tvg::Result res = picture->load(gl_state.xml_code.utf8().get_data(), gl_state.xml_code.utf8().length(), "svg+xml", false);
+	tvg::Result res = picture->load(gl_state.xml_code.get_data(), gl_state.xml_code.length(), "svg+xml", false);
 	if (res != tvg::Result::Success) {
 		ERR_FAIL_V_MSG(FT_Err_Invalid_SVG_Document, "Failed to load SVG document (glyph rendering).");
 	}
