@@ -44,6 +44,7 @@ class ColorPickerButton;
 class ConfirmationDialog;
 class DirectionalLight3D;
 class EditorData;
+class EditorSelection;
 class EditorSpinSlider;
 class HSplitContainer;
 class LineEdit;

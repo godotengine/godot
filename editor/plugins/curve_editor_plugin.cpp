@@ -34,6 +34,7 @@
 #include "core/core_string_names.h"
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -780,7 +781,7 @@ CurveEditorPlugin::CurveEditorPlugin() {
 	curve_plugin.instantiate();
 	EditorInspector::add_inspector_plugin(curve_plugin);
 
-	get_editor_interface()->get_resource_previewer()->add_preview_generator(memnew(CurvePreviewGenerator));
+	EditorInterface::get_singleton()->get_resource_previewer()->add_preview_generator(memnew(CurvePreviewGenerator));
 }
 
 //-----------------------------------

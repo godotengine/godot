@@ -9,7 +9,7 @@
 		Accessing the settings can be done using the following methods, such as:
 		[codeblocks]
 		[gdscript]
-		var settings = EditorInterface.get_editor_settings()
+		var settings = get_editor_interface().get_editor_settings()
 		# `settings.set("some/property", 10)` also works as this class overrides `_set()` internally.
 		settings.set_setting("some/property", 10)
 		# `settings.get("some/property")` also works as this class overrides `_get()` internally.

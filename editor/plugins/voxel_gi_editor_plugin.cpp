@@ -30,6 +30,7 @@
 
 #include "voxel_gi_editor_plugin.h"
 
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/gui/editor_file_dialog.h"
 
@@ -190,7 +191,7 @@ VoxelGIEditorPlugin::VoxelGIEditorPlugin() {
 	probe_file->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	probe_file->add_filter("*.res");
 	probe_file->connect("file_selected", callable_mp(this, &VoxelGIEditorPlugin::_voxel_gi_save_path_and_bake));
-	get_editor_interface()->get_base_control()->add_child(probe_file);
+	EditorInterface::get_singleton()->get_base_control()->add_child(probe_file);
 	probe_file->set_title(TTR("Select path for VoxelGI Data File"));
 
 	VoxelGI::bake_begin_function = bake_func_begin;
