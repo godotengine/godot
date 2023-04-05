@@ -17,11 +17,24 @@
 				Loads a certificate from [param path] ("*.crt" file).
 			</description>
 		</method>
+		<method name="load_from_string">
+			<return type="int" enum="Error" />
+			<param index="0" name="string" type="String" />
+			<description>
+				Loads a certificate from the given [param string].
+			</description>
+		</method>
 		<method name="save">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<description>
 				Saves a certificate to the given [param path] (should be a "*.crt" file).
+			</description>
+		</method>
+		<method name="save_to_string">
+			<return type="String" />
+			<description>
+				Returns a string representation of the certificate, or an empty string if the certificate is invalid.
 			</description>
 		</method>
 	</methods>
