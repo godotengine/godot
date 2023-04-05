@@ -20,13 +20,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Editor (target=editor, tests=yes)
+          - name: Editor (tests=yes)
             cache-name: macos-editor
             target: editor
             tests: true
             bin: "./bin/godot.macos.editor.x86_64"
 
-          - name: Template (target=template_release)
+          - name: Template
             cache-name: macos-template
             target: template_release
             tests: false

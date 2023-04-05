@@ -15,7 +15,7 @@ concurrency:
 jobs:
   android-template:
     runs-on: "ubuntu-20.04"
-    name: Template (target=template_release)
+    name: Template
 
     steps:
       - uses: actions/checkout@v3

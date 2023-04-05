@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Editor w/ Mono (target=editor)
+          - name: Editor w/ Mono
             cache-name: linux-editor-mono
             target: editor
             tests: false # Disabled due freeze caused by mix Mono build and CI
@@ -33,7 +33,7 @@ jobs:
             proj-conv: true
             artifact: true
 
-          - name: Editor with doubles and GCC sanitizers (target=editor, tests=yes, dev_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=gold)
+          - name: Editor with doubles and GCC sanitizers (tests=yes, dev_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=gold)
             cache-name: linux-editor-double-sanitizers
             target: editor
             tests: true
@@ -48,7 +48,7 @@ jobs:
             # Skip 2GiB artifact speeding up action.
             artifact: false
 
-          - name: Editor with clang sanitizers (target=editor, tests=yes, dev_build=yes, use_asan=yes, use_ubsan=yes, use_llvm=yes, linker=lld)
+          - name: Editor with clang sanitizers (tests=yes, dev_build=yes, use_asan=yes, use_ubsan=yes, use_llvm=yes, linker=lld)
             cache-name: linux-editor-llvm-sanitizers
             target: editor
             tests: true
@@ -58,7 +58,7 @@ jobs:
             # Skip 2GiB artifact speeding up action.
             artifact: false
 
-          - name: Template w/ Mono (target=template_release)
+          - name: Template w/ Mono
             cache-name: linux-template-mono
             target: template_release
             tests: false
@@ -66,7 +66,7 @@ jobs:
             build-mono: false
             artifact: true
 
-          - name: Minimal template (target=template_release, everything disabled)
+          - name: Minimal template (everything disabled)
             cache-name: linux-template-minimal
             target: template_release
             tests: false
