@@ -219,6 +219,7 @@ void TextServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("font_set_name", "font_rid", "name"), &TextServer::font_set_name);
 	ClassDB::bind_method(D_METHOD("font_get_name", "font_rid"), &TextServer::font_get_name);
+	ClassDB::bind_method(D_METHOD("font_get_ot_name_strings", "font_rid"), &TextServer::font_get_ot_name_strings);
 
 	ClassDB::bind_method(D_METHOD("font_set_style_name", "font_rid", "name"), &TextServer::font_set_style_name);
 	ClassDB::bind_method(D_METHOD("font_get_style_name", "font_rid"), &TextServer::font_get_style_name);

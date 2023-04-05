@@ -251,6 +251,7 @@ public:
 
 	virtual void font_set_name(const RID &p_font_rid, const String &p_name) = 0;
 	virtual String font_get_name(const RID &p_font_rid) const = 0;
+	virtual Dictionary font_get_ot_name_strings(const RID &p_font_rid) const { return Dictionary(); }
 
 	virtual void font_set_style_name(const RID &p_font_rid, const String &p_name) = 0;
 	virtual String font_get_style_name(const RID &p_font_rid) const = 0;

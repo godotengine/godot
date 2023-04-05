@@ -215,6 +215,12 @@
 				Returns a set of OpenType feature tags. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
 			</description>
 		</method>
+		<method name="get_ot_name_strings" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns [Dictionary] with OpenType font name strings (localized font names, version, description, license information, sample text, etc.).
+			</description>
+		</method>
 		<method name="get_rids" qualifiers="const">
 			<return type="RID[]" />
 			<description>
