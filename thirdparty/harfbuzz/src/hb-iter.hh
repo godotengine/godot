@@ -172,10 +172,16 @@ struct
 HB_FUNCOBJ (hb_iter);
 struct
 {
-  template <typename T> unsigned
-  operator () (T&& c) const
-  { return c.len (); }
+  template <typename T> auto
+  impl (T&& c, hb_priority<1>) const HB_RETURN (unsigned, c.len ())
 
+  template <typename T> auto
+  impl (T&& c, hb_priority<0>) const HB_RETURN (unsigned, c.len)
+
+  public:
+
+  template <typename T> auto
+  operator () (T&& c) const HB_RETURN (unsigned, impl (std::forward<T> (c), hb_prioritize))
 }
 HB_FUNCOBJ (hb_len);
 

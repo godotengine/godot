@@ -1587,11 +1587,17 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 	Vector<int> caret_edit_order = text_editor->get_caret_index_edit_order();
 	caret_edit_order.reverse();
 	int last_line = -1;
+	int folded_to = 0;
 	for (const int &c1 : caret_edit_order) {
 		int from = _get_affected_lines_from(c1);
-		from += from == last_line ? 1 : 0;
+		from += from == last_line ? 1 + folded_to : 0;
 		int to = _get_affected_lines_to(c1);
 		last_line = to;
+		// If last line is folded, extends to the end of the folded section
+		if (text_editor->is_line_folded(to)) {
+			folded_to = text_editor->get_next_visible_line_offset_from(to + 1, 1) - 1;
+			to += folded_to;
+		}
 		// Check first if there's any uncommented lines in selection.
 		bool is_commented = true;
 		for (int line = from; line <= to; line++) {

@@ -1090,6 +1090,7 @@ void ResourceLoader::initialize() {
 }
 
 void ResourceLoader::finalize() {
+	clear_thread_load_tasks();
 	memdelete(thread_load_mutex);
 	memdelete(thread_load_semaphore);
 }

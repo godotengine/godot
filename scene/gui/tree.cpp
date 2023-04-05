@@ -4047,7 +4047,24 @@ void Tree::_notification(int p_what) {
 					int clip_w = tbrect.size.width - sb->get_minimum_size().width;
 					columns.write[i].text_buf->set_width(clip_w);
 
-					Vector2 text_pos = tbrect.position + Point2i(sb->get_offset().x + (tbrect.size.width - columns[i].text_buf->get_size().x) / 2, (tbrect.size.height - columns[i].text_buf->get_size().y) / 2);
+					Vector2 text_pos = Point2i(tbrect.position.x, tbrect.position.y + (tbrect.size.height - columns[i].text_buf->get_size().y) / 2);
+					switch (columns[i].title_alignment) {
+						case HorizontalAlignment::HORIZONTAL_ALIGNMENT_LEFT: {
+							text_pos.x += cache.rtl ? tbrect.size.width - (sb->get_offset().x + columns[i].text_buf->get_size().x) : sb->get_offset().x;
+							break;
+						}
+
+						case HorizontalAlignment::HORIZONTAL_ALIGNMENT_RIGHT: {
+							text_pos.x += cache.rtl ? sb->get_offset().x : tbrect.size.width - (sb->get_offset().x + columns[i].text_buf->get_size().x);
+							break;
+						}
+
+						default: {
+							text_pos.x += sb->get_offset().x + (tbrect.size.width - columns[i].text_buf->get_size().x) / 2;
+							break;
+						}
+					}
+
 					if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
 						columns[i].text_buf->draw_outline(ci, text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 					}
@@ -4689,6 +4706,27 @@ String Tree::get_column_title(int p_column) const {
 	return columns[p_column].title;
 }
 
+void Tree::set_column_title_alignment(int p_column, HorizontalAlignment p_alignment) {
+	ERR_FAIL_INDEX(p_column, columns.size());
+
+	if (p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
+		WARN_PRINT("HORIZONTAL_ALIGNMENT_FILL is not supported for column titles.");
+	}
+
+	if (columns[p_column].title_alignment == p_alignment) {
+		return;
+	}
+
+	columns.write[p_column].title_alignment = p_alignment;
+	update_column(p_column);
+	queue_redraw();
+}
+
+HorizontalAlignment Tree::get_column_title_alignment(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, columns.size(), HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
+	return columns[p_column].title_alignment;
+}
+
 void Tree::set_column_title_direction(int p_column, Control::TextDirection p_text_direction) {
 	ERR_FAIL_INDEX(p_column, columns.size());
 	ERR_FAIL_COND((int)p_text_direction < -1 || (int)p_text_direction > 3);
@@ -5218,6 +5256,9 @@ void Tree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_column_title", "column", "title"), &Tree::set_column_title);
 	ClassDB::bind_method(D_METHOD("get_column_title", "column"), &Tree::get_column_title);
+
+	ClassDB::bind_method(D_METHOD("set_column_title_alignment", "column", "title_alignment"), &Tree::set_column_title_alignment);
+	ClassDB::bind_method(D_METHOD("get_column_title_alignment", "column"), &Tree::get_column_title_alignment);
 
 	ClassDB::bind_method(D_METHOD("set_column_title_direction", "column", "direction"), &Tree::set_column_title_direction);
 	ClassDB::bind_method(D_METHOD("get_column_title_direction", "column"), &Tree::get_column_title_direction);

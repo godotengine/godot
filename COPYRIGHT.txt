@@ -227,19 +227,23 @@ License: Expat
 
 Files: ./thirdparty/harfbuzz/
 Comment: HarfBuzz text shaping library
-Copyright: 2010-2020, Google, Inc.
- 2018-2020, Ebrahim Byagowi
- 2019-2020, Facebook, Inc.
- 2012, Mozilla Foundation
+Copyright: 2010-2022, Google, Inc.
+ 2015-2020, Ebrahim Byagowi
+ 2019,2020, Facebook, Inc.
+ 2012, 2015, Mozilla Foundation
  2011, Codethink Limited
  2008, 2010, Nokia Corporation and/or its subsidiary(-ies)
  2009, Keith Stribley
- 2009, Martin Hosken and SIL International
+ 2011, Martin Hosken and SIL International
  2007, Chris Wilson
- 2005-2006, 2020-2021, Behdad Esfahbod
- 2005, David Turner
- 2004, 2007-2010, Red Hat, Inc.
- 1998-2004, David Turner and Werner Lemberg
+ 2005-2006, 2020-2023, Behdad Esfahbod
+ 2004, 2007-2010, 2013, 2021-2023, Red Hat, Inc.
+ 1998-2005, David Turner and Werner Lemberg
+ 2016, Igalia, S.L.
+ 2022, Matthias Clasen
+ 2018, 2021, Khaled Hosny
+ 2018-2020, Adobe, Inc.
+ 2013-2015, Alexei Podtelezhnikov
 License: HarfBuzz
 
 Files: ./thirdparty/icu4c/

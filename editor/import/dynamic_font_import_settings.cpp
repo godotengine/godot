@@ -924,9 +924,9 @@ void DynamicFontImportSettings::_notification(int p_what) {
 			connect("confirmed", callable_mp(this, &DynamicFontImportSettings::_re_import));
 		} break;
 
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			add_var->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			label_warn->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -1284,8 +1284,6 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "variation_face_index"), 0));
 	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::TRANSFORM2D, "variation_transform"), Transform2D()));
 
-	Color warn_color = (EditorNode::get_singleton()) ? EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("warning_color"), SNAME("Editor")) : Color(1, 1, 0);
-
 	// Root layout
 
 	VBoxContainer *root_vb = memnew(VBoxContainer);
@@ -1302,7 +1300,6 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	label_warn->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	label_warn->set_text("");
 	root_vb->add_child(label_warn);
-	label_warn->add_theme_color_override("font_color", warn_color);
 	label_warn->hide();
 
 	// Page 1 layout: Rendering Options
@@ -1379,7 +1376,6 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	add_var = memnew(Button);
 	page2_hb_vars->add_child(add_var);
 	add_var->set_tooltip_text(TTR("Add configuration"));
-	add_var->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 	add_var->connect("pressed", callable_mp(this, &DynamicFontImportSettings::_variation_add));
 
 	vars_list = memnew(Tree);

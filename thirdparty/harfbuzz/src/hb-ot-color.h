@@ -120,6 +120,15 @@ hb_ot_color_glyph_get_layers (hb_face_t           *face,
 			      unsigned int        *layer_count, /* IN/OUT.  May be NULL. */
 			      hb_ot_color_layer_t *layers /* OUT.     May be NULL. */);
 
+/* COLRv1 */
+
+HB_EXTERN hb_bool_t
+hb_ot_color_has_paint (hb_face_t *face);
+
+HB_EXTERN hb_bool_t
+hb_ot_color_glyph_has_paint (hb_face_t      *face,
+                             hb_codepoint_t  glyph);
+
 /*
  * SVG
  */

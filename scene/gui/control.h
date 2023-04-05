@@ -161,6 +161,8 @@ private:
 
 	// This Data struct is to avoid namespace pollution in derived classes.
 	struct Data {
+		bool initialized = false;
+
 		// Global relations.
 
 		List<Control *>::Element *RI = nullptr;

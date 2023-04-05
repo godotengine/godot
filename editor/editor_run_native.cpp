@@ -40,6 +40,7 @@ void EditorRunNative::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			remote_debug->set_icon(get_theme_icon(SNAME("PlayRemote"), SNAME("EditorIcons")));
 		} break;
+
 		case NOTIFICATION_PROCESS: {
 			bool changed = EditorExport::get_singleton()->poll_export_platforms() || first;
 
@@ -155,7 +156,6 @@ bool EditorRunNative::is_deploy_debug_remote_enabled() const {
 EditorRunNative::EditorRunNative() {
 	remote_debug = memnew(MenuButton);
 	remote_debug->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::run_native));
-	remote_debug->set_icon(get_theme_icon(SNAME("PlayRemote"), SNAME("EditorIcons")));
 	remote_debug->set_tooltip_text(TTR("Remote Debug"));
 	remote_debug->set_disabled(true);
 

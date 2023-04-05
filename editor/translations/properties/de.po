@@ -93,7 +93,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-07 01:01+0000\n"
+"PO-Revision-Date: 2023-03-27 01:56+0000\n"
 "Last-Translator: ‎ <artism90@googlemail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/de/>\n"
@@ -102,7 +102,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.16.2-dev\n"
+"X-Generator: Weblate 4.17-dev\n"
 
 msgid "Application"
 msgstr "Anwendung"
@@ -142,6 +142,12 @@ msgstr "Eigener Nutzerverzeichnisname"
 
 msgid "Project Settings Override"
 msgstr "Projekteinstellungsüberbrückung"
+
+msgid "Main Loop Type"
+msgstr "Typ der Hauptschleife"
+
+msgid "Auto Accept Quit"
+msgstr "Automatisches Beendenakzeptieren"
 
 msgid "Display"
 msgstr "Anzeige"
@@ -239,6 +245,15 @@ msgstr "In separatem Thread ausführen"
 msgid "3D"
 msgstr "3D"
 
+msgid "Stretch"
+msgstr "Strecken"
+
+msgid "Aspect"
+msgstr "Verhältnis"
+
+msgid "Scale"
+msgstr "Skalierung"
+
 msgid "Debug"
 msgstr "Debuggen"
 
@@ -308,6 +323,21 @@ msgstr "GUI"
 msgid "Timers"
 msgstr "Timer"
 
+msgid "Incremental Search Max Interval Msec"
+msgstr "Maximales Intervall für inkrementelle Suche in ms"
+
+msgid "Common"
+msgstr "Allgemein"
+
+msgid "Fonts"
+msgstr "Schriftarten"
+
+msgid "Dynamic Fonts"
+msgstr "Dynamische Schriftarten"
+
+msgid "Use Oversampling"
+msgstr "Oversampling verwenden"
+
 msgid "Rendering Device"
 msgstr "Rendering-Backend"
 
@@ -328,6 +358,9 @@ msgstr "Vulkan"
 
 msgid "Max Descriptors per Pool"
 msgstr "Max Deskriptoren pro Pool"
+
+msgid "Textures"
+msgstr "Texturen"
 
 msgid "Low Processor Usage Mode"
 msgstr "Niedrige-Prozessorauslastungsmodus"
@@ -548,9 +581,6 @@ msgstr "Suffix"
 msgid "Rotation"
 msgstr "Rotation"
 
-msgid "Scale"
-msgstr "Skalierung"
-
 msgid "Value"
 msgstr "Wert"
 
@@ -616,12 +646,6 @@ msgstr "Versteckte Dateien anzeigen"
 
 msgid "Disable Overwrite Warning"
 msgstr "Überschreibenwarnung deaktivieren"
-
-msgid "Import"
-msgstr "Import"
-
-msgid "Reimport Missing Imported Files"
-msgstr "Fehlende importierte Dateien reimportieren"
 
 msgid "Text Editor"
 msgstr "Texteditor"
@@ -986,6 +1010,9 @@ msgstr "3D-Griffe"
 msgid "Gizmo Colors"
 msgstr "Grifffarben"
 
+msgid "Instantiated"
+msgstr "Instanziiert"
+
 msgid "Joint"
 msgstr "Gelenk"
 
@@ -1337,12 +1364,6 @@ msgstr "Regler ausblenden"
 msgid "Zoom"
 msgstr "Vergrößerung"
 
-msgid "Export"
-msgstr "Exportieren"
-
-msgid "Convert Text Resources to Binary"
-msgstr "Textressourcen in Binärformat konvertieren"
-
 msgid "Custom Template"
 msgstr "Eigene Vorlage"
 
@@ -1373,6 +1394,9 @@ msgstr "ETC"
 msgid "ETC2"
 msgstr "ETC2"
 
+msgid "Export"
+msgstr "Exportieren"
+
 msgid "SSH"
 msgstr "SSH"
 
@@ -1393,6 +1417,9 @@ msgstr "Kantenglättung"
 
 msgid "Generate Mipmaps"
 msgstr "Mipmaps generieren"
+
+msgid "Multichannel Signed Distance Field"
+msgstr "Mehrkanaliges signiertes Distanzfeld"
 
 msgid "Allow System Fallback"
 msgstr "System-Fallback erlauben"
@@ -1428,7 +1455,7 @@ msgid "Variation"
 msgstr "Variation"
 
 msgid "Transform"
-msgstr "Transform, Tranformation, Transformierung?"
+msgstr "Transformation"
 
 msgid "Collada"
 msgstr "Collada"
@@ -1492,6 +1519,9 @@ msgstr "Mesh skalieren"
 
 msgid "Offset Mesh"
 msgstr "Mesh verschieben"
+
+msgid "Import"
+msgstr "Import"
 
 msgid "Skip Import"
 msgstr "Import überspringen"
@@ -1661,6 +1691,9 @@ msgstr "Partikel"
 msgid "Reflection Probe"
 msgstr "Reflexionssonde"
 
+msgid "Decal"
+msgstr "Decal"
+
 msgid "Joint Body A"
 msgstr "Gelenk Körper A"
 
@@ -1745,6 +1778,12 @@ msgstr "Namensgebung"
 msgid "Default Signal Callback Name"
 msgstr "Standardmäßiger Name für Signalcallbacks"
 
+msgid "Reimport Missing Imported Files"
+msgstr "Fehlende importierte Dateien reimportieren"
+
+msgid "Convert Text Resources to Binary"
+msgstr "Textressourcen in Binärformat konvertieren"
+
 msgid "Show Scene Tree Root Selection"
 msgstr "Szenenbaumwurzelauswahl anzeigen"
 
@@ -1795,9 +1834,6 @@ msgstr "Ausrichtung"
 
 msgid "V-Sync"
 msgstr "V-Sync"
-
-msgid "Common"
-msgstr "Allgemein"
 
 msgid "stdout"
 msgstr "Standardausgabe"
@@ -1888,30 +1924,6 @@ msgstr "Assembly-Name"
 
 msgid "Solution Directory"
 msgstr "Solution-Verzeichnis"
-
-msgid "Main Loop Type"
-msgstr "Typ der Hauptschleife"
-
-msgid "Stretch"
-msgstr "Strecken"
-
-msgid "Aspect"
-msgstr "Verhältnis"
-
-msgid "Auto Accept Quit"
-msgstr "Automatisches Beendenakzeptieren"
-
-msgid "Fonts"
-msgstr "Schriftarten"
-
-msgid "Dynamic Fonts"
-msgstr "Dynamische Schriftarten"
-
-msgid "Use Oversampling"
-msgstr "Oversampling verwenden"
-
-msgid "Textures"
-msgstr "Texturen"
 
 msgid "Operation"
 msgstr "Betrieb"
@@ -4779,7 +4791,7 @@ msgid "Diffuse"
 msgstr "Zerstreuen"
 
 msgid "NormalMap"
-msgstr "Normal-Map"
+msgstr "NormalMap"
 
 msgid "Follow Viewport"
 msgstr "Ansichtsfenster folgen"
@@ -5680,6 +5692,9 @@ msgstr "Näherungsausblenden"
 
 msgid "Distance"
 msgstr "Distanz"
+
+msgid "MSDF"
+msgstr "MSDF"
 
 msgid "Lightmap Size Hint"
 msgstr "Lightmap-Größenhinweis"

@@ -24,12 +24,11 @@
  *
  */
 
-#ifndef HB_OT_COLR_COLRV1_CLOSURE_HH
-#define HB_OT_COLR_COLRV1_CLOSURE_HH
+#ifndef OT_COLOR_COLR_COLRV1_CLOSURE_HH
+#define OT_COLOR_COLR_COLRV1_CLOSURE_HH
 
-#include "hb-open-type.hh"
-#include "hb-ot-layout-common.hh"
-#include "hb-ot-color-colr-table.hh"
+#include "../../../hb-open-type.hh"
+#include "COLR.hh"
 
 /*
  * COLR -- Color
@@ -105,4 +104,4 @@ HB_INTERNAL void PaintComposite::closurev1 (hb_colrv1_closure_context_t* c) cons
 } /* namespace OT */
 
 
-#endif /* HB_OT_COLR_COLRV1_CLOSURE_HH */
+#endif /* OT_COLOR_COLR_COLRV1_CLOSURE_HH */

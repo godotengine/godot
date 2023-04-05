@@ -37,6 +37,7 @@
 
 #ifndef HB_EXPERIMENTAL_API
 #define HB_NO_BEYOND_64K
+#define HB_NO_CUBIC_GLYF
 #define HB_NO_VAR_COMPOSITES
 #endif
 
@@ -80,9 +81,10 @@
 #define HB_NO_MMAP
 #define HB_NO_NAME
 #define HB_NO_OPEN
-#define HB_NO_SETLOCALE
 #define HB_NO_OT_FONT_GLYPH_NAMES
 #define HB_NO_OT_SHAPE_FRACTIONS
+#define HB_NO_PAINT
+#define HB_NO_SETLOCALE
 #define HB_NO_STYLE
 #define HB_NO_SUBSET_LAYOUT
 #define HB_NO_VERTICAL
@@ -132,6 +134,10 @@
 #ifdef HB_NO_CFF
 #define HB_NO_OT_FONT_CFF
 #define HB_NO_SUBSET_CFF
+#endif
+
+#ifdef HB_NO_DRAW
+#define HB_NO_OUTLINE
 #endif
 
 #ifdef HB_NO_GETENV

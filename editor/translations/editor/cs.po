@@ -35,13 +35,14 @@
 # Ondřej Pavelka <flamekick97@gmail.com>, 2022, 2023.
 # ElisHoli <eliskaholz@seznam.cz>, 2023.
 # Bluie <hruza.ondrej@gmail.com>, 2023.
+# Matej Fary <farymatej@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-08 00:26+0000\n"
-"Last-Translator: Bluie <hruza.ondrej@gmail.com>\n"
+"PO-Revision-Date: 2023-03-18 08:29+0000\n"
+"Last-Translator: Matej Fary <farymatej@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -62,6 +63,9 @@ msgstr "Pravé tlačítko myši"
 
 msgid "Middle Mouse Button"
 msgstr "Prostřední tlačítko myši"
+
+msgid "Mouse Wheel Up"
+msgstr "Kolečko nahoru"
 
 msgid "Mouse Wheel Down"
 msgstr "Kolečko dolů"

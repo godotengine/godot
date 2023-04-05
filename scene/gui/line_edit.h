@@ -274,6 +274,7 @@ public:
 	void selection_delete();
 	void deselect();
 	bool has_selection() const;
+	String get_selected_text();
 	int get_selection_from_column() const;
 	int get_selection_to_column() const;
 

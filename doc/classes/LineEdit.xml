@@ -109,6 +109,12 @@
 				Returns the scroll offset due to [member caret_column], as a number of characters.
 			</description>
 		</method>
+		<method name="get_selected_text">
+			<return type="String" />
+			<description>
+				Returns the text inside the selection.
+			</description>
+		</method>
 		<method name="get_selection_from_column" qualifiers="const">
 			<return type="int" />
 			<description>
