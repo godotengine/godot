@@ -40,6 +40,7 @@
 #include "scene/gui/spin_box.h"
 
 class GraphEdit;
+class GraphEditArranger;
 class ViewPanner;
 
 class GraphEditFilter : public Control {
@@ -113,13 +114,6 @@ public:
 	};
 
 private:
-	enum SET_OPERATIONS {
-		IS_EQUAL,
-		IS_SUBSET,
-		DIFFERENCE,
-		UNION,
-	};
-
 	struct ConnectionType {
 		union {
 			struct {
@@ -206,7 +200,6 @@ private:
 	bool right_disconnects = false;
 	bool updating = false;
 	bool awaiting_scroll_offset_update = false;
-	bool arranging_graph = false;
 	List<Connection> connections;
 
 	float lines_thickness = 2.0f;
@@ -217,6 +210,8 @@ private:
 	Control *connections_layer = nullptr;
 	GraphEditFilter *top_layer = nullptr;
 	GraphEditMinimap *minimap = nullptr;
+
+	Ref<GraphEditArranger> arranger;
 
 	HashSet<ConnectionType, ConnectionType> valid_connection_types;
 	HashSet<int> valid_left_disconnect_types;
@@ -277,15 +272,6 @@ private:
 	void _minimap_toggled();
 
 	bool _check_clickable_control(Control *p_control, const Vector2 &r_mouse_pos, const Vector2 &p_offset);
-
-	int _set_operations(SET_OPERATIONS p_operation, HashSet<StringName> &r_u, const HashSet<StringName> &r_v);
-	HashMap<int, Vector<StringName>> _layering(const HashSet<StringName> &r_selected_nodes, const HashMap<StringName, HashSet<StringName>> &r_upper_neighbours);
-	Vector<StringName> _split(const Vector<StringName> &r_layer, const HashMap<StringName, Dictionary> &r_crossings);
-	void _horizontal_alignment(Dictionary &r_root, Dictionary &r_align, const HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, HashSet<StringName>> &r_upper_neighbours, const HashSet<StringName> &r_selected_nodes);
-	void _crossing_minimisation(HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, HashSet<StringName>> &r_upper_neighbours);
-	void _calculate_inner_shifts(Dictionary &r_inner_shifts, const Dictionary &r_root, const Dictionary &r_node_names, const Dictionary &r_align, const HashSet<StringName> &r_block_heads, const HashMap<StringName, Pair<int, int>> &r_port_info);
-	float _calculate_threshold(StringName p_v, StringName p_w, const Dictionary &r_node_names, const HashMap<int, Vector<StringName>> &r_layers, const Dictionary &r_root, const Dictionary &r_align, const Dictionary &r_inner_shift, real_t p_current_threshold, const HashMap<StringName, Vector2> &r_node_positions);
-	void _place_block(StringName p_v, float p_delta, const HashMap<int, Vector<StringName>> &r_layers, const Dictionary &r_root, const Dictionary &r_align, const Dictionary &r_node_name, const Dictionary &r_inner_shift, Dictionary &r_sink, Dictionary &r_shift, HashMap<StringName, Vector2> &r_node_positions);
 
 protected:
 	static void _bind_methods();
