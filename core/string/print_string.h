@@ -63,7 +63,7 @@ extern void print_verbose(String p_string);
 
 // With no arguments, print_line() outputs a newline.
 inline void print_line() {
-	__print_line(stringify_variants(""));
+	__print_line("");
 }
 
 inline void print_line(Variant v) {
