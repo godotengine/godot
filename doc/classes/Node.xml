@@ -830,6 +830,11 @@
 				When this signal is received, the child [param node] is still in the tree and valid. This signal is emitted [i]after[/i] the child node's own [signal tree_exiting] and [constant NOTIFICATION_EXIT_TREE].
 			</description>
 		</signal>
+		<signal name="child_order_changed">
+			<description>
+				Emitted when the list of children is changed. This happens when child nodes are added, moved or removed.
+			</description>
+		</signal>
 		<signal name="ready">
 			<description>
 				Emitted when the node is ready. Comes after [method _ready] callback and follows the same rules.
@@ -867,8 +872,8 @@
 			Notification received when the node is about to exit a [SceneTree].
 			This notification is emitted [i]after[/i] the related [signal tree_exiting].
 		</constant>
-		<constant name="NOTIFICATION_MOVED_IN_PARENT" value="12">
-			Notification received when the node is moved in the parent.
+		<constant name="NOTIFICATION_MOVED_IN_PARENT" value="12" is_deprecated="true">
+			This notification is deprecated and is no longer emitted. Use [constant NOTIFICATION_CHILD_ORDER_CHANGED] instead.
 		</constant>
 		<constant name="NOTIFICATION_READY" value="13">
 			Notification received when the node is ready. See [method _ready].
@@ -906,6 +911,9 @@
 		</constant>
 		<constant name="NOTIFICATION_PATH_RENAMED" value="23">
 			Notification received when the node's name or one of its parents' name is changed. This notification is [i]not[/i] received when the node is removed from the scene tree to be added to another parent later on.
+		</constant>
+		<constant name="NOTIFICATION_CHILD_ORDER_CHANGED" value="24">
+			Notification received when the list of children is changed. This happens when child nodes are added, moved or removed.
 		</constant>
 		<constant name="NOTIFICATION_INTERNAL_PROCESS" value="25">
 			Notification received every frame when the internal process flag is set (see [method set_process_internal]).

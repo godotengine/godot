@@ -393,9 +393,9 @@ void Node::_move_child(Node *p_child, int p_index, bool p_ignore_end) {
 	}
 	// notification second
 	move_child_notify(p_child);
-	for (int i = motion_from; i <= motion_to; i++) {
-		data.children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
-	}
+	notification(NOTIFICATION_CHILD_ORDER_CHANGED);
+	emit_signal(SNAME("child_order_changed"));
+
 	p_child->_propagate_groups_dirty();
 
 	data.blocked--;
@@ -1124,6 +1124,8 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name) {
 	//recognize children created in this node constructor
 	p_child->data.parent_owned = data.in_constructor;
 	add_child_notify(p_child);
+	notification(NOTIFICATION_CHILD_ORDER_CHANGED);
+	emit_signal(SNAME("child_order_changed"));
 }
 
 void Node::add_child(Node *p_child, bool p_force_readable_name, InternalMode p_internal) {
@@ -1213,10 +1215,8 @@ void Node::remove_child(Node *p_child) {
 	child_count = data.children.size();
 	children = data.children.ptrw();
 
-	for (int i = idx; i < child_count; i++) {
-		children[i]->data.index = i;
-		children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
-	}
+	notification(NOTIFICATION_CHILD_ORDER_CHANGED);
+	emit_signal(SNAME("child_order_changed"));
 
 	p_child->data.parent = nullptr;
 	p_child->data.index = -1;
@@ -2974,6 +2974,7 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_DRAG_BEGIN);
 	BIND_CONSTANT(NOTIFICATION_DRAG_END);
 	BIND_CONSTANT(NOTIFICATION_PATH_RENAMED);
+	BIND_CONSTANT(NOTIFICATION_CHILD_ORDER_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_PROCESS);
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	BIND_CONSTANT(NOTIFICATION_POST_ENTER_TREE);
@@ -3027,6 +3028,7 @@ void Node::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tree_exited"));
 	ADD_SIGNAL(MethodInfo("child_entered_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
 	ADD_SIGNAL(MethodInfo("child_exiting_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
+	ADD_SIGNAL(MethodInfo("child_order_changed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "unique_name_in_owner", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_unique_name_in_owner", "is_unique_name_in_owner");

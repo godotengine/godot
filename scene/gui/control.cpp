@@ -3021,6 +3021,8 @@ void Control::_notification(int p_notification) {
 				Viewport *viewport = get_viewport();
 				ERR_FAIL_COND(!viewport);
 				data.RI = viewport->_gui_add_root_control(this);
+
+				get_parent()->connect(SNAME("child_order_changed"), callable_mp(get_viewport(), &Viewport::gui_set_root_order_dirty), CONNECT_REFERENCE_COUNTED);
 			}
 
 			data.parent_canvas_item = get_parent_item();
@@ -3049,24 +3051,17 @@ void Control::_notification(int p_notification) {
 			if (data.RI) {
 				get_viewport()->_gui_remove_root_control(data.RI);
 				data.RI = nullptr;
+				get_parent()->disconnect(SNAME("child_order_changed"), callable_mp(get_viewport(), &Viewport::gui_set_root_order_dirty));
 			}
 
 			data.parent_canvas_item = nullptr;
 			data.is_rtl_dirty = true;
 		} break;
 
-		case NOTIFICATION_MOVED_IN_PARENT: {
+		case NOTIFICATION_CHILD_ORDER_CHANGED: {
 			// Some parents need to know the order of the children to draw (like TabContainer),
 			// so we update them just in case.
-			Control *parent_control = get_parent_control();
-			if (parent_control) {
-				parent_control->queue_redraw();
-			}
 			queue_redraw();
-
-			if (data.RI) {
-				get_viewport()->gui_set_root_order_dirty();
-			}
 		} break;
 
 		case NOTIFICATION_RESIZED: {
