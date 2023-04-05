@@ -273,6 +273,9 @@ private:
 
 	void _rename_pressed(int p_menu);
 	void _rename_operation_confirm();
+	void _update_hovered(const Vector2 &p_position);
+	void _on_hover_exit();
+	void _update_flag();
 	Size2 get_grid_size() const;
 
 protected:
