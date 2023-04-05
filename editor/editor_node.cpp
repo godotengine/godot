@@ -2797,24 +2797,25 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 						save_confirmation->popup_centered();
 						break;
 					}
-					
+
 					plugin_to_save = nullptr;
 					for (int i = 0; i < editor_data.get_editor_plugin_count(); i++) {
 						const String unsaved_status = editor_data.get_editor_plugin(i)->get_unsaved_status();
 						if (!unsaved_status.is_empty()) {
 							if (p_option == RELOAD_CURRENT_PROJECT) {
 								save_confirmation->set_ok_button_text(TTR("Save & Reload"));
-								save_confirmation->set_text(RTR(unsaved_status));
+								save_confirmation->set_text(unsaved_status);
 							} else {
 								save_confirmation->set_ok_button_text(TTR("Save & Quit"));
-								save_confirmation->set_text(RTR(unsaved_status));
+								save_confirmation->set_text(unsaved_status);
 							}
+							save_confirmation->reset_size();
 							save_confirmation->popup_centered();
 							plugin_to_save = editor_data.get_editor_plugin(i);
 							break;
 						}
 					}
-					
+
 					if (plugin_to_save) {
 						break;
 					}
@@ -3057,13 +3058,21 @@ int EditorNode::_next_unsaved_scene(bool p_valid_filename, int p_start) {
 		if (!editor_data.get_edited_scene_root(i)) {
 			continue;
 		}
+
+		String scene_filename = editor_data.get_edited_scene_root(i)->get_scene_file_path();
+		if (p_valid_filename && scene_filename.is_empty()) {
+			continue;
+		}
+
 		bool unsaved = EditorUndoRedoManager::get_singleton()->is_history_unsaved(editor_data.get_scene_history_id(i));
 		if (unsaved) {
-			String scene_filename = editor_data.get_edited_scene_root(i)->get_scene_file_path();
-			if (p_valid_filename && scene_filename.is_empty()) {
-				continue;
-			}
 			return i;
+		} else {
+			for (int j = 0; j < editor_data.get_editor_plugin_count(); j++) {
+				if (!editor_data.get_editor_plugin(j)->get_unsaved_status(scene_filename).is_empty()) {
+					return i;
+				}
+			}
 		}
 	}
 	return -1;
@@ -5574,19 +5583,36 @@ void EditorNode::_scene_tab_closed(int p_tab, int p_option) {
 		return;
 	}
 
-	bool unsaved = EditorUndoRedoManager::get_singleton()->is_history_unsaved(editor_data.get_scene_history_id(p_tab));
-	if (unsaved) {
+	String scene_filename = scene->get_scene_file_path();
+	String unsaved_message;
+
+	if (EditorUndoRedoManager::get_singleton()->is_history_unsaved(editor_data.get_scene_history_id(p_tab))) {
+		if (scene_filename.is_empty()) {
+			unsaved_message = TTR("This scene was never saved.");
+		} else {
+			unsaved_message = vformat(TTR("Scene \"%s\" has unsaved changes."), scene_filename);
+		}
+	} else {
+		// Check if any plugin has unsaved changes in that scene.
+		for (int i = 0; i < editor_data.get_editor_plugin_count(); i++) {
+			unsaved_message = editor_data.get_editor_plugin(i)->get_unsaved_status(scene_filename);
+			if (!unsaved_message.is_empty()) {
+				break;
+			}
+		}
+	}
+
+	if (!unsaved_message.is_empty()) {
 		if (get_current_tab() != p_tab) {
 			set_current_scene(p_tab);
 		}
 
-		String scene_filename = scene->get_scene_file_path();
 		if (current_menu_option == RELOAD_CURRENT_PROJECT) {
 			save_confirmation->set_ok_button_text(TTR("Save & Reload"));
-			save_confirmation->set_text(vformat(TTR("Save changes to '%s' before reloading?"), !scene_filename.is_empty() ? scene_filename : "unsaved scene"));
+			save_confirmation->set_text(unsaved_message + "\n\n" + TTR("Save before reloading?"));
 		} else {
 			save_confirmation->set_ok_button_text(TTR("Save & Close"));
-			save_confirmation->set_text(vformat(TTR("Save changes to '%s' before closing?"), !scene_filename.is_empty() ? scene_filename : "unsaved scene"));
+			save_confirmation->set_text(unsaved_message + "\n\n" + TTR("Save before closing?"));
 		}
 		save_confirmation->reset_size();
 		save_confirmation->popup_centered();
