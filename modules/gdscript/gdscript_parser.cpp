@@ -2820,6 +2820,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *
 
 	attribute->base = p_previous_operand;
 
+	if (current.is_node_name()) {
+		current.type = GDScriptTokenizer::Token::IDENTIFIER;
+	}
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifier after "." for attribute access.)")) {
 		complete_extents(attribute);
 		return attribute;
