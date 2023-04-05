@@ -44,6 +44,7 @@ CurveEditor::CurveEditor() {
 	_tangents_length = 40;
 	_dragging = false;
 	_has_undo_data = false;
+	_gizmo_handle_scale = EDITOR_GET("interface/touchscreen/scale_gizmo_handles");
 
 	set_focus_mode(FOCUS_ALL);
 	set_clip_contents(true);
@@ -96,8 +97,13 @@ Size2 CurveEditor::get_minimum_size() const {
 }
 
 void CurveEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW) {
-		_draw();
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			_draw();
+		} break;
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			_gizmo_handle_scale = EDITOR_GET("interface/touchscreen/scale_gizmo_handles");
+		} break;
 	}
 }
 
@@ -391,7 +397,7 @@ int CurveEditor::get_point_at(Vector2 pos) const {
 	}
 	const Curve &curve = **_curve_ref;
 
-	const float true_hover_radius = Math::round(_hover_radius * EDSCALE);
+	const float true_hover_radius = Math::round(_hover_radius * _gizmo_handle_scale * EDSCALE);
 	const float r = true_hover_radius * true_hover_radius;
 
 	for (int i = 0; i < curve.get_point_count(); ++i) {
@@ -411,14 +417,14 @@ CurveEditor::TangentIndex CurveEditor::get_tangent_at(Vector2 pos) const {
 
 	if (_selected_point != 0) {
 		Vector2 control_pos = get_tangent_view_pos(_selected_point, TANGENT_LEFT);
-		if (control_pos.distance_to(pos) < _hover_radius) {
+		if (control_pos.distance_to(pos) < _hover_radius * _gizmo_handle_scale) {
 			return TANGENT_LEFT;
 		}
 	}
 
 	if (_selected_point != _curve_ref->get_point_count() - 1) {
 		Vector2 control_pos = get_tangent_view_pos(_selected_point, TANGENT_RIGHT);
-		if (control_pos.distance_to(pos) < _hover_radius) {
+		if (control_pos.distance_to(pos) < _hover_radius * _gizmo_handle_scale) {
 			return TANGENT_RIGHT;
 		}
 	}
@@ -555,7 +561,7 @@ Vector2 CurveEditor::get_tangent_view_pos(int i, TangentIndex tangent) const {
 	Vector2 point_pos = get_view_pos(_curve_ref->get_point_position(i));
 	Vector2 control_pos = get_view_pos(_curve_ref->get_point_position(i) + dir);
 
-	return point_pos + Math::round(_tangents_length * EDSCALE) * (control_pos - point_pos).normalized();
+	return point_pos + Math::round(_tangents_length * _gizmo_handle_scale * EDSCALE) * (control_pos - point_pos).normalized();
 }
 
 Vector2 CurveEditor::get_view_pos(Vector2 world_pos) const {
@@ -699,13 +705,13 @@ void CurveEditor::_draw() {
 		if (i != 0) {
 			Vector2 control_pos = get_tangent_view_pos(i, TANGENT_LEFT);
 			draw_line(get_view_pos(pos), control_pos, tangent_color, Math::round(EDSCALE), true);
-			draw_rect(Rect2(control_pos, Vector2(1, 1)).grow(Math::round(2 * EDSCALE)), tangent_color);
+			draw_rect(Rect2(control_pos, Vector2(1, 1)).grow(Math::round(2 * _gizmo_handle_scale * EDSCALE)), tangent_color);
 		}
 
 		if (i != curve.get_point_count() - 1) {
 			Vector2 control_pos = get_tangent_view_pos(i, TANGENT_RIGHT);
 			draw_line(get_view_pos(pos), control_pos, tangent_color, Math::round(EDSCALE), true);
-			draw_rect(Rect2(control_pos, Vector2(1, 1)).grow(Math::round(2 * EDSCALE)), tangent_color);
+			draw_rect(Rect2(control_pos, Vector2(1, 1)).grow(Math::round(2 * _gizmo_handle_scale * EDSCALE)), tangent_color);
 		}
 	}
 
@@ -728,7 +734,7 @@ void CurveEditor::_draw() {
 
 	for (int i = 0; i < curve.get_point_count(); ++i) {
 		Vector2 pos = curve.get_point_position(i);
-		draw_rect(Rect2(get_view_pos(pos), Vector2(1, 1)).grow(Math::round(3 * EDSCALE)), i == _selected_point ? selected_point_color : point_color);
+		draw_rect(Rect2(get_view_pos(pos), Vector2(1, 1)).grow(Math::round(3 * _gizmo_handle_scale * EDSCALE)), i == _selected_point ? selected_point_color : point_color);
 		// TODO Circles are prettier. Needs a fix! Or a texture
 		//draw_circle(pos, 2, point_color);
 	}
@@ -738,7 +744,7 @@ void CurveEditor::_draw() {
 	if (_hover_point != -1) {
 		const Color hover_color = line_color;
 		Vector2 pos = curve.get_point_position(_hover_point);
-		draw_rect(Rect2(get_view_pos(pos), Vector2(1, 1)).grow(Math::round(_hover_radius * EDSCALE)), hover_color, false, Math::round(EDSCALE));
+		draw_rect(Rect2(get_view_pos(pos), Vector2(1, 1)).grow(Math::round(_hover_radius * _gizmo_handle_scale * EDSCALE)), hover_color, false, Math::round(EDSCALE));
 	}
 
 	// Help text

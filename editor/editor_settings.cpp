@@ -374,6 +374,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set_restart_if_changed("interface/touchscreen/enable_long_press_as_right_click", true);
 	_initial_set("interface/touchscreen/enable_pan_and_scale_gestures", has_touchscreen_ui);
 	set_restart_if_changed("interface/touchscreen/enable_pan_and_scale_gestures", true);
+	_initial_set("interface/touchscreen/scale_gizmo_handles", has_touchscreen_ui ? 3 : 1);
+	hints["interface/touchscreen/scale_gizmo_handles"] = PropertyInfo(Variant::REAL, "interface/touchscreen/scale_gizmo_handles", PROPERTY_HINT_RANGE, "1,5,1");
 
 	// Scene tabs
 	_initial_set("interface/scene_tabs/show_thumbnail_on_hover", true);
@@ -620,7 +622,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/2d/pan_speed", 20);
 
 	// Polygon editor
-	_initial_set("editors/poly_editor/point_grab_radius", 8);
+	_initial_set("editors/poly_editor/point_grab_radius", has_touchscreen_ui ? 32 : 8);
 	_initial_set("editors/poly_editor/show_previous_outline", true);
 
 	// Animation
