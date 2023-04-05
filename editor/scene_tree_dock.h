@@ -77,7 +77,6 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_MULTI_EDIT,
 		TOOL_ERASE,
 		TOOL_COPY_NODE_PATH,
-		TOOL_BUTTON_MAX,
 		TOOL_OPEN_DOCUMENTATION,
 		TOOL_AUTO_EXPAND,
 		TOOL_SCENE_EDITABLE_CHILDREN,
@@ -266,6 +265,10 @@ class SceneTreeDock : public VBoxContainer {
 	void _clear_clipboard();
 	void _create_remap_for_node(Node *p_node, HashMap<Ref<Resource>, Ref<Resource>> &r_remap);
 	void _create_remap_for_resource(Ref<Resource> p_resource, HashMap<Ref<Resource>, Ref<Resource>> &r_remap);
+
+	void _list_all_subresources(PopupMenu *p_menu);
+	void _gather_resources(Node *p_node, List<Pair<Ref<Resource>, Node *>> &r_resources);
+	void _edit_subresource(int p_idx, const PopupMenu *p_from_menu);
 
 	bool profile_allow_editing = true;
 	bool profile_allow_script_editing = true;
