@@ -31,7 +31,6 @@
 #include "hb-ot-shaper-arabic-pua.hh"
 #include "hb-open-type.hh"
 #include "hb-set.hh"
-#include "hb-cache.hh"
 
 /*
  * cmap -- Character to Glyph Index Mapping
@@ -1415,7 +1414,7 @@ struct CmapSubtable
     switch (format) {
     case  4: return u.format4.serialize (c, it);
     case 12: return u.format12.serialize (c, it);
-    case 14: return u.format14.serialize (c, &plan->unicodes, &plan->glyphs_requested, plan->glyph_map, base);
+    case 14: return u.format14.serialize (c, plan->unicodes, plan->glyphs_requested, plan->glyph_map, base);
     default: return;
     }
   }
@@ -1842,8 +1841,6 @@ struct cmap
 
   struct accelerator_t
   {
-    using cache_t = hb_cache_t<21, 16, 8, true>;
-
     accelerator_t (hb_face_t *face)
     {
       this->table = hb_sanitize_context_t ().reference_table<cmap> (face);
@@ -1898,43 +1895,26 @@ struct cmap
     }
     ~accelerator_t () { this->table.destroy (); }
 
-    inline bool _cached_get (hb_codepoint_t unicode,
-			     hb_codepoint_t *glyph,
-			     cache_t *cache) const
-    {
-      unsigned v;
-      if (cache && cache->get (unicode, &v))
-      {
-        *glyph = v;
-	return true;
-      }
-      bool ret  = this->get_glyph_funcZ (this->get_glyph_data, unicode, glyph);
-
-      if (cache && ret)
-        cache->set (unicode, *glyph);
-      return ret;
-    }
-
     bool get_nominal_glyph (hb_codepoint_t  unicode,
-			    hb_codepoint_t *glyph,
-			    cache_t *cache = nullptr) const
+			    hb_codepoint_t *glyph) const
     {
-      if (unlikely (!this->get_glyph_funcZ)) return 0;
-      return _cached_get (unicode, glyph, cache);
+      if (unlikely (!this->get_glyph_funcZ)) return false;
+      return this->get_glyph_funcZ (this->get_glyph_data, unicode, glyph);
     }
-
     unsigned int get_nominal_glyphs (unsigned int count,
 				     const hb_codepoint_t *first_unicode,
 				     unsigned int unicode_stride,
 				     hb_codepoint_t *first_glyph,
-				     unsigned int glyph_stride,
-				     cache_t *cache = nullptr) const
+				     unsigned int glyph_stride) const
     {
       if (unlikely (!this->get_glyph_funcZ)) return 0;
 
+      hb_cmap_get_glyph_func_t get_glyph_funcZ = this->get_glyph_funcZ;
+      const void *get_glyph_data = this->get_glyph_data;
+
       unsigned int done;
       for (done = 0;
-	   done < count && _cached_get (*first_unicode, first_glyph, cache);
+	   done < count && get_glyph_funcZ (get_glyph_data, *first_unicode, first_glyph);
 	   done++)
       {
 	first_unicode = &StructAtOffsetUnaligned<hb_codepoint_t> (first_unicode, unicode_stride);
@@ -1945,8 +1925,7 @@ struct cmap
 
     bool get_variation_glyph (hb_codepoint_t  unicode,
 			      hb_codepoint_t  variation_selector,
-			      hb_codepoint_t *glyph,
-			      cache_t *cache = nullptr) const
+			      hb_codepoint_t *glyph) const
     {
       switch (this->subtable_uvs->get_glyph_variant (unicode,
 						     variation_selector,
@@ -1957,7 +1936,7 @@ struct cmap
 	case GLYPH_VARIANT_USE_DEFAULT:	break;
       }
 
-      return get_nominal_glyph (unicode, glyph, cache);
+      return get_nominal_glyph (unicode, glyph);
     }
 
     void collect_unicodes (hb_set_t *out, unsigned int num_glyphs) const

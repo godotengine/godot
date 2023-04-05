@@ -24,22 +24,11 @@ struct PairSet
   public:
   DEFINE_SIZE_MIN (2);
 
-  static unsigned get_size (unsigned len1, unsigned len2)
-  {
-    return Types::HBGlyphID::static_size + Value::static_size * (len1 + len2);
-  }
-  static unsigned get_size (const ValueFormat valueFormats[2])
-  {
-    unsigned len1 = valueFormats[0].get_len ();
-    unsigned len2 = valueFormats[1].get_len ();
-    return get_size (len1, len2);
-  }
-
   struct sanitize_closure_t
   {
     const ValueFormat *valueFormats;
     unsigned int len1; /* valueFormats[0].get_len() */
-    unsigned int stride; /* bytes */
+    unsigned int stride; /* 1 + len1 + len2 */
   };
 
   bool sanitize (hb_sanitize_context_t *c, const sanitize_closure_t *closure) const
@@ -48,6 +37,7 @@ struct PairSet
     if (!(c->check_struct (this)
        && c->check_range (&firstPairValueRecord,
                           len,
+                          HBUINT16::static_size,
                           closure->stride))) return_trace (false);
 
     unsigned int count = len;
@@ -59,7 +49,9 @@ struct PairSet
   bool intersects (const hb_set_t *glyphs,
                    const ValueFormat *valueFormats) const
   {
-    unsigned record_size = get_size (valueFormats);
+    unsigned int len1 = valueFormats[0].get_len ();
+    unsigned int len2 = valueFormats[1].get_len ();
+    unsigned int record_size = HBUINT16::static_size * (1 + len1 + len2);
 
     const PairValueRecord *record = &firstPairValueRecord;
     unsigned int count = len;
@@ -75,7 +67,9 @@ struct PairSet
   void collect_glyphs (hb_collect_glyphs_context_t *c,
                        const ValueFormat *valueFormats) const
   {
-    unsigned record_size = get_size (valueFormats);
+    unsigned int len1 = valueFormats[0].get_len ();
+    unsigned int len2 = valueFormats[1].get_len ();
+    unsigned int record_size = HBUINT16::static_size * (1 + len1 + len2);
 
     const PairValueRecord *record = &firstPairValueRecord;
     c->input->add_array (&record->secondGlyph, len, record_size);
@@ -84,7 +78,9 @@ struct PairSet
   void collect_variation_indices (hb_collect_variation_indices_context_t *c,
                                   const ValueFormat *valueFormats) const
   {
-    unsigned record_size = get_size (valueFormats);
+    unsigned len1 = valueFormats[0].get_len ();
+    unsigned len2 = valueFormats[1].get_len ();
+    unsigned record_size = HBUINT16::static_size * (1 + len1 + len2);
 
     const PairValueRecord *record = &firstPairValueRecord;
     unsigned count = len;
@@ -105,7 +101,7 @@ struct PairSet
     hb_buffer_t *buffer = c->buffer;
     unsigned int len1 = valueFormats[0].get_len ();
     unsigned int len2 = valueFormats[1].get_len ();
-    unsigned record_size = get_size (len1, len2);
+    unsigned int record_size = HBUINT16::static_size * (1 + len1 + len2);
 
     const PairValueRecord *record = hb_bsearch (buffer->info[pos].codepoint,
                                                 &firstPairValueRecord,
@@ -116,7 +112,7 @@ struct PairSet
       if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
       {
 	c->buffer->message (c->font,
-			    "try kerning glyphs at %u,%u",
+			    "try kerning glyphs at %d,%d",
 			    c->buffer->idx, pos);
       }
 
@@ -127,14 +123,14 @@ struct PairSet
 	if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
 	{
 	  c->buffer->message (c->font,
-			      "kerned glyphs at %u,%u",
+			      "kerned glyphs at %d,%d",
 			      c->buffer->idx, pos);
 	}
 
       if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
       {
 	c->buffer->message (c->font,
-			    "tried kerning glyphs at %u,%u",
+			    "tried kerning glyphs at %d,%d",
 			    c->buffer->idx, pos);
       }
 
@@ -172,7 +168,7 @@ struct PairSet
 
     unsigned len1 = valueFormats[0].get_len ();
     unsigned len2 = valueFormats[1].get_len ();
-    unsigned record_size = get_size (len1, len2);
+    unsigned record_size = HBUINT16::static_size + Value::static_size * (len1 + len2);
 
     typename PairValueRecord::context_t context =
     {
@@ -181,7 +177,7 @@ struct PairSet
       newFormats,
       len1,
       &glyph_map,
-      &c->plan->layout_variation_idx_delta_map
+      c->plan->layout_variation_idx_delta_map
     };
 
     const PairValueRecord *record = &firstPairValueRecord;

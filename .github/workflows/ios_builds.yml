@@ -1,6 +1,5 @@
 name: 🍏 iOS Builds
-on:
-  workflow_call:
+on: [push, pull_request]
 
 # Global Settings
 env:

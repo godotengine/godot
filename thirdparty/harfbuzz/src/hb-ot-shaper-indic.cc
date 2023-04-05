@@ -482,7 +482,9 @@ initial_reordering_consonant_syllable (const hb_ot_shape_plan_t *plan,
       is_one_of (info[start+2], FLAG (I_Cat(ZWJ))))
   {
     buffer->merge_clusters (start+1, start+3);
-    hb_swap (info[start+1], info[start+2]);
+    hb_glyph_info_t tmp = info[start+1];
+    info[start+1] = info[start+2];
+    info[start+2] = tmp;
   }
 
   /* 1. Find base consonant:

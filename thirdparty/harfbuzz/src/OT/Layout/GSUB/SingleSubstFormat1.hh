@@ -25,15 +25,7 @@ struct SingleSubstFormat1_3
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (c->check_struct (this) &&
-                  coverage.sanitize (c, this) &&
-                  /* The coverage  table may use a range to represent a set
-                   * of glyphs, which means a small number of bytes can
-                   * generate a large glyph set. Manually modify the
-                   * sanitizer max ops to take this into account.
-                   *
-                   * Note: This check *must* be right after coverage sanitize. */
-                  c->check_ops ((this + coverage).get_population () >> 1));
+    return_trace (coverage.sanitize (c, this) && deltaGlyphID.sanitize (c));
   }
 
   hb_codepoint_t get_mask () const
@@ -111,7 +103,7 @@ struct SingleSubstFormat1_3
     {
       c->buffer->sync_so_far ();
       c->buffer->message (c->font,
-			  "replacing glyph at %u (single substitution)",
+			  "replacing glyph at %d (single substitution)",
 			  c->buffer->idx);
     }
 
@@ -120,8 +112,8 @@ struct SingleSubstFormat1_3
     if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
     {
       c->buffer->message (c->font,
-			  "replaced glyph at %u (single substitution)",
-			  c->buffer->idx - 1u);
+			  "replaced glyph at %d (single substitution)",
+			  c->buffer->idx - 1);
     }
 
     return_trace (true);

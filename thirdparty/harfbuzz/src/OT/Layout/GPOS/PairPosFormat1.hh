@@ -43,7 +43,7 @@ struct PairPosFormat1_3
     {
       valueFormat,
       len1,
-      PairSet::get_size (len1, len2)
+      1 + len1 + len2
     };
 
     return_trace (coverage.sanitize (c, this) && pairSet.sanitize (c, this, &closure));
@@ -177,7 +177,9 @@ struct PairPosFormat1_3
 
   hb_pair_t<unsigned, unsigned> compute_effective_value_formats (const hb_set_t& glyphset) const
   {
-    unsigned record_size = PairSet::get_size (valueFormat);
+    unsigned len1 = valueFormat[0].get_len ();
+    unsigned len2 = valueFormat[1].get_len ();
+    unsigned record_size = HBUINT16::static_size + Value::static_size * (len1 + len2);
 
     unsigned format1 = 0;
     unsigned format2 = 0;

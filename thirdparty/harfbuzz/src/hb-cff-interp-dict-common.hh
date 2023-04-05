@@ -35,8 +35,10 @@ using namespace OT;
 /* an opstr and the parsed out dict value(s) */
 struct dict_val_t : op_str_t
 {
-  void init () {}
+  void init () { single_val.set_int (0); }
   void fini () {}
+
+  number_t	      single_val;
 };
 
 typedef dict_val_t num_dict_val_t;

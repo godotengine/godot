@@ -113,7 +113,7 @@ _hb_print_func (const char *func)
     const char *paren = strchr (func, '(');
     if (paren)
       func_len = paren - func;
-    fprintf (stderr, "%.*s", (int) func_len, func);
+    fprintf (stderr, "%.*s", func_len, func);
   }
 }
 
@@ -142,9 +142,9 @@ _hb_debug_msg_va (const char *what,
   fprintf (stderr, "%-10s", what ? what : "");
 
   if (obj)
-    fprintf (stderr, "(%*p) ", (int) (2 * sizeof (void *)), obj);
+    fprintf (stderr, "(%*p) ", (unsigned int) (2 * sizeof (void *)), obj);
   else
-    fprintf (stderr, " %*s  ", (int) (2 * sizeof (void *)), "");
+    fprintf (stderr, " %*s  ", (unsigned int) (2 * sizeof (void *)), "");
 
   if (indented) {
 #define VBAR	"\342\224\202"	/* U+2502 BOX DRAWINGS LIGHT VERTICAL */
@@ -306,7 +306,7 @@ struct hb_auto_trace_t
     }
 
     _hb_debug_msg<max_level> (what, obj, func, true, plevel ? *plevel : 1, -1,
-			      "return %s (line %u)",
+			      "return %s (line %d)",
 			      hb_printer_t<hb_decay<decltype (v)>>().print (v), line);
     if (plevel) --*plevel;
     plevel = nullptr;
@@ -373,10 +373,6 @@ struct hb_no_trace_t {
 #define HB_DEBUG_FT (HB_DEBUG+0)
 #endif
 
-#ifndef HB_DEBUG_JUSTIFY
-#define HB_DEBUG_JUSTIFY (HB_DEBUG+0)
-#endif
-
 #ifndef HB_DEBUG_OBJECT
 #define HB_DEBUG_OBJECT (HB_DEBUG+0)
 #endif
@@ -400,7 +396,7 @@ struct hb_no_trace_t {
 #define TRACE_APPLY(this) \
 	hb_auto_trace_t<HB_DEBUG_APPLY, bool> trace \
 	(&c->debug_depth, c->get_name (), this, HB_FUNC, \
-	 "idx %u gid %u lookup %d", \
+	 "idx %d gid %u lookup %d", \
 	 c->buffer->idx, c->buffer->cur().codepoint, (int) c->lookup_index)
 #else
 #define TRACE_APPLY(this) hb_no_trace_t<bool> trace
@@ -458,7 +454,7 @@ struct hb_no_trace_t {
 #define TRACE_DISPATCH(this, format) \
 	hb_auto_trace_t<context_t::max_debug_depth, typename context_t::return_t> trace \
 	(&c->debug_depth, c->get_name (), this, HB_FUNC, \
-	 "format %u", (unsigned) format)
+	 "format %d", (int) format)
 #else
 #define TRACE_DISPATCH(this, format) hb_no_trace_t<typename context_t::return_t> trace
 #endif

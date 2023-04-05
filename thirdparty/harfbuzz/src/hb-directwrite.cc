@@ -251,12 +251,16 @@ _hb_directwrite_shaper_face_data_destroy (hb_directwrite_face_data_t *data)
       data->dwriteFactory->UnregisterFontFileLoader (data->fontFileLoader);
     data->dwriteFactory->Release ();
   }
-  delete data->fontFileLoader;
-  delete data->fontFileStream;
-  hb_blob_destroy (data->faceBlob);
+  if (data->fontFileLoader)
+    delete data->fontFileLoader;
+  if (data->fontFileStream)
+    delete data->fontFileStream;
+  if (data->faceBlob)
+    hb_blob_destroy (data->faceBlob);
   if (data->dwrite_dll)
     FreeLibrary (data->dwrite_dll);
-  delete data;
+  if (data)
+    delete data;
 }
 
 

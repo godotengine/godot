@@ -177,6 +177,9 @@ private:
 		FILE_CLOSE_OTHERS,
 		FILE_CLOSE_RIGHT,
 		FILE_CLOSE_ALL,
+		FILE_CLOSE_ALL_AND_QUIT,
+		FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER,
+		FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT,
 		FILE_QUIT,
 		FILE_EXTERNAL_OPEN_SCENE,
 		EDIT_UNDO,
@@ -326,10 +329,7 @@ private:
 	PopupMenu *scene_tabs_context_menu = nullptr;
 	Panel *tab_preview_panel = nullptr;
 	TextureRect *tab_preview = nullptr;
-
 	int tab_closing_idx = 0;
-	List<String> tabs_to_close;
-	int tab_closing_menu_option = -1;
 
 	bool exiting = false;
 	bool dimmed = false;
@@ -652,9 +652,7 @@ private:
 	void _dock_floating_close_request(Control *p_control);
 	void _dock_make_float();
 	void _scene_tab_changed(int p_tab);
-	void _proceed_closing_scene_tabs();
-	bool _is_closing_editor() const;
-	void _scene_tab_closed(int p_tab, int p_option = SCENE_TAB_CLOSE);
+	void _scene_tab_closed(int p_tab, int option = SCENE_TAB_CLOSE);
 	void _scene_tab_hovered(int p_tab);
 	void _scene_tab_exit();
 	void _scene_tab_input(const Ref<InputEvent> &p_input);

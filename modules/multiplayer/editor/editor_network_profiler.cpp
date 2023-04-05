@@ -41,40 +41,23 @@ void EditorNetworkProfiler::_bind_methods() {
 
 void EditorNetworkProfiler::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
+			node_icon = get_theme_icon(SNAME("Node"), SNAME("EditorIcons"));
 			if (activate->is_pressed()) {
-				activate->set_icon(theme_cache.stop_icon);
+				activate->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
 			} else {
-				activate->set_icon(theme_cache.play_icon);
+				activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
 			}
-			clear_button->set_icon(theme_cache.clear_icon);
-
-			incoming_bandwidth_text->set_right_icon(theme_cache.incoming_bandwidth_icon);
-			outgoing_bandwidth_text->set_right_icon(theme_cache.outgoing_bandwidth_icon);
+			clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
+			incoming_bandwidth_text->set_right_icon(get_theme_icon(SNAME("ArrowDown"), SNAME("EditorIcons")));
+			outgoing_bandwidth_text->set_right_icon(get_theme_icon(SNAME("ArrowUp"), SNAME("EditorIcons")));
 
 			// This needs to be done here to set the faded color when the profiler is first opened
-			incoming_bandwidth_text->add_theme_color_override("font_uneditable_color", theme_cache.incoming_bandwidth_color * Color(1, 1, 1, 0.5));
-			outgoing_bandwidth_text->add_theme_color_override("font_uneditable_color", theme_cache.outgoing_bandwidth_color * Color(1, 1, 1, 0.5));
+			incoming_bandwidth_text->add_theme_color_override("font_uneditable_color", get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5));
+			outgoing_bandwidth_text->add_theme_color_override("font_uneditable_color", get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5));
 		} break;
 	}
-}
-
-void EditorNetworkProfiler::_update_theme_item_cache() {
-	VBoxContainer::_update_theme_item_cache();
-
-	theme_cache.node_icon = get_theme_icon(SNAME("Node"), SNAME("EditorIcons"));
-	theme_cache.stop_icon = get_theme_icon(SNAME("Stop"), SNAME("EditorIcons"));
-	theme_cache.play_icon = get_theme_icon(SNAME("Play"), SNAME("EditorIcons"));
-	theme_cache.clear_icon = get_theme_icon(SNAME("Clear"), SNAME("EditorIcons"));
-
-	theme_cache.multiplayer_synchronizer_icon = get_theme_icon("MultiplayerSynchronizer", SNAME("EditorIcons"));
-	theme_cache.instance_options_icon = get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons"));
-
-	theme_cache.incoming_bandwidth_icon = get_theme_icon(SNAME("ArrowDown"), SNAME("EditorIcons"));
-	theme_cache.outgoing_bandwidth_icon = get_theme_icon(SNAME("ArrowUp"), SNAME("EditorIcons"));
-
-	theme_cache.incoming_bandwidth_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
-	theme_cache.outgoing_bandwidth_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
 }
 
 void EditorNetworkProfiler::_refresh() {
@@ -128,11 +111,11 @@ void EditorNetworkProfiler::refresh_replication_data() {
 		const NodeInfo &cfg_info = node_data[E.value.config];
 
 		node->set_text(0, root_info.path.get_file());
-		node->set_icon(0, has_theme_icon(root_info.type, SNAME("EditorIcons")) ? get_theme_icon(root_info.type, SNAME("EditorIcons")) : theme_cache.node_icon);
+		node->set_icon(0, has_theme_icon(root_info.type, SNAME("EditorIcons")) ? get_theme_icon(root_info.type, SNAME("EditorIcons")) : node_icon);
 		node->set_tooltip_text(0, root_info.path);
 
 		node->set_text(1, sync_info.path.get_file());
-		node->set_icon(1, theme_cache.multiplayer_synchronizer_icon);
+		node->set_icon(1, get_theme_icon("MultiplayerSynchronizer", SNAME("EditorIcons")));
 		node->set_tooltip_text(1, sync_info.path);
 
 		int cfg_idx = cfg_info.path.find("::");
@@ -140,7 +123,7 @@ void EditorNetworkProfiler::refresh_replication_data() {
 			String res_idstr = cfg_info.path.substr(cfg_idx + 2).replace("SceneReplicationConfig_", "");
 			String scene_path = cfg_info.path.substr(0, cfg_idx);
 			node->set_text(2, vformat("%s (%s)", res_idstr, scene_path.get_file()));
-			node->add_button(2, theme_cache.instance_options_icon);
+			node->add_button(2, get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons")));
 			node->set_tooltip_text(2, cfg_info.path);
 			node->set_metadata(2, scene_path);
 		} else {
@@ -171,11 +154,11 @@ void EditorNetworkProfiler::add_node_data(const NodeInfo &p_info) {
 void EditorNetworkProfiler::_activate_pressed() {
 	if (activate->is_pressed()) {
 		refresh_timer->start();
-		activate->set_icon(theme_cache.stop_icon);
+		activate->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
 		activate->set_text(TTR("Stop"));
 	} else {
 		refresh_timer->stop();
-		activate->set_icon(theme_cache.play_icon);
+		activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
 		activate->set_text(TTR("Start"));
 	}
 	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
@@ -241,10 +224,10 @@ void EditorNetworkProfiler::set_bandwidth(int p_incoming, int p_outgoing) {
 	// Make labels more prominent when the bandwidth is greater than 0 to attract user attention
 	incoming_bandwidth_text->add_theme_color_override(
 			"font_uneditable_color",
-			theme_cache.incoming_bandwidth_color * Color(1, 1, 1, p_incoming > 0 ? 1 : 0.5));
+			get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, p_incoming > 0 ? 1 : 0.5));
 	outgoing_bandwidth_text->add_theme_color_override(
 			"font_uneditable_color",
-			theme_cache.outgoing_bandwidth_color * Color(1, 1, 1, p_outgoing > 0 ? 1 : 0.5));
+			get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, p_outgoing > 0 ? 1 : 0.5));
 }
 
 bool EditorNetworkProfiler::is_profiling() {

@@ -97,7 +97,6 @@ public:
 
 private:
 	DisplayServer::WindowID window_id = DisplayServer::INVALID_WINDOW_ID;
-	bool initialized = false;
 
 	String title;
 	mutable int current_screen = 0;

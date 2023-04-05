@@ -35,15 +35,16 @@ struct hb_aat_map_t
   friend struct hb_aat_map_builder_t;
 
   public:
-  struct range_flags_t
+
+  void init ()
   {
-    hb_mask_t flags;
-    unsigned cluster_first;
-    unsigned cluster_last; // end - 1
-  };
+    hb_memset (this, 0, sizeof (*this));
+    chain_flags.init ();
+  }
+  void fini () { chain_flags.fini (); }
 
   public:
-  hb_vector_t<hb_sorted_vector_t<range_flags_t>> chain_flags;
+  hb_vector_t<hb_mask_t> chain_flags;
 };
 
 struct hb_aat_map_builder_t
@@ -55,7 +56,7 @@ struct hb_aat_map_builder_t
 				      face (face_),
 				      props (props_) {}
 
-  HB_INTERNAL void add_feature (const hb_feature_t &feature);
+  HB_INTERNAL void add_feature (hb_tag_t tag, unsigned int value=1);
 
   HB_INTERNAL void compile (hb_aat_map_t  &m);
 
@@ -77,34 +78,11 @@ struct hb_aat_map_builder_t
 	    return (a->seq < b->seq ? -1 : a->seq > b->seq ? 1 : 0);
     }
 
-    /* compares type & setting only */
+    /* compares type & setting only, not is_exclusive flag or seq number */
     int cmp (const feature_info_t& f) const
     {
       return (f.type != type) ? (f.type < type ? -1 : 1) :
 	     (f.setting != setting) ? (f.setting < setting ? -1 : 1) : 0;
-    }
-  };
-
-  struct feature_range_t
-  {
-    feature_info_t info;
-    unsigned start;
-    unsigned end;
-  };
-
-  private:
-  struct feature_event_t
-  {
-    unsigned int index;
-    bool start;
-    feature_info_t feature;
-
-    HB_INTERNAL static int cmp (const void *pa, const void *pb) {
-      const feature_event_t *a = (const feature_event_t *) pa;
-      const feature_event_t *b = (const feature_event_t *) pb;
-      return a->index < b->index ? -1 : a->index > b->index ? 1 :
-	     a->start < b->start ? -1 : a->start > b->start ? 1 :
-	     feature_info_t::cmp (&a->feature, &b->feature);
     }
   };
 
@@ -113,10 +91,7 @@ struct hb_aat_map_builder_t
   hb_segment_properties_t props;
 
   public:
-  hb_sorted_vector_t<feature_range_t> features;
-  hb_sorted_vector_t<feature_info_t> current_features;
-  unsigned range_first = HB_FEATURE_GLOBAL_START;
-  unsigned range_last = HB_FEATURE_GLOBAL_END;
+  hb_sorted_vector_t<feature_info_t> features;
 };
 
 

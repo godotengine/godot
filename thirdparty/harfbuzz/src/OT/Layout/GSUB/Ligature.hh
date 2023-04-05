@@ -69,7 +69,7 @@ struct Ligature
       {
 	c->buffer->sync_so_far ();
 	c->buffer->message (c->font,
-			    "replacing glyph at %u (ligature substitution)",
+			    "replacing glyph at %d (ligature substitution)",
 			    c->buffer->idx);
       }
 
@@ -78,8 +78,8 @@ struct Ligature
       if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
       {
 	c->buffer->message (c->font,
-			    "replaced glyph at %u (ligature substitution)",
-			    c->buffer->idx - 1u);
+			    "replaced glyph at %d (ligature substitution)",
+			    c->buffer->idx - 1);
       }
 
       return_trace (true);
@@ -138,7 +138,7 @@ struct Ligature
     {
       c->buffer->sync_so_far ();
       c->buffer->message (c->font,
-			  "ligated glyph at %u",
+			  "ligated glyph at %d",
 			  pos);
     }
 

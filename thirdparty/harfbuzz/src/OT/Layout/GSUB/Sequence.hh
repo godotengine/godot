@@ -44,7 +44,7 @@ struct Sequence
       {
 	c->buffer->sync_so_far ();
 	c->buffer->message (c->font,
-			    "replacing glyph at %u (multiple substitution)",
+			    "replacing glyph at %d (multiple substitution)",
 			    c->buffer->idx);
       }
 
@@ -53,8 +53,8 @@ struct Sequence
       if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
       {
 	c->buffer->message (c->font,
-			    "replaced glyph at %u (multiple subtitution)",
-			    c->buffer->idx - 1u);
+			    "replaced glyph at %d (multiple subtitution)",
+			    c->buffer->idx - 1);
       }
 
       return_trace (true);
@@ -67,7 +67,7 @@ struct Sequence
       {
 	c->buffer->sync_so_far ();
 	c->buffer->message (c->font,
-			    "deleting glyph at %u (multiple substitution)",
+			    "deleting glyph at %d (multiple substitution)",
 			    c->buffer->idx);
       }
 
@@ -77,7 +77,7 @@ struct Sequence
       {
 	c->buffer->sync_so_far ();
 	c->buffer->message (c->font,
-			    "deleted glyph at %u (multiple substitution)",
+			    "deleted glyph at %d (multiple substitution)",
 			    c->buffer->idx);
       }
 
@@ -88,7 +88,7 @@ struct Sequence
     {
       c->buffer->sync_so_far ();
       c->buffer->message (c->font,
-			  "multiplying glyph at %u",
+			  "multiplying glyph at %d",
 			  c->buffer->idx);
     }
 

@@ -38,7 +38,7 @@ struct hb_bit_set_t
   hb_bit_set_t () = default;
   ~hb_bit_set_t () = default;
 
-  hb_bit_set_t (const hb_bit_set_t& other) : hb_bit_set_t () { set (other, true); }
+  hb_bit_set_t (const hb_bit_set_t& other) : hb_bit_set_t () { set (other); }
   hb_bit_set_t ( hb_bit_set_t&& other) : hb_bit_set_t () { hb_swap (*this, other); }
   hb_bit_set_t& operator= (const hb_bit_set_t& other) { set (other); return *this; }
   hb_bit_set_t& operator= (hb_bit_set_t&& other) { hb_swap (*this, other); return *this; }
@@ -85,16 +85,12 @@ struct hb_bit_set_t
   void err () { if (successful) successful = false; } /* TODO Remove */
   bool in_error () const { return !successful; }
 
-  bool resize (unsigned int count, bool clear = true, bool exact_size = false)
+  bool resize (unsigned int count, bool clear = true)
   {
     if (unlikely (!successful)) return false;
-
-    if (pages.length == 0 && count == 1)
-      exact_size = true; // Most sets are small and local
-
-    if (unlikely (!pages.resize (count, clear, exact_size) || !page_map.resize (count, clear, exact_size)))
+    if (unlikely (!pages.resize (count, clear) || !page_map.resize (count, clear)))
     {
-      pages.resize (page_map.length, clear, exact_size);
+      pages.resize (page_map.length);
       successful = false;
       return false;
     }
@@ -350,11 +346,11 @@ struct hb_bit_set_t
     hb_codepoint_t c = first - 1;
     return next (&c) && c <= last;
   }
-  void set (const hb_bit_set_t &other, bool exact_size = false)
+  void set (const hb_bit_set_t &other)
   {
     if (unlikely (!successful)) return;
     unsigned int count = other.pages.length;
-    if (unlikely (!resize (count, false, exact_size)))
+    if (unlikely (!resize (count, false)))
       return;
     population = other.population;
 
@@ -426,7 +422,7 @@ struct hb_bit_set_t
   private:
   bool allocate_compact_workspace (hb_vector_t<unsigned>& workspace)
   {
-    if (unlikely (!workspace.resize_exact (pages.length)))
+    if (unlikely (!workspace.resize (pages.length)))
     {
       successful = false;
       return false;

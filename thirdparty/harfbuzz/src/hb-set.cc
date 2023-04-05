@@ -174,7 +174,7 @@ hb_set_allocation_successful (const hb_set_t  *set)
  *
  * Allocate a copy of @set.
  *
- * Return value: (transfer full): Newly-allocated set.
+ * Return value: Newly-allocated set.
  *
  * Since: 2.8.2
  **/
@@ -182,9 +182,7 @@ hb_set_t *
 hb_set_copy (const hb_set_t *set)
 {
   hb_set_t *copy = hb_set_create ();
-  if (unlikely (copy->in_error ()))
-    return hb_set_get_empty ();
-
+  if (unlikely (!copy)) return nullptr;
   copy->set (*set);
   return copy;
 }
@@ -491,22 +489,6 @@ hb_set_invert (hb_set_t *set)
 {
   /* Immutible-safe. */
   set->invert ();
-}
-
-/**
- * hb_set_is_inverted:
- * @set: A set
- *
- * Returns whether the set is inverted.
- *
- * Return value: `true` if the set is inverted, `false` otherwise
- *
- * Since: 7.0.0
- **/
-hb_bool_t
-hb_set_is_inverted (const hb_set_t *set)
-{
-  return set->is_inverted ();
 }
 
 /**

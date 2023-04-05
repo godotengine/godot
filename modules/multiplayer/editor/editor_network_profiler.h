@@ -73,22 +73,7 @@ private:
 	HashMap<ObjectID, SyncInfo> sync_data;
 	HashMap<ObjectID, NodeInfo> node_data;
 	HashSet<ObjectID> missing_node_data;
-
-	struct ThemeCache {
-		Ref<Texture2D> node_icon;
-		Ref<Texture2D> stop_icon;
-		Ref<Texture2D> play_icon;
-		Ref<Texture2D> clear_icon;
-
-		Ref<Texture2D> multiplayer_synchronizer_icon;
-		Ref<Texture2D> instance_options_icon;
-
-		Ref<Texture2D> incoming_bandwidth_icon;
-		Ref<Texture2D> outgoing_bandwidth_icon;
-
-		Color incoming_bandwidth_color;
-		Color outgoing_bandwidth_color;
-	} theme_cache;
+	Ref<Texture2D> node_icon;
 
 	void _activate_pressed();
 	void _clear_pressed();
@@ -96,8 +81,6 @@ private:
 	void _replication_button_clicked(TreeItem *p_item, int p_column, int p_idx, MouseButton p_button);
 
 protected:
-	virtual void _update_theme_item_cache() override;
-
 	void _notification(int p_what);
 	static void _bind_methods();
 

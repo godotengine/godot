@@ -70,7 +70,6 @@ private:
 		Color custom_fg;
 		Color custom_bg = Color(0.0, 0.0, 0.0, 0.0);
 
-		int column = 0;
 		Rect2 rect_cache;
 		Rect2 min_rect_cache;
 
@@ -144,8 +143,7 @@ private:
 	} theme_cache;
 
 	void _scroll_changed(double);
-	void _check_shape_changed();
-	void _shape_text(int p_idx);
+	void _shape(int p_idx);
 
 protected:
 	virtual void _update_theme_item_cache() override;

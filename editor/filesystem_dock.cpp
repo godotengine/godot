@@ -1454,29 +1454,6 @@ void FileSystemDock::_update_project_settings_after_move(const HashMap<String, S
 	ProjectSettings::get_singleton()->save();
 }
 
-String FileSystemDock::_get_unique_name(const FileOrFolder &p_entry, const String &p_at_path) {
-	String new_path;
-	String new_path_base;
-
-	if (p_entry.is_file) {
-		new_path = p_at_path.path_join(p_entry.path.get_file());
-		new_path_base = new_path.get_basename() + " (%d)." + new_path.get_extension();
-	} else {
-		PackedStringArray path_split = p_entry.path.split("/");
-		new_path = p_at_path.path_join(path_split[path_split.size() - 2]);
-		new_path_base = new_path + " (%d)";
-	}
-
-	int exist_counter = 1;
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	while (da->file_exists(new_path) || da->dir_exists(new_path)) {
-		exist_counter++;
-		new_path = vformat(new_path_base, exist_counter);
-	}
-
-	return new_path;
-}
-
 void FileSystemDock::_update_favorites_list_after_move(const HashMap<String, String> &p_files_renames, const HashMap<String, String> &p_folders_renames) const {
 	Vector<String> favorites_list = EditorSettings::get_singleton()->get_favorites();
 	Vector<String> new_favorites;
@@ -1681,9 +1658,8 @@ void FileSystemDock::_duplicate_operation_confirm() {
 	_rescan();
 }
 
-void FileSystemDock::_overwrite_dialog_action(bool p_overwrite) {
-	overwrite_dialog->hide();
-	_move_operation_confirm(to_move_path, to_move_or_copy, p_overwrite ? OVERWRITE_REPLACE : OVERWRITE_RENAME);
+void FileSystemDock::_move_with_overwrite() {
+	_move_operation_confirm(to_move_path, true);
 }
 
 Vector<String> FileSystemDock::_check_existing() {
@@ -1705,21 +1681,14 @@ Vector<String> FileSystemDock::_check_existing() {
 	return conflicting_items;
 }
 
-void FileSystemDock::_move_dialog_confirm(const String &p_path) {
-	_move_operation_confirm(p_path, move_dialog->is_copy_pressed());
-}
-
-void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_copy, Overwrite p_overwrite) {
-	if (p_overwrite == OVERWRITE_UNDECIDED) {
+void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_overwrite) {
+	if (!p_overwrite) {
 		to_move_path = p_to_path;
-		to_move_or_copy = p_copy;
-
 		Vector<String> conflicting_items = _check_existing();
 		if (!conflicting_items.is_empty()) {
 			// Ask to do something.
 			overwrite_dialog->set_text(vformat(
-					p_copy ? TTR("The following files or folders conflict with items in the target location '%s':\n\n%s\n\nDo you wish to overwrite them or rename the copied files?")
-						   : TTR("The following files or folders conflict with items in the target location '%s':\n\n%s\n\nDo you wish to overwrite them or rename the moved files?"),
+					TTR("The following files or folders conflict with items in the target location '%s':\n\n%s\n\nDo you wish to overwrite them?"),
 					to_move_path,
 					String("\n").join(conflicting_items)));
 			overwrite_dialog->popup_centered();
@@ -1727,71 +1696,43 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		}
 	}
 
-	Vector<String> new_paths;
-	new_paths.resize(to_move.size());
+	// Check groups.
 	for (int i = 0; i < to_move.size(); i++) {
-		if (p_overwrite == OVERWRITE_RENAME) {
-			new_paths.write[i] = _get_unique_name(to_move[i], p_to_path);
-		} else {
-			new_paths.write[i] = p_to_path.path_join(to_move[i].path.get_file());
+		if (to_move[i].is_file && EditorFileSystem::get_singleton()->is_group_file(to_move[i].path)) {
+			EditorFileSystem::get_singleton()->move_group_file(to_move[i].path, p_to_path.path_join(to_move[i].path.get_file()));
 		}
 	}
 
-	if (p_copy) {
-		bool is_copied = false;
-		for (int i = 0; i < to_move.size(); i++) {
-			String old_path = to_move[i].path.ends_with("/") ? to_move[i].path.substr(0, to_move[i].path.length() - 1) : to_move[i].path;
-			const String &new_path = new_paths[i];
-
-			if (old_path != new_path) {
-				_try_duplicate_item(to_move[i], new_paths[i]);
-				is_copied = true;
-			}
+	HashMap<String, String> file_renames;
+	HashMap<String, String> folder_renames;
+	bool is_moved = false;
+	for (int i = 0; i < to_move.size(); i++) {
+		String old_path = to_move[i].path.ends_with("/") ? to_move[i].path.substr(0, to_move[i].path.length() - 1) : to_move[i].path;
+		String new_path = p_to_path.path_join(old_path.get_file());
+		if (old_path != new_path) {
+			_try_move_item(to_move[i], new_path, file_renames, folder_renames);
+			is_moved = true;
 		}
+	}
 
-		if (is_copied) {
-			_rescan();
-		}
-	} else {
-		// Check groups.
-		for (int i = 0; i < to_move.size(); i++) {
-			if (to_move[i].is_file && EditorFileSystem::get_singleton()->is_group_file(to_move[i].path)) {
-				EditorFileSystem::get_singleton()->move_group_file(to_move[i].path, new_paths[i]);
-			}
-		}
+	if (is_moved) {
+		int current_tab = EditorNode::get_singleton()->get_current_tab();
+		_save_scenes_after_move(file_renames); // Save scenes before updating.
+		_update_dependencies_after_move(file_renames);
+		_update_resource_paths_after_move(file_renames);
+		_update_project_settings_after_move(file_renames);
+		_update_favorites_list_after_move(file_renames, folder_renames);
 
-		bool is_moved = false;
-		HashMap<String, String> file_renames;
-		HashMap<String, String> folder_renames;
+		EditorNode::get_singleton()->set_current_tab(current_tab);
 
-		for (int i = 0; i < to_move.size(); i++) {
-			String old_path = to_move[i].path.ends_with("/") ? to_move[i].path.substr(0, to_move[i].path.length() - 1) : to_move[i].path;
-			const String &new_path = new_paths[i];
-			if (old_path != new_path) {
-				_try_move_item(to_move[i], new_path, file_renames, folder_renames);
-				is_moved = true;
-			}
-		}
+		print_verbose("FileSystem: calling rescan.");
+		_rescan();
 
-		if (is_moved) {
-			int current_tab = EditorNode::get_singleton()->get_current_tab();
-			_save_scenes_after_move(file_renames); // Save scenes before updating.
-			_update_dependencies_after_move(file_renames);
-			_update_resource_paths_after_move(file_renames);
-			_update_project_settings_after_move(file_renames);
-			_update_favorites_list_after_move(file_renames, folder_renames);
+		print_verbose("FileSystem: saving moved scenes.");
+		_save_scenes_after_move(file_renames);
 
-			EditorNode::get_singleton()->set_current_tab(current_tab);
-
-			print_verbose("FileSystem: calling rescan.");
-			_rescan();
-
-			print_verbose("FileSystem: saving moved scenes.");
-			_save_scenes_after_move(file_renames);
-
-			path = p_to_path;
-			current_path->set_text(path);
-		}
+		path = p_to_path;
+		current_path->set_text(path);
 	}
 }
 
@@ -2009,7 +1950,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		} break;
 
 		case FILE_MOVE: {
-			// Move or copy the files to a given location.
+			// Move the files to a given location.
 			to_move.clear();
 			Vector<String> collapsed_paths = _remove_self_included_paths(p_selected);
 			for (int i = collapsed_paths.size() - 1; i >= 0; i--) {
@@ -2019,7 +1960,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				}
 			}
 			if (to_move.size() > 0) {
-				move_dialog->popup_centered_ratio(0.4);
+				move_dialog->popup_centered_ratio();
 			}
 		} break;
 
@@ -2484,7 +2425,28 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 			}
 			if (!to_move.is_empty()) {
 				if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
-					_move_operation_confirm(to_dir, true);
+					for (int i = 0; i < to_move.size(); i++) {
+						String new_path;
+						String new_path_base;
+
+						if (to_move[i].is_file) {
+							new_path = to_dir.path_join(to_move[i].path.get_file());
+							new_path_base = new_path.get_basename() + " (%d)." + new_path.get_extension();
+						} else {
+							PackedStringArray path_split = to_move[i].path.split("/");
+							new_path = to_dir.path_join(path_split[path_split.size() - 2]);
+							new_path_base = new_path + " (%d)";
+						}
+
+						int exist_counter = 1;
+						Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+						while (da->file_exists(new_path) || da->dir_exists(new_path)) {
+							exist_counter++;
+							new_path = vformat(new_path_base, exist_counter);
+						}
+						_try_duplicate_item(to_move[i], new_path);
+					}
+					_rescan();
 				} else {
 					_move_operation_confirm(to_dir);
 				}
@@ -2675,7 +2637,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 	}
 
 	if (p_paths.size() > 1 || p_paths[0] != "res://") {
-		p_popup->add_icon_item(get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")), TTR("Move/Duplicate To..."), FILE_MOVE);
+		p_popup->add_icon_item(get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")), TTR("Move To..."), FILE_MOVE);
 		p_popup->add_icon_shortcut(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/delete"), FILE_REMOVE);
 	}
 
@@ -3316,8 +3278,9 @@ FileSystemDock::FileSystemDock() {
 	add_child(remove_dialog);
 
 	move_dialog = memnew(EditorDirDialog);
+	move_dialog->set_ok_button_text(TTR("Move"));
 	add_child(move_dialog);
-	move_dialog->connect("dir_selected", callable_mp(this, &FileSystemDock::_move_dialog_confirm));
+	move_dialog->connect("dir_selected", callable_mp(this, &FileSystemDock::_move_operation_confirm).bind(false));
 
 	rename_dialog = memnew(ConfirmationDialog);
 	VBoxContainer *rename_dialog_vb = memnew(VBoxContainer);
@@ -3331,10 +3294,9 @@ FileSystemDock::FileSystemDock() {
 	rename_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_rename_operation_confirm));
 
 	overwrite_dialog = memnew(ConfirmationDialog);
-	add_child(overwrite_dialog);
 	overwrite_dialog->set_ok_button_text(TTR("Overwrite"));
-	overwrite_dialog->add_button(TTR("Keep Both"), true)->connect("pressed", callable_mp(this, &FileSystemDock::_overwrite_dialog_action).bind(false));
-	overwrite_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_overwrite_dialog_action).bind(true));
+	add_child(overwrite_dialog);
+	overwrite_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_move_with_overwrite));
 
 	duplicate_dialog = memnew(ConfirmationDialog);
 	VBoxContainer *duplicate_dialog_vb = memnew(VBoxContainer);

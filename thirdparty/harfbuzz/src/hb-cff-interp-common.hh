@@ -488,7 +488,7 @@ struct op_str_t
 
   const unsigned char *ptr = nullptr;
 
-  op_code_t  op = OpCode_Invalid;
+  op_code_t  op;
 
   uint8_t length = 0;
 };
@@ -522,10 +522,20 @@ struct parsed_values_t
 
   void alloc (unsigned n)
   {
-    values.alloc (n, true);
+    values.alloc (n);
   }
 
-  void add_op (op_code_t op, const byte_str_ref_t& str_ref = byte_str_ref_t (), const VAL &v = VAL ())
+  void add_op (op_code_t op, const byte_str_ref_t& str_ref = byte_str_ref_t ())
+  {
+    VAL *val = values.push ();
+    val->op = op;
+    auto arr = str_ref.sub_array (opStart, str_ref.get_offset () - opStart);
+    val->ptr = arr.arrayZ;
+    val->length = arr.length;
+    opStart = str_ref.get_offset ();
+  }
+
+  void add_op (op_code_t op, const byte_str_ref_t& str_ref, const VAL &v)
   {
     VAL *val = values.push (v);
     val->op = op;

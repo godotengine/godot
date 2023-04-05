@@ -147,7 +147,6 @@ struct Coverage
     TRACE_SUBSET (this);
     auto it =
     + iter ()
-    | hb_take (c->plan->source->get_num_glyphs ())
     | hb_filter (c->plan->glyph_map_gsub)
     | hb_map_retains_sorting (c->plan->glyph_map_gsub)
     ;
