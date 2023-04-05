@@ -313,6 +313,24 @@
 				[b]Note:[/b] Strings with equal hash values are [i]not[/i] guaranteed to be the same, as a result of hash collisions. On the countrary, strings with different hash values are guaranteed to be different.
 			</description>
 		</method>
+		<method name="hex_decode" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Decodes a hexadecimal string as a [PackedByteArray].
+				[codeblocks]
+				[gdscript]
+				var text = "hello world"
+				var encoded = text.to_utf8_buffer().hex_encode() # outputs "68656c6c6f20776f726c64"
+				print(buf.hex_decode().get_string_from_utf8())
+				[/gdscript]
+				[csharp]
+				var text = "hello world";
+				var encoded = text.ToUtf8Buffer().HexEncode(); # outputs "68656c6c6f20776f726c64"
+				GD.Print(buf.HexDecode().GetStringFromUtf8());
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="hex_to_int" qualifiers="const">
 			<return type="int" />
 			<description>

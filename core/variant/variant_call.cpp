@@ -1734,6 +1734,7 @@ static void _register_variant_builtin_methods() {
 	bind_string_method(to_utf8_buffer, sarray(), varray());
 	bind_string_method(to_utf16_buffer, sarray(), varray());
 	bind_string_method(to_utf32_buffer, sarray(), varray());
+	bind_string_method(hex_decode, sarray(), varray());
 	bind_string_method(to_wchar_buffer, sarray(), varray());
 
 	bind_static_method(String, num_scientific, sarray("number"), varray());

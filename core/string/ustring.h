@@ -321,6 +321,8 @@ public:
 	static String chr(char32_t p_char);
 	static String md5(const uint8_t *p_md5);
 	static String hex_encode_buffer(const uint8_t *p_buffer, int p_len);
+	Vector<uint8_t> hex_decode() const;
+
 	bool is_numeric() const;
 
 	double to_float() const;
