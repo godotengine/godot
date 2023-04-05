@@ -1310,11 +1310,17 @@ void DisplayServerX11::show_window(WindowID p_id) {
 	const WindowData &wd = windows[p_id];
 	popup_open(p_id);
 
+	const Point2i bmpos = wd.position;
+
 	DEBUG_LOG_X11("show_window: %lu (%u) \n", wd.x11_window, p_id);
 
 	XMapWindow(x11_display, wd.x11_window);
 	XSync(x11_display, False);
 	_validate_mode_on_map(p_id);
+	if (!wd.borderless && !wd.fullscreen && !wd.exclusive_fullscreen) {
+		usleep(50000); // waiting for the window-manager to compelete the decoration of the window
+		window_set_position(bmpos, p_id);
+	}
 }
 
 void DisplayServerX11::delete_sub_window(WindowID p_id) {
