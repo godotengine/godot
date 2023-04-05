@@ -31,7 +31,7 @@ jobs:
             sconsflags: debug_symbols=no vsproj=yes
             bin: "./bin/godot.windows.editor.x86_64.exe"
 
-          - name: Template (target=template_release, tools=no)
+          - name: Template (target=template_release)
             cache-name: windows-template
             target: template_release
             tests: false
