@@ -255,12 +255,14 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 
 				if (tabs[i].rb_rect.has_point(pos)) {
 					rb_pressing = true;
+					_update_hover();
 					queue_redraw();
 					return;
 				}
 
 				if (tabs[i].cb_rect.has_point(pos) && (cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && i == current))) {
 					cb_pressing = true;
+					_update_hover();
 					queue_redraw();
 					return;
 				}
