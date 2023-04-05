@@ -2440,7 +2440,7 @@ PackedStringArray ScriptEditor::get_unsaved_scripts() const {
 
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
-		if (se->is_unsaved()) {
+		if (se && se->is_unsaved()) {
 			unsaved_list.append(se->get_name());
 		}
 	}
@@ -4219,15 +4219,40 @@ void ScriptEditorPlugin::selected_notify() {
 	_focus_another_editor();
 }
 
-String ScriptEditorPlugin::get_unsaved_status() const {
+String ScriptEditorPlugin::get_unsaved_status(const String &p_for_scene) const {
 	const PackedStringArray unsaved_scripts = script_editor->get_unsaved_scripts();
 	if (unsaved_scripts.is_empty()) {
 		return String();
 	}
 
 	PackedStringArray message;
+	if (!p_for_scene.is_empty()) {
+		PackedStringArray unsaved_built_in_scripts;
+
+		const String scene_file = p_for_scene.get_file();
+		for (const String &E : unsaved_scripts) {
+			if (!E.is_resource_file() && E.contains(scene_file)) {
+				unsaved_built_in_scripts.append(E);
+			}
+		}
+
+		if (unsaved_built_in_scripts.is_empty()) {
+			return String();
+		} else {
+			message.resize(unsaved_built_in_scripts.size() + 1);
+			message.write[0] = TTR("There are unsaved changes in the following built-in script(s):");
+
+			int i = 1;
+			for (const String &E : unsaved_built_in_scripts) {
+				message.write[i] = E.trim_suffix("(*)");
+				i++;
+			}
+			return String("\n").join(message);
+		}
+	}
+
 	message.resize(unsaved_scripts.size() + 1);
-	message.write[0] = "Save changes to the following script(s) before quitting?";
+	message.write[0] = TTR("Save changes to the following script(s) before quitting?");
 
 	int i = 1;
 	for (const String &E : unsaved_scripts) {
