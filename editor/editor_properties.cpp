@@ -796,53 +796,72 @@ public:
 		return String();
 	}
 
+	void _update_hovered(const Vector2 &p_position) {
+		bool expand_was_hovered = expand_hovered;
+		expand_hovered = expand_rect.has_point(p_position);
+		if (expand_hovered != expand_was_hovered) {
+			update();
+		}
+
+		if (!expand_hovered) {
+			for (int i = 0; i < flag_rects.size(); i++) {
+				if (flag_rects[i].has_point(p_position)) {
+					// Used to highlight the hovered flag in the layers grid.
+					hovered_index = i;
+					update();
+					return;
+				}
+			}
+		}
+
+		// Remove highlight when no square is hovered.
+		if (hovered_index != -1) {
+			hovered_index = -1;
+			update();
+		}
+	}
+
+	void _on_hover_exit() {
+		if (expand_hovered) {
+			expand_hovered = false;
+			update();
+		}
+		if (hovered_index != -1) {
+			hovered_index = -1;
+			update();
+		}
+	}
+
+	void _update_flag() {
+		if (hovered_index >= 0) {
+			// Toggle the flag.
+			// We base our choice on the hovered flag, so that it always matches the hovered flag.
+			if (value & (1 << hovered_index)) {
+				value &= ~(1 << hovered_index);
+			} else {
+				value |= (1 << hovered_index);
+			}
+
+			emit_signal("flag_changed", value);
+			update();
+		} else if (expand_hovered) {
+			expanded = !expanded;
+			minimum_size_changed();
+			update();
+		}
+	}
+
 	void _gui_input(const Ref<InputEvent> &p_ev) {
 		const Ref<InputEventMouseMotion> mm = p_ev;
 		if (mm.is_valid()) {
-			bool expand_was_hovered = expand_hovered;
-			expand_hovered = expand_rect.has_point(mm->get_position());
-			if (expand_hovered != expand_was_hovered) {
-				update();
-			}
-
-			if (!expand_hovered) {
-				for (int i = 0; i < flag_rects.size(); i++) {
-					if (flag_rects[i].has_point(mm->get_position())) {
-						// Used to highlight the hovered flag in the layers grid.
-						hovered_index = i;
-						update();
-						return;
-					}
-				}
-			}
-
-			// Remove highlight when no square is hovered.
-			if (hovered_index != -1) {
-				hovered_index = -1;
-				update();
-			}
-
+			_update_hovered(mm->get_position());
 			return;
 		}
 
 		const Ref<InputEventMouseButton> mb = p_ev;
 		if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) {
-			if (hovered_index >= 0) {
-				// Toggle the flag.
-				// We base our choice on the hovered flag, so that it always matches the hovered flag.
-				if (value & (1 << hovered_index)) {
-					value &= ~(1 << hovered_index);
-				} else {
-					value |= (1 << hovered_index);
-				}
-
-				emit_signal("flag_changed", value);
-				update();
-			} else if (expand_hovered) {
-				expanded = !expanded;
-				minimum_size_changed();
-				update();
-			}
+			_update_hovered(mb->get_position());
+			_update_flag();
 		}
 	}
 
@@ -974,14 +993,7 @@ public:
 			} break;
 
 			case NOTIFICATION_MOUSE_EXIT: {
-				if (expand_hovered) {
-					expand_hovered = false;
-					update();
-				}
-				if (hovered_index != -1) {
-					hovered_index = -1;
-					update();
-				}
+				_on_hover_exit();
 			} break;
 
 			default:
