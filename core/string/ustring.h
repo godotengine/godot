@@ -337,6 +337,7 @@ public:
 	static double to_float(const char *p_str);
 	static double to_float(const wchar_t *p_str, const wchar_t **r_end = nullptr);
 	static double to_float(const char32_t *p_str, const char32_t **r_end = nullptr);
+	static uint32_t num_characters(int64_t p_int);
 
 	String capitalize() const;
 	String to_camel_case() const;
@@ -432,7 +433,7 @@ public:
 	String property_name_encode() const;
 
 	// node functions
-	static const String invalid_node_name_characters;
+	static String get_invalid_node_name_characters();
 	String validate_node_name() const;
 	String validate_identifier() const;
 	String validate_filename() const;

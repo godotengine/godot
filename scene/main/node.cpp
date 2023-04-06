@@ -994,8 +994,29 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 
 		if (!unique) {
 			ERR_FAIL_COND(!node_hrcr_count.ref());
-			String name = "@" + String(p_child->get_name()) + "@" + itos(node_hrcr_count.get());
-			p_child->data.name = name;
+			// Optimized version of the code below:
+			// String name = "@" + String(p_child->get_name()) + "@" + itos(node_hrcr_count.get());
+			uint32_t c = node_hrcr_count.get();
+			String cn = p_child->get_class_name().operator String();
+			const char32_t *cn_ptr = cn.ptr();
+			uint32_t cn_length = cn.length();
+			uint32_t c_chars = String::num_characters(c);
+			uint32_t len = 2 + cn_length + c_chars;
+			char32_t *str = (char32_t *)alloca(sizeof(char32_t) * (len + 1));
+			uint32_t idx = 0;
+			str[idx++] = '@';
+			for (uint32_t i = 0; i < cn_length; i++) {
+				str[idx++] = cn_ptr[i];
+			}
+			str[idx++] = '@';
+			idx += c_chars;
+			ERR_FAIL_COND(idx != len);
+			str[idx] = 0;
+			while (c) {
+				str[--idx] = '0' + (c % 10);
+				c /= 10;
+			}
+			p_child->data.name = String(str);
 		}
 	}
 }
