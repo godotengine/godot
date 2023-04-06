@@ -6,7 +6,7 @@
 	<description>
 		Displays the content of a [Viewport] node as a dynamic [Texture2D]. This can be used to mix controls, 2D, and 3D elements in the same scene.
 		To create a ViewportTexture in code, use the [method Viewport.get_texture] method on the target viewport.
-		[b]Note:[/b] When local to scene, this texture uses [method Resource.setup_local_to_scene] to set the proxy texture and flags in the local viewport.
+		[b]Note:[/b] When local to scene, this texture uses [method Resource.setup_local_to_scene] to set the proxy texture and flags in the local viewport. Local to scene viewport textures will return incorrect data until the scene root is ready (see [signal Node.ready]).
 	</description>
 	<tutorials>
 		<link title="GUI in 3D Demo">https://godotengine.org/asset-library/asset/127</link>
