@@ -385,9 +385,14 @@ Point2 Node2D::to_global(Point2 p_local) const {
 
 void Node2D::_notification(int p_notification) {
 	switch (p_notification) {
-		case NOTIFICATION_MOVED_IN_PARENT: {
+		case NOTIFICATION_ENTER_TREE: {
 			if (get_viewport()) {
-				get_viewport()->gui_set_root_order_dirty();
+				get_parent()->connect(SNAME("child_order_changed"), callable_mp(get_viewport(), &Viewport::gui_set_root_order_dirty), CONNECT_REFERENCE_COUNTED);
+			}
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			if (get_viewport()) {
+				get_parent()->disconnect(SNAME("child_order_changed"), callable_mp(get_viewport(), &Viewport::gui_set_root_order_dirty));
 			}
 		} break;
 	}

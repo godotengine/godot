@@ -376,6 +376,7 @@ private:
 		double tooltip_delay = 0.0;
 		bool roots_order_dirty = false;
 		List<Control *> roots;
+		HashSet<ObjectID> canvas_parents_with_dirty_order;
 		int canvas_sort_index = 0; //for sorting items with canvas as root
 		bool dragging = false;
 		bool drag_successful = false;
@@ -468,6 +469,8 @@ private:
 	virtual bool _can_consume_input_events() const { return true; }
 	uint64_t event_count = 0;
 
+	void _process_dirty_canvas_parent_orders();
+
 protected:
 	void _set_size(const Size2i &p_size, const Size2i &p_size_2d_override, bool p_allocated);
 
@@ -480,6 +483,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	void canvas_parent_mark_dirty(Node *p_node);
+
 	uint64_t get_processed_events_count() const { return event_count; }
 
 	AudioListener2D *get_audio_listener_2d() const;
