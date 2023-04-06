@@ -569,6 +569,9 @@
 		<member name="content_scale_size" type="Vector2i" setter="set_content_scale_size" getter="get_content_scale_size" default="Vector2i(0, 0)">
 			Base size of the content (i.e. nodes that are drawn inside the window). If non-zero, [Window]'s content will be scaled when the window is resized to a different size.
 		</member>
+		<member name="content_scale_stretch" type="int" setter="set_content_scale_stretch" getter="get_content_scale_stretch" enum="Window.ContentScaleStretch" default="0">
+			The policy to use to determine the final scale factor for 2D elements. This affects how [member content_scale_factor] is applied, in addition to the automatic scale factor determined by [member content_scale_size].
+		</member>
 		<member name="current_screen" type="int" setter="set_current_screen" getter="get_current_screen">
 			The screen the window is currently on.
 		</member>
@@ -839,6 +842,12 @@
 		</constant>
 		<constant name="CONTENT_SCALE_ASPECT_EXPAND" value="4" enum="ContentScaleAspect">
 			The content's aspect will be preserved. If the target size has different aspect from the base one, the content will stay in the top-left corner and add an extra visible area in the stretched space.
+		</constant>
+		<constant name="CONTENT_SCALE_STRETCH_FRACTIONAL" value="0" enum="ContentScaleStretch">
+			The content will be stretched according to a fractional factor. This fills all the space available in the window, but allows "pixel wobble" to occur due to uneven pixel scaling.
+		</constant>
+		<constant name="CONTENT_SCALE_STRETCH_INTEGER" value="1" enum="ContentScaleStretch">
+			The content will be stretched only according to an integer factor, preserving sharp pixels. This may leave a black background visible on the window's edges depending on the window size.
 		</constant>
 		<constant name="LAYOUT_DIRECTION_INHERITED" value="0" enum="LayoutDirection">
 			Automatic layout direction, determined from the parent window layout direction.
