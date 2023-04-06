@@ -500,6 +500,7 @@ public:
 	bool can_process_notification(int p_what) const;
 	bool is_enabled() const;
 
+	bool is_ready() const;
 	void request_ready();
 
 	static void print_orphan_nodes();

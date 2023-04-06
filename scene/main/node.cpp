@@ -2786,6 +2786,10 @@ bool Node::is_displayed_folded() const {
 	return data.display_folded;
 }
 
+bool Node::is_ready() const {
+	return !data.ready_first;
+}
+
 void Node::request_ready() {
 	data.ready_first = true;
 }
@@ -2932,6 +2936,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("queue_free"), &Node::queue_free);
 
 	ClassDB::bind_method(D_METHOD("request_ready"), &Node::request_ready);
+	ClassDB::bind_method(D_METHOD("is_node_ready"), &Node::is_ready);
 
 	ClassDB::bind_method(D_METHOD("set_multiplayer_authority", "id", "recursive"), &Node::set_multiplayer_authority, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_multiplayer_authority"), &Node::get_multiplayer_authority);
