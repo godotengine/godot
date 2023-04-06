@@ -1215,6 +1215,10 @@ void Node::remove_child(Node *p_child) {
 	child_count = data.children.size();
 	children = data.children.ptrw();
 
+	for (int i = idx; i < child_count; i++) {
+		children[i]->data.index = i;
+	}
+
 	notification(NOTIFICATION_CHILD_ORDER_CHANGED);
 	emit_signal(SNAME("child_order_changed"));
 
