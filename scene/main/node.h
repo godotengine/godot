@@ -356,6 +356,8 @@ public:
 
 	void set_owner(Node *p_owner);
 	Node *get_owner() const;
+
+	List<Node *> get_owned();
 	void get_owned_by(Node *p_by, List<Node *> *p_owned);
 
 	void set_unique_name_in_owner(bool p_enabled);
