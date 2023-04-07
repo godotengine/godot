@@ -76,7 +76,9 @@ struct SwShapeTask : SwTask
 
     void run(unsigned tid) override
     {
-        if (opacity == 0) return;  //Invisible
+        auto compMethod = CompositeMethod::None;
+        auto usedAsClip = (sdata->composite(nullptr, &compMethod) == Result::Success) && (compMethod == CompositeMethod::ClipPath);
+        if (opacity == 0 && !usedAsClip) return;  //Invisible
 
         uint8_t strokeAlpha = 0;
         auto visibleStroke = false;
@@ -98,7 +100,7 @@ struct SwShapeTask : SwTask
             sdata->fillColor(nullptr, nullptr, nullptr, &alpha);
             alpha = static_cast<uint8_t>(static_cast<uint32_t>(alpha) * opacity / 255);
             visibleFill = (alpha > 0 || sdata->fill());
-            if (visibleFill || visibleStroke) {
+            if (visibleFill || visibleStroke || usedAsClip) {
                 shapeReset(&shape);
                 if (!shapePrepare(&shape, sdata, transform, clipRegion, bbox, mpool, tid, clips.count > 0 ? true : false)) goto err;
             }
@@ -110,7 +112,7 @@ struct SwShapeTask : SwTask
 
         //Fill
         if (flags & (RenderUpdateFlag::Gradient | RenderUpdateFlag::Transform | RenderUpdateFlag::Color)) {
-            if (visibleFill) {
+            if (visibleFill || usedAsClip) {
                 /* We assume that if stroke width is bigger than 2,
                    shape outline below stroke could be full covered by stroke drawing.
                    Thus it turns off antialising in that condition.
@@ -291,7 +293,7 @@ bool SwRenderer::viewport(const RenderRegion& vp)
 }
 
 
-bool SwRenderer::target(uint32_t* buffer, uint32_t stride, uint32_t w, uint32_t h, uint32_t cs)
+bool SwRenderer::target(uint32_t* buffer, uint32_t stride, uint32_t w, uint32_t h, uint32_t colorSpace)
 {
     if (!buffer || stride == 0 || w == 0 || h == 0 || w > stride) return false;
 
@@ -301,7 +303,7 @@ bool SwRenderer::target(uint32_t* buffer, uint32_t stride, uint32_t w, uint32_t 
     surface->stride = stride;
     surface->w = w;
     surface->h = h;
-    surface->cs = cs;
+    surface->cs = colorSpace;
 
     vport.x = vport.y = 0;
     vport.w = surface->w;
@@ -641,6 +643,13 @@ RenderData SwRenderer::prepare(const Shape& sdata, RenderData data, const Render
 
 SwRenderer::SwRenderer():mpool(globalMpool)
 {
+}
+
+
+uint32_t SwRenderer::colorSpace()
+{
+    if (surface) return surface->cs;
+    return tvg::SwCanvas::ARGB8888;
 }
 
 

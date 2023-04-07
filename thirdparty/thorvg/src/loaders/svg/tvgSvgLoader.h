@@ -52,6 +52,7 @@ public:
 private:
     AspectRatioAlign align = AspectRatioAlign::XMidYMid;
     AspectRatioMeetOrSlice meetOrSlice = AspectRatioMeetOrSlice::Meet;
+    bool renderingDisabled = false;
 
     bool header();
     void clear();

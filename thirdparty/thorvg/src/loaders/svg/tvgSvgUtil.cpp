@@ -137,7 +137,11 @@ float svgUtilStrtof(const char *nPtr, char **endPtr)
                     pow10 *= 10ULL;
                 }
             }
+        } else if (isspace(*iter)) { //skip if there is a space after the dot.
+            a = iter;
+            goto success;
         }
+
         val += static_cast<float>(decimalPart) / static_cast<float>(pow10);
         a = iter;
     }
