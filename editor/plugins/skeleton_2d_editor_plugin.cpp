@@ -30,11 +30,11 @@
 
 #include "skeleton_2d_editor_plugin.h"
 
-#include "canvas_item_editor_plugin.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/plugins/canvas_item_editor_plugin.h"
 #include "scene/2d/mesh_instance_2d.h"
-#include "scene/gui/box_container.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
 #include "thirdparty/misc/clipper.hpp"
 

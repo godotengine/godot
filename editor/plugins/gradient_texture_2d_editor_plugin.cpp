@@ -33,7 +33,9 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_spin_slider.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/separator.h"
 

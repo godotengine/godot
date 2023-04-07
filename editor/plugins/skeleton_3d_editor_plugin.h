@@ -31,10 +31,10 @@
 #ifndef SKELETON_3D_EDITOR_PLUGIN_H
 #define SKELETON_3D_EDITOR_PLUGIN_H
 
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
-#include "node_3d_editor_plugin.h"
+#include "editor/gui/editor_file_dialog.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/skeleton_3d.h"

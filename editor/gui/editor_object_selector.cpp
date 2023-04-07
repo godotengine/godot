@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_path.cpp                                                       */
+/*  editor_object_selector.cpp                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,20 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "editor_path.h"
+#include "editor_object_selector.h"
 
 #include "editor/editor_data.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/multi_node_edit.h"
 
-Size2 EditorPath::get_minimum_size() const {
+Size2 EditorObjectSelector::get_minimum_size() const {
 	Ref<Font> font = get_theme_font(SNAME("font"));
 	int font_size = get_theme_font_size(SNAME("font_size"));
 	return Button::get_minimum_size() + Size2(0, font->get_height(font_size));
 }
 
-void EditorPath::_add_children_to_popup(Object *p_obj, int p_depth) {
+void EditorObjectSelector::_add_children_to_popup(Object *p_obj, int p_depth) {
 	if (p_depth > 8) {
 		return;
 	}
@@ -86,7 +86,7 @@ void EditorPath::_add_children_to_popup(Object *p_obj, int p_depth) {
 	}
 }
 
-void EditorPath::_show_popup() {
+void EditorObjectSelector::_show_popup() {
 	if (sub_objects_menu->is_visible()) {
 		sub_objects_menu->hide();
 		return;
@@ -106,7 +106,7 @@ void EditorPath::_show_popup() {
 	sub_objects_menu->popup();
 }
 
-void EditorPath::_about_to_show() {
+void EditorObjectSelector::_about_to_show() {
 	Object *obj = ObjectDB::get_instance(history->get_path_object(history->get_path_size() - 1));
 	if (!obj) {
 		return;
@@ -121,7 +121,7 @@ void EditorPath::_about_to_show() {
 	}
 }
 
-void EditorPath::update_path() {
+void EditorObjectSelector::update_path() {
 	for (int i = 0; i < history->get_path_size(); i++) {
 		Object *obj = ObjectDB::get_instance(history->get_path_object(i));
 		if (!obj) {
@@ -170,7 +170,7 @@ void EditorPath::update_path() {
 	}
 }
 
-void EditorPath::clear_path() {
+void EditorObjectSelector::clear_path() {
 	set_disabled(true);
 	set_tooltip_text("");
 
@@ -179,12 +179,12 @@ void EditorPath::clear_path() {
 	sub_objects_icon->hide();
 }
 
-void EditorPath::enable_path() {
+void EditorObjectSelector::enable_path() {
 	set_disabled(false);
 	sub_objects_icon->show();
 }
 
-void EditorPath::_id_pressed(int p_idx) {
+void EditorObjectSelector::_id_pressed(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, objects.size());
 
 	Object *obj = ObjectDB::get_instance(objects[p_idx]);
@@ -195,7 +195,7 @@ void EditorPath::_id_pressed(int p_idx) {
 	EditorNode::get_singleton()->push_item(obj);
 }
 
-void EditorPath::_notification(int p_what) {
+void EditorObjectSelector::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
@@ -210,15 +210,15 @@ void EditorPath::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			connect("pressed", callable_mp(this, &EditorPath::_show_popup));
+			connect("pressed", callable_mp(this, &EditorObjectSelector::_show_popup));
 		} break;
 	}
 }
 
-void EditorPath::_bind_methods() {
+void EditorObjectSelector::_bind_methods() {
 }
 
-EditorPath::EditorPath(EditorSelectionHistory *p_history) {
+EditorObjectSelector::EditorObjectSelector(EditorSelectionHistory *p_history) {
 	history = p_history;
 
 	MarginContainer *main_mc = memnew(MarginContainer);
@@ -249,8 +249,8 @@ EditorPath::EditorPath(EditorSelectionHistory *p_history) {
 	sub_objects_menu = memnew(PopupMenu);
 	sub_objects_menu->set_auto_translate(false);
 	add_child(sub_objects_menu);
-	sub_objects_menu->connect("about_to_popup", callable_mp(this, &EditorPath::_about_to_show));
-	sub_objects_menu->connect("id_pressed", callable_mp(this, &EditorPath::_id_pressed));
+	sub_objects_menu->connect("about_to_popup", callable_mp(this, &EditorObjectSelector::_about_to_show));
+	sub_objects_menu->connect("id_pressed", callable_mp(this, &EditorObjectSelector::_id_pressed));
 
 	set_tooltip_text(TTR("Open a list of sub-resources."));
 }
