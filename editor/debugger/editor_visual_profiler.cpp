@@ -30,7 +30,10 @@
 
 #include "editor_visual_profiler.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
@@ -146,8 +149,8 @@ void EditorVisualProfiler::_item_selected() {
 }
 
 void EditorVisualProfiler::_update_plot() {
-	const int w = graph->get_size().width;
-	const int h = graph->get_size().height;
+	const int w = graph->get_size().width + 1; // `+1` is to prevent from crashing when visual profiler is auto started.
+	const int h = graph->get_size().height + 1;
 
 	bool reset_texture = false;
 
@@ -425,9 +428,18 @@ void EditorVisualProfiler::_clear_pressed() {
 	_update_plot();
 }
 
+void EditorVisualProfiler::_autostart_pressed() {
+	autostart_button->release_focus();
+	ProjectSettings::get_singleton()->set_setting("debug/settings/profiler/autostart_visual_profiler", autostart_button->is_pressed());
+	ProjectSettings::get_singleton()->save();
+}
+
 void EditorVisualProfiler::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_ENTER_TREE: {
+			EditorNode::get_singleton()->connect("project_settings_changed", callable_mp(this, &EditorVisualProfiler::_project_settings_changed));
+			[[fallthrough]];
+		}
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -437,6 +449,7 @@ void EditorVisualProfiler::_notification(int p_what) {
 				activate->set_icon(get_editor_theme_icon(SNAME("Play")));
 			}
 			clear_button->set_icon(get_editor_theme_icon(SNAME("Clear")));
+			autostart_button->set_icon(get_editor_theme_icon(SNAME("AutoPlay")));
 		} break;
 	}
 }
@@ -669,6 +682,7 @@ void EditorVisualProfiler::set_enabled(bool p_enable) {
 void EditorVisualProfiler::set_pressed(bool p_pressed) {
 	activate->set_pressed(p_pressed);
 	_update_button_text();
+	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
 }
 
 bool EditorVisualProfiler::is_profiling() {
@@ -729,6 +743,10 @@ Vector<Vector<String>> EditorVisualProfiler::get_data_as_csv() const {
 	return res;
 }
 
+void EditorVisualProfiler::_project_settings_changed() {
+	autostart_button->set_pressed(GLOBAL_GET("debug/settings/profiler/autostart_visual_profiler"));
+}
+
 EditorVisualProfiler::EditorVisualProfiler() {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
@@ -764,6 +782,13 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	linked->connect("pressed", callable_mp(this, &EditorVisualProfiler::_update_plot));
 
 	hb->add_spacer();
+
+	autostart_button = memnew(Button);
+	autostart_button->set_toggle_mode(true);
+	autostart_button->set_text(TTR("Auto Start"));
+	autostart_button->set_pressed(GLOBAL_GET("debug/settings/profiler/autostart_profiler"));
+	autostart_button->connect("pressed", callable_mp(this, &EditorVisualProfiler::_autostart_pressed));
+	hb->add_child(autostart_button);
 
 	hb->add_child(memnew(Label(TTR("Frame #:"))));
 
