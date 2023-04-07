@@ -241,7 +241,9 @@
 			<return type="void" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Specifies the smooth group to use for the [i]next[/i] vertex. If this is never called, all vertices will have the default smooth group of [code]0[/code] and will be smoothed with adjacent vertices of the same group. To produce a mesh with flat normals, set the smooth group to [code]-1[/code].
+				Specifies the smooth group to use for the [i]next[/i] vertex. If this is never called, all vertices will have the default smooth group of [code]0[/code] and will be smoothed with adjacent vertices of the same group. To produce a mesh with flat normals, set the smooth group to [code]uint.MaxValue[/code].
+				[b]Note:[/b] This function actually takes an [code]uint32_t[/code], so any negative integers passed will trigger a type error.
+				[b]Note:[/b] [code]uint.MaxValue[/code] has the same raw binary representation as [code](int)-1[/code]
 			</description>
 		</method>
 		<method name="set_tangent">
