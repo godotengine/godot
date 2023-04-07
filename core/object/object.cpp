@@ -195,14 +195,15 @@ bool Object::_predelete() {
 	_predelete_ok = 1;
 	notification(NOTIFICATION_PREDELETE, true);
 	if (_predelete_ok) {
-		_class_ptr = nullptr; //must restore so destructors can access class ptr correctly
+		_class_name_ptr = nullptr; // Must restore, so constructors/destructors have proper class name access at each stage.
 	}
 	return _predelete_ok;
 }
 
 void Object::_postinitialize() {
-	_class_ptr = _get_class_namev();
+	_class_name_ptr = _get_class_namev(); // Set the direct pointer, which is much faster to obtain, but can only happen after postinitialize.
 	_initialize_classv();
+	_class_name_ptr = nullptr; // May have been called from a constructor.
 	notification(NOTIFICATION_POSTINITIALIZE);
 }
 
