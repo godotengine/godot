@@ -359,7 +359,7 @@ void main() {
 	vec3 model_origin = model_matrix[3].xyz;
 	if (is_multimesh) {
 		vertex = mat3(matrix) * vertex;
-		model_origin = double_add_vec3(model_origin, model_precision, matrix[3].xyz, vec3(0.0), model_precision);
+		model_origin = double_add_vec3(vec3(0.0), model_precision, matrix[3].xyz, vec3(0.0), model_precision);
 	}
 	vertex = mat3(model_matrix) * vertex;
 	vec3 temp_precision;
