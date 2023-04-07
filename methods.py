@@ -783,7 +783,7 @@ def generate_vs_project(env, num_jobs, project_name="godot"):
                     for plat_id in ModuleConfigs.PLATFORM_IDS
                 ]
                 self.arg_dict["cpppaths"] += ModuleConfigs.for_every_variant(env["CPPPATH"] + [includes])
-                self.arg_dict["cppdefines"] += ModuleConfigs.for_every_variant(env["CPPDEFINES"] + defines)
+                self.arg_dict["cppdefines"] += ModuleConfigs.for_every_variant(list(env["CPPDEFINES"]) + defines)
                 self.arg_dict["cmdargs"] += ModuleConfigs.for_every_variant(cli_args)
 
             def build_commandline(self, commands):
