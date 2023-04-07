@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_title_bar.cpp                                                  */
+/*  editor_object_selector.h                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,59 +28,46 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "editor/editor_title_bar.h"
+#ifndef EDITOR_OBJECT_SELECTOR_H
+#define EDITOR_OBJECT_SELECTOR_H
 
-void EditorTitleBar::gui_input(const Ref<InputEvent> &p_event) {
-	if (!can_move) {
-		return;
-	}
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/label.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/gui/texture_rect.h"
 
-	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid() && moving) {
-		if (mm->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
-			Window *w = Object::cast_to<Window>(get_viewport());
-			if (w) {
-				Point2 mouse = DisplayServer::get_singleton()->mouse_get_position();
-				w->set_position(mouse - click_pos);
-			}
-		} else {
-			moving = false;
-		}
-	}
+class EditorSelectionHistory;
 
-	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && has_point(mb->get_position())) {
-		Window *w = Object::cast_to<Window>(get_viewport());
-		if (w) {
-			if (mb->get_button_index() == MouseButton::LEFT) {
-				if (mb->is_pressed()) {
-					click_pos = DisplayServer::get_singleton()->mouse_get_position() - w->get_position();
-					moving = true;
-				} else {
-					moving = false;
-				}
-			}
-			if (mb->get_button_index() == MouseButton::LEFT && mb->is_double_click() && mb->is_pressed()) {
-				if (DisplayServer::get_singleton()->window_maximize_on_title_dbl_click()) {
-					if (w->get_mode() == Window::MODE_WINDOWED) {
-						w->set_mode(Window::MODE_MAXIMIZED);
-					} else if (w->get_mode() == Window::MODE_MAXIMIZED) {
-						w->set_mode(Window::MODE_WINDOWED);
-					}
-				} else if (DisplayServer::get_singleton()->window_minimize_on_title_dbl_click()) {
-					w->set_mode(Window::MODE_MINIMIZED);
-				}
-				moving = false;
-			}
-		}
-	}
-}
+class EditorObjectSelector : public Button {
+	GDCLASS(EditorObjectSelector, Button);
 
-void EditorTitleBar::set_can_move_window(bool p_enabled) {
-	can_move = p_enabled;
-	set_process_input(can_move);
-}
+	EditorSelectionHistory *history = nullptr;
 
-bool EditorTitleBar::get_can_move_window() const {
-	return can_move;
-}
+	TextureRect *current_object_icon = nullptr;
+	Label *current_object_label = nullptr;
+	TextureRect *sub_objects_icon = nullptr;
+	PopupMenu *sub_objects_menu = nullptr;
+
+	Vector<ObjectID> objects;
+
+	void _show_popup();
+	void _id_pressed(int p_idx);
+	void _about_to_show();
+	void _add_children_to_popup(Object *p_obj, int p_depth = 0);
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	virtual Size2 get_minimum_size() const override;
+
+	void update_path();
+	void clear_path();
+	void enable_path();
+
+	EditorObjectSelector(EditorSelectionHistory *p_history);
+};
+
+#endif // EDITOR_OBJECT_SELECTOR_H

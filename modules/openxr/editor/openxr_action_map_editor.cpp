@@ -31,10 +31,10 @@
 #include "openxr_action_map_editor.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_file_dialog.h"
 
 // TODO implement redo/undo system
 

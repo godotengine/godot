@@ -35,12 +35,12 @@
 #include "core/io/resource_saver.h"
 #include "core/string/string_builder.h"
 #include "editor/create_dialog.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_file_dialog.h"
 
 static String _get_parent_class_of_script(String p_path) {
 	if (!ResourceLoader::exists(p_path, "Script")) {

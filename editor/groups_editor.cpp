@@ -33,10 +33,12 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/scene_tree_editor.h"
 #include "editor/scene_tree_dock.h"
-#include "editor/scene_tree_editor.h"
-#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/tree.h"
 #include "scene/resources/packed_scene.h"
 
 static bool can_edit(Node *p_node, String p_group) {
