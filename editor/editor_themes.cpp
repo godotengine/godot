@@ -1209,6 +1209,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("scroll_border", "Tree", 40 * EDSCALE);
 	theme->set_constant("scroll_speed", "Tree", 12);
 	theme->set_constant("outline_size", "Tree", 0 * EDSCALE);
+	theme->set_constant("scrollbar_margin_left", "Tree", 0);
+	theme->set_constant("scrollbar_margin_top", "Tree", 0);
+	theme->set_constant("scrollbar_margin_right", "Tree", 0);
+	theme->set_constant("scrollbar_margin_bottom", "Tree", 0);
+	theme->set_constant("scrollbar_h_separation", "Tree", 1 * EDSCALE);
+	theme->set_constant("scrollbar_v_separation", "Tree", 1 * EDSCALE);
 
 	const Color guide_color = mono_color * Color(1, 1, 1, 0.05);
 	Color relationship_line_color = mono_color * Color(1, 1, 1, relationship_line_opacity);
