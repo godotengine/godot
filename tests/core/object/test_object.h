@@ -82,6 +82,8 @@ public:
 	Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid) const override {
 		return Variant::PACKED_FLOAT32_ARRAY;
 	}
+	virtual void validate_property(PropertyInfo &p_property) const override {
+	}
 	bool property_can_revert(const StringName &p_name) const override {
 		return false;
 	};

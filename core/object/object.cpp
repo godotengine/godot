@@ -526,6 +526,10 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 
 void Object::validate_property(PropertyInfo &p_property) const {
 	_validate_propertyv(p_property);
+
+	if (script_instance) { // Call it last to allow user altering already validated properties.
+		script_instance->validate_property(p_property);
+	}
 }
 
 bool Object::property_can_revert(const StringName &p_name) const {
@@ -1603,6 +1607,8 @@ void Object::_bind_methods() {
 	plget.return_val.hint = PROPERTY_HINT_ARRAY_TYPE;
 	plget.return_val.hint_string = "Dictionary";
 	BIND_OBJ_CORE_METHOD(plget);
+
+	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::NIL, "_validate_property", PropertyInfo(Variant::DICTIONARY, "property")));
 
 	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::BOOL, "_property_can_revert", PropertyInfo(Variant::STRING_NAME, "property")));
 	MethodInfo mipgr("_property_get_revert", PropertyInfo(Variant::STRING_NAME, "property"));
