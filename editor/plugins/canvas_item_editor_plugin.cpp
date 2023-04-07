@@ -4691,7 +4691,6 @@ void CanvasItemEditor::_reset_drag() {
 void CanvasItemEditor::_bind_methods() {
 	ClassDB::bind_method("_get_editor_data", &CanvasItemEditor::_get_editor_data);
 
-	ClassDB::bind_method(D_METHOD("set_state"), &CanvasItemEditor::set_state);
 	ClassDB::bind_method(D_METHOD("update_viewport"), &CanvasItemEditor::update_viewport);
 	ClassDB::bind_method(D_METHOD("center_at", "position"), &CanvasItemEditor::center_at);
 
@@ -4905,6 +4904,13 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 }
 
 void CanvasItemEditor::clear() {
+	zoom = 1.0 / MAX(1, EDSCALE);
+	zoom_widget->set_zoom(zoom);
+
+	view_offset = Point2(-150 - RULER_WIDTH, -95 - RULER_WIDTH);
+	previous_update_view_offset = view_offset; // Moves the view a little bit to the left so that (0,0) is visible. The values a relative to a 16/10 screen.
+	_update_scrollbars();
+
 	grid_offset = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "grid_offset", Vector2());
 	grid_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "grid_step", Vector2(8, 8));
 	primary_grid_steps = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "primary_grid_steps", 8);
@@ -4956,10 +4962,6 @@ void CanvasItemEditor::center_at(const Point2 &p_pos) {
 }
 
 CanvasItemEditor::CanvasItemEditor() {
-	zoom = 1.0 / MAX(1, EDSCALE);
-	view_offset = Point2(-150 - RULER_WIDTH, -95 - RULER_WIDTH);
-	previous_update_view_offset = view_offset; // Moves the view a little bit to the left so that (0,0) is visible. The values a relative to a 16/10 screen
-
 	snap_target[0] = SNAP_TARGET_NONE;
 	snap_target[1] = SNAP_TARGET_NONE;
 
@@ -5406,8 +5408,8 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	set_process_shortcut_input(true);
 
-	// Update the menus' checkboxes
-	call_deferred(SNAME("set_state"), get_state());
+	// Update the menus' checkboxes.
+	callable_mp(this, &CanvasItemEditor::set_state).bind(get_state()).call_deferred();
 }
 
 CanvasItemEditor *CanvasItemEditor::singleton = nullptr;
