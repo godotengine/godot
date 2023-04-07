@@ -4,6 +4,123 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [4.0.3] - TBD
+
+See the [release announcement](https://godotengine.org/article/maintenance-release-godot-4-0-3) for details.
+
+### Added
+
+#### Editor
+
+- Properly remember snapping options per-project ([GH-74682](https://github.com/godotengine/godot/pull/74682)).
+- Remember directory when installing templates file ([GH-74735](https://github.com/godotengine/godot/pull/74735)).
+- Improve editor state initialization ([GH-75563](https://github.com/godotengine/godot/pull/75563)).
+
+#### Navigation
+
+- Navigation: Expose NavigationAgent path postprocessing and pathfinding algorithm options ([GH-75326](https://github.com/godotengine/godot/pull/75326)).
+
+#### Physics
+
+- Warn when a concave polygon is assigned to ConvexPolygonShape2D ([GH-56671](https://github.com/godotengine/godot/pull/56671)).
+
+### Changed
+
+#### 3D
+
+- Use physical shortcuts for freelook navigation in the editor ([GH-73651](https://github.com/godotengine/godot/pull/73651)).
+
+#### Buildsystem
+
+- Wait for static check results before starting other CI builds ([GH-65232](https://github.com/godotengine/godot/pull/65232)).
+- Remove obsolete 'tools' in a CI workflow name ([GH-75687](https://github.com/godotengine/godot/pull/75687)).
+- Visibly print trailing whitespace when static checks fail ([GH-75700](https://github.com/godotengine/godot/pull/75700)).
+
+#### C#/.NET
+
+- Truncate instead of round in Vector2/3/4 to Vector2I/3I/4I conversion ([GH-75477](https://github.com/godotengine/godot/pull/75477)).
+
+#### Editor
+
+- Prevent off-screen controls in editor ([GH-73646](https://github.com/godotengine/godot/pull/73646)).
+- Re-enable script editor File menu shortcuts when the menu is hidden ([GH-74319](https://github.com/godotengine/godot/pull/74319)).
+- Prevent color conversion of the big Godot logo ([GH-75653](https://github.com/godotengine/godot/pull/75653)).
+
+#### GUI
+
+- Ignore invisible children of GraphNode for minimum size ([GH-72240](https://github.com/godotengine/godot/pull/72240)).
+- Update `TextureProgressBar` upon texture changes ([GH-75532](https://github.com/godotengine/godot/pull/75532)).
+- Keep a copy of UTF-8 XML source string during the SVG font processing ([GH-75675](https://github.com/godotengine/godot/pull/75675)).
+
+#### Import
+
+- gltf: Remove obsolete hack to embed gltf textures in advanced import ([GH-75636](https://github.com/godotengine/godot/pull/75636)).
+
+#### Physics
+
+- Modify contact_max_allowed_penetration precision to 3 significant digits ([GH-75665](https://github.com/godotengine/godot/pull/75665)).
+
+#### Rendering
+
+- Recreate swap chain when suboptimal to avoid error spam ([GH-72859](https://github.com/godotengine/godot/pull/72859)).
+
+#### Thirdparty
+
+- thorvg updated to 0.8.4.
+
+### Fixed
+
+#### 2D
+
+- Fix RemoteTransform2D could fail to update AnimatableBody2D's position or rotation ([GH-75487](https://github.com/godotengine/godot/pull/75487)).
+
+#### Audio
+
+- Fix AudioStreamPlayer2D crash when PhysicsServer2D runs on thread ([GH-75728](https://github.com/godotengine/godot/pull/75728)).
+
+#### Buildsystem
+
+- Fix the Python type error when creating the .sln file ([GH-75309](https://github.com/godotengine/godot/pull/75309)).
+
+#### Core
+
+- Fix moving position indicator out of bounds in FileAccessMemory ([GH-75641](https://github.com/godotengine/godot/pull/75641)).
+
+#### Editor
+
+- Fix off-by-one issue where "Go to Line" dialog shows the incorrect line number ([GH-75523](https://github.com/godotengine/godot/pull/75523)).
+
+#### GUI
+
+- Fix commenting collapsed function issue ([GH-75070](https://github.com/godotengine/godot/pull/75070)).
+- Fix fill align and trim with enabled dropcap in `RichTextLabel` ([GH-75504](https://github.com/godotengine/godot/pull/75504)).
+- Fix descriptions not showing for theme properties ([GH-75559](https://github.com/godotengine/godot/pull/75559)).
+- Fix some theme values affect the editor by setting a default value for them ([GH-75566](https://github.com/godotengine/godot/pull/75566)).
+- Fix several GraphEdit operations at zoom levels other than 100% ([GH-75595](https://github.com/godotengine/godot/pull/75595)).
+
+#### Import
+
+- SVG: fix tvg::Picture->size() and scale based errors. ([GH-75034](https://github.com/godotengine/godot/pull/75034)).
+
+#### Input
+
+- Fix guide button detection with XInput and Xbox Series controllers ([GH-73200](https://github.com/godotengine/godot/pull/73200)).
+- Fix the issue preventing dragging in the 2D editor ([GH-75113](https://github.com/godotengine/godot/pull/75113)).
+- Fix keycode/physical keycode mix up on web ([GH-75738](https://github.com/godotengine/godot/pull/75738)).
+
+#### Navigation
+
+- Navigation: Fix NavigationObstacles not being added to avoidance simulation ([GH-75756](https://github.com/godotengine/godot/pull/75756)).
+
+#### Porting
+
+- Windows: Fix clipboard relying on focused window ([GH-73878](https://github.com/godotengine/godot/pull/73878)).
+
+#### Rendering
+
+- Fix interpolation of R0 for metallic and calculation of the Fresnel Shlick term in SSR ([GH-75368](https://github.com/godotengine/godot/pull/75368)).
+
+
 ## [4.0.2] - 2023-04-04
 
 See the [release announcement](https://godotengine.org/article/maintenance-release-godot-4-0-2) for details.
@@ -2817,6 +2934,7 @@ See the [release announcement](https://godotengine.org/article/godot-3-3-has-arr
   - Only WebAssembly is supported now, since all browsers supporting WebGL 2.0 also support WebAssembly.
 
 
+[4.0.3]: https://github.com/godotengine/godot/compare/4.0.2-stable...4.0.3-stable
 [4.0.2]: https://github.com/godotengine/godot/compare/4.0.1-stable...4.0.2-stable
 [4.0.1]: https://github.com/godotengine/godot/compare/4.0-stable...4.0.1-stable
 [4.0]: https://github.com/godotengine/godot/compare/3.2-stable...4.0-stable
