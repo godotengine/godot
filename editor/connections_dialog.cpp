@@ -119,7 +119,7 @@ void ConnectDialog::ok_pressed() {
 		return;
 	}
 
-	if (!method_name.strip_edges().is_valid_identifier()) {
+	if (!TS->is_valid_identifier(method_name.strip_edges())) {
 		error->set_text(TTR("Method name must be a valid identifier."));
 		error->popup_centered();
 		return;
@@ -228,7 +228,7 @@ StringName ConnectDialog::generate_method_callback_name(Node *p_source, String p
 	String node_name = p_source->get_name();
 	for (int i = 0; i < node_name.length(); i++) { // TODO: Regex filter may be cleaner.
 		char32_t c = node_name[i];
-		if (!is_ascii_identifier_char(c)) {
+		if ((i == 0 && !is_unicode_identifier_start(c)) || (i > 0 && !is_unicode_identifier_continue(c))) {
 			if (c == ' ') {
 				// Replace spaces with underlines.
 				c = '_';
