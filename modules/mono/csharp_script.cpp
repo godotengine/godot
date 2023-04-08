@@ -289,7 +289,7 @@ void CSharpLanguage::get_reserved_words(List<String> *p_words) const {
 	}
 }
 
-bool CSharpLanguage::is_control_flow_keyword(String p_keyword) const {
+bool CSharpLanguage::is_control_flow_keyword(const String &p_keyword) const {
 	return p_keyword == "break" ||
 			p_keyword == "case" ||
 			p_keyword == "catch" ||
@@ -348,7 +348,7 @@ Ref<Script> CSharpLanguage::make_template(const String &p_template, const String
 	return scr;
 }
 
-Vector<ScriptLanguage::ScriptTemplate> CSharpLanguage::get_built_in_templates(StringName p_object) {
+Vector<ScriptLanguage::ScriptTemplate> CSharpLanguage::get_built_in_templates(const StringName &p_object) {
 	Vector<ScriptLanguage::ScriptTemplate> templates;
 #ifdef TOOLS_ENABLED
 	for (int i = 0; i < TEMPLATES_ARRAY_SIZE; i++) {

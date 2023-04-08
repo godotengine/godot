@@ -69,10 +69,10 @@ struct _NO_DISCARD_ Quaternion {
 	Vector3 get_euler(EulerOrder p_order = EulerOrder::YXZ) const;
 	static Quaternion from_euler(const Vector3 &p_euler);
 
-	Quaternion slerp(const Quaternion &p_to, const real_t &p_weight) const;
-	Quaternion slerpni(const Quaternion &p_to, const real_t &p_weight) const;
-	Quaternion spherical_cubic_interpolate(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, const real_t &p_weight) const;
-	Quaternion spherical_cubic_interpolate_in_time(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, const real_t &p_weight, const real_t &p_b_t, const real_t &p_pre_a_t, const real_t &p_post_b_t) const;
+	Quaternion slerp(const Quaternion &p_to, real_t p_weight) const;
+	Quaternion slerpni(const Quaternion &p_to, real_t p_weight) const;
+	Quaternion spherical_cubic_interpolate(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, real_t p_weight) const;
+	Quaternion spherical_cubic_interpolate_in_time(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, real_t p_weight, real_t p_b_t, real_t p_pre_a_t, real_t p_post_b_t) const;
 
 	Vector3 get_axis() const;
 	real_t get_angle() const;

@@ -120,7 +120,7 @@ struct _NO_DISCARD_ Vector3i {
 	operator Vector3() const;
 
 	_FORCE_INLINE_ Vector3i() {}
-	_FORCE_INLINE_ Vector3i(const int32_t p_x, const int32_t p_y, const int32_t p_z) {
+	_FORCE_INLINE_ Vector3i(int32_t p_x, int32_t p_y, int32_t p_z) {
 		x = p_x;
 		y = p_y;
 		z = p_z;

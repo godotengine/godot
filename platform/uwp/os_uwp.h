@@ -238,7 +238,7 @@ public:
 	virtual Error close_dynamic_library(void *p_library_handle);
 	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false);
 
-	virtual Error shell_open(String p_uri);
+	virtual Error shell_open(const String &p_uri);
 
 	void run();
 

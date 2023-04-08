@@ -363,7 +363,7 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 	return ERR_PARSE_ERROR;
 }
 
-Error JSON::_parse_value(Variant &value, Token &token, const char32_t *p_str, int &index, int p_len, int &line, int p_depth, String &r_err_str) {
+Error JSON::_parse_value(Variant &value, const Token &token, const char32_t *p_str, int &index, int p_len, int &line, int p_depth, String &r_err_str) {
 	if (p_depth > Variant::MAX_RECURSION_DEPTH) {
 		r_err_str = "JSON structure is too deep. Bailing.";
 		return ERR_OUT_OF_MEMORY;

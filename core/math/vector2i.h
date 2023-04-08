@@ -125,7 +125,7 @@ struct _NO_DISCARD_ Vector2i {
 	operator Vector2() const;
 
 	inline Vector2i() {}
-	inline Vector2i(const int32_t p_x, const int32_t p_y) {
+	inline Vector2i(int32_t p_x, int32_t p_y) {
 		x = p_x;
 		y = p_y;
 	}

@@ -76,7 +76,7 @@ Error StreamPeerTCP::poll() {
 	return ERR_CONNECTION_ERROR;
 }
 
-void StreamPeerTCP::accept_socket(Ref<NetSocket> p_sock, IPAddress p_host, uint16_t p_port) {
+void StreamPeerTCP::accept_socket(Ref<NetSocket> p_sock, const IPAddress &p_host, uint16_t p_port) {
 	_sock = p_sock;
 	_sock->set_blocking_enabled(false);
 

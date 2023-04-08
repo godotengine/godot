@@ -61,7 +61,7 @@ private:
 
 	NetError _get_socket_error() const;
 	void _set_socket(SOCKET_TYPE p_sock, IP::Type p_ip_type, bool p_is_stream);
-	_FORCE_INLINE_ Error _change_multicast_group(IPAddress p_ip, String p_if_name, bool p_add);
+	_FORCE_INLINE_ Error _change_multicast_group(const IPAddress &p_ip, const String &p_if_name, bool p_add);
 	_FORCE_INLINE_ void _set_close_exec_enabled(bool p_enabled);
 
 protected:
@@ -77,14 +77,14 @@ public:
 
 	virtual Error open(Type p_sock_type, IP::Type &ip_type);
 	virtual void close();
-	virtual Error bind(IPAddress p_addr, uint16_t p_port);
+	virtual Error bind(const IPAddress &p_addr, uint16_t p_port);
 	virtual Error listen(int p_max_pending);
-	virtual Error connect_to_host(IPAddress p_host, uint16_t p_port);
+	virtual Error connect_to_host(const IPAddress &p_host, uint16_t p_port);
 	virtual Error poll(PollType p_type, int timeout) const;
 	virtual Error recv(uint8_t *p_buffer, int p_len, int &r_read);
 	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IPAddress &r_ip, uint16_t &r_port, bool p_peek = false);
 	virtual Error send(const uint8_t *p_buffer, int p_len, int &r_sent);
-	virtual Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IPAddress p_ip, uint16_t p_port);
+	virtual Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, const IPAddress &p_ip, uint16_t p_port);
 	virtual Ref<NetSocket> accept(IPAddress &r_ip, uint16_t &r_port);
 
 	virtual bool is_open() const;
@@ -97,8 +97,8 @@ public:
 	virtual void set_tcp_no_delay_enabled(bool p_enabled);
 	virtual void set_reuse_address_enabled(bool p_enabled);
 	virtual void set_reuse_port_enabled(bool p_enabled);
-	virtual Error join_multicast_group(const IPAddress &p_multi_address, String p_if_name);
-	virtual Error leave_multicast_group(const IPAddress &p_multi_address, String p_if_name);
+	virtual Error join_multicast_group(const IPAddress &p_multi_address, const String &p_if_name);
+	virtual Error leave_multicast_group(const IPAddress &p_multi_address, const String &p_if_name);
 
 	NetSocketPosix();
 	~NetSocketPosix();

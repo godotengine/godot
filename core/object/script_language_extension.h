@@ -215,7 +215,7 @@ public:
 			p_words->push_back(ret[i]);
 		}
 	}
-	EXBIND1RC(bool, is_control_flow_keyword, String)
+	EXBIND1RC(bool, is_control_flow_keyword, const String &)
 
 	GDVIRTUAL0RC(Vector<String>, _get_comment_delimiters)
 
@@ -239,9 +239,9 @@ public:
 
 	EXBIND3RC(Ref<Script>, make_template, const String &, const String &, const String &)
 
-	GDVIRTUAL1RC(TypedArray<Dictionary>, _get_built_in_templates, StringName)
+	GDVIRTUAL1RC(TypedArray<Dictionary>, _get_built_in_templates, const StringName &)
 
-	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) override {
+	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) override {
 		TypedArray<Dictionary> ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_built_in_templates, p_object, ret);
 		Vector<ScriptTemplate> stret;

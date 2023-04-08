@@ -211,7 +211,7 @@ public:
 
 	virtual String get_unique_id() const override;
 
-	virtual Error shell_open(String p_uri) override;
+	virtual Error shell_open(const String &p_uri) override;
 
 	void run();
 

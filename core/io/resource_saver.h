@@ -100,7 +100,7 @@ public:
 	static void set_save_callback(ResourceSavedCallback p_callback);
 	static void set_get_resource_id_for_path(ResourceSaverGetResourceIDForPath p_callback);
 
-	static bool add_custom_resource_format_saver(String script_path);
+	static bool add_custom_resource_format_saver(const String &script_path);
 	static void add_custom_savers();
 	static void remove_custom_savers();
 };

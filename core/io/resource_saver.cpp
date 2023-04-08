@@ -225,7 +225,7 @@ Ref<ResourceFormatSaver> ResourceSaver::_find_custom_resource_format_saver(Strin
 	return Ref<ResourceFormatSaver>();
 }
 
-bool ResourceSaver::add_custom_resource_format_saver(String script_path) {
+bool ResourceSaver::add_custom_resource_format_saver(const String &script_path) {
 	if (_find_custom_resource_format_saver(script_path).is_valid()) {
 		return false;
 	}

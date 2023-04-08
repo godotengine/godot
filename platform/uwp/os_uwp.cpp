@@ -687,7 +687,7 @@ String OS_UWP::get_stdin_string() {
 void OS_UWP::move_window_to_foreground() {
 }
 
-Error OS_UWP::shell_open(String p_uri) {
+Error OS_UWP::shell_open(const String &p_uri) {
 	return FAILED;
 }
 

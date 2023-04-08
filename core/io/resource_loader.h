@@ -135,7 +135,7 @@ private:
 
 	static ResourceLoadedCallback _loaded_callback;
 
-	static Ref<ResourceFormatLoader> _find_custom_resource_format_loader(String path);
+	static Ref<ResourceFormatLoader> _find_custom_resource_format_loader(const String &path);
 
 	struct ThreadLoadTask {
 		Thread *thread = nullptr;
@@ -230,7 +230,7 @@ public:
 	static void set_load_callback(ResourceLoadedCallback p_callback);
 	static ResourceLoaderImport import;
 
-	static bool add_custom_resource_format_loader(String script_path);
+	static bool add_custom_resource_format_loader(const String &script_path);
 	static void add_custom_loaders();
 	static void remove_custom_loaders();
 

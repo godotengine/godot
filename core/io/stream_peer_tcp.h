@@ -61,7 +61,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void accept_socket(Ref<NetSocket> p_sock, IPAddress p_host, uint16_t p_port);
+	void accept_socket(Ref<NetSocket> p_sock, const IPAddress &p_host, uint16_t p_port);
 
 	Error bind(int p_port, const IPAddress &p_host);
 	Error connect_to_host(const IPAddress &p_host, int p_port);

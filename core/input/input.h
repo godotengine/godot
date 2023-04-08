@@ -215,8 +215,8 @@ private:
 	JoyEvent _get_mapped_button_event(const JoyDeviceMapping &mapping, JoyButton p_button);
 	JoyEvent _get_mapped_axis_event(const JoyDeviceMapping &mapping, JoyAxis p_axis, float p_value);
 	void _get_mapped_hat_events(const JoyDeviceMapping &mapping, HatDir p_hat, JoyEvent r_events[(size_t)HatDir::MAX]);
-	JoyButton _get_output_button(String output);
-	JoyAxis _get_output_axis(String output);
+	JoyButton _get_output_button(const String &output);
+	JoyAxis _get_output_axis(const String &output);
 	void _button_event(int p_device, JoyButton p_index, bool p_pressed);
 	void _axis_event(int p_device, JoyAxis p_axis, float p_value);
 
@@ -270,7 +270,7 @@ public:
 	Vector2 get_joy_vibration_strength(int p_device);
 	float get_joy_vibration_duration(int p_device);
 	uint64_t get_joy_vibration_timestamp(int p_device);
-	void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid = "");
+	void joy_connection_changed(int p_idx, bool p_connected, const String &p_name, const String &p_guid = "");
 
 	Vector3 get_gravity() const;
 	Vector3 get_accelerometer() const;
@@ -318,14 +318,14 @@ public:
 	void joy_axis(int p_device, JoyAxis p_axis, float p_value);
 	void joy_hat(int p_device, BitField<HatMask> p_val);
 
-	void add_joy_mapping(String p_mapping, bool p_update_existing = false);
-	void remove_joy_mapping(String p_guid);
+	void add_joy_mapping(const String &p_mapping, bool p_update_existing = false);
+	void remove_joy_mapping(const String &p_guid);
 
 	int get_unused_joy_id();
 
 	bool is_joy_known(int p_device);
 	String get_joy_guid(int p_device) const;
-	void set_fallback_mapping(String p_guid);
+	void set_fallback_mapping(const String &p_guid);
 
 	void flush_buffered_events();
 	bool is_using_input_buffering();

@@ -401,7 +401,7 @@ void Basis::rotate_to_align(Vector3 p_start_direction, Vector3 p_end_direction) 
 	}
 }
 
-void Basis::get_rotation_axis_angle(Vector3 &p_axis, real_t &p_angle) const {
+void Basis::get_rotation_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 	// Assumes that the matrix can be decomposed into a proper rotation and scaling matrix as M = R.S,
 	// and returns the Euler angles corresponding to the rotation part, complementing get_scale().
 	// See the comment in get_scale() for further information.
@@ -412,10 +412,10 @@ void Basis::get_rotation_axis_angle(Vector3 &p_axis, real_t &p_angle) const {
 		m.scale(Vector3(-1, -1, -1));
 	}
 
-	m.get_axis_angle(p_axis, p_angle);
+	m.get_axis_angle(r_axis, r_angle);
 }
 
-void Basis::get_rotation_axis_angle_local(Vector3 &p_axis, real_t &p_angle) const {
+void Basis::get_rotation_axis_angle_local(Vector3 &r_axis, real_t &r_angle) const {
 	// Assumes that the matrix can be decomposed into a proper rotation and scaling matrix as M = R.S,
 	// and returns the Euler angles corresponding to the rotation part, complementing get_scale().
 	// See the comment in get_scale() for further information.
@@ -427,8 +427,8 @@ void Basis::get_rotation_axis_angle_local(Vector3 &p_axis, real_t &p_angle) cons
 		m.scale(Vector3(-1, -1, -1));
 	}
 
-	m.get_axis_angle(p_axis, p_angle);
-	p_angle = -p_angle;
+	m.get_axis_angle(r_axis, r_angle);
+	r_angle = -r_angle;
 }
 
 Vector3 Basis::get_euler(EulerOrder p_order) const {

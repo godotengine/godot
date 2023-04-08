@@ -242,7 +242,7 @@ bool NetSocketPosix::_can_use_ip(const IPAddress &p_ip, const bool p_for_bind) c
 	return !(_ip_type != IP::TYPE_ANY && !p_ip.is_wildcard() && _ip_type != type);
 }
 
-_FORCE_INLINE_ Error NetSocketPosix::_change_multicast_group(IPAddress p_ip, String p_if_name, bool p_add) {
+_FORCE_INLINE_ Error NetSocketPosix::_change_multicast_group(const IPAddress &p_ip, const String &p_if_name, bool p_add) {
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V(!_can_use_ip(p_ip, false), ERR_INVALID_PARAMETER);
 
@@ -389,7 +389,7 @@ void NetSocketPosix::close() {
 	_is_stream = false;
 }
 
-Error NetSocketPosix::bind(IPAddress p_addr, uint16_t p_port) {
+Error NetSocketPosix::bind(const IPAddress &p_addr, uint16_t p_port) {
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V(!_can_use_ip(p_addr, true), ERR_INVALID_PARAMETER);
 
@@ -419,7 +419,7 @@ Error NetSocketPosix::listen(int p_max_pending) {
 	return OK;
 }
 
-Error NetSocketPosix::connect_to_host(IPAddress p_host, uint16_t p_port) {
+Error NetSocketPosix::connect_to_host(const IPAddress &p_host, uint16_t p_port) {
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V(!_can_use_ip(p_host, false), ERR_INVALID_PARAMETER);
 
@@ -613,7 +613,7 @@ Error NetSocketPosix::send(const uint8_t *p_buffer, int p_len, int &r_sent) {
 	return OK;
 }
 
-Error NetSocketPosix::sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IPAddress p_ip, uint16_t p_port) {
+Error NetSocketPosix::sendto(const uint8_t *p_buffer, int p_len, int &r_sent, const IPAddress &p_ip, uint16_t p_port) {
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
 
 	struct sockaddr_storage addr;
@@ -767,11 +767,11 @@ Ref<NetSocket> NetSocketPosix::accept(IPAddress &r_ip, uint16_t &r_port) {
 	return Ref<NetSocket>(ns);
 }
 
-Error NetSocketPosix::join_multicast_group(const IPAddress &p_multi_address, String p_if_name) {
+Error NetSocketPosix::join_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) {
 	return _change_multicast_group(p_multi_address, p_if_name, true);
 }
 
-Error NetSocketPosix::leave_multicast_group(const IPAddress &p_multi_address, String p_if_name) {
+Error NetSocketPosix::leave_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) {
 	return _change_multicast_group(p_multi_address, p_if_name, false);
 }
 
