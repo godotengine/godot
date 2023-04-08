@@ -2002,7 +2002,7 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 		return;
 	}
 
-	char32_t caret_last_completion_char;
+	char32_t caret_last_completion_char = 0;
 	begin_complex_operation();
 	Vector<int> caret_edit_order = get_caret_index_edit_order();
 	for (const int &i : caret_edit_order) {
