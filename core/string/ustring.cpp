@@ -38,6 +38,7 @@
 #include "core/string/string_name.h"
 #include "core/string/translation.h"
 #include "core/string/ucaps.h"
+#include "core/templates/local_vector.h"
 #include "core/variant/variant.h"
 #include "core/version_generated.gen.h"
 
@@ -3369,6 +3370,147 @@ float String::similarity(const String &p_string) const {
 	}
 
 	return (2.0f * inter) / sum;
+}
+
+// Initially based on: https://github.com/ka-weihe/fastest-levenshtein
+// Improved by adding transposition (for lengths <= 32) from: https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.19.7158&rep=rep1&type=pdf
+int String::edit_distance(const String &p_string) const {
+	const String &a = length() < p_string.length() ? p_string : *this;
+	const String &b = length() < p_string.length() ? *this : p_string;
+
+	if (b.is_empty()) {
+		return a.length();
+	}
+
+	HashMap<char32_t, char32_t> peq(0x10000);
+	if (a.length() <= 32) {
+		const char32_t n = a.length();
+		const char32_t m = b.length();
+		const int lst = 1 << (n - 1);
+
+		char32_t sc = n;
+
+		int pv = -1;
+		int mv = 0;
+		char32_t eq = 0;
+
+		char32_t i = n;
+		while (i--) {
+			peq[a.unicode_at(i)] |= 1 << i;
+		}
+
+		for (i = 0; i < m; i++) {
+			const char32_t tr = i > 1 ? ((~eq) & peq[b.unicode_at(i)]) << 1 & peq[b.unicode_at(i - 1)] : 0;
+			eq = peq[b.unicode_at(i)];
+			const char32_t xv = eq | mv;
+			eq |= (((eq & pv) + pv) ^ pv) | tr;
+			mv |= ~(eq | pv);
+			pv &= eq;
+
+			if (mv & lst) {
+				sc++;
+			}
+			if (pv & lst) {
+				sc--;
+			}
+
+			mv = (mv << 1) | 1;
+			pv = (pv << 1) | ~(xv | mv);
+			mv &= xv;
+		}
+
+		return sc;
+	}
+
+	const char32_t n = a.length();
+	const char32_t m = b.length();
+	const char32_t hsize = unsigned(Math::ceil(n / 32.f));
+	const char32_t vsize = unsigned(Math::ceil(m / 32.f));
+
+	LocalVector<int> mhc;
+	mhc.resize(hsize + 1);
+	LocalVector<int> phc;
+	phc.resize(hsize + 1);
+
+	for (char32_t i = 0; i <= hsize; i++) {
+		mhc[i] = 0;
+		phc[i] = -1;
+	}
+
+	char32_t j;
+	for (j = 0; j < vsize - 1; j++) {
+		int mv = 0;
+		int pv = -1;
+
+		const char32_t start = j * 32U;
+		const char32_t vlen = MIN(32U, m) + start;
+		for (char32_t k = start; k < vlen; k++) {
+			peq[b.unicode_at(k)] |= 1 << k;
+		}
+
+		for (char32_t i = 0; i < n; i++) {
+			const char32_t eq = peq[a.unicode_at(i)];
+			const char32_t pb = (char32_t(phc[(i / 32) | 0]) >> i) & 1;
+			const char32_t mb = (char32_t(mhc[(i / 32) | 0]) >> i) & 1;
+			const char32_t xv = eq | mv;
+			const char32_t xh = ((((eq | mb) & pv) + pv) ^ pv) | eq | mb;
+
+			char32_t ph = mv | ~(xh | pv);
+			if ((char32_t(ph) >> 31) ^ pb) {
+				phc[(i / 32) | 0] ^= 1 << i;
+			}
+
+			char32_t mh = pv & xh;
+			if ((char32_t(mh) >> 31) ^ mb) {
+				mhc[(i / 32) | 0] ^= 1 << i;
+			}
+
+			ph = (ph << 1) | pb;
+			mh = (mh << 1) | mb;
+			pv = mh | ~(xv | ph);
+			mv = ph & xv;
+		}
+
+		for (char32_t k = start; k < vlen; k++) {
+			peq[b.unicode_at(k)] = 0;
+		}
+	}
+
+	int mv = 0;
+	int pv = -1;
+
+	const char32_t start = j * 32U;
+	const char32_t vlen = MIN(32U, m - start) + start;
+	for (char32_t k = start; k < vlen; k++) {
+		peq[b.unicode_at(k)] |= 1 << k;
+	}
+
+	char32_t score = m;
+	for (char32_t i = 0; i < n; i++) {
+		const char32_t eq = peq[a.unicode_at(i)];
+		const char32_t pb = (char32_t(phc[(i / 32) | 0]) >> i) & 1;
+		const char32_t mb = (char32_t(mhc[(i / 32) | 0]) >> i) & 1;
+		const char32_t xv = eq | mv;
+		const char32_t xh = ((((eq | mb) & pv) + pv) ^ pv) | eq | mb;
+		char32_t ph = mv | ~(xh | pv);
+		char32_t mh = pv & xh;
+
+		score += (char32_t(ph) >> (m - 1)) & 1;
+		score -= (char32_t(mh) >> (m - 1)) & 1;
+
+		if ((char32_t(ph) >> 31) ^ pb) {
+			phc[(i / 32) | 0] ^= 1 << i;
+		}
+		if ((char32_t(mh) >> 31) ^ mb) {
+			mhc[(i / 32) | 0] ^= 1 << i;
+		}
+		ph = (ph << 1) | pb;
+		mh = (mh << 1) | mb;
+		pv = mh | ~(xv | ph);
+		mv = ph & xv;
+	}
+
+	return score;
 }
 
 static bool _wildcard_match(const char32_t *p_pattern, const char32_t *p_string, bool p_case_sensitive) {

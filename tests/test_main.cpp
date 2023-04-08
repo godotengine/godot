@@ -159,6 +159,10 @@ int test_main(int argc, char *argv[]) {
 		if (arg != "--test") {
 			test_args.push_back(arg);
 		}
+
+		if (arg == "--verbose") {
+			OS::get_singleton()->_verbose_stdout = true;
+		}
 	}
 
 	if (test_args.size() > 0) {

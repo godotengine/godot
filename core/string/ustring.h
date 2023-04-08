@@ -297,6 +297,7 @@ public:
 	bool is_quoted() const;
 	Vector<String> bigrams() const;
 	float similarity(const String &p_string) const;
+	int edit_distance(const String &p_string) const;
 	String format(const Variant &values, String placeholder = "{_}") const;
 	String replace_first(const String &p_key, const String &p_with) const;
 	String replace(const String &p_key, const String &p_with) const;
