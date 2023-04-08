@@ -2767,7 +2767,9 @@ void EditorInspector::update_tree() {
 					// Update the docs reference and the label based on the script.
 					Vector<DocData::ClassDoc> docs = scr->get_documentation();
 					if (!docs.is_empty()) {
-						doc_name = docs[0].name;
+						// The documentation of a GDScript's main class is at the end of the array.
+						// Hacky because this isn't necessarily always guaranteed.
+						doc_name = docs[docs.size() - 1].name;
 					}
 					if (script_name != StringName()) {
 						label = script_name;
@@ -3116,7 +3118,9 @@ void EditorInspector::update_tree() {
 					if (scr.is_valid()) {
 						Vector<DocData::ClassDoc> docs = scr->get_documentation();
 						if (!docs.is_empty()) {
-							classname = docs[0].name;
+							// The documentation of a GDScript's main class is at the end of the array.
+							// Hacky because this isn't necessarily always guaranteed.
+							classname = docs[docs.size() - 1].name;
 						}
 					}
 				}
