@@ -26,9 +26,10 @@ namespace Godot.SourceGenerators
 
         private void AnalyzeNode(SyntaxNodeAnalysisContext context)
         {
-            // Ignore syntax inside comments
-            if (IsInsideDocumentation(context.Node))
+            if (ShouldIgnoreTypeArgumentList(context.Node))
+            {
                 return;
+            }
 
             var typeArgListSyntax = (TypeArgumentListSyntax)context.Node;
 
@@ -95,6 +96,16 @@ namespace Godot.SourceGenerators
             }
 
             return false;
+        }
+
+        private bool IsInAttribute(SyntaxNode? syntaxNode)
+        {
+            return syntaxNode?.Parent is NameSyntax && syntaxNode.Parent.Parent is AttributeSyntax;
+        }
+
+        private bool ShouldIgnoreTypeArgumentList(SyntaxNode? syntaxNode)
+        {
+            return IsInsideDocumentation(syntaxNode) || IsInAttribute(syntaxNode);
         }
 
         /// <summary>
