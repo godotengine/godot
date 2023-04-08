@@ -1653,6 +1653,7 @@ static void _register_variant_builtin_methods() {
 	bind_string_method(is_subsequence_ofn, sarray("text"), varray());
 	bind_string_method(bigrams, sarray(), varray());
 	bind_string_method(similarity, sarray("text"), varray());
+	bind_string_method(edit_distance, sarray("text"), varray());
 
 	bind_string_method(format, sarray("values", "placeholder"), varray("{_}"));
 	bind_string_methodv(replace, static_cast<String (String::*)(const String &, const String &) const>(&String::replace), sarray("what", "forwhat"), varray());

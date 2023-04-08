@@ -1571,6 +1571,79 @@ TEST_CASE("[String] Similarity") {
 	CHECK(a.similarity(b) > a.similarity(c));
 }
 
+TEST_CASE("[String] Levenshtein Distance") {
+	// Just for testing, we define a naive version of the levenshtein distance, to compare against
+	// based on https://github.com/fabvalaaah/damerau-levenshtein-js/blob/master/app.js
+	auto naive_levenshtein = [](const String &_a, const String &_b) {
+		auto a = _a;
+		auto b = _b;
+		if (a.length() == 0) {
+			return b.length();
+		}
+		if (b.length() == 0) {
+			return a.length();
+		}
+
+		if (a.length() > b.length()) {
+			SWAP(a, b);
+		}
+
+		LocalVector<LocalVector<int>> row;
+		row.resize(a.length() + 1);
+		for (int i = 0; i <= a.length(); i++) {
+			LocalVector<int> col;
+			col.resize(b.length() + 1);
+			col[0] = i;
+			row[i] = col;
+		}
+		for (int j = 0; j <= b.length(); j++) {
+			row[0][j] = j;
+		}
+
+		for (int i = 1; i <= a.length(); i++) {
+			int cost;
+			for (int j = 1; j <= b.length(); j++) {
+				if (a.unicode_at(i - 1) == b.unicode_at(j - 1)) {
+					cost = 0;
+				} else {
+					cost = 1;
+				}
+
+				row[i][j] = MIN(row[i - 1][j] + 1, MIN(row[i][j - 1] + 1, row[i - 1][j - 1] + cost));
+
+				// Currently our algorithm (ustring#edit_distance) only supports transposition with strings less than 32 chars in length
+				if (a.length() <= 32 && i > 1 && j > 1 && a.unicode_at(i - 1) == b.unicode_at(j - 2) && a.unicode_at(i - 2) == b.unicode_at(j - 1)) {
+					row[i][j] = MIN(row[i][j], row[i - 2][j - 2] + cost);
+				}
+			}
+		}
+
+		return row[a.length()][b.length()];
+	};
+
+	HashMap<String, String> tests;
+	tests.insert("abc", "abc"); // Noop (<= 32)
+	tests.insert("abc", "ab"); // Deletion (<= 32)
+	tests.insert("abc", "abca"); // Insertion (<= 32)
+	tests.insert("abc", "aba"); // Substitution (<= 32)
+	tests.insert("abc", "acb"); // Transposition (<= 32)
+	tests.insert("abcdefghijklmnopqrstuvwxyz12345678", "abcdefghijklmnopqrstuvwxyz12345678"); // Noop (> 32)
+	tests.insert("abcdefghijklmnopqrstuvwxyz12345678", "abcdefghijklmnopqrstuvwxyz1234567"); // Deletion (> 32)
+	tests.insert("abcdefghijklmnopqrstuvwxyz12345678", "abcdefghijklmnopqrstuvwxyz123456789"); // Insertion (> 32)
+	tests.insert("abcdefghijklmnopqrstuvwxyz12345678", "abcdefghijklmnopqrstuvwxyz12345677"); // Substitution (> 32)
+	tests.insert("abcdefghijklmnopqrstuvwxyz12345678", "abcdefghijklmnopqrstuvwxyz12345687"); // Transposition (> 32)
+	for (const KeyValue<String, String> &E : tests) {
+		CHECK(E.key.edit_distance(E.value) == naive_levenshtein(E.key, E.value));
+		// Make sure our implementation satisfies the triangle inequality
+		CHECK(E.value.edit_distance(E.key) == naive_levenshtein(E.value, E.key));
+	}
+
+	// let's test if transposition is a noop for > 32 length strings
+	String tr_key = "abcdefghijklmnopqrstuvwxyz12345678";
+	String tr_value = "abcdefghijklmnopqrstuvwxyz12345687";
+	CHECK(String(tr_key).edit_distance(tr_value) == 2);
+}
+
 TEST_CASE("[String] Strip edges") {
 	String s = "\t Test Test   ";
 	CHECK(s.strip_edges(true, false) == "Test Test   ");
