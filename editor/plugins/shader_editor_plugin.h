@@ -82,6 +82,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 	void _menu_item_pressed(int p_index);
 	void _resource_saved(Object *obj);
 	void _close_shader(int p_index);
+	void _close_builtin_shaders_from_scene(const String &p_scene);
 
 	void _shader_created(Ref<Shader> p_shader);
 	void _shader_include_created(Ref<ShaderInclude> p_shader_inc);
@@ -91,6 +92,9 @@ class ShaderEditorPlugin : public EditorPlugin {
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+
+protected:
+	void _notification(int p_what);
 
 public:
 	virtual String get_name() const override { return "Shader"; }
