@@ -414,6 +414,8 @@ void Viewport::_notification(int p_what) {
 			RenderingServer::get_singleton()->viewport_set_canvas_transform(viewport, current_canvas, canvas_transform);
 			RenderingServer::get_singleton()->viewport_set_canvas_cull_mask(viewport, canvas_cull_mask);
 			_update_audio_listener_2d();
+			find_world_2d()->_register_viewport(this);
+
 #ifndef _3D_DISABLED
 			RenderingServer::get_singleton()->viewport_set_scenario(viewport, find_world_3d()->get_scenario());
 			_update_audio_listener_3d();
@@ -472,6 +474,7 @@ void Viewport::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			_gui_cancel_tooltip();
+			find_world_2d()->_remove_viewport(this);
 
 			RenderingServer::get_singleton()->viewport_set_scenario(viewport, RID());
 			RenderingServer::get_singleton()->viewport_remove_canvas(viewport, current_canvas);
@@ -1090,6 +1093,10 @@ void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
 		RenderingServer::get_singleton()->viewport_remove_canvas(viewport, current_canvas);
 	}
 
+	if (world_2d.is_valid()) {
+		world_2d->_remove_viewport(this);
+	}
+
 	if (p_world_2d.is_valid()) {
 		world_2d = p_world_2d;
 	} else {
@@ -1102,6 +1109,7 @@ void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
 	if (is_inside_tree()) {
 		current_canvas = find_world_2d()->get_canvas();
 		RenderingServer::get_singleton()->viewport_attach_canvas(viewport, current_canvas);
+		find_world_2d()->_register_viewport(this);
 	}
 }
 
