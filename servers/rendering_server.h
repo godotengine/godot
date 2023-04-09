@@ -107,6 +107,7 @@ public:
 	virtual RID texture_proxy_create(RID p_base) = 0;
 
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0;
+	virtual void texture_2d_update_partial(RID p_texture, const Ref<Image> &p_sub_image, int p_dst_x, int p_dst_y, int p_mipmap = 0, int p_layer = 0) = 0;
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) = 0;
 	virtual void texture_proxy_update(RID p_texture, RID p_proxy_to) = 0;
 

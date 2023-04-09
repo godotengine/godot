@@ -163,7 +163,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	Vector<uint8_t> _texture_get_data_from_image(Texture *tex, VkImage p_image, VmaAllocation p_allocation, uint32_t p_layer, bool p_2d = false);
 	Error _texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, BitField<BarrierMask> p_post_barrier, bool p_use_setup_queue);
-
+	Error _texture_update_partial(RID p_texture, const Ref<Image> &p_image, int p_dst_x, int p_dst_y, uint32_t p_mipmap, uint32_t p_layer, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS, bool p_use_setup_queue = false);
 	/*****************/
 	/**** SAMPLER ****/
 	/*****************/
@@ -1049,6 +1049,7 @@ public:
 
 	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D, uint32_t p_layers = 0);
 	virtual Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
+	virtual Error texture_update_partial(RID p_texture, const Ref<Image> &p_image, int p_dst_x, int p_dst_y, uint32_t p_mipmap = 0, uint32_t p_layer = 0, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
 	virtual Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer);
 
 	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, BitField<RenderingDevice::TextureUsageBits> p_usage) const;

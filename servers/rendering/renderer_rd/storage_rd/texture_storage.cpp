@@ -1131,7 +1131,23 @@ void TextureStorage::_texture_2d_update(RID p_texture, const Ref<Image> &p_image
 void TextureStorage::texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer) {
 	_texture_2d_update(p_texture, p_image, p_layer, false);
 }
+void TextureStorage::texture_2d_update_partial(RID p_texture, const Ref<Image> &p_sub_image, int p_dst_x, int p_dst_y, int p_mipmap, int p_layer) {
+	ERR_FAIL_COND(p_sub_image.is_null() || p_sub_image->is_empty());
+	ERR_FAIL_COND_MSG(p_sub_image->is_compressed(), "Compressed image is not supported");
 
+	Texture *texture = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_COND(!texture);
+	ERR_FAIL_COND(texture->is_render_target);
+	ERR_FAIL_COND(p_dst_x < 0 || p_dst_y < 0 || p_dst_x + p_sub_image->get_width() > texture->width || p_dst_y + p_sub_image->get_height() > texture->height);
+	ERR_FAIL_COND(p_sub_image->get_format() != texture->format);
+	ERR_FAIL_COND(p_mipmap < 0 || p_mipmap >= texture->mipmaps);
+
+	if (texture->type == TextureStorage::TYPE_LAYERED) {
+		ERR_FAIL_INDEX(p_layer, texture->layers);
+	}
+
+	RD::get_singleton()->texture_update_partial(texture->rd_texture, p_sub_image, p_dst_x, p_dst_y, p_mipmap, p_layer);
+}
 void TextureStorage::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) {
 	Texture *tex = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_COND(!tex);

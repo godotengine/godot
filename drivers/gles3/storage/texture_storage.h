@@ -507,6 +507,7 @@ public:
 	RID texture_create_external(Texture::Type p_type, Image::Format p_format, unsigned int p_image, int p_width, int p_height, int p_depth, int p_layers, RS::TextureLayeredType p_layered_type = RS::TEXTURE_LAYERED_2D_ARRAY);
 
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override;
+	virtual void texture_2d_update_partial(RID p_texture, const Ref<Image> &p_sub_image, int p_dst_x, int p_dst_y, int p_dst_mip, int p_layer = 0) override;
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override{};
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) override;
 

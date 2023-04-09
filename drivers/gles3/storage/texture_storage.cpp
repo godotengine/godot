@@ -812,6 +812,10 @@ void TextureStorage::texture_2d_update(RID p_texture, const Ref<Image> &p_image,
 #endif
 }
 
+void TextureStorage::texture_2d_update_partial(RID p_texture, const Ref<Image> &p_sub_image, int p_dst_x, int p_dst_y, int p_dst_mip, int p_layer) {
+	texture_set_data_partial(p_texture, p_sub_image, 0, 0, p_sub_image->get_width(), p_sub_image->get_height(), p_dst_x, p_dst_y, p_dst_mip, p_layer);
+}
+
 void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {
 	Texture *tex = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_COND(!tex);

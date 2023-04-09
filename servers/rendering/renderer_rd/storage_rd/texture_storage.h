@@ -470,6 +470,7 @@ public:
 	virtual void texture_proxy_initialize(RID p_texture, RID p_base) override; //all slices, then all the mipmaps, must be coherent
 
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override;
+	virtual void texture_2d_update_partial(RID p_texture, const Ref<Image> &p_sub_image, int p_dst_x, int p_dst_y, int p_mipmap = 0, int p_layer = 0) override;
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override;
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) override;
 
