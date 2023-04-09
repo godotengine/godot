@@ -482,6 +482,7 @@ class ScriptEditor : public PanelContainer {
 	void _on_find_in_files_modified_files(PackedStringArray paths);
 
 	static void _open_script_request(const String &p_path);
+	void _close_builtin_scripts_from_scene(const String &p_scene);
 
 	static ScriptEditor *script_editor;
 
@@ -522,8 +523,6 @@ public:
 
 	void notify_script_close(const Ref<Script> &p_script);
 	void notify_script_changed(const Ref<Script> &p_script);
-
-	void close_builtin_scripts_from_scene(const String &p_scene);
 
 	void goto_help(const String &p_desc) { _help_class_goto(p_desc); }
 	void update_doc(const String &p_name);
