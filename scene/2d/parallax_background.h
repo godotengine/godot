@@ -79,6 +79,8 @@ public:
 
 	Vector2 get_final_offset() const;
 
+	Point2 get_screen_offset() const;
+
 	ParallaxBackground();
 };
 
