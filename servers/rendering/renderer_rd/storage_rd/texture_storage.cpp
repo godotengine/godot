@@ -1131,7 +1131,26 @@ void TextureStorage::_texture_2d_update(RID p_texture, const Ref<Image> &p_image
 void TextureStorage::texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer) {
 	_texture_2d_update(p_texture, p_image, p_layer, false);
 }
+void TextureStorage::texture_update_partial(RID p_texture, const Ref<Image> &p_sub_image, int dst_x, int dst_y, int p_layer) {
+	ERR_FAIL_COND(p_sub_image.is_null() || p_sub_image->is_empty());
+	ERR_FAIL_COND(p_sub_image->is_compressed());
 
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_COND(!tex);
+	ERR_FAIL_COND(tex->is_render_target);
+	ERR_FAIL_COND(dst_x < 0 || dst_y < 0 || dst_x + p_sub_image->get_width() > tex->width || dst_y + p_sub_image->get_height() > tex->height);
+	ERR_FAIL_COND(p_sub_image->get_format() != tex->format);
+
+	if (tex->type == TextureStorage::TYPE_LAYERED) {
+		ERR_FAIL_INDEX(p_layer, tex->layers);
+	}
+
+	TextureToRDFormat f;
+	Ref<Image> validated = _validate_texture_format(p_sub_image, f);
+
+	RD::get_singleton()->texture_update_partial(tex->rd_texture, p_layer, validated->get_data(), validated->get_width(), validated->get_height(), dst_x, dst_y);
+
+}
 void TextureStorage::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) {
 	Texture *tex = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_COND(!tex);
