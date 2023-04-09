@@ -163,7 +163,8 @@
 			<param index="2" name="custom_speed" type="float" default="1.0" />
 			<param index="3" name="from_end" type="bool" default="false" />
 			<description>
-				Plays the animation with key [param name]. Custom blend times and speed can be set. If [param custom_speed] is negative and [param from_end] is [code]true[/code], the animation will play backwards (which is equivalent to calling [method play_backwards]).
+				Plays the animation with key [param name]. Custom blend times and speed can be set.
+				The [param from_end] option only affects when switching to a new animation track, or if the same track but at the start or end. It does not affect resuming playback that was paused in the middle of an animation. If [param custom_speed] is negative and [param from_end] is [code]true[/code], the animation will play backwards (which is equivalent to calling [method play_backwards]).
 				The [AnimationPlayer] keeps track of its current or last played animation with [member assigned_animation]. If this method is called with that same animation [param name], or with no [param name] parameter, the assigned animation will resume playing if it was paused.
 				[b]Note:[/b] The animation will be updated the next time the [AnimationPlayer] is processed. If other variables are updated at the same time this is called, they may be updated too early. To perform the update immediately, call [code]advance(0)[/code].
 			</description>
