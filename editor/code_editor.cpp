@@ -126,22 +126,18 @@ void FindReplaceBar::unhandled_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	Control *focus_owner = get_viewport()->gui_get_focus_owner();
-	if (text_editor->has_focus() || (focus_owner && vbc_lineedit->is_ancestor_of(focus_owner))) {
-		bool accepted = true;
+	bool accepted = true;
+	switch (k->get_keycode()) {
+		case Key::ESCAPE: {
+			_hide_bar();
+		} break;
+		default: {
+			accepted = false;
+		} break;
+	}
 
-		switch (k->get_keycode()) {
-			case Key::ESCAPE: {
-				_hide_bar();
-			} break;
-			default: {
-				accepted = false;
-			} break;
-		}
-
-		if (accepted) {
-			accept_event();
-		}
+	if (accepted) {
+		accept_event();
 	}
 }
 
