@@ -1415,9 +1415,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// so this compensates for that.
 	style_line_edit->set_content_margin(SIDE_TOP, style_line_edit->get_content_margin(SIDE_TOP) - 1 * EDSCALE);
 
-	// Don't round the bottom corner to make the line look sharper.
-	style_tab_selected->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
-	style_tab_selected->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+	// Don't round the bottom corners to make the line look sharper.
+	style_line_edit->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+	style_line_edit->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
 
 	if (draw_extra_borders) {
 		style_line_edit->set_border_width_all(Math::round(EDSCALE));
