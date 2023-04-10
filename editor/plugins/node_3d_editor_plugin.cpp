@@ -7866,7 +7866,10 @@ void Node3DEditor::clear() {
 		viewports[i]->reset();
 	}
 
-	RenderingServer::get_singleton()->instance_set_visible(origin_instance, true);
+	if (origin_instance.is_valid()) {
+		RenderingServer::get_singleton()->instance_set_visible(origin_instance, true);
+	}
+
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN), true);
 	for (int i = 0; i < 3; ++i) {
 		if (grid_enable[i]) {
@@ -8654,6 +8657,7 @@ void fragment() {
 		_load_default_preview_settings();
 		_preview_settings_changed();
 	}
+	clear(); // Make sure values are initialized.
 }
 Node3DEditor::~Node3DEditor() {
 	memdelete(preview_node);
