@@ -1060,7 +1060,7 @@ bool ScriptEditor::_test_script_times_on_disk(Ref<Resource> p_for_script) {
 			script_editor->reload_scripts();
 			need_reload = false;
 		} else {
-			disk_changed->call_deferred(SNAME("popup_centered_ratio"), 0.5);
+			disk_changed->call_deferred(SNAME("popup_centered_ratio"), 0.3);
 		}
 	}
 
