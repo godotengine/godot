@@ -214,7 +214,11 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			Mesh::ConvexDecompositionSettings settings;
+			Ref<MeshConvexDecompositionSettings> settings = Ref<MeshConvexDecompositionSettings>();
+			settings.instantiate();
+			settings->set_max_convex_hulls(32);
+			settings->set_max_concavity(0.001);
+
 			Vector<Ref<Shape3D>> shapes = mesh->convex_decompose(settings);
 
 			if (!shapes.size()) {
