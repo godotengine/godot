@@ -636,6 +636,8 @@ void EditorNode::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
+			get_tree()->set_disable_node_threading(true); // No node threading while running editor.
+
 			Engine::get_singleton()->set_editor_hint(true);
 
 			Window *window = get_window();

@@ -54,6 +54,18 @@ public:
 		PROCESS_MODE_DISABLED, // never process
 	};
 
+	enum ProcessThreadGroup {
+		PROCESS_THREAD_GROUP_INHERIT,
+		PROCESS_THREAD_GROUP_MAIN_THREAD,
+		PROCESS_THREAD_GROUP_SUB_THREAD,
+	};
+
+	enum ProcessThreadMessages {
+		FLAG_PROCESS_THREAD_MESSAGES = 1,
+		FLAG_PROCESS_THREAD_MESSAGES_PHYSICS = 2,
+		FLAG_PROCESS_THREAD_MESSAGES_ALL = 3,
+	};
+
 	enum DuplicateFlags {
 		DUPLICATE_SIGNALS = 1,
 		DUPLICATE_GROUPS = 2,
@@ -80,11 +92,9 @@ public:
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->is_greater_than(p_a); }
 	};
 
-	struct ComparatorWithPriority {
-		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->data.process_priority == p_a->data.process_priority ? p_b->is_greater_than(p_a) : p_b->data.process_priority > p_a->data.process_priority; }
-	};
-
 	static int orphan_node_count;
+
+	void _update_process(bool p_enable, bool p_for_children);
 
 private:
 	struct GroupData {
@@ -102,6 +112,14 @@ private:
 			}
 			return order_left < order_right;
 		}
+	};
+
+	struct ComparatorWithPriority {
+		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->data.process_priority == p_a->data.process_priority ? p_b->is_greater_than(p_a) : p_b->data.process_priority > p_a->data.process_priority; }
+	};
+
+	struct ComparatorWithPhysicsPriority {
+		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->data.physics_process_priority == p_a->data.physics_process_priority ? p_b->is_greater_than(p_a) : p_b->data.physics_process_priority > p_a->data.physics_process_priority; }
 	};
 
 	// This Data struct is to avoid namespace pollution in derived classes.
@@ -142,6 +160,11 @@ private:
 
 		ProcessMode process_mode = PROCESS_MODE_INHERIT;
 		Node *process_owner = nullptr;
+		ProcessThreadGroup process_thread_group = PROCESS_THREAD_GROUP_INHERIT;
+		Node *process_thread_group_owner = nullptr;
+		int process_thread_group_order = 0;
+		BitField<ProcessThreadMessages> process_thread_messages;
+		void *process_group = nullptr; // to avoid cyclic dependency
 
 		int multiplayer_authority = 1; // Server by default.
 		Variant rpc_config;
@@ -151,6 +174,7 @@ private:
 		bool physics_process = false;
 		bool process = false;
 		int process_priority = 0;
+		int physics_process_priority = 0;
 
 		bool physics_process_internal = false;
 		bool process_internal = false;
@@ -220,6 +244,19 @@ private:
 
 	void _update_children_cache_impl() const;
 
+	// Process group management
+	void _add_process_group();
+	void _remove_process_group();
+	void _add_to_process_thread_group();
+	void _remove_from_process_thread_group();
+	void _remove_tree_from_process_thread_group();
+	void _add_tree_to_process_thread_group(Node *p_owner);
+
+	static thread_local Node *current_process_thread_group;
+
+	Variant _call_deferred_thread_group_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	Variant _call_thread_safe_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+
 protected:
 	void _block() { data.blocked++; }
 	void _unblock() { data.blocked--; }
@@ -247,6 +284,8 @@ protected:
 	void _call_shortcut_input(const Ref<InputEvent> &p_event);
 	void _call_unhandled_input(const Ref<InputEvent> &p_event);
 	void _call_unhandled_key_input(const Ref<InputEvent> &p_event);
+
+	void _validate_property(PropertyInfo &p_property) const;
 
 protected:
 	virtual void input(const Ref<InputEvent> &p_event);
@@ -456,6 +495,12 @@ public:
 	void set_process_priority(int p_priority);
 	int get_process_priority() const;
 
+	void set_process_thread_group_order(int p_order);
+	int get_process_thread_group_order() const;
+
+	void set_physics_process_priority(int p_priority);
+	int get_physics_process_priority() const;
+
 	void set_process_input(bool p_enable);
 	bool is_processing_input() const;
 
@@ -467,6 +512,23 @@ public:
 
 	void set_process_unhandled_key_input(bool p_enable);
 	bool is_processing_unhandled_key_input() const;
+
+	_FORCE_INLINE_ bool _is_any_processing() const {
+		return data.process || data.process_internal || data.physics_process || data.physics_process_internal;
+	}
+	_FORCE_INLINE_ bool is_accessible_from_caller_thread() const {
+		if (current_process_thread_group == nullptr) {
+			// Not thread processing. Only accessible if node is outside the scene tree,
+			// or if accessing from the main thread.
+			return !data.inside_tree || Thread::is_main_thread();
+		} else {
+			// Thread processing
+			return current_process_thread_group == data.process_thread_group_owner;
+		}
+	}
+
+	void set_process_thread_messages(BitField<ProcessThreadMessages> p_flags);
+	BitField<ProcessThreadMessages> get_process_thread_messages() const;
 
 	Node *duplicate(int p_flags = DUPLICATE_GROUPS | DUPLICATE_SIGNALS | DUPLICATE_SCRIPTS) const;
 #ifdef TOOLS_ENABLED
@@ -499,9 +561,12 @@ public:
 	bool can_process() const;
 	bool can_process_notification(int p_what) const;
 	bool is_enabled() const;
-
 	bool is_ready() const;
+
 	void request_ready();
+
+	void set_process_thread_group(ProcessThreadGroup p_mode);
+	ProcessThreadGroup get_process_thread_group() const;
 
 	static void print_orphan_nodes();
 
@@ -554,6 +619,32 @@ public:
 
 	Ref<MultiplayerAPI> get_multiplayer() const;
 
+	void call_deferred_thread_groupp(const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error = false);
+	template <typename... VarArgs>
+	void call_deferred_thread_group(const StringName &p_method, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		call_deferred_thread_groupp(p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	}
+	void set_deferred_thread_group(const StringName &p_property, const Variant &p_value);
+	void notify_deferred_thread_group(int p_notification);
+
+	void call_thread_safep(const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error = false);
+	template <typename... VarArgs>
+	void call_thread_safe(const StringName &p_method, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		call_deferred_thread_groupp(p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	}
+	void set_thread_safe(const StringName &p_property, const Variant &p_value);
+	void notify_thread_safe(int p_notification);
+
 	Node();
 	~Node();
 };
@@ -579,6 +670,18 @@ Error Node::rpc_id(int p_peer_id, const StringName &p_method, VarArgs... p_args)
 	}
 	return rpcp(p_peer_id, p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 }
+
+#ifdef DEBUG_ENABLED
+#define ERR_THREAD_GUARD ERR_FAIL_COND_MSG(!is_accessible_from_caller_thread(), "Caller thread can't call this function in this node. Use call_deferred() or call_thread_group() instead.");
+#define ERR_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(!is_accessible_from_caller_thread(), (m_ret), "Caller thread can't call this function in this node. Use call_deferred() or call_thread_group() instead.")
+#define ERR_MAIN_THREAD_GUARD ERR_FAIL_COND_MSG(is_inside_tree() && !Thread::is_main_thread(), "This function in this node can only be accessed from the main thread. Use call_deferred() instead.");
+#define ERR_MAIN_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(is_inside_tree() && !Thread::is_main_thread(), (m_ret), "This function in this node can only be accessed from the main thread. Use call_deferred() instead.")
+#else
+#define ERR_THREAD_GUARD
+#define ERR_THREAD_GUARD_V(m_ret)
+#define ERR_MAIN_THREAD_GUARD
+#define ERR_MAIN_THREAD_GUARD_V(m_ret)
+#endif
 
 // Add these macro to your class's 'get_configuration_warnings' function to have warnings show up in the scene tree inspector.
 #define DEPRECATED_NODE_WARNING warnings.push_back(RTR("This node is marked as deprecated and will be removed in future versions.\nPlease check the Godot documentation for information about migration."));

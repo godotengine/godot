@@ -923,6 +923,8 @@ public:
 
 	_ALWAYS_INLINE_ bool is_ref_counted() const { return type_is_reference; }
 
+	void cancel_free();
+
 	Object();
 	virtual ~Object();
 };

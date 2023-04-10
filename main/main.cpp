@@ -178,6 +178,7 @@ static int converter_max_line_length = 100000;
 
 HashMap<Main::CLIScope, Vector<String>> forwardable_cli_arguments;
 #endif
+static bool single_threaded_scene = false;
 bool use_startup_benchmark = false;
 String startup_benchmark_file;
 
@@ -423,6 +424,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --gpu-abort                       Abort on graphics API usage errors (usually validation layer errors). May help see the problem if your system freezes.\n");
 #endif
 	OS::get_singleton()->print("  --remote-debug <uri>              Remote debug (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007).\n");
+	OS::get_singleton()->print("  --single-threaded-scene           Scene tree runs in single-threaded mode. Sub-thread groups are disabled and run on the main thread.\n");
 #if defined(DEBUG_ENABLED)
 	OS::get_singleton()->print("  --debug-collisions                Show collision shapes when running the scene.\n");
 	OS::get_singleton()->print("  --debug-paths                     Show path lines when running the scene.\n");
@@ -1108,6 +1110,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing remote debug server uri, aborting.\n");
 				goto error;
 			}
+		} else if (I->get() == "--single-threaded-scene") {
+			single_threaded_scene = true;
 		} else if (I->get() == "--build-solutions") { // Build the scripting solution such C#
 
 			auto_build_solutions = true;
@@ -2779,6 +2783,10 @@ bool Main::start() {
 			NavigationServer3D::get_singleton()->set_debug_enabled(true);
 		}
 #endif
+
+		if (single_threaded_scene) {
+			sml->set_disable_node_threading(true);
+		}
 
 		bool embed_subwindows = GLOBAL_GET("display/window/subwindows/embed_subwindows");
 
