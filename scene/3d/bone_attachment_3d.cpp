@@ -148,7 +148,9 @@ void BoneAttachment3D::_check_bind() {
 			bone_idx = sk->find_bone(bone_name);
 		}
 		if (bone_idx != -1) {
-			sk->call_deferred(SNAME("connect"), "bone_pose_changed", callable_mp(this, &BoneAttachment3D::on_bone_pose_update));
+			if (!bound && !sk->is_connected(SNAME("bone_pose_changed"), callable_mp(this, &BoneAttachment3D::on_bone_pose_update))) {
+				sk->call_deferred(SNAME("connect"), "bone_pose_changed", callable_mp(this, &BoneAttachment3D::on_bone_pose_update));
+			}
 			bound = true;
 			call_deferred(SNAME("on_bone_pose_update"), bone_idx);
 		}
@@ -175,7 +177,7 @@ void BoneAttachment3D::_check_unbind() {
 	if (bound) {
 		Skeleton3D *sk = _get_skeleton3d();
 
-		if (sk) {
+		if (sk && sk->is_connected(SNAME("bone_pose_changed"), callable_mp(this, &BoneAttachment3D::on_bone_pose_update))) {
 			sk->disconnect(SNAME("bone_pose_changed"), callable_mp(this, &BoneAttachment3D::on_bone_pose_update));
 		}
 		bound = false;
