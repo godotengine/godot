@@ -728,6 +728,14 @@
 				Modulates all colors in the given canvas.
 			</description>
 		</method>
+		<method name="debug_canvas_item_get_rect">
+			<return type="Rect2" />
+			<argument index="0" name="item" type="RID" />
+			<description>
+				Returns the bounding rectangle for a canvas item in local space, as calculated by the renderer. This bound is used internally for culling.
+				[b]Warning:[/b] This function is intended for debugging in the editor, and will pass through and return a zero [Rect2] in exported projects.
+			</description>
+		</method>
 		<method name="directional_light_create">
 			<return type="RID" />
 			<description>

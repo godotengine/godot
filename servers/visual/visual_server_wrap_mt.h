@@ -619,6 +619,8 @@ public:
 	FUNC2(canvas_item_set_z_as_relative_to_parent, RID, bool)
 	FUNC3(canvas_item_set_copy_to_backbuffer, RID, bool, const Rect2 &)
 	FUNC2(canvas_item_attach_skeleton, RID, RID)
+	FUNC2(canvas_item_set_skeleton_relative_xform, RID, Transform2D)
+	FUNC1R(Rect2, _debug_canvas_item_get_rect, RID)
 
 	FUNC1(canvas_item_clear, RID)
 	FUNC2(canvas_item_set_draw_index, RID, int)
