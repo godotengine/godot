@@ -206,8 +206,6 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 	IMMDeviceEnumerator *enumerator = nullptr;
 	IMMDevice *output_device = nullptr;
 
-	CoInitialize(nullptr);
-
 	HRESULT hr = CoCreateInstance(CLSID_MMDeviceEnumerator, nullptr, CLSCTX_ALL, IID_IMMDeviceEnumerator, (void **)&enumerator);
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
@@ -582,8 +580,6 @@ PackedStringArray AudioDriverWASAPI::audio_device_get_list(bool p_input) {
 
 	list.push_back(String("Default"));
 
-	CoInitialize(nullptr);
-
 	HRESULT hr = CoCreateInstance(CLSID_MMDeviceEnumerator, nullptr, CLSCTX_ALL, IID_IMMDeviceEnumerator, (void **)&enumerator);
 	ERR_FAIL_COND_V(hr != S_OK, PackedStringArray());
 
@@ -702,6 +698,8 @@ void AudioDriverWASAPI::write_sample(WORD format_tag, int bits_per_sample, BYTE 
 }
 
 void AudioDriverWASAPI::thread_func(void *p_udata) {
+	CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+
 	AudioDriverWASAPI *ad = static_cast<AudioDriverWASAPI *>(p_udata);
 	uint32_t avail_frames = 0;
 	uint32_t write_ofs = 0;
@@ -908,6 +906,7 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 			OS::get_singleton()->delay_usec(1000);
 		}
 	}
+	CoUninitialize();
 }
 
 void AudioDriverWASAPI::start() {

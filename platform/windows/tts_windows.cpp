@@ -251,7 +251,6 @@ TTS_Windows *TTS_Windows::get_singleton() {
 
 TTS_Windows::TTS_Windows() {
 	singleton = this;
-	CoInitialize(nullptr);
 
 	if (SUCCEEDED(CoCreateInstance(CLSID_SpVoice, nullptr, CLSCTX_ALL, IID_ISpVoice, (void **)&synth))) {
 		ULONGLONG event_mask = SPFEI(SPEI_END_INPUT_STREAM) | SPFEI(SPEI_START_INPUT_STREAM) | SPFEI(SPEI_WORD_BOUNDARY);
