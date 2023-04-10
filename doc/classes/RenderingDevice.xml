@@ -113,7 +113,7 @@
 		</method>
 		<method name="compute_pipeline_is_valid">
 			<return type="bool" />
-			<param index="0" name="compute_pieline" type="RID" />
+			<param index="0" name="compute_pipeline" type="RID" />
 			<description>
 			</description>
 		</method>
