@@ -50,7 +50,7 @@ def disable_warnings(self):
 
 def force_optimization_on_debug(self):
     # 'self' is the environment
-    if self["target"] != "template-release":
+    if self["target"] == "template_release":
         return
 
     if self.msvc:
