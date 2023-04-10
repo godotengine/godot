@@ -1,0 +1,23 @@
+disable-default-queries: false
+
+queries:
+  - name: Use an external code QL pack and runs queries from https://github.com/github/codeql/blob/lgtm.com/cpp/ql/src/codeql-suites/cpp-lgtm-full.qls
+    uses: github/codeql/cpp/ql/src/codeql-suites/cpp-lgtm-full.qls@lgtm.com
+  - name: Security-and-quality queries for C and C++
+    uses: github/codeql/cpp/ql/src/codeql-suites/cpp-security-and-quality.qls@lgtm.com
+
+query-filters:
+  - exclude:
+      id: cpp/fixme-comment  # not useful
+  - exclude:
+      id: cpp/poorly-documented-function  # not useful
+  - exclude:
+      id: cpp/commented-out-code  # not useful
+  - exclude:
+      id: cpp/loop-variable-changed  # lot of false positives
+  - exclude:
+      id: cpp/empty-if  # lot of false positives
+  - exclude:
+      id: cpp/empty-block  # lot of false positives
+  - exclude:
+      id: cpp/lossy-function-result-cast # lot of false positives
