@@ -413,6 +413,7 @@ private:
 	CaretType caret_type = CaretType::CARET_TYPE_LINE;
 
 	bool draw_caret = true;
+	bool draw_caret_when_editable_disabled = false;
 
 	bool caret_blink_enabled = false;
 	Timer *caret_blink_timer = nullptr;
@@ -820,6 +821,9 @@ public:
 
 	void set_caret_blink_interval(const float p_interval);
 	float get_caret_blink_interval() const;
+
+	void set_draw_caret_when_editable_disabled(bool p_enable);
+	bool is_drawing_caret_when_editable_disabled() const;
 
 	void set_move_caret_on_right_click_enabled(const bool p_enabled);
 	bool is_move_caret_on_right_click_enabled() const;
