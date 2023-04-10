@@ -341,9 +341,7 @@ void CanvasItem::_notification(int p_what) {
 }
 
 void CanvasItem::_window_visibility_changed() {
-	if (visible) {
-		_propagate_visibility_changed(window->is_visible());
-	}
+	_propagate_visibility_changed(window->is_visible());
 }
 
 void CanvasItem::queue_redraw() {
