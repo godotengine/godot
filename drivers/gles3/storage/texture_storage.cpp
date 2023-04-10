@@ -812,40 +812,8 @@ void TextureStorage::texture_2d_update(RID p_texture, const Ref<Image> &p_image,
 #endif
 }
 
-void TextureStorage::texture_update_partial(RID p_texture, const Ref<Image> &p_sub_image, int dst_x, int dst_y, int p_layer) {
-	ERR_FAIL_COND(p_sub_image.is_null() || p_sub_image->is_empty());
-	ERR_FAIL_COND(p_sub_image->is_compressed());
-
-	Texture *texture = texture_owner.get_or_null(p_texture);
-
-	ERR_FAIL_COND(!texture);
-	ERR_FAIL_COND(dst_x < 0 || dst_y < 0 || dst_x + p_sub_image->get_width() > texture->width || dst_y + p_sub_image->get_height() > texture->height);
-	ERR_FAIL_COND(p_sub_image->get_format() != texture->format);
-
-	GLenum type;
-	GLenum format;
-	GLenum internal_format;
-	bool compressed;
-
-	Ref<Image> img = _get_gl_image_and_format(p_sub_image, p_sub_image->get_format(), texture->format, format, internal_format, type, compressed, false);
-
-	GLenum blit_target = (texture->target == GL_TEXTURE_CUBE_MAP) ? _cube_side_enum[p_layer] : texture->target;
-
-	Vector<uint8_t> read = img->get_data();
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(texture->target, texture->tex_id);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-	int p_dst_mip = 0;
-	int src_w = img->get_width();
-	int src_h = img->get_height();
-	if (texture->target == GL_TEXTURE_2D_ARRAY) {
-		glTexSubImage3D(GL_TEXTURE_2D_ARRAY, p_dst_mip, dst_x, dst_y, p_layer, src_w, src_h, 0, format, type, &read[0]);
-	} else {
-		glTexSubImage2D(GL_TEXTURE_2D, p_dst_mip, dst_x, dst_y, src_w, src_h, format, type, &read[0]);
-	}
-	//todo support mipmaps
+void TextureStorage::texture_2d_update_partial(RID p_texture, const Ref<Image> &p_sub_image, int p_dst_x, int p_dst_y, int p_dst_mip, int p_layer) {
+	texture_set_data_partial(p_texture, p_sub_image, 0, 0, p_sub_image->get_width(), p_sub_image->get_height(), p_dst_x, p_dst_y, p_dst_mip, p_layer);
 }
 
 void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {

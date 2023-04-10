@@ -2429,8 +2429,8 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, BitField<BarrierMask> p_post_barrier) {
 	return _texture_update(p_texture, p_layer, p_data, p_post_barrier, false);
 }
-Error RenderingDeviceVulkan::texture_update_partial(RID p_texture, const Ref<Image> &p_image, int src_w, int src_h, int dst_x, int dst_y, uint32_t p_layer, BitField<BarrierMask> p_post_barrier) {
-	return _texture_update_partial(p_texture, p_layer, &p_image, src_w, src_h, dst_x, dst_y, p_post_barrier, false);
+Error RenderingDeviceVulkan::texture_update_partial(RID p_texture, const Ref<Image> &p_image, int p_dst_x, int p_dst_y, uint32_t p_mipmap, uint32_t p_layer, BitField<BarrierMask> p_post_barrier) {
+	return _texture_update_partial(p_texture, p_image, p_dst_x, p_dst_y, p_mipmap, p_layer, p_post_barrier, false);
 }
 
 static _ALWAYS_INLINE_ void _copy_region(uint8_t const *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_x, uint32_t p_src_y, uint32_t p_src_w, uint32_t p_src_h, uint32_t p_src_full_w, uint32_t p_unit_size) {
@@ -2669,10 +2669,10 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 	return OK;
 }
 
-Error RenderingDeviceVulkan::_texture_update_partial(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, int src_w, int src_h, int dst_x, int dst_y, BitField<BarrierMask> p_post_barrier, bool p_use_setup_queue) {
+Error RenderingDeviceVulkan::_texture_update_partial(RID p_texture, const Ref<Image> &p_image, int p_dst_x, int p_dst_y, uint32_t p_mipmap, uint32_t p_layer, BitField<BarrierMask> p_post_barrier, bool p_use_setup_queue) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V_MSG((draw_list || compute_list) , ERR_INVALID_PARAMETER,
+	ERR_FAIL_COND_V_MSG((draw_list || compute_list), ERR_INVALID_PARAMETER,
 			"Updating textures is forbidden during creation of a draw or compute list");
 
 	Texture *texture = texture_owner.get_or_null(p_texture);
@@ -2696,10 +2696,8 @@ Error RenderingDeviceVulkan::_texture_update_partial(RID p_texture, uint32_t p_l
 	}
 	ERR_FAIL_COND_V(p_layer >= layer_count, ERR_INVALID_PARAMETER);
 
-	uint32_t width, height;
-	uint32_t image_size = get_image_format_required_size(texture->format, texture->width, texture->height, texture->depth, texture->mipmaps, &width, &height);
-
-	const uint8_t *r = p_data.ptr();
+	const Vector<uint8_t> &data = p_image->get_data();
+	const uint8_t *r = data.ptr();
 
 	VkCommandBuffer command_buffer = p_use_setup_queue ? frames[frame].setup_command_buffer : frames[frame].draw_command_buffer;
 
@@ -2717,80 +2715,73 @@ Error RenderingDeviceVulkan::_texture_update_partial(RID p_texture, uint32_t p_l
 		image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		image_memory_barrier.image = texture->image;
 		image_memory_barrier.subresourceRange.aspectMask = texture->barrier_aspect_mask;
-		image_memory_barrier.subresourceRange.baseMipLevel = 0;
-		image_memory_barrier.subresourceRange.levelCount = texture->mipmaps;
+		image_memory_barrier.subresourceRange.baseMipLevel = p_mipmap;
+		image_memory_barrier.subresourceRange.levelCount = p_mipmap + 1;
 		image_memory_barrier.subresourceRange.baseArrayLayer = p_layer;
 		image_memory_barrier.subresourceRange.layerCount = 1;
 
 		vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
 	}
 
-	uint32_t mipmap_offset = 0;
+	uint32_t sub_image_width = p_image->get_width();
+	uint32_t sub_image_height = p_image->get_height();
 
-	uint32_t logic_width = texture->width;
-	uint32_t logic_height = texture->height;
+	uint32_t width;
+	uint32_t height;
+	uint32_t depth;
+	get_image_format_required_size(texture->format, texture->width, texture->height, texture->depth, p_mipmap + 1, &width, &height, &depth);
 
-	for (uint32_t mm_i = 0; mm_i < texture->mipmaps; mm_i++) {
-		uint32_t sub_width;
-		uint32_t sub_height;
-		uint32_t depth;
-		uint32_t origin_total = get_image_format_required_size(texture->format, texture->width, texture->height, texture->depth, mm_i + 1, &width, &height, &depth);
-		uint32_t sub_total = get_image_format_required_size(texture->format, src_w, src_h, texture->depth, mm_i + 1, &sub_width, &sub_height);
-		const uint8_t *read_ptr_mipmap = r + mipmap_offset;
-		image_size = origin_total - mipmap_offset;
+	ERR_FAIL_COND_V_MSG(p_dst_x + sub_image_width > width, ERR_INVALID_PARAMETER, "p_dst_x is out of bound for this mipmap");
+	ERR_FAIL_COND_V_MSG(p_dst_y + sub_image_height > height, ERR_INVALID_PARAMETER, "p_dst_y is out of bound for this mipmap");
 
-		for (uint32_t z = 0; z < depth; z++) { // For 3D textures, depth may be > 0.
+	for (uint32_t z = 0; z < depth; z++) { // For 3D textures, depth may be > 0.
 
-			const uint8_t *read_ptr = read_ptr_mipmap + (image_size / depth) * z;
+		const uint8_t *read_ptr = r;
 
-			uint32_t pixel_size = get_image_format_pixel_size(texture->format);
-			uint32_t to_allocate = src_w * src_h * pixel_size;
+		uint32_t pixel_size = get_image_format_pixel_size(texture->format);
+		uint32_t to_allocate = sub_image_width * sub_image_height * pixel_size;
 
-			uint32_t alloc_offset, alloc_size;
-			Error err = _staging_buffer_allocate(to_allocate, pixel_size, alloc_offset, alloc_size, false);
-			ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+		uint32_t alloc_offset, alloc_size;
+		Error err = _staging_buffer_allocate(to_allocate, pixel_size, alloc_offset, alloc_size, false);
+		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
-			uint8_t *write_ptr;
+		uint8_t *write_ptr;
 
-			{ // Map.
-				void *data_ptr = nullptr;
-				VkResult vkerr = vmaMapMemory(allocator, staging_buffer_blocks[staging_buffer_current].allocation, &data_ptr);
-				ERR_FAIL_COND_V_MSG(vkerr, ERR_CANT_CREATE, "vmaMapMemory failed with error " + itos(vkerr) + ".");
-				write_ptr = (uint8_t *)data_ptr;
-				write_ptr += alloc_offset;
-			}
-
-			_copy_region(read_ptr, write_ptr, 0, 0, src_w, src_h, width, pixel_size);
-
-			{ // Unmap.
-				vmaUnmapMemory(allocator, staging_buffer_blocks[staging_buffer_current].allocation);
-			}
-
-			VkBufferImageCopy buffer_image_copy;
-			buffer_image_copy.bufferOffset = alloc_offset;
-			buffer_image_copy.bufferRowLength = 0; // Tightly packed.
-			buffer_image_copy.bufferImageHeight = 0; // Tightly packed.
-
-			buffer_image_copy.imageSubresource.aspectMask = texture->read_aspect_mask;
-			buffer_image_copy.imageSubresource.mipLevel = mm_i;
-			buffer_image_copy.imageSubresource.baseArrayLayer = p_layer;
-			buffer_image_copy.imageSubresource.layerCount = 1;
-
-			buffer_image_copy.imageOffset.x = dst_x;
-			buffer_image_copy.imageOffset.y = dst_y;
-			buffer_image_copy.imageOffset.z = z;
-
-			buffer_image_copy.imageExtent.width = src_w;
-			buffer_image_copy.imageExtent.height = src_h;
-			buffer_image_copy.imageExtent.depth = 1;
-
-			vkCmdCopyBufferToImage(command_buffer, staging_buffer_blocks[staging_buffer_current].buffer, texture->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &buffer_image_copy);
-
-			staging_buffer_blocks.write[staging_buffer_current].fill_amount += alloc_size;
+		{ // Map.
+			void *data_ptr = nullptr;
+			VkResult vkerr = vmaMapMemory(allocator, staging_buffer_blocks[staging_buffer_current].allocation, &data_ptr);
+			ERR_FAIL_COND_V_MSG(vkerr, ERR_CANT_CREATE, "vmaMapMemory failed with error " + itos(vkerr) + ".");
+			write_ptr = (uint8_t *)data_ptr;
+			write_ptr += alloc_offset;
 		}
-		mipmap_offset = origin_total;
-		logic_width = MAX(1u, logic_width >> 1);
-		logic_height = MAX(1u, logic_height >> 1);
+
+		_copy_region(read_ptr, write_ptr, 0, 0, sub_image_width, sub_image_height, sub_image_width, pixel_size);
+
+		{ // Unmap.
+			vmaUnmapMemory(allocator, staging_buffer_blocks[staging_buffer_current].allocation);
+		}
+
+		VkBufferImageCopy buffer_image_copy;
+		buffer_image_copy.bufferOffset = alloc_offset;
+		buffer_image_copy.bufferRowLength = 0; // Tightly packed.
+		buffer_image_copy.bufferImageHeight = 0; // Tightly packed.
+
+		buffer_image_copy.imageSubresource.aspectMask = texture->read_aspect_mask;
+		buffer_image_copy.imageSubresource.mipLevel = p_mipmap;
+		buffer_image_copy.imageSubresource.baseArrayLayer = p_layer;
+		buffer_image_copy.imageSubresource.layerCount = 1;
+
+		buffer_image_copy.imageOffset.x = p_dst_x;
+		buffer_image_copy.imageOffset.y = p_dst_y;
+		buffer_image_copy.imageOffset.z = z;
+
+		buffer_image_copy.imageExtent.width = sub_image_width;
+		buffer_image_copy.imageExtent.height = sub_image_height;
+		buffer_image_copy.imageExtent.depth = 1;
+
+		vkCmdCopyBufferToImage(command_buffer, staging_buffer_blocks[staging_buffer_current].buffer, texture->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &buffer_image_copy);
+
+		staging_buffer_blocks.write[staging_buffer_current].fill_amount += alloc_size;
 	}
 	// Barrier to restore layout.
 	{
@@ -2824,8 +2815,8 @@ Error RenderingDeviceVulkan::_texture_update_partial(RID p_texture, uint32_t p_l
 		image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		image_memory_barrier.image = texture->image;
 		image_memory_barrier.subresourceRange.aspectMask = texture->barrier_aspect_mask;
-		image_memory_barrier.subresourceRange.baseMipLevel = 0;
-		image_memory_barrier.subresourceRange.levelCount = texture->mipmaps;
+		image_memory_barrier.subresourceRange.baseMipLevel = p_mipmap;
+		image_memory_barrier.subresourceRange.levelCount = p_mipmap + 1;
 		image_memory_barrier.subresourceRange.baseArrayLayer = p_layer;
 		image_memory_barrier.subresourceRange.layerCount = 1;
 
