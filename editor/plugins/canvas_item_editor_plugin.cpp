@@ -5407,6 +5407,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	singleton = this;
 
 	set_process_shortcut_input(true);
+	clear(); // Make sure values are initialized.
 
 	// Update the menus' checkboxes.
 	callable_mp(this, &CanvasItemEditor::set_state).bind(get_state()).call_deferred();

@@ -1343,7 +1343,7 @@ void GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNod
 				default_used = true;
 			} else {
 				if (default_used) {
-					push_error("Cannot have a mandatory parameters after optional parameters.");
+					push_error("Cannot have mandatory parameters after optional parameters.");
 					continue;
 				}
 			}
@@ -1475,7 +1475,7 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 
 void GDScriptParser::clear_unused_annotations() {
 	for (const AnnotationNode *annotation : annotation_stack) {
-		push_error(vformat(R"(Annotation "%s" does not precedes a valid target, so it will have no effect.)", annotation->name), annotation);
+		push_error(vformat(R"(Annotation "%s" does not precede a valid target, so it will have no effect.)", annotation->name), annotation);
 	}
 
 	annotation_stack.clear();
@@ -1817,7 +1817,7 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 	n_for->list = parse_expression(false);
 
 	if (!n_for->list) {
-		push_error(R"(Expected a list or range after "in".)");
+		push_error(R"(Expected iterable after "in".)");
 	}
 
 	consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "for" condition.)");
@@ -3856,7 +3856,7 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 					variable->export_info.hint = PROPERTY_HINT_NODE_TYPE;
 					variable->export_info.hint_string = export_type.to_string();
 				} else {
-					push_error(R"(Export type can only be built-in, a resource, a node or an enum.)", variable);
+					push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", variable);
 					return false;
 				}
 
@@ -3901,8 +3901,7 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 				variable->export_info.hint_string = enum_hint_string;
 			} break;
 			default:
-				// TODO: Allow custom user resources.
-				push_error(R"(Export type can only be built-in, a resource, or an enum.)", variable);
+				push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", variable);
 				break;
 		}
 
