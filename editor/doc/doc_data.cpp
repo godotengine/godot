@@ -384,6 +384,9 @@ void DocData::generate(bool p_basic_types) {
 					found_type = true;
 					if (retinfo.type == Variant::INT && retinfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
 						prop.enumeration = retinfo.class_name;
+						if (prop.enumeration.begins_with("_")) { //proxy class
+							prop.enumeration = prop.enumeration.substr(1, prop.enumeration.length());
+						}
 						prop.type = "int";
 					} else if (retinfo.class_name != StringName()) {
 						prop.type = retinfo.class_name;
