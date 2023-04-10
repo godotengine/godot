@@ -118,7 +118,7 @@ bool TTS_Windows::is_speaking() const {
 
 	SPVOICESTATUS status;
 	synth->GetStatus(&status, nullptr);
-	return (status.dwRunningState == SPRS_IS_SPEAKING);
+	return (status.dwRunningState == SPRS_IS_SPEAKING || status.dwRunningState == 0 /* Waiting To Speak */);
 }
 
 bool TTS_Windows::is_paused() const {
