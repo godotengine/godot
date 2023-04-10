@@ -543,8 +543,9 @@ void ColorPicker::_html_submitted(const String &p_html) {
 		return;
 	}
 
-	Color previous_color = color;
-	color = Color::html(p_html);
+	const Color previous_color = color;
+	color = Color::from_string(p_html, previous_color);
+
 	if (!is_editing_alpha()) {
 		color.a = previous_color.a;
 	}
@@ -644,13 +645,13 @@ void ColorPicker::_text_type_toggled() {
 		text_type->set_icon(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")));
 
 		c_text->set_editable(false);
-		c_text->set_h_size_flags(SIZE_EXPAND_FILL);
+		c_text->set_tooltip_text(RTR("Copy this constructor in a script."));
 	} else {
 		text_type->set_text("#");
 		text_type->set_icon(nullptr);
 
 		c_text->set_editable(true);
-		c_text->set_h_size_flags(SIZE_FILL);
+		c_text->set_tooltip_text(RTR("Enter a hex code (\"#ff0000\") or named color (\"red\")."));
 	}
 	_update_color();
 }
@@ -1793,7 +1794,10 @@ ColorPicker::ColorPicker() {
 
 	c_text = memnew(LineEdit);
 	hex_hbc->add_child(c_text);
+	c_text->set_h_size_flags(SIZE_EXPAND_FILL);
 	c_text->set_select_all_on_focus(true);
+	c_text->set_tooltip_text(RTR("Enter a hex code (\"#ff0000\") or named color (\"red\")."));
+	c_text->set_placeholder(RTR("Hex code or named color"));
 	c_text->connect("text_submitted", callable_mp(this, &ColorPicker::_html_submitted));
 	c_text->connect("text_changed", callable_mp(this, &ColorPicker::_text_changed));
 	c_text->connect("focus_exited", callable_mp(this, &ColorPicker::_html_focus_exit));
