@@ -4412,5 +4412,4 @@ DisplayServerWindows::~DisplayServerWindows() {
 	if (tts) {
 		memdelete(tts);
 	}
-	CoUninitialize();
 }
