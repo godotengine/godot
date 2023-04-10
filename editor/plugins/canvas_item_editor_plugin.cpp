@@ -1242,6 +1242,7 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 	}
 
 	if (panner_active) {
+		_update_cursor();
 		return true;
 	}
 
