@@ -49,6 +49,7 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_translation.h"
+#include "editor/engine_update_label.h"
 #include "scene/gui/color_picker.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
@@ -412,6 +413,14 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	}
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/editor_screen", -2, ed_screen_hints)
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/project_manager_screen", -2, ed_screen_hints)
+
+	{
+		EngineUpdateLabel::UpdateMode default_update_mode = EngineUpdateLabel::UpdateMode::NEWEST_UNSTABLE;
+		if (String(VERSION_STATUS) == String("stable")) {
+			default_update_mode = EngineUpdateLabel::UpdateMode::NEWEST_STABLE;
+		}
+		EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "network/connection/engine_version_update_mode", int(default_update_mode), "Disable Update Checks,Check Newest Preview,Check Newest Stable,Check Newest Patch"); // Uses EngineUpdateLabel::UpdateMode.
+	}
 
 	_initial_set("interface/editor/debug/enable_pseudolocalization", false);
 	set_restart_if_changed("interface/editor/debug/enable_pseudolocalization", true);

@@ -228,6 +228,7 @@ opts.Add(
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
 opts.Add(BoolVariable("scu_build", "Use single compilation unit build", False))
 opts.Add("scu_limit", "Max includes per SCU file when using scu_build (determines RAM use)", "0")
+opts.Add(BoolVariable("engine_update_check", "Enable engine update checks in the Project Manager", True))
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
@@ -473,6 +474,9 @@ if methods.get_cmdline_bool("fast_unsafe", env_base.dev_build):
 
 if env_base["use_precise_math_checks"]:
     env_base.Append(CPPDEFINES=["PRECISE_MATH_CHECKS"])
+
+if env_base["engine_update_check"]:
+    env_base.Append(CPPDEFINES=["ENGINE_UPDATE_CHECK_ENABLED"])
 
 if not env_base.File("#main/splash_editor.png").exists():
     # Force disabling editor splash if missing.
