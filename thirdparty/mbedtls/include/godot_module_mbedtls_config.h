@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_core_mbedtls_config.h                                           */
+/*  godot_module_mbedtls_config.h                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,26 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_CORE_MBEDTLS_CONFIG_H
-#define GODOT_CORE_MBEDTLS_CONFIG_H
+#ifndef GODOT_MODULE_MBEDTLS_CONFIG_H
+#define GODOT_MODULE_MBEDTLS_CONFIG_H
 
-#include <limits.h>
+#include "platform_config.h"
 
-// For AES
-#define MBEDTLS_CIPHER_MODE_CBC
-#define MBEDTLS_CIPHER_MODE_CFB
-#define MBEDTLS_CIPHER_MODE_CTR
-#define MBEDTLS_CIPHER_MODE_OFB
-#define MBEDTLS_CIPHER_MODE_XTS
+#ifdef GODOT_MBEDTLS_INCLUDE_H
 
-#define MBEDTLS_AES_C
-#define MBEDTLS_BASE64_C
-#define MBEDTLS_CTR_DRBG_C
-#define MBEDTLS_ENTROPY_C
-#define MBEDTLS_MD5_C
-#define MBEDTLS_SHA1_C
-#define MBEDTLS_SHA256_C
-#define MBEDTLS_PLATFORM_ZEROIZE_ALT
-#define MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES
+// Allow platforms to customize the mbedTLS configuration.
+#include GODOT_MBEDTLS_INCLUDE_H
 
-#endif // GODOT_CORE_MBEDTLS_CONFIG_H
+#else
+
+// Include default mbedTLS config.
+#include <mbedtls/config.h>
+
+// Disable weak cryptography.
+#undef MBEDTLS_KEY_EXCHANGE_DHE_PSK_ENABLED
+#undef MBEDTLS_KEY_EXCHANGE_DHE_RSA_ENABLED
+#undef MBEDTLS_SSL_CBC_RECORD_SPLITTING
+#undef MBEDTLS_SSL_PROTO_TLS1
+#undef MBEDTLS_SSL_PROTO_TLS1_1
+#undef MBEDTLS_ARC4_C
+#undef MBEDTLS_DES_C
+#undef MBEDTLS_DHM_C
+
+#endif // GODOT_MBEDTLS_INCLUDE_H
+
+#endif // GODOT_MODULE_MBEDTLS_CONFIG_H

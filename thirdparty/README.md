@@ -378,6 +378,7 @@ File extracted from upstream release tarball:
   Applied the patch in `patches/windows-arm64-hardclock.diff`
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core.
+- Added the file `godot_module_mbedtls_config.h` to customize the build configuration when bundling the full library.
 
 
 ## meshoptimizer
