@@ -751,6 +751,17 @@
 				[b]Warning:[/b] Due to the way it is implemented, this function returns [code]0[/code] rather than [code]1[/code] for negative values of [param value] (in reality, 1 is the smallest integer power of 2).
 			</description>
 		</method>
+		<method name="int_to_hex">
+			<return type="String" />
+			<param index="0" name="int" type="int" />
+			<description>
+				Converts a [param int] to hexadecimal, does not prepend [code]0x[/code].
+				[codeblock]
+				int_to_hex(42) # Returns a2
+				[/codeblock]
+				[b]Warning:[/b] This function only works on unsigned (absolute) values.
+			</description>
+		</method>
 		<method name="pingpong">
 			<return type="float" />
 			<param index="0" name="value" type="float" />

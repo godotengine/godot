@@ -666,6 +666,24 @@ struct VariantUtilityFunctions {
 		return nearest_power_of_2_templated(uint64_t(x));
 	}
 
+	static inline String int_to_hex(int32_t x) {
+		ERR_FAIL_COND_V_MSG(x < 0, String(), "Cannot convert non absolute integer to hexadecimal string.");
+		String s;
+		for (uint8_t i = 7 + 1; i > 0; i--) {
+			int digit = x & 0x0f;
+			if (digit == 0) {
+				break;
+			}
+			char ch = digit + '0';
+			if (ch > '9') {
+				ch += 0x27;
+			}
+			s += ch;
+			x >>= 4;
+		}
+		return s;
+	}
+
 	// Random
 
 	static inline void randomize() {
@@ -1583,6 +1601,8 @@ void Variant::_register_variant_utility_functions() {
 
 	FUNCBINDR(nearest_po2, sarray("value"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(pingpong, sarray("value", "length"), Variant::UTILITY_FUNC_TYPE_MATH);
+
+	FUNCBINDR(int_to_hex, sarray("int"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	// Random
 
