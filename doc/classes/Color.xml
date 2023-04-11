@@ -42,6 +42,17 @@
 		</method>
 		<method name="Color">
 			<return type="Color" />
+			<argument index="0" name="from" type="Color" />
+			<argument index="1" name="alpha" type="float" />
+			<description>
+				Constructs a color from the existing color, with [member a] set to the given [code]alpha[/code] value.
+				[codeblock]
+				var red = Color(Color.red, 0.2) # 20% opaque red.
+				[/codeblock]
+			</description>
+		</method>
+		<method name="Color">
+			<return type="Color" />
 			<argument index="0" name="r" type="float" />
 			<argument index="1" name="g" type="float" />
 			<argument index="2" name="b" type="float" />
