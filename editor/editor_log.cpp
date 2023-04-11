@@ -97,8 +97,6 @@ void EditorLog::_update_theme() {
 	log->add_theme_font_size_override("italics_font_size", font_size);
 	log->add_theme_font_size_override("mono_font_size", font_size);
 
-	log->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
-
 	type_filter_map[MSG_TYPE_STD]->toggle_button->set_icon(get_theme_icon(SNAME("Popup"), SNAME("EditorIcons")));
 	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_icon(get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
 	type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_icon(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
