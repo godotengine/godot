@@ -1251,7 +1251,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	enc_pck = memnew(CheckButton);
 	enc_pck->connect("toggled", callable_mp(this, &ProjectExportDialog::_enc_pck_changed));
-	enc_pck->set_text(TTR("Encrypt Exported PCK"));
+	enc_pck->set_text(TTR("Encrypt Exported PCK / APK Assets"));
 	sec_vb->add_child(enc_pck);
 
 	enc_directory = memnew(CheckButton);

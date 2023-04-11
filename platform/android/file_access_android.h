@@ -32,6 +32,8 @@
 #define FILE_ACCESS_ANDROID_H
 
 #include "core/io/file_access.h"
+#include "core/io/file_access_encrypted.h"
+#include "core/io/file_access_pack.h"
 #include <android/asset_manager.h>
 #include <android/log.h>
 #include <stdio.h>
@@ -44,7 +46,12 @@ class FileAccessAndroid : public FileAccess {
 	String absolute_path;
 	String path_src;
 
+	static HashMap<String, String> directory;
+	static bool dir_loaded;
+	Ref<FileAccessEncrypted> fae;
+
 	void _close();
+	static void _load_encrypted_directory();
 
 public:
 	static AAssetManager *asset_manager;
