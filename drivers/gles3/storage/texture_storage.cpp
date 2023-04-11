@@ -868,6 +868,74 @@ void TextureStorage::texture_2d_update(RID p_texture, const Ref<Image> &p_image,
 #endif
 }
 
+void TextureStorage::texture_2d_update_partial(RID p_texture, const Ref<Image> &p_data, Vector2i p_dst_pos, int p_dst_mipmap, int p_layer) {
+	ERR_FAIL_COND(p_data.is_null() || p_data->is_empty());
+
+	Texture *texture = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_COND_MSG(p_data->is_compressed() || texture->compressed, "Compressed texture is not supported for partial texture updates. Please use an uncompressed image instead.");
+	ERR_FAIL_COND(!texture);
+	ERR_FAIL_COND(!texture->active);
+	ERR_FAIL_COND(texture->is_render_target);
+	ERR_FAIL_COND(p_dst_pos.x < 0 || p_dst_pos.y < 0);
+	ERR_FAIL_COND(p_data->get_format() != texture->format);
+	ERR_FAIL_COND(p_dst_mipmap < 0 || p_dst_mipmap >= texture->mipmaps);
+
+	uint32_t dst_mip_width = texture->width >> p_dst_mipmap;
+	uint32_t dst_mip_height = texture->height >> p_dst_mipmap;
+	ERR_FAIL_COND_MSG((uint32_t)p_dst_pos.x >= dst_mip_width || (uint32_t)p_dst_pos.y >= dst_mip_height, "dst_pos is out of bounds for this mipmap");
+
+	GLenum type;
+	GLenum format;
+	GLenum internal_format;
+	bool compressed = false;
+
+	uint32_t data_width = p_data->get_width();
+	uint32_t data_height = p_data->get_height();
+	ERR_FAIL_COND_MSG((uint32_t)p_dst_pos.x + data_width > dst_mip_width || (uint32_t)p_dst_pos.y + data_height > dst_mip_height, "The size of the data is out of bounds for this mipmap");
+
+	Image::Format real_format;
+	Ref<Image> img = _get_gl_image_and_format(p_data, p_data->get_format(), real_format, format, internal_format, type, compressed, false);
+
+	GLenum blit_target = (texture->target == GL_TEXTURE_CUBE_MAP) ? _cube_side_enum[p_layer] : texture->target;
+
+	Vector<uint8_t> read = img->get_data();
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(texture->target, texture->tex_id);
+
+#ifndef WEB_ENABLED
+	switch (texture->format) {
+#ifdef GLES_OVER_GL
+		case Image::FORMAT_L8: {
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_RED);
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_RED);
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_ONE);
+		} break;
+		case Image::FORMAT_LA8: {
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_RED);
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_RED);
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_GREEN);
+		} break;
+#endif // GLES3_OVER_GL
+		default: {
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_BLUE);
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_ALPHA);
+		} break;
+	}
+#endif // WEB_ENABLED
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	if (texture->target == GL_TEXTURE_2D_ARRAY) {
+		glTexSubImage3D(GL_TEXTURE_2D_ARRAY, p_dst_mipmap, p_dst_pos.x, p_dst_pos.y, p_layer, data_width, data_height, 1, format, type, &read[0]);
+	} else {
+		glTexSubImage2D(blit_target, p_dst_mipmap, p_dst_pos.x, p_dst_pos.y, data_width, data_height, format, type, &read[0]);
+	}
+}
+
 void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {
 	Texture *tex = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_COND(!tex);

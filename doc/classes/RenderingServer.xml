@@ -3252,6 +3252,18 @@
 				[b]Note:[/b] The [param image] must have the same width, height and format as the current [param texture] data. Otherwise, an error will be printed and the original texture won't be modified. If you need to use different width, height or format, use [method texture_replace] instead.
 			</description>
 		</method>
+		<method name="texture_2d_update_partial">
+			<return type="void" />
+			<param index="0" name="texture" type="RID" />
+			<param index="1" name="data" type="Image" />
+			<param index="2" name="dst_pos" type="Vector2i" />
+			<param index="3" name="dst_mipmap" type="int" default="0" />
+			<param index="4" name="layer" type="int" default="0" />
+			<description>
+				Updates the partial of the texture specified by the [param texture] [RID] with the data.
+				[b]Note:[/b] The [param data] must have the same format as the current [param texture] data and compressed textures are not supported.
+			</description>
+		</method>
 		<method name="texture_3d_create">
 			<return type="RID" />
 			<param index="0" name="format" type="int" enum="Image.Format" />

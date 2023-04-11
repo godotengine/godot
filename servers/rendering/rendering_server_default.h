@@ -186,6 +186,7 @@ public:
 
 	//these go through command queue if they are in another thread
 	FUNC3(texture_2d_update, RID, const Ref<Image> &, int)
+	FUNC5(texture_2d_update_partial, RID, const Ref<Image> &, Vector2i, int, int)
 	FUNC2(texture_3d_update, RID, const Vector<Ref<Image>> &)
 	FUNC2(texture_proxy_update, RID, RID)
 

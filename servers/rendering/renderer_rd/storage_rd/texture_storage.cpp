@@ -1131,7 +1131,33 @@ void TextureStorage::_texture_2d_update(RID p_texture, const Ref<Image> &p_image
 void TextureStorage::texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer) {
 	_texture_2d_update(p_texture, p_image, p_layer, false);
 }
+void TextureStorage::texture_2d_update_partial(RID p_texture, const Ref<Image> &p_data, Vector2i p_dst_pos, int p_dst_mipmap, int p_layer) {
+	ERR_FAIL_COND(p_data.is_null() || p_data->is_empty());
 
+	Texture *texture = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_COND_MSG(p_data->is_compressed() || texture->format > Image::FORMAT_RGBE9995, "Compressed texture is not supported for partial texture updates. Please use an uncompressed image instead.");
+	Image::Format src_format = p_data->get_format();
+	ERR_FAIL_COND(!texture);
+	ERR_FAIL_COND(texture->is_render_target);
+	ERR_FAIL_COND(p_dst_pos.x < 0 || p_dst_pos.y < 0);
+	ERR_FAIL_COND(src_format != texture->format);
+	ERR_FAIL_COND(p_dst_mipmap < 0 || p_dst_mipmap >= texture->mipmaps);
+
+	ERR_FAIL_COND_MSG(p_dst_pos.x >= texture->width >> p_dst_mipmap || p_dst_pos.y >= texture->height >> p_dst_mipmap, "dst_pos is out of bounds for this mipmap.");
+
+	if (texture->type == TextureStorage::TYPE_LAYERED) {
+		ERR_FAIL_INDEX(p_layer, texture->layers);
+	}
+
+#ifdef TOOLS_ENABLED
+	texture->image_cache_2d.unref();
+#endif
+
+	TextureToRDFormat f;
+	Ref<Image> validated = _validate_texture_format(p_data, f);
+
+	RD::get_singleton()->texture_update_partial(texture->rd_texture, validated->get_data(), validated->get_size(), p_dst_pos, p_dst_mipmap, p_layer);
+}
 void TextureStorage::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) {
 	Texture *tex = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_COND(!tex);
