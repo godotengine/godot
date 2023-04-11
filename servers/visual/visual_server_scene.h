@@ -135,7 +135,7 @@ public:
 
 	class SpatialPartitioningScene {
 	public:
-		virtual SpatialPartitionID create(Instance *p_userdata, const AABB &p_aabb = AABB(), int p_subindex = 0, bool p_pairable = false, uint32_t p_pairable_type = 0, uint32_t pairable_mask = 1) = 0;
+		virtual SpatialPartitionID create(Instance *p_userdata, const AABB &p_aabb, int p_subindex, bool p_pairable, uint32_t p_pairable_type, uint32_t pairable_mask) = 0;
 		virtual void erase(SpatialPartitionID p_handle) = 0;
 		virtual void move(SpatialPartitionID p_handle, const AABB &p_aabb) = 0;
 		virtual void activate(SpatialPartitionID p_handle, const AABB &p_aabb) {}
@@ -168,7 +168,7 @@ public:
 		Octree_CL<Instance, true> _octree;
 
 	public:
-		SpatialPartitionID create(Instance *p_userdata, const AABB &p_aabb = AABB(), int p_subindex = 0, bool p_pairable = false, uint32_t p_pairable_type = 0, uint32_t pairable_mask = 1);
+		SpatialPartitionID create(Instance *p_userdata, const AABB &p_aabb, int p_subindex, bool p_pairable, uint32_t p_pairable_type, uint32_t pairable_mask);
 		void erase(SpatialPartitionID p_handle);
 		void move(SpatialPartitionID p_handle, const AABB &p_aabb);
 		void set_pairable(Instance *p_instance, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask);
@@ -231,10 +231,25 @@ public:
 		BVH_Manager<Instance, 2, true, 256, UserPairTestFunction<Instance>, UserCullTestFunction<Instance>> _bvh;
 		Instance *_dummy_cull_object;
 
+		uint32_t find_tree_id_and_collision_mask(bool p_pairable, uint32_t &r_tree_collision_mask) const {
+			// "pairable" (lights etc) can pair with geometry (non pairable) or other pairables.
+			// Geometry never pairs with other geometry, so we can eliminate geometry - geometry collision checks.
+
+			// Additionally, when lights are made invisible their p_pairable_mask is set to zero to stop their collisions.
+			// We could potentially choose `tree_collision_mask` based on whether p_pairable_mask is zero,
+			// in order to catch invisible lights, but in practice these instances will already have been deactivated within
+			// the BVH so this step is unnecessary. So we can keep the simpler logic of geometry collides with pairable,
+			// pairable collides with everything.
+			r_tree_collision_mask = !p_pairable ? 2 : 3;
+
+			// Returns tree_id.
+			return p_pairable ? 1 : 0;
+		}
+
 	public:
 		SpatialPartitioningScene_BVH();
 		~SpatialPartitioningScene_BVH();
-		SpatialPartitionID create(Instance *p_userdata, const AABB &p_aabb = AABB(), int p_subindex = 0, bool p_pairable = false, uint32_t p_pairable_type = 0, uint32_t p_pairable_mask = 1);
+		SpatialPartitionID create(Instance *p_userdata, const AABB &p_aabb, int p_subindex, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask);
 		void erase(SpatialPartitionID p_handle);
 		void move(SpatialPartitionID p_handle, const AABB &p_aabb);
 		void activate(SpatialPartitionID p_handle, const AABB &p_aabb);
