@@ -239,7 +239,8 @@ void SectionedInspector::update_category_list() {
 	for (PropertyInfo &pi : pinfo) {
 		if (pi.usage & PROPERTY_USAGE_CATEGORY) {
 			continue;
-		} else if (!(pi.usage & PROPERTY_USAGE_EDITOR) || (restrict_to_basic && !(pi.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
+		} else if (!(pi.usage & PROPERTY_USAGE_EDITOR) ||
+				(filter_text.is_empty() && restrict_to_basic && !(pi.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
 			continue;
 		}
 
