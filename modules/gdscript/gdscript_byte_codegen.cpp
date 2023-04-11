@@ -142,7 +142,9 @@ void GDScriptByteCodeGenerator::pop_temporary() {
 	if (slot.type == Variant::NIL) {
 		// Avoid keeping in the stack long-lived references to objects,
 		// which may prevent RefCounted objects from being freed.
-		write_assign_false(Address(Address::TEMPORARY, slot_idx));
+		// However, the cleanup will be performed an the end of the
+		// statement, to allow object references to survive chaining.
+		temporaries_pending_clear.push_back(slot_idx);
 	}
 	temporaries_pool[slot.type].push_back(slot_idx);
 	used_temporaries.pop_back();
@@ -1750,6 +1752,23 @@ void GDScriptByteCodeGenerator::start_block() {
 
 void GDScriptByteCodeGenerator::end_block() {
 	pop_stack_identifiers();
+}
+
+void GDScriptByteCodeGenerator::clean_temporaries() {
+	List<int>::Element *E = temporaries_pending_clear.front();
+	while (E) {
+		// The temporary may have been re-used as something else than an object
+		// since it was added to the list. In that case, there's no need to clear it.
+		int slot_idx = E->get();
+		const StackSlot &slot = temporaries[slot_idx];
+		if (slot.type == Variant::NIL) {
+			write_assign_false(Address(Address::TEMPORARY, slot_idx));
+		}
+
+		List<int>::Element *next = E->next();
+		E->erase();
+		E = next;
+	}
 }
 
 GDScriptByteCodeGenerator::~GDScriptByteCodeGenerator() {

@@ -1665,6 +1665,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 	Error err = OK;
 	GDScriptCodeGenerator *gen = codegen.generator;
 
+	gen->clean_temporaries();
 	codegen.start_block();
 
 	if (p_add_locals) {
@@ -1967,6 +1968,8 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				}
 			} break;
 		}
+
+		gen->clean_temporaries();
 	}
 
 	codegen.end_block();
