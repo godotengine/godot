@@ -2645,7 +2645,7 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 		HashMap<CursorShape, Vector<Variant>>::Iterator cursor_c = cursors_cache.find(p_shape);
 
 		if (cursor_c) {
-			if (cursor_c->value[0] == p_cursor && cursor_c->value[1] == p_hotspot) {
+			if (cursor_c->value[0] == Variant(p_cursor) && cursor_c->value[1] == Variant(p_hotspot)) {
 				cursor_set_shape(p_shape);
 				return;
 			}

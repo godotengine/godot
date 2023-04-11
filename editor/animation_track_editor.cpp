@@ -2975,7 +2975,7 @@ bool AnimationTrackEdit::can_drop_data(const Point2 &p_point, const Variant &p_d
 	if (get_editor()->is_grouping_tracks()) {
 		String base_path = animation->track_get_path(track);
 		base_path = base_path.get_slice(":", 0); // Remove sub-path.
-		if (d["group"] != base_path) {
+		if (d["group"] != Variant(base_path)) {
 			return false;
 		}
 	}
@@ -3006,7 +3006,7 @@ void AnimationTrackEdit::drop_data(const Point2 &p_point, const Variant &p_data)
 	if (get_editor()->is_grouping_tracks()) {
 		String base_path = animation->track_get_path(track);
 		base_path = base_path.get_slice(":", 0); // Remove sub-path.
-		if (d["group"] != base_path) {
+		if (d["group"] != Variant(base_path)) {
 			return;
 		}
 	}
@@ -3841,13 +3841,13 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 		} else if (animation->track_get_type(i) == Animation::TYPE_BEZIER) {
 			Variant value;
 			String track_path = animation->track_get_path(i);
-			if (track_path == np) {
+			if (track_path == String(np)) {
 				value = p_value; // All good.
 			} else {
 				int sep = track_path.rfind(":");
 				if (sep != -1) {
 					String base_path = track_path.substr(0, sep);
-					if (base_path == np) {
+					if (base_path == String(np)) {
 						String value_name = track_path.substr(sep + 1);
 						value = p_value.get(value_name);
 					} else {

@@ -1578,7 +1578,7 @@ void AnimationTree::_process_graph(double p_delta) {
 								start_ofs += time - a->track_get_key_time(i, idx);
 							}
 
-							if (t->object->call(SNAME("get_stream")) != t->audio_stream) {
+							if (t->object->call(SNAME("get_stream")) != Variant(t->audio_stream)) {
 								t->object->call(SNAME("set_stream"), t->audio_stream);
 								t->audio_stream_playback.unref();
 								if (!playing_audio_stream_players.has(asp)) {

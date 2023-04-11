@@ -281,12 +281,12 @@ bool ActionMapEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 	}
 
 	// Don't allow moving an action in-between events.
-	if (d["input_type"] == "action" && item->has_meta("__event")) {
+	if (d["input_type"] == Variant("action") && item->has_meta("__event")) {
 		return false;
 	}
 
 	// Don't allow moving an event to a different action.
-	if (d["input_type"] == "event" && item->get_parent() != selected->get_parent()) {
+	if (d["input_type"] == Variant("event") && item->get_parent() != selected->get_parent()) {
 		return false;
 	}
 
@@ -307,13 +307,13 @@ void ActionMapEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 	}
 
 	Dictionary d = p_data;
-	if (d["input_type"] == "action") {
+	if (d["input_type"] == Variant("action")) {
 		// Change action order.
 		String relative_to = target->get_meta("__name");
 		String action_name = selected->get_meta("__name");
 		emit_signal(SNAME("action_reordered"), action_name, relative_to, drop_above);
 
-	} else if (d["input_type"] == "event") {
+	} else if (d["input_type"] == Variant("event")) {
 		// Change event order
 		int current_index = selected->get_meta("__index");
 		int target_index = target->get_meta("__index");

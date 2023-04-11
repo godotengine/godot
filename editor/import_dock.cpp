@@ -514,7 +514,7 @@ void ImportDock::_reimport() {
 		if (params->importer.is_valid()) {
 			String importer_name = params->importer->get_importer_name();
 
-			if (params->checking && config->get_value("remap", "importer") == params->importer->get_importer_name()) {
+			if (params->checking && config->get_value("remap", "importer") == Variant(params->importer->get_importer_name())) {
 				//update only what is edited (checkboxes) if the importer is the same
 				for (const PropertyInfo &E : params->properties) {
 					if (params->checked.has(E.name)) {

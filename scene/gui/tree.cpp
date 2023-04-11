@@ -411,7 +411,7 @@ Ref<Texture2D> TreeItem::get_icon(int p_column) const {
 void TreeItem::set_icon_region(int p_column, const Rect2 &p_icon_region) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
-	if (cells[p_column].icon_region == p_icon_region) {
+	if (cells[p_column].icon_region == Rect2i(p_icon_region)) {
 		return;
 	}
 

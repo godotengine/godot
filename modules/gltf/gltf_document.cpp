@@ -3596,13 +3596,13 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 				width = albedo_texture->get_width();
 			}
 			orm_image->initialize_data(width, height, false, Image::FORMAT_RGBA8);
-			if (ao_image.is_valid() && ao_image->get_size() != Vector2(width, height)) {
+			if (ao_image.is_valid() && ao_image->get_size() != Vector2i(width, height)) {
 				ao_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
 			}
-			if (roughness_image.is_valid() && roughness_image->get_size() != Vector2(width, height)) {
+			if (roughness_image.is_valid() && roughness_image->get_size() != Vector2i(width, height)) {
 				roughness_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
 			}
-			if (metallness_image.is_valid() && metallness_image->get_size() != Vector2(width, height)) {
+			if (metallness_image.is_valid() && metallness_image->get_size() != Vector2i(width, height)) {
 				metallness_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
 			}
 			for (int32_t h = 0; h < height; h++) {

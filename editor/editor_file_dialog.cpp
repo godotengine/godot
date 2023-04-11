@@ -945,7 +945,7 @@ void EditorFileDialog::update_file_list() {
 	fav_down->set_disabled(true);
 	get_ok_button()->set_disabled(_is_open_should_be_disabled());
 	for (int i = 0; i < favorites->get_item_count(); i++) {
-		if (favorites->get_item_metadata(i) == cdir || favorites->get_item_metadata(i) == cdir + "/") {
+		if (favorites->get_item_metadata(i) == Variant(cdir) || favorites->get_item_metadata(i) == Variant(cdir + "/")) {
 			favorites->select(i);
 			favorite->set_pressed(true);
 			if (i > 0) {

@@ -1697,7 +1697,7 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 							if (!_guess_expression_type(c, dn->elements[i].key, key)) {
 								continue;
 							}
-							if (key.value == String(subscript->attribute->name)) {
+							if (key.value == Variant(String(subscript->attribute->name))) {
 								r_type.assigned_expression = dn->elements[i].value;
 								found = _guess_expression_type(c, dn->elements[i].value, r_type);
 								break;

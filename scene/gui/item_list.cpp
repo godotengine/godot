@@ -219,7 +219,7 @@ void ItemList::set_item_icon_region(int p_idx, const Rect2 &p_region) {
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
-	if (items[p_idx].icon_region == p_region) {
+	if (items[p_idx].icon_region == Rect2i(p_region)) {
 		return;
 	}
 
@@ -591,7 +591,7 @@ ItemList::IconMode ItemList::get_icon_mode() const {
 }
 
 void ItemList::set_fixed_icon_size(const Size2i &p_size) {
-	if (fixed_icon_size == p_size) {
+	if (fixed_icon_size == Size2(p_size)) {
 		return;
 	}
 

@@ -359,7 +359,7 @@ Rect2 Sprite2D::get_rect() const {
 		ofs = ofs.floor();
 	}
 
-	if (s == Size2(0, 0)) {
+	if (s == Size2i(0, 0)) {
 		s = Size2(1, 1);
 	}
 
