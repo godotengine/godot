@@ -136,9 +136,11 @@ public:
 		}
 	}
 	_FORCE_INLINE_ bool empty() const { return count == 0; }
-	_FORCE_INLINE_ void reserve(U p_size) {
+	_FORCE_INLINE_ U get_capacity() const { return capacity; }
+
+	_FORCE_INLINE_ void reserve(U p_size, bool p_allow_shrink = false) {
 		p_size = nearest_power_of_2_templated(p_size);
-		if (p_size > capacity) {
+		if (!p_allow_shrink ? p_size > capacity : ((p_size >= count) && (p_size != capacity))) {
 			capacity = p_size;
 			data = (T *)memrealloc(data, capacity * sizeof(T));
 			CRASH_COND_MSG(!data, "Out of memory");

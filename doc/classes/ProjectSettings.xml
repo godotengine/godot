@@ -1190,7 +1190,7 @@
 		</member>
 		<member name="memory/limits/command_queue/multithreading_queue_size_kb" type="int" setter="" getter="" default="256">
 		</member>
-		<member name="memory/limits/message_queue/max_size_kb" type="int" setter="" getter="" default="4096">
+		<member name="memory/limits/message_queue/max_size_mb" type="int" setter="" getter="" default="32">
 			Godot uses a message queue to defer some function calls. If you run out of space on it (you will see an error), you can increase the size here.
 		</member>
 		<member name="memory/limits/multithreaded_server/rid_pool_prealloc" type="int" setter="" getter="" default="60">

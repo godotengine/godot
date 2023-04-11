@@ -31,15 +31,12 @@
 #ifndef MESSAGE_QUEUE_H
 #define MESSAGE_QUEUE_H
 
+#include "core/local_vector.h"
 #include "core/object.h"
 #include "core/os/thread_safe.h"
 
 class MessageQueue {
 	_THREAD_SAFE_CLASS_
-
-	enum {
-		DEFAULT_QUEUE_SIZE_KB = 4096
-	};
 
 	enum {
 		TYPE_CALL,
@@ -60,12 +57,23 @@ class MessageQueue {
 		};
 	};
 
-	uint8_t *buffer;
-	uint32_t buffer_end;
-	uint32_t buffer_max_used;
-	uint32_t buffer_size;
+	struct Buffer {
+		LocalVector<uint8_t> data;
+		uint64_t end = 0;
+	};
+
+	Buffer buffers[2];
+	int read_buffer = 0;
+	int write_buffer = 1;
+	uint64_t max_allowed_buffer_size = 0;
+
+	struct BufferSizeMonitor {
+		uint32_t max_size = 0;
+		uint32_t flush_count = 0;
+	} _buffer_size_monitor;
 
 	void _call_function(Object *p_target, const StringName &p_func, const Variant *p_args, int p_argcount, bool p_show_error);
+	void _update_buffer_monitor();
 
 	static MessageQueue *singleton;
 
