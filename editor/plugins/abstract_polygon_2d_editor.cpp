@@ -37,6 +37,8 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "scene/gui/button.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/separator.h"
 
 bool AbstractPolygon2DEditor::Vertex::operator==(const AbstractPolygon2DEditor::Vertex &p_vertex) const {

@@ -40,6 +40,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_spin_slider.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "editor/scene_tree_dock.h"

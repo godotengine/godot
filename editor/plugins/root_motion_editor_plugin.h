@@ -33,10 +33,13 @@
 
 #include "editor/editor_inspector.h"
 
+class Button;
+class ConfirmationDialog;
 class Tree;
 
 class EditorPropertyRootMotion : public EditorProperty {
 	GDCLASS(EditorPropertyRootMotion, EditorProperty);
+
 	Button *assign = nullptr;
 	Button *clear = nullptr;
 	NodePath base_hint;

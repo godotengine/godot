@@ -30,12 +30,13 @@
 
 #include "inspector_dock.h"
 
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
+#include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_object_selector.h"
 #include "editor/plugins/script_editor_plugin.h"
 
 InspectorDock *InspectorDock::singleton = nullptr;
@@ -510,7 +511,7 @@ void InspectorDock::update(Object *p_object) {
 	if (editor_history->get_history_len() > 0) {
 		history_menu->set_disabled(false);
 	}
-	editor_path->update_path();
+	object_selector->update_path();
 
 	current = p_object;
 
@@ -530,11 +531,11 @@ void InspectorDock::update(Object *p_object) {
 
 	if (!is_object || is_text_file) {
 		info->hide();
-		editor_path->clear_path();
+		object_selector->clear_path();
 		return;
 	}
 
-	editor_path->enable_path();
+	object_selector->enable_path();
 
 	PopupMenu *p = object_menu->get_popup();
 
@@ -689,9 +690,9 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 
 	HBoxContainer *subresource_hb = memnew(HBoxContainer);
 	add_child(subresource_hb);
-	editor_path = memnew(EditorPath(EditorNode::get_singleton()->get_editor_selection_history()));
-	editor_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	subresource_hb->add_child(editor_path);
+	object_selector = memnew(EditorObjectSelector(EditorNode::get_singleton()->get_editor_selection_history()));
+	object_selector->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	subresource_hb->add_child(object_selector);
 
 	open_docs_button = memnew(Button);
 	open_docs_button->set_flat(true);
