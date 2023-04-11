@@ -164,11 +164,14 @@ void AudioStreamPlayer2D::_update_panning() {
 	volume_vector.write[1] = AudioFrame(0, 0);
 	volume_vector.write[2] = AudioFrame(0, 0);
 	volume_vector.write[3] = AudioFrame(0, 0);
+	int listeners = 0;
 
 	for (Viewport *vp : viewports) {
 		if (!vp->is_audio_listener_2d()) {
 			continue;
 		}
+		listeners += 1;
+
 		//compute matrix to convert to screen
 		Vector2 screen_size = vp->get_visible_rect().size;
 		Vector2 listener_in_global;
@@ -206,7 +209,11 @@ void AudioStreamPlayer2D::_update_panning() {
 		float l = 1.0 - pan;
 		float r = pan;
 
-		volume_vector.write[0] = AudioFrame(l, r) * multiplier;
+		volume_vector.write[0] += AudioFrame(l, r) * multiplier;
+	}
+
+	if (listeners > 1) {
+		volume_vector.write[0] /= float(listeners);
 	}
 
 	for (const Ref<AudioStreamPlayback> &playback : stream_playbacks) {
