@@ -62,6 +62,15 @@ class ViewportNavigationControl;
 class ViewportRotationControl : public Control {
 	GDCLASS(ViewportRotationControl, Control);
 
+	enum ViewAxis {
+		VIEW_AXIS_PLUS_X,
+		VIEW_AXIS_PLUS_Y,
+		VIEW_AXIS_PLUS_Z,
+		VIEW_AXIS_MINUS_X,
+		VIEW_AXIS_MINUS_Y,
+		VIEW_AXIS_MINUS_Z,
+	};
+
 	struct Axis2D {
 		Vector2i screen_point;
 		float z_axis = -99.0;
@@ -88,6 +97,7 @@ protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _draw();
 	void _draw_axis(const Axis2D &p_axis);
+	void _focus_axis();
 	void _get_sorted_axis(Vector<Axis2D> &r_axis);
 	void _update_focus();
 	void _on_mouse_exited();
@@ -110,6 +120,7 @@ class Node3DEditorViewport : public Control {
 		VIEW_RIGHT,
 		VIEW_FRONT,
 		VIEW_REAR,
+		VIEW_IS_Z_FORWARD,
 		VIEW_CENTER_TO_ORIGIN,
 		VIEW_CENTER_TO_SELECTION,
 		VIEW_ALIGN_TRANSFORM_WITH_VIEW,
@@ -218,6 +229,8 @@ private:
 
 	MenuButton *view_menu = nullptr;
 	PopupMenu *display_submenu = nullptr;
+
+	bool viewport_camera_is_z_forward = false;
 
 	Control *surface = nullptr;
 	SubViewport *viewport = nullptr;

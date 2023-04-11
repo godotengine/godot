@@ -261,12 +261,12 @@ void ViewportRotationControl::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			axis_menu_options.clear();
-			axis_menu_options.push_back(Node3DEditorViewport::VIEW_RIGHT);
-			axis_menu_options.push_back(Node3DEditorViewport::VIEW_TOP);
-			axis_menu_options.push_back(Node3DEditorViewport::VIEW_REAR);
-			axis_menu_options.push_back(Node3DEditorViewport::VIEW_LEFT);
-			axis_menu_options.push_back(Node3DEditorViewport::VIEW_BOTTOM);
-			axis_menu_options.push_back(Node3DEditorViewport::VIEW_FRONT);
+			axis_menu_options.push_back(VIEW_AXIS_MINUS_X);
+			axis_menu_options.push_back(VIEW_AXIS_PLUS_Y);
+			axis_menu_options.push_back(VIEW_AXIS_MINUS_Z);
+			axis_menu_options.push_back(VIEW_AXIS_PLUS_X);
+			axis_menu_options.push_back(VIEW_AXIS_MINUS_Y);
+			axis_menu_options.push_back(VIEW_AXIS_PLUS_Z);
 
 			axis_colors.clear();
 			axis_colors.push_back(get_theme_color(SNAME("axis_x_color"), SNAME("Editor")));
@@ -337,7 +337,7 @@ void ViewportRotationControl::_get_sorted_axis(Vector<Axis2D> &r_axis) {
 		Vector3 axis_3d = camera_basis.get_column(i);
 		Vector2i axis_vector = Vector2(axis_3d.x, -axis_3d.y) * radius;
 
-		if (Math::abs(axis_3d.z) < 1.0) {
+		if (Math::abs(axis_3d.z) <= 1.0) {
 			Axis2D pos_axis;
 			pos_axis.axis = i;
 			pos_axis.screen_point = center + axis_vector;
@@ -352,7 +352,7 @@ void ViewportRotationControl::_get_sorted_axis(Vector<Axis2D> &r_axis) {
 		} else {
 			// Special case when the camera is aligned with one axis
 			Axis2D axis;
-			axis.axis = i + (axis_3d.z < 0 ? 0 : 3);
+			axis.axis = i + (axis_3d.z <= 0 ? 0 : 3);
 			axis.screen_point = center;
 			axis.z_axis = 1.0;
 			r_axis.push_back(axis);
@@ -360,6 +360,29 @@ void ViewportRotationControl::_get_sorted_axis(Vector<Axis2D> &r_axis) {
 	}
 
 	r_axis.sort_custom<Axis2DCompare>();
+}
+
+void ViewportRotationControl::_focus_axis() {
+	switch (focused_axis) {
+		case VIEW_AXIS_PLUS_X: {
+			viewport->_menu_option(viewport->viewport_camera_is_z_forward ? Node3DEditorViewport::VIEW_RIGHT : Node3DEditorViewport::VIEW_LEFT);
+		} break;
+		case VIEW_AXIS_PLUS_Y: {
+			viewport->_menu_option(Node3DEditorViewport::VIEW_TOP);
+		} break;
+		case VIEW_AXIS_PLUS_Z: {
+			viewport->_menu_option(viewport->viewport_camera_is_z_forward ? Node3DEditorViewport::VIEW_FRONT : Node3DEditorViewport::VIEW_REAR);
+		} break;
+		case VIEW_AXIS_MINUS_X: {
+			viewport->_menu_option(viewport->viewport_camera_is_z_forward ? Node3DEditorViewport::VIEW_LEFT : Node3DEditorViewport::VIEW_RIGHT);
+		} break;
+		case VIEW_AXIS_MINUS_Y: {
+			viewport->_menu_option(Node3DEditorViewport::VIEW_BOTTOM);
+		} break;
+		case VIEW_AXIS_MINUS_Z: {
+			viewport->_menu_option(viewport->viewport_camera_is_z_forward ? Node3DEditorViewport::VIEW_REAR : Node3DEditorViewport::VIEW_FRONT);
+		} break;
+	}
 }
 
 void ViewportRotationControl::_process_click(int p_index, Vector2 p_position, bool p_pressed) {
@@ -372,7 +395,7 @@ void ViewportRotationControl::_process_click(int p_index, Vector2 p_position, bo
 		}
 	} else {
 		if (focused_axis > -1) {
-			viewport->_menu_option(axis_menu_options[focused_axis]);
+			_focus_axis();
 			_update_focus();
 		}
 		orbiting_index = -1;
@@ -3125,7 +3148,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		} break;
 		case VIEW_LEFT: {
 			cursor.x_rot = 0;
-			cursor.y_rot = Math_PI / 2.0;
+			cursor.y_rot = viewport_camera_is_z_forward ? Math_PI / 2.0 : -Math_PI / 2.0;
 			set_message(TTR("Left View."), 2);
 			view_type = VIEW_TYPE_LEFT;
 			_set_auto_orthogonal();
@@ -3134,7 +3157,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		} break;
 		case VIEW_RIGHT: {
 			cursor.x_rot = 0;
-			cursor.y_rot = -Math_PI / 2.0;
+			cursor.y_rot = viewport_camera_is_z_forward ? -Math_PI / 2.0 : Math_PI / 2.0;
 			set_message(TTR("Right View."), 2);
 			view_type = VIEW_TYPE_RIGHT;
 			_set_auto_orthogonal();
@@ -3143,7 +3166,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		} break;
 		case VIEW_FRONT: {
 			cursor.x_rot = 0;
-			cursor.y_rot = Math_PI;
+			cursor.y_rot = viewport_camera_is_z_forward ? 0 : Math_PI;
 			set_message(TTR("Front View."), 2);
 			view_type = VIEW_TYPE_FRONT;
 			_set_auto_orthogonal();
@@ -3152,12 +3175,19 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		} break;
 		case VIEW_REAR: {
 			cursor.x_rot = 0;
-			cursor.y_rot = 0;
+			cursor.y_rot = viewport_camera_is_z_forward ? Math_PI : 0;
 			set_message(TTR("Rear View."), 2);
 			view_type = VIEW_TYPE_REAR;
 			_set_auto_orthogonal();
 			_update_name();
 
+		} break;
+		case VIEW_IS_Z_FORWARD: {
+			int idx = view_menu->get_popup()->get_item_index(VIEW_IS_Z_FORWARD);
+			bool current = view_menu->get_popup()->is_item_checked(idx);
+			current = !current;
+			viewport_camera_is_z_forward = current;
+			view_menu->get_popup()->set_item_checked(idx, current);
 		} break;
 		case VIEW_CENTER_TO_ORIGIN: {
 			cursor.pos = Vector3(0, 0, 0);
@@ -4957,6 +4987,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/right_view"), VIEW_RIGHT);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/front_view"), VIEW_FRONT);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/rear_view"), VIEW_REAR);
+	view_menu->get_popup()->add_check_item(TTR("View is +Z Forward"), VIEW_IS_Z_FORWARD);
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/switch_perspective_orthogonal"), VIEW_SWITCH_PERSPECTIVE_ORTHOGONAL);
 	view_menu->get_popup()->add_radio_check_item(TTR("Perspective"), VIEW_PERSPECTIVE);
