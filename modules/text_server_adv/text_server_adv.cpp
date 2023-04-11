@@ -4182,22 +4182,37 @@ bool TextServerAdvanced::_shape_substr(ShapedTextDataAdvanced *p_new_sd, const S
 			ERR_FAIL_COND_V_MSG((start < 0 || end - start > p_new_sd->utf16.length()), false, "Invalid BiDi override range.");
 
 			// Create temporary line bidi & shape.
-			UBiDi *bidi_iter = ubidi_openSized(end - start, 0, &err);
-			ERR_FAIL_COND_V_MSG(U_FAILURE(err), false, u_errorName(err));
-			ubidi_setLine(p_sd->bidi_iter[ov], start, end, bidi_iter, &err);
-			if (U_FAILURE(err)) {
-				ubidi_close(bidi_iter);
-				ERR_FAIL_V_MSG(false, u_errorName(err));
+			UBiDi *bidi_iter = nullptr;
+			if (p_sd->bidi_iter[ov]) {
+				bidi_iter = ubidi_openSized(end - start, 0, &err);
+				if (U_SUCCESS(err)) {
+					ubidi_setLine(p_sd->bidi_iter[ov], start, end, bidi_iter, &err);
+					if (U_FAILURE(err)) {
+						ubidi_close(bidi_iter);
+						bidi_iter = nullptr;
+						ERR_PRINT(vformat("BiDi reordering for the line failed: %s", u_errorName(err)));
+					}
+				} else {
+					bidi_iter = nullptr;
+					ERR_PRINT(vformat("BiDi iterator allocation for the line failed: %s", u_errorName(err)));
+				}
 			}
 			p_new_sd->bidi_iter.push_back(bidi_iter);
 
 			err = U_ZERO_ERROR;
-			int bidi_run_count = ubidi_countRuns(bidi_iter, &err);
-			ERR_FAIL_COND_V_MSG(U_FAILURE(err), false, u_errorName(err));
+			int bidi_run_count = 1;
+			if (bidi_iter) {
+				bidi_run_count = ubidi_countRuns(bidi_iter, &err);
+				if (U_FAILURE(err)) {
+					ERR_PRINT(u_errorName(err));
+				}
+			}
 			for (int i = 0; i < bidi_run_count; i++) {
 				int32_t _bidi_run_start = 0;
-				int32_t _bidi_run_length = 0;
-				ubidi_getVisualRun(bidi_iter, i, &_bidi_run_start, &_bidi_run_length);
+				int32_t _bidi_run_length = end - start;
+				if (bidi_iter) {
+					ubidi_getVisualRun(bidi_iter, i, &_bidi_run_start, &_bidi_run_length);
+				}
 
 				int32_t bidi_run_start = _convert_pos(p_sd, ov_start + start + _bidi_run_start);
 				int32_t bidi_run_end = _convert_pos(p_sd, ov_start + start + _bidi_run_start + _bidi_run_length);
@@ -5642,38 +5657,53 @@ bool TextServerAdvanced::_shaped_text_shape(const RID &p_shaped) {
 
 		UErrorCode err = U_ZERO_ERROR;
 		UBiDi *bidi_iter = ubidi_openSized(end - start, 0, &err);
-		ERR_FAIL_COND_V_MSG(U_FAILURE(err), false, u_errorName(err));
-
-		switch (static_cast<TextServer::Direction>(sd->bidi_override[ov].z)) {
-			case DIRECTION_LTR: {
-				ubidi_setPara(bidi_iter, data + start, end - start, UBIDI_LTR, nullptr, &err);
-			} break;
-			case DIRECTION_RTL: {
-				ubidi_setPara(bidi_iter, data + start, end - start, UBIDI_RTL, nullptr, &err);
-			} break;
-			case DIRECTION_INHERITED: {
-				ubidi_setPara(bidi_iter, data + start, end - start, base_para_direction, nullptr, &err);
-			} break;
-			case DIRECTION_AUTO: {
-				UBiDiDirection direction = ubidi_getBaseDirection(data + start, end - start);
-				if (direction != UBIDI_NEUTRAL) {
-					ubidi_setPara(bidi_iter, data + start, end - start, direction, nullptr, &err);
-				} else {
+		if (U_SUCCESS(err)) {
+			switch (static_cast<TextServer::Direction>(sd->bidi_override[ov].z)) {
+				case DIRECTION_LTR: {
+					ubidi_setPara(bidi_iter, data + start, end - start, UBIDI_LTR, nullptr, &err);
+				} break;
+				case DIRECTION_RTL: {
+					ubidi_setPara(bidi_iter, data + start, end - start, UBIDI_RTL, nullptr, &err);
+				} break;
+				case DIRECTION_INHERITED: {
 					ubidi_setPara(bidi_iter, data + start, end - start, base_para_direction, nullptr, &err);
-				}
-			} break;
+				} break;
+				case DIRECTION_AUTO: {
+					UBiDiDirection direction = ubidi_getBaseDirection(data + start, end - start);
+					if (direction != UBIDI_NEUTRAL) {
+						ubidi_setPara(bidi_iter, data + start, end - start, direction, nullptr, &err);
+					} else {
+						ubidi_setPara(bidi_iter, data + start, end - start, base_para_direction, nullptr, &err);
+					}
+				} break;
+			}
+			if (U_FAILURE(err)) {
+				ubidi_close(bidi_iter);
+				bidi_iter = nullptr;
+				ERR_PRINT(vformat("BiDi reordering for the paragraph failed: %s", u_errorName(err)));
+			}
+		} else {
+			bidi_iter = nullptr;
+			ERR_PRINT(vformat("BiDi iterator allocation for the paragraph failed: %s", u_errorName(err)));
 		}
-		ERR_FAIL_COND_V_MSG(U_FAILURE(err), false, u_errorName(err));
 		sd->bidi_iter.push_back(bidi_iter);
 
 		err = U_ZERO_ERROR;
-		int bidi_run_count = ubidi_countRuns(bidi_iter, &err);
-		ERR_FAIL_COND_V_MSG(U_FAILURE(err), false, u_errorName(err));
+		int bidi_run_count = 1;
+		if (bidi_iter) {
+			bidi_run_count = ubidi_countRuns(bidi_iter, &err);
+			if (U_FAILURE(err)) {
+				ERR_PRINT(u_errorName(err));
+			}
+		}
 		for (int i = 0; i < bidi_run_count; i++) {
 			int32_t _bidi_run_start = 0;
-			int32_t _bidi_run_length = 0;
+			int32_t _bidi_run_length = end - start;
+			bool is_rtl = false;
 			hb_direction_t bidi_run_direction = HB_DIRECTION_INVALID;
-			bool is_rtl = (ubidi_getVisualRun(bidi_iter, i, &_bidi_run_start, &_bidi_run_length) == UBIDI_LTR);
+			if (bidi_iter) {
+				is_rtl = (ubidi_getVisualRun(bidi_iter, i, &_bidi_run_start, &_bidi_run_length) == UBIDI_LTR);
+			}
 			switch (sd->orientation) {
 				case ORIENTATION_HORIZONTAL: {
 					if (is_rtl) {
