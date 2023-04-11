@@ -1597,6 +1597,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("default_color", "RichTextLabel", font_color);
 	theme->set_color("font_shadow_color", "RichTextLabel", Color(0, 0, 0, 0));
 	theme->set_color("font_outline_color", "RichTextLabel", font_outline_color);
+	theme->set_color("selection_color", "RichTextLabel", selection_color);
 	theme->set_constant("shadow_offset_x", "RichTextLabel", 1 * EDSCALE);
 	theme->set_constant("shadow_offset_y", "RichTextLabel", 1 * EDSCALE);
 	theme->set_constant("shadow_outline_size", "RichTextLabel", 1 * EDSCALE);
@@ -1618,7 +1619,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("value_color", "EditorHelp", font_color * Color(1, 1, 1, 0.6));
 	theme->set_color("qualifier_color", "EditorHelp", font_color * Color(1, 1, 1, 0.8));
 	theme->set_color("type_color", "EditorHelp", accent_color.lerp(font_color, 0.5));
-	theme->set_color("selection_color", "EditorHelp", accent_color * Color(1, 1, 1, 0.4));
+	theme->set_color("selection_color", "EditorHelp", selection_color);
 	theme->set_color("link_color", "EditorHelp", accent_color.lerp(mono_color, 0.8));
 	theme->set_color("code_color", "EditorHelp", accent_color.lerp(mono_color, 0.6));
 	theme->set_color("kbd_color", "EditorHelp", accent_color.lerp(property_color, 0.6));
