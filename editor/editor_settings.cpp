@@ -1488,7 +1488,9 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 
 	// Only add the override if the OS supports the provided feature.
 	if (!OS::get_singleton()->has_feature(p_feature)) {
-		return;
+		if (!(p_feature == "macos" && (OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")))) {
+			return;
+		}
 	}
 
 	Array events;
@@ -1496,12 +1498,12 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 	for (int i = 0; i < p_keycodes.size(); i++) {
 		Key keycode = (Key)p_keycodes[i];
 
-#ifdef MACOS_ENABLED
-		// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
-		if (keycode == Key::KEY_DELETE) {
-			keycode = KeyModifierMask::META | Key::BACKSPACE;
+		if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+			// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
+			if (keycode == Key::KEY_DELETE) {
+				keycode = KeyModifierMask::META | Key::BACKSPACE;
+			}
 		}
-#endif
 
 		Ref<InputEventKey> ie;
 		if (keycode != Key::NONE) {
@@ -1530,12 +1532,12 @@ Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, cons
 	for (int i = 0; i < p_keycodes.size(); i++) {
 		Key keycode = (Key)p_keycodes[i];
 
-#ifdef MACOS_ENABLED
-		// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
-		if (keycode == Key::KEY_DELETE) {
-			keycode = KeyModifierMask::META | Key::BACKSPACE;
+		if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+			// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
+			if (keycode == Key::KEY_DELETE) {
+				keycode = KeyModifierMask::META | Key::BACKSPACE;
+			}
 		}
-#endif
 
 		Ref<InputEventKey> ie;
 		if (keycode != Key::NONE) {
