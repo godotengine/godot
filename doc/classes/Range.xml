@@ -9,6 +9,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="set_value_no_signal">
+			<return type="void" />
+			<argument index="0" name="value" type="float" />
+			<description>
+				Sets the [Range]'s current value to the specified [member value], without emitting the [signal value_changed] signal.
+			</description>
+		</method>
 		<method name="share">
 			<return type="void" />
 			<argument index="0" name="with" type="Node" />
@@ -52,7 +59,7 @@
 			If greater than 0, [code]value[/code] will always be rounded to a multiple of [code]step[/code]. If [code]rounded[/code] is also [code]true[/code], [code]value[/code] will first be rounded to a multiple of [code]step[/code] then rounded to the nearest integer.
 		</member>
 		<member name="value" type="float" setter="set_value" getter="get_value" default="0.0">
-			Range's current value.
+			Range's current value. Changing this property (even via code) will trigger [signal value_changed] signal. Use [method set_value_no_signal] if you want to avoid it.
 		</member>
 	</members>
 	<signals>
