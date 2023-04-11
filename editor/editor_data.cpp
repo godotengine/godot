@@ -293,6 +293,13 @@ Dictionary EditorData::get_scene_editor_states(int p_idx) const {
 }
 
 void EditorData::set_editor_states(const Dictionary &p_states) {
+	if (p_states.is_empty()) {
+		for (EditorPlugin *ep : editor_plugins) {
+			ep->clear();
+		}
+		return;
+	}
+
 	List<Variant> keys;
 	p_states.get_key_list(&keys);
 

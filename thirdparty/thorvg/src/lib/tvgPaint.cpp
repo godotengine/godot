@@ -38,9 +38,9 @@ static bool _compFastTrack(Paint* cmpTarget, const RenderTransform* pTransform, 
 
     if (rTransform) rTransform->update();
 
-    //No rotational.
-    if (pTransform && !mathRightAngle(&pTransform->m)) return false;
-    if (rTransform && !mathRightAngle(&rTransform->m)) return false;
+    //No rotation and no skewing
+    if (pTransform && (!mathRightAngle(&pTransform->m) || mathSkewed(&pTransform->m))) return false;
+    if (rTransform && (!mathRightAngle(&rTransform->m) || mathSkewed(&rTransform->m))) return false;
 
     //Perpendicular Rectangle?
     auto pt1 = pts + 0;
@@ -381,6 +381,19 @@ CompositeMethod Paint::composite(const Paint** target) const noexcept
         if (target) *target = nullptr;
         return CompositeMethod::None;
     }
+}
+
+
+Result Paint::composite(const Paint** source, CompositeMethod* method) const noexcept
+{
+    if (source) *source = pImpl->compSource;
+    auto met = (pImpl->compSource && pImpl->compSource->pImpl->compData ?
+                pImpl->compSource->pImpl->compData->method : CompositeMethod::None);
+    if (method) *method = met;
+
+    if (pImpl->compSource != nullptr && met != CompositeMethod::None)
+        return Result::Success;
+    return Result::InsufficientCondition;
 }
 
 

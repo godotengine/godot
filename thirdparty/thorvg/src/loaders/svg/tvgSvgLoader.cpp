@@ -180,9 +180,9 @@ static float _toFloat(const SvgParser* svgParse, const char* str, SvgParserLengt
         else if (type == SvgParserLengthType::Horizontal) parsedValue = (parsedValue / 100.0) * svgParse->global.w;
         else //if other then it's radius
         {
-            float max = (float)svgParse->global.w;
+            float max = svgParse->global.w;
             if (max < svgParse->global.h)
-                max = (float)svgParse->global.h;
+                max = svgParse->global.h;
             parsedValue = (parsedValue / 100.0) * max;
         }
     }
@@ -341,7 +341,7 @@ static void _parseDashArray(SvgLoaderData* loader, const char *str, SvgDash* das
             ++end;
             //Refers to the diagonal length of the viewport.
             //https://www.w3.org/TR/SVG2/coords.html#Units
-            parsedValue = (sqrtf(pow(loader->svgParse->global.w, 2) + pow(loader->svgParse->global.h, 2)) / sqrtf(2.0f)) * (parsedValue / 100.0f);
+            parsedValue = (sqrtf(powf(loader->svgParse->global.w, 2) + powf(loader->svgParse->global.h, 2)) / sqrtf(2.0f)) * (parsedValue / 100.0f);
         }
         (*dash).array.push(parsedValue);
         str = end;
@@ -376,7 +376,7 @@ static char* _idFromUrl(const char* url)
 }
 
 
-static unsigned char _parserColor(const char* value, char** end)
+static unsigned char _parseColor(const char* value, char** end)
 {
     float r;
 
@@ -586,11 +586,11 @@ static void _toColor(const char* str, uint8_t* r, uint8_t* g, uint8_t* b, char**
             *b = strtol(tmp, nullptr, 16);
         }
     } else if (len >= 10 && (str[0] == 'r' || str[0] == 'R') && (str[1] == 'g' || str[1] == 'G') && (str[2] == 'b' || str[2] == 'B') && str[3] == '(' && str[len - 1] == ')') {
-        tr = _parserColor(str + 4, &red);
+        tr = _parseColor(str + 4, &red);
         if (red && *red == ',') {
-            tg = _parserColor(red + 1, &green);
+            tg = _parseColor(red + 1, &green);
             if (green && *green == ',') {
-                tb = _parserColor(green + 1, &blue);
+                tb = _parseColor(green + 1, &blue);
                 if (blue && blue[0] == ')' && blue[1] == '\0') {
                     *r = tr;
                     *g = tg;
@@ -840,13 +840,13 @@ static bool _attrParseSvgNode(void* data, const char* key, const char* value)
             if (_parseNumber(&value, &doc->vy)) {
                 if (_parseNumber(&value, &doc->vw)) {
                     _parseNumber(&value, &doc->vh);
-                    loader->svgParse->global.h = (uint32_t)doc->vh;
+                    loader->svgParse->global.h = doc->vh;
                 }
-                loader->svgParse->global.w = (uint32_t)doc->vw;
+                loader->svgParse->global.w = doc->vw;
             }
-            loader->svgParse->global.y = (int)doc->vy;
+            loader->svgParse->global.y = doc->vy;
         }
-        loader->svgParse->global.x = (int)doc->vx;
+        loader->svgParse->global.x = doc->vx;
     } else if (!strcmp(key, "preserveAspectRatio")) {
         _parseAspectRatio(&value, &doc->align, &doc->meetOrSlice);
     } else if (!strcmp(key, "style")) {
@@ -1300,11 +1300,11 @@ static SvgNode* _createSvgNode(SvgLoaderData* loader, SvgNode* parent, const cha
 
     if (loader->svgParse->global.w == 0) {
         if (doc->w < FLT_EPSILON) loader->svgParse->global.w = 1;
-        else loader->svgParse->global.w = (uint32_t)doc->w;
+        else loader->svgParse->global.w = doc->w;
     }
     if (loader->svgParse->global.h == 0) {
         if (doc->h < FLT_EPSILON) loader->svgParse->global.h = 1;
-        else loader->svgParse->global.h = (uint32_t)doc->h;
+        else loader->svgParse->global.h = doc->h;
     }
 
     return loader->svgParse->node;
@@ -2375,7 +2375,7 @@ static void _recalcRadialFyAttr(SvgLoaderData* loader, SvgRadialGradient* radial
 static void _recalcRadialRAttr(SvgLoaderData* loader, SvgRadialGradient* radial, bool userSpace)
 {
     // scaling factor based on the Units paragraph from : https://www.w3.org/TR/2015/WD-SVG2-20150915/coords.html
-    if (userSpace && !radial->isRPercentage) radial->r = radial->r / (sqrtf(pow(loader->svgParse->global.h, 2) + pow(loader->svgParse->global.w, 2)) / sqrtf(2.0));
+    if (userSpace && !radial->isRPercentage) radial->r = radial->r / (sqrtf(powf(loader->svgParse->global.h, 2) + powf(loader->svgParse->global.w, 2)) / sqrtf(2.0));
 }
 
 
@@ -3180,6 +3180,12 @@ SvgLoader::~SvgLoader()
 
 void SvgLoader::run(unsigned tid)
 {
+    //According to the SVG standard the value of the width/height of the viewbox set to 0 disables rendering
+    if (renderingDisabled) {
+        root = Scene::gen();
+        return;
+    }
+
     if (!simpleXmlParse(content, size, true, _svgLoaderParser, &(loaderData))) return;
 
     if (loaderData.doc) {

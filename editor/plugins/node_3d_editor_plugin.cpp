@@ -4872,8 +4872,8 @@ void Node3DEditorViewport::finish_transform() {
 }
 
 // Register a shortcut and also add it as an input action with the same events.
-void Node3DEditorViewport::register_shortcut_action(const String &p_path, const String &p_name, Key p_keycode) {
-	Ref<Shortcut> sc = ED_SHORTCUT(p_path, p_name, p_keycode);
+void Node3DEditorViewport::register_shortcut_action(const String &p_path, const String &p_name, Key p_keycode, bool p_physical) {
+	Ref<Shortcut> sc = ED_SHORTCUT(p_path, p_name, p_keycode, p_physical);
 	shortcut_changed_callback(sc, p_path);
 	// Connect to the change event on the shortcut so the input binding can be updated.
 	sc->connect("changed", callable_mp(this, &Node3DEditorViewport::shortcut_changed_callback).bind(sc, p_path));
@@ -5054,12 +5054,12 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 		view_menu->get_popup()->set_item_tooltip(shadeless_idx, unsupported_tooltip);
 	}
 
-	register_shortcut_action("spatial_editor/freelook_left", TTR("Freelook Left"), Key::A);
-	register_shortcut_action("spatial_editor/freelook_right", TTR("Freelook Right"), Key::D);
-	register_shortcut_action("spatial_editor/freelook_forward", TTR("Freelook Forward"), Key::W);
-	register_shortcut_action("spatial_editor/freelook_backwards", TTR("Freelook Backwards"), Key::S);
-	register_shortcut_action("spatial_editor/freelook_up", TTR("Freelook Up"), Key::E);
-	register_shortcut_action("spatial_editor/freelook_down", TTR("Freelook Down"), Key::Q);
+	register_shortcut_action("spatial_editor/freelook_left", TTR("Freelook Left"), Key::A, true);
+	register_shortcut_action("spatial_editor/freelook_right", TTR("Freelook Right"), Key::D, true);
+	register_shortcut_action("spatial_editor/freelook_forward", TTR("Freelook Forward"), Key::W, true);
+	register_shortcut_action("spatial_editor/freelook_backwards", TTR("Freelook Backwards"), Key::S, true);
+	register_shortcut_action("spatial_editor/freelook_up", TTR("Freelook Up"), Key::E, true);
+	register_shortcut_action("spatial_editor/freelook_down", TTR("Freelook Down"), Key::Q, true);
 	register_shortcut_action("spatial_editor/freelook_speed_modifier", TTR("Freelook Speed Modifier"), Key::SHIFT);
 	register_shortcut_action("spatial_editor/freelook_slow_modifier", TTR("Freelook Slow Modifier"), Key::ALT);
 
@@ -5995,6 +5995,10 @@ void Node3DEditor::_snap_changed() {
 	snap_translate_value = snap_translate->get_text().to_float();
 	snap_rotate_value = snap_rotate->get_text().to_float();
 	snap_scale_value = snap_scale->get_text().to_float();
+
+	EditorSettings::get_singleton()->set_project_metadata("3d_editor", "snap_translate_value", snap_translate_value);
+	EditorSettings::get_singleton()->set_project_metadata("3d_editor", "snap_rotate_value", snap_rotate_value);
+	EditorSettings::get_singleton()->set_project_metadata("3d_editor", "snap_scale_value", snap_scale_value);
 }
 
 void Node3DEditor::_snap_update() {
@@ -7853,11 +7857,19 @@ void Node3DEditor::clear() {
 	settings_znear->set_value(EDITOR_GET("editors/3d/default_z_near"));
 	settings_zfar->set_value(EDITOR_GET("editors/3d/default_z_far"));
 
+	snap_translate_value = EditorSettings::get_singleton()->get_project_metadata("3d_editor", "snap_translate_value", 1);
+	snap_rotate_value = EditorSettings::get_singleton()->get_project_metadata("3d_editor", "snap_rotate_value", 15);
+	snap_scale_value = EditorSettings::get_singleton()->get_project_metadata("3d_editor", "snap_scale_value", 10);
+	_snap_update();
+
 	for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
 		viewports[i]->reset();
 	}
 
-	RenderingServer::get_singleton()->instance_set_visible(origin_instance, true);
+	if (origin_instance.is_valid()) {
+		RenderingServer::get_singleton()->instance_set_visible(origin_instance, true);
+	}
+
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN), true);
 	for (int i = 0; i < 3; ++i) {
 		if (grid_enable[i]) {
@@ -8307,10 +8319,6 @@ Node3DEditor::Node3DEditor() {
 
 	/* SNAP DIALOG */
 
-	snap_translate_value = 1;
-	snap_rotate_value = 15;
-	snap_scale_value = 10;
-
 	snap_dialog = memnew(ConfirmationDialog);
 	snap_dialog->set_title(TTR("Snap Settings"));
 	add_child(snap_dialog);
@@ -8649,6 +8657,7 @@ void fragment() {
 		_load_default_preview_settings();
 		_preview_settings_changed();
 	}
+	clear(); // Make sure values are initialized.
 }
 Node3DEditor::~Node3DEditor() {
 	memdelete(preview_node);

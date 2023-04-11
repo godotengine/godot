@@ -1561,6 +1561,30 @@ void ScriptEditor::_prepare_file_menu() {
 	menu->set_item_disabled(menu->get_item_index(FILE_RUN), current_is_doc);
 }
 
+void ScriptEditor::_file_menu_closed() {
+	PopupMenu *menu = file_menu->get_popup();
+
+	menu->set_item_disabled(menu->get_item_index(FILE_REOPEN_CLOSED), false);
+
+	menu->set_item_disabled(menu->get_item_index(FILE_SAVE), false);
+	menu->set_item_disabled(menu->get_item_index(FILE_SAVE_AS), false);
+	menu->set_item_disabled(menu->get_item_index(FILE_SAVE_ALL), false);
+
+	menu->set_item_disabled(menu->get_item_index(FILE_TOOL_RELOAD_SOFT), false);
+	menu->set_item_disabled(menu->get_item_index(FILE_COPY_PATH), false);
+	menu->set_item_disabled(menu->get_item_index(SHOW_IN_FILE_SYSTEM), false);
+
+	menu->set_item_disabled(menu->get_item_index(WINDOW_PREV), false);
+	menu->set_item_disabled(menu->get_item_index(WINDOW_NEXT), false);
+
+	menu->set_item_disabled(menu->get_item_index(FILE_CLOSE), false);
+	menu->set_item_disabled(menu->get_item_index(CLOSE_ALL), false);
+	menu->set_item_disabled(menu->get_item_index(CLOSE_OTHER_TABS), false);
+	menu->set_item_disabled(menu->get_item_index(CLOSE_DOCS), false);
+
+	menu->set_item_disabled(menu->get_item_index(FILE_RUN), false);
+}
+
 void ScriptEditor::_tab_changed(int p_which) {
 	ensure_select_current();
 }
@@ -3916,6 +3940,7 @@ ScriptEditor::ScriptEditor() {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/toggle_scripts_panel", TTR("Toggle Scripts Panel"), KeyModifierMask::CMD_OR_CTRL | Key::BACKSLASH), TOGGLE_SCRIPTS_PANEL);
 	file_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptEditor::_menu_option));
 	file_menu->get_popup()->connect("about_to_popup", callable_mp(this, &ScriptEditor::_prepare_file_menu));
+	file_menu->get_popup()->connect("popup_hide", callable_mp(this, &ScriptEditor::_file_menu_closed));
 
 	script_search_menu = memnew(MenuButton);
 	script_search_menu->set_text(TTR("Search"));

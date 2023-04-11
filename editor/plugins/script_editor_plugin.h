@@ -336,6 +336,7 @@ class ScriptEditor : public PanelContainer {
 	bool _has_docs_tab() const;
 	bool _has_script_tab() const;
 	void _prepare_file_menu();
+	void _file_menu_closed();
 
 	Tree *disk_changed_list = nullptr;
 	ConfirmationDialog *disk_changed = nullptr;

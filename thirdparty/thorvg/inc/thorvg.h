@@ -336,6 +336,20 @@ public:
     CompositeMethod composite(const Paint** target) const noexcept;
 
     /**
+     * @brief Gets the composition source object and the composition method.
+     *
+     * @param[out] source The paint of the composition source object.
+     * @param[out] method The method used to composite the source object with the target.
+     *
+     * @return Result::Success when the paint object used as a composition target, Result::InsufficientCondition otherwise.
+     *
+     * @warning Please do not use it, this API is not official one. It could be modified in the next version.
+     *
+     * @BETA_API
+     */
+    Result composite(const Paint** source, CompositeMethod* method) const noexcept;
+
+    /**
      * @brief Return the unique id value of the paint instance.
      *
      * This method can be called for checking the current concrete instance type.

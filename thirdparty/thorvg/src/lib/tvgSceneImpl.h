@@ -60,6 +60,11 @@ struct Scene::Impl
     Array<Paint*> paints;
     uint8_t opacity;                     //for composition
     RenderMethod* renderer = nullptr;    //keep it for explicit clear
+    Scene* scene = nullptr;
+
+    Impl(Scene* s) : scene(s)
+    {
+    }
 
     ~Impl()
     {
@@ -81,8 +86,14 @@ struct Scene::Impl
 
     bool needComposition(uint32_t opacity)
     {
+        if (opacity == 0 || paints.count == 0) return false;
+
+        //Masking may require composition (even if opacity == 255)
+        auto compMethod = scene->composite(nullptr);
+        if (compMethod != CompositeMethod::None && compMethod != CompositeMethod::ClipPath) return true;
+
         //Half translucent requires intermediate composition.
-        if (opacity == 255 || opacity == 0) return false;
+        if (opacity == 255) return false;
 
         //If scene has several children or only scene, it may require composition.
         if (paints.count > 1) return true;

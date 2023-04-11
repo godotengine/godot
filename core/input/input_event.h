@@ -195,7 +195,7 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
-	static Ref<InputEventKey> create_reference(Key p_keycode_with_modifier_masks);
+	static Ref<InputEventKey> create_reference(Key p_keycode_with_modifier_masks, bool p_physical = false);
 
 	InputEventKey() {}
 };
