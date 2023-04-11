@@ -56,7 +56,7 @@ PostProcessor::PostProcessor() {
 
 		post_process.shader.initialize(tonemap_modes);
 
-		if (!RendererCompositorRD::singleton->is_xr_enabled()) {
+		if (!RendererCompositorRD::get_singleton()->is_xr_enabled()) {
 			post_process.shader.set_variant_enabled(TONEMAP_MODE_NORMAL_MULTIVIEW, false);
 			post_process.shader.set_variant_enabled(TONEMAP_MODE_BICUBIC_GLOW_FILTER_MULTIVIEW, false);
 			post_process.shader.set_variant_enabled(TONEMAP_MODE_1D_LUT_MULTIVIEW, false);
