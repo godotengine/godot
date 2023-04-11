@@ -1310,6 +1310,7 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 			uint32_t instance_color_offset = 0;
 			bool instance_uses_color = false;
 			bool instance_uses_custom_data = false;
+			bool use_instancing = false;
 
 			if (state.canvas_instance_batches[p_index].command_type == Item::Command::TYPE_MESH) {
 				const Item::CommandMesh *m = static_cast<const Item::CommandMesh *>(state.canvas_instance_batches[p_index].command);
@@ -1336,6 +1337,7 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 				instance_color_offset = mesh_storage->multimesh_get_color_offset(multimesh);
 				instance_uses_color = mesh_storage->multimesh_uses_colors(multimesh);
 				instance_uses_custom_data = mesh_storage->multimesh_uses_custom_data(multimesh);
+				use_instancing = true;
 
 			} else if (state.canvas_instance_batches[p_index].command_type == Item::Command::TYPE_PARTICLES) {
 				const Item::CommandParticles *pt = static_cast<const Item::CommandParticles *>(state.canvas_instance_batches[p_index].command);
@@ -1362,6 +1364,7 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 				instance_color_offset = 8; // 8 bytes for instance transform.
 				instance_uses_color = true;
 				instance_uses_custom_data = true;
+				use_instancing = true;
 			}
 
 			ERR_FAIL_COND(mesh.is_null());
@@ -1397,7 +1400,7 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 					use_index_buffer = true;
 				}
 
-				if (instance_count > 1) {
+				if (use_instancing) {
 					if (instance_buffer == 0) {
 						break;
 					}
@@ -1426,7 +1429,7 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 				}
 				glBindBuffer(GL_ARRAY_BUFFER, 0);
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-				if (instance_count > 1) {
+				if (use_instancing) {
 					glDisableVertexAttribArray(5);
 					glDisableVertexAttribArray(6);
 					glDisableVertexAttribArray(7);
