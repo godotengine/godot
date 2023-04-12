@@ -46,6 +46,9 @@ void Button::_set_internal_margin(Side p_side, float p_value) {
 	_internal_margin[p_side] = p_value;
 }
 
+void Button::_queue_update_size_cache() {
+}
+
 void Button::_update_theme_item_cache() {
 	BaseButton::_update_theme_item_cache();
 
@@ -544,6 +547,7 @@ Ref<Texture2D> Button::get_icon() const {
 void Button::set_expand_icon(bool p_enabled) {
 	if (expand_icon != p_enabled) {
 		expand_icon = p_enabled;
+		_queue_update_size_cache();
 		queue_redraw();
 		update_minimum_size();
 	}

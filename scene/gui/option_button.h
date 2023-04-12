@@ -66,13 +66,13 @@ class OptionButton : public Button {
 	void _select(int p_which, bool p_emit = false);
 	void _select_int(int p_which);
 	void _refresh_size_cache();
-	void _queue_refresh_cache();
 
 	virtual void pressed() override;
 
 protected:
 	Size2 get_minimum_size() const override;
 	virtual void _update_theme_item_cache() override;
+	virtual void _queue_update_size_cache() override;
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
