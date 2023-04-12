@@ -37,6 +37,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/filesystem_dock.h"
+#include "editor/gui/editor_run_bar.h"
 #include "editor/inspector_dock.h"
 #include "main/main.h"
 #include "scene/gui/box_container.h"
@@ -317,35 +318,35 @@ void EditorInterface::save_scene_as(const String &p_scene, bool p_with_preview) 
 // Scene playback.
 
 void EditorInterface::play_main_scene() {
-	EditorNode::get_singleton()->run_play();
+	EditorRunBar::get_singleton()->play_main_scene();
 }
 
 void EditorInterface::play_current_scene() {
-	EditorNode::get_singleton()->run_play_current();
+	EditorRunBar::get_singleton()->play_current_scene();
 }
 
 void EditorInterface::play_custom_scene(const String &scene_path) {
-	EditorNode::get_singleton()->run_play_custom(scene_path);
+	EditorRunBar::get_singleton()->play_custom_scene(scene_path);
 }
 
 void EditorInterface::stop_playing_scene() {
-	EditorNode::get_singleton()->run_stop();
+	EditorRunBar::get_singleton()->stop_playing();
 }
 
 bool EditorInterface::is_playing_scene() const {
-	return EditorNode::get_singleton()->is_run_playing();
+	return EditorRunBar::get_singleton()->is_playing();
 }
 
 String EditorInterface::get_playing_scene() const {
-	return EditorNode::get_singleton()->get_run_playing_scene();
+	return EditorRunBar::get_singleton()->get_playing_scene();
 }
 
 void EditorInterface::set_movie_maker_enabled(bool p_enabled) {
-	EditorNode::get_singleton()->set_movie_maker_enabled(p_enabled);
+	EditorRunBar::get_singleton()->set_movie_maker_enabled(p_enabled);
 }
 
 bool EditorInterface::is_movie_maker_enabled() const {
-	return EditorNode::get_singleton()->is_movie_maker_enabled();
+	return EditorRunBar::get_singleton()->is_movie_maker_enabled();
 }
 
 // Base.

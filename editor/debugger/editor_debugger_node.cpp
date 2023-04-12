@@ -37,6 +37,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_run_bar.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -87,8 +88,7 @@ EditorDebuggerNode::EditorDebuggerNode() {
 	remote_scene_tree_timeout = EDITOR_DEF("debugger/remote_scene_tree_refresh_interval", 1.0);
 	inspect_edited_object_timeout = EDITOR_DEF("debugger/remote_inspect_refresh_interval", 0.2);
 
-	EditorNode *editor = EditorNode::get_singleton();
-	editor->get_pause_button()->connect("pressed", callable_mp(this, &EditorDebuggerNode::_paused));
+	EditorRunBar::get_singleton()->get_pause_button()->connect("pressed", callable_mp(this, &EditorDebuggerNode::_paused));
 }
 
 ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
@@ -260,7 +260,7 @@ void EditorDebuggerNode::stop(bool p_force) {
 		server->stop();
 		EditorNode::get_log()->add_message("--- Debugging process stopped ---", EditorLog::MSG_TYPE_EDITOR);
 
-		if (EditorNode::get_singleton()->is_movie_maker_enabled()) {
+		if (EditorRunBar::get_singleton()->is_movie_maker_enabled()) {
 			// Request attention in case the user was doing something else when movie recording is finished.
 			DisplayServer::get_singleton()->window_request_attention();
 		}
@@ -344,7 +344,7 @@ void EditorDebuggerNode::_notification(int p_what) {
 					}
 				}
 
-				EditorNode::get_singleton()->get_pause_button()->set_disabled(false);
+				EditorRunBar::get_singleton()->get_pause_button()->set_disabled(false);
 				// Switch to remote tree view if so desired.
 				auto_switch_remote_scene_tree = (bool)EDITOR_GET("debugger/auto_switch_to_remote_scene_tree");
 				if (auto_switch_remote_scene_tree) {
@@ -413,8 +413,8 @@ void EditorDebuggerNode::_debugger_stopped(int p_id) {
 		}
 	});
 	if (!found) {
-		EditorNode::get_singleton()->get_pause_button()->set_pressed(false);
-		EditorNode::get_singleton()->get_pause_button()->set_disabled(true);
+		EditorRunBar::get_singleton()->get_pause_button()->set_pressed(false);
+		EditorRunBar::get_singleton()->get_pause_button()->set_disabled(true);
 		SceneTreeDock::get_singleton()->hide_remote_tree();
 		SceneTreeDock::get_singleton()->hide_tab_buttons();
 		EditorNode::get_singleton()->notify_all_debug_sessions_exited();
@@ -509,7 +509,7 @@ void EditorDebuggerNode::_update_debug_options() {
 }
 
 void EditorDebuggerNode::_paused() {
-	const bool paused = EditorNode::get_singleton()->get_pause_button()->is_pressed();
+	const bool paused = EditorRunBar::get_singleton()->get_pause_button()->is_pressed();
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		if (paused && !dbg->is_breaked()) {
 			dbg->debug_break();
@@ -527,7 +527,7 @@ void EditorDebuggerNode::_breaked(bool p_breaked, bool p_can_debug, String p_mes
 		tabs->set_current_tab(p_debugger);
 	}
 	_break_state_changed();
-	EditorNode::get_singleton()->get_pause_button()->set_pressed(p_breaked);
+	EditorRunBar::get_singleton()->get_pause_button()->set_pressed(p_breaked);
 	emit_signal(SNAME("breaked"), p_breaked, p_can_debug);
 }
 

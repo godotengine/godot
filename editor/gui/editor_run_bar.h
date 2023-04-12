@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_run_script.cpp                                                 */
+/*  editor_run_bar.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,55 +28,88 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "editor_run_script.h"
+#ifndef EDITOR_RUN_BAR_H
+#define EDITOR_RUN_BAR_H
 
-#include "editor/editor_interface.h"
-#include "editor/editor_node.h"
+#include "editor/editor_run.h"
+#include "editor/export/editor_export.h"
+#include "scene/gui/margin_container.h"
 
-void EditorScript::add_root_node(Node *p_node) {
-	if (!editor) {
-		EditorNode::add_io_error("EditorScript::add_root_node: " + TTR("Write your logic in the _run() method."));
-		return;
-	}
+class Button;
+class EditorRunNative;
+class EditorQuickOpen;
+class PanelContainer;
 
-	if (editor->get_edited_scene()) {
-		EditorNode::add_io_error("EditorScript::add_root_node: " + TTR("There is an edited scene already."));
-		return;
-	}
+class EditorRunBar : public MarginContainer {
+	GDCLASS(EditorRunBar, MarginContainer);
 
-	//editor->set_edited_scene(p_node);
-}
+	static EditorRunBar *singleton;
 
-EditorInterface *EditorScript::get_editor_interface() {
-	return EditorInterface::get_singleton();
-}
+	enum RunMode {
+		STOPPED = 0,
+		RUN_MAIN,
+		RUN_CURRENT,
+		RUN_CUSTOM,
+	};
 
-Node *EditorScript::get_scene() {
-	if (!editor) {
-		EditorNode::add_io_error("EditorScript::get_scene: " + TTR("Write your logic in the _run() method."));
-		return nullptr;
-	}
+	PanelContainer *main_panel = nullptr;
 
-	return editor->get_edited_scene();
-}
+	Button *play_button = nullptr;
+	Button *pause_button = nullptr;
+	Button *stop_button = nullptr;
+	Button *play_scene_button = nullptr;
+	Button *play_custom_scene_button = nullptr;
 
-void EditorScript::_run() {
-	if (!GDVIRTUAL_CALL(_run)) {
-		EditorNode::add_io_error(TTR("Couldn't run editor script, did you forget to override the '_run' method?"));
-	}
-}
+	EditorRun editor_run;
+	EditorRunNative *run_native = nullptr;
 
-void EditorScript::set_editor(EditorNode *p_editor) {
-	editor = p_editor;
-}
+	PanelContainer *write_movie_panel = nullptr;
+	Button *write_movie_button = nullptr;
 
-void EditorScript::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("add_root_node", "node"), &EditorScript::add_root_node);
-	ClassDB::bind_method(D_METHOD("get_scene"), &EditorScript::get_scene);
-	ClassDB::bind_method(D_METHOD("get_editor_interface"), &EditorScript::get_editor_interface);
-	GDVIRTUAL_BIND(_run);
-}
+	EditorQuickOpen *quick_run = nullptr;
 
-EditorScript::EditorScript() {
-	editor = nullptr;
-}
+	RunMode current_mode = RunMode::STOPPED;
+	String run_custom_filename;
+	String run_current_filename;
+
+	void _reset_play_buttons();
+	void _update_play_buttons();
+
+	void _write_movie_toggled(bool p_enabled);
+	void _quick_run_selected();
+
+	void _play_current_pressed();
+	void _play_custom_pressed();
+
+	void _run_scene(const String &p_scene_path = "");
+	void _run_native(const Ref<EditorExportPreset> &p_preset);
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	static EditorRunBar *get_singleton() { return singleton; }
+
+	void play_main_scene(bool p_from_native = false);
+	void play_current_scene(bool p_reload = false);
+	void play_custom_scene(const String &p_custom);
+
+	void stop_playing();
+	bool is_playing() const;
+	String get_playing_scene() const;
+
+	Error start_native_device(int p_device_id);
+
+	OS::ProcessID has_child_process(OS::ProcessID p_pid) const;
+	void stop_child_process(OS::ProcessID p_pid);
+
+	void set_movie_maker_enabled(bool p_enabled);
+	bool is_movie_maker_enabled() const;
+
+	Button *get_pause_button() { return pause_button; }
+
+	EditorRunBar();
+};
+
+#endif // EDITOR_RUN_BAR_H

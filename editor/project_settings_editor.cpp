@@ -36,6 +36,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/export/editor_export.h"
 #include "scene/gui/check_button.h"
 #include "servers/movie_writer/movie_writer.h"
 
