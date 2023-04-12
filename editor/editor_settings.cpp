@@ -578,6 +578,13 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/behavior/navigation/drag_and_drop_selection", true);
 	_initial_set("text_editor/behavior/navigation/stay_in_script_editor_on_node_selected", true);
 
+	// Behavior: Input
+#ifdef LINUXBSD_ENABLED
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "text_editor/behavior/input/middle_mouse_button_paste", true, "")
+#else
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "text_editor/behavior/input/middle_mouse_button_paste", false, "")
+#endif
+
 	// Behavior: Indent
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/behavior/indent/type", 0, "Tabs,Spaces")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/behavior/indent/size", 4, "1,64,1") // size of 0 crashes.

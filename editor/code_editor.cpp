@@ -1011,6 +1011,8 @@ bool CodeTextEditor::_add_font_size(int p_delta) {
 }
 
 void CodeTextEditor::update_editor_settings() {
+	print_line(vformat("update_editor_settings()"));
+
 	// Theme: Highlighting
 	completion_font_color = EDITOR_GET("text_editor/theme/highlighting/completion_font_color");
 	completion_string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
@@ -1047,6 +1049,9 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_smooth_scroll_enabled(EDITOR_GET("text_editor/behavior/navigation/smooth_scrolling"));
 	text_editor->set_v_scroll_speed(EDITOR_GET("text_editor/behavior/navigation/v_scroll_speed"));
 	text_editor->set_drag_and_drop_selection_enabled(EDITOR_GET("text_editor/behavior/navigation/drag_and_drop_selection"));
+
+	// Behavior: Input
+	text_editor->set_middle_mouse_paste_enabled(EDITOR_GET("text_editor/behavior/input/middle_mouse_button_paste"));
 
 	// Behavior: indent
 	text_editor->set_indent_using_spaces(EDITOR_GET("text_editor/behavior/indent/type"));
