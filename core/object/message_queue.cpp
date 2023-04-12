@@ -90,6 +90,10 @@ Error CallQueue::push_callablep(const Callable &p_callable, const Variant **p_ar
 	if (p_show_error) {
 		msg->type |= FLAG_SHOW_ERROR;
 	}
+	// Support callables of static methods.
+	if (p_callable.get_object_id().is_null() && p_callable.is_valid()) {
+		msg->type |= FLAG_NULL_IS_OK;
+	}
 
 	buffer_end += sizeof(Message);
 
@@ -238,28 +242,24 @@ Error CallQueue::flush() {
 
 		mutex.unlock();
 
-		if (target != nullptr) {
-			switch (message->type & FLAG_MASK) {
-				case TYPE_CALL: {
+		switch (message->type & FLAG_MASK) {
+			case TYPE_CALL: {
+				if (target || (message->type & FLAG_NULL_IS_OK)) {
 					Variant *args = (Variant *)(message + 1);
-
-					// messages don't expect a return value
-
 					_call_function(message->callable, args, message->args, message->type & FLAG_SHOW_ERROR);
-
-				} break;
-				case TYPE_NOTIFICATION: {
-					// messages don't expect a return value
+				}
+			} break;
+			case TYPE_NOTIFICATION: {
+				if (target) {
 					target->notification(message->notification);
-
-				} break;
-				case TYPE_SET: {
+				}
+			} break;
+			case TYPE_SET: {
+				if (target) {
 					Variant *arg = (Variant *)(message + 1);
-					// messages don't expect a return value
 					target->set(message->callable.get_method(), *arg);
-
-				} break;
-			}
+				}
+			} break;
 		}
 
 		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
@@ -355,36 +355,41 @@ void CallQueue::statistics() {
 
 			Object *target = message->callable.get_object();
 
-			if (target != nullptr) {
-				switch (message->type & FLAG_MASK) {
-					case TYPE_CALL: {
+			bool null_target = true;
+			switch (message->type & FLAG_MASK) {
+				case TYPE_CALL: {
+					if (target || (message->type & FLAG_NULL_IS_OK)) {
 						if (!call_count.has(message->callable)) {
 							call_count[message->callable] = 0;
 						}
 
 						call_count[message->callable]++;
-
-					} break;
-					case TYPE_NOTIFICATION: {
+						null_target = false;
+					}
+				} break;
+				case TYPE_NOTIFICATION: {
+					if (target) {
 						if (!notify_count.has(message->notification)) {
 							notify_count[message->notification] = 0;
 						}
 
 						notify_count[message->notification]++;
-
-					} break;
-					case TYPE_SET: {
+						null_target = false;
+					}
+				} break;
+				case TYPE_SET: {
+					if (target) {
 						StringName t = message->callable.get_method();
 						if (!set_count.has(t)) {
 							set_count[t] = 0;
 						}
 
 						set_count[t]++;
-
-					} break;
-				}
-
-			} else {
+						null_target = false;
+					}
+				} break;
+			}
+			if (null_target) {
 				//object was deleted
 				print_line("Object was deleted while awaiting a callback");
 

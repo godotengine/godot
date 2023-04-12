@@ -75,6 +75,10 @@ CallableCustom::CompareLessFunc CallableCustomBind::get_compare_less_func() cons
 	return _less_func;
 }
 
+bool CallableCustomBind::is_valid() const {
+	return callable.is_valid();
+}
+
 StringName CallableCustomBind::get_method() const {
 	return callable.get_method();
 }
@@ -191,6 +195,10 @@ CallableCustom::CompareEqualFunc CallableCustomUnbind::get_compare_equal_func() 
 
 CallableCustom::CompareLessFunc CallableCustomUnbind::get_compare_less_func() const {
 	return _less_func;
+}
+
+bool CallableCustomUnbind::is_valid() const {
+	return callable.is_valid();
 }
 
 StringName CallableCustomUnbind::get_method() const {
