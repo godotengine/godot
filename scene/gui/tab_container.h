@@ -107,6 +107,9 @@ public:
 	void set_tab_hidden(int p_tab, bool p_hidden);
 	bool get_tab_hidden(int p_tab) const;
 
+	void set_tab_metadata(int p_tab, const Variant &p_metadata);
+	Variant get_tab_metadata(int p_tab) const;
+
 	int get_tab_count() const;
 	void set_current_tab(int p_current);
 	int get_current_tab() const;

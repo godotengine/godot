@@ -472,6 +472,21 @@ bool Tabs::get_tab_disabled(int p_tab) const {
 	return tabs[p_tab].disabled;
 }
 
+void Tabs::set_tab_metadata(int p_tab, const Variant &p_metadata) {
+	ERR_FAIL_INDEX(p_tab, tabs.size());
+
+	if (tabs[p_tab].metadata == p_metadata) {
+		return;
+	}
+
+	tabs.write[p_tab].metadata = p_metadata;
+}
+
+Variant Tabs::get_tab_metadata(int p_tab) const {
+	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Variant());
+	return tabs[p_tab].metadata;
+}
+
 void Tabs::set_tab_right_button(int p_tab, const Ref<Texture> &p_right_button) {
 	ERR_FAIL_INDEX(p_tab, tabs.size());
 	tabs.write[p_tab].right_button = p_right_button;
@@ -961,6 +976,8 @@ void Tabs::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_button_icon", "tab_idx"), &Tabs::get_tab_right_button);
 	ClassDB::bind_method(D_METHOD("set_tab_disabled", "tab_idx", "disabled"), &Tabs::set_tab_disabled);
 	ClassDB::bind_method(D_METHOD("get_tab_disabled", "tab_idx"), &Tabs::get_tab_disabled);
+	ClassDB::bind_method(D_METHOD("set_tab_metadata", "tab_idx", "metadata"), &Tabs::set_tab_metadata);
+	ClassDB::bind_method(D_METHOD("get_tab_metadata", "tab_idx"), &Tabs::get_tab_metadata);
 	ClassDB::bind_method(D_METHOD("remove_tab", "tab_idx"), &Tabs::remove_tab);
 	ClassDB::bind_method(D_METHOD("add_tab", "title", "icon"), &Tabs::add_tab, DEFVAL(""), DEFVAL(Ref<Texture>()));
 	ClassDB::bind_method(D_METHOD("set_tab_align", "align"), &Tabs::set_tab_align);

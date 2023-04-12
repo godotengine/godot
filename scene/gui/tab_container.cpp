@@ -931,6 +931,22 @@ bool TabContainer::get_tab_hidden(int p_tab) const {
 	}
 }
 
+void TabContainer::set_tab_metadata(int p_tab, const Variant &p_metadata) {
+	Control *child = get_tab_control(p_tab);
+	ERR_FAIL_COND(!child);
+	child->set_meta("_tab_metadata", p_metadata);
+}
+
+Variant TabContainer::get_tab_metadata(int p_tab) const {
+	Control *child = get_tab_control(p_tab);
+	ERR_FAIL_COND_V(!child, Variant());
+	if (child->has_meta("_tab_metadata")) {
+		return child->get_meta("_tab_metadata");
+	} else {
+		return Variant();
+	}
+}
+
 void TabContainer::get_translatable_strings(List<String> *p_strings) const {
 	Vector<Control *> tabs = _get_tabs();
 	for (int i = 0; i < tabs.size(); i++) {
@@ -1047,6 +1063,8 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_disabled", "tab_idx"), &TabContainer::get_tab_disabled);
 	ClassDB::bind_method(D_METHOD("set_tab_hidden", "tab_idx", "hidden"), &TabContainer::set_tab_hidden);
 	ClassDB::bind_method(D_METHOD("get_tab_hidden", "tab_idx"), &TabContainer::get_tab_hidden);
+	ClassDB::bind_method(D_METHOD("set_tab_metadata", "tab_idx", "metadata"), &TabContainer::set_tab_metadata);
+	ClassDB::bind_method(D_METHOD("get_tab_metadata", "tab_idx"), &TabContainer::get_tab_metadata);
 	ClassDB::bind_method(D_METHOD("get_tab_idx_at_point", "point"), &TabContainer::get_tab_idx_at_point);
 	ClassDB::bind_method(D_METHOD("set_popup", "popup"), &TabContainer::set_popup);
 	ClassDB::bind_method(D_METHOD("get_popup"), &TabContainer::get_popup);

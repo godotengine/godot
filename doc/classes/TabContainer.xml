@@ -72,6 +72,13 @@
 				Returns the index of the tab at local coordinates [code]point[/code]. Returns [code]-1[/code] if the point is outside the control boundaries or if there's no tab at the queried position.
 			</description>
 		</method>
+		<method name="get_tab_metadata" qualifiers="const">
+			<return type="Variant" />
+			<argument index="0" name="tab_idx" type="int" />
+			<description>
+				Returns the metadata value set to the tab at index [code]tab_idx[/code]. If no metadata was previously set, returns [code]null[/code] by default.
+			</description>
+		</method>
 		<method name="get_tab_title" qualifiers="const">
 			<return type="String" />
 			<argument index="0" name="tab_idx" type="int" />
@@ -114,6 +121,14 @@
 			<argument index="1" name="icon" type="Texture" />
 			<description>
 				Sets an icon for the tab at index [code]tab_idx[/code].
+			</description>
+		</method>
+		<method name="set_tab_metadata">
+			<return type="void" />
+			<argument index="0" name="tab_idx" type="int" />
+			<argument index="1" name="metadata" type="Variant" />
+			<description>
+				Sets the metadata value for the tab at index [code]tab_idx[/code].
 			</description>
 		</method>
 		<method name="set_tab_title">

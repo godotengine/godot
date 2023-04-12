@@ -60,6 +60,7 @@ private:
 		Ref<Texture> icon;
 		int ofs_cache;
 		bool disabled;
+		Variant metadata;
 		int size_cache;
 		int size_text;
 		int x_cache;
@@ -123,6 +124,9 @@ public:
 
 	void set_tab_disabled(int p_tab, bool p_disabled);
 	bool get_tab_disabled(int p_tab) const;
+
+	void set_tab_metadata(int p_tab, const Variant &p_metadata);
+	Variant get_tab_metadata(int p_tab) const;
 
 	void set_tab_right_button(int p_tab, const Ref<Texture> &p_right_button);
 	Ref<Texture> get_tab_right_button(int p_tab) const;
