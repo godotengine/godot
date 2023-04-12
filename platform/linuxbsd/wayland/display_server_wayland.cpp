@@ -3354,7 +3354,7 @@ void DisplayServerWayland::cursor_set_custom_image(const Ref<Resource> &p_cursor
 			// associate the alpha in-place.
 			uint8_t *pixel_data = (uint8_t *)&cursor.buffer_data[index];
 			pixel_data[0] = pixel_data[0] * pixel_data[3] / 255;
-			pixel_data[1] = pixel_data[2] * pixel_data[3] / 255;
+			pixel_data[1] = pixel_data[1] * pixel_data[3] / 255;
 			pixel_data[2] = pixel_data[2] * pixel_data[3] / 255;
 		}
 	} else {
