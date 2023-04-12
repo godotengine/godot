@@ -501,6 +501,22 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		}
 	}
 
+	// If looking for files in a network client, use it directly
+
+	if (FileAccessNetworkClient::get_singleton()) {
+		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
+#ifndef PCK_ENCRYPTION_ENABLED
+		if (err == OK && !p_ignore_override) {
+			bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+			if (!disable_override) {
+				// Optional, we don't mind if it fails
+				_load_settings_text("res://override.cfg");
+			}
+		}
+#endif
+		return err;
+	}
+
 	// Attempt with a user-defined main pack first
 
 	if (!p_main_pack.is_empty()) {
@@ -508,11 +524,16 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		ERR_FAIL_COND_V_MSG(!ok, ERR_CANT_OPEN, "Cannot open resource pack '" + p_main_pack + "'.");
 
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
+#ifndef PCK_ENCRYPTION_ENABLED
 		if (err == OK && !p_ignore_override) {
-			// Load override from location of the main pack
-			// Optional, we don't mind if it fails
-			_load_settings_text(p_main_pack.get_base_dir().path_join("override.cfg"));
+			bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+			if (!disable_override) {
+				// Load override from location of the main pack
+				// Optional, we don't mind if it fails
+				_load_settings_text(p_main_pack.get_base_dir().path_join("override.cfg"));
+			}
 		}
+#endif
 		return err;
 	}
 
@@ -558,12 +579,17 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		// If we opened our package, try and load our project.
 		if (found) {
 			Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
+#ifndef PCK_ENCRYPTION_ENABLED
 			if (err == OK && !p_ignore_override) {
-				// Load overrides from the PCK and the executable location.
-				// Optional, we don't mind if either fails.
-				_load_settings_text("res://override.cfg");
-				_load_settings_text(exec_path.get_base_dir().path_join("override.cfg"));
+				bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+				if (!disable_override) {
+					// Load overrides from the PCK and the executable location.
+					// Optional, we don't mind if either fails.
+					_load_settings_text("res://override.cfg");
+					_load_settings_text(exec_path.get_base_dir().path_join("override.cfg"));
+				}
 			}
+#endif
 			return err;
 		}
 	}
@@ -573,10 +599,15 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 
 	if (!OS::get_singleton()->get_resource_dir().is_empty()) {
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
+#ifndef PCK_ENCRYPTION_ENABLED
 		if (err == OK && !p_ignore_override) {
-			// Optional, we don't mind if it fails.
-			_load_settings_text("res://override.cfg");
+			bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+			if (!disable_override) {
+				// Optional, we don't mind if it fails.
+				_load_settings_text("res://override.cfg");
+			}
 		}
+#endif
 		return err;
 	}
 
@@ -596,9 +627,16 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		resource_path = current_dir;
 		resource_path = resource_path.replace("\\", "/"); // Windows path to Unix path just in case.
 		err = _load_settings_text_or_binary(current_dir.path_join("project.godot"), current_dir.path_join("project.binary"));
+#ifndef PCK_ENCRYPTION_ENABLED
 		if (err == OK && !p_ignore_override) {
-			// Optional, we don't mind if it fails.
-			_load_settings_text(current_dir.path_join("override.cfg"));
+			bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+			if (!disable_override) {
+				// Optional, we don't mind if it fails.
+				_load_settings_text(current_dir.path_join("override.cfg"));
+			}
+		}
+#endif
+		if (err == OK) {
 			found = true;
 			break;
 		}
@@ -628,12 +666,17 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 
 Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bool p_upwards, bool p_ignore_override) {
 	Error err = _setup(p_path, p_main_pack, p_upwards, p_ignore_override);
+#ifndef PCK_ENCRYPTION_ENABLED
 	if (err == OK) {
-		String custom_settings = GLOBAL_GET("application/config/project_settings_override");
-		if (!custom_settings.is_empty()) {
-			_load_settings_text(custom_settings);
+		bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+		if (!disable_override) {
+			String custom_settings = GLOBAL_GET("application/config/project_settings_override");
+			if (!custom_settings.is_empty()) {
+				_load_settings_text(custom_settings);
+			}
 		}
 	}
+#endif
 
 	// Updating the default value after the project settings have loaded.
 	bool use_hidden_directory = GLOBAL_GET("application/config/use_hidden_project_data_directory");
@@ -1256,6 +1299,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_RST("application/config/use_hidden_project_data_directory", true);
 	GLOBAL_DEF("application/config/use_custom_user_dir", false);
 	GLOBAL_DEF("application/config/custom_user_dir_name", "");
+	GLOBAL_DEF("application/config/disable_project_settings_override", false);
 	GLOBAL_DEF("application/config/project_settings_override", "");
 
 	GLOBAL_DEF("application/run/main_loop_type", "SceneTree");

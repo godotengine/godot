@@ -27,7 +27,9 @@ if "SCRIPT_AES256_ENCRYPTION_KEY" in os.environ:
             except Exception:
                 ec_valid = False
             txt += txts
-    if not ec_valid:
+    if ec_valid:
+        env.Append(CPPDEFINES=["PCK_ENCRYPTION_ENABLED"])
+    else:
         print("Error: Invalid AES256 encryption key, not 64 hexadecimal characters: '" + key + "'.")
         print(
             "Unset 'SCRIPT_AES256_ENCRYPTION_KEY' in your environment "
