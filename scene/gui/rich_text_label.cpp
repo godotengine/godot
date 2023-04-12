@@ -2705,6 +2705,10 @@ bool RichTextLabel::is_ready() const {
 	return (main->first_invalid_line.load() == (int)main->lines.size() && main->first_resized_line.load() == (int)main->lines.size() && main->first_invalid_font_line.load() == (int)main->lines.size());
 }
 
+bool RichTextLabel::is_updating() const {
+	return updating.load() || validating.load();
+}
+
 void RichTextLabel::set_threaded(bool p_threaded) {
 	if (threaded != p_threaded) {
 		_stop_thread();
@@ -2729,6 +2733,7 @@ bool RichTextLabel::_validate_line_caches() {
 	if (updating.load()) {
 		return false;
 	}
+	validating.store(true);
 	if (main->first_invalid_line.load() == (int)main->lines.size()) {
 		MutexLock data_lock(data_mutex);
 		Rect2 text_rect = _get_text_rect();
@@ -2747,6 +2752,7 @@ bool RichTextLabel::_validate_line_caches() {
 
 		if (main->first_resized_line.load() == (int)main->lines.size()) {
 			vscroll->set_value(old_scroll);
+			validating.store(false);
 			return true;
 		}
 
@@ -2798,8 +2804,10 @@ bool RichTextLabel::_validate_line_caches() {
 		if (fit_content) {
 			update_minimum_size();
 		}
+		validating.store(false);
 		return true;
 	}
+	validating.store(false);
 	stop_thread.store(false);
 	if (threaded) {
 		updating.store(true);
@@ -2809,7 +2817,9 @@ bool RichTextLabel::_validate_line_caches() {
 		loading_started = OS::get_singleton()->get_ticks_msec();
 		return false;
 	} else {
+		updating.store(true);
 		_process_line_caches();
+		updating.store(false);
 		queue_redraw();
 		return true;
 	}
@@ -5895,6 +5905,7 @@ RichTextLabel::RichTextLabel(const String &p_text) {
 
 	set_text(p_text);
 	updating.store(false);
+	validating.store(false);
 	stop_thread.store(false);
 
 	set_clip_contents(true);
