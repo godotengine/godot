@@ -74,6 +74,8 @@ public:
 
 	PackedStringArray get_configuration_warnings() const override;
 
+	void _avoidance_done(Vector3 p_new_velocity); // Dummy
+
 private:
 	void initialize_agent();
 	void reevaluate_agent_radius();

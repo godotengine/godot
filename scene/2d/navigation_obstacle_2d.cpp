@@ -196,11 +196,18 @@ void NavigationObstacle2D::set_agent_parent(Node *p_agent_parent) {
 		} else {
 			NavigationServer2D::get_singleton()->agent_set_map(get_rid(), parent_node2d->get_world_2d()->get_navigation_map());
 		}
+		// Need to register Callback as obstacle requires a valid Callback to be added to avoidance simulation.
+		NavigationServer2D::get_singleton()->agent_set_callback(get_rid(), callable_mp(this, &NavigationObstacle2D::_avoidance_done));
 		reevaluate_agent_radius();
 	} else {
 		parent_node2d = nullptr;
 		NavigationServer2D::get_singleton()->agent_set_map(get_rid(), RID());
+		NavigationServer2D::get_singleton()->agent_set_callback(agent, Callable());
 	}
+}
+
+void NavigationObstacle2D::_avoidance_done(Vector3 p_new_velocity) {
+	// Dummy function as obstacle requires a valid Callback to be added to avoidance simulation.
 }
 
 void NavigationObstacle2D::set_navigation_map(RID p_navigation_map) {

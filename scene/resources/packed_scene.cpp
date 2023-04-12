@@ -44,7 +44,9 @@
 #include "scene/property_utils.h"
 
 #define PACKED_SCENE_VERSION 3
-#define META_POINTER_PROPERTY_BASE "metadata/_editor_prop_ptr_"
+
+const String PackedScene::META_POINTER_PROPERTY_BASE = "metadata/_editor_prop_ptr_";
+
 bool SceneState::can_instantiate() const {
 	return nodes.size() > 0;
 }
@@ -239,15 +241,38 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					if (nprops[j].name & FLAG_PATH_PROPERTY_IS_NODE) {
 						uint32_t name_idx = nprops[j].name & (FLAG_PATH_PROPERTY_IS_NODE - 1);
 						ERR_FAIL_UNSIGNED_INDEX_V(name_idx, (uint32_t)sname_count, nullptr);
-						if (Engine::get_singleton()->is_editor_hint()) {
-							// If editor, just set the metadata and be it
-							node->set(META_POINTER_PROPERTY_BASE + String(snames[name_idx]), props[nprops[j].value]);
+
+						const StringName &prop_name = snames[name_idx];
+						const Variant &prop_variant = props[nprops[j].value];
+
+						if (prop_variant.get_type() == Variant::ARRAY) {
+							if (Engine::get_singleton()->is_editor_hint()) {
+								// If editor, simply set the original array of NodePaths.
+								node->set(prop_name, prop_variant);
+								continue;
+							}
+
+							const Array &array = prop_variant;
+							for (int k = 0; k < array.size(); k++) {
+								DeferredNodePathProperties dnp;
+								dnp.path = array[k];
+								dnp.base = node;
+								// Use special property name to signify an array. This is only used in deferred_node_paths.
+								dnp.property = String(prop_name) + "/indices/" + itos(k);
+								deferred_node_paths.push_back(dnp);
+							}
+
 						} else {
+							if (Engine::get_singleton()->is_editor_hint()) {
+								// If editor, just set the metadata and be it.
+								node->set(PackedScene::META_POINTER_PROPERTY_BASE + String(prop_name), prop_variant);
+								continue;
+							}
 							// Do an actual deferred sed of the property path.
 							DeferredNodePathProperties dnp;
-							dnp.path = props[nprops[j].value];
+							dnp.path = prop_variant;
 							dnp.base = node;
-							dnp.property = snames[name_idx];
+							dnp.property = prop_name;
 							deferred_node_paths.push_back(dnp);
 						}
 						continue;
@@ -415,8 +440,26 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 	}
 
 	for (const DeferredNodePathProperties &dnp : deferred_node_paths) {
+		// Replace properties stored as NodePaths with actual Nodes.
 		Node *other = dnp.base->get_node_or_null(dnp.path);
-		dnp.base->set(dnp.property, other);
+
+		const String string_property = dnp.property;
+		if (string_property.contains("/indices/")) {
+			// For properties with "/indices/", the replacement takes place inside an Array.
+			const String base_property = string_property.get_slice("/", 0);
+			const int index = string_property.get_slice("/", 2).to_int();
+
+			Array array = dnp.base->get(base_property);
+			if (array.size() >= index) {
+				array.push_back(other);
+			} else {
+				array.set(index, other);
+			}
+
+			dnp.base->set(base_property, array);
+		} else {
+			dnp.base->set(dnp.property, other);
+		}
 	}
 
 	for (KeyValue<Ref<Resource>, Ref<Resource>> &E : resources_local_to_scene) {
@@ -584,7 +627,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 		if (E.name == META_PROPERTY_MISSING_RESOURCES) {
 			continue; // Ignore this property when packing.
 		}
-		if (E.name.begins_with(META_POINTER_PROPERTY_BASE)) {
+		if (E.name.begins_with(PackedScene::META_POINTER_PROPERTY_BASE)) {
 			continue; // do not save.
 		}
 
@@ -600,7 +643,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 		bool use_deferred_node_path_bit = false;
 
 		if (E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE) {
-			value = p_node->get(META_POINTER_PROPERTY_BASE + E.name);
+			value = p_node->get(PackedScene::META_POINTER_PROPERTY_BASE + E.name);
 			if (value.get_type() != Variant::NODE_PATH) {
 				continue; //was never set, ignore.
 			}
@@ -610,6 +653,20 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 			Ref<Resource> ures = value;
 			if (ures.is_null()) {
 				value = missing_resource_properties[E.name];
+			}
+		} else if (E.type == Variant::ARRAY && E.hint == PROPERTY_HINT_TYPE_STRING) {
+			int hint_subtype_separator = E.hint_string.find(":");
+			if (hint_subtype_separator >= 0) {
+				String subtype_string = E.hint_string.substr(0, hint_subtype_separator);
+				int slash_pos = subtype_string.find("/");
+				PropertyHint subtype_hint = PropertyHint::PROPERTY_HINT_NONE;
+				if (slash_pos >= 0) {
+					subtype_hint = PropertyHint(subtype_string.get_slice("/", 1).to_int());
+					subtype_string = subtype_string.substr(0, slash_pos);
+				}
+				Variant::Type subtype = Variant::Type(subtype_string.to_int());
+
+				use_deferred_node_path_bit = subtype == Variant::OBJECT && subtype_hint == PROPERTY_HINT_NODE_TYPE;
 			}
 		}
 
@@ -1736,7 +1793,7 @@ void SceneState::add_editable_instance(const NodePath &p_path) {
 }
 
 String SceneState::get_meta_pointer_property(const String &p_property) {
-	return META_POINTER_PROPERTY_BASE + p_property;
+	return PackedScene::META_POINTER_PROPERTY_BASE + p_property;
 }
 
 Vector<String> SceneState::_get_node_groups(int p_idx) const {

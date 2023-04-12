@@ -40,6 +40,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_spin_slider.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "editor/scene_tree_dock.h"
@@ -5162,10 +5163,10 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	position_control->set_navigation_mode(Node3DEditorViewport::NAVIGATION_MOVE);
 	position_control->set_custom_minimum_size(Size2(navigation_control_size, navigation_control_size) * EDSCALE);
 	position_control->set_h_size_flags(SIZE_SHRINK_END);
-	position_control->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, 0 * EDSCALE);
+	position_control->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, 0);
 	position_control->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -navigation_control_size * EDSCALE);
 	position_control->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_BEGIN, navigation_control_size * EDSCALE);
-	position_control->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0 * EDSCALE);
+	position_control->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
 	position_control->set_viewport(this);
 	surface->add_child(position_control);
 
@@ -5175,8 +5176,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	look_control->set_h_size_flags(SIZE_SHRINK_END);
 	look_control->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -navigation_control_size * EDSCALE);
 	look_control->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -navigation_control_size * EDSCALE);
-	look_control->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0 * EDSCALE);
-	look_control->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0 * EDSCALE);
+	look_control->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
+	look_control->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
 	look_control->set_viewport(this);
 	surface->add_child(look_control);
 
@@ -7866,7 +7867,10 @@ void Node3DEditor::clear() {
 		viewports[i]->reset();
 	}
 
-	RenderingServer::get_singleton()->instance_set_visible(origin_instance, true);
+	if (origin_instance.is_valid()) {
+		RenderingServer::get_singleton()->instance_set_visible(origin_instance, true);
+	}
+
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN), true);
 	for (int i = 0; i < 3; ++i) {
 		if (grid_enable[i]) {
@@ -8654,6 +8658,7 @@ void fragment() {
 		_load_default_preview_settings();
 		_preview_settings_changed();
 	}
+	clear(); // Make sure values are initialized.
 }
 Node3DEditor::~Node3DEditor() {
 	memdelete(preview_node);

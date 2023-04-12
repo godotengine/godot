@@ -32,9 +32,9 @@
 
 #include "canvas_item_editor_plugin.h"
 #include "core/io/image_loader.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/scene_tree_dock.h"
 #include "scene/2d/cpu_particles_2d.h"
 #include "scene/gui/menu_button.h"

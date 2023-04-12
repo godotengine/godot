@@ -2735,7 +2735,8 @@ void EditorInspector::update_tree() {
 			List<PropertyInfo>::Element *N = E_property->next();
 			bool valid = true;
 			while (N) {
-				if (!N->get().name.begins_with("metadata/_") && N->get().usage & PROPERTY_USAGE_EDITOR && (!restrict_to_basic || (N->get().usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
+				if (!N->get().name.begins_with("metadata/_") && N->get().usage & PROPERTY_USAGE_EDITOR &&
+						(!filter.is_empty() || !restrict_to_basic || (N->get().usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
 					break;
 				}
 				if (N->get().usage & PROPERTY_USAGE_CATEGORY) {
@@ -2758,26 +2759,30 @@ void EditorInspector::update_tree() {
 			doc_name = p.name;
 
 			// Use category's owner script to update some of its information.
-			if (!EditorNode::get_editor_data().is_type_recognized(type) && p.hint_string.length() && FileAccess::exists(p.hint_string)) {
-				StringName script_name;
-
+			if (!EditorNode::get_editor_data().is_type_recognized(type) && p.hint_string.length() && ResourceLoader::exists(p.hint_string)) {
 				Ref<Script> scr = ResourceLoader::load(p.hint_string, "Script");
 				if (scr.is_valid()) {
-					script_name = EditorNode::get_editor_data().script_class_get_name(scr->get_path());
+					StringName script_name = EditorNode::get_editor_data().script_class_get_name(scr->get_path());
 
 					// Update the docs reference and the label based on the script.
 					Vector<DocData::ClassDoc> docs = scr->get_documentation();
 					if (!docs.is_empty()) {
 						doc_name = docs[0].name;
 					}
-					if (script_name != StringName() && label != script_name) {
+					if (script_name != StringName()) {
 						label = script_name;
 					}
-				}
 
-				// Find the corresponding icon.
-				category->icon = EditorNode::get_singleton()->get_class_icon(script_name, "Object");
-			} else if (!type.is_empty()) {
+					// Find the icon corresponding to the script.
+					if (script_name != StringName()) {
+						category->icon = EditorNode::get_singleton()->get_class_icon(script_name, "Object");
+					} else {
+						category->icon = EditorNode::get_singleton()->get_object_icon(scr.ptr(), "Object");
+					}
+				}
+			}
+
+			if (category->icon.is_null() && !type.is_empty()) {
 				category->icon = EditorNode::get_singleton()->get_class_icon(type, "Object");
 			}
 
@@ -2807,7 +2812,8 @@ void EditorInspector::update_tree() {
 
 			continue;
 
-		} else if (p.name.begins_with("metadata/_") || !(p.usage & PROPERTY_USAGE_EDITOR) || _is_property_disabled_by_feature_profile(p.name) || (restrict_to_basic && !(p.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
+		} else if (p.name.begins_with("metadata/_") || !(p.usage & PROPERTY_USAGE_EDITOR) || _is_property_disabled_by_feature_profile(p.name) ||
+				(filter.is_empty() && restrict_to_basic && !(p.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
 			// Ignore properties that are not supposed to be in the inspector.
 			continue;
 		}

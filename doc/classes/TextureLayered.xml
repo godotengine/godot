@@ -4,7 +4,7 @@
 		Base class for texture types which contain the data of multiple [Image]s. Each image is of the same size and format.
 	</brief_description>
 	<description>
-		Base class for [ImageTextureLayered]. Cannot be used directly, but contains all the functions necessary for accessing the derived resource types. See also [Texture3D].
+		Base class for [ImageTextureLayered] and [CompressedTextureLayered]. Cannot be used directly, but contains all the functions necessary for accessing the derived resource types. See also [Texture3D].
 		Data is set on a per-layer basis. For [Texture2DArray]s, the layer specifies the array layer.
 		All images need to have the same width, height and number of mipmap levels.
 		A [TextureLayered] can be loaded with [method ResourceLoader.load].

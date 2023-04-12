@@ -30,12 +30,13 @@
 
 #include "inspector_dock.h"
 
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
+#include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_object_selector.h"
 #include "editor/plugins/script_editor_plugin.h"
 
 InspectorDock *InspectorDock::singleton = nullptr;
@@ -420,12 +421,9 @@ Container *InspectorDock::get_addon_area() {
 
 void InspectorDock::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED:
-		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			set_theme(EditorNode::get_singleton()->get_gui_base()->get_theme());
-
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			resource_new_button->set_icon(get_theme_icon(SNAME("New"), SNAME("EditorIcons")));
 			resource_load_button->set_icon(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")));
 			resource_save_button->set_icon(get_theme_icon(SNAME("Save"), SNAME("EditorIcons")));
@@ -513,7 +511,7 @@ void InspectorDock::update(Object *p_object) {
 	if (editor_history->get_history_len() > 0) {
 		history_menu->set_disabled(false);
 	}
-	editor_path->update_path();
+	object_selector->update_path();
 
 	current = p_object;
 
@@ -533,11 +531,11 @@ void InspectorDock::update(Object *p_object) {
 
 	if (!is_object || is_text_file) {
 		info->hide();
-		editor_path->clear_path();
+		object_selector->clear_path();
 		return;
 	}
 
-	editor_path->enable_path();
+	object_selector->enable_path();
 
 	PopupMenu *p = object_menu->get_popup();
 
@@ -659,8 +657,8 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	resource_extra_button->set_tooltip_text(TTR("Extra resource options."));
 	general_options_hb->add_child(resource_extra_button);
 	resource_extra_button->connect("about_to_popup", callable_mp(this, &InspectorDock::_prepare_resource_extra_popup));
-	resource_extra_button->get_popup()->add_icon_shortcut(get_theme_icon(SNAME("ActionPaste"), SNAME("EditorIcons")), ED_SHORTCUT("property_editor/paste_resource", TTR("Edit Resource from Clipboard")), RESOURCE_EDIT_CLIPBOARD);
-	resource_extra_button->get_popup()->add_icon_shortcut(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), ED_SHORTCUT("property_editor/copy_resource", TTR("Copy Resource")), RESOURCE_COPY);
+	resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/paste_resource", TTR("Edit Resource from Clipboard")), RESOURCE_EDIT_CLIPBOARD);
+	resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/copy_resource", TTR("Copy Resource")), RESOURCE_COPY);
 	resource_extra_button->get_popup()->set_item_disabled(1, true);
 	resource_extra_button->get_popup()->add_separator();
 	resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/show_in_filesystem", TTR("Show in FileSystem")), RESOURCE_SHOW_IN_FILESYSTEM);
@@ -692,9 +690,9 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 
 	HBoxContainer *subresource_hb = memnew(HBoxContainer);
 	add_child(subresource_hb);
-	editor_path = memnew(EditorPath(EditorNode::get_singleton()->get_editor_selection_history()));
-	editor_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	subresource_hb->add_child(editor_path);
+	object_selector = memnew(EditorObjectSelector(EditorNode::get_singleton()->get_editor_selection_history()));
+	object_selector->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	subresource_hb->add_child(object_selector);
 
 	open_docs_button = memnew(Button);
 	open_docs_button->set_flat(true);

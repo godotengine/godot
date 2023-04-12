@@ -33,7 +33,9 @@
 
 #include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
-#include "editor/editor_spin_slider.h"
+
+class Button;
+class EditorSpinSlider;
 
 class GradientTexture2DEditorRect : public Control {
 	GDCLASS(GradientTexture2DEditorRect, Control);

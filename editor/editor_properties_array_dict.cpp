@@ -35,35 +35,51 @@
 #include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_spin_slider.h"
 #include "editor/inspector_dock.h"
+#include "scene/gui/button.h"
+#include "scene/resources/packed_scene.h"
 
 bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
 
-	if (name.begins_with("indices")) {
-		int index = name.get_slicec('/', 1).to_int();
-		array.set(index, p_value);
-		return true;
+	if (!name.begins_with("indices") && !name.begins_with(PackedScene::META_POINTER_PROPERTY_BASE + "indices")) {
+		return false;
 	}
 
-	return false;
+	int index;
+	if (name.begins_with("metadata/")) {
+		index = name.get_slice("/", 2).to_int();
+	} else {
+		index = name.get_slice("/", 1).to_int();
+	}
+
+	array.set(index, p_value);
+	return true;
 }
 
 bool EditorPropertyArrayObject::_get(const StringName &p_name, Variant &r_ret) const {
 	String name = p_name;
 
-	if (name.begins_with("indices")) {
-		int index = name.get_slicec('/', 1).to_int();
-		bool valid;
-		r_ret = array.get(index, &valid);
-		if (r_ret.get_type() == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(r_ret)) {
-			r_ret = Object::cast_to<EncodedObjectAsID>(r_ret)->get_object_id();
-		}
-
-		return valid;
+	if (!name.begins_with("indices") && !name.begins_with(PackedScene::META_POINTER_PROPERTY_BASE + "indices")) {
+		return false;
 	}
 
-	return false;
+	int index;
+	if (name.begins_with("metadata/")) {
+		index = name.get_slice("/", 2).to_int();
+	} else {
+		index = name.get_slice("/", 1).to_int();
+	}
+
+	bool valid;
+	r_ret = array.get(index, &valid);
+
+	if (r_ret.get_type() == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(r_ret)) {
+		r_ret = Object::cast_to<EncodedObjectAsID>(r_ret)->get_object_id();
+	}
+
+	return valid;
 }
 
 void EditorPropertyArrayObject::set_array(const Variant &p_array) {
@@ -176,15 +192,22 @@ void EditorPropertyArray::initialize_array(Variant &p_array) {
 }
 
 void EditorPropertyArray::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
-	if (p_property.begins_with("indices")) {
-		int index = p_property.get_slice("/", 1).to_int();
-
-		Variant array = object->get_array().duplicate();
-		array.set(index, p_value);
-
-		object->set_array(array);
-		emit_changed(get_edited_property(), array, "", true);
+	if (!p_property.begins_with("indices") && !p_property.begins_with(PackedScene::META_POINTER_PROPERTY_BASE + "indices")) {
+		return;
 	}
+
+	int index;
+	if (p_property.begins_with("metadata/")) {
+		index = p_property.get_slice("/", 2).to_int();
+	} else {
+		index = p_property.get_slice("/", 1).to_int();
+	}
+
+	Array array;
+	array.assign(object->get_array().duplicate());
+	array.set(index, p_value);
+	object->set_array(array);
+	emit_changed(get_edited_property(), array, "", true);
 }
 
 void EditorPropertyArray::_change_type(Object *p_button, int p_index) {
@@ -688,11 +711,6 @@ EditorPropertyArray::EditorPropertyArray() {
 	add_child(edit);
 	add_focusable(edit);
 
-	container = nullptr;
-	property_vbox = nullptr;
-	size_slider = nullptr;
-	button_add_item = nullptr;
-	paginator = nullptr;
 	change_type = memnew(PopupMenu);
 	add_child(change_type);
 	change_type->connect("id_pressed", callable_mp(this, &EditorPropertyArray::_change_type_menu));

@@ -549,6 +549,13 @@ private:
 
 		int scroll_border = 0;
 		int scroll_speed = 0;
+
+		int scrollbar_margin_top = -1;
+		int scrollbar_margin_right = -1;
+		int scrollbar_margin_bottom = -1;
+		int scrollbar_margin_left = -1;
+		int scrollbar_h_separation = 0;
+		int scrollbar_v_separation = 0;
 	} theme_cache;
 
 	struct Cache {
@@ -634,6 +641,9 @@ private:
 	void _go_up();
 
 	bool _scroll(bool p_horizontal, float p_pages);
+
+	Rect2 _get_scrollbar_layout_rect() const;
+	Rect2 _get_content_rect() const; // Considering the background stylebox and scrollbars.
 
 protected:
 	virtual void _update_theme_item_cache() override;

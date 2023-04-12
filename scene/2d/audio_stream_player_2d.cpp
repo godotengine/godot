@@ -68,7 +68,8 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			// Update anything related to position first, if possible of course.
-			if (setplay.get() > 0 || (active.is_set() && last_mix_count != AudioServer::get_singleton()->get_mix_count())) {
+			if (setplay.get() > 0 || (active.is_set() && last_mix_count != AudioServer::get_singleton()->get_mix_count()) || force_update_panning) {
+				force_update_panning = false;
 				_update_panning();
 			}
 
@@ -109,6 +110,7 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 	}
 }
 
+// Interacts with PhysicsServer2D, so can only be called during _physics_process
 StringName AudioStreamPlayer2D::_get_actual_bus() {
 	Vector2 global_pos = get_global_position();
 
@@ -117,6 +119,7 @@ StringName AudioStreamPlayer2D::_get_actual_bus() {
 	ERR_FAIL_COND_V(world_2d.is_null(), SNAME("Master"));
 
 	PhysicsDirectSpaceState2D *space_state = PhysicsServer2D::get_singleton()->space_get_direct_state(world_2d->get_space());
+	ERR_FAIL_COND_V(space_state == nullptr, SNAME("Master"));
 	PhysicsDirectSpaceState2D::ShapeResult sr[MAX_INTERSECT_AREAS];
 
 	PhysicsDirectSpaceState2D::PointParameters point_params;
@@ -142,6 +145,7 @@ StringName AudioStreamPlayer2D::_get_actual_bus() {
 	return default_bus;
 }
 
+// Interacts with PhysicsServer2D, so can only be called during _physics_process
 void AudioStreamPlayer2D::_update_panning() {
 	if (!active.is_set() || stream.is_null()) {
 		return;
