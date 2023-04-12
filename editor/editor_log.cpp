@@ -276,6 +276,11 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		return;
 	}
 
+	if (unlikely(log->is_updating())) {
+		// The new message arrived during log RTL text processing/redraw (invalid BiDi control characters / font error), ignore it to avoid RTL data corruption.
+		return;
+	}
+
 	// Only add the message to the log if it passes the filters.
 	bool filter_active = type_filter_map[p_message.type]->is_active();
 	String search_text = search_box->get_text();
