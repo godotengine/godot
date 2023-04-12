@@ -31,7 +31,7 @@
 #ifndef FBX_IMPORTER_MANAGER_H
 #define FBX_IMPORTER_MANAGER_H
 
-#include "editor/editor_file_dialog.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
 

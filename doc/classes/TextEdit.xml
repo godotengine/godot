@@ -1088,10 +1088,13 @@
 	</methods>
 	<members>
 		<member name="caret_blink" type="bool" setter="set_caret_blink_enabled" getter="is_caret_blink_enabled" default="false">
-			Sets if the caret should blink.
+			If [code]true[/code], makes the caret blink.
 		</member>
 		<member name="caret_blink_interval" type="float" setter="set_caret_blink_interval" getter="get_caret_blink_interval" default="0.65">
-			Duration (in seconds) of a caret's blinking cycle.
+			The interval at which the caret blinks (in seconds).
+		</member>
+		<member name="caret_draw_when_editable_disabled" type="bool" setter="set_draw_caret_when_editable_disabled" getter="is_drawing_caret_when_editable_disabled" default="false">
+			If [code]true[/code], caret will be visible when [member editable] is disabled.
 		</member>
 		<member name="caret_mid_grapheme" type="bool" setter="set_caret_mid_grapheme_enabled" getter="is_caret_mid_grapheme_enabled" default="true">
 			Allow moving caret, selecting and removing the individual composite character components.

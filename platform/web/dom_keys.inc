@@ -33,7 +33,7 @@
 // See https://w3c.github.io/uievents-code/#code-value-tables
 Key dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], bool p_physical) {
 #define DOM2GODOT(p_str, p_godot_code)                                                                \
-	if (memcmp((const void *)p_str, (void *)(p_physical ? p_key : p_code), strlen(p_str) + 1) == 0) { \
+	if (memcmp((const void *)p_str, (void *)(p_physical ? p_code : p_key), strlen(p_str) + 1) == 0) { \
 		return Key::p_godot_code;                                                                     \
 	}
 

@@ -30,8 +30,8 @@
 
 #include "editor_debugger_tree.h"
 
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/scene_tree_dock.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/texture_rect.h"

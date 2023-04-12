@@ -30,8 +30,8 @@
 
 #include "lightmap_gi_editor_plugin.h"
 
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
+#include "editor/gui/editor_file_dialog.h"
 
 void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
 	if (lightmap) {

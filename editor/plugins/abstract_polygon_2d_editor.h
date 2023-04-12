@@ -35,6 +35,7 @@
 #include "scene/2d/polygon_2d.h"
 #include "scene/gui/box_container.h"
 
+class Button;
 class CanvasItemEditor;
 class ConfirmationDialog;
 

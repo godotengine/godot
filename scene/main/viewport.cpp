@@ -165,6 +165,31 @@ ViewportTexture::~ViewportTexture() {
 	}
 }
 
+void Viewport::_process_dirty_canvas_parent_orders() {
+	for (const ObjectID &id : gui.canvas_parents_with_dirty_order) {
+		Object *obj = ObjectDB::get_instance(id);
+		if (!obj) {
+			continue; // May have been deleted.
+		}
+
+		Node *n = static_cast<Node *>(obj);
+		for (int i = 0; i < n->get_child_count(); i++) {
+			Node *c = n->get_child(i);
+			CanvasItem *ci = Object::cast_to<CanvasItem>(c);
+			if (ci) {
+				ci->update_draw_order();
+				continue;
+			}
+			CanvasLayer *cl = Object::cast_to<CanvasLayer>(c);
+			if (cl) {
+				cl->update_draw_order();
+			}
+		}
+	}
+
+	gui.canvas_parents_with_dirty_order.clear();
+}
+
 void Viewport::_sub_window_update_order() {
 	if (gui.sub_windows.size() < 2) {
 		return;
@@ -927,6 +952,14 @@ Rect2 Viewport::get_visible_rect() const {
 	}
 
 	return r;
+}
+
+void Viewport::canvas_parent_mark_dirty(Node *p_node) {
+	bool request_update = gui.canvas_parents_with_dirty_order.is_empty();
+	gui.canvas_parents_with_dirty_order.insert(p_node->get_instance_id());
+	if (request_update) {
+		MessageQueue::get_singleton()->push_callable(callable_mp(this, &Viewport::_process_dirty_canvas_parent_orders));
+	}
 }
 
 void Viewport::_update_audio_listener_2d() {

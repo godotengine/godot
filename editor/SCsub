@@ -119,7 +119,7 @@ if env.editor_build:
 
     SConscript("debugger/SCsub")
     SConscript("export/SCsub")
-    SConscript("fileserver/SCsub")
+    SConscript("gui/SCsub")
     SConscript("icons/SCsub")
     SConscript("import/SCsub")
     SConscript("plugins/SCsub")

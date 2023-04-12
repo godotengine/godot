@@ -284,12 +284,18 @@ void MeshInstance3D::create_convex_collision(bool p_clean, bool p_simplify) {
 	}
 }
 
-Node *MeshInstance3D::create_multiple_convex_collisions_node() {
+Node *MeshInstance3D::create_multiple_convex_collisions_node(const Ref<MeshConvexDecompositionSettings> &p_settings) {
 	if (mesh.is_null()) {
 		return nullptr;
 	}
 
-	Mesh::ConvexDecompositionSettings settings;
+	Ref<MeshConvexDecompositionSettings> settings;
+	if (p_settings.is_valid()) {
+		settings = p_settings;
+	} else {
+		settings.instantiate();
+	}
+
 	Vector<Ref<Shape3D>> shapes = mesh->convex_decompose(settings);
 	if (!shapes.size()) {
 		return nullptr;
@@ -304,8 +310,8 @@ Node *MeshInstance3D::create_multiple_convex_collisions_node() {
 	return static_body;
 }
 
-void MeshInstance3D::create_multiple_convex_collisions() {
-	StaticBody3D *static_body = Object::cast_to<StaticBody3D>(create_multiple_convex_collisions_node());
+void MeshInstance3D::create_multiple_convex_collisions(const Ref<MeshConvexDecompositionSettings> &p_settings) {
+	StaticBody3D *static_body = Object::cast_to<StaticBody3D>(create_multiple_convex_collisions_node(p_settings));
 	ERR_FAIL_COND(!static_body);
 	static_body->set_name(String(get_name()) + "_col");
 
@@ -504,7 +510,7 @@ void MeshInstance3D::_bind_methods() {
 	ClassDB::set_method_flags("MeshInstance3D", "create_trimesh_collision", METHOD_FLAGS_DEFAULT);
 	ClassDB::bind_method(D_METHOD("create_convex_collision", "clean", "simplify"), &MeshInstance3D::create_convex_collision, DEFVAL(true), DEFVAL(false));
 	ClassDB::set_method_flags("MeshInstance3D", "create_convex_collision", METHOD_FLAGS_DEFAULT);
-	ClassDB::bind_method(D_METHOD("create_multiple_convex_collisions"), &MeshInstance3D::create_multiple_convex_collisions);
+	ClassDB::bind_method(D_METHOD("create_multiple_convex_collisions", "settings"), &MeshInstance3D::create_multiple_convex_collisions, DEFVAL(Ref<MeshConvexDecompositionSettings>()));
 	ClassDB::set_method_flags("MeshInstance3D", "create_multiple_convex_collisions", METHOD_FLAGS_DEFAULT);
 
 	ClassDB::bind_method(D_METHOD("get_blend_shape_count"), &MeshInstance3D::get_blend_shape_count);

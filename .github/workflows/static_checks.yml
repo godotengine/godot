@@ -1,5 +1,6 @@
 name: 📊 Static Checks
-on: [push, pull_request]
+on:
+  workflow_call:
 
 concurrency:
   group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-static
@@ -21,7 +22,8 @@ jobs:
           sudo apt-get install -qq dos2unix clang-format-15 libxml2-utils python3-pip moreutils
           sudo update-alternatives --remove-all clang-format || true
           sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-15 100
-          sudo pip3 install black==22.3.0 pygments pytest==7.1.2 mypy==0.971
+          sudo pip3 install black==22.3.0 pytest==7.1.2 mypy==0.971
+          git config diff.wsErrorHighlight all
 
       - name: File formatting checks (file_format.sh)
         run: |

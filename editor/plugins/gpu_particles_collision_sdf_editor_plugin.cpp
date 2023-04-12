@@ -30,8 +30,8 @@
 
 #include "gpu_particles_collision_sdf_editor_plugin.h"
 
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
+#include "editor/gui/editor_file_dialog.h"
 
 void GPUParticlesCollisionSDF3DEditorPlugin::_bake() {
 	if (col_sdf) {

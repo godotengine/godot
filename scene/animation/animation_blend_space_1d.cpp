@@ -288,8 +288,6 @@ double AnimationNodeBlendSpace1D::process(double p_time, bool p_seek, bool p_is_
 	double max_time_remaining = 0.0;
 
 	if (blend_mode == BLEND_MODE_INTERPOLATED) {
-		float weights[MAX_BLEND_POINTS] = {};
-
 		int point_lower = -1;
 		float pos_lower = 0.0;
 		int point_higher = -1;
@@ -300,26 +298,18 @@ double AnimationNodeBlendSpace1D::process(double p_time, bool p_seek, bool p_is_
 			float pos = blend_points[i].position;
 
 			if (pos <= blend_pos) {
-				if (point_lower == -1) {
-					point_lower = i;
-					pos_lower = pos;
-				} else if ((blend_pos - pos) < (blend_pos - pos_lower)) {
+				if (point_lower == -1 || pos > pos_lower) {
 					point_lower = i;
 					pos_lower = pos;
 				}
-			} else {
-				if (point_higher == -1) {
-					point_higher = i;
-					pos_higher = pos;
-				} else if ((pos - blend_pos) < (pos_higher - blend_pos)) {
-					point_higher = i;
-					pos_higher = pos;
-				}
+			} else if (point_higher == -1 || pos < pos_higher) {
+				point_higher = i;
+				pos_higher = pos;
 			}
 		}
 
 		// fill in weights
-
+		float weights[MAX_BLEND_POINTS] = {};
 		if (point_lower == -1 && point_higher != -1) {
 			// we are on the left side, no other point to the left
 			// we just play the next point.

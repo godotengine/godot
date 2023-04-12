@@ -558,6 +558,24 @@
 		<theme_item name="scroll_speed" data_type="constant" type="int" default="12">
 			The speed of border scrolling.
 		</theme_item>
+		<theme_item name="scrollbar_h_separation" data_type="constant" type="int" default="4">
+			The horizontal separation of tree content and scrollbar.
+		</theme_item>
+		<theme_item name="scrollbar_margin_bottom" data_type="constant" type="int" default="-1">
+			The bottom margin of the scrollbars. When negative, uses [theme_item panel] bottom margin.
+		</theme_item>
+		<theme_item name="scrollbar_margin_left" data_type="constant" type="int" default="-1">
+			The left margin of the horizontal scrollbar. When negative, uses [theme_item panel] left margin.
+		</theme_item>
+		<theme_item name="scrollbar_margin_right" data_type="constant" type="int" default="-1">
+			The right margin of the scrollbars. When negative, uses [theme_item panel] right margin.
+		</theme_item>
+		<theme_item name="scrollbar_margin_top" data_type="constant" type="int" default="-1">
+			The right margin of the vertical scrollbar. When negative, uses [theme_item panel] top margin.
+		</theme_item>
+		<theme_item name="scrollbar_v_separation" data_type="constant" type="int" default="4">
+			The vertical separation of tree content and scrollbar.
+		</theme_item>
 		<theme_item name="v_separation" data_type="constant" type="int" default="4">
 			The vertical padding inside each item, i.e. the distance between the item's content and top/bottom border.
 		</theme_item>

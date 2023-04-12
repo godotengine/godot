@@ -93,32 +93,22 @@ private:
 	// breakpoints
 	HashMap<int, bool> breakpointed_lines;
 	bool draw_breakpoints = false;
-	Color breakpoint_color = Color(1, 1, 1);
-	Ref<Texture2D> breakpoint_icon = Ref<Texture2D>();
 
 	// bookmarks
 	bool draw_bookmarks = false;
-	Color bookmark_color = Color(1, 1, 1);
-	Ref<Texture2D> bookmark_icon = Ref<Texture2D>();
 
 	// executing lines
 	bool draw_executing_lines = false;
-	Color executing_line_color = Color(1, 1, 1);
-	Ref<Texture2D> executing_line_icon = Ref<Texture2D>();
 
 	/* Line numbers */
 	int line_number_gutter = -1;
 	int line_number_digits = 1;
 	String line_number_padding = " ";
-	Color line_number_color = Color(1, 1, 1);
 	void _line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region);
 
 	/* Fold Gutter */
 	int fold_gutter = -1;
 	bool draw_fold_gutter = false;
-	Color folding_color = Color(1, 1, 1);
-	Ref<Texture2D> can_fold_icon = Ref<Texture2D>();
-	Ref<Texture2D> folded_icon = Ref<Texture2D>();
 	void _fold_gutter_draw_callback(int p_line, int p_gutter, Rect2 p_region);
 
 	void _gutter_clicked(int p_line, int p_gutter);
@@ -199,15 +189,6 @@ private:
 	bool code_completion_enabled = false;
 	bool code_completion_forced = false;
 
-	int code_completion_max_width = 0;
-	int code_completion_max_lines = 7;
-	int code_completion_scroll_width = 0;
-	Color code_completion_scroll_color = Color(0, 0, 0, 0);
-	Color code_completion_scroll_hovered_color = Color(0, 0, 0, 0);
-	Color code_completion_background_color = Color(0, 0, 0, 0);
-	Color code_completion_selected_color = Color(0, 0, 0, 0);
-	Color code_completion_existing_color = Color(0, 0, 0, 0);
-
 	bool code_completion_active = false;
 	bool is_code_completion_scroll_hovered = false;
 	bool is_code_completion_scroll_pressed = false;
@@ -230,7 +211,6 @@ private:
 
 	/* Line length guidelines */
 	TypedArray<int> line_length_guideline_columns;
-	Color line_length_guideline_color;
 
 	/* Symbol lookup */
 	bool symbol_lookup_on_click_enabled = false;
@@ -240,12 +220,51 @@ private:
 	Point2i symbol_lookup_pos;
 
 	/* Visual */
-	Ref<StyleBox> style_normal;
+	struct ThemeCache {
+		/* Gutters */
+		Color code_folding_color = Color(1, 1, 1);
+		Ref<Texture2D> can_fold_icon;
+		Ref<Texture2D> folded_icon;
+		Ref<Texture2D> folded_eol_icon;
 
-	Ref<Font> font;
-	int font_size = 16;
+		Color breakpoint_color = Color(1, 1, 1);
+		Ref<Texture2D> breakpoint_icon = Ref<Texture2D>();
 
-	int line_spacing = 1;
+		Color bookmark_color = Color(1, 1, 1);
+		Ref<Texture2D> bookmark_icon = Ref<Texture2D>();
+
+		Color executing_line_color = Color(1, 1, 1);
+		Ref<Texture2D> executing_line_icon = Ref<Texture2D>();
+
+		Color line_number_color = Color(1, 1, 1);
+
+		/* Code Completion */
+		Ref<StyleBox> code_completion_style;
+		int code_completion_icon_separation = 0;
+
+		int code_completion_max_width = 0;
+		int code_completion_max_lines = 7;
+		int code_completion_scroll_width = 0;
+		Color code_completion_scroll_color = Color(0, 0, 0, 0);
+		Color code_completion_scroll_hovered_color = Color(0, 0, 0, 0);
+		Color code_completion_background_color = Color(0, 0, 0, 0);
+		Color code_completion_selected_color = Color(0, 0, 0, 0);
+		Color code_completion_existing_color = Color(0, 0, 0, 0);
+
+		/* Code hint */
+		Ref<StyleBox> code_hint_style;
+		Color code_hint_color;
+
+		/* Line length guideline */
+		Color line_length_guideline_color;
+
+		/* Other visuals */
+		Ref<StyleBox> style_normal;
+
+		Ref<Font> font;
+		int font_size = 16;
+		int line_spacing = 1;
+	} theme_cache;
 
 	/* Callbacks */
 	int lines_edited_changed = 0;
@@ -258,8 +277,9 @@ private:
 
 protected:
 	void _notification(int p_what);
-
 	static void _bind_methods();
+
+	virtual void _update_theme_item_cache() override;
 
 	/* Text manipulation */
 

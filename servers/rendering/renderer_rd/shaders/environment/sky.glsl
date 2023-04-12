@@ -260,6 +260,10 @@ void main() {
 	frag_color.rgb = color;
 	frag_color.a = alpha;
 
+	// For mobile renderer we're multiplying by 0.5 as we're using a UNORM buffer.
+	// For both mobile and clustered, we also bake in the exposure value for the environment and camera.
+	frag_color.rgb = frag_color.rgb * params.luminance_multiplier;
+
 #if !defined(DISABLE_FOG) && !defined(USE_CUBEMAP_PASS)
 
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
@@ -284,10 +288,6 @@ void main() {
 	if (!AT_CUBEMAP_PASS && !AT_HALF_RES_PASS && !AT_QUARTER_RES_PASS) {
 		frag_color.a = 0.0;
 	}
-
-	// For mobile renderer we're multiplying by 0.5 as we're using a UNORM buffer.
-	// For both mobile and clustered, we also bake in the exposure value for the environment and camera.
-	frag_color.rgb = frag_color.rgb * params.luminance_multiplier;
 
 #ifdef USE_DEBANDING
 	frag_color.rgb += interleaved_gradient_noise(gl_FragCoord.xy);

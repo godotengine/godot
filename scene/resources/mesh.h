@@ -39,6 +39,7 @@
 
 class ConcavePolygonShape3D;
 class ConvexPolygonShape3D;
+class MeshConvexDecompositionSettings;
 class Shape3D;
 
 class Mesh : public Resource {
@@ -178,42 +179,11 @@ public:
 	Size2i get_lightmap_size_hint() const;
 	void clear_cache() const;
 
-	struct ConvexDecompositionSettings {
-		enum Mode : int {
-			CONVEX_DECOMPOSITION_MODE_VOXEL = 0,
-			CONVEX_DECOMPOSITION_MODE_TETRAHEDRON
-		};
-
-		/// Maximum concavity. [Range: 0.0 -> 1.0]
-		real_t max_concavity = 1.0;
-		/// Controls the bias toward clipping along symmetry planes. [Range: 0.0 -> 1.0]
-		real_t symmetry_planes_clipping_bias = 0.05;
-		/// Controls the bias toward clipping along revolution axes. [Range: 0.0 -> 1.0]
-		real_t revolution_axes_clipping_bias = 0.05;
-		real_t min_volume_per_convex_hull = 0.0001;
-		/// Maximum number of voxels generated during the voxelization stage.
-		uint32_t resolution = 10'000;
-		uint32_t max_num_vertices_per_convex_hull = 32;
-		/// Controls the granularity of the search for the "best" clipping plane.
-		/// [Range: 1 -> 16]
-		uint32_t plane_downsampling = 4;
-		/// Controls the precision of the convex-hull generation process during the
-		/// clipping plane selection stage.
-		/// [Range: 1 -> 16]
-		uint32_t convexhull_downsampling = 4;
-		/// enable/disable normalizing the mesh before applying the convex decomposition.
-		bool normalize_mesh = false;
-		Mode mode = CONVEX_DECOMPOSITION_MODE_VOXEL;
-		bool convexhull_approximation = true;
-		/// This is the maximum number of convex hulls to produce from the merge operation.
-		uint32_t max_convex_hulls = 1;
-		bool project_hull_vertices = true;
-	};
-	typedef Vector<Vector<Vector3>> (*ConvexDecompositionFunc)(const real_t *p_vertices, int p_vertex_count, const uint32_t *p_triangles, int p_triangle_count, const ConvexDecompositionSettings &p_settings, Vector<Vector<uint32_t>> *r_convex_indices);
+	typedef Vector<Vector<Vector3>> (*ConvexDecompositionFunc)(const real_t *p_vertices, int p_vertex_count, const uint32_t *p_triangles, int p_triangle_count, const Ref<MeshConvexDecompositionSettings> &p_settings, Vector<Vector<uint32_t>> *r_convex_indices);
 
 	static ConvexDecompositionFunc convex_decomposition_function;
 
-	Vector<Ref<Shape3D>> convex_decompose(const ConvexDecompositionSettings &p_settings) const;
+	Vector<Ref<Shape3D>> convex_decompose(const Ref<MeshConvexDecompositionSettings> &p_settings) const;
 	Ref<ConvexPolygonShape3D> create_convex_shape(bool p_clean = true, bool p_simplify = false) const;
 	Ref<ConcavePolygonShape3D> create_trimesh_shape() const;
 
@@ -224,6 +194,89 @@ public:
 
 	Mesh();
 };
+
+class MeshConvexDecompositionSettings : public RefCounted {
+	GDCLASS(MeshConvexDecompositionSettings, RefCounted);
+
+public:
+	enum Mode : int {
+		CONVEX_DECOMPOSITION_MODE_VOXEL = 0,
+		CONVEX_DECOMPOSITION_MODE_TETRAHEDRON = 1
+	};
+
+private:
+	Mode mode = CONVEX_DECOMPOSITION_MODE_VOXEL;
+
+	/// Maximum concavity. [Range: 0.0 -> 1.0]
+	real_t max_concavity = 1.0;
+	/// Controls the bias toward clipping along symmetry planes. [Range: 0.0 -> 1.0]
+	real_t symmetry_planes_clipping_bias = 0.05;
+	/// Controls the bias toward clipping along revolution axes. [Range: 0.0 -> 1.0]
+	real_t revolution_axes_clipping_bias = 0.05;
+	real_t min_volume_per_convex_hull = 0.0001;
+	/// Maximum number of voxels generated during the voxelization stage.
+	uint32_t resolution = 10'000;
+	uint32_t max_num_vertices_per_convex_hull = 32;
+	/// Controls the granularity of the search for the "best" clipping plane.
+	/// [Range: 1 -> 16]
+	uint32_t plane_downsampling = 4;
+	/// Controls the precision of the convex-hull generation process during the
+	/// clipping plane selection stage.
+	/// [Range: 1 -> 16]
+	uint32_t convex_hull_downsampling = 4;
+	/// enable/disable normalizing the mesh before applying the convex decomposition.
+	bool normalize_mesh = false;
+
+	bool convex_hull_approximation = true;
+	/// This is the maximum number of convex hulls to produce from the merge operation.
+	uint32_t max_convex_hulls = 1;
+	bool project_hull_vertices = true;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_max_concavity(real_t p_max_concavity);
+	real_t get_max_concavity() const;
+
+	void set_symmetry_planes_clipping_bias(real_t p_symmetry_planes_clipping_bias);
+	real_t get_symmetry_planes_clipping_bias() const;
+
+	void set_revolution_axes_clipping_bias(real_t p_revolution_axes_clipping_bias);
+	real_t get_revolution_axes_clipping_bias() const;
+
+	void set_min_volume_per_convex_hull(real_t p_min_volume_per_convex_hull);
+	real_t get_min_volume_per_convex_hull() const;
+
+	void set_resolution(uint32_t p_resolution);
+	uint32_t get_resolution() const;
+
+	void set_max_num_vertices_per_convex_hull(uint32_t p_max_num_vertices_per_convex_hull);
+	uint32_t get_max_num_vertices_per_convex_hull() const;
+
+	void set_plane_downsampling(uint32_t p_plane_downsampling);
+	uint32_t get_plane_downsampling() const;
+
+	void set_convex_hull_downsampling(uint32_t p_convex_hull_downsampling);
+	uint32_t get_convex_hull_downsampling() const;
+
+	void set_normalize_mesh(bool p_normalize_mesh);
+	bool get_normalize_mesh() const;
+
+	void set_mode(Mode p_mode);
+	Mode get_mode() const;
+
+	void set_convex_hull_approximation(bool p_convex_hull_approximation);
+	bool get_convex_hull_approximation() const;
+
+	void set_max_convex_hulls(uint32_t p_max_convex_hulls);
+	uint32_t get_max_convex_hulls() const;
+
+	void set_project_hull_vertices(bool p_project_hull_vertices);
+	bool get_project_hull_vertices() const;
+};
+
+VARIANT_ENUM_CAST(MeshConvexDecompositionSettings::Mode);
 
 class ArrayMesh : public Mesh {
 	GDCLASS(ArrayMesh, Mesh);

@@ -34,6 +34,7 @@
 #include "core/math/math_defs.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/string/translation.h"
 #include "label.h"
 #include "scene/scene_string_names.h"
 #include "servers/display_server.h"
@@ -1469,7 +1470,16 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 				}
 			} break;
 		}
-
+		// Adjust for dropcap.
+		int dc_lines = l.text_buf->get_dropcap_lines();
+		float h_off = l.text_buf->get_dropcap_size().x;
+		if (line <= dc_lines) {
+			if (rtl) {
+				off.x -= h_off;
+			} else {
+				off.x += h_off;
+			}
+		}
 		off.y += TS->shaped_text_get_ascent(rid);
 
 		Array objects = TS->shaped_text_get_objects(rid);
@@ -1509,7 +1519,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 									}
 									if (crect.has_point(p_click)) {
 										for (int j = 0; j < (int)frame->lines.size(); j++) {
-											_find_click_in_line(frame, j, rect.position + Vector2(0, frame->lines[j].offset.y), rect.size.x, p_click, &table_click_frame, &table_click_line, &table_click_item, &table_click_char, true, p_meta);
+											_find_click_in_line(frame, j, rect.position + Vector2(frame->padding.position.x, frame->lines[j].offset.y), rect.size.x, p_click, &table_click_frame, &table_click_line, &table_click_item, &table_click_char, true, p_meta);
 											if (table_click_frame && table_click_item) {
 												// Save cell detected cell hit data.
 												table_range = Vector2i(INT32_MAX, 0);
@@ -1790,8 +1800,7 @@ void RichTextLabel::_notification(int p_what) {
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			_stop_thread();
-			main->first_invalid_line.store(0); //invalidate ALL
+			_apply_translation();
 			queue_redraw();
 		} break;
 
@@ -5114,13 +5123,17 @@ void RichTextLabel::set_text(const String &p_bbcode) {
 	if (text == p_bbcode) {
 		return;
 	}
-
 	text = p_bbcode;
+	_apply_translation();
+}
+
+void RichTextLabel::_apply_translation() {
+	String xl_text = atr(text);
 	if (use_bbcode) {
-		parse_bbcode(p_bbcode);
+		parse_bbcode(xl_text);
 	} else { // raw text
 		clear();
-		add_text(p_bbcode);
+		add_text(xl_text);
 	}
 }
 
@@ -5135,13 +5148,7 @@ void RichTextLabel::set_use_bbcode(bool p_enable) {
 	use_bbcode = p_enable;
 	notify_property_list_changed();
 
-	const String current_text = text;
-	if (use_bbcode) {
-		parse_bbcode(current_text);
-	} else { // raw text
-		clear();
-		add_text(current_text);
-	}
+	_apply_translation();
 }
 
 bool RichTextLabel::is_using_bbcode() const {
@@ -5276,7 +5283,7 @@ float RichTextLabel::get_visible_ratio() const {
 void RichTextLabel::set_effects(Array p_effects) {
 	custom_effects = p_effects;
 	if ((!text.is_empty()) && use_bbcode) {
-		parse_bbcode(text);
+		parse_bbcode(atr(text));
 	}
 }
 
@@ -5291,7 +5298,7 @@ void RichTextLabel::install_effect(const Variant effect) {
 	ERR_FAIL_COND_MSG(rteffect.is_null(), "Invalid RichTextEffect resource.");
 	custom_effects.push_back(effect);
 	if ((!text.is_empty()) && use_bbcode) {
-		parse_bbcode(text);
+		parse_bbcode(atr(text));
 	}
 }
 
