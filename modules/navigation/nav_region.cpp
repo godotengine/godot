@@ -114,7 +114,7 @@ void NavRegion::update_polygons() {
 		p.edges.resize(mesh_poly.size());
 
 		Vector3 center;
-		float sum(0);
+		real_t sum(0);
 
 		for (int j(0); j < mesh_poly.size(); j++) {
 			int idx = indices[j];
@@ -143,7 +143,7 @@ void NavRegion::update_polygons() {
 
 		p.clockwise = sum > 0;
 		if (mesh_poly.size() != 0) {
-			p.center = center / float(mesh_poly.size());
+			p.center = center / real_t(mesh_poly.size());
 		}
 	}
 }

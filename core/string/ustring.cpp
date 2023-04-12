@@ -1644,6 +1644,35 @@ String String::hex_encode_buffer(const uint8_t *p_buffer, int p_len) {
 	return ret;
 }
 
+Vector<uint8_t> String::hex_decode() const {
+	ERR_FAIL_COND_V_MSG(length() % 2 != 0, Vector<uint8_t>(), "Hexadecimal string of uneven length.");
+
+#define HEX_TO_BYTE(m_output, m_index)                                                                                   \
+	uint8_t m_output;                                                                                                    \
+	c = operator[](m_index);                                                                                             \
+	if (is_digit(c)) {                                                                                                   \
+		m_output = c - '0';                                                                                              \
+	} else if (c >= 'a' && c <= 'f') {                                                                                   \
+		m_output = c - 'a' + 10;                                                                                         \
+	} else if (c >= 'A' && c <= 'F') {                                                                                   \
+		m_output = c - 'A' + 10;                                                                                         \
+	} else {                                                                                                             \
+		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Invalid hexadecimal character \"" + chr(c) + "\" at index " + m_index + "."); \
+	}
+
+	Vector<uint8_t> out;
+	int len = length() / 2;
+	out.resize(len);
+	for (int i = 0; i < len; i++) {
+		char32_t c;
+		HEX_TO_BYTE(first, i * 2);
+		HEX_TO_BYTE(second, i * 2 + 1);
+		out.write[i] = first * 16 + second;
+	}
+	return out;
+#undef HEX_TO_BYTE
+}
+
 void String::print_unicode_error(const String &p_message, bool p_critical) const {
 	if (p_critical) {
 		print_error(vformat("Unicode parsing error, some characters were replaced with spaces: %s", p_message));
@@ -2562,6 +2591,23 @@ double String::to_float(const char32_t *p_str, const char32_t **r_end) {
 
 double String::to_float(const wchar_t *p_str, const wchar_t **r_end) {
 	return built_in_strtod<wchar_t>(p_str, (wchar_t **)r_end);
+}
+
+uint32_t String::num_characters(int64_t p_int) {
+	int r = 1;
+	if (p_int < 0) {
+		r += 1;
+		if (p_int == INT64_MIN) {
+			p_int = INT64_MAX;
+		} else {
+			p_int = -p_int;
+		}
+	}
+	while (p_int >= 10) {
+		p_int /= 10;
+		r++;
+	}
+	return r;
 }
 
 int64_t String::to_int(const char32_t *p_str, int p_len, bool p_clamp) {
@@ -4532,15 +4578,65 @@ String String::property_name_encode() const {
 }
 
 // Changes made to the set of invalid characters must also be reflected in the String documentation.
-const String String::invalid_node_name_characters = ". : @ / \" " UNIQUE_NODE_PREFIX;
+
+static const char32_t invalid_node_name_characters[] = { '.', ':', '@', '/', '\"', UNIQUE_NODE_PREFIX[0], 0 };
+
+String String::get_invalid_node_name_characters() {
+	// Do not use this function for critical validation.
+	String r;
+	const char32_t *c = invalid_node_name_characters;
+	while (*c) {
+		if (c != invalid_node_name_characters) {
+			r += " ";
+		}
+		r += String::chr(*c);
+		c++;
+	}
+	return r;
+}
 
 String String::validate_node_name() const {
-	Vector<String> chars = String::invalid_node_name_characters.split(" ");
-	String name = this->replace(chars[0], "");
-	for (int i = 1; i < chars.size(); i++) {
-		name = name.replace(chars[i], "");
+	// This is a critical validation in node addition, so it must be optimized.
+	const char32_t *cn = ptr();
+	if (cn == nullptr) {
+		return String();
 	}
-	return name;
+	bool valid = true;
+	uint32_t idx = 0;
+	while (cn[idx]) {
+		const char32_t *c = invalid_node_name_characters;
+		while (*c) {
+			if (cn[idx] == *c) {
+				valid = false;
+				break;
+			}
+			c++;
+		}
+		if (!valid) {
+			break;
+		}
+		idx++;
+	}
+
+	if (valid) {
+		return *this;
+	}
+
+	String validated = *this;
+	char32_t *nn = validated.ptrw();
+	while (nn[idx]) {
+		const char32_t *c = invalid_node_name_characters;
+		while (*c) {
+			if (nn[idx] == *c) {
+				nn[idx] = '_';
+				break;
+			}
+			c++;
+		}
+		idx++;
+	}
+
+	return validated;
 }
 
 String String::get_basename() const {

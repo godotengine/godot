@@ -34,13 +34,14 @@
 #include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
-#include "scene/3d/camera_3d.h"
-#include "scene/3d/light_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/gui/color_rect.h"
 #include "scene/resources/material.h"
 #include "scene/resources/primitive_meshes.h"
 
+class Camera3D;
+class ColorRect;
+class DirectionalLight3D;
+class HBoxContainer;
+class MeshInstance3D;
 class SubViewport;
 class SubViewportContainer;
 class TextureButton;

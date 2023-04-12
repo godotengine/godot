@@ -376,7 +376,6 @@ private:
 #define GDCLASS(m_class, m_inherits)                                                                                                             \
 private:                                                                                                                                         \
 	void operator=(const m_class &p_rval) {}                                                                                                     \
-	mutable StringName _class_name;                                                                                                              \
 	friend class ::ClassDB;                                                                                                                      \
                                                                                                                                                  \
 public:                                                                                                                                          \
@@ -388,13 +387,11 @@ public:                                                                         
 		return String(#m_class);                                                                                                                 \
 	}                                                                                                                                            \
 	virtual const StringName *_get_class_namev() const override {                                                                                \
-		if (_get_extension()) {                                                                                                                  \
-			return &_get_extension()->class_name;                                                                                                \
+		static StringName _class_name_static;                                                                                                    \
+		if (unlikely(!_class_name_static)) {                                                                                                     \
+			StringName::assign_static_unique_class_name(&_class_name_static, #m_class);                                                          \
 		}                                                                                                                                        \
-		if (!_class_name) {                                                                                                                      \
-			_class_name = get_class_static();                                                                                                    \
-		}                                                                                                                                        \
-		return &_class_name;                                                                                                                     \
+		return &_class_name_static;                                                                                                              \
 	}                                                                                                                                            \
 	static _FORCE_INLINE_ void *get_class_ptr_static() {                                                                                         \
 		static int ptr;                                                                                                                          \
@@ -614,8 +611,7 @@ private:
 	Variant script; // Reference does not exist yet, store it in a Variant.
 	HashMap<StringName, Variant> metadata;
 	HashMap<StringName, Variant *> metadata_properties;
-	mutable StringName _class_name;
-	mutable const StringName *_class_ptr = nullptr;
+	mutable const StringName *_class_name_ptr = nullptr;
 
 	void _add_user_signal(const String &p_name, const Array &p_args = Array());
 	bool _has_user_signal(const StringName &p_name) const;
@@ -714,10 +710,11 @@ protected:
 	Variant _call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	virtual const StringName *_get_class_namev() const {
-		if (!_class_name) {
-			_class_name = get_class_static();
+		static StringName _class_name_static;
+		if (unlikely(!_class_name_static)) {
+			StringName::assign_static_unique_class_name(&_class_name_static, "Object");
 		}
-		return &_class_name;
+		return &_class_name_static;
 	}
 
 	Vector<StringName> _get_meta_list_bind() const;
@@ -788,13 +785,16 @@ public:
 
 	_FORCE_INLINE_ const StringName &get_class_name() const {
 		if (_extension) {
+			// Can't put inside the unlikely as constructor can run it
 			return _extension->class_name;
 		}
-		if (!_class_ptr) {
+
+		if (unlikely(!_class_name_ptr)) {
+			// While class is initializing / deinitializing, constructors and destructurs
+			// need access to the proper class at the proper stage.
 			return *_get_class_namev();
-		} else {
-			return *_class_ptr;
 		}
+		return *_class_name_ptr;
 	}
 
 	/* IAPI */

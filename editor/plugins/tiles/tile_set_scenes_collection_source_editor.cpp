@@ -38,7 +38,9 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 
+#include "scene/gui/button.h"
 #include "scene/gui/item_list.h"
+#include "scene/gui/label.h"
 #include "scene/gui/split_container.h"
 
 #include "core/core_string_names.h"

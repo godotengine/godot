@@ -1678,8 +1678,8 @@ TEST_CASE("[String] validate_node_name") {
 	String name_with_kana = U"Name with kana ゴドツ";
 	CHECK(name_with_kana.validate_node_name() == U"Name with kana ゴドツ");
 
-	String name_with_invalid_chars = "Name with invalid characters :.@removed!";
-	CHECK(name_with_invalid_chars.validate_node_name() == "Name with invalid characters removed!");
+	String name_with_invalid_chars = "Name with invalid characters :.@%removed!";
+	CHECK(name_with_invalid_chars.validate_node_name() == "Name with invalid characters ____removed!");
 }
 
 TEST_CASE("[String] validate_identifier") {

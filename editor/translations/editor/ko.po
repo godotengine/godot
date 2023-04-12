@@ -45,13 +45,15 @@
 # 이정희 <daemul72@gmail.com>, 2023.
 # nulta <un5450@naver.com>, 2023.
 # jaehun choe <jayden.choe@gmail.com>, 2023.
+# 설동훈 <tjfehdgns@gmail.com>, 2023.
+# Rocream <kbg4660@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-05 01:38+0000\n"
-"Last-Translator: jaehun choe <jayden.choe@gmail.com>\n"
+"PO-Revision-Date: 2023-04-01 13:00+0000\n"
+"Last-Translator: Rocream <kbg4660@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -59,7 +61,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.16.2-dev\n"
+"X-Generator: Weblate 4.17-dev\n"
 
 msgid "Unset"
 msgstr "설정 해제"
@@ -844,6 +846,9 @@ msgstr "복사할 트랙 선택"
 msgid "Select All/None"
 msgstr "모두 선택/해제"
 
+msgid "Animation Change Keyframe Time"
+msgstr "애니메이션 키 프레임 시간 바꾸기"
+
 msgid "Add Audio Track Clip"
 msgstr "오디오 트랙 클립 추가"
 
@@ -865,6 +870,10 @@ msgstr "%d개 찾아 바꿈."
 msgid "%d match"
 msgid_plural "%d matches"
 msgstr[0] "%d개 일치"
+
+msgid "%d of %d match"
+msgid_plural "%d of %d matches"
+msgstr[0] "%d 중 %d 일치"
 
 msgid "Match Case"
 msgstr "대소문자 구분"
@@ -2080,7 +2089,7 @@ msgid "(Re)Importing Assets"
 msgstr "애셋 (다시) 가져오는 중"
 
 msgid "Experimental"
-msgstr "실험적"
+msgstr "실험적인"
 
 msgid "This method supports a variable number of arguments."
 msgstr "이 메서드는 다양한 인수를 지원합니다."
@@ -5988,6 +5997,9 @@ msgstr "오버드로 표시"
 msgid "Display Unshaded"
 msgstr "셰이더 없음 표시"
 
+msgid "Normal Buffer"
+msgstr "방출 소스:"
+
 msgid "View Environment"
 msgstr "환경 보기"
 
@@ -7411,6 +7423,9 @@ msgstr "수평으로 뒤집기"
 
 msgid "Flip Vertically"
 msgstr "수직으로 뒤집기"
+
+msgid "Tiles"
+msgstr "타일"
 
 msgid "Yes"
 msgstr "예"
@@ -9551,9 +9566,6 @@ msgstr ""
 "Hint Tooltip은 Control의 Mouse Filter가 \"Ignore\"으로 설정되어 있기 때문에 "
 "보이지 않습니다. 해결하려면 Mouse Filter를 \"Stop\"이나 \"Pass\"로 설정하세"
 "요."
-
-msgid "Theme Overrides"
-msgstr "테마 오버라이드"
 
 msgid "Alert!"
 msgstr "경고!"

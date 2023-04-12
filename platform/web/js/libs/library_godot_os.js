@@ -291,6 +291,28 @@ const GodotOS = {
 		});
 	},
 
+	godot_js_os_has_feature__sig: 'ii',
+	godot_js_os_has_feature: function (p_ftr) {
+		const ftr = GodotRuntime.parseString(p_ftr);
+		const ua = navigator.userAgent;
+		if (ftr === 'web_macos') {
+			return (ua.indexOf('Mac') !== -1) ? 1 : 0;
+		}
+		if (ftr === 'web_windows') {
+			return (ua.indexOf('Windows') !== -1) ? 1 : 0;
+		}
+		if (ftr === 'web_android') {
+			return (ua.indexOf('Android') !== -1) ? 1 : 0;
+		}
+		if (ftr === 'web_ios') {
+			return ((ua.indexOf('iPhone') !== -1) || (ua.indexOf('iPad') !== -1) || (ua.indexOf('iPod') !== -1)) ? 1 : 0;
+		}
+		if (ftr === 'web_linuxbsd') {
+			return ((ua.indexOf('CrOS') !== -1) || (ua.indexOf('BSD') !== -1) || (ua.indexOf('Linux') !== -1) || (ua.indexOf('X11') !== -1)) ? 1 : 0;
+		}
+		return 0;
+	},
+
 	godot_js_os_execute__sig: 'ii',
 	godot_js_os_execute: function (p_json) {
 		const json_args = GodotRuntime.parseString(p_json);

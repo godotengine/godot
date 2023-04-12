@@ -33,11 +33,11 @@
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "scene/gui/margin_container.h"
 
 void DependencyEditor::_searched(const String &p_path) {

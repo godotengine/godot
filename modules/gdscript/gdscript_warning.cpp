@@ -183,7 +183,7 @@ String GDScriptWarning::get_message() const {
 			return vformat(R"*(The default value is using "%s" which won't return nodes in the scene tree before "_ready()" is called. Use the "@onready" annotation to solve this.)*", symbols[0]);
 		}
 		case ONREADY_WITH_EXPORT: {
-			return R"(The "@onready" annotation will make the default value to be set after the "@export" takes effect and will override it.)";
+			return R"("@onready" will set the default value after "@export" takes effect and will override it.)";
 		}
 		case WARNING_MAX:
 			break; // Can't happen, but silences warning

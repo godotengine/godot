@@ -31,13 +31,12 @@
 #ifndef GROUPS_EDITOR_H
 #define GROUPS_EDITOR_H
 
-#include "editor/scene_tree_editor.h"
-#include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/popup.h"
-#include "scene/gui/tree.h"
+
+class Button;
+class LineEdit;
+class Tree;
+class TreeItem;
 
 class GroupDialog : public AcceptDialog {
 	GDCLASS(GroupDialog, AcceptDialog);

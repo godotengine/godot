@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_path.h                                                         */
+/*  editor_dir_dialog.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,46 +28,51 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_PATH_H
-#define EDITOR_PATH_H
+#ifndef EDITOR_DIR_DIALOG_H
+#define EDITOR_DIR_DIALOG_H
 
-#include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/label.h"
-#include "scene/gui/popup_menu.h"
-#include "scene/gui/texture_rect.h"
+#include "scene/gui/dialogs.h"
 
-class EditorSelectionHistory;
+class CheckBox;
+class EditorFileSystemDirectory;
+class Tree;
+class TreeItem;
 
-class EditorPath : public Button {
-	GDCLASS(EditorPath, Button);
+class EditorDirDialog : public ConfirmationDialog {
+	GDCLASS(EditorDirDialog, ConfirmationDialog);
 
-	EditorSelectionHistory *history = nullptr;
+	ConfirmationDialog *makedialog = nullptr;
+	LineEdit *makedirname = nullptr;
+	AcceptDialog *mkdirerr = nullptr;
 
-	TextureRect *current_object_icon = nullptr;
-	Label *current_object_label = nullptr;
-	TextureRect *sub_objects_icon = nullptr;
-	PopupMenu *sub_objects_menu = nullptr;
+	Button *makedir = nullptr;
+	HashSet<String> opened_paths;
 
-	Vector<ObjectID> objects;
+	Tree *tree = nullptr;
+	bool updating = false;
+	CheckBox *copy = nullptr;
 
-	void _show_popup();
-	void _id_pressed(int p_idx);
-	void _about_to_show();
-	void _add_children_to_popup(Object *p_obj, int p_depth = 0);
+	void _copy_toggled(bool p_pressed);
+	void _item_collapsed(Object *p_item);
+	void _item_activated();
+	void _update_dir(TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path = String());
+
+	void _make_dir();
+	void _make_dir_confirm();
+
+	void ok_pressed() override;
+
+	bool must_reload = false;
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	virtual Size2 get_minimum_size() const override;
+	void reload(const String &p_path = "");
+	bool is_copy_pressed() const;
 
-	void update_path();
-	void clear_path();
-	void enable_path();
-
-	EditorPath(EditorSelectionHistory *p_history);
+	EditorDirDialog();
 };
 
-#endif // EDITOR_PATH_H
+#endif // EDITOR_DIR_DIALOG_H

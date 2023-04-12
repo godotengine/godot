@@ -293,7 +293,7 @@ private:
 	Color debug_navigation_link_connection_disabled_color = Color(0.5, 0.5, 0.5, 1.0);
 	Color debug_navigation_agent_path_color = Color(1.0, 0.0, 0.0, 1.0);
 
-	float debug_navigation_agent_path_point_size = 4.0;
+	real_t debug_navigation_agent_path_point_size = 4.0;
 
 	bool debug_navigation_enable_edge_connections = true;
 	bool debug_navigation_enable_edge_connections_xray = true;
@@ -368,8 +368,8 @@ public:
 	void set_debug_navigation_enable_agent_paths_xray(const bool p_value);
 	bool get_debug_navigation_enable_agent_paths_xray() const;
 
-	void set_debug_navigation_agent_path_point_size(float p_point_size);
-	float get_debug_navigation_agent_path_point_size() const;
+	void set_debug_navigation_agent_path_point_size(real_t p_point_size);
+	real_t get_debug_navigation_agent_path_point_size() const;
 
 	Ref<StandardMaterial3D> get_debug_navigation_geometry_face_material();
 	Ref<StandardMaterial3D> get_debug_navigation_geometry_edge_material();

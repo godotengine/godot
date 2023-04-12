@@ -58,7 +58,7 @@
 				This will color columns 0-4 red, and columns 5-eol in green.
 			</description>
 		</method>
-		<method name="get_text_edit">
+		<method name="get_text_edit" qualifiers="const">
 			<return type="TextEdit" />
 			<description>
 				Returns the associated [TextEdit] node.

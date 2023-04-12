@@ -109,6 +109,12 @@
 				Returns the scroll offset due to [member caret_column], as a number of characters.
 			</description>
 		</method>
+		<method name="get_selected_text">
+			<return type="String" />
+			<description>
+				Returns the text inside the selection.
+			</description>
+		</method>
 		<method name="get_selection_from_column" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -181,10 +187,10 @@
 			Text alignment as defined in the [enum HorizontalAlignment] enum.
 		</member>
 		<member name="caret_blink" type="bool" setter="set_caret_blink_enabled" getter="is_caret_blink_enabled" default="false">
-			If [code]true[/code], the caret (text cursor) blinks.
+			If [code]true[/code], makes the caret blink.
 		</member>
 		<member name="caret_blink_interval" type="float" setter="set_caret_blink_interval" getter="get_caret_blink_interval" default="0.65">
-			Duration (in seconds) of a caret's blinking cycle.
+			The interval at which the caret blinks (in seconds).
 		</member>
 		<member name="caret_column" type="int" setter="set_caret_column" getter="get_caret_column" default="0">
 			The caret's column position inside the [LineEdit]. When set, the text may scroll to accommodate it.

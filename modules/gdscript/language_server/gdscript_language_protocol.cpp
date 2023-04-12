@@ -237,6 +237,7 @@ void GDScriptLanguageProtocol::poll() {
 	HashMap<int, Ref<LSPeer>>::Iterator E = clients.begin();
 	while (E != clients.end()) {
 		Ref<LSPeer> peer = E->value;
+		peer->connection->poll();
 		StreamPeerTCP::Status status = peer->connection->get_status();
 		if (status == StreamPeerTCP::STATUS_NONE || status == StreamPeerTCP::STATUS_ERROR) {
 			on_client_disconnected(E->key);

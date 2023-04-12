@@ -31,15 +31,22 @@
 #include "theme_editor_plugin.h"
 
 #include "core/os/keyboard.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_resource_picker.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/progress_dialog.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/color_picker.h"
+#include "scene/gui/item_list.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/scroll_container.h"
 #include "scene/gui/split_container.h"
+#include "scene/gui/tab_bar.h"
+#include "scene/gui/tab_container.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/theme/theme_db.h"
 
 void ThemeItemImportTree::_update_items_tree() {

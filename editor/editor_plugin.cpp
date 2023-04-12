@@ -40,6 +40,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/export/editor_export.h"
 #include "editor/filesystem_dock.h"
+#include "editor/gui/editor_title_bar.h"
 #include "editor/import/editor_import_plugin.h"
 #include "editor/import/resource_importer_scene.h"
 #include "editor/inspector_dock.h"

@@ -15,6 +15,7 @@
 			<return type="float" />
 			<param index="0" name="param" type="int" enum="ConeTwistJoint3D.Param" />
 			<description>
+				Returns the value of the specified parameter.
 			</description>
 		</method>
 		<method name="set_param">
@@ -22,6 +23,7 @@
 			<param index="0" name="param" type="int" enum="ConeTwistJoint3D.Param" />
 			<param index="1" name="value" type="float" />
 			<description>
+				Sets the value of the specified parameter.
 			</description>
 		</method>
 	</methods>

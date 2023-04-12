@@ -533,7 +533,6 @@ void GraphEdit::_notification(int p_what) {
 
 void GraphEdit::_update_comment_enclosed_nodes_list(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes) {
 	Rect2 comment_node_rect = p_node->get_rect();
-	comment_node_rect.size *= zoom;
 
 	Vector<GraphNode *> enclosed_nodes;
 	for (int i = 0; i < get_child_count(); i++) {
@@ -543,7 +542,6 @@ void GraphEdit::_update_comment_enclosed_nodes_list(GraphNode *p_node, HashMap<S
 		}
 
 		Rect2 node_rect = gn->get_rect();
-		node_rect.size *= zoom;
 
 		bool included = comment_node_rect.encloses(node_rect);
 		if (included) {
@@ -806,7 +804,6 @@ bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &mpos
 	}
 
 	Rect2 control_rect = p_control->get_rect();
-	control_rect.size *= zoom;
 	control_rect.position *= zoom;
 	control_rect.position += p_offset;
 
@@ -873,7 +870,6 @@ bool GraphEdit::is_in_port_hotzone(const Vector2 &p_pos, const Vector2 &p_mouse_
 			continue;
 		}
 		Rect2 child_rect = child->get_rect();
-		child_rect.size *= zoom;
 
 		if (child_rect.has_point(p_mouse_pos * zoom)) {
 			for (int j = 0; j < child->get_child_count(); j++) {
@@ -1169,7 +1165,6 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 			}
 
 			Rect2 r = gn->get_rect();
-			r.size *= zoom;
 			bool in_box = r.intersects(box_selecting_rect);
 
 			if (in_box) {
@@ -1215,7 +1210,6 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 
 					if (gn) {
 						Rect2 r = gn->get_rect();
-						r.size *= zoom;
 						if (r.has_point(mb->get_position())) {
 							gn->set_selected(false);
 						}

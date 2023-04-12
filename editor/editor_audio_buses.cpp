@@ -34,12 +34,12 @@
 #include "core/input/input.h"
 #include "core/io/resource_saver.h"
 #include "core/os/keyboard.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "filesystem_dock.h"
+#include "editor/filesystem_dock.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/font.h"
 #include "servers/audio_server.h"
@@ -1436,6 +1436,15 @@ Size2 EditorAudioMeterNotches::get_minimum_size() const {
 	return Size2(width, height);
 }
 
+void EditorAudioMeterNotches::_update_theme_item_cache() {
+	Control::_update_theme_item_cache();
+
+	theme_cache.notch_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
+
+	theme_cache.font = get_theme_font(SNAME("font"), SNAME("Label"));
+	theme_cache.font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+}
+
 void EditorAudioMeterNotches::_bind_methods() {
 	ClassDB::bind_method("add_notch", &EditorAudioMeterNotches::add_notch);
 	ClassDB::bind_method("_draw_audio_notches", &EditorAudioMeterNotches::_draw_audio_notches);
@@ -1443,10 +1452,6 @@ void EditorAudioMeterNotches::_bind_methods() {
 
 void EditorAudioMeterNotches::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED: {
-			notch_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
-		} break;
-
 		case NOTIFICATION_DRAW: {
 			_draw_audio_notches();
 		} break;
@@ -1454,28 +1459,22 @@ void EditorAudioMeterNotches::_notification(int p_what) {
 }
 
 void EditorAudioMeterNotches::_draw_audio_notches() {
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-	float font_height = font->get_height(font_size);
+	float font_height = theme_cache.font->get_height(theme_cache.font_size);
 
 	for (int i = 0; i < notches.size(); i++) {
 		AudioNotch n = notches[i];
 		draw_line(Vector2(0, (1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + top_padding),
 				Vector2(line_length * EDSCALE, (1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + top_padding),
-				notch_color,
+				theme_cache.notch_color,
 				Math::round(EDSCALE));
 
 		if (n.render_db_value) {
-			draw_string(font,
+			draw_string(theme_cache.font,
 					Vector2((line_length + label_space) * EDSCALE,
 							(1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + (font_height / 4) + top_padding),
 					String::num(Math::abs(n.db_value)) + "dB",
-					HORIZONTAL_ALIGNMENT_LEFT, -1, font_size,
-					notch_color);
+					HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size,
+					theme_cache.notch_color);
 		}
 	}
-}
-
-EditorAudioMeterNotches::EditorAudioMeterNotches() {
-	notch_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
 }

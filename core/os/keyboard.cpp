@@ -367,11 +367,11 @@ String keycode_get_string(Key p_code) {
 		codestr += "+";
 	}
 	if ((p_code & KeyModifierMask::CMD_OR_CTRL) != Key::NONE) {
-#ifdef MACOS_ENABLED
-		codestr += find_keycode_name(Key::META);
-#else
-		codestr += find_keycode_name(Key::CTRL);
-#endif
+		if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+			codestr += find_keycode_name(Key::META);
+		} else {
+			codestr += find_keycode_name(Key::CTRL);
+		}
 		codestr += "+";
 	}
 	if ((p_code & KeyModifierMask::CTRL) != Key::NONE) {

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_dir_dialog.h                                                   */
+/*  editor_title_bar.cpp                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,45 +28,59 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_DIR_DIALOG_H
-#define EDITOR_DIR_DIALOG_H
+#include "editor_title_bar.h"
 
-#include "core/io/dir_access.h"
-#include "editor/editor_file_system.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/tree.h"
+void EditorTitleBar::gui_input(const Ref<InputEvent> &p_event) {
+	if (!can_move) {
+		return;
+	}
 
-class EditorDirDialog : public ConfirmationDialog {
-	GDCLASS(EditorDirDialog, ConfirmationDialog);
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid() && moving) {
+		if (mm->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
+			Window *w = Object::cast_to<Window>(get_viewport());
+			if (w) {
+				Point2 mouse = DisplayServer::get_singleton()->mouse_get_position();
+				w->set_position(mouse - click_pos);
+			}
+		} else {
+			moving = false;
+		}
+	}
 
-	ConfirmationDialog *makedialog = nullptr;
-	LineEdit *makedirname = nullptr;
-	AcceptDialog *mkdirerr = nullptr;
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && has_point(mb->get_position())) {
+		Window *w = Object::cast_to<Window>(get_viewport());
+		if (w) {
+			if (mb->get_button_index() == MouseButton::LEFT) {
+				if (mb->is_pressed()) {
+					click_pos = DisplayServer::get_singleton()->mouse_get_position() - w->get_position();
+					moving = true;
+				} else {
+					moving = false;
+				}
+			}
+			if (mb->get_button_index() == MouseButton::LEFT && mb->is_double_click() && mb->is_pressed()) {
+				if (DisplayServer::get_singleton()->window_maximize_on_title_dbl_click()) {
+					if (w->get_mode() == Window::MODE_WINDOWED) {
+						w->set_mode(Window::MODE_MAXIMIZED);
+					} else if (w->get_mode() == Window::MODE_MAXIMIZED) {
+						w->set_mode(Window::MODE_WINDOWED);
+					}
+				} else if (DisplayServer::get_singleton()->window_minimize_on_title_dbl_click()) {
+					w->set_mode(Window::MODE_MINIMIZED);
+				}
+				moving = false;
+			}
+		}
+	}
+}
 
-	Button *makedir = nullptr;
-	HashSet<String> opened_paths;
+void EditorTitleBar::set_can_move_window(bool p_enabled) {
+	can_move = p_enabled;
+	set_process_input(can_move);
+}
 
-	Tree *tree = nullptr;
-	bool updating = false;
-
-	void _item_collapsed(Object *p_item);
-	void _item_activated();
-	void _update_dir(TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path = String());
-
-	void _make_dir();
-	void _make_dir_confirm();
-
-	void ok_pressed() override;
-
-	bool must_reload = false;
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	void reload(const String &p_path = "");
-	EditorDirDialog();
-};
-
-#endif // EDITOR_DIR_DIALOG_H
+bool EditorTitleBar::get_can_move_window() const {
+	return can_move;
+}

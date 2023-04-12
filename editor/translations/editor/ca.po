@@ -23,7 +23,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-09 22:27+0000\n"
+"PO-Revision-Date: 2023-03-19 23:59+0000\n"
 "Last-Translator: Jordi Borràs <jborras@centrekepler.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
@@ -710,6 +710,9 @@ msgstr "Clip d'animació:"
 msgid "Toggle Track Enabled"
 msgstr "Pista de commutació activada"
 
+msgid "Don't Use Blend"
+msgstr "No utilitzis la Barreja"
+
 msgid "Continuous"
 msgstr "Continu"
 
@@ -726,7 +729,13 @@ msgid "Linear"
 msgstr "Lineal"
 
 msgid "Cubic"
-msgstr "Cúbic"
+msgstr "Cúbica"
+
+msgid "Linear Angle"
+msgstr "Lineal Angular"
+
+msgid "Cubic Angle"
+msgstr "Cúbica Angular"
 
 msgid "Clamp Loop Interp"
 msgstr "Limita la Interpolació del bucle"
@@ -740,23 +749,45 @@ msgstr "Insereix una clau"
 msgid "Duplicate Key(s)"
 msgstr "Duplica les Claus"
 
+msgid "Add RESET Value(s)"
+msgstr "Afegeix valor(s) de RESET"
+
 msgid "Delete Key(s)"
 msgstr "Elimina les Claus"
 
 msgid "Change Animation Update Mode"
-msgstr "Canviar el Mode d'Actualització de l'Animació"
+msgstr "Canvia el Mode d'Actualització de l'Animació"
 
 msgid "Change Animation Interpolation Mode"
-msgstr "Canviar Mode d'Interpolació de l'Animació"
+msgstr "Canvia el Mode d'Interpolació de l'Animació"
 
 msgid "Change Animation Loop Mode"
-msgstr "Canviar Mode de bucle d'Animació"
+msgstr "Canvia el Mode de bucle d'Animació"
+
+msgid "Change Animation Use Blend"
+msgstr "Canvia l'ús de la Mescla (Blend) en l'animació"
+
+msgid ""
+"Compressed tracks can't be edited or removed. Re-import the animation with "
+"compression disabled in order to edit."
+msgstr ""
+"Les pistes comprimides no es poden editar o eliminar. Reimporta l'animació "
+"amb la compressió desactivada per poder-la editar."
 
 msgid "Remove Anim Track"
-msgstr "Treu la Pista"
+msgstr "Elimina la Pista d'Animació"
+
+msgid "Create new track for %s and insert key?"
+msgstr "Voleu crear una nova pista per a %s i inserir-hi una clau?"
+
+msgid "Create %d new tracks and insert keys?"
+msgstr "Voleu crear %d noves pistes i inserir-hi claus?"
 
 msgid "Create"
 msgstr "Crea"
+
+msgid "Animation Insert Key"
+msgstr "Insereix una Clau a l'Animació"
 
 msgid "node '%s'"
 msgstr "node '%s'"
@@ -772,10 +803,20 @@ msgid "property '%s'"
 msgstr "propietat '%s'"
 
 msgid "Change Animation Step"
-msgstr "Canviar Pas d'Animació"
+msgstr "Canvia el Pas d'Animació"
 
 msgid "Rearrange Tracks"
 msgstr "Reorganitza pistes"
+
+msgid "Blend Shape tracks only apply to MeshInstance3D nodes."
+msgstr ""
+"Les pistes de Mescla (Blend) només s'apliquen a nodes del tipus "
+"Meshinstance3D."
+
+msgid "Position/Rotation/Scale 3D tracks only apply to 3D-based nodes."
+msgstr ""
+"Les pistes de Posició/Rotació/Escala 3D només s'apliquen a nodes basats en "
+"3D."
 
 msgid ""
 "Audio tracks can only point to nodes of type:\n"
@@ -783,7 +824,7 @@ msgid ""
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
-"Les pistes de àudio només poden apuntar a nodes del tipus:\n"
+"Les pistes d'àudio només poden apuntar a nodes dels tipus:\n"
 "-AudioStreamPlayer\n"
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
@@ -795,16 +836,29 @@ msgid "Not possible to add a new track without a root"
 msgstr "No es pot afegir una nova pista sense cap arrel"
 
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr "La pista no és vàlida per a Bezier (no hi ha subpropietats adequades)"
+msgstr ""
+"La pista no és vàlida per a corbes de Bézier (cap subpropietat adequada)"
 
 msgid "Add Bezier Track"
-msgstr "Afegir Pista Bezier"
+msgstr "Afegeix una Pista de corbes de Bézier"
 
 msgid "Track path is invalid, so can't add a key."
 msgstr "El camí de la Pista no és vàlid i per tant no s'hi poden afegir claus."
 
+msgid "Track is not of type Node3D, can't insert key"
+msgstr "La pista no és de tipus Node3D, no s'hi pot inserir la clau"
+
+msgid "Add Position Key"
+msgstr "Afegeix una clau de Posició"
+
+msgid "Add Rotation Key"
+msgstr "Afegeix una Clau de Rotació"
+
+msgid "Add Scale Key"
+msgstr "Afegeix una Clau d'Escala"
+
 msgid "Add Track Key"
-msgstr "Afegir Clau de Pista"
+msgstr "Afegeix una Clau de Pista"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr ""
@@ -816,6 +870,9 @@ msgstr "Afegir Clau de Pista de Mètode"
 msgid "Method not found in object:"
 msgstr "Mètode no trobat a l'objecte:"
 
+msgid "Animation Move Keys"
+msgstr "Mou les Claus de l'Animació"
+
 msgid "Position"
 msgstr "Posició"
 
@@ -825,8 +882,14 @@ msgstr "Rotació"
 msgid "Scale"
 msgstr "Escala"
 
+msgid "BlendShape"
+msgstr "Barreja de forma (BlendShape)"
+
 msgid "Methods"
 msgstr "Mètodes"
+
+msgid "Bezier"
+msgstr "Bézier"
 
 msgid "Audio"
 msgstr "Àudio"
@@ -837,10 +900,41 @@ msgstr "El porta-retalls és buit!"
 msgid "Paste Tracks"
 msgstr "Enganxa les Pistes"
 
+msgid "Animation Scale Keys"
+msgstr "Claus d'Escala de l'Animació"
+
+msgid "Make Easing Keys"
+msgstr "Crea Claus de Suavització"
+
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr ""
 "Aquesta opció no funciona per l'edició de Bézier, ja que és una pista única."
+
+msgid "Animation Add RESET Keys"
+msgstr "Afegeix Claus de RESET a l'animació"
+
+msgid "Bake Animation as Linear keys."
+msgstr "Precalcula l'animació com a Claus Lineals."
+
+msgid ""
+"This animation belongs to an imported scene, so changes to imported tracks "
+"will not be saved.\n"
+"\n"
+"To modify this animation, navigate to the scene's Advanced Import settings "
+"and select the animation.\n"
+"Some options, including looping, are available here. To add custom tracks, "
+"enable \"Save To File\" and\n"
+"\"Keep Custom Tracks\"."
+msgstr ""
+"Aquesta animació pertany a una escena importada, de manera que no es desaran "
+"els canvis a les pistes importades.\n"
+"\n"
+"Per tal de modificar aquesta animació, navegueu a la configuració avançada "
+"d’importació de l’escena i seleccioneu l'animació.\n"
+"Algunes opcions, com la repetició, poden trobar-s'hi. Per afegir-hi pistes "
+"personalitzades, activeu \"Desa en un fitxer\" i\n"
+"\"Mantingues les pistes personalitzades\"."
 
 msgid "Warning: Editing imported animation"
 msgstr "Advertiment: Edició d'animació importada"
@@ -848,8 +942,14 @@ msgstr "Advertiment: Edició d'animació importada"
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "Seleccioneu un node AnimationPlayer per a crear i editar animacions."
 
+msgid "Imported Scene"
+msgstr "Escena Importada"
+
+msgid "Toggle between the bezier curve editor and track editor."
+msgstr "Alterna entre l'editor de corbes de Bézier i el de pistes."
+
 msgid "Only show tracks from nodes selected in tree."
-msgstr "Mostra les pistes dels nodes seleccionats en l'arbre."
+msgstr "Mostra només les pistes dels nodes seleccionats en l'arbre."
 
 msgid "Group tracks by node or display them as plain list."
 msgstr "Agrupa les pistes per node o mostra-les en una llista."
@@ -873,13 +973,16 @@ msgid "Animation properties."
 msgstr "Propietats de l'Animació."
 
 msgid "Copy Tracks"
-msgstr "Còpia les Pistes"
+msgstr "Copia les Pistes"
 
 msgid "Scale Selection"
 msgstr "Escala la Selecció"
 
 msgid "Scale From Cursor"
-msgstr "Escala amb el Cursor"
+msgstr "Escala a partir del Cursor"
+
+msgid "Make Easing Selection"
+msgstr "Selecciona el tipus de suavització"
 
 msgid "Duplicate Selection"
 msgstr "Duplica la Selecció"
@@ -891,16 +994,34 @@ msgid "Delete Selection"
 msgstr "Suprimeix la Selecció"
 
 msgid "Go to Next Step"
-msgstr "Anar al Pas Següent"
+msgstr "Ves al Pas Següent"
 
 msgid "Go to Previous Step"
-msgstr "Anar al Pas Anterior"
+msgstr "Ves al Pas Anterior"
 
 msgid "Apply Reset"
 msgstr "Aplica reinicialització"
 
+msgid "Bake Animation"
+msgstr "Precalcula l'Animació"
+
+msgid "Optimize Animation (no undo)"
+msgstr "Optimitza l'Animació (no es pot desfer)"
+
+msgid "Clean-Up Animation (no undo)"
+msgstr "Poleix l'Animació (No es pot desfer)"
+
+msgid "Pick a node to animate:"
+msgstr "Tria un node a animar:"
+
 msgid "Use Bezier Curves"
-msgstr "Fés servir Corbes Bézier"
+msgstr "Fes servir Corbes de Bézier"
+
+msgid "Create RESET Track(s)"
+msgstr "Crea pistes RESET"
+
+msgid "Animation Optimizer"
+msgstr "Optimitzador d'Animació"
 
 msgid "Optimize"
 msgstr "Optimitza"

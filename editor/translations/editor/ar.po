@@ -74,13 +74,17 @@
 # "Ali F. Abbas" <alifuadabbas@gmail.com>, 2023.
 # Youssef Mohamed <starmod300@gmail.com>, 2023.
 # "Mr.k" <mineshtine28546271@gmail.com>, 2023.
+# Mohammedi Mohammed Djawad <smallcloverstudio@gmail.com>, 2023.
+# Hamed Mohammed Almuslhi <wbk7777@hotmail.com>, 2023.
+# KhalilBenGaied <grozz1@yahoo.com>, 2023.
+# بسام العوفي <co-able@hotmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-12 02:42+0000\n"
-"Last-Translator: \"Mr.k\" <mineshtine28546271@gmail.com>\n"
+"PO-Revision-Date: 2023-04-01 01:47+0000\n"
+"Last-Translator: بسام العوفي <co-able@hotmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -89,7 +93,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 4.16.2-dev\n"
+"X-Generator: Weblate 4.17-dev\n"
 
 msgid "Unset"
 msgstr "غير محدد"
@@ -535,6 +539,12 @@ msgstr "حذف الحدث"
 msgid "Filter by name..."
 msgstr "فلتر بواسطة الاسم..."
 
+msgid "Clear All"
+msgstr "مسح الكل"
+
+msgid "Add New Action"
+msgstr "إضافة اكشن جديد"
+
 msgid "Add"
 msgstr "أضف"
 
@@ -622,6 +632,12 @@ msgstr "الرسوم المتحركه تغييرات متعددة للمراحل
 msgid "Animation Multi Change %s"
 msgstr "تغيرات متعددة للرسوم المتحركة s%"
 
+msgid "Animation Multi Change Keyframe Value"
+msgstr "تغيير متعدد لقيمة الإطار(ات)"
+
+msgid "Animation Multi Change Call"
+msgstr "تغيير متعدد لنداء(ات) التحريك"
+
 msgid "Change Animation Length"
 msgstr "تعديل مدة الرسم المتحرك"
 
@@ -636,6 +652,15 @@ msgstr "لا يمكن تغيير وضع التكرار على الرسوم ال�
 
 msgid "Property Track"
 msgstr "مسار خاصية"
+
+msgid "3D Position Track"
+msgstr "مسار الموقع ثلاثي الابعاد"
+
+msgid "3D Rotation Track"
+msgstr "مسار الدوران ثلاثي الأبعاد"
+
+msgid "3D Scale Track"
+msgstr "مسار الحجم ثلاثي الأبعاد"
 
 msgid "Blend Shape Track"
 msgstr "مزيج الشكل و المسار"
@@ -670,11 +695,17 @@ msgstr "الدوال:"
 msgid "Audio Clips:"
 msgstr "مقاطع صوتية:"
 
+msgid "Animation Clips:"
+msgstr "مقاطع التحريك:"
+
 msgid "Change Track Path"
 msgstr "تغيير مسار مقطع الحركة/الانيميشن"
 
 msgid "Toggle this track on/off."
 msgstr "تمكين/إيقاف هذا المسار."
+
+msgid "Use Blend"
+msgstr "استعمال الدمج"
 
 msgid "Update Mode (How this property is set)"
 msgstr "وضع التحديث (كيفية تعيين هذه الخاصية)"
@@ -691,11 +722,23 @@ msgstr "إزالة هذا المسار."
 msgid "Time (s):"
 msgstr "الوقت(ثواني):"
 
+msgid "Position:"
+msgstr "الموقع"
+
+msgid "Rotation:"
+msgstr "الدوران:"
+
 msgid "Scale:"
-msgstr "تغيير الأبعاد:"
+msgstr "التحاكي:"
+
+msgid "Blend Shape:"
+msgstr "دمج الشكل:"
 
 msgid "Type:"
-msgstr "نوع:"
+msgstr "النوع:"
+
+msgid "(Invalid, expected type: %s)"
+msgstr "(غير صحيح، النوع المُتوقع: %s)"
 
 msgid "Handle mode: Free\n"
 msgstr "وضع المقبض: حر\n"
@@ -708,6 +751,9 @@ msgstr "وضع المقبض: متوازن\n"
 
 msgid "Handle mode: Mirrored\n"
 msgstr "وضع المقبض: معكوس\n"
+
+msgid "Stream:"
+msgstr "تدفق:"
 
 msgid "Toggle Track Enabled"
 msgstr "ترجيح المسار المُفعل"
@@ -722,16 +768,19 @@ msgid "Discrete"
 msgstr "متقطع"
 
 msgid "Capture"
-msgstr "التقاط"
+msgstr "إلتقط"
 
 msgid "Nearest"
-msgstr "أقرب"
+msgstr "الأقرب"
 
 msgid "Linear"
 msgstr "خطي"
 
 msgid "Cubic"
 msgstr "مكعبي"
+
+msgid "Cubic Angle"
+msgstr "زاوية مكعبة"
 
 msgid "Clamp Loop Interp"
 msgstr "تفسير الحلقة المثبتة"
@@ -758,7 +807,7 @@ msgid "Change Animation Interpolation Mode"
 msgstr "تغيير وضع التفسير (Interpolation) للرسم المتحرك"
 
 msgid "Change Animation Loop Mode"
-msgstr "تغيير وضع عقدة الرسم المتحرك"
+msgstr "تغيير طريقة تكرار عرض التحريك"
 
 msgid ""
 "Compressed tracks can't be edited or removed. Re-import the animation with "
@@ -769,6 +818,9 @@ msgstr ""
 
 msgid "Remove Anim Track"
 msgstr "إزالة مسار التحريك"
+
+msgid "Create %d new tracks and insert keys?"
+msgstr "أنشئ %d مسارات جديدة و مفاتيح الإدخال؟"
 
 msgid "Create"
 msgstr "أنشئ"
@@ -1379,7 +1431,7 @@ msgid "Dependencies"
 msgstr "التبعيات"
 
 msgid "Resource"
-msgstr "مورد"
+msgstr "المصدر"
 
 msgid "Path"
 msgstr "المسار"
@@ -1801,6 +1853,38 @@ msgid ""
 "Supports basic text layouts."
 msgstr "التنفيذ الاحتياطي لخادم النص يدعم تخطيطات النص الأساسية."
 
+msgid ""
+"Text Server implementation powered by ICU and HarfBuzz libraries.\n"
+"Supports complex text layouts, BiDi, and contextual OpenType font features."
+msgstr ""
+"تُدعم خاصية خادم النص باستعمال مكتبات ICU وHarfBuzz.\n"
+"يدعم المخططات النصية المعقدة، الكتابة بالاتاجهين، والمزايا السياقية لخطوط "
+"OpenType."
+
+msgid ""
+"TrueType, OpenType, Type 1, and WOFF1 font format support using FreeType "
+"library (if disabled, WOFF2 support is also disabled)."
+msgstr ""
+"دعم صيغة الخط TrueType وOpenType وType 1 وWOFF1 باستعمال مكتبة FreeType (إن "
+"تم إيقافها، سيتوقف دعم WOFF2 كذلك)."
+
+msgid "WOFF2 font format support using FreeType and Brotli libraries."
+msgstr "دعم صيغة الخط WOFF2 باستعمال مكاتب FreeType وBrotli."
+
+msgid ""
+"SIL Graphite smart font technology support (supported by Advanced Text "
+"Server only)."
+msgstr "دعم تقنية الخط الذكي SIL Graphite (يدعمها خادر النص المتقدم فقط)."
+
+msgid "General Features:"
+msgstr "المزايا الرئيسية:"
+
+msgid "Text Rendering and Font Options:"
+msgstr "إخراج النص وإعدادات الخط:"
+
+msgid "File saving failed."
+msgstr "فشل حفظ الملف."
+
 msgid "Nodes and Classes:"
 msgstr "العُقد (Nodes) والفئات (Classes):"
 
@@ -1816,14 +1900,38 @@ msgstr "جديد"
 msgid "Save"
 msgstr "حفظ"
 
+msgid "Profile:"
+msgstr "المرُتسم Profile:"
+
 msgid "Reset to Defaults"
-msgstr "اعادة التعيين للإفتراضيات"
+msgstr "إعادة للإعدادات الافتراضية"
+
+msgid "Actions:"
+msgstr "الإجراءات:"
+
+msgid "Configure Engine Build Profile:"
+msgstr "عدّل مُرتسم بناء المحرك:"
+
+msgid "Please Confirm:"
+msgstr "أكد من فضلك:"
+
+msgid "Engine Build Profile"
+msgstr "مُرتسم بناء المحرك"
+
+msgid "Load Profile"
+msgstr "حمّل المرُتسم"
 
 msgid "Export Profile"
-msgstr "تصدير الملف"
+msgstr "تصدير المُرتسم"
+
+msgid "Edit Build Configuration Profile"
+msgstr "عدّل مُرتسم إعدادات التصدير"
+
+msgid "Filter Commands"
+msgstr "تصفية الأوامر"
 
 msgid "Paste Params"
-msgstr "لصق المُعامل"
+msgstr "لصق المُعاملات"
 
 msgid "Updating Scene"
 msgstr "يُحدث المشهد"
@@ -1905,6 +2013,9 @@ msgid ""
 msgstr ""
 "يسمح بتحديد خصائص الاستيراد المتعلقة بالوسائط على حدى. يتطلب عمله رصيف "
 "الملفات."
+
+msgid "Provides an overview of the editor's and each scene's undo history."
+msgstr "يؤمن موجزاً لتاريخ التراجع الخاص بالمحرر وكل من العُقد على حدة."
 
 msgid "(current)"
 msgstr "(الحالي)"
@@ -2001,6 +2112,19 @@ msgstr "إفتح"
 msgid "Select Current Folder"
 msgstr "تحديد المجلد الحالي"
 
+msgid "Cannot save file with an empty filename."
+msgstr "لا يمكن حفظ الملف بدون اسم."
+
+msgid "Cannot save file with a name starting with a dot."
+msgstr "لا يمكن حفظ الملف باسم يبدأ بنقطة."
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"الملف \"s%\" موجود سلفاً.\n"
+"هل ترغب باستبداله بهذا الملف؟"
+
 msgid "Select This Folder"
 msgstr "حدد هذا المجلد"
 
@@ -2036,6 +2160,9 @@ msgstr "إفتح ملف أو وجهة"
 
 msgid "Save a File"
 msgstr "حفظ ملف"
+
+msgid "Favorited folder does not exist anymore and will be removed."
+msgstr "المُجلد المُفضل لم يعد موجوداً وستتم إزالته."
 
 msgid "Go Back"
 msgstr "الرجوع للخلف"
@@ -2114,6 +2241,39 @@ msgstr "هناك عدة مستوردات مخصوصة لعدة أنواع حدد
 msgid "(Re)Importing Assets"
 msgstr "إعادة إستيراد الأصول"
 
+msgid "Deprecated"
+msgstr "مُهمل"
+
+msgid "Experimental"
+msgstr "تجريبي"
+
+msgid "This method supports a variable number of arguments."
+msgstr "تدعم هذا الدالة عددا متفاوتاً من المتغيرات."
+
+msgid ""
+"This method is called by the engine.\n"
+"It can be overridden to customize built-in behavior."
+msgstr ""
+"يتم استدعاء هذه الدالة من قبل المحرك.\n"
+"يمكن تجاوزها لتطبيق تغييرات على السلوك الافتراضي للمحرك."
+
+msgid ""
+"This method has no side effects.\n"
+"It does not modify the object in any way."
+msgstr ""
+"ليس لهذه الدالة تأثيرات جانية.\n"
+"فهي لا تعدل الشيء object بأي طريقة كانت."
+
+msgid ""
+"This method does not need an instance to be called.\n"
+"It can be called directly using the class name."
+msgstr ""
+"لا تتطلب هذه الدالة نسخها ليتم استدعاءها.\n"
+"يمكن أن تستدعيها باستعمال اسم الصف class name."
+
+msgid "There is currently no description for this %s."
+msgstr "لا يوجد حالياً وصف لـ %s."
+
 msgid "Top"
 msgstr "فوق"
 
@@ -2126,14 +2286,29 @@ msgstr "يرث:"
 msgid "Inherited by:"
 msgstr "مورث بواسطة:"
 
+msgid ""
+"This class is marked as deprecated. It will be removed in future versions."
+msgstr ""
+"تم وسم هذا الصف class بأنه مُهمل. ستتم إزالته في النُسخ المستقبلية من المحرك."
+
+msgid ""
+"This class is marked as experimental. It is subject to likely change or "
+"possible removal in future versions. Use at your own discretion."
+msgstr ""
+"تم وسم هذا الصف بأنه تجريبي. من المتوقع أن يتغير أو يُزال في الإصدارات "
+"المستقبلية. استعمله على مسؤوليتك."
+
 msgid "Description"
 msgstr "الوصف"
+
+msgid "There is currently no description for this class."
+msgstr "لا يوجد حالياً وصف لهذا الصف."
 
 msgid "Online Tutorials"
 msgstr "التعليمات على الإنترنت"
 
 msgid "Properties"
-msgstr "خصائص"
+msgstr "الخصائص"
 
 msgid "overrides %s:"
 msgstr "يتجاوز %s:"
@@ -2163,13 +2338,19 @@ msgid "Styles"
 msgstr "مظاهر"
 
 msgid "Enumerations"
-msgstr "تعدادات"
+msgstr "المسرودات"
+
+msgid "There is currently no description for this annotation."
+msgstr "لا يوجد حالياً وصف لهذه التأشيرة."
 
 msgid "Property Descriptions"
 msgstr "أوصاف المُلكية"
 
 msgid "(value)"
 msgstr "(القيمة)"
+
+msgid "There is currently no description for this property."
+msgstr "لا يوجد حالياً وصف لهذه الخاصية."
 
 msgid ""
 "There is currently no description for this property. Please help us by "
@@ -2235,6 +2416,9 @@ msgstr "دالة"
 msgid "Signal"
 msgstr "الإشاراة"
 
+msgid "Annotation"
+msgstr "التأشيرة"
+
 msgid "Constant"
 msgstr "ثابت"
 
@@ -2243,6 +2427,12 @@ msgstr "خاصية"
 
 msgid "Theme Property"
 msgstr "خاصية الموضوع (Theme)"
+
+msgid "This member is marked as deprecated."
+msgstr "تم وسم هذا العنصر بأنه مُهمل."
+
+msgid "This member is marked as experimental."
+msgstr "تم وسم هذا العنصر على أنه تجريبي."
 
 msgid "Property:"
 msgstr "خاصية:"
@@ -2254,6 +2444,24 @@ msgstr "تثبيت القيمة يجْبِرَهُ على حفظها حتى لو
 msgid "Open Documentation"
 msgstr "فتح الوثائق"
 
+msgid "Add element to property array with prefix %s."
+msgstr "أضف عنصراً غلى مصفوفة الخصائص مع البادئة %s."
+
+msgid "Remove element %d from property array with prefix %s."
+msgstr "أزل العنصر %d من مصفوفة الخاصيات ذو البادئة %s."
+
+msgid "Move element %d to position %d in property array with prefix %s."
+msgstr "أنقل العنصر %d إلى الترتيب %d في مصفوفة الخاصيات، ذو البادئة %s."
+
+msgid "Clear property array with prefix %s."
+msgstr "امسح مصفوفة الخاصيات ذات البادئة %s."
+
+msgid "Resize property array with prefix %s."
+msgstr "غير حجم مصفوفة الخاصيات باستعمال البادئة %s."
+
+msgid "Element %d: %s%d*"
+msgstr "العنصر %d: %s%d*"
+
 msgid "Move Up"
 msgstr "تحريك لأعلى"
 
@@ -2262,6 +2470,9 @@ msgstr "تحريك لأسفل"
 
 msgid "Resize Array"
 msgstr "تغيير حجم المصفوفة"
+
+msgid "Add Metadata"
+msgstr "أضف البيانات الوصفية"
 
 msgid "Set %s"
 msgstr "تحديد %s"
@@ -2274,6 +2485,15 @@ msgstr "تم تثبيت %s"
 
 msgid "Unpinned %s"
 msgstr "تم فك التثبيت s%"
+
+msgid "Add metadata %s"
+msgstr "أضف البيانات الوصفية %s"
+
+msgid "Metadata name can't be empty."
+msgstr "لا يمكن أن يكون اسم البيانات الوصفية فارغاً."
+
+msgid "Names starting with _ are reserved for editor-only metadata."
+msgstr "تم حجز الأسماء التي تبدأ بـ _ للبيانات الوصفية الخاصة بالمحرر فقط."
 
 msgid "Copy Property Path"
 msgstr "نسخ مسار الخاصية"
@@ -2298,6 +2518,16 @@ msgstr "مسح المُخرجات"
 
 msgid "Copy Selection"
 msgstr "نسخ المُحدد"
+
+msgid ""
+"Collapse duplicate messages into one log entry. Shows number of occurrences."
+msgstr "اجمع الرسائل المُكررة إلى سجل واحد. أظهر عدد مرات التكرار."
+
+msgid "Focus Search/Filter Bar"
+msgstr "ركّز على شريط البحث/ التصفية"
+
+msgid "Native Shader Source Inspector"
+msgstr "فاحص موارد الـ shader الأصلي"
 
 msgid "New Window"
 msgstr "نافذة جديدة"
@@ -2344,6 +2574,9 @@ msgstr "صيغة الملف المطلوب غير معروفة:"
 
 msgid "Error while saving."
 msgstr "خطأ خلال الحفظ."
+
+msgid "Scene file '%s' appears to be invalid/corrupt."
+msgstr "يبدو أن ملف المشهد '%s' غير صالح/ تالف."
 
 msgid "Saving Scene"
 msgstr "حفظ المشهد"
@@ -2399,6 +2632,9 @@ msgstr "إسم النسق غير موجود!"
 msgid "Restored the Default layout to its base settings."
 msgstr "تم إسترجاع النسق الإفتراضي (Default layout) لاعدادتهِ الأساسية."
 
+msgid "This object is marked as read-only, so it's not editable."
+msgstr "تم وصف هذا الكائن على أنه للقراءة فقط، لذا لا يمكن تعديله."
+
 msgid ""
 "This resource belongs to a scene that was imported, so it's not editable.\n"
 "Please read the documentation relevant to importing scenes to better "
@@ -2417,6 +2653,25 @@ msgstr ""
 
 msgid "Changes may be lost!"
 msgstr "التغييرات ربما تُفقد!"
+
+msgid "This object is read-only."
+msgstr "هذا الكائن للقراءة فقط."
+
+msgid ""
+"Movie Maker mode is enabled, but no movie file path has been specified.\n"
+"A default movie file path can be specified in the project settings under the "
+"Editor > Movie Writer category.\n"
+"Alternatively, for running single scenes, a `movie_file` string metadata can "
+"be added to the root node,\n"
+"specifying the path to a movie file that will be used when recording that "
+"scene."
+msgstr ""
+"لقد تم تفعيل وضع صنع الأفلام، ولكن لم يتم تحديد مسار لملف الفلم.\n"
+"يمكن تحديد المسار الافتراضي للملف ضمن إعدادات المشروغ عن طريق: المحرر > خيار "
+"كاتب الأفلام.\n"
+"كبديل لتشغيل مشهد واحد، يمكن إضافة النص `movie_file` كجزء من البيانات "
+"الوصفية ضمن العُقدة الأساسية root node.\n"
+"سيتم تحديد مسار ملف الفلم عندما يتم تسجيل المشهد."
 
 msgid "There is no defined scene to run."
 msgstr "ليس هناك مشهد محدد ليتم تشغيله."
@@ -2771,25 +3026,76 @@ msgid "Questions & Answers"
 msgstr "أسئلة وإجابات"
 
 msgid "Report a Bug"
-msgstr "إرسال تقرير عن خلل برمجي"
+msgstr "بلِّغْ عن خلل برمجي"
 
 msgid "Suggest a Feature"
 msgstr "اقترح ميزة"
 
 msgid "Send Docs Feedback"
-msgstr "إرسال مستندات التغذية الراجعة Feedback"
+msgstr "إرسال الاستدراكات على \"التوثيقات\""
 
 msgid "Community"
 msgstr "المجتمع"
 
 msgid "About Godot"
-msgstr "حول غو-دوت"
+msgstr "حول جَوْدَتْ"
 
 msgid "Support Godot Development"
-msgstr "إدعم تطوير محرك غو-دوت"
+msgstr "ادعم تطوير جَوْدَتْ"
+
+msgid "Run the project's default scene."
+msgstr "شغّل المشهد الافتراضي للمشروع."
+
+msgid "Run Project"
+msgstr "شغِّلْ المشروع"
+
+msgid "Pause the running project's execution for debugging."
+msgstr "‌أوقِفْ قليلا \"تنفيذَ\" المشروع الحالي؛ للصيانة"
+
+msgid "Stop the currently running project."
+msgstr "أوقِفْ المشروع الذي يعمل الآن"
+
+msgid "Stop Running Project"
+msgstr "أوقِفْ المشروع"
+
+msgid "Run the currently edited scene."
+msgstr "شغّلْ المشهد المعدل حاليا"
+
+msgid "Run Current Scene"
+msgstr "شغّل المشهد الحالي"
+
+msgid "Run a specific scene."
+msgstr "شغّل مشهد مُختاراً."
+
+msgid "Run Specific Scene"
+msgstr "شغّل المشهد المُختار"
+
+msgid ""
+"Enable Movie Maker mode.\n"
+"The project will run at stable FPS and the visual and audio output will be "
+"recorded to a video file."
+msgstr ""
+"مكّن وضع صنع الأفلام. \n"
+"المشروع سيشتغل بعدد إطارات FPS ثابت والمُخرجات البصرية والصوتية سوف تُسجّل في "
+"ملف مرئي (فِديو)."
+
+msgid "Choose a renderer."
+msgstr "اخترْ نظام التكوين"
+
+msgid "Mobile"
+msgstr "المحمول (كالجوال والأجهزة اللوحية والحواسب المحمولة الضعيفة)"
+
+msgid "Compatibility"
+msgstr "التوافق"
+
+msgid "Changing the renderer requires restarting the editor."
+msgstr "تغييرنظام التكوين يتطلب استئناف المحرر"
 
 msgid "Update Continuously"
 msgstr "تحديث متواصل"
+
+msgid "Update When Changed"
+msgstr "تحديث عند أي تغيير"
 
 msgid "Hide Update Spinner"
 msgstr "إخفاء دوران التحديث"
@@ -2801,7 +3107,10 @@ msgid "Inspector"
 msgstr "الفاحص"
 
 msgid "Node"
-msgstr "وحدة"
+msgstr "عقدة"
+
+msgid "History"
+msgstr "سجل التغييرات"
 
 msgid "Expand Bottom Panel"
 msgstr "توسيع القائمة السفلية"
@@ -2813,7 +3122,7 @@ msgid "Don't Save"
 msgstr "لا تحفظ"
 
 msgid "Android build template is missing, please install relevant templates."
-msgstr "قالب البناء الخاص بالأندرويد مفقود، من فضلك نزل قوالب ذات صلة."
+msgstr "قالب البناء الخاص بالأندرويد مفقود، فضلا نزلْ القوالب المتعلقة."
 
 msgid "Manage Templates"
 msgstr "إدارة القوالب"
@@ -2832,7 +3141,7 @@ msgstr ""
 "قم بإزالة \"res://android/build\" يدوياً قبل الشروع بهذه العملية مرة أخرى."
 
 msgid "Import Templates From ZIP File"
-msgstr "إستيراد القوالب من ملف مضغوط بصيغة Zip"
+msgstr "استيراد القوالب من ملف مضغوط بصيغة Zip"
 
 msgid "Template Package"
 msgstr "رزمة القوالب"
@@ -2889,11 +3198,14 @@ msgstr "فتح في المُحرر التالي"
 msgid "Open the previous Editor"
 msgstr "إفتح المُحرر السابق"
 
+msgid "Ok"
+msgstr "حسناً"
+
 msgid "Warning!"
 msgstr "تحذيرات!"
 
 msgid "No sub-resources found."
-msgstr "لا مصدر للسطح تم تحديده."
+msgstr "لم نجد المصادر الفرعية."
 
 msgid "Open a list of sub-resources."
 msgstr "فتح قائمة الموارد الفرعية."
@@ -2946,6 +3258,9 @@ msgstr "إلحاق..."
 msgid "Invalid RID"
 msgstr "RID غير صالح"
 
+msgid "Recursion detected, unable to assign resource to property."
+msgstr "تم رصد حالة تكرار، فشل توكيل المورد إلى الخاصية."
+
 msgid ""
 "Can't create a ViewportTexture on resources saved as a file.\n"
 "Resource needs to belong to a scene."
@@ -2970,11 +3285,20 @@ msgstr "اختر إطار عرض"
 msgid "Selected node is not a Viewport!"
 msgstr "العُقدة المختارة ليست إطار عرض Viewport!"
 
+msgid "(Nil) %s"
+msgstr "(لا شيء Nil) %s"
+
+msgid "%s (size %s)"
+msgstr "%s (الحجم %s)"
+
 msgid "Size:"
 msgstr "الحجم:"
 
 msgid "Remove Item"
 msgstr "إزالة عنصر"
+
+msgid "Dictionary (size %d)"
+msgstr "القاموس (الحجم %d)"
 
 msgid "New Key:"
 msgstr "مفتاح جديد:"
@@ -3044,6 +3368,12 @@ msgstr "جميع الأجهزة"
 
 msgid "Device"
 msgstr "الجهاز"
+
+msgid "Listening for input..."
+msgstr "يتم رصد المُدخلات..."
+
+msgid "Filter by event..."
+msgstr "صنّف حسب الحدث..."
 
 msgid "Project export for platform:"
 msgstr "تصدير المشروع لمنصة:"
@@ -4036,7 +4366,7 @@ msgid "Animation Tools"
 msgstr "أدوات الرسم المتحرك"
 
 msgid "Animation"
-msgstr "رسوم متحركة"
+msgstr "التحريك"
 
 msgid "Edit Transitions..."
 msgstr "تحرير الانتقالات..."
@@ -4913,7 +5243,7 @@ msgid "Surface Points+Normal (Directed)"
 msgstr "نقاط السطح + طبيعي (مُوجّه)"
 
 msgid "Volume"
-msgstr "حجم"
+msgstr "الحجم"
 
 msgid "Emission Source:"
 msgstr "مصدر الانبعاث:"
@@ -5553,6 +5883,9 @@ msgstr "سابق"
 
 msgid "Post"
 msgstr "لاحق"
+
+msgid "Tonemap"
+msgstr "خريطة تناغم الألوان"
 
 msgid "Remove Point from Curve"
 msgstr "إزالة النقطة من المنحنى"
@@ -7530,6 +7863,9 @@ msgstr "خريطة الإدخال"
 msgid "Localization"
 msgstr "توطين"
 
+msgid "Autoload"
+msgstr "التحميل التلقائي"
+
 msgid "Plugins"
 msgstr "إضافات"
 
@@ -8666,3 +9002,13 @@ msgstr "التعين للإنتظام."
 
 msgid "Constants cannot be modified."
 msgstr "لا يمكن تعديل الثوابت."
+
+msgid "The local variable '%s' is declared but never used."
+msgstr "تم فرض المُتغير المحلي '%s' ولكن لم يستعمل."
+
+msgid ""
+"The total size of the %s for this shader on this device has been exceeded "
+"(%d/%d). The shader may not work correctly."
+msgstr ""
+"تم الوصول للحجم الكامل لـ %s بالنسبة لهذا الـ shader على هذا الجهاز (%d/%d). "
+"قد لا يعمل الـ shader بالشكل المناسب."

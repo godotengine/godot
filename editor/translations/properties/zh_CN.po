@@ -92,7 +92,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2023-02-25 00:15+0000\n"
+"PO-Revision-Date: 2023-03-28 02:34+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/zh_Hans/>\n"
@@ -101,7 +101,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.17-dev\n"
 
 msgid "Application"
 msgstr "应用"
@@ -141,6 +141,15 @@ msgstr "自定义用户目录名称"
 
 msgid "Project Settings Override"
 msgstr "项目设置覆盖"
+
+msgid "Main Loop Type"
+msgstr "主循环类型"
+
+msgid "Auto Accept Quit"
+msgstr "自动接受退出"
+
+msgid "Quit on Go Back"
+msgstr "返回时退出"
 
 msgid "Display"
 msgstr "显示"
@@ -212,10 +221,10 @@ msgid "General"
 msgstr "常规"
 
 msgid "2D Panning Strength"
-msgstr "2D 平移强度"
+msgstr "2D 声像强度"
 
 msgid "3D Panning Strength"
-msgstr "3D 平移强度"
+msgstr "3D 声像强度"
 
 msgid "Editor"
 msgstr "编辑器"
@@ -225,6 +234,12 @@ msgstr "脚本"
 
 msgid "Search in File Extensions"
 msgstr "搜索文件扩展名"
+
+msgid "Subwindows"
+msgstr "子窗口"
+
+msgid "Embed Subwindows"
+msgstr "嵌入式子窗口"
 
 msgid "Physics"
 msgstr "物理"
@@ -237,6 +252,15 @@ msgstr "在独立的线程上运行"
 
 msgid "3D"
 msgstr "3D"
+
+msgid "Stretch"
+msgstr "拉伸"
+
+msgid "Aspect"
+msgstr "比例"
+
+msgid "Scale"
+msgstr "缩放"
 
 msgid "Debug"
 msgstr "调试"
@@ -316,6 +340,21 @@ msgstr "计时器"
 msgid "Incremental Search Max Interval Msec"
 msgstr "增量搜索最大间隔（毫秒）"
 
+msgid "Common"
+msgstr "通用"
+
+msgid "Snap Controls to Pixels"
+msgstr "控件像素吸附"
+
+msgid "Fonts"
+msgstr "字体"
+
+msgid "Dynamic Fonts"
+msgstr "动态字体"
+
+msgid "Use Oversampling"
+msgstr "使用过采样"
+
 msgid "Rendering Device"
 msgstr "渲染设备"
 
@@ -336,6 +375,18 @@ msgstr "Vulkan"
 
 msgid "Max Descriptors per Pool"
 msgstr "单池最大描述符数"
+
+msgid "Textures"
+msgstr "纹理"
+
+msgid "Canvas Textures"
+msgstr "画布纹理"
+
+msgid "Default Texture Filter"
+msgstr "默认纹理过滤"
+
+msgid "Default Texture Repeat"
+msgstr "默认纹理重复"
 
 msgid "Low Processor Usage Mode"
 msgstr "低处理器使用模式"
@@ -527,7 +578,7 @@ msgid "Resource"
 msgstr "资源"
 
 msgid "Local to Scene"
-msgstr "本地于场景"
+msgstr "本地化到场景"
 
 msgid "Path"
 msgstr "路径"
@@ -643,9 +694,6 @@ msgstr "跳过占位符"
 msgid "Rotation"
 msgstr "旋转"
 
-msgid "Scale"
-msgstr "缩放"
-
 msgid "Value"
 msgstr "值"
 
@@ -729,15 +777,6 @@ msgstr "显示隐藏文件"
 
 msgid "Disable Overwrite Warning"
 msgstr "禁用覆盖警告"
-
-msgid "Import"
-msgstr "导入"
-
-msgid "Reimport Missing Imported Files"
-msgstr "重新导入缺失的已导入文件"
-
-msgid "Use Multiple Threads"
-msgstr "使用多线程"
 
 msgid "Text Editor"
 msgstr "文本编辑器"
@@ -1642,12 +1681,6 @@ msgstr "隐藏滑动条"
 msgid "Zoom"
 msgstr "缩放"
 
-msgid "Export"
-msgstr "导出"
-
-msgid "Convert Text Resources to Binary"
-msgstr "将文本资源转换为二进制"
-
 msgid "Custom Template"
 msgstr "自定义模板"
 
@@ -1677,6 +1710,9 @@ msgstr "ETC"
 
 msgid "ETC2"
 msgstr "ETC2"
+
+msgid "Export"
+msgstr "导出"
 
 msgid "SSH"
 msgstr "SSH"
@@ -1896,6 +1932,9 @@ msgstr "偏移网格"
 
 msgid "Optimize Mesh"
 msgstr "优化网格"
+
+msgid "Import"
+msgstr "导入"
 
 msgid "Skip Import"
 msgstr "跳过导入"
@@ -2249,7 +2288,7 @@ msgid "Auto Reload and Parse Scripts on Save"
 msgstr "保存时自动重新加载并解析脚本"
 
 msgid "Open Dominant Script on Scene Change"
-msgstr "场景变化时打开主要脚本"
+msgstr "场景变化时打开主导脚本"
 
 msgid "External"
 msgstr "外部"
@@ -2341,12 +2380,6 @@ msgstr "时长"
 msgid "Version Control"
 msgstr "版本控制"
 
-msgid "Plugin Name"
-msgstr "插件名"
-
-msgid "Autoload on Startup"
-msgstr "启动时自动加载"
-
 msgid "Username"
 msgstr "用户名"
 
@@ -2373,6 +2406,21 @@ msgstr "默认信号回调为自身名称"
 
 msgid "Scene Name Casing"
 msgstr "场景名称大小写"
+
+msgid "Reimport Missing Imported Files"
+msgstr "重新导入缺失的已导入文件"
+
+msgid "Use Multiple Threads"
+msgstr "使用多线程"
+
+msgid "Convert Text Resources to Binary"
+msgstr "将文本资源转换为二进制"
+
+msgid "Plugin Name"
+msgstr "插件名"
+
+msgid "Autoload on Startup"
+msgstr "启动时自动加载"
 
 msgid "Show Scene Tree Root Selection"
 msgstr "显示场景树根选择"
@@ -2454,9 +2502,6 @@ msgstr "垂直同步"
 
 msgid "V-Sync Mode"
 msgstr "垂直同步模式"
-
-msgid "Common"
-msgstr "通用"
 
 msgid "stdout"
 msgstr "标准输出"
@@ -2601,51 +2646,6 @@ msgstr "程序集名称"
 
 msgid "Solution Directory"
 msgstr "解决方案目录"
-
-msgid "Main Loop Type"
-msgstr "主循环类型"
-
-msgid "Subwindows"
-msgstr "子窗口"
-
-msgid "Embed Subwindows"
-msgstr "嵌入式子窗口"
-
-msgid "Stretch"
-msgstr "拉伸"
-
-msgid "Aspect"
-msgstr "比例"
-
-msgid "Auto Accept Quit"
-msgstr "自动接受退出"
-
-msgid "Quit on Go Back"
-msgstr "返回时退出"
-
-msgid "Snap Controls to Pixels"
-msgstr "控件像素吸附"
-
-msgid "Fonts"
-msgstr "字体"
-
-msgid "Dynamic Fonts"
-msgstr "动态字体"
-
-msgid "Use Oversampling"
-msgstr "使用过采样"
-
-msgid "Textures"
-msgstr "纹理"
-
-msgid "Canvas Textures"
-msgstr "画布纹理"
-
-msgid "Default Texture Filter"
-msgstr "默认纹理过滤"
-
-msgid "Default Texture Repeat"
-msgstr "默认纹理重复"
 
 msgid "Operation"
 msgstr "操作"
@@ -4239,6 +4239,9 @@ msgstr "底"
 
 msgid "Smoothed"
 msgstr "平滑"
+
+msgid "Position Smoothing"
+msgstr "位置平滑"
 
 msgid "Rotation Smoothing"
 msgstr "旋转平滑"
@@ -6546,9 +6549,6 @@ msgstr "字形标志"
 
 msgid "Relative Index"
 msgstr "相对索引"
-
-msgid "Bbcode Enabled"
-msgstr "启用 Bbcode"
 
 msgid "Fit Content"
 msgstr "适配内容"

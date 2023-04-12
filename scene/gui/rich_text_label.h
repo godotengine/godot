@@ -527,6 +527,7 @@ private:
 #endif
 	bool use_bbcode = false;
 	String text;
+	void _apply_translation();
 
 	bool fit_content = false;
 

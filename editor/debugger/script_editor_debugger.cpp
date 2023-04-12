@@ -40,12 +40,13 @@
 #include "editor/debugger/editor_performance_profiler.h"
 #include "editor/debugger/editor_profiler.h"
 #include "editor/debugger/editor_visual_profiler.h"
-#include "editor/editor_file_dialog.h"
+#include "editor/editor_file_system.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/editor_debugger_plugin.h"
@@ -756,6 +757,12 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			monitors.set(i, p_data[i]);
 		}
 		performance_profiler->update_monitors(monitors);
+
+	} else if (p_msg == "filesystem:update_file") {
+		ERR_FAIL_COND(p_data.size() < 1);
+		if (EditorFileSystem::get_singleton()) {
+			EditorFileSystem::get_singleton()->update_file(p_data[0]);
+		}
 
 	} else {
 		int colon_index = p_msg.find_char(':');

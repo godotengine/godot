@@ -31,12 +31,12 @@
 #include "scene_import_settings.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/importer_mesh.h"
@@ -1001,6 +1001,12 @@ void SceneImportSettings::_notification(int p_what) {
 			connect("confirmed", callable_mp(this, &SceneImportSettings::_re_import));
 		} break;
 
+		case NOTIFICATION_THEME_CHANGED: {
+			action_menu->add_theme_style_override("normal", get_theme_stylebox("normal", "Button"));
+			action_menu->add_theme_style_override("hover", get_theme_stylebox("hover", "Button"));
+			action_menu->add_theme_style_override("pressed", get_theme_stylebox("pressed", "Button"));
+		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			inspector->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
 		} break;
@@ -1288,9 +1294,6 @@ SceneImportSettings::SceneImportSettings() {
 	action_menu->set_text(TTR("Actions..."));
 	// Style the MenuButton like a regular Button to make it more noticeable.
 	action_menu->set_flat(false);
-	action_menu->add_theme_style_override("normal", get_theme_stylebox("normal", "Button"));
-	action_menu->add_theme_style_override("hover", get_theme_stylebox("hover", "Button"));
-	action_menu->add_theme_style_override("pressed", get_theme_stylebox("pressed", "Button"));
 	action_menu->set_focus_mode(Control::FOCUS_ALL);
 	menu_hb->add_child(action_menu);
 

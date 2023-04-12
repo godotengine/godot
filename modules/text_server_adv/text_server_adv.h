@@ -515,7 +515,9 @@ class TextServerAdvanced : public TextServerExtension {
 
 		~ShapedTextDataAdvanced() {
 			for (int i = 0; i < bidi_iter.size(); i++) {
-				ubidi_close(bidi_iter[i]);
+				if (bidi_iter[i]) {
+					ubidi_close(bidi_iter[i]);
+				}
 			}
 			if (script_iter) {
 				memdelete(script_iter);

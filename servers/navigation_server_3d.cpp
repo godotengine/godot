@@ -144,13 +144,13 @@ NavigationServer3D::NavigationServer3D() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 
-	GLOBAL_DEF("navigation/2d/default_cell_size", 1);
-	GLOBAL_DEF("navigation/2d/default_edge_connection_margin", 1);
-	GLOBAL_DEF("navigation/2d/default_link_connection_radius", 4);
+	GLOBAL_DEF_BASIC("navigation/2d/default_cell_size", 1);
+	GLOBAL_DEF_BASIC("navigation/2d/default_edge_connection_margin", 1);
+	GLOBAL_DEF_BASIC("navigation/2d/default_link_connection_radius", 4);
 
-	GLOBAL_DEF("navigation/3d/default_cell_size", 0.25);
-	GLOBAL_DEF("navigation/3d/default_edge_connection_margin", 0.25);
-	GLOBAL_DEF("navigation/3d/default_link_connection_radius", 1.0);
+	GLOBAL_DEF_BASIC("navigation/3d/default_cell_size", 0.25);
+	GLOBAL_DEF_BASIC("navigation/3d/default_edge_connection_margin", 0.25);
+	GLOBAL_DEF_BASIC("navigation/3d/default_link_connection_radius", 1.0);
 
 #ifdef DEBUG_ENABLED
 	debug_navigation_edge_connection_color = GLOBAL_DEF("debug/shapes/navigation/edge_connection_color", Color(1.0, 0.0, 1.0, 1.0));
@@ -456,14 +456,14 @@ Color NavigationServer3D::get_debug_navigation_link_connection_disabled_color() 
 	return debug_navigation_link_connection_disabled_color;
 }
 
-void NavigationServer3D::set_debug_navigation_agent_path_point_size(float p_point_size) {
+void NavigationServer3D::set_debug_navigation_agent_path_point_size(real_t p_point_size) {
 	debug_navigation_agent_path_point_size = MAX(0.1, p_point_size);
 	if (debug_navigation_agent_path_point_material.is_valid()) {
 		debug_navigation_agent_path_point_material->set_point_size(debug_navigation_agent_path_point_size);
 	}
 }
 
-float NavigationServer3D::get_debug_navigation_agent_path_point_size() const {
+real_t NavigationServer3D::get_debug_navigation_agent_path_point_size() const {
 	return debug_navigation_agent_path_point_size;
 }
 
