@@ -5771,6 +5771,8 @@ Dictionary Node3DEditor::get_state() const {
 	d["viewports"] = vpdata;
 
 	d["show_grid"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_GRID));
+	d["show_grid_xy"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_GRID_XY));
+	d["show_grid_yz"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_GRID_YZ));
 	d["show_origin"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN));
 	d["fov"] = get_fov();
 	d["znear"] = get_znear();
@@ -6242,20 +6244,13 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(p_option), origin_enabled);
 		} break;
 		case MENU_VIEW_GRID: {
-			bool is_checked = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(p_option));
-
-			grid_enabled = !is_checked;
-
-			for (int i = 0; i < 3; ++i) {
-				if (grid_enable[i]) {
-					grid_visible[i] = grid_enabled;
-				}
-			}
-			_finish_grid();
-			_init_grid();
-
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(p_option), grid_enabled);
-
+			_toggle_view_grid_plane_options(p_option, grid_enabled);
+		} break;
+		case MENU_VIEW_GRID_XY: {
+			_toggle_view_grid_plane_options(p_option, grid_enable[0], "editors/3d/grid_xy_plane");
+		} break;
+		case MENU_VIEW_GRID_YZ: {
+			_toggle_view_grid_plane_options(p_option, grid_enable[1], "editors/3d/grid_yz_plane");
 		} break;
 		case MENU_VIEW_CAMERA_SETTINGS: {
 			settings_dialog->popup_centered(settings_vbc->get_combined_minimum_size() + Size2(50, 50));
@@ -6914,6 +6909,27 @@ void Node3DEditor::_update_gizmos_menu_theme() {
 				gizmos_menu->set_item_icon(idx, gizmos_menu->get_theme_icon(SNAME("visibility_hidden")));
 				break;
 		}
+	}
+}
+
+void Node3DEditor::_toggle_view_grid_plane_options(int p_option, bool &p_grid_plane_option, String p_editor_path) {
+	bool is_checked = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(p_option));
+
+	p_grid_plane_option = !is_checked;
+	if (p_editor_path.length())
+		EditorSettings::get_singleton()->set(p_editor_path, p_grid_plane_option);
+	for (int i = 0; i < 3; ++i) {
+		if (grid_enable[i]) {
+			grid_visible[i] = grid_enable[i];
+		}
+	}
+	_finish_grid();
+	_init_grid();
+
+	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(p_option), p_grid_plane_option);
+	if (p_option == MENU_VIEW_GRID) {
+		view_menu->get_popup()->set_item_disabled(view_menu->get_popup()->get_item_index(MENU_VIEW_GRID_XY), !p_grid_plane_option);
+		view_menu->get_popup()->set_item_disabled(view_menu->get_popup()->get_item_index(MENU_VIEW_GRID_YZ), !p_grid_plane_option);
 	}
 }
 
@@ -8279,6 +8295,8 @@ Node3DEditor::Node3DEditor() {
 	p->add_separator();
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_origin", TTR("View Origin")), MENU_VIEW_ORIGIN);
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_grid", TTR("View Grid"), Key::NUMBERSIGN), MENU_VIEW_GRID);
+	p->add_check_shortcut(ED_SHORTCUT("editors/3d/grid_xy_plane", TTR("View Grid Xy Plane"), KeyModifierMask::CMD_OR_CTRL + Key::BRACKETLEFT), MENU_VIEW_GRID_XY);
+	p->add_check_shortcut(ED_SHORTCUT("editors/3d/grid_yz_plane", TTR("View Grid Yz Plane"), KeyModifierMask::CMD_OR_CTRL + Key::BRACKETRIGHT), MENU_VIEW_GRID_YZ);
 
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/settings", TTR("Settings...")), MENU_VIEW_CAMERA_SETTINGS);
