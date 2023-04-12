@@ -35,6 +35,7 @@
 #include "thirdparty/misc/polypartition.h"
 
 constexpr real_t CIRCLE_CIRCLE_RELATIVE_TOLERANCE = 1e-6;
+constexpr real_t LINE_CIRCLE_RELATIVE_TOLERANCE = 1e-6;
 
 void Geometry3D::get_closest_points_between_segments(const Vector3 &p_p0, const Vector3 &p_p1, const Vector3 &p_q0, const Vector3 &p_q1, Vector3 &r_ps, Vector3 &r_qt) {
 	// Based on David Eberly's Computation of Distance Between Line Segments algorithm.
@@ -1240,4 +1241,152 @@ void Geometry3D::get_closest_points_between_circle_and_circle(const Transform3D 
 	r_num_closest_pairs = 1;
 	r_closest_points[1] = p_circle1_transform.origin + R_b * Math::cos(gl_min_t) * U + R_b * Math::sin(gl_min_t) * V;
 	r_closest_points[0] = get_closest_point_on_circle(r_closest_points[1], p_circle0_transform, R_a);
+}
+
+/*
+ * Line-Circle distance
+ * Based on David Vranek's Fast and Accurate Circle-Circle and Circle-Line 3D Distance Computation.
+ * Implementation based on the one once included in ODE by Russell L. Smith, but heavily modified.
+ * See https://github.com/cyberbotics/webots/blob/21d6eefd7a2f59fa3277788b552587e388dfe0a4/src/ode/ode/src/cylinder_revolution_data.cpp
+ */
+
+/*************************************************************************
+ *                                                                       *
+ * Open Dynamics Engine, Copyright (C) 2001-2003 Russell L. Smith.       *
+ * All rights reserved.  Email: russ@q12.org   Web: www.q12.org          *
+ *                                                                       *
+ * This library is free software; you can redistribute it and/or         *
+ * modify it under the terms of EITHER:                                  *
+ *   (1) The GNU Lesser General Public License as published by the Free  *
+ *       Software Foundation; either version 2.1 of the License, or (at  *
+ *       your option) any later version. The text of the GNU Lesser      *
+ *       General Public License is included with this library in the     *
+ *       file LICENSE.TXT.                                               *
+ *   (2) The BSD-style license that is included with this library in     *
+ *       the file LICENSE-BSD.TXT.                                       *
+ *                                                                       *
+ * This library is distributed in the hope that it will be useful,       *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the files    *
+ * LICENSE.TXT and LICENSE-BSD.TXT for more details.                     *
+ *                                                                       *
+ *************************************************************************/
+
+struct LineCircleDistanceData {
+	real_t A[6]; // NOTE: Compared with Vranek's notation (a_k), we have: A[0] = a_4, A[1] = a_5, A[2] = a_3, A[3] = a_0, A[4] = a_1, A[5] = a_2, and a_6 = 1.0.
+	real_t B[2];
+	real_t t = INFINITY; // Ensure an update on the first call to update_t.
+	real_t distCN = 0.0;
+	_FORCE_INLINE_ void update_t(real_t p_t) {
+		if (t == p_t) {
+			return;
+		}
+		t = p_t;
+		distCN = Math::sqrt(A[3] + t * (A[4] + t * A[5]));
+	}
+};
+
+real_t line_circle_distance(void *p_data, real_t p_t) { // p_t is the line parameter
+	LineCircleDistanceData *distance_data = static_cast<LineCircleDistanceData *>(p_data);
+	distance_data->update_t(p_t);
+	return distance_data->A[0] + p_t * (distance_data->A[1] + p_t) + distance_data->A[2] * distance_data->distCN;
+}
+
+real_t line_circle_distance_derivative(void *p_data, real_t p_t) { // first derivative of line_circle_distance
+	LineCircleDistanceData *distance_data = static_cast<LineCircleDistanceData *>(p_data);
+	distance_data->update_t(p_t);
+	return distance_data->A[1] + 2.0 * p_t + (distance_data->B[0] + p_t * distance_data->B[1]) * (1.0 / distance_data->distCN);
+}
+
+void Geometry3D::get_closest_points_between_line_and_circle(const Vector3 &p_line_origin, const Vector3 &p_line_direction, const Transform3D &p_circle_transform, const real_t p_circle_radius, Vector3 *r_closest_points, size_t &r_num_closest_pairs) {
+	// NOTE: This function assumes p_line_direction is a normalized vector.
+
+	// TODO: Detect and handle degenerate cases early?
+
+	// Constants used in the squared distance function.
+	Vector3 D = p_line_origin - p_circle_transform.origin;
+	Vector3 circle_normal = p_circle_transform.basis.get_column(1);
+	Vector3 E = p_line_direction - (circle_normal.dot(p_line_direction)) * circle_normal;
+	Vector3 F = D - (circle_normal.dot(D)) * circle_normal;
+	real_t R_a = p_circle_radius;
+	Vector3 M = p_line_direction;
+
+	LineCircleDistanceData data;
+
+	// Coefficients used in the squared distance function; see line_circle_distance.
+	data.A[0] = D.dot(D) + R_a * R_a;
+	data.A[1] = 2 * D.dot(M);
+	data.A[2] = -2 * R_a;
+	data.A[3] = F.dot(F);
+	data.A[4] = 2 * E.dot(F);
+	data.A[5] = E.dot(E);
+	// Note: Here we have a6 = p_line_direction.length_squared() == 1.
+
+	// Coefficients used in the derivative of the squared distance function; see line_circle_distance_derivative.
+	data.B[0] = 0.5 * data.A[2] * data.A[4];
+	data.B[1] = data.A[2] * data.A[5];
+
+	// TODO: Improve minimum bracketing or starting interval;
+	// see https://math.stackexchange.com/questions/4618258/minimum-distance-between-a-line-and-a-circle-in-3d-bracketing-triplet
+	// For now, determine a bracketing triplet from an interval:
+	real_t r1 = p_circle_radius;
+	real_t start = (p_circle_transform.origin - p_line_origin).dot(p_line_direction);
+	// NOTE: We widen the interval in case the minimum happens to be exactly (start - r1) or (start + r1).
+	real_t a = start - r1 - 0.1;
+	real_t b = start + r1 + 0.1;
+	real_t c = 0.0;
+	real_t fa = 0.0;
+	real_t fb = 0.0;
+	real_t fc = 0.0;
+	Minimization::bracketing_triplet_from_interval(&data, &line_circle_distance, &a, &b, &c, &fa, &fb, &fc);
+
+	// Find a single local minimum of the distance function numerically, using a modification of Brent's minimization algorithm (making use of the derivative).
+	real_t loc_min_t = 0.0;
+	real_t loc_min_dist = Minimization::get_local_minimum(&data, &line_circle_distance, &line_circle_distance_derivative, a, b, c, LINE_CIRCLE_RELATIVE_TOLERANCE, &loc_min_t);
+
+	// Shift the distance function f(t) down by the local minimum D:
+	// f(t) = t^2 + a5*t + a4 + a3*sqrt(a2*t^2 + a1*t + a0)
+	// g(t) = f(t) - D, where D = f(loc_min_t)
+	// Solving g(t) = 0 leads to a polynomial equation of degree four in t:
+	// t^2 + a5*t + a4 - D = a3*sqrt(a2*t^2 + a1*t + a0)
+	// (t^2 + a5*t + a4 - D)^2 = a3^2 * (a2*t^2 + a1*t + a0)
+	// (t^2 + a5*t + a4 - D)^2 - a3^2 * (a2*t^2 + a1*t + a0) = 0
+	// Expand in powers of t:
+	// t^4 + 2*a5*t^3 + (a5^2 - a2*a3^2 + 2*(a4 - D))*t^2 + (2*a4*a5 - a1*a3^2 - 2*D*a5)*t - a0*a3^2 + D^2 - 2*D*a4 + a4^2 = 0
+	real_t quartic_coeff3 = 2.0 * data.A[1];
+	real_t quartic_coeff2 = data.A[1] * data.A[1] - data.A[2] * data.A[2] * data.A[5] + 2.0 * (data.A[0] - loc_min_dist);
+
+	// The polynomial of degree four has a double root at the previously found t0 = loc_min_t; use Horner's method twice to deflate it to a quadratic polynomial:
+	// Quartic: C1*t^4 + C2*t^3 + C3*t^2 + C4*t + C5
+	// Deflate quartic -> cubic B1*t^3 + B2*t^2 + B3*t + B4 using the root t0:
+	// - B1 = C1;
+	// - B2 = B1*t0 + C2 = C1*t0 + C2;
+	// - B3 = B2*t0 + C3 = C1*t0^2 + C2*t0 + C3;
+	// - B4 = B3*t0 + C4 = C1*t0^3 + C2*t0^2 + C3*t0 + C4
+	// Deflate cubic -> quadratic A1*t^2 + A2*t + A3 using the root t0:
+	// - A1 = B1 = C1
+	// - A2 = A1*t0 + B2 = 2*C1*t0 + C2
+	// - A3 = A2*t0 + B3 = 3*C1*t0^2 + 2*C2*t0 + C3
+	real_t quadratic_coeff[3];
+	quadratic_coeff[0] = (3.0 * loc_min_t + 2.0 * quartic_coeff3) * loc_min_t + quartic_coeff2;
+	quadratic_coeff[1] = 2.0 * loc_min_t + quartic_coeff3;
+	quadratic_coeff[2] = 1.0;
+
+	// If the quadratic has two distinct real roots, then the global minimum lies between the two roots of the quadratic.
+	real_t quadratic_roots[2];
+	if (real_roots_of_quadratic_polynomial(quadratic_coeff, quadratic_roots)) {
+		a = quadratic_roots[0];
+		b = quadratic_roots[1];
+		// Find a minimum in this interval.
+		// TODO: Can there be a local maximum instead of a minimum in this interval?
+		// TODO: If not, should we use a root finder here to find a zero of the derivative?
+		Minimization::bracketing_triplet_from_interval(&data, &line_circle_distance, &a, &b, &c, &fa, &fb, &fc);
+		loc_min_dist = Minimization::get_local_minimum(&data, &line_circle_distance, &line_circle_distance_derivative, a, b, c, LINE_CIRCLE_RELATIVE_TOLERANCE, &loc_min_t);
+	}
+	// NOTE: If the quadratic has just one real root, then the previously found local minimum is a global minimum, and so is the root of the quadratic.
+	// If the quadratic has no real roots, then the previously found local minimum is the unique global minimum.
+
+	r_closest_points[0] = p_line_origin + loc_min_t * p_line_direction;
+	r_closest_points[1] = get_closest_point_on_circle(r_closest_points[0], p_circle_transform, p_circle_radius);
+	r_num_closest_pairs = 1;
 }
