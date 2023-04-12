@@ -3670,7 +3670,7 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 			gl.end = span.end;
 			gl.count = 1;
 			gl.index = 0;
-			gl.flags = GRAPHEME_IS_VALID | GRAPHEME_IS_VIRTUAL;
+			gl.flags = GRAPHEME_IS_VALID | GRAPHEME_IS_EMBEDDED_OBJECT;
 			if (sd->orientation == ORIENTATION_HORIZONTAL) {
 				gl.advance = sd->objects[span.embedded_key].rect.size.x;
 			} else {

@@ -1784,6 +1784,9 @@
 		<constant name="GRAPHEME_IS_SAFE_TO_INSERT_TATWEEL" value="2048" enum="GraphemeFlag" is_bitfield="true">
 			It is safe to insert a U+0640 before this grapheme for elongation.
 		</constant>
+		<constant name="GRAPHEME_IS_EMBEDDED_OBJECT" value="4096" enum="GraphemeFlag" is_bitfield="true">
+			Grapheme is an object replacement character for the embedded object.
+		</constant>
 		<constant name="HINTING_NONE" value="0" enum="Hinting">
 			Disables font hinting (smoother but less crisp).
 		</constant>
