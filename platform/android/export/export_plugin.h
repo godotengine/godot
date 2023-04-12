@@ -72,6 +72,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	struct APKExportData {
 		zipFile apk;
+		bool enc_pack = false;
+		HashMap<String, String> directory;
+		HashSet<String> ids;
 		EditorProgress *ep = nullptr;
 	};
 

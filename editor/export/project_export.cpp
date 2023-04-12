@@ -386,14 +386,10 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		seed_input->set_text(itos(seed));
 	}
 
-	enc_directory->set_disabled(!enc_pck_mode);
 	enc_in_filters->set_editable(enc_pck_mode);
 	enc_ex_filters->set_editable(enc_pck_mode);
 	script_key->set_editable(enc_pck_mode);
 	seed_input->set_editable(enc_pck_mode);
-
-	bool enc_directory_mode = current->get_enc_directory();
-	enc_directory->set_pressed(enc_directory_mode);
 
 	String key = current->get_script_encryption_key();
 	if (!updating_script_key) {
@@ -588,7 +584,6 @@ void ProjectExportDialog::_enc_pck_changed(bool p_pressed) {
 	ERR_FAIL_COND(current.is_null());
 
 	current->set_enc_pck(p_pressed);
-	enc_directory->set_disabled(!p_pressed);
 	enc_in_filters->set_editable(p_pressed);
 	enc_ex_filters->set_editable(p_pressed);
 	script_key->set_editable(p_pressed);
@@ -609,19 +604,6 @@ void ProjectExportDialog::_seed_input_changed(const String &p_text) {
 	updating_seed = true;
 	_update_current_preset();
 	updating_seed = false;
-}
-
-void ProjectExportDialog::_enc_directory_changed(bool p_pressed) {
-	if (updating) {
-		return;
-	}
-
-	Ref<EditorExportPreset> current = get_current_preset();
-	ERR_FAIL_COND(current.is_null());
-
-	current->set_enc_directory(p_pressed);
-
-	_update_current_preset();
 }
 
 void ProjectExportDialog::_script_encryption_key_changed(const String &p_key) {
@@ -707,7 +689,6 @@ void ProjectExportDialog::_duplicate_preset() {
 	preset->set_enc_in_filter(current->get_enc_in_filter());
 	preset->set_enc_ex_filter(current->get_enc_ex_filter());
 	preset->set_enc_pck(current->get_enc_pck());
-	preset->set_enc_directory(current->get_enc_directory());
 	preset->set_script_encryption_key(current->get_script_encryption_key());
 	preset->set_script_export_mode(current->get_script_export_mode());
 
@@ -1626,13 +1607,8 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	enc_pck = memnew(CheckButton);
 	enc_pck->connect(SceneStringName(toggled), callable_mp(this, &ProjectExportDialog::_enc_pck_changed));
-	enc_pck->set_text(TTR("Encrypt Exported PCK"));
+	enc_pck->set_text(TTR("Encrypt Exported PCK or Android Assets"));
 	sec_vb->add_child(enc_pck);
-
-	enc_directory = memnew(CheckButton);
-	enc_directory->connect(SceneStringName(toggled), callable_mp(this, &ProjectExportDialog::_enc_directory_changed));
-	enc_directory->set_text(TTR("Encrypt Index (File Names and Info)"));
-	sec_vb->add_child(enc_directory);
 
 	enc_in_filters = memnew(LineEdit);
 	enc_in_filters->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_enc_filters_changed));

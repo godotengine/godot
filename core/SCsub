@@ -238,6 +238,7 @@ ec_valid = len(gdkey) == 64
 if ec_valid:
     try:
         gdkey = ", ".join([str(int(f"{a}{b}", 16)) for a, b in zip(gdkey[0::2], gdkey[1::2])])
+        env.Append(CPPDEFINES=["PCK_ENCRYPTION_ENABLED"])
     except Exception:
         ec_valid = False
 if not ec_valid:

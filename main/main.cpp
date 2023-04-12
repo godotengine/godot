@@ -532,15 +532,19 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--quit-after <int>", "Quit after the given number of iterations. Set to 0 to disable.\n");
 	print_help_option("-l, --language <locale>", "Use a specific locale (<locale> being a two-letter code).\n");
 	print_help_option("--path <directory>", "Path to a project (<directory> must contain a \"project.godot\" file).\n");
+#ifndef PCK_ENCRYPTION_ENABLED
 	print_help_option("-u, --upwards", "Scan folders upwards for project.godot file.\n");
+#endif
 	print_help_option("--main-pack <file>", "Path to a pack (.pck) file to load.\n");
 #ifdef DISABLE_DEPRECATED
 	print_help_option("--render-thread <mode>", "Render thread mode (\"safe\", \"separate\").\n");
 #else
 	print_help_option("--render-thread <mode>", "Render thread mode (\"unsafe\" [deprecated], \"safe\", \"separate\").\n");
 #endif
+#ifndef PCK_ENCRYPTION_ENABLED
 	print_help_option("--remote-fs <address>", "Remote filesystem (<host/IP>[:<port>] address).\n");
 	print_help_option("--remote-fs-password <password>", "Password for remote filesystem.\n");
+#endif
 
 	print_help_option("--audio-driver <driver>", "Audio driver [");
 	for (int i = 0; i < AudioDriverManager::get_driver_count(); i++) {
@@ -636,10 +640,14 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--editor-pseudolocalization", "Enable pseudolocalization for the editor and the project manager.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #endif
 
+#if !defined(PCK_ENCRYPTION_ENABLED) || defined(TOOLS_ENABLED)
 	print_help_title("Standalone tools");
+#endif
+#ifndef PCK_ENCRYPTION_ENABLED
 	print_help_option("-s, --script <script>", "Run a script.\n");
 	print_help_option("--main-loop <main_loop_name>", "Run a MainLoop specified by its global class name.\n");
 	print_help_option("--check-only", "Only parse for errors and quit (use with --script).\n");
+#endif
 #ifdef TOOLS_ENABLED
 	print_help_option("--import", "Starts the editor, waits for any resources to be imported, and then quits.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--export-release <preset> <path>", "Export the project in release mode using the given preset and output path. The preset name should match one defined in \"export_presets.cfg\".\n", CLI_OPTION_AVAILABILITY_EDITOR);
@@ -1845,6 +1853,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// Network file system needs to be configured before globals, since globals are based on the
 	// 'project.godot' file which will only be available through the network if this is enabled
+#ifndef PCK_ENCRYPTION_ENABLED
 	if (!remotefs.is_empty()) {
 		int port;
 		if (remotefs.contains_char(':')) {
@@ -1860,6 +1869,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			goto error;
 		}
 	}
+#endif
 
 	OS::get_singleton()->_in_editor = editor;
 	if (globals->setup(project_path, main_pack, upwards, editor) == OK) {
@@ -3979,6 +3989,17 @@ int Main::start() {
 #endif // DISABLE_DEPRECATED
 
 #endif // TOOLS_ENABLED
+
+#ifdef PCK_ENCRYPTION_ENABLED
+	script = String();
+	game_path = String();
+#else
+	bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+	if (disable_override) {
+		script = String();
+		game_path = String();
+	}
+#endif // PCK_ENCRYPTION_ENABLED
 
 	if (script.is_empty() && game_path.is_empty()) {
 		game_path = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));

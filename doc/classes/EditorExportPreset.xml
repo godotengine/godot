@@ -33,7 +33,7 @@
 				Returns number of files selected in the "Resources" tab of the export dialog.
 			</description>
 		</method>
-		<method name="get_encrypt_directory" qualifiers="const">
+		<method name="get_encrypt_directory" qualifiers="const" deprecated="Directory encryption is always enabled.">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code], PCK directory encryption is enabled in the export dialog.

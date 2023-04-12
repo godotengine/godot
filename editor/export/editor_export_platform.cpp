@@ -52,6 +52,8 @@
 #include "scene/resources/image_texture.h"
 #include "scene/resources/packed_scene.h"
 
+#define PCK_PADDING 16
+
 class EditorExportSaveProxy {
 	HashSet<String> saved_paths;
 	EditorExportPlatform::EditorExportSaveFunction save_func;
@@ -71,18 +73,6 @@ public:
 	EditorExportSaveProxy(EditorExportPlatform::EditorExportSaveFunction p_save_func, bool p_track_saves) :
 			save_func(p_save_func), tracking_saves(p_track_saves) {}
 };
-
-static int _get_pad(int p_alignment, int p_n) {
-	int rest = p_n % p_alignment;
-	int pad = 0;
-	if (rest > 0) {
-		pad = p_alignment - rest;
-	};
-
-	return pad;
-}
-
-#define PCK_PADDING 16
 
 Ref<Image> EditorExportPlatform::_load_icon_or_splash_image(const String &p_path, Error *r_error) const {
 	Ref<Image> image;
@@ -279,6 +269,10 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 			sd.encrypted = false;
 			break;
 		}
+	}
+
+	if (!p_key.is_empty()) {
+		sd.encrypted = file_requires_encryption(p_path, p_enc_in_filters, p_enc_ex_filters);
 	}
 
 	Ref<FileAccessEncrypted> fae;
@@ -1968,29 +1962,28 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 
 	uint32_t pack_flags = 0;
 	bool enc_pck = p_preset->get_enc_pck();
-	bool enc_directory = p_preset->get_enc_directory();
-	if (enc_pck && enc_directory) {
+	if (enc_pck) {
 		pack_flags |= PACK_DIR_ENCRYPTED;
 	}
 	if (p_embed) {
 		pack_flags |= PACK_REL_FILEBASE;
 	}
-	f->store_32(pack_flags); // flags
+	f->store_32(pack_flags); // Flags.
 
 	uint64_t file_base_ofs = f->get_position();
-	f->store_64(0); // files base
+	f->store_64(0); // Files base offset.
 
 	for (int i = 0; i < 16; i++) {
-		//reserved
+		// Reserved.
 		f->store_32(0);
 	}
 
-	f->store_32(pd.file_ofs.size()); //amount of files
+	f->store_32(pd.file_ofs.size()); // Amount of files.
 
 	Ref<FileAccessEncrypted> fae;
 	Ref<FileAccess> fhead = f;
 
-	if (enc_pck && enc_directory) {
+	if (enc_pck) {
 		uint64_t seed = p_preset->get_seed();
 		String script_key = _get_script_encryption_key(p_preset);
 		Vector<uint8_t> key;
