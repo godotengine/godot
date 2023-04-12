@@ -30,8 +30,11 @@
 
 #include "geometry_3d.h"
 
+#include "minimization.h"
 #include "thirdparty/misc/clipper.hpp"
 #include "thirdparty/misc/polypartition.h"
+
+constexpr real_t CIRCLE_CIRCLE_RELATIVE_TOLERANCE = 1e-6;
 
 void Geometry3D::get_closest_points_between_segments(const Vector3 &p_p0, const Vector3 &p_p1, const Vector3 &p_q0, const Vector3 &p_q1, Vector3 &r_ps, Vector3 &r_qt) {
 	// Based on David Eberly's Computation of Distance Between Line Segments algorithm.
@@ -983,4 +986,258 @@ Vector<int8_t> Geometry3D::generate_sdf8(const Vector<uint32_t> &p_positive, con
 		wsdf[i] = CLAMP(diff, -128, 127);
 	}
 	return sdf8;
+}
+
+/*
+ * Point-Circle distance
+ */
+
+Vector3 get_closest_point_on_circle(const Vector3 &p_point, const Transform3D &p_circle_transform, const real_t p_circle_radius) {
+	Vector3 point_local = p_point - p_circle_transform.origin;
+	Vector3 U = p_circle_transform.basis.get_column(0);
+	Vector3 V = p_circle_transform.basis.get_column(2);
+	Vector3 closest_local = U.dot(point_local) * U + V.dot(point_local) * V;
+	real_t closest_local_length = closest_local.length();
+	if (closest_local_length > 0.0) {
+		return p_circle_transform.origin + p_circle_radius * (closest_local / closest_local_length);
+	} else {
+		return p_circle_transform.origin + p_circle_radius * U.normalized();
+	}
+}
+
+/*
+ * Circle-Circle distance
+ * Based on David Vranek's Fast and Accurate Circle-Circle and Circle-Line 3D Distance Computation.
+ * Implementation based on the one in MinuteTorus by Sang Hyun Son, but significantly modified.
+ * See https://github.com/SonSang/MinuteTorus/blob/1a11cacc8cea6f62d16ffc9919ba35fe998742c9/Circle/CircleDistance.cpp
+ */
+
+/**********************************************************************************
+ * MinuteTorus, Copyright (c) [2021] [Sanghyun Son, Youngjin Park]                *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy   *
+ * of this software and associated documentation files (the "Software"), to deal  *
+ * in the Software without restriction, including without limitation the rights   *
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell      *
+ * copies of the Software, and to permit persons to whom the Software is          *
+ * furnished to do so, subject to the following conditions:                       *
+ *                                                                                *
+ * The above copyright notice and this permission notice shall be included in all *
+ * copies or substantial portions of the Software.                                *
+ *                                                                                *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR     *
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,       *
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE    *
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER         *
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,  *
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  *
+ * SOFTWARE.                                                                      *
+ **********************************************************************************/
+
+struct CircleCircleDistanceData {
+	real_t a[10];
+	real_t t = INFINITY; // Ensure an update on the first call to update_t.
+	real_t cost = 0.0;
+	real_t sint = 0.0;
+	real_t cost2 = 0.0;
+	real_t sint2 = 0.0;
+	real_t costsint = 0.0;
+	real_t root = 0.0;
+
+	_FORCE_INLINE_ void update_t(real_t p_t) {
+		if (t == p_t) {
+			return;
+		}
+		t = p_t;
+		cost = cos(t);
+		sint = sin(t);
+		cost2 = cost * cost;
+		sint2 = sint * sint;
+		costsint = cost * sint;
+		root = sqrt(a[5] * cost2 + a[4] * sint2 + a[3] * cost + a[2] * sint + a[1] * costsint + a[0]);
+	}
+};
+
+inline real_t circle_circle_distance(void *p_data, real_t p_t) { // p_t is the angle on circle1
+	CircleCircleDistanceData *d = static_cast<CircleCircleDistanceData *>(p_data);
+	d->update_t(p_t);
+	return d->a[9] * d->cost + d->a[8] * d->sint + d->a[7] + d->a[6] * d->root;
+}
+
+inline real_t circle_circle_distance_derivative(void *p_data, real_t p_t) { // first derivative of circle_circle_distance
+	CircleCircleDistanceData *d = static_cast<CircleCircleDistanceData *>(p_data);
+	d->update_t(p_t);
+	return -d->a[9] * d->sint + d->a[8] * d->cost + d->a[6] * 0.5 * (1.0 / d->root) * (2.0 * d->costsint * (d->a[4] - d->a[5]) - d->a[3] * d->sint + d->a[2] * d->cost + d->a[1] * (d->cost2 - d->sint2));
+}
+
+bool real_roots_of_quadratic_polynomial(const real_t p_coeff[3], real_t *r_x) {
+	const real_t a = p_coeff[2];
+	const real_t b = p_coeff[1];
+	const real_t c = p_coeff[0];
+	if (a == 0.0) { // Not actually quadratic.
+		return false;
+	}
+	if (c == 0.0) { // At least one root is zero.
+		r_x[0] = 0.0;
+		r_x[1] = -b / a;
+		return true;
+	}
+	// Compute discriminant avoiding overflow.
+	real_t l_e;
+	real_t l_d;
+	const real_t l_b = 0.5 * b;
+	if (Math::abs(l_b) < Math::abs(c)) {
+		l_e = (c < 0.0) ? -a : a;
+		l_e = l_b * (l_b / Math::abs(c)) - l_e;
+		l_d = Math::sqrt(Math::abs(l_e)) * Math::sqrt(Math::abs(c));
+	} else {
+		l_e = 1.0 - (a / l_b) * (c / l_b);
+		l_d = Math::sqrt(Math::abs(l_e)) * Math::abs(l_b);
+	}
+	if (l_e >= 0.0) { // Real roots.
+		// Compute largest root (in absolute value) by avoiding cancellation.
+		if (l_b > 0.0) {
+			l_d = -l_d;
+		}
+		r_x[0] = (-l_b + l_d) / a;
+		r_x[1] = (r_x[0] != 0.0) ? (c / r_x[0]) / a : 0.0; // Smallest root.
+		return true;
+	} else { // Complex roots.
+		return false;
+	}
+}
+
+void Geometry3D::get_closest_points_between_circle_and_circle(const Transform3D &p_circle0_transform, const real_t p_circle0_radius, const Transform3D &p_circle1_transform, const real_t p_circle1_radius, Vector3 *r_closest_points, size_t &r_num_closest_pairs) {
+	// Constants used in the squared distance function.
+	Vector3 center_a = p_circle0_transform.origin;
+	Vector3 center_b = p_circle1_transform.origin;
+	Vector3 normal_a = p_circle0_transform.basis.get_column(1);
+	Vector3 U = p_circle1_transform.basis.get_column(0);
+	Vector3 V = p_circle1_transform.basis.get_column(2);
+	real_t R_a = p_circle0_radius;
+	real_t R_b = p_circle1_radius;
+	real_t tmp[11];
+	tmp[0] = center_a.dot(center_a);
+	tmp[1] = center_a.dot(center_b);
+	tmp[2] = center_b.dot(center_b);
+	tmp[3] = normal_a.dot(center_a);
+	tmp[4] = normal_a.dot(center_b);
+	tmp[5] = normal_a.dot(U);
+	tmp[6] = normal_a.dot(V);
+	tmp[7] = center_a.dot(U);
+	tmp[8] = center_a.dot(V);
+	tmp[9] = center_b.dot(U);
+	tmp[10] = center_b.dot(V);
+
+	// Coefficients used in the squared distance function and its derivative; see circle_circle_distance and circle_circle_distance_derivative.
+	CircleCircleDistanceData data;
+	data.a[0] = R_b * R_b + tmp[2] + tmp[0] - 2.0 * tmp[1] - (tmp[4] - tmp[3]) * (tmp[4] - tmp[3]);
+	data.a[1] = -2.0 * R_b * R_b * tmp[5] * tmp[6];
+	data.a[2] = 2.0 * R_b * tmp[10] - 2.0 * R_b * tmp[8] - 2.0 * R_b * (tmp[4] - tmp[3]) * tmp[6];
+	data.a[3] = 2.0 * R_b * tmp[9] - 2.0 * R_b * tmp[7] - 2.0 * R_b * (tmp[4] - tmp[3]) * tmp[5];
+	data.a[4] = -R_b * R_b * tmp[6] * tmp[6];
+	data.a[5] = -R_b * R_b * tmp[5] * tmp[5];
+	data.a[6] = -2.0 * R_a;
+	data.a[7] = R_a * R_a + R_b * R_b + tmp[0] + tmp[2] - 2.0 * tmp[1];
+	data.a[8] = 2.0 * R_b * tmp[10] - 2.0 * R_b * tmp[8];
+	data.a[9] = 2.0 * R_b * tmp[9] - 2.0 * R_b * tmp[7];
+
+	// Evaluate the squared distance function at three equally spaced angles.
+	real_t a = (-2.0 / 3.0) * Math_PI;
+	real_t b = 0;
+	real_t c = (2.0 / 3.0) * Math_PI;
+	real_t fa = circle_circle_distance(&data, a);
+	real_t fb = circle_circle_distance(&data, b);
+	real_t fc = circle_circle_distance(&data, c);
+
+	// TODO: Handle special cases like f(a) == f(b) == f(c) and the other three below, which do happen.
+
+	// Re-order the three angles to form a bracketing triplet.
+	if (fb > fc) {
+		if (fa > fc) { // f(c) is smallest; swap b and c.
+			b = (2.0 / 3.0) * Math_PI;
+			c = Math_TAU;
+			SWAP(fb, fc);
+		} else if (fa < fc) { // f(a) is smallest; swap b and a.
+			a = -Math_TAU;
+			b = -(2.0 / 3.0) * Math_PI;
+			SWAP(fb, fa);
+		} else { // f(b) is greater than f(a) == f(c)
+			ERR_FAIL_MSG("f(a) == f(c)");
+		}
+	} else if (fb < fc) {
+		if (fa < fb) { // f(a) is smallest; swap a and b.
+			a = -Math_TAU;
+			b = -(2.0 / 3.0) * Math_PI;
+			SWAP(fa, fb);
+		} else if (fa == fb) { // f(c) is greater than f(a) == f(b)
+			ERR_FAIL_MSG("f(a) == f(b)");
+		}
+		// else f(b) is smallest; nothing to do.
+	} else { // f(b) == f(c)
+		ERR_FAIL_MSG("f(b) == f(c)");
+	}
+
+	// Find a single local minimum of the distance function numerically, using a modification of Brent's minimization algorithm (making use of the derivative).
+	real_t loc_min_t;
+	real_t loc_min_dist = Minimization::get_local_minimum(&data, &circle_circle_distance, &circle_circle_distance_derivative, a, b, c, CIRCLE_CIRCLE_RELATIVE_TOLERANCE, &loc_min_t);
+
+	// Shift the distance function down by the local minimum; setting that equal to zero leads to a polynomial equation of degree four in z = cos(t).
+	real_t d[3] = { data.a[7] - loc_min_dist, data.a[6] * data.a[6], data.a[8] * data.a[8] };
+	real_t c1 = 2.0 * data.a[8] * d[0] - d[1] * data.a[2];
+	//real_t c2 = d[1] * data.a[4]; // NOTE: unused.
+	real_t c3 = d[0] * d[0] - d[1] * data.a[0] + d[2] - d[1] * data.a[4];
+	real_t c4 = 2.0 * data.a[9] * d[0] - d[1] * data.a[3];
+	real_t c5 = 2.0 * data.a[9] * data.a[8] - d[1] * data.a[1];
+	real_t c6 = -d[2] + d[1] * data.a[4] + data.a[9] * data.a[9] - d[1] * data.a[5];
+	// Coefficients of the quartic:
+	real_t quartic_coeff[5];
+	//quartic_coeff[0] = c3 * c3 - c1 * c1; // NOTE: unused.
+	//quartic_coeff[1] = -2.0 * c1 * c5 + 2.0 * c3 * c4; // NOTE: unused.
+	quartic_coeff[2] = c1 * c1 - c5 * c5 + 2.0 * c3 * c6 + c4 * c4;
+	quartic_coeff[3] = 2.0 * c1 * c5 + 2.0 * c4 * c6;
+	quartic_coeff[4] = c6 * c6 + c5 * c5;
+
+	// The polynomial of degree four in z = cos(t) has a double root at the previously found z0 = cos(loc_min_t); use Horner's method to deflate it to a quadratic polynomial.
+	real_t z = cos(loc_min_t);
+	real_t quadratic_coeff[3];
+	quadratic_coeff[0] = (3.0 * quartic_coeff[4] * z + 2.0 * quartic_coeff[3]) * z + quartic_coeff[2];
+	quadratic_coeff[1] = 2.0 * quartic_coeff[4] * z + quartic_coeff[3];
+	quadratic_coeff[2] = quartic_coeff[4];
+	real_t quadratic_roots[2];
+
+	real_t gl_min_dist = loc_min_dist;
+	real_t gl_min_t = loc_min_t;
+
+	// If the quadratic has two distinct real roots, then the global minimum lies between the two roots of the quadratic.
+	if (real_roots_of_quadratic_polynomial(quadratic_coeff, quadratic_roots)) {
+		real_t cosa = CLAMP(quadratic_roots[0], -1.0, 1.0);
+		real_t cosb = CLAMP(quadratic_roots[1], -1.0, 1.0);
+		a = acos(cosa); // In the range [0, pi].
+		b = acos(cosb); // In the range [0, pi].
+		if (circle_circle_distance_derivative(&data, a) * circle_circle_distance_derivative(&data, b) < 0.0) {
+			// Find a minimum in this interval.
+			// TODO: Can there be a local maximum instead of a minimum in this interval?
+			// TODO: If not, should we use a root finder here to find a zero of the derivative?
+			loc_min_dist = Minimization::get_local_minimum(&data, &circle_circle_distance, &circle_circle_distance_derivative, a, b, b, CIRCLE_CIRCLE_RELATIVE_TOLERANCE, &loc_min_t);
+			if (loc_min_dist < gl_min_dist) {
+				gl_min_dist = loc_min_dist;
+				gl_min_t = loc_min_t;
+			}
+		}
+		a = Math_TAU - a;
+		b = Math_TAU - b;
+		if (circle_circle_distance_derivative(&data, a) * circle_circle_distance_derivative(&data, b) < 0.0) {
+			loc_min_dist = Minimization::get_local_minimum(&data, &circle_circle_distance, &circle_circle_distance_derivative, a, b, b, CIRCLE_CIRCLE_RELATIVE_TOLERANCE, &loc_min_t);
+			if (loc_min_dist < gl_min_dist) {
+				gl_min_dist = loc_min_dist;
+				gl_min_t = loc_min_t;
+			}
+		}
+	}
+	// NOTE: If the quadratic has just one real root, then the previously found local minimum is a global minimum, and so is the root of the quadratic.
+	// If the quadratic has no real roots, then the previously found local minimum is the unique global minimum.
+
+	r_num_closest_pairs = 1;
+	r_closest_points[1] = p_circle1_transform.origin + R_b * Math::cos(gl_min_t) * U + R_b * Math::sin(gl_min_t) * V;
+	r_closest_points[0] = get_closest_point_on_circle(r_closest_points[1], p_circle0_transform, R_a);
 }

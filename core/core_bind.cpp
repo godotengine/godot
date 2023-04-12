@@ -916,6 +916,13 @@ Vector3 Geometry3D::get_closest_point_to_segment_uncapped(const Vector3 &p_point
 	return ::Geometry3D::get_closest_point_to_segment_uncapped(p_point, s);
 }
 
+Vector<Vector3> Geometry3D::get_closest_points_between_circle_and_circle(const Transform3D &p_circle0_transform, const real_t p_circle0_radius, const Transform3D &p_circle1_transform, const real_t p_circle1_radius) {
+	Vector3 closest_points[2];
+	size_t num_closest_pairs = 0;
+	::Geometry3D::get_closest_points_between_circle_and_circle(p_circle0_transform, p_circle0_radius, p_circle1_transform, p_circle1_radius, closest_points, num_closest_pairs);
+	return { closest_points[0], closest_points[1] };
+}
+
 Variant Geometry3D::ray_intersects_triangle(const Vector3 &p_from, const Vector3 &p_dir, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2) {
 	Vector3 res;
 	if (::Geometry3D::ray_intersects_triangle(p_from, p_dir, p_v0, p_v1, p_v2, &res)) {
@@ -987,6 +994,8 @@ void Geometry3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment", "point", "s1", "s2"), &Geometry3D::get_closest_point_to_segment);
 
 	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment_uncapped", "point", "s1", "s2"), &Geometry3D::get_closest_point_to_segment_uncapped);
+
+	ClassDB::bind_method(D_METHOD("get_closest_points_between_circle_and_circle", "circle0_transform", "circle0_radius", "circle1_transform", "circle1_radius"), &Geometry3D::get_closest_points_between_circle_and_circle);
 
 	ClassDB::bind_method(D_METHOD("ray_intersects_triangle", "from", "dir", "a", "b", "c"), &Geometry3D::ray_intersects_triangle);
 	ClassDB::bind_method(D_METHOD("segment_intersects_triangle", "from", "to", "a", "b", "c"), &Geometry3D::segment_intersects_triangle);
