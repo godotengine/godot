@@ -1948,7 +1948,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	glDepthFunc(GL_LEQUAL);
 	glDepthMask(GL_TRUE);
 	scene_state.current_depth_test = GLES3::SceneShaderData::DEPTH_TEST_ENABLED;
-	scene_state.current_depth_draw = GLES3::SceneShaderData::DEPTH_DRAW_OPAQUE;
+	scene_state.current_depth_draw = GLES3::SceneShaderData::DEPTH_DRAW_ALWAYS;
 
 	if (!fb_cleared) {
 		glClearDepth(1.0f);
@@ -1976,19 +1976,17 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 	_render_list_template<PASS_MODE_COLOR>(&render_list_params, &render_data, 0, render_list[RENDER_LIST_OPAQUE].elements.size());
 
+	glDepthMask(GL_FALSE);
+	scene_state.current_depth_draw = GLES3::SceneShaderData::DEPTH_DRAW_DISABLED;
+
 	if (draw_sky) {
 		RENDER_TIMESTAMP("Render Sky");
-		if (scene_state.current_depth_test != GLES3::SceneShaderData::DEPTH_TEST_ENABLED) {
-			glEnable(GL_DEPTH_TEST);
-			scene_state.current_depth_test = GLES3::SceneShaderData::DEPTH_TEST_ENABLED;
-		}
+
 		glEnable(GL_DEPTH_TEST);
-		glDepthMask(GL_FALSE);
 		glDisable(GL_BLEND);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		scene_state.current_depth_test = GLES3::SceneShaderData::DEPTH_TEST_ENABLED;
-		scene_state.current_depth_draw = GLES3::SceneShaderData::DEPTH_DRAW_DISABLED;
 		scene_state.cull_mode = GLES3::SceneShaderData::CULL_BACK;
 
 		_draw_sky(render_data.environment, render_data.cam_projection, render_data.cam_transform, sky_energy_multiplier, p_camera_data->view_count > 1, flip_y);
