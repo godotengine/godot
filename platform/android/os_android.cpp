@@ -757,6 +757,10 @@ Error OS_Android::kill(const ProcessID &p_pid) {
 	return OS_Unix::kill(p_pid);
 }
 
+String OS_Android::get_system_ca_certificates() {
+	return godot_java->get_ca_certificates();
+}
+
 Error OS_Android::setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) {
 	r_project_path = get_user_data_dir();
 	Error err = OS_Unix::setup_remote_filesystem(p_server_host, p_port, p_password, r_project_path);

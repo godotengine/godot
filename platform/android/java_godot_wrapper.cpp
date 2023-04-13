@@ -70,6 +70,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_request_permission = p_env->GetMethodID(godot_class, "requestPermission", "(Ljava/lang/String;)Z");
 	_request_permissions = p_env->GetMethodID(godot_class, "requestPermissions", "()Z");
 	_get_granted_permissions = p_env->GetMethodID(godot_class, "getGrantedPermissions", "()[Ljava/lang/String;");
+	_get_ca_certificates = p_env->GetMethodID(godot_class, "getCACertificates", "()Ljava/lang/String;");
 	_init_input_devices = p_env->GetMethodID(godot_class, "initInputDevices", "()V");
 	_get_surface = p_env->GetMethodID(godot_class, "getSurface", "()Landroid/view/Surface;");
 	_is_activity_resumed = p_env->GetMethodID(godot_class, "isActivityResumed", "()Z");
@@ -308,6 +309,17 @@ Vector<String> GodotJavaWrapper::get_granted_permissions() const {
 		}
 	}
 	return permissions_list;
+}
+
+String GodotJavaWrapper::get_ca_certificates() const {
+	if (_get_ca_certificates) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, String());
+		jstring s = (jstring)env->CallObjectMethod(godot_instance, _get_ca_certificates);
+		return jstring_to_string(s, env);
+	} else {
+		return String();
+	}
 }
 
 void GodotJavaWrapper::init_input_devices() {

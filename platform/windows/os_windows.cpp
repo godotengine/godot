@@ -55,6 +55,7 @@
 #include <regstr.h>
 #include <shlobj.h>
 #include <wbemcli.h>
+#include <wincrypt.h>
 
 #ifdef DEBUG_ENABLED
 #pragma pack(push, before_imagehlp, 8)
@@ -1675,6 +1676,26 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 	}
 
 	return OK;
+}
+
+String OS_Windows::get_system_ca_certificates() {
+	HCERTSTORE cert_store = CertOpenSystemStoreA(0, "ROOT");
+	ERR_FAIL_COND_V_MSG(!cert_store, "", "Failed to read the root certificate store.");
+
+	String certs;
+	PCCERT_CONTEXT curr = CertEnumCertificatesInStore(cert_store, nullptr);
+	while (curr) {
+		DWORD size = 0;
+		bool success = CryptBinaryToStringA(curr->pbCertEncoded, curr->cbCertEncoded, CRYPT_STRING_BASE64HEADER | CRYPT_STRING_NOCR, nullptr, &size);
+		ERR_CONTINUE(!success);
+		PackedByteArray pba;
+		pba.resize(size);
+		CryptBinaryToStringA(curr->pbCertEncoded, curr->cbCertEncoded, CRYPT_STRING_BASE64HEADER | CRYPT_STRING_NOCR, (char *)pba.ptrw(), &size);
+		certs += String((char *)pba.ptr(), size);
+		curr = CertEnumCertificatesInStore(cert_store, curr);
+	}
+	CertCloseStore(cert_store, 0);
+	return certs;
 }
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {

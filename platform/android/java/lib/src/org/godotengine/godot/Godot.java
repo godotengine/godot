@@ -1044,6 +1044,11 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		return PermissionsUtil.getGrantedPermissions(getActivity());
 	}
 
+	@Keep
+	private String getCACertificates() {
+		return GodotNetUtils.getCACertificates();
+	}
+
 	/**
 	 * The download state should trigger changes in the UI --- it may be useful
 	 * to show the state as being indeterminate at times. This sample can be
