@@ -63,24 +63,35 @@ void InputMap::_bind_methods() {
  */
 String InputMap::suggest_actions(const StringName &p_action) const {
 	List<StringName> actions = get_actions();
+	List<StringName> similar_actions;
 	StringName closest_action;
-	float closest_similarity = 0.0;
+	int smallest_edit_distance = 10;
 
-	// Find the most action with the most similar name.
+	// Find the action with the most similar name.
 	for (const StringName &action : actions) {
-		const float similarity = String(action).similarity(p_action);
+		int similarity = String(action).edit_distance(p_action);
 
-		if (similarity > closest_similarity) {
+		if (similarity < smallest_edit_distance) {
 			closest_action = action;
-			closest_similarity = similarity;
+			smallest_edit_distance = similarity;
+			similar_actions.clear();
+		} else if (similarity == smallest_edit_distance) {
+			similar_actions.push_back(action);
 		}
 	}
 
 	String error_message = vformat("The InputMap action \"%s\" doesn't exist.", p_action);
 
-	if (closest_similarity >= 0.4) {
+	if (smallest_edit_distance <= 2) {
 		// Only include a suggestion in the error message if it's similar enough.
-		error_message += vformat(" Did you mean \"%s\"?", closest_action);
+		error_message += vformat(" Did you mean \"%s\"", closest_action);
+
+		for (const StringName &action : similar_actions) {
+			error_message += action == similar_actions[similar_actions.size() - 1] ? " or " : ", ";
+			error_message += vformat("\"%s\"", action);
+		}
+
+		error_message += "?";
 	}
 	return error_message;
 }
