@@ -6649,7 +6649,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 		pipeline_library_create_info.pLibraries = libraries.ptr();
 
 		//TODO: re-enable VRS
-		graphics_pipeline_create_info.flags = 0;
+		graphics_pipeline_create_info.flags = VK_PIPELINE_CREATE_LINK_TIME_OPTIMIZATION_BIT_EXT;
 		graphics_pipeline_create_info.pNext = &pipeline_library_create_info;
 		graphics_pipeline_create_info.layout = shader->pipeline_layout;
 		graphics_pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
@@ -6715,14 +6715,14 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	};
 	pipeline.validation.primitive_minimum = primitive_minimum[p_render_primitive];
 #endif
-	if (context->get_graphics_pipeline_library_capabilities().graphics_pipeline_library_supported && GLOBAL_GET("rendering/rendering_device/vulkan/graphics_pipeline_library/use_graphics_pipeline_library")){
-		OptimizedPipelineInfo optimized_pipeline_info = {};
-		optimized_pipeline_info.device = &device;
-		optimized_pipeline_info.render_pipeline = &pipeline;
-		optimized_pipeline_info.create_info = &graphics_pipeline_create_info;
-		optimized_pipeline_thread.start(create_optimized_render_pipeline, &optimized_pipeline_info);
-		optimized_pipeline_thread.wait_to_finish();
-	}
+	// if (context->get_graphics_pipeline_library_capabilities().graphics_pipeline_library_supported && GLOBAL_GET("rendering/rendering_device/vulkan/graphics_pipeline_library/use_graphics_pipeline_library")){
+	// 	OptimizedPipelineInfo optimized_pipeline_info = {};
+	// 	optimized_pipeline_info.device = &device;
+	// 	optimized_pipeline_info.render_pipeline = &pipeline;
+	// 	optimized_pipeline_info.create_info = &graphics_pipeline_create_info;
+	// 	optimized_pipeline_thread.start(create_optimized_render_pipeline, &optimized_pipeline_info);
+	// 	optimized_pipeline_thread.wait_to_finish();
+	// }
 	// Create ID to associate with this pipeline.
 	RID id = render_pipeline_owner.make_rid(pipeline);
 #ifdef DEV_ENABLED
