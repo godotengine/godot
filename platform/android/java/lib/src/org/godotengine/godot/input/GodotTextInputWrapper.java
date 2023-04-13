@@ -124,11 +124,12 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 	public boolean onEditorAction(final TextView pTextView, final int pActionID, final KeyEvent pKeyEvent) {
 		if (mEdit == pTextView && isFullScreenEdit() && pKeyEvent != null) {
 			final String characters = pKeyEvent.getCharacters();
-
-			for (int i = 0; i < characters.length(); i++) {
-				final int character = characters.codePointAt(i);
-				GodotLib.key(0, character, 0, true);
-				GodotLib.key(0, character, 0, false);
+			if (characters != null) {
+				for (int i = 0; i < characters.length(); i++) {
+					final int character = characters.codePointAt(i);
+					GodotLib.key(0, character, 0, true);
+					GodotLib.key(0, character, 0, false);
+				}
 			}
 		}
 
