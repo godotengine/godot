@@ -47,6 +47,7 @@ class Dictionary {
 
 public:
 	void get_key_list(List<Variant> *p_keys) const;
+	bool set_key_at_index(int p_index, const Variant &new_key);
 	Variant get_key_at_index(int p_index) const;
 	Variant get_value_at_index(int p_index) const;
 

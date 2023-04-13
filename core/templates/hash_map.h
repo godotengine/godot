@@ -310,6 +310,32 @@ public:
 		return _lookup_pos(p_key, _pos);
 	}
 
+	bool replace(const TKey &p_key, const TKey &new_key) {
+		if (has(new_key)) {
+			return false;
+		}
+		uint32_t pos = 0;
+		bool exists = _lookup_pos(p_key, pos);
+		CRASH_COND_MSG(!exists, "HashMap key not found.");
+
+		HashMapElement<TKey, TValue> *prev_elem = elements[pos]->prev;
+		HashMapElement<TKey, TValue> *next_elem = elements[pos]->next;
+		HashMapElement<TKey, TValue> *new_elem = _insert(new_key, elements[pos]->data.value, !prev_elem);
+		erase(p_key);
+
+		if (next_elem && prev_elem) {
+			tail_element = new_elem->prev;
+			tail_element->next = nullptr;
+
+			prev_elem->next = new_elem;
+			new_elem->prev = prev_elem;
+
+			next_elem->prev = new_elem;
+			new_elem->next = next_elem;
+		}
+		return true;
+	}
+
 	bool erase(const TKey &p_key) {
 		uint32_t pos = 0;
 		bool exists = _lookup_pos(p_key, pos);

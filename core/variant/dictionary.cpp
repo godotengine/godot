@@ -55,6 +55,10 @@ void Dictionary::get_key_list(List<Variant> *p_keys) const {
 	}
 }
 
+bool Dictionary::set_key_at_index(int p_index, const Variant &new_key) {
+	return _p->variant_map.replace(get_key_at_index(p_index), new_key);
+}
+
 Variant Dictionary::get_key_at_index(int p_index) const {
 	int index = 0;
 	for (const KeyValue<Variant, Variant> &E : _p->variant_map) {
