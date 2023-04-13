@@ -60,6 +60,8 @@ class EditorPropertyDictionaryObject : public RefCounted {
 	Variant new_item_key;
 	Variant new_item_value;
 	Dictionary dict;
+	Variant edited_key;
+	int editing_key_index = -3;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -74,6 +76,10 @@ public:
 
 	void set_new_item_value(const Variant &p_new_item);
 	Variant get_new_item_value();
+
+	void edit_key_at_index(int p_index);
+	Variant get_edited_key();
+	int get_editing_key_index();
 
 	EditorPropertyDictionaryObject();
 };
@@ -144,6 +150,15 @@ public:
 class EditorPropertyDictionary : public EditorProperty {
 	GDCLASS(EditorPropertyDictionary, EditorProperty);
 
+public:
+	enum MenuItems {
+		MENU_COPY_KEY = 5,
+		MENU_PASTE_VALUE_TO_KEY,
+		MENU_EDIT_KEY,
+		MENU_REMOVE_ITEM,
+	};
+
+private:
 	PopupMenu *change_type = nullptr;
 	bool updating = false;
 
@@ -167,6 +182,10 @@ class EditorPropertyDictionary : public EditorProperty {
 
 	void _add_key_value();
 	void _object_id_selected(const StringName &p_property, ObjectID p_id);
+	void _create_key_value_editor(HBoxContainer *hbox, const int &change_index, const Variant &key, const Variant &value);
+	void set_layout_direction_on_child(Node *node);
+	void item_menu_option(int p_option, int change_index);
+	void _update_item_popup(PopupMenu *menu, const int &change_index);
 
 protected:
 	static void _bind_methods();
@@ -199,7 +218,7 @@ class EditorPropertyLocalizableString : public EditorProperty {
 	void _edit_pressed();
 	void _remove_item(Object *p_button, int p_index);
 	void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
-
+	void _update_item_popup(PopupMenu &menu, const int &change_index);
 	void _add_locale_popup();
 	void _add_locale(const String &p_locale);
 	void _object_id_selected(const StringName &p_property, ObjectID p_id);
