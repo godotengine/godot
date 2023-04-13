@@ -714,6 +714,12 @@
 		<constant name="COMPRESS_BPTC" value="3" enum="CompressMode">
 			Use BPTC compression.
 		</constant>
+		<constant name="COMPRESS_ASTC" value="4" enum="CompressMode">
+			Use ASTC compression.
+		</constant>
+		<constant name="COMPRESS_MAX" value="5" enum="CompressMode">
+			Represents the size of the [enum CompressMode] enum.
+		</constant>
 		<constant name="USED_CHANNELS_L" value="0" enum="UsedChannels">
 		</constant>
 		<constant name="USED_CHANNELS_LA" value="1" enum="UsedChannels">
