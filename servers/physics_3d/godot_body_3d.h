@@ -119,6 +119,7 @@ class GodotBody3D : public GodotCollisionObject3D {
 	struct Contact {
 		Vector3 local_pos;
 		Vector3 local_normal;
+		Vector3 local_velocity_at_pos;
 		real_t depth = 0.0;
 		int local_shape = 0;
 		Vector3 collider_pos;
@@ -184,7 +185,7 @@ public:
 	_FORCE_INLINE_ int get_max_contacts_reported() const { return contacts.size(); }
 
 	_FORCE_INLINE_ bool can_report_contacts() const { return !contacts.is_empty(); }
-	_FORCE_INLINE_ void add_contact(const Vector3 &p_local_pos, const Vector3 &p_local_normal, real_t p_depth, int p_local_shape, const Vector3 &p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID &p_collider, const Vector3 &p_collider_velocity_at_pos, const Vector3 &p_impulse);
+	_FORCE_INLINE_ void add_contact(const Vector3 &p_local_pos, const Vector3 &p_local_normal, real_t p_depth, int p_local_shape, const Vector3 &p_local_velocity_at_pos, const Vector3 &p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID &p_collider, const Vector3 &p_collider_velocity_at_pos, const Vector3 &p_impulse);
 
 	_FORCE_INLINE_ void add_exception(const RID &p_exception) { exceptions.insert(p_exception); }
 	_FORCE_INLINE_ void remove_exception(const RID &p_exception) { exceptions.erase(p_exception); }
@@ -348,7 +349,7 @@ public:
 
 //add contact inline
 
-void GodotBody3D::add_contact(const Vector3 &p_local_pos, const Vector3 &p_local_normal, real_t p_depth, int p_local_shape, const Vector3 &p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID &p_collider, const Vector3 &p_collider_velocity_at_pos, const Vector3 &p_impulse) {
+void GodotBody3D::add_contact(const Vector3 &p_local_pos, const Vector3 &p_local_normal, real_t p_depth, int p_local_shape, const Vector3 &p_local_velocity_at_pos, const Vector3 &p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID &p_collider, const Vector3 &p_collider_velocity_at_pos, const Vector3 &p_impulse) {
 	int c_max = contacts.size();
 
 	if (c_max == 0) {
@@ -381,6 +382,7 @@ void GodotBody3D::add_contact(const Vector3 &p_local_pos, const Vector3 &p_local
 
 	c[idx].local_pos = p_local_pos;
 	c[idx].local_normal = p_local_normal;
+	c[idx].local_velocity_at_pos = p_local_velocity_at_pos;
 	c[idx].depth = p_depth;
 	c[idx].local_shape = p_local_shape;
 	c[idx].collider_pos = p_collider_pos;
