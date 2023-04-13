@@ -2366,7 +2366,7 @@
 		<method name="particles_collision_set_attractor_strength">
 			<return type="void" />
 			<param index="0" name="particles_collision" type="RID" />
-			<param index="1" name="setrngth" type="float" />
+			<param index="1" name="strength" type="float" />
 			<description>
 			</description>
 		</method>
