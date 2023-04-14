@@ -2846,7 +2846,6 @@ void EditorInspector::update_tree() {
 
 			String type = p.name;
 			String label = p.name;
-			doc_name = p.name;
 
 			// Use category's owner script to update some of its information.
 			if (!EditorNode::get_editor_data().is_type_recognized(type) && p.hint_string.length() && ResourceLoader::exists(p.hint_string)) {
