@@ -337,7 +337,7 @@ void ViewportRotationControl::_get_sorted_axis(Vector<Axis2D> &r_axis) {
 		Vector3 axis_3d = camera_basis.get_column(i);
 		Vector2i axis_vector = Vector2(axis_3d.x, -axis_3d.y) * radius;
 
-		if (Math::abs(axis_3d.z) < 1.0) {
+		if (Math::abs(axis_3d.z) <= 1.0) {
 			Axis2D pos_axis;
 			pos_axis.axis = i;
 			pos_axis.screen_point = center + axis_vector;
@@ -352,7 +352,7 @@ void ViewportRotationControl::_get_sorted_axis(Vector<Axis2D> &r_axis) {
 		} else {
 			// Special case when the camera is aligned with one axis
 			Axis2D axis;
-			axis.axis = i + (axis_3d.z < 0 ? 0 : 3);
+			axis.axis = i + (axis_3d.z <= 0 ? 0 : 3);
 			axis.screen_point = center;
 			axis.z_axis = 1.0;
 			r_axis.push_back(axis);
