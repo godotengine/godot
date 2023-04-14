@@ -154,6 +154,9 @@ private:
 	VelocityTrack mouse_velocity_track;
 	HashMap<int, VelocityTrack> touch_velocity_track;
 	HashMap<int, Joypad> joy_names;
+
+	HashSet<uint32_t> ignored_device_ids;
+
 	int fallback_mapping = -1;
 
 	CursorShape default_shape = CURSOR_ARROW;
@@ -328,6 +331,7 @@ public:
 
 	bool is_joy_known(int p_device);
 	String get_joy_guid(int p_device) const;
+	bool should_ignore_device(int p_vendor_id, int p_product_id) const;
 	void set_fallback_mapping(String p_guid);
 
 	void flush_buffered_events();
