@@ -403,11 +403,23 @@
 		<constant name="DOWN" value="Vector3(0, -1, 0)">
 			Down unit vector.
 		</constant>
-		<constant name="FORWARD" value="Vector3(0, 0, -1)">
-			Forward unit vector. Represents the local direction of forward, and the global direction of north.
+		<constant name="CAMERA_FORWARD" value="Vector3(0, 0, -1)">
+			Forward unit vector from a camera view (as Godot cameras look at -Z, +Y-up).
 		</constant>
-		<constant name="BACK" value="Vector3(0, 0, 1)">
-			Back unit vector. Represents the local direction of back, and the global direction of south.
+		<constant name="CAMERA_BACK" value="Vector3(0, 0, 1)">
+			Backward unit vector from a camera view (as Godot cameras look at -Z, +Y-up).
+		</constant>
+		<constant name="FRONT" value="Vector3(0, 0, 1)">
+			Forward unit vector for models, and the global direction of south.
+		</constant>
+		<constant name="REAR" value="Vector3(0, 0, -1)">
+			Back unit vector for models, and the global direction of north.
+		</constant>
+		<constant name="FORWARD" value="Vector3(0, 0, -1)" is_deprecated="true">
+			This constant is deprecated and is no longer meaningful. Please refer to either [constant Vector3.CAMERA_FORWARD] or [constant Vector3.FRONT] depending on your needs.
+		</constant>
+		<constant name="BACK" value="Vector3(0, 0, 1)" is_deprecated="true">
+			This constant is deprecated and is no longer meaningful. Please refer to either [constant Vector3.CAMERA_BACK] or [constant Vector3.REAR] depending on your needs.
 		</constant>
 	</constants>
 	<operators>

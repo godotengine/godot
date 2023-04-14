@@ -809,6 +809,7 @@ void Node3D::set_identity() {
 	set_transform(Transform3D());
 }
 
+#ifndef DISABLE_DEPRECATED
 void Node3D::look_at(const Vector3 &p_target, const Vector3 &p_up) {
 	ERR_FAIL_COND_MSG(!is_inside_tree(), "Node not inside tree. Use look_at_from_position() instead.");
 	Vector3 origin = get_global_transform().origin;
@@ -821,6 +822,42 @@ void Node3D::look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target
 	ERR_FAIL_COND_MSG(p_up.cross(p_target - p_pos).is_zero_approx(), "Up vector and direction between node origin and target are aligned, look_at() failed.");
 
 	Transform3D lookat = Transform3D(Basis::looking_at(p_target - p_pos, p_up), p_pos);
+	Vector3 original_scale = get_scale();
+	set_global_transform(lookat);
+	set_scale(original_scale);
+	WARN_DEPRECATED_MSG("This function is deprecated and will eventually be removed. Please use camera_look_at() instead, or model_look_at() functions depending on the right context.");
+}
+#endif
+
+void Node3D::camera_look_at(const Vector3 &p_target, const Vector3 &p_up) {
+	ERR_FAIL_COND_MSG(!is_inside_tree(), "Node not inside tree. Use camera_look_at_from_position() instead.");
+	Vector3 origin = get_global_transform().origin;
+	look_at_from_position(origin, p_target, p_up);
+}
+
+void Node3D::camera_look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up) {
+	ERR_FAIL_COND_MSG(p_pos.is_equal_approx(p_target), "Node origin and target are in the same position, camera_look_at_from_position() failed.");
+	ERR_FAIL_COND_MSG(p_up.is_zero_approx(), "The up vector can't be zero, camera_look_at() failed.");
+	ERR_FAIL_COND_MSG(p_up.cross(p_target - p_pos).is_zero_approx(), "Up vector and direction between node origin and target are aligned, camera_look_at() failed.");
+
+	Transform3D lookat = Transform3D(Basis::looking_at(p_target - p_pos, p_up), p_pos);
+	Vector3 original_scale = get_scale();
+	set_global_transform(lookat);
+	set_scale(original_scale);
+}
+
+void Node3D::model_look_at(const Vector3 &p_target, const Vector3 &p_up) {
+	ERR_FAIL_COND_MSG(!is_inside_tree(), "Node not inside tree. Use model_look_at_from_position() instead.");
+	Vector3 origin = get_global_transform().origin;
+	model_look_at_from_position(origin, p_target, p_up);
+}
+
+void Node3D::model_look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up) {
+	ERR_FAIL_COND_MSG(p_pos.is_equal_approx(p_target), "Node origin and target are in the same position, model_look_at_from_position() failed.");
+	ERR_FAIL_COND_MSG(p_up.is_zero_approx(), "The up vector can't be zero, model_look_at() failed.");
+	ERR_FAIL_COND_MSG(p_up.cross(p_target - p_pos).is_zero_approx(), "Up vector and direction between node origin and target are aligned, model_look_at() failed.");
+
+	Transform3D lookat = Transform3D(Basis::looking_at(p_target - p_pos, p_up, true), p_pos);
 	Vector3 original_scale = get_scale();
 	set_global_transform(lookat);
 	set_scale(original_scale);
@@ -1056,8 +1093,16 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("orthonormalize"), &Node3D::orthonormalize);
 	ClassDB::bind_method(D_METHOD("set_identity"), &Node3D::set_identity);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("look_at", "target", "up"), &Node3D::look_at, DEFVAL(Vector3(0, 1, 0)));
 	ClassDB::bind_method(D_METHOD("look_at_from_position", "position", "target", "up"), &Node3D::look_at_from_position, DEFVAL(Vector3(0, 1, 0)));
+#endif
+
+	ClassDB::bind_method(D_METHOD("camera_look_at", "target", "up"), &Node3D::camera_look_at, DEFVAL(Vector3(0, 1, 0)));
+	ClassDB::bind_method(D_METHOD("camera_look_at_from_position", "position", "target", "up"), &Node3D::camera_look_at_from_position, DEFVAL(Vector3(0, 1, 0)));
+
+	ClassDB::bind_method(D_METHOD("model_look_at", "target", "up"), &Node3D::model_look_at, DEFVAL(Vector3(0, 1, 0)));
+	ClassDB::bind_method(D_METHOD("model_look_at_from_position", "position", "target", "up"), &Node3D::model_look_at_from_position, DEFVAL(Vector3(0, 1, 0)));
 
 	ClassDB::bind_method(D_METHOD("to_local", "global_point"), &Node3D::to_local);
 	ClassDB::bind_method(D_METHOD("to_global", "local_point"), &Node3D::to_global);

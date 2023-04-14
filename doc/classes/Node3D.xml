@@ -20,6 +20,25 @@
 				Attach a gizmo to this [code]Node3D[/code].
 			</description>
 		</method>
+		<method name="camera_look_at">
+			<return type="void" />
+			<param index="0" name="target" type="Vector3" />
+			<param index="1" name="up" type="Vector3" default="Vector3(0, 1, 0)" />
+			<description>
+				Rotates the node so that the [constant Vector3.CAMERA_FORWARD] axis (-Z) points toward the [param target] position. Use this method when you want to point a Camera3D node towards a specific positions. For 3D models, [method model_look_at] will properly orient the front in the desired direction.
+				The local up axis (+Y) points as close to the [param up] vector as possible while staying perpendicular to the local forward axis. The resulting transform is orthogonal, and the scale is preserved. Non-uniform scaling may not work correctly.
+				The [param target] position cannot be the same as the node's position, the [param up] vector cannot be zero, and the direction from the node's position to the [param target] vector cannot be parallel to the [param up] vector.
+				Operations take place in global space, which means that the node must be in the scene tree.
+			</description>
+		</method>
+		<method name="camera_look_at_from_position">
+			<return type="void" />
+			<param index="0" name="position" type="Vector3" />
+			<param index="1" name="target" type="Vector3" />
+			<param index="2" name="up" type="Vector3" default="Vector3(0, 1, 0)" />
+			<description>
+			</description>
+		</method>
 		<method name="clear_gizmos">
 			<return type="void" />
 			<description>
@@ -108,7 +127,7 @@
 				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and all its antecedents are also visible. If any antecedent is hidden, this node will not be visible in the scene tree.
 			</description>
 		</method>
-		<method name="look_at">
+		<method name="look_at" is_deprecated="true">
 			<return type="void" />
 			<param index="0" name="target" type="Vector3" />
 			<param index="1" name="up" type="Vector3" default="Vector3(0, 1, 0)" />
@@ -117,15 +136,37 @@
 				The local up axis (+Y) points as close to the [param up] vector as possible while staying perpendicular to the local forward axis. The resulting transform is orthogonal, and the scale is preserved. Non-uniform scaling may not work correctly.
 				The [param target] position cannot be the same as the node's position, the [param up] vector cannot be zero, and the direction from the node's position to the [param target] vector cannot be parallel to the [param up] vector.
 				Operations take place in global space, which means that the node must be in the scene tree.
+				This method is deprecated, please use [method model_look_at] or [method camera_look_at] depending on your needs.
 			</description>
 		</method>
-		<method name="look_at_from_position">
+		<method name="look_at_from_position" is_deprecated="true">
 			<return type="void" />
 			<param index="0" name="position" type="Vector3" />
 			<param index="1" name="target" type="Vector3" />
 			<param index="2" name="up" type="Vector3" default="Vector3(0, 1, 0)" />
 			<description>
 				Moves the node to the specified [param position], and then rotates the node to point toward the [param target] as per [method look_at]. Operations take place in global space.
+				This method is deprecated, please use [method model_look_at_from_position] or [method camera_look_at_from_position] depending on your needs.
+			</description>
+		</method>
+		<method name="model_look_at">
+			<return type="void" />
+			<param index="0" name="target" type="Vector3" />
+			<param index="1" name="up" type="Vector3" default="Vector3(0, 1, 0)" />
+			<description>
+				Rotates the node so that the [constant Vector3.MODEL_FRONT] axis (+Z) points toward the [param target] position. Use this method when you want to point a 3D model towards a specific position. For 3D cameras ([Camera3D]) use [method camera_look_at].
+				The local up axis (+Y) points as close to the [param up] vector as possible while staying perpendicular to the local forward axis. The resulting transform is orthogonal, and the scale is preserved. Non-uniform scaling may not work correctly.
+				The [param target] position cannot be the same as the node's position, the [param up] vector cannot be zero, and the direction from the node's position to the [param target] vector cannot be parallel to the [param up] vector.
+				Operations take place in global space, which means that the node must be in the scene tree.
+			</description>
+		</method>
+		<method name="model_look_at_from_position">
+			<return type="void" />
+			<param index="0" name="position" type="Vector3" />
+			<param index="1" name="target" type="Vector3" />
+			<param index="2" name="up" type="Vector3" default="Vector3(0, 1, 0)" />
+			<description>
+				Moves the node to the specified [param position], and then rotates the node to point toward the [param target] as per [method model_look_at]. Operations take place in global space.
 			</description>
 		</method>
 		<method name="orthonormalize">
