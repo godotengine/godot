@@ -720,8 +720,13 @@ void TextShaderEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			PopupMenu *popup = help_menu->get_popup();
 			popup->set_item_icon(popup->get_item_index(HELP_DOCS), get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
-		} break;
 
+			int line_height = shader_editor->get_text_editor()->get_line_height();
+
+			shader_editor->get_text_editor()->set_gutter_width(color_preview_gutter, line_height);
+			color_preview_icon = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
+			color_preview_opaque_icon = get_theme_icon(SNAME("ColorPreviewOpaque"), SNAME("EditorIcons"));
+		} break;
 		case NOTIFICATION_APPLICATION_FOCUS_IN: {
 			_check_for_external_edit();
 		} break;
@@ -734,6 +739,7 @@ void TextShaderEditor::_editor_settings_changed() {
 	shader_editor->get_text_editor()->add_theme_constant_override("line_spacing", EDITOR_GET("text_editor/appearance/whitespace/line_spacing"));
 	shader_editor->get_text_editor()->set_draw_breakpoints_gutter(false);
 	shader_editor->get_text_editor()->set_draw_executing_lines_gutter(false);
+	shader_editor->get_text_editor()->set_gutter_draw(color_preview_gutter, EDITOR_GET("text_editor/appearance/gutters/show_color_preview_gutter"));
 
 	trim_trailing_whitespace_on_save = EDITOR_GET("text_editor/behavior/files/trim_trailing_whitespace_on_save");
 }
@@ -857,6 +863,172 @@ void TextShaderEditor::_reload() {
 		_reload_shader_from_disk();
 	} else if (shader_inc.is_valid()) {
 		_reload_shader_include_from_disk();
+	}
+}
+
+void TextShaderEditor::_script_validated(bool p_valid) {
+	compilation_success = p_valid;
+	_update_color_previews();
+	emit_signal(SNAME("validation_changed"));
+}
+
+void TextShaderEditor::_color_changed(const Color &p_color) {
+	CodeEdit *text_editor = shader_editor->get_text_editor();
+	String new_args = _format_source_color_value(p_color);
+	String line = text_editor->get_line(color_position.x);
+	String line_with_replaced_args = line.replace(color_args, new_args);
+
+	color_args = new_args;
+	text_editor->begin_complex_operation();
+	text_editor->set_line(color_position.x, line_with_replaced_args);
+	text_editor->end_complex_operation();
+	text_editor->queue_redraw();
+	Dictionary meta = text_editor->get_line_gutter_metadata(color_position.x, color_preview_gutter);
+
+	meta["color"] = p_color;
+	meta["hash"] = line_with_replaced_args.hash();
+	meta["end"] = (int)meta["start"] + new_args.length();
+	text_editor->set_line_gutter_metadata(color_position.x, color_preview_gutter, meta);
+}
+
+void TextShaderEditor::_update_color_previews() {
+	if (!compilation_success) {
+		return;
+	}
+	CodeEdit *text_editor = shader_editor->get_text_editor();
+
+	text_editor->set_gutter_width(color_preview_gutter, text_editor->get_line_height());
+	for (int i = 0; i < text_editor->get_line_count(); i++) {
+		String line = text_editor->get_line(i);
+		Dictionary meta = text_editor->get_line_gutter_metadata(i, color_preview_gutter);
+		bool has_hash = meta.has("hash");
+		uint32_t line_hash = line.hash();
+
+		if (has_hash && (uint32_t)meta["hash"] == line_hash) {
+			continue;
+		}
+		Ref<RegExMatch> match;
+		Variant color = _parse_source_color_value(line, &match);
+
+		if (match.is_valid() && color.get_type() == Variant::Type::COLOR) {
+			meta = Dictionary();
+			meta["color"] = color;
+			meta["hash"] = line_hash;
+			meta["start"] = match->get_start(0);
+			meta["end"] = match->get_end(0);
+			text_editor->set_line_gutter_clickable(i, color_preview_gutter, true);
+			text_editor->set_line_gutter_metadata(i, color_preview_gutter, meta);
+		} else if (has_hash) {
+			text_editor->set_line_gutter_clickable(i, color_preview_gutter, false);
+			text_editor->set_line_gutter_metadata(i, color_preview_gutter, Dictionary());
+		}
+	}
+}
+
+void TextShaderEditor::_gutter_clicked(int p_line, int p_gutter) {
+	CodeEdit *text_editor = shader_editor->get_text_editor();
+
+	if (p_gutter == color_preview_gutter) {
+		Dictionary meta = text_editor->get_line_gutter_metadata(p_line, color_preview_gutter);
+
+		if (!meta.has("color") || !meta.has("start") || !meta.has("end")) {
+			return;
+		}
+		String line = text_editor->get_line(p_line);
+		Color color = meta["color"];
+		Point2 gutter_position = text_editor->get_global_position() + text_editor->get_pos_at_line_column(p_line, 0);
+		Point2 panel_position;
+
+		color_position.x = p_line;
+		color_position.y = (int)meta["start"];
+		color_args = line.substr(color_position.y, (int)meta["end"] - color_position.y);
+		color_picker->set_pick_color(color);
+		gutter_position.x -= text_editor->get_gutter_width(0) + text_editor->get_gutter_width(1) + text_editor->get_gutter_width(2) / 2.0;
+		panel_position = _snap_color_panel_position(gutter_position);
+		color_panel->set_position(panel_position);
+		color_panel->popup();
+	}
+}
+
+void TextShaderEditor::_update_gutter_indexes() {
+	CodeEdit *text_editor = shader_editor->get_text_editor();
+
+	for (int i = 0; i < text_editor->get_gutter_count(); i++) {
+		if (text_editor->get_gutter_name(i) == "color_preview_gutter") {
+			color_preview_gutter = i;
+			continue;
+		}
+	}
+}
+
+Variant TextShaderEditor::_parse_source_color_value(const String &p_line, Ref<RegExMatch> *r_match) const {
+	if (!p_line.contains("source_color")) {
+		return Variant();
+	}
+	Ref<RegExMatch> match = source_color_rule.search(p_line);
+
+	if (r_match != nullptr) {
+		*r_match = match;
+	}
+	if (!match.is_valid()) {
+		return Variant();
+	}
+	String group = match->get_string("channels");
+	Vector<double> channels = group.split_floats(",", false);
+
+	if (channels.size() != 4) {
+		return Variant();
+	}
+	return Color(channels[0], channels[1], channels[2], channels[3]);
+}
+
+String TextShaderEditor::_format_source_color_value(const Color &p_color) const {
+	return "vec4(" + rtos(p_color.r) + ", " + rtos(p_color.g) + ", " + rtos(p_color.b) + ", " + rtos(p_color.a) + ")";
+}
+
+Point2 TextShaderEditor::_snap_color_panel_position(const Point2 &p_position) {
+	int margin = shader_editor->get_text_editor()->get_line_height();
+	Size2 container = color_picker->get_size();
+	Size2 window_size = get_window()->get_size();
+	Point2 position = Point2(p_position);
+
+	if (p_position.y + container.y <= window_size.y) {
+		position.x -= container.width / 2.0 + margin;
+		return position;
+	}
+	if (p_position.y - container.y - 2 * margin >= 0) {
+		position.x -= container.width / 2.0 + margin;
+		position.y -= container.y + 2 * margin;
+		return position;
+	}
+	position.x -= container.width + 2 * margin;
+	position.y -= container.height / 2.0;
+	return position;
+}
+
+void TextShaderEditor::_color_preview_gutter_draw_callback(int p_line, int p_gutter, Rect2 p_region) {
+	CodeEdit *text_editor = shader_editor->get_text_editor();
+	Dictionary meta = text_editor->get_line_gutter_metadata(p_line, color_preview_gutter);
+
+	if (!meta.has("color")) {
+		return;
+	}
+	Color color = meta["color"];
+	bool hovering = p_region.has_point(text_editor->get_local_mouse_pos());
+	int horizontal_padding = p_region.size.x / 10;
+	int length = p_region.size.y / 6;
+
+	p_region.position += Point2(horizontal_padding, length);
+	p_region.size -= Point2(length, length) * 2;
+	if (hovering) {
+		color = color.lightened(0.3);
+	}
+	if (color.a < 1.0) {
+		color_preview_icon->draw_rect(text_editor->get_canvas_item(), p_region);
+		text_editor->draw_rect(p_region, color);
+		color_preview_opaque_icon->draw_rect(text_editor->get_canvas_item(), p_region, false, Color(color, 1.0));
+	} else {
+		text_editor->draw_rect(p_region, color);
 	}
 }
 
@@ -1086,7 +1258,29 @@ TextShaderEditor::TextShaderEditor() {
 	shader_editor->get_text_editor()->set_context_menu_enabled(false);
 	shader_editor->get_text_editor()->connect("gui_input", callable_mp(this, &TextShaderEditor::_text_edit_gui_input));
 
+	shader_editor->get_text_editor()->connect("gutter_added", callable_mp(this, &TextShaderEditor::_update_gutter_indexes));
+	shader_editor->get_text_editor()->connect("gutter_removed", callable_mp(this, &TextShaderEditor::_update_gutter_indexes));
+	shader_editor->get_text_editor()->connect("gutter_clicked", callable_mp(this, &TextShaderEditor::_gutter_clicked));
+	_update_gutter_indexes();
+
+	color_preview_gutter = 1;
+	shader_editor->get_text_editor()->add_gutter(color_preview_gutter);
+	shader_editor->get_text_editor()->set_gutter_name(color_preview_gutter, "color_preview_gutter");
+	shader_editor->get_text_editor()->set_gutter_draw(color_preview_gutter, false);
+	shader_editor->get_text_editor()->set_gutter_overwritable(color_preview_gutter, true);
+	shader_editor->get_text_editor()->set_gutter_type(color_preview_gutter, TextEdit::GUTTER_TYPE_CUSTOM);
+	shader_editor->get_text_editor()->set_gutter_custom_draw(color_preview_gutter, callable_mp(this, &TextShaderEditor::_color_preview_gutter_draw_callback));
+
 	shader_editor->update_editor_settings();
+
+	color_panel = memnew(PopupPanel);
+	add_child(color_panel);
+
+	color_picker = memnew(ColorPicker);
+	color_picker->set_deferred_mode(true);
+	color_picker->connect("color_changed", callable_mp(this, &TextShaderEditor::_color_changed));
+	color_panel->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker).bind(color_picker));
+	color_panel->add_child(color_picker);
 
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);

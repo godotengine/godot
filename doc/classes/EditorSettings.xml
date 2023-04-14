@@ -739,6 +739,9 @@
 		<member name="text_editor/appearance/gutters/line_numbers_zero_padded" type="bool" setter="" getter="">
 			If [code]true[/code], displays line numbers with zero padding (e.g. [code]007[/code] instead of [code]7[/code]).
 		</member>
+		<member name="text_editor/appearance/gutters/show_color_preview_gutter" type="bool" setter="" getter="">
+			If [code]true[/code], displays inline color preview in a gutter at the left. Only preview the first inline color. Click on the gutter to show a [ColorPicker] and change the inline color.
+		</member>
 		<member name="text_editor/appearance/gutters/show_info_gutter" type="bool" setter="" getter="">
 			If [code]true[/code], displays a gutter at the left containing icons for methods with signal connections and for overridden methods.
 		</member>

@@ -34,6 +34,7 @@
 #include "script_editor_plugin.h"
 
 #include "editor/code_editor.h"
+#include "modules/regex/regex.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
@@ -91,6 +92,15 @@ class ScriptTextEditor : public ScriptEditorBase {
 	int connection_gutter = -1;
 	void _gutter_clicked(int p_line, int p_gutter);
 	void _update_gutter_indexes();
+
+	int color_preview_gutter = -1;
+	RegEx color_rule = RegEx("Color((?<named_color>\\.[A-Z_]+)|(?<ctor>\\(.*\\)))");
+	Ref<Texture2D> color_preview_icon;
+	Ref<Texture2D> color_preview_opaque_icon;
+	Variant _parse_color_value(const String &p_line, Ref<RegExMatch> *r_match = nullptr) const;
+	String _format_color_value(const Color &p_color) const;
+	Point2 _snap_color_panel_position(const Point2 &p_position) const;
+	void _color_preview_gutter_draw_callback(int p_line, int p_gutter, Rect2 p_region);
 
 	int line_number_gutter = -1;
 	Color default_line_number_color = Color(1, 1, 1);
@@ -165,6 +175,8 @@ protected:
 	void _update_errors();
 	void _update_bookmark_list();
 	void _bookmark_item_pressed(int p_idx);
+
+	void _update_color_previews();
 
 	static void _code_complete_scripts(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force);
 	void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force);

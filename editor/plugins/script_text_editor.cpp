@@ -330,6 +330,7 @@ bool ScriptTextEditor::show_members_overview() {
 
 void ScriptTextEditor::update_settings() {
 	code_editor->get_text_editor()->set_gutter_draw(connection_gutter, EDITOR_GET("text_editor/appearance/gutters/show_info_gutter"));
+	code_editor->get_text_editor()->set_gutter_draw(color_preview_gutter, EDITOR_GET("text_editor/appearance/gutters/show_color_preview_gutter"));
 	code_editor->update_editor_settings();
 }
 
@@ -481,6 +482,7 @@ void ScriptTextEditor::_validate_script() {
 		script_is_valid = true;
 	}
 	_update_connected_methods();
+	_update_color_previews();
 	_update_warnings();
 	_update_errors();
 
@@ -804,6 +806,130 @@ void ScriptTextEditor::_breakpoint_toggled(int p_row) {
 	EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), p_row + 1, code_editor->get_text_editor()->is_line_breakpointed(p_row));
 }
 
+void ScriptTextEditor::_update_color_previews() {
+	if (!script_is_valid) {
+		return;
+	}
+	CodeEdit *text_editor = code_editor->get_text_editor();
+
+	text_editor->set_gutter_width(color_preview_gutter, text_editor->get_line_height());
+	for (int i = 0; i < text_editor->get_line_count(); i++) {
+		String line = text_editor->get_line(i);
+		Dictionary meta = text_editor->get_line_gutter_metadata(i, color_preview_gutter);
+		bool has_hash = meta.has("hash");
+		uint32_t line_hash = line.hash();
+
+		if (has_hash && (uint32_t)meta["hash"] == line_hash) {
+			continue;
+		}
+		Ref<RegExMatch> match;
+		Variant color = _parse_color_value(line, &match);
+
+		if (match.is_valid() && color.get_type() == Variant::Type::COLOR) {
+			meta = Dictionary();
+			meta["color"] = color;
+			meta["hash"] = line_hash;
+			meta["start"] = match->get_start(0);
+			meta["end"] = match->get_end(0);
+			text_editor->set_line_gutter_clickable(i, color_preview_gutter, true);
+			text_editor->set_line_gutter_metadata(i, color_preview_gutter, meta);
+		} else if (has_hash) {
+			text_editor->set_line_gutter_clickable(i, color_preview_gutter, false);
+			text_editor->set_line_gutter_metadata(i, color_preview_gutter, Dictionary());
+		}
+	}
+}
+
+Variant ScriptTextEditor::_parse_color_value(const String &p_line, Ref<RegExMatch> *r_match) const {
+	Ref<RegExMatch> match = color_rule.search(p_line);
+
+	if (r_match != nullptr) {
+		*r_match = match;
+	}
+	if (!match.is_valid()) {
+		return Variant();
+	}
+	String named_color = match->get_string("named_color");
+
+	if (!named_color.is_empty()) {
+		named_color = named_color.substr(1);
+		int named_index = Color::find_named_color(named_color);
+
+		if (named_index == -1) {
+			return Variant();
+		}
+		return Color::get_named_color(named_index);
+	}
+	String color_declaration = match->get_string(0);
+	Expression expression;
+
+	if (expression.parse(color_declaration) != OK) {
+		return Variant();
+	}
+	Variant result = expression.execute(Array(), nullptr, false);
+
+	if (expression.has_execute_failed() || result.get_type() != Variant::Type::COLOR) {
+		return Variant();
+	}
+	return (Color)result;
+}
+
+String ScriptTextEditor::_format_color_value(const Color &p_color) const {
+	String value = "Color(" + rtos(p_color.r) + ", " + rtos(p_color.g) + ", " + rtos(p_color.b);
+
+	if (p_color.a != 1.0f) {
+		value += ", " + rtos(p_color.a);
+	}
+	value += ")";
+	return value;
+}
+
+Point2 ScriptTextEditor::_snap_color_panel_position(const Point2 &p_position) const {
+	int margin = code_editor->get_text_editor()->get_line_height();
+	Size2 container = color_picker->get_size();
+	Size2 window_size = get_window()->get_size();
+	Point2 position = Point2(p_position);
+
+	if (p_position.y + container.y <= window_size.y) {
+		position.x -= container.width / 2.0 + margin;
+		return position;
+	}
+	if (p_position.y - container.y - 2 * margin >= 0) {
+		position.x -= container.width / 2.0 + margin;
+		position.y -= container.y + 2 * margin;
+		return position;
+	}
+	position.x -= container.width + 2 * margin;
+	position.y -= container.height / 2.0;
+	return position;
+}
+
+void ScriptTextEditor::_color_preview_gutter_draw_callback(int p_line, int p_gutter, Rect2 p_region) {
+	CodeEdit *text_editor = code_editor->get_text_editor();
+	Dictionary meta = text_editor->get_line_gutter_metadata(p_line, color_preview_gutter);
+
+	if (!meta.has("color")) {
+		return;
+	}
+	Color color = meta["color"];
+	bool hovering = p_region.has_point(text_editor->get_local_mouse_pos());
+	int horizontal_padding = p_region.size.x / 10;
+	int length = p_region.size.y / 6;
+
+	p_region.position += Point2(horizontal_padding, length);
+	p_region.size -= Point2(length, length) * 2;
+	if (hovering) {
+		color = color.lightened(0.3);
+	}
+	if (color.a < 1.0) {
+		color_preview_icon->draw_rect(text_editor->get_canvas_item(), p_region);
+		text_editor->draw_rect(p_region, color);
+		color_preview_opaque_icon->draw_rect(text_editor->get_canvas_item(), p_region, false, Color(color, 1.0));
+	} else {
+		text_editor->draw_rect(p_region, color);
+	}
+}
+
 void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_column) {
 	Node *base = get_tree()->get_edited_scene_root();
 	if (base) {
@@ -1119,6 +1245,11 @@ void ScriptTextEditor::_update_gutter_indexes() {
 			continue;
 		}
 
+		if (code_editor->get_text_editor()->get_gutter_name(i) == "color_preview_gutter") {
+			color_preview_gutter = i;
+			continue;
+		}
+
 		if (code_editor->get_text_editor()->get_gutter_name(i) == "line_numbers") {
 			line_number_gutter = i;
 			continue;
@@ -1127,43 +1258,63 @@ void ScriptTextEditor::_update_gutter_indexes() {
 }
 
 void ScriptTextEditor::_gutter_clicked(int p_line, int p_gutter) {
-	if (p_gutter != connection_gutter) {
-		return;
-	}
-
-	Dictionary meta = code_editor->get_text_editor()->get_line_gutter_metadata(p_line, p_gutter);
-	String type = meta.get("type", "");
-	if (type.is_empty()) {
-		return;
-	}
-
-	// All types currently need a method name.
-	String method = meta.get("method", "");
-	if (method.is_empty()) {
-		return;
-	}
-
-	if (type == "connection") {
-		Node *base = get_tree()->get_edited_scene_root();
-		if (!base) {
+	if (p_gutter == connection_gutter) {
+		Dictionary meta = code_editor->get_text_editor()->get_line_gutter_metadata(p_line, p_gutter);
+		String type = meta.get("type", "");
+		if (type.is_empty()) {
 			return;
 		}
 
-		Vector<Node *> nodes = _find_all_node_for_script(base, base, script);
-		connection_info_dialog->popup_connections(method, nodes);
-	} else if (type == "inherits") {
-		String base_class_raw = meta["base_class"];
-		PackedStringArray base_class_split = base_class_raw.split(":", true, 1);
-
-		if (base_class_split[0] == "script") {
-			// Go to function declaration.
-			Ref<Script> base_script = ResourceLoader::load(base_class_split[1]);
-			ERR_FAIL_COND(!base_script.is_valid());
-			emit_signal(SNAME("go_to_method"), base_script, method);
-		} else if (base_class_split[0] == "builtin") {
-			// Open method documentation.
-			emit_signal(SNAME("go_to_help"), "class_method:" + base_class_split[1] + ":" + method);
+		// All types currently need a method name.
+		String method = meta.get("method", "");
+		if (method.is_empty()) {
+			return;
 		}
+
+		if (type == "connection") {
+			Node *base = get_tree()->get_edited_scene_root();
+			if (!base) {
+				return;
+			}
+
+			Vector<Node *> nodes = _find_all_node_for_script(base, base, script);
+			connection_info_dialog->popup_connections(method, nodes);
+		} else if (type == "inherits") {
+			String base_class_raw = meta["base_class"];
+			PackedStringArray base_class_split = base_class_raw.split(":", true, 1);
+
+			if (base_class_split[0] == "script") {
+				// Go to function declaration.
+				Ref<Script> base_script = ResourceLoader::load(base_class_split[1]);
+				ERR_FAIL_COND(!base_script.is_valid());
+				emit_signal(SNAME("go_to_method"), base_script, method);
+			} else if (base_class_split[0] == "builtin") {
+				// Open method documentation.
+				emit_signal(SNAME("go_to_help"), "class_method:" + base_class_split[1] + ":" + method);
+			}
+		}
+	}
+
+	if (p_gutter == color_preview_gutter) {
+		CodeEdit *text_editor = code_editor->get_text_editor();
+		Dictionary meta = text_editor->get_line_gutter_metadata(p_line, color_preview_gutter);
+
+		if (!meta.has("color") || !meta.has("start") || !meta.has("end")) {
+			return;
+		}
+		String line = text_editor->get_line(p_line);
+		Color color = meta["color"];
+		Point2 gutter_position = text_editor->get_global_position() + text_editor->get_pos_at_line_column(p_line, 0);
+		Point2 panel_position;
+
+		color_position.x = p_line;
+		color_position.y = (int)meta["start"];
+		color_args = line.substr(color_position.y, (int)meta["end"] - color_position.y);
+		color_picker->set_pick_color(color);
+		gutter_position.x -= text_editor->get_gutter_width(0) + text_editor->get_gutter_width(1) + text_editor->get_gutter_width(2) / 2.0;
+		panel_position = _snap_color_panel_position(gutter_position);
+		color_panel->set_position(panel_position);
+		color_panel->popup();
 	}
 }
 
@@ -1520,7 +1671,12 @@ void ScriptTextEditor::_notification(int p_what) {
 			}
 			[[fallthrough]];
 		case NOTIFICATION_ENTER_TREE: {
-			code_editor->get_text_editor()->set_gutter_width(connection_gutter, code_editor->get_text_editor()->get_line_height());
+			int line_height = code_editor->get_text_editor()->get_line_height();
+
+			code_editor->get_text_editor()->set_gutter_width(connection_gutter, line_height);
+			code_editor->get_text_editor()->set_gutter_width(color_preview_gutter, line_height);
+			color_preview_icon = get_parent_control()->get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
+			color_preview_opaque_icon = get_parent_control()->get_theme_icon(SNAME("ColorPreviewOpaque"), SNAME("EditorIcons"));
 		} break;
 	}
 }
@@ -1856,75 +2012,17 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
 		if (has_color) {
 			String line = tx->get_line(row);
+			Ref<RegExMatch> match;
+			Variant color = _parse_color_value(line, &match);
+
 			color_position.x = row;
 			color_position.y = col;
-
-			int begin = -1;
-			int end = -1;
-			enum EXPRESSION_PATTERNS {
-				NOT_PARSED,
-				RGBA_PARAMETER, // Color(float,float,float) or Color(float,float,float,float)
-				COLOR_NAME, // Color.COLOR_NAME
-			} expression_pattern = NOT_PARSED;
-
-			for (int i = col; i < line.length(); i++) {
-				if (line[i] == '(') {
-					if (expression_pattern == NOT_PARSED) {
-						begin = i;
-						expression_pattern = RGBA_PARAMETER;
-					} else {
-						// Method call or '(' appearing twice.
-						expression_pattern = NOT_PARSED;
-
-						break;
-					}
-				} else if (expression_pattern == RGBA_PARAMETER && line[i] == ')' && end < 0) {
-					end = i + 1;
-
-					break;
-				} else if (expression_pattern == NOT_PARSED && line[i] == '.') {
-					begin = i;
-					expression_pattern = COLOR_NAME;
-				} else if (expression_pattern == COLOR_NAME && end < 0 && (line[i] == ' ' || line[i] == '\t')) {
-					// Including '.' and spaces.
-					continue;
-				} else if (expression_pattern == COLOR_NAME && !(line[i] == '_' || ('A' <= line[i] && line[i] <= 'Z'))) {
-					end = i;
-
-					break;
-				}
-			}
-
-			switch (expression_pattern) {
-				case RGBA_PARAMETER: {
-					color_args = line.substr(begin, end - begin);
-					String stripped = color_args.replace(" ", "").replace("\t", "").replace("(", "").replace(")", "");
-					PackedFloat64Array color = stripped.split_floats(",");
-					if (color.size() > 2) {
-						float alpha = color.size() > 3 ? color[3] : 1.0f;
-						color_picker->set_pick_color(Color(color[0], color[1], color[2], alpha));
-					}
-				} break;
-				case COLOR_NAME: {
-					if (end < 0) {
-						end = line.length();
-					}
-					color_args = line.substr(begin, end - begin);
-					const String color_name = color_args.replace(" ", "").replace("\t", "").replace(".", "");
-					const int color_index = Color::find_named_color(color_name);
-					if (0 <= color_index) {
-						const Color color_constant = Color::get_named_color(color_index);
-						color_picker->set_pick_color(color_constant);
-					} else {
-						has_color = false;
-					}
-				} break;
-				default:
-					has_color = false;
-					break;
-			}
-			if (has_color) {
+			if (match.is_valid() && color.get_type() == Variant::Type::COLOR) {
+				color_args = match->get_string(0);
+				color_picker->set_pick_color(color);
 				color_panel->set_position(get_screen_position() + local_pos);
+			} else {
+				has_color = false;
 			}
 		}
 		_make_context_menu(tx->has_selection(), has_color, foldable, open_docs, goto_definition, local_pos);
@@ -1932,13 +2030,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 }
 
 void ScriptTextEditor::_color_changed(const Color &p_color) {
-	String new_args;
-	if (p_color.a == 1.0f) {
-		new_args = String("(" + rtos(p_color.r) + ", " + rtos(p_color.g) + ", " + rtos(p_color.b) + ")");
-	} else {
-		new_args = String("(" + rtos(p_color.r) + ", " + rtos(p_color.g) + ", " + rtos(p_color.b) + ", " + rtos(p_color.a) + ")");
-	}
-
+	String new_args = _format_color_value(p_color);
 	String line = code_editor->get_text_editor()->get_line(color_position.x);
 	String line_with_replaced_args = line.replace(color_args, new_args);
 
@@ -1947,6 +2039,12 @@ void ScriptTextEditor::_color_changed(const Color &p_color) {
 	code_editor->get_text_editor()->set_line(color_position.x, line_with_replaced_args);
 	code_editor->get_text_editor()->end_complex_operation();
 	code_editor->get_text_editor()->queue_redraw();
+	Dictionary meta = code_editor->get_text_editor()->get_line_gutter_metadata(color_position.x, color_preview_gutter);
+
+	meta["color"] = p_color;
+	meta["hash"] = line_with_replaced_args.hash();
+	meta["end"] = (int)meta["start"] + new_args.length();
+	code_editor->get_text_editor()->set_line_gutter_metadata(color_position.x, color_preview_gutter, meta);
 }
 
 void ScriptTextEditor::_prepare_edit_menu() {
@@ -2178,6 +2276,14 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->get_text_editor()->set_gutter_draw(connection_gutter, false);
 	code_editor->get_text_editor()->set_gutter_overwritable(connection_gutter, true);
 	code_editor->get_text_editor()->set_gutter_type(connection_gutter, TextEdit::GUTTER_TYPE_ICON);
+
+	color_preview_gutter = 2;
+	code_editor->get_text_editor()->add_gutter(color_preview_gutter);
+	code_editor->get_text_editor()->set_gutter_name(color_preview_gutter, "color_preview_gutter");
+	code_editor->get_text_editor()->set_gutter_draw(color_preview_gutter, false);
+	code_editor->get_text_editor()->set_gutter_overwritable(color_preview_gutter, true);
+	code_editor->get_text_editor()->set_gutter_type(color_preview_gutter, TextEdit::GUTTER_TYPE_CUSTOM);
+	code_editor->get_text_editor()->set_gutter_custom_draw(color_preview_gutter, callable_mp(this, &ScriptTextEditor::_color_preview_gutter_draw_callback));
 
 	warnings_panel = memnew(RichTextLabel);
 	warnings_panel->set_custom_minimum_size(Size2(0, 100 * EDSCALE));

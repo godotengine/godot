@@ -32,6 +32,8 @@
 #define TEXT_SHADER_EDITOR_H
 
 #include "editor/code_editor.h"
+#include "modules/regex/regex.h"
+#include "scene/gui/color_picker.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
@@ -150,12 +152,19 @@ class TextShaderEditor : public MarginContainer {
 	ShaderTextEditor *shader_editor = nullptr;
 	bool compilation_success = true;
 
+	PopupPanel *color_panel = nullptr;
+	ColorPicker *color_picker = nullptr;
+	Vector2 color_position;
+	String color_args;
+
 	void _menu_option(int p_option);
 	mutable Ref<Shader> shader;
 	mutable Ref<ShaderInclude> shader_inc;
 
 	void _editor_settings_changed();
 	void _project_settings_changed();
+
+	void _color_changed(const Color &p_color);
 
 	void _check_for_external_edit();
 	void _reload_shader_from_disk();
@@ -165,10 +174,22 @@ class TextShaderEditor : public MarginContainer {
 	void _warning_clicked(Variant p_line);
 	void _update_warnings(bool p_validate);
 
-	void _script_validated(bool p_valid) {
-		compilation_success = p_valid;
-		emit_signal(SNAME("validation_changed"));
-	}
+	void _script_validated(bool p_valid);
+
+	void _update_color_previews();
+
+	void _gutter_clicked(int p_line, int p_gutter);
+	void _update_gutter_indexes();
+
+	/* Color Preview Gutter */
+	int color_preview_gutter = -1;
+	RegEx source_color_rule = RegEx("vec4\\((?<channels>.*)\\)");
+	Ref<Texture2D> color_preview_icon;
+	Ref<Texture2D> color_preview_opaque_icon;
+	Variant _parse_source_color_value(const String &p_line, Ref<RegExMatch> *r_match = nullptr) const;
+	String _format_source_color_value(const Color &p_color) const;
+	Point2 _snap_color_panel_position(const Point2 &p_position);
+	void _color_preview_gutter_draw_callback(int p_line, int p_gutter, Rect2 p_region);
 
 	uint32_t dependencies_version = 0xFFFFFFFF;
 
