@@ -561,8 +561,8 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 		}                                                                                                                                                         \
 		static void ptrcall(void *p_base, const void **p_args, void *r_ret, int p_argcount) {                                                                     \
 			LocalVector<Variant> vars;                                                                                                                            \
-			vars.resize(p_argcount);                                                                                                                              \
 			LocalVector<const Variant *> vars_ptrs;                                                                                                               \
+			vars.resize(p_argcount);                                                                                                                              \
 			vars_ptrs.resize(p_argcount);                                                                                                                         \
 			for (int i = 0; i < p_argcount; i++) {                                                                                                                \
 				vars[i] = PtrToArg<Variant>::convert(p_args[i]);                                                                                                  \
@@ -571,7 +571,7 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 			Variant base = PtrToArg<m_class>::convert(p_base);                                                                                                    \
 			Variant ret;                                                                                                                                          \
 			Callable::CallError ce;                                                                                                                               \
-			m_method_ptr(&base, (const Variant **)&vars_ptrs[0], p_argcount, ret, ce);                                                                            \
+			m_method_ptr(&base, vars_ptrs.ptr(), p_argcount, ret, ce);                                                                                            \
 			if (m_has_return) {                                                                                                                                   \
 				m_return_type r = ret;                                                                                                                            \
 				PtrToArg<m_return_type>::encode(ret, r_ret);                                                                                                      \
@@ -617,8 +617,8 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 		}                                                                                                                                                         \
 		static void ptrcall(void *p_base, const void **p_args, void *r_ret, int p_argcount) {                                                                     \
 			LocalVector<Variant> vars;                                                                                                                            \
-			vars.resize(p_argcount);                                                                                                                              \
 			LocalVector<const Variant *> vars_ptrs;                                                                                                               \
+			vars.resize(p_argcount);                                                                                                                              \
 			vars_ptrs.resize(p_argcount);                                                                                                                         \
 			for (int i = 0; i < p_argcount; i++) {                                                                                                                \
 				vars[i] = PtrToArg<Variant>::convert(p_args[i]);                                                                                                  \
@@ -627,7 +627,7 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 			Variant base = PtrToArg<m_class>::convert(p_base);                                                                                                    \
 			Variant ret;                                                                                                                                          \
 			Callable::CallError ce;                                                                                                                               \
-			m_method_ptr(&base, (const Variant **)&vars_ptrs[0], p_argcount, ret, ce);                                                                            \
+			m_method_ptr(&base, vars_ptrs.ptr(), p_argcount, ret, ce);                                                                                            \
 		}                                                                                                                                                         \
 		static int get_argument_count() {                                                                                                                         \
 			return 1;                                                                                                                                             \
@@ -1132,11 +1132,7 @@ static void register_builtin_method(const Vector<String> &p_argnames, const Vect
 
 	imi.call = T::call;
 	imi.validated_call = T::validated_call;
-	if (T::is_vararg()) {
-		imi.ptrcall = nullptr;
-	} else {
-		imi.ptrcall = T::ptrcall;
-	}
+	imi.ptrcall = T::ptrcall;
 
 	imi.default_arguments = p_def_args;
 	imi.argument_names = p_argnames;
