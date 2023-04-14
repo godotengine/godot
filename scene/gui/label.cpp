@@ -609,6 +609,7 @@ void Label::_notification(int p_what) {
 
 		case NOTIFICATION_RESIZED: {
 			lines_dirty = true;
+			_shape();
 		} break;
 	}
 }
