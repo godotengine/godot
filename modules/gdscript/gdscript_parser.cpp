@@ -3686,6 +3686,12 @@ bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation)
 }
 
 bool GDScriptParser::tool_annotation(const AnnotationNode *p_annotation, Node *p_node) {
+#ifdef DEBUG_ENABLED
+	if (this->_is_tool) {
+		push_error(R"("@tool" annotation can only be used once.)", p_annotation);
+		return false;
+	}
+#endif // DEBUG_ENABLED
 	this->_is_tool = true;
 	return true;
 }
@@ -3694,6 +3700,16 @@ bool GDScriptParser::icon_annotation(const AnnotationNode *p_annotation, Node *p
 	ERR_FAIL_COND_V_MSG(p_node->type != Node::CLASS, false, R"("@icon" annotation can only be applied to classes.)");
 	ERR_FAIL_COND_V(p_annotation->resolved_arguments.is_empty(), false);
 	ClassNode *p_class = static_cast<ClassNode *>(p_node);
+#ifdef DEBUG_ENABLED
+	if (!p_class->icon_path.is_empty()) {
+		push_error(R"("@icon" annotation can only be used once.)", p_annotation);
+		return false;
+	}
+	if (String(p_annotation->resolved_arguments[0]).is_empty()) {
+		push_error(R"("@icon" annotation argument must contain the path to the icon.)", p_annotation->arguments[0]);
+		return false;
+	}
+#endif // DEBUG_ENABLED
 	p_class->icon_path = p_annotation->resolved_arguments[0];
 	return true;
 }
