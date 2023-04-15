@@ -1,6 +1,3 @@
-[submodule "godot-plus-thirdparty"]
-	path = thirdparty
-	url = https://github.com/sentik/godot-plus-thirdparty.git
-[submodule "thirdparty2"]
-	path = thirdparty2
+[submodule "thirdparty-precompiled"]
+	path = thirdparty-precompiled
 	url = https://github.com/sentik/godot-plus-thirdparty.git
