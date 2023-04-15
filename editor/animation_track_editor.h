@@ -252,7 +252,6 @@ class AnimationTrackEdit : public Control {
 	bool hovered = false;
 	bool clicking_on_name = false;
 	int hovering_key_idx = -1;
-	int last_idx = -1;
 
 	void _zoom_changed();
 
