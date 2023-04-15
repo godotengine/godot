@@ -56,37 +56,48 @@ struct hb_subset_accelerator_t
 					 const hb_set_t& unicodes_,
 					 bool has_seac_) {
     hb_subset_accelerator_t* accel =
-        (hb_subset_accelerator_t*) hb_malloc (sizeof(hb_subset_accelerator_t));
-    new (accel) hb_subset_accelerator_t (unicode_to_gid_, gid_to_unicodes_, unicodes_);
-    accel->has_seac = has_seac_;
+        (hb_subset_accelerator_t*) hb_calloc (1, sizeof(hb_subset_accelerator_t));
+
+    new (accel) hb_subset_accelerator_t (unicode_to_gid_,
+					 gid_to_unicodes_,
+					 unicodes_,
+					 has_seac_);
+
     return accel;
   }
 
-  static void destroy(void* value) {
-    if (!value) return;
+  static void destroy (void* p)
+  {
+    if (!p) return;
 
-    hb_subset_accelerator_t* accel = (hb_subset_accelerator_t*) value;
-
-    if (accel->cff_accelerator && accel->destroy_cff_accelerator)
-      accel->destroy_cff_accelerator ((void*) accel->cff_accelerator);
-
-    if (accel->cmap_cache && accel->destroy_cmap_cache)
-      accel->destroy_cmap_cache ((void*) accel->cmap_cache);
+    hb_subset_accelerator_t *accel = (hb_subset_accelerator_t *) p;
 
     accel->~hb_subset_accelerator_t ();
+
     hb_free (accel);
   }
 
   hb_subset_accelerator_t (const hb_map_t& unicode_to_gid_,
 			   const hb_multimap_t& gid_to_unicodes_,
-                          const hb_set_t& unicodes_)
-      : unicode_to_gid(unicode_to_gid_), gid_to_unicodes (gid_to_unicodes_), unicodes(unicodes_),
-        cmap_cache(nullptr), destroy_cmap_cache(nullptr),
-        has_seac(false), cff_accelerator(nullptr), destroy_cff_accelerator(nullptr)
-  { sanitized_table_cache_lock.init (); }
+			   const hb_set_t& unicodes_,
+			   bool has_seac_) :
+    unicode_to_gid(unicode_to_gid_),
+    gid_to_unicodes (gid_to_unicodes_),
+    unicodes(unicodes_),
+    cmap_cache(nullptr),
+    destroy_cmap_cache(nullptr),
+    has_seac(has_seac_),
+    cff_accelerator(nullptr),
+    destroy_cff_accelerator(nullptr) {}
 
   ~hb_subset_accelerator_t ()
-  { sanitized_table_cache_lock.fini (); }
+  {
+    if (cff_accelerator && destroy_cff_accelerator)
+      destroy_cff_accelerator ((void*) cff_accelerator);
+
+    if (cmap_cache && destroy_cmap_cache)
+      destroy_cmap_cache ((void*) cmap_cache);
+  }
 
   // Generic
 

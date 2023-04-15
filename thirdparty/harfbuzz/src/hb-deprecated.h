@@ -102,7 +102,8 @@ typedef hb_bool_t (*hb_font_get_glyph_func_t) (hb_font_t *font, void *font_data,
 					       hb_codepoint_t *glyph,
 					       void *user_data);
 
-HB_EXTERN HB_DEPRECATED_FOR(hb_font_funcs_set_nominal_glyph_func and hb_font_funcs_set_variation_glyph_func) void
+HB_DEPRECATED_FOR (hb_font_funcs_set_nominal_glyph_func and hb_font_funcs_set_variation_glyph_func)
+HB_EXTERN void
 hb_font_funcs_set_glyph_func (hb_font_funcs_t *ffuncs,
 			      hb_font_get_glyph_func_t func,
 			      void *user_data, hb_destroy_func_t destroy);

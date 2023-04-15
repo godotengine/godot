@@ -30,6 +30,7 @@
 #include "hb-ot-cff-common.hh"
 #include "hb-subset-cff2.hh"
 #include "hb-draw.hh"
+#include "hb-paint.hh"
 
 namespace CFF {
 
@@ -282,9 +283,6 @@ struct cff2_private_dict_opset_t : dict_opset_t
       case OpCode_BlueFuzz:
       case OpCode_ExpansionFactor:
       case OpCode_LanguageGroup:
-	val.single_val = env.argStack.pop_num ();
-	env.clear_args ();
-	break;
       case OpCode_BlueValues:
       case OpCode_OtherBlues:
       case OpCode_FamilyBlues:
@@ -516,6 +514,7 @@ struct cff2
     HB_INTERNAL bool get_extents (hb_font_t *font,
 				  hb_codepoint_t glyph,
 				  hb_glyph_extents_t *extents) const;
+    HB_INTERNAL bool paint_glyph (hb_font_t *font, hb_codepoint_t glyph, hb_paint_funcs_t *funcs, void *data, hb_color_t foreground) const;
     HB_INTERNAL bool get_path (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session) const;
   };
 

@@ -123,7 +123,7 @@ struct graph_t
         while (a || b)
         {
           DEBUG_MSG (SUBSET_REPACK, nullptr,
-                     "  0x%x %s 0x%x", *a, (*a == *b) ? "==" : "!=", *b);
+                     "  0x%x %s 0x%x", (unsigned) *a, (*a == *b) ? "==" : "!=", (unsigned) *b);
           a++;
           b++;
         }
@@ -700,6 +700,9 @@ struct graph_t
       }
     }
 
+    if (in_error ())
+      return false;
+
     if (!made_changes)
       return false;
 
@@ -833,7 +836,11 @@ struct graph_t
     if (index_map.has (node_idx))
       return;
 
-    index_map.set (node_idx, duplicate (node_idx));
+    unsigned clone_idx = duplicate (node_idx);
+    if (!check_success (clone_idx != (unsigned) -1))
+      return;
+
+    index_map.set (node_idx, clone_idx);
     for (const auto& l : object (node_idx).all_links ()) {
       duplicate_subgraph (l.objidx, index_map);
     }
@@ -918,12 +925,12 @@ struct graph_t
     {
       // Can't duplicate this node, doing so would orphan the original one as all remaining links
       // to child are from parent.
-      DEBUG_MSG (SUBSET_REPACK, nullptr, "  Not duplicating %d => %d",
+      DEBUG_MSG (SUBSET_REPACK, nullptr, "  Not duplicating %u => %u",
                  parent_idx, child_idx);
       return -1;
     }
 
-    DEBUG_MSG (SUBSET_REPACK, nullptr, "  Duplicating %d => %d",
+    DEBUG_MSG (SUBSET_REPACK, nullptr, "  Duplicating %u => %u",
                parent_idx, child_idx);
 
     unsigned clone_idx = duplicate (child_idx);
@@ -981,7 +988,7 @@ struct graph_t
    */
   bool raise_childrens_priority (unsigned parent_idx)
   {
-    DEBUG_MSG (SUBSET_REPACK, nullptr, "  Raising priority of all children of %d",
+    DEBUG_MSG (SUBSET_REPACK, nullptr, "  Raising priority of all children of %u",
                parent_idx);
     // This operation doesn't change ordering until a sort is run, so no need
     // to invalidate positions. It does not change graph structure so no need

@@ -26,22 +26,29 @@ struct path_builder_t
 
     optional_point_t lerp (optional_point_t p, float t)
     { return optional_point_t (x + t * (p.x - x), y + t * (p.y - y)); }
-  } first_oncurve, first_offcurve, last_offcurve;
+  } first_oncurve, first_offcurve, first_offcurve2, last_offcurve, last_offcurve2;
 
   path_builder_t (hb_font_t *font_, hb_draw_session_t &draw_session_)
   {
     font = font_;
     draw_session = &draw_session_;
-    first_oncurve = first_offcurve = last_offcurve = optional_point_t ();
+    first_oncurve = first_offcurve = first_offcurve2 = last_offcurve = last_offcurve2 = optional_point_t ();
   }
 
   /* based on https://github.com/RazrFalcon/ttf-parser/blob/4f32821/src/glyf.rs#L287
      See also:
      * https://developer.apple.com/fonts/TrueType-Reference-Manual/RM01/Chap1.html
-     * https://stackoverflow.com/a/20772557 */
+     * https://stackoverflow.com/a/20772557
+     *
+     * Cubic support added. */
   void consume_point (const contour_point_t &point)
   {
     bool is_on_curve = point.flag & glyf_impl::SimpleGlyph::FLAG_ON_CURVE;
+#ifdef HB_NO_CUBIC_GLYF
+    bool is_cubic = false;
+#else
+    bool is_cubic = !is_on_curve && (point.flag & glyf_impl::SimpleGlyph::FLAG_CUBIC);
+#endif
     optional_point_t p (font->em_fscalef_x (point.x), font->em_fscalef_y (point.y));
     if (!first_oncurve)
     {
@@ -52,7 +59,12 @@ struct path_builder_t
       }
       else
       {
-	if (first_offcurve)
+	if (is_cubic && !first_offcurve2)
+	{
+	  first_offcurve2 = first_offcurve;
+	  first_offcurve = p;
+	}
+	else if (first_offcurve)
 	{
 	  optional_point_t mid = first_offcurve.lerp (p, .5f);
 	  first_oncurve = mid;
@@ -69,16 +81,41 @@ struct path_builder_t
       {
 	if (is_on_curve)
 	{
-	  draw_session->quadratic_to (last_offcurve.x, last_offcurve.y,
-				     p.x, p.y);
+	  if (last_offcurve2)
+	  {
+	    draw_session->cubic_to (last_offcurve2.x, last_offcurve2.y,
+				    last_offcurve.x, last_offcurve.y,
+				    p.x, p.y);
+	    last_offcurve2 = optional_point_t ();
+	  }
+	  else
+	    draw_session->quadratic_to (last_offcurve.x, last_offcurve.y,
+				       p.x, p.y);
 	  last_offcurve = optional_point_t ();
 	}
 	else
 	{
-	  optional_point_t mid = last_offcurve.lerp (p, .5f);
-	  draw_session->quadratic_to (last_offcurve.x, last_offcurve.y,
-				     mid.x, mid.y);
-	  last_offcurve = p;
+	  if (is_cubic && !last_offcurve2)
+	  {
+	    last_offcurve2 = last_offcurve;
+	    last_offcurve = p;
+	  }
+	  else
+	  {
+	    optional_point_t mid = last_offcurve.lerp (p, .5f);
+
+	    if (is_cubic)
+	    {
+	      draw_session->cubic_to (last_offcurve2.x, last_offcurve2.y,
+				      last_offcurve.x, last_offcurve.y,
+				      mid.x, mid.y);
+	      last_offcurve2 = optional_point_t ();
+	    }
+	    else
+	      draw_session->quadratic_to (last_offcurve.x, last_offcurve.y,
+					 mid.x, mid.y);
+	    last_offcurve = p;
+	  }
 	}
       }
       else
@@ -94,19 +131,40 @@ struct path_builder_t
     {
       if (first_offcurve && last_offcurve)
       {
-	optional_point_t mid = last_offcurve.lerp (first_offcurve, .5f);
-	draw_session->quadratic_to (last_offcurve.x, last_offcurve.y,
-				   mid.x, mid.y);
+	optional_point_t mid = last_offcurve.lerp (first_offcurve2 ?
+						   first_offcurve2 :
+						   first_offcurve, .5f);
+	if (last_offcurve2)
+	  draw_session->cubic_to (last_offcurve2.x, last_offcurve2.y,
+				  last_offcurve.x, last_offcurve.y,
+				  mid.x, mid.y);
+	else
+	  draw_session->quadratic_to (last_offcurve.x, last_offcurve.y,
+				     mid.x, mid.y);
 	last_offcurve = optional_point_t ();
-	/* now check the rest */
       }
+      /* now check the rest */
 
       if (first_offcurve && first_oncurve)
-	draw_session->quadratic_to (first_offcurve.x, first_offcurve.y,
-				   first_oncurve.x, first_oncurve.y);
+      {
+        if (first_offcurve2)
+	  draw_session->cubic_to (first_offcurve2.x, first_offcurve2.y,
+				  first_offcurve.x, first_offcurve.y,
+				  first_oncurve.x, first_oncurve.y);
+	else
+	  draw_session->quadratic_to (first_offcurve.x, first_offcurve.y,
+				     first_oncurve.x, first_oncurve.y);
+      }
       else if (last_offcurve && first_oncurve)
-	draw_session->quadratic_to (last_offcurve.x, last_offcurve.y,
-				   first_oncurve.x, first_oncurve.y);
+      {
+	if (last_offcurve2)
+	  draw_session->cubic_to (last_offcurve2.x, last_offcurve2.y,
+				  last_offcurve.x, last_offcurve.y,
+				  first_oncurve.x, first_oncurve.y);
+	else
+	  draw_session->quadratic_to (last_offcurve.x, last_offcurve.y,
+				     first_oncurve.x, first_oncurve.y);
+      }
       else if (first_oncurve)
 	draw_session->line_to (first_oncurve.x, first_oncurve.y);
       else if (first_offcurve)
@@ -117,7 +175,7 @@ struct path_builder_t
       }
 
       /* Getting ready for the next contour */
-      first_oncurve = first_offcurve = last_offcurve = optional_point_t ();
+      first_oncurve = first_offcurve = last_offcurve = last_offcurve2 = optional_point_t ();
       draw_session->close_path ();
     }
   }

@@ -38,6 +38,7 @@ class GDExtensionManager : public Object {
 
 	int32_t level = -1;
 	HashMap<String, Ref<GDExtension>> gdextension_map;
+	HashMap<String, String> gdextension_class_icon_paths;
 
 	static void _bind_methods();
 
@@ -58,6 +59,9 @@ public:
 	bool is_extension_loaded(const String &p_path) const;
 	Vector<String> get_loaded_extensions() const;
 	Ref<GDExtension> get_extension(const String &p_path);
+
+	bool class_has_icon_path(const String &p_class) const;
+	String class_get_icon_path(const String &p_class) const;
 
 	void initialize_extensions(GDExtension::InitializationLevel p_level);
 	void deinitialize_extensions(GDExtension::InitializationLevel p_level);

@@ -27,7 +27,7 @@
 			<return type="Vector4i" />
 			<param index="0" name="from" type="Vector4" />
 			<description>
-				Constructs a new [Vector4i] from the given [Vector4].
+				Constructs a new [Vector4i] from the given [Vector4] by truncating components' fractional parts (rounding towards zero). For a different behavior consider passing the result of [method Vector4.ceil], [method Vector4.floor] or [method Vector4.round] to this constructor instead.
 			</description>
 		</constructor>
 		<constructor name="Vector4i">

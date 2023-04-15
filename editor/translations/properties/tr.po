@@ -94,8 +94,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-15 01:17+0000\n"
-"Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
+"PO-Revision-Date: 2023-03-18 08:29+0000\n"
+"Last-Translator: Black <ebubekir23atalay@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/tr/>\n"
 "Language: tr\n"
@@ -192,17 +192,38 @@ msgstr "Odak Yok"
 msgid "Window Width Override"
 msgstr "Pencere Genişliğini Geçersiz Kıl"
 
+msgid "Window Height Override"
+msgstr "Pencere Yüksekliğinin Üzerine Yazma"
+
+msgid "Energy Saving"
+msgstr "Enerji Tasarrufu"
+
 msgid "Keep Screen On"
 msgstr "Ekranı Açık Tut"
 
 msgid "Audio"
 msgstr "Ses"
 
+msgid "Buses"
+msgstr "Veri Yolları"
+
+msgid "Default Bus Layout"
+msgstr "Varsayılan Veriyolu Düzeni"
+
 msgid "General"
 msgstr "Genel"
 
+msgid "2D Panning Strength"
+msgstr "2D Kaydırma Keskinliği"
+
+msgid "3D Panning Strength"
+msgstr "3D Kaydırma Keskinliği"
+
 msgid "Editor"
 msgstr "Düzenleyici"
+
+msgid "Script"
+msgstr "Betik"
 
 msgid "Physics"
 msgstr "Fizik"
@@ -212,6 +233,9 @@ msgstr "2D"
 
 msgid "3D"
 msgstr "3D"
+
+msgid "Scale"
+msgstr "Ölçekle"
 
 msgid "Debug"
 msgstr "Hata Ayıklama"
@@ -230,6 +254,12 @@ msgstr "Oluşturucu"
 
 msgid "Limits"
 msgstr "Limitler"
+
+msgid "Common"
+msgstr "Yaygın"
+
+msgid "Fonts"
+msgstr "Yazı Tipleri"
 
 msgid "Vulkan"
 msgstr "Vulkan"
@@ -405,9 +435,6 @@ msgstr "Son Ek"
 msgid "Rotation"
 msgstr "Rotasyon"
 
-msgid "Scale"
-msgstr "Ölçekle"
-
 msgid "Value"
 msgstr "Değer"
 
@@ -467,12 +494,6 @@ msgstr "Gizli Dosyaları Göster"
 
 msgid "Disable Overwrite Warning"
 msgstr "Üzerine Yazma Uyarısını Devre Dışı Bırak"
-
-msgid "Import"
-msgstr "İçe Aktar"
-
-msgid "Reimport Missing Imported Files"
-msgstr "Eksik Dosyaları Yeniden İçe Aktar"
 
 msgid "Text Editor"
 msgstr "Metin Editörü"
@@ -1131,9 +1152,6 @@ msgstr "Düz"
 msgid "Hide Slider"
 msgstr "Kaydırıcıyı Gizle"
 
-msgid "Export"
-msgstr "Dışa Aktar"
-
 msgid "Custom Template"
 msgstr "Özel Şablon"
 
@@ -1160,6 +1178,9 @@ msgstr "ETC"
 
 msgid "ETC2"
 msgstr "ETC2"
+
+msgid "Export"
+msgstr "Dışa Aktar"
 
 msgid "Export Path"
 msgstr "Dışa aktarım Yolu"
@@ -1235,6 +1256,9 @@ msgstr "Mesh Ölçeği"
 
 msgid "Offset Mesh"
 msgstr "Mesh Kaydırma"
+
+msgid "Import"
+msgstr "İçe Aktar"
 
 msgid "Advanced"
 msgstr "Gelişmiş"
@@ -1380,14 +1404,14 @@ msgstr "SSH Özel Anahtar Yolu"
 msgid "Main Run Args"
 msgstr "Oynatma Argümanları"
 
+msgid "Reimport Missing Imported Files"
+msgstr "Eksik Dosyaları Yeniden İçe Aktar"
+
 msgid "Driver"
 msgstr "Sürücü"
 
 msgid "Threads"
 msgstr "İş parçacıkları"
-
-msgid "Common"
-msgstr "Yaygın"
 
 msgid "Defaults"
 msgstr "Varsayılanlar"
@@ -1409,9 +1433,6 @@ msgstr "Araç İpucu Pozisyon Kaydırması"
 
 msgid "Project"
 msgstr "Proje"
-
-msgid "Fonts"
-msgstr "Yazı Tipleri"
 
 msgid "Snap"
 msgstr "Tutunma"

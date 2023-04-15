@@ -34,7 +34,7 @@
 #include "core/os/os.h"
 #include "core/string/translation.h"
 
-void ItemList::_shape(int p_idx) {
+void ItemList::_shape_text(int p_idx) {
 	Item &item = items.write[p_idx];
 
 	item.text_buf->clear();
@@ -61,7 +61,7 @@ int ItemList::add_item(const String &p_item, const Ref<Texture2D> &p_texture, bo
 	items.push_back(item);
 	int item_id = items.size() - 1;
 
-	_shape(items.size() - 1);
+	_shape_text(items.size() - 1);
 
 	queue_redraw();
 	shape_changed = true;
@@ -93,7 +93,7 @@ void ItemList::set_item_text(int p_idx, const String &p_text) {
 	}
 
 	items.write[p_idx].text = p_text;
-	_shape(p_idx);
+	_shape_text(p_idx);
 	queue_redraw();
 	shape_changed = true;
 }
@@ -111,7 +111,7 @@ void ItemList::set_item_text_direction(int p_idx, Control::TextDirection p_text_
 	ERR_FAIL_COND((int)p_text_direction < -1 || (int)p_text_direction > 3);
 	if (items[p_idx].text_direction != p_text_direction) {
 		items.write[p_idx].text_direction = p_text_direction;
-		_shape(p_idx);
+		_shape_text(p_idx);
 		queue_redraw();
 	}
 }
@@ -128,7 +128,7 @@ void ItemList::set_item_language(int p_idx, const String &p_language) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 	if (items[p_idx].language != p_language) {
 		items.write[p_idx].language = p_language;
-		_shape(p_idx);
+		_shape_text(p_idx);
 		queue_redraw();
 	}
 }
@@ -999,21 +999,26 @@ void ItemList::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			for (int i = 0; i < items.size(); i++) {
-				_shape(i);
+				_shape_text(i);
 			}
 			shape_changed = true;
 			queue_redraw();
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			int mw = scroll_bar->get_minimum_size().x;
-			scroll_bar->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -mw);
+			_check_shape_changed();
+
+			int scroll_bar_minwidth = scroll_bar->get_minimum_size().x;
+			scroll_bar->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -scroll_bar_minwidth);
 			scroll_bar->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
 			scroll_bar->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, theme_cache.panel_style->get_margin(SIDE_TOP));
 			scroll_bar->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -theme_cache.panel_style->get_margin(SIDE_BOTTOM));
 
 			Size2 size = get_size();
 			int width = size.width - theme_cache.panel_style->get_minimum_size().width;
+			if (scroll_bar->is_visible()) {
+				width -= scroll_bar_minwidth;
+			}
 
 			draw_style_box(theme_cache.panel_style, Rect2(Point2(), size));
 
@@ -1035,145 +1040,7 @@ void ItemList::_notification(int p_what) {
 				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), false);
 			}
 
-			if (shape_changed) {
-				float max_column_width = 0.0;
-
-				//1- compute item minimum sizes
-				for (int i = 0; i < items.size(); i++) {
-					Size2 minsize;
-					if (items[i].icon.is_valid()) {
-						if (fixed_icon_size.x > 0 && fixed_icon_size.y > 0) {
-							minsize = fixed_icon_size * icon_scale;
-						} else {
-							minsize = items[i].get_icon_size() * icon_scale;
-						}
-
-						if (!items[i].text.is_empty()) {
-							if (icon_mode == ICON_MODE_TOP) {
-								minsize.y += theme_cache.icon_margin;
-							} else {
-								minsize.x += theme_cache.icon_margin;
-							}
-						}
-					}
-
-					if (!items[i].text.is_empty()) {
-						int max_width = -1;
-						if (fixed_column_width) {
-							max_width = fixed_column_width;
-						} else if (same_column_width) {
-							max_width = items[i].rect_cache.size.x;
-						}
-						items.write[i].text_buf->set_width(max_width);
-						Size2 s = items[i].text_buf->get_size();
-
-						if (icon_mode == ICON_MODE_TOP) {
-							minsize.x = MAX(minsize.x, s.width);
-							if (max_text_lines > 0) {
-								minsize.y += s.height + theme_cache.line_separation * max_text_lines;
-							} else {
-								minsize.y += s.height;
-							}
-
-						} else {
-							minsize.y = MAX(minsize.y, s.height);
-							minsize.x += s.width;
-						}
-					}
-
-					if (fixed_column_width > 0) {
-						minsize.x = fixed_column_width;
-					}
-					max_column_width = MAX(max_column_width, minsize.x);
-
-					// elements need to adapt to the selected size
-					minsize.y += theme_cache.v_separation;
-					minsize.x += theme_cache.h_separation;
-					items.write[i].rect_cache.size = minsize;
-					items.write[i].min_rect_cache.size = minsize;
-				}
-
-				int fit_size = size.x - theme_cache.panel_style->get_minimum_size().width - mw;
-
-				//2-attempt best fit
-				current_columns = 0x7FFFFFFF;
-				if (max_columns > 0) {
-					current_columns = max_columns;
-				}
-
-				while (true) {
-					//repeat until all fits
-					bool all_fit = true;
-					Vector2 ofs;
-					int col = 0;
-					int max_h = 0;
-					separators.clear();
-					for (int i = 0; i < items.size(); i++) {
-						if (current_columns > 1 && items[i].rect_cache.size.width + ofs.x > fit_size) {
-							//went past
-							current_columns = MAX(col, 1);
-							all_fit = false;
-							break;
-						}
-
-						if (same_column_width) {
-							items.write[i].rect_cache.size.x = max_column_width;
-						}
-						items.write[i].rect_cache.position = ofs;
-						max_h = MAX(max_h, items[i].rect_cache.size.y);
-						ofs.x += items[i].rect_cache.size.x + theme_cache.h_separation;
-						col++;
-						if (col == current_columns) {
-							if (i < items.size() - 1) {
-								separators.push_back(ofs.y + max_h + theme_cache.v_separation / 2);
-							}
-
-							for (int j = i; j >= 0 && col > 0; j--, col--) {
-								items.write[j].rect_cache.size.y = max_h;
-							}
-
-							ofs.x = 0;
-							ofs.y += max_h + theme_cache.v_separation;
-							col = 0;
-							max_h = 0;
-						}
-					}
-
-					for (int j = items.size() - 1; j >= 0 && col > 0; j--, col--) {
-						items.write[j].rect_cache.size.y = max_h;
-					}
-
-					if (all_fit) {
-						float page = MAX(0, size.height - theme_cache.panel_style->get_minimum_size().height);
-						float max = MAX(page, ofs.y + max_h);
-						if (auto_height) {
-							auto_height_value = ofs.y + max_h + theme_cache.panel_style->get_minimum_size().height;
-						}
-						scroll_bar->set_max(max);
-						scroll_bar->set_page(page);
-						if (max <= page) {
-							scroll_bar->set_value(0);
-							scroll_bar->hide();
-						} else {
-							scroll_bar->show();
-
-							if (do_autoscroll_to_bottom) {
-								scroll_bar->set_value(max);
-							}
-						}
-						break;
-					}
-				}
-
-				update_minimum_size();
-				shape_changed = false;
-			}
-
-			if (scroll_bar->is_visible()) {
-				width -= mw;
-			}
-
-			//ensure_selected_visible needs to be checked before we draw the list.
+			// Ensure_selected_visible needs to be checked before we draw the list.
 			if (ensure_selected_visible && current >= 0 && current < items.size()) {
 				Rect2 r = items[current].rect_cache;
 				int from = scroll_bar->get_value();
@@ -1191,11 +1058,12 @@ void ItemList::_notification(int p_what) {
 			Vector2 base_ofs = theme_cache.panel_style->get_offset();
 			base_ofs.y -= int(scroll_bar->get_value());
 
-			const Rect2 clip(-base_ofs, size); // visible frame, don't need to draw outside of there
+			// Define a visible frame to check against and optimize drawing.
+			const Rect2 clip(-base_ofs, size);
 
+			// Do a binary search to find the first item whose rect reaches below clip.position.y.
 			int first_item_visible;
 			{
-				// do a binary search to find the first item whose rect reaches below clip.position.y
 				int lo = 0;
 				int hi = items.size();
 				while (lo < hi) {
@@ -1207,13 +1075,17 @@ void ItemList::_notification(int p_what) {
 						hi = mid;
 					}
 				}
-				// we might have ended up with column 2, or 3, ..., so let's find the first column
-				while (lo > 0 && items[lo - 1].rect_cache.position.y == items[lo].rect_cache.position.y) {
+
+				// We might end up with an item in columns 2, 3, etc, but we need the one from the first column.
+				// We can also end up in a state where lo reached hi, and so no items can be rendered; we skip that.
+				while (lo < hi && lo > 0 && items[lo].column > 0) {
 					lo -= 1;
 				}
+
 				first_item_visible = lo;
 			}
 
+			// Draw visible items.
 			for (int i = first_item_visible; i < items.size(); i++) {
 				Rect2 rcache = items[i].rect_cache;
 
@@ -1404,9 +1276,9 @@ void ItemList::_notification(int p_what) {
 				}
 			}
 
+			// Do a binary search to find the first separator that is below clip_position.y.
 			int first_visible_separator = 0;
 			{
-				// do a binary search to find the first separator that is below clip_position.y
 				int lo = 0;
 				int hi = separators.size();
 				while (lo < hi) {
@@ -1420,6 +1292,7 @@ void ItemList::_notification(int p_what) {
 				first_visible_separator = lo;
 			}
 
+			// Draw visible separators.
 			for (int i = first_visible_separator; i < separators.size(); i++) {
 				if (separators[i] > clip.position.y + clip.size.y) {
 					break; // done
@@ -1430,6 +1303,151 @@ void ItemList::_notification(int p_what) {
 			}
 		} break;
 	}
+}
+
+void ItemList::_check_shape_changed() {
+	if (!shape_changed) {
+		return;
+	}
+
+	int scroll_bar_minwidth = scroll_bar->get_minimum_size().x;
+	Size2 size = get_size();
+	float max_column_width = 0.0;
+
+	//1- compute item minimum sizes
+	for (int i = 0; i < items.size(); i++) {
+		Size2 minsize;
+		if (items[i].icon.is_valid()) {
+			if (fixed_icon_size.x > 0 && fixed_icon_size.y > 0) {
+				minsize = fixed_icon_size * icon_scale;
+			} else {
+				minsize = items[i].get_icon_size() * icon_scale;
+			}
+
+			if (!items[i].text.is_empty()) {
+				if (icon_mode == ICON_MODE_TOP) {
+					minsize.y += theme_cache.icon_margin;
+				} else {
+					minsize.x += theme_cache.icon_margin;
+				}
+			}
+		}
+
+		if (!items[i].text.is_empty()) {
+			int max_width = -1;
+			if (fixed_column_width) {
+				max_width = fixed_column_width;
+			} else if (same_column_width) {
+				max_width = items[i].rect_cache.size.x;
+			}
+			items.write[i].text_buf->set_width(max_width);
+			Size2 s = items[i].text_buf->get_size();
+
+			if (icon_mode == ICON_MODE_TOP) {
+				minsize.x = MAX(minsize.x, s.width);
+				if (max_text_lines > 0) {
+					minsize.y += s.height + theme_cache.line_separation * max_text_lines;
+				} else {
+					minsize.y += s.height;
+				}
+
+			} else {
+				minsize.y = MAX(minsize.y, s.height);
+				minsize.x += s.width;
+			}
+		}
+
+		if (fixed_column_width > 0) {
+			minsize.x = fixed_column_width;
+		}
+		max_column_width = MAX(max_column_width, minsize.x);
+
+		// elements need to adapt to the selected size
+		minsize.y += theme_cache.v_separation;
+		minsize.x += theme_cache.h_separation;
+		items.write[i].rect_cache.size = minsize;
+		items.write[i].min_rect_cache.size = minsize;
+	}
+
+	int fit_size = size.x - theme_cache.panel_style->get_minimum_size().width - scroll_bar_minwidth;
+
+	//2-attempt best fit
+	current_columns = 0x7FFFFFFF;
+	if (max_columns > 0) {
+		current_columns = max_columns;
+	}
+
+	// Repeat until all items fit.
+	while (true) {
+		bool all_fit = true;
+		Vector2 ofs;
+		int col = 0;
+		int max_h = 0;
+
+		separators.clear();
+
+		for (int i = 0; i < items.size(); i++) {
+			if (current_columns > 1 && items[i].rect_cache.size.width + ofs.x > fit_size) {
+				// Went past.
+				current_columns = MAX(col, 1);
+				all_fit = false;
+				break;
+			}
+
+			if (same_column_width) {
+				items.write[i].rect_cache.size.x = max_column_width;
+			}
+			items.write[i].rect_cache.position = ofs;
+
+			max_h = MAX(max_h, items[i].rect_cache.size.y);
+			ofs.x += items[i].rect_cache.size.x + theme_cache.h_separation;
+
+			items.write[i].column = col;
+			col++;
+			if (col == current_columns) {
+				if (i < items.size() - 1) {
+					separators.push_back(ofs.y + max_h + theme_cache.v_separation / 2);
+				}
+
+				for (int j = i; j >= 0 && col > 0; j--, col--) {
+					items.write[j].rect_cache.size.y = max_h;
+				}
+
+				ofs.x = 0;
+				ofs.y += max_h + theme_cache.v_separation;
+				col = 0;
+				max_h = 0;
+			}
+		}
+
+		for (int j = items.size() - 1; j >= 0 && col > 0; j--, col--) {
+			items.write[j].rect_cache.size.y = max_h;
+		}
+
+		if (all_fit) {
+			float page = MAX(0, size.height - theme_cache.panel_style->get_minimum_size().height);
+			float max = MAX(page, ofs.y + max_h);
+			if (auto_height) {
+				auto_height_value = ofs.y + max_h + theme_cache.panel_style->get_minimum_size().height;
+			}
+			scroll_bar->set_max(max);
+			scroll_bar->set_page(page);
+			if (max <= page) {
+				scroll_bar->set_value(0);
+				scroll_bar->hide();
+			} else {
+				scroll_bar->show();
+
+				if (do_autoscroll_to_bottom) {
+					scroll_bar->set_value(max);
+				}
+			}
+			break;
+		}
+	}
+
+	update_minimum_size();
+	shape_changed = false;
 }
 
 void ItemList::_scroll_changed(double) {

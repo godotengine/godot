@@ -1286,7 +1286,7 @@ void BaseMaterial3D::_update_shader() {
 			code += "	vec2 ref_ofs = SCREEN_UV - ref_normal.xy * dot(texture(texture_refraction,base_uv),refraction_texture_channel) * refraction;\n";
 		}
 		code += "	float ref_amount = 1.0 - albedo.a * albedo_tex.a;\n";
-		code += "	EMISSION += textureLod(screen_texture,ref_ofs,ROUGHNESS * 8.0).rgb * ref_amount;\n";
+		code += "	EMISSION += textureLod(screen_texture,ref_ofs,ROUGHNESS * 8.0).rgb * ref_amount * EXPOSURE;\n";
 		code += "	ALBEDO *= 1.0 - ref_amount;\n";
 		code += "	ALPHA = 1.0;\n";
 

@@ -29,6 +29,8 @@
 
 #include "hb.hh"
 
+#include "hb-set.hh"
+
 
 /*
  * hb_hashmap_t
@@ -308,6 +310,13 @@ struct hb_hashmap_t
 
   unsigned int get_population () const { return population; }
 
+  void update (const hb_hashmap_t &other)
+  {
+    if (unlikely (!successful)) return;
+
+    hb_copy (other, *this);
+  }
+
   /*
    * Iterator
    */
@@ -347,6 +356,30 @@ struct hb_hashmap_t
     + values_ref ()
     | hb_map (hb_ridentity)
   )
+
+  /* C iterator. */
+  bool next (int *idx,
+	     K *key,
+	     V *value) const
+  {
+    unsigned i = (unsigned) (*idx + 1);
+
+    unsigned count = size ();
+    while (i < count && !items[i].is_real ())
+      i++;
+
+    if (i >= count)
+    {
+      *idx = -1;
+      return false;
+    }
+
+    *key = items[i].key;
+    *value = items[i].value;
+
+    *idx = (signed) i;
+    return true;
+  }
 
   /* Sink interface. */
   hb_hashmap_t& operator << (const hb_pair_t<K, V>& v)
@@ -450,38 +483,6 @@ struct hb_map_t : hb_hashmap_t<hb_codepoint_t,
 	    hb_requires (hb_is_iterable (Iterable))>
   hb_map_t (const Iterable &o) : hashmap (o) {}
 };
-
-template <typename K, typename V>
-static inline
-hb_hashmap_t<K, V>* hb_hashmap_create ()
-{
-  using hashmap = hb_hashmap_t<K, V>;
-  hashmap* map;
-  if (!(map = hb_object_create<hashmap> ()))
-    return nullptr;
-
-  return map;
-}
-
-template <typename K, typename V>
-static inline
-void hb_hashmap_destroy (hb_hashmap_t<K, V>* map)
-{
-  if (!hb_object_destroy (map))
-    return;
-
-  hb_free (map);
-}
-
-namespace hb {
-
-template <typename K, typename V>
-struct vtable<hb_hashmap_t<K, V>>
-{
-  static constexpr auto destroy = hb_hashmap_destroy<K,V>;
-};
-
-}
 
 
 #endif /* HB_MAP_HH */

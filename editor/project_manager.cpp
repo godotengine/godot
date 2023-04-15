@@ -41,12 +41,13 @@
 #include "core/os/os.h"
 #include "core/string/translation.h"
 #include "core/version.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_themes.h"
 #include "editor/editor_vcs_interface.h"
+#include "editor/gui/editor_file_dialog.h"
+#include "editor/plugins/asset_library_editor_plugin.h"
 #include "main/main.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/check_box.h"
@@ -62,1118 +63,1121 @@
 
 constexpr int GODOT4_CONFIG_VERSION = 5;
 
-class ProjectDialog : public ConfirmationDialog {
-	GDCLASS(ProjectDialog, ConfirmationDialog);
+/// Project Dialog.
 
-public:
-	bool is_folder_empty = true;
-	enum Mode {
-		MODE_NEW,
-		MODE_IMPORT,
-		MODE_INSTALL,
-		MODE_RENAME,
-	};
+void ProjectDialog::_set_message(const String &p_msg, MessageType p_type, InputType input_type) {
+	msg->set_text(p_msg);
+	Ref<Texture2D> current_path_icon = status_rect->get_texture();
+	Ref<Texture2D> current_install_icon = install_status_rect->get_texture();
+	Ref<Texture2D> new_icon;
 
-private:
-	enum MessageType {
-		MESSAGE_ERROR,
-		MESSAGE_WARNING,
-		MESSAGE_SUCCESS,
-	};
+	switch (p_type) {
+		case MESSAGE_ERROR: {
+			msg->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			msg->set_modulate(Color(1, 1, 1, 1));
+			new_icon = get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons"));
 
-	enum InputType {
-		PROJECT_PATH,
-		INSTALL_PATH,
-	};
+		} break;
+		case MESSAGE_WARNING: {
+			msg->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+			msg->set_modulate(Color(1, 1, 1, 1));
+			new_icon = get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons"));
 
-	Mode mode;
-	Button *browse;
-	Button *install_browse;
-	Button *create_dir;
-	Container *name_container;
-	Container *path_container;
-	Container *install_path_container;
-	Container *renderer_container;
-	Label *renderer_info;
-	HBoxContainer *default_files_container;
-	Ref<ButtonGroup> renderer_button_group;
-	Label *msg;
-	LineEdit *project_path;
-	LineEdit *project_name;
-	LineEdit *install_path;
-	TextureRect *status_rect;
-	TextureRect *install_status_rect;
-	EditorFileDialog *fdialog;
-	EditorFileDialog *fdialog_install;
-	OptionButton *vcs_metadata_selection;
-	String zip_path;
-	String zip_title;
-	AcceptDialog *dialog_error;
-	String fav_dir;
+		} break;
+		case MESSAGE_SUCCESS: {
+			msg->remove_theme_color_override("font_color");
+			msg->set_modulate(Color(1, 1, 1, 0));
+			new_icon = get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons"));
 
-	String created_folder_path;
+		} break;
+	}
 
-	void set_message(const String &p_msg, MessageType p_type = MESSAGE_SUCCESS, InputType input_type = PROJECT_PATH) {
-		msg->set_text(p_msg);
-		Ref<Texture2D> current_path_icon = status_rect->get_texture();
-		Ref<Texture2D> current_install_icon = install_status_rect->get_texture();
-		Ref<Texture2D> new_icon;
+	if (current_path_icon != new_icon && input_type == PROJECT_PATH) {
+		status_rect->set_texture(new_icon);
+	} else if (current_install_icon != new_icon && input_type == INSTALL_PATH) {
+		install_status_rect->set_texture(new_icon);
+	}
 
-		switch (p_type) {
-			case MESSAGE_ERROR: {
-				msg->add_theme_color_override("font_color", msg->get_theme_color(SNAME("error_color"), SNAME("Editor")));
-				msg->set_modulate(Color(1, 1, 1, 1));
-				new_icon = msg->get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons"));
+	Size2i window_size = get_size();
+	Size2 contents_min_size = get_contents_minimum_size();
+	if (window_size.x < contents_min_size.x || window_size.y < contents_min_size.y) {
+		set_size(window_size.max(contents_min_size));
+	}
+}
 
-			} break;
-			case MESSAGE_WARNING: {
-				msg->add_theme_color_override("font_color", msg->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-				msg->set_modulate(Color(1, 1, 1, 1));
-				new_icon = msg->get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons"));
-
-			} break;
-			case MESSAGE_SUCCESS: {
-				msg->set_modulate(Color(1, 1, 1, 0));
-				new_icon = msg->get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons"));
-
-			} break;
+String ProjectDialog::_test_path() {
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	String valid_path, valid_install_path;
+	if (d->change_dir(project_path->get_text()) == OK) {
+		valid_path = project_path->get_text();
+	} else if (d->change_dir(project_path->get_text().strip_edges()) == OK) {
+		valid_path = project_path->get_text().strip_edges();
+	} else if (project_path->get_text().ends_with(".zip")) {
+		if (d->file_exists(project_path->get_text())) {
+			valid_path = project_path->get_text();
 		}
-
-		if (current_path_icon != new_icon && input_type == PROJECT_PATH) {
-			status_rect->set_texture(new_icon);
-		} else if (current_install_icon != new_icon && input_type == INSTALL_PATH) {
-			install_status_rect->set_texture(new_icon);
-		}
-
-		Size2i window_size = get_size();
-		Size2 contents_min_size = get_contents_minimum_size();
-		if (window_size.x < contents_min_size.x || window_size.y < contents_min_size.y) {
-			set_size(window_size.max(contents_min_size));
+	} else if (project_path->get_text().strip_edges().ends_with(".zip")) {
+		if (d->file_exists(project_path->get_text().strip_edges())) {
+			valid_path = project_path->get_text().strip_edges();
 		}
 	}
 
-	String _test_path() {
-		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		String valid_path, valid_install_path;
-		if (d->change_dir(project_path->get_text()) == OK) {
-			valid_path = project_path->get_text();
-		} else if (d->change_dir(project_path->get_text().strip_edges()) == OK) {
-			valid_path = project_path->get_text().strip_edges();
-		} else if (project_path->get_text().ends_with(".zip")) {
-			if (d->file_exists(project_path->get_text())) {
-				valid_path = project_path->get_text();
-			}
-		} else if (project_path->get_text().strip_edges().ends_with(".zip")) {
-			if (d->file_exists(project_path->get_text().strip_edges())) {
-				valid_path = project_path->get_text().strip_edges();
-			}
+	if (valid_path.is_empty()) {
+		_set_message(TTR("The path specified doesn't exist."), MESSAGE_ERROR);
+		get_ok_button()->set_disabled(true);
+		return "";
+	}
+
+	if (mode == MODE_IMPORT && valid_path.ends_with(".zip")) {
+		if (d->change_dir(install_path->get_text()) == OK) {
+			valid_install_path = install_path->get_text();
+		} else if (d->change_dir(install_path->get_text().strip_edges()) == OK) {
+			valid_install_path = install_path->get_text().strip_edges();
 		}
 
-		if (valid_path.is_empty()) {
-			set_message(TTR("The path specified doesn't exist."), MESSAGE_ERROR);
+		if (valid_install_path.is_empty()) {
+			_set_message(TTR("The path specified doesn't exist."), MESSAGE_ERROR, INSTALL_PATH);
+			get_ok_button()->set_disabled(true);
+			return "";
+		}
+	}
+
+	if (mode == MODE_IMPORT || mode == MODE_RENAME) {
+		if (!valid_path.is_empty() && !d->file_exists("project.godot")) {
+			if (valid_path.ends_with(".zip")) {
+				Ref<FileAccess> io_fa;
+				zlib_filefunc_def io = zipio_create_io(&io_fa);
+
+				unzFile pkg = unzOpen2(valid_path.utf8().get_data(), &io);
+				if (!pkg) {
+					_set_message(TTR("Error opening package file (it's not in ZIP format)."), MESSAGE_ERROR);
+					get_ok_button()->set_disabled(true);
+					unzClose(pkg);
+					return "";
+				}
+
+				int ret = unzGoToFirstFile(pkg);
+				while (ret == UNZ_OK) {
+					unz_file_info info;
+					char fname[16384];
+					ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+					if (ret != UNZ_OK) {
+						break;
+					}
+
+					if (String::utf8(fname).ends_with("project.godot")) {
+						break;
+					}
+
+					ret = unzGoToNextFile(pkg);
+				}
+
+				if (ret == UNZ_END_OF_LIST_OF_FILE) {
+					_set_message(TTR("Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."), MESSAGE_ERROR);
+					get_ok_button()->set_disabled(true);
+					unzClose(pkg);
+					return "";
+				}
+
+				unzClose(pkg);
+
+				// check if the specified install folder is empty, even though this is not an error, it is good to check here
+				d->list_dir_begin();
+				is_folder_empty = true;
+				String n = d->get_next();
+				while (!n.is_empty()) {
+					if (!n.begins_with(".")) {
+						// Allow `.`, `..` (reserved current/parent folder names)
+						// and hidden files/folders to be present.
+						// For instance, this lets users initialize a Git repository
+						// and still be able to create a project in the directory afterwards.
+						is_folder_empty = false;
+						break;
+					}
+					n = d->get_next();
+				}
+				d->list_dir_end();
+
+				if (!is_folder_empty) {
+					_set_message(TTR("Please choose an empty folder."), MESSAGE_WARNING, INSTALL_PATH);
+					get_ok_button()->set_disabled(true);
+					return "";
+				}
+
+			} else {
+				_set_message(TTR("Please choose a \"project.godot\" or \".zip\" file."), MESSAGE_ERROR);
+				install_path_container->hide();
+				get_ok_button()->set_disabled(true);
+				return "";
+			}
+
+		} else if (valid_path.ends_with("zip")) {
+			_set_message(TTR("This directory already contains a Godot project."), MESSAGE_ERROR, INSTALL_PATH);
 			get_ok_button()->set_disabled(true);
 			return "";
 		}
 
-		if (mode == MODE_IMPORT && valid_path.ends_with(".zip")) {
-			if (d->change_dir(install_path->get_text()) == OK) {
-				valid_install_path = install_path->get_text();
-			} else if (d->change_dir(install_path->get_text().strip_edges()) == OK) {
-				valid_install_path = install_path->get_text().strip_edges();
+	} else {
+		// Check if the specified folder is empty, even though this is not an error, it is good to check here.
+		d->list_dir_begin();
+		is_folder_empty = true;
+		String n = d->get_next();
+		while (!n.is_empty()) {
+			if (!n.begins_with(".")) {
+				// Allow `.`, `..` (reserved current/parent folder names)
+				// and hidden files/folders to be present.
+				// For instance, this lets users initialize a Git repository
+				// and still be able to create a project in the directory afterwards.
+				is_folder_empty = false;
+				break;
 			}
-
-			if (valid_install_path.is_empty()) {
-				set_message(TTR("The path specified doesn't exist."), MESSAGE_ERROR, INSTALL_PATH);
-				get_ok_button()->set_disabled(true);
-				return "";
-			}
+			n = d->get_next();
 		}
+		d->list_dir_end();
 
-		if (mode == MODE_IMPORT || mode == MODE_RENAME) {
-			if (!valid_path.is_empty() && !d->file_exists("project.godot")) {
-				if (valid_path.ends_with(".zip")) {
-					Ref<FileAccess> io_fa;
-					zlib_filefunc_def io = zipio_create_io(&io_fa);
-
-					unzFile pkg = unzOpen2(valid_path.utf8().get_data(), &io);
-					if (!pkg) {
-						set_message(TTR("Error opening package file (it's not in ZIP format)."), MESSAGE_ERROR);
-						get_ok_button()->set_disabled(true);
-						unzClose(pkg);
-						return "";
-					}
-
-					int ret = unzGoToFirstFile(pkg);
-					while (ret == UNZ_OK) {
-						unz_file_info info;
-						char fname[16384];
-						ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
-						if (ret != UNZ_OK) {
-							break;
-						}
-
-						if (String::utf8(fname).ends_with("project.godot")) {
-							break;
-						}
-
-						ret = unzGoToNextFile(pkg);
-					}
-
-					if (ret == UNZ_END_OF_LIST_OF_FILE) {
-						set_message(TTR("Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."), MESSAGE_ERROR);
-						get_ok_button()->set_disabled(true);
-						unzClose(pkg);
-						return "";
-					}
-
-					unzClose(pkg);
-
-					// check if the specified install folder is empty, even though this is not an error, it is good to check here
-					d->list_dir_begin();
-					is_folder_empty = true;
-					String n = d->get_next();
-					while (!n.is_empty()) {
-						if (!n.begins_with(".")) {
-							// Allow `.`, `..` (reserved current/parent folder names)
-							// and hidden files/folders to be present.
-							// For instance, this lets users initialize a Git repository
-							// and still be able to create a project in the directory afterwards.
-							is_folder_empty = false;
-							break;
-						}
-						n = d->get_next();
-					}
-					d->list_dir_end();
-
-					if (!is_folder_empty) {
-						set_message(TTR("Please choose an empty folder."), MESSAGE_WARNING, INSTALL_PATH);
-						get_ok_button()->set_disabled(true);
-						return "";
-					}
-
-				} else {
-					set_message(TTR("Please choose a \"project.godot\" or \".zip\" file."), MESSAGE_ERROR);
-					install_path_container->hide();
-					get_ok_button()->set_disabled(true);
-					return "";
-				}
-
-			} else if (valid_path.ends_with("zip")) {
-				set_message(TTR("This directory already contains a Godot project."), MESSAGE_ERROR, INSTALL_PATH);
+		if (!is_folder_empty) {
+			if (valid_path == OS::get_singleton()->get_environment("HOME") || valid_path == OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DOCUMENTS) || valid_path == OS::get_singleton()->get_executable_path().get_base_dir()) {
+				_set_message(TTR("You cannot save a project in the selected path. Please make a new folder or choose a new path."), MESSAGE_ERROR);
 				get_ok_button()->set_disabled(true);
 				return "";
 			}
 
+			_set_message(TTR("The selected path is not empty. Choosing an empty folder is highly recommended."), MESSAGE_WARNING);
+			get_ok_button()->set_disabled(false);
+			return valid_path;
+		}
+	}
+
+	_set_message("");
+	_set_message("", MESSAGE_SUCCESS, INSTALL_PATH);
+	get_ok_button()->set_disabled(false);
+	return valid_path;
+}
+
+void ProjectDialog::_path_text_changed(const String &p_path) {
+	String sp = _test_path();
+	if (!sp.is_empty()) {
+		// If the project name is empty or default, infer the project name from the selected folder name
+		if (project_name->get_text().strip_edges().is_empty() || project_name->get_text().strip_edges() == TTR("New Game Project")) {
+			sp = sp.replace("\\", "/");
+			int lidx = sp.rfind("/");
+
+			if (lidx != -1) {
+				sp = sp.substr(lidx + 1, sp.length()).capitalize();
+			}
+			if (sp.is_empty() && mode == MODE_IMPORT) {
+				sp = TTR("Imported Project");
+			}
+
+			project_name->set_text(sp);
+			_text_changed(sp);
+		}
+	}
+
+	if (!created_folder_path.is_empty() && created_folder_path != p_path) {
+		_remove_created_folder();
+	}
+}
+
+void ProjectDialog::_file_selected(const String &p_path) {
+	String p = p_path;
+	if (mode == MODE_IMPORT) {
+		if (p.ends_with("project.godot")) {
+			p = p.get_base_dir();
+			install_path_container->hide();
+			get_ok_button()->set_disabled(false);
+		} else if (p.ends_with(".zip")) {
+			install_path->set_text(p.get_base_dir());
+			install_path_container->show();
+			get_ok_button()->set_disabled(false);
 		} else {
-			// Check if the specified folder is empty, even though this is not an error, it is good to check here.
-			d->list_dir_begin();
-			is_folder_empty = true;
-			String n = d->get_next();
-			while (!n.is_empty()) {
-				if (!n.begins_with(".")) {
-					// Allow `.`, `..` (reserved current/parent folder names)
-					// and hidden files/folders to be present.
-					// For instance, this lets users initialize a Git repository
-					// and still be able to create a project in the directory afterwards.
-					is_folder_empty = false;
-					break;
-				}
-				n = d->get_next();
-			}
-			d->list_dir_end();
-
-			if (!is_folder_empty) {
-				if (valid_path == OS::get_singleton()->get_environment("HOME") || valid_path == OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DOCUMENTS) || valid_path == OS::get_singleton()->get_executable_path().get_base_dir()) {
-					set_message(TTR("You cannot save a project in the selected path. Please make a new folder or choose a new path."), MESSAGE_ERROR);
-					get_ok_button()->set_disabled(true);
-					return "";
-				}
-
-				set_message(TTR("The selected path is not empty. Choosing an empty folder is highly recommended."), MESSAGE_WARNING);
-				get_ok_button()->set_disabled(false);
-				return valid_path;
-			}
-		}
-
-		set_message("");
-		set_message("", MESSAGE_SUCCESS, INSTALL_PATH);
-		get_ok_button()->set_disabled(false);
-		return valid_path;
-	}
-
-	void _path_text_changed(const String &p_path) {
-		String sp = _test_path();
-		if (!sp.is_empty()) {
-			// If the project name is empty or default, infer the project name from the selected folder name
-			if (project_name->get_text().strip_edges().is_empty() || project_name->get_text().strip_edges() == TTR("New Game Project")) {
-				sp = sp.replace("\\", "/");
-				int lidx = sp.rfind("/");
-
-				if (lidx != -1) {
-					sp = sp.substr(lidx + 1, sp.length()).capitalize();
-				}
-				if (sp.is_empty() && mode == MODE_IMPORT) {
-					sp = TTR("Imported Project");
-				}
-
-				project_name->set_text(sp);
-				_text_changed(sp);
-			}
-		}
-
-		if (!created_folder_path.is_empty() && created_folder_path != p_path) {
-			_remove_created_folder();
-		}
-	}
-
-	void _file_selected(const String &p_path) {
-		String p = p_path;
-		if (mode == MODE_IMPORT) {
-			if (p.ends_with("project.godot")) {
-				p = p.get_base_dir();
-				install_path_container->hide();
-				get_ok_button()->set_disabled(false);
-			} else if (p.ends_with(".zip")) {
-				install_path->set_text(p.get_base_dir());
-				install_path_container->show();
-				get_ok_button()->set_disabled(false);
-			} else {
-				set_message(TTR("Please choose a \"project.godot\" or \".zip\" file."), MESSAGE_ERROR);
-				get_ok_button()->set_disabled(true);
-				return;
-			}
-		}
-
-		String sp = p.simplify_path();
-		project_path->set_text(sp);
-		_path_text_changed(sp);
-		if (p.ends_with(".zip")) {
-			install_path->call_deferred(SNAME("grab_focus"));
-		} else {
-			get_ok_button()->call_deferred(SNAME("grab_focus"));
-		}
-	}
-
-	void _path_selected(const String &p_path) {
-		String sp = p_path.simplify_path();
-		project_path->set_text(sp);
-		_path_text_changed(sp);
-		get_ok_button()->call_deferred(SNAME("grab_focus"));
-	}
-
-	void _install_path_selected(const String &p_path) {
-		String sp = p_path.simplify_path();
-		install_path->set_text(sp);
-		_path_text_changed(sp);
-		get_ok_button()->call_deferred(SNAME("grab_focus"));
-	}
-
-	void _browse_path() {
-		fdialog->set_current_dir(project_path->get_text());
-
-		if (mode == MODE_IMPORT) {
-			fdialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-			fdialog->clear_filters();
-			fdialog->add_filter("project.godot", vformat("%s %s", VERSION_NAME, TTR("Project")));
-			fdialog->add_filter("*.zip", TTR("ZIP File"));
-		} else {
-			fdialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
-		}
-		fdialog->popup_file_dialog();
-	}
-
-	void _browse_install_path() {
-		fdialog_install->set_current_dir(install_path->get_text());
-		fdialog_install->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
-		fdialog_install->popup_file_dialog();
-	}
-
-	void _create_folder() {
-		const String project_name_no_edges = project_name->get_text().strip_edges();
-		if (project_name_no_edges.is_empty() || !created_folder_path.is_empty() || project_name_no_edges.ends_with(".")) {
-			set_message(TTR("Invalid project name."), MESSAGE_WARNING);
+			_set_message(TTR("Please choose a \"project.godot\" or \".zip\" file."), MESSAGE_ERROR);
+			get_ok_button()->set_disabled(true);
 			return;
 		}
+	}
 
-		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		if (d->change_dir(project_path->get_text()) == OK) {
-			if (!d->dir_exists(project_name_no_edges)) {
-				if (d->make_dir(project_name_no_edges) == OK) {
-					d->change_dir(project_name_no_edges);
-					String dir_str = d->get_current_dir();
-					project_path->set_text(dir_str);
-					_path_text_changed(dir_str);
-					created_folder_path = d->get_current_dir();
-					create_dir->set_disabled(true);
-				} else {
-					dialog_error->set_text(TTR("Couldn't create folder."));
-					dialog_error->popup_centered();
-				}
+	String sp = p.simplify_path();
+	project_path->set_text(sp);
+	_path_text_changed(sp);
+	if (p.ends_with(".zip")) {
+		install_path->call_deferred(SNAME("grab_focus"));
+	} else {
+		get_ok_button()->call_deferred(SNAME("grab_focus"));
+	}
+}
+
+void ProjectDialog::_path_selected(const String &p_path) {
+	String sp = p_path.simplify_path();
+	project_path->set_text(sp);
+	_path_text_changed(sp);
+	get_ok_button()->call_deferred(SNAME("grab_focus"));
+}
+
+void ProjectDialog::_install_path_selected(const String &p_path) {
+	String sp = p_path.simplify_path();
+	install_path->set_text(sp);
+	_path_text_changed(sp);
+	get_ok_button()->call_deferred(SNAME("grab_focus"));
+}
+
+void ProjectDialog::_browse_path() {
+	fdialog->set_current_dir(project_path->get_text());
+
+	if (mode == MODE_IMPORT) {
+		fdialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+		fdialog->clear_filters();
+		fdialog->add_filter("project.godot", vformat("%s %s", VERSION_NAME, TTR("Project")));
+		fdialog->add_filter("*.zip", TTR("ZIP File"));
+	} else {
+		fdialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
+	}
+	fdialog->popup_file_dialog();
+}
+
+void ProjectDialog::_browse_install_path() {
+	fdialog_install->set_current_dir(install_path->get_text());
+	fdialog_install->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
+	fdialog_install->popup_file_dialog();
+}
+
+void ProjectDialog::_create_folder() {
+	const String project_name_no_edges = project_name->get_text().strip_edges();
+	if (project_name_no_edges.is_empty() || !created_folder_path.is_empty() || project_name_no_edges.ends_with(".")) {
+		_set_message(TTR("Invalid project name."), MESSAGE_WARNING);
+		return;
+	}
+
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	if (d->change_dir(project_path->get_text()) == OK) {
+		if (!d->dir_exists(project_name_no_edges)) {
+			if (d->make_dir(project_name_no_edges) == OK) {
+				d->change_dir(project_name_no_edges);
+				String dir_str = d->get_current_dir();
+				project_path->set_text(dir_str);
+				_path_text_changed(dir_str);
+				created_folder_path = d->get_current_dir();
+				create_dir->set_disabled(true);
 			} else {
-				dialog_error->set_text(TTR("There is already a folder in this path with the specified name."));
+				dialog_error->set_text(TTR("Couldn't create folder."));
 				dialog_error->popup_centered();
 			}
+		} else {
+			dialog_error->set_text(TTR("There is already a folder in this path with the specified name."));
+			dialog_error->popup_centered();
 		}
 	}
+}
 
-	void _text_changed(const String &p_text) {
-		if (mode != MODE_NEW) {
+void ProjectDialog::_text_changed(const String &p_text) {
+	if (mode != MODE_NEW) {
+		return;
+	}
+
+	_test_path();
+
+	if (p_text.strip_edges().is_empty()) {
+		_set_message(TTR("It would be a good idea to name your project."), MESSAGE_ERROR);
+	}
+}
+
+void ProjectDialog::_nonempty_confirmation_ok_pressed() {
+	is_folder_empty = true;
+	ok_pressed();
+}
+
+void ProjectDialog::_renderer_selected() {
+	String renderer_type = renderer_button_group->get_pressed_button()->get_meta(SNAME("rendering_method"));
+
+	if (renderer_type == "forward_plus") {
+		renderer_info->set_text(
+				String::utf8("•  ") + TTR("Supports desktop platforms only.") +
+				String::utf8("\n•  ") + TTR("Advanced 3D graphics available.") +
+				String::utf8("\n•  ") + TTR("Can scale to large complex scenes.") +
+				String::utf8("\n•  ") + TTR("Uses RenderingDevice backend.") +
+				String::utf8("\n•  ") + TTR("Slower rendering of simple scenes."));
+	} else if (renderer_type == "mobile") {
+		renderer_info->set_text(
+				String::utf8("•  ") + TTR("Supports desktop + mobile platforms.") +
+				String::utf8("\n•  ") + TTR("Less advanced 3D graphics.") +
+				String::utf8("\n•  ") + TTR("Less scalable for complex scenes.") +
+				String::utf8("\n•  ") + TTR("Uses RenderingDevice backend.") +
+				String::utf8("\n•  ") + TTR("Fast rendering of simple scenes."));
+	} else if (renderer_type == "gl_compatibility") {
+		renderer_info->set_text(
+				String::utf8("•  ") + TTR("Supports desktop, mobile + web platforms.") +
+				String::utf8("\n•  ") + TTR("Least advanced 3D graphics (currently work-in-progress).") +
+				String::utf8("\n•  ") + TTR("Intended for low-end/older devices.") +
+				String::utf8("\n•  ") + TTR("Uses OpenGL 3 backend (OpenGL 3.3/ES 3.0/WebGL2).") +
+				String::utf8("\n•  ") + TTR("Fastest rendering of simple scenes."));
+	} else {
+		WARN_PRINT("Unknown renderer type. Please report this as a bug on GitHub.");
+	}
+}
+
+void ProjectDialog::_remove_created_folder() {
+	if (!created_folder_path.is_empty()) {
+		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		d->remove(created_folder_path);
+
+		create_dir->set_disabled(false);
+		created_folder_path = "";
+	}
+}
+
+void ProjectDialog::ok_pressed() {
+	String dir = project_path->get_text();
+
+	if (mode == MODE_RENAME) {
+		String dir2 = _test_path();
+		if (dir2.is_empty()) {
+			_set_message(TTR("Invalid project path (changed anything?)."), MESSAGE_ERROR);
 			return;
 		}
 
-		_test_path();
-
-		if (p_text.strip_edges().is_empty()) {
-			set_message(TTR("It would be a good idea to name your project."), MESSAGE_ERROR);
-		}
-	}
-
-	void _nonempty_confirmation_ok_pressed() {
-		is_folder_empty = true;
-		ok_pressed();
-	}
-
-	void _renderer_selected() {
-		String renderer_type = renderer_button_group->get_pressed_button()->get_meta(SNAME("rendering_method"));
-
-		if (renderer_type == "forward_plus") {
-			renderer_info->set_text(
-					String::utf8("•  ") + TTR("Supports desktop platforms only.") +
-					String::utf8("\n•  ") + TTR("Advanced 3D graphics available.") +
-					String::utf8("\n•  ") + TTR("Can scale to large complex scenes.") +
-					String::utf8("\n•  ") + TTR("Uses RenderingDevice backend.") +
-					String::utf8("\n•  ") + TTR("Slower rendering of simple scenes."));
-		} else if (renderer_type == "mobile") {
-			renderer_info->set_text(
-					String::utf8("•  ") + TTR("Supports desktop + mobile platforms.") +
-					String::utf8("\n•  ") + TTR("Less advanced 3D graphics.") +
-					String::utf8("\n•  ") + TTR("Less scalable for complex scenes.") +
-					String::utf8("\n•  ") + TTR("Uses RenderingDevice backend.") +
-					String::utf8("\n•  ") + TTR("Fast rendering of simple scenes."));
-		} else if (renderer_type == "gl_compatibility") {
-			renderer_info->set_text(
-					String::utf8("•  ") + TTR("Supports desktop, mobile + web platforms.") +
-					String::utf8("\n•  ") + TTR("Least advanced 3D graphics (currently work-in-progress).") +
-					String::utf8("\n•  ") + TTR("Intended for low-end/older devices.") +
-					String::utf8("\n•  ") + TTR("Uses OpenGL 3 backend (OpenGL 3.3/ES 3.0/WebGL2).") +
-					String::utf8("\n•  ") + TTR("Fastest rendering of simple scenes."));
+		// Load project.godot as ConfigFile to set the new name.
+		ConfigFile cfg;
+		String project_godot = dir2.path_join("project.godot");
+		Error err = cfg.load(project_godot);
+		if (err != OK) {
+			_set_message(vformat(TTR("Couldn't load project at '%s' (error %d). It may be missing or corrupted."), project_godot, err), MESSAGE_ERROR);
 		} else {
-			WARN_PRINT("Unknown renderer type. Please report this as a bug on GitHub.");
+			cfg.set_value("application", "config/name", project_name->get_text().strip_edges());
+			err = cfg.save(project_godot);
+			if (err != OK) {
+				_set_message(vformat(TTR("Couldn't save project at '%s' (error %d)."), project_godot, err), MESSAGE_ERROR);
+			}
 		}
-	}
 
-	void ok_pressed() override {
-		String dir = project_path->get_text();
+		hide();
+		emit_signal(SNAME("projects_updated"));
 
-		if (mode == MODE_RENAME) {
-			String dir2 = _test_path();
-			if (dir2.is_empty()) {
-				set_message(TTR("Invalid project path (changed anything?)."), MESSAGE_ERROR);
+	} else {
+		if (mode == MODE_IMPORT) {
+			if (project_path->get_text().ends_with(".zip")) {
+				mode = MODE_INSTALL;
+				ok_pressed();
+
 				return;
 			}
 
-			// Load project.godot as ConfigFile to set the new name.
-			ConfigFile cfg;
-			String project_godot = dir2.path_join("project.godot");
-			Error err = cfg.load(project_godot);
-			if (err != OK) {
-				set_message(vformat(TTR("Couldn't load project at '%s' (error %d). It may be missing or corrupted."), project_godot, err), MESSAGE_ERROR);
-			} else {
-				cfg.set_value("application", "config/name", project_name->get_text().strip_edges());
-				err = cfg.save(project_godot);
-				if (err != OK) {
-					set_message(vformat(TTR("Couldn't save project at '%s' (error %d)."), project_godot, err), MESSAGE_ERROR);
-				}
-			}
-
-			hide();
-			emit_signal(SNAME("projects_updated"));
-
 		} else {
-			if (mode == MODE_IMPORT) {
-				if (project_path->get_text().ends_with(".zip")) {
-					mode = MODE_INSTALL;
-					ok_pressed();
+			if (mode == MODE_NEW) {
+				// Before we create a project, check that the target folder is empty.
+				// If not, we need to ask the user if they're sure they want to do this.
+				if (!is_folder_empty) {
+					ConfirmationDialog *cd = memnew(ConfirmationDialog);
+					cd->set_title(TTR("Warning: This folder is not empty"));
+					cd->set_text(TTR("You are about to create a Godot project in a non-empty folder.\nThe entire contents of this folder will be imported as project resources!\n\nAre you sure you wish to continue?"));
+					cd->get_ok_button()->connect("pressed", callable_mp(this, &ProjectDialog::_nonempty_confirmation_ok_pressed));
+					get_parent()->add_child(cd);
+					cd->popup_centered();
+					cd->grab_focus();
+					return;
+				}
+				PackedStringArray project_features = ProjectSettings::get_required_features();
+				ProjectSettings::CustomMap initial_settings;
 
+				// Be sure to change this code if/when renderers are changed.
+				// Default values are "forward_plus" for the main setting, "mobile" for the mobile override,
+				// and "gl_compatibility" for the web override.
+				String renderer_type = renderer_button_group->get_pressed_button()->get_meta(SNAME("rendering_method"));
+				initial_settings["rendering/renderer/rendering_method"] = renderer_type;
+
+				EditorSettings::get_singleton()->set("project_manager/default_renderer", renderer_type);
+				EditorSettings::get_singleton()->save();
+
+				if (renderer_type == "forward_plus") {
+					project_features.push_back("Forward Plus");
+				} else if (renderer_type == "mobile") {
+					project_features.push_back("Mobile");
+				} else if (renderer_type == "gl_compatibility") {
+					project_features.push_back("GL Compatibility");
+					// Also change the default rendering method for the mobile override.
+					initial_settings["rendering/renderer/rendering_method.mobile"] = "gl_compatibility";
+				} else {
+					WARN_PRINT("Unknown renderer type. Please report this as a bug on GitHub.");
+				}
+
+				project_features.sort();
+				initial_settings["application/config/features"] = project_features;
+				initial_settings["application/config/name"] = project_name->get_text().strip_edges();
+				initial_settings["application/config/icon"] = "res://icon.svg";
+
+				if (ProjectSettings::get_singleton()->save_custom(dir.path_join("project.godot"), initial_settings, Vector<String>(), false) != OK) {
+					_set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
+				} else {
+					// Store default project icon in SVG format.
+					Error err;
+					Ref<FileAccess> fa_icon = FileAccess::open(dir.path_join("icon.svg"), FileAccess::WRITE, &err);
+					fa_icon->store_string(get_default_project_icon());
+
+					if (err != OK) {
+						_set_message(TTR("Couldn't create icon.svg in project path."), MESSAGE_ERROR);
+					}
+
+					EditorVCSInterface::create_vcs_metadata_files(EditorVCSInterface::VCSMetadata(vcs_metadata_selection->get_selected()), dir);
+				}
+			} else if (mode == MODE_INSTALL) {
+				if (project_path->get_text().ends_with(".zip")) {
+					dir = install_path->get_text();
+					zip_path = project_path->get_text();
+				}
+
+				Ref<FileAccess> io_fa;
+				zlib_filefunc_def io = zipio_create_io(&io_fa);
+
+				unzFile pkg = unzOpen2(zip_path.utf8().get_data(), &io);
+				if (!pkg) {
+					dialog_error->set_text(TTR("Error opening package file, not in ZIP format."));
+					dialog_error->popup_centered();
 					return;
 				}
 
-			} else {
-				if (mode == MODE_NEW) {
-					// Before we create a project, check that the target folder is empty.
-					// If not, we need to ask the user if they're sure they want to do this.
-					if (!is_folder_empty) {
-						ConfirmationDialog *cd = memnew(ConfirmationDialog);
-						cd->set_title(TTR("Warning: This folder is not empty"));
-						cd->set_text(TTR("You are about to create a Godot project in a non-empty folder.\nThe entire contents of this folder will be imported as project resources!\n\nAre you sure you wish to continue?"));
-						cd->get_ok_button()->connect("pressed", callable_mp(this, &ProjectDialog::_nonempty_confirmation_ok_pressed));
-						get_parent()->add_child(cd);
-						cd->popup_centered();
-						cd->grab_focus();
-						return;
+				// Find the zip_root
+				String zip_root;
+				int ret = unzGoToFirstFile(pkg);
+				while (ret == UNZ_OK) {
+					unz_file_info info;
+					char fname[16384];
+					unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+
+					String name = String::utf8(fname);
+					if (name.ends_with("project.godot")) {
+						zip_root = name.substr(0, name.rfind("project.godot"));
+						break;
 					}
-					PackedStringArray project_features = ProjectSettings::get_required_features();
-					ProjectSettings::CustomMap initial_settings;
 
-					// Be sure to change this code if/when renderers are changed.
-					// Default values are "forward_plus" for the main setting, "mobile" for the mobile override,
-					// and "gl_compatibility" for the web override.
-					String renderer_type = renderer_button_group->get_pressed_button()->get_meta(SNAME("rendering_method"));
-					initial_settings["rendering/renderer/rendering_method"] = renderer_type;
+					ret = unzGoToNextFile(pkg);
+				}
 
-					EditorSettings::get_singleton()->set("project_manager/default_renderer", renderer_type);
-					EditorSettings::get_singleton()->save();
+				ret = unzGoToFirstFile(pkg);
 
-					if (renderer_type == "forward_plus") {
-						project_features.push_back("Forward Plus");
-					} else if (renderer_type == "mobile") {
-						project_features.push_back("Mobile");
-					} else if (renderer_type == "gl_compatibility") {
-						project_features.push_back("GL Compatibility");
-						// Also change the default rendering method for the mobile override.
-						initial_settings["rendering/renderer/rendering_method.mobile"] = "gl_compatibility";
+				Vector<String> failed_files;
+
+				while (ret == UNZ_OK) {
+					//get filename
+					unz_file_info info;
+					char fname[16384];
+					ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+					if (ret != UNZ_OK) {
+						break;
+					}
+
+					String path = String::utf8(fname);
+
+					if (path.is_empty() || path == zip_root || !zip_root.is_subsequence_of(path)) {
+						//
+					} else if (path.ends_with("/")) { // a dir
+						path = path.substr(0, path.length() - 1);
+						String rel_path = path.substr(zip_root.length());
+
+						Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+						da->make_dir(dir.path_join(rel_path));
 					} else {
-						WARN_PRINT("Unknown renderer type. Please report this as a bug on GitHub.");
-					}
+						Vector<uint8_t> uncomp_data;
+						uncomp_data.resize(info.uncompressed_size);
+						String rel_path = path.substr(zip_root.length());
 
-					project_features.sort();
-					initial_settings["application/config/features"] = project_features;
-					initial_settings["application/config/name"] = project_name->get_text().strip_edges();
-					initial_settings["application/config/icon"] = "res://icon.svg";
+						//read
+						unzOpenCurrentFile(pkg);
+						ret = unzReadCurrentFile(pkg, uncomp_data.ptrw(), uncomp_data.size());
+						ERR_BREAK_MSG(ret < 0, vformat("An error occurred while attempting to read from file: %s. This file will not be used.", rel_path));
+						unzCloseCurrentFile(pkg);
 
-					if (ProjectSettings::get_singleton()->save_custom(dir.path_join("project.godot"), initial_settings, Vector<String>(), false) != OK) {
-						set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
-					} else {
-						// Store default project icon in SVG format.
-						Error err;
-						Ref<FileAccess> fa_icon = FileAccess::open(dir.path_join("icon.svg"), FileAccess::WRITE, &err);
-						fa_icon->store_string(get_default_project_icon());
-
-						if (err != OK) {
-							set_message(TTR("Couldn't create icon.svg in project path."), MESSAGE_ERROR);
-						}
-
-						EditorVCSInterface::create_vcs_metadata_files(EditorVCSInterface::VCSMetadata(vcs_metadata_selection->get_selected()), dir);
-					}
-				} else if (mode == MODE_INSTALL) {
-					if (project_path->get_text().ends_with(".zip")) {
-						dir = install_path->get_text();
-						zip_path = project_path->get_text();
-					}
-
-					Ref<FileAccess> io_fa;
-					zlib_filefunc_def io = zipio_create_io(&io_fa);
-
-					unzFile pkg = unzOpen2(zip_path.utf8().get_data(), &io);
-					if (!pkg) {
-						dialog_error->set_text(TTR("Error opening package file, not in ZIP format."));
-						dialog_error->popup_centered();
-						return;
-					}
-
-					// Find the zip_root
-					String zip_root;
-					int ret = unzGoToFirstFile(pkg);
-					while (ret == UNZ_OK) {
-						unz_file_info info;
-						char fname[16384];
-						unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
-
-						String name = String::utf8(fname);
-						if (name.ends_with("project.godot")) {
-							zip_root = name.substr(0, name.rfind("project.godot"));
-							break;
-						}
-
-						ret = unzGoToNextFile(pkg);
-					}
-
-					ret = unzGoToFirstFile(pkg);
-
-					Vector<String> failed_files;
-
-					while (ret == UNZ_OK) {
-						//get filename
-						unz_file_info info;
-						char fname[16384];
-						ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
-						if (ret != UNZ_OK) {
-							break;
-						}
-
-						String path = String::utf8(fname);
-
-						if (path.is_empty() || path == zip_root || !zip_root.is_subsequence_of(path)) {
-							//
-						} else if (path.ends_with("/")) { // a dir
-							path = path.substr(0, path.length() - 1);
-							String rel_path = path.substr(zip_root.length());
-
-							Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-							da->make_dir(dir.path_join(rel_path));
+						Ref<FileAccess> f = FileAccess::open(dir.path_join(rel_path), FileAccess::WRITE);
+						if (f.is_valid()) {
+							f->store_buffer(uncomp_data.ptr(), uncomp_data.size());
 						} else {
-							Vector<uint8_t> uncomp_data;
-							uncomp_data.resize(info.uncompressed_size);
-							String rel_path = path.substr(zip_root.length());
-
-							//read
-							unzOpenCurrentFile(pkg);
-							ret = unzReadCurrentFile(pkg, uncomp_data.ptrw(), uncomp_data.size());
-							ERR_BREAK_MSG(ret < 0, vformat("An error occurred while attempting to read from file: %s. This file will not be used.", rel_path));
-							unzCloseCurrentFile(pkg);
-
-							Ref<FileAccess> f = FileAccess::open(dir.path_join(rel_path), FileAccess::WRITE);
-							if (f.is_valid()) {
-								f->store_buffer(uncomp_data.ptr(), uncomp_data.size());
-							} else {
-								failed_files.push_back(rel_path);
-							}
+							failed_files.push_back(rel_path);
 						}
-
-						ret = unzGoToNextFile(pkg);
 					}
 
-					unzClose(pkg);
+					ret = unzGoToNextFile(pkg);
+				}
 
-					if (failed_files.size()) {
-						String err_msg = TTR("The following files failed extraction from package:") + "\n\n";
-						for (int i = 0; i < failed_files.size(); i++) {
-							if (i > 15) {
-								err_msg += "\nAnd " + itos(failed_files.size() - i) + " more files.";
-								break;
-							}
-							err_msg += failed_files[i] + "\n";
+				unzClose(pkg);
+
+				if (failed_files.size()) {
+					String err_msg = TTR("The following files failed extraction from package:") + "\n\n";
+					for (int i = 0; i < failed_files.size(); i++) {
+						if (i > 15) {
+							err_msg += "\nAnd " + itos(failed_files.size() - i) + " more files.";
+							break;
 						}
-
-						dialog_error->set_text(err_msg);
-						dialog_error->popup_centered();
-
-					} else if (!project_path->get_text().ends_with(".zip")) {
-						dialog_error->set_text(TTR("Package installed successfully!"));
-						dialog_error->popup_centered();
+						err_msg += failed_files[i] + "\n";
 					}
+
+					dialog_error->set_text(err_msg);
+					dialog_error->popup_centered();
+
+				} else if (!project_path->get_text().ends_with(".zip")) {
+					dialog_error->set_text(TTR("Package installed successfully!"));
+					dialog_error->popup_centered();
 				}
 			}
-
-			dir = dir.replace("\\", "/");
-			if (dir.ends_with("/")) {
-				dir = dir.substr(0, dir.length() - 1);
-			}
-
-			hide();
-			emit_signal(SNAME("project_created"), dir);
 		}
+
+		dir = dir.replace("\\", "/");
+		if (dir.ends_with("/")) {
+			dir = dir.substr(0, dir.length() - 1);
+		}
+
+		hide();
+		emit_signal(SNAME("project_created"), dir);
+	}
+}
+
+void ProjectDialog::cancel_pressed() {
+	_remove_created_folder();
+
+	project_path->clear();
+	_path_text_changed("");
+	project_name->clear();
+	_text_changed("");
+
+	if (status_rect->get_texture() == get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons"))) {
+		msg->show();
 	}
 
-	void _remove_created_folder() {
-		if (!created_folder_path.is_empty()) {
+	if (install_status_rect->get_texture() == get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons"))) {
+		msg->show();
+	}
+}
+
+void ProjectDialog::set_zip_path(const String &p_path) {
+	zip_path = p_path;
+}
+
+void ProjectDialog::set_zip_title(const String &p_title) {
+	zip_title = p_title;
+}
+
+void ProjectDialog::set_mode(Mode p_mode) {
+	mode = p_mode;
+}
+
+void ProjectDialog::set_project_path(const String &p_path) {
+	project_path->set_text(p_path);
+}
+
+void ProjectDialog::show_dialog() {
+	if (mode == MODE_RENAME) {
+		project_path->set_editable(false);
+		browse->hide();
+		install_browse->hide();
+
+		set_title(TTR("Rename Project"));
+		set_ok_button_text(TTR("Rename"));
+		name_container->show();
+		status_rect->hide();
+		msg->hide();
+		install_path_container->hide();
+		install_status_rect->hide();
+		renderer_container->hide();
+		default_files_container->hide();
+		get_ok_button()->set_disabled(false);
+
+		// Fetch current name from project.godot to prefill the text input.
+		ConfigFile cfg;
+		String project_godot = project_path->get_text().path_join("project.godot");
+		Error err = cfg.load(project_godot);
+		if (err != OK) {
+			_set_message(vformat(TTR("Couldn't load project at '%s' (error %d). It may be missing or corrupted."), project_godot, err), MESSAGE_ERROR);
+			status_rect->show();
+			msg->show();
+			get_ok_button()->set_disabled(true);
+		} else {
+			String cur_name = cfg.get_value("application", "config/name", "");
+			project_name->set_text(cur_name);
+			_text_changed(cur_name);
+		}
+
+		project_name->call_deferred(SNAME("grab_focus"));
+
+		create_dir->hide();
+
+	} else {
+		fav_dir = EDITOR_GET("filesystem/directories/default_project_path");
+		if (!fav_dir.is_empty()) {
+			project_path->set_text(fav_dir);
+			fdialog->set_current_dir(fav_dir);
+		} else {
 			Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-			d->remove(created_folder_path);
-
-			create_dir->set_disabled(false);
-			created_folder_path = "";
+			project_path->set_text(d->get_current_dir());
+			fdialog->set_current_dir(d->get_current_dir());
 		}
-	}
+		String proj = TTR("New Game Project");
+		project_name->set_text(proj);
+		_text_changed(proj);
 
-	void cancel_pressed() override {
-		_remove_created_folder();
+		project_path->set_editable(true);
+		browse->set_disabled(false);
+		browse->show();
+		install_browse->set_disabled(false);
+		install_browse->show();
+		create_dir->show();
+		status_rect->show();
+		install_status_rect->show();
+		msg->show();
 
-		project_path->clear();
-		_path_text_changed("");
-		project_name->clear();
-		_text_changed("");
-
-		if (status_rect->get_texture() == msg->get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons"))) {
-			msg->show();
-		}
-
-		if (install_status_rect->get_texture() == msg->get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons"))) {
-			msg->show();
-		}
-	}
-
-	void _notification(int p_what) {
-		switch (p_what) {
-			case NOTIFICATION_WM_CLOSE_REQUEST: {
-				_remove_created_folder();
-			} break;
-		}
-	}
-
-protected:
-	static void _bind_methods() {
-		ADD_SIGNAL(MethodInfo("project_created"));
-		ADD_SIGNAL(MethodInfo("projects_updated"));
-	}
-
-public:
-	void set_zip_path(const String &p_path) {
-		zip_path = p_path;
-	}
-	void set_zip_title(const String &p_title) {
-		zip_title = p_title;
-	}
-
-	void set_mode(Mode p_mode) {
-		mode = p_mode;
-	}
-
-	void set_project_path(const String &p_path) {
-		project_path->set_text(p_path);
-	}
-
-	void show_dialog() {
-		if (mode == MODE_RENAME) {
-			project_path->set_editable(false);
-			browse->hide();
-			install_browse->hide();
-
-			set_title(TTR("Rename Project"));
-			set_ok_button_text(TTR("Rename"));
-			name_container->show();
-			status_rect->hide();
-			msg->hide();
+		if (mode == MODE_IMPORT) {
+			set_title(TTR("Import Existing Project"));
+			set_ok_button_text(TTR("Import & Edit"));
+			name_container->hide();
 			install_path_container->hide();
-			install_status_rect->hide();
 			renderer_container->hide();
 			default_files_container->hide();
-			get_ok_button()->set_disabled(false);
+			project_path->grab_focus();
 
-			// Fetch current name from project.godot to prefill the text input.
-			ConfigFile cfg;
-			String project_godot = project_path->get_text().path_join("project.godot");
-			Error err = cfg.load(project_godot);
-			if (err != OK) {
-				set_message(vformat(TTR("Couldn't load project at '%s' (error %d). It may be missing or corrupted."), project_godot, err), MESSAGE_ERROR);
-				status_rect->show();
-				msg->show();
-				get_ok_button()->set_disabled(true);
-			} else {
-				String cur_name = cfg.get_value("application", "config/name", "");
-				project_name->set_text(cur_name);
-				_text_changed(cur_name);
-			}
-
+		} else if (mode == MODE_NEW) {
+			set_title(TTR("Create New Project"));
+			set_ok_button_text(TTR("Create & Edit"));
+			name_container->show();
+			install_path_container->hide();
+			renderer_container->show();
+			default_files_container->show();
 			project_name->call_deferred(SNAME("grab_focus"));
+			project_name->call_deferred(SNAME("select_all"));
 
-			create_dir->hide();
-
-		} else {
-			fav_dir = EDITOR_GET("filesystem/directories/default_project_path");
-			if (!fav_dir.is_empty()) {
-				project_path->set_text(fav_dir);
-				fdialog->set_current_dir(fav_dir);
-			} else {
-				Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-				project_path->set_text(d->get_current_dir());
-				fdialog->set_current_dir(d->get_current_dir());
-			}
-			String proj = TTR("New Game Project");
-			project_name->set_text(proj);
-			_text_changed(proj);
-
-			project_path->set_editable(true);
-			browse->set_disabled(false);
-			browse->show();
-			install_browse->set_disabled(false);
-			install_browse->show();
-			create_dir->show();
-			status_rect->show();
-			install_status_rect->show();
-			msg->show();
-
-			if (mode == MODE_IMPORT) {
-				set_title(TTR("Import Existing Project"));
-				set_ok_button_text(TTR("Import & Edit"));
-				name_container->hide();
-				install_path_container->hide();
-				renderer_container->hide();
-				default_files_container->hide();
-				project_path->grab_focus();
-
-			} else if (mode == MODE_NEW) {
-				set_title(TTR("Create New Project"));
-				set_ok_button_text(TTR("Create & Edit"));
-				name_container->show();
-				install_path_container->hide();
-				renderer_container->show();
-				default_files_container->show();
-				project_name->call_deferred(SNAME("grab_focus"));
-				project_name->call_deferred(SNAME("select_all"));
-
-			} else if (mode == MODE_INSTALL) {
-				set_title(TTR("Install Project:") + " " + zip_title);
-				set_ok_button_text(TTR("Install & Edit"));
-				project_name->set_text(zip_title);
-				name_container->show();
-				install_path_container->hide();
-				renderer_container->hide();
-				default_files_container->hide();
-				project_path->grab_focus();
-			}
-
-			_test_path();
+		} else if (mode == MODE_INSTALL) {
+			set_title(TTR("Install Project:") + " " + zip_title);
+			set_ok_button_text(TTR("Install & Edit"));
+			project_name->set_text(zip_title);
+			name_container->show();
+			install_path_container->hide();
+			renderer_container->hide();
+			default_files_container->hide();
+			project_path->grab_focus();
 		}
 
-		popup_centered(Size2(500, 0) * EDSCALE);
+		_test_path();
 	}
 
-	ProjectDialog() {
-		VBoxContainer *vb = memnew(VBoxContainer);
-		add_child(vb);
+	popup_centered(Size2(500, 0) * EDSCALE);
+}
 
-		name_container = memnew(VBoxContainer);
-		vb->add_child(name_container);
+void ProjectDialog::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_WM_CLOSE_REQUEST: {
+			_remove_created_folder();
+		} break;
+	}
+}
 
-		Label *l = memnew(Label);
-		l->set_text(TTR("Project Name:"));
-		name_container->add_child(l);
+void ProjectDialog::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("project_created"));
+	ADD_SIGNAL(MethodInfo("projects_updated"));
+}
 
-		HBoxContainer *pnhb = memnew(HBoxContainer);
-		name_container->add_child(pnhb);
+ProjectDialog::ProjectDialog() {
+	VBoxContainer *vb = memnew(VBoxContainer);
+	add_child(vb);
 
-		project_name = memnew(LineEdit);
-		project_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		pnhb->add_child(project_name);
+	name_container = memnew(VBoxContainer);
+	vb->add_child(name_container);
 
-		create_dir = memnew(Button);
-		pnhb->add_child(create_dir);
-		create_dir->set_text(TTR("Create Folder"));
-		create_dir->connect("pressed", callable_mp(this, &ProjectDialog::_create_folder));
+	Label *l = memnew(Label);
+	l->set_text(TTR("Project Name:"));
+	name_container->add_child(l);
 
-		path_container = memnew(VBoxContainer);
-		vb->add_child(path_container);
+	HBoxContainer *pnhb = memnew(HBoxContainer);
+	name_container->add_child(pnhb);
 
-		l = memnew(Label);
-		l->set_text(TTR("Project Path:"));
-		path_container->add_child(l);
+	project_name = memnew(LineEdit);
+	project_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	pnhb->add_child(project_name);
 
-		HBoxContainer *pphb = memnew(HBoxContainer);
-		path_container->add_child(pphb);
+	create_dir = memnew(Button);
+	pnhb->add_child(create_dir);
+	create_dir->set_text(TTR("Create Folder"));
+	create_dir->connect("pressed", callable_mp(this, &ProjectDialog::_create_folder));
 
-		project_path = memnew(LineEdit);
-		project_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		project_path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
-		pphb->add_child(project_path);
+	path_container = memnew(VBoxContainer);
+	vb->add_child(path_container);
 
-		install_path_container = memnew(VBoxContainer);
-		vb->add_child(install_path_container);
+	l = memnew(Label);
+	l->set_text(TTR("Project Path:"));
+	path_container->add_child(l);
 
-		l = memnew(Label);
-		l->set_text(TTR("Project Installation Path:"));
-		install_path_container->add_child(l);
+	HBoxContainer *pphb = memnew(HBoxContainer);
+	path_container->add_child(pphb);
 
-		HBoxContainer *iphb = memnew(HBoxContainer);
-		install_path_container->add_child(iphb);
+	project_path = memnew(LineEdit);
+	project_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	project_path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
+	pphb->add_child(project_path);
 
-		install_path = memnew(LineEdit);
-		install_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		install_path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
-		iphb->add_child(install_path);
+	install_path_container = memnew(VBoxContainer);
+	vb->add_child(install_path_container);
 
-		// status icon
-		status_rect = memnew(TextureRect);
-		status_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
-		pphb->add_child(status_rect);
+	l = memnew(Label);
+	l->set_text(TTR("Project Installation Path:"));
+	install_path_container->add_child(l);
 
-		browse = memnew(Button);
-		browse->set_text(TTR("Browse"));
-		browse->connect("pressed", callable_mp(this, &ProjectDialog::_browse_path));
-		pphb->add_child(browse);
+	HBoxContainer *iphb = memnew(HBoxContainer);
+	install_path_container->add_child(iphb);
 
-		// install status icon
-		install_status_rect = memnew(TextureRect);
-		install_status_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
-		iphb->add_child(install_status_rect);
+	install_path = memnew(LineEdit);
+	install_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	install_path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
+	iphb->add_child(install_path);
 
-		install_browse = memnew(Button);
-		install_browse->set_text(TTR("Browse"));
-		install_browse->connect("pressed", callable_mp(this, &ProjectDialog::_browse_install_path));
-		iphb->add_child(install_browse);
+	// status icon
+	status_rect = memnew(TextureRect);
+	status_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+	pphb->add_child(status_rect);
 
-		msg = memnew(Label);
-		msg->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-		vb->add_child(msg);
+	browse = memnew(Button);
+	browse->set_text(TTR("Browse"));
+	browse->connect("pressed", callable_mp(this, &ProjectDialog::_browse_path));
+	pphb->add_child(browse);
 
-		// Renderer selection.
-		renderer_container = memnew(VBoxContainer);
-		vb->add_child(renderer_container);
-		l = memnew(Label);
-		l->set_text(TTR("Renderer:"));
-		renderer_container->add_child(l);
-		HBoxContainer *rshc = memnew(HBoxContainer);
-		renderer_container->add_child(rshc);
-		renderer_button_group.instantiate();
+	// install status icon
+	install_status_rect = memnew(TextureRect);
+	install_status_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+	iphb->add_child(install_status_rect);
 
-		// Left hand side, used for checkboxes to select renderer.
-		Container *rvb = memnew(VBoxContainer);
-		rshc->add_child(rvb);
+	install_browse = memnew(Button);
+	install_browse->set_text(TTR("Browse"));
+	install_browse->connect("pressed", callable_mp(this, &ProjectDialog::_browse_install_path));
+	iphb->add_child(install_browse);
 
-		String default_renderer_type = "forward_plus";
-		if (EditorSettings::get_singleton()->has_setting("project_manager/default_renderer")) {
-			default_renderer_type = EditorSettings::get_singleton()->get_setting("project_manager/default_renderer");
-		}
+	msg = memnew(Label);
+	msg->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	vb->add_child(msg);
 
-		Button *rs_button = memnew(CheckBox);
-		rs_button->set_button_group(renderer_button_group);
-		rs_button->set_text(TTR("Forward+"));
+	// Renderer selection.
+	renderer_container = memnew(VBoxContainer);
+	vb->add_child(renderer_container);
+	l = memnew(Label);
+	l->set_text(TTR("Renderer:"));
+	renderer_container->add_child(l);
+	HBoxContainer *rshc = memnew(HBoxContainer);
+	renderer_container->add_child(rshc);
+	renderer_button_group.instantiate();
+
+	// Left hand side, used for checkboxes to select renderer.
+	Container *rvb = memnew(VBoxContainer);
+	rshc->add_child(rvb);
+
+	String default_renderer_type = "forward_plus";
+	if (EditorSettings::get_singleton()->has_setting("project_manager/default_renderer")) {
+		default_renderer_type = EditorSettings::get_singleton()->get_setting("project_manager/default_renderer");
+	}
+
+	Button *rs_button = memnew(CheckBox);
+	rs_button->set_button_group(renderer_button_group);
+	rs_button->set_text(TTR("Forward+"));
 #if defined(WEB_ENABLED)
-		rs_button->set_disabled(true);
+	rs_button->set_disabled(true);
 #endif
-		rs_button->set_meta(SNAME("rendering_method"), "forward_plus");
-		rs_button->connect("pressed", callable_mp(this, &ProjectDialog::_renderer_selected));
-		rvb->add_child(rs_button);
-		if (default_renderer_type == "forward_plus") {
-			rs_button->set_pressed(true);
-		}
-		rs_button = memnew(CheckBox);
-		rs_button->set_button_group(renderer_button_group);
-		rs_button->set_text(TTR("Mobile"));
+	rs_button->set_meta(SNAME("rendering_method"), "forward_plus");
+	rs_button->connect("pressed", callable_mp(this, &ProjectDialog::_renderer_selected));
+	rvb->add_child(rs_button);
+	if (default_renderer_type == "forward_plus") {
+		rs_button->set_pressed(true);
+	}
+	rs_button = memnew(CheckBox);
+	rs_button->set_button_group(renderer_button_group);
+	rs_button->set_text(TTR("Mobile"));
 #if defined(WEB_ENABLED)
-		rs_button->set_disabled(true);
+	rs_button->set_disabled(true);
 #endif
-		rs_button->set_meta(SNAME("rendering_method"), "mobile");
-		rs_button->connect("pressed", callable_mp(this, &ProjectDialog::_renderer_selected));
-		rvb->add_child(rs_button);
-		if (default_renderer_type == "mobile") {
-			rs_button->set_pressed(true);
-		}
-		rs_button = memnew(CheckBox);
-		rs_button->set_button_group(renderer_button_group);
-		rs_button->set_text(TTR("Compatibility"));
+	rs_button->set_meta(SNAME("rendering_method"), "mobile");
+	rs_button->connect("pressed", callable_mp(this, &ProjectDialog::_renderer_selected));
+	rvb->add_child(rs_button);
+	if (default_renderer_type == "mobile") {
+		rs_button->set_pressed(true);
+	}
+	rs_button = memnew(CheckBox);
+	rs_button->set_button_group(renderer_button_group);
+	rs_button->set_text(TTR("Compatibility"));
 #if !defined(GLES3_ENABLED)
-		rs_button->set_disabled(true);
+	rs_button->set_disabled(true);
 #endif
-		rs_button->set_meta(SNAME("rendering_method"), "gl_compatibility");
-		rs_button->connect("pressed", callable_mp(this, &ProjectDialog::_renderer_selected));
-		rvb->add_child(rs_button);
+	rs_button->set_meta(SNAME("rendering_method"), "gl_compatibility");
+	rs_button->connect("pressed", callable_mp(this, &ProjectDialog::_renderer_selected));
+	rvb->add_child(rs_button);
 #if defined(GLES3_ENABLED)
-		if (default_renderer_type == "gl_compatibility") {
-			rs_button->set_pressed(true);
-		}
+	if (default_renderer_type == "gl_compatibility") {
+		rs_button->set_pressed(true);
+	}
 #endif
-		rshc->add_child(memnew(VSeparator));
+	rshc->add_child(memnew(VSeparator));
 
-		// Right hand side, used for text explaining each choice.
-		rvb = memnew(VBoxContainer);
-		rvb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		rshc->add_child(rvb);
-		renderer_info = memnew(Label);
-		renderer_info->set_modulate(Color(1, 1, 1, 0.7));
-		rvb->add_child(renderer_info);
-		_renderer_selected();
+	// Right hand side, used for text explaining each choice.
+	rvb = memnew(VBoxContainer);
+	rvb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	rshc->add_child(rvb);
+	renderer_info = memnew(Label);
+	renderer_info->set_modulate(Color(1, 1, 1, 0.7));
+	rvb->add_child(renderer_info);
+	_renderer_selected();
 
-		l = memnew(Label);
-		l->set_text(TTR("The renderer can be changed later, but scenes may need to be adjusted."));
-		// Add some extra spacing to separate it from the list above and the buttons below.
-		l->set_custom_minimum_size(Size2(0, 40) * EDSCALE);
-		l->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-		l->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
-		l->set_modulate(Color(1, 1, 1, 0.7));
-		renderer_container->add_child(l);
+	l = memnew(Label);
+	l->set_text(TTR("The renderer can be changed later, but scenes may need to be adjusted."));
+	// Add some extra spacing to separate it from the list above and the buttons below.
+	l->set_custom_minimum_size(Size2(0, 40) * EDSCALE);
+	l->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	l->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	l->set_modulate(Color(1, 1, 1, 0.7));
+	renderer_container->add_child(l);
 
-		default_files_container = memnew(HBoxContainer);
-		vb->add_child(default_files_container);
-		l = memnew(Label);
-		l->set_text(TTR("Version Control Metadata:"));
-		default_files_container->add_child(l);
-		vcs_metadata_selection = memnew(OptionButton);
-		vcs_metadata_selection->set_custom_minimum_size(Size2(100, 20));
-		vcs_metadata_selection->add_item(TTR("None"), (int)EditorVCSInterface::VCSMetadata::NONE);
-		vcs_metadata_selection->add_item(TTR("Git"), (int)EditorVCSInterface::VCSMetadata::GIT);
-		vcs_metadata_selection->select((int)EditorVCSInterface::VCSMetadata::GIT);
-		default_files_container->add_child(vcs_metadata_selection);
+	default_files_container = memnew(HBoxContainer);
+	vb->add_child(default_files_container);
+	l = memnew(Label);
+	l->set_text(TTR("Version Control Metadata:"));
+	default_files_container->add_child(l);
+	vcs_metadata_selection = memnew(OptionButton);
+	vcs_metadata_selection->set_custom_minimum_size(Size2(100, 20));
+	vcs_metadata_selection->add_item(TTR("None"), (int)EditorVCSInterface::VCSMetadata::NONE);
+	vcs_metadata_selection->add_item(TTR("Git"), (int)EditorVCSInterface::VCSMetadata::GIT);
+	vcs_metadata_selection->select((int)EditorVCSInterface::VCSMetadata::GIT);
+	default_files_container->add_child(vcs_metadata_selection);
+	Control *spacer = memnew(Control);
+	spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	default_files_container->add_child(spacer);
+
+	fdialog = memnew(EditorFileDialog);
+	fdialog->set_previews_enabled(false); //Crucial, otherwise the engine crashes.
+	fdialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	fdialog_install = memnew(EditorFileDialog);
+	fdialog_install->set_previews_enabled(false); //Crucial, otherwise the engine crashes.
+	fdialog_install->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	add_child(fdialog);
+	add_child(fdialog_install);
+
+	project_name->connect("text_changed", callable_mp(this, &ProjectDialog::_text_changed));
+	project_path->connect("text_changed", callable_mp(this, &ProjectDialog::_path_text_changed));
+	install_path->connect("text_changed", callable_mp(this, &ProjectDialog::_path_text_changed));
+	fdialog->connect("dir_selected", callable_mp(this, &ProjectDialog::_path_selected));
+	fdialog->connect("file_selected", callable_mp(this, &ProjectDialog::_file_selected));
+	fdialog_install->connect("dir_selected", callable_mp(this, &ProjectDialog::_install_path_selected));
+	fdialog_install->connect("file_selected", callable_mp(this, &ProjectDialog::_install_path_selected));
+
+	set_hide_on_ok(false);
+
+	dialog_error = memnew(AcceptDialog);
+	add_child(dialog_error);
+}
+
+/// Project List and friends.
+
+void ProjectListItemControl::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			if (icon_needs_reload) {
+				// The project icon may not be loaded by the time the control is displayed,
+				// so use a loading placeholder.
+				project_icon->set_texture(get_theme_icon(SNAME("ProjectIconLoading"), SNAME("EditorIcons")));
+			}
+
+			project_title->add_theme_font_override("font", get_theme_font(SNAME("title"), SNAME("EditorFonts")));
+			project_title->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("title_size"), SNAME("EditorFonts")));
+			project_title->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), SNAME("Tree")));
+			project_path->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), SNAME("Tree")));
+			project_unsupported_features->add_theme_font_override("font", get_theme_font(SNAME("title"), SNAME("EditorFonts")));
+			project_unsupported_features->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+
+			favorite_button->set_texture_normal(get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons")));
+			if (project_is_missing) {
+				explore_button->set_icon(get_theme_icon(SNAME("FileBroken"), SNAME("EditorIcons")));
+			} else {
+				explore_button->set_icon(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")));
+			}
+		} break;
+
+		case NOTIFICATION_MOUSE_ENTER: {
+			is_hovering = true;
+			queue_redraw();
+		} break;
+
+		case NOTIFICATION_MOUSE_EXIT: {
+			is_hovering = false;
+			queue_redraw();
+		} break;
+
+		case NOTIFICATION_DRAW: {
+			if (is_selected) {
+				draw_style_box(get_theme_stylebox(SNAME("selected"), SNAME("Tree")), Rect2(Point2(), get_size()));
+			}
+			if (is_hovering) {
+				draw_style_box(get_theme_stylebox(SNAME("hover"), SNAME("Tree")), Rect2(Point2(), get_size()));
+			}
+
+			draw_line(Point2(0, get_size().y + 1), Point2(get_size().x, get_size().y + 1), get_theme_color(SNAME("guide_color"), SNAME("Tree")));
+		} break;
+	}
+}
+
+void ProjectListItemControl::set_project_title(const String &p_title) {
+	project_title->set_text(p_title);
+}
+
+void ProjectListItemControl::set_project_path(const String &p_path) {
+	project_path->set_text(p_path);
+}
+
+void ProjectListItemControl::set_project_icon(const Ref<Texture2D> &p_icon) {
+	icon_needs_reload = false;
+
+	// The default project icon is 128×128 to look crisp on hiDPI displays,
+	// but we want the actual displayed size to be 64×64 on loDPI displays.
+	project_icon->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+	project_icon->set_custom_minimum_size(Size2(64, 64) * EDSCALE);
+	project_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+
+	project_icon->set_texture(p_icon);
+}
+
+void ProjectListItemControl::set_unsupported_features(const PackedStringArray &p_features) {
+	if (p_features.size() > 0) {
+		String unsupported_features_str = String(", ").join(p_features);
+		project_unsupported_features->set_text(unsupported_features_str);
+		project_unsupported_features->set_custom_minimum_size(Size2(unsupported_features_str.length() * 15, 10) * EDSCALE);
+		project_unsupported_features->show();
+	} else {
+		project_unsupported_features->hide();
+	}
+}
+
+bool ProjectListItemControl::should_load_project_icon() const {
+	return icon_needs_reload;
+}
+
+void ProjectListItemControl::set_selected(bool p_selected) {
+	is_selected = p_selected;
+	queue_redraw();
+}
+
+void ProjectListItemControl::set_is_favorite(bool p_favorite) {
+	favorite_button->set_modulate(p_favorite ? Color(1, 1, 1, 1) : Color(1, 1, 1, 0.2));
+}
+
+void ProjectListItemControl::set_is_missing(bool p_missing) {
+	if (project_is_missing == p_missing) {
+		return;
+	}
+	project_is_missing = p_missing;
+
+	if (project_is_missing) {
+		project_icon->set_modulate(Color(1, 1, 1, 0.5));
+
+		explore_button->set_icon(get_theme_icon(SNAME("FileBroken"), SNAME("EditorIcons")));
+		explore_button->set_tooltip_text(TTR("Error: Project is missing on the filesystem."));
+	} else {
+		project_icon->set_modulate(Color(1, 1, 1, 1.0));
+
+		explore_button->set_icon(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")));
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+		explore_button->set_tooltip_text(TTR("Show in File Manager"));
+#else
+		// Opening the system file manager is not supported on the Android and web editors.
+		explore_button->hide();
+#endif
+	}
+}
+
+void ProjectListItemControl::set_is_grayed(bool p_grayed) {
+	if (p_grayed) {
+		main_vbox->set_modulate(Color(1, 1, 1, 0.5));
+		// Don't make the icon less prominent if the parent is already grayed out.
+		explore_button->set_modulate(Color(1, 1, 1, 1.0));
+	} else {
+		main_vbox->set_modulate(Color(1, 1, 1, 1.0));
+		explore_button->set_modulate(Color(1, 1, 1, 0.5));
+	}
+}
+
+void ProjectListItemControl::_favorite_button_pressed() {
+	emit_signal(SNAME("favorite_pressed"));
+}
+
+void ProjectListItemControl::_explore_button_pressed() {
+	emit_signal(SNAME("explore_pressed"));
+}
+
+void ProjectListItemControl::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("favorite_pressed"));
+	ADD_SIGNAL(MethodInfo("explore_pressed"));
+}
+
+ProjectListItemControl::ProjectListItemControl() {
+	set_focus_mode(FocusMode::FOCUS_ALL);
+
+	VBoxContainer *favorite_box = memnew(VBoxContainer);
+	favorite_box->set_alignment(BoxContainer::ALIGNMENT_CENTER);
+	add_child(favorite_box);
+
+	favorite_button = memnew(TextureButton);
+	favorite_button->set_name("FavoriteButton");
+	// This makes the project's "hover" style display correctly when hovering the favorite icon.
+	favorite_button->set_mouse_filter(MOUSE_FILTER_PASS);
+	favorite_box->add_child(favorite_button);
+	favorite_button->connect("pressed", callable_mp(this, &ProjectListItemControl::_favorite_button_pressed));
+
+	project_icon = memnew(TextureRect);
+	project_icon->set_name("ProjectIcon");
+	project_icon->set_v_size_flags(SIZE_SHRINK_CENTER);
+	add_child(project_icon);
+
+	main_vbox = memnew(VBoxContainer);
+	main_vbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	add_child(main_vbox);
+
+	Control *ec = memnew(Control);
+	ec->set_custom_minimum_size(Size2(0, 1));
+	ec->set_mouse_filter(MOUSE_FILTER_PASS);
+	main_vbox->add_child(ec);
+
+	// Top half, title and unsupported features labels.
+	{
+		HBoxContainer *title_hb = memnew(HBoxContainer);
+		main_vbox->add_child(title_hb);
+
+		project_title = memnew(Label);
+		project_title->set_name("ProjectName");
+		project_title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		project_title->set_clip_text(true);
+		title_hb->add_child(project_title);
+
+		project_unsupported_features = memnew(Label);
+		project_unsupported_features->set_name("ProjectUnsupportedFeatures");
+		project_unsupported_features->set_clip_text(true);
+		project_unsupported_features->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+		title_hb->add_child(project_unsupported_features);
+		project_unsupported_features->hide();
+
 		Control *spacer = memnew(Control);
-		spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		default_files_container->add_child(spacer);
-
-		fdialog = memnew(EditorFileDialog);
-		fdialog->set_previews_enabled(false); //Crucial, otherwise the engine crashes.
-		fdialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-		fdialog_install = memnew(EditorFileDialog);
-		fdialog_install->set_previews_enabled(false); //Crucial, otherwise the engine crashes.
-		fdialog_install->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-		add_child(fdialog);
-		add_child(fdialog_install);
-
-		project_name->connect("text_changed", callable_mp(this, &ProjectDialog::_text_changed));
-		project_path->connect("text_changed", callable_mp(this, &ProjectDialog::_path_text_changed));
-		install_path->connect("text_changed", callable_mp(this, &ProjectDialog::_path_text_changed));
-		fdialog->connect("dir_selected", callable_mp(this, &ProjectDialog::_path_selected));
-		fdialog->connect("file_selected", callable_mp(this, &ProjectDialog::_file_selected));
-		fdialog_install->connect("dir_selected", callable_mp(this, &ProjectDialog::_install_path_selected));
-		fdialog_install->connect("file_selected", callable_mp(this, &ProjectDialog::_install_path_selected));
-
-		set_hide_on_ok(false);
-		mode = MODE_NEW;
-
-		dialog_error = memnew(AcceptDialog);
-		add_child(dialog_error);
-	}
-};
-
-class ProjectListItemControl : public HBoxContainer {
-	GDCLASS(ProjectListItemControl, HBoxContainer)
-public:
-	TextureButton *favorite_button;
-	TextureRect *icon;
-	bool icon_needs_reload;
-	bool hover;
-
-	ProjectListItemControl() {
-		favorite_button = nullptr;
-		icon = nullptr;
-		icon_needs_reload = true;
-		hover = false;
-
-		set_focus_mode(FocusMode::FOCUS_ALL);
+		spacer->set_custom_minimum_size(Size2(10, 10));
+		title_hb->add_child(spacer);
 	}
 
-	void set_is_favorite(bool fav) {
-		favorite_button->set_modulate(fav ? Color(1, 1, 1, 1) : Color(1, 1, 1, 0.2));
+	// Bottom half, containing the path and view folder button.
+	{
+		HBoxContainer *path_hb = memnew(HBoxContainer);
+		path_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		main_vbox->add_child(path_hb);
+
+		explore_button = memnew(Button);
+		explore_button->set_name("ExploreButton");
+		explore_button->set_flat(true);
+		path_hb->add_child(explore_button);
+		explore_button->connect("pressed", callable_mp(this, &ProjectListItemControl::_explore_button_pressed));
+
+		project_path = memnew(Label);
+		project_path->set_name("ProjectPath");
+		project_path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
+		project_path->set_clip_text(true);
+		project_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		project_path->set_modulate(Color(1, 1, 1, 0.5));
+		path_hb->add_child(project_path);
 	}
-
-	void _notification(int p_what) {
-		switch (p_what) {
-			case NOTIFICATION_MOUSE_ENTER: {
-				hover = true;
-				queue_redraw();
-			} break;
-
-			case NOTIFICATION_MOUSE_EXIT: {
-				hover = false;
-				queue_redraw();
-			} break;
-
-			case NOTIFICATION_DRAW: {
-				if (hover) {
-					draw_style_box(get_theme_stylebox(SNAME("hover"), SNAME("Tree")), Rect2(Point2(), get_size()));
-				}
-			} break;
-		}
-	}
-};
-
-class ProjectList : public ScrollContainer {
-	GDCLASS(ProjectList, ScrollContainer)
-public:
-	static const char *SIGNAL_SELECTION_CHANGED;
-	static const char *SIGNAL_PROJECT_ASK_OPEN;
-
-	enum MenuOptions {
-		GLOBAL_NEW_WINDOW,
-		GLOBAL_OPEN_PROJECT
-	};
-
-	// Can often be passed by copy
-	struct Item {
-		String project_name;
-		String description;
-		String path;
-		String icon;
-		String main_scene;
-		PackedStringArray unsupported_features;
-		uint64_t last_edited = 0;
-		bool favorite = false;
-		bool grayed = false;
-		bool missing = false;
-		int version = 0;
-
-		ProjectListItemControl *control = nullptr;
-
-		Item() {}
-
-		Item(const String &p_name,
-				const String &p_description,
-				const String &p_path,
-				const String &p_icon,
-				const String &p_main_scene,
-				const PackedStringArray &p_unsupported_features,
-				uint64_t p_last_edited,
-				bool p_favorite,
-				bool p_grayed,
-				bool p_missing,
-				int p_version) {
-			project_name = p_name;
-			description = p_description;
-			path = p_path;
-			icon = p_icon;
-			main_scene = p_main_scene;
-			unsupported_features = p_unsupported_features;
-			last_edited = p_last_edited;
-			favorite = p_favorite;
-			grayed = p_grayed;
-			missing = p_missing;
-			version = p_version;
-			control = nullptr;
-		}
-
-		_FORCE_INLINE_ bool operator==(const Item &l) const {
-			return path == l.path;
-		}
-	};
-
-	bool project_opening_initiated;
-
-	ProjectList();
-	~ProjectList();
-
-	void _global_menu_new_window(const Variant &p_tag);
-	void _global_menu_open_project(const Variant &p_tag);
-
-	void update_dock_menu();
-	void migrate_config();
-	void load_projects();
-	void set_search_term(String p_search_term);
-	void set_order_option(int p_option);
-	void sort_projects();
-	int get_project_count() const;
-	void select_project(int p_index);
-	void select_first_visible_project();
-	void erase_selected_projects(bool p_delete_project_contents);
-	Vector<Item> get_selected_projects() const;
-	const HashSet<String> &get_selected_project_keys() const;
-	void ensure_project_visible(int p_index);
-	int get_single_selected_index() const;
-	bool is_any_project_missing() const;
-	void erase_missing_projects();
-	int refresh_project(const String &dir_path);
-	void add_project(const String &dir_path, bool favorite);
-	void save_config();
-	void set_project_version(const String &p_project_path, int version);
-
-private:
-	static void _bind_methods();
-	void _notification(int p_what);
-
-	void _panel_draw(Node *p_hb);
-	void _panel_input(const Ref<InputEvent> &p_ev, Node *p_hb);
-	void _favorite_pressed(Node *p_hb);
-	void _show_project(const String &p_path);
-
-	void select_range(int p_begin, int p_end);
-	void toggle_select(int p_index);
-	void create_project_item_control(int p_index);
-	void remove_project(int p_index, bool p_update_settings);
-	void update_icons_async();
-	void load_project_icon(int p_index);
-	static Item load_project_data(const String &p_property_key, bool p_favorite);
-
-	String _search_term;
-	FilterOption _order_option;
-	HashSet<String> _selected_project_paths;
-	String _last_clicked; // Project key
-	VBoxContainer *_scroll_children;
-	int _icon_load_index;
-
-	Vector<Item> _projects;
-
-	ConfigFile _config;
-	String _config_path;
-};
+}
 
 struct ProjectListComparator {
-	FilterOption order_option = FilterOption::EDIT_DATE;
+	ProjectList::FilterOption order_option = ProjectList::FilterOption::EDIT_DATE;
 
 	// operator<
 	_FORCE_INLINE_ bool operator()(const ProjectList::Item &a, const ProjectList::Item &b) const {
@@ -1184,9 +1188,9 @@ struct ProjectListComparator {
 			return false;
 		}
 		switch (order_option) {
-			case PATH:
+			case ProjectList::PATH:
 				return a.path < b.path;
-			case EDIT_DATE:
+			case ProjectList::EDIT_DATE:
 				return a.last_edited > b.last_edited;
 			default:
 				return a.project_name < b.project_name;
@@ -1194,24 +1198,8 @@ struct ProjectListComparator {
 	}
 };
 
-ProjectList::ProjectList() {
-	_order_option = FilterOption::EDIT_DATE;
-	_scroll_children = memnew(VBoxContainer);
-	_scroll_children->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	add_child(_scroll_children);
-
-	_icon_load_index = 0;
-	project_opening_initiated = false;
-	_config_path = EditorPaths::get_singleton()->get_data_dir().path_join("projects.cfg");
-}
-
-ProjectList::~ProjectList() {
-}
-
-void ProjectList::update_icons_async() {
-	_icon_load_index = 0;
-	set_process(true);
-}
+const char *ProjectList::SIGNAL_SELECTION_CHANGED = "selection_changed";
+const char *ProjectList::SIGNAL_PROJECT_ASK_OPEN = "project_ask_open";
 
 void ProjectList::_notification(int p_what) {
 	switch (p_what) {
@@ -1219,8 +1207,8 @@ void ProjectList::_notification(int p_what) {
 			// Load icons as a coroutine to speed up launch when you have hundreds of projects
 			if (_icon_load_index < _projects.size()) {
 				Item &item = _projects.write[_icon_load_index];
-				if (item.control->icon_needs_reload) {
-					load_project_icon(_icon_load_index);
+				if (item.control->should_load_project_icon()) {
+					_load_project_icon(_icon_load_index);
 				}
 				_icon_load_index++;
 
@@ -1231,7 +1219,12 @@ void ProjectList::_notification(int p_what) {
 	}
 }
 
-void ProjectList::load_project_icon(int p_index) {
+void ProjectList::_update_icons_async() {
+	_icon_load_index = 0;
+	set_process(true);
+}
+
+void ProjectList::_load_project_icon(int p_index) {
 	Item &item = _projects.write[p_index];
 
 	Ref<Texture2D> default_icon = get_theme_icon(SNAME("DefaultProjectIcon"), SNAME("EditorIcons"));
@@ -1249,17 +1242,11 @@ void ProjectList::load_project_icon(int p_index) {
 		icon = default_icon;
 	}
 
-	// The default project icon is 128×128 to look crisp on hiDPI displays,
-	// but we want the actual displayed size to be 64×64 on loDPI displays.
-	item.control->icon->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
-	item.control->icon->set_custom_minimum_size(Size2(64, 64) * EDSCALE);
-	item.control->icon->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
-
-	item.control->icon->set_texture(icon);
-	item.control->icon_needs_reload = false;
+	item.control->set_project_icon(icon);
 }
 
-// Load project data from p_property_key and return it in a ProjectList::Item. p_favorite is passed directly into the Item.
+// Load project data from p_property_key and return it in a ProjectList::Item.
+// p_favorite is passed directly into the Item.
 ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_favorite) {
 	String conf = p_path.path_join("project.godot");
 	bool grayed = false;
@@ -1370,16 +1357,14 @@ void ProjectList::load_projects() {
 
 	// Create controls
 	for (int i = 0; i < _projects.size(); ++i) {
-		create_project_item_control(i);
+		_create_project_item_control(i);
 	}
 
 	sort_projects();
+	_update_icons_async();
+	update_dock_menu();
 
 	set_v_scroll(0);
-
-	update_icons_async();
-
-	update_dock_menu();
 }
 
 void ProjectList::update_dock_menu() {
@@ -1427,121 +1412,31 @@ void ProjectList::_global_menu_open_project(const Variant &p_tag) {
 	}
 }
 
-void ProjectList::create_project_item_control(int p_index) {
+void ProjectList::_create_project_item_control(int p_index) {
 	// Will be added last in the list, so make sure indexes match
 	ERR_FAIL_COND(p_index != _scroll_children->get_child_count());
 
 	Item &item = _projects.write[p_index];
 	ERR_FAIL_COND(item.control != nullptr); // Already created
 
-	Ref<Texture2D> favorite_icon = get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons"));
-	Color font_color = get_theme_color(SNAME("font_color"), SNAME("Tree"));
-
 	ProjectListItemControl *hb = memnew(ProjectListItemControl);
-	hb->connect("draw", callable_mp(this, &ProjectList::_panel_draw).bind(hb));
-	hb->connect("gui_input", callable_mp(this, &ProjectList::_panel_input).bind(hb));
 	hb->add_theme_constant_override("separation", 10 * EDSCALE);
+
+	hb->set_project_title(!item.missing ? item.project_name : TTR("Missing Project"));
+	hb->set_project_path(item.path);
 	hb->set_tooltip_text(item.description);
+	hb->set_unsupported_features(item.unsupported_features);
 
-	VBoxContainer *favorite_box = memnew(VBoxContainer);
-	favorite_box->set_name("FavoriteBox");
-	TextureButton *favorite = memnew(TextureButton);
-	favorite->set_name("FavoriteButton");
-	favorite->set_texture_normal(favorite_icon);
-	// This makes the project's "hover" style display correctly when hovering the favorite icon.
-	favorite->set_mouse_filter(MOUSE_FILTER_PASS);
-	favorite->connect("pressed", callable_mp(this, &ProjectList::_favorite_pressed).bind(hb));
-	favorite_box->add_child(favorite);
-	favorite_box->set_alignment(BoxContainer::ALIGNMENT_CENTER);
-	hb->add_child(favorite_box);
-	hb->favorite_button = favorite;
 	hb->set_is_favorite(item.favorite);
+	hb->set_is_missing(item.missing);
+	hb->set_is_grayed(item.grayed);
 
-	TextureRect *tf = memnew(TextureRect);
-	// The project icon may not be loaded by the time the control is displayed,
-	// so use a loading placeholder.
-	tf->set_texture(get_theme_icon(SNAME("ProjectIconLoading"), SNAME("EditorIcons")));
-	tf->set_v_size_flags(SIZE_SHRINK_CENTER);
-	if (item.missing) {
-		tf->set_modulate(Color(1, 1, 1, 0.5));
-	}
-	hb->add_child(tf);
-	hb->icon = tf;
+	hb->connect("gui_input", callable_mp(this, &ProjectList::_panel_input).bind(hb));
+	hb->connect("favorite_pressed", callable_mp(this, &ProjectList::_favorite_pressed).bind(hb));
 
-	VBoxContainer *vb = memnew(VBoxContainer);
-	if (item.grayed) {
-		vb->set_modulate(Color(1, 1, 1, 0.5));
-	}
-	vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	hb->add_child(vb);
-	Control *ec = memnew(Control);
-	ec->set_custom_minimum_size(Size2(0, 1));
-	ec->set_mouse_filter(MOUSE_FILTER_PASS);
-	vb->add_child(ec);
-
-	{ // Top half, title and unsupported features labels.
-		HBoxContainer *title_hb = memnew(HBoxContainer);
-		vb->add_child(title_hb);
-
-		Label *title = memnew(Label(!item.missing ? item.project_name : TTR("Missing Project")));
-		title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		title->add_theme_font_override("font", get_theme_font(SNAME("title"), SNAME("EditorFonts")));
-		title->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("title_size"), SNAME("EditorFonts")));
-		title->add_theme_color_override("font_color", font_color);
-		title->set_clip_text(true);
-		title_hb->add_child(title);
-
-		String unsupported_features_str = String(", ").join(item.unsupported_features);
-		int length = unsupported_features_str.length();
-		if (length > 0) {
-			Label *unsupported_label = memnew(Label(unsupported_features_str));
-			unsupported_label->set_custom_minimum_size(Size2(length * 15, 10) * EDSCALE);
-			unsupported_label->add_theme_font_override("font", get_theme_font(SNAME("title"), SNAME("EditorFonts")));
-			unsupported_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-			unsupported_label->set_clip_text(true);
-			unsupported_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
-			title_hb->add_child(unsupported_label);
-			Control *spacer = memnew(Control());
-			spacer->set_custom_minimum_size(Size2(10, 10));
-			title_hb->add_child(spacer);
-		}
-	}
-
-	{ // Bottom half, containing the path and view folder button.
-		HBoxContainer *path_hb = memnew(HBoxContainer);
-		path_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		vb->add_child(path_hb);
-
-		Button *show = memnew(Button);
-		// Display a folder icon if the project directory can be opened, or a "broken file" icon if it can't.
-		show->set_icon(get_theme_icon(!item.missing ? SNAME("Load") : SNAME("FileBroken"), SNAME("EditorIcons")));
-		show->set_flat(true);
-		if (!item.grayed) {
-			// Don't make the icon less prominent if the parent is already grayed out.
-			show->set_modulate(Color(1, 1, 1, 0.5));
-		}
-		path_hb->add_child(show);
-
-		if (!item.missing) {
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
-			show->connect("pressed", callable_mp(this, &ProjectList::_show_project).bind(item.path));
-			show->set_tooltip_text(TTR("Show in File Manager"));
-#else
-			// Opening the system file manager is not supported on the Android and web editors.
-			show->hide();
+	hb->connect("explore_pressed", callable_mp(this, &ProjectList::_show_project).bind(item.path));
 #endif
-		} else {
-			show->set_tooltip_text(TTR("Error: Project is missing on the filesystem."));
-		}
-
-		Label *fpath = memnew(Label(item.path));
-		fpath->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
-		path_hb->add_child(fpath);
-		fpath->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		fpath->set_modulate(Color(1, 1, 1, 0.5));
-		fpath->add_theme_color_override("font_color", font_color);
-		fpath->set_clip_text(true);
-	}
 
 	_scroll_children->add_child(hb);
 	item.control = hb;
@@ -1592,8 +1487,7 @@ void ProjectList::sort_projects() {
 	}
 
 	// Rewind the coroutine because order of projects changed
-	update_icons_async();
-
+	_update_icons_async();
 	update_dock_menu();
 }
 
@@ -1645,7 +1539,7 @@ int ProjectList::get_single_selected_index() const {
 	return 0;
 }
 
-void ProjectList::remove_project(int p_index, bool p_update_config) {
+void ProjectList::_remove_project(int p_index, bool p_update_config) {
 	const Item item = _projects[p_index]; // Take a copy
 
 	_selected_project_paths.erase(item.path);
@@ -1686,7 +1580,7 @@ void ProjectList::erase_missing_projects() {
 		const Item &item = _projects[i];
 
 		if (item.missing) {
-			remove_project(i, true);
+			_remove_project(i, true);
 			--i;
 			++deleted_count;
 
@@ -1714,7 +1608,7 @@ int ProjectList::refresh_project(const String &dir_path) {
 	for (int i = 0; i < _projects.size(); ++i) {
 		const Item &existing_item = _projects[i];
 		if (existing_item.path == dir_path) {
-			remove_project(i, false);
+			_remove_project(i, false);
 			break;
 		}
 	}
@@ -1726,7 +1620,7 @@ int ProjectList::refresh_project(const String &dir_path) {
 		Item item = load_project_data(dir_path, is_favourite);
 
 		_projects.push_back(item);
-		create_project_item_control(_projects.size() - 1);
+		_create_project_item_control(_projects.size() - 1);
 
 		sort_projects();
 
@@ -1736,7 +1630,7 @@ int ProjectList::refresh_project(const String &dir_path) {
 					select_project(i);
 					ensure_project_visible(i);
 				}
-				load_project_icon(i);
+				_load_project_icon(i);
 
 				index = i;
 				break;
@@ -1770,35 +1664,57 @@ int ProjectList::get_project_count() const {
 	return _projects.size();
 }
 
-void ProjectList::select_project(int p_index) {
+void ProjectList::_clear_project_selection() {
 	Vector<Item> previous_selected_items = get_selected_projects();
 	_selected_project_paths.clear();
 
 	for (int i = 0; i < previous_selected_items.size(); ++i) {
-		previous_selected_items[i].control->queue_redraw();
+		previous_selected_items[i].control->set_selected(false);
 	}
+}
 
-	toggle_select(p_index);
+void ProjectList::_toggle_project(int p_index) {
+	// This methods adds to the selection or removes from the
+	// selection.
+	Item &item = _projects.write[p_index];
+
+	if (_selected_project_paths.has(item.path)) {
+		_deselect_project_nocheck(p_index);
+	} else {
+		_select_project_nocheck(p_index);
+	}
+}
+
+void ProjectList::_select_project_nocheck(int p_index) {
+	Item &item = _projects.write[p_index];
+	_selected_project_paths.insert(item.path);
+	item.control->set_selected(true);
+}
+
+void ProjectList::_deselect_project_nocheck(int p_index) {
+	Item &item = _projects.write[p_index];
+	_selected_project_paths.erase(item.path);
+	item.control->set_selected(false);
+}
+
+void ProjectList::select_project(int p_index) {
+	// This method keeps only one project selected.
+	_clear_project_selection();
+	_select_project_nocheck(p_index);
 }
 
 void ProjectList::select_first_visible_project() {
-	bool found = false;
+	_clear_project_selection();
 
 	for (int i = 0; i < _projects.size(); i++) {
 		if (_projects[i].control->is_visible()) {
-			select_project(i);
-			found = true;
+			_select_project_nocheck(i);
 			break;
 		}
 	}
-
-	if (!found) {
-		// Deselect all projects if there are no visible projects in the list.
-		_selected_project_paths.clear();
-	}
 }
 
-inline void sort(int &a, int &b) {
+inline void _sort_project_range(int &a, int &b) {
 	if (a > b) {
 		int temp = a;
 		a = b;
@@ -1806,22 +1722,13 @@ inline void sort(int &a, int &b) {
 	}
 }
 
-void ProjectList::select_range(int p_begin, int p_end) {
-	sort(p_begin, p_end);
-	select_project(p_begin);
-	for (int i = p_begin + 1; i <= p_end; ++i) {
-		toggle_select(i);
-	}
-}
+void ProjectList::_select_project_range(int p_begin, int p_end) {
+	_clear_project_selection();
 
-void ProjectList::toggle_select(int p_index) {
-	Item &item = _projects.write[p_index];
-	if (_selected_project_paths.has(item.path)) {
-		_selected_project_paths.erase(item.path);
-	} else {
-		_selected_project_paths.insert(item.path);
+	_sort_project_range(p_begin, p_end);
+	for (int i = p_begin; i <= p_end; ++i) {
+		_select_project_nocheck(i);
 	}
-	item.control->queue_redraw();
 }
 
 void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
@@ -1853,24 +1760,7 @@ void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
 	update_dock_menu();
 }
 
-// Draws selected project highlight
-void ProjectList::_panel_draw(Node *p_hb) {
-	Control *hb = Object::cast_to<Control>(p_hb);
-
-	if (is_layout_rtl() && get_v_scroll_bar()->is_visible_in_tree()) {
-		hb->draw_line(Point2(get_v_scroll_bar()->get_minimum_size().x, hb->get_size().y + 1), Point2(hb->get_size().x, hb->get_size().y + 1), get_theme_color(SNAME("guide_color"), SNAME("Tree")));
-	} else {
-		hb->draw_line(Point2(0, hb->get_size().y + 1), Point2(hb->get_size().x, hb->get_size().y + 1), get_theme_color(SNAME("guide_color"), SNAME("Tree")));
-	}
-
-	String key = _projects[p_hb->get_index()].path;
-
-	if (_selected_project_paths.has(key)) {
-		hb->draw_style_box(get_theme_stylebox(SNAME("selected"), SNAME("Tree")), Rect2(Point2(), hb->get_size()));
-	}
-}
-
-// Input for each item in the list
+// Input for each item in the list.
 void ProjectList::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 	Ref<InputEventMouseButton> mb = p_ev;
 	int clicked_index = p_hb->get_index();
@@ -1887,10 +1777,10 @@ void ProjectList::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 				}
 			}
 			CRASH_COND(anchor_index == -1);
-			select_range(anchor_index, clicked_index);
+			_select_project_range(anchor_index, clicked_index);
 
 		} else if (mb->is_ctrl_pressed()) {
-			toggle_select(clicked_index);
+			_toggle_project(clicked_index);
 
 		} else {
 			_last_clicked = clicked_project.path;
@@ -1940,13 +1830,20 @@ void ProjectList::_show_project(const String &p_path) {
 	OS::get_singleton()->shell_open(String("file://") + p_path);
 }
 
-const char *ProjectList::SIGNAL_SELECTION_CHANGED = "selection_changed";
-const char *ProjectList::SIGNAL_PROJECT_ASK_OPEN = "project_ask_open";
-
 void ProjectList::_bind_methods() {
 	ADD_SIGNAL(MethodInfo(SIGNAL_SELECTION_CHANGED));
 	ADD_SIGNAL(MethodInfo(SIGNAL_PROJECT_ASK_OPEN));
 }
+
+ProjectList::ProjectList() {
+	_scroll_children = memnew(VBoxContainer);
+	_scroll_children->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	add_child(_scroll_children);
+
+	_config_path = EditorPaths::get_singleton()->get_data_dir().path_join("projects.cfg");
+}
+
+/// Project Manager.
 
 ProjectManager *ProjectManager::singleton = nullptr;
 
@@ -1959,9 +1856,19 @@ void ProjectManager::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-			search_box->set_clear_button_enabled(true);
+			Engine::get_singleton()->set_editor_hint(false);
+		} break;
 
+		case NOTIFICATION_THEME_CHANGED: {
+			background_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("Background"), SNAME("EditorStyles")));
+			loading_label->add_theme_font_override("font", get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
+			search_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("search_panel"), SNAME("ProjectManager")));
+
+			// Top bar.
+			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			language_btn->set_icon(get_theme_icon(SNAME("Environment"), SNAME("EditorIcons")));
+
+			// Sidebar.
 			create_btn->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			import_btn->set_icon(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")));
 			scan_btn->set_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
@@ -1971,7 +1878,20 @@ void ProjectManager::_notification(int p_what) {
 			erase_btn->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			erase_missing_btn->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
 
-			Engine::get_singleton()->set_editor_hint(false);
+			create_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
+			import_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
+			scan_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
+			open_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
+			run_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
+			rename_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
+			erase_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
+			erase_missing_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
+
+			// Asset library popup.
+			if (asset_library) {
+				// Removes extra border margins.
+				asset_library->add_theme_style_override("panel", memnew(StyleBoxEmpty));
+			}
 		} break;
 
 		case NOTIFICATION_RESIZED: {
@@ -2004,13 +1924,9 @@ void ProjectManager::_notification(int p_what) {
 			}
 #endif
 
-			if (asset_library) {
-				// Removes extra border margins.
-				asset_library->add_theme_style_override("panel", memnew(StyleBoxEmpty));
-				// Suggest browsing asset library to get templates/demos.
-				if (open_templates && _project_list->get_project_count() == 0) {
-					open_templates->popup_centered();
-				}
+			// Suggest browsing asset library to get templates/demos.
+			if (asset_library && open_templates && _project_list->get_project_count() == 0) {
+				open_templates->popup_centered();
 			}
 		} break;
 
@@ -2256,7 +2172,7 @@ void ProjectManager::_open_selected_projects_ask() {
 		return;
 	}
 
-	const Size2i popup_min_size = Size2i(600.0 * EDSCALE, 400.0 * EDSCALE);
+	const Size2i popup_min_size = Size2i(600.0 * EDSCALE, 0);
 
 	if (selected_list.size() > 1) {
 		multi_open_ask->set_text(vformat(TTR("You requested to open %d projects in parallel. Do you confirm?\nNote that usual checks for engine version compatibility will be bypassed."), selected_list.size()));
@@ -2341,7 +2257,7 @@ void ProjectManager::_open_selected_projects_ask() {
 
 void ProjectManager::_full_convert_button_pressed() {
 	ask_update_settings->hide();
-	ask_full_convert_dialog->popup_centered(Size2i(600.0 * EDSCALE, 400.0 * EDSCALE));
+	ask_full_convert_dialog->popup_centered(Size2i(600.0 * EDSCALE, 0));
 	ask_full_convert_dialog->get_cancel_button()->grab_focus();
 }
 
@@ -2438,6 +2354,7 @@ void ProjectManager::_scan_dir(const String &path) {
 	}
 	da->list_dir_end();
 }
+
 void ProjectManager::_scan_begin(const String &p_base) {
 	print_line("Scanning projects at: " + p_base);
 	_scan_dir(p_base);
@@ -2690,19 +2607,19 @@ ProjectManager::ProjectManager() {
 		AcceptDialog::set_swap_cancel_ok(swap_cancel_ok == 2);
 	}
 
+	EditorColorMap::create();
 	Ref<Theme> theme = create_custom_theme();
-	set_theme(theme);
 	DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), SNAME("Editor")));
 
+	set_theme(theme);
 	set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
-	Panel *panel = memnew(Panel);
-	add_child(panel);
-	panel->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("Background"), SNAME("EditorStyles")));
+	background_panel = memnew(Panel);
+	add_child(background_panel);
+	background_panel->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
 	VBoxContainer *vb = memnew(VBoxContainer);
-	panel->add_child(vb);
+	background_panel->add_child(vb);
 	vb->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 8 * EDSCALE);
 
 	Control *center_box = memnew(Control);
@@ -2731,12 +2648,12 @@ ProjectManager::ProjectManager() {
 		search_box = memnew(LineEdit);
 		search_box->set_placeholder(TTR("Filter Projects"));
 		search_box->set_tooltip_text(TTR("This field filters projects by name and last path component.\nTo filter projects by name and full path, the query must contain at least one `/` character."));
+		search_box->set_clear_button_enabled(true);
 		search_box->connect("text_changed", callable_mp(this, &ProjectManager::_on_search_term_changed));
 		search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hb->add_child(search_box);
 
 		loading_label = memnew(Label(TTR("Loading, please wait...")));
-		loading_label->add_theme_font_override("font", get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
 		loading_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hb->add_child(loading_label);
 		// The loading label is shown later.
@@ -2761,16 +2678,15 @@ ProjectManager::ProjectManager() {
 			filter_option->add_item(sort_filter_titles[i]);
 		}
 
-		PanelContainer *pc = memnew(PanelContainer);
-		pc->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
-		pc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		search_tree_vb->add_child(pc);
+		search_panel = memnew(PanelContainer);
+		search_panel->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		search_tree_vb->add_child(search_panel);
 
 		_project_list = memnew(ProjectList);
 		_project_list->connect(ProjectList::SIGNAL_SELECTION_CHANGED, callable_mp(this, &ProjectManager::_update_project_buttons));
 		_project_list->connect(ProjectList::SIGNAL_PROJECT_ASK_OPEN, callable_mp(this, &ProjectManager::_open_selected_projects_ask));
 		_project_list->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
-		pc->add_child(_project_list);
+		search_panel->add_child(_project_list);
 	}
 
 	{
@@ -2779,25 +2695,20 @@ ProjectManager::ProjectManager() {
 		tree_vb->set_custom_minimum_size(Size2(120, 120));
 		local_projects_hb->add_child(tree_vb);
 
-		const int btn_h_separation = int(6 * EDSCALE);
-
 		create_btn = memnew(Button);
 		create_btn->set_text(TTR("New Project"));
-		create_btn->add_theme_constant_override("h_separation", btn_h_separation);
 		create_btn->set_shortcut(ED_SHORTCUT("project_manager/new_project", TTR("New Project"), KeyModifierMask::CMD_OR_CTRL | Key::N));
 		create_btn->connect("pressed", callable_mp(this, &ProjectManager::_new_project));
 		tree_vb->add_child(create_btn);
 
 		import_btn = memnew(Button);
 		import_btn->set_text(TTR("Import"));
-		import_btn->add_theme_constant_override("h_separation", btn_h_separation);
 		import_btn->set_shortcut(ED_SHORTCUT("project_manager/import_project", TTR("Import Project"), KeyModifierMask::CMD_OR_CTRL | Key::I));
 		import_btn->connect("pressed", callable_mp(this, &ProjectManager::_import_project));
 		tree_vb->add_child(import_btn);
 
 		scan_btn = memnew(Button);
 		scan_btn->set_text(TTR("Scan"));
-		scan_btn->add_theme_constant_override("h_separation", btn_h_separation);
 		scan_btn->set_shortcut(ED_SHORTCUT("project_manager/scan_projects", TTR("Scan Projects"), KeyModifierMask::CMD_OR_CTRL | Key::S));
 		scan_btn->connect("pressed", callable_mp(this, &ProjectManager::_scan_projects));
 		tree_vb->add_child(scan_btn);
@@ -2806,21 +2717,18 @@ ProjectManager::ProjectManager() {
 
 		open_btn = memnew(Button);
 		open_btn->set_text(TTR("Edit"));
-		open_btn->add_theme_constant_override("h_separation", btn_h_separation);
 		open_btn->set_shortcut(ED_SHORTCUT("project_manager/edit_project", TTR("Edit Project"), KeyModifierMask::CMD_OR_CTRL | Key::E));
 		open_btn->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects_ask));
 		tree_vb->add_child(open_btn);
 
 		run_btn = memnew(Button);
 		run_btn->set_text(TTR("Run"));
-		run_btn->add_theme_constant_override("h_separation", btn_h_separation);
 		run_btn->set_shortcut(ED_SHORTCUT("project_manager/run_project", TTR("Run Project"), KeyModifierMask::CMD_OR_CTRL | Key::R));
 		run_btn->connect("pressed", callable_mp(this, &ProjectManager::_run_project));
 		tree_vb->add_child(run_btn);
 
 		rename_btn = memnew(Button);
 		rename_btn->set_text(TTR("Rename"));
-		rename_btn->add_theme_constant_override("h_separation", btn_h_separation);
 		// The F2 shortcut isn't overridden with Enter on macOS as Enter is already used to edit a project.
 		rename_btn->set_shortcut(ED_SHORTCUT("project_manager/rename_project", TTR("Rename Project"), Key::F2));
 		rename_btn->connect("pressed", callable_mp(this, &ProjectManager::_rename_project));
@@ -2828,14 +2736,12 @@ ProjectManager::ProjectManager() {
 
 		erase_btn = memnew(Button);
 		erase_btn->set_text(TTR("Remove"));
-		erase_btn->add_theme_constant_override("h_separation", btn_h_separation);
 		erase_btn->set_shortcut(ED_SHORTCUT("project_manager/remove_project", TTR("Remove Project"), Key::KEY_DELETE));
 		erase_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_project));
 		tree_vb->add_child(erase_btn);
 
 		erase_missing_btn = memnew(Button);
 		erase_missing_btn->set_text(TTR("Remove Missing"));
-		erase_missing_btn->add_theme_constant_override("h_separation", btn_h_separation);
 		erase_missing_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects));
 		tree_vb->add_child(erase_missing_btn);
 
@@ -2880,7 +2786,6 @@ ProjectManager::ProjectManager() {
 		settings_hb->add_child(h_spacer);
 
 		language_btn = memnew(OptionButton);
-		language_btn->set_icon(get_theme_icon(SNAME("Environment"), SNAME("EditorIcons")));
 		language_btn->set_focus_mode(Control::FOCUS_NONE);
 		language_btn->set_fit_to_longest_item(false);
 		language_btn->set_flat(true);

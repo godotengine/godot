@@ -63,10 +63,10 @@ Size2 TabBar::get_minimum_size() const {
 		}
 		ms.width += style->get_minimum_size().width;
 
-		Ref<Texture2D> tex = tabs[i].icon;
-		if (tex.is_valid()) {
-			ms.height = MAX(ms.height, tex->get_size().height + y_margin);
-			ms.width += tex->get_size().width + theme_cache.h_separation;
+		if (tabs[i].icon.is_valid()) {
+			const Size2 icon_size = _get_tab_icon_size(i);
+			ms.height = MAX(ms.height, icon_size.height + y_margin);
+			ms.width += icon_size.width + theme_cache.h_separation;
 		}
 
 		if (!tabs[i].text.is_empty()) {
@@ -304,6 +304,7 @@ void TabBar::_update_theme_item_cache() {
 	Control::_update_theme_item_cache();
 
 	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
+	theme_cache.icon_max_width = get_theme_constant(SNAME("icon_max_width"));
 
 	theme_cache.tab_unselected_style = get_theme_stylebox(SNAME("tab_unselected"));
 	theme_cache.tab_selected_style = get_theme_stylebox(SNAME("tab_selected"));
@@ -492,9 +493,11 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_in
 	// Draw the icon.
 	Ref<Texture2D> icon = tabs[p_index].icon;
 	if (icon.is_valid()) {
-		icon->draw(ci, Point2i(rtl ? p_x - icon->get_width() : p_x, p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - icon->get_height()) / 2));
+		const Size2 icon_size = _get_tab_icon_size(p_index);
+		const Point2 icon_pos = Point2i(rtl ? p_x - icon_size.width : p_x, p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - icon_size.height) / 2);
+		icon->draw_rect(ci, Rect2(icon_pos, icon_size));
 
-		p_x = rtl ? p_x - icon->get_width() - theme_cache.h_separation : p_x + icon->get_width() + theme_cache.h_separation;
+		p_x = rtl ? p_x - icon_size.width - theme_cache.h_separation : p_x + icon_size.width + theme_cache.h_separation;
 	}
 
 	// Draw the text.
@@ -717,6 +720,29 @@ void TabBar::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 Ref<Texture2D> TabBar::get_tab_icon(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Ref<Texture2D>());
 	return tabs[p_tab].icon;
+}
+
+void TabBar::set_tab_icon_max_width(int p_tab, int p_width) {
+	ERR_FAIL_INDEX(p_tab, tabs.size());
+
+	if (tabs[p_tab].icon_max_width == p_width) {
+		return;
+	}
+
+	tabs.write[p_tab].icon_max_width = p_width;
+
+	_update_cache();
+	_ensure_no_over_offset();
+	if (scroll_to_selected) {
+		ensure_tab_visible(current);
+	}
+	queue_redraw();
+	update_minimum_size();
+}
+
+int TabBar::get_tab_icon_max_width(int p_tab) const {
+	ERR_FAIL_INDEX_V(p_tab, tabs.size(), 0);
+	return tabs[p_tab].icon_max_width;
 }
 
 void TabBar::set_tab_disabled(int p_tab, bool p_disabled) {
@@ -1023,9 +1049,14 @@ Variant TabBar::get_drag_data(const Point2 &p_point) {
 	HBoxContainer *drag_preview = memnew(HBoxContainer);
 
 	if (!tabs[tab_over].icon.is_null()) {
+		const Size2 icon_size = _get_tab_icon_size(tab_over);
+
 		TextureRect *tf = memnew(TextureRect);
 		tf->set_texture(tabs[tab_over].icon);
-		tf->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+		tf->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+		tf->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+		tf->set_custom_minimum_size(icon_size);
+
 		drag_preview->add_child(tf);
 	}
 
@@ -1270,9 +1301,9 @@ int TabBar::get_tab_width(int p_idx) const {
 	}
 	int x = style->get_minimum_size().width;
 
-	Ref<Texture2D> tex = tabs[p_idx].icon;
-	if (tex.is_valid()) {
-		x += tex->get_width() + theme_cache.h_separation;
+	if (tabs[p_idx].icon.is_valid()) {
+		const Size2 icon_size = _get_tab_icon_size(p_idx);
+		x += icon_size.width + theme_cache.h_separation;
 	}
 
 	if (!tabs[p_idx].text.is_empty()) {
@@ -1303,6 +1334,27 @@ int TabBar::get_tab_width(int p_idx) const {
 	}
 
 	return x;
+}
+
+Size2 TabBar::_get_tab_icon_size(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, tabs.size(), Size2());
+	const TabBar::Tab &tab = tabs[p_index];
+	Size2 icon_size = tab.icon->get_size();
+
+	int icon_max_width = 0;
+	if (theme_cache.icon_max_width > 0) {
+		icon_max_width = theme_cache.icon_max_width;
+	}
+	if (tab.icon_max_width > 0 && (icon_max_width == 0 || tab.icon_max_width < icon_max_width)) {
+		icon_max_width = tab.icon_max_width;
+	}
+
+	if (icon_max_width > 0 && icon_size.width > icon_max_width) {
+		icon_size.height = icon_size.height * icon_max_width / icon_size.width;
+		icon_size.width = icon_max_width;
+	}
+
+	return icon_size;
 }
 
 void TabBar::_ensure_no_over_offset() {
@@ -1547,6 +1599,8 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_language", "tab_idx"), &TabBar::get_tab_language);
 	ClassDB::bind_method(D_METHOD("set_tab_icon", "tab_idx", "icon"), &TabBar::set_tab_icon);
 	ClassDB::bind_method(D_METHOD("get_tab_icon", "tab_idx"), &TabBar::get_tab_icon);
+	ClassDB::bind_method(D_METHOD("set_tab_icon_max_width", "tab_idx", "width"), &TabBar::set_tab_icon_max_width);
+	ClassDB::bind_method(D_METHOD("get_tab_icon_max_width", "tab_idx"), &TabBar::get_tab_icon_max_width);
 	ClassDB::bind_method(D_METHOD("set_tab_button_icon", "tab_idx", "icon"), &TabBar::set_tab_button_icon);
 	ClassDB::bind_method(D_METHOD("get_tab_button_icon", "tab_idx"), &TabBar::get_tab_button_icon);
 	ClassDB::bind_method(D_METHOD("set_tab_disabled", "tab_idx", "disabled"), &TabBar::set_tab_disabled);

@@ -32,12 +32,12 @@
 
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_file_dialog.h"
 
 const char *EditorFeatureProfile::feature_names[FEATURE_MAX] = {
 	TTRC("3D Editor"),
@@ -908,6 +908,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	HBoxContainer *profiles_hbc = memnew(HBoxContainer);
 	profile_list = memnew(OptionButton);
 	profile_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	profile_list->set_auto_translate(false);
 	profiles_hbc->add_child(profile_list);
 	profile_list->connect("item_selected", callable_mp(this, &EditorFeatureProfileManager::_profile_selected));
 

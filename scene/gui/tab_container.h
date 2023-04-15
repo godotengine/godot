@@ -59,6 +59,7 @@ class TabContainer : public Container {
 
 		// TabBar overrides.
 		int icon_separation = 0;
+		int icon_max_width = 0;
 		int outline_size = 0;
 
 		Ref<StyleBox> tab_unselected_style;

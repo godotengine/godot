@@ -177,10 +177,10 @@
 				[b]Note:[/b] To put an ASCII string without prepending its size, you can use [method put_data]:
 				[codeblocks]
 				[gdscript]
-				put_data("Hello world".to_ascii())
+				put_data("Hello world".to_ascii_buffer())
 				[/gdscript]
 				[csharp]
-				PutData("Hello World".ToAscii());
+				PutData("Hello World".ToAsciiBuffer());
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -221,10 +221,10 @@
 				[b]Note:[/b] To put an UTF-8 string without prepending its size, you can use [method put_data]:
 				[codeblocks]
 				[gdscript]
-				put_data("Hello world".to_utf8())
+				put_data("Hello world".to_utf8_buffer())
 				[/gdscript]
 				[csharp]
-				PutData("Hello World".ToUtf8());
+				PutData("Hello World".ToUtf8Buffer());
 				[/csharp]
 				[/codeblocks]
 			</description>

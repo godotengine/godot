@@ -133,22 +133,6 @@ namespace GodotTools
                     }
                     break;
                 }
-                case MenuOptions.SetupGodotNugetFallbackFolder:
-                {
-                    try
-                    {
-                        string fallbackFolder = NuGetUtils.GodotFallbackFolderPath;
-                        NuGetUtils.AddFallbackFolderToGodotNuGetConfigs(NuGetUtils.GodotFallbackFolderName,
-                            fallbackFolder);
-                        NuGetUtils.AddBundledPackagesToFallbackFolder(fallbackFolder);
-                    }
-                    catch (Exception e)
-                    {
-                        ShowErrorDialog("Failed to setup Godot NuGet Offline Packages: " + e.Message);
-                    }
-
-                    break;
-                }
                 default:
                     throw new ArgumentOutOfRangeException(nameof(id), id, "Invalid menu option");
             }
@@ -168,7 +152,6 @@ namespace GodotTools
         private enum MenuOptions
         {
             CreateSln,
-            SetupGodotNugetFallbackFolder,
         }
 
         public void ShowErrorDialog(string message, string title = "Error")
@@ -532,17 +515,6 @@ namespace GodotTools
             AddExportPlugin(exportPlugin);
             exportPlugin.RegisterExportSettings();
             _exportPluginWeak = WeakRef(exportPlugin);
-
-            try
-            {
-                // At startup we make sure NuGet.Config files have our Godot NuGet fallback folder included
-                NuGetUtils.AddFallbackFolderToGodotNuGetConfigs(NuGetUtils.GodotFallbackFolderName,
-                    NuGetUtils.GodotFallbackFolderPath);
-            }
-            catch (Exception e)
-            {
-                GD.PushError("Failed to add Godot NuGet Offline Packages to NuGet.Config: " + e.Message);
-            }
 
             BuildManager.Initialize();
             RiderPathManager.Initialize();

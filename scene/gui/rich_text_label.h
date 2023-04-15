@@ -377,6 +377,7 @@ private:
 	bool threaded = false;
 	std::atomic<bool> stop_thread;
 	std::atomic<bool> updating;
+	std::atomic<bool> validating;
 	std::atomic<double> loaded;
 
 	uint64_t loading_started = 0;
@@ -527,6 +528,7 @@ private:
 #endif
 	bool use_bbcode = false;
 	String text;
+	void _apply_translation();
 
 	bool fit_content = false;
 
@@ -677,6 +679,7 @@ public:
 	void deselect();
 
 	bool is_ready() const;
+	bool is_updating() const;
 
 	void set_threaded(bool p_threaded);
 	bool is_threaded() const;

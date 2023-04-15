@@ -263,9 +263,8 @@ void main() {
 
 		// Schlick term.
 		float metallic = texelFetch(source_metallic, ssC << 1, 0).w;
-		float f0 = mix(0.04, 1.0, metallic); // Assume a "specular" amount of 0.5
-		normal.y = -normal.y;
-		float m = clamp(1.0 - dot(normalize(normal), -view_dir), 0.0, 1.0);
+		float f0 = mix(0.04, 0.37, metallic); // The default value of R0 is 0.04 and the maximum value is considered to be Germanium with R0 value of 0.37
+		float m = clamp(1.0 - dot(normal, -view_dir), 0.0, 1.0);
 		float m2 = m * m;
 		m = m2 * m2 * m; // pow(m,5)
 		final_color.a *= f0 + (1.0 - f0) * m; // Fresnel Schlick term.

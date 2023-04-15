@@ -435,6 +435,7 @@ private:
 		bool expand = true;
 		bool clip_content = false;
 		String title;
+		HorizontalAlignment title_alignment = HORIZONTAL_ALIGNMENT_CENTER;
 		Ref<TextLine> text_buf;
 		String language;
 		Control::TextDirection text_direction = Control::TEXT_DIRECTION_INHERITED;
@@ -530,21 +531,31 @@ private:
 		Color font_outline_color;
 
 		float base_scale = 1.0;
+		int font_outline_size = 0;
 
 		int h_separation = 0;
 		int v_separation = 0;
 		int item_margin = 0;
 		int button_margin = 0;
+		int icon_max_width = 0;
 		Point2 offset;
+
 		int draw_relationship_lines = 0;
 		int relationship_line_width = 0;
 		int parent_hl_line_width = 0;
 		int children_hl_line_width = 0;
 		int parent_hl_line_margin = 0;
 		int draw_guides = 0;
+
 		int scroll_border = 0;
 		int scroll_speed = 0;
-		int font_outline_size = 0;
+
+		int scrollbar_margin_top = -1;
+		int scrollbar_margin_right = -1;
+		int scrollbar_margin_bottom = -1;
+		int scrollbar_margin_left = -1;
+		int scrollbar_h_separation = 0;
+		int scrollbar_v_separation = 0;
 	} theme_cache;
 
 	struct Cache {
@@ -573,6 +584,7 @@ private:
 	} cache;
 
 	int _get_title_button_height() const;
+	Size2 _get_cell_icon_size(const TreeItem::Cell &p_cell) const;
 
 	void _scroll_moved(float p_value);
 	HScrollBar *h_scroll = nullptr;
@@ -630,6 +642,9 @@ private:
 
 	bool _scroll(bool p_horizontal, float p_pages);
 
+	Rect2 _get_scrollbar_layout_rect() const;
+	Rect2 _get_content_rect() const; // Considering the background stylebox and scrollbars.
+
 protected:
 	virtual void _update_theme_item_cache() override;
 
@@ -679,6 +694,9 @@ public:
 
 	void set_column_title(int p_column, const String &p_title);
 	String get_column_title(int p_column) const;
+
+	void set_column_title_alignment(int p_column, HorizontalAlignment p_alignment);
+	HorizontalAlignment get_column_title_alignment(int p_column) const;
 
 	void set_column_title_direction(int p_column, Control::TextDirection p_text_direction);
 	Control::TextDirection get_column_title_direction(int p_column) const;

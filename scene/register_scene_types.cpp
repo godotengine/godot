@@ -781,6 +781,7 @@ void register_scene_types() {
 	ParticleProcessMaterial::init_shaders();
 
 	GDREGISTER_VIRTUAL_CLASS(Mesh);
+	GDREGISTER_CLASS(MeshConvexDecompositionSettings);
 	GDREGISTER_CLASS(ArrayMesh);
 	GDREGISTER_CLASS(PlaceholderMesh);
 	GDREGISTER_CLASS(ImmediateMesh);

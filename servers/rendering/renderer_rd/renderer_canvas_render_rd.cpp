@@ -1866,7 +1866,7 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 		}
 	}
 
-	if (oc->line_point_count != lines.size() && oc->vertex_array.is_valid()) {
+	if ((oc->line_point_count != lines.size() || lines.size() == 0) && oc->vertex_array.is_valid()) {
 		RD::get_singleton()->free(oc->vertex_array);
 		RD::get_singleton()->free(oc->vertex_buffer);
 		RD::get_singleton()->free(oc->index_array);
@@ -1881,6 +1881,7 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 	}
 
 	if (lines.size()) {
+		oc->line_point_count = lines.size();
 		Vector<uint8_t> geometry;
 		Vector<uint8_t> indices;
 		int lc = lines.size();
@@ -1971,7 +1972,7 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 		}
 	}
 
-	if (oc->sdf_index_count != sdf_indices.size() && oc->sdf_point_count != p_points.size() && oc->sdf_vertex_array.is_valid()) {
+	if (((oc->sdf_index_count != sdf_indices.size() && oc->sdf_point_count != p_points.size()) || p_points.size() == 0) && oc->sdf_vertex_array.is_valid()) {
 		RD::get_singleton()->free(oc->sdf_vertex_array);
 		RD::get_singleton()->free(oc->sdf_vertex_buffer);
 		RD::get_singleton()->free(oc->sdf_index_array);

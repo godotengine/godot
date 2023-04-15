@@ -33,17 +33,18 @@
 #include "core/config/project_settings.h"
 #include "core/core_string_names.h"
 #include "editor/create_dialog.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties_array_dict.h"
 #include "editor/editor_resource_picker.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_spin_slider.h"
+#include "editor/gui/scene_tree_editor.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/project_settings_editor.h"
 #include "editor/property_selector.h"
-#include "editor/scene_tree_editor.h"
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/3d/fog_volume.h"
 #include "scene/3d/gpu_particles_3d.h"
@@ -358,6 +359,7 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	option_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	option_button->set_clip_text(true);
 	option_button->set_flat(true);
+	option_button->set_auto_translate(false);
 	default_layout->add_child(option_button);
 	option_button->connect("item_selected", callable_mp(this, &EditorPropertyTextEnum::_option_selected));
 
@@ -711,6 +713,7 @@ EditorPropertyEnum::EditorPropertyEnum() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
 	options->set_flat(true);
+	options->set_auto_translate(false);
 	add_child(options);
 	add_focusable(options);
 	options->connect("item_selected", callable_mp(this, &EditorPropertyEnum::_option_selected));

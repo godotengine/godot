@@ -335,7 +335,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 							}
 						}
 						if (!pass && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
-							DisplayServer::get_singleton()->clipboard_set_primary(text.substr(selection.begin, selection.end - selection.begin));
+							DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
 						}
 					}
 				}
@@ -355,7 +355,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 		} else {
 			if (selection.enabled && !pass && b->get_button_index() == MouseButton::LEFT && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
-				DisplayServer::get_singleton()->clipboard_set_primary(text.substr(selection.begin, selection.end - selection.begin));
+				DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
 			}
 			if (!text.is_empty() && is_editable() && clear_button_enabled) {
 				bool press_attempt = clear_button_status.press_attempt;
@@ -644,7 +644,7 @@ Variant LineEdit::get_drag_data(const Point2 &p_point) {
 	}
 
 	if (selection.drag_attempt && selection.enabled) {
-		String t = text.substr(selection.begin, selection.end - selection.begin);
+		String t = get_selected_text();
 		Label *l = memnew(Label);
 		l->set_text(t);
 		set_drag_preview(l);
@@ -952,7 +952,7 @@ void LineEdit::_notification(int p_what) {
 					if (ceil(ofs.x) >= x_ofs && (ofs.x + glyphs[i].advance) <= ofs_max) {
 						if (glyphs[i].font_rid != RID()) {
 							TS->font_draw_glyph(glyphs[i].font_rid, ci, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, selected ? font_selected_color : font_color);
-						} else if ((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+						} else if (((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) && ((glyphs[i].flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) != TextServer::GRAPHEME_IS_EMBEDDED_OBJECT)) {
 							TS->draw_hex_code_box(ci, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, selected ? font_selected_color : font_color);
 						}
 					}
@@ -1168,13 +1168,13 @@ void LineEdit::_notification(int p_what) {
 
 void LineEdit::copy_text() {
 	if (selection.enabled && !pass) {
-		DisplayServer::get_singleton()->clipboard_set(text.substr(selection.begin, selection.end - selection.begin));
+		DisplayServer::get_singleton()->clipboard_set(get_selected_text());
 	}
 }
 
 void LineEdit::cut_text() {
 	if (editable && selection.enabled && !pass) {
-		DisplayServer::get_singleton()->clipboard_set(text.substr(selection.begin, selection.end - selection.begin));
+		DisplayServer::get_singleton()->clipboard_set(get_selected_text());
 		selection_delete();
 	}
 }
@@ -1809,6 +1809,14 @@ void LineEdit::deselect() {
 
 bool LineEdit::has_selection() const {
 	return selection.enabled;
+}
+
+String LineEdit::get_selected_text() {
+	if (selection.enabled) {
+		return text.substr(selection.begin, selection.end - selection.begin);
+	} else {
+		return String();
+	}
 }
 
 int LineEdit::get_selection_from_column() const {
@@ -2486,6 +2494,7 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("select_all"), &LineEdit::select_all);
 	ClassDB::bind_method(D_METHOD("deselect"), &LineEdit::deselect);
 	ClassDB::bind_method(D_METHOD("has_selection"), &LineEdit::has_selection);
+	ClassDB::bind_method(D_METHOD("get_selected_text"), &LineEdit::get_selected_text);
 	ClassDB::bind_method(D_METHOD("get_selection_from_column"), &LineEdit::get_selection_from_column);
 	ClassDB::bind_method(D_METHOD("get_selection_to_column"), &LineEdit::get_selection_to_column);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &LineEdit::set_text);

@@ -3328,16 +3328,12 @@ void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, 
 		}
 
 		Ref<Texture2D> texture = p_cursor;
+		ERR_FAIL_COND(!texture.is_valid());
 		Ref<AtlasTexture> atlas_texture = p_cursor;
-		Ref<Image> image;
 		Size2 texture_size;
 		Rect2 atlas_rect;
 
-		if (texture.is_valid()) {
-			image = texture->get_image();
-		}
-
-		if (!image.is_valid() && atlas_texture.is_valid()) {
+		if (atlas_texture.is_valid()) {
 			texture = atlas_texture->get_atlas();
 
 			atlas_rect.size.width = texture->get_width();
@@ -3347,17 +3343,16 @@ void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, 
 
 			texture_size.width = atlas_texture->get_region().size.x;
 			texture_size.height = atlas_texture->get_region().size.y;
-		} else if (image.is_valid()) {
+		} else {
 			texture_size.width = texture->get_width();
 			texture_size.height = texture->get_height();
 		}
 
-		ERR_FAIL_COND(!texture.is_valid());
 		ERR_FAIL_COND(p_hotspot.x < 0 || p_hotspot.y < 0);
 		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
 		ERR_FAIL_COND(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height);
 
-		image = texture->get_image();
+		Ref<Image> image = texture->get_image();
 
 		ERR_FAIL_COND(!image.is_valid());
 
@@ -3521,14 +3516,16 @@ void DisplayServerMacOS::process_events() {
 	}
 
 	// Process "menu_callback"s.
-	for (MenuCall &E : deferred_menu_calls) {
-		Variant tag = E.tag;
+	while (List<MenuCall>::Element *call_p = deferred_menu_calls.front()) {
+		MenuCall call = call_p->get();
+		deferred_menu_calls.pop_front(); // Remove before call to avoid infinite loop in case callback is using `process_events` (e.g. EditorProgress).
+
+		Variant tag = call.tag;
 		Variant *tagp = &tag;
 		Variant ret;
 		Callable::CallError ce;
-		E.callback.callp((const Variant **)&tagp, 1, ret, ce);
+		call.callback.callp((const Variant **)&tagp, 1, ret, ce);
 	}
-	deferred_menu_calls.clear();
 
 	if (!drop_events) {
 		_process_key_events();

@@ -42,6 +42,18 @@
 				The elements in the array returned from this method are displayed as warnings in the Scene dock if the script that overrides it is a [code]tool[/code] script.
 				Returning an empty array produces no warnings.
 				Call [method update_configuration_warnings] when the warnings need to be updated for this node.
+				[codeblock]
+				@export var energy = 0:
+				    set(value):
+				        energy = value
+				        update_configuration_warnings()
+
+				func _get_configuration_warnings():
+				    if energy &lt; 0:
+				        return ["Energy must be 0 or greater."]
+				    else:
+				        return []
+				[/codeblock]
 			</description>
 		</method>
 		<method name="_input" qualifiers="virtual">
@@ -127,7 +139,7 @@
 			<description>
 				Adds a child [param node]. Nodes can have any number of children, but every child must have a unique name. Child nodes are automatically deleted when the parent node is deleted, so an entire scene can be removed by deleting its topmost node.
 				If [param force_readable_name] is [code]true[/code], improves the readability of the added [param node]. If not named, the [param node] is renamed to its type, and if it shares [member name] with a sibling, a number is suffixed more appropriately. This operation is very slow. As such, it is recommended leaving this to [code]false[/code], which assigns a dummy name featuring [code]@[/code] in both situations.
-				If [param internal] is different than [constant INTERNAL_MODE_DISABLED], the child will be added as internal node. Such nodes are ignored by methods like [method get_children], unless their parameter [code]include_internal[/code] is [code]true[/code].The intended usage is to hide the internal nodes from the user, so the user won't accidentally delete or modify them. Used by some GUI nodes, e.g. [ColorPicker]. See [enum InternalMode] for available modes.
+				If [param internal] is different than [constant INTERNAL_MODE_DISABLED], the child will be added as internal node. Such nodes are ignored by methods like [method get_children], unless their parameter [code]include_internal[/code] is [code]true[/code]. The intended usage is to hide the internal nodes from the user, so the user won't accidentally delete or modify them. Used by some GUI nodes, e.g. [ColorPicker]. See [enum InternalMode] for available modes.
 				[b]Note:[/b] If the child node already has a parent, the function will fail. Use [method remove_child] first to remove the node from its current parent. For example:
 				[codeblocks]
 				[gdscript]
@@ -206,7 +218,7 @@
 			<param index="1" name="recursive" type="bool" default="true" />
 			<param index="2" name="owned" type="bool" default="true" />
 			<description>
-				Finds the first descendant of this node whose name matches [param pattern] as in [method String.match].
+				Finds the first descendant of this node whose name matches [param pattern] as in [method String.match]. Internal children are also searched over (see [code]internal[/code] parameter in [method add_child]).
 				[param pattern] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
 				If [param recursive] is [code]true[/code], all child nodes are included, even if deeply nested. Nodes are checked in tree order, so this node's first direct child is checked first, then its own direct children, etc., before moving to the second direct child, and so on. If [param recursive] is [code]false[/code], only this node's direct children are matched.
 				If [param owned] is [code]true[/code], this method only finds nodes who have an assigned [member Node.owner]. This is especially important for scenes instantiated through a script, because those scenes don't have an owner.
@@ -222,7 +234,7 @@
 			<param index="2" name="recursive" type="bool" default="true" />
 			<param index="3" name="owned" type="bool" default="true" />
 			<description>
-				Finds descendants of this node whose name matches [param pattern] as in [method String.match], and/or type matches [param type] as in [method Object.is_class].
+				Finds descendants of this node whose name matches [param pattern] as in [method String.match], and/or type matches [param type] as in [method Object.is_class]. Internal children are also searched over (see [code]internal[/code] parameter in [method add_child]).
 				[param pattern] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
 				[param type] will check equality or inheritance, and is case-sensitive. [code]"Object"[/code] will match a node whose type is [code]"Node"[/code] but not the other way around.
 				If [param recursive] is [code]true[/code], all child nodes are included, even if deeply nested. Nodes are checked in tree order, so this node's first direct child is checked first, then its own direct children, etc., before moving to the second direct child, and so on. If [param recursive] is [code]false[/code], only this node's direct children are matched.
@@ -818,6 +830,11 @@
 				When this signal is received, the child [param node] is still in the tree and valid. This signal is emitted [i]after[/i] the child node's own [signal tree_exiting] and [constant NOTIFICATION_EXIT_TREE].
 			</description>
 		</signal>
+		<signal name="child_order_changed">
+			<description>
+				Emitted when the list of children is changed. This happens when child nodes are added, moved or removed.
+			</description>
+		</signal>
 		<signal name="ready">
 			<description>
 				Emitted when the node is ready. Comes after [method _ready] callback and follows the same rules.
@@ -855,8 +872,8 @@
 			Notification received when the node is about to exit a [SceneTree].
 			This notification is emitted [i]after[/i] the related [signal tree_exiting].
 		</constant>
-		<constant name="NOTIFICATION_MOVED_IN_PARENT" value="12">
-			Notification received when the node is moved in the parent.
+		<constant name="NOTIFICATION_MOVED_IN_PARENT" value="12" is_deprecated="true">
+			This notification is deprecated and is no longer emitted. Use [constant NOTIFICATION_CHILD_ORDER_CHANGED] instead.
 		</constant>
 		<constant name="NOTIFICATION_READY" value="13">
 			Notification received when the node is ready. See [method _ready].
@@ -894,6 +911,9 @@
 		</constant>
 		<constant name="NOTIFICATION_PATH_RENAMED" value="23">
 			Notification received when the node's name or one of its parents' name is changed. This notification is [i]not[/i] received when the node is removed from the scene tree to be added to another parent later on.
+		</constant>
+		<constant name="NOTIFICATION_CHILD_ORDER_CHANGED" value="24">
+			Notification received when the list of children is changed. This happens when child nodes are added, moved or removed.
 		</constant>
 		<constant name="NOTIFICATION_INTERNAL_PROCESS" value="25">
 			Notification received every frame when the internal process flag is set (see [method set_process_internal]).
@@ -942,8 +962,10 @@
 			Specific to the Android platform.
 		</constant>
 		<constant name="NOTIFICATION_WM_SIZE_CHANGED" value="1008">
+			Notification received from the OS when the window is resized.
 		</constant>
 		<constant name="NOTIFICATION_WM_DPI_CHANGE" value="1009">
+			Notification received from the OS when the screen's DPI has been changed. Only implemented on macOS.
 		</constant>
 		<constant name="NOTIFICATION_VP_MOUSE_ENTER" value="1010">
 			Notification received when the mouse enters the viewport.

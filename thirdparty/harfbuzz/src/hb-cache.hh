@@ -39,7 +39,9 @@ template <unsigned int key_bits=16,
 struct hb_cache_t
 {
   using item_t = typename std::conditional<thread_safe,
-					   hb_atomic_int_t,
+					   typename std::conditional<key_bits + value_bits - cache_bits <= 16,
+								     hb_atomic_short_t,
+								     hb_atomic_int_t>::type,
 					   typename std::conditional<key_bits + value_bits - cache_bits <= 16,
 								     short,
 								     int>::type
@@ -48,8 +50,9 @@ struct hb_cache_t
   static_assert ((key_bits >= cache_bits), "");
   static_assert ((key_bits + value_bits <= cache_bits + 8 * sizeof (item_t)), "");
 
+  hb_cache_t () { init (); }
+
   void init () { clear (); }
-  void fini () {}
 
   void clear ()
   {

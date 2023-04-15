@@ -38,13 +38,13 @@
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_feature_profile.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_quick_open.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector_dock.h"
 #include "editor/multi_node_edit.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
@@ -1278,13 +1278,6 @@ void SceneTreeDock::_notification(int p_what) {
 			spatial_editor_plugin->get_spatial_editor()->connect("item_lock_status_changed", callable_mp(scene_tree, &SceneTreeEditor::_update_tree).bind(false));
 			spatial_editor_plugin->get_spatial_editor()->connect("item_group_status_changed", callable_mp(scene_tree, &SceneTreeEditor::_update_tree).bind(false));
 
-			button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-			button_instance->set_icon(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
-			button_create_script->set_icon(get_theme_icon(SNAME("ScriptCreate"), SNAME("EditorIcons")));
-			button_detach_script->set_icon(get_theme_icon(SNAME("ScriptRemove"), SNAME("EditorIcons")));
-			button_tree_menu->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
-
-			filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			filter->set_clear_button_enabled(true);
 
 			// create_root_dialog
@@ -1366,19 +1359,35 @@ void SceneTreeDock::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			scene_tree->set_auto_expand_selected(EDITOR_GET("docks/scene_tree/auto_expand_to_selected"), false);
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
 			button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			button_instance->set_icon(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
 			button_create_script->set_icon(get_theme_icon(SNAME("ScriptCreate"), SNAME("EditorIcons")));
 			button_detach_script->set_icon(get_theme_icon(SNAME("ScriptRemove"), SNAME("EditorIcons")));
 			button_tree_menu->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
-			button_2d->set_icon(get_theme_icon(SNAME("Node2D"), SNAME("EditorIcons")));
-			button_3d->set_icon(get_theme_icon(SNAME("Node3D"), SNAME("EditorIcons")));
-			button_ui->set_icon(get_theme_icon(SNAME("Control"), SNAME("EditorIcons")));
-			button_custom->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-			button_clipboard->set_icon(get_theme_icon(SNAME("ActionPaste"), SNAME("EditorIcons")));
 
 			filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-			filter->set_clear_button_enabled(true);
+
+			// These buttons are created on READY, because reasons...
+			if (button_2d) {
+				button_2d->set_icon(get_theme_icon(SNAME("Node2D"), SNAME("EditorIcons")));
+			}
+			if (button_3d) {
+				button_3d->set_icon(get_theme_icon(SNAME("Node3D"), SNAME("EditorIcons")));
+			}
+			if (button_ui) {
+				button_ui->set_icon(get_theme_icon(SNAME("Control"), SNAME("EditorIcons")));
+			}
+			if (button_custom) {
+				button_custom->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			}
+			if (button_clipboard) {
+				button_clipboard->set_icon(get_theme_icon(SNAME("ActionPaste"), SNAME("EditorIcons")));
+			}
+
+			menu_subresources->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), SNAME("Editor")));
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -2739,9 +2748,8 @@ void SceneTreeDock::_add_children_to_popup(Object *p_obj, int p_depth) {
 		if (menu->get_item_count() == 0) {
 			menu->add_submenu_item(TTR("Sub-Resources"), "Sub-Resources");
 		}
-		int index = menu_subresources->get_item_count();
 		menu_subresources->add_icon_item(icon, E.name.capitalize(), EDIT_SUBRESOURCE_BASE + subresources.size());
-		menu_subresources->set_item_indent(index, p_depth);
+		menu_subresources->set_item_indent(-1, p_depth);
 		subresources.push_back(obj->get_instance_id());
 
 		_add_children_to_popup(obj, p_depth + 1);
@@ -2964,6 +2972,13 @@ void SceneTreeDock::_update_tree_menu() {
 	tree_menu->add_separator();
 	tree_menu->add_check_item(TTR("Auto Expand to Selected"), TOOL_AUTO_EXPAND);
 	tree_menu->set_item_checked(tree_menu->get_item_index(TOOL_AUTO_EXPAND), EDITOR_GET("docks/scene_tree/auto_expand_to_selected"));
+
+	PopupMenu *resource_list = memnew(PopupMenu);
+	resource_list->set_name("AllResources");
+	resource_list->connect("about_to_popup", callable_mp(this, &SceneTreeDock::_list_all_subresources).bind(resource_list));
+	resource_list->connect("index_pressed", callable_mp(this, &SceneTreeDock::_edit_subresource).bind(resource_list));
+	tree_menu->add_child(resource_list);
+	tree_menu->add_submenu_item(TTR("All Scene Sub-Resources"), "AllResources");
 }
 
 void SceneTreeDock::_update_filter_menu() {
@@ -3470,6 +3485,88 @@ void SceneTreeDock::_create_remap_for_resource(Ref<Resource> p_resource, HashMap
 			}
 		}
 	}
+}
+
+void SceneTreeDock::_list_all_subresources(PopupMenu *p_menu) {
+	p_menu->clear();
+
+	List<Pair<Ref<Resource>, Node *>> all_resources;
+	if (edited_scene) {
+		_gather_resources(edited_scene, all_resources);
+	}
+
+	HashMap<String, List<Pair<Ref<Resource>, Node *>>> resources_by_type;
+	HashMap<Ref<Resource>, int> unique_resources;
+
+	for (const Pair<Ref<Resource>, Node *> &pair : all_resources) {
+		if (!unique_resources.has(pair.first)) {
+			resources_by_type[pair.first->get_class()].push_back(pair);
+		}
+		unique_resources[pair.first]++;
+	}
+
+	for (KeyValue<String, List<Pair<Ref<Resource>, Node *>>> kv : resources_by_type) {
+		p_menu->add_icon_item(EditorNode::get_singleton()->get_class_icon(kv.key), kv.key);
+		p_menu->set_item_as_separator(-1, true);
+
+		for (const Pair<Ref<Resource>, Node *> &pair : kv.value) {
+			String display_text;
+			if (pair.first->get_name().is_empty()) {
+				display_text = vformat(TTR("<Unnamed> at %s"), pair.second->get_name());
+			} else {
+				display_text = pair.first->get_name();
+			}
+
+			if (unique_resources[pair.first] > 1) {
+				display_text += " " + vformat(TTR("(used %d times)"), unique_resources[pair.first]);
+			}
+
+			p_menu->add_item(display_text);
+			p_menu->set_item_metadata(-1, pair.first->get_instance_id());
+		}
+	}
+}
+
+void SceneTreeDock::_gather_resources(Node *p_node, List<Pair<Ref<Resource>, Node *>> &r_resources) {
+	if (p_node != edited_scene && p_node->get_owner() != edited_scene) {
+		return;
+	}
+
+	List<PropertyInfo> pinfo;
+	p_node->get_property_list(&pinfo);
+	for (const PropertyInfo &E : pinfo) {
+		if (!(E.usage & PROPERTY_USAGE_EDITOR)) {
+			continue;
+		}
+		if (E.hint != PROPERTY_HINT_RESOURCE_TYPE) {
+			continue;
+		}
+
+		Variant value = p_node->get(E.name);
+		if (value.get_type() != Variant::OBJECT) {
+			continue;
+		}
+		Ref<Resource> res = value;
+		if (res.is_null()) {
+			continue;
+		}
+
+		const Pair<Ref<Resource>, Node *> pair(res, p_node);
+		r_resources.push_back(pair);
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_gather_resources(p_node->get_child(i), r_resources);
+	}
+}
+
+void SceneTreeDock::_edit_subresource(int p_idx, const PopupMenu *p_from_menu) {
+	const ObjectID &id = p_from_menu->get_item_metadata(p_idx);
+
+	Object *obj = ObjectDB::get_instance(id);
+	ERR_FAIL_COND(!obj);
+
+	_push_item(obj);
 }
 
 void SceneTreeDock::_bind_methods() {

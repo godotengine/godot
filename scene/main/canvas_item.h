@@ -212,6 +212,8 @@ public:
 	virtual Transform2D _edit_get_transform() const;
 #endif
 
+	void update_draw_order();
+
 	/* VISIBILITY */
 
 	void set_visible(bool p_visible);

@@ -329,7 +329,7 @@
 			[b]Note:[/b] On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.
 		</member>
 		<member name="editors/3d/navigation/warped_mouse_panning" type="bool" setter="" getter="">
-			If [code]true[/code], warps the mouse around the 3D viewport while panning in the 3D editor. This makes it possible to pan over a large area without having to exit panning then mouse the mouse back constantly.
+			If [code]true[/code], warps the mouse around the 3D viewport while panning in the 3D editor. This makes it possible to pan over a large area without having to exit panning and adjust the mouse cursor.
 		</member>
 		<member name="editors/3d/navigation/zoom_modifier" type="int" setter="" getter="">
 			The modifier key that must be held to zoom in the 3D editor.
@@ -408,7 +408,7 @@
 			Controls whether the mouse wheel scroll zooms or pans in subeditors. The list of affected subeditors is: animation blend tree editor, [Polygon2D] editor, tileset editor, texture region editor and visual shader editor. See also [member editors/panning/2d_editor_panning_scheme] and [member editors/panning/animation_editors_panning_scheme].
 		</member>
 		<member name="editors/panning/warped_mouse_panning" type="bool" setter="" getter="">
-			If [code]true[/code], warps the mouse around the 2D viewport while panning in the 2D editor. This makes it possible to pan over a large area without having to exit panning then mouse the mouse back constantly.
+			If [code]true[/code], warps the mouse around the 2D viewport while panning in the 2D editor. This makes it possible to pan over a large area without having to exit panning and adjust the mouse cursor.
 		</member>
 		<member name="editors/polygon_editor/point_grab_radius" type="int" setter="" getter="">
 			The radius in which points can be selected in the [Polygon2D] and [CollisionPolygon2D] editors (in pixels). Higher values make it easier to select points quickly, but can make it more difficult to select the expected point when several points are located close to each other.
@@ -546,7 +546,7 @@
 			If [code]true[/code], the mouse's additional side buttons will be usable to navigate in the script editor's file history. Set this to [code]false[/code] if you're using the side buttons for other purposes (such as a push-to-talk button in a VoIP program).
 		</member>
 		<member name="interface/editor/save_each_scene_on_quit" type="bool" setter="" getter="">
-			If [code]true[/code], the editor will save all scenes when confirming the [b]Save[/b] action when quitting the editor or quitting to the project list. If [code]false[/code], the editor will ask to save each scene individually.
+			If [code]false[/code], the editor will save all scenes when confirming the [b]Save[/b] action when quitting the editor or quitting to the project list. If [code]true[/code], the editor will ask to save each scene individually.
 		</member>
 		<member name="interface/editor/separate_distraction_mode" type="bool" setter="" getter="">
 			If [code]true[/code], the editor's Script tab will have a separate distraction mode setting from the 2D/3D/AssetLib tabs. If [code]false[/code], the distraction-free mode toggle is shared between all tabs.
@@ -686,7 +686,7 @@
 			If [code]true[/code], makes the caret blink according to [member text_editor/appearance/caret/caret_blink_interval]. Disabling this setting can improve battery life on laptops if you spend long amounts of time in the script editor, since it will reduce the frequency at which the editor needs to be redrawn.
 		</member>
 		<member name="text_editor/appearance/caret/caret_blink_interval" type="float" setter="" getter="">
-			The interval at which to blink the caret (in seconds). See also [member text_editor/appearance/caret/caret_blink].
+			The interval at which the caret will blink (in seconds). See also [member text_editor/appearance/caret/caret_blink].
 		</member>
 		<member name="text_editor/appearance/caret/highlight_all_occurrences" type="bool" setter="" getter="">
 			If [code]true[/code], highlights all occurrences of the currently selected text in the script editor. See also [member text_editor/theme/highlighting/word_highlighted_color].

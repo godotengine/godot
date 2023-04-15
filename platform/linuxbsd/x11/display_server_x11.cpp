@@ -2654,16 +2654,12 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 		}
 
 		Ref<Texture2D> texture = p_cursor;
+		ERR_FAIL_COND(!texture.is_valid());
 		Ref<AtlasTexture> atlas_texture = p_cursor;
-		Ref<Image> image;
 		Size2i texture_size;
 		Rect2i atlas_rect;
 
-		if (texture.is_valid()) {
-			image = texture->get_image();
-		}
-
-		if (!image.is_valid() && atlas_texture.is_valid()) {
+		if (atlas_texture.is_valid()) {
 			texture = atlas_texture->get_atlas();
 
 			atlas_rect.size.width = texture->get_width();
@@ -2673,17 +2669,16 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 
 			texture_size.width = atlas_texture->get_region().size.x;
 			texture_size.height = atlas_texture->get_region().size.y;
-		} else if (image.is_valid()) {
+		} else {
 			texture_size.width = texture->get_width();
 			texture_size.height = texture->get_height();
 		}
 
-		ERR_FAIL_COND(!texture.is_valid());
 		ERR_FAIL_COND(p_hotspot.x < 0 || p_hotspot.y < 0);
 		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
 		ERR_FAIL_COND(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height);
 
-		image = texture->get_image();
+		Ref<Image> image = texture->get_image();
 
 		ERR_FAIL_COND(!image.is_valid());
 
@@ -2848,7 +2843,7 @@ Key DisplayServerX11::keyboard_get_keycode_from_physical(Key p_keycode) const {
 	Key modifiers = p_keycode & KeyModifierMask::MODIFIER_MASK;
 	Key keycode_no_mod = p_keycode & KeyModifierMask::CODE_MASK;
 	unsigned int xkeycode = KeyMappingX11::get_xlibcode(keycode_no_mod);
-	KeySym xkeysym = XkbKeycodeToKeysym(x11_display, xkeycode, 0, 0);
+	KeySym xkeysym = XkbKeycodeToKeysym(x11_display, xkeycode, keyboard_get_current_layout(), 0);
 	if (is_ascii_lower_case(xkeysym)) {
 		xkeysym -= ('a' - 'A');
 	}
@@ -3509,6 +3504,15 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	wd.fullscreen = _window_fullscreen_check(window_id);
 	wd.minimized = _window_minimize_check(window_id);
 	wd.maximized = _window_maximize_check(window_id, "_NET_WM_STATE");
+
+	// Readjusting the window position if the window is being reparented by the window manager for decoration
+	Window root, parent, *children;
+	unsigned int nchildren;
+	if (XQueryTree(x11_display, wd.x11_window, &root, &parent, &children, &nchildren) && wd.parent != parent) {
+		wd.parent = parent;
+		window_set_position(wd.position, window_id);
+	}
+	XFree(children);
 
 	{
 		//the position in xconfigure is not useful here, obtain it manually
@@ -4994,6 +4998,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	{
 		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo.screen), win_rect.position.x, win_rect.position.y, win_rect.size.width > 0 ? win_rect.size.width : 1, win_rect.size.height > 0 ? win_rect.size.height : 1, 0, visualInfo.depth, InputOutput, visualInfo.visual, valuemask, &windowAttributes);
 
+		wd.parent = RootWindow(x11_display, visualInfo.screen);
 		XSetWindowAttributes window_attributes_ime = {};
 		window_attributes_ime.event_mask = KeyPressMask | KeyReleaseMask | StructureNotifyMask | ExposureMask;
 

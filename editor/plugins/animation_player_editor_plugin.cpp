@@ -35,11 +35,11 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/os/keyboard.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/canvas_item_editor_plugin.h" // For onion skinning.
 #include "editor/plugins/node_3d_editor_plugin.h" // For onion skinning.
@@ -1749,6 +1749,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	animation->set_h_size_flags(SIZE_EXPAND_FILL);
 	animation->set_tooltip_text(TTR("Display list of animations in player."));
 	animation->set_clip_text(true);
+	animation->set_auto_translate(false);
 
 	autoplay = memnew(Button);
 	autoplay->set_flat(true);
@@ -1848,6 +1849,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	blend_editor.tree->set_columns(2);
 	blend_vb->add_margin_child(TTR("Blend Times:"), blend_editor.tree, true);
 	blend_editor.next = memnew(OptionButton);
+	blend_editor.next->set_auto_translate(false);
 	blend_vb->add_margin_child(TTR("Next (Auto Queue):"), blend_editor.next);
 	blend_editor.dialog->set_title(TTR("Cross-Animation Blend Times"));
 	updating_blends = false;

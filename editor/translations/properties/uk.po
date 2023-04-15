@@ -32,8 +32,8 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-14 01:22+0000\n"
-"Last-Translator: Vladimir Spodin <gravin1904@gmail.com>\n"
+"PO-Revision-Date: 2023-03-30 00:03+0000\n"
+"Last-Translator: Мирослав <hlopukmyroslav@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/uk/>\n"
 "Language: uk\n"
@@ -42,7 +42,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.16.2-dev\n"
+"X-Generator: Weblate 4.17-dev\n"
 
 msgid "Application"
 msgstr "Програма"
@@ -82,6 +82,12 @@ msgstr "Нетипова назва каталогу користувача"
 
 msgid "Project Settings Override"
 msgstr "Перевизначення параметрів проєкту"
+
+msgid "Main Loop Type"
+msgstr "Знайти тип вузла"
+
+msgid "Auto Accept Quit"
+msgstr "Автоматично виходити"
 
 msgid "Display"
 msgstr "Показ"
@@ -179,6 +185,15 @@ msgstr "Запуск на окремому потоці"
 msgid "3D"
 msgstr "Просторова графіка"
 
+msgid "Stretch"
+msgstr "Розтягнути"
+
+msgid "Aspect"
+msgstr "Аспект"
+
+msgid "Scale"
+msgstr "Масштаб"
+
 msgid "Debug"
 msgstr "Діагностика"
 
@@ -257,6 +272,18 @@ msgstr "Таймери"
 msgid "Incremental Search Max Interval Msec"
 msgstr "Максимальний інтервал інкрементального пошуку, мсек"
 
+msgid "Common"
+msgstr "Загальні"
+
+msgid "Fonts"
+msgstr "Шрифти"
+
+msgid "Dynamic Fonts"
+msgstr "Динамічні шрифти"
+
+msgid "Use Oversampling"
+msgstr "Передискретизація"
+
 msgid "Rendering Device"
 msgstr "Пристрій рендерингу"
 
@@ -277,6 +304,9 @@ msgstr "Vulkan"
 
 msgid "Max Descriptors per Pool"
 msgstr "Макс. кількість дескрипторів на пул"
+
+msgid "Textures"
+msgstr "Текстури"
 
 msgid "Low Processor Usage Mode"
 msgstr "Режим низького використання процесора"
@@ -560,9 +590,6 @@ msgstr "Пропустити заповнювачі"
 msgid "Rotation"
 msgstr "Обертання"
 
-msgid "Scale"
-msgstr "Масштаб"
-
 msgid "Value"
 msgstr "Значення"
 
@@ -646,15 +673,6 @@ msgstr "Показувати приховані файли"
 
 msgid "Disable Overwrite Warning"
 msgstr "Вимкнути попередження про перезапис"
-
-msgid "Import"
-msgstr "Імпорт"
-
-msgid "Reimport Missing Imported Files"
-msgstr "Повторно імпортувати пропущені імпортовані файли"
-
-msgid "Use Multiple Threads"
-msgstr "Використання кількох потоків"
 
 msgid "Text Editor"
 msgstr "Текстовий редактор"
@@ -1561,12 +1579,6 @@ msgstr "Приховати повзунок"
 msgid "Zoom"
 msgstr "Масштаб"
 
-msgid "Export"
-msgstr "Експортування"
-
-msgid "Convert Text Resources to Binary"
-msgstr "Перетворювати текстові ресурси на двійкові"
-
 msgid "Custom Template"
 msgstr "Нетиповий шаблон"
 
@@ -1596,6 +1608,9 @@ msgstr "ETC"
 
 msgid "ETC2"
 msgstr "ETC2"
+
+msgid "Export"
+msgstr "Експортування"
 
 msgid "Export Path"
 msgstr "Шлях експорту"
@@ -1764,6 +1779,9 @@ msgstr "Зміщення сітки"
 
 msgid "Optimize Mesh"
 msgstr "Оптимізувати сітку"
+
+msgid "Import"
+msgstr "Імпорт"
 
 msgid "Skip Import"
 msgstr "Пропустити імпорт"
@@ -2095,6 +2113,15 @@ msgstr "Сигнал зворотного виклику за замовчува
 msgid "Scene Name Casing"
 msgstr "Регістр назв сцени"
 
+msgid "Reimport Missing Imported Files"
+msgstr "Повторно імпортувати пропущені імпортовані файли"
+
+msgid "Use Multiple Threads"
+msgstr "Використання кількох потоків"
+
+msgid "Convert Text Resources to Binary"
+msgstr "Перетворювати текстові ресурси на двійкові"
+
 msgid "Show Scene Tree Root Selection"
 msgstr "Показувати кореневе позначення ієрархії сцени"
 
@@ -2139,9 +2166,6 @@ msgstr "Орієнтація"
 
 msgid "V-Sync"
 msgstr "Верт. синхронізація"
-
-msgid "Common"
-msgstr "Загальні"
 
 msgid "stdout"
 msgstr "stdout"
@@ -2223,30 +2247,6 @@ msgstr "Назва збірки"
 
 msgid "Solution Directory"
 msgstr "Каталог проєкту"
-
-msgid "Main Loop Type"
-msgstr "Знайти тип вузла"
-
-msgid "Stretch"
-msgstr "Розтягнути"
-
-msgid "Aspect"
-msgstr "Аспект"
-
-msgid "Auto Accept Quit"
-msgstr "Автоматично виходити"
-
-msgid "Fonts"
-msgstr "Шрифти"
-
-msgid "Dynamic Fonts"
-msgstr "Динамічні шрифти"
-
-msgid "Use Oversampling"
-msgstr "Передискретизація"
-
-msgid "Textures"
-msgstr "Текстури"
 
 msgid "Operation"
 msgstr "Дія"
@@ -5481,6 +5481,9 @@ msgstr "Місцевості"
 
 msgid "Custom Data"
 msgstr "Спеціальні дані"
+
+msgid "Scene"
+msgstr "Сцена"
 
 msgid "Transpose"
 msgstr "Транспонувати"

@@ -33,9 +33,11 @@
 #include "core/core_constants.h"
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
+#include "core/version.h"
 #include "core/version_generated.gen.h"
 #include "doc_data_compressed.gen.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -44,6 +46,33 @@
 #define CONTRIBUTE_URL vformat("%s/contributing/documentation/updating_the_class_reference.html", VERSION_DOCS_URL)
 
 DocTools *EditorHelp::doc = nullptr;
+
+class DocCache : public Resource {
+	GDCLASS(DocCache, Resource);
+	RES_BASE_EXTENSION("doc_cache");
+
+	String version_hash;
+	Array classes;
+
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("set_version_hash", "version_hash"), &DocCache::set_version_hash);
+		ClassDB::bind_method(D_METHOD("get_version_hash"), &DocCache::get_version_hash);
+
+		ClassDB::bind_method(D_METHOD("set_classes", "classes"), &DocCache::set_classes);
+		ClassDB::bind_method(D_METHOD("get_classes"), &DocCache::get_classes);
+
+		ADD_PROPERTY(PropertyInfo(Variant::STRING, "version_hash"), "set_version_hash", "get_version_hash");
+		ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "classes"), "set_classes", "get_classes");
+	}
+
+public:
+	String get_version_hash() const { return version_hash; }
+	void set_version_hash(const String &p_version_hash) { version_hash = p_version_hash; }
+
+	Array get_classes() const { return classes; }
+	void set_classes(const Array &p_classes) { classes = p_classes; }
+};
 
 void EditorHelp::_update_theme_item_cache() {
 	VBoxContainer::_update_theme_item_cache();
@@ -263,16 +292,8 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 	class_desc->pop();
 }
 
-void EditorHelp::_add_type_icon(const String &p_type, int p_size) {
-	Ref<Texture2D> icon;
-	if (has_theme_icon(p_type, SNAME("EditorIcons"))) {
-		icon = get_theme_icon(p_type, SNAME("EditorIcons"));
-	} else if (ClassDB::class_exists(p_type) && ClassDB::is_parent_class(p_type, "Object")) {
-		icon = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
-	} else {
-		icon = get_theme_icon(SNAME("ArrowRight"), SNAME("EditorIcons"));
-	}
-
+void EditorHelp::_add_type_icon(const String &p_type, int p_size, const String &p_fallback) {
+	Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(p_type, p_fallback);
 	Vector2i size = Vector2i(icon->get_width(), icon->get_height());
 	if (p_size > 0) {
 		// Ensures icon scales proportionally on both axis, based on icon height.
@@ -644,7 +665,7 @@ void EditorHelp::_update_doc() {
 	section_line.push_back(Pair<String, int>(TTR("Top"), 0));
 	_push_title_font();
 	class_desc->add_text(TTR("Class:") + " ");
-	_add_type_icon(edited_class, theme_cache.doc_title_font_size);
+	_add_type_icon(edited_class, theme_cache.doc_title_font_size, "Object");
 	class_desc->add_text(" ");
 	class_desc->push_color(theme_cache.headline_color);
 	_add_text(edited_class);
@@ -676,7 +697,7 @@ void EditorHelp::_update_doc() {
 		String inherits = cd.inherits;
 
 		while (!inherits.is_empty()) {
-			_add_type_icon(inherits);
+			_add_type_icon(inherits, theme_cache.doc_font_size, "ArrowRight");
 			class_desc->add_text(non_breaking_space); // Otherwise icon borrows hyperlink from _add_type().
 			_add_type(inherits);
 
@@ -709,7 +730,7 @@ void EditorHelp::_update_doc() {
 				if (prev) {
 					class_desc->add_text(" , ");
 				}
-				_add_type_icon(E.value.name);
+				_add_type_icon(E.value.name, theme_cache.doc_font_size, "ArrowRight");
 				class_desc->add_text(non_breaking_space); // Otherwise icon borrows hyperlink from _add_type().
 				_add_type(E.value.name);
 				prev = true;
@@ -2176,23 +2197,98 @@ void EditorHelp::_wait_for_thread() {
 	}
 }
 
+String EditorHelp::get_cache_full_path() {
+	return EditorPaths::get_singleton()->get_cache_dir().path_join("editor.doc_cache");
+}
+
+static bool first_attempt = true;
+static List<StringName> classes_whitelist;
+
+void EditorHelp::_load_doc_thread(void *p_udata) {
+	DEV_ASSERT(first_attempt);
+	Ref<DocCache> cache_res = ResourceLoader::load(get_cache_full_path());
+	if (cache_res.is_valid() && cache_res->get_version_hash() == String(VERSION_HASH)) {
+		for (int i = 0; i < cache_res->get_classes().size(); i++) {
+			doc->add_doc(DocData::ClassDoc::from_dict(cache_res->get_classes()[i]));
+		}
+		classes_whitelist.clear();
+	} else {
+		// We have to go back to the main thread to start from scratch.
+		first_attempt = false;
+		callable_mp_static(&EditorHelp::generate_doc).call_deferred();
+	}
+}
+
 void EditorHelp::_gen_doc_thread(void *p_udata) {
 	DocTools compdoc;
 	compdoc.load_compressed(_doc_data_compressed, _doc_data_compressed_size, _doc_data_uncompressed_size);
 	doc->merge_from(compdoc); // Ensure all is up to date.
+
+	Ref<DocCache> cache_res;
+	cache_res.instantiate();
+	cache_res->set_version_hash(VERSION_HASH);
+	Array classes;
+	for (const KeyValue<String, DocData::ClassDoc> &E : doc->class_list) {
+		classes.push_back(DocData::ClassDoc::to_dict(E.value));
+	}
+	cache_res->set_classes(classes);
+	Error err = ResourceSaver::save(cache_res, get_cache_full_path(), ResourceSaver::FLAG_COMPRESS);
+	if (err) {
+		ERR_PRINT("Cannot save editor help cache (" + get_cache_full_path() + ").");
+	}
 }
 
 static bool doc_gen_use_threads = true;
 
 void EditorHelp::generate_doc() {
-	doc = memnew(DocTools);
-	// Not doable on threads unfortunately, since it instantiates all sorts of classes to get default values.
-	doc->generate(true);
-
 	if (doc_gen_use_threads) {
-		thread.start(_gen_doc_thread, nullptr);
+		// In case not the first attempt.
+		_wait_for_thread();
+	}
+
+	DEV_ASSERT(first_attempt == (doc == nullptr));
+
+	if (!doc) {
+		// Classes registered after this point should not have documentation generated.
+		ClassDB::get_class_list(&classes_whitelist);
+
+		GDREGISTER_CLASS(DocCache);
+		doc = memnew(DocTools);
+	}
+
+	if (first_attempt && FileAccess::exists(get_cache_full_path())) {
+		if (doc_gen_use_threads) {
+			thread.start(_load_doc_thread, nullptr);
+		} else {
+			_load_doc_thread(nullptr);
+		}
 	} else {
-		_gen_doc_thread(nullptr);
+		print_verbose("Regenerating editor help cache");
+
+		if (!first_attempt) {
+			// Some classes that should not be exposed may have been registered by now. Unexpose them.
+			// Arduous, but happens only when regenerating.
+			List<StringName> current_classes;
+			ClassDB::get_class_list(&current_classes);
+			List<StringName>::Element *W = classes_whitelist.front();
+			for (const StringName &name : current_classes) {
+				if (W && W->get() == name) {
+					W = W->next();
+				} else {
+					ClassDB::classes[name].exposed = false;
+				}
+			}
+		}
+		classes_whitelist.clear();
+
+		// Not doable on threads unfortunately, since it instantiates all sorts of classes to get default values.
+		doc->generate(true);
+
+		if (doc_gen_use_threads) {
+			thread.start(_gen_doc_thread, nullptr);
+		} else {
+			_gen_doc_thread(nullptr);
+		}
 	}
 }
 

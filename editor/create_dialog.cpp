@@ -462,6 +462,11 @@ void CreateDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			const int icon_width = get_theme_constant(SNAME("class_icon_size"), SNAME("Editor"));
+			search_options->add_theme_constant_override("icon_max_width", icon_width);
+			favorites->add_theme_constant_override("icon_max_width", icon_width);
+			recent->set_fixed_icon_size(Size2(icon_width, icon_width));
+
 			_update_theme();
 		} break;
 	}

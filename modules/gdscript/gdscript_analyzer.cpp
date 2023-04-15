@@ -479,7 +479,24 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 					}
 					if (look_class->has_member(name)) {
 						resolve_class_member(look_class, name, id);
-						base = look_class->get_member(name).get_datatype();
+						GDScriptParser::ClassNode::Member member = look_class->get_member(name);
+						GDScriptParser::DataType member_datatype = member.get_datatype();
+
+						switch (member.type) {
+							case GDScriptParser::ClassNode::Member::CLASS:
+								break; // OK.
+							case GDScriptParser::ClassNode::Member::CONSTANT:
+								if (member_datatype.kind != GDScriptParser::DataType::SCRIPT && member_datatype.kind != GDScriptParser::DataType::CLASS) {
+									push_error(vformat(R"(Constant "%s" is not a preloaded script or class.)", name), id);
+									return ERR_PARSE_ERROR;
+								}
+								break;
+							default:
+								push_error(vformat(R"(Cannot use %s "%s" in extends chain.)", member.get_type_name(), name), id);
+								return ERR_PARSE_ERROR;
+						}
+
+						base = member_datatype;
 						found = true;
 						break;
 					}
@@ -505,6 +522,9 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 
 			if (!id_type.is_set()) {
 				push_error(vformat(R"(Could not find nested type "%s".)", id->name), id);
+				return ERR_PARSE_ERROR;
+			} else if (id_type.kind != GDScriptParser::DataType::SCRIPT && id_type.kind != GDScriptParser::DataType::CLASS) {
+				push_error(vformat(R"(Identifier "%s" is not a preloaded script or class.)", id->name), id);
 				return ERR_PARSE_ERROR;
 			}
 
@@ -4546,7 +4566,7 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 			result.set_container_element_type(elem_type);
 		} else if (p_property.type == Variant::INT) {
 			// Check if it's enum.
-			if ((p_property.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) && p_property.class_name != StringName()) {
+			if ((p_property.usage & PROPERTY_USAGE_CLASS_IS_ENUM) && p_property.class_name != StringName()) {
 				if (CoreConstants::is_global_enum(p_property.class_name)) {
 					result = make_global_enum_type(p_property.class_name, StringName(), false);
 					result.is_constant = false;
@@ -4558,6 +4578,7 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 					}
 				}
 			}
+			// PROPERTY_USAGE_CLASS_IS_BITFIELD: BitField[T] isn't supported (yet?), use plain int.
 		}
 	}
 	return result;

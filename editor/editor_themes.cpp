@@ -587,9 +587,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	} else {
 		theme->set_color("highend_color", "Editor", Color(1.0, 0.0, 0.0));
 	}
+
 	const int thumb_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 	theme->set_constant("scale", "Editor", EDSCALE);
 	theme->set_constant("thumb_size", "Editor", thumb_size);
+	theme->set_constant("class_icon_size", "Editor", 16 * EDSCALE);
 	theme->set_constant("dark_theme", "Editor", dark_theme);
 	theme->set_constant("color_picker_button_height", "Editor", 28 * EDSCALE);
 
@@ -834,7 +836,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_focus_color", "MenuButton", font_focus_color);
 	theme->set_color("font_outline_color", "MenuButton", font_outline_color);
 
-	theme->set_constant("outline_size", "MenuButton", 0 * EDSCALE);
+	theme->set_constant("outline_size", "MenuButton", 0);
 
 	theme->set_stylebox("MenuHover", "EditorStyles", style_widget_hover);
 
@@ -859,7 +861,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_pressed_color", "Button", icon_pressed_color);
 	theme->set_color("icon_disabled_color", "Button", icon_disabled_color);
 
-	theme->set_constant("outline_size", "Button", 0 * EDSCALE);
+	theme->set_constant("h_separation", "Button", 2 * EDSCALE);
+	theme->set_constant("outline_size", "Button", 0);
 
 	const float ACTION_BUTTON_EXTRA_MARGIN = 32 * EDSCALE;
 
@@ -915,7 +918,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_pressed_color", "MenuBar", icon_pressed_color);
 	theme->set_color("icon_disabled_color", "MenuBar", icon_disabled_color);
 
-	theme->set_constant("outline_size", "MenuBar", 0 * EDSCALE);
+	theme->set_constant("h_separation", "MenuBar", 4 * EDSCALE);
+	theme->set_constant("outline_size", "MenuBar", 0);
 
 	// OptionButton
 	Ref<StyleBoxFlat> style_option_button_focus = style_widget_focus->duplicate();
@@ -959,7 +963,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("arrow_margin", "OptionButton", widget_default_margin.x - 2 * EDSCALE);
 	theme->set_constant("modulate_arrow", "OptionButton", true);
 	theme->set_constant("h_separation", "OptionButton", 4 * EDSCALE);
-	theme->set_constant("outline_size", "OptionButton", 0 * EDSCALE);
+	theme->set_constant("outline_size", "OptionButton", 0);
 
 	// CheckButton
 	theme->set_stylebox("normal", "CheckButton", style_menu);
@@ -993,8 +997,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_disabled_color", "CheckButton", icon_disabled_color);
 
 	theme->set_constant("h_separation", "CheckButton", 8 * EDSCALE);
-	theme->set_constant("check_v_offset", "CheckButton", 0 * EDSCALE);
-	theme->set_constant("outline_size", "CheckButton", 0 * EDSCALE);
+	theme->set_constant("check_v_offset", "CheckButton", 0);
+	theme->set_constant("outline_size", "CheckButton", 0);
 
 	// Checkbox
 	Ref<StyleBoxFlat> sb_checkbox = style_menu->duplicate();
@@ -1029,8 +1033,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_disabled_color", "CheckBox", icon_disabled_color);
 
 	theme->set_constant("h_separation", "CheckBox", 8 * EDSCALE);
-	theme->set_constant("check_v_offset", "CheckBox", 0 * EDSCALE);
-	theme->set_constant("outline_size", "CheckBox", 0 * EDSCALE);
+	theme->set_constant("check_v_offset", "CheckBox", 0);
+	theme->set_constant("outline_size", "CheckBox", 0);
 
 	// PopupDialog
 	theme->set_stylebox("panel", "PopupDialog", style_popup);
@@ -1085,7 +1089,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const int vsep_base = extra_spacing + default_margin_size + 6;
 	const int force_even_vsep = vsep_base + (vsep_base % 2);
 	theme->set_constant("v_separation", "PopupMenu", force_even_vsep * EDSCALE);
-	theme->set_constant("outline_size", "PopupMenu", 0 * EDSCALE);
+	theme->set_constant("outline_size", "PopupMenu", 0);
 	theme->set_constant("item_start_padding", "PopupMenu", default_margin_size * 1.5 * EDSCALE);
 	theme->set_constant("item_end_padding", "PopupMenu", default_margin_size * 1.5 * EDSCALE);
 
@@ -1204,7 +1208,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("button_margin", "Tree", default_margin_size * EDSCALE);
 	theme->set_constant("scroll_border", "Tree", 40 * EDSCALE);
 	theme->set_constant("scroll_speed", "Tree", 12);
-	theme->set_constant("outline_size", "Tree", 0 * EDSCALE);
+	theme->set_constant("outline_size", "Tree", 0);
+	theme->set_constant("scrollbar_margin_left", "Tree", 0);
+	theme->set_constant("scrollbar_margin_top", "Tree", 0);
+	theme->set_constant("scrollbar_margin_right", "Tree", 0);
+	theme->set_constant("scrollbar_margin_bottom", "Tree", 0);
+	theme->set_constant("scrollbar_h_separation", "Tree", 1 * EDSCALE);
+	theme->set_constant("scrollbar_v_separation", "Tree", 1 * EDSCALE);
 
 	const Color guide_color = mono_color * Color(1, 1, 1, 0.05);
 	Color relationship_line_color = mono_color * Color(1, 1, 1, relationship_line_opacity);
@@ -1300,7 +1310,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("h_separation", "ItemList", 6 * EDSCALE);
 	theme->set_constant("icon_margin", "ItemList", 6 * EDSCALE);
 	theme->set_constant("line_separation", "ItemList", 3 * EDSCALE);
-	theme->set_constant("outline_size", "ItemList", 0 * EDSCALE);
+	theme->set_constant("outline_size", "ItemList", 0);
 
 	// TabBar & TabContainer
 	Ref<StyleBoxFlat> style_tabbar_background = make_flat_stylebox(dark_color_1, 0, 0, 0, 0, corner_radius * EDSCALE);
@@ -1338,9 +1348,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("drop_mark", "TabContainer", theme->get_icon(SNAME("GuiTabDropMark"), SNAME("EditorIcons")));
 	theme->set_icon("drop_mark", "TabBar", theme->get_icon(SNAME("GuiTabDropMark"), SNAME("EditorIcons")));
 	theme->set_constant("side_margin", "TabContainer", 0);
-	theme->set_constant("outline_size", "TabContainer", 0 * EDSCALE);
+	theme->set_constant("outline_size", "TabContainer", 0);
 	theme->set_constant("h_separation", "TabBar", 4 * EDSCALE);
-	theme->set_constant("outline_size", "TabBar", 0 * EDSCALE);
+	theme->set_constant("outline_size", "TabBar", 0);
 
 	// Content of each tab.
 	Ref<StyleBoxFlat> style_content_panel = style_default->duplicate();
@@ -1405,9 +1415,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// so this compensates for that.
 	style_line_edit->set_content_margin(SIDE_TOP, style_line_edit->get_content_margin(SIDE_TOP) - 1 * EDSCALE);
 
-	// Don't round the bottom corner to make the line look sharper.
-	style_tab_selected->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
-	style_tab_selected->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+	// Don't round the bottom corners to make the line look sharper.
+	style_line_edit->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+	style_line_edit->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
 
 	if (draw_extra_borders) {
 		style_line_edit->set_border_width_all(Math::round(EDSCALE));
@@ -1436,7 +1446,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("selection_color", "LineEdit", selection_color);
 	theme->set_color("clear_button_color", "LineEdit", font_color);
 	theme->set_color("clear_button_color_pressed", "LineEdit", accent_color);
-	theme->set_constant("outline_size", "LineEdit", 0 * EDSCALE);
+	theme->set_constant("outline_size", "LineEdit", 0);
 
 	// TextEdit
 	theme->set_stylebox("normal", "TextEdit", style_line_edit);
@@ -1450,8 +1460,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_outline_color", "TextEdit", font_outline_color);
 	theme->set_color("caret_color", "TextEdit", font_color);
 	theme->set_color("selection_color", "TextEdit", selection_color);
+	theme->set_color("background_color", "TextEdit", Color(0, 0, 0, 0));
+
 	theme->set_constant("line_spacing", "TextEdit", 4 * EDSCALE);
-	theme->set_constant("outline_size", "TextEdit", 0 * EDSCALE);
+	theme->set_constant("outline_size", "TextEdit", 0);
 
 	theme->set_icon("h_grabber", "SplitContainer", theme->get_icon(SNAME("GuiHsplitter"), SNAME("EditorIcons")));
 	theme->set_icon("v_grabber", "SplitContainer", theme->get_icon(SNAME("GuiVsplitter"), SNAME("EditorIcons")));
@@ -1585,10 +1597,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("default_color", "RichTextLabel", font_color);
 	theme->set_color("font_shadow_color", "RichTextLabel", Color(0, 0, 0, 0));
 	theme->set_color("font_outline_color", "RichTextLabel", font_outline_color);
+	theme->set_color("selection_color", "RichTextLabel", selection_color);
 	theme->set_constant("shadow_offset_x", "RichTextLabel", 1 * EDSCALE);
 	theme->set_constant("shadow_offset_y", "RichTextLabel", 1 * EDSCALE);
 	theme->set_constant("shadow_outline_size", "RichTextLabel", 1 * EDSCALE);
-	theme->set_constant("outline_size", "RichTextLabel", 0 * EDSCALE);
+	theme->set_constant("outline_size", "RichTextLabel", 0);
 	theme->set_stylebox("focus", "RichTextLabel", make_empty_stylebox());
 	theme->set_stylebox("normal", "RichTextLabel", style_tree_bg);
 
@@ -1606,7 +1619,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("value_color", "EditorHelp", font_color * Color(1, 1, 1, 0.6));
 	theme->set_color("qualifier_color", "EditorHelp", font_color * Color(1, 1, 1, 0.8));
 	theme->set_color("type_color", "EditorHelp", accent_color.lerp(font_color, 0.5));
-	theme->set_color("selection_color", "EditorHelp", accent_color * Color(1, 1, 1, 0.4));
+	theme->set_color("selection_color", "EditorHelp", selection_color);
 	theme->set_color("link_color", "EditorHelp", accent_color.lerp(mono_color, 0.8));
 	theme->set_color("code_color", "EditorHelp", accent_color.lerp(mono_color, 0.6));
 	theme->set_color("kbd_color", "EditorHelp", accent_color.lerp(property_color, 0.6));
@@ -1632,7 +1645,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("shadow_offset_y", "Label", 1 * EDSCALE);
 	theme->set_constant("shadow_outline_size", "Label", 1 * EDSCALE);
 	theme->set_constant("line_spacing", "Label", 3 * EDSCALE);
-	theme->set_constant("outline_size", "Label", 0 * EDSCALE);
+	theme->set_constant("outline_size", "Label", 0);
 
 	// LinkButton
 	theme->set_stylebox("focus", "LinkButton", style_empty);
@@ -1644,7 +1657,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_disabled_color", "LinkButton", font_disabled_color);
 	theme->set_color("font_outline_color", "LinkButton", font_outline_color);
 
-	theme->set_constant("outline_size", "LinkButton", 0 * EDSCALE);
+	theme->set_constant("outline_size", "LinkButton", 0);
 
 	// TooltipPanel + TooltipLabel
 	// TooltipPanel is also used for custom tooltips, while TooltipLabel
@@ -1681,7 +1694,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("fill", "ProgressBar", make_stylebox(theme->get_icon(SNAME("GuiProgressFill"), SNAME("EditorIcons")), 6, 6, 6, 6, 2, 1, 2, 1));
 	theme->set_color("font_color", "ProgressBar", font_color);
 	theme->set_color("font_outline_color", "ProgressBar", font_outline_color);
-	theme->set_constant("outline_size", "ProgressBar", 0 * EDSCALE);
+	theme->set_constant("outline_size", "ProgressBar", 0);
 
 	// GraphEdit
 	theme->set_stylebox("bg", "GraphEdit", style_tree_bg);
@@ -1887,6 +1900,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	Ref<StyleBoxEmpty> vshader_label_style = make_empty_stylebox(2, 1, 2, 1);
 	theme->set_stylebox("label_style", "VShaderEditor", vshader_label_style);
+
+	// Project manager.
+	theme->set_stylebox("search_panel", "ProjectManager", style_tree_bg);
+	theme->set_constant("sidebar_button_icon_separation", "ProjectManager", int(6 * EDSCALE));
 
 	// adaptive script theme constants
 	// for comments and elements with lower relevance

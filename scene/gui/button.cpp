@@ -83,6 +83,7 @@ void Button::_update_theme_item_cache() {
 	theme_cache.icon = get_theme_icon(SNAME("icon"));
 
 	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
+	theme_cache.icon_max_width = get_theme_constant(SNAME("icon_max_width"));
 }
 
 void Button::_notification(int p_what) {
@@ -252,7 +253,6 @@ void Button::_notification(int p_what) {
 
 				float icon_ofs_region = 0.0;
 				Point2 style_offset;
-				Size2 icon_size = _icon->get_size();
 				if (icon_align_rtl_checked == HORIZONTAL_ALIGNMENT_LEFT) {
 					style_offset.x = style->get_margin(SIDE_LEFT);
 					if (_internal_margin[SIDE_LEFT] > 0) {
@@ -268,6 +268,7 @@ void Button::_notification(int p_what) {
 				}
 				style_offset.y = style->get_margin(SIDE_TOP);
 
+				Size2 icon_size = _icon->get_size();
 				if (expand_icon) {
 					Size2 _size = get_size() - style->get_offset() * 2;
 					int icon_text_separation = text.is_empty() ? 0 : theme_cache.h_separation;
@@ -285,6 +286,7 @@ void Button::_notification(int p_what) {
 
 					icon_size = Size2(icon_width, icon_height);
 				}
+				icon_size = _fit_icon_size(icon_size);
 
 				if (icon_align_rtl_checked == HORIZONTAL_ALIGNMENT_LEFT) {
 					icon_region = Rect2(style_offset + Point2(icon_ofs_region, Math::floor((valign - icon_size.y) * 0.5)), icon_size);
@@ -365,6 +367,18 @@ void Button::_notification(int p_what) {
 	}
 }
 
+Size2 Button::_fit_icon_size(const Size2 &p_size) const {
+	int max_width = theme_cache.icon_max_width;
+	Size2 icon_size = p_size;
+
+	if (max_width > 0 && icon_size.width > max_width) {
+		icon_size.height = icon_size.height * max_width / icon_size.width;
+		icon_size.width = max_width;
+	}
+
+	return icon_size;
+}
+
 Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Texture2D> p_icon) const {
 	Ref<TextParagraph> paragraph;
 	if (p_text.is_empty()) {
@@ -380,15 +394,16 @@ Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Textu
 	}
 
 	if (!expand_icon && p_icon.is_valid()) {
-		minsize.height = MAX(minsize.height, p_icon->get_height());
+		Size2 icon_size = _fit_icon_size(p_icon->get_size());
+		minsize.height = MAX(minsize.height, icon_size.height);
 
 		if (icon_alignment != HORIZONTAL_ALIGNMENT_CENTER) {
-			minsize.width += p_icon->get_width();
+			minsize.width += icon_size.width;
 			if (!xl_text.is_empty() || !p_text.is_empty()) {
 				minsize.width += MAX(0, theme_cache.h_separation);
 			}
 		} else {
-			minsize.width = MAX(minsize.width, p_icon->get_width());
+			minsize.width = MAX(minsize.width, icon_size.width);
 		}
 	}
 

@@ -120,6 +120,7 @@ private:
 	XrSessionState session_state = XR_SESSION_STATE_UNKNOWN;
 	bool running = false;
 	XrFrameState frame_state = { XR_TYPE_FRAME_STATE, NULL, 0, 0, false };
+	double render_target_size_multiplier = 1.0;
 
 	OpenXRGraphicsExtensionWrapper *graphics_extension = nullptr;
 	XrSystemGraphicsProperties graphics_properties;
@@ -367,6 +368,10 @@ public:
 	float get_display_refresh_rate() const;
 	void set_display_refresh_rate(float p_refresh_rate);
 	Array get_available_display_refresh_rates() const;
+
+	// Render Target size multiplier
+	double get_render_target_size_multiplier() const;
+	void set_render_target_size_multiplier(double multiplier);
 
 	// action map
 	String get_default_action_map_resource_name();

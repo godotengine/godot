@@ -115,6 +115,7 @@ void Bone2D::_notification(int p_what) {
 				bone.bone = this;
 				skeleton->bones.push_back(bone);
 				skeleton->_make_bone_setup_dirty();
+				get_parent()->connect(SNAME("child_order_changed"), callable_mp(skeleton, &Skeleton2D::_make_bone_setup_dirty), CONNECT_REFERENCE_COUNTED);
 			}
 
 			cache_transform = get_transform();
@@ -154,15 +155,6 @@ void Bone2D::_notification(int p_what) {
 #endif // TOOLS_ENABLED
 		} break;
 
-		case NOTIFICATION_MOVED_IN_PARENT: {
-			if (skeleton) {
-				skeleton->_make_bone_setup_dirty();
-			}
-			if (copy_transform_to_cache) {
-				cache_transform = get_transform();
-			}
-		} break;
-
 		case NOTIFICATION_EXIT_TREE: {
 			if (skeleton) {
 				for (int i = 0; i < skeleton->bones.size(); i++) {
@@ -172,7 +164,7 @@ void Bone2D::_notification(int p_what) {
 					}
 				}
 				skeleton->_make_bone_setup_dirty();
-				skeleton = nullptr;
+				get_parent()->disconnect(SNAME("child_order_changed"), callable_mp(skeleton, &Skeleton2D::_make_bone_setup_dirty));
 			}
 			parent_bone = nullptr;
 			set_transform(cache_transform);

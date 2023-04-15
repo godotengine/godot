@@ -417,6 +417,10 @@ void TextEdit::Text::move_gutters(int p_from_line, int p_to_line) {
 
 void TextEdit::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			_update_caches();
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			_update_caches();
 			if (caret_pos_dirty) {
@@ -512,28 +516,28 @@ void TextEdit::_notification(int p_what) {
 
 			RID ci = get_canvas_item();
 			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), true);
-			int xmargin_beg = style_normal->get_margin(SIDE_LEFT) + gutters_width + gutter_padding;
+			int xmargin_beg = theme_cache.style_normal->get_margin(SIDE_LEFT) + gutters_width + gutter_padding;
 
-			int xmargin_end = size.width - style_normal->get_margin(SIDE_RIGHT);
+			int xmargin_end = size.width - theme_cache.style_normal->get_margin(SIDE_RIGHT);
 			if (draw_minimap) {
 				xmargin_end -= minimap_width;
 			}
 			// Let's do it easy for now.
-			style_normal->draw(ci, Rect2(Point2(), size));
+			theme_cache.style_normal->draw(ci, Rect2(Point2(), size));
 			if (!editable) {
-				style_readonly->draw(ci, Rect2(Point2(), size));
-				draw_caret = false;
+				theme_cache.style_readonly->draw(ci, Rect2(Point2(), size));
+				draw_caret = is_drawing_caret_when_editable_disabled();
 			}
 			if (has_focus()) {
-				style_focus->draw(ci, Rect2(Point2(), size));
+				theme_cache.style_focus->draw(ci, Rect2(Point2(), size));
 			}
 
 			int visible_rows = get_visible_line_count() + 1;
 
-			Color color = !editable ? font_readonly_color : font_color;
+			Color color = !editable ? theme_cache.font_readonly_color : theme_cache.font_color;
 
-			if (background_color.a > 0.01) {
-				RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(), get_size()), background_color);
+			if (theme_cache.background_color.a > 0.01) {
+				RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(), get_size()), theme_cache.background_color);
 			}
 
 			Vector<BraceMatchingData> brace_matching;
@@ -734,7 +738,7 @@ void TextEdit::_notification(int p_what) {
 					viewport_alpha = 0.1;
 				}
 
-				const Color viewport_color = (background_color.get_v() < 0.5) ? Color(1, 1, 1, viewport_alpha) : Color(0, 0, 0, viewport_alpha);
+				const Color viewport_color = (theme_cache.background_color.get_v() < 0.5) ? Color(1, 1, 1, viewport_alpha) : Color(0, 0, 0, viewport_alpha);
 				if (rtl) {
 					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, viewport_offset_y, minimap_width, viewport_height), viewport_color);
 				} else {
@@ -763,9 +767,9 @@ void TextEdit::_notification(int p_what) {
 
 					Color line_background_color = text.get_line_background_color(minimap_line);
 					line_background_color.a *= 0.6;
-					Color current_color = font_color;
+					Color current_color = theme_cache.font_color;
 					if (!editable) {
-						current_color = font_readonly_color;
+						current_color = theme_cache.font_readonly_color;
 					}
 
 					Vector<String> wrap_rows = get_line_wrapped_text(minimap_line);
@@ -793,9 +797,9 @@ void TextEdit::_notification(int p_what) {
 
 						if (caret_line_wrap_index_map.has(minimap_line) && caret_line_wrap_index_map[minimap_line].has(line_wrap_index) && highlight_current_line) {
 							if (rtl) {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, i * 3, minimap_width, 2), current_line_color);
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, i * 3, minimap_width, 2), theme_cache.current_line_color);
 							} else {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), i * 3, minimap_width, 2), current_line_color);
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), i * 3, minimap_width, 2), theme_cache.current_line_color);
 							}
 						} else if (line_background_color != Color(0, 0, 0, 0)) {
 							if (rtl) {
@@ -811,9 +815,9 @@ void TextEdit::_notification(int p_what) {
 						for (int j = 0; j < str.length(); j++) {
 							const Variant *color_data = color_map.getptr(last_wrap_column + j);
 							if (color_data != nullptr) {
-								current_color = (color_data->operator Dictionary()).get("color", font_color);
+								current_color = (color_data->operator Dictionary()).get("color", theme_cache.font_color);
 								if (!editable) {
-									current_color.a = font_readonly_color.a;
+									current_color.a = theme_cache.font_readonly_color.a;
 								}
 							}
 							color = current_color;
@@ -875,16 +879,16 @@ void TextEdit::_notification(int p_what) {
 			int top_limit_y = 0;
 			int bottom_limit_y = get_size().height;
 			if (!editable) {
-				top_limit_y += style_readonly->get_margin(SIDE_TOP);
-				bottom_limit_y -= style_readonly->get_margin(SIDE_BOTTOM);
+				top_limit_y += theme_cache.style_readonly->get_margin(SIDE_TOP);
+				bottom_limit_y -= theme_cache.style_readonly->get_margin(SIDE_BOTTOM);
 			} else {
-				top_limit_y += style_normal->get_margin(SIDE_TOP);
-				bottom_limit_y -= style_normal->get_margin(SIDE_BOTTOM);
+				top_limit_y += theme_cache.style_normal->get_margin(SIDE_TOP);
+				bottom_limit_y -= theme_cache.style_normal->get_margin(SIDE_BOTTOM);
 			}
 
 			// Draw main text.
 			line_drawing_cache.clear();
-			int row_height = draw_placeholder ? placeholder_line_height + line_spacing : get_line_height();
+			int row_height = draw_placeholder ? placeholder_line_height + theme_cache.line_spacing : get_line_height();
 			int line = first_vis_line;
 			for (int i = 0; i < draw_amount; i++) {
 				line++;
@@ -909,9 +913,9 @@ void TextEdit::_notification(int p_what) {
 				Dictionary color_map = _get_line_syntax_highlighting(line);
 
 				// Ensure we at least use the font color.
-				Color current_color = !editable ? font_readonly_color : font_color;
+				Color current_color = !editable ? theme_cache.font_readonly_color : theme_cache.font_color;
 				if (draw_placeholder) {
-					current_color = font_placeholder_color;
+					current_color = theme_cache.font_placeholder_color;
 				}
 
 				const Ref<TextParagraph> ldata = draw_placeholder ? placeholder_data_buf : text.get_line_data(line);
@@ -933,14 +937,14 @@ void TextEdit::_notification(int p_what) {
 					int ofs_x = 0;
 					int ofs_y = 0;
 					if (!editable) {
-						ofs_x = style_readonly->get_offset().x / 2;
-						ofs_x -= style_normal->get_offset().x / 2;
-						ofs_y = style_readonly->get_offset().y / 2;
+						ofs_x = theme_cache.style_readonly->get_offset().x / 2;
+						ofs_x -= theme_cache.style_normal->get_offset().x / 2;
+						ofs_y = theme_cache.style_readonly->get_offset().y / 2;
 					} else {
-						ofs_y = style_normal->get_offset().y / 2;
+						ofs_y = theme_cache.style_normal->get_offset().y / 2;
 					}
 
-					ofs_y += i * row_height + line_spacing / 2;
+					ofs_y += i * row_height + theme_cache.line_spacing / 2;
 					ofs_y -= first_visible_line_wrap_ofs * row_height;
 					ofs_y -= _get_v_scroll_offset() * row_height;
 
@@ -969,20 +973,20 @@ void TextEdit::_notification(int p_what) {
 						// Draw line background if empty as we won't loop at all.
 						if (caret_line_wrap_index_map.has(line) && caret_line_wrap_index_map[line].has(line_wrap_index) && highlight_current_line) {
 							if (rtl) {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - ofs_x - xmargin_end, ofs_y, xmargin_end, row_height), current_line_color);
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - ofs_x - xmargin_end, ofs_y, xmargin_end, row_height), theme_cache.current_line_color);
 							} else {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(ofs_x, ofs_y, xmargin_end, row_height), current_line_color);
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(ofs_x, ofs_y, xmargin_end, row_height), theme_cache.current_line_color);
 							}
 						}
 
 						// Give visual indication of empty selected line.
 						for (int c = 0; c < carets.size(); c++) {
 							if (has_selection(c) && line >= get_selection_from_line(c) && line <= get_selection_to_line(c) && char_margin >= xmargin_beg) {
-								float char_w = font->get_char_size(' ', font_size).width;
+								float char_w = theme_cache.font->get_char_size(' ', theme_cache.font_size).width;
 								if (rtl) {
-									RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - xmargin_beg - ofs_x - char_w, ofs_y, char_w, row_height), selection_color);
+									RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - xmargin_beg - ofs_x - char_w, ofs_y, char_w, row_height), theme_cache.selection_color);
 								} else {
-									RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, char_w, row_height), selection_color);
+									RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, char_w, row_height), theme_cache.selection_color);
 								}
 							}
 						}
@@ -990,9 +994,9 @@ void TextEdit::_notification(int p_what) {
 						// If it has text, then draw current line marker in the margin, as line number etc will draw over it, draw the rest of line marker later.
 						if (caret_line_wrap_index_map.has(line) && caret_line_wrap_index_map[line].has(line_wrap_index) && highlight_current_line) {
 							if (rtl) {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - ofs_x - xmargin_end, ofs_y, xmargin_end, row_height), current_line_color);
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - ofs_x - xmargin_end, ofs_y, xmargin_end, row_height), theme_cache.current_line_color);
 							} else {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(ofs_x, ofs_y, xmargin_end, row_height), current_line_color);
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(ofs_x, ofs_y, xmargin_end, row_height), theme_cache.current_line_color);
 							}
 						}
 					}
@@ -1002,7 +1006,7 @@ void TextEdit::_notification(int p_what) {
 
 						cache_entry.y_offset = ofs_y;
 
-						int gutter_offset = style_normal->get_margin(SIDE_LEFT);
+						int gutter_offset = theme_cache.style_normal->get_margin(SIDE_LEFT);
 						for (int g = 0; g < gutters.size(); g++) {
 							const GutterInfo gutter = gutters[g];
 
@@ -1019,11 +1023,11 @@ void TextEdit::_notification(int p_what) {
 
 									Ref<TextLine> tl;
 									tl.instantiate();
-									tl->add_string(txt, font, font_size);
+									tl->add_string(txt, theme_cache.font, theme_cache.font_size);
 
 									int yofs = ofs_y + (row_height - tl->get_size().y) / 2;
-									if (outline_size > 0 && outline_color.a > 0) {
-										tl->draw_outline(ci, Point2(gutter_offset + ofs_x, yofs), outline_size, outline_color);
+									if (theme_cache.outline_size > 0 && theme_cache.outline_color.a > 0) {
+										tl->draw_outline(ci, Point2(gutter_offset + ofs_x, yofs), theme_cache.outline_size, theme_cache.outline_color);
 									}
 									tl->draw(ci, Point2(gutter_offset + ofs_x, yofs), get_line_gutter_item_color(line, g));
 								} break;
@@ -1100,7 +1104,7 @@ void TextEdit::_notification(int p_what) {
 								if (rect.position.x + rect.size.x > xmargin_end) {
 									rect.size.x = xmargin_end - rect.position.x;
 								}
-								draw_rect(rect, selection_color, true);
+								draw_rect(rect, theme_cache.selection_color, true);
 							}
 						}
 					}
@@ -1122,8 +1126,8 @@ void TextEdit::_notification(int p_what) {
 								} else if (rect.position.x + rect.size.x > xmargin_end) {
 									rect.size.x = xmargin_end - rect.position.x;
 								}
-								draw_rect(rect, search_result_color, true);
-								draw_rect(rect, search_result_border_color, false);
+								draw_rect(rect, theme_cache.search_result_color, true);
+								draw_rect(rect, theme_cache.search_result_border_color, false);
 							}
 
 							search_text_col = _get_column_pos_of_word(search_text, str, search_flags, search_text_col + search_text_len);
@@ -1146,7 +1150,7 @@ void TextEdit::_notification(int p_what) {
 								} else if (rect.position.x + rect.size.x > xmargin_end) {
 									rect.size.x = xmargin_end - rect.position.x;
 								}
-								draw_rect(rect, word_highlighted_color);
+								draw_rect(rect, theme_cache.word_highlighted_color);
 							}
 
 							highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, highlighted_text_col + highlighted_text_len);
@@ -1160,7 +1164,7 @@ void TextEdit::_notification(int p_what) {
 							while (lookup_symbol_word_col != -1) {
 								Vector<Vector2> sel = TS->shaped_text_get_selection(rid, lookup_symbol_word_col + start, lookup_symbol_word_col + lookup_symbol_word_len + start);
 								for (int j = 0; j < sel.size(); j++) {
-									Rect2 rect = Rect2(sel[j].x + char_margin + ofs_x, ofs_y + (line_spacing / 2), sel[j].y - sel[j].x, row_height);
+									Rect2 rect = Rect2(sel[j].x + char_margin + ofs_x, ofs_y + (theme_cache.line_spacing / 2), sel[j].y - sel[j].x, row_height);
 									if (rect.position.x + rect.size.x <= xmargin_beg || rect.position.x > xmargin_end) {
 										continue;
 									}
@@ -1170,8 +1174,8 @@ void TextEdit::_notification(int p_what) {
 									} else if (rect.position.x + rect.size.x > xmargin_end) {
 										rect.size.x = xmargin_end - rect.position.x;
 									}
-									rect.position.y += ceil(TS->shaped_text_get_ascent(rid)) + ceil(font->get_underline_position(font_size));
-									rect.size.y = MAX(1, font->get_underline_thickness(font_size));
+									rect.position.y += ceil(TS->shaped_text_get_ascent(rid)) + ceil(theme_cache.font->get_underline_position(theme_cache.font_size));
+									rect.size.y = MAX(1, theme_cache.font->get_underline_thickness(theme_cache.font_size));
 									draw_rect(rect, color);
 								}
 
@@ -1191,12 +1195,12 @@ void TextEdit::_notification(int p_what) {
 					int last_visible_char = TS->shaped_text_get_range(rid).x;
 
 					float char_ofs = 0;
-					if (outline_size > 0 && outline_color.a > 0) {
+					if (theme_cache.outline_size > 0 && theme_cache.outline_color.a > 0) {
 						for (int j = 0; j < gl_size; j++) {
 							for (int k = 0; k < glyphs[j].repeat; k++) {
 								if ((char_ofs + char_margin) >= xmargin_beg && (char_ofs + glyphs[j].advance + char_margin) <= xmargin_end) {
 									if (glyphs[j].font_rid != RID()) {
-										TS->font_draw_glyph_outline(glyphs[j].font_rid, ci, glyphs[j].font_size, outline_size, Vector2(char_margin + char_ofs + ofs_x + glyphs[j].x_off, ofs_y + glyphs[j].y_off), glyphs[j].index, outline_color);
+										TS->font_draw_glyph_outline(glyphs[j].font_rid, ci, glyphs[j].font_size, theme_cache.outline_size, Vector2(char_margin + char_ofs + ofs_x + glyphs[j].x_off, ofs_y + glyphs[j].y_off), glyphs[j].index, theme_cache.outline_color);
 									}
 								}
 								char_ofs += glyphs[j].advance;
@@ -1218,9 +1222,9 @@ void TextEdit::_notification(int p_what) {
 						}
 						const Variant *color_data = (color_start >= 0) ? color_map.getptr(color_start) : nullptr;
 						if (color_data != nullptr) {
-							current_color = (color_data->operator Dictionary()).get("color", font_color);
-							if (!editable && current_color.a > font_readonly_color.a) {
-								current_color.a = font_readonly_color.a;
+							current_color = (color_data->operator Dictionary()).get("color", theme_cache.font_color);
+							if (!editable && current_color.a > theme_cache.font_readonly_color.a) {
+								current_color.a = theme_cache.font_readonly_color.a;
 							}
 						}
 						Color gl_color = current_color;
@@ -1231,7 +1235,7 @@ void TextEdit::_notification(int p_what) {
 								int sel_to = (line < get_selection_to_line(c)) ? TS->shaped_text_get_range(rid).y : get_selection_to_column(c);
 
 								if (glyphs[j].start >= sel_from && glyphs[j].end <= sel_to && use_selected_font_color) {
-									gl_color = font_selected_color;
+									gl_color = theme_cache.font_selected_color;
 								}
 							}
 						}
@@ -1243,30 +1247,30 @@ void TextEdit::_notification(int p_what) {
 									if ((brace_matching[c].open_match_line == line && brace_matching[c].open_match_column == glyphs[j].start) ||
 											(get_caret_column(c) == glyphs[j].start && get_caret_line(c) == line && carets_wrap_index[c] == line_wrap_index && (brace_matching[c].open_matching || brace_matching[c].open_mismatch))) {
 										if (brace_matching[c].open_mismatch) {
-											gl_color = brace_mismatch_color;
+											gl_color = theme_cache.brace_mismatch_color;
 										}
-										Rect2 rect = Rect2(char_pos, ofs_y + font->get_underline_position(font_size), glyphs[j].advance * glyphs[j].repeat, MAX(font->get_underline_thickness(font_size) * get_theme_default_base_scale(), 1));
+										Rect2 rect = Rect2(char_pos, ofs_y + theme_cache.font->get_underline_position(theme_cache.font_size), glyphs[j].advance * glyphs[j].repeat, MAX(theme_cache.font->get_underline_thickness(theme_cache.font_size) * theme_cache.base_scale, 1));
 										draw_rect(rect, gl_color);
 									}
 
 									if ((brace_matching[c].close_match_line == line && brace_matching[c].close_match_column == glyphs[j].start) ||
 											(get_caret_column(c) == glyphs[j].start + 1 && get_caret_line(c) == line && carets_wrap_index[c] == line_wrap_index && (brace_matching[c].close_matching || brace_matching[c].close_mismatch))) {
 										if (brace_matching[c].close_mismatch) {
-											gl_color = brace_mismatch_color;
+											gl_color = theme_cache.brace_mismatch_color;
 										}
-										Rect2 rect = Rect2(char_pos, ofs_y + font->get_underline_position(font_size), glyphs[j].advance * glyphs[j].repeat, MAX(font->get_underline_thickness(font_size) * get_theme_default_base_scale(), 1));
+										Rect2 rect = Rect2(char_pos, ofs_y + theme_cache.font->get_underline_position(theme_cache.font_size), glyphs[j].advance * glyphs[j].repeat, MAX(theme_cache.font->get_underline_thickness(theme_cache.font_size) * theme_cache.base_scale, 1));
 										draw_rect(rect, gl_color);
 									}
 								}
 							}
 
 							if (draw_tabs && ((glyphs[j].flags & TextServer::GRAPHEME_IS_TAB) == TextServer::GRAPHEME_IS_TAB)) {
-								int yofs = (text_height - tab_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
-								tab_icon->draw(ci, Point2(char_pos, ofs_y + yofs), gl_color);
+								int yofs = (text_height - theme_cache.tab_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
+								theme_cache.tab_icon->draw(ci, Point2(char_pos, ofs_y + yofs), gl_color);
 							} else if (draw_spaces && ((glyphs[j].flags & TextServer::GRAPHEME_IS_SPACE) == TextServer::GRAPHEME_IS_SPACE) && ((glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL)) {
-								int yofs = (text_height - space_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
-								int xofs = (glyphs[j].advance * glyphs[j].repeat - space_icon->get_width()) / 2;
-								space_icon->draw(ci, Point2(char_pos + xofs, ofs_y + yofs), gl_color);
+								int yofs = (text_height - theme_cache.space_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
+								int xofs = (glyphs[j].advance * glyphs[j].repeat - theme_cache.space_icon->get_width()) / 2;
+								theme_cache.space_icon->draw(ci, Point2(char_pos + xofs, ofs_y + yofs), gl_color);
 							}
 						}
 
@@ -1276,7 +1280,7 @@ void TextEdit::_notification(int p_what) {
 								if (glyphs[j].font_rid != RID()) {
 									TS->font_draw_glyph(glyphs[j].font_rid, ci, glyphs[j].font_size, Vector2(char_margin + char_ofs + ofs_x + glyphs[j].x_off, ofs_y + glyphs[j].y_off), glyphs[j].index, gl_color);
 									had_glyphs_drawn = true;
-								} else if ((glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+								} else if (((glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) && ((glyphs[j].flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) != TextServer::GRAPHEME_IS_EMBEDDED_OBJECT)) {
 									TS->draw_hex_code_box(ci, glyphs[j].font_size, Vector2(char_margin + char_ofs + ofs_x + glyphs[j].x_off, ofs_y + glyphs[j].y_off), glyphs[j].index, gl_color);
 									had_glyphs_drawn = true;
 								}
@@ -1302,18 +1306,18 @@ void TextEdit::_notification(int p_what) {
 
 					// is_line_folded
 					if (line_wrap_index == line_wrap_amount && line < text.size() - 1 && _is_line_hidden(line + 1)) {
-						int xofs = char_ofs + char_margin + ofs_x + (folded_eol_icon->get_width() / 2);
+						int xofs = char_ofs + char_margin + ofs_x + (theme_cache.folded_eol_icon->get_width() / 2);
 						if (xofs >= xmargin_beg && xofs < xmargin_end) {
-							int yofs = (text_height - folded_eol_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
-							Color eol_color = code_folding_color;
+							int yofs = (text_height - theme_cache.folded_eol_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
+							Color eol_color = theme_cache.code_folding_color;
 							eol_color.a = 1;
-							folded_eol_icon->draw(ci, Point2(xofs, ofs_y + yofs), eol_color);
+							theme_cache.folded_eol_icon->draw(ci, Point2(xofs, ofs_y + yofs), eol_color);
 						}
 					}
 
 					// Carets.
 					// Prevent carets from disappearing at theme scales below 1.0 (if the caret width is 1).
-					const int caret_width = get_theme_constant(SNAME("caret_width")) * MAX(1, get_theme_default_base_scale());
+					const int caret_width = theme_cache.caret_width * MAX(1, theme_cache.base_scale);
 
 					for (int c = 0; c < carets.size(); c++) {
 						if (!clipped && get_caret_line(c) == line && carets_wrap_index[c] == line_wrap_index) {
@@ -1327,7 +1331,7 @@ void TextEdit::_notification(int p_what) {
 									ts_caret = TS->shaped_text_get_carets(rid, ime_text.is_empty() ? get_caret_column(c) : get_caret_column(c) + ime_selection.x);
 								} else {
 									// No carets, add one at the start.
-									int h = font->get_height(font_size);
+									int h = theme_cache.font->get_height(theme_cache.font_size);
 									if (rtl) {
 										ts_caret.l_dir = TextServer::DIRECTION_RTL;
 										ts_caret.l_caret = Rect2(Vector2(xmargin_end - char_margin + ofs_x, -h / 2), Size2(caret_width * 4, h));
@@ -1348,7 +1352,7 @@ void TextEdit::_notification(int p_what) {
 									if (draw_caret || drag_caret_force_displayed) {
 										if (caret_type == CaretType::CARET_TYPE_BLOCK || overtype_mode) {
 											//Block or underline caret, draw trailing carets at full height.
-											int h = font->get_height(font_size);
+											int h = theme_cache.font->get_height(theme_cache.font_size);
 
 											if (ts_caret.t_caret != Rect2()) {
 												if (overtype_mode) {
@@ -1359,17 +1363,17 @@ void TextEdit::_notification(int p_what) {
 													ts_caret.t_caret.size.y = h;
 												}
 												ts_caret.t_caret.position += Vector2(char_margin + ofs_x, ofs_y);
-												draw_rect(ts_caret.t_caret, caret_color, overtype_mode);
+												draw_rect(ts_caret.t_caret, theme_cache.caret_color, overtype_mode);
 
 												if (ts_caret.l_caret != Rect2() && ts_caret.l_dir != ts_caret.t_dir) {
 													// Draw split caret (leading part).
 													ts_caret.l_caret.position += Vector2(char_margin + ofs_x, ofs_y);
 													ts_caret.l_caret.size.x = caret_width;
-													draw_rect(ts_caret.l_caret, caret_color);
+													draw_rect(ts_caret.l_caret, theme_cache.caret_color);
 													// Draw extra direction marker on top of split caret.
 													float d = (ts_caret.l_dir == TextServer::DIRECTION_LTR) ? 0.5 : -3;
 													Rect2 trect = Rect2(ts_caret.l_caret.position.x + d * caret_width, ts_caret.l_caret.position.y + ts_caret.l_caret.size.y - caret_width, 3 * caret_width, caret_width);
-													RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
+													RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, theme_cache.caret_color);
 												}
 											} else { // End of the line.
 												if (gl_size > 0) {
@@ -1385,8 +1389,8 @@ void TextEdit::_notification(int p_what) {
 													ts_caret.l_caret.position.y += ts_caret.l_caret.size.y;
 													ts_caret.l_caret.size.y = caret_width;
 												}
-												if (ts_caret.l_caret.position.x >= TS->shaped_text_get_size(rid).x) {
-													ts_caret.l_caret.size.x = font->get_char_size('m', font_size).x;
+												if (Math::ceil(ts_caret.l_caret.position.x) >= TS->shaped_text_get_size(rid).x) {
+													ts_caret.l_caret.size.x = theme_cache.font->get_char_size('m', theme_cache.font_size).x;
 												} else {
 													ts_caret.l_caret.size.x = 3 * caret_width;
 												}
@@ -1394,7 +1398,7 @@ void TextEdit::_notification(int p_what) {
 												if (ts_caret.l_dir == TextServer::DIRECTION_RTL) {
 													ts_caret.l_caret.position.x -= ts_caret.l_caret.size.x;
 												}
-												draw_rect(ts_caret.l_caret, caret_color, overtype_mode);
+												draw_rect(ts_caret.l_caret, theme_cache.caret_color, overtype_mode);
 											}
 										} else {
 											// Normal caret.
@@ -1402,28 +1406,28 @@ void TextEdit::_notification(int p_what) {
 												// Draw extra marker on top of mid caret.
 												Rect2 trect = Rect2(ts_caret.l_caret.position.x - 2.5 * caret_width, ts_caret.l_caret.position.y, 6 * caret_width, caret_width);
 												trect.position += Vector2(char_margin + ofs_x, ofs_y);
-												RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
+												RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, theme_cache.caret_color);
 											} else if (ts_caret.l_caret != Rect2() && ts_caret.t_caret != Rect2() && ts_caret.l_dir != ts_caret.t_dir) {
 												// Draw extra direction marker on top of split caret.
 												float d = (ts_caret.l_dir == TextServer::DIRECTION_LTR) ? 0.5 : -3;
 												Rect2 trect = Rect2(ts_caret.l_caret.position.x + d * caret_width, ts_caret.l_caret.position.y + ts_caret.l_caret.size.y - caret_width, 3 * caret_width, caret_width);
 												trect.position += Vector2(char_margin + ofs_x, ofs_y);
-												RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
+												RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, theme_cache.caret_color);
 
 												d = (ts_caret.t_dir == TextServer::DIRECTION_LTR) ? 0.5 : -3;
 												trect = Rect2(ts_caret.t_caret.position.x + d * caret_width, ts_caret.t_caret.position.y, 3 * caret_width, caret_width);
 												trect.position += Vector2(char_margin + ofs_x, ofs_y);
-												RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
+												RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, theme_cache.caret_color);
 											}
 											ts_caret.l_caret.position += Vector2(char_margin + ofs_x, ofs_y);
 											ts_caret.l_caret.size.x = caret_width;
 
-											draw_rect(ts_caret.l_caret, caret_color);
+											draw_rect(ts_caret.l_caret, theme_cache.caret_color);
 
 											ts_caret.t_caret.position += Vector2(char_margin + ofs_x, ofs_y);
 											ts_caret.t_caret.size.x = caret_width;
 
-											draw_rect(ts_caret.t_caret, caret_color);
+											draw_rect(ts_caret.t_caret, theme_cache.caret_color);
 										}
 									}
 								}
@@ -1444,7 +1448,7 @@ void TextEdit::_notification(int p_what) {
 											rect.size.x = xmargin_end - rect.position.x;
 										}
 										rect.size.y = caret_width;
-										draw_rect(rect, caret_color);
+										draw_rect(rect, theme_cache.caret_color);
 										carets.write[c].draw_pos.x = rect.position.x;
 									}
 								}
@@ -1463,7 +1467,7 @@ void TextEdit::_notification(int p_what) {
 											rect.size.x = xmargin_end - rect.position.x;
 										}
 										rect.size.y = caret_width * 3;
-										draw_rect(rect, caret_color);
+										draw_rect(rect, theme_cache.caret_color);
 										carets.write[c].draw_pos.x = rect.position.x;
 									}
 								}
@@ -1711,7 +1715,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				int row = pos.y;
 				int col = pos.x;
 
-				int left_margin = style_normal->get_margin(SIDE_LEFT);
+				int left_margin = theme_cache.style_normal->get_margin(SIDE_LEFT);
 				for (int i = 0; i < gutters.size(); i++) {
 					if (!gutters[i].draw || gutters[i].width <= 0) {
 						continue;
@@ -1956,7 +1960,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		// Check if user is hovering a different gutter, and update if yes.
 		Vector2i current_hovered_gutter = Vector2i(-1, -1);
 
-		int left_margin = style_normal->get_margin(SIDE_LEFT);
+		int left_margin = theme_cache.style_normal->get_margin(SIDE_LEFT);
 		if (mpos.x <= left_margin + gutters_width + gutter_padding) {
 			int hovered_row = get_line_column_at_pos(mpos).y;
 			for (int i = 0; i < gutters.size(); i++) {
@@ -2008,14 +2012,14 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		// If a modifier has been pressed, and nothing else, return.
-		if (k->get_keycode() == Key::CTRL || k->get_keycode() == Key::ALT || k->get_keycode() == Key::SHIFT || k->get_keycode() == Key::META) {
+		if (k->get_keycode() == Key::CTRL || k->get_keycode() == Key::ALT || k->get_keycode() == Key::SHIFT || k->get_keycode() == Key::META || k->get_keycode() == Key::CAPSLOCK) {
 			return;
 		}
 
 		_reset_caret_blink_timer();
 
 		// Allow unicode handling if:
-		// * No Modifiers are pressed (except shift)
+		// * No modifiers are pressed (except Shift and CapsLock)
 		bool allow_unicode_handling = !(k->is_command_or_control_pressed() || k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
 
 		// Check and handle all built in shortcuts.
@@ -2919,7 +2923,7 @@ void TextEdit::_get_above_below_caret_line_column(int p_old_line, int p_old_wrap
 }
 
 void TextEdit::_update_placeholder() {
-	if (font.is_null() || font_size <= 0) {
+	if (theme_cache.font.is_null() || theme_cache.font_size <= 0) {
 		return; // Not in tree?
 	}
 
@@ -2928,7 +2932,7 @@ void TextEdit::_update_placeholder() {
 	placeholder_data_buf->set_width(text.get_width());
 	placeholder_data_buf->set_direction((TextServer::Direction)text_direction);
 	placeholder_data_buf->set_preserve_control(draw_control_chars);
-	placeholder_data_buf->add_string(placeholder_text, font, font_size, language);
+	placeholder_data_buf->add_string(placeholder_text, theme_cache.font, theme_cache.font_size, language);
 
 	placeholder_bidi_override = structured_text_parser(st_parser, st_args, placeholder_text);
 	if (placeholder_bidi_override.is_empty()) {
@@ -2937,13 +2941,13 @@ void TextEdit::_update_placeholder() {
 
 	if (get_tab_size() > 0) {
 		Vector<float> tabs;
-		tabs.push_back(font->get_char_size(' ', font_size).width * get_tab_size());
+		tabs.push_back(theme_cache.font->get_char_size(' ', theme_cache.font_size).width * get_tab_size());
 		placeholder_data_buf->tab_align(tabs);
 	}
 
 	// Update height.
 	const int wrap_amount = placeholder_data_buf->get_line_count() - 1;
-	placeholder_line_height = font->get_height(font_size);
+	placeholder_line_height = theme_cache.font->get_height(theme_cache.font_size);
 	for (int i = 0; i <= wrap_amount; i++) {
 		placeholder_line_height = MAX(placeholder_line_height, placeholder_data_buf->get_line_size(i).y);
 	}
@@ -2959,48 +2963,55 @@ void TextEdit::_update_placeholder() {
 	}
 }
 
-void TextEdit::_update_caches() {
-	/* Internal API for CodeEdit. */
-	brace_mismatch_color = get_theme_color(SNAME("brace_mismatch_color"), SNAME("CodeEdit"));
-	code_folding_color = get_theme_color(SNAME("code_folding_color"), SNAME("CodeEdit"));
-	folded_eol_icon = get_theme_icon(SNAME("folded_eol_icon"), SNAME("CodeEdit"));
+void TextEdit::_update_theme_item_cache() {
+	Control::_update_theme_item_cache();
+
+	theme_cache.base_scale = get_theme_default_base_scale();
+
+	/* Internal API for CodeEdit */
+	theme_cache.brace_mismatch_color = get_theme_color(SNAME("brace_mismatch_color"), SNAME("CodeEdit"));
+	theme_cache.code_folding_color = get_theme_color(SNAME("code_folding_color"), SNAME("CodeEdit"));
+	theme_cache.folded_eol_icon = get_theme_icon(SNAME("folded_eol_icon"), SNAME("CodeEdit"));
 
 	/* Search */
-	search_result_color = get_theme_color(SNAME("search_result_color"));
-	search_result_border_color = get_theme_color(SNAME("search_result_border_color"));
+	theme_cache.search_result_color = get_theme_color(SNAME("search_result_color"));
+	theme_cache.search_result_border_color = get_theme_color(SNAME("search_result_border_color"));
 
 	/* Caret */
-	caret_color = get_theme_color(SNAME("caret_color"));
-	caret_background_color = get_theme_color(SNAME("caret_background_color"));
+	theme_cache.caret_width = get_theme_constant(SNAME("caret_width"));
+	theme_cache.caret_color = get_theme_color(SNAME("caret_color"));
+	theme_cache.caret_background_color = get_theme_color(SNAME("caret_background_color"));
 
 	/* Selection */
-	font_selected_color = get_theme_color(SNAME("font_selected_color"));
-	selection_color = get_theme_color(SNAME("selection_color"));
-	use_selected_font_color = font_selected_color != Color(0, 0, 0, 0);
+	theme_cache.font_selected_color = get_theme_color(SNAME("font_selected_color"));
+	theme_cache.selection_color = get_theme_color(SNAME("selection_color"));
+	use_selected_font_color = theme_cache.font_selected_color != Color(0, 0, 0, 0);
 
-	/* Visual. */
-	style_normal = get_theme_stylebox(SNAME("normal"));
-	style_focus = get_theme_stylebox(SNAME("focus"));
-	style_readonly = get_theme_stylebox(SNAME("read_only"));
+	/* Other visuals */
+	theme_cache.style_normal = get_theme_stylebox(SNAME("normal"));
+	theme_cache.style_focus = get_theme_stylebox(SNAME("focus"));
+	theme_cache.style_readonly = get_theme_stylebox(SNAME("read_only"));
 
-	tab_icon = get_theme_icon(SNAME("tab"));
-	space_icon = get_theme_icon(SNAME("space"));
+	theme_cache.tab_icon = get_theme_icon(SNAME("tab"));
+	theme_cache.space_icon = get_theme_icon(SNAME("space"));
 
-	font = get_theme_font(SNAME("font"));
-	font_size = get_theme_font_size(SNAME("font_size"));
-	font_color = get_theme_color(SNAME("font_color"));
-	font_readonly_color = get_theme_color(SNAME("font_readonly_color"));
-	font_placeholder_color = get_theme_color(SNAME("font_placeholder_color"));
+	theme_cache.font = get_theme_font(SNAME("font"));
+	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
+	theme_cache.font_color = get_theme_color(SNAME("font_color"));
+	theme_cache.font_readonly_color = get_theme_color(SNAME("font_readonly_color"));
+	theme_cache.font_placeholder_color = get_theme_color(SNAME("font_placeholder_color"));
 
-	outline_size = get_theme_constant(SNAME("outline_size"));
-	outline_color = get_theme_color(SNAME("font_outline_color"));
+	theme_cache.outline_size = get_theme_constant(SNAME("outline_size"));
+	theme_cache.outline_color = get_theme_color(SNAME("font_outline_color"));
 
-	line_spacing = get_theme_constant(SNAME("line_spacing"));
+	theme_cache.line_spacing = get_theme_constant(SNAME("line_spacing"));
 
-	background_color = get_theme_color(SNAME("background_color"));
-	current_line_color = get_theme_color(SNAME("current_line_color"));
-	word_highlighted_color = get_theme_color(SNAME("word_highlighted_color"));
+	theme_cache.background_color = get_theme_color(SNAME("background_color"));
+	theme_cache.current_line_color = get_theme_color(SNAME("current_line_color"));
+	theme_cache.word_highlighted_color = get_theme_color(SNAME("word_highlighted_color"));
+}
 
+void TextEdit::_update_caches() {
 	/* Text properties. */
 	TextServer::Direction dir;
 	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
@@ -3010,8 +3021,8 @@ void TextEdit::_update_caches() {
 	}
 	text.set_direction_and_language(dir, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 	text.set_draw_control_chars(draw_control_chars);
-	text.set_font(font);
-	text.set_font_size(font_size);
+	text.set_font(theme_cache.font);
+	text.set_font_size(theme_cache.font_size);
 	text.invalidate_font();
 	_update_placeholder();
 
@@ -3023,7 +3034,7 @@ void TextEdit::_update_caches() {
 
 /* General overrides. */
 Size2 TextEdit::get_minimum_size() const {
-	Size2 size = style_normal->get_minimum_size();
+	Size2 size = theme_cache.style_normal->get_minimum_size();
 	if (fit_content_height) {
 		size.y += content_height_cache;
 	}
@@ -3119,7 +3130,7 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 	Point2i pos = get_line_column_at_pos(p_pos);
 	int row = pos.y;
 
-	int left_margin = style_normal->get_margin(SIDE_LEFT);
+	int left_margin = theme_cache.style_normal->get_margin(SIDE_LEFT);
 	int gutter = left_margin + gutters_width;
 	if (p_pos.x < gutter) {
 		for (int i = 0; i < gutters.size(); i++) {
@@ -3137,7 +3148,7 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 		return CURSOR_ARROW;
 	}
 
-	int xmargin_end = get_size().width - style_normal->get_margin(SIDE_RIGHT);
+	int xmargin_end = get_size().width - theme_cache.style_normal->get_margin(SIDE_RIGHT);
 	if (draw_minimap && p_pos.x > xmargin_end - minimap_width && p_pos.x <= xmargin_end) {
 		return CURSOR_ARROW;
 	}
@@ -3465,7 +3476,7 @@ int TextEdit::get_line_width(int p_line, int p_wrap_index) const {
 }
 
 int TextEdit::get_line_height() const {
-	return text.get_line_height() + line_spacing;
+	return text.get_line_height() + theme_cache.line_spacing;
 }
 
 int TextEdit::get_indent_level(int p_line) const {
@@ -4249,7 +4260,7 @@ String TextEdit::get_word_at_pos(const Vector2 &p_pos) const {
 
 Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_of_bounds) const {
 	float rows = p_pos.y;
-	rows -= style_normal->get_margin(SIDE_TOP);
+	rows -= theme_cache.style_normal->get_margin(SIDE_TOP);
 	rows /= get_line_height();
 	rows += _get_v_scroll_offset();
 	int first_vis_line = get_first_visible_line();
@@ -4284,7 +4295,7 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_
 	}
 
 	int col = 0;
-	int colx = p_pos.x - (style_normal->get_margin(SIDE_LEFT) + gutters_width + gutter_padding);
+	int colx = p_pos.x - (theme_cache.style_normal->get_margin(SIDE_LEFT) + gutters_width + gutter_padding);
 	colx += first_visible_col;
 	col = _get_char_pos_for_line(colx, row, wrap_index);
 	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE && wrap_index < get_line_wrap_count(row)) {
@@ -4339,7 +4350,7 @@ Rect2i TextEdit::get_rect_at_line_column(int p_line, int p_column) const {
 
 	Point2i pos, size;
 	pos.y = cache_entry.y_offset + get_line_height() * wrap_index;
-	pos.x = get_total_gutter_width() + style_normal->get_margin(SIDE_LEFT) - get_h_scroll();
+	pos.x = get_total_gutter_width() + theme_cache.style_normal->get_margin(SIDE_LEFT) - get_h_scroll();
 
 	RID text_rid = text.get_line_data(p_line)->get_line_rid(wrap_index);
 	Vector2 col_bounds = TS->shaped_text_get_grapheme_bounds(text_rid, p_column);
@@ -4353,7 +4364,7 @@ Rect2i TextEdit::get_rect_at_line_column(int p_line, int p_column) const {
 
 int TextEdit::get_minimap_line_at_pos(const Point2i &p_pos) const {
 	float rows = p_pos.y;
-	rows -= style_normal->get_margin(SIDE_TOP);
+	rows -= theme_cache.style_normal->get_margin(SIDE_TOP);
 	rows /= (minimap_char_size.y + minimap_line_spacing);
 	rows += _get_v_scroll_offset();
 
@@ -4476,6 +4487,18 @@ float TextEdit::get_caret_blink_interval() const {
 void TextEdit::set_caret_blink_interval(const float p_interval) {
 	ERR_FAIL_COND(p_interval <= 0);
 	caret_blink_timer->set_wait_time(p_interval);
+}
+
+void TextEdit::set_draw_caret_when_editable_disabled(bool p_enable) {
+	if (draw_caret_when_editable_disabled == p_enable) {
+		return;
+	}
+	draw_caret_when_editable_disabled = p_enable;
+	queue_redraw();
+}
+
+bool TextEdit::is_drawing_caret_when_editable_disabled() const {
+	return draw_caret_when_editable_disabled;
 }
 
 void TextEdit::set_move_caret_on_right_click_enabled(const bool p_enabled) {
@@ -5519,7 +5542,7 @@ void TextEdit::adjust_viewport_to_caret(int p_caret) {
 		set_line_as_last_visible(cur_line, cur_wrap);
 	}
 
-	int visible_width = get_size().width - style_normal->get_minimum_size().width - gutters_width - gutter_padding;
+	int visible_width = get_size().width - theme_cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding;
 	if (draw_minimap) {
 		visible_width -= minimap_width;
 	}
@@ -5573,7 +5596,7 @@ void TextEdit::center_viewport_to_caret(int p_caret) {
 	minimap_clicked = false;
 
 	set_line_as_center_visible(get_caret_line(p_caret), get_caret_wrap_index(p_caret));
-	int visible_width = get_size().width - style_normal->get_minimum_size().width - gutters_width - gutter_padding;
+	int visible_width = get_size().width - theme_cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding;
 	if (draw_minimap) {
 		visible_width -= minimap_width;
 	}
@@ -6184,6 +6207,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_caret_blink_interval", "interval"), &TextEdit::set_caret_blink_interval);
 	ClassDB::bind_method(D_METHOD("get_caret_blink_interval"), &TextEdit::get_caret_blink_interval);
 
+	ClassDB::bind_method(D_METHOD("set_draw_caret_when_editable_disabled", "enable"), &TextEdit::set_draw_caret_when_editable_disabled);
+	ClassDB::bind_method(D_METHOD("is_drawing_caret_when_editable_disabled"), &TextEdit::is_drawing_caret_when_editable_disabled);
+
 	ClassDB::bind_method(D_METHOD("set_move_caret_on_right_click_enabled", "enable"), &TextEdit::set_move_caret_on_right_click_enabled);
 	ClassDB::bind_method(D_METHOD("is_move_caret_on_right_click_enabled"), &TextEdit::is_move_caret_on_right_click_enabled);
 
@@ -6425,6 +6451,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "caret_type", PROPERTY_HINT_ENUM, "Line,Block"), "set_caret_type", "get_caret_type");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), "set_caret_blink_enabled", "is_caret_blink_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "caret_blink_interval", PROPERTY_HINT_RANGE, "0.1,10,0.01,suffix:s"), "set_caret_blink_interval", "get_caret_blink_interval");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_draw_when_editable_disabled"), "set_draw_caret_when_editable_disabled", "is_drawing_caret_when_editable_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_move_on_right_click"), "set_move_caret_on_right_click_enabled", "is_move_caret_on_right_click_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_mid_grapheme"), "set_caret_mid_grapheme_enabled", "is_caret_mid_grapheme_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_multiple"), "set_multiple_carets_enabled", "is_multiple_carets_enabled");
@@ -7191,7 +7218,7 @@ void TextEdit::_post_shift_selection(int p_caret) {
 
 /* Line Wrapping */
 void TextEdit::_update_wrap_at_column(bool p_force) {
-	int new_wrap_at = get_size().width - style_normal->get_minimum_size().width - gutters_width - gutter_padding;
+	int new_wrap_at = get_size().width - theme_cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding;
 	if (draw_minimap) {
 		new_wrap_at -= minimap_width;
 	}
@@ -7228,8 +7255,8 @@ void TextEdit::_update_scrollbars() {
 	Size2 hmin = h_scroll->get_combined_minimum_size();
 	Size2 vmin = v_scroll->get_combined_minimum_size();
 
-	v_scroll->set_begin(Point2(size.width - vmin.width, style_normal->get_margin(SIDE_TOP)));
-	v_scroll->set_end(Point2(size.width, size.height - style_normal->get_margin(SIDE_TOP) - style_normal->get_margin(SIDE_BOTTOM)));
+	v_scroll->set_begin(Point2(size.width - vmin.width, theme_cache.style_normal->get_margin(SIDE_TOP)));
+	v_scroll->set_end(Point2(size.width, size.height - theme_cache.style_normal->get_margin(SIDE_TOP) - theme_cache.style_normal->get_margin(SIDE_BOTTOM)));
 
 	h_scroll->set_begin(Point2(0, size.height - hmin.height));
 	h_scroll->set_end(Point2(size.width - vmin.width, size.height));
@@ -7242,7 +7269,7 @@ void TextEdit::_update_scrollbars() {
 		total_rows += visible_rows - 1;
 	}
 
-	int visible_width = size.width - style_normal->get_minimum_size().width;
+	int visible_width = size.width - theme_cache.style_normal->get_minimum_size().width;
 	int total_width = (draw_placeholder ? placeholder_max_width : text.get_max_width()) + vmin.x + gutters_width + gutter_padding;
 
 	if (draw_minimap) {
@@ -7298,7 +7325,7 @@ void TextEdit::_update_scrollbars() {
 
 int TextEdit::_get_control_height() const {
 	int control_height = get_size().height;
-	control_height -= style_normal->get_minimum_size().height;
+	control_height -= theme_cache.style_normal->get_minimum_size().height;
 	if (h_scroll->is_visible_in_tree()) {
 		control_height -= h_scroll->get_size().height;
 	}
@@ -7460,7 +7487,7 @@ void TextEdit::_scroll_lines_down() {
 
 void TextEdit::_update_minimap_hover() {
 	const Point2 mp = get_local_mouse_pos();
-	const int xmargin_end = get_size().width - style_normal->get_margin(SIDE_RIGHT);
+	const int xmargin_end = get_size().width - theme_cache.style_normal->get_margin(SIDE_RIGHT);
 
 	const bool hovering_sidebar = mp.x > xmargin_end - minimap_width && mp.x < xmargin_end;
 	if (!hovering_sidebar) {
@@ -7487,7 +7514,7 @@ void TextEdit::_update_minimap_hover() {
 void TextEdit::_update_minimap_click() {
 	Point2 mp = get_local_mouse_pos();
 
-	int xmargin_end = get_size().width - style_normal->get_margin(SIDE_RIGHT);
+	int xmargin_end = get_size().width - theme_cache.style_normal->get_margin(SIDE_RIGHT);
 	if (!dragging_minimap && (mp.x < xmargin_end - minimap_width || mp.y > xmargin_end)) {
 		minimap_clicked = false;
 		return;
@@ -7777,7 +7804,6 @@ TextEdit::TextEdit(const String &p_placeholder) {
 
 	clear();
 	set_focus_mode(FOCUS_ALL);
-	_update_caches();
 	set_default_cursor_shape(CURSOR_IBEAM);
 	set_process_unhandled_key_input(true);
 

@@ -183,7 +183,7 @@
 			<return type="int" />
 			<param index="0" name="column" type="int" />
 			<description>
-				Returns the column's icon's maximum width.
+				Returns the maximum allowed width of the icon in the given [param column].
 			</description>
 		</method>
 		<method name="get_icon_modulate" qualifiers="const">
@@ -545,7 +545,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="width" type="int" />
 			<description>
-				Sets the given column's icon's maximum width.
+				Sets the maximum allowed width of the icon in the given [param column]. This limit is applied on top of the default size of the icon and on top of [theme_item Tree.icon_max_width]. The height is adjusted according to the icon's ratio.
 			</description>
 		</method>
 		<method name="set_icon_modulate">

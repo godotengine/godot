@@ -31,22 +31,22 @@
 #ifndef FILESYSTEM_DOCK_H
 #define FILESYSTEM_DOCK_H
 
-#include "editor/create_dialog.h"
 #include "editor/dependency_editor.h"
-#include "editor/editor_dir_dialog.h"
 #include "editor/editor_file_system.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/script_create_dialog.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
-#include "scene/gui/progress_bar.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 
+class CreateDialog;
+class EditorDirDialog;
+class ItemList;
+class LineEdit;
+class ProgressBar;
 class SceneCreateDialog;
 class ShaderCreateDialog;
 
@@ -102,6 +102,12 @@ private:
 		FILE_NEW_FOLDER,
 		FILE_NEW_SCRIPT,
 		FILE_NEW_SCENE,
+	};
+
+	enum Overwrite {
+		OVERWRITE_UNDECIDED,
+		OVERWRITE_REPLACE,
+		OVERWRITE_RENAME,
 	};
 
 	FileSortOption file_sort = FILE_SORT_NAME;
@@ -173,6 +179,7 @@ private:
 	FileOrFolder to_duplicate;
 	Vector<FileOrFolder> to_move;
 	String to_move_path;
+	bool to_move_or_copy = false;
 
 	Vector<String> history;
 	int history_pos;
@@ -227,6 +234,7 @@ private:
 	void _save_scenes_after_move(const HashMap<String, String> &p_renames) const;
 	void _update_favorites_list_after_move(const HashMap<String, String> &p_files_renames, const HashMap<String, String> &p_folders_renames) const;
 	void _update_project_settings_after_move(const HashMap<String, String> &p_renames) const;
+	String _get_unique_name(const FileOrFolder &p_entry, const String &p_at_path);
 
 	void _resource_removed(const Ref<Resource> &p_resource);
 	void _file_removed(String p_file);
@@ -237,9 +245,10 @@ private:
 	void _make_scene_confirm();
 	void _rename_operation_confirm();
 	void _duplicate_operation_confirm();
-	void _move_with_overwrite();
+	void _overwrite_dialog_action(bool p_overwrite);
 	Vector<String> _check_existing();
-	void _move_operation_confirm(const String &p_to_path, bool p_overwrite = false);
+	void _move_dialog_confirm(const String &p_path);
+	void _move_operation_confirm(const String &p_to_path, bool p_copy = false, Overwrite p_overwrite = OVERWRITE_UNDECIDED);
 
 	void _tree_rmb_option(int p_option);
 	void _file_list_rmb_option(int p_option);

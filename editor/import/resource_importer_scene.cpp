@@ -477,48 +477,45 @@ void _rescale_animation(Vector3 p_scale, Ref<Animation> p_animation) {
 	}
 }
 
-void _apply_basis_to_scalable_node_collection(ScalableNodeCollection &p_dictionary, Vector3 p_scale) {
-	for (Node3D *node_3d : p_dictionary.node_3ds) {
-		if (node_3d) {
-			node_3d->set_position(p_scale * node_3d->get_position());
-
-			Skeleton3D *skeleton_3d = Object::cast_to<Skeleton3D>(node_3d);
-			if (skeleton_3d) {
-				for (int i = 0; i < skeleton_3d->get_bone_count(); i++) {
-					Transform3D rest = skeleton_3d->get_bone_rest(i);
-					skeleton_3d->set_bone_rest(i, Transform3D(rest.basis, p_scale * rest.origin));
-					skeleton_3d->set_bone_pose_position(i, p_scale * rest.origin);
-				}
+void _apply_scale_to_scalable_node_collection(ScalableNodeCollection &p_collection, Vector3 p_scale) {
+	for (Node3D *node_3d : p_collection.node_3ds) {
+		node_3d->set_position(p_scale * node_3d->get_position());
+		Skeleton3D *skeleton_3d = Object::cast_to<Skeleton3D>(node_3d);
+		if (skeleton_3d) {
+			for (int i = 0; i < skeleton_3d->get_bone_count(); i++) {
+				Transform3D rest = skeleton_3d->get_bone_rest(i);
+				skeleton_3d->set_bone_rest(i, Transform3D(rest.basis, p_scale * rest.origin));
+				skeleton_3d->set_bone_pose_position(i, p_scale * rest.origin);
 			}
 		}
 	}
-	for (Ref<ImporterMesh> mesh : p_dictionary.importer_meshes) {
+	for (Ref<ImporterMesh> mesh : p_collection.importer_meshes) {
 		_rescale_importer_mesh(p_scale, mesh, false);
 	}
-	for (Ref<Skin> skin : p_dictionary.skins) {
+	for (Ref<Skin> skin : p_collection.skins) {
 		_rescale_skin(p_scale, skin);
 	}
-	for (Ref<Animation> animation : p_dictionary.animations) {
+	for (Ref<Animation> animation : p_collection.animations) {
 		_rescale_animation(p_scale, animation);
 	}
 }
 
-void _populate_scalable_nodes_collection(Node *p_node, ScalableNodeCollection &p_dictionary) {
+void _populate_scalable_nodes_collection(Node *p_node, ScalableNodeCollection &p_collection) {
 	if (!p_node) {
 		return;
 	}
 	Node3D *node_3d = Object::cast_to<Node3D>(p_node);
 	if (node_3d) {
-		p_dictionary.node_3ds.insert(node_3d);
+		p_collection.node_3ds.insert(node_3d);
 		ImporterMeshInstance3D *mesh_instance_3d = Object::cast_to<ImporterMeshInstance3D>(p_node);
 		if (mesh_instance_3d) {
 			Ref<ImporterMesh> mesh = mesh_instance_3d->get_mesh();
 			if (mesh.is_valid()) {
-				p_dictionary.importer_meshes.insert(mesh);
+				p_collection.importer_meshes.insert(mesh);
 			}
 			Ref<Skin> skin = mesh_instance_3d->get_skin();
 			if (skin.is_valid()) {
-				p_dictionary.skins.insert(skin);
+				p_collection.skins.insert(skin);
 			}
 		}
 	}
@@ -529,21 +526,20 @@ void _populate_scalable_nodes_collection(Node *p_node, ScalableNodeCollection &p
 
 		for (const StringName &E : animation_list) {
 			Ref<Animation> animation = animation_player->get_animation(E);
-			p_dictionary.animations.insert(animation);
+			p_collection.animations.insert(animation);
 		}
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *child = p_node->get_child(i);
-		_populate_scalable_nodes_collection(child, p_dictionary);
+		_populate_scalable_nodes_collection(child, p_collection);
 	}
 }
 
-void _apply_permanent_rotation_scale_to_node(Node *p_node) {
-	Transform3D transform = Object::cast_to<Node3D>(p_node)->get_transform();
+void _apply_permanent_scale_to_descendants(Node *p_root_node, Vector3 p_scale) {
 	ScalableNodeCollection scalable_node_collection;
-	_populate_scalable_nodes_collection(p_node, scalable_node_collection);
-	_apply_basis_to_scalable_node_collection(scalable_node_collection, transform.basis.get_scale());
+	_populate_scalable_nodes_collection(p_root_node, scalable_node_collection);
+	_apply_scale_to_scalable_node_collection(scalable_node_collection, p_scale);
 }
 
 Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &r_collision_map, Pair<PackedVector3Array, PackedInt32Array> *r_occluder_arrays, List<Pair<NodePath, Node *>> &r_node_renames) {
@@ -1608,22 +1604,23 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/shape_type", PROPERTY_HINT_ENUM, "Decompose Convex,Simple Convex,Trimesh,Box,Sphere,Cylinder,Capsule", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
 
 			// Decomposition
-			Mesh::ConvexDecompositionSettings decomposition_default;
+			Ref<MeshConvexDecompositionSettings> decomposition_default = Ref<MeshConvexDecompositionSettings>();
+			decomposition_default.instantiate();
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "decomposition/advanced", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/precision", PROPERTY_HINT_RANGE, "1,10,1"), 5));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "decomposition/max_concavity", PROPERTY_HINT_RANGE, "0.0,1.0,0.001", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.max_concavity));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "decomposition/symmetry_planes_clipping_bias", PROPERTY_HINT_RANGE, "0.0,1.0,0.001", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.symmetry_planes_clipping_bias));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "decomposition/revolution_axes_clipping_bias", PROPERTY_HINT_RANGE, "0.0,1.0,0.001", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.revolution_axes_clipping_bias));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "decomposition/min_volume_per_convex_hull", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.min_volume_per_convex_hull));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/resolution", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.resolution));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/max_num_vertices_per_convex_hull", PROPERTY_HINT_RANGE, "5,512,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.max_num_vertices_per_convex_hull));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/plane_downsampling", PROPERTY_HINT_RANGE, "1,16,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.plane_downsampling));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/convexhull_downsampling", PROPERTY_HINT_RANGE, "1,16,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.convexhull_downsampling));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "decomposition/normalize_mesh", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.normalize_mesh));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/mode", PROPERTY_HINT_ENUM, "Voxel,Tetrahedron", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), static_cast<int>(decomposition_default.mode)));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "decomposition/convexhull_approximation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.convexhull_approximation));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/max_convex_hulls", PROPERTY_HINT_RANGE, "1,100,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.max_convex_hulls));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "decomposition/project_hull_vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.project_hull_vertices));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "decomposition/max_concavity", PROPERTY_HINT_RANGE, "0.0,1.0,0.001", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default->get_max_concavity()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "decomposition/symmetry_planes_clipping_bias", PROPERTY_HINT_RANGE, "0.0,1.0,0.001", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default->get_symmetry_planes_clipping_bias()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "decomposition/revolution_axes_clipping_bias", PROPERTY_HINT_RANGE, "0.0,1.0,0.001", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default->get_revolution_axes_clipping_bias()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "decomposition/min_volume_per_convex_hull", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default->get_min_volume_per_convex_hull()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/resolution", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default->get_resolution()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/max_num_vertices_per_convex_hull", PROPERTY_HINT_RANGE, "5,512,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default->get_max_num_vertices_per_convex_hull()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/plane_downsampling", PROPERTY_HINT_RANGE, "1,16,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default->get_plane_downsampling()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/convexhull_downsampling", PROPERTY_HINT_RANGE, "1,16,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default->get_convex_hull_downsampling()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "decomposition/normalize_mesh", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default->get_normalize_mesh()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/mode", PROPERTY_HINT_ENUM, "Voxel,Tetrahedron", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), static_cast<int>(decomposition_default->get_mode())));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "decomposition/convexhull_approximation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default->get_convex_hull_approximation()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/max_convex_hulls", PROPERTY_HINT_RANGE, "1,100,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default->get_max_convex_hulls()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "decomposition/project_hull_vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default->get_project_hull_vertices()));
 
 			// Primitives: Box, Sphere, Cylinder, Capsule.
 			r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "primitive/size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), Vector3(2.0, 2.0, 2.0)));
@@ -2302,11 +2299,6 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashM
 	Error err = OK;
 	HashMap<StringName, Variant> options_dupe = p_options;
 
-	// By default, the GLTF importer will extract embedded images into files on disk
-	// However, we do not want the advanced settings dialog to be able to write files on disk.
-	// To avoid this and also avoid compressing to basis every time, we are using the uncompressed option.
-	options_dupe["gltf/embedded_image_handling"] = 3; // Embed as Uncompressed defined in GLTFState::GLTFHandleBinary::HANDLE_BINARY_EMBED_AS_UNCOMPRESSED
-
 	Node *scene = importer->import_scene(p_source_file, EditorSceneFormatImporter::IMPORT_ANIMATION | EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS, options_dupe, nullptr, &err);
 	if (!scene || err != OK) {
 		return nullptr;
@@ -2382,11 +2374,13 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		root_scale = p_options["nodes/root_scale"];
 	}
 	if (Object::cast_to<Node3D>(scene)) {
-		Object::cast_to<Node3D>(scene)->scale(Vector3(root_scale, root_scale, root_scale));
-	}
-	if (apply_root) {
-		_apply_permanent_rotation_scale_to_node(scene);
-		Object::cast_to<Node3D>(scene)->scale(Vector3(root_scale, root_scale, root_scale).inverse());
+		Node3D *scene_3d = Object::cast_to<Node3D>(scene);
+		Vector3 scale = Vector3(root_scale, root_scale, root_scale);
+		if (apply_root) {
+			_apply_permanent_scale_to_descendants(scene, scale);
+		} else {
+			scene_3d->scale(scale);
+		}
 	}
 	Dictionary subresources = p_options["_subresources"];
 

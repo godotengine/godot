@@ -198,7 +198,7 @@ class CallableCustomMethodPointerRetC : public CallableCustomMethodPointerBase {
 	} data;
 
 public:
-	virtual ObjectID get_object() const {
+	virtual ObjectID get_object() const override {
 #ifdef DEBUG_ENABLED
 		if (ObjectDB::get_instance(ObjectID(data.object_id)) == nullptr) {
 			return ObjectID();
@@ -207,7 +207,7 @@ public:
 		return data.instance->get_instance_id();
 	}
 
-	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
+	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {
 #ifdef DEBUG_ENABLED
 		ERR_FAIL_COND_MSG(ObjectDB::get_instance(ObjectID(data.object_id)) == nullptr, "Invalid Object id '" + uitos(data.object_id) + "', can't call method.");
 #endif
@@ -254,11 +254,15 @@ class CallableCustomStaticMethodPointer : public CallableCustomMethodPointerBase
 	} data;
 
 public:
-	virtual ObjectID get_object() const {
+	virtual bool is_valid() const override {
+		return true;
+	}
+
+	virtual ObjectID get_object() const override {
 		return ObjectID();
 	}
 
-	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
+	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {
 		call_with_variant_args_static_ret(data.method, p_arguments, p_argcount, r_return_value, r_call_error);
 		r_return_value = Variant();
 	}
@@ -292,11 +296,15 @@ class CallableCustomStaticMethodPointerRet : public CallableCustomMethodPointerB
 	} data;
 
 public:
-	virtual ObjectID get_object() const {
+	virtual bool is_valid() const override {
+		return true;
+	}
+
+	virtual ObjectID get_object() const override {
 		return ObjectID();
 	}
 
-	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
+	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {
 		call_with_variant_args_static_ret(data.method, p_arguments, p_argcount, r_return_value, r_call_error);
 	}
 

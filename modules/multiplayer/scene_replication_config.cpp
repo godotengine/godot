@@ -51,6 +51,9 @@ bool SceneReplicationConfig::_set(const StringName &p_name, const Variant &p_val
 		ERR_FAIL_INDEX_V(idx, properties.size(), false);
 		ReplicationProperty &prop = properties[idx];
 		if (what == "sync") {
+			if ((bool)p_value == prop.sync) {
+				return true;
+			}
 			prop.sync = p_value;
 			if (prop.sync) {
 				sync_props.push_back(prop.name);
@@ -59,6 +62,9 @@ bool SceneReplicationConfig::_set(const StringName &p_name, const Variant &p_val
 			}
 			return true;
 		} else if (what == "spawn") {
+			if ((bool)p_value == prop.spawn) {
+				return true;
+			}
 			prop.spawn = p_value;
 			if (prop.spawn) {
 				spawn_props.push_back(prop.name);
@@ -132,16 +138,18 @@ void SceneReplicationConfig::add_property(const NodePath &p_path, int p_index) {
 	spawn_props.clear();
 	for (const ReplicationProperty &prop : properties) {
 		if (prop.sync) {
-			sync_props.push_back(p_path);
+			sync_props.push_back(prop.name);
 		}
 		if (prop.spawn) {
-			spawn_props.push_back(p_path);
+			spawn_props.push_back(prop.name);
 		}
 	}
 }
 
 void SceneReplicationConfig::remove_property(const NodePath &p_path) {
 	properties.erase(p_path);
+	sync_props.erase(p_path);
+	spawn_props.erase(p_path);
 }
 
 bool SceneReplicationConfig::has_property(const NodePath &p_path) const {
@@ -178,7 +186,7 @@ void SceneReplicationConfig::property_set_spawn(const NodePath &p_path, bool p_e
 	spawn_props.clear();
 	for (const ReplicationProperty &prop : properties) {
 		if (prop.spawn) {
-			spawn_props.push_back(p_path);
+			spawn_props.push_back(prop.name);
 		}
 	}
 }
@@ -199,7 +207,7 @@ void SceneReplicationConfig::property_set_sync(const NodePath &p_path, bool p_en
 	sync_props.clear();
 	for (const ReplicationProperty &prop : properties) {
 		if (prop.sync) {
-			sync_props.push_back(p_path);
+			sync_props.push_back(prop.name);
 		}
 	}
 }
