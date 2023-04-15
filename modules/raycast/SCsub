@@ -114,6 +114,11 @@ if env["builtin_embree"]:
 
     env.modules_sources += thirdparty_obj
 
+else:
+    thirdparty_dir = "#thirdparty/embree/"
+    env_raycast.Append(CPPPATH=[thirdparty_dir + "include"])
+    env.Append(LIBPATH=[thirdparty_dir + "lib"])
+    env.Append(LINKFLAGS=["embree3.lib", "tbb.lib", "psapi.lib"])
 
 # Godot source files
 

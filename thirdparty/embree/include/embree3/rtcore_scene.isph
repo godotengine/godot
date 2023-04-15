@@ -1,0 +1,203 @@
+// Copyright 2009-2021 Intel Corporation
+// SPDX-License-Identifier: Apache-2.0
+
+#ifndef __RTC_SCENE_ISPH__
+#define __RTC_SCENE_ISPH__
+
+#include "rtcore_device.isph"
+
+/* Forward declarations for ray structures */
+struct RTCRayHit;
+struct RTCRayHitNp;
+
+/* Scene flags */
+enum RTCSceneFlags
+{
+  RTC_SCENE_FLAG_NONE                    = 0,
+  RTC_SCENE_FLAG_DYNAMIC                 = (1 << 0),
+  RTC_SCENE_FLAG_COMPACT                 = (1 << 1),
+  RTC_SCENE_FLAG_ROBUST                  = (1 << 2),
+  RTC_SCENE_FLAG_CONTEXT_FILTER_FUNCTION = (1 << 3)
+};
+
+/* Creates a new scene. */
+RTC_API RTCScene rtcNewScene(RTCDevice device);
+
+/* Retains the scene (increments the reference count). */
+RTC_API void rtcRetainScene(RTCScene scene);
+
+/* Releases the scene (decrements the reference count). */
+RTC_API void rtcReleaseScene(RTCScene scene);
+
+
+/* Attaches the geometry to a scene. */
+RTC_API uniform unsigned int rtcAttachGeometry(RTCScene scene, RTCGeometry geometry);
+
+/* Attaches the geometry to a scene using the specified geometry ID. */
+RTC_API void rtcAttachGeometryByID(RTCScene scene, RTCGeometry geometry, uniform unsigned int geomID);
+
+/* Detaches the geometry from the scene. */
+RTC_API void rtcDetachGeometry(RTCScene scene, uniform unsigned int geomID);
+
+/* Gets a geometry handle from the scene. This function is not thread safe and should get used during rendering. */
+RTC_API RTCGeometry rtcGetGeometry(RTCScene scene, uniform unsigned int geomID);
+
+/* Gets a geometry handle from the scene. This function is thread safe and should NOT get used during rendering. */
+RTC_API RTCGeometry rtcGetGeometryThreadSafe(RTCScene scene, uniform unsigned int geomID);
+
+
+/* Commits the scene. */
+RTC_API void rtcCommitScene(RTCScene scene);
+
+/* Commits the scene from multiple threads. */
+RTC_API void rtcJoinCommitScene(RTCScene scene);
+
+
+/* Progress monitor callback function */
+typedef unmasked uniform bool (*uniform RTCProgressMonitorFunction)(void* uniform ptr, uniform double n);
+
+/* Sets the progress monitor callback function of the scene. */
+RTC_API void rtcSetSceneProgressMonitorFunction(RTCScene scene, RTCProgressMonitorFunction progress, void* uniform ptr);
+
+/* Sets the build quality of the scene. */
+RTC_API void rtcSetSceneBuildQuality(RTCScene scene, uniform RTCBuildQuality quality);
+
+/* Sets the scene flags. */
+RTC_API void rtcSetSceneFlags(RTCScene scene, uniform RTCSceneFlags flags);
+
+/* Returns the scene flags. */
+RTC_API uniform RTCSceneFlags rtcGetSceneFlags(RTCScene scene);
+
+/* Returns the axis-aligned bounds of the scene. */
+RTC_API void rtcGetSceneBounds(RTCScene scene, uniform RTCBounds* uniform bounds_o);
+
+/* Returns the linear axis-aligned bounds of the scene. */
+RTC_API void rtcGetSceneLinearBounds(RTCScene scene, uniform RTCLinearBounds* uniform bounds_o);
+
+
+/* perform a closest point query of the scene. */
+RTC_API bool rtcPointQuery(RTCScene scene, uniform RTCPointQuery* uniform query, uniform RTCPointQueryContext* uniform context, RTCPointQueryFunction queryFunc, void* uniform userPtr);
+
+/* Perform a closest point query with a packet of 4 points with the scene. */
+RTC_API bool rtcPointQuery4(const int* uniform valid, RTCScene scene, void* uniform query, uniform RTCPointQueryContext* uniform context, RTCPointQueryFunction queryFunc, void * varying * uniform userPtr);
+
+/* Perform a closest point query with a packet of 4 points with the scene. */
+RTC_API bool rtcPointQuery8(const int* uniform valid, RTCScene scene, void* uniform query, uniform RTCPointQueryContext* uniform context, RTCPointQueryFunction queryFunc, void * varying * uniform userPtr);
+
+/* Perform a closest point query with a packet of 4 points with the scene. */
+RTC_API bool rtcPointQuery16(const int* uniform valid, RTCScene scene, void* uniform query, uniform RTCPointQueryContext* uniform context, RTCPointQueryFunction queryFunc, void * varying * uniform userPtr);
+
+/* Intersects a varying ray with the scene. */
+RTC_FORCEINLINE bool rtcPointQueryV(RTCScene scene, varying RTCPointQuery* uniform query, uniform RTCPointQueryContext* uniform context, RTCPointQueryFunction queryFunc, void * varying * uniform userPtr)
+{
+  varying bool mask = __mask;
+  unmasked {
+    varying int imask = mask ? -1 : 0;
+  }
+  if (sizeof(varying float) == 16)
+    return rtcPointQuery4((uniform int* uniform)&imask, scene, query, context, queryFunc, userPtr);
+  else if (sizeof(varying float) == 32)
+    return rtcPointQuery8((uniform int* uniform)&imask, scene, query, context, queryFunc, userPtr);
+  else if (sizeof(varying float) == 64)
+    return rtcPointQuery16((uniform int* uniform)&imask, scene, query, context, queryFunc, userPtr);
+  else
+    return false;
+}
+
+/* Intersects a single ray with the scene. */
+RTC_API void rtcIntersect1(RTCScene scene, uniform RTCIntersectContext* uniform context, uniform RTCRayHit* uniform rayhit);
+
+/* Intersects a packet of 4 rays with the scene. */
+RTC_API void rtcIntersect4(const int* uniform valid, RTCScene scene, uniform RTCIntersectContext* uniform context, void* uniform rayhit);
+
+/* Intersects a packet of 8 rays with the scene. */
+RTC_API void rtcIntersect8(const int* uniform valid, RTCScene scene, uniform RTCIntersectContext* uniform context, void* uniform rayhit);
+
+/* Intersects a packet of 16 rays with the scene. */
+RTC_API void rtcIntersect16(const int* uniform valid, RTCScene scene, uniform RTCIntersectContext* uniform context, void* uniform rayhit);
+
+/* Intersects a varying ray with the scene. */
+RTC_FORCEINLINE void rtcIntersectV(RTCScene scene, uniform RTCIntersectContext* uniform context, varying RTCRayHit* uniform rayhit) 
+{
+  varying bool mask = __mask;
+  unmasked {
+    varying int imask = mask ? -1 : 0;
+  }
+  if (sizeof(varying float) == 16)
+    rtcIntersect4((uniform int* uniform)&imask, scene, context, rayhit);
+  else if (sizeof(varying float) == 32)
+    rtcIntersect8((uniform int* uniform)&imask, scene, context, rayhit);
+  else if (sizeof(varying float) == 64)
+    rtcIntersect16((uniform int* uniform)&imask, scene, context, rayhit);
+}
+
+/* Intersects a stream of M rays with the scene. */
+RTC_API void rtcIntersect1M(RTCScene scene, uniform RTCIntersectContext* uniform context, uniform RTCRayHit* uniform rayhit, uniform unsigned int M, uniform uintptr_t byteStride);
+
+/* Intersects a stream of pointers to M rays with the scene. */
+RTC_API void rtcIntersect1Mp(RTCScene scene, uniform RTCIntersectContext* uniform context, uniform RTCRayHit** uniform rayhit, uniform unsigned int M);
+
+/* Intersects a stream of M ray packets of size N in SOA format with the scene. */
+RTC_API void rtcIntersectNM(RTCScene scene, uniform RTCIntersectContext* uniform context, struct RTCRayHitN* uniform rayhit, uniform unsigned int N, uniform unsigned int M, uniform uintptr_t byteStride);
+
+/* Intersects a stream of M ray packets of native packet size with the scene. */
+RTC_FORCEINLINE void rtcIntersectVM(RTCScene scene, uniform RTCIntersectContext* uniform context, varying RTCRayHit* uniform rayhit, uniform unsigned int M, uniform uintptr_t byteStride) {
+  rtcIntersectNM(scene, context, (struct RTCRayHitN* uniform)rayhit, sizeof(varying float)/4, M, byteStride);
+}
+
+/* Intersects a stream of M ray packets of size N in SOA format with the scene. */
+RTC_API void rtcIntersectNp(RTCScene scene, uniform RTCIntersectContext* uniform context, uniform RTCRayHitNp* uniform rayhit, uniform unsigned int N);
+
+/* Tests a single ray for occlusion with the scene. */
+RTC_API void rtcOccluded1(RTCScene scene, uniform RTCIntersectContext* uniform context, uniform RTCRay* uniform ray);
+
+/* Tests a packet of 4 rays for occlusion occluded with the scene. */
+RTC_API void rtcOccluded4(const uniform int* uniform valid, RTCScene scene, uniform RTCIntersectContext* uniform context, void* uniform ray);
+
+/* Tests a packet of 8 rays for occlusion occluded with the scene. */
+RTC_API void rtcOccluded8(const uniform int* uniform valid, RTCScene scene, uniform RTCIntersectContext* uniform context, void* uniform ray);
+
+/* Tests a packet of 16 rays for occlusion occluded with the scene. */
+RTC_API void rtcOccluded16(const uniform int* uniform valid, RTCScene scene, uniform RTCIntersectContext* uniform context, void* uniform ray);
+
+/* Tests a varying ray for occlusion with the scene. */
+RTC_FORCEINLINE void rtcOccludedV(RTCScene scene, uniform RTCIntersectContext* uniform context, varying RTCRay* uniform ray)
+{
+  varying bool mask = __mask;
+  unmasked {
+    varying int imask = mask ? -1 : 0;
+  }
+
+  if (sizeof(varying float) == 16)
+    rtcOccluded4((uniform int* uniform)&imask, scene, context, ray);
+  else if (sizeof(varying float) == 32)
+    rtcOccluded8((uniform int* uniform)&imask, scene, context, ray);
+  else if (sizeof(varying float) == 64)
+    rtcOccluded16((uniform int* uniform)&imask, scene, context, ray);
+}
+
+/* Tests a stream of M rays for occlusion with the scene. */
+RTC_API void rtcOccluded1M(RTCScene scene, uniform RTCIntersectContext* uniform context, uniform RTCRay* uniform ray, uniform unsigned int M, uniform uintptr_t byteStride);
+
+/* Tests a stream of pointers to M rays for occlusion with the scene. */
+RTC_API void rtcOccluded1Mp(RTCScene scene, uniform RTCIntersectContext* uniform context, uniform RTCRay** uniform ray, uniform unsigned int M);
+
+/* Tests a stream of M ray packets of size N in SOA format for occlusion with the scene. */
+RTC_API void rtcOccludedNM(RTCScene scene, uniform RTCIntersectContext* uniform context, struct RTCRayN* uniform ray, uniform unsigned int N, uniform unsigned int M, uniform uintptr_t byteStride);
+
+/* Tests a stream of M ray packets of native size in SOA format for occlusion with the scene. */
+RTC_FORCEINLINE void rtcOccludedVM(RTCScene scene, uniform RTCIntersectContext* uniform context, varying RTCRay* uniform ray, uniform unsigned int M, uniform uintptr_t byteStride) {
+  rtcOccludedNM(scene, context, (struct RTCRayN* uniform)ray, sizeof(varying float)/4, M, byteStride);
+}
+
+/* Tests a stream of M ray packets of size N in SOA format for occlusion with the scene. */
+RTC_API void rtcOccludedNp(RTCScene scene, uniform RTCIntersectContext* uniform context, uniform RTCRayNp* uniform ray, uniform unsigned int N);
+
+/*! collision callback */
+struct RTCCollision { unsigned int geomID0; unsigned int primID0; unsigned int geomID1; unsigned int primID1; };
+typedef unmasked void (* uniform RTCCollideFunc) (void* uniform userPtr, uniform RTCCollision* uniform collisions, uniform unsigned int num_collisions);
+
+/*! Performs collision detection of two scenes */
+RTC_API void rtcCollide (RTCScene scene0, RTCScene scene1, RTCCollideFunc callback, void* userPtr);
+
+#endif

@@ -15,15 +15,15 @@
 #define RTC_MIN_WIDTH EMBREE_MIN_WIDTH
 
 #if !defined(EMBREE_STATIC_LIB)
-#   define EMBREE_STATIC_LIB
+/* #undef EMBREE_STATIC_LIB */
 #endif
-/* #undef EMBREE_API_NAMESPACE*/
+/* #undef EMBREE_API_NAMESPACE */
 
 #if defined(EMBREE_API_NAMESPACE)
-#  define RTC_NAMESPACE
-#  define RTC_NAMESPACE_BEGIN namespace {
+#  define RTC_NAMESPACE 
+#  define RTC_NAMESPACE_BEGIN namespace  {
 #  define RTC_NAMESPACE_END }
-#  define RTC_NAMESPACE_USE using namespace;
+#  define RTC_NAMESPACE_USE using namespace ;
 #  define RTC_API_EXTERN_C
 #  undef EMBREE_API_NAMESPACE
 #else
