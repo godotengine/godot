@@ -329,7 +329,7 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 
 	if (p_node == scene) {
 		icon = get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
-		item->set_text(0, "Scene");
+		item->set_text(0, TTR("Scene"));
 	}
 
 	item->set_icon(0, icon);
@@ -1032,12 +1032,12 @@ void SceneImportSettings::_save_path_changed(const String &p_path) {
 	save_path_item->set_text(1, p_path);
 
 	if (FileAccess::exists(p_path)) {
-		save_path_item->set_text(2, "Warning: File exists");
+		save_path_item->set_text(2, TTR("Warning: File exists"));
 		save_path_item->set_tooltip_text(2, TTR("Existing file with the same name will be replaced."));
 		save_path_item->set_icon(2, get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
 
 	} else {
-		save_path_item->set_text(2, "Will create new File");
+		save_path_item->set_text(2, TTR("Will create new file"));
 		save_path_item->set_icon(2, get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons")));
 	}
 }
@@ -1077,7 +1077,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 
 				if (md.has_import_id) {
 					if (md.settings.has("use_external/enabled") && bool(md.settings["use_external/enabled"])) {
-						item->set_text(2, "Already External");
+						item->set_text(2, TTR("Already External"));
 						item->set_tooltip_text(2, TTR("This material already references an external file, no action will be taken.\nDisable the external property for it to be extracted again."));
 					} else {
 						item->set_metadata(0, E.key);
@@ -1092,12 +1092,12 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 
 						item->set_text(1, path);
 						if (FileAccess::exists(path)) {
-							item->set_text(2, "Warning: File exists");
+							item->set_text(2, TTR("Warning: File exists"));
 							item->set_tooltip_text(2, TTR("Existing file with the same name will be replaced."));
 							item->set_icon(2, get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
 
 						} else {
-							item->set_text(2, "Will create new File");
+							item->set_text(2, TTR("Will create new file"));
 							item->set_icon(2, get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons")));
 						}
 
@@ -1105,7 +1105,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 					}
 
 				} else {
-					item->set_text(2, "No import ID");
+					item->set_text(2, TTR("No import ID"));
 					item->set_tooltip_text(2, TTR("Material has no name nor any other way to identify on re-import.\nPlease name it or ensure it is exported with an unique ID."));
 					item->set_icon(2, get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
 				}
@@ -1130,7 +1130,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 
 				if (md.has_import_id) {
 					if (md.settings.has("save_to_file/enabled") && bool(md.settings["save_to_file/enabled"])) {
-						item->set_text(2, "Already Saving");
+						item->set_text(2, TTR("Already Saving"));
 						item->set_tooltip_text(2, TTR("This mesh already saves to an external resource, no action will be taken."));
 					} else {
 						item->set_metadata(0, E.key);
@@ -1145,12 +1145,12 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 
 						item->set_text(1, path);
 						if (FileAccess::exists(path)) {
-							item->set_text(2, "Warning: File exists");
+							item->set_text(2, TTR("Warning: File exists"));
 							item->set_tooltip_text(2, TTR("Existing file with the same name will be replaced on import."));
 							item->set_icon(2, get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
 
 						} else {
-							item->set_text(2, "Will save to new File");
+							item->set_text(2, TTR("Will save to new file"));
 							item->set_icon(2, get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons")));
 						}
 
@@ -1158,7 +1158,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 					}
 
 				} else {
-					item->set_text(2, "No import ID");
+					item->set_text(2, TTR("No import ID"));
 					item->set_tooltip_text(2, TTR("Mesh has no name nor any other way to identify on re-import.\nPlease name it or ensure it is exported with an unique ID."));
 					item->set_icon(2, get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
 				}
@@ -1182,7 +1182,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 				item->set_text(0, name);
 
 				if (ad.settings.has("save_to_file/enabled") && bool(ad.settings["save_to_file/enabled"])) {
-					item->set_text(2, "Already Saving");
+					item->set_text(2, TTR("Already Saving"));
 					item->set_tooltip_text(2, TTR("This animation already saves to an external resource, no action will be taken."));
 				} else {
 					item->set_metadata(0, E.key);
@@ -1197,12 +1197,12 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 
 					item->set_text(1, path);
 					if (FileAccess::exists(path)) {
-						item->set_text(2, "Warning: File exists");
+						item->set_text(2, TTR("Warning: File exists"));
 						item->set_tooltip_text(2, TTR("Existing file with the same name will be replaced on import."));
 						item->set_icon(2, get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
 
 					} else {
-						item->set_text(2, "Will save to new File");
+						item->set_text(2, TTR("Will save to new file"));
 						item->set_icon(2, get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons")));
 					}
 

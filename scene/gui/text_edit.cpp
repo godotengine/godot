@@ -1385,7 +1385,7 @@ void TextEdit::_notification(int p_what) {
 													ts_caret.l_caret.position.y += ts_caret.l_caret.size.y;
 													ts_caret.l_caret.size.y = caret_width;
 												}
-												if (ts_caret.l_caret.position.x >= TS->shaped_text_get_size(rid).x) {
+												if (Math::ceil(ts_caret.l_caret.position.x) >= TS->shaped_text_get_size(rid).x) {
 													ts_caret.l_caret.size.x = font->get_char_size('m', font_size).x;
 												} else {
 													ts_caret.l_caret.size.x = 3 * caret_width;
@@ -1480,7 +1480,11 @@ void TextEdit::_notification(int p_what) {
 			if (has_focus()) {
 				if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
 					DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
-					DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + get_caret_draw_pos(), get_viewport()->get_window_id());
+					Point2 pos = get_global_position() + get_caret_draw_pos();
+					if (get_window()->get_embedder()) {
+						pos += get_viewport()->get_popup_base_transform().get_origin();
+					}
+					DisplayServer::get_singleton()->window_set_ime_position(pos, get_viewport()->get_window_id());
 				}
 			}
 		} break;
@@ -1494,7 +1498,11 @@ void TextEdit::_notification(int p_what) {
 
 			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
 				DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
-				DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + get_caret_draw_pos(), get_viewport()->get_window_id());
+				Point2 pos = get_global_position() + get_caret_draw_pos();
+				if (get_window()->get_embedder()) {
+					pos += get_viewport()->get_popup_base_transform().get_origin();
+				}
+				DisplayServer::get_singleton()->window_set_ime_position(pos, get_viewport()->get_window_id());
 			}
 
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
@@ -3027,6 +3035,11 @@ bool TextEdit::is_text_field() const {
 }
 
 Variant TextEdit::get_drag_data(const Point2 &p_point) {
+	Variant ret = Control::get_drag_data(p_point);
+	if (ret != Variant()) {
+		return ret;
+	}
+
 	if (has_selection() && selection_drag_attempt) {
 		String t = get_selected_text();
 		Label *l = memnew(Label);

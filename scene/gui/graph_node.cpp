@@ -664,7 +664,7 @@ Size2 GraphNode::get_minimum_size() const {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c) {
+		if (!c || !c->is_visible()) {
 			continue;
 		}
 		if (c->is_set_as_top_level()) {
@@ -805,13 +805,13 @@ void GraphNode::_connpos_update() {
 		Size2i size = c->get_rect().size;
 
 		int y = sb->get_margin(SIDE_TOP) + vofs;
-		int h = size.y;
+		int h = size.height;
 
 		if (slot_info.has(idx)) {
 			if (slot_info[idx].enable_left) {
 				PortCache cc;
 				cc.position = Point2i(edgeofs, y + h / 2);
-				cc.height = size.height;
+				cc.height = h;
 
 				cc.slot_idx = idx;
 				cc.type = slot_info[idx].type_left;
@@ -822,7 +822,7 @@ void GraphNode::_connpos_update() {
 			if (slot_info[idx].enable_right) {
 				PortCache cc;
 				cc.position = Point2i(get_size().width - edgeofs, y + h / 2);
-				cc.height = size.height;
+				cc.height = h;
 
 				cc.slot_idx = idx;
 				cc.type = slot_info[idx].type_right;
@@ -833,7 +833,7 @@ void GraphNode::_connpos_update() {
 		}
 
 		vofs += sep;
-		vofs += size.y;
+		vofs += h;
 		idx++;
 	}
 

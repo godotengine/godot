@@ -65,7 +65,7 @@ struct GL_State {
 	float y = 0;
 	float w = 0;
 	float h = 0;
-	String xml_code;
+	CharString xml_code;
 	tvg::Matrix m;
 };
 

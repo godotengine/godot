@@ -516,11 +516,13 @@ void JoypadWindows::joypad_vibration_stop_xinput(int p_device, uint64_t p_timest
 void JoypadWindows::load_xinput() {
 	xinput_get_state = &_xinput_get_state;
 	xinput_set_state = &_xinput_set_state;
+	bool legacy_xinput = false;
 	xinput_dll = LoadLibrary("XInput1_4.dll");
 	if (!xinput_dll) {
 		xinput_dll = LoadLibrary("XInput1_3.dll");
 		if (!xinput_dll) {
 			xinput_dll = LoadLibrary("XInput9_1_0.dll");
+			legacy_xinput = true;
 		}
 	}
 
@@ -529,7 +531,9 @@ void JoypadWindows::load_xinput() {
 		return;
 	}
 
-	XInputGetState_t func = (XInputGetState_t)GetProcAddress((HMODULE)xinput_dll, "XInputGetState");
+	// (LPCSTR)100 is the magic number to get XInputGetStateEx, which also provides the state for the guide button
+	LPCSTR get_state_func_name = legacy_xinput ? "XInputGetState" : (LPCSTR)100;
+	XInputGetState_t func = (XInputGetState_t)GetProcAddress((HMODULE)xinput_dll, get_state_func_name);
 	XInputSetState_t set_func = (XInputSetState_t)GetProcAddress((HMODULE)xinput_dll, "XInputSetState");
 	if (!func || !set_func) {
 		unload_xinput();

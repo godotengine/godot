@@ -36,6 +36,7 @@ public:
     float vw = 0;
     float vh = 0;
     float w = 0, h = 0;         //default image size
+    uint32_t colorSpace = SwCanvas::ARGB8888;
 
     virtual ~LoadModule() {}
 
@@ -48,7 +49,7 @@ public:
 
     virtual bool read() = 0;
     virtual bool close() = 0;
-    virtual unique_ptr<Surface> bitmap() { return nullptr; }
+    virtual unique_ptr<Surface> bitmap(uint32_t colorSpace) { return nullptr; }
     virtual unique_ptr<Paint> paint() { return nullptr; }
 };
 

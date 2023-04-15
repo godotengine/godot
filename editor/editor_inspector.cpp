@@ -3133,6 +3133,11 @@ void EditorInspector::update_tree() {
 			StringName propname = property_prefix + p.name;
 			bool found = false;
 
+			// Small hack for theme_overrides. They are listed under Control, but come from another class.
+			if (classname == "Control" && p.name.begins_with("theme_override_")) {
+				classname = get_edited_object()->get_class();
+			}
+
 			// Search for the property description in the cache.
 			HashMap<StringName, HashMap<StringName, PropertyDocInfo>>::Iterator E = doc_info_cache.find(classname);
 			if (E) {
@@ -3370,7 +3375,17 @@ void EditorInspector::set_keying(bool p_active) {
 		return;
 	}
 	keying = p_active;
-	update_tree();
+	_keying_changed();
+}
+
+void EditorInspector::_keying_changed() {
+	for (const KeyValue<StringName, List<EditorProperty *>> &F : editor_property_map) {
+		for (EditorProperty *E : F.value) {
+			if (E) {
+				E->set_keying(keying);
+			}
+		}
+	}
 }
 
 void EditorInspector::set_read_only(bool p_read_only) {

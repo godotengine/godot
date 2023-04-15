@@ -1859,6 +1859,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/reference_space", PROPERTY_HINT_ENUM, "Local,Stage"), "1");
 
 	GLOBAL_DEF_BASIC("xr/openxr/submit_depth_buffer", false);
+	GLOBAL_DEF_BASIC("xr/openxr/startup_alert", true);
 
 #ifdef TOOLS_ENABLED
 	// Disabled for now, using XR inside of the editor we'll be working on during the coming months.
@@ -2630,7 +2631,7 @@ bool Main::start() {
 	if (editor) {
 		main_loop = memnew(SceneTree);
 	}
-	String main_loop_type = GLOBAL_DEF("application/run/main_loop_type", "SceneTree");
+	String main_loop_type = GLOBAL_GET("application/run/main_loop_type");
 
 	if (!script.is_empty()) {
 		Ref<Script> script_res = ResourceLoader::load(script);
@@ -2721,7 +2722,7 @@ bool Main::start() {
 		}
 #endif
 
-		bool embed_subwindows = GLOBAL_DEF("display/window/subwindows/embed_subwindows", true);
+		bool embed_subwindows = GLOBAL_GET("display/window/subwindows/embed_subwindows");
 
 		if (single_window || (!project_manager && !editor && embed_subwindows) || !DisplayServer::get_singleton()->has_feature(DisplayServer::Feature::FEATURE_SUBWINDOWS)) {
 			sml->get_root()->set_embedding_subwindows(true);
@@ -2823,16 +2824,8 @@ bool Main::start() {
 			startup_benchmark_file = String();
 		}
 #endif
-		GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/window/stretch/mode", PROPERTY_HINT_ENUM, "disabled,canvas_items,viewport"), "disabled");
-		GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/window/stretch/aspect", PROPERTY_HINT_ENUM, "ignore,keep,keep_width,keep_height,expand"), "keep");
-		GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "display/window/stretch/scale", PROPERTY_HINT_RANGE, "0.5,8.0,0.01"), 1.0);
-		sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
-		sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
-		GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
-		GLOBAL_DEF_BASIC("gui/fonts/dynamic_fonts/use_oversampling", true);
-
-		GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap"), 1);
-		GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM, "Disable,Enable,Mirror"), 0);
+		sml->set_auto_accept_quit(GLOBAL_GET("application/config/auto_accept_quit"));
+		sml->set_quit_on_go_back(GLOBAL_GET("application/config/quit_on_go_back"));
 
 		if (!editor && !project_manager) {
 			//standard helpers that can be changed from main config

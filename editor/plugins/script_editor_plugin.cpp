@@ -1561,6 +1561,30 @@ void ScriptEditor::_prepare_file_menu() {
 	menu->set_item_disabled(menu->get_item_index(FILE_RUN), current_is_doc);
 }
 
+void ScriptEditor::_file_menu_closed() {
+	PopupMenu *menu = file_menu->get_popup();
+
+	menu->set_item_disabled(menu->get_item_index(FILE_REOPEN_CLOSED), false);
+
+	menu->set_item_disabled(menu->get_item_index(FILE_SAVE), false);
+	menu->set_item_disabled(menu->get_item_index(FILE_SAVE_AS), false);
+	menu->set_item_disabled(menu->get_item_index(FILE_SAVE_ALL), false);
+
+	menu->set_item_disabled(menu->get_item_index(FILE_TOOL_RELOAD_SOFT), false);
+	menu->set_item_disabled(menu->get_item_index(FILE_COPY_PATH), false);
+	menu->set_item_disabled(menu->get_item_index(SHOW_IN_FILE_SYSTEM), false);
+
+	menu->set_item_disabled(menu->get_item_index(WINDOW_PREV), false);
+	menu->set_item_disabled(menu->get_item_index(WINDOW_NEXT), false);
+
+	menu->set_item_disabled(menu->get_item_index(FILE_CLOSE), false);
+	menu->set_item_disabled(menu->get_item_index(CLOSE_ALL), false);
+	menu->set_item_disabled(menu->get_item_index(CLOSE_OTHER_TABS), false);
+	menu->set_item_disabled(menu->get_item_index(CLOSE_DOCS), false);
+
+	menu->set_item_disabled(menu->get_item_index(FILE_RUN), false);
+}
+
 void ScriptEditor::_tab_changed(int p_which) {
 	ensure_select_current();
 }
@@ -3586,7 +3610,72 @@ void ScriptEditor::_on_find_in_files_result_selected(String fpath, int line_numb
 			shader_editor->get_shader_editor(res)->goto_line_selection(line_number - 1, begin, end);
 			return;
 		} else if (fpath.get_extension() == "tscn") {
+			Ref<FileAccess> f = FileAccess::open(fpath, FileAccess::READ);
+			bool is_script_found = false;
+
+			// Starting from top of the tscn file.
+			int scr_start_line = 1;
+
+			String scr_header = "[sub_resource type=\"GDScript\" id=\"";
+			String scr_id = "";
+			String line = "";
+
+			int l = 0;
+
+			while (!f->eof_reached()) {
+				line = f->get_line();
+				l++;
+
+				if (!line.begins_with(scr_header)) {
+					continue;
+				}
+
+				// Found the end of the script.
+				scr_id = line.get_slice(scr_header, 1);
+				scr_id = scr_id.get_slice("\"", 0);
+
+				scr_start_line = l + 1;
+				int scr_line_count = 0;
+
+				do {
+					line = f->get_line();
+					l++;
+					String strline = line.strip_edges();
+
+					if (strline.ends_with("\"") && !strline.ends_with("\\\"")) {
+						// Found the end of script.
+						break;
+					}
+					scr_line_count++;
+
+				} while (!f->eof_reached());
+
+				if (line_number > scr_start_line + scr_line_count) {
+					// Find in another built-in GDScript.
+					continue;
+				}
+
+				// Real line number of the built-in script.
+				line_number = line_number - scr_start_line;
+
+				is_script_found = true;
+				break;
+			}
+
 			EditorNode::get_singleton()->load_scene(fpath);
+
+			if (is_script_found && !scr_id.is_empty()) {
+				Ref<Script> scr = ResourceLoader::load(fpath + "::" + scr_id, "Script");
+				if (scr.is_valid()) {
+					edit(scr);
+					ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(_get_current_editor());
+
+					if (ste) {
+						ste->goto_line_selection(line_number, begin, end);
+					}
+				}
+			}
+
 			return;
 		} else {
 			Ref<Script> scr = res;
@@ -3851,6 +3940,7 @@ ScriptEditor::ScriptEditor() {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/toggle_scripts_panel", TTR("Toggle Scripts Panel"), KeyModifierMask::CMD_OR_CTRL | Key::BACKSLASH), TOGGLE_SCRIPTS_PANEL);
 	file_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptEditor::_menu_option));
 	file_menu->get_popup()->connect("about_to_popup", callable_mp(this, &ScriptEditor::_prepare_file_menu));
+	file_menu->get_popup()->connect("popup_hide", callable_mp(this, &ScriptEditor::_file_menu_closed));
 
 	script_search_menu = memnew(MenuButton);
 	script_search_menu->set_text(TTR("Search"));

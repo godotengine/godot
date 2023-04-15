@@ -376,6 +376,12 @@ bool ShaderEditorPlugin::can_drop_data_fw(const Point2 &p_point, const Variant &
 					return true;
 				}
 			}
+			if (ResourceLoader::exists(file, "ShaderInclude")) {
+				Ref<ShaderInclude> sinclude = ResourceLoader::load(file);
+				if (sinclude.is_valid()) {
+					return true;
+				}
+			}
 		}
 		return false;
 	}
@@ -405,11 +411,10 @@ void ShaderEditorPlugin::drop_data_fw(const Point2 &p_point, const Variant &p_da
 
 		for (int i = 0; i < files.size(); i++) {
 			String file = files[i];
-			if (!ResourceLoader::exists(file, "Shader")) {
-				continue;
+			Ref<Resource> res;
+			if (ResourceLoader::exists(file, "Shader") || ResourceLoader::exists(file, "ShaderInclude")) {
+				res = ResourceLoader::load(file);
 			}
-
-			Ref<Resource> res = ResourceLoader::load(file);
 			if (res.is_valid()) {
 				edit(res.ptr());
 			}

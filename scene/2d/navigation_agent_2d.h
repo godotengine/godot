@@ -48,6 +48,8 @@ class NavigationAgent2D : public Node {
 
 	bool avoidance_enabled = false;
 	uint32_t navigation_layers = 1;
+	NavigationPathQueryParameters2D::PathfindingAlgorithm pathfinding_algorithm = NavigationPathQueryParameters2D::PathfindingAlgorithm::PATHFINDING_ALGORITHM_ASTAR;
+	NavigationPathQueryParameters2D::PathPostProcessing path_postprocessing = NavigationPathQueryParameters2D::PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL;
 	BitField<NavigationPathQueryParameters2D::PathMetadataFlags> path_metadata_flags = NavigationPathQueryParameters2D::PathMetadataFlags::PATH_METADATA_INCLUDE_ALL;
 
 	real_t path_desired_distance = 20.0;
@@ -76,7 +78,7 @@ class NavigationAgent2D : public Node {
 	// Debug properties for exposed bindings
 	bool debug_enabled = false;
 	float debug_path_custom_point_size = 4.0;
-	float debug_path_custom_line_width = 1.0;
+	float debug_path_custom_line_width = -1.0;
 	bool debug_use_custom = false;
 	Color debug_path_custom_color = Color(1.0, 1.0, 1.0, 1.0);
 #ifdef DEBUG_ENABLED
@@ -111,6 +113,16 @@ public:
 
 	void set_navigation_layer_value(int p_layer_number, bool p_value);
 	bool get_navigation_layer_value(int p_layer_number) const;
+
+	void set_pathfinding_algorithm(const NavigationPathQueryParameters2D::PathfindingAlgorithm p_pathfinding_algorithm);
+	NavigationPathQueryParameters2D::PathfindingAlgorithm get_pathfinding_algorithm() const {
+		return pathfinding_algorithm;
+	}
+
+	void set_path_postprocessing(const NavigationPathQueryParameters2D::PathPostProcessing p_path_postprocessing);
+	NavigationPathQueryParameters2D::PathPostProcessing get_path_postprocessing() const {
+		return path_postprocessing;
+	}
 
 	void set_path_metadata_flags(BitField<NavigationPathQueryParameters2D::PathMetadataFlags> p_flags);
 	BitField<NavigationPathQueryParameters2D::PathMetadataFlags> get_path_metadata_flags() const {

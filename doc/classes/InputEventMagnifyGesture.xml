@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="InputEventMagnifyGesture" inherits="InputEventGesture" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		[InputEvent] that represents a magnifying touch gesture.
 	</brief_description>
 	<description>
+		Magnify gesture is performed when the user pinches the touch screen. It's typically used for zooming.
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
 		<member name="factor" type="float" setter="set_factor" getter="get_factor" default="1.0">
+			The amount (or delta) of the event. This value is higher the faster the gesture is performed.
 		</member>
 	</members>
 </class>

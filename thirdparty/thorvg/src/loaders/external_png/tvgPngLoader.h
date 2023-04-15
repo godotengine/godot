@@ -36,11 +36,11 @@ public:
     bool read() override;
     bool close() override;
 
-    unique_ptr<Surface> bitmap() override;
+    unique_ptr<Surface> bitmap(uint32_t colorSpace) override;
 
 private:
     png_imagep image = nullptr;
-    const uint32_t* content = nullptr;
+    uint32_t* content = nullptr;
 };
 
 #endif //_TVG_PNG_LOADER_H_

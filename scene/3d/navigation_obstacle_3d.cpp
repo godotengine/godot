@@ -203,11 +203,18 @@ void NavigationObstacle3D::set_agent_parent(Node *p_agent_parent) {
 		} else {
 			NavigationServer3D::get_singleton()->agent_set_map(get_rid(), parent_node3d->get_world_3d()->get_navigation_map());
 		}
+		// Need to register Callback as obstacle requires a valid Callback to be added to avoidance simulation.
+		NavigationServer3D::get_singleton()->agent_set_callback(get_rid(), callable_mp(this, &NavigationObstacle3D::_avoidance_done));
 		reevaluate_agent_radius();
 	} else {
 		parent_node3d = nullptr;
 		NavigationServer3D::get_singleton()->agent_set_map(get_rid(), RID());
+		NavigationServer3D::get_singleton()->agent_set_callback(agent, Callable());
 	}
+}
+
+void NavigationObstacle3D::_avoidance_done(Vector3 p_new_velocity) {
+	// Dummy function as obstacle requires a valid Callback to be added to avoidance simulation.
 }
 
 void NavigationObstacle3D::set_navigation_map(RID p_navigation_map) {

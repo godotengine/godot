@@ -557,10 +557,14 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 	}
 
 	//erase navigation
-	for (const KeyValue<IndexKey, Octant::NavigationCell> &E : g.navigation_cell_ids) {
-		NavigationServer3D::get_singleton()->free(E.value.region);
+	for (KeyValue<IndexKey, Octant::NavigationCell> &E : g.navigation_cell_ids) {
+		if (E.value.region.is_valid()) {
+			NavigationServer3D::get_singleton()->free(E.value.region);
+			E.value.region = RID();
+		}
 		if (E.value.navigation_mesh_debug_instance.is_valid()) {
 			RS::get_singleton()->free(E.value.navigation_mesh_debug_instance);
+			E.value.navigation_mesh_debug_instance = RID();
 		}
 	}
 	g.navigation_cell_ids.clear();

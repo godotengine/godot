@@ -14,6 +14,7 @@
 
     <GodotProjectDir Condition=" '$(GodotProjectDir)' == '' ">$(MSBuildProjectDirectory)</GodotProjectDir>
     <GodotProjectDir>$([MSBuild]::EnsureTrailingSlash('$(GodotProjectDir)'))</GodotProjectDir>
+    <GodotProjectDirBase64 Condition=" $([MSBuild]::VersionGreaterThanOrEquals($(MSBuildAssemblyVersion), '17.3')) ">$([MSBuild]::ConvertToBase64('$(GodotProjectDir)'))</GodotProjectDirBase64>
 
     <!-- Custom output paths for Godot projects. In brief, 'bin\' and 'obj\' are moved to '$(GodotProjectDir)\.godot\mono\temp\'. -->
     <BaseOutputPath>$(GodotProjectDir).godot\mono\temp\bin\</BaseOutputPath>
@@ -28,6 +29,13 @@
     <!-- Do not append the target framework name to the output path. -->
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
+
+  <Target Condition=" $([MSBuild]::VersionLessThan($(MSBuildAssemblyVersion), '17.3')) " Name="GodotProjectDir" BeforeTargets="Build">
+    <Error Text="Cannot build from path containing '%23', move your project or update dotnet to the latest version." Condition="$(GodotProjectDir.Contains('%23'))" /> <!-- # -->
+    <Error Text="Cannot build from path containing '%3B', move your project or update dotnet to the latest version." Condition="$(GodotProjectDir.Contains('%3B'))" /> <!-- ; -->
+    <Error Text="Cannot build from path containing newlines, move your project or update dotnet to the latest version." Condition="$(GodotProjectDir.Contains('%0A'))" /> <!-- \n -->
+    <Error Text="Cannot build from path containing newlines, move your project or update dotnet to the latest version." Condition="$(GodotProjectDir.Contains('%0D'))" /> <!-- \r -->
+  </Target>
 
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" Condition=" '$(GodotSdkImportsMicrosoftNetSdk)' == 'true' " />
 

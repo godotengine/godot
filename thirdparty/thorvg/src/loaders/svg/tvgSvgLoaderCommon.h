@@ -425,8 +425,7 @@ struct SvgParser
     SvgStopStyleFlags flags;
     struct
     {
-        int x, y;
-        uint32_t w, h;
+        float x, y, w, h;
     } global;
     struct
     {

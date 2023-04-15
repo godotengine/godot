@@ -53,6 +53,12 @@ static inline bool mathRightAngle(const Matrix* m)
 }
 
 
+static inline bool mathSkewed(const Matrix* m)
+{
+    return (fabsf(m->e21 + m->e12) > FLT_EPSILON);
+}
+
+
 static inline bool mathIdentity(const Matrix* m)
 {
     if (!mathEqual(m->e11, 1.0f) || !mathZero(m->e12) || !mathZero(m->e13) ||

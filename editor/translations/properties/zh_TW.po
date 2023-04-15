@@ -44,8 +44,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-18 17:29+0000\n"
-"Last-Translator: Eric K <eric900601@gmail.com>\n"
+"PO-Revision-Date: 2023-03-31 00:59+0000\n"
+"Last-Translator: leo <leowong1220@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -53,7 +53,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.17-dev\n"
 
 msgid "Application"
 msgstr "應用"
@@ -90,6 +90,12 @@ msgstr "自訂使用者目錄名稱"
 
 msgid "Project Settings Override"
 msgstr "覆寫專案設定"
+
+msgid "Main Loop Type"
+msgstr "主迴圈類型"
+
+msgid "Auto Accept Quit"
+msgstr "自動接受退出"
 
 msgid "Display"
 msgstr "顯示"
@@ -133,6 +139,15 @@ msgstr "2D"
 msgid "3D"
 msgstr "3D"
 
+msgid "Stretch"
+msgstr "伸縮"
+
+msgid "Aspect"
+msgstr "方位"
+
+msgid "Scale"
+msgstr "縮放"
+
 msgid "Debug"
 msgstr "偵錯"
 
@@ -159,6 +174,18 @@ msgstr "強制畫面佈局由右至左"
 
 msgid "GUI"
 msgstr "圖形使用者介面"
+
+msgid "Common"
+msgstr "常見"
+
+msgid "Fonts"
+msgstr "字體"
+
+msgid "Dynamic Fonts"
+msgstr "動態字體"
+
+msgid "Use Oversampling"
+msgstr "使用過取樣"
 
 msgid "Vulkan"
 msgstr "Vulkan"
@@ -361,9 +388,6 @@ msgstr "後綴"
 msgid "Rotation"
 msgstr "旋轉"
 
-msgid "Scale"
-msgstr "縮放"
-
 msgid "Value"
 msgstr "值"
 
@@ -429,12 +453,6 @@ msgstr "顯示隱藏的檔案"
 
 msgid "Disable Overwrite Warning"
 msgstr "停用覆寫警告"
-
-msgid "Import"
-msgstr "匯入"
-
-msgid "Reimport Missing Imported Files"
-msgstr "重新匯入已匯入的遺失檔案"
 
 msgid "Text Editor"
 msgstr "文字編輯器"
@@ -1138,9 +1156,6 @@ msgstr "平面"
 msgid "Hide Slider"
 msgstr "隱藏拖曳條"
 
-msgid "Export"
-msgstr "匯出"
-
 msgid "Custom Template"
 msgstr "自訂模板"
 
@@ -1167,6 +1182,9 @@ msgstr "ETC"
 
 msgid "ETC2"
 msgstr "ETC2"
+
+msgid "Export"
+msgstr "匯出"
 
 msgid "Export Path"
 msgstr "匯出路徑"
@@ -1245,6 +1263,9 @@ msgstr "縮放網格"
 
 msgid "Offset Mesh"
 msgstr "Mesh 偏移"
+
+msgid "Import"
+msgstr "匯入"
 
 msgid "Advanced"
 msgstr "進階"
@@ -1474,6 +1495,9 @@ msgstr "SSH私鑰路徑"
 msgid "Main Run Args"
 msgstr "主執行引數"
 
+msgid "Reimport Missing Imported Files"
+msgstr "重新匯入已匯入的遺失檔案"
+
 msgid "Show Scene Tree Root Selection"
 msgstr "顯示場景樹的根選擇"
 
@@ -1518,9 +1542,6 @@ msgstr "方向"
 
 msgid "V-Sync"
 msgstr "垂直同步"
-
-msgid "Common"
-msgstr "常見"
 
 msgid "stdout"
 msgstr "標準輸出"
@@ -1596,27 +1617,6 @@ msgstr "工具提示位置偏移"
 
 msgid "Project"
 msgstr "專案"
-
-msgid "Main Loop Type"
-msgstr "主迴圈類型"
-
-msgid "Stretch"
-msgstr "伸縮"
-
-msgid "Aspect"
-msgstr "方位"
-
-msgid "Auto Accept Quit"
-msgstr "自動接受退出"
-
-msgid "Fonts"
-msgstr "字體"
-
-msgid "Dynamic Fonts"
-msgstr "動態字體"
-
-msgid "Use Oversampling"
-msgstr "使用過取樣"
 
 msgid "Operation"
 msgstr "操作"

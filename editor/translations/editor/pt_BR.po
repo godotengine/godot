@@ -133,7 +133,7 @@
 # Orangotango De tanga <luizinho0045@gmail.com>, 2021.
 # Felipe SiFa <felipe@logus.digital>, 2022.
 # Gabriel Gian <gabrielgian@live.com>, 2022.
-# waleson azevedo pessoa de melo <walesonmelo23@gmail.com>, 2022.
+# waleson azevedo pessoa de melo <walesonmelo23@gmail.com>, 2022, 2023.
 # atomic <celobl12@gmail.com>, 2022.
 # Douglas S. Elias <douglassantoselias@gmail.com>, 2022.
 # Daniel Abrante <danielabrante@protonmail.com>, 2022.
@@ -163,12 +163,13 @@
 # Paulo Henrique <paulohenprado@gmail.com>, 2023.
 # Lucas Eduardo da Silva <sain.dreams@outlook.com>, 2023.
 # "Márcio A. M. Reyes" <reyes.marcio@gmail.com>, 2023.
+# Fernando Lopes <fefehex12@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2023-03-12 22:47+0000\n"
+"PO-Revision-Date: 2023-04-02 22:42+0000\n"
 "Last-Translator: Elizandro Baldin <ejbaldin@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
@@ -177,7 +178,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.16.2-dev\n"
+"X-Generator: Weblate 4.17-dev\n"
 
 msgid "Unset"
 msgstr "Desativar"
@@ -870,7 +871,7 @@ msgid "Capture"
 msgstr "Capturar"
 
 msgid "Nearest"
-msgstr "Aproximado"
+msgstr "Mais Próximo"
 
 msgid "Linear"
 msgstr "Linear"
@@ -2699,7 +2700,7 @@ msgstr ""
 "[url=$url]contribuindo com uma[/url][/color]!"
 
 msgid "Top"
-msgstr "Início"
+msgstr "Superior"
 
 msgid "Class:"
 msgstr "Classe:"
@@ -2810,7 +2811,7 @@ msgstr ""
 "[url=$url]contribuindo com uma[/url][/color]!"
 
 msgid "Constructor Descriptions"
-msgstr "Descrições do Construtor"
+msgstr "Descrições da Propriedade"
 
 msgid "Method Descriptions"
 msgstr "Descrições do Método"
@@ -2912,6 +2913,23 @@ msgstr ""
 
 msgid "Open Documentation"
 msgstr "Abrir Documentação"
+
+msgid "Add element to property array with prefix %s."
+msgstr "Adicionar o elemento para a matriz de propriedades com prefixo %s."
+
+msgid "Remove element %d from property array with prefix %s."
+msgstr "Remover o elemento %d da matriz de propriedades com prefixo %s."
+
+msgid "Move element %d to position %d in property array with prefix %s."
+msgstr ""
+"Mover o elemento %d para a posição %d na matriz de propriedades com prefixo "
+"%s."
+
+msgid "Clear property array with prefix %s."
+msgstr "Limpar a matriz de propriedades com prefixo %s."
+
+msgid "Resize property array with prefix %s."
+msgstr "Redimensionar a matriz de propriedades com prefixo %s."
 
 msgid "Element %d: %s%d*"
 msgstr "Elemento %d: %s%d*"
@@ -3025,7 +3043,7 @@ msgid "Edit Filters"
 msgstr "Editar Filtros"
 
 msgid "Language:"
-msgstr "Idioma/Dialeto:"
+msgstr "Linguagem:"
 
 msgctxt "Locale"
 msgid "Script:"
@@ -3607,7 +3625,7 @@ msgid "Reopen Closed Scene"
 msgstr "Reabrir Cena Fechada"
 
 msgid "Open Recent"
-msgstr "Abrir Recente"
+msgstr "Abrir Recentes"
 
 msgid "Save Scene"
 msgstr "Salvar Cena"
@@ -4335,10 +4353,10 @@ msgid "Save ZIP"
 msgstr "Salvar ZIP"
 
 msgid "Custom debug template not found."
-msgstr "Modelo customizado de depuração não encontrado."
+msgstr "Modelo personalizado de depuração não encontrado."
 
 msgid "Custom release template not found."
-msgstr "Modelo customizado de lançamento não encontrado."
+msgstr "Modelo personalizado de lançamento não encontrado."
 
 msgid "Prepare Template"
 msgstr "Preparar Modelo"
@@ -4743,6 +4761,23 @@ msgstr "Gerenciar Modelos de Exportação"
 
 msgid "Export With Debug"
 msgstr "Exportar Com Depuração"
+
+msgid "Disable FBX & Restart"
+msgstr "Desabilitar FBX & Reiniciar"
+
+msgid ""
+"Canceling this dialog will disable the FBX importer.\n"
+"You can re-enable it in the Project Settings under Filesystem > Import > FBX "
+"> Enabled.\n"
+"\n"
+"The editor will restart as importers are registered when the editor starts."
+msgstr ""
+"Cancelar este diálogo desabilitará o importador FBX.\n"
+"Você pode reativá-lo nas Configurações do Projeto em "
+"Arquivos>Importar>FBX>Habilitado.\n"
+"\n"
+"O editor será reiniciado à medida que os importadores forem registrados "
+"quando o editor for iniciado."
 
 msgid "Path to FBX2glTF executable is empty."
 msgstr "O caminho para o executável FBX2glTF está vazio."
@@ -5246,7 +5281,7 @@ msgid "Import Scene"
 msgstr "Importar Cena"
 
 msgid "Running Custom Script..."
-msgstr "Rodando Script Personalizado..."
+msgstr "Executando Script Personalizado..."
 
 msgid "Couldn't load post-import script:"
 msgstr "O script de pós-importação não pôde ser carregado:"
@@ -7015,13 +7050,13 @@ msgid "Fill"
 msgstr "Preencher"
 
 msgid "Shrink Begin"
-msgstr "Diminuir Início"
+msgstr "Reduzir ao Início"
 
 msgid "Shrink Center"
-msgstr "Encolher Centro"
+msgstr "Reduzir ao Centro"
 
 msgid "Shrink End"
-msgstr "Encolher Final"
+msgstr "Reduzir ao Final"
 
 msgid "Custom"
 msgstr "Personalizar"
@@ -7075,7 +7110,7 @@ msgid "Right Wide"
 msgstr "Largura Direita"
 
 msgid "Full Rect"
-msgstr "Reto Completo"
+msgstr "Retângulo Completo"
 
 msgid ""
 "Enable to also set the Expand flag.\n"
@@ -8371,7 +8406,7 @@ msgid "Reset Field of View to Default"
 msgstr "Redefinir o Campo de Visão para o Padrão"
 
 msgid "Transform"
-msgstr "Transformada"
+msgstr "Transformar"
 
 msgid "Snap Object to Floor"
 msgstr "Encaixar Objeto no Chão"
@@ -8434,7 +8469,7 @@ msgid "View Z-Far:"
 msgstr "Visão Z-Longe:"
 
 msgid "Transform Change"
-msgstr "Alteração da Transformada"
+msgstr "Alterar Transformação"
 
 msgid "Translate:"
 msgstr "Translação:"
@@ -8944,7 +8979,7 @@ msgid "Save All"
 msgstr "Salvar Tudo"
 
 msgid "Soft Reload Tool Script"
-msgstr "Ferramenta de Recarregamento Parcial de Script"
+msgstr "Ferramenta Recarregar Script"
 
 msgid "Copy Script Path"
 msgstr "Copiar Caminho do Script"
@@ -12405,6 +12440,9 @@ msgstr "Remover Tudo"
 msgid "Also delete project contents (no undo!)"
 msgstr "Também deletar os conteúdos do projeto (não pode ser desfeito!)"
 
+msgid "Convert Full Project"
+msgstr "Converter Projeto Completo"
+
 msgid ""
 "This option will perform full project conversion, updating scenes, resources "
 "and scripts from Godot 3.x to work in Godot 4.0.\n"
@@ -13492,6 +13530,9 @@ msgstr "Recuperando texturas"
 
 msgid "Class name can't be a reserved keyword"
 msgstr "O nome da classe não pode ser uma palavra-chave reservada"
+
+msgid "Class name must be a valid identifier"
+msgstr "O nome da classe deve ser um identificador válido"
 
 msgid "Build Solution"
 msgstr "Construir Solução"
@@ -15638,9 +15679,6 @@ msgstr ""
 "Alterar o índice Z de um controle afeta apenas a ordem do desenho, não a "
 "ordem de manipulação do evento de entrada."
 
-msgid "Theme Overrides"
-msgstr "Substituições de Tema"
-
 msgid "Alert!"
 msgstr "Alerta!"
 
@@ -15758,7 +15796,7 @@ msgid ""
 msgstr ""
 "Um ScrollContainer foi feito para trabalhar com um único componente filho.\n"
 "Use um contêiner como filho (VBox, HBox, etc.) ou um Control e defina o "
-"tamanho mínimo manualmente."
+"tamanho mínimo personalizado manualmente."
 
 msgid ""
 "This node doesn't have a SubViewport as child, so it can't display its "
@@ -16417,6 +16455,12 @@ msgid ""
 "'hint_normal_roughness_texture' is not supported in gl_compatibility shaders."
 msgstr ""
 "'hint_normal_roughness_texture' não é suportado em shaders gl_compatibility."
+
+msgid "'hint_normal_roughness_texture' is not supported in '%s' shaders."
+msgstr "'hint_normal_roughness_texture' não é suportado em shaders '%s'."
+
+msgid "'hint_depth_texture' is not supported in '%s' shaders."
+msgstr "'hint_normal_roughness_texture' não é suportado em shaders '%s'."
 
 msgid "This hint is only for sampler types."
 msgstr "Esta inferência é apenas para tipos de amostrador."
