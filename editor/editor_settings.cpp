@@ -1369,6 +1369,10 @@ String EditorSettings::get_editor_layouts_config() const {
 	return EditorPaths::get_singleton()->get_config_dir().path_join("editor_layouts.cfg");
 }
 
+String EditorSettings::get_window_cached_config() const {
+	return EditorPaths::get_singleton()->get_cache_dir().path_join("window.cfg");
+}
+
 float EditorSettings::get_auto_display_scale() const {
 #if defined(MACOS_ENABLED) || defined(ANDROID_ENABLED)
 	return DisplayServer::get_singleton()->screen_get_max_scale();

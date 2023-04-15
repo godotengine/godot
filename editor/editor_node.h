@@ -394,6 +394,8 @@ private:
 	EditorAbout *about = nullptr;
 	AcceptDialogAutoReparent *warning = nullptr;
 
+	Ref<ConfigFile> window_config;
+
 	int overridden_default_layout = -1;
 	Ref<ConfigFile> default_layout;
 	PopupMenu *editor_layouts = nullptr;
@@ -571,6 +573,9 @@ private:
 	void _fs_changed();
 	void _resources_reimported(const Vector<String> &p_resources);
 	void _sources_changed(bool p_exist);
+
+	void _load_window_config();
+	void _save_window_config();
 
 	void _node_renamed();
 	void _editor_select_next();

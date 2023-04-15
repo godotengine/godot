@@ -641,6 +641,16 @@ void EditorNode::_notification(int p_what) {
 				window->set_theme(theme);
 			}
 
+			// Restore windows settings
+			window_config.instantiate();
+			Error err = window_config->load(EditorSettings::get_singleton()->get_window_cached_config());
+			if (err == OK) {
+				bool restore_window_state = (bool)EDITOR_DEF("interface/editor/remember_window_size_and_position", false);
+				if (restore_window_state) {
+					_load_window_config();
+				}
+			}
+
 			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
 			get_tree()->get_root()->set_as_audio_listener_3d(false);
 			get_tree()->get_root()->set_as_audio_listener_2d(false);
@@ -1110,6 +1120,63 @@ void EditorNode::_sources_changed(bool p_exist) {
 				use_startup_benchmark = false;
 			}
 		}
+	}
+}
+
+void EditorNode::_load_window_config() {
+	Window *window = get_window();
+	if (window) {
+		String mode = window_config->get_value("window", "mode", "maximized");
+		bool is_windowed = false;
+		if (mode == "windowed") {
+			is_windowed = true;
+			window->set_mode(Window::MODE_WINDOWED);
+		} else if (mode == "fullscreen") {
+			window->set_mode(Window::MODE_FULLSCREEN);
+		} else if (mode == "exclusive_fullscreen") {
+			window->set_mode(Window::MODE_EXCLUSIVE_FULLSCREEN);
+		} else {
+			window->set_mode(Window::MODE_MAXIMIZED);
+		}
+
+		int screen = (int)window_config->get_value("window", "screen", window->get_current_screen());
+		window->set_current_screen(screen);
+
+		if (is_windowed) {
+			Point2i window_position = (Point2i)window_config->get_value("window", "position", window->get_position());
+			window->set_position(window_position);
+
+			Size2i window_size = (Size2i)window_config->get_value("window", "window_size", window->get_size());
+			window->set_size(window_size);
+		}
+	}
+}
+
+void EditorNode::_save_window_config() {
+	Window *window = get_window();
+	if (window) {
+		window_config->set_value("window", "window_size", window->get_size());
+		window_config->set_value("window", "screen", window->get_current_screen());
+
+		Window::Mode mode = window->get_mode();
+		switch (mode) {
+			case Window::MODE_WINDOWED:
+				window_config->set_value("window", "mode", "windowed");
+				break;
+			case Window::MODE_FULLSCREEN:
+				window_config->set_value("window", "mode", "fullscreen");
+				break;
+			case Window::MODE_EXCLUSIVE_FULLSCREEN:
+				window_config->set_value("window", "mode", "exclusive_fullscreen");
+				break;
+			default:
+				window_config->set_value("window", "mode", "maximized");
+				break;
+		}
+
+		window_config->set_value("window", "position", window->get_position());
+
+		window_config->save(EditorSettings::get_singleton()->get_window_cached_config());
 	}
 }
 
@@ -3268,6 +3335,7 @@ void EditorNode::_exit_editor(int p_exit_code) {
 	exiting = true;
 	resource_preview->stop(); // Stop early to avoid crashes.
 	_save_docks();
+	_save_window_config();
 
 	// Dim the editor window while it's quitting to make it clearer that it's busy.
 	dim_editor(true);
