@@ -115,10 +115,34 @@ if env["builtin_embree"]:
     env.modules_sources += thirdparty_obj
 
 else:
-    thirdparty_dir = "#thirdparty/embree/"
+    thirdparty_dir = "#thirdparty/embree/precompiled/"
     env_raycast.Append(CPPPATH=[thirdparty_dir + "include"])
     env.Append(LIBPATH=[thirdparty_dir + "lib"])
-    env.Append(LINKFLAGS=["embree3.lib", "tbb.lib", "psapi.lib"])
+    env.Append(LINKFLAGS= [
+       "embree3.lib",
+       "embree_avx.lib",
+       "embree_avx2.lib",
+       "embree_sse42.lib",
+       "lexers.lib",
+       "math.lib",
+       "simd.lib",
+       "sys.lib",
+       "tasking.lib",
+       "tbb.lib",
+       "tbbmalloc.lib",
+       "tbbmalloc_proxy.lib",
+       "psapi.lib"
+    ])
+
+    # We allow the use of SSE and AVX regardless of the Architecture,
+    # since Embree automatically determines supported instructions and optimizations at runtime.
+    env.Append(CPPDEFINES=[
+        "EMBREE_TARGET_SSE2",
+        "EMBREE_TARGET_AVX",
+        "EMBREE_TARGET_AVX2",
+        "EMBREE_TARGET_AVX512",
+        "EMBREE_TARGET_SSE42"
+    ]);
 
 # Godot source files
 

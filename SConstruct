@@ -176,6 +176,7 @@ opts.Add(BoolVariable("debug_symbols", "Build with debugging symbols", False))
 opts.Add(BoolVariable("separate_debug_symbols", "Extract debugging symbols to a separate file", False))
 opts.Add(EnumVariable("lto", "Link-time optimization (production builds)", "none", ("none", "auto", "thin", "full")))
 opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
+opts.Add(EnumVariable("use_simd", "Enable optimizations using simd instructions", "avx2", ("sse2", "avx", "avx2", "avx512")))
 
 # Components
 opts.Add(BoolVariable("deprecated", "Enable compatibility code for deprecated and removed features", True))
@@ -538,7 +539,7 @@ if selected_platform in platform_list:
     # are actually handled to change compile options, etc.
     detect.configure(env)
 
-    print(f'Building for platform "{selected_platform}", architecture "{env["arch"]}", target "{env["target"]}".')
+    print(f'Building for platform "{selected_platform}", architecture "{env["arch"]}", target "{env["target"]}", debug_symbols: "{env["debug_symbols"]}".')
     if env.dev_build:
         print("NOTE: Developer build, with debug optimization level and debug symbols (unless overridden).")
 
@@ -546,6 +547,22 @@ if selected_platform in platform_list:
     # "custom" means do nothing and let users set their own optimization flags.
     # Needs to happen after configure to have `env.msvc` defined.
     if env.msvc:
+        env.Append(CCFLAGS=["/cgthreads8"])
+        env.Append(CCFLAGS=["/MP 64"])
+
+        # We start supporting SSE3 and SSE4 if we support AVX
+        if env["use_simd"] == "avx" or env["use_simd"] == "avx2" or env["use_simd"] == "avx512":
+            env.Append(CPPDEFINES=["__SSE4_1__", "__SSE4_2__", "__SSE3__", "__SSSE3__"])
+
+        if env["use_simd"] == "sse2":
+            env.Append(CCFLAGS=["/arch:SSE2"])
+        elif env["use_simd"] == "avx":
+            env.Append(CCFLAGS=["/arch:AVX"])
+        elif env["use_simd"] == "avx2":
+            env.Append(CCFLAGS=["/arch:AVX2"])
+        elif env["use_simd"] == "avx512":
+            env.Append(CCFLAGS=["/arch:AVX512"])
+
         if env["debug_symbols"]:
             env.Append(CCFLAGS=["/Zi", "/FS"])
             env.Append(LINKFLAGS=["/DEBUG:FULL"])
