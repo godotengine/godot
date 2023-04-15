@@ -400,6 +400,20 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 				}
 			} break;
 
+			case GDScriptParser::TypeNode::VARIABLE: {
+				GDScriptParser::VariableNode *variable_node = (GDScriptParser::VariableNode *)(node);
+				lsp::DocumentSymbol symbol;
+				symbol.kind = lsp::SymbolKind::Variable;
+				symbol.name = variable_node->identifier->name;
+				symbol.range.start.line = LINE_NUMBER_TO_INDEX(variable_node->start_line);
+				symbol.range.start.character = LINE_NUMBER_TO_INDEX(variable_node->start_column);
+				symbol.range.end.line = LINE_NUMBER_TO_INDEX(variable_node->end_line);
+				symbol.range.end.character = LINE_NUMBER_TO_INDEX(variable_node->end_column);
+				symbol.uri = uri;
+				symbol.script_path = path;
+				r_symbol.children.push_back(symbol);
+			} break;
+
 			default:
 				continue;
 		}
