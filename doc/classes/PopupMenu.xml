@@ -573,11 +573,14 @@
 		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.4, 0.4, 0.4, 0.8)">
 			[Color] used for disabled menu items' text.
 		</theme_item>
-		<theme_item name="font_hover_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
-			[Color] used for the hovered text.
+		<theme_item name="font_hover_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
+			[Color] used for the text when an item is hovered with the mouse or selected with the keyboard.
 		</theme_item>
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The tint of text outline of the menu item.
+		</theme_item>
+		<theme_item name="font_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			[Color] used for the text when an item is pressed with the mouse.
 		</theme_item>
 		<theme_item name="font_separator_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			[Color] used for labeled separators' text. See [method add_separator].
@@ -653,7 +656,7 @@
 			[Texture2D] icon for the unchecked checkbox items when they are disabled.
 		</theme_item>
 		<theme_item name="hover" data_type="style" type="StyleBox">
-			[StyleBox] displayed when the [PopupMenu] item is hovered.
+			[StyleBox] displayed when the [PopupMenu] item is hovered with the mouse or selected with the keyboard.
 		</theme_item>
 		<theme_item name="labeled_separator_left" data_type="style" type="StyleBox">
 			[StyleBox] for the left side of labeled separator. See [method add_separator].
@@ -666,6 +669,9 @@
 		</theme_item>
 		<theme_item name="panel_disabled" data_type="style" type="StyleBox">
 			[StyleBox] used when the [PopupMenu] item is disabled.
+		</theme_item>
+		<theme_item name="pressed" data_type="style" type="StyleBox">
+			[StyleBox] displayed when the [PopupMenu] item is pressed with the mouse.
 		</theme_item>
 		<theme_item name="separator" data_type="style" type="StyleBox">
 			[StyleBox] used for the separators. See [method add_separator].

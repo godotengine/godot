@@ -1055,9 +1055,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("panel", "PopupMenu", style_popup_menu);
 
 	Ref<StyleBoxFlat> style_menu_hover = style_widget_hover->duplicate();
-	// Don't use rounded corners for hover highlights since the StyleBox touches the PopupMenu's edges.
+	// Don't use rounded corners for hover/pressed highlights since the StyleBox touches the PopupMenu's edges.
 	style_menu_hover->set_corner_radius_all(0);
 	theme->set_stylebox("hover", "PopupMenu", style_menu_hover);
+
+	Ref<StyleBoxFlat> style_menu_pressed = style_widget_pressed->duplicate();
+	style_menu_pressed->set_corner_radius_all(0);
+	theme->set_stylebox("pressed", "PopupMenu", style_menu_pressed);
 
 	theme->set_stylebox("separator", "PopupMenu", style_popup_separator);
 	theme->set_stylebox("labeled_separator_left", "PopupMenu", style_popup_labeled_separator_left);
@@ -1065,6 +1069,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_color("font_color", "PopupMenu", font_color);
 	theme->set_color("font_hover_color", "PopupMenu", font_hover_color);
+	theme->set_color("font_pressed_color", "PopupMenu", font_hover_pressed_color);
 	theme->set_color("font_accelerator_color", "PopupMenu", font_disabled_color);
 	theme->set_color("font_disabled_color", "PopupMenu", font_disabled_color);
 	theme->set_color("font_separator_color", "PopupMenu", font_disabled_color);

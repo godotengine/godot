@@ -408,11 +408,16 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 
 	if (b.is_valid()) {
+		const MouseButton button_idx = b->get_button_index();
+
+		is_mouse_pressed = b->is_pressed();
+		// Update hover/pressed stylebox status and location.
+		control->queue_redraw();
+
 		if (!item_clickable_area.has_point(b->get_position())) {
 			return;
 		}
 
-		MouseButton button_idx = b->get_button_index();
 		if (!b->is_pressed()) {
 			// Activate the item on release of either the left mouse button or
 			// any mouse button held down when the popup was opened.
@@ -595,10 +600,10 @@ void PopupMenu::_draw_items() {
 		float h = _get_item_height(i);
 
 		if (i == mouse_over) {
-			if (rtl) {
-				theme_cache.hover_style->draw(ci, Rect2(item_ofs + Point2(scroll_width, -theme_cache.v_separation / 2), Size2(display_width, h + theme_cache.v_separation)));
+			if (is_mouse_pressed) {
+				theme_cache.pressed_style->draw(ci, Rect2(item_ofs + Point2(rtl ? scroll_width : 0, -theme_cache.v_separation / 2), Size2(display_width, h + theme_cache.v_separation)));
 			} else {
-				theme_cache.hover_style->draw(ci, Rect2(item_ofs + Point2(0, -theme_cache.v_separation / 2), Size2(display_width, h + theme_cache.v_separation)));
+				theme_cache.hover_style->draw(ci, Rect2(item_ofs + Point2(rtl ? scroll_width : 0, -theme_cache.v_separation / 2), Size2(display_width, h + theme_cache.v_separation)));
 			}
 		}
 
@@ -700,18 +705,25 @@ void PopupMenu::_draw_items() {
 		} else {
 			item_ofs.x += icon_ofs + check_ofs;
 
+			Color font_color;
+			if (i == mouse_over) {
+				font_color = is_mouse_pressed ? theme_cache.font_pressed_color : theme_cache.font_hover_color;
+			} else {
+				font_color = theme_cache.font_color;
+			}
+
 			if (rtl) {
 				Vector2 text_pos = Size2(control->get_size().width - items[i].text_buf->get_size().width - item_ofs.x, item_ofs.y) + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
 				if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
 					items[i].text_buf->draw_outline(ci, text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 				}
-				items[i].text_buf->draw(ci, text_pos, items[i].disabled ? theme_cache.font_disabled_color : (i == mouse_over ? theme_cache.font_hover_color : theme_cache.font_color));
+				items[i].text_buf->draw(ci, text_pos, items[i].disabled ? theme_cache.font_disabled_color : font_color);
 			} else {
 				Vector2 text_pos = item_ofs + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
 				if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
 					items[i].text_buf->draw_outline(ci, text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 				}
-				items[i].text_buf->draw(ci, text_pos, items[i].disabled ? theme_cache.font_disabled_color : (i == mouse_over ? theme_cache.font_hover_color : theme_cache.font_color));
+				items[i].text_buf->draw(ci, text_pos, items[i].disabled ? theme_cache.font_disabled_color : font_color);
 			}
 		}
 
@@ -726,7 +738,15 @@ void PopupMenu::_draw_items() {
 			if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
 				items[i].accel_text_buf->draw_outline(ci, text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 			}
-			items[i].accel_text_buf->draw(ci, text_pos, i == mouse_over ? theme_cache.font_hover_color : theme_cache.font_accelerator_color);
+
+			Color font_color;
+			if (i == mouse_over) {
+				font_color = is_mouse_pressed ? theme_cache.font_pressed_color : theme_cache.font_hover_color;
+			} else {
+				font_color = theme_cache.font_accelerator_color;
+			}
+
+			items[i].accel_text_buf->draw(ci, text_pos, font_color);
 		}
 
 		// Cache the item vertical offset from the first item and the height.
@@ -819,6 +839,7 @@ void PopupMenu::_update_theme_item_cache() {
 
 	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
 	theme_cache.hover_style = get_theme_stylebox(SNAME("hover"));
+	theme_cache.pressed_style = get_theme_stylebox(SNAME("pressed"));
 
 	theme_cache.separator_style = get_theme_stylebox(SNAME("separator"));
 	theme_cache.labeled_separator_left = get_theme_stylebox(SNAME("labeled_separator_left"));
@@ -850,6 +871,7 @@ void PopupMenu::_update_theme_item_cache() {
 
 	theme_cache.font_color = get_theme_color(SNAME("font_color"));
 	theme_cache.font_hover_color = get_theme_color(SNAME("font_hover_color"));
+	theme_cache.font_pressed_color = get_theme_color(SNAME("font_pressed_color"));
 	theme_cache.font_disabled_color = get_theme_color(SNAME("font_disabled_color"));
 	theme_cache.font_accelerator_color = get_theme_color(SNAME("font_accelerator_color"));
 	theme_cache.font_outline_size = get_theme_constant(SNAME("outline_size"));

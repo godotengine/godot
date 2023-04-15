@@ -654,6 +654,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("panel", "PopupMenu", style_popup_panel);
 	theme->set_stylebox("panel_disabled", "PopupMenu", style_popup_panel_disabled);
 	theme->set_stylebox("hover", "PopupMenu", make_flat_stylebox(style_popup_hover_color));
+	theme->set_stylebox("pressed", "PopupMenu", make_flat_stylebox(style_pressed_color));
 	theme->set_stylebox("separator", "PopupMenu", separator_horizontal);
 	theme->set_stylebox("labeled_separator_left", "PopupMenu", separator_horizontal);
 	theme->set_stylebox("labeled_separator_right", "PopupMenu", separator_horizontal);
@@ -677,7 +678,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color", "PopupMenu", control_font_color);
 	theme->set_color("font_accelerator_color", "PopupMenu", Color(0.7, 0.7, 0.7, 0.8));
 	theme->set_color("font_disabled_color", "PopupMenu", Color(0.4, 0.4, 0.4, 0.8));
-	theme->set_color("font_hover_color", "PopupMenu", control_font_color);
+	theme->set_color("font_hover_color", "PopupMenu", control_font_hover_color);
+	theme->set_color("font_pressed_color", "PopupMenu", control_font_pressed_color);
 	theme->set_color("font_separator_color", "PopupMenu", control_font_color);
 	theme->set_color("font_outline_color", "PopupMenu", Color(1, 1, 1));
 	theme->set_color("font_separator_outline_color", "PopupMenu", Color(1, 1, 1));
