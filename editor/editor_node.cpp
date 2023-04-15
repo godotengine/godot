@@ -672,6 +672,8 @@ void EditorNode::_notification(int p_what) {
 
 			DisplayServer::get_singleton()->set_system_theme_change_callback(callable_mp(this, &EditorNode::_update_theme).bind(false));
 
+			get_viewport()->connect("size_changed", callable_mp(this, &EditorNode::_viewport_resized));
+
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
 
@@ -700,6 +702,7 @@ void EditorNode::_notification(int p_what) {
 			FileAccess::set_file_close_fail_notify_callback(nullptr);
 			log->deinit(); // Do not get messages anymore.
 			editor_data.clear_edited_scenes();
+			get_viewport()->disconnect("size_changed", callable_mp(this, &EditorNode::_viewport_resized));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -1195,6 +1198,13 @@ void EditorNode::_reload_project_settings() {
 }
 
 void EditorNode::_vp_resized() {
+}
+
+void EditorNode::_viewport_resized() {
+	Window *w = get_window();
+	if (w) {
+		was_window_windowed_last = w->get_mode() == Window::MODE_WINDOWED;
+	}
 }
 
 void EditorNode::_titlebar_resized() {
@@ -5139,6 +5149,7 @@ void EditorNode::_save_editor_layout() {
 	editor_dock_manager->save_docks_to_config(config, "docks");
 	_save_open_scenes_to_config(config);
 	_save_central_editor_layout_to_config(config);
+	_save_window_settings_to_config(config, "EditorWindow");
 	editor_data.get_plugin_window_layout(config);
 
 	config->save(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
@@ -5245,6 +5256,38 @@ void EditorNode::_load_central_editor_layout_from_config(Ref<ConfigFile> p_confi
 		if (selected_main_editor_idx >= 0 && selected_main_editor_idx < main_editor_buttons.size()) {
 			callable_mp(this, &EditorNode::editor_select).call_deferred(selected_main_editor_idx);
 		}
+	}
+}
+
+void EditorNode::_save_window_settings_to_config(Ref<ConfigFile> p_layout, const String &p_section) {
+	Window *w = get_window();
+	if (w) {
+		p_layout->set_value(p_section, "screen", w->get_current_screen());
+
+		Window::Mode mode = w->get_mode();
+		switch (mode) {
+			case Window::MODE_WINDOWED:
+				p_layout->set_value(p_section, "mode", "windowed");
+				p_layout->set_value(p_section, "size", w->get_size());
+				break;
+			case Window::MODE_FULLSCREEN:
+			case Window::MODE_EXCLUSIVE_FULLSCREEN:
+				p_layout->set_value(p_section, "mode", "fullscreen");
+				break;
+			case Window::MODE_MINIMIZED:
+				if (was_window_windowed_last) {
+					p_layout->set_value(p_section, "mode", "windowed");
+					p_layout->set_value(p_section, "size", w->get_size());
+				} else {
+					p_layout->set_value(p_section, "mode", "maximized");
+				}
+				break;
+			default:
+				p_layout->set_value(p_section, "mode", "maximized");
+				break;
+		}
+
+		p_layout->set_value(p_section, "position", w->get_position());
 	}
 }
 
