@@ -179,7 +179,7 @@ void Area2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 	locked = true;
 
 	if (body_in) {
-		if (!E && !body_map.has(objid)) {
+		if (!E) {
 			E = body_map.insert(objid, BodyState());
 			E->value.rid = p_body;
 			E->value.rc = 1;
