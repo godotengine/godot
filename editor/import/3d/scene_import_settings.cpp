@@ -1117,6 +1117,20 @@ void SceneImportSettingsDialog::_cleanup() {
 	set_process(false);
 }
 
+void SceneImportSettingsDialog::_on_light_1_switch_pressed() {
+	light1->set_visible(light_1_switch->is_pressed());
+}
+
+void SceneImportSettingsDialog::_on_light_2_switch_pressed() {
+	light2->set_visible(light_2_switch->is_pressed());
+}
+
+void SceneImportSettingsDialog::_on_light_rotate_switch_pressed() {
+	bool light_top_level = !light_rotate_switch->is_pressed();
+	light1->set_as_top_level_keep_local(light_top_level);
+	light2->set_as_top_level_keep_local(light_top_level);
+}
+
 void SceneImportSettingsDialog::_viewport_input(const Ref<InputEvent> &p_input) {
 	float *rot_x = &cam_rot_x;
 	float *rot_y = &cam_rot_y;
@@ -1232,6 +1246,13 @@ void SceneImportSettingsDialog::_re_import() {
 	EditorFileSystem::get_singleton()->reimport_file_with_custom_parameters(base_path, editing_animation ? "animation_library" : "scene", main_settings);
 }
 
+void SceneImportSettingsDialog::_update_theme_item_cache() {
+	ConfirmationDialog::_update_theme_item_cache();
+	theme_cache.light_1_icon = get_editor_theme_icon(SNAME("MaterialPreviewLight1"));
+	theme_cache.light_2_icon = get_editor_theme_icon(SNAME("MaterialPreviewLight2"));
+	theme_cache.rotate_icon = get_editor_theme_icon(SNAME("PreviewRotate"));
+}
+
 void SceneImportSettingsDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
@@ -1251,6 +1272,10 @@ void SceneImportSettingsDialog::_notification(int p_what) {
 				animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
 			}
 			animation_stop_button->set_icon(get_editor_theme_icon(SNAME("Stop")));
+
+			light_1_switch->set_icon(theme_cache.light_1_icon);
+			light_2_switch->set_icon(theme_cache.light_2_icon);
+			light_rotate_switch->set_icon(theme_cache.rotate_icon);
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -1644,6 +1669,40 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 
 	base_viewport->set_use_own_world_3d(true);
 
+	HBoxContainer *viewport_hbox = memnew(HBoxContainer);
+	vp_container->add_child(viewport_hbox);
+	viewport_hbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 2);
+
+	viewport_hbox->add_spacer();
+
+	VBoxContainer *vb_light = memnew(VBoxContainer);
+	vb_light->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	viewport_hbox->add_child(vb_light);
+
+	light_rotate_switch = memnew(Button);
+	light_rotate_switch->set_theme_type_variation("PreviewLightButton");
+	light_rotate_switch->set_toggle_mode(true);
+	light_rotate_switch->set_pressed(true);
+	light_rotate_switch->set_tooltip_text(TTR("Rotate Lights With Model"));
+	light_rotate_switch->connect("pressed", callable_mp(this, &SceneImportSettingsDialog::_on_light_rotate_switch_pressed));
+	vb_light->add_child(light_rotate_switch);
+
+	light_1_switch = memnew(Button);
+	light_1_switch->set_theme_type_variation("PreviewLightButton");
+	light_1_switch->set_toggle_mode(true);
+	light_1_switch->set_pressed(true);
+	light_1_switch->set_tooltip_text(TTR("Primary Light"));
+	light_1_switch->connect("pressed", callable_mp(this, &SceneImportSettingsDialog::_on_light_1_switch_pressed));
+	vb_light->add_child(light_1_switch);
+
+	light_2_switch = memnew(Button);
+	light_2_switch->set_theme_type_variation("PreviewLightButton");
+	light_2_switch->set_toggle_mode(true);
+	light_2_switch->set_pressed(true);
+	light_2_switch->set_tooltip_text(TTR("Secondary Light"));
+	light_2_switch->connect("pressed", callable_mp(this, &SceneImportSettingsDialog::_on_light_2_switch_pressed));
+	vb_light->add_child(light_2_switch);
+
 	camera = memnew(Camera3D);
 	base_viewport->add_child(camera);
 	camera->make_current();
@@ -1675,10 +1734,15 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	environment->set_sky_custom_fov(50.0);
 	camera->set_environment(environment);
 
-	light = memnew(DirectionalLight3D);
-	light->set_transform(Transform3D().looking_at(Vector3(-1, -2, -0.6), Vector3(0, 1, 0)));
-	base_viewport->add_child(light);
-	light->set_shadow(true);
+	light1 = memnew(DirectionalLight3D);
+	light1->set_transform(Transform3D(Basis::looking_at(Vector3(-1, -1, -1))));
+	light1->set_shadow(true);
+	camera->add_child(light1);
+
+	light2 = memnew(DirectionalLight3D);
+	light2->set_transform(Transform3D(Basis::looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1))));
+	light2->set_color(Color(0.5f, 0.5f, 0.5f));
+	camera->add_child(light2);
 
 	{
 		Ref<StandardMaterial3D> selection_mat;
