@@ -1587,7 +1587,7 @@
 			Default landscape orientation.
 		</constant>
 		<constant name="SCREEN_PORTRAIT" value="1" enum="ScreenOrientation">
-			Default portrait orienstation.
+			Default portrait orientation.
 		</constant>
 		<constant name="SCREEN_REVERSE_LANDSCAPE" value="2" enum="ScreenOrientation">
 			Reverse landscape orientation (upside down).
