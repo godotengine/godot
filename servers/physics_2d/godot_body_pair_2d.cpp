@@ -187,6 +187,9 @@ bool GodotBodyPair2D::_test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, 
 
 	// A is moving fast enough that tunneling might occur. See if it's really about to collide.
 
+	// Roughly predict body B's position in the next frame (ignoring collisions).
+	Transform2D predicted_xform_B = p_xform_B.translated(p_B->get_linear_velocity() * p_step);
+
 	// Cast a segment from support in motion normal, in the same direction of motion by motion length.
 	// Support point will the farthest forward collision point along the movement vector.
 	// i.e. the point that should hit B first if any collision does occur.
@@ -200,7 +203,7 @@ bool GodotBodyPair2D::_test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, 
 	// This should ensure the calculated new velocity will really cause a bit of overlap instead of just getting us very close.
 	Vector2 to = from + motion;
 
-	Transform2D from_inv = p_xform_B.affine_inverse();
+	Transform2D from_inv = predicted_xform_B.affine_inverse();
 
 	// Back up 10% of the per-frame motion behind the support point and use that as the beginning of our cast.
 	// At high speeds, this may mean we're actually casting from well behind the body instead of inside it, which is odd. But it still works out.
@@ -216,7 +219,7 @@ bool GodotBodyPair2D::_test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, 
 
 	// Check one-way collision based on motion direction.
 	if (p_A->get_shape(p_shape_A)->allows_one_way_collision() && p_B->is_shape_set_as_one_way_collision(p_shape_B)) {
-		Vector2 direction = p_xform_B.columns[1].normalized();
+		Vector2 direction = predicted_xform_B.columns[1].normalized();
 		if (direction.dot(mnormal) < CMP_EPSILON) {
 			collided = false;
 			oneway_disabled = true;
@@ -226,7 +229,7 @@ bool GodotBodyPair2D::_test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, 
 
 	// Shorten the linear velocity so it does not hit, but gets close enough,
 	// next frame will hit softly or soft enough.
-	Vector2 hitpos = p_xform_B.xform(rpos);
+	Vector2 hitpos = predicted_xform_B.xform(rpos);
 
 	real_t newlen = hitpos.distance_to(from) + (max - min) * 0.01; // adding 1% of body length to the distance between collision and support point should cause body A's support point to arrive just within B's collider next frame.
 	p_A->set_linear_velocity(mnormal * (newlen / p_step));
