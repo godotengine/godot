@@ -234,7 +234,7 @@ void Area3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 	locked = true;
 
 	if (body_in) {
-		if (!E) {
+		if (!E && !body_map.has(objid)) {
 			E = body_map.insert(objid, BodyState());
 			E->value.rid = p_body;
 			E->value.rc = 0;
