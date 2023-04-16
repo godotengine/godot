@@ -78,7 +78,18 @@ class SceneImportSettings : public ConfirmationDialog {
 	bool first_aabb = false;
 	AABB contents_aabb;
 
-	DirectionalLight3D *light = nullptr;
+	TextureButton *light_1_switch = nullptr;
+	TextureButton *light_2_switch = nullptr;
+
+	struct ThemeCache {
+		Ref<Texture2D> light_1_on;
+		Ref<Texture2D> light_1_off;
+		Ref<Texture2D> light_2_on;
+		Ref<Texture2D> light_2_off;
+	} theme_cache;
+
+	DirectionalLight3D *light1 = nullptr;
+	DirectionalLight3D *light2 = nullptr;
 	Ref<ArrayMesh> selection_mesh;
 	MeshInstance3D *node_selected = nullptr;
 
@@ -154,6 +165,7 @@ class SceneImportSettings : public ConfirmationDialog {
 	void _material_tree_selected();
 	void _mesh_tree_selected();
 	void _scene_tree_selected();
+	void _light_button_pressed(Node *p_button);
 
 	void _viewport_input(const Ref<InputEvent> &p_input);
 
@@ -196,6 +208,7 @@ class SceneImportSettings : public ConfirmationDialog {
 	Timer *update_view_timer = nullptr;
 
 protected:
+	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 
 public:

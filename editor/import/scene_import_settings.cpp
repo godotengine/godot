@@ -884,6 +884,16 @@ void SceneImportSettings::_scene_tree_selected() {
 	_select(scene_tree, type, import_id);
 }
 
+void SceneImportSettings::_light_button_pressed(Node *p_button) {
+	if (p_button == light_1_switch) {
+		light1->set_visible(!light_1_switch->is_pressed());
+	}
+
+	if (p_button == light_2_switch) {
+		light2->set_visible(!light_2_switch->is_pressed());
+	}
+}
+
 void SceneImportSettings::_viewport_input(const Ref<InputEvent> &p_input) {
 	float *rot_x = &cam_rot_x;
 	float *rot_y = &cam_rot_y;
@@ -995,6 +1005,15 @@ void SceneImportSettings::_re_import() {
 	EditorFileSystem::get_singleton()->reimport_file_with_custom_parameters(base_path, editing_animation ? "animation_library" : "scene", main_settings);
 }
 
+void SceneImportSettings::_update_theme_item_cache() {
+	ConfirmationDialog::_update_theme_item_cache();
+
+	theme_cache.light_1_on = get_theme_icon(SNAME("MaterialPreviewLight1"), SNAME("EditorIcons"));
+	theme_cache.light_1_off = get_theme_icon(SNAME("MaterialPreviewLight1Off"), SNAME("EditorIcons"));
+	theme_cache.light_2_on = get_theme_icon(SNAME("MaterialPreviewLight2"), SNAME("EditorIcons"));
+	theme_cache.light_2_off = get_theme_icon(SNAME("MaterialPreviewLight2Off"), SNAME("EditorIcons"));
+}
+
 void SceneImportSettings::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
@@ -1005,6 +1024,11 @@ void SceneImportSettings::_notification(int p_what) {
 			action_menu->add_theme_style_override("normal", get_theme_stylebox("normal", "Button"));
 			action_menu->add_theme_style_override("hover", get_theme_stylebox("hover", "Button"));
 			action_menu->add_theme_style_override("pressed", get_theme_stylebox("pressed", "Button"));
+
+			light_1_switch->set_texture_normal(theme_cache.light_1_on);
+			light_1_switch->set_texture_pressed(theme_cache.light_1_off);
+			light_2_switch->set_texture_normal(theme_cache.light_2_on);
+			light_2_switch->set_texture_pressed(theme_cache.light_2_off);
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -1347,6 +1371,32 @@ SceneImportSettings::SceneImportSettings() {
 
 	base_viewport->set_use_own_world_3d(true);
 
+	HBoxContainer *hb = memnew(HBoxContainer);
+	vp_container->add_child(hb);
+	hb->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 2);
+
+	hb->add_spacer();
+
+	VBoxContainer *vb_toolbar = memnew(VBoxContainer);
+	vb_toolbar->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	hb->add_child(vb_toolbar);
+
+	light_1_switch = memnew(TextureButton);
+	light_1_switch->set_toggle_mode(true);
+	light_1_switch->set_tooltip_text(TTR("Primary Light"));
+	light_1_switch->set_stretch_mode(TextureButton::STRETCH_KEEP_ASPECT_CENTERED);
+	light_1_switch->set_custom_minimum_size(Size2(20, 20));
+	vb_toolbar->add_child(light_1_switch);
+	light_1_switch->connect("pressed", callable_mp(this, &SceneImportSettings::_light_button_pressed).bind(light_1_switch));
+
+	light_2_switch = memnew(TextureButton);
+	light_2_switch->set_toggle_mode(true);
+	light_2_switch->set_tooltip_text(TTR("Secondary Light"));
+	light_2_switch->set_stretch_mode(TextureButton::STRETCH_KEEP_ASPECT_CENTERED);
+	light_2_switch->set_custom_minimum_size(Size2(20, 20));
+	vb_toolbar->add_child(light_2_switch);
+	light_2_switch->connect("pressed", callable_mp(this, &SceneImportSettings::_light_button_pressed).bind(light_2_switch));
+
 	camera = memnew(Camera3D);
 	base_viewport->add_child(camera);
 	camera->make_current();
@@ -1356,10 +1406,15 @@ SceneImportSettings::SceneImportSettings() {
 		camera->set_attributes(camera_attributes);
 	}
 
-	light = memnew(DirectionalLight3D);
-	light->set_transform(Transform3D().looking_at(Vector3(-1, -2, -0.6), Vector3(0, 1, 0)));
-	base_viewport->add_child(light);
-	light->set_shadow(true);
+	light1 = memnew(DirectionalLight3D);
+	light1->set_transform(Transform3D().looking_at(Vector3(-1, -2, -0.6), Vector3(0, 1, 0)));
+	base_viewport->add_child(light1);
+	light1->set_shadow(true);
+
+	light2 = memnew(DirectionalLight3D);
+	light2->set_transform(Transform3D().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
+	base_viewport->add_child(light2);
+	light2->set_color(Color(0.7, 0.7, 0.7));
 
 	{
 		Ref<StandardMaterial3D> selection_mat;
