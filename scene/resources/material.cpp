@@ -205,10 +205,30 @@ bool ShaderMaterial::_get(const StringName &p_name, Variant &r_ret) const {
 	return false;
 }
 
+static bool is_headless_exporting() {
+#ifdef TOOLS_ENABLED
+	if (OS::get_singleton()->get_cmdline_args().find("--headless")) {
+		if (OS::get_singleton()->get_cmdline_args().find("--export")) {
+			return true;
+		}
+	}
+#endif
+	return false;
+}
+
 void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 	if (!shader.is_null()) {
 		List<PropertyInfo> list;
-		shader->get_shader_uniform_list(&list, true);
+
+		static const bool is_headless_export = is_headless_exporting();
+		if (is_headless_export) {
+			shader->get_shader_uniform_list(&list, true);
+		} else {
+			// Hacky solution to make --headless exports include shader parameters.
+			for (const KeyValue<StringName, Variant> &P : param_cache) {
+				list.push_back(PropertyInfo(P.value.get_type(), P.key));
+			}
+		}
 
 		HashMap<String, HashMap<String, List<PropertyInfo>>> groups;
 		{
