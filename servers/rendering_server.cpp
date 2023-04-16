@@ -140,9 +140,9 @@ RID RenderingServer::get_test_texture() {
 					c.b = y;
 				}
 
-				w[(y * TEST_TEXTURE_SIZE + x) * 3 + 0] = uint8_t(CLAMP(c.r * 255, 0, 255));
-				w[(y * TEST_TEXTURE_SIZE + x) * 3 + 1] = uint8_t(CLAMP(c.g * 255, 0, 255));
-				w[(y * TEST_TEXTURE_SIZE + x) * 3 + 2] = uint8_t(CLAMP(c.b * 255, 0, 255));
+				w[(y * TEST_TEXTURE_SIZE + x) * 3 + 0] = uint8_t(CLAMP(c.r, 0, 255));
+				w[(y * TEST_TEXTURE_SIZE + x) * 3 + 1] = uint8_t(CLAMP(c.g, 0, 255));
+				w[(y * TEST_TEXTURE_SIZE + x) * 3 + 2] = uint8_t(CLAMP(c.b, 0, 255));
 			}
 		}
 	}
@@ -2120,7 +2120,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("particles_collision_set_cull_mask", "particles_collision", "mask"), &RenderingServer::particles_collision_set_cull_mask);
 	ClassDB::bind_method(D_METHOD("particles_collision_set_sphere_radius", "particles_collision", "radius"), &RenderingServer::particles_collision_set_sphere_radius);
 	ClassDB::bind_method(D_METHOD("particles_collision_set_box_extents", "particles_collision", "extents"), &RenderingServer::particles_collision_set_box_extents);
-	ClassDB::bind_method(D_METHOD("particles_collision_set_attractor_strength", "particles_collision", "setrngth"), &RenderingServer::particles_collision_set_attractor_strength);
+	ClassDB::bind_method(D_METHOD("particles_collision_set_attractor_strength", "particles_collision", "strength"), &RenderingServer::particles_collision_set_attractor_strength);
 	ClassDB::bind_method(D_METHOD("particles_collision_set_attractor_directionality", "particles_collision", "amount"), &RenderingServer::particles_collision_set_attractor_directionality);
 	ClassDB::bind_method(D_METHOD("particles_collision_set_attractor_attenuation", "particles_collision", "curve"), &RenderingServer::particles_collision_set_attractor_attenuation);
 	ClassDB::bind_method(D_METHOD("particles_collision_set_field_texture", "particles_collision", "texture"), &RenderingServer::particles_collision_set_field_texture);

@@ -31,9 +31,8 @@
 #ifndef SCENE_TREE_DOCK_H
 #define SCENE_TREE_DOCK_H
 
-#include "scene_tree_editor.h"
-
 #include "editor/editor_data.h"
+#include "editor/gui/scene_tree_editor.h"
 #include "editor/script_create_dialog.h"
 #include "scene/gui/box_container.h"
 #include "scene/resources/animation.h"

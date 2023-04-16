@@ -37,12 +37,20 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_spin_slider.h"
+#include "editor/gui/scene_tree_editor.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "scene/animation/animation_player.h"
 #include "scene/animation/tween.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/grid_container.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/panel_container.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/slider.h"
+#include "scene/gui/spin_box.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/view_panner.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
@@ -6697,40 +6705,36 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	ease_grid->set_columns(2);
 	ease_dialog->add_child(ease_grid);
 	transition_selection = memnew(OptionButton);
-	transition_selection->add_item("Linear", Tween::TRANS_LINEAR);
-	transition_selection->add_item("Sine", Tween::TRANS_SINE);
-	transition_selection->add_item("Quint", Tween::TRANS_QUINT);
-	transition_selection->add_item("Quart", Tween::TRANS_QUART);
-	transition_selection->add_item("Quad", Tween::TRANS_QUAD);
-	transition_selection->add_item("Expo", Tween::TRANS_EXPO);
-	transition_selection->add_item("Elastic", Tween::TRANS_ELASTIC);
-	transition_selection->add_item("Cubic", Tween::TRANS_CUBIC);
-	transition_selection->add_item("Circ", Tween::TRANS_CIRC);
-	transition_selection->add_item("Bounce", Tween::TRANS_BOUNCE);
-	transition_selection->add_item("Back", Tween::TRANS_BACK);
+	transition_selection->add_item(TTR("Linear", "Transition Type"), Tween::TRANS_LINEAR);
+	transition_selection->add_item(TTR("Sine", "Transition Type"), Tween::TRANS_SINE);
+	transition_selection->add_item(TTR("Quint", "Transition Type"), Tween::TRANS_QUINT);
+	transition_selection->add_item(TTR("Quart", "Transition Type"), Tween::TRANS_QUART);
+	transition_selection->add_item(TTR("Quad", "Transition Type"), Tween::TRANS_QUAD);
+	transition_selection->add_item(TTR("Expo", "Transition Type"), Tween::TRANS_EXPO);
+	transition_selection->add_item(TTR("Elastic", "Transition Type"), Tween::TRANS_ELASTIC);
+	transition_selection->add_item(TTR("Cubic", "Transition Type"), Tween::TRANS_CUBIC);
+	transition_selection->add_item(TTR("Circ", "Transition Type"), Tween::TRANS_CIRC);
+	transition_selection->add_item(TTR("Bounce", "Transition Type"), Tween::TRANS_BOUNCE);
+	transition_selection->add_item(TTR("Back", "Transition Type"), Tween::TRANS_BACK);
 	transition_selection->select(Tween::TRANS_LINEAR); // Default
+	transition_selection->set_auto_translate(false); // Translation context is needed.
 	ease_selection = memnew(OptionButton);
-	ease_selection->add_item("In", Tween::EASE_IN);
-	ease_selection->add_item("Out", Tween::EASE_OUT);
-	ease_selection->add_item("InOut", Tween::EASE_IN_OUT);
-	ease_selection->add_item("OutIn", Tween::EASE_OUT_IN);
+	ease_selection->add_item(TTR("In", "Ease Type"), Tween::EASE_IN);
+	ease_selection->add_item(TTR("Out", "Ease Type"), Tween::EASE_OUT);
+	ease_selection->add_item(TTR("InOut", "Ease Type"), Tween::EASE_IN_OUT);
+	ease_selection->add_item(TTR("OutIn", "Ease Type"), Tween::EASE_OUT_IN);
 	ease_selection->select(Tween::EASE_IN_OUT); // Default
+	ease_selection->set_auto_translate(false); // Translation context is needed.
 	ease_fps = memnew(SpinBox);
 	ease_fps->set_min(1);
 	ease_fps->set_max(999);
 	ease_fps->set_step(1);
 	ease_fps->set_value(30); // Default
-	Label *ease_label1 = memnew(Label);
-	Label *ease_label2 = memnew(Label);
-	Label *ease_label3 = memnew(Label);
-	ease_label1->set_text("Transition Type:");
-	ease_label2->set_text("Ease Type:");
-	ease_label3->set_text("FPS:");
-	ease_grid->add_child(ease_label1);
+	ease_grid->add_child(memnew(Label(TTR("Transition Type:"))));
 	ease_grid->add_child(transition_selection);
-	ease_grid->add_child(ease_label2);
+	ease_grid->add_child(memnew(Label(TTR("Ease Type:"))));
 	ease_grid->add_child(ease_selection);
-	ease_grid->add_child(ease_label3);
+	ease_grid->add_child(memnew(Label(TTR("FPS:"))));
 	ease_grid->add_child(ease_fps);
 
 	//
@@ -6752,21 +6756,13 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bake_fps->set_max(999);
 	bake_fps->set_step(1);
 	bake_fps->set_value(30); // Default
-	Label *bake_label1 = memnew(Label);
-	Label *bake_label2 = memnew(Label);
-	Label *bake_label3 = memnew(Label);
-	Label *bake_label4 = memnew(Label);
-	bake_label1->set_text("Pos/Rot/Scl3D Track:");
-	bake_label2->set_text("Blendshape Track:");
-	bake_label3->set_text("Value Track:");
-	bake_label4->set_text("FPS:");
-	bake_grid->add_child(bake_label1);
+	bake_grid->add_child(memnew(Label(TTR("Pos/Rot/Scl3D Track:"))));
 	bake_grid->add_child(bake_trs);
-	bake_grid->add_child(bake_label2);
+	bake_grid->add_child(memnew(Label(TTR("Blendshape Track:"))));
 	bake_grid->add_child(bake_blendshape);
-	bake_grid->add_child(bake_label3);
+	bake_grid->add_child(memnew(Label(TTR("Value Track:"))));
 	bake_grid->add_child(bake_value);
-	bake_grid->add_child(bake_label4);
+	bake_grid->add_child(memnew(Label(TTR("FPS:"))));
 	bake_grid->add_child(bake_fps);
 
 	//

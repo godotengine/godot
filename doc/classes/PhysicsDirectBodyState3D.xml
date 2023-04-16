@@ -179,6 +179,13 @@
 				Returns the local shape index of the collision.
 			</description>
 		</method>
+		<method name="get_contact_local_velocity_at_position" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="contact_idx" type="int" />
+			<description>
+				Returns the linear velocity vector at the body's contact point.
+			</description>
+		</method>
 		<method name="get_space_state">
 			<return type="PhysicsDirectSpaceState3D" />
 			<description>

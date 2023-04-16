@@ -526,7 +526,7 @@ void TextEdit::_notification(int p_what) {
 			theme_cache.style_normal->draw(ci, Rect2(Point2(), size));
 			if (!editable) {
 				theme_cache.style_readonly->draw(ci, Rect2(Point2(), size));
-				draw_caret = false;
+				draw_caret = is_drawing_caret_when_editable_disabled();
 			}
 			if (has_focus()) {
 				theme_cache.style_focus->draw(ci, Rect2(Point2(), size));
@@ -1280,7 +1280,7 @@ void TextEdit::_notification(int p_what) {
 								if (glyphs[j].font_rid != RID()) {
 									TS->font_draw_glyph(glyphs[j].font_rid, ci, glyphs[j].font_size, Vector2(char_margin + char_ofs + ofs_x + glyphs[j].x_off, ofs_y + glyphs[j].y_off), glyphs[j].index, gl_color);
 									had_glyphs_drawn = true;
-								} else if ((glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+								} else if (((glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) && ((glyphs[j].flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) != TextServer::GRAPHEME_IS_EMBEDDED_OBJECT)) {
 									TS->draw_hex_code_box(ci, glyphs[j].font_size, Vector2(char_margin + char_ofs + ofs_x + glyphs[j].x_off, ofs_y + glyphs[j].y_off), glyphs[j].index, gl_color);
 									had_glyphs_drawn = true;
 								}
@@ -4489,6 +4489,18 @@ void TextEdit::set_caret_blink_interval(const float p_interval) {
 	caret_blink_timer->set_wait_time(p_interval);
 }
 
+void TextEdit::set_draw_caret_when_editable_disabled(bool p_enable) {
+	if (draw_caret_when_editable_disabled == p_enable) {
+		return;
+	}
+	draw_caret_when_editable_disabled = p_enable;
+	queue_redraw();
+}
+
+bool TextEdit::is_drawing_caret_when_editable_disabled() const {
+	return draw_caret_when_editable_disabled;
+}
+
 void TextEdit::set_move_caret_on_right_click_enabled(const bool p_enabled) {
 	move_caret_on_right_click = p_enabled;
 }
@@ -6195,6 +6207,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_caret_blink_interval", "interval"), &TextEdit::set_caret_blink_interval);
 	ClassDB::bind_method(D_METHOD("get_caret_blink_interval"), &TextEdit::get_caret_blink_interval);
 
+	ClassDB::bind_method(D_METHOD("set_draw_caret_when_editable_disabled", "enable"), &TextEdit::set_draw_caret_when_editable_disabled);
+	ClassDB::bind_method(D_METHOD("is_drawing_caret_when_editable_disabled"), &TextEdit::is_drawing_caret_when_editable_disabled);
+
 	ClassDB::bind_method(D_METHOD("set_move_caret_on_right_click_enabled", "enable"), &TextEdit::set_move_caret_on_right_click_enabled);
 	ClassDB::bind_method(D_METHOD("is_move_caret_on_right_click_enabled"), &TextEdit::is_move_caret_on_right_click_enabled);
 
@@ -6436,6 +6451,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "caret_type", PROPERTY_HINT_ENUM, "Line,Block"), "set_caret_type", "get_caret_type");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), "set_caret_blink_enabled", "is_caret_blink_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "caret_blink_interval", PROPERTY_HINT_RANGE, "0.1,10,0.01,suffix:s"), "set_caret_blink_interval", "get_caret_blink_interval");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_draw_when_editable_disabled"), "set_draw_caret_when_editable_disabled", "is_drawing_caret_when_editable_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_move_on_right_click"), "set_move_caret_on_right_click_enabled", "is_move_caret_on_right_click_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_mid_grapheme"), "set_caret_mid_grapheme_enabled", "is_caret_mid_grapheme_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_multiple"), "set_multiple_carets_enabled", "is_multiple_carets_enabled");

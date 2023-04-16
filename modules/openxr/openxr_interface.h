@@ -128,6 +128,9 @@ public:
 	void set_action_set_active(const String &p_action_set, bool p_active);
 	Array get_action_sets() const;
 
+	double get_render_target_size_multiplier() const;
+	void set_render_target_size_multiplier(double multiplier);
+
 	virtual Size2 get_render_target_size() override;
 	virtual uint32_t get_view_count() override;
 	virtual Transform3D get_camera_transform() override;

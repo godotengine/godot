@@ -89,6 +89,7 @@ private:
 	const double default_message_duration = 5.0;
 
 	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type);
+	static void _error_handler_impl(const String &p_file, int p_line, const String &p_error, const String &p_errorexp, bool p_editor_notify, int p_type);
 	void _update_vbox_position();
 	void _update_disable_notifications_button();
 	void _auto_hide_or_free_toasts();

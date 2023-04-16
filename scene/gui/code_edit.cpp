@@ -451,11 +451,8 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 
 	/* Ctrl + Hover symbols */
-#ifdef MACOS_ENABLED
-	if (k->get_keycode() == Key::META) {
-#else
-	if (k->get_keycode() == Key::CTRL) {
-#endif
+	bool mac_keys = OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios");
+	if ((mac_keys && k->get_keycode() == Key::META) || (!mac_keys && k->get_keycode() == Key::CTRL)) {
 		if (symbol_lookup_on_click_enabled) {
 			if (k->is_pressed() && !is_dragging_cursor()) {
 				symbol_lookup_new_word = get_word_at_pos(get_local_mouse_pos());
@@ -2002,7 +1999,7 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 		return;
 	}
 
-	char32_t caret_last_completion_char;
+	char32_t caret_last_completion_char = 0;
 	begin_complex_operation();
 	Vector<int> caret_edit_order = get_caret_index_edit_order();
 	for (const int &i : caret_edit_order) {

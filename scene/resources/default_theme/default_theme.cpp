@@ -162,7 +162,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_font("font", "Button", Ref<Font>());
 	theme->set_font_size("font_size", "Button", -1);
-	theme->set_constant("outline_size", "Button", 0 * scale);
+	theme->set_constant("outline_size", "Button", 0);
 
 	theme->set_color("font_color", "Button", control_font_color);
 	theme->set_color("font_pressed_color", "Button", control_font_pressed_color);
@@ -191,7 +191,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_font("font", "MenuBar", Ref<Font>());
 	theme->set_font_size("font_size", "MenuBar", -1);
-	theme->set_constant("outline_size", "MenuBar", 0 * scale);
+	theme->set_constant("outline_size", "MenuBar", 0);
 
 	theme->set_color("font_color", "MenuBar", control_font_color);
 	theme->set_color("font_pressed_color", "MenuBar", control_font_pressed_color);
@@ -316,7 +316,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_outline_color", "CheckBox", Color(1, 1, 1));
 
 	theme->set_constant("h_separation", "CheckBox", 4 * scale);
-	theme->set_constant("check_v_offset", "CheckBox", 0 * scale);
+	theme->set_constant("check_v_offset", "CheckBox", 0);
 	theme->set_constant("outline_size", "CheckBox", 0);
 
 	// CheckButton
@@ -353,7 +353,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_outline_color", "CheckButton", Color(1, 1, 1));
 
 	theme->set_constant("h_separation", "CheckButton", 4 * scale);
-	theme->set_constant("check_v_offset", "CheckButton", 0 * scale);
+	theme->set_constant("check_v_offset", "CheckButton", 0);
 	theme->set_constant("outline_size", "CheckButton", 0);
 
 	// Label
@@ -1045,7 +1045,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("shadow_offset_y", "RichTextLabel", 1 * scale);
 	theme->set_constant("shadow_outline_size", "RichTextLabel", 1 * scale);
 
-	theme->set_constant("line_separation", "RichTextLabel", 0 * scale);
+	theme->set_constant("line_separation", "RichTextLabel", 0);
 	theme->set_constant("table_h_separation", "RichTextLabel", 3 * scale);
 	theme->set_constant("table_v_separation", "RichTextLabel", 3 * scale);
 
@@ -1068,10 +1068,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("separation", "BoxContainer", 4 * scale);
 	theme->set_constant("separation", "HBoxContainer", 4 * scale);
 	theme->set_constant("separation", "VBoxContainer", 4 * scale);
-	theme->set_constant("margin_left", "MarginContainer", 0 * scale);
-	theme->set_constant("margin_top", "MarginContainer", 0 * scale);
-	theme->set_constant("margin_right", "MarginContainer", 0 * scale);
-	theme->set_constant("margin_bottom", "MarginContainer", 0 * scale);
+	theme->set_constant("margin_left", "MarginContainer", 0);
+	theme->set_constant("margin_top", "MarginContainer", 0);
+	theme->set_constant("margin_right", "MarginContainer", 0);
+	theme->set_constant("margin_bottom", "MarginContainer", 0);
 	theme->set_constant("h_separation", "GridContainer", 4 * scale);
 	theme->set_constant("v_separation", "GridContainer", 4 * scale);
 	theme->set_constant("separation", "SplitContainer", 12 * scale);
@@ -1080,9 +1080,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("minimum_grab_thickness", "SplitContainer", 6 * scale);
 	theme->set_constant("minimum_grab_thickness", "HSplitContainer", 6 * scale);
 	theme->set_constant("minimum_grab_thickness", "VSplitContainer", 6 * scale);
-	theme->set_constant("autohide", "SplitContainer", 1 * scale);
-	theme->set_constant("autohide", "HSplitContainer", 1 * scale);
-	theme->set_constant("autohide", "VSplitContainer", 1 * scale);
+	theme->set_constant("autohide", "SplitContainer", 1);
+	theme->set_constant("autohide", "HSplitContainer", 1);
+	theme->set_constant("autohide", "VSplitContainer", 1);
 	theme->set_constant("h_separation", "FlowContainer", 4 * scale);
 	theme->set_constant("v_separation", "FlowContainer", 4 * scale);
 	theme->set_constant("h_separation", "HFlowContainer", 4 * scale);

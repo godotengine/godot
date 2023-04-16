@@ -37,10 +37,10 @@
 #include "editor_import_blend_runner.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "main/main.h"
 #include "scene/gui/line_edit.h"
 

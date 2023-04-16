@@ -34,16 +34,6 @@ namespace GodotTools.Build
             if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
                 return; // No solution to build
 
-            try
-            {
-                // Make sure our packages are added to the fallback folder
-                NuGetUtils.AddBundledPackagesToFallbackFolder(NuGetUtils.GodotFallbackFolderPath);
-            }
-            catch (Exception e)
-            {
-                GD.PushError("Failed to setup Godot NuGet Offline Packages: " + e.Message);
-            }
-
             if (!BuildManager.BuildProjectBlocking("Debug"))
                 return; // Build failed
 
@@ -61,16 +51,6 @@ namespace GodotTools.Build
         {
             if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
                 return; // No solution to build
-
-            try
-            {
-                // Make sure our packages are added to the fallback folder
-                NuGetUtils.AddBundledPackagesToFallbackFolder(NuGetUtils.GodotFallbackFolderPath);
-            }
-            catch (Exception e)
-            {
-                GD.PushError("Failed to setup Godot NuGet Offline Packages: " + e.Message);
-            }
 
             if (!BuildManager.BuildProjectBlocking("Debug", rebuild: true))
                 return; // Build failed

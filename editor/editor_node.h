@@ -34,10 +34,8 @@
 #include "core/templates/safe_refcount.h"
 #include "editor/editor_data.h"
 #include "editor/editor_folding.h"
-#include "editor/editor_native_shader_source_visualizer.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_run.h"
-#include "editor/editor_title_bar.h"
 #include "editor/export/editor_export.h"
 
 typedef void (*EditorNodeInitCallback)();
@@ -46,62 +44,21 @@ typedef bool (*EditorBuildCallback)();
 
 class AcceptDialog;
 class AcceptDialogAutoReparent;
-class AudioStreamPreviewGenerator;
-class BackgroundProgress;
 class CenterContainer;
 class CheckBox;
 class ColorPicker;
 class ConfirmationDialog;
 class Control;
-class DependencyEditor;
-class DependencyErrorDialog;
-class DynamicFontImportSettings;
-class EditorAbout;
-class EditorCommandPalette;
-class EditorExport;
-class EditorExtensionManager;
-class EditorFeatureProfileManager;
-class EditorFileDialog;
-class EditorFileServer;
-class EditorFolding;
-class EditorInspector;
-class EditorLayoutsDialog;
-class EditorLog;
-class EditorPluginList;
-class EditorQuickOpen;
-class EditorPropertyResource;
-class EditorResourcePreview;
-class EditorResourceConversionPlugin;
-class EditorRun;
-class EditorRunNative;
-class EditorSelectionHistory;
-class EditorSettingsDialog;
-class EditorToaster;
-class EditorUndoRedoManager;
-class ExportTemplateManager;
-class FBXImporterManager;
 class FileDialog;
-class FileSystemDock;
-class HistoryDock;
+class HBoxContainer;
 class HSplitContainer;
-class ImportDock;
 class LinkButton;
 class MenuBar;
 class MenuButton;
 class Node2D;
-class NodeDock;
 class OptionButton;
-class OrphanResourcesDialog;
 class Panel;
 class PanelContainer;
-class PluginConfigDialog;
-class ProgressDialog;
-class ProjectExportDialog;
-class ProjectSettingsEditor;
-class RunSettingsDialog;
-class SceneImportSettings;
-class AudioStreamImportSettings;
-class ScriptCreateDialog;
 class SubViewport;
 class TabBar;
 class TabContainer;
@@ -110,7 +67,50 @@ class TextureProgressBar;
 class Tree;
 class VSplitContainer;
 class Window;
+
+class AudioStreamImportSettings;
+class AudioStreamPreviewGenerator;
+class BackgroundProgress;
+class DependencyEditor;
+class DependencyErrorDialog;
+class DynamicFontImportSettings;
+class EditorAbout;
 class EditorBuildProfileManager;
+class EditorCommandPalette;
+class EditorExport;
+class EditorExtensionManager;
+class EditorFeatureProfileManager;
+class EditorFileDialog;
+class EditorFolding;
+class EditorInspector;
+class EditorLayoutsDialog;
+class EditorLog;
+class EditorNativeShaderSourceVisualizer;
+class EditorPluginList;
+class EditorQuickOpen;
+class EditorPropertyResource;
+class EditorResourcePreview;
+class EditorResourceConversionPlugin;
+class EditorRunNative;
+class EditorSelectionHistory;
+class EditorSettingsDialog;
+class EditorTitleBar;
+class EditorToaster;
+class EditorUndoRedoManager;
+class ExportTemplateManager;
+class FBXImporterManager;
+class FileSystemDock;
+class HistoryDock;
+class ImportDock;
+class NodeDock;
+class OrphanResourcesDialog;
+class PluginConfigDialog;
+class ProgressDialog;
+class ProjectExportDialog;
+class ProjectSettingsEditor;
+class RunSettingsDialog;
+class SceneImportSettings;
+class ScriptCreateDialog;
 
 class EditorNode : public Node {
 	GDCLASS(EditorNode, Node);
@@ -738,7 +738,7 @@ public:
 	static EditorData &get_editor_data() { return singleton->editor_data; }
 	static EditorFolding &get_editor_folding() { return singleton->editor_folding; }
 
-	static HBoxContainer *get_menu_hb() { return singleton->menu_hb; }
+	static EditorTitleBar *get_menu_hb() { return singleton->menu_hb; }
 	static VSplitContainer *get_top_split() { return singleton->top_split; }
 
 	static String adjust_scene_name_casing(const String &root_name);

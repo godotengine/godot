@@ -970,6 +970,7 @@ void DebugAdapterProtocol::poll() {
 	List<Ref<DAPeer>> to_delete;
 	for (List<Ref<DAPeer>>::Element *E = clients.front(); E; E = E->next()) {
 		Ref<DAPeer> peer = E->get();
+		peer->connection->poll();
 		StreamPeerTCP::Status status = peer->connection->get_status();
 		if (status == StreamPeerTCP::STATUS_NONE || status == StreamPeerTCP::STATUS_ERROR) {
 			to_delete.push_back(peer);
