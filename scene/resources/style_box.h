@@ -163,7 +163,7 @@ class StyleBoxFlat : public StyleBox {
 	int corner_detail = 8;
 	int shadow_size = 0;
 	Point2 shadow_offset;
-	real_t aa_size = 0.625;
+	real_t aa_size = 1;
 
 protected:
 	virtual float get_style_margin(Side p_side) const override;
