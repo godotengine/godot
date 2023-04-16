@@ -179,10 +179,10 @@ void Area2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 	locked = true;
 
 	if (body_in) {
-		if (!E) {
+		if (!E && !body_map.has(objid)) {
 			E = body_map.insert(objid, BodyState());
 			E->value.rid = p_body;
-			E->value.rc = 0;
+			E->value.rc = 1;
 			E->value.in_tree = node && node->is_inside_tree();
 			if (node) {
 				node->connect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &Area2D::_body_enter_tree).bind(objid));
@@ -192,7 +192,6 @@ void Area2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 				}
 			}
 		}
-		E->value.rc++;
 		if (node) {
 			E->value.shapes.insert(ShapePair(p_body_shape, p_area_shape));
 		}
