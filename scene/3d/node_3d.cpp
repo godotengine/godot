@@ -753,6 +753,15 @@ void Node3D::set_as_top_level(bool p_enabled) {
 	data.top_level = p_enabled;
 }
 
+void Node3D::set_as_top_level_keep_local(bool p_enabled) {
+	ERR_THREAD_GUARD;
+	if (data.top_level == p_enabled) {
+		return;
+	}
+	data.top_level = p_enabled;
+	_propagate_transform_changed(this);
+}
+
 bool Node3D::is_set_as_top_level() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	return data.top_level;
