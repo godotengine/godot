@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Quaternion" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Quaternion.
+		A unit quaternion used for representing 3D rotations.
 	</brief_description>
 	<description>
-		A unit quaternion used for representing 3D rotations. Quaternions need to be normalized to be used for rotation.
-		It is similar to Basis, which implements matrix representation of rotations, and can be parametrized using both an axis-angle pair or Euler angles. Basis stores rotation, scale, and shearing, while Quaternion only stores rotation.
-		Due to its compactness and the way it is stored in memory, certain operations (obtaining axis-angle and performing SLERP, in particular) are more efficient and robust against floating-point errors.
+		Quaternions are similar to [Basis], which implements the matrix representation of rotations. Unlike [Basis], which stores rotation, scale, and shearing, quaternions only store rotation.
+		Quaternions can be parametrized using both an axis-angle pair or Euler angles. Due to their compactness and the way they are stored in memory, certain operations (obtaining axis-angle and performing SLERP, in particular) are more efficient and robust against floating-point errors.
+		[b]Note:[/b] Quaternions need to be normalized before being used for rotation.
 	</description>
 	<tutorials>
 		<link title="Using 3D transforms">$DOCS_URL/tutorials/3d/using_transforms.html#interpolating-with-quaternions</link>
