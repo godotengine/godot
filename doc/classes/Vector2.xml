@@ -214,7 +214,7 @@
 			<return type="bool" />
 			<param index="0" name="to" type="Vector2" />
 			<description>
-				Returns [code]true[/code] if this vector and [code]v[/code] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
+				Returns [code]true[/code] if this vector and [param to] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
 			</description>
 		</method>
 		<method name="is_finite" qualifiers="const">
@@ -288,7 +288,7 @@
 			<return type="Vector2" />
 			<description>
 				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code]. See also [method is_normalized].
-				[b]Note:[/b] This function may return incorrect values if the initial vector length is near zero.
+				[b]Note:[/b] This function may return incorrect values if the input vector length is near zero.
 			</description>
 		</method>
 		<method name="orthogonal" qualifiers="const">
