@@ -104,7 +104,7 @@ bool CallableCustomBindUnbind::is_bind_unbind() const {
 }
 
 int CallableCustomBindUnbind::get_bound_arguments_count() const {
-	return MAX(0, callable.get_bound_arguments_count() + binds.size() - unbind_argcount);
+	return MAX(0, callable.get_bound_arguments_count() - unbind_argcount) + binds.size();
 }
 
 void CallableCustomBindUnbind::get_bound_arguments(Vector<Variant> &r_arguments, int &r_argcount) const {
@@ -112,45 +112,50 @@ void CallableCustomBindUnbind::get_bound_arguments(Vector<Variant> &r_arguments,
 	int sub_count;
 	callable.get_bound_arguments_ref(sub_args, sub_count);
 
-	int new_count = sub_count + binds.size() - unbind_argcount;
+	int new_count = sub_count - unbind_argcount;
 
 	if (new_count <= 0) {
-		r_arguments = Vector<Variant>();
-		r_argcount = 0;
+		r_arguments = binds;
+		r_argcount = binds.size();
 		return;
 	}
 
-	r_arguments.resize(new_count);
-	for (int i = 0; i < new_count; i++) {
-		if (i < sub_count) {
+	int all_count = new_count + binds.size();
+
+	r_arguments.resize(all_count);
+	for (int i = 0; i < all_count; i++) {
+		if (i < new_count) {
 			r_arguments.write[i] = sub_args[i];
 		} else {
-			r_arguments.write[i] = binds[i - sub_count];
+			r_arguments.write[i] = binds[i - new_count];
 		}
 	}
 
-	r_argcount = new_count;
+	r_argcount = all_count;
 }
 
 void CallableCustomBindUnbind::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
-	int argcount = p_argcount + binds.size() - unbind_argcount;
-	if (argcount < 0) {
+	int new_count = p_argcount - unbind_argcount;
+
+	if (new_count < 0) {
 		r_call_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_call_error.argument = 0;
-		r_call_error.expected = -argcount; // !
+		r_call_error.expected = -new_count; // !
 		return;
 	}
 
-	const Variant **args = (const Variant **)alloca(sizeof(const Variant **) * argcount);
-	for (int i = 0; i < argcount; i++) {
-		if (i < p_argcount) {
+	int all_count = new_count + binds.size();
+
+	const Variant **args = (const Variant **)alloca(sizeof(const Variant **) * all_count);
+	for (int i = 0; i < all_count; i++) {
+		if (i < new_count) {
 			args[i] = (const Variant *)p_arguments[i];
 		} else {
-			args[i] = (const Variant *)&binds[i - p_argcount];
+			args[i] = (const Variant *)&binds[i - new_count];
 		}
 	}
 
-	callable.callp(args, argcount, r_return_value, r_call_error);
+	callable.callp(args, all_count, r_return_value, r_call_error);
 }
 
 CallableCustomBindUnbind::CallableCustomBindUnbind(const Callable &p_callable, const Vector<Variant> &p_binds, int p_unbind_argcount) {
