@@ -114,7 +114,7 @@ public:
 	virtual void mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) override {}
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const override { return AABB(); }
 
-	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID()) override { return AABB(); }
+	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID(), Transform3D p_transform = Transform3D()) override { return AABB(); }
 	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) override {}
 	virtual void mesh_clear(RID p_mesh) override;
 

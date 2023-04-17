@@ -317,6 +317,12 @@ public:
 
 	void update_visibility_notifiers();
 
+	Rect2 _debug_canvas_item_get_rect(RID p_item) {
+		Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+		ERR_FAIL_COND_V(!canvas_item, Rect2());
+		return canvas_item->get_rect();
+	}
+
 	bool free(RID p_rid);
 	RendererCanvasCull();
 	~RendererCanvasCull();

@@ -1457,6 +1457,15 @@ public:
 
 	virtual void canvas_set_shadow_texture_size(int p_size) = 0;
 
+	Rect2 debug_canvas_item_get_rect(RID p_item) {
+#ifdef TOOLS_ENABLED
+		return _debug_canvas_item_get_rect(p_item);
+#else
+		return Rect2();
+#endif
+	}
+	virtual Rect2 _debug_canvas_item_get_rect(RID p_item) = 0;
+
 	/* GLOBAL SHADER UNIFORMS */
 
 	enum GlobalShaderParameterType {

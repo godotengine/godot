@@ -80,7 +80,12 @@ const Rect2 &RendererCanvasRender::Item::get_rect() const {
 			} break;
 			case Item::Command::TYPE_MESH: {
 				const Item::CommandMesh *mesh = static_cast<const Item::CommandMesh *>(c);
-				AABB aabb = RSG::mesh_storage->mesh_get_aabb(mesh->mesh, skeleton);
+
+				Vector2 t_x = xform.columns[0];
+				Vector2 t_y = xform.columns[1];
+				Vector2 origin = xform.columns[2];
+				Transform3D transform = Transform3D(Vector3(t_x.x, t_x.y, 0.0), Vector3(t_y.x, t_y.y, 0.0), Vector3(0.0, 0.0, 1.0), Vector3(origin.x, origin.y, 0.0));
+				AABB aabb = RSG::mesh_storage->mesh_get_aabb(mesh->mesh, skeleton, transform);
 
 				r = Rect2(aabb.position.x, aabb.position.y, aabb.size.x, aabb.size.y);
 

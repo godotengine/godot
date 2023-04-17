@@ -597,7 +597,7 @@ AABB MeshStorage::mesh_get_custom_aabb(RID p_mesh) const {
 	return mesh->custom_aabb;
 }
 
-AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
+AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton, Transform3D p_transform) {
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_COND_V(!mesh, AABB());
 
@@ -627,7 +627,7 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 
 			if (skeleton->use_2d) {
 				for (int j = 0; j < bs; j++) {
-					if (skbones[0].size == Vector3()) {
+					if (skbones[j].size == Vector3(-1, -1, -1)) {
 						continue; //bone is unused
 					}
 
@@ -643,7 +643,14 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 					mtx.basis.rows[1][1] = dataptr[5];
 					mtx.origin.y = dataptr[7];
 
-					AABB baabb = mtx.xform(skbones[j]);
+					Vector2 t_x = skeleton->base_transform_2d.columns[0];
+					Vector2 t_y = skeleton->base_transform_2d.columns[1];
+					Vector2 origin = skeleton->base_transform_2d.columns[2];
+					Transform3D skeleton_transform = Transform3D(Vector3(t_x.x, t_x.y, 0.0), Vector3(t_y.x, t_y.y, 0.0), Vector3(0.0, 0.0, 1.0), Vector3(origin.x, origin.y, 0.0));
+
+					Transform3D transform = skeleton_transform.affine_inverse() * p_transform;
+
+					AABB baabb = transform.affine_inverse().xform(mtx.xform(transform.xform(skbones[j])));
 
 					if (first) {
 						laabb = baabb;
@@ -654,7 +661,7 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 				}
 			} else {
 				for (int j = 0; j < bs; j++) {
-					if (skbones[0].size == Vector3()) {
+					if (skbones[j].size == Vector3(-1, -1, -1)) {
 						continue; //bone is unused
 					}
 
