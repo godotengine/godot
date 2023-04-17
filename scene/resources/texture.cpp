@@ -2431,9 +2431,13 @@ float GradientTexture2D::_get_gradient_offset_at(int x, int y) const {
 	if (repeat == Repeat::REPEAT_NONE) {
 		ofs = CLAMP(ofs, 0.0, 1.0);
 	} else if (repeat == Repeat::REPEAT) {
-		ofs = Math::fmod(ofs, 1.0f);
-		if (ofs < 0) {
-			ofs = 1 + ofs;
+		if (ofs > 0.0) {
+			ofs = Math::fposmod(ofs, 1.0f);
+			if (ofs == 0.0) {
+				ofs += 1.0;
+			}
+		} else {
+			ofs = Math::fposmod(ofs, 1.0f);
 		}
 	} else if (repeat == Repeat::REPEAT_MIRROR) {
 		ofs = Math::abs(ofs);
