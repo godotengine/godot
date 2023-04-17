@@ -171,6 +171,11 @@ const GodotWebXR = {
 			gl.bindTexture(gl.TEXTURE_2D, texture);
 			gl.uniform1i(GodotWebXR.programInfo.uniformLocations.uSampler, 0);
 
+			const blend_enabled = gl.getParameter(gl.BLEND);
+			if (blend_enabled) {
+				gl.disable(gl.BLEND);
+			}
+
 			gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
 			// Restore state.
@@ -178,6 +183,9 @@ const GodotWebXR = {
 			gl.disableVertexAttribArray(GodotWebXR.programInfo.attribLocations.vertexPosition);
 			gl.bindBuffer(gl.ARRAY_BUFFER, null);
 			gl.useProgram(orig_program);
+			if (blend_enabled) {
+				gl.enable(gl.BLEND);
+			}
 		},
 
 		// Holds the controllers list between function calls.
