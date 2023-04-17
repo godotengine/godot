@@ -313,9 +313,18 @@ void EditorExport::update_export_presets() {
 	for (int i = 0; i < export_platforms.size(); i++) {
 		Ref<EditorExportPlatform> platform = export_platforms[i];
 
-		if (platform->should_update_export_options()) {
+		bool should_update = platform->should_update_export_options();
+		for (int j = 0; j < export_plugins.size(); j++) {
+			should_update |= export_plugins.write[j]->_should_update_export_options(platform);
+		}
+
+		if (should_update) {
 			List<EditorExportPlatform::ExportOption> options;
 			platform->get_export_options(&options);
+
+			for (int j = 0; j < export_plugins.size(); j++) {
+				export_plugins.write[j]->_get_export_options(platform, &options);
+			}
 
 			platform_options[platform->get_name()] = options;
 		}
