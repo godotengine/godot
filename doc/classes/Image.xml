@@ -602,6 +602,12 @@
 		<constant name="COMPRESS_ETC2" value="4" enum="CompressMode">
 			Use ETC2 compression.
 		</constant>
+		<constant name="COMPRESS_BPTC" value="5" enum="CompressMode">
+			Use BPTC compression.
+		</constant>
+		<constant name="COMPRESS_MAX" value="6" enum="CompressMode">
+			Represents the size of the [enum CompressMode] enum.
+		</constant>
 		<constant name="COMPRESS_SOURCE_GENERIC" value="0" enum="CompressSource">
 			Source texture (before compression) is a regular texture. Default for all textures.
 		</constant>
