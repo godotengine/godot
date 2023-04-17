@@ -30,7 +30,7 @@
 
 #include "callable.h"
 
-#include "callable_bind.h"
+#include "callable_bind_unbind.h"
 #include "core/object/message_queue.h"
 #include "core/object/object.h"
 #include "core/object/ref_counted.h"
@@ -95,12 +95,21 @@ Error Callable::rpcp(int p_id, const Variant **p_arguments, int p_argcount, Call
 }
 
 Callable Callable::bindp(const Variant **p_arguments, int p_argcount) const {
+	if (p_argcount == 0) {
+		return *this; // No point in creating a new callable if nothing is bound.
+	}
+
 	Vector<Variant> args;
 	args.resize(p_argcount);
 	for (int i = 0; i < p_argcount; i++) {
 		args.write[i] = *p_arguments[i];
 	}
-	return Callable(memnew(CallableCustomBind(*this, args)));
+
+	if (is_custom() && custom->is_bind_unbind()) {
+		return Callable(memnew(CallableCustomBindUnbind(static_cast<const CallableCustomBindUnbind *>(custom), args, 0)));
+	} else {
+		return Callable(memnew(CallableCustomBindUnbind(*this, args, 0)));
+	}
 }
 
 Callable Callable::bindv(const Array &p_arguments) {
@@ -113,12 +122,22 @@ Callable Callable::bindv(const Array &p_arguments) {
 	for (int i = 0; i < p_arguments.size(); i++) {
 		args.write[i] = p_arguments[i];
 	}
-	return Callable(memnew(CallableCustomBind(*this, args)));
+
+	if (is_custom() && custom->is_bind_unbind()) {
+		return Callable(memnew(CallableCustomBindUnbind(static_cast<const CallableCustomBindUnbind *>(custom), args, 0)));
+	} else {
+		return Callable(memnew(CallableCustomBindUnbind(*this, args, 0)));
+	}
 }
 
 Callable Callable::unbind(int p_argcount) const {
 	ERR_FAIL_COND_V_MSG(p_argcount <= 0, Callable(*this), "Amount of unbind() arguments must be 1 or greater.");
-	return Callable(memnew(CallableCustomUnbind(*this, p_argcount)));
+
+	if (is_custom() && custom->is_bind_unbind()) {
+		return Callable(memnew(CallableCustomBindUnbind(static_cast<const CallableCustomBindUnbind *>(custom), Vector<Variant>(), p_argcount)));
+	} else {
+		return Callable(memnew(CallableCustomBindUnbind(*this, Vector<Variant>(), p_argcount)));
+	}
 }
 
 bool Callable::is_valid() const {
@@ -395,6 +414,10 @@ Error CallableCustom::rpc(int p_peer_id, const Variant **p_arguments, int p_argc
 
 const Callable *CallableCustom::get_base_comparator() const {
 	return nullptr;
+}
+
+bool CallableCustom::is_bind_unbind() const {
+	return false;
 }
 
 int CallableCustom::get_bound_arguments_count() const {

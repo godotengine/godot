@@ -69,16 +69,11 @@ public:
 
 			Callable base_callable;
 			if (p_connection.callable.is_custom()) {
-				CallableCustomBind *ccb = dynamic_cast<CallableCustomBind *>(p_connection.callable.get_custom());
-				if (ccb) {
-					binds = ccb->get_binds();
-					base_callable = ccb->get_callable();
-				}
-
-				CallableCustomUnbind *ccu = dynamic_cast<CallableCustomUnbind *>(p_connection.callable.get_custom());
-				if (ccu) {
-					unbinds = ccu->get_unbinds();
-					base_callable = ccu->get_callable();
+				CallableCustomBindUnbind *ccbu = dynamic_cast<CallableCustomBindUnbind *>(p_connection.callable.get_custom());
+				if (ccbu) {
+					binds = ccbu->get_binds();
+					unbinds = ccbu->get_unbinds();
+					base_callable = ccbu->get_callable();
 				}
 			} else {
 				base_callable = p_connection.callable;

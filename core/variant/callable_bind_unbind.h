@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  callable_bind.h                                                       */
+/*  callable_bind_unbind.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,21 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CALLABLE_BIND_H
-#define CALLABLE_BIND_H
+#ifndef CALLABLE_BIND_UNBIND_H
+#define CALLABLE_BIND_UNBIND_H
 
 #include "core/variant/callable.h"
 #include "core/variant/variant.h"
 
-class CallableCustomBind : public CallableCustom {
+class CallableCustomBindUnbind : public CallableCustom {
 	Callable callable;
 	Vector<Variant> binds;
+	int unbind_argcount;
 
 	static bool _equal_func(const CallableCustom *p_a, const CallableCustom *p_b);
 	static bool _less_func(const CallableCustom *p_a, const CallableCustom *p_b);
 
 public:
-	//for every type that inherits, these must always be the same for this type
+	// For every type that inherits, these must always be the same for this type.
 	virtual uint32_t hash() const override;
 	virtual String get_as_text() const override;
 	virtual CompareEqualFunc get_compare_equal_func() const override;
@@ -52,41 +53,16 @@ public:
 	virtual ObjectID get_object() const override;
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 	virtual const Callable *get_base_comparator() const override;
-	virtual int get_bound_arguments_count() const override;
-	virtual void get_bound_arguments(Vector<Variant> &r_arguments, int &r_argcount) const override;
-	Callable get_callable() { return callable; }
-	Vector<Variant> get_binds() { return binds; }
-
-	CallableCustomBind(const Callable &p_callable, const Vector<Variant> &p_binds);
-	virtual ~CallableCustomBind();
-};
-
-class CallableCustomUnbind : public CallableCustom {
-	Callable callable;
-	int argcount;
-
-	static bool _equal_func(const CallableCustom *p_a, const CallableCustom *p_b);
-	static bool _less_func(const CallableCustom *p_a, const CallableCustom *p_b);
-
-public:
-	//for every type that inherits, these must always be the same for this type
-	virtual uint32_t hash() const override;
-	virtual String get_as_text() const override;
-	virtual CompareEqualFunc get_compare_equal_func() const override;
-	virtual CompareLessFunc get_compare_less_func() const override;
-	virtual bool is_valid() const override;
-	virtual StringName get_method() const override;
-	virtual ObjectID get_object() const override;
-	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
-	virtual const Callable *get_base_comparator() const override;
+	virtual bool is_bind_unbind() const override;
 	virtual int get_bound_arguments_count() const override;
 	virtual void get_bound_arguments(Vector<Variant> &r_arguments, int &r_argcount) const override;
 
-	Callable get_callable() { return callable; }
-	int get_unbinds() { return argcount; }
+	_FORCE_INLINE_ Callable get_callable() const { return callable; }
+	_FORCE_INLINE_ Vector<Variant> get_binds() const { return binds; }
+	_FORCE_INLINE_ int get_unbinds() const { return unbind_argcount; }
 
-	CallableCustomUnbind(const Callable &p_callable, int p_argcount);
-	virtual ~CallableCustomUnbind();
+	CallableCustomBindUnbind(const Callable &p_callable, const Vector<Variant> &p_binds, int p_unbind_argcount);
+	CallableCustomBindUnbind(const CallableCustomBindUnbind *p_other, const Vector<Variant> &p_binds, int p_unbind_argcount);
 };
 
-#endif // CALLABLE_BIND_H
+#endif // CALLABLE_BIND_UNBIND_H

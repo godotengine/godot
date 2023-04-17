@@ -328,9 +328,9 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 				if (method_callback) {
 					Vector<Variant> binds;
 					if (op.callable.is_custom()) {
-						CallableCustomBind *ccb = dynamic_cast<CallableCustomBind *>(op.callable.get_custom());
-						if (ccb) {
-							binds = ccb->get_binds();
+						CallableCustomBindUnbind *ccbu = dynamic_cast<CallableCustomBindUnbind *>(op.callable.get_custom());
+						if (ccbu) {
+							binds = ccbu->get_binds();
 						}
 					}
 
