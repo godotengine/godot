@@ -154,6 +154,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_get_contact_local_velocity_at_position" qualifiers="virtual const">
+			<return type="Vector2" />
+			<param index="0" name="contact_idx" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="_get_inverse_inertia" qualifiers="virtual const">
 			<return type="float" />
 			<description>
