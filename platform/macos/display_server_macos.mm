@@ -3915,7 +3915,6 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 			gl_manager = nullptr;
 			r_error = ERR_UNAVAILABLE;
 			ERR_FAIL_MSG("Could not initialize OpenGL");
-			return;
 		}
 	}
 #endif
