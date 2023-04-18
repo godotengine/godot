@@ -226,6 +226,7 @@ Ref<StandardMaterial3D> NavigationServer3D::get_debug_navigation_geometry_face_m
 	face_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	face_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	face_material->set_albedo(get_debug_navigation_geometry_face_color());
+	face_material->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
 	if (enabled_geometry_face_random_color) {
 		face_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 		face_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
