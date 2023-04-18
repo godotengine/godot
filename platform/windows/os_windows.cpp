@@ -201,7 +201,6 @@ void OS_Windows::initialize() {
 	IPUnix::make_default();
 	main_loop = nullptr;
 
-	CoInitialize(nullptr);
 	HRESULT hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown **>(&dwrite_factory));
 	if (SUCCEEDED(hr)) {
 		hr = dwrite_factory->GetSystemFontCollection(&font_collection, false);
@@ -467,8 +466,6 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 	if (device_name.is_empty()) {
 		return Vector<String>();
 	}
-
-	CoInitialize(nullptr);
 
 	HRESULT hr = CoCreateInstance(clsid, NULL, CLSCTX_INPROC_SERVER, uuid, (LPVOID *)&wbemLocator);
 	if (hr != S_OK) {
@@ -1600,6 +1597,8 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	hInstance = _hInstance;
 
+	CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+
 #ifdef WASAPI_ENABLED
 	AudioDriverManager::add_driver(&driver_wasapi);
 #endif
@@ -1627,4 +1626,5 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 }
 
 OS_Windows::~OS_Windows() {
+	CoUninitialize();
 }
