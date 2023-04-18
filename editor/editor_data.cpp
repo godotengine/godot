@@ -39,6 +39,7 @@
 #include "editor/editor_plugin.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/multi_node_edit.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "scene/resources/packed_scene.h"
 
@@ -48,25 +49,48 @@ void EditorSelectionHistory::cleanup_history() {
 
 		for (int j = 0; j < history[i].path.size(); j++) {
 			if (!history[i].path[j].ref.is_null()) {
-				// Reference is not null - object still alive.
-				continue;
+				// If the node is a MultiNodeEdit node, examine it and see if anything is missing from it.
+				Ref<MultiNodeEdit> multi_node_edit = history[i].path[j].ref;
+				if (multi_node_edit.is_valid()) {
+					Node *root = EditorNode::get_singleton()->get_edited_scene();
+					if (root) {
+						for (int k = 0; k < multi_node_edit->get_node_count(); k++) {
+							NodePath np = multi_node_edit->get_node(k);
+							Node *multi_node_selected_node = root->get_node_or_null(np);
+							if (!multi_node_selected_node) {
+								fail = true;
+								break;
+							}
+						}
+					} else {
+						fail = true;
+					}
+				} else {
+					// Reference is not null - object still alive.
+					continue;
+				}
 			}
 
-			Object *obj = ObjectDB::get_instance(history[i].path[j].object);
-			if (obj) {
-				Node *n = Object::cast_to<Node>(obj);
-				if (n && n->is_inside_tree()) {
-					// Node valid and inside tree - object still alive.
-					continue;
-				}
-				if (!n) {
-					// Node possibly still alive.
-					continue;
-				}
-			} // Else: object not valid - not alive.
+			if (!fail) {
+				Object *obj = ObjectDB::get_instance(history[i].path[j].object);
+				if (obj) {
+					Node *n = Object::cast_to<Node>(obj);
+					if (n && n->is_inside_tree()) {
+						// Node valid and inside tree - object still alive.
+						continue;
+					}
+					if (!n) {
+						// Node possibly still alive.
+						continue;
+					}
+				} // Else: object not valid - not alive.
 
-			fail = true;
-			break;
+				fail = true;
+			}
+
+			if (fail) {
+				break;
+			}
 		}
 
 		if (fail) {
