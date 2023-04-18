@@ -40,8 +40,7 @@ extern "C" {
 /**
  * \brief          HAVEGE state structure
  */
-typedef struct mbedtls_havege_state
-{
+typedef struct mbedtls_havege_state {
     uint32_t PT1, PT2, offset[2];
     uint32_t pool[MBEDTLS_HAVEGE_COLLECT_SIZE];
     uint32_t WALK[8192];
@@ -53,14 +52,14 @@ mbedtls_havege_state;
  *
  * \param hs       HAVEGE state to be initialized
  */
-void mbedtls_havege_init( mbedtls_havege_state *hs );
+void mbedtls_havege_init(mbedtls_havege_state *hs);
 
 /**
  * \brief          Clear HAVEGE state
  *
  * \param hs       HAVEGE state to be cleared
  */
-void mbedtls_havege_free( mbedtls_havege_state *hs );
+void mbedtls_havege_free(mbedtls_havege_state *hs);
 
 /**
  * \brief          HAVEGE rand function
@@ -71,7 +70,7 @@ void mbedtls_havege_free( mbedtls_havege_state *hs );
  *
  * \return         0
  */
-int mbedtls_havege_random( void *p_rng, unsigned char *output, size_t len );
+int mbedtls_havege_random(void *p_rng, unsigned char *output, size_t len);
 
 #ifdef __cplusplus
 }
