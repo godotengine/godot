@@ -568,6 +568,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color property_color = font_color.lerp(Color(0.5, 0.5, 0.5), 0.5);
 	Color readonly_color = property_color.lerp(dark_theme ? Color(0, 0, 0) : Color(1, 1, 1), 0.25);
 	Color readonly_warning_color = error_color.lerp(dark_theme ? Color(0, 0, 0) : Color(1, 1, 1), 0.25);
+	Color inactive_color = Color(0.9, 0.9, 0.05);
 
 	if (!dark_theme) {
 		// Darken some colors to be readable on a light background.
@@ -1150,6 +1151,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("property_color", "EditorProperty", property_color);
 	theme->set_color("readonly_color", "EditorProperty", readonly_color);
 	theme->set_color("readonly_warning_color", "EditorProperty", readonly_warning_color);
+	theme->set_color("inactive_color", "EditorProperty", inactive_color);
 
 	Ref<StyleBoxFlat> style_property_group_note = style_default->duplicate();
 	Color property_group_note_color = accent_color;

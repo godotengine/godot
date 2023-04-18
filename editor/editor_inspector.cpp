@@ -260,9 +260,13 @@ void EditorProperty::_notification(int p_what) {
 
 			Color color;
 			if (draw_warning) {
-				color = get_theme_color(is_read_only() ? SNAME("readonly_warning_color") : SNAME("warning_color"));
+				color = get_theme_color((is_read_only() || is_inactive()) ? SNAME("readonly_warning_color") : SNAME("warning_color"));
 			} else {
-				color = get_theme_color(is_read_only() ? SNAME("readonly_color") : SNAME("property_color"));
+				if (is_inactive()) {
+					color = get_theme_color(SNAME("inactive_color"));
+				} else {
+					color = get_theme_color(is_read_only() ? SNAME("readonly_color") : SNAME("property_color"));
+				}
 			}
 			if (label.contains(".")) {
 				// FIXME: Move this to the project settings editor, as this is only used
@@ -447,6 +451,14 @@ void EditorProperty::set_read_only(bool p_read_only) {
 
 bool EditorProperty::is_read_only() const {
 	return read_only;
+}
+
+void EditorProperty::set_inactive(bool p_inactive) {
+	inactive = p_inactive;
+}
+
+bool EditorProperty::is_inactive() const {
+	return inactive;
 }
 
 Variant EditorPropertyRevert::get_property_revert_value(Object *p_object, const StringName &p_property, bool *r_is_valid) {
@@ -915,7 +927,7 @@ static Control *make_help_bit(const String &p_text, bool p_property) {
 	}
 	text += "[u][b]" + property_name + "[/b][/u]";
 
-	if (slices.size() > 1) {
+	if (slices.size() > 1 && slices[1] != "") {
 		String property_doc = slices[1].strip_edges();
 		if (property_name != property_doc) {
 			text += "\n" + property_doc;
@@ -923,6 +935,12 @@ static Control *make_help_bit(const String &p_text, bool p_property) {
 	} else {
 		text += "\n[i]" + TTR("No description.") + "[/i]";
 	}
+
+	// Add inactive warning.
+	if (slices.size() > 2 && slices[2] != "") {
+		text += "\n[b][color=yellow]" + TTR("Warning: This property does not have effect, because it doesn't meet dependency: %s.", slices[2].strip_edges()) + "[/color][/b]";
+	}
+
 	help_bit->set_text(text);
 
 	return help_bit;
@@ -3090,6 +3108,7 @@ void EditorInspector::update_tree() {
 		}
 
 		bool property_read_only = (p.usage & PROPERTY_USAGE_READ_ONLY) || read_only;
+		bool property_inactive = p.usage & PROPERTY_USAGE_INACTIVE;
 
 		// Mark properties that would require an editor restart (mostly when editing editor settings).
 		if (p.usage & PROPERTY_USAGE_RESTART_IF_CHANGED) {
@@ -3243,6 +3262,7 @@ void EditorInspector::update_tree() {
 				ep->set_checked(checked);
 				ep->set_keying(keying);
 				ep->set_read_only(property_read_only || all_read_only);
+				ep->set_inactive(property_inactive);
 				ep->set_deletable(deletable_properties || p.name.begins_with("metadata/"));
 			}
 
@@ -3261,10 +3281,16 @@ void EditorInspector::update_tree() {
 				ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
 				ep->connect("resource_selected", callable_mp(this, &EditorInspector::_resource_selected), CONNECT_DEFERRED);
 				ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), CONNECT_DEFERRED);
+
+				StringName property_dependency = "";
+				if (property_inactive) {
+					property_dependency = p.property_dependency;
+				}
+
 				if (!doc_info.description.is_empty()) {
-					ep->set_tooltip_text(property_prefix + p.name + "::" + doc_info.description);
+					ep->set_tooltip_text(property_prefix + p.name + "::" + doc_info.description + "::" + property_dependency);
 				} else {
-					ep->set_tooltip_text(property_prefix + p.name);
+					ep->set_tooltip_text(property_prefix + p.name + "::" + "" + "::" + property_dependency);
 				}
 				ep->set_doc_path(doc_info.path);
 				ep->update_property();

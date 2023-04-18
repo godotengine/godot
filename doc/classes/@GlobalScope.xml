@@ -2842,6 +2842,9 @@
 		<constant name="PROPERTY_USAGE_READ_ONLY" value="268435456" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is read-only in the [EditorInspector].
 		</constant>
+		<constant name="PROPERTY_USAGE_INACTIVE" value="536870912" enum="PropertyUsageFlags" is_bitfield="true">
+			The property is inactive. It will be colored differently and display a warning in tooltip. The warning is configured with the property_dependency property.
+		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT" value="6" enum="PropertyUsageFlags" is_bitfield="true">
 			Default usage (storage, editor and network).
 		</constant>

@@ -70,6 +70,7 @@ PropertyInfo::operator Dictionary() const {
 	d["hint"] = hint;
 	d["hint_string"] = hint_string;
 	d["usage"] = usage;
+	d["property_dependency"] = property_dependency;
 	return d;
 }
 
@@ -98,6 +99,10 @@ PropertyInfo PropertyInfo::from_dict(const Dictionary &p_dict) {
 
 	if (p_dict.has("usage")) {
 		pi.usage = p_dict["usage"];
+	}
+
+	if (p_dict.has("property_dependency")) {
+		pi.property_dependency = p_dict["property_dependency"];
 	}
 
 	return pi;
