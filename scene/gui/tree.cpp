@@ -3395,7 +3395,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		accept_event();
 	}
 
-	if (k.is_valid()) { // Incremental search
+	if (allow_search && k.is_valid()) { // Incremental search
 
 		if (!k->is_pressed()) {
 			return;
@@ -5246,6 +5246,14 @@ bool Tree::get_allow_reselect() const {
 	return allow_reselect;
 }
 
+void Tree::set_allow_search(bool p_allow) {
+	allow_search = p_allow;
+}
+
+bool Tree::get_allow_search() const {
+	return allow_search;
+}
+
 void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &Tree::clear);
 	ClassDB::bind_method(D_METHOD("create_item", "parent", "index"), &Tree::create_item, DEFVAL(Variant()), DEFVAL(-1));
@@ -5326,10 +5334,14 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_allow_reselect", "allow"), &Tree::set_allow_reselect);
 	ClassDB::bind_method(D_METHOD("get_allow_reselect"), &Tree::get_allow_reselect);
 
+	ClassDB::bind_method(D_METHOD("set_allow_search", "allow"), &Tree::set_allow_search);
+	ClassDB::bind_method(D_METHOD("get_allow_search"), &Tree::get_allow_search);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "columns"), "set_columns", "get_columns");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "column_titles_visible"), "set_column_titles_visible", "are_column_titles_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_rmb_select"), "set_allow_rmb_select", "get_allow_rmb_select");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_search"), "set_allow_search", "get_allow_search");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_folding"), "set_hide_folding", "is_folding_hidden");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enable_recursive_folding"), "set_enable_recursive_folding", "is_recursive_folding_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_root"), "set_hide_root", "is_root_hidden");
