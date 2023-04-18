@@ -409,6 +409,9 @@ def configure_msvc(env, vcvars_msvc_config):
         "wbemuuid",
     ]
 
+    if env.debug_features:
+        LIBS += ["psapi", "dbghelp"]
+
     if env["vulkan"]:
         env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
         if not env["use_volk"]:
@@ -586,6 +589,9 @@ def configure_mingw(env):
             "wbemuuid",
         ]
     )
+
+    if env.debug_features:
+        env.Append(LIBS=["psapi", "dbghelp"])
 
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED"])
