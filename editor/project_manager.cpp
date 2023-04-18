@@ -3015,7 +3015,8 @@ ProjectManager::ProjectManager() {
 			add_child(open_templates);
 		}
 
-		about = memnew(EditorAbout);
+		// about = memnew(EditorAbout);
+		about = cast_to<EditorAbout>(ClassDB::instantiate("EditorNewAbout"));
 		add_child(about);
 
 		_build_icon_type_cache(get_theme());
