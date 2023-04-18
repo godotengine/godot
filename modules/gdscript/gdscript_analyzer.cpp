@@ -1308,10 +1308,11 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 						push_error(vformat(R"(Getter with type "%s" cannot be used along with setter of type "%s".)", getter_function->datatype.to_string(), setter_function->parameters[0]->datatype.to_string()), member.variable);
 					}
 				}
-#ifdef DEBUG_ENABLED
-				parser->ignored_warnings = previously_ignored_warnings;
-#endif // DEBUG_ENABLED
 			}
+
+#ifdef DEBUG_ENABLED
+			parser->ignored_warnings = previously_ignored_warnings;
+#endif // DEBUG_ENABLED
 		}
 	}
 
