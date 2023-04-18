@@ -73,9 +73,11 @@ Ref<Script> GDScriptLanguage::make_template(const String &p_template, const Stri
 									 .replace(": String", "")
 									 .replace(": Array[String]", "")
 									 .replace(": float", "")
+									 .replace(": CharFXTransform", "")
 									 .replace(":=", "=")
 									 .replace(" -> String", "")
 									 .replace(" -> int", "")
+									 .replace(" -> bool", "")
 									 .replace(" -> void", "");
 	}
 
