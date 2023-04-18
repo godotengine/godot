@@ -69,6 +69,12 @@ bool EditorInspector::_property_path_matches(const String &p_property_path, cons
 	return false;
 }
 
+String EditorProperty::get_tooltip_string(const String &p_string) const {
+	// Trim to 100 characters to prevent the tooltip from being too long.
+	constexpr int TOOLTIP_MAX_LENGTH = 100;
+	return p_string.left(TOOLTIP_MAX_LENGTH).strip_edges() + String((p_string.length() > TOOLTIP_MAX_LENGTH) ? "..." : "");
+}
+
 Size2 EditorProperty::get_minimum_size() const {
 	Size2 ms;
 	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Tree"));
