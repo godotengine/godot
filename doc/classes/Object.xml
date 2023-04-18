@@ -662,7 +662,7 @@
 			<return type="bool" />
 			<param index="0" name="method" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the the given [param method] name exists in the object.
+				Returns [code]true[/code] if the given [param method] name exists in the object.
 				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>

@@ -258,7 +258,7 @@
 			If [code]true[/code], the GUI controls on the viewport will lay pixel perfectly.
 		</member>
 		<member name="handle_input_locally" type="bool" setter="set_handle_input_locally" getter="is_handling_input_locally" default="true">
-			If [code]true[/code], this viewport will mark incoming input events as handled by itself. If [code]false[/code], this is instead done by the the first parent viewport that is set to handle input locally.
+			If [code]true[/code], this viewport will mark incoming input events as handled by itself. If [code]false[/code], this is instead done by the first parent viewport that is set to handle input locally.
 			A [SubViewportContainer] will automatically set this property to [code]false[/code] for the [Viewport] contained inside of it.
 			See also [method set_input_as_handled] and [method is_input_handled].
 		</member>
