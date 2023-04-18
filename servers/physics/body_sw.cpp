@@ -509,6 +509,9 @@ void BodySW::integrate_forces(real_t p_step) {
 		area_linear_damp=damp_area->get_linear_damp();
 	*/
 
+	prev_linear_velocity = linear_velocity;
+	prev_angular_velocity = angular_velocity;
+
 	Vector3 motion;
 	bool do_motion = false;
 
