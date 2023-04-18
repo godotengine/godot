@@ -16,3 +16,12 @@ Type=Application
 MimeType=application/x-godot-project;
 Categories=Development;IDE;
 StartupWMClass=Godot
+Actions=Editor;ProjectManager;
+
+[Desktop Action Editor]
+Exec=godot --editor
+Name=Editor
+
+[Desktop Action ProjectManager]
+Exec=godot --project-manager
+Name=Project Manager
