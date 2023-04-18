@@ -39,6 +39,7 @@
 #include "editor/editor_plugin.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "scene/resources/packed_scene.h"
 
@@ -472,6 +473,8 @@ void EditorData::add_custom_type(const String &p_type, const String &p_inherits,
 		custom_types[p_inherits] = Vector<CustomType>();
 	}
 	custom_types[p_inherits].push_back(ct);
+
+	AnimationTreeEditor::get_singleton()->add_custom_type(p_type, p_script);
 }
 
 Variant EditorData::instantiate_custom_type(const String &p_type, const String &p_inherits) {
@@ -525,6 +528,10 @@ void EditorData::remove_custom_type(const String &p_type) {
 	for (KeyValue<String, Vector<CustomType>> &E : custom_types) {
 		for (int i = 0; i < E.value.size(); i++) {
 			if (E.value[i].name == p_type) {
+				Ref<Script> script = E.value[i].script;
+				// process remove custom type by script;
+				AnimationTreeEditor::get_singleton()->remove_custom_type(script);
+
 				E.value.remove_at(i);
 				if (E.value.is_empty()) {
 					custom_types.erase(E.key);
