@@ -48,6 +48,11 @@ void TTS_Linux::speech_init_thread_func(void *p_userdata) {
 		if (initialize_speechd(dylibloader_verbose) != 0) {
 			print_verbose("Text-to-Speech: Cannot load Speech Dispatcher library!");
 		} else {
+			if (!spd_open || !spd_set_notification_on || !spd_list_synthesis_voices || !free_spd_voices || !spd_set_synthesis_voice || !spd_set_volume || !spd_set_voice_pitch || !spd_set_voice_rate || !spd_set_data_mode || !spd_say || !spd_pause || !spd_resume || !spd_cancel) {
+				// There's no API to check version, check if functions are available instead.
+				print_verbose("Text-to-Speech: Unsupported Speech Dispatcher library version!");
+				return;
+			}
 #else
 		{
 #endif

@@ -212,7 +212,8 @@ class DisplayServerX11 : public DisplayServer {
 	String im_text;
 
 #ifdef XKB_ENABLED
-	bool xkb_loaded = false;
+	bool xkb_loaded_v05p = false;
+	bool xkb_loaded_v08p = false;
 	xkb_context *xkb_ctx = nullptr;
 	xkb_compose_table *dead_tbl = nullptr;
 #endif

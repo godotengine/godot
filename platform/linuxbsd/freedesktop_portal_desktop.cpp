@@ -138,6 +138,17 @@ FreeDesktopPortalDesktop::FreeDesktopPortalDesktop() {
 #else
 	unsupported = false;
 #endif
+	bool ver_ok = false;
+	int version_major = 0;
+	int version_minor = 0;
+	int version_rev = 0;
+	dbus_get_version(&version_major, &version_minor, &version_rev);
+	ver_ok = (version_major == 1 && version_minor >= 10) || (version_major > 1); // 1.10.0
+	print_verbose(vformat("PortalDesktop: DBus %d.%d.%d detected.", version_major, version_minor, version_rev));
+	if (!ver_ok) {
+		print_verbose("PortalDesktop: Unsupported DBus library version!");
+		unsupported = true;
+	}
 }
 
 #endif // DBUS_ENABLED

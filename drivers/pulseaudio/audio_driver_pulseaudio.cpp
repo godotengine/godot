@@ -290,6 +290,18 @@ Error AudioDriverPulseAudio::init() {
 		return ERR_CANT_OPEN;
 	}
 #endif
+	bool ver_ok = false;
+	String version = String::utf8(pa_get_library_version());
+	Vector<String> ver_parts = version.split(".");
+	if (ver_parts.size() >= 2) {
+		ver_ok = (ver_parts[0].to_int() >= 8); // 8.0.0
+	}
+	print_verbose(vformat("PulseAudio %s detected.", version));
+	if (!ver_ok) {
+		print_verbose("Unsupported PulseAudio library version!");
+		return ERR_CANT_OPEN;
+	}
+
 	active.clear();
 	exit_thread.clear();
 

@@ -1354,7 +1354,7 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	}
 	XDestroyWindow(x11_display, wd.x11_xim_window);
 #ifdef XKB_ENABLED
-	if (xkb_loaded) {
+	if (xkb_loaded_v05p) {
 		if (wd.xkb_state) {
 			xkb_compose_state_unref(wd.xkb_state);
 			wd.xkb_state = nullptr;
@@ -2982,7 +2982,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 
 	String keysym;
 #ifdef XKB_ENABLED
-	if (xkb_loaded) {
+	if (xkb_loaded_v08p) {
 		KeySym keysym_unicode_nm = 0; // keysym used to find unicode
 		XLookupString(&xkeyevent_no_mod, nullptr, 0, &keysym_unicode_nm, nullptr);
 		keysym = String::chr(xkb_keysym_to_utf32(xkb_keysym_to_upper(keysym_unicode_nm)));
@@ -3077,7 +3077,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 		} while (status == XBufferOverflow);
 #endif
 #ifdef XKB_ENABLED
-	} else if (xkeyevent->type == KeyPress && wd.xkb_state && xkb_loaded) {
+	} else if (xkeyevent->type == KeyPress && wd.xkb_state && xkb_loaded_v05p) {
 		xkb_compose_feed_result res = xkb_compose_state_feed(wd.xkb_state, keysym_unicode);
 		if (res == XKB_COMPOSE_FEED_ACCEPTED) {
 			if (xkb_compose_state_get_status(wd.xkb_state) == XKB_COMPOSE_COMPOSED) {
@@ -5004,7 +5004,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 
 		wd.x11_xim_window = XCreateWindow(x11_display, wd.x11_window, 0, 0, 1, 1, 0, CopyFromParent, InputOnly, CopyFromParent, CWEventMask, &window_attributes_ime);
 #ifdef XKB_ENABLED
-		if (dead_tbl && xkb_loaded) {
+		if (dead_tbl && xkb_loaded_v05p) {
 			wd.xkb_state = xkb_compose_state_new(dead_tbl, XKB_COMPOSE_STATE_NO_FLAGS);
 		}
 #endif
@@ -5288,9 +5288,16 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		ERR_FAIL_MSG("Can't load XCursor dynamically.");
 	}
 #ifdef XKB_ENABLED
-	xkb_loaded = (initialize_xkbcommon(dylibloader_verbose) == 0);
-	if (!xkb_context_new || !xkb_compose_table_new_from_locale || !xkb_compose_table_unref || !xkb_context_unref || !xkb_compose_state_feed || !xkb_compose_state_unref || !xkb_compose_state_new || !xkb_compose_state_get_status || !xkb_compose_state_get_utf8 || !xkb_keysym_to_utf32 || !xkb_keysym_to_upper) {
-		xkb_loaded = false;
+	bool xkb_loaded = (initialize_xkbcommon(dylibloader_verbose) == 0);
+	xkb_loaded_v05p = xkb_loaded;
+	if (!xkb_context_new || !xkb_compose_table_new_from_locale || !xkb_compose_table_unref || !xkb_context_unref || !xkb_compose_state_feed || !xkb_compose_state_unref || !xkb_compose_state_new || !xkb_compose_state_get_status || !xkb_compose_state_get_utf8) {
+		xkb_loaded_v05p = false;
+		print_verbose("Detected XKBcommon library version older than 0.5, dead key composition and Unicode key labels disabled.");
+	}
+	xkb_loaded_v08p = xkb_loaded;
+	if (!xkb_keysym_to_utf32 || !xkb_keysym_to_upper) {
+		xkb_loaded_v08p = false;
+		print_verbose("Detected XKBcommon library version older than 0.8, Unicode key labels disabled.");
 	}
 #endif
 	if (initialize_xext(dylibloader_verbose) != 0) {
@@ -5346,6 +5353,15 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 	r_error = OK;
 
+	{
+		if (!XcursorImageCreate || !XcursorImageLoadCursor || !XcursorImageDestroy || !XcursorGetDefaultSize || !XcursorGetTheme || !XcursorLibraryLoadImage) {
+			// There's no API to check version, check if functions are available instead.
+			ERR_PRINT("Unsupported Xcursor library version.");
+			r_error = ERR_UNAVAILABLE;
+			return;
+		}
+	}
+
 	for (int i = 0; i < CURSOR_MAX; i++) {
 		cursors[i] = None;
 		img[i] = nullptr;
@@ -5360,6 +5376,71 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		ERR_PRINT("X11 Display is not available");
 		r_error = ERR_UNAVAILABLE;
 		return;
+	}
+
+	{
+		int version_major = 0;
+		int version_minor = 0;
+		int rc = XShapeQueryVersion(x11_display, &version_major, &version_minor);
+		print_verbose(vformat("Xshape %d.%d detected.", version_major, version_minor));
+		if (rc != 1 || version_major < 1) {
+			ERR_PRINT("Unsupported Xshape library version.");
+			r_error = ERR_UNAVAILABLE;
+			XCloseDisplay(x11_display);
+			return;
+		}
+	}
+
+	{
+		int version_major = 0;
+		int version_minor = 0;
+		int rc = XineramaQueryVersion(x11_display, &version_major, &version_minor);
+		print_verbose(vformat("Xinerama %d.%d detected.", version_major, version_minor));
+		if (rc != 1 || version_major < 1) {
+			ERR_PRINT("Unsupported Xinerama library version.");
+			r_error = ERR_UNAVAILABLE;
+			XCloseDisplay(x11_display);
+			return;
+		}
+	}
+
+	{
+		int version_major = 0;
+		int version_minor = 0;
+		int rc = XRRQueryVersion(x11_display, &version_major, &version_minor);
+		print_verbose(vformat("Xrandr %d.%d detected.", version_major, version_minor));
+		if (rc != 1 || (version_major == 1 && version_minor < 3) || (version_major < 1)) {
+			ERR_PRINT("Unsupported Xrandr library version.");
+			r_error = ERR_UNAVAILABLE;
+			XCloseDisplay(x11_display);
+			return;
+		}
+	}
+
+	{
+		int version_major = 0;
+		int version_minor = 0;
+		int rc = XRenderQueryVersion(x11_display, &version_major, &version_minor);
+		print_verbose(vformat("Xrender %d.%d detected.", version_major, version_minor));
+		if (rc != 1 || (version_major == 0 && version_minor < 11)) {
+			ERR_PRINT("Unsupported Xrender library version.");
+			r_error = ERR_UNAVAILABLE;
+			XCloseDisplay(x11_display);
+			return;
+		}
+	}
+
+	{
+		int version_major = 2; // Report 2.2 as supported by engine, but should work with 2.1 or 2.0 library as well.
+		int version_minor = 2;
+		int rc = XIQueryVersion(x11_display, &version_major, &version_minor);
+		print_verbose(vformat("Xinput %d.%d detected.", version_major, version_minor));
+		if (rc != Success || (version_major < 2)) {
+			ERR_PRINT("Unsupported Xinput2 library version.");
+			r_error = ERR_UNAVAILABLE;
+			XCloseDisplay(x11_display);
+			return;
+		}
 	}
 
 	char *modifiers = nullptr;
@@ -5784,7 +5865,7 @@ DisplayServerX11::~DisplayServerX11() {
 		}
 		XDestroyWindow(x11_display, wd.x11_xim_window);
 #ifdef XKB_ENABLED
-		if (xkb_loaded) {
+		if (xkb_loaded_v05p) {
 			if (wd.xkb_state) {
 				xkb_compose_state_unref(wd.xkb_state);
 				wd.xkb_state = nullptr;
@@ -5796,7 +5877,7 @@ DisplayServerX11::~DisplayServerX11() {
 	}
 
 #ifdef XKB_ENABLED
-	if (xkb_loaded) {
+	if (xkb_loaded_v05p) {
 		if (dead_tbl) {
 			xkb_compose_table_unref(dead_tbl);
 		}
