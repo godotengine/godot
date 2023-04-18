@@ -19,7 +19,7 @@
 			Sets the texture repeating mode. See [enum TextureRepeat] for options.
 		</member>
 		<member name="texture_source" type="int" setter="set_texture_source" getter="get_texture_source" enum="VisualShaderNodeTextureParameter.TextureSource" default="0">
-			Sets the texture source mode. Used for reading from the screen, depth, or normal_roughness texture. see [enum TextureSource] for options.
+			Sets the texture source mode. Used for reading from the screen, depth, or normal_roughness texture. See [enum TextureSource] for options.
 		</member>
 		<member name="texture_type" type="int" setter="set_texture_type" getter="get_texture_type" enum="VisualShaderNodeTextureParameter.TextureType" default="0">
 			Defines the type of data provided by the source texture. See [enum TextureType] for options.

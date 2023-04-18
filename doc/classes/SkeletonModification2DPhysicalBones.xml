@@ -13,7 +13,7 @@
 		<method name="fetch_physical_bones">
 			<return type="void" />
 			<description>
-				Empties the list of [PhysicalBone2D] nodes and populates it will all [PhysicalBone2D] nodes that are children of the [Skeleton2D].
+				Empties the list of [PhysicalBone2D] nodes and populates it with all [PhysicalBone2D] nodes that are children of the [Skeleton2D].
 			</description>
 		</method>
 		<method name="get_physical_bone_node" qualifiers="const">
