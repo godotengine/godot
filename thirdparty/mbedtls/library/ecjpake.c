@@ -35,10 +35,10 @@
 #if !defined(MBEDTLS_ECJPAKE_ALT)
 
 /* Parameter validation macros based on platform_util.h */
-#define ECJPAKE_VALIDATE_RET( cond )    \
-    MBEDTLS_INTERNAL_VALIDATE_RET( cond, MBEDTLS_ERR_ECP_BAD_INPUT_DATA )
-#define ECJPAKE_VALIDATE( cond )        \
-    MBEDTLS_INTERNAL_VALIDATE( cond )
+#define ECJPAKE_VALIDATE_RET(cond)    \
+    MBEDTLS_INTERNAL_VALIDATE_RET(cond, MBEDTLS_ERR_ECP_BAD_INPUT_DATA)
+#define ECJPAKE_VALIDATE(cond)        \
+    MBEDTLS_INTERNAL_VALIDATE(cond)
 
 /*
  * Convert a mbedtls_ecjpake_role to identifier string
@@ -48,206 +48,212 @@ static const char * const ecjpake_id[] = {
     "server"
 };
 
-#define ID_MINE     ( ecjpake_id[ ctx->role ] )
-#define ID_PEER     ( ecjpake_id[ 1 - ctx->role ] )
+#define ID_MINE     (ecjpake_id[ctx->role])
+#define ID_PEER     (ecjpake_id[1 - ctx->role])
 
 /*
  * Initialize context
  */
-void mbedtls_ecjpake_init( mbedtls_ecjpake_context *ctx )
+void mbedtls_ecjpake_init(mbedtls_ecjpake_context *ctx)
 {
-    ECJPAKE_VALIDATE( ctx != NULL );
+    ECJPAKE_VALIDATE(ctx != NULL);
 
     ctx->md_info = NULL;
-    mbedtls_ecp_group_init( &ctx->grp );
+    mbedtls_ecp_group_init(&ctx->grp);
     ctx->point_format = MBEDTLS_ECP_PF_UNCOMPRESSED;
 
-    mbedtls_ecp_point_init( &ctx->Xm1 );
-    mbedtls_ecp_point_init( &ctx->Xm2 );
-    mbedtls_ecp_point_init( &ctx->Xp1 );
-    mbedtls_ecp_point_init( &ctx->Xp2 );
-    mbedtls_ecp_point_init( &ctx->Xp  );
+    mbedtls_ecp_point_init(&ctx->Xm1);
+    mbedtls_ecp_point_init(&ctx->Xm2);
+    mbedtls_ecp_point_init(&ctx->Xp1);
+    mbedtls_ecp_point_init(&ctx->Xp2);
+    mbedtls_ecp_point_init(&ctx->Xp);
 
-    mbedtls_mpi_init( &ctx->xm1 );
-    mbedtls_mpi_init( &ctx->xm2 );
-    mbedtls_mpi_init( &ctx->s   );
+    mbedtls_mpi_init(&ctx->xm1);
+    mbedtls_mpi_init(&ctx->xm2);
+    mbedtls_mpi_init(&ctx->s);
 }
 
 /*
  * Free context
  */
-void mbedtls_ecjpake_free( mbedtls_ecjpake_context *ctx )
+void mbedtls_ecjpake_free(mbedtls_ecjpake_context *ctx)
 {
-    if( ctx == NULL )
+    if (ctx == NULL) {
         return;
+    }
 
     ctx->md_info = NULL;
-    mbedtls_ecp_group_free( &ctx->grp );
+    mbedtls_ecp_group_free(&ctx->grp);
 
-    mbedtls_ecp_point_free( &ctx->Xm1 );
-    mbedtls_ecp_point_free( &ctx->Xm2 );
-    mbedtls_ecp_point_free( &ctx->Xp1 );
-    mbedtls_ecp_point_free( &ctx->Xp2 );
-    mbedtls_ecp_point_free( &ctx->Xp  );
+    mbedtls_ecp_point_free(&ctx->Xm1);
+    mbedtls_ecp_point_free(&ctx->Xm2);
+    mbedtls_ecp_point_free(&ctx->Xp1);
+    mbedtls_ecp_point_free(&ctx->Xp2);
+    mbedtls_ecp_point_free(&ctx->Xp);
 
-    mbedtls_mpi_free( &ctx->xm1 );
-    mbedtls_mpi_free( &ctx->xm2 );
-    mbedtls_mpi_free( &ctx->s   );
+    mbedtls_mpi_free(&ctx->xm1);
+    mbedtls_mpi_free(&ctx->xm2);
+    mbedtls_mpi_free(&ctx->s);
 }
 
 /*
  * Setup context
  */
-int mbedtls_ecjpake_setup( mbedtls_ecjpake_context *ctx,
-                           mbedtls_ecjpake_role role,
-                           mbedtls_md_type_t hash,
-                           mbedtls_ecp_group_id curve,
-                           const unsigned char *secret,
-                           size_t len )
+int mbedtls_ecjpake_setup(mbedtls_ecjpake_context *ctx,
+                          mbedtls_ecjpake_role role,
+                          mbedtls_md_type_t hash,
+                          mbedtls_ecp_group_id curve,
+                          const unsigned char *secret,
+                          size_t len)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
-    ECJPAKE_VALIDATE_RET( ctx != NULL );
-    ECJPAKE_VALIDATE_RET( role == MBEDTLS_ECJPAKE_CLIENT ||
-                          role == MBEDTLS_ECJPAKE_SERVER );
-    ECJPAKE_VALIDATE_RET( secret != NULL || len == 0 );
+    ECJPAKE_VALIDATE_RET(ctx != NULL);
+    ECJPAKE_VALIDATE_RET(role == MBEDTLS_ECJPAKE_CLIENT ||
+                         role == MBEDTLS_ECJPAKE_SERVER);
+    ECJPAKE_VALIDATE_RET(secret != NULL || len == 0);
 
     ctx->role = role;
 
-    if( ( ctx->md_info = mbedtls_md_info_from_type( hash ) ) == NULL )
-        return( MBEDTLS_ERR_MD_FEATURE_UNAVAILABLE );
+    if ((ctx->md_info = mbedtls_md_info_from_type(hash)) == NULL) {
+        return MBEDTLS_ERR_MD_FEATURE_UNAVAILABLE;
+    }
 
-    MBEDTLS_MPI_CHK( mbedtls_ecp_group_load( &ctx->grp, curve ) );
+    MBEDTLS_MPI_CHK(mbedtls_ecp_group_load(&ctx->grp, curve));
 
-    MBEDTLS_MPI_CHK( mbedtls_mpi_read_binary( &ctx->s, secret, len ) );
+    MBEDTLS_MPI_CHK(mbedtls_mpi_read_binary(&ctx->s, secret, len));
 
 cleanup:
-    if( ret != 0 )
-        mbedtls_ecjpake_free( ctx );
+    if (ret != 0) {
+        mbedtls_ecjpake_free(ctx);
+    }
 
-    return( ret );
+    return ret;
 }
 
 /*
  * Check if context is ready for use
  */
-int mbedtls_ecjpake_check( const mbedtls_ecjpake_context *ctx )
+int mbedtls_ecjpake_check(const mbedtls_ecjpake_context *ctx)
 {
-    ECJPAKE_VALIDATE_RET( ctx != NULL );
+    ECJPAKE_VALIDATE_RET(ctx != NULL);
 
-    if( ctx->md_info == NULL ||
+    if (ctx->md_info == NULL ||
         ctx->grp.id == MBEDTLS_ECP_DP_NONE ||
-        ctx->s.p == NULL )
-    {
-        return( MBEDTLS_ERR_ECP_BAD_INPUT_DATA );
+        ctx->s.p == NULL) {
+        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
     }
 
-    return( 0 );
+    return 0;
 }
 
 /*
  * Write a point plus its length to a buffer
  */
-static int ecjpake_write_len_point( unsigned char **p,
-                                    const unsigned char *end,
-                                    const mbedtls_ecp_group *grp,
-                                    const int pf,
-                                    const mbedtls_ecp_point *P )
+static int ecjpake_write_len_point(unsigned char **p,
+                                   const unsigned char *end,
+                                   const mbedtls_ecp_group *grp,
+                                   const int pf,
+                                   const mbedtls_ecp_point *P)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len;
 
     /* Need at least 4 for length plus 1 for point */
-    if( end < *p || end - *p < 5 )
-        return( MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL );
+    if (end < *p || end - *p < 5) {
+        return MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL;
+    }
 
-    ret = mbedtls_ecp_point_write_binary( grp, P, pf,
-                                          &len, *p + 4, end - ( *p + 4 ) );
-    if( ret != 0 )
-        return( ret );
+    ret = mbedtls_ecp_point_write_binary(grp, P, pf,
+                                         &len, *p + 4, end - (*p + 4));
+    if (ret != 0) {
+        return ret;
+    }
 
-    MBEDTLS_PUT_UINT32_BE( len, *p, 0 );
+    MBEDTLS_PUT_UINT32_BE(len, *p, 0);
 
     *p += 4 + len;
 
-    return( 0 );
+    return 0;
 }
 
 /*
  * Size of the temporary buffer for ecjpake_hash:
  * 3 EC points plus their length, plus ID and its length (4 + 6 bytes)
  */
-#define ECJPAKE_HASH_BUF_LEN    ( 3 * ( 4 + MBEDTLS_ECP_MAX_PT_LEN ) + 4 + 6 )
+#define ECJPAKE_HASH_BUF_LEN    (3 * (4 + MBEDTLS_ECP_MAX_PT_LEN) + 4 + 6)
 
 /*
  * Compute hash for ZKP (7.4.2.2.2.1)
  */
-static int ecjpake_hash( const mbedtls_md_info_t *md_info,
-                         const mbedtls_ecp_group *grp,
-                         const int pf,
-                         const mbedtls_ecp_point *G,
-                         const mbedtls_ecp_point *V,
-                         const mbedtls_ecp_point *X,
-                         const char *id,
-                         mbedtls_mpi *h )
+static int ecjpake_hash(const mbedtls_md_info_t *md_info,
+                        const mbedtls_ecp_group *grp,
+                        const int pf,
+                        const mbedtls_ecp_point *G,
+                        const mbedtls_ecp_point *V,
+                        const mbedtls_ecp_point *X,
+                        const char *id,
+                        mbedtls_mpi *h)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned char buf[ECJPAKE_HASH_BUF_LEN];
     unsigned char *p = buf;
-    const unsigned char *end = buf + sizeof( buf );
-    const size_t id_len = strlen( id );
+    const unsigned char *end = buf + sizeof(buf);
+    const size_t id_len = strlen(id);
     unsigned char hash[MBEDTLS_MD_MAX_SIZE];
 
     /* Write things to temporary buffer */
-    MBEDTLS_MPI_CHK( ecjpake_write_len_point( &p, end, grp, pf, G ) );
-    MBEDTLS_MPI_CHK( ecjpake_write_len_point( &p, end, grp, pf, V ) );
-    MBEDTLS_MPI_CHK( ecjpake_write_len_point( &p, end, grp, pf, X ) );
+    MBEDTLS_MPI_CHK(ecjpake_write_len_point(&p, end, grp, pf, G));
+    MBEDTLS_MPI_CHK(ecjpake_write_len_point(&p, end, grp, pf, V));
+    MBEDTLS_MPI_CHK(ecjpake_write_len_point(&p, end, grp, pf, X));
 
-    if( end - p < 4 )
-        return( MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL );
+    if (end - p < 4) {
+        return MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL;
+    }
 
-    MBEDTLS_PUT_UINT32_BE( id_len, p, 0 );
+    MBEDTLS_PUT_UINT32_BE(id_len, p, 0);
     p += 4;
 
-    if( end < p || (size_t)( end - p ) < id_len )
-        return( MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL );
+    if (end < p || (size_t) (end - p) < id_len) {
+        return MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL;
+    }
 
-    memcpy( p, id, id_len );
+    memcpy(p, id, id_len);
     p += id_len;
 
     /* Compute hash */
-    MBEDTLS_MPI_CHK( mbedtls_md( md_info, buf, p - buf, hash ) );
+    MBEDTLS_MPI_CHK(mbedtls_md(md_info, buf, p - buf, hash));
 
     /* Turn it into an integer mod n */
-    MBEDTLS_MPI_CHK( mbedtls_mpi_read_binary( h, hash,
-                                        mbedtls_md_get_size( md_info ) ) );
-    MBEDTLS_MPI_CHK( mbedtls_mpi_mod_mpi( h, h, &grp->N ) );
+    MBEDTLS_MPI_CHK(mbedtls_mpi_read_binary(h, hash,
+                                            mbedtls_md_get_size(md_info)));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(h, h, &grp->N));
 
 cleanup:
-    return( ret );
+    return ret;
 }
 
 /*
  * Parse a ECShnorrZKP (7.4.2.2.2) and verify it (7.4.2.3.3)
  */
-static int ecjpake_zkp_read( const mbedtls_md_info_t *md_info,
-                             const mbedtls_ecp_group *grp,
-                             const int pf,
-                             const mbedtls_ecp_point *G,
-                             const mbedtls_ecp_point *X,
-                             const char *id,
-                             const unsigned char **p,
-                             const unsigned char *end )
+static int ecjpake_zkp_read(const mbedtls_md_info_t *md_info,
+                            const mbedtls_ecp_group *grp,
+                            const int pf,
+                            const mbedtls_ecp_point *G,
+                            const mbedtls_ecp_point *X,
+                            const char *id,
+                            const unsigned char **p,
+                            const unsigned char *end)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_ecp_point V, VV;
     mbedtls_mpi r, h;
     size_t r_len;
 
-    mbedtls_ecp_point_init( &V );
-    mbedtls_ecp_point_init( &VV );
-    mbedtls_mpi_init( &r );
-    mbedtls_mpi_init( &h );
+    mbedtls_ecp_point_init(&V);
+    mbedtls_ecp_point_init(&VV);
+    mbedtls_mpi_init(&r);
+    mbedtls_mpi_init(&h);
 
     /*
      * struct {
@@ -255,64 +261,62 @@ static int ecjpake_zkp_read( const mbedtls_md_info_t *md_info,
      *     opaque r<1..2^8-1>;
      * } ECSchnorrZKP;
      */
-    if( end < *p )
-        return( MBEDTLS_ERR_ECP_BAD_INPUT_DATA );
+    if (end < *p) {
+        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
 
-    MBEDTLS_MPI_CHK( mbedtls_ecp_tls_read_point( grp, &V, p, end - *p ) );
+    MBEDTLS_MPI_CHK(mbedtls_ecp_tls_read_point(grp, &V, p, end - *p));
 
-    if( end < *p || (size_t)( end - *p ) < 1 )
-    {
+    if (end < *p || (size_t) (end - *p) < 1) {
         ret = MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
         goto cleanup;
     }
 
     r_len = *(*p)++;
 
-    if( end < *p || (size_t)( end - *p ) < r_len || r_len == 0 )
-    {
+    if (end < *p || (size_t) (end - *p) < r_len || r_len == 0) {
         ret = MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
         goto cleanup;
     }
 
-    MBEDTLS_MPI_CHK( mbedtls_mpi_read_binary( &r, *p, r_len ) );
+    MBEDTLS_MPI_CHK(mbedtls_mpi_read_binary(&r, *p, r_len));
     *p += r_len;
 
     /*
      * Verification
      */
-    MBEDTLS_MPI_CHK( ecjpake_hash( md_info, grp, pf, G, &V, X, id, &h ) );
-    MBEDTLS_MPI_CHK( mbedtls_ecp_muladd( (mbedtls_ecp_group *) grp,
-                     &VV, &h, X, &r, G ) );
+    MBEDTLS_MPI_CHK(ecjpake_hash(md_info, grp, pf, G, &V, X, id, &h));
+    MBEDTLS_MPI_CHK(mbedtls_ecp_muladd((mbedtls_ecp_group *) grp,
+                                       &VV, &h, X, &r, G));
 
-    if( mbedtls_ecp_point_cmp( &VV, &V ) != 0 )
-    {
+    if (mbedtls_ecp_point_cmp(&VV, &V) != 0) {
         ret = MBEDTLS_ERR_ECP_VERIFY_FAILED;
         goto cleanup;
     }
 
 cleanup:
-    mbedtls_ecp_point_free( &V );
-    mbedtls_ecp_point_free( &VV );
-    mbedtls_mpi_free( &r );
-    mbedtls_mpi_free( &h );
+    mbedtls_ecp_point_free(&V);
+    mbedtls_ecp_point_free(&VV);
+    mbedtls_mpi_free(&r);
+    mbedtls_mpi_free(&h);
 
-    return( ret );
+    return ret;
 }
 
 /*
  * Generate ZKP (7.4.2.3.2) and write it as ECSchnorrZKP (7.4.2.2.2)
  */
-static int ecjpake_zkp_write( const mbedtls_md_info_t *md_info,
-                              const mbedtls_ecp_group *grp,
-                              const int pf,
-                              const mbedtls_ecp_point *G,
-                              const mbedtls_mpi *x,
-                              const mbedtls_ecp_point *X,
-                              const char *id,
-                              unsigned char **p,
-                              const unsigned char *end,
-                              int (*f_rng)(void *, unsigned char *, size_t),
-                              void *p_rng )
+static int ecjpake_zkp_write(const mbedtls_md_info_t *md_info,
+                             const mbedtls_ecp_group *grp,
+                             const int pf,
+                             const mbedtls_ecp_point *G,
+                             const mbedtls_mpi *x,
+                             const mbedtls_ecp_point *X,
+                             const char *id,
+                             unsigned char **p,
+                             const unsigned char *end,
+                             int (*f_rng)(void *, unsigned char *, size_t),
+                             void *p_rng)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_ecp_point V;
@@ -320,62 +324,63 @@ static int ecjpake_zkp_write( const mbedtls_md_info_t *md_info,
     mbedtls_mpi h; /* later recycled to hold r */
     size_t len;
 
-    if( end < *p )
-        return( MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL );
+    if (end < *p) {
+        return MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL;
+    }
 
-    mbedtls_ecp_point_init( &V );
-    mbedtls_mpi_init( &v );
-    mbedtls_mpi_init( &h );
+    mbedtls_ecp_point_init(&V);
+    mbedtls_mpi_init(&v);
+    mbedtls_mpi_init(&h);
 
     /* Compute signature */
-    MBEDTLS_MPI_CHK( mbedtls_ecp_gen_keypair_base( (mbedtls_ecp_group *) grp,
-                                                   G, &v, &V, f_rng, p_rng ) );
-    MBEDTLS_MPI_CHK( ecjpake_hash( md_info, grp, pf, G, &V, X, id, &h ) );
-    MBEDTLS_MPI_CHK( mbedtls_mpi_mul_mpi( &h, &h, x ) ); /* x*h */
-    MBEDTLS_MPI_CHK( mbedtls_mpi_sub_mpi( &h, &v, &h ) ); /* v - x*h */
-    MBEDTLS_MPI_CHK( mbedtls_mpi_mod_mpi( &h, &h, &grp->N ) ); /* r */
+    MBEDTLS_MPI_CHK(mbedtls_ecp_gen_keypair_base((mbedtls_ecp_group *) grp,
+                                                 G, &v, &V, f_rng, p_rng));
+    MBEDTLS_MPI_CHK(ecjpake_hash(md_info, grp, pf, G, &V, X, id, &h));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&h, &h, x));     /* x*h */
+    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(&h, &v, &h));     /* v - x*h */
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&h, &h, &grp->N));     /* r */
 
     /* Write it out */
-    MBEDTLS_MPI_CHK( mbedtls_ecp_tls_write_point( grp, &V,
-                pf, &len, *p, end - *p ) );
+    MBEDTLS_MPI_CHK(mbedtls_ecp_tls_write_point(grp, &V,
+                                                pf, &len, *p, end - *p));
     *p += len;
 
-    len = mbedtls_mpi_size( &h ); /* actually r */
-    if( end < *p || (size_t)( end - *p ) < 1 + len || len > 255 )
-    {
+    len = mbedtls_mpi_size(&h);   /* actually r */
+    if (end < *p || (size_t) (end - *p) < 1 + len || len > 255) {
         ret = MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL;
         goto cleanup;
     }
 
-    *(*p)++ = MBEDTLS_BYTE_0( len );
-    MBEDTLS_MPI_CHK( mbedtls_mpi_write_binary( &h, *p, len ) ); /* r */
+    *(*p)++ = MBEDTLS_BYTE_0(len);
+    MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&h, *p, len));     /* r */
     *p += len;
 
 cleanup:
-    mbedtls_ecp_point_free( &V );
-    mbedtls_mpi_free( &v );
-    mbedtls_mpi_free( &h );
+    mbedtls_ecp_point_free(&V);
+    mbedtls_mpi_free(&v);
+    mbedtls_mpi_free(&h);
 
-    return( ret );
+    return ret;
 }
 
 /*
  * Parse a ECJPAKEKeyKP (7.4.2.2.1) and check proof
  * Output: verified public key X
  */
-static int ecjpake_kkp_read( const mbedtls_md_info_t *md_info,
-                             const mbedtls_ecp_group *grp,
-                             const int pf,
-                             const mbedtls_ecp_point *G,
-                             mbedtls_ecp_point *X,
-                             const char *id,
-                             const unsigned char **p,
-                             const unsigned char *end )
+static int ecjpake_kkp_read(const mbedtls_md_info_t *md_info,
+                            const mbedtls_ecp_group *grp,
+                            const int pf,
+                            const mbedtls_ecp_point *G,
+                            mbedtls_ecp_point *X,
+                            const char *id,
+                            const unsigned char **p,
+                            const unsigned char *end)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
-    if( end < *p )
-        return( MBEDTLS_ERR_ECP_BAD_INPUT_DATA );
+    if (end < *p) {
+        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
 
     /*
      * struct {
@@ -383,69 +388,69 @@ static int ecjpake_kkp_read( const mbedtls_md_info_t *md_info,
      *     ECSchnorrZKP zkp;
      * } ECJPAKEKeyKP;
      */
-    MBEDTLS_MPI_CHK( mbedtls_ecp_tls_read_point( grp, X, p, end - *p ) );
-    if( mbedtls_ecp_is_zero( X ) )
-    {
+    MBEDTLS_MPI_CHK(mbedtls_ecp_tls_read_point(grp, X, p, end - *p));
+    if (mbedtls_ecp_is_zero(X)) {
         ret = MBEDTLS_ERR_ECP_INVALID_KEY;
         goto cleanup;
     }
 
-    MBEDTLS_MPI_CHK( ecjpake_zkp_read( md_info, grp, pf, G, X, id, p, end ) );
+    MBEDTLS_MPI_CHK(ecjpake_zkp_read(md_info, grp, pf, G, X, id, p, end));
 
 cleanup:
-    return( ret );
+    return ret;
 }
 
 /*
  * Generate an ECJPAKEKeyKP
  * Output: the serialized structure, plus private/public key pair
  */
-static int ecjpake_kkp_write( const mbedtls_md_info_t *md_info,
-                              const mbedtls_ecp_group *grp,
-                              const int pf,
-                              const mbedtls_ecp_point *G,
-                              mbedtls_mpi *x,
-                              mbedtls_ecp_point *X,
-                              const char *id,
-                              unsigned char **p,
-                              const unsigned char *end,
-                              int (*f_rng)(void *, unsigned char *, size_t),
-                              void *p_rng )
+static int ecjpake_kkp_write(const mbedtls_md_info_t *md_info,
+                             const mbedtls_ecp_group *grp,
+                             const int pf,
+                             const mbedtls_ecp_point *G,
+                             mbedtls_mpi *x,
+                             mbedtls_ecp_point *X,
+                             const char *id,
+                             unsigned char **p,
+                             const unsigned char *end,
+                             int (*f_rng)(void *, unsigned char *, size_t),
+                             void *p_rng)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len;
 
-    if( end < *p )
-        return( MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL );
+    if (end < *p) {
+        return MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL;
+    }
 
     /* Generate key (7.4.2.3.1) and write it out */
-    MBEDTLS_MPI_CHK( mbedtls_ecp_gen_keypair_base( (mbedtls_ecp_group *) grp, G, x, X,
-                                                   f_rng, p_rng ) );
-    MBEDTLS_MPI_CHK( mbedtls_ecp_tls_write_point( grp, X,
-                pf, &len, *p, end - *p ) );
+    MBEDTLS_MPI_CHK(mbedtls_ecp_gen_keypair_base((mbedtls_ecp_group *) grp, G, x, X,
+                                                 f_rng, p_rng));
+    MBEDTLS_MPI_CHK(mbedtls_ecp_tls_write_point(grp, X,
+                                                pf, &len, *p, end - *p));
     *p += len;
 
     /* Generate and write proof */
-    MBEDTLS_MPI_CHK( ecjpake_zkp_write( md_info, grp, pf, G, x, X, id,
-                                        p, end, f_rng, p_rng ) );
+    MBEDTLS_MPI_CHK(ecjpake_zkp_write(md_info, grp, pf, G, x, X, id,
+                                      p, end, f_rng, p_rng));
 
 cleanup:
-    return( ret );
+    return ret;
 }
 
 /*
  * Read a ECJPAKEKeyKPPairList (7.4.2.3) and check proofs
  * Outputs: verified peer public keys Xa, Xb
  */
-static int ecjpake_kkpp_read( const mbedtls_md_info_t *md_info,
-                              const mbedtls_ecp_group *grp,
-                              const int pf,
-                              const mbedtls_ecp_point *G,
-                              mbedtls_ecp_point *Xa,
-                              mbedtls_ecp_point *Xb,
-                              const char *id,
-                              const unsigned char *buf,
-                              size_t len )
+static int ecjpake_kkpp_read(const mbedtls_md_info_t *md_info,
+                             const mbedtls_ecp_group *grp,
+                             const int pf,
+                             const mbedtls_ecp_point *G,
+                             mbedtls_ecp_point *Xa,
+                             mbedtls_ecp_point *Xb,
+                             const char *id,
+                             const unsigned char *buf,
+                             size_t len)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     const unsigned char *p = buf;
@@ -456,114 +461,115 @@ static int ecjpake_kkpp_read( const mbedtls_md_info_t *md_info,
      *     ECJPAKEKeyKP ecjpake_key_kp_pair_list[2];
      * } ECJPAKEKeyKPPairList;
      */
-    MBEDTLS_MPI_CHK( ecjpake_kkp_read( md_info, grp, pf, G, Xa, id, &p, end ) );
-    MBEDTLS_MPI_CHK( ecjpake_kkp_read( md_info, grp, pf, G, Xb, id, &p, end ) );
+    MBEDTLS_MPI_CHK(ecjpake_kkp_read(md_info, grp, pf, G, Xa, id, &p, end));
+    MBEDTLS_MPI_CHK(ecjpake_kkp_read(md_info, grp, pf, G, Xb, id, &p, end));
 
-    if( p != end )
+    if (p != end) {
         ret = MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
 
 cleanup:
-    return( ret );
+    return ret;
 }
 
 /*
  * Generate a ECJPAKEKeyKPPairList
  * Outputs: the serialized structure, plus two private/public key pairs
  */
-static int ecjpake_kkpp_write( const mbedtls_md_info_t *md_info,
-                               const mbedtls_ecp_group *grp,
-                               const int pf,
-                               const mbedtls_ecp_point *G,
-                               mbedtls_mpi *xm1,
-                               mbedtls_ecp_point *Xa,
-                               mbedtls_mpi *xm2,
-                               mbedtls_ecp_point *Xb,
-                               const char *id,
-                               unsigned char *buf,
-                               size_t len,
-                               size_t *olen,
-                               int (*f_rng)(void *, unsigned char *, size_t),
-                               void *p_rng )
+static int ecjpake_kkpp_write(const mbedtls_md_info_t *md_info,
+                              const mbedtls_ecp_group *grp,
+                              const int pf,
+                              const mbedtls_ecp_point *G,
+                              mbedtls_mpi *xm1,
+                              mbedtls_ecp_point *Xa,
+                              mbedtls_mpi *xm2,
+                              mbedtls_ecp_point *Xb,
+                              const char *id,
+                              unsigned char *buf,
+                              size_t len,
+                              size_t *olen,
+                              int (*f_rng)(void *, unsigned char *, size_t),
+                              void *p_rng)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned char *p = buf;
     const unsigned char *end = buf + len;
 
-    MBEDTLS_MPI_CHK( ecjpake_kkp_write( md_info, grp, pf, G, xm1, Xa, id,
-                &p, end, f_rng, p_rng ) );
-    MBEDTLS_MPI_CHK( ecjpake_kkp_write( md_info, grp, pf, G, xm2, Xb, id,
-                &p, end, f_rng, p_rng ) );
+    MBEDTLS_MPI_CHK(ecjpake_kkp_write(md_info, grp, pf, G, xm1, Xa, id,
+                                      &p, end, f_rng, p_rng));
+    MBEDTLS_MPI_CHK(ecjpake_kkp_write(md_info, grp, pf, G, xm2, Xb, id,
+                                      &p, end, f_rng, p_rng));
 
     *olen = p - buf;
 
 cleanup:
-    return( ret );
+    return ret;
 }
 
 /*
  * Read and process the first round message
  */
-int mbedtls_ecjpake_read_round_one( mbedtls_ecjpake_context *ctx,
-                                    const unsigned char *buf,
-                                    size_t len )
+int mbedtls_ecjpake_read_round_one(mbedtls_ecjpake_context *ctx,
+                                   const unsigned char *buf,
+                                   size_t len)
 {
-    ECJPAKE_VALIDATE_RET( ctx != NULL );
-    ECJPAKE_VALIDATE_RET( buf != NULL );
+    ECJPAKE_VALIDATE_RET(ctx != NULL);
+    ECJPAKE_VALIDATE_RET(buf != NULL);
 
-    return( ecjpake_kkpp_read( ctx->md_info, &ctx->grp, ctx->point_format,
-                               &ctx->grp.G,
-                               &ctx->Xp1, &ctx->Xp2, ID_PEER,
-                               buf, len ) );
+    return ecjpake_kkpp_read(ctx->md_info, &ctx->grp, ctx->point_format,
+                             &ctx->grp.G,
+                             &ctx->Xp1, &ctx->Xp2, ID_PEER,
+                             buf, len);
 }
 
 /*
  * Generate and write the first round message
  */
-int mbedtls_ecjpake_write_round_one( mbedtls_ecjpake_context *ctx,
-                            unsigned char *buf, size_t len, size_t *olen,
-                            int (*f_rng)(void *, unsigned char *, size_t),
-                            void *p_rng )
+int mbedtls_ecjpake_write_round_one(mbedtls_ecjpake_context *ctx,
+                                    unsigned char *buf, size_t len, size_t *olen,
+                                    int (*f_rng)(void *, unsigned char *, size_t),
+                                    void *p_rng)
 {
-    ECJPAKE_VALIDATE_RET( ctx   != NULL );
-    ECJPAKE_VALIDATE_RET( buf   != NULL );
-    ECJPAKE_VALIDATE_RET( olen  != NULL );
-    ECJPAKE_VALIDATE_RET( f_rng != NULL );
+    ECJPAKE_VALIDATE_RET(ctx   != NULL);
+    ECJPAKE_VALIDATE_RET(buf   != NULL);
+    ECJPAKE_VALIDATE_RET(olen  != NULL);
+    ECJPAKE_VALIDATE_RET(f_rng != NULL);
 
-    return( ecjpake_kkpp_write( ctx->md_info, &ctx->grp, ctx->point_format,
-                                &ctx->grp.G,
-                                &ctx->xm1, &ctx->Xm1, &ctx->xm2, &ctx->Xm2,
-                                ID_MINE, buf, len, olen, f_rng, p_rng ) );
+    return ecjpake_kkpp_write(ctx->md_info, &ctx->grp, ctx->point_format,
+                              &ctx->grp.G,
+                              &ctx->xm1, &ctx->Xm1, &ctx->xm2, &ctx->Xm2,
+                              ID_MINE, buf, len, olen, f_rng, p_rng);
 }
 
 /*
  * Compute the sum of three points R = A + B + C
  */
-static int ecjpake_ecp_add3( mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
-                             const mbedtls_ecp_point *A,
-                             const mbedtls_ecp_point *B,
-                             const mbedtls_ecp_point *C )
+static int ecjpake_ecp_add3(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
+                            const mbedtls_ecp_point *A,
+                            const mbedtls_ecp_point *B,
+                            const mbedtls_ecp_point *C)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_mpi one;
 
-    mbedtls_mpi_init( &one );
+    mbedtls_mpi_init(&one);
 
-    MBEDTLS_MPI_CHK( mbedtls_mpi_lset( &one, 1 ) );
-    MBEDTLS_MPI_CHK( mbedtls_ecp_muladd( grp, R, &one, A, &one, B ) );
-    MBEDTLS_MPI_CHK( mbedtls_ecp_muladd( grp, R, &one, R, &one, C ) );
+    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&one, 1));
+    MBEDTLS_MPI_CHK(mbedtls_ecp_muladd(grp, R, &one, A, &one, B));
+    MBEDTLS_MPI_CHK(mbedtls_ecp_muladd(grp, R, &one, R, &one, C));
 
 cleanup:
-    mbedtls_mpi_free( &one );
+    mbedtls_mpi_free(&one);
 
-    return( ret );
+    return ret;
 }
 
 /*
  * Read and process second round message (C: 7.4.2.5, S: 7.4.2.6)
  */
-int mbedtls_ecjpake_read_round_two( mbedtls_ecjpake_context *ctx,
-                                            const unsigned char *buf,
-                                            size_t len )
+int mbedtls_ecjpake_read_round_two(mbedtls_ecjpake_context *ctx,
+                                   const unsigned char *buf,
+                                   size_t len)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     const unsigned char *p = buf;
@@ -571,11 +577,11 @@ int mbedtls_ecjpake_read_round_two( mbedtls_ecjpake_context *ctx,
     mbedtls_ecp_group grp;
     mbedtls_ecp_point G;    /* C: GB, S: GA */
 
-    ECJPAKE_VALIDATE_RET( ctx != NULL );
-    ECJPAKE_VALIDATE_RET( buf != NULL );
+    ECJPAKE_VALIDATE_RET(ctx != NULL);
+    ECJPAKE_VALIDATE_RET(buf != NULL);
 
-    mbedtls_ecp_group_init( &grp );
-    mbedtls_ecp_point_init( &G );
+    mbedtls_ecp_group_init(&grp);
+    mbedtls_ecp_point_init(&G);
 
     /*
      * Server: GA = X3  + X4  + X1      (7.4.2.6.1)
@@ -583,8 +589,8 @@ int mbedtls_ecjpake_read_round_two( mbedtls_ecjpake_context *ctx,
      * Unified: G = Xm1 + Xm2 + Xp1
      * We need that before parsing in order to check Xp as we read it
      */
-    MBEDTLS_MPI_CHK( ecjpake_ecp_add3( &ctx->grp, &G,
-                                       &ctx->Xm1, &ctx->Xm2, &ctx->Xp1 ) );
+    MBEDTLS_MPI_CHK(ecjpake_ecp_add3(&ctx->grp, &G,
+                                     &ctx->Xm1, &ctx->Xm2, &ctx->Xp1));
 
     /*
      * struct {
@@ -592,71 +598,68 @@ int mbedtls_ecjpake_read_round_two( mbedtls_ecjpake_context *ctx,
      *     ECJPAKEKeyKP ecjpake_key_kp;
      * } Client/ServerECJPAKEParams;
      */
-    if( ctx->role == MBEDTLS_ECJPAKE_CLIENT )
-    {
-        MBEDTLS_MPI_CHK( mbedtls_ecp_tls_read_group( &grp, &p, len ) );
-        if( grp.id != ctx->grp.id )
-        {
+    if (ctx->role == MBEDTLS_ECJPAKE_CLIENT) {
+        MBEDTLS_MPI_CHK(mbedtls_ecp_tls_read_group(&grp, &p, len));
+        if (grp.id != ctx->grp.id) {
             ret = MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE;
             goto cleanup;
         }
     }
 
-    MBEDTLS_MPI_CHK( ecjpake_kkp_read( ctx->md_info, &ctx->grp,
-                            ctx->point_format,
-                            &G, &ctx->Xp, ID_PEER, &p, end ) );
+    MBEDTLS_MPI_CHK(ecjpake_kkp_read(ctx->md_info, &ctx->grp,
+                                     ctx->point_format,
+                                     &G, &ctx->Xp, ID_PEER, &p, end));
 
-    if( p != end )
-    {
+    if (p != end) {
         ret = MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
         goto cleanup;
     }
 
 cleanup:
-    mbedtls_ecp_group_free( &grp );
-    mbedtls_ecp_point_free( &G );
+    mbedtls_ecp_group_free(&grp);
+    mbedtls_ecp_point_free(&G);
 
-    return( ret );
+    return ret;
 }
 
 /*
  * Compute R = +/- X * S mod N, taking care not to leak S
  */
-static int ecjpake_mul_secret( mbedtls_mpi *R, int sign,
-                               const mbedtls_mpi *X,
-                               const mbedtls_mpi *S,
-                               const mbedtls_mpi *N,
-                               int (*f_rng)(void *, unsigned char *, size_t),
-                               void *p_rng )
+static int ecjpake_mul_secret(mbedtls_mpi *R, int sign,
+                              const mbedtls_mpi *X,
+                              const mbedtls_mpi *S,
+                              const mbedtls_mpi *N,
+                              int (*f_rng)(void *, unsigned char *, size_t),
+                              void *p_rng)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_mpi b; /* Blinding value, then s + N * blinding */
 
-    mbedtls_mpi_init( &b );
+    mbedtls_mpi_init(&b);
 
     /* b = s + rnd-128-bit * N */
-    MBEDTLS_MPI_CHK( mbedtls_mpi_fill_random( &b, 16, f_rng, p_rng ) );
-    MBEDTLS_MPI_CHK( mbedtls_mpi_mul_mpi( &b, &b, N ) );
-    MBEDTLS_MPI_CHK( mbedtls_mpi_add_mpi( &b, &b, S ) );
+    MBEDTLS_MPI_CHK(mbedtls_mpi_fill_random(&b, 16, f_rng, p_rng));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&b, &b, N));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(&b, &b, S));
 
     /* R = sign * X * b mod N */
-    MBEDTLS_MPI_CHK( mbedtls_mpi_mul_mpi( R, X, &b ) );
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(R, X, &b));
     R->s *= sign;
-    MBEDTLS_MPI_CHK( mbedtls_mpi_mod_mpi( R, R, N ) );
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(R, R, N));
 
 cleanup:
-    mbedtls_mpi_free( &b );
+    mbedtls_mpi_free(&b);
 
-    return( ret );
+    return ret;
 }
 
 /*
  * Generate and write the second round message (S: 7.4.2.5, C: 7.4.2.6)
  */
-int mbedtls_ecjpake_write_round_two( mbedtls_ecjpake_context *ctx,
-                            unsigned char *buf, size_t len, size_t *olen,
-                            int (*f_rng)(void *, unsigned char *, size_t),
-                            void *p_rng )
+int mbedtls_ecjpake_write_round_two(mbedtls_ecjpake_context *ctx,
+                                    unsigned char *buf, size_t len, size_t *olen,
+                                    int (*f_rng)(void *, unsigned char *, size_t),
+                                    void *p_rng)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_ecp_point G;    /* C: GA, S: GB */
@@ -666,14 +669,14 @@ int mbedtls_ecjpake_write_round_two( mbedtls_ecjpake_context *ctx,
     const unsigned char *end = buf + len;
     size_t ec_len;
 
-    ECJPAKE_VALIDATE_RET( ctx   != NULL );
-    ECJPAKE_VALIDATE_RET( buf   != NULL );
-    ECJPAKE_VALIDATE_RET( olen  != NULL );
-    ECJPAKE_VALIDATE_RET( f_rng != NULL );
+    ECJPAKE_VALIDATE_RET(ctx   != NULL);
+    ECJPAKE_VALIDATE_RET(buf   != NULL);
+    ECJPAKE_VALIDATE_RET(olen  != NULL);
+    ECJPAKE_VALIDATE_RET(f_rng != NULL);
 
-    mbedtls_ecp_point_init( &G );
-    mbedtls_ecp_point_init( &Xm );
-    mbedtls_mpi_init( &xm );
+    mbedtls_ecp_point_init(&G);
+    mbedtls_ecp_point_init(&Xm);
+    mbedtls_mpi_init(&xm);
 
     /*
      * First generate private/public key pair (S: 7.4.2.5.1, C: 7.4.2.6.1)
@@ -682,11 +685,11 @@ int mbedtls_ecjpake_write_round_two( mbedtls_ecjpake_context *ctx,
      * Server:  GB = X3  + X1  + X2  | xs = x4  * s | Xs = xs * GB
      * Unified: G  = Xm1 + Xp1 + Xp2 | xm = xm2 * s | Xm = xm * G
      */
-    MBEDTLS_MPI_CHK( ecjpake_ecp_add3( &ctx->grp, &G,
-                                       &ctx->Xp1, &ctx->Xp2, &ctx->Xm1 ) );
-    MBEDTLS_MPI_CHK( ecjpake_mul_secret( &xm, 1, &ctx->xm2, &ctx->s,
-                                         &ctx->grp.N, f_rng, p_rng ) );
-    MBEDTLS_MPI_CHK( mbedtls_ecp_mul( &ctx->grp, &Xm, &xm, &G, f_rng, p_rng ) );
+    MBEDTLS_MPI_CHK(ecjpake_ecp_add3(&ctx->grp, &G,
+                                     &ctx->Xp1, &ctx->Xp2, &ctx->Xm1));
+    MBEDTLS_MPI_CHK(ecjpake_mul_secret(&xm, 1, &ctx->xm2, &ctx->s,
+                                       &ctx->grp.N, f_rng, p_rng));
+    MBEDTLS_MPI_CHK(mbedtls_ecp_mul(&ctx->grp, &Xm, &xm, &G, f_rng, p_rng));
 
     /*
      * Now write things out
@@ -696,49 +699,46 @@ int mbedtls_ecjpake_write_round_two( mbedtls_ecjpake_context *ctx,
      *     ECJPAKEKeyKP ecjpake_key_kp;
      * } Client/ServerECJPAKEParams;
      */
-    if( ctx->role == MBEDTLS_ECJPAKE_SERVER )
-    {
-        if( end < p )
-        {
+    if (ctx->role == MBEDTLS_ECJPAKE_SERVER) {
+        if (end < p) {
             ret = MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL;
             goto cleanup;
         }
-        MBEDTLS_MPI_CHK( mbedtls_ecp_tls_write_group( &ctx->grp, &ec_len,
-                                                      p, end - p ) );
+        MBEDTLS_MPI_CHK(mbedtls_ecp_tls_write_group(&ctx->grp, &ec_len,
+                                                    p, end - p));
         p += ec_len;
     }
 
-    if( end < p )
-    {
+    if (end < p) {
         ret = MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL;
         goto cleanup;
     }
-    MBEDTLS_MPI_CHK( mbedtls_ecp_tls_write_point( &ctx->grp, &Xm,
-                     ctx->point_format, &ec_len, p, end - p ) );
+    MBEDTLS_MPI_CHK(mbedtls_ecp_tls_write_point(&ctx->grp, &Xm,
+                                                ctx->point_format, &ec_len, p, end - p));
     p += ec_len;
 
-    MBEDTLS_MPI_CHK( ecjpake_zkp_write( ctx->md_info, &ctx->grp,
-                                        ctx->point_format,
-                                        &G, &xm, &Xm, ID_MINE,
-                                        &p, end, f_rng, p_rng ) );
+    MBEDTLS_MPI_CHK(ecjpake_zkp_write(ctx->md_info, &ctx->grp,
+                                      ctx->point_format,
+                                      &G, &xm, &Xm, ID_MINE,
+                                      &p, end, f_rng, p_rng));
 
     *olen = p - buf;
 
 cleanup:
-    mbedtls_ecp_point_free( &G );
-    mbedtls_ecp_point_free( &Xm );
-    mbedtls_mpi_free( &xm );
+    mbedtls_ecp_point_free(&G);
+    mbedtls_ecp_point_free(&Xm);
+    mbedtls_mpi_free(&xm);
 
-    return( ret );
+    return ret;
 }
 
 /*
  * Derive PMS (7.4.2.7 / 7.4.2.8)
  */
-int mbedtls_ecjpake_derive_secret( mbedtls_ecjpake_context *ctx,
-                            unsigned char *buf, size_t len, size_t *olen,
-                            int (*f_rng)(void *, unsigned char *, size_t),
-                            void *p_rng )
+int mbedtls_ecjpake_derive_secret(mbedtls_ecjpake_context *ctx,
+                                  unsigned char *buf, size_t len, size_t *olen,
+                                  int (*f_rng)(void *, unsigned char *, size_t),
+                                  void *p_rng)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_ecp_point K;
@@ -746,45 +746,46 @@ int mbedtls_ecjpake_derive_secret( mbedtls_ecjpake_context *ctx,
     unsigned char kx[MBEDTLS_ECP_MAX_BYTES];
     size_t x_bytes;
 
-    ECJPAKE_VALIDATE_RET( ctx   != NULL );
-    ECJPAKE_VALIDATE_RET( buf   != NULL );
-    ECJPAKE_VALIDATE_RET( olen  != NULL );
-    ECJPAKE_VALIDATE_RET( f_rng != NULL );
+    ECJPAKE_VALIDATE_RET(ctx   != NULL);
+    ECJPAKE_VALIDATE_RET(buf   != NULL);
+    ECJPAKE_VALIDATE_RET(olen  != NULL);
+    ECJPAKE_VALIDATE_RET(f_rng != NULL);
 
-    *olen = mbedtls_md_get_size( ctx->md_info );
-    if( len < *olen )
-        return( MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL );
+    *olen = mbedtls_md_get_size(ctx->md_info);
+    if (len < *olen) {
+        return MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL;
+    }
 
-    mbedtls_ecp_point_init( &K );
-    mbedtls_mpi_init( &m_xm2_s );
-    mbedtls_mpi_init( &one );
+    mbedtls_ecp_point_init(&K);
+    mbedtls_mpi_init(&m_xm2_s);
+    mbedtls_mpi_init(&one);
 
-    MBEDTLS_MPI_CHK( mbedtls_mpi_lset( &one, 1 ) );
+    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&one, 1));
 
     /*
      * Client:  K = ( Xs - X4  * x2  * s ) * x2
      * Server:  K = ( Xc - X2  * x4  * s ) * x4
      * Unified: K = ( Xp - Xp2 * xm2 * s ) * xm2
      */
-    MBEDTLS_MPI_CHK( ecjpake_mul_secret( &m_xm2_s, -1, &ctx->xm2, &ctx->s,
-                                         &ctx->grp.N, f_rng, p_rng ) );
-    MBEDTLS_MPI_CHK( mbedtls_ecp_muladd( &ctx->grp, &K,
-                                         &one, &ctx->Xp,
-                                         &m_xm2_s, &ctx->Xp2 ) );
-    MBEDTLS_MPI_CHK( mbedtls_ecp_mul( &ctx->grp, &K, &ctx->xm2, &K,
-                                      f_rng, p_rng ) );
+    MBEDTLS_MPI_CHK(ecjpake_mul_secret(&m_xm2_s, -1, &ctx->xm2, &ctx->s,
+                                       &ctx->grp.N, f_rng, p_rng));
+    MBEDTLS_MPI_CHK(mbedtls_ecp_muladd(&ctx->grp, &K,
+                                       &one, &ctx->Xp,
+                                       &m_xm2_s, &ctx->Xp2));
+    MBEDTLS_MPI_CHK(mbedtls_ecp_mul(&ctx->grp, &K, &ctx->xm2, &K,
+                                    f_rng, p_rng));
 
     /* PMS = SHA-256( K.X ) */
-    x_bytes = ( ctx->grp.pbits + 7 ) / 8;
-    MBEDTLS_MPI_CHK( mbedtls_mpi_write_binary( &K.X, kx, x_bytes ) );
-    MBEDTLS_MPI_CHK( mbedtls_md( ctx->md_info, kx, x_bytes, buf ) );
+    x_bytes = (ctx->grp.pbits + 7) / 8;
+    MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&K.X, kx, x_bytes));
+    MBEDTLS_MPI_CHK(mbedtls_md(ctx->md_info, kx, x_bytes, buf));
 
 cleanup:
-    mbedtls_ecp_point_free( &K );
-    mbedtls_mpi_free( &m_xm2_s );
-    mbedtls_mpi_free( &one );
+    mbedtls_ecp_point_free(&K);
+    mbedtls_mpi_free(&m_xm2_s);
+    mbedtls_mpi_free(&one);
 
-    return( ret );
+    return ret;
 }
 
 #undef ID_MINE
@@ -798,10 +799,10 @@ cleanup:
 
 #if !defined(MBEDTLS_ECP_DP_SECP256R1_ENABLED) || \
     !defined(MBEDTLS_SHA256_C)
-int mbedtls_ecjpake_self_test( int verbose )
+int mbedtls_ecjpake_self_test(int verbose)
 {
     (void) verbose;
-    return( 0 );
+    return 0;
 }
 #else
 
@@ -939,59 +940,58 @@ static const unsigned char ecjpake_test_pms[] = {
 };
 
 /* Load my private keys and generate the corresponding public keys */
-static int ecjpake_test_load( mbedtls_ecjpake_context *ctx,
-                              const unsigned char *xm1, size_t len1,
-                              const unsigned char *xm2, size_t len2 )
+static int ecjpake_test_load(mbedtls_ecjpake_context *ctx,
+                             const unsigned char *xm1, size_t len1,
+                             const unsigned char *xm2, size_t len2)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
-    MBEDTLS_MPI_CHK( mbedtls_mpi_read_binary( &ctx->xm1, xm1, len1 ) );
-    MBEDTLS_MPI_CHK( mbedtls_mpi_read_binary( &ctx->xm2, xm2, len2 ) );
-    MBEDTLS_MPI_CHK( mbedtls_ecp_mul( &ctx->grp, &ctx->Xm1, &ctx->xm1,
-                                      &ctx->grp.G, NULL, NULL ) );
-    MBEDTLS_MPI_CHK( mbedtls_ecp_mul( &ctx->grp, &ctx->Xm2, &ctx->xm2,
-                                      &ctx->grp.G, NULL, NULL ) );
+    MBEDTLS_MPI_CHK(mbedtls_mpi_read_binary(&ctx->xm1, xm1, len1));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_read_binary(&ctx->xm2, xm2, len2));
+    MBEDTLS_MPI_CHK(mbedtls_ecp_mul(&ctx->grp, &ctx->Xm1, &ctx->xm1,
+                                    &ctx->grp.G, NULL, NULL));
+    MBEDTLS_MPI_CHK(mbedtls_ecp_mul(&ctx->grp, &ctx->Xm2, &ctx->xm2,
+                                    &ctx->grp.G, NULL, NULL));
 
 cleanup:
-    return( ret );
+    return ret;
 }
 
 #endif /* ! MBEDTLS_ECJPAKE_ALT */
 
 /* For tests we don't need a secure RNG;
  * use the LGC from Numerical Recipes for simplicity */
-static int ecjpake_lgc( void *p, unsigned char *out, size_t len )
+static int ecjpake_lgc(void *p, unsigned char *out, size_t len)
 {
     static uint32_t x = 42;
     (void) p;
 
-    while( len > 0 )
-    {
+    while (len > 0) {
         size_t use_len = len > 4 ? 4 : len;
         x = 1664525 * x + 1013904223;
-        memcpy( out, &x, use_len );
+        memcpy(out, &x, use_len);
         out += use_len;
         len -= use_len;
     }
 
-    return( 0 );
+    return 0;
 }
 
-#define TEST_ASSERT( x )    \
+#define TEST_ASSERT(x)    \
     do {                    \
-        if( x )             \
-            ret = 0;        \
+        if (x)             \
+        ret = 0;        \
         else                \
         {                   \
             ret = 1;        \
             goto cleanup;   \
         }                   \
-    } while( 0 )
+    } while (0)
 
 /*
  * Checkup routine
  */
-int mbedtls_ecjpake_self_test( int verbose )
+int mbedtls_ecjpake_self_test(int verbose)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_ecjpake_context cli;
@@ -999,59 +999,63 @@ int mbedtls_ecjpake_self_test( int verbose )
     unsigned char buf[512], pms[32];
     size_t len, pmslen;
 
-    mbedtls_ecjpake_init( &cli );
-    mbedtls_ecjpake_init( &srv );
+    mbedtls_ecjpake_init(&cli);
+    mbedtls_ecjpake_init(&srv);
 
-    if( verbose != 0 )
-        mbedtls_printf( "  ECJPAKE test #0 (setup): " );
+    if (verbose != 0) {
+        mbedtls_printf("  ECJPAKE test #0 (setup): ");
+    }
 
-    TEST_ASSERT( mbedtls_ecjpake_setup( &cli, MBEDTLS_ECJPAKE_CLIENT,
-                    MBEDTLS_MD_SHA256, MBEDTLS_ECP_DP_SECP256R1,
-                    ecjpake_test_password,
-            sizeof( ecjpake_test_password ) ) == 0 );
+    TEST_ASSERT(mbedtls_ecjpake_setup(&cli, MBEDTLS_ECJPAKE_CLIENT,
+                                      MBEDTLS_MD_SHA256, MBEDTLS_ECP_DP_SECP256R1,
+                                      ecjpake_test_password,
+                                      sizeof(ecjpake_test_password)) == 0);
 
-    TEST_ASSERT( mbedtls_ecjpake_setup( &srv, MBEDTLS_ECJPAKE_SERVER,
-                    MBEDTLS_MD_SHA256, MBEDTLS_ECP_DP_SECP256R1,
-                    ecjpake_test_password,
-            sizeof( ecjpake_test_password ) ) == 0 );
+    TEST_ASSERT(mbedtls_ecjpake_setup(&srv, MBEDTLS_ECJPAKE_SERVER,
+                                      MBEDTLS_MD_SHA256, MBEDTLS_ECP_DP_SECP256R1,
+                                      ecjpake_test_password,
+                                      sizeof(ecjpake_test_password)) == 0);
 
-    if( verbose != 0 )
-        mbedtls_printf( "passed\n" );
+    if (verbose != 0) {
+        mbedtls_printf("passed\n");
+    }
 
-    if( verbose != 0 )
-        mbedtls_printf( "  ECJPAKE test #1 (random handshake): " );
+    if (verbose != 0) {
+        mbedtls_printf("  ECJPAKE test #1 (random handshake): ");
+    }
 
-    TEST_ASSERT( mbedtls_ecjpake_write_round_one( &cli,
-                 buf, sizeof( buf ), &len, ecjpake_lgc, NULL ) == 0 );
+    TEST_ASSERT(mbedtls_ecjpake_write_round_one(&cli,
+                                                buf, sizeof(buf), &len, ecjpake_lgc, NULL) == 0);
 
-    TEST_ASSERT( mbedtls_ecjpake_read_round_one( &srv, buf, len ) == 0 );
+    TEST_ASSERT(mbedtls_ecjpake_read_round_one(&srv, buf, len) == 0);
 
-    TEST_ASSERT( mbedtls_ecjpake_write_round_one( &srv,
-                 buf, sizeof( buf ), &len, ecjpake_lgc, NULL ) == 0 );
+    TEST_ASSERT(mbedtls_ecjpake_write_round_one(&srv,
+                                                buf, sizeof(buf), &len, ecjpake_lgc, NULL) == 0);
 
-    TEST_ASSERT( mbedtls_ecjpake_read_round_one( &cli, buf, len ) == 0 );
+    TEST_ASSERT(mbedtls_ecjpake_read_round_one(&cli, buf, len) == 0);
 
-    TEST_ASSERT( mbedtls_ecjpake_write_round_two( &srv,
-                 buf, sizeof( buf ), &len, ecjpake_lgc, NULL ) == 0 );
+    TEST_ASSERT(mbedtls_ecjpake_write_round_two(&srv,
+                                                buf, sizeof(buf), &len, ecjpake_lgc, NULL) == 0);
 
-    TEST_ASSERT( mbedtls_ecjpake_read_round_two( &cli, buf, len ) == 0 );
+    TEST_ASSERT(mbedtls_ecjpake_read_round_two(&cli, buf, len) == 0);
 
-    TEST_ASSERT( mbedtls_ecjpake_derive_secret( &cli,
-                 pms, sizeof( pms ), &pmslen, ecjpake_lgc, NULL ) == 0 );
+    TEST_ASSERT(mbedtls_ecjpake_derive_secret(&cli,
+                                              pms, sizeof(pms), &pmslen, ecjpake_lgc, NULL) == 0);
 
-    TEST_ASSERT( mbedtls_ecjpake_write_round_two( &cli,
-                 buf, sizeof( buf ), &len, ecjpake_lgc, NULL ) == 0 );
+    TEST_ASSERT(mbedtls_ecjpake_write_round_two(&cli,
+                                                buf, sizeof(buf), &len, ecjpake_lgc, NULL) == 0);
 
-    TEST_ASSERT( mbedtls_ecjpake_read_round_two( &srv, buf, len ) == 0 );
+    TEST_ASSERT(mbedtls_ecjpake_read_round_two(&srv, buf, len) == 0);
 
-    TEST_ASSERT( mbedtls_ecjpake_derive_secret( &srv,
-                 buf, sizeof( buf ), &len, ecjpake_lgc, NULL ) == 0 );
+    TEST_ASSERT(mbedtls_ecjpake_derive_secret(&srv,
+                                              buf, sizeof(buf), &len, ecjpake_lgc, NULL) == 0);
 
-    TEST_ASSERT( len == pmslen );
-    TEST_ASSERT( memcmp( buf, pms, len ) == 0 );
+    TEST_ASSERT(len == pmslen);
+    TEST_ASSERT(memcmp(buf, pms, len) == 0);
 
-    if( verbose != 0 )
-        mbedtls_printf( "passed\n" );
+    if (verbose != 0) {
+        mbedtls_printf("passed\n");
+    }
 
 #if !defined(MBEDTLS_ECJPAKE_ALT)
     /* 'reference handshake' tests can only be run against implementations
@@ -1059,72 +1063,75 @@ int mbedtls_ecjpake_self_test( int verbose )
      * are generated. This is only the case for the internal mbed TLS
      * implementation, so these tests are skipped in case the internal
      * implementation is swapped out for an alternative one. */
-    if( verbose != 0 )
-        mbedtls_printf( "  ECJPAKE test #2 (reference handshake): " );
+    if (verbose != 0) {
+        mbedtls_printf("  ECJPAKE test #2 (reference handshake): ");
+    }
 
     /* Simulate generation of round one */
-    MBEDTLS_MPI_CHK( ecjpake_test_load( &cli,
-                ecjpake_test_x1, sizeof( ecjpake_test_x1 ),
-                ecjpake_test_x2, sizeof( ecjpake_test_x2 ) ) );
+    MBEDTLS_MPI_CHK(ecjpake_test_load(&cli,
+                                      ecjpake_test_x1, sizeof(ecjpake_test_x1),
+                                      ecjpake_test_x2, sizeof(ecjpake_test_x2)));
 
-    MBEDTLS_MPI_CHK( ecjpake_test_load( &srv,
-                ecjpake_test_x3, sizeof( ecjpake_test_x3 ),
-                ecjpake_test_x4, sizeof( ecjpake_test_x4 ) ) );
+    MBEDTLS_MPI_CHK(ecjpake_test_load(&srv,
+                                      ecjpake_test_x3, sizeof(ecjpake_test_x3),
+                                      ecjpake_test_x4, sizeof(ecjpake_test_x4)));
 
     /* Read round one */
-    TEST_ASSERT( mbedtls_ecjpake_read_round_one( &srv,
-                                    ecjpake_test_cli_one,
-                            sizeof( ecjpake_test_cli_one ) ) == 0 );
+    TEST_ASSERT(mbedtls_ecjpake_read_round_one(&srv,
+                                               ecjpake_test_cli_one,
+                                               sizeof(ecjpake_test_cli_one)) == 0);
 
-    TEST_ASSERT( mbedtls_ecjpake_read_round_one( &cli,
-                                    ecjpake_test_srv_one,
-                            sizeof( ecjpake_test_srv_one ) ) == 0 );
+    TEST_ASSERT(mbedtls_ecjpake_read_round_one(&cli,
+                                               ecjpake_test_srv_one,
+                                               sizeof(ecjpake_test_srv_one)) == 0);
 
     /* Skip generation of round two, read round two */
-    TEST_ASSERT( mbedtls_ecjpake_read_round_two( &cli,
-                                    ecjpake_test_srv_two,
-                            sizeof( ecjpake_test_srv_two ) ) == 0 );
+    TEST_ASSERT(mbedtls_ecjpake_read_round_two(&cli,
+                                               ecjpake_test_srv_two,
+                                               sizeof(ecjpake_test_srv_two)) == 0);
 
-    TEST_ASSERT( mbedtls_ecjpake_read_round_two( &srv,
-                                    ecjpake_test_cli_two,
-                            sizeof( ecjpake_test_cli_two ) ) == 0 );
+    TEST_ASSERT(mbedtls_ecjpake_read_round_two(&srv,
+                                               ecjpake_test_cli_two,
+                                               sizeof(ecjpake_test_cli_two)) == 0);
 
     /* Server derives PMS */
-    TEST_ASSERT( mbedtls_ecjpake_derive_secret( &srv,
-                 buf, sizeof( buf ), &len, ecjpake_lgc, NULL ) == 0 );
+    TEST_ASSERT(mbedtls_ecjpake_derive_secret(&srv,
+                                              buf, sizeof(buf), &len, ecjpake_lgc, NULL) == 0);
 
-    TEST_ASSERT( len == sizeof( ecjpake_test_pms ) );
-    TEST_ASSERT( memcmp( buf, ecjpake_test_pms, len ) == 0 );
+    TEST_ASSERT(len == sizeof(ecjpake_test_pms));
+    TEST_ASSERT(memcmp(buf, ecjpake_test_pms, len) == 0);
 
-    memset( buf, 0, len ); /* Avoid interferences with next step */
+    memset(buf, 0, len);   /* Avoid interferences with next step */
 
     /* Client derives PMS */
-    TEST_ASSERT( mbedtls_ecjpake_derive_secret( &cli,
-                 buf, sizeof( buf ), &len, ecjpake_lgc, NULL ) == 0 );
+    TEST_ASSERT(mbedtls_ecjpake_derive_secret(&cli,
+                                              buf, sizeof(buf), &len, ecjpake_lgc, NULL) == 0);
 
-    TEST_ASSERT( len == sizeof( ecjpake_test_pms ) );
-    TEST_ASSERT( memcmp( buf, ecjpake_test_pms, len ) == 0 );
+    TEST_ASSERT(len == sizeof(ecjpake_test_pms));
+    TEST_ASSERT(memcmp(buf, ecjpake_test_pms, len) == 0);
 
-    if( verbose != 0 )
-        mbedtls_printf( "passed\n" );
+    if (verbose != 0) {
+        mbedtls_printf("passed\n");
+    }
 #endif /* ! MBEDTLS_ECJPAKE_ALT */
 
 cleanup:
-    mbedtls_ecjpake_free( &cli );
-    mbedtls_ecjpake_free( &srv );
+    mbedtls_ecjpake_free(&cli);
+    mbedtls_ecjpake_free(&srv);
 
-    if( ret != 0 )
-    {
-        if( verbose != 0 )
-            mbedtls_printf( "failed\n" );
+    if (ret != 0) {
+        if (verbose != 0) {
+            mbedtls_printf("failed\n");
+        }
 
         ret = 1;
     }
 
-    if( verbose != 0 )
-        mbedtls_printf( "\n" );
+    if (verbose != 0) {
+        mbedtls_printf("\n");
+    }
 
-    return( ret );
+    return ret;
 }
 
 #undef TEST_ASSERT
