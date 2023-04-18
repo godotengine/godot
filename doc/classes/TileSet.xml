@@ -67,7 +67,7 @@
 			<param index="1" name="atlas_source_id_override" type="int" default="-1" />
 			<description>
 				Adds a [TileSetSource] to the TileSet. If [param atlas_source_id_override] is not -1, also set its source ID. Otherwise, a unique identifier is automatically generated.
-				The function returns the added source source ID or -1 if the source could not be added.
+				The function returns the added source ID or -1 if the source could not be added.
 			</description>
 		</method>
 		<method name="add_terrain">
@@ -578,7 +578,7 @@
 			<param index="0" name="source_from" type="int" />
 			<param index="1" name="source_to" type="int" />
 			<description>
-				Creates a source-level proxy for the given source ID. A proxy will map set of tile identifiers to another set of identifiers. Both the atlac coordinates ID and the alternative tile ID are kept the same when using source-level proxies.
+				Creates a source-level proxy for the given source ID. A proxy will map set of tile identifiers to another set of identifiers. Both the atlas coordinates ID and the alternative tile ID are kept the same when using source-level proxies.
 				This can be used to replace a source in all TileMaps using this TileSet, as TileMap nodes will find and use the proxy's target source when one is available.
 				Proxied tiles can be automatically replaced in TileMap nodes using the editor.
 			</description>

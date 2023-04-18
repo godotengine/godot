@@ -1016,7 +1016,7 @@
 			<return type="bool" />
 			<param index="0" name="string" type="String" />
 			<description>
-				Returns [code]true[/code] is [param string] is a valid identifier.
+				Returns [code]true[/code] if [param string] is a valid identifier.
 				If the text server supports the [constant FEATURE_UNICODE_IDENTIFIERS] feature, a valid identifier must:
 				- Conform to normalization form C.
 				- Begin with a Unicode character of class XID_Start or [code]"_"[/code].

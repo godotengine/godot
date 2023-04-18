@@ -1852,7 +1852,7 @@
 		<method name="lightmap_create">
 			<return type="RID" />
 			<description>
-				Creates a lightmap GI and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]instance_*[/code] RenderingServer functions.
+				Creates a lightmap GI and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]lightmap_*[/code] RenderingServer functions.
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
 				This is the internal equivalent of the [LightmapGI] node.
 			</description>
@@ -4171,10 +4171,10 @@
 		<constant name="FOG_VOLUME_SHAPE_MAX" value="5" enum="FogVolumeShape">
 		</constant>
 		<constant name="VIEWPORT_SCALING_3D_MODE_BILINEAR" value="0" enum="ViewportScaling3DMode">
-			Use bilinear scaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less then [code]1.0[/code] will result in undersampling while values greater than [code]1.0[/code] will result in supersampling. A value of [code]1.0[/code] disables scaling.
+			Use bilinear scaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less than [code]1.0[/code] will result in undersampling while values greater than [code]1.0[/code] will result in supersampling. A value of [code]1.0[/code] disables scaling.
 		</constant>
 		<constant name="VIEWPORT_SCALING_3D_MODE_FSR" value="1" enum="ViewportScaling3DMode">
-			Use AMD FidelityFX Super Resolution 1.0 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less then [code]1.0[/code] will be result in the viewport being upscaled using FSR. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
+			Use AMD FidelityFX Super Resolution 1.0 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less than [code]1.0[/code] will be result in the viewport being upscaled using FSR. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
 		</constant>
 		<constant name="VIEWPORT_SCALING_3D_MODE_MAX" value="2" enum="ViewportScaling3DMode">
 		</constant>
