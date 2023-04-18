@@ -401,7 +401,6 @@ Color Color::named(const String &p_name) {
 	int idx = find_named_color(p_name);
 	if (idx == -1) {
 		ERR_FAIL_V_MSG(Color(), "Invalid color name: " + p_name + ".");
-		return Color();
 	}
 	return named_colors[idx].color;
 }

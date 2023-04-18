@@ -2193,7 +2193,7 @@ int64_t String::hex_to_int() const {
 		} else if (c >= 'a' && c <= 'f') {
 			n = (c - 'a') + 10;
 		} else {
-			ERR_FAIL_COND_V_MSG(true, 0, "Invalid hexadecimal notation character \"" + chr(*s) + "\" in string \"" + *this + "\".");
+			ERR_FAIL_V_MSG(0, vformat(R"(Invalid hexadecimal notation character "%c" (U+%04X) in string "%s".)", *s, static_cast<int32_t>(*s), *this));
 		}
 		// Check for overflow/underflow, with special case to ensure INT64_MIN does not result in error
 		bool overflow = ((hex > INT64_MAX / 16) && (sign == 1 || (sign == -1 && hex != (INT64_MAX >> 4) + 1))) || (sign == -1 && hex == (INT64_MAX >> 4) + 1 && c > '0');
