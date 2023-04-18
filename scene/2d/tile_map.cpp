@@ -890,7 +890,7 @@ void TileMap::_update_dirty_quadrants() {
 			q->self()->local_to_map.clear();
 			for (const Vector2i &E : q->self()->cells) {
 				Vector2i pk = E;
-				Vector2i pk_local_coords = map_to_local(pk);
+				Vector2 pk_local_coords = map_to_local(pk);
 				q->self()->map_to_local[pk] = pk_local_coords;
 				q->self()->local_to_map[pk_local_coords] = pk;
 			}
@@ -1092,7 +1092,7 @@ void TileMap::_rendering_notification(int p_what) {
 					TileMapQuadrant &q = E_quadrant.value;
 
 					// Update occluders transform.
-					for (const KeyValue<Vector2i, Vector2i> &E_cell : q.local_to_map) {
+					for (const KeyValue<Vector2, Vector2i> &E_cell : q.local_to_map) {
 						Transform2D xform;
 						xform.set_origin(E_cell.key);
 						for (const KeyValue<Vector2i, RID> &kv : q.occluders) {
@@ -1250,7 +1250,7 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 		RID prev_ci;
 
 		// Iterate over the cells of the quadrant.
-		for (const KeyValue<Vector2i, Vector2i> &E_cell : q.local_to_map) {
+		for (const KeyValue<Vector2, Vector2i> &E_cell : q.local_to_map) {
 			TileMapCell c = get_cell(q.layer, E_cell.value, true);
 
 			TileSetSource *source;
@@ -1348,13 +1348,13 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 
 		for (TileMapLayer &layer : layers) {
 			// Sort the quadrants coords per local coordinates.
-			RBMap<Vector2i, Vector2i, TileMapQuadrant::CoordsWorldComparator> local_to_map;
+			RBMap<Vector2, Vector2i, TileMapQuadrant::CoordsWorldComparator> local_to_map;
 			for (const KeyValue<Vector2i, TileMapQuadrant> &E : layer.quadrant_map) {
 				local_to_map[map_to_local(E.key)] = E.key;
 			}
 
 			// Sort the quadrants.
-			for (const KeyValue<Vector2i, Vector2i> &E : local_to_map) {
+			for (const KeyValue<Vector2, Vector2i> &E : local_to_map) {
 				TileMapQuadrant &q = layer.quadrant_map[E.value];
 				for (const RID &ci : q.canvas_items) {
 					RS::get_singleton()->canvas_item_set_draw_index(ci, index++);
@@ -1436,7 +1436,7 @@ void TileMap::_rendering_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 	}
 }
 
-void TileMap::draw_tile(RID p_canvas_item, const Vector2i &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame, Color p_modulation, const TileData *p_tile_data_override) {
+void TileMap::draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame, Color p_modulation, const TileData *p_tile_data_override) {
 	ERR_FAIL_COND(!p_tile_set.is_valid());
 	ERR_FAIL_COND(!p_tile_set->has_source(p_atlas_source_id));
 	ERR_FAIL_COND(!p_tile_set->get_source(p_atlas_source_id)->has_tile(p_atlas_coords));
@@ -1468,7 +1468,7 @@ void TileMap::draw_tile(RID p_canvas_item, const Vector2i &p_position, const Ref
 		Color modulate = tile_data->get_modulate() * p_modulation;
 
 		// Compute the offset.
-		Vector2i tile_offset = tile_data->get_texture_origin();
+		Vector2 tile_offset = tile_data->get_texture_origin();
 
 		// Get destination rect.
 		Rect2 dest_rect;
@@ -3059,7 +3059,7 @@ void TileMap::_build_runtime_update_tile_data(SelfList<TileMapQuadrant>::List &r
 		while (q_list_element) {
 			TileMapQuadrant &q = *q_list_element->self();
 			// Iterate over the cells of the quadrant.
-			for (const KeyValue<Vector2i, Vector2i> &E_cell : q.local_to_map) {
+			for (const KeyValue<Vector2, Vector2i> &E_cell : q.local_to_map) {
 				TileMapCell c = get_cell(q.layer, E_cell.value, true);
 
 				TileSetSource *source;
