@@ -30,6 +30,7 @@
 
 #include "editor_run_script.h"
 
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 
 void EditorScript::add_root_node(Node *p_node) {

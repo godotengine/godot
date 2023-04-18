@@ -30,6 +30,7 @@
 
 #include "mesh_library_editor_plugin.h"
 
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/gui/editor_file_dialog.h"

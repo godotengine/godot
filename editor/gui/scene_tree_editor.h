@@ -31,9 +31,10 @@
 #ifndef SCENE_TREE_EDITOR_H
 #define SCENE_TREE_EDITOR_H
 
-#include "editor/editor_data.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
+
+class EditorSelection;
 
 class SceneTreeEditor : public Control {
 	GDCLASS(SceneTreeEditor, Control);
