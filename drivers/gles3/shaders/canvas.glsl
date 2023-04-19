@@ -589,7 +589,7 @@ void main() {
 		if (bool(read_draw_data_flags & FLAGS_FLIP_V)) {
 			normal.y = -normal.y;
 		}
-		normal.z = sqrt(1.0 - dot(normal.xy, normal.xy));
+		normal.z = sqrt(max(0.0, 1.0 - dot(normal.xy, normal.xy)));
 		normal_used = true;
 	} else {
 		normal = vec3(0.0, 0.0, 1.0);
