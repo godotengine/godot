@@ -1746,10 +1746,14 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		bool is_copied = false;
 		for (int i = 0; i < to_move.size(); i++) {
 			String old_path = to_move[i].path.ends_with("/") ? to_move[i].path.substr(0, to_move[i].path.length() - 1) : to_move[i].path;
-			const String &new_path = new_paths[i];
+			String new_path = new_paths[i];
+
+			if (!to_move[i].is_file && old_path.get_base_dir() != new_path.get_base_dir()) {
+				new_path = new_path.path_join(old_path.get_file());
+			}
 
 			if (old_path != new_path) {
-				_try_duplicate_item(to_move[i], new_paths[i]);
+				_try_duplicate_item(to_move[i], new_path);
 				is_copied = true;
 			}
 		}
@@ -1771,7 +1775,13 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 
 		for (int i = 0; i < to_move.size(); i++) {
 			String old_path = to_move[i].path.ends_with("/") ? to_move[i].path.substr(0, to_move[i].path.length() - 1) : to_move[i].path;
-			const String &new_path = new_paths[i];
+			String new_path = new_paths[i];
+
+			// This is not a rename, we are moving a directory into another directory
+			if (!to_move[i].is_file && old_path.get_base_dir() != new_path.get_base_dir()) {
+				new_path = new_path.path_join(old_path.get_file());
+			}
+
 			if (old_path != new_path) {
 				_try_move_item(to_move[i], new_path, file_renames, folder_renames);
 				is_moved = true;
