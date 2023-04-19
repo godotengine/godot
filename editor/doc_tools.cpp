@@ -40,6 +40,7 @@
 #include "core/string/translation.h"
 #include "core/version.h"
 #include "editor/editor_settings.h"
+#include "editor/export/editor_export.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
 
@@ -396,6 +397,16 @@ void DocTools::generate(bool p_basic_types) {
 			} else if (name == "ProjectSettings") {
 				ProjectSettings::get_singleton()->get_property_list(&properties);
 				own_properties = properties;
+			} else if (name.begins_with("EditorExportPlatform") && ClassDB::can_instantiate(name)) {
+				Ref<EditorExportPlatform> platform = Object::cast_to<EditorExportPlatform>(ClassDB::instantiate(name));
+				if (platform.is_valid()) {
+					List<EditorExportPlatform::ExportOption> options;
+					platform->get_export_options(&options);
+					for (const EditorExportPlatform::ExportOption &E : options) {
+						properties.push_back(E.option);
+					}
+					own_properties = properties;
+				}
 			} else {
 				ClassDB::get_property_list(name, &properties);
 				ClassDB::get_property_list(name, &own_properties, true);
@@ -434,6 +445,12 @@ void DocTools::generate(bool p_basic_types) {
 				if (name == "EditorSettings") {
 					if (E.name == "resource_local_to_scene" || E.name == "resource_name" || E.name == "resource_path" || E.name == "script") {
 						// Don't include spurious properties in the generated EditorSettings class reference.
+						continue;
+					}
+				}
+
+				if (name.begins_with("EditorExportPlatform")) {
+					if (E.name == "script") {
 						continue;
 					}
 				}

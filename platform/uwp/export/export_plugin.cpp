@@ -62,7 +62,7 @@ void EditorExportPlatformUWP::get_preset_features(const Ref<EditorExportPreset> 
 	r_features->push_back(p_preset->get("binary_format/architecture"));
 }
 
-void EditorExportPlatformUWP::get_export_options(List<ExportOption> *r_options) {
+void EditorExportPlatformUWP::get_export_options(List<ExportOption> *r_options) const {
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 

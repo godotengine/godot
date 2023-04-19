@@ -143,11 +143,13 @@ public:
 		PropertyInfo option;
 		Variant default_value;
 		bool update_visibility = false;
+		bool required = false;
 
-		ExportOption(const PropertyInfo &p_info, const Variant &p_default, bool p_update_visibility = false) :
+		ExportOption(const PropertyInfo &p_info, const Variant &p_default, bool p_update_visibility = false, bool p_required = false) :
 				option(p_info),
 				default_value(p_default),
-				update_visibility(p_update_visibility) {
+				update_visibility(p_update_visibility),
+				required(p_required) {
 		}
 		ExportOption() {}
 	};
@@ -196,9 +198,10 @@ public:
 
 	virtual bool fill_log_messages(RichTextLabel *p_log, Error p_err);
 
-	virtual void get_export_options(List<ExportOption> *r_options) = 0;
+	virtual void get_export_options(List<ExportOption> *r_options) const = 0;
 	virtual bool should_update_export_options() { return false; }
-	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option, const HashMap<StringName, Variant> &p_options) const { return true; }
+	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const { return true; }
+	virtual String get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const { return String(); }
 
 	virtual String get_os_name() const = 0;
 	virtual String get_name() const = 0;

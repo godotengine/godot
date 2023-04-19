@@ -79,6 +79,7 @@ private:
 	bool checkable = false;
 	bool checked = false;
 	bool draw_warning = false;
+	bool draw_prop_warning = false;
 	bool keying = false;
 	bool deletable = false;
 

@@ -33,6 +33,10 @@
 #include "editor/editor_settings.h"
 #include "export_plugin.h"
 
+void register_uwp_exporter_types() {
+	// GDREGISTER_VIRTUAL_CLASS(EditorExportPlatformUWP);
+}
+
 void register_uwp_exporter() {
 #ifdef WINDOWS_ENABLED
 	EDITOR_DEF("export/uwp/signtool", "");

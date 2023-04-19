@@ -33,6 +33,10 @@
 #include "editor/export/editor_export.h"
 #include "export_plugin.h"
 
+void register_windows_exporter_types() {
+	GDREGISTER_VIRTUAL_CLASS(EditorExportPlatformWindows);
+}
+
 void register_windows_exporter() {
 #ifndef ANDROID_ENABLED
 	EDITOR_DEF("export/windows/rcedit", "");

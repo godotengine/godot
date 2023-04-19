@@ -55,13 +55,13 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	Ref<ImageTexture> logo;
 
 	// Plugins
-	SafeFlag plugins_changed;
+	mutable SafeFlag plugins_changed;
 #ifndef ANDROID_ENABLED
 	Thread check_for_changes_thread;
 	SafeFlag quit_request;
 #endif
 	Mutex plugins_lock;
-	Vector<PluginConfigIOS> plugins;
+	mutable Vector<PluginConfigIOS> plugins;
 
 	typedef Error (*FileHandler)(String p_file, void *p_userdata);
 	static Error _walk_dir_recursive(Ref<DirAccess> &p_da, FileHandler p_handler, void *p_userdata);
@@ -178,7 +178,9 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 
 protected:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
-	virtual void get_export_options(List<ExportOption> *r_options) override;
+	virtual void get_export_options(List<ExportOption> *r_options) const override;
+	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const override;
+	virtual String get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const override;
 
 public:
 	virtual String get_name() const override { return "iOS"; }

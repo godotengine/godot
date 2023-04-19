@@ -26,7 +26,7 @@ def _make_doc_data_class_path(to_path):
 
 if env.editor_build:
     # Register exporters
-    reg_exporters_inc = '#include "register_exporters.h"\n'
+    reg_exporters_inc = '#include "register_exporters.h"\n\n'
     reg_exporters = "void register_exporters() {\n"
     for e in env.platform_exporters:
         # Glob all .cpp files in export folder
@@ -35,6 +35,10 @@ if env.editor_build:
 
         reg_exporters += "\tregister_" + e + "_exporter();\n"
         reg_exporters_inc += '#include "platform/' + e + '/export/export.h"\n'
+    reg_exporters += "}\n\n"
+    reg_exporters += "void register_exporter_types() {\n"
+    for e in env.platform_exporters:
+        reg_exporters += "\tregister_" + e + "_exporter_types();\n"
     reg_exporters += "}\n"
 
     # NOTE: It is safe to generate this file here, since this is still executed serially

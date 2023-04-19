@@ -52,9 +52,17 @@ bool EditorExportPreset::_get(const StringName &p_name, Variant &r_ret) const {
 	return false;
 }
 
+void EditorExportPreset::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_get_property_warning", "name"), &EditorExportPreset::_get_property_warning);
+}
+
+String EditorExportPreset::_get_property_warning(const StringName &p_name) const {
+	return platform->get_export_option_warning(this, p_name);
+}
+
 void EditorExportPreset::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const PropertyInfo &E : properties) {
-		if (platform->get_export_option_visibility(this, E.name, values)) {
+		if (platform->get_export_option_visibility(this, E.name)) {
 			p_list->push_back(E);
 		}
 	}
