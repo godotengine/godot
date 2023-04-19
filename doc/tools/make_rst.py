@@ -567,7 +567,7 @@ def main() -> None:
         if path.endswith("/") or path.endswith("\\"):
             path = path[:-1]
 
-        if os.path.basename(path) == "modules":
+        if os.path.basename(path) in ["modules", "platform"]:
             for subdir, dirs, _ in os.walk(path):
                 if "doc_classes" in dirs:
                     doc_dir = os.path.join(subdir, "doc_classes")
