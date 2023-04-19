@@ -366,6 +366,8 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 				return p_address.address | (GDScriptFunction::ADDR_TYPE_MEMBER << GDScriptFunction::ADDR_BITS);
 			case Address::CONSTANT:
 				return p_address.address | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
+			case Address::STATIC_VARIABLE:
+				return p_address.address | (GDScriptFunction::ADDR_TYPE_STATIC_VAR << GDScriptFunction::ADDR_BITS);
 			case Address::LOCAL_VARIABLE:
 			case Address::FUNCTION_PARAMETER:
 				return p_address.address | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);

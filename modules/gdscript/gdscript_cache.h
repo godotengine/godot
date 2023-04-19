@@ -78,6 +78,7 @@ class GDScriptCache {
 	HashMap<String, GDScriptParserRef *> parser_map;
 	HashMap<String, Ref<GDScript>> shallow_gdscript_cache;
 	HashMap<String, Ref<GDScript>> full_gdscript_cache;
+	HashMap<String, Ref<GDScript>> static_gdscript_cache;
 	HashMap<String, HashSet<String>> dependencies;
 	HashMap<String, Ref<PackedScene>> packed_scene_cache;
 	HashMap<String, HashSet<String>> packed_scene_dependencies;
@@ -101,6 +102,8 @@ public:
 	static Ref<GDScript> get_full_script(const String &p_path, Error &r_error, const String &p_owner = String(), bool p_update_from_disk = false);
 	static Ref<GDScript> get_cached_script(const String &p_path);
 	static Error finish_compiling(const String &p_owner);
+	static void add_static_script(Ref<GDScript> p_script);
+	static void remove_static_script(const String &p_fqcn);
 
 	static Ref<PackedScene> get_packed_scene(const String &p_path, Error &r_error, const String &p_owner = "");
 	static void clear_unreferenced_packed_scenes();

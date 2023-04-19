@@ -566,6 +566,14 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		ERR_FAIL_V_MSG(result, "\nCould not find test function on: '" + source_file + "'");
 	}
 
+	// Setup output handlers.
+	ErrorHandlerData error_data(&result, this);
+
+	_print_handler.userdata = &result;
+	_error_handler.userdata = &error_data;
+	add_print_handler(&_print_handler);
+	add_error_handler(&_error_handler);
+
 	script->reload();
 
 	// Create object instance for test.
@@ -576,14 +584,6 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	}
 	obj->set_script(script);
 	GDScriptInstance *instance = static_cast<GDScriptInstance *>(obj->get_script_instance());
-
-	// Setup output handlers.
-	ErrorHandlerData error_data(&result, this);
-
-	_print_handler.userdata = &result;
-	_error_handler.userdata = &error_data;
-	add_print_handler(&_print_handler);
-	add_error_handler(&_error_handler);
 
 	// Call test function.
 	Callable::CallError call_err;

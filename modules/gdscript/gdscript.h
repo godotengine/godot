@@ -94,6 +94,8 @@ class GDScript : public Script {
 
 	HashSet<StringName> members; //members are just indices to the instantiated script.
 	HashMap<StringName, Variant> constants;
+	HashMap<StringName, MemberInfo> static_variables_indices;
+	Vector<Variant> static_variables;
 	HashMap<StringName, GDScriptFunction *> member_functions;
 	HashMap<StringName, MemberInfo> member_indices; //members are just indices to the instantiated script.
 	HashMap<StringName, Ref<GDScript>> subclasses;
@@ -101,6 +103,12 @@ class GDScript : public Script {
 	Dictionary rpc_config;
 
 #ifdef TOOLS_ENABLED
+
+	// For static data storage during hot-reloading.
+	HashMap<StringName, MemberInfo> old_static_variables_indices;
+	Vector<Variant> old_static_variables;
+	void _save_old_static_data();
+	void _restore_old_static_data();
 
 	HashMap<StringName, int> member_lines;
 	HashMap<StringName, Variant> member_default_values;
@@ -123,6 +131,9 @@ class GDScript : public Script {
 	GDScriptFunction *implicit_initializer = nullptr;
 	GDScriptFunction *initializer = nullptr; //direct pointer to new , faster to locate
 	GDScriptFunction *implicit_ready = nullptr;
+	GDScriptFunction *static_initializer = nullptr;
+
+	Error _static_init();
 
 	int subclass_count = 0;
 	RBSet<Object *> instances;
@@ -267,6 +278,8 @@ public:
 	virtual void get_members(HashSet<StringName> *p_members) override;
 
 	virtual const Variant get_rpc_config() const override;
+
+	void unload_static() const;
 
 #ifdef TOOLS_ENABLED
 	virtual bool is_placeholder_fallback_enabled() const override { return placeholder_fallback_enabled; }
@@ -439,6 +452,7 @@ public:
 
 	struct {
 		StringName _init;
+		StringName _static_init;
 		StringName _notification;
 		StringName _set;
 		StringName _get;

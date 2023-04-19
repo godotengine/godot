@@ -185,6 +185,9 @@ String GDScriptWarning::get_message() const {
 		case ONREADY_WITH_EXPORT: {
 			return R"("@onready" will set the default value after "@export" takes effect and will override it.)";
 		}
+		case REDUNDANT_STATIC_UNLOAD: {
+			return R"(The "@static_unload" annotation is redundant because the file does not have a class with static variables.)";
+		}
 		case WARNING_MAX:
 			break; // Can't happen, but silences warning
 	}
@@ -254,6 +257,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"NATIVE_METHOD_OVERRIDE",
 		"GET_NODE_DEFAULT_WITHOUT_ONREADY",
 		"ONREADY_WITH_EXPORT",
+		"REDUNDANT_STATIC_UNLOAD",
 	};
 
 	static_assert((sizeof(names) / sizeof(*names)) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");
