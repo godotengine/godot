@@ -1637,6 +1637,7 @@ void TileMap::_physics_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r
 						// Create the body.
 						RID body = ps->body_create();
 						bodies_coords[body] = E_cell;
+						bodies_layers[body] = q.layer;
 						ps->body_set_mode(body, collision_animatable ? PhysicsServer2D::BODY_MODE_KINEMATIC : PhysicsServer2D::BODY_MODE_STATIC);
 						ps->body_set_space(body, space);
 
@@ -1692,6 +1693,7 @@ void TileMap::_physics_cleanup_quadrant(TileMapQuadrant *p_quadrant) {
 	ERR_FAIL_NULL(PhysicsServer2D::get_singleton());
 	for (RID body : p_quadrant->bodies) {
 		bodies_coords.erase(body);
+		bodies_layers.erase(body);
 		PhysicsServer2D::get_singleton()->free(body);
 	}
 	p_quadrant->bodies.clear();
@@ -2893,6 +2895,11 @@ HashMap<Vector2i, TileMapQuadrant> *TileMap::get_quadrant_map(int p_layer) {
 Vector2i TileMap::get_coords_for_body_rid(RID p_physics_body) {
 	ERR_FAIL_COND_V_MSG(!bodies_coords.has(p_physics_body), Vector2i(), vformat("No tiles for the given body RID %d.", p_physics_body));
 	return bodies_coords[p_physics_body];
+}
+
+int TileMap::get_layer_for_body_rid(RID p_physics_body) {
+	ERR_FAIL_COND_V_MSG(!bodies_layers.has(p_physics_body), int(), vformat("No tiles for the given body RID %d.", p_physics_body));
+	return bodies_layers[p_physics_body];
 }
 
 void TileMap::fix_invalid_tiles() {
@@ -4154,6 +4161,7 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cell_tile_data", "layer", "coords", "use_proxies"), &TileMap::get_cell_tile_data, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("get_coords_for_body_rid", "body"), &TileMap::get_coords_for_body_rid);
+	ClassDB::bind_method(D_METHOD("get_layer_for_body_rid", "body"), &TileMap::get_layer_for_body_rid);
 
 	ClassDB::bind_method(D_METHOD("get_pattern", "layer", "coords_array"), &TileMap::get_pattern);
 	ClassDB::bind_method(D_METHOD("map_pattern", "position_in_tilemap", "coords_in_pattern", "pattern"), &TileMap::map_pattern);

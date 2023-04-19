@@ -219,6 +219,8 @@ private:
 
 	// Mapping for RID to coords.
 	HashMap<RID, Vector2i> bodies_coords;
+	// Mapping for RID to tile layer.
+	HashMap<RID, int> bodies_layers;
 
 	// Quadrants and internals management.
 	Vector2i _coords_to_quadrant_coords(int p_layer, const Vector2i &p_coords) const;
@@ -396,6 +398,8 @@ public:
 
 	// For finding tiles from collision.
 	Vector2i get_coords_for_body_rid(RID p_physics_body);
+	// For getting their layers as well.
+	int get_layer_for_body_rid(RID p_physics_body);
 
 	// Fixing and clearing methods.
 	void fix_invalid_tiles();
