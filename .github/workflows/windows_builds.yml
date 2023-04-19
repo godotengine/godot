@@ -23,7 +23,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Editor (target=editor, tests=yes)
+          - name: Editor
+            info: 'tests=yes'
             cache-name: windows-editor
             target: editor
             tests: true
@@ -31,13 +32,15 @@ jobs:
             sconsflags: debug_symbols=no vsproj=yes
             bin: "./bin/godot.windows.editor.x86_64.exe"
 
-          - name: Template (target=template_release)
+          - name: Template
+            info: 'tools=no'
             cache-name: windows-template
             target: template_release
             tests: false
             sconsflags: debug_symbols=no
 
     steps:
+      - run: "echo 'INFO: ${{ matrix.info }}'"
       - uses: actions/checkout@v3
 
       - name: Setup Godot build cache
