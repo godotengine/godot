@@ -1157,17 +1157,17 @@ void Window::_notification(int p_what) {
 			notification(NOTIFICATION_THEME_CHANGED);
 		} break;
 
-		case NOTIFICATION_THEME_CHANGED: {
-			emit_signal(SceneStringNames::get_singleton()->theme_changed);
-			_invalidate_theme_cache();
-			_update_theme_item_cache();
-		} break;
-
 		case NOTIFICATION_READY: {
 			if (wrap_controls) {
 				// Finish any resizing immediately so it doesn't interfere on stuff overriding _ready().
 				_update_child_controls();
 			}
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			emit_signal(SceneStringNames::get_singleton()->theme_changed);
+			_invalidate_theme_cache();
+			_update_theme_item_cache();
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -1185,6 +1185,15 @@ void Window::_notification(int p_what) {
 				}
 #endif
 				DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
+			}
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (unparent_when_invisible && !is_visible()) {
+				Node *p = get_parent();
+				if (p) {
+					p->remove_child(this);
+				}
 			}
 		} break;
 
@@ -1579,6 +1588,48 @@ void Window::popup(const Rect2i &p_screen_rect) {
 
 	_post_popup();
 	notification(NOTIFICATION_POST_POPUP);
+}
+
+bool Window::_try_parent_dialog(Node *p_from_node) {
+	ERR_FAIL_NULL_V(p_from_node, false);
+	ERR_FAIL_COND_V_MSG(is_inside_tree(), false, "Attempting to parent and popup a dialog that already has a parent.");
+
+	Window *w = p_from_node->get_last_exclusive_window();
+	if (w && w != this) {
+		w->add_child(this);
+		return true;
+	}
+	return false;
+}
+
+void Window::popup_exclusive(Node *p_from_node, const Rect2i &p_screen_rect) {
+	if (_try_parent_dialog(p_from_node)) {
+		popup(p_screen_rect);
+	}
+}
+
+void Window::popup_exclusive_on_parent(Node *p_from_node, const Rect2i &p_parent_rect) {
+	if (_try_parent_dialog(p_from_node)) {
+		popup_on_parent(p_parent_rect);
+	}
+}
+
+void Window::popup_exclusive_centered(Node *p_from_node, const Size2i &p_minsize) {
+	if (_try_parent_dialog(p_from_node)) {
+		popup_centered(p_minsize);
+	}
+}
+
+void Window::popup_exclusive_centered_ratio(Node *p_from_node, float p_ratio) {
+	if (_try_parent_dialog(p_from_node)) {
+		popup_centered_ratio(p_ratio);
+	}
+}
+
+void Window::popup_exclusive_centered_clamped(Node *p_from_node, const Size2i &p_size, float p_fallback_ratio) {
+	if (_try_parent_dialog(p_from_node)) {
+		popup_centered_clamped(p_size, p_fallback_ratio);
+	}
 }
 
 Rect2i Window::fit_rect_in_parent(Rect2i p_rect, const Rect2i &p_parent_rect) const {
@@ -2192,6 +2243,10 @@ bool Window::is_clamped_to_embedder() const {
 	return clamp_to_embedder;
 }
 
+void Window::set_unparent_when_invisible(bool p_unparent) {
+	unparent_when_invisible = p_unparent;
+}
+
 void Window::set_layout_direction(Window::LayoutDirection p_direction) {
 	ERR_FAIL_INDEX((int)p_direction, 4);
 
@@ -2335,6 +2390,8 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_exclusive", "exclusive"), &Window::set_exclusive);
 	ClassDB::bind_method(D_METHOD("is_exclusive"), &Window::is_exclusive);
 
+	ClassDB::bind_method(D_METHOD("set_unparent_when_invisible", "unparent"), &Window::set_unparent_when_invisible);
+
 	ClassDB::bind_method(D_METHOD("can_draw"), &Window::can_draw);
 	ClassDB::bind_method(D_METHOD("has_focus"), &Window::has_focus);
 	ClassDB::bind_method(D_METHOD("grab_focus"), &Window::grab_focus);
@@ -2428,9 +2485,15 @@ void Window::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("popup", "rect"), &Window::popup, DEFVAL(Rect2i()));
 	ClassDB::bind_method(D_METHOD("popup_on_parent", "parent_rect"), &Window::popup_on_parent);
-	ClassDB::bind_method(D_METHOD("popup_centered_ratio", "ratio"), &Window::popup_centered_ratio, DEFVAL(0.8));
 	ClassDB::bind_method(D_METHOD("popup_centered", "minsize"), &Window::popup_centered, DEFVAL(Size2i()));
+	ClassDB::bind_method(D_METHOD("popup_centered_ratio", "ratio"), &Window::popup_centered_ratio, DEFVAL(0.8));
 	ClassDB::bind_method(D_METHOD("popup_centered_clamped", "minsize", "fallback_ratio"), &Window::popup_centered_clamped, DEFVAL(Size2i()), DEFVAL(0.75));
+
+	ClassDB::bind_method(D_METHOD("popup_exclusive", "from_node", "rect"), &Window::popup_exclusive, DEFVAL(Rect2i()));
+	ClassDB::bind_method(D_METHOD("popup_exclusive_on_parent", "from_node", "parent_rect"), &Window::popup_exclusive_on_parent);
+	ClassDB::bind_method(D_METHOD("popup_exclusive_centered", "from_node", "minsize"), &Window::popup_exclusive_centered, DEFVAL(Size2i()));
+	ClassDB::bind_method(D_METHOD("popup_exclusive_centered_ratio", "from_node", "ratio"), &Window::popup_exclusive_centered_ratio, DEFVAL(0.8));
+	ClassDB::bind_method(D_METHOD("popup_exclusive_centered_clamped", "from_node", "minsize", "fallback_ratio"), &Window::popup_exclusive_centered_clamped, DEFVAL(Size2i()), DEFVAL(0.75));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "initial_position", PROPERTY_HINT_ENUM, "Absolute,Center of Primary Screen,Center of Other Screen,Center of Screen With Mouse Pointer,Center of Screen With Keyboard Focus"), "set_initial_position", "get_initial_position");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");

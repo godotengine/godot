@@ -375,6 +375,52 @@
 				Popups the [Window] centered inside its parent [Window] and sets its size as a [param ratio] of parent's size.
 			</description>
 		</method>
+		<method name="popup_exclusive">
+			<return type="void" />
+			<param index="0" name="from_node" type="Node" />
+			<param index="1" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)" />
+			<description>
+				Attempts to parent this dialog to the last exclusive window relative to [param from_node], and then calls [method Window.popup] on it. The dialog must have no current parent, otherwise the method fails.
+				See also [method set_unparent_when_invisible] and [method Node.get_last_exclusive_window].
+			</description>
+		</method>
+		<method name="popup_exclusive_centered">
+			<return type="void" />
+			<param index="0" name="from_node" type="Node" />
+			<param index="1" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
+			<description>
+				Attempts to parent this dialog to the last exclusive window relative to [param from_node], and then calls [method Window.popup_centered] on it. The dialog must have no current parent, otherwise the method fails.
+				See also [method set_unparent_when_invisible] and [method Node.get_last_exclusive_window].
+			</description>
+		</method>
+		<method name="popup_exclusive_centered_clamped">
+			<return type="void" />
+			<param index="0" name="from_node" type="Node" />
+			<param index="1" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
+			<param index="2" name="fallback_ratio" type="float" default="0.75" />
+			<description>
+				Attempts to parent this dialog to the last exclusive window relative to [param from_node], and then calls [method Window.popup_centered_clamped] on it. The dialog must have no current parent, otherwise the method fails.
+				See also [method set_unparent_when_invisible] and [method Node.get_last_exclusive_window].
+			</description>
+		</method>
+		<method name="popup_exclusive_centered_ratio">
+			<return type="void" />
+			<param index="0" name="from_node" type="Node" />
+			<param index="1" name="ratio" type="float" default="0.8" />
+			<description>
+				Attempts to parent this dialog to the last exclusive window relative to [param from_node], and then calls [method Window.popup_centered_ratio] on it. The dialog must have no current parent, otherwise the method fails.
+				See also [method set_unparent_when_invisible] and [method Node.get_last_exclusive_window].
+			</description>
+		</method>
+		<method name="popup_exclusive_on_parent">
+			<return type="void" />
+			<param index="0" name="from_node" type="Node" />
+			<param index="1" name="parent_rect" type="Rect2i" />
+			<description>
+				Attempts to parent this dialog to the last exclusive window relative to [param from_node], and then calls [method Window.popup_on_parent] on it. The dialog must have no current parent, otherwise the method fails.
+				See also [method set_unparent_when_invisible] and [method Node.get_last_exclusive_window].
+			</description>
+		</method>
 		<method name="popup_on_parent">
 			<return type="void" />
 			<param index="0" name="parent_rect" type="Rect2i" />
@@ -463,6 +509,14 @@
 			<param index="0" name="direction" type="int" enum="Window.LayoutDirection" />
 			<description>
 				Sets layout direction and text writing direction. Right-to-left layouts are necessary for certain languages (e.g. Arabic and Hebrew).
+			</description>
+		</method>
+		<method name="set_unparent_when_invisible">
+			<return type="void" />
+			<param index="0" name="unparent" type="bool" />
+			<description>
+				If [param unparent] is [code]true[/code], the window is automatically unparented when going invisible.
+				[b]Note:[/b] Make sure to keep a reference to the node, otherwise it will be orphaned. You also need to manually call [method Node.queue_free] to free the window if it's not parented.
 			</description>
 		</method>
 		<method name="set_use_font_oversampling">

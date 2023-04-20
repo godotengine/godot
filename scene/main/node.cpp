@@ -1735,6 +1735,15 @@ Window *Node::get_window() const {
 	return nullptr;
 }
 
+Window *Node::get_last_exclusive_window() const {
+	Window *w = get_window();
+	while (w && w->get_exclusive_child()) {
+		w = w->get_exclusive_child();
+	}
+
+	return w;
+}
+
 bool Node::is_ancestor_of(const Node *p_node) const {
 	ERR_FAIL_NULL_V(p_node, false);
 	Node *p = p_node->data.parent;
@@ -3297,6 +3306,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_physics_processing_internal"), &Node::is_physics_processing_internal);
 
 	ClassDB::bind_method(D_METHOD("get_window"), &Node::get_window);
+	ClassDB::bind_method(D_METHOD("get_last_exclusive_window"), &Node::get_last_exclusive_window);
 	ClassDB::bind_method(D_METHOD("get_tree"), &Node::get_tree);
 	ClassDB::bind_method(D_METHOD("create_tween"), &Node::create_tween);
 
