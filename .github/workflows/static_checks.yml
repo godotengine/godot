@@ -30,9 +30,9 @@ jobs:
         id: changed-files
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
-            files=$(git diff-tree --no-commit-id --name-only -r ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} 2> /dev/null)
+            files=$(git diff-tree --no-commit-id --name-only -r ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} 2> /dev/null || true)
           elif [ "${{ github.event_name }}" == "push" -a "${{ github.event.forced }}" == "false" -a "${{ github.event.created }}" == "false" ]; then
-            files=$(git diff-tree --no-commit-id --name-only -r ${{ github.event.before }}..${{ github.event.after }} 2> /dev/null)
+            files=$(git diff-tree --no-commit-id --name-only -r ${{ github.event.before }}..${{ github.event.after }} 2> /dev/null || true)
           fi
           echo "$files" >> changed.txt
           cat changed.txt
