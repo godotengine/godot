@@ -1661,6 +1661,7 @@ MaterialStorage::MaterialStorage() {
 		//for light
 		actions.renames["VIEW"] = "view";
 		actions.renames["LIGHT_COLOR"] = "light_color";
+		actions.renames["LIGHT_IS_DIRECTIONAL"] = "is_directional";
 		actions.renames["LIGHT"] = "light";
 		actions.renames["ATTENUATION"] = "attenuation";
 		actions.renames["DIFFUSE_LIGHT"] = "diffuse_light";
