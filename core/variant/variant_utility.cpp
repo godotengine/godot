@@ -623,35 +623,51 @@ struct VariantUtilityFunctions {
 	}
 
 	static inline Variant clamp(const Variant &x, const Variant &min, const Variant &max, Callable::CallError &r_error) {
-		Variant value = x;
-
-		Variant ret;
-
-		bool valid;
-		Variant::evaluate(Variant::OP_LESS, value, min, ret, valid);
-		if (!valid) {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-			r_error.expected = value.get_type();
-			r_error.argument = 1;
-			return Variant();
-		}
-		if (ret.booleanize()) {
-			value = min;
-		}
-		Variant::evaluate(Variant::OP_GREATER, value, max, ret, valid);
-		if (!valid) {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-			r_error.expected = value.get_type();
-			r_error.argument = 2;
-			return Variant();
-		}
-		if (ret.booleanize()) {
-			value = max;
-		}
-
 		r_error.error = Callable::CallError::CALL_OK;
+		if (x.get_type() != min.get_type()) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.expected = x.get_type();
+			r_error.argument = 1;
+			return x;
+		}
 
-		return value;
+		if (x.get_type() != max.get_type()) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.expected = x.get_type();
+			r_error.argument = 2;
+			return x;
+		}
+
+		switch (x.get_type()) {
+			case Variant::INT: {
+				return clampi(x, min, max);
+			} break;
+			case Variant::FLOAT: {
+				return clampf(x, min, max);
+			} break;
+			case Variant::VECTOR2: {
+				return VariantInternalAccessor<Vector2>::get(&x).clamp(VariantInternalAccessor<Vector2>::get(&min), VariantInternalAccessor<Vector2>::get(&max));
+			} break;
+			case Variant::VECTOR2I: {
+				return VariantInternalAccessor<Vector2i>::get(&x).clamp(VariantInternalAccessor<Vector2i>::get(&min), VariantInternalAccessor<Vector2i>::get(&max));
+			} break;
+			case Variant::VECTOR3: {
+				return VariantInternalAccessor<Vector3>::get(&x).clamp(VariantInternalAccessor<Vector3>::get(&min), VariantInternalAccessor<Vector3>::get(&max));
+			} break;
+			case Variant::VECTOR3I: {
+				return VariantInternalAccessor<Vector3i>::get(&x).clamp(VariantInternalAccessor<Vector3i>::get(&min), VariantInternalAccessor<Vector3i>::get(&max));
+			} break;
+			case Variant::VECTOR4: {
+				return VariantInternalAccessor<Vector4>::get(&x).clamp(VariantInternalAccessor<Vector4>::get(&min), VariantInternalAccessor<Vector4>::get(&max));
+			} break;
+			case Variant::VECTOR4I: {
+				return VariantInternalAccessor<Vector4i>::get(&x).clamp(VariantInternalAccessor<Vector4i>::get(&min), VariantInternalAccessor<Vector4i>::get(&max));
+			} break;
+			default: {
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				return x;
+			}
+		}
 	}
 
 	static inline double clampf(double x, double min, double max) {
