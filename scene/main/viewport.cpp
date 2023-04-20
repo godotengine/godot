@@ -4320,7 +4320,7 @@ void SubViewport::set_size_force(const Size2i &p_size) {
 
 void SubViewport::_internal_set_size(const Size2i &p_size, bool p_force) {
 	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
-	if (!p_force && c && c->is_stretch_enabled()) {
+	if (!p_force && c && c->is_stretch_enabled() && c->get_stretch_shrink() != 0) {
 #ifdef DEBUG_ENABLED
 		WARN_PRINT("Can't change the size of a `SubViewport` with a `SubViewportContainer` parent that has `stretch` enabled. Set `SubViewportContainer.stretch` to `false` to allow changing the size manually.");
 #endif // DEBUG_ENABLED
@@ -4385,8 +4385,8 @@ Transform2D SubViewport::get_screen_transform_internal(bool p_absolute_position)
 	Transform2D container_transform;
 	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
 	if (c) {
-		if (c->is_stretch_enabled()) {
-			container_transform.scale(Vector2(c->get_stretch_shrink(), c->get_stretch_shrink()));
+		if (c->is_stretch_enabled() && c->get_stretch_shrink() != 1) {
+			container_transform.scale(c->get_size() / Vector2(get_size()));
 		}
 		container_transform = c->get_viewport()->get_screen_transform_internal(p_absolute_position) * c->get_global_transform_with_canvas() * container_transform;
 	} else {
@@ -4404,8 +4404,8 @@ Transform2D SubViewport::get_popup_base_transform() const {
 		return get_final_transform();
 	}
 	Transform2D container_transform;
-	if (c->is_stretch_enabled()) {
-		container_transform.scale(Vector2(c->get_stretch_shrink(), c->get_stretch_shrink()));
+	if (c->is_stretch_enabled() && c->get_stretch_shrink() != 1) {
+		container_transform.scale(c->get_size() / Vector2(get_size()));
 	}
 	return c->get_screen_transform() * container_transform * get_final_transform();
 }
@@ -4464,7 +4464,7 @@ void SubViewport::_bind_methods() {
 void SubViewport::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "size") {
 		SubViewportContainer *parent_svc = Object::cast_to<SubViewportContainer>(get_parent());
-		if (parent_svc && parent_svc->is_stretch_enabled()) {
+		if (parent_svc && parent_svc->is_stretch_enabled() && parent_svc->get_stretch_shrink() != 0) {
 			p_property.usage = PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY;
 		} else {
 			p_property.usage = PROPERTY_USAGE_DEFAULT;

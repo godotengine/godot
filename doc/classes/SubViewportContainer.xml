@@ -12,13 +12,14 @@
 	</tutorials>
 	<members>
 		<member name="stretch" type="bool" setter="set_stretch" getter="is_stretch_enabled" default="false">
-			If [code]true[/code], the sub-viewport will be automatically resized to the control's size.
-			[b]Note:[/b] If [code]true[/code], this will prohibit changing [member SubViewport.size] of its children manually.
+			If [code]true[/code] and [member stretch_shrink] is not [code]0[/code], the sub-viewport will be automatically resized to the control's size.
+			[b]Note:[/b] If [code]true[/code] and [member stretch_shrink] is not [code]0[/code], this will prohibit changing [member SubViewport.size] of its children manually.
 		</member>
 		<member name="stretch_shrink" type="int" setter="set_stretch_shrink" getter="get_stretch_shrink" default="1">
-			Divides the sub-viewport's effective resolution by this value while preserving its scale. This can be used to speed up rendering.
+			If not [code]0[/code], divides the sub-viewport's effective resolution by this value while preserving its scale. This can be used to speed up rendering.
 			For example, a 1280×720 sub-viewport with [member stretch_shrink] set to [code]2[/code] will be rendered at 640×360 while occupying the same size in the container.
 			[b]Note:[/b] [member stretch] must be [code]true[/code] for this property to work.
+			[b]Note:[/b] If [code]0[/code], sub-viewport texture is stretched across the container regardless of its size or aspect ratio.
 		</member>
 	</members>
 </class>

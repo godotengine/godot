@@ -69,7 +69,7 @@ bool SubViewportContainer::is_stretch_enabled() const {
 }
 
 void SubViewportContainer::set_stretch_shrink(int p_shrink) {
-	ERR_FAIL_COND(p_shrink < 1);
+	ERR_FAIL_COND(p_shrink < 0);
 	if (shrink == p_shrink) {
 		return;
 	}
@@ -81,7 +81,7 @@ void SubViewportContainer::set_stretch_shrink(int p_shrink) {
 }
 
 void SubViewportContainer::recalc_force_viewport_sizes() {
-	if (!stretch) {
+	if (!stretch || shrink == 0) {
 		return;
 	}
 
@@ -192,13 +192,7 @@ void SubViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	if (stretch && shrink > 1) {
-		Transform2D xform;
-		xform.scale(Vector2(1, 1) / shrink);
-		_send_event_to_viewports(p_event->xformed_by(xform));
-	} else {
-		_send_event_to_viewports(p_event);
-	}
+	_send_event_to_viewports(p_event);
 }
 
 void SubViewportContainer::_send_event_to_viewports(const Ref<InputEvent> &p_event) {
@@ -208,7 +202,13 @@ void SubViewportContainer::_send_event_to_viewports(const Ref<InputEvent> &p_eve
 			continue;
 		}
 
-		c->push_input(p_event);
+		if (stretch && shrink != 1) {
+			Transform2D xform;
+			xform.scale(Vector2(c->get_size()) / get_size());
+			c->push_input(p_event->xformed_by(xform));
+		} else {
+			c->push_input(p_event);
+		}
 	}
 }
 
