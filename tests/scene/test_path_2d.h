@@ -144,7 +144,7 @@ TEST_CASE("[SceneTree][Path2D] _edit_is_selected_on_click check") {
 	SUBCASE("Null curve") {
 		Path2D *test_path = memnew(Path2D);
 		Vector2 p0 = Vector2(0, 0);
-		CHECK(test_path->_edit_is_selected_on_click(p0,0.0) == false);
+		CHECK(test_path->_edit_is_selected_on_click(p0, 0.0) == false);
 		memdelete(test_path);
 	}
 	SUBCASE("Curve with points - Curve selected") {
