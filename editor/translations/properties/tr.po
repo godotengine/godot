@@ -89,13 +89,14 @@
 # Dream Drunk <myemailpoly149@gmail.com>, 2022.
 # alpdenthedev <ekrem_ekrem_45@hotmail.com>, 2022.
 # Muhammed Said Gülberk <msgulberk@gmail.com>, 2022.
+# Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-18 08:29+0000\n"
-"Last-Translator: Black <ebubekir23atalay@gmail.com>\n"
+"PO-Revision-Date: 2023-04-05 13:41+0000\n"
+"Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/tr/>\n"
 "Language: tr\n"
@@ -103,7 +104,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.16.2-dev\n"
+"X-Generator: Weblate 4.17-dev\n"
 
 msgid "Application"
 msgstr "Uygulama"
@@ -143,6 +144,15 @@ msgstr "Özelleştirilmiş Kullanıcı Dizini Adı"
 
 msgid "Project Settings Override"
 msgstr "Proje Ayarlarını Bastır"
+
+msgid "Main Loop Type"
+msgstr "Ana Döngü Türü"
+
+msgid "Auto Accept Quit"
+msgstr "Çıkışı Otomatik Kabul Et"
+
+msgid "Quit on Go Back"
+msgstr "Geri Dönüşte Çık"
 
 msgid "Display"
 msgstr "Görüntüle"
@@ -225,14 +235,29 @@ msgstr "Düzenleyici"
 msgid "Script"
 msgstr "Betik"
 
+msgid "Subwindows"
+msgstr "Altpencereler"
+
+msgid "Embed Subwindows"
+msgstr "Altpencereleri Göm"
+
 msgid "Physics"
 msgstr "Fizik"
 
 msgid "2D"
 msgstr "2D"
 
+msgid "Run on Separate Thread"
+msgstr "Ayrı İş Parçasında Çalıştır"
+
 msgid "3D"
 msgstr "3D"
+
+msgid "Stretch"
+msgstr "Esnet"
+
+msgid "Aspect"
+msgstr "Görünüş"
 
 msgid "Scale"
 msgstr "Ölçekle"
@@ -246,20 +271,68 @@ msgstr "Ayarlar"
 msgid "Compression"
 msgstr "Sıkıştırma"
 
+msgid "Formats"
+msgstr "Biçimler"
+
+msgid "Long Distance Matching"
+msgstr "Uzun Mesafe Eşleşmesi"
+
+msgid "Compression Level"
+msgstr "Sıkıştırma Seviyesi"
+
+msgid "Window Log Size"
+msgstr "Pencere Günlüğü Boyutu"
+
+msgid "Crash Handler"
+msgstr "Çökme İşleyicisi"
+
 msgid "Message"
 msgstr "Mesaj"
 
 msgid "Rendering"
 msgstr "Oluşturucu"
 
+msgid "Occlusion Culling"
+msgstr "Perdeleme Kaldırma"
+
+msgid "BVH Build Quality"
+msgstr "BVH Yapı Kalitesi"
+
+msgid "Memory"
+msgstr "Hafıza"
+
 msgid "Limits"
 msgstr "Limitler"
+
+msgid "Multithreaded Server"
+msgstr "Çokluişparçalı Sunucu"
+
+msgid "Internationalization"
+msgstr "Çoklu Dilde Kullanılırlık"
+
+msgid "Root Node Layout Direction"
+msgstr "Kök Düğüm Tarasım Yönü"
+
+msgid "GUI"
+msgstr "GUI"
+
+msgid "Timers"
+msgstr "Zamanlayıcılar"
 
 msgid "Common"
 msgstr "Yaygın"
 
+msgid "Snap Controls to Pixels"
+msgstr "Kontrolleri Beneklere Tuttur"
+
 msgid "Fonts"
 msgstr "Yazı Tipleri"
+
+msgid "Dynamic Fonts"
+msgstr "Dinamik Yazıtipleri"
+
+msgid "Use Oversampling"
+msgstr "Sıkörnekleme Kullan"
 
 msgid "Vulkan"
 msgstr "Vulkan"

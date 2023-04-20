@@ -109,13 +109,16 @@
 # Hugo Berthet-Rambaud <hugoberthetrambaud@outlook.com>, 2023.
 # Nathan Chambrette <n.chambrette@gmail.com>, 2023.
 # slundi <slundi@gmail.com>, 2023.
+# Rémy Lapointe <remy-lapointe@hotmail.ca>, 2023.
+# Dimitri <dimitripilot3@gmail.com>, 2023.
+# "Dimitri A." <dimitripilot3@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-03 22:23+0000\n"
-"Last-Translator: Rémy Lapointe <remy-lapointe@hotmail.ca>\n"
+"PO-Revision-Date: 2023-04-12 11:49+0000\n"
+"Last-Translator: \"Dimitri A.\" <dimitripilot3@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/fr/>\n"
 "Language: fr\n"
@@ -141,7 +144,7 @@ msgid "Description"
 msgstr "Description"
 
 msgid "Run"
-msgstr "Lancer"
+msgstr "Exécution"
 
 msgid "Main Scene"
 msgstr "Scène principale"
@@ -152,23 +155,20 @@ msgstr "Désactiver stdout"
 msgid "Disable stderr"
 msgstr "Désactiver stderr"
 
-msgid "Use Hidden Project Data Directory"
-msgstr "Utiliser un Répertoire Caché Pour Les Données du Projet"
-
 msgid "Use Custom User Dir"
-msgstr "Utiliser un Répertoire Utilisateur Personnalisé"
+msgstr "Utiliser un répertoire utilisateur personnalisé"
 
 msgid "Custom User Dir Name"
-msgstr "Nom du Répertoire Utilisateur Personnalisé"
-
-msgid "Project Settings Override"
-msgstr "Remplacement Des Paramètres du Projet"
+msgstr "Nom du répertoire utilisateur personnalisé"
 
 msgid "Main Loop Type"
 msgstr "Type de boucle principale"
 
 msgid "Auto Accept Quit"
 msgstr "Accepter automatiquement la fermeture"
+
+msgid "Quit on Go Back"
+msgstr "Quitter avec la touche Retour"
 
 msgid "Display"
 msgstr "Affichage"
@@ -189,43 +189,40 @@ msgid "Mode"
 msgstr "Mode"
 
 msgid "Initial Position Type"
-msgstr "Type de Position Initiale"
+msgstr "Type de position initiale"
 
 msgid "Initial Position"
-msgstr "Position Initiale"
+msgstr "Position initiale"
 
 msgid "Initial Screen"
-msgstr "Ecran Initial"
+msgstr "Écran initial"
 
 msgid "Resizable"
 msgstr "Redimensionnable"
 
 msgid "Borderless"
-msgstr "Sans Bordure"
+msgstr "Sans bordure"
 
 msgid "Always on Top"
-msgstr "Toujours au dessus"
+msgstr "Toujours au-dessus"
 
 msgid "Transparent"
 msgstr "Transparent"
-
-msgid "Extend to Title"
-msgstr "Étirer au titre"
 
 msgid "No Focus"
 msgstr "Sans focus"
 
 msgid "Window Width Override"
-msgstr "Redéfinition de la largeur de fenêtre"
+msgstr "Redéfinir la largeur de la fenêtre"
 
 msgid "Window Height Override"
-msgstr "Redéfinition de la hauteur de fenêtre"
+msgstr "Redéfinir la hauteur de la fenêtre"
 
 msgid "Energy Saving"
-msgstr "Économie d'Énergie"
+msgstr "Économie d'énergie"
 
 msgid "Keep Screen On"
-msgstr "Garder l'écran actif"
+msgstr "Garder l'écran allumé"
 
 msgid "Audio"
 msgstr "Audio"
@@ -240,10 +237,10 @@ msgid "General"
 msgstr "Général"
 
 msgid "2D Panning Strength"
-msgstr "Force de mouvement panoramique 2D"
+msgstr "Intensité du panoramique audio 2D"
 
 msgid "3D Panning Strength"
-msgstr "Force de mouvement panoramique 3D"
+msgstr "Intensité du panoramique audio 3D"
 
 msgid "Editor"
 msgstr "Éditeur"
@@ -528,7 +525,7 @@ msgid "Include Navigational"
 msgstr "Inclure navigationel"
 
 msgid "Include Hidden"
-msgstr "Inclure caché(s)"
+msgstr "Inclure les fichiers cachés"
 
 msgid "Big Endian"
 msgstr "Gros-boutiste"
@@ -752,9 +749,6 @@ msgstr "Filtres"
 msgid "Show Hidden Files"
 msgstr "Afficher les fichiers cachés"
 
-msgid "Disable Overwrite Warning"
-msgstr "Désactiver l'avertissement de réécriture"
-
 msgid "Text Editor"
 msgstr "Éditeur de texte"
 
@@ -864,7 +858,7 @@ msgid "Use Embedded Menu"
 msgstr "Utiliser le menu intégré"
 
 msgid "Expand to Title"
-msgstr "Étirer à la longueur du texte"
+msgstr "Étendre jusqu'au titre"
 
 msgid "Custom Display Scale"
 msgstr "Échelle personnalisée d'affichage"
@@ -966,7 +960,7 @@ msgid "Enable Long Press as Right Click"
 msgstr "Activer l'appui long comme clic droit"
 
 msgid "Enable Pan and Scale Gestures"
-msgstr "Activer les gestes de mouvement panoramique et de mise à l'échelle"
+msgstr "Activer les gestes de panoramique et de zoom"
 
 msgid "Display Close Button"
 msgstr "Afficher bouton Fermer"
@@ -1026,10 +1020,10 @@ msgid "Scene Tree"
 msgstr "Arborescence de scène"
 
 msgid "Start Create Dialog Fully Expanded"
-msgstr "Lancer le dialogue de création complètement déplié"
+msgstr "Tout déplier quand une fenêtre « Créer » s'ouvre"
 
 msgid "Auto Expand to Selected"
-msgstr "Étirement auto à la sélection"
+msgstr "Auto-déplier jusqu'à la sélection"
 
 msgid "Always Show Folders"
 msgstr "Toujours afficher les dossiers"
@@ -1317,7 +1311,7 @@ msgid "Zoom Modifier"
 msgstr "Touche de combinaison : Zoom"
 
 msgid "Warped Mouse Panning"
-msgstr "Panoramique déformé de la souris"
+msgstr "Curseur en boucle lors du défilement panoramique"
 
 msgid "Navigation Feel"
 msgstr "Préférences de navigation"
@@ -1392,13 +1386,22 @@ msgid "Constrain Editor View"
 msgstr "Restreindre la fenêtre d'éditeur"
 
 msgid "Panning"
-msgstr "Mouvement panoramique"
+msgstr "Panoramique"
+
+msgid "2D Editor Panning Scheme"
+msgstr "Schéma de défilement souris (éditeur 2D)"
+
+msgid "Sub Editors Panning Scheme"
+msgstr "Schéma de défilement souris (éditeurs secondaires)"
+
+msgid "Animation Editors Panning Scheme"
+msgstr "Schéma de défilement souris (éditeurs d'animation)"
 
 msgid "Simple Panning"
 msgstr "Panoramique simple"
 
 msgid "2D Editor Pan Speed"
-msgstr "Vitesse de mouvement panoramique 2D"
+msgstr "Vitesse de défilement souris (éditeur 2D)"
 
 msgid "Tiles Editor"
 msgstr "Éditeur de tuiles"
@@ -3186,7 +3189,7 @@ msgid "Extra Args"
 msgstr "Arguments Supplémentaires"
 
 msgid "APK Expansion"
-msgstr "Expansion APK"
+msgstr "Fichier(s) d'extension APK"
 
 msgid "Salt"
 msgstr "Sel"
@@ -3458,15 +3461,6 @@ msgstr "Description d'utilisation du calendrier"
 msgid "Photos Library Usage Description"
 msgstr "Description d'utilisation de la bibliothèque photo"
 
-msgid "Desktop Folder Usage Description"
-msgstr "Description d'utilisation du dossier Bureau"
-
-msgid "Documents Folder Usage Description"
-msgstr "Description d'utilisation du dossier Documents"
-
-msgid "Downloads Folder Usage Description"
-msgstr "Description d'utilisation du dossier Téléchargements"
-
 msgid "Network Volumes Usage Description"
 msgstr "Description d'utilisation des disques réseau"
 
@@ -3636,7 +3630,7 @@ msgid "Product Version"
 msgstr "Version de produit"
 
 msgid "Company Name"
-msgstr "Nom de l’Entreprise"
+msgstr "Nom de la société"
 
 msgid "Product Name"
 msgstr "Nom du produit"
@@ -3712,6 +3706,9 @@ msgstr "Distance Maximale"
 
 msgid "Attenuation"
 msgstr "Atténuation"
+
+msgid "Panning Strength"
+msgstr "Intensité du panoramique"
 
 msgid "Bus"
 msgstr "Bus"
@@ -4974,10 +4971,13 @@ msgid "Clip Text"
 msgstr "Découper le texte"
 
 msgid "Expand Icon"
-msgstr "Développer l'icône"
+msgstr "Icône de taille variable"
 
 msgid "Use Top Left"
 msgstr "Utiliser haut à gauche"
+
+msgid "Indentation"
+msgstr "Indentation"
 
 msgid "Edit Alpha"
 msgstr "Modifier alpha"
@@ -5038,6 +5038,9 @@ msgstr "Distance d'arrondissage"
 
 msgid "Use Snap"
 msgstr "Utiliser l’aimantation"
+
+msgid "Panning Scheme"
+msgstr "Schéma de défilement"
 
 msgid "Zoom Min"
 msgstr "Zoom Min"
@@ -5119,6 +5122,9 @@ msgstr "Secret"
 
 msgid "Secret Character"
 msgstr "Caractère secret"
+
+msgid "Expand to Text Length"
+msgstr "Étendre à la longueur du texte"
 
 msgid "Context Menu Enabled"
 msgstr "Menu Contextuel Activé"
@@ -5309,6 +5315,9 @@ msgstr "Degrés remplis"
 msgid "Center Offset"
 msgstr "Décalage du Centre"
 
+msgid "Expand Mode"
+msgstr "Mode d'expansion"
+
 msgid "Custom Minimum Height"
 msgstr "Taille Minimum Personnalisée"
 
@@ -5464,6 +5473,9 @@ msgstr "Sélection d'objet"
 
 msgid "Disable Input"
 msgstr "Désactiver entrées"
+
+msgid "16 Bits"
+msgstr "16 bits"
 
 msgid "Quad 0"
 msgstr "Quad 0"
@@ -5708,11 +5720,14 @@ msgstr "Fermer décalage V"
 msgid "Parent Folder"
 msgstr "Dossier parent"
 
+msgid "Back Folder"
+msgstr "Dossier précédent"
+
+msgid "Forward Folder"
+msgstr "Dossier suivant"
+
 msgid "Reload"
 msgstr "Recharger"
-
-msgid "Toggle Hidden"
-msgstr "Cacher/Montrer"
 
 msgid "Folder"
 msgstr "Dossier"
@@ -5995,6 +6010,9 @@ msgstr "Influence de la lumière"
 
 msgid "AO Channel Affect"
 msgstr "Influence du canal AO"
+
+msgid "SSIL"
+msgstr "SSIL"
 
 msgid "Glow"
 msgstr "Luisance"
@@ -6371,6 +6389,12 @@ msgstr "Panorama"
 msgid "Rayleigh"
 msgstr "Rayleigh"
 
+msgid "Ground Color"
+msgstr "Couleur du sol"
+
+msgid "Expand Margins"
+msgstr "Marges d'expansion"
+
 msgid "Blend"
 msgstr "Mélanger"
 
@@ -6504,7 +6528,7 @@ msgid "Level dB"
 msgstr "Niveau (dB)"
 
 msgid "Pan"
-msgstr "Panoramique/faire un panoramique"
+msgstr "Panoramique"
 
 msgid "Attack (µs)"
 msgstr "Attaque (µs)"
@@ -6697,6 +6721,9 @@ msgstr "Réflexions"
 
 msgid "Texture Array Reflections"
 msgstr "Refléxions de la liste de textures"
+
+msgid "GI"
+msgstr "GI"
 
 msgid "Overrides"
 msgstr "Redéfinition"
