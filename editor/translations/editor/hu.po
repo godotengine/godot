@@ -24,13 +24,17 @@
 # Balázs Püspök-Kiss <pkblazsak@gmail.com>, 2021.
 # Mr.Catfood <sipos22@msn.com>, 2022.
 # 6Leoo6 <leo.takacs@yahoo.com>, 2022.
+# Krajczár Dávid <TheEveningRacer@users.noreply.hosted.weblate.org>, 2023.
+# roli_greiner <greiner.roli@gmail.com>, 2023.
+# Adam Gulacsi <adam.gulacsi@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-06-19 11:52+0000\n"
-"Last-Translator: 6Leoo6 <leo.takacs@yahoo.com>\n"
+"PO-Revision-Date: 2023-04-17 17:39+0000\n"
+"Last-Translator: Krajczár Dávid <TheEveningRacer@users.noreply.hosted."
+"weblate.org>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -38,22 +42,219 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.13.1-dev\n"
+"X-Generator: Weblate 4.17\n"
+
+msgid "Unset"
+msgstr "Nincs beállítva"
+
+msgid "Physical"
+msgstr "Fizikai"
+
+msgid "Left Mouse Button"
+msgstr "Bal Egérgomb"
+
+msgid "Right Mouse Button"
+msgstr "Jobb Egérgomb"
+
+msgid "Middle Mouse Button"
+msgstr "Középső Egérgomb"
+
+msgid "Mouse Wheel Up"
+msgstr "Egérgörgő Fel"
+
+msgid "Mouse Wheel Down"
+msgstr "Egérgörgő Le"
+
+msgid "Mouse Wheel Left"
+msgstr "Egérgörgő Bal"
+
+msgid "Mouse Wheel Right"
+msgstr "Egérgörgő Jobb"
+
+msgid "Mouse Thumb Button 1"
+msgstr "Oldalsó Egérgomb 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "Oldalsó Egérgomb 2"
 
 msgid "Button"
 msgstr "Gomb"
 
+msgid "Double Click"
+msgstr "Dupla kattintás"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "Egérmozgás (%s) pozíciónál, (%s) gyorsasággal"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Bal Analóg Kar X-tengely, Joystick 0 X-tengely"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "Bal Analóg Kar Y-tengely, Joystick 0 Y-tengely"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "Jobb Analóg Kar X-tengely, Joystick 1 X-tengely"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "Jobb Analóg Kar Y-tengely, Joystick 1 Y-tengely"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "Joystick 2 X-tengely, Bal Ravasz, Sony L2, Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "Joystick 2 Y-tengely, Jobb Ravasz, Sony R2, Xbox RT"
+
+msgid "Joystick 3 X-Axis"
+msgstr "Joystick 3 X-tengely"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "Joystick 3 Y-tengely"
+
+msgid "Joystick 4 X-Axis"
+msgstr "Joystick 4 X-tengely"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "Joystick 4 Y-tengely"
+
+msgid "Unknown Joypad Axis"
+msgstr "Ismeretlen Joypad tengely"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "Joypad Mozgatás a(z) %d (%s) tengelyen, ennyivel: %.2f"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "Alsó Akciógomb, Sony Kereszt, Xbox A, Nintendo B"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "Jobb Akciógomb, Sony Kör, Xbox B, Nintendo A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "Bal Akciógomb, Sony Négyzet, Xbox X, Nintendo Y"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "Felső Akciógomb, Sony Háromszög, Xbox Y, Nintendo X"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "Vissza, Sony Select, Xbox Back, Nintendo -"
+
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "Segítség Gomb, Sony PS, Xbox Home"
+
+msgid "Start, Nintendo +"
+msgstr "Start, Nintendo +"
+
+msgid "Left Stick, Sony L3, Xbox L/LS"
+msgstr "Bal Kar, Sony L3, Xbox L/LS"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "Jobb Kar, Sony R3, Xbox R/RS"
+
+msgid "Left Shoulder, Sony L1, Xbox LB"
+msgstr "Bal Hátsó Gomb, Sony L1, Xbox LB"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "Jobb Hátsó Gomb, Sony R1, Xbox RB"
+
+msgid "D-pad Up"
+msgstr "D-pad Fel"
+
+msgid "D-pad Down"
+msgstr "D-pad Le"
+
+msgid "D-pad Left"
+msgstr "D-pad Bal"
+
+msgid "D-pad Right"
+msgstr "D-pad Jobb"
+
+msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "Xbox Share, PS5 Microphone, Nintendo Capture"
+
+msgid "Xbox Paddle 1"
+msgstr "Xbox Pedál 1"
+
+msgid "Xbox Paddle 2"
+msgstr "Xbox pedál 2"
+
+msgid "Xbox Paddle 3"
+msgstr "Xbox pedál 3"
+
+msgid "Xbox Paddle 4"
+msgstr "Xbox pedál 4"
+
+msgid "PS4/5 Touchpad"
+msgstr "PS4/5 Touchpad"
+
+msgid "Joypad Button %d"
+msgstr "Joypad Gomb %d"
+
+msgid "Pressure:"
+msgstr "Nyomás:"
+
+msgid "touched"
+msgstr "érintve"
+
+msgid "released"
+msgstr "elengedve"
+
+msgid "Screen %s at (%s) with %s touch points"
+msgstr "Képernyő %s a (%s) helyen, %s érintési pontban"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr ""
+"A Képernyőt húzták %s érintési pontban, (%s) pozícióban, (%s) sebességgel"
+
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "Nagyító Kézmozdulat a (%s) helyen, %s tényezővel"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "Pásztázás Kézmozdulat a (%s) pontban, (%s) delta értékkel"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "MIDI Bevitel: Csatorna=%s Üzenet=%s"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "Input Esemény: Gyorsbillentyű=%s"
+
+msgid "Accept"
+msgstr "Elfogad"
+
 msgid "Select"
-msgstr "Kiválasztás"
+msgstr "Kiválaszt"
 
 msgid "Cancel"
 msgstr "Mégse"
+
+msgid "Focus Next"
+msgstr "Fókuszálás a Következőre"
+
+msgid "Focus Prev"
+msgstr "Fókuszálás az Előzőre"
+
+msgid "Left"
+msgstr "Bal"
+
+msgid "Right"
+msgstr "Jobb"
 
 msgid "Up"
 msgstr "Fel"
 
 msgid "Down"
 msgstr "Le"
+
+msgid "Page Up"
+msgstr "Page Up"
+
+msgid "Page Down"
+msgstr "Page Down"
+
+msgid "Home"
+msgstr "Home"
+
+msgid "End"
+msgstr "End"
 
 msgid "Cut"
 msgstr "Kivágás"
@@ -70,8 +271,77 @@ msgstr "Visszavonás"
 msgid "Redo"
 msgstr "Újra"
 
+msgid "Completion Query"
+msgstr "Kódkiegészítés"
+
+msgid "New Line"
+msgstr "Új Sor"
+
+msgid "New Blank Line"
+msgstr "Új Üres Sor"
+
+msgid "New Line Above"
+msgstr "Új Sor Felette"
+
+msgid "Indent"
+msgstr "Behúzás Növelése"
+
+msgid "Dedent"
+msgstr "Behúzás Csökkentése"
+
+msgid "Backspace"
+msgstr "Törlés Balra"
+
+msgid "Backspace Word"
+msgstr "Szó Törlése Balra"
+
+msgid "Backspace all to Left"
+msgstr "Törlés a Sor Elejéig"
+
 msgid "Delete"
-msgstr "Törlés"
+msgstr "Törlés Jobbra"
+
+msgid "Delete Word"
+msgstr "Szó Törlése Jobbra"
+
+msgid "Delete all to Right"
+msgstr "Sor Törlése Jobbra"
+
+msgid "Caret Left"
+msgstr "Kurzor Balra"
+
+msgid "Caret Word Left"
+msgstr "Kurzor Szó Elejére"
+
+msgid "Caret Right"
+msgstr "Kurzor Jobbra"
+
+msgid "Caret Word Right"
+msgstr "Kurzor Szó Végére"
+
+msgid "Caret Up"
+msgstr "Kurzor Fel"
+
+msgid "Caret Down"
+msgstr "Kurzor Le"
+
+msgid "Caret Line Start"
+msgstr "Kurzor a Sor Elejére"
+
+msgid "Caret Line End"
+msgstr "Kurzor a Sor Végére"
+
+msgid "Caret Page Up"
+msgstr "Kurzor Egy Oldallal Feljebb"
+
+msgid "Caret Page Down"
+msgstr "Kurzor Egy Oldallal Lejjebb"
+
+msgid "Caret Document Start"
+msgstr "Kurzor a Dokumentum Elejére"
+
+msgid "Caret Document End"
+msgstr "Kurzor a Dokumentum Végére"
 
 msgid "Select All"
 msgstr "Összes Kijelölése"
@@ -1329,6 +1599,9 @@ msgstr "Források Vizsgálata"
 msgid "(Re)Importing Assets"
 msgstr "Eszközök (Újra) Betöltése"
 
+msgid "Experimental"
+msgstr "Kísérleti"
+
 msgid "Top"
 msgstr "Eleje"
 
@@ -1352,6 +1625,9 @@ msgstr "Tulajdonságok"
 
 msgid "default:"
 msgstr "alapértelmezett:"
+
+msgid "Constructors"
+msgstr "Közreműködők"
 
 msgid "Theme Properties"
 msgstr "Téma Tulajdonságai"

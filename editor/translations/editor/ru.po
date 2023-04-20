@@ -125,7 +125,7 @@
 # Sergey Karmanov <ppoocpel8888@gmail.com>, 2022.
 # Дмитрий <Dimega@inbox.ru>, 2022.
 # Vladimir Kirillovskiy <vladimir.kirillovskiy@gmail.com>, 2022, 2023.
-# Evgeniy Khramov <thejenjagamertjg@gmail.com>, 2022.
+# Evgeniy Khramov <thejenjagamertjg@gmail.com>, 2022, 2023.
 # kirill blaze <kirillblaze2@gmail.com>, 2022, 2023.
 # Alexander Alexeev <dergluck@gmail.com>, 2023.
 # Playmore Dev <playmoredevelop@gmail.com>, 2023.
@@ -135,13 +135,17 @@
 # Lost Net <pc.mirkn@gmail.com>, 2023.
 # galzuris dev <dev@galzuris.com>, 2023.
 # Usow Maxim <usow.maxim2016@yandex.ru>, 2023.
+# vaartis <vaartis@cock.li>, 2023.
+# Melairz1237 <mr.artem.snegov@mail.ru>, 2023.
+# Noky Socket <lollysimbart@gmail.com>, 2023.
+# Aleksey Smirnov <debugger94@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-01 06:09+0000\n"
-"Last-Translator: Lost Net <pc.mirkn@gmail.com>\n"
+"PO-Revision-Date: 2023-04-20 03:46+0000\n"
+"Last-Translator: Aleksey Smirnov <debugger94@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -150,7 +154,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
 msgstr "Не задано"
@@ -168,13 +172,13 @@ msgid "Middle Mouse Button"
 msgstr "Средняя кнопка мыши"
 
 msgid "Mouse Wheel Up"
-msgstr "Колёсико мыши вверх"
+msgstr "Колесико мыши вверх"
 
 msgid "Mouse Wheel Down"
-msgstr "Колёсико мыши вниз"
+msgstr "Колесико мыши вниз"
 
 msgid "Mouse Wheel Left"
-msgstr "Колёсико мыши влево"
+msgstr "Колесико мыши влево"
 
 msgid "Mouse Wheel Right"
 msgstr "Колесико мыши вправо"
@@ -192,25 +196,25 @@ msgid "Double Click"
 msgstr "Двойной щелчок"
 
 msgid "Mouse motion at position (%s) with velocity (%s)"
-msgstr "Движение мыши в местоположении (%s) со скоростью движения (%s)"
+msgstr "Движение мыши в позиции (%s) со скоростью движения (%s)"
 
 msgid "Left Stick X-Axis, Joystick 0 X-Axis"
-msgstr "Левый стик по оси X, Джойстик 0 по оси X"
+msgstr "Левый стик по оси X, джойстик 0 по оси X"
 
 msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
-msgstr "Левый стик по оси Y, Джойстик 0 по оси Y"
+msgstr "Левый стик по оси Y, джойстик 0 по оси Y"
 
 msgid "Right Stick X-Axis, Joystick 1 X-Axis"
-msgstr "Правый стик по оси X, Джойстик 1 по оси X"
+msgstr "Правый стик по оси X, джойстик 1 по оси X"
 
 msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
-msgstr "Правый стик по оси Y, Джойстик 1 по оси Y"
+msgstr "Правый стик по оси Y, джойстик 1 по оси Y"
 
 msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
-msgstr "Джойстик 2 по оси X, Левый триггер, Sony L2, Xbox LT"
+msgstr "Джойстик 2 по оси X, левый триггер, Sony L2, Xbox LT"
 
 msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
-msgstr "Джойстик 2 по оси Y, Правый триггер, Sony R2, Xbox RT"
+msgstr "Джойстик 2 по оси Y, правый триггер, Sony R2, Xbox RT"
 
 msgid "Joystick 3 X-Axis"
 msgstr "Джойстик 3 по оси X"
@@ -258,40 +262,40 @@ msgid "Right Stick, Sony R3, Xbox R/RS"
 msgstr "Правый стик, Sony R3, Xbox R/RS"
 
 msgid "Left Shoulder, Sony L1, Xbox LB"
-msgstr "Левый Бампер, Sony L1, Xbox LB"
+msgstr "Левый бампер, Sony L1, Xbox LB"
 
 msgid "Right Shoulder, Sony R1, Xbox RB"
-msgstr "Правый Бампер, Sony R1, Xbox RB"
+msgstr "Правый бампер, Sony R1, Xbox RB"
 
 msgid "D-pad Up"
-msgstr "D-pad Вверх"
+msgstr "D-pad вверх"
 
 msgid "D-pad Down"
-msgstr "D-pad Вниз"
+msgstr "D-pad вниз"
 
 msgid "D-pad Left"
-msgstr "D-pad Влево"
+msgstr "D-pad влево"
 
 msgid "D-pad Right"
-msgstr "D-pad Вправо"
+msgstr "D-pad вправо"
 
 msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
 msgstr "Xbox Share, PS5 Microphone, Nintendo Capture"
 
 msgid "Xbox Paddle 1"
-msgstr "Xbox Крестовина 1"
+msgstr "Xbox крестовина 1"
 
 msgid "Xbox Paddle 2"
-msgstr "Xbox Крестовина 2"
+msgstr "Xbox крестовина 2"
 
 msgid "Xbox Paddle 3"
-msgstr "Xbox Крестовина 3"
+msgstr "Xbox крестовина 3"
 
 msgid "Xbox Paddle 4"
-msgstr "Xbox Крестовина 4"
+msgstr "Xbox крестовина 4"
 
 msgid "PS4/5 Touchpad"
-msgstr "PS4/5 Тачпад"
+msgstr "PS4/5 тачпад"
 
 msgid "Joypad Button %d"
 msgstr "Кнопка джойстика %d"
@@ -306,11 +310,12 @@ msgid "released"
 msgstr "отпустил"
 
 msgid "Screen %s at (%s) with %s touch points"
-msgstr "Экран %s в (%s) с %s тачпад точками"
+msgstr "Экран %s в (%s) с %s точками касания"
 
 msgid ""
 "Screen dragged with %s touch points at position (%s) with velocity of (%s)"
-msgstr "Экран с %s тачпад точками в позиции (%s) перетянут со скоростью (%s)"
+msgstr ""
+"Экран перетаскивание с %s точек касания в позиции (%s) со скоростью (%s)"
 
 msgid "Magnify Gesture at (%s) with factor %s"
 msgstr "Жест увеличения в (%s) с коэффициентом %s"
@@ -319,16 +324,16 @@ msgid "Pan Gesture at (%s) with delta (%s)"
 msgstr "Жест панорамирования на (%s) с дельтой (%s)"
 
 msgid "MIDI Input on Channel=%s Message=%s"
-msgstr "MIDI Вход на канале=%s Сообщение=%s"
+msgstr "MIDI вход на канале=%s сообщение=%s"
 
 msgid "Input Event with Shortcut=%s"
-msgstr "Событие ввода с Shortcut=%s"
+msgstr "Событие ввода с сочетанием клавиш=%s"
 
 msgid "Accept"
 msgstr "Подтвердить"
 
 msgid "Select"
-msgstr "Выделение"
+msgstr "Выбор"
 
 msgid "Cancel"
 msgstr "Отмена"
@@ -403,7 +408,7 @@ msgid "Backspace Word"
 msgstr "Стереть слово"
 
 msgid "Backspace all to Left"
-msgstr "Стереть всё слева"
+msgstr "Стереть все слева"
 
 msgid "Delete"
 msgstr "Удалить"
@@ -412,19 +417,19 @@ msgid "Delete Word"
 msgstr "Удалить слово"
 
 msgid "Delete all to Right"
-msgstr "Удалить всё справа"
+msgstr "Удалить все справа"
 
 msgid "Caret Left"
-msgstr "Курсор влево"
+msgstr "Каретка влево"
 
 msgid "Caret Word Left"
-msgstr "Курсор влево на слово"
+msgstr "Каретка влево на слово"
 
 msgid "Caret Right"
-msgstr "Курсор вправо"
+msgstr "Каретка вправо"
 
 msgid "Caret Word Right"
-msgstr "Курсор вправо на слово"
+msgstr "Каретка вправо на слово"
 
 msgid "Caret Up"
 msgstr "Каретка вверх"
@@ -463,13 +468,13 @@ msgid "Scroll Down"
 msgstr "Прокрутка вниз"
 
 msgid "Select All"
-msgstr "Выделить всё"
+msgstr "Выделить все"
 
 msgid "Select Word Under Caret"
 msgstr "Выделить слово под курсором"
 
 msgid "Add Selection for Next Occurrence"
-msgstr "Добавить Выделение для Следующего Действия"
+msgstr "Добавить выделение для следующего действия"
 
 msgid "Clear Carets and Selection"
 msgstr "Очистить каретки и выделение"
@@ -493,13 +498,13 @@ msgid "Refresh"
 msgstr "Обновить"
 
 msgid "Show Hidden"
-msgstr "Показывать скрытые"
+msgstr "Показать скрытые"
 
 msgid "Swap Input Direction"
 msgstr "Сменить направление ввода"
 
 msgid "Invalid input %d (not passed) in expression"
-msgstr "Некорректный ввод %d (не подходит) в выражении"
+msgstr "Некорректный ввод %d (не передан) в выражении"
 
 msgid "self can't be used because instance is null (not passed)"
 msgstr ""
@@ -567,10 +572,10 @@ msgid "An action with the name '%s' already exists."
 msgstr "Действие с именем «%s» уже существует."
 
 msgid "Cannot Revert - Action is same as initial"
-msgstr "Невозможно вернуться - Действие схоже с первоначальным"
+msgstr "Невозможно обратить - Действие схоже с первоначальным"
 
 msgid "Revert Action"
-msgstr "Откатить действие"
+msgstr "Обратить действие"
 
 msgid "Add Event"
 msgstr "Добавить событие"
@@ -591,7 +596,7 @@ msgid "Filter by name..."
 msgstr "Фильтр по имени..."
 
 msgid "Clear All"
-msgstr "Очистить"
+msgstr "Очистить все"
 
 msgid "Add New Action"
 msgstr "Добавить новое действие"
@@ -630,19 +635,19 @@ msgid "Make Handles Free"
 msgstr "Сделать ручки свободными"
 
 msgid "Make Handles Linear"
-msgstr "Сделать Дескрипторы Линейными"
+msgstr "Сделать ручки линейными"
 
 msgid "Make Handles Balanced"
-msgstr "Сделать Дескрипторы Сбалансированными"
+msgstr "Сделать ручки сбалансированными"
 
 msgid "Make Handles Mirrored"
-msgstr "Сделать Дескрипторы Отражёнными"
+msgstr "Сделать ручки отраженными"
 
 msgid "Make Handles Balanced (Auto Tangent)"
-msgstr "Сделать Дескрипторы Сбалансированными (Авто тангенс)"
+msgstr "Сделать ручки сбалансированными (авто тангенс)"
 
 msgid "Make Handles Mirrored (Auto Tangent)"
-msgstr "Сделать Дескрипторы Отражёнными (Авто тангенс)"
+msgstr "Сделать ручки отраженными (авто тангенс)"
 
 msgid "Add Bezier Point"
 msgstr "Добавить точку Безье"
@@ -651,10 +656,10 @@ msgid "Move Bezier Points"
 msgstr "Передвинуть точки Безье"
 
 msgid "Animation Duplicate Keys"
-msgstr "Дублировать ключи анимации"
+msgstr "Анимация дублировать ключи"
 
 msgid "Animation Delete Keys"
-msgstr "Удалить ключи анимации"
+msgstr "Анимация удалить ключи"
 
 msgid "Focus"
 msgstr "Фокус"
@@ -666,28 +671,28 @@ msgid "Deselect All Keys"
 msgstr "Снять выделение с ключей"
 
 msgid "Animation Change Transition"
-msgstr "Изменить переход анимации"
+msgstr "Анимация изменить переход"
 
 msgid "Animation Change %s"
 msgstr "Анимация изменения %s"
 
 msgid "Animation Change Keyframe Value"
-msgstr "Изменить значение ключевого кадра"
+msgstr "Анимация изменить значение ключевого кадра"
 
 msgid "Animation Change Call"
-msgstr "Изменить вызов анимации"
+msgstr "Анимация изменить вызов"
 
 msgid "Animation Multi Change Transition"
-msgstr "Множественное изменение перехода анимации"
+msgstr "Анимация множественное изменение перехода"
 
 msgid "Animation Multi Change %s"
-msgstr "Множественное изменение анимации %s"
+msgstr "Анимация множественное изменение %s"
 
 msgid "Animation Multi Change Keyframe Value"
-msgstr "Множественное изменение значения ключевого кадра анимации"
+msgstr "Анимация множественное изменение значения ключевого кадра"
 
 msgid "Animation Multi Change Call"
-msgstr "Множественное изменение вызова анимации"
+msgstr "Анимации множественное изменение вызова"
 
 msgid "Change Animation Length"
 msgstr "Изменить длину анимации"
@@ -706,10 +711,10 @@ msgstr ""
 "сцену."
 
 msgid "Property Track"
-msgstr "Дорожка параметра"
+msgstr "Дорожка свойства"
 
 msgid "3D Position Track"
-msgstr "Дорожка положения 3D"
+msgstr "Дорожка позиция 3D"
 
 msgid "3D Rotation Track"
 msgstr "Дорожка вращения 3D"
@@ -718,7 +723,7 @@ msgid "3D Scale Track"
 msgstr "Дорожка масштабирования 3D"
 
 msgid "Blend Shape Track"
-msgstr "Сгладить Форму Дорожки"
+msgstr "Дорожка форма смешивания"
 
 msgid "Call Method Track"
 msgstr "Дорожка вызова метода"
@@ -805,16 +810,16 @@ msgid "Out-Handle:"
 msgstr "Ручка ИЗ:"
 
 msgid "Handle mode: Free\n"
-msgstr "Режим дескриптора: Свободный\n"
+msgstr "Режим ручки: Свободный\n"
 
 msgid "Handle mode: Linear\n"
-msgstr "Режим дескриптора: Линейный\n"
+msgstr "Режим ручки: Линейный\n"
 
 msgid "Handle mode: Balanced\n"
-msgstr "Режим дескриптора: Сбалансированный\n"
+msgstr "Режим ручки: Сбалансированный\n"
 
 msgid "Handle mode: Mirrored\n"
-msgstr "Режим дескриптора: Отражённый\n"
+msgstr "Режим ручки: Отражённый\n"
 
 msgid "Stream:"
 msgstr "Поток:"
@@ -826,13 +831,13 @@ msgid "End (s):"
 msgstr "Конец (сек.):"
 
 msgid "Animation Clip:"
-msgstr "Клип Анимации:"
+msgstr "Клип анимации:"
 
 msgid "Toggle Track Enabled"
 msgstr "Включить/выключить дорожку"
 
 msgid "Don't Use Blend"
-msgstr "Не использовать Сглаживание"
+msgstr "Не использовать смешивание"
 
 msgid "Continuous"
 msgstr "Непрерывная"
@@ -859,10 +864,10 @@ msgid "Cubic Angle"
 msgstr "Кубический угол"
 
 msgid "Clamp Loop Interp"
-msgstr "Обрезание Перехода Зацикливания"
+msgstr "Обрезание перехода зацикливания"
 
 msgid "Wrap Loop Interp"
-msgstr "Обработка Перехода Зацикливания"
+msgstr "Перенос перехода зацикливания"
 
 msgid "Insert Key"
 msgstr "Вставить ключ"
@@ -883,7 +888,7 @@ msgid "Change Animation Interpolation Mode"
 msgstr "Изменить способ интерполяции анимации"
 
 msgid "Change Animation Loop Mode"
-msgstr "Изменить режим цикла анимации"
+msgstr "Изменить режим зацикливания анимации"
 
 msgid "Change Animation Use Blend"
 msgstr "Изменить использование смешивания анимации"
@@ -892,8 +897,8 @@ msgid ""
 "Compressed tracks can't be edited or removed. Re-import the animation with "
 "compression disabled in order to edit."
 msgstr ""
-"Сжатые дорожки не могут быть удалены/изменены. Для редактирования анимации, "
-"вам нужно переимпортировать её с выключенным сжатием."
+"Сжатые дорожки не могут быть удалены/изменены. Реимпортируйте анимацию с "
+"выключенным сжатием для их редактирования."
 
 msgid "Remove Anim Track"
 msgstr "Удалить дорожку анимации"
@@ -908,7 +913,7 @@ msgid "Create"
 msgstr "Создать"
 
 msgid "Animation Insert Key"
-msgstr "Вставить ключ анимации"
+msgstr "Анимация вставить ключ"
 
 msgid "node '%s'"
 msgstr "узел «%s»"
@@ -917,7 +922,7 @@ msgid "animation"
 msgstr "анимация"
 
 msgid "AnimationPlayer can't animate itself, only other players."
-msgstr "AnimationPlayer не может анимировать сам себя, только других."
+msgstr "AnimationPlayer не может анимировать сам себя, только другие плееры."
 
 msgid "property '%s'"
 msgstr "свойство «%s»"
@@ -933,7 +938,7 @@ msgstr "Дорожки формы смешивания применяются т
 
 msgid "Position/Rotation/Scale 3D tracks only apply to 3D-based nodes."
 msgstr ""
-"Дорожки 3D положения/вращения/масштабирования применяются только к 3D-узлам."
+"Дорожки 3D позиции/вращения/масштабирования применяются только к 3D-узлам."
 
 msgid ""
 "Audio tracks can only point to nodes of type:\n"
@@ -980,13 +985,13 @@ msgid "Track path is invalid, so can't add a method key."
 msgstr "Путь к дорожке некорректен, потому нельзя добавить ключ метода."
 
 msgid "Add Method Track Key"
-msgstr "Добавить ключ дорожки для метода"
+msgstr "Добавить ключ дорожки метода"
 
 msgid "Method not found in object:"
-msgstr "В объекте нет такого метода:"
+msgstr "Метод не найден в объекте:"
 
 msgid "Animation Move Keys"
-msgstr "Переместить ключи анимации"
+msgstr "Анимация переместить ключи"
 
 msgid "Position"
 msgstr "Позиция"
@@ -995,7 +1000,7 @@ msgid "Rotation"
 msgstr "Поворот"
 
 msgid "Scale"
-msgstr "Масштабировать"
+msgstr "Масштаб"
 
 msgid "BlendShape"
 msgstr "Форма смешивания"
@@ -1016,7 +1021,7 @@ msgid "Paste Tracks"
 msgstr "Вставить дорожки"
 
 msgid "Animation Scale Keys"
-msgstr "Масштабировать ключи анимации"
+msgstr "Анимация ключи масштаба"
 
 msgid "Make Easing Keys"
 msgstr "Создать ключи плавного перехода"
@@ -1028,7 +1033,7 @@ msgstr ""
 "одна дорожка."
 
 msgid "Animation Add RESET Keys"
-msgstr "Добавить RESET-ключи анимации"
+msgstr "Анимация добавить RESET-ключи"
 
 msgid "Bake Animation as Linear keys."
 msgstr "Запечь анимацию как линейные ключи."
@@ -1043,13 +1048,13 @@ msgid ""
 "enable \"Save To File\" and\n"
 "\"Keep Custom Tracks\"."
 msgstr ""
-"Данная анимация принадлежит импортированной сцене, поэтому изменения, "
-"внесенные в импортированные дорожки, не будут сохранены.\n"
+"Эта анимация принадлежит импортированной сцене, поэтому изменения, внесенные "
+"в импортированные дорожки, не будут сохранены.\n"
 "\n"
 "Чтобы изменить эту анимацию, перейдите к настройкам расширенного импорта "
 "сцены и выберите анимацию.\n"
 "Здесь доступны некоторые опции, включая зацикливание. Чтобы добавить "
-"пользовательские дорожки, включите опции \"Сохранить в файл\" и\n"
+"пользовательские дорожки, включите \"Сохранить в файл\" и\n"
 "\"Сохранять пользовательские дорожки\"."
 
 msgid "Warning: Editing imported animation"
@@ -1140,10 +1145,10 @@ msgid "Animation Optimizer"
 msgstr "Оптимизатор анимации"
 
 msgid "Max Velocity Error:"
-msgstr "Макс. погрешность Скорости:"
+msgstr "Макс. погрешность скорости:"
 
 msgid "Max Angular Error:"
-msgstr "Макс. Угловая погрешность:"
+msgstr "Макс. угловая погрешность:"
 
 msgid "Max Precision Error:"
 msgstr "Макс. погрешность точности:"
@@ -1170,19 +1175,19 @@ msgid "Scale Ratio:"
 msgstr "Коэффициент масштабирования:"
 
 msgid "Select Transition and Easing"
-msgstr "Выбрать Переход и Ослабление"
+msgstr "Выбрать переход и ослабление"
 
 msgid "Animation Baker"
-msgstr "Сгенерировать анимацию"
+msgstr "Запекатель анимации"
 
 msgid "Select Tracks to Copy"
 msgstr "Выбрать дорожки для копирования"
 
 msgid "Select All/None"
-msgstr "Выбрать всё/Сбросить"
+msgstr "Выбрать все/ничего"
 
 msgid "Animation Change Keyframe Time"
-msgstr "Изменить время ключевого кадра анимации"
+msgstr "Анимация изменить время ключевого кадра"
 
 msgid "Add Audio Track Clip"
 msgstr "Добавить звуковую дорожку"
@@ -1224,7 +1229,7 @@ msgid "Replace"
 msgstr "Заменить"
 
 msgid "Replace All"
-msgstr "Заменить всё"
+msgstr "Заменить все"
 
 msgid "Selection Only"
 msgstr "Только выделенное"
@@ -1260,8 +1265,8 @@ msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
 msgstr ""
-"Целевой метод не найден. Укажите правильный метод или прикрепите скрипт на "
-"целевой узел."
+"Целевой метод не найден. Укажите правильный метод или прикрепите скрипт к "
+"целевому узлу."
 
 msgid "Attached Script"
 msgstr "Прикреплённый скрипт"
@@ -1312,10 +1317,10 @@ msgid "Allows to drop arguments sent by signal emitter."
 msgstr "Разрешить отбрасывать аргументы, отправленные эмиттером."
 
 msgid "Unbind Signal Arguments:"
-msgstr "Отключить аргументы сигнала:"
+msgstr "Отвязать аргументы сигнала:"
 
 msgid "Receiver Method:"
-msgstr "Метод-приёмник:"
+msgstr "Принимающий метод:"
 
 msgid "Advanced"
 msgstr "Дополнительно"
@@ -1357,7 +1362,7 @@ msgid "Disconnect '%s' from '%s'"
 msgstr "Отсоединить «%s» от «%s»"
 
 msgid "Disconnect all from signal: '%s'"
-msgstr "Отсоединить всё от сигнала: «%s»"
+msgstr "Отсоединить все от сигнала: «%s»"
 
 msgid "Connect..."
 msgstr "Присоединить..."
@@ -1402,7 +1407,7 @@ msgid "Change"
 msgstr "Изменить"
 
 msgid "Create New %s"
-msgstr "Создать %s"
+msgstr "Создать новый %s"
 
 msgid "No results for \"%s\"."
 msgstr "Нет результатов для «%s»."
@@ -2122,7 +2127,7 @@ msgid "XR"
 msgstr "XR"
 
 msgid "RenderingDevice"
-msgstr "RenderingDevice"
+msgstr "Устройство рендеринга"
 
 msgid "OpenGL"
 msgstr "OpenGL"
@@ -2163,9 +2168,7 @@ msgstr "XR (AR и VR)."
 msgid ""
 "RenderingDevice based rendering (if disabled, the OpenGL back-end is "
 "required)."
-msgstr ""
-"Рендеринг на основе RenderingDevice (если отключен, бэкенд OpenGL "
-"обязателен)."
+msgstr "Рендеринг на основе RenderingDevice (если отключен, требуется OpenGL)."
 
 msgid ""
 "OpenGL back-end (if disabled, the RenderingDevice back-end is required)."
@@ -2179,7 +2182,7 @@ msgid ""
 "Supports basic text layouts."
 msgstr ""
 "Резервная реализация текстового сервера\n"
-"Поддерживает базовые макеты текста."
+"Поддерживает базовую разметку текста."
 
 msgid ""
 "Text Server implementation powered by ICU and HarfBuzz libraries.\n"
@@ -2206,6 +2209,14 @@ msgid ""
 msgstr ""
 "Поддержка технологии смарт-шрифтов SIL Graphite (поддерживается только "
 "Расширенный текстовый сервер)."
+
+msgid ""
+"Multi-channel signed distance field font rendering support using msdfgen "
+"library (pre-rendered MSDF fonts can be used even if this option disabled)."
+msgstr ""
+"Поддержка рендеринга многоканальных шрифтов поля знакового расстояния с "
+"использованием библиотеки msdfgen (предварительно отрендеренные шрифты MSDF "
+"могут быть использованы даже при отключенной опции)."
 
 msgid "General Features:"
 msgstr "Основные возможности:"
@@ -2975,6 +2986,9 @@ msgstr "Копировать путь свойства"
 
 msgid "Select existing layout:"
 msgstr "Выберите существующий макет:"
+
+msgid "Or enter new layout name"
+msgstr "Или введите новое имя макета"
 
 msgid "Changed Locale Language Filter"
 msgstr "Изменён фильтр локали по языкам"
@@ -3964,6 +3978,21 @@ msgstr "Редактировать имена слоев"
 msgid "<empty>"
 msgstr "<пусто>"
 
+msgid "Temporary Euler may be changed implicitly!"
+msgstr "Временной Эйлер может быть изменен неявно!"
+
+msgid ""
+"Temporary Euler will not be stored in the object with the original value. "
+"Instead, it will be stored as Quaternion with irreversible conversion.\n"
+"This is due to the fact that the result of Euler->Quaternion can be "
+"determined uniquely, but the result of Quaternion->Euler can be multi-"
+"existent."
+msgstr ""
+"Временный Эйлер не будет храниться в объекте с исходным значением. Вместо "
+"этого он будет сохранен как кватернион с необратимым преобразованием.\n"
+"Это связано с тем, что результат Euler->Quaternion может быть определен "
+"однозначно, а результат Quaternion->Euler может быть многозначным."
+
 msgid "Assign..."
 msgstr "Устанавливать.."
 
@@ -4100,7 +4129,7 @@ msgid "Edit Built-in Action"
 msgstr "Изменить встроенное действие"
 
 msgid "Edit Shortcut"
-msgstr "Изменить быстрые клавиши"
+msgstr "Изменить сочетание клавиш"
 
 msgid "Common"
 msgstr "Общий"
@@ -4118,7 +4147,7 @@ msgid "The editor must be restarted for changes to take effect."
 msgstr "Чтобы изменения вступили в силу, необходимо перезапустить редактор."
 
 msgid "Shortcuts"
-msgstr "Горячие клавиши"
+msgstr "Сочетания клавиш"
 
 msgid "Binding"
 msgstr "Привязка"
@@ -4166,8 +4195,14 @@ msgstr "Правый стик вниз, джойстик 1 вниз"
 msgid "Joystick 2 Left"
 msgstr "Джойстик 2 лево"
 
+msgid "Left Trigger, Sony L2, Xbox LT, Joystick 2 Right"
+msgstr "Левый Триггер, Sony L2, Xbox LT, Джойстик 2 Вправо"
+
 msgid "Joystick 2 Up"
 msgstr "Джойстик 2 Вверх"
+
+msgid "Right Trigger, Sony R2, Xbox RT, Joystick 2 Down"
+msgstr "Правый Триггер, Sony L2, Xbox LT, Джойстик 2 Вниз"
 
 msgid "Joystick 3 Left"
 msgstr "Джойстик 3 влево"
@@ -4682,6 +4717,20 @@ msgstr "Экспорт в режиме отладки"
 msgid "Disable FBX & Restart"
 msgstr "Отключить FBX и перезапустить"
 
+msgid ""
+"Canceling this dialog will disable the FBX importer.\n"
+"You can re-enable it in the Project Settings under Filesystem > Import > FBX "
+"> Enabled.\n"
+"\n"
+"The editor will restart as importers are registered when the editor starts."
+msgstr ""
+"Отмена этого диалога отключит импортер FBX.\n"
+"Вы можете снова включить его в настройках проекта в разделе Файловая система "
+"> Импорт > FBX > Включено.\n"
+"\n"
+"Редактор перезапустится, так как импортеры регистрируются при запуске "
+"редактора."
+
 msgid "Path to FBX2glTF executable is empty."
 msgstr "Путь к исполнителю FBX2glTF пуст."
 
@@ -5147,8 +5196,23 @@ msgstr "Формирование текста и добавление глифо
 msgid "Glyphs from the Character Map"
 msgstr "Глифы с карты символов"
 
+msgid ""
+"Add or remove glyphs from the character map to pre-render list:\n"
+"Note: Some stylistic alternatives and glyph variants do not have one-to-one "
+"correspondence to character, and not shown in this map, use \"Glyphs from "
+"the text\" tab to add these."
+msgstr ""
+"Добавьте или удалите глифы из карты символов в список предварительного "
+"рендера:\n"
+"Обратите внимание: Некоторые стилистические альтернативы и варианты глифов "
+"не имеют соответствия один к одному с символом и не показаны в этой карте, "
+"используйте вкладку \"Глифы из текста\" для их добавления."
+
 msgid "Dynamically rendered TrueType/OpenType font"
 msgstr "Динамически отображаемый шрифт TrueType/OpenType"
+
+msgid "Prerendered multichannel(+true) signed distance field"
+msgstr "Предрендерное многоканальное (+true) подписанное поле расстояния"
 
 msgid "Can't load font texture:"
 msgstr "Не удается загрузить текстуру шрифта:"
@@ -5185,6 +5249,13 @@ msgstr "Вы вернули объект, унаследованный от Node
 
 msgid "Saving..."
 msgstr "Сохранение..."
+
+msgid ""
+"Error importing GLSL shader file: '%s'. Open the file in the filesystem dock "
+"in order to see the reason."
+msgstr ""
+"Ошибка при импорте файла шейдеров GLSL: '%s'. Откройте файл в доке файловой "
+"системы, чтобы увидеть причину."
 
 msgid ""
 "%s: Texture detected as used as a normal map in 3D. Enabling red-green "
@@ -5243,19 +5314,96 @@ msgstr "Расширенные настройки импорта для сцен
 msgid "Select folder to extract material resources"
 msgstr "Выбрать папку для извлечения материалов"
 
+msgid "Select folder where mesh resources will save on import"
+msgstr "Выберите папку, в которую будут сохраняться ресурсы меша при импорте"
+
+msgid "Select folder where animations will save on import"
+msgstr "Выберите папку, в которую будут сохраняться анимации при импорте"
+
+msgid "Warning: File exists"
+msgstr "Предупреждение: Файл уже существует"
+
+msgid "Existing file with the same name will be replaced."
+msgstr "Существующий файл с тем же именем будет заменен."
+
+msgid "Will create new file"
+msgstr "Будет создан новый файл"
+
+msgid "Already External"
+msgstr "Уже Внешний"
+
+msgid ""
+"This material already references an external file, no action will be taken.\n"
+"Disable the external property for it to be extracted again."
+msgstr ""
+"Этот материал уже ссылается на внешний файл, никаких действий не будет "
+"предпринято.\n"
+"Отключите внешнее свойство, чтобы его можно было извлечь снова."
+
+msgid "No import ID"
+msgstr "Без ID импорта"
+
+msgid ""
+"Material has no name nor any other way to identify on re-import.\n"
+"Please name it or ensure it is exported with an unique ID."
+msgstr ""
+"Материал не имеет ни названия, ни другого способа идентификации при "
+"повторном импорте.\n"
+"Пожалуйста, назовите его или убедитесь, что он экспортируется с уникальным "
+"ID."
+
 msgid "Extract Materials to Resource Files"
 msgstr "Извлечь материалы в файлы ресурсов"
 
 msgid "Extract"
 msgstr "Извлечь"
 
+msgid "Already Saving"
+msgstr "Уже сохраняется"
+
+msgid ""
+"This mesh already saves to an external resource, no action will be taken."
+msgstr ""
+"Этот меш уже сохранен на внешнем ресурсе, никаких действий предприниматься "
+"не будет."
+
+msgid "Existing file with the same name will be replaced on import."
+msgstr "Существующий файл с тем же именем будет заменен при импорте."
+
+msgid "Will save to new file"
+msgstr "Будет сохранено в новый файл"
+
+msgid ""
+"Mesh has no name nor any other way to identify on re-import.\n"
+"Please name it or ensure it is exported with an unique ID."
+msgstr ""
+"У меша нет ни имени, ни другого способа идентификации при повторном "
+"импорте.\n"
+"Пожалуйста, назовите его или убедитесь, что он экспортируется с уникальным "
+"ID."
+
+msgid "Set paths to save meshes as resource files on Reimport"
+msgstr ""
+"Установка путей для сохранения меша в качестве файлов ресурсов при повторном "
+"импорте"
+
 msgid "Set Paths"
 msgstr "Задать пути"
+
+msgid ""
+"This animation already saves to an external resource, no action will be "
+"taken."
+msgstr ""
+"Эта анимация уже сохранена на внешнем ресурсе, никаких действий "
+"предприниматься не будет."
 
 msgid "Set paths to save animations as resource files on Reimport"
 msgstr ""
 "Задать пути для сохранения анимаций в виде файлов ресурсов при повторном "
 "импорте"
+
+msgid "Can't make material external to file, write error:"
+msgstr "Невозможно сделать материал внешним для файла, ошибка записи:"
 
 msgid "Actions..."
 msgstr "Действия..."
@@ -5265,6 +5413,9 @@ msgstr "Извлечь материалы"
 
 msgid "Set Animation Save Paths"
 msgstr "Задать пути сохранения анимации"
+
+msgid "Set Mesh Save Paths"
+msgstr "Задать пути сохранения меша"
 
 msgid "Meshes"
 msgstr "Сетка"
@@ -5385,6 +5536,16 @@ msgstr ""
 "Автоматическое переключение между «Meta» («Command») и «Control» в "
 "зависимости от текущей платформы."
 
+msgid "Keycode (Latin Equivalent)"
+msgstr "Код клавиш (Латинский эквивалент)"
+
+msgid "Physical Keycode (Position on US QWERTY Keyboard)"
+msgstr ""
+"Физический код клавиши (Положение на клавиатуре с раскладкой US QWERTY)"
+
+msgid "Key Label (Unicode, Case-Insensitive)"
+msgstr "Название клавиши (Юникод, без учета регистра)"
+
 msgid ""
 "The following resources will be duplicated and embedded within this resource/"
 "object."
@@ -5469,6 +5630,9 @@ msgstr "Фильтр свойств"
 msgid "Manage object properties."
 msgstr "Управление свойствами объекта."
 
+msgid "This cannot be undone. Are you sure?"
+msgstr "Это нельзя отменить. Вы уверены?"
+
 msgid "Add %d Translations"
 msgstr "Добавить %d переводов"
 
@@ -5489,6 +5653,12 @@ msgstr "Удалить ресурс перенаправления"
 
 msgid "Remove Resource Remap Option"
 msgstr "Удалить параметр перенаправления ресурса"
+
+msgid "Add %d file(s) for POT generation"
+msgstr "Добавить %d файл(ов) для генерации POT"
+
+msgid "Remove file from POT generation"
+msgstr "Удалить файл из генерации POT"
 
 msgid "Removed"
 msgstr "Удалён"
@@ -5649,7 +5819,7 @@ msgstr ""
 "если активация завершилась неудачей."
 
 msgid "Set the blending position within the space"
-msgstr "Установить место смешивания в пространстве"
+msgstr "Установить позицию смешивания в пространстве"
 
 msgid "Select and move points, create points with RMB."
 msgstr "Выбирайте, перемещайте и создавайте точки с ПКМ."
@@ -5797,6 +5967,9 @@ msgstr "Имя анимации содержит недопустимые сим
 msgid "Animation with the same name already exists."
 msgstr "Анимация с таким именем уже существует."
 
+msgid "Enter a library name."
+msgstr "Введите имя библиотеки."
+
 msgid "Library name contains invalid characters: '/', ':', ',' or '['."
 msgstr "Имя библиотеки содержит недопустимые символы: «/», «:», «,» или «[»."
 
@@ -5805,6 +5978,9 @@ msgstr "Библиотека с таким именем уже существу�
 
 msgid "Animation name is valid."
 msgstr "Имя анимации допустимо."
+
+msgid "Global library will be created."
+msgstr "Будет создана глобальная библиотека."
 
 msgid "Library name is valid."
 msgstr "Имя библиотеки допустимо."
@@ -5835,6 +6011,9 @@ msgstr ""
 msgid "Save Library"
 msgstr "Сохранить библиотеку"
 
+msgid "Make Animation Library Unique: %s"
+msgstr "Сделать библиотеку анимации уникальной: %s"
+
 msgid ""
 "This animation can't be saved because it does not belong to the edited "
 "scene. Make it unique first."
@@ -5858,11 +6037,20 @@ msgstr "Сделать анимацию уникальной: %s"
 msgid "Invalid AnimationLibrary file."
 msgstr "Недопустимый файл AnimationLibrary."
 
+msgid "This library is already added to the player."
+msgstr "Эта библиотека уже добавлена в проигрыватель."
+
 msgid "Invalid Animation file."
 msgstr "Недопустимый файл анимации."
 
+msgid "This animation is already added to the library."
+msgstr "Эта анимация уже добавлена в библиотеку."
+
 msgid "Load Animation into Library: %s"
 msgstr "Загрузить анимацию в библиотеку: %s"
+
+msgid "Save Animation library to File: %s"
+msgstr "Сохранить библиотеку анимации в файл: %s"
 
 msgid "Save Animation to File: %s"
 msgstr "Сохранить анимацию в файл: %s"
@@ -5894,11 +6082,20 @@ msgstr "Удалить библиотеку анимаций: %s"
 msgid "Remove Animation from Library: %s"
 msgstr "Удалить анимацию из библиотеки: %s"
 
+msgid "[built-in]"
+msgstr "[встроенный]"
+
+msgid "[foreign]"
+msgstr "[внешний]"
+
 msgid "[imported]"
 msgstr "[импортировано]"
 
 msgid "Add Animation to Library"
 msgstr "Добавить анимацию в библиотеку"
+
+msgid "Load animation from file and add to library"
+msgstr "Загрузить анимацию из файла и добавить в библиотеку"
 
 msgid "Paste Animation to Library from clipboard"
 msgstr "Вставить анимацию в библиотеку из буфера обмена"
@@ -5991,7 +6188,7 @@ msgid "Play selected animation from current pos. (D)"
 msgstr "Воспроизвести выбранную анимацию с текущей позиции. (D)"
 
 msgid "Animation position (in seconds)."
-msgstr "Текущий кадр анимации (в секундах)."
+msgstr "Анимация позиция (в секундах)."
 
 msgid "Scale animation playback globally for the node."
 msgstr "Скорость воспроизведения анимации."
@@ -6050,6 +6247,9 @@ msgstr "Принудительно раскрашивание белым"
 msgid "Include Gizmos (3D)"
 msgstr "Включать 3D гизмо"
 
+msgid "Onion Skinning temporarily disabled due to rendering bug."
+msgstr "Onion Skinning временно отключен из-за ошибки рендеринга."
+
 msgid "Pin AnimationPlayer"
 msgstr "Закрепить анимацию игрока"
 
@@ -6104,6 +6304,17 @@ msgstr "Узел удалён"
 msgid "Transition Removed"
 msgstr "Переход удалён"
 
+msgid ""
+"Select and move nodes.\n"
+"RMB: Add node at position clicked.\n"
+"Shift+LMB+Drag: Connects the selected node with another node or creates a "
+"new node if you select an area without nodes."
+msgstr ""
+"Выбор и перемещение узлов.\n"
+"ПКМ: добавление узла в выбранную позицию.\n"
+"Shift+ЛКМ+Тащить: Соединяет выбранный узел с другим узлом или создает новый "
+"узел, если выбрана область без узлов."
+
 msgid "Create new nodes."
 msgstr "Создать новый узел."
 
@@ -6122,6 +6333,9 @@ msgstr "Удалить выделенный узел или переход."
 msgid "Transition:"
 msgstr "Переход:"
 
+msgid "New Transitions Should Auto Advance"
+msgstr "Новые переходы должны Auto Advance"
+
 msgid "Play Mode:"
 msgstr "Режим воспроизведения:"
 
@@ -6130,6 +6344,9 @@ msgstr "Удалить выделенное"
 
 msgid "Delete All"
 msgstr "Удалить всё"
+
+msgid "Root"
+msgstr "Корень"
 
 msgid "AnimationTree"
 msgstr "Дерево анимации"
@@ -6279,6 +6496,15 @@ msgstr "Все"
 msgid "No results for \"%s\" for support level(s): %s."
 msgstr "Нет результатов для «%s» для уровней поддержки: %s."
 
+msgid ""
+"No results compatible with %s %s for support level(s): %s.\n"
+"Check the enabled support levels using the 'Support' button in the top-right "
+"corner."
+msgstr ""
+"Нет результатов для %s %s для уровней поддержки: %s.\n"
+"Проверьте включенные уровни поддержки с помощью кнопки \"Поддержка\" в "
+"правом верхнем углу."
+
 msgid "Search Templates, Projects, and Demos"
 msgstr "Искать шаблоны, проекты и демо"
 
@@ -6314,6 +6540,9 @@ msgstr "Аудио пред прослушивание Старт/Пауза"
 
 msgid "Bone Picker:"
 msgstr "Выбор кости:"
+
+msgid "Clear mappings in current group."
+msgstr "Очистить отображения в текущей группе."
 
 msgid "Preview"
 msgstr "Предпросмотр"
@@ -6509,7 +6738,7 @@ msgid "Alt+Drag: Scale selected node."
 msgstr "Alt+Тащить: Масштабирование выбранного узла."
 
 msgid "V: Set selected node's pivot position."
-msgstr "V: Задать положение pivot выделенного узла."
+msgstr "V: Задать положение опорной точки выделенного узла."
 
 msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
 msgstr ""
@@ -6593,6 +6822,9 @@ msgstr "Привязка к другим узлам"
 
 msgid "Snap to Guides"
 msgstr "Привязка к направляющим"
+
+msgid "Lock selected node, preventing selection and movement."
+msgstr "Заблокировать выбранный узел, предотвращая выбор и движение."
 
 msgid "Lock Selected Node(s)"
 msgstr "Заблокировать выбранный узел(узлы)"
@@ -6717,10 +6949,21 @@ msgstr "Разделить шаг сетки на 2"
 msgid "Adding %s..."
 msgstr "Добавление %s..."
 
+msgid "Drag and drop to add as child of current scene's root node."
+msgstr "Перетащите, чтобы добавить как дочерний узел базового узла сцены."
+
 msgid "Hold Ctrl when dropping to add as child of selected node."
 msgstr ""
 "Удерживайте Ctrl при перетаскивании, чтобы добавить в качестве ребёнка "
 "выбранного узла."
+
+msgid "Hold Shift when dropping to add as sibling of selected node."
+msgstr ""
+"Удерживайте Shift при удалении, чтобы добавить выбранный узел в качестве "
+"родственного узла."
+
+msgid "Hold Alt when dropping to add as a different node type."
+msgstr "Удерживайте Alt при удалении, чтобы добавить узел другого типа."
 
 msgid "Cannot instantiate multiple nodes without root."
 msgstr "Не удается создать несколько узлов без корня."
@@ -6735,10 +6978,13 @@ msgid "Change Default Type"
 msgstr "Изменить тип по умолчанию"
 
 msgid "Set Target Position"
-msgstr "Установите положение цели"
+msgstr "Установить целевую позицию"
 
 msgid "Set Handle"
 msgstr "Задать обработчик"
+
+msgid "This node doesn't have a control parent."
+msgstr "Этот узел не имеет родительский узел управления."
 
 msgid ""
 "Use the appropriate layout properties depending on where you are going to "
@@ -6834,8 +7080,18 @@ msgstr "Справа по всей высоте"
 msgid "Full Rect"
 msgstr "Полный прямоугольник"
 
+msgid "Some parents of the selected nodes do not support the Expand flag."
+msgstr ""
+"Некоторые родительские узлы выбранных узлов не поддерживают расширенный флаг."
+
 msgid "Align with Expand"
 msgstr "Выровнять Развертыванием"
+
+msgid "Change Anchors, Offsets, Grow Direction"
+msgstr "Изменить якоря, смещения, направление роста"
+
+msgid "Change Anchors, Offsets (Keep Ratio)"
+msgstr "Изменить привязки(якоря), смещения (сохранить соотношение)"
 
 msgid "Change Vertical Size Flags"
 msgstr "Изменить флаги размера по вертикали"
@@ -7402,6 +7658,17 @@ msgstr ""
 msgid "Create Outline Mesh..."
 msgstr "Создать полисетку обводки..."
 
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the StandardMaterial Grow property when using "
+"that property isn't possible."
+msgstr ""
+"Создать статический контурый меш. Нормали меша будут повёрнуты "
+"автоматически.\n"
+"Можно использовать вместо свойства Grow в SpatialMaterial, если нет "
+"возможности использовать Grow."
+
 msgid "View UV1"
 msgstr "Просмотр UV1"
 
@@ -7593,10 +7860,10 @@ msgid "End Location"
 msgstr "Конечное положение"
 
 msgid "Change Start Position"
-msgstr "Задать Начальное положение"
+msgstr "Изменить начальную позицию"
 
 msgid "Change End Position"
-msgstr "Задать конечное положение"
+msgstr "Задать конечную позицию"
 
 msgid "Change Fog Volume Size"
 msgstr "Задать объем тумана"
@@ -7675,6 +7942,9 @@ msgstr "Манипуляция отключена (без вставленног
 
 msgid "Animation Key Inserted."
 msgstr "Ключ анимации вставлен."
+
+msgid "X: %s\n"
+msgstr "X: %s\n"
 
 msgid "Y: %s\n"
 msgstr "Y: %s\n"
@@ -7829,6 +8099,12 @@ msgstr "Кластер декалей"
 msgid "ReflectionProbe Cluster"
 msgstr "Кластер ReflectionProbe"
 
+msgid "Occlusion Culling Buffer"
+msgstr "Буфер Occlusion Culling"
+
+msgid "Motion Vectors"
+msgstr "Векторы движения"
+
 msgid "Display Advanced..."
 msgstr "Показать дополнительные..."
 
@@ -7841,6 +8117,9 @@ msgstr "Отобразить гизмо"
 msgid "View Information"
 msgstr "Информация"
 
+msgid "View Frame Time"
+msgstr "Время кадра"
+
 msgid "Half Resolution"
 msgstr "Половинное разрешение"
 
@@ -7852,6 +8131,9 @@ msgstr "Включить эффект Доплера"
 
 msgid "Cinematic Preview"
 msgstr "Кинематографический предварительный просмотр"
+
+msgid "Not available when using the OpenGL renderer."
+msgstr "Недоступно при использовании рендерера OpenGL."
 
 msgid "Freelook Left"
 msgstr "Свободный вид, лево"
@@ -7877,6 +8159,33 @@ msgstr "Модификатор скорости свободного вида"
 msgid "Freelook Slow Modifier"
 msgstr "Модификатор замедления свободного вида"
 
+msgid "Lock Transformation to X axis"
+msgstr "Заблокировать трансформацию по оси X"
+
+msgid "Lock Transformation to Y axis"
+msgstr "Заблокировать трансформацию по оси Y"
+
+msgid "Lock Transformation to Z axis"
+msgstr "Заблокировать трансформацию по оси Z"
+
+msgid "Lock Transformation to YZ plane"
+msgstr "Заблокировать трансформацию в плоскость YZ"
+
+msgid "Lock Transformation to XZ plane"
+msgstr "Заблокировать трансформацию в плоскость XZ"
+
+msgid "Lock Transformation to XY plane"
+msgstr "Заблокировать трансформацию в плоскость XY"
+
+msgid "Cancel Transformation"
+msgstr "Отменить трансформацию"
+
+msgid "Begin Rotate Transformation"
+msgstr "Начать трансформацию поворота"
+
+msgid "Begin Scale Transformation"
+msgstr "Начать трансформацию размера"
+
 msgid "Toggle Camera Preview"
 msgstr "Переключить превью камеры"
 
@@ -7888,6 +8197,9 @@ msgid ""
 msgstr ""
 "Чтобы увеличить масштаб дальше, измените плоскости отсечения камеры (Вид -> "
 "Настройки...)"
+
+msgid "Overriding material..."
+msgstr "Переопределить материал..."
 
 msgid "XForm Dialog"
 msgstr "XForm диалоговое окно"
@@ -7911,6 +8223,9 @@ msgstr "Привязать узлы к полу"
 
 msgid "Couldn't find a solid floor to snap the selection to."
 msgstr "Не удалось найти сплошной пол, к которому можно привязать выделение."
+
+msgid "Add Preview Sun to Scene"
+msgstr "Добавить предварительный просмотр солнца в сцену"
 
 msgid "Preview disabled."
 msgstr "Превью отключено."
@@ -8065,11 +8380,32 @@ msgstr "После"
 msgid "Sun Color"
 msgstr "Цвет солнца"
 
+msgid ""
+"Adds a DirectionalLight3D node matching the preview sun settings to the "
+"current scene.\n"
+"Hold Shift while clicking to also add the preview environment to the current "
+"scene."
+msgstr ""
+"Добавляет узел DirectionalLight3D, соответствующий настройкам предпросмотра "
+"солнца для текущей сцены.\n"
+"Удерживайте Shift при нажатии, чтобы также добавить предпросмотр окружения к "
+"текущей сцене."
+
 msgid "Glow"
 msgstr "Свечение"
 
 msgid "Tonemap"
 msgstr "Карта тональности"
+
+msgid ""
+"Adds a WorldEnvironment node matching the preview environment settings to "
+"the current scene.\n"
+"Hold Shift while clicking to also add the preview sun to the current scene."
+msgstr ""
+"Добавляет узел WorldEnvironment, соответствующий настройкам предпросмотра "
+"окружения, в текущую сцену.\n"
+"Удерживайте Shift при нажатии, чтобы также добавить предпросмотра солнца к "
+"текущей сцене."
 
 msgid "Remove Point from Curve"
 msgstr "Удалить точку с кривой"
@@ -8132,7 +8468,7 @@ msgid "Curve Point #"
 msgstr "Точка Кривой #"
 
 msgid "Set Curve Point Position"
-msgstr "Установить положение точки кривой"
+msgstr "Установить позицию точки кривой"
 
 msgid "Set Curve In Position"
 msgstr "Установить позицию входа кривой"
@@ -8412,6 +8748,9 @@ msgstr "Ошибка сохранения"
 msgid "Save Theme As..."
 msgstr "Сохранить тему как..."
 
+msgid "Unsaved file."
+msgstr "Несохранённый файл."
+
 msgid "%s Class Reference"
 msgstr "Справка по классу %s"
 
@@ -8420,6 +8759,9 @@ msgstr "Найти следующее"
 
 msgid "Find Previous"
 msgstr "Найти предыдущий"
+
+msgid "Filter Scripts"
+msgstr "Фильтр скриптов"
 
 msgid "Toggle alphabetical sorting of the method list."
 msgstr "Включить сортировку по алфавиту в списке методов."
@@ -8512,6 +8854,12 @@ msgstr "Очистить недавние скрипты"
 msgid "Standard"
 msgstr "Стандартный"
 
+msgid "Plain Text"
+msgstr "Простой текст"
+
+msgid "JSON"
+msgstr "JSON"
+
 msgid "Connections to method:"
 msgstr "Подключения к методу:"
 
@@ -8520,6 +8868,9 @@ msgstr "Источник"
 
 msgid "Target"
 msgstr "Цель"
+
+msgid "Error at (%d, %d):"
+msgstr "Ошибка в (%d, %d):"
 
 msgid ""
 "Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
@@ -8640,8 +8991,26 @@ msgstr "Переход к следующей точке останова"
 msgid "Go to Previous Breakpoint"
 msgstr "Перейти к предыдущей точке останова"
 
+msgid "Load Shader File"
+msgstr "Загрузить файл шейдера"
+
+msgid "Save File"
+msgstr "Сохранить файл"
+
 msgid "Save File As"
 msgstr "Сохранить файл как"
+
+msgid "Open File in Inspector"
+msgstr "Открыть файл в инспекторе"
+
+msgid "Close File"
+msgstr "Закрыть файл"
+
+msgid "Shader Editor"
+msgstr "Редактор шейдеров"
+
+msgid "ShaderFile"
+msgstr "Файл шейдера"
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "У этого скелета нет костей, создайте дочерние Bone2D узлы."
@@ -8661,14 +9030,48 @@ msgstr "Задать позу покоя"
 msgid "Overwrite Rest Pose"
 msgstr "Перезаписать позу покоя"
 
+msgid "Set Bone Transform"
+msgstr "Установить трансформирование костей"
+
+msgid "Cannot create a physical skeleton for a Skeleton3D node with no bones."
+msgstr "Не удалось создать физический скелет для узла Skeleton3D без костей."
+
 msgid "Create physical bones"
 msgstr "Создать физические кости"
+
+msgid "Cannot export a SkeletonProfile for a Skeleton3D node with no bones."
+msgstr ""
+"Не удалось экспортировать SkeletonProfile для узла Skeleton3D без костей."
 
 msgid "Export Skeleton Profile As..."
 msgstr "Экспортировать профиль скелета как..."
 
+msgid "Set Bone Parentage"
+msgstr "Привязать кость к родителю"
+
+msgid "Skeleton3D"
+msgstr "Скелет3D"
+
+msgid "Reset All Bone Poses"
+msgstr "Сбросить все позы костей"
+
+msgid "Reset Selected Poses"
+msgstr "Сбросить выделенные позы"
+
+msgid "Create Physical Skeleton"
+msgstr "Создать физический скелет"
+
+msgid "Bone Transform"
+msgstr "Трансформация костей"
+
 msgid "Play IK"
 msgstr "Воспроизвести IK"
+
+msgid "Create MeshInstance2D"
+msgstr "Создать MeshInstance2D"
+
+msgid "MeshInstance2D Preview"
+msgstr "Предпросмотр MeshInstance2D"
 
 msgid "Create Polygon2D"
 msgstr "Создать Polygon2D"
@@ -8690,6 +9093,9 @@ msgstr "Предпросмотр LightOccluder2D"
 
 msgid "Can't convert a Sprite2D from a foreign scene."
 msgstr "Невозможно конвертировать Sprite2D из другой сцены."
+
+msgid "Sprite2D is empty!"
+msgstr "Sprite2D пуст!"
 
 msgid "Can't convert a sprite using animation frames to mesh."
 msgstr ""
@@ -8719,6 +9125,9 @@ msgstr "Некорректная геометрия, невозможно соз
 
 msgid "Create LightOccluder2D Sibling"
 msgstr "Создать соседний LightOccluder2D"
+
+msgid "Sprite2D"
+msgstr "Спрайт2D"
 
 msgid "Simplification:"
 msgstr "Упрощение:"
@@ -8768,11 +9177,20 @@ msgstr "Удалить анимацию?"
 msgid "Change Animation FPS"
 msgstr "Изменить FPS анимации"
 
+msgid "Set Frame Duration"
+msgstr "Задать продолжительность кадра"
+
 msgid "(empty)"
 msgstr "(пусто)"
 
 msgid "Animations:"
 msgstr "Анимации:"
+
+msgid "Animation Speed"
+msgstr "Скорость анимации"
+
+msgid "Filter Animations"
+msgstr "Фильтр анимации"
 
 msgid "Delete Animation"
 msgstr "Удалить анимацию"
@@ -8785,6 +9203,21 @@ msgstr "Длительность кадра:"
 
 msgid "Zoom Reset"
 msgstr "Сбросить масштабирование"
+
+msgid "Add frames from sprite sheet"
+msgstr "Добавить кадры из спрайт-листа"
+
+msgid "Delete Frame"
+msgstr "Удалить кадр"
+
+msgid "Copy Frame"
+msgstr "Скопировать кадр"
+
+msgid "Move Frame Left"
+msgstr "Переместить кадр влево"
+
+msgid "Move Frame Right"
+msgstr "Переместить кадр вправо"
 
 msgid "Select Frames"
 msgstr "Выбрать кадры"
@@ -8806,6 +9239,19 @@ msgstr "Создать кадры из спрайт-листа"
 
 msgid "SpriteFrames"
 msgstr "Спрайт кадры"
+
+msgid "Warnings should be fixed to prevent errors."
+msgstr "Предупреждения должны быть устранены для предотвращения ошибок."
+
+msgid ""
+"This shader has been modified on disk.\n"
+"What action should be taken?"
+msgstr ""
+"Этот шейдер был изменён на диске.\n"
+"Какое действие должно быть предпринято?"
+
+msgid "Memory: %s"
+msgstr "Память: %s"
 
 msgid "Set Region Rect"
 msgstr "Задать регион"
@@ -8858,6 +9304,15 @@ msgstr[0] "{num} размер шрифта"
 msgstr[1] "{num} размера шрифта"
 msgstr[2] "{num} размеров шрифта"
 
+msgid "No font sizes found."
+msgstr "Размер шрифта не найден."
+
+msgid "1 icon"
+msgid_plural "{num} icons"
+msgstr[0] "Иконка"
+msgstr[1] "Иконки"
+msgstr[2] "Иконок"
+
 msgid "No icons found."
 msgstr "Иконки не найдены."
 
@@ -8891,6 +9346,12 @@ msgstr "Обновление редактора"
 msgid "Finalizing"
 msgstr "Завершение"
 
+msgid "Import Theme Items"
+msgstr "Импортировать элементы темы"
+
+msgid "Filter Items"
+msgstr "Фильтр элементов"
+
 msgid "With Data"
 msgstr "С данными"
 
@@ -8923,6 +9384,9 @@ msgstr "Выделить все видимые шрифты и их данные
 
 msgid "Deselect all visible font items."
 msgstr "Снять выделение со всех видимых шрифтов."
+
+msgid "Font sizes"
+msgstr "Размер шрифта"
 
 msgid "Select all visible icon items."
 msgstr "Выбрать все видимые иконки."
@@ -9017,6 +9481,9 @@ msgid ""
 msgstr ""
 "Этот тип темы пуст.\n"
 "Добавьте в него элементы вручную или импортировав из другой темы."
+
+msgid "Remove Theme Item"
+msgstr "Удалить элемент темы"
 
 msgid "Add Theme Type"
 msgstr "Добавить тип Темы"
@@ -9331,6 +9798,9 @@ msgstr "Глобальные действия:"
 
 msgid "Atlas"
 msgstr "Атлас"
+
+msgid "Physics"
+msgstr "Физика"
 
 msgid "Setup"
 msgstr "Настройка"
@@ -9740,6 +10210,13 @@ msgstr "Входной параметр «%s» для режима шейдер�
 
 msgid "'%s' input parameter for vertex shader mode."
 msgstr "Входной параметр «%s» для режима вершинного шейдера."
+
+msgid ""
+"A node for help to multiply a position input vector by rotation using "
+"specific axis. Intended to work with emitters."
+msgstr ""
+"Узел для помощи умножения входного вектора позиции на вращение по "
+"определенной оси. Предназначен для работы с эмиттерами."
 
 msgid "Returns the absolute value of the parameter."
 msgstr "Возвращает абсолютное значение параметра."
@@ -11307,11 +11784,17 @@ msgstr "Начать запекание"
 msgid "Class name can't be a reserved keyword"
 msgstr "Имя класса не может быть зарезервированным ключевым словом"
 
+msgid "Class name must be a valid identifier"
+msgstr "Имя класса должно быть допустимым идентификатором"
+
 msgid "Build Solution"
 msgstr "Собрать решение"
 
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Недостаточно байтов для декодирования байтов или неверный формат."
+
+msgid "Failed to load .NET runtime"
+msgstr "Не удалось загрузить исполняющую среду .NET"
 
 msgid "%s/s"
 msgstr "%s/с"
@@ -12112,6 +12595,13 @@ msgstr ""
 "Заслоняющий полигон для этого окклюдера пуст. Пожалуйста, добавьте полигон."
 
 msgid ""
+"NavigationLink2D start position should be different than the end position to "
+"be useful."
+msgstr ""
+"Начальная позиция NavigationLink2D должна отличаться от конечной, чтобы быть "
+"полезной."
+
+msgid ""
 "The NavigationObstacle2D only serves to provide collision avoidance to a "
 "Node2D object."
 msgstr ""
@@ -12189,6 +12679,13 @@ msgstr "Создание проб"
 
 msgid "Generating Probe Volumes"
 msgstr "Генерация объёмов проб"
+
+msgid ""
+"NavigationLink3D start position should be different than the end position to "
+"be useful."
+msgstr ""
+"NavigationLink3D начальная позиция должна отличаться от конечной, чтобы быть "
+"полезной."
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Это тело будет игнорироваться, пока вы не установите сетку."
@@ -12475,6 +12972,9 @@ msgstr "Пропущено условие."
 
 msgid "Condition evaluation error."
 msgstr "Ошибка вычисления условия."
+
+msgid "Shader include file does not exist: "
+msgstr "Файл включенный в шейдер не существует "
 
 msgid "Invalid macro argument count."
 msgstr "Недопустимое количество аргументов макроса."

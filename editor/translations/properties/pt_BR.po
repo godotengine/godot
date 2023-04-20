@@ -157,13 +157,14 @@
 # Kauã Azevedo <Kazevic@pm.me>, 2022.
 # Zer0-Zer0 <dankmemerson@tutanota.com>, 2022.
 # Levi Ferreira <leviferreiramorais@gmail.com>, 2023.
+# Daniel Mucciolo <danielviannapsi@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2023-04-02 22:43+0000\n"
-"Last-Translator: Elizandro Baldin <ejbaldin@gmail.com>\n"
+"PO-Revision-Date: 2023-04-13 04:06+0000\n"
+"Last-Translator: Daniel Mucciolo <danielviannapsi@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -4151,6 +4152,9 @@ msgstr "Curva de Velocidade"
 msgid "Process Material"
 msgstr "Processo de Material"
 
+msgid "Visibility Rect"
+msgstr "Visibility Rect (Retângulo de Visibilidade)"
+
 msgid "Section Subdivisions"
 msgstr "Subdivisões de Secção"
 
@@ -4184,6 +4188,9 @@ msgstr "Somente Editor"
 msgid "Energy"
 msgstr "Energia"
 
+msgid "Blend Mode"
+msgstr "Modo de mesclagem"
+
 msgid "Z Min"
 msgstr "Z Mínimo"
 
@@ -4201,6 +4208,9 @@ msgstr "Escalonamento da Textura"
 
 msgid "Closed"
 msgstr "Fechado"
+
+msgid "Cull Mode"
+msgstr "Cull Mode"
 
 msgid "Width Curve"
 msgstr "Largura da Curva"
@@ -5696,6 +5706,24 @@ msgstr "Largura do Mapa"
 msgid "Shader"
 msgstr "Shader"
 
+msgid "Depth Draw Mode"
+msgstr "Modo de Desenho de Profundidade"
+
+msgid "Diffuse Mode"
+msgstr "Modo Difuso"
+
+msgid "Specular Mode"
+msgstr "Modo Especular"
+
+msgid "Disable Ambient Light"
+msgstr "Desativar a luz ambiente"
+
+msgid "Vertex Color"
+msgstr "Cor do vértice"
+
+msgid "Use as Albedo"
+msgstr "Use como Albedo"
+
 msgid "Is sRGB"
 msgstr "É sRGB"
 
@@ -5714,8 +5742,14 @@ msgstr "Ligado UV2"
 msgid "Rim"
 msgstr "Aro"
 
+msgid "Clearcoat"
+msgstr "Clearcoat"
+
 msgid "Flowmap"
 msgstr "Mapa de Fluxo"
+
+msgid "Ambient Occlusion"
+msgstr "Oclusão de Ambiente"
 
 msgid "Deep Parallax"
 msgstr "Parallax Profundo"
@@ -5744,8 +5778,17 @@ msgstr "Triplanar Global"
 msgid "Sampling"
 msgstr "Mostragem"
 
+msgid "Shadows"
+msgstr "Sombras"
+
 msgid "Grow"
 msgstr "Crescer"
+
+msgid "Use Point Size"
+msgstr "Usar Point Size (Tamanho de ponto)"
+
+msgid "Point Size"
+msgstr "Tamanho do ponto"
 
 msgid "Distance"
 msgstr "Distância"
@@ -6148,6 +6191,12 @@ msgstr "Fragmento"
 
 msgid "Unshaded"
 msgstr "Sem sombra"
+
+msgid "Ensure Correct Normals"
+msgstr "Garanta os Normais Corretos"
+
+msgid "Vertex Lighting"
+msgstr "Vertex Lighting (Iluminacão de vértices)"
 
 msgid "Lossless Compression"
 msgstr "Compressão Sem Perda"
