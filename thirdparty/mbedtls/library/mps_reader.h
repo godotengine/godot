@@ -134,8 +134,7 @@ typedef struct mbedtls_mps_reader mbedtls_mps_reader;
  * Structure definitions
  */
 
-struct mbedtls_mps_reader
-{
+struct mbedtls_mps_reader {
     unsigned char *frag;  /*!< The fragment of incoming data managed by
                            *   the reader; it is provided to the reader
                            *   through mbedtls_mps_reader_feed(). The reader
@@ -146,46 +145,46 @@ struct mbedtls_mps_reader
                            *   The reader is in consuming mode if
                            *   and only if \c frag is not \c NULL.          */
     mbedtls_mps_stored_size_t frag_len;
-                          /*!< The length of the current fragment.
-                           *   Must be 0 if \c frag == \c NULL.             */
+    /*!< The length of the current fragment.
+     *   Must be 0 if \c frag == \c NULL.             */
     mbedtls_mps_stored_size_t commit;
-                          /*!< The offset of the last commit, relative
-                           *   to the first byte in the fragment, if
-                           *   no accumulator is present. If an accumulator
-                           *   is present, it is viewed as a prefix to the
-                           *   current fragment, and this variable contains
-                           *   an offset from the beginning of the accumulator.
-                           *
-                           *   This is only used when the reader is in
-                           *   consuming mode, i.e. \c frag != \c NULL;
-                           *   otherwise, its value is \c 0.                */
+    /*!< The offset of the last commit, relative
+     *   to the first byte in the fragment, if
+     *   no accumulator is present. If an accumulator
+     *   is present, it is viewed as a prefix to the
+     *   current fragment, and this variable contains
+     *   an offset from the beginning of the accumulator.
+     *
+     *   This is only used when the reader is in
+     *   consuming mode, i.e. \c frag != \c NULL;
+     *   otherwise, its value is \c 0.                */
     mbedtls_mps_stored_size_t end;
-                          /*!< The offset of the end of the last chunk
-                           *   passed to the user through a call to
-                           *   mbedtls_mps_reader_get(), relative to the first
-                           *   byte in the fragment, if no accumulator is
-                           *   present. If an accumulator is present, it is
-                           *   viewed as a prefix to the current fragment, and
-                           *   this variable contains an offset from the
-                           *   beginning of the accumulator.
-                           *
-                           *   This is only used when the reader is in
-                           *   consuming mode, i.e. \c frag != \c NULL;
-                           *   otherwise, its value is \c 0.                */
+    /*!< The offset of the end of the last chunk
+     *   passed to the user through a call to
+     *   mbedtls_mps_reader_get(), relative to the first
+     *   byte in the fragment, if no accumulator is
+     *   present. If an accumulator is present, it is
+     *   viewed as a prefix to the current fragment, and
+     *   this variable contains an offset from the
+     *   beginning of the accumulator.
+     *
+     *   This is only used when the reader is in
+     *   consuming mode, i.e. \c frag != \c NULL;
+     *   otherwise, its value is \c 0.                */
     mbedtls_mps_stored_size_t pending;
-                          /*!< The amount of incoming data missing on the
-                           *   last call to mbedtls_mps_reader_get().
-                           *   In particular, it is \c 0 if the last call
-                           *   was successful.
-                           *   If a reader is reclaimed after an
-                           *   unsuccessful call to mbedtls_mps_reader_get(),
-                           *   this variable is used to have the reader
-                           *   remember how much data should be accumulated
-                           *   so that the call to mbedtls_mps_reader_get()
-                           *   succeeds next time.
-                           *   This is only used when the reader is in
-                           *   consuming mode, i.e. \c frag != \c NULL;
-                           *   otherwise, its value is \c 0.                */
+    /*!< The amount of incoming data missing on the
+     *   last call to mbedtls_mps_reader_get().
+     *   In particular, it is \c 0 if the last call
+     *   was successful.
+     *   If a reader is reclaimed after an
+     *   unsuccessful call to mbedtls_mps_reader_get(),
+     *   this variable is used to have the reader
+     *   remember how much data should be accumulated
+     *   so that the call to mbedtls_mps_reader_get()
+     *   succeeds next time.
+     *   This is only used when the reader is in
+     *   consuming mode, i.e. \c frag != \c NULL;
+     *   otherwise, its value is \c 0.                */
 
     /* The accumulator is only needed if we need to be able to pause
      * the reader. A few bytes could be saved by moving this to a
@@ -195,32 +194,31 @@ struct mbedtls_mps_reader
                            *   data if a read-request via mbedtls_mps_reader_get()
                            *   cannot be served from the current fragment.   */
     mbedtls_mps_stored_size_t acc_len;
-                           /*!< The total size of the accumulator.           */
+    /*!< The total size of the accumulator.           */
     mbedtls_mps_stored_size_t acc_available;
-                          /*!< The number of bytes currently gathered in
-                           *   the accumulator. This is both used in
-                           *   producing and in consuming mode:
-                           *   While producing, it is increased until
-                           *   it reaches the value of \c acc_remaining below.
-                           *   While consuming, it is used to judge if a
-                           *   get request can be served from the
-                           *   accumulator or not.
-                           *   Must not be larger than \c acc_len.           */
-    union
-    {
+    /*!< The number of bytes currently gathered in
+     *   the accumulator. This is both used in
+     *   producing and in consuming mode:
+     *   While producing, it is increased until
+     *   it reaches the value of \c acc_remaining below.
+     *   While consuming, it is used to judge if a
+     *   get request can be served from the
+     *   accumulator or not.
+     *   Must not be larger than \c acc_len.           */
+    union {
         mbedtls_mps_stored_size_t acc_remaining;
-                              /*!< This indicates the amount of data still
-                               *   to be gathered in the accumulator. It is
-                               *   only used in producing mode.
-                               *   Must be at most acc_len - acc_available.  */
+        /*!< This indicates the amount of data still
+         *   to be gathered in the accumulator. It is
+         *   only used in producing mode.
+         *   Must be at most acc_len - acc_available.  */
         mbedtls_mps_stored_size_t frag_offset;
-                              /*!< If an accumulator is present and in use, this
-                               *   field indicates the offset of the current
-                               *   fragment from the beginning of the
-                               *   accumulator. If no accumulator is present
-                               *   or the accumulator is not in use, this is \c 0.
-                               *   It is only used in consuming mode.
-                               *   Must not be larger than \c acc_available. */
+        /*!< If an accumulator is present and in use, this
+         *   field indicates the offset of the current
+         *   fragment from the beginning of the
+         *   accumulator. If no accumulator is present
+         *   or the accumulator is not in use, this is \c 0.
+         *   It is only used in consuming mode.
+         *   Must not be larger than \c acc_available. */
     } acc_share;
 };
 
@@ -254,9 +252,9 @@ struct mbedtls_mps_reader
  * \return          \c 0 on success.
  * \return          A negative \c MBEDTLS_ERR_READER_XXX error code on failure.
  */
-int mbedtls_mps_reader_init( mbedtls_mps_reader *reader,
-                             unsigned char *acc,
-                             mbedtls_mps_size_t acc_len );
+int mbedtls_mps_reader_init(mbedtls_mps_reader *reader,
+                            unsigned char *acc,
+                            mbedtls_mps_size_t acc_len);
 
 /**
  * \brief           Free a reader object
@@ -266,7 +264,7 @@ int mbedtls_mps_reader_init( mbedtls_mps_reader *reader,
  * \return          \c 0 on success.
  * \return          A negative \c MBEDTLS_ERR_READER_XXX error code on failure.
  */
-int mbedtls_mps_reader_free( mbedtls_mps_reader *reader );
+int mbedtls_mps_reader_free(mbedtls_mps_reader *reader);
 
 /**
  * \brief           Pass chunk of data for the reader to manage.
@@ -291,9 +289,9 @@ int mbedtls_mps_reader_free( mbedtls_mps_reader *reader );
  * \return          Another negative \c MBEDTLS_ERR_READER_XXX error code on
  *                  different kinds of failures.
  */
-int mbedtls_mps_reader_feed( mbedtls_mps_reader *reader,
-                             unsigned char *buf,
-                             mbedtls_mps_size_t buflen );
+int mbedtls_mps_reader_feed(mbedtls_mps_reader *reader,
+                            unsigned char *buf,
+                            mbedtls_mps_size_t buflen);
 
 /**
  * \brief           Reclaim reader's access to the current input buffer.
@@ -310,8 +308,8 @@ int mbedtls_mps_reader_feed( mbedtls_mps_reader *reader,
  * \return          \c 0 on success.
  * \return          A negative \c MBEDTLS_ERR_READER_XXX error code on failure.
  */
-int mbedtls_mps_reader_reclaim( mbedtls_mps_reader *reader,
-                                int *paused );
+int mbedtls_mps_reader_reclaim(mbedtls_mps_reader *reader,
+                               int *paused);
 
 /*
  * Usage API (Upper layer)
@@ -353,10 +351,10 @@ int mbedtls_mps_reader_reclaim( mbedtls_mps_reader *reader,
  *                  address as buflen and checking \c *buflen == \c desired
  *                  afterwards.
  */
-int mbedtls_mps_reader_get( mbedtls_mps_reader *reader,
-                            mbedtls_mps_size_t desired,
-                            unsigned char **buffer,
-                            mbedtls_mps_size_t *buflen );
+int mbedtls_mps_reader_get(mbedtls_mps_reader *reader,
+                           mbedtls_mps_size_t desired,
+                           unsigned char **buffer,
+                           mbedtls_mps_size_t *buflen);
 
 /**
  * \brief         Mark data obtained from mbedtls_mps_reader_get() as processed.
@@ -377,6 +375,6 @@ int mbedtls_mps_reader_get( mbedtls_mps_reader *reader,
  * \return        A negative \c MBEDTLS_ERR_READER_XXX error code on failure.
  *
  */
-int mbedtls_mps_reader_commit( mbedtls_mps_reader *reader );
+int mbedtls_mps_reader_commit(mbedtls_mps_reader *reader);
 
 #endif /* MBEDTLS_READER_H */
