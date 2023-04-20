@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using GodotTools.Build;
 using GodotTools.Core;
 using GodotTools.Internals;
@@ -45,6 +47,17 @@ namespace GodotTools.Export
                         }
                     },
                     { "default_value", true }
+                },
+                new Godot.Collections.Dictionary()
+                {
+                    {
+                        "option", new Godot.Collections.Dictionary()
+                        {
+                            { "name", "dotnet/embed_build_outputs" },
+                            { "type", (int)Variant.Type.Bool }
+                        }
+                    },
+                    { "default_value", false }
                 }
             };
         }
@@ -146,6 +159,8 @@ namespace GodotTools.Export
                 }
             }
 
+            bool embedBuildResults = (bool)GetOption("dotnet/embed_build_outputs");
+
             foreach (var arch in archs)
             {
                 string ridOS = DetermineRuntimeIdentifierOS(platform);
@@ -190,15 +205,42 @@ namespace GodotTools.Export
                         "Publish succeeded but project assembly not found in the output directory");
                 }
 
-                // Add to the exported project shared object list.
+                var manifest = new StringBuilder();
 
+                // Add to the exported project shared object list or packed resources.
                 foreach (string file in Directory.GetFiles(publishOutputTempDir, "*", SearchOption.AllDirectories))
                 {
-                    AddSharedObject(file, tags: null,
-                        Path.Join(projectDataDirName,
-                            Path.GetRelativePath(publishOutputTempDir, Path.GetDirectoryName(file))));
+                    if (embedBuildResults)
+                    {
+                        var filePath = SanitizeSlashes(Path.GetRelativePath(publishOutputTempDir, file));
+                        var fileData = File.ReadAllBytes(file);
+                        var hash = Convert.ToBase64String(SHA512.HashData(fileData));
+
+                        manifest.Append($"{filePath}\t{hash}\n");
+
+                        AddFile($"res://.godot/mono/publish/{arch}/{filePath}", fileData, false);
+                    }
+                    else
+                    {
+                        AddSharedObject(file, tags: null,
+                            Path.Join(projectDataDirName,
+                                Path.GetRelativePath(publishOutputTempDir, Path.GetDirectoryName(file))));
+                    }
+                }
+
+                if (embedBuildResults)
+                {
+                    var fileData = Encoding.Default.GetBytes(manifest.ToString());
+                    AddFile($"res://.godot/mono/publish/{arch}/.dotnet-publish-manifest", fileData, false);
                 }
             }
+        }
+
+        private string SanitizeSlashes(string path)
+        {
+            if (Path.DirectorySeparatorChar == '\\')
+                return path.Replace('\\', '/');
+            return path;
         }
 
         private string DetermineRuntimeIdentifierOS(string platform)

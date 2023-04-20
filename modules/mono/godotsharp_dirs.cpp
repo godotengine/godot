@@ -141,19 +141,52 @@ private:
 #else // TOOLS_ENABLED
 		String arch = Engine::get_singleton()->get_architecture_name();
 		String appname_safe = path::get_csharp_project_name();
-		String data_dir_root = exe_dir.path_join("data_" + appname_safe + "_" + arch);
-		if (!DirAccess::exists(data_dir_root)) {
-			data_dir_root = exe_dir.path_join("data_Godot_" + arch);
-		}
+		String packed_path = "res://.godot/mono/publish/" + arch;
+		if (DirAccess::exists(packed_path)) {
+			// The dotnet publish data is packed in the pck/zip.
+			String data_dir_root = OS::get_singleton()->get_cache_path().path_join("data_" + appname_safe + "_" + arch);
+			bool has_data = false;
+			if (!has_data) {
+				// 1. Try to access the data directly.
+				String global_packed = ProjectSettings::get_singleton()->globalize_path(packed_path);
+				if (global_packed.is_absolute_path() && FileAccess::exists(global_packed.path_join(".dotnet-publish-manifest"))) {
+					data_dir_root = global_packed;
+					has_data = true;
+				}
+			}
+			if (!has_data) {
+				// 2. Check if the data was extracted before and is up-to-date.
+				String packed_manifest = packed_path.path_join(".dotnet-publish-manifest");
+				String extracted_manifest = data_dir_root.path_join(".dotnet-publish-manifest");
+				if (FileAccess::exists(packed_manifest) && FileAccess::exists(extracted_manifest)) {
+					if (FileAccess::get_file_as_bytes(packed_manifest) == FileAccess::get_file_as_bytes(extracted_manifest)) {
+						has_data = true;
+					}
+				}
+			}
+			if (!has_data) {
+				// 3. Extract the data to a temporary location to load from there.
+				Ref<DirAccess> da = DirAccess::create_for_path(packed_path);
+				ERR_FAIL_NULL(da);
+				ERR_FAIL_COND(da->copy_dir(packed_path, data_dir_root) != OK);
+			}
+			api_assemblies_dir = data_dir_root;
+		} else {
+			// The dotnet publish data is in a directory next to the executable.
+			String data_dir_root = exe_dir.path_join("data_" + appname_safe + "_" + arch);
+			if (!DirAccess::exists(data_dir_root)) {
+				data_dir_root = exe_dir.path_join("data_Godot_" + arch);
+			}
 #ifdef MACOS_ENABLED
-		if (!DirAccess::exists(data_dir_root)) {
-			data_dir_root = res_dir.path_join("data_" + appname_safe + "_" + arch);
-		}
-		if (!DirAccess::exists(data_dir_root)) {
-			data_dir_root = res_dir.path_join("data_Godot_" + arch);
-		}
+			if (!DirAccess::exists(data_dir_root)) {
+				data_dir_root = res_dir.path_join("data_" + appname_safe + "_" + arch);
+			}
+			if (!DirAccess::exists(data_dir_root)) {
+				data_dir_root = res_dir.path_join("data_Godot_" + arch);
+			}
 #endif
-		api_assemblies_dir = data_dir_root;
+			api_assemblies_dir = data_dir_root;
+		}
 #endif
 	}
 
