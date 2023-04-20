@@ -39,6 +39,16 @@ def get_opts():
     ]
 
 
+def get_doc_classes():
+    return [
+        "EditorExportPlatformIOS",
+    ]
+
+
+def get_doc_path():
+    return "doc_classes"
+
+
 def get_flags():
     return [
         ("arch", "arm64"),  # Default for convenience.

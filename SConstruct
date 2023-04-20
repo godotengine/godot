@@ -66,6 +66,7 @@ if ARGUMENTS.get("target", "editor") == "editor":
 platform_list = []  # list of platforms
 platform_opts = {}  # options for each platform
 platform_flags = {}  # flags for each platform
+platform_doc_class_path = {}
 
 active_platforms = []
 active_platform_ids = []
@@ -81,6 +82,15 @@ for x in sorted(glob.glob("platform/*")):
 
     sys.path.insert(0, tmppath)
     import detect
+
+    # Get doc classes paths (if present)
+    try:
+        doc_classes = detect.get_doc_classes()
+        doc_path = detect.get_doc_path()
+        for c in doc_classes:
+            platform_doc_class_path[c] = x.replace("\\", "/") + "/" + doc_path
+    except Exception:
+        pass
 
     if os.path.exists(x + "/export/export.cpp"):
         platform_exporters.append(x[9:])
@@ -782,7 +792,7 @@ if selected_platform in platform_list:
     modules_enabled = OrderedDict()
     env.module_dependencies = {}
     env.module_icons_paths = []
-    env.doc_class_path = {}
+    env.doc_class_path = platform_doc_class_path
 
     for name, path in modules_detected.items():
         if not env["module_" + name + "_enabled"]:
