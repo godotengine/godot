@@ -204,7 +204,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	static void generate_doc();
+	static void generate_doc(bool p_use_cache = true);
 	static DocTools *get_doc_data();
 	static void cleanup_doc();
 	static String get_cache_full_path();

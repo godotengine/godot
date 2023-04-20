@@ -3894,7 +3894,7 @@ void BindingsGenerator::_log(const char *p_format, ...) {
 void BindingsGenerator::_initialize() {
 	initialized = false;
 
-	EditorHelp::generate_doc();
+	EditorHelp::generate_doc(false);
 
 	enum_types.clear();
 
