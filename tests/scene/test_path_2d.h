@@ -109,12 +109,12 @@ TEST_CASE("[SceneTree][Path2D] _edit_get_rect check") {
 		Path2D *test_path = memnew(Path2D);
 		Rect2 test_rect_1 = test_path->_edit_get_rect();
 		Rect2 test_rect_2 = Rect2(0, 0, 0, 0);
-        CHECK(test_rect_1 == test_rect_2);
+        	CHECK(test_rect_1 == test_rect_2);
 		memdelete(test_path);
     }
 	SUBCASE("Valid curve with points") {
 		Path2D *test_path = memnew(Path2D);
-		Curve2D *test_curve = memnew(Curve2D);
+		Ref <Curve2D> *test_curve = memnew(Curve2D);
 		Vector2 p0 = Vector2(40, 30);
 		test_curve->add_point(p0);
 		test_path->set_curve(test_curve);
@@ -127,12 +127,12 @@ TEST_CASE("[SceneTree][Path2D] _edit_get_rect check") {
 TEST_CASE("[SceneTree][Path2D] _edit_use_rect check") {
 	SUBCASE("Invalid curve") {
 		Path2D *test_path = memnew(Path2D);
-        CHECK(test_path->_edit_use_rect() == false);
+        	CHECK(test_path->_edit_use_rect() == false);
 		memdelete(test_path);
     }
 	SUBCASE("Valid curve with points") {
 		Path2D *test_path = memnew(Path2D);
-		Curve2D *test_curve = memnew(Curve2D);
+		Ref <Curve2D> *test_curve = memnew(Curve2D);
 		test_curve->set_point_count(1);
 		test_path->set_curve(test_curve);
 		CHECK(test_path->_edit_use_rect() == true);
@@ -149,7 +149,7 @@ TEST_CASE("[SceneTree][Path2D] _edit_is_selected_on_click check") {
 	}
 	SUBCASE("Curve with points - Curve selected") {
 		Path2D *test_path = memnew(Path2D);
-		Curve2D *test_curve = memnew(Curve2D);
+		Ref <Curve2D> *test_curve = memnew(Curve2D);
 		Vector2 p0 = Vector2(0, 0);
 		test_curve->add_point(p0);
 		test_path->set_curve(test_curve);
@@ -158,7 +158,7 @@ TEST_CASE("[SceneTree][Path2D] _edit_is_selected_on_click check") {
 	}
 	SUBCASE("Curve with points - Curve not selected") {
 		Path2D *test_path = memnew(Path2D);
-		Curve2D *test_curve = memnew(Curve2D);
+		Ref <Curve2D> *test_curve = memnew(Curve2D);
 		Vector2 p0 = Vector2(0, 0);
 		test_curve->add_point(p0);
 		test_path->set_curve(test_curve);
@@ -167,7 +167,7 @@ TEST_CASE("[SceneTree][Path2D] _edit_is_selected_on_click check") {
 		memdelete(test_path);
 	}
 }
-	
+
 } // namespace TestPath2D
 
 #endif // TEST_PATH_2D_H
