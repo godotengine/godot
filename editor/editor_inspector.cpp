@@ -3159,11 +3159,32 @@ void EditorInspector::update_tree() {
 			if (!found) {
 				// Build the property description String and add it to the cache.
 				DocTools *dd = EditorHelp::get_doc_data();
-				HashMap<String, DocData::ClassDoc>::Iterator F = dd->class_list.find(classname);
+				HashMap<String, DocData::ClassDoc>::ConstIterator F = dd->class_list.find(classname);
 				while (F && doc_info.description.is_empty()) {
 					for (int i = 0; i < F->value.properties.size(); i++) {
 						if (F->value.properties[i].name == propname.operator String()) {
 							doc_info.description = DTR(F->value.properties[i].description);
+
+							const Vector<String> class_enum = F->value.properties[i].enumeration.split(".");
+							const String class_name = class_enum[0];
+							const String enum_name = class_enum.size() >= 2 ? class_enum[1] : "";
+							if (!enum_name.is_empty()) {
+								HashMap<String, DocData::ClassDoc>::ConstIterator enum_class = dd->class_list.find(class_name);
+								if (enum_class) {
+									for (DocData::ConstantDoc val : enum_class->value.constants) {
+										// Don't display `_MAX` enum value descriptions, as these are never exposed in the inspector.
+										if (val.enumeration == enum_name && !val.name.ends_with("_MAX")) {
+											const String enum_value = EditorPropertyNameProcessor::get_singleton()->process_name(val.name, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
+											// Prettify the enum value display, so that "<ENUM NAME>_<VALUE>" becomes "Value".
+											doc_info.description += vformat(
+													"\n[b]%s:[/b] %s",
+													enum_value.trim_prefix(EditorPropertyNameProcessor::get_singleton()->process_name(enum_name, EditorPropertyNameProcessor::STYLE_CAPITALIZED) + " "),
+													DTR(val.description).trim_prefix("\n"));
+										}
+									}
+								}
+							}
+
 							doc_info.path = "class_property:" + F->value.name + ":" + F->value.properties[i].name;
 							break;
 						}
