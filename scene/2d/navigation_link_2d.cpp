@@ -60,6 +60,12 @@ void NavigationLink2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_global_end_position", "position"), &NavigationLink2D::set_global_end_position);
 	ClassDB::bind_method(D_METHOD("get_global_end_position"), &NavigationLink2D::get_global_end_position);
 
+	ClassDB::bind_method(D_METHOD("set_start_node_path", "path"), &NavigationLink2D::set_start_node_path);
+	ClassDB::bind_method(D_METHOD("get_start_node_path"), &NavigationLink2D::get_start_node_path);
+
+	ClassDB::bind_method(D_METHOD("set_end_node_path", "path"), &NavigationLink2D::set_end_node_path);
+	ClassDB::bind_method(D_METHOD("get_end_node_path"), &NavigationLink2D::get_end_node_path);
+
 	ClassDB::bind_method(D_METHOD("set_enter_cost", "enter_cost"), &NavigationLink2D::set_enter_cost);
 	ClassDB::bind_method(D_METHOD("get_enter_cost"), &NavigationLink2D::get_enter_cost);
 
@@ -70,9 +76,25 @@ void NavigationLink2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bidirectional"), "set_bidirectional", "is_bidirectional");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_2D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "start_position"), "set_start_position", "get_start_position");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "start_node_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node2D"), "set_start_node_path", "get_start_node_path");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "end_position"), "set_end_position", "get_end_position");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "end_node_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node2D"), "set_end_node_path", "get_end_node_path");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "enter_cost"), "set_enter_cost", "get_enter_cost");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "travel_cost"), "set_travel_cost", "get_travel_cost");
+}
+
+void NavigationLink2D::_validate_property(PropertyInfo &property) const {
+	if (property.name == "start_position") {
+		if (!start_node_path.is_empty()) {
+			property.usage = PROPERTY_USAGE_NONE;
+		}
+	}
+
+	if (property.name == "end_position") {
+		if (!end_node_path.is_empty()) {
+			property.usage = PROPERTY_USAGE_NONE;
+		}
+	}
 }
 
 #ifndef DISABLE_DEPRECATED
@@ -106,6 +128,7 @@ void NavigationLink2D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (enabled) {
 				NavigationServer2D::get_singleton()->link_set_map(link, get_world_2d()->get_navigation_map());
+				set_physics_process_internal(true);
 
 				// Update global positions for the link.
 				Transform2D gt = get_global_transform();
@@ -119,8 +142,24 @@ void NavigationLink2D::_notification(int p_what) {
 			NavigationServer2D::get_singleton()->link_set_start_position(link, gt.xform(start_position));
 			NavigationServer2D::get_singleton()->link_set_end_position(link, gt.xform(end_position));
 		} break;
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			if (!start_node_path.is_empty()) {
+				Node2D *start_node = Object::cast_to<Node2D>(get_node_or_null(start_node_path));
+				if (start_node) {
+					set_global_start_position(start_node->get_global_position());
+				}
+			}
+
+			if (!end_node_path.is_empty()) {
+				Node2D *end_node = Object::cast_to<Node2D>(get_node_or_null(end_node_path));
+				if (end_node) {
+					set_global_end_position(end_node->get_global_position());
+				}
+			}
+		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			NavigationServer2D::get_singleton()->link_set_map(link, RID());
+			set_physics_process_internal(false);
 		} break;
 		case NOTIFICATION_DRAW: {
 #ifdef DEBUG_ENABLED
@@ -181,6 +220,8 @@ void NavigationLink2D::set_enabled(bool p_enabled) {
 	} else {
 		NavigationServer2D::get_singleton()->link_set_map(link, get_world_2d()->get_navigation_map());
 	}
+
+	set_physics_process_internal(enabled);
 
 #ifdef DEBUG_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() || NavigationServer2D::get_singleton()->get_debug_enabled()) {
@@ -307,6 +348,26 @@ Vector2 NavigationLink2D::get_global_end_position() const {
 	} else {
 		return end_position;
 	}
+}
+
+void NavigationLink2D::set_start_node_path(const NodePath &p_path) {
+	if (start_node_path == p_path) {
+		return;
+	}
+
+	start_node_path = p_path;
+
+	notify_property_list_changed();
+}
+
+void NavigationLink2D::set_end_node_path(const NodePath &p_path) {
+	if (end_node_path == p_path) {
+		return;
+	}
+
+	end_node_path = p_path;
+
+	notify_property_list_changed();
 }
 
 void NavigationLink2D::set_enter_cost(real_t p_enter_cost) {

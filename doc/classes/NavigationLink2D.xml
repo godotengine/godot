@@ -59,6 +59,10 @@
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
 			Whether this link is currently active. If [code]false[/code], [method NavigationServer2D.map_get_path] will ignore this link.
 		</member>
+		<member name="end_node_path" type="NodePath" setter="set_end_node_path" getter="get_end_node_path" default="NodePath(&quot;&quot;)">
+			Use the node's position at the passed in path to determine the [member end_position] of the link.
+			Changes to [member end_position] will be ignored while this is set and the node's position will be used instead.
+		</member>
 		<member name="end_position" type="Vector2" setter="set_end_position" getter="get_end_position" default="Vector2(0, 0)">
 			Ending position of the link.
 			This position will search out the nearest polygon in the navigation mesh to attach to.
@@ -69,6 +73,10 @@
 		</member>
 		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
 			A bitfield determining all navigation layers the link belongs to. These navigation layers will be checked when requesting a path with [method NavigationServer2D.map_get_path].
+		</member>
+		<member name="start_node_path" type="NodePath" setter="set_start_node_path" getter="get_start_node_path" default="NodePath(&quot;&quot;)">
+			Use the node's position at the passed in path to determine the [member start_position] of the link.
+			Changes to [member start_position] will be ignored while this is set and the node's position will be used instead.
 		</member>
 		<member name="start_position" type="Vector2" setter="set_start_position" getter="get_start_position" default="Vector2(0, 0)">
 			Starting position of the link.

@@ -39,6 +39,7 @@
 
 class Timer;
 class EditorNode3DGizmoPlugin;
+class NavigationLink3D;
 
 class EditorNode3DGizmo : public Node3DGizmo {
 	GDCLASS(EditorNode3DGizmo, Node3DGizmo);
@@ -635,6 +636,8 @@ public:
 
 class NavigationLink3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(NavigationLink3DGizmoPlugin, EditorNode3DGizmoPlugin);
+
+	int map_handle_index_to_link_index(const NavigationLink3D *p_link, int p_id) const;
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;

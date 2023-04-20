@@ -5139,19 +5139,39 @@ void NavigationLink3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->add_lines(lines, link->is_enabled() ? link_material : link_material_disabled);
 	p_gizmo->add_collision_segments(lines);
 
+	// Only add handles for positions that can be manipulated.
 	Vector<Vector3> handles;
-	handles.append(start_position);
-	handles.append(end_position);
-	p_gizmo->add_handles(handles, handles_material);
+	if (link->get_start_node_path().is_empty()) {
+		handles.append(start_position);
+	}
+	if (link->get_end_node_path().is_empty()) {
+		handles.append(end_position);
+	}
+	if (handles.size() > 0) {
+		p_gizmo->add_handles(handles, handles_material);
+	}
+}
+
+int NavigationLink3DGizmoPlugin::map_handle_index_to_link_index(const NavigationLink3D *p_link, int p_id) const {
+	if (p_link->get_start_node_path().is_empty() && p_link->get_end_node_path().is_empty()) {
+		return p_id;
+	} else if (p_link->get_start_node_path().is_empty()) {
+		return p_id == 0 ? 0 : -1;
+	} else if (p_link->get_end_node_path().is_empty()) {
+		return p_id == 0 ? 1 : -1;
+	} else {
+		return -1;
+	}
 }
 
 String NavigationLink3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	return p_id == 0 ? TTR("Start Location") : TTR("End Location");
+	NavigationLink3D *link = Object::cast_to<NavigationLink3D>(p_gizmo->get_node_3d());
+	return map_handle_index_to_link_index(link, p_id) == 0 ? TTR("Start Location") : TTR("End Location");
 }
 
 Variant NavigationLink3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	NavigationLink3D *link = Object::cast_to<NavigationLink3D>(p_gizmo->get_node_3d());
-	return p_id == 0 ? link->get_start_position() : link->get_end_position();
+	return map_handle_index_to_link_index(link, p_id) == 0 ? link->get_start_position() : link->get_end_position();
 }
 
 void NavigationLink3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
@@ -5166,7 +5186,7 @@ void NavigationLink3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, i
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
 	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
 
-	Vector3 position = p_id == 0 ? link->get_start_position() : link->get_end_position();
+	Vector3 position = map_handle_index_to_link_index(link, p_id) == 0 ? link->get_start_position() : link->get_end_position();
 	Plane move_plane = Plane(cam_dir, gt.xform(position));
 
 	Vector3 intersection;
@@ -5180,9 +5200,9 @@ void NavigationLink3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, i
 	}
 
 	position = gi.xform(intersection);
-	if (p_id == 0) {
+	if (map_handle_index_to_link_index(link, p_id) == 0) {
 		link->set_start_position(position);
-	} else if (p_id == 1) {
+	} else if (map_handle_index_to_link_index(link, p_id) == 1) {
 		link->set_end_position(position);
 	}
 }
@@ -5191,7 +5211,7 @@ void NavigationLink3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo
 	NavigationLink3D *link = Object::cast_to<NavigationLink3D>(p_gizmo->get_node_3d());
 
 	if (p_cancel) {
-		if (p_id == 0) {
+		if (map_handle_index_to_link_index(link, p_id) == 0) {
 			link->set_start_position(p_restore);
 		} else {
 			link->set_end_position(p_restore);
@@ -5200,7 +5220,7 @@ void NavigationLink3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo
 	}
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-	if (p_id == 0) {
+	if (map_handle_index_to_link_index(link, p_id) == 0) {
 		ur->create_action(TTR("Change Start Position"));
 		ur->add_do_method(link, "set_start_position", link->get_start_position());
 		ur->add_undo_method(link, "set_start_position", p_restore);

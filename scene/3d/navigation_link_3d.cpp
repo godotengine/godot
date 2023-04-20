@@ -169,6 +169,12 @@ void NavigationLink3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_global_end_position", "position"), &NavigationLink3D::set_global_end_position);
 	ClassDB::bind_method(D_METHOD("get_global_end_position"), &NavigationLink3D::get_global_end_position);
 
+	ClassDB::bind_method(D_METHOD("set_start_node_path", "path"), &NavigationLink3D::set_start_node_path);
+	ClassDB::bind_method(D_METHOD("get_start_node_path"), &NavigationLink3D::get_start_node_path);
+
+	ClassDB::bind_method(D_METHOD("set_end_node_path", "path"), &NavigationLink3D::set_end_node_path);
+	ClassDB::bind_method(D_METHOD("get_end_node_path"), &NavigationLink3D::get_end_node_path);
+
 	ClassDB::bind_method(D_METHOD("set_enter_cost", "enter_cost"), &NavigationLink3D::set_enter_cost);
 	ClassDB::bind_method(D_METHOD("get_enter_cost"), &NavigationLink3D::get_enter_cost);
 
@@ -179,9 +185,25 @@ void NavigationLink3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bidirectional"), "set_bidirectional", "is_bidirectional");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "start_position"), "set_start_position", "get_start_position");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "start_node_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node3D"), "set_start_node_path", "get_start_node_path");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "end_position"), "set_end_position", "get_end_position");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "end_node_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node3D"), "set_end_node_path", "get_end_node_path");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "enter_cost"), "set_enter_cost", "get_enter_cost");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "travel_cost"), "set_travel_cost", "get_travel_cost");
+}
+
+void NavigationLink3D::_validate_property(PropertyInfo &property) const {
+	if (property.name == "start_position") {
+		if (!start_node_path.is_empty()) {
+			property.usage = PROPERTY_USAGE_NONE;
+		}
+	}
+
+	if (property.name == "end_position") {
+		if (!end_node_path.is_empty()) {
+			property.usage = PROPERTY_USAGE_NONE;
+		}
+	}
 }
 
 #ifndef DISABLE_DEPRECATED
@@ -215,10 +237,14 @@ void NavigationLink3D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (enabled) {
 				NavigationServer3D::get_singleton()->link_set_map(link, get_world_3d()->get_navigation_map());
+			}
 
-				// Update global positions for the link.
-				Transform3D gt = get_global_transform();
+			// Update global positions for the link.
+			Transform3D gt = get_global_transform();
+			if (start_node_path.is_empty()) {
 				NavigationServer3D::get_singleton()->link_set_start_position(link, gt.xform(start_position));
+			}
+			if (end_node_path.is_empty()) {
 				NavigationServer3D::get_singleton()->link_set_end_position(link, gt.xform(end_position));
 			}
 
@@ -229,14 +255,33 @@ void NavigationLink3D::_notification(int p_what) {
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			// Update global positions for the link.
 			Transform3D gt = get_global_transform();
-			NavigationServer3D::get_singleton()->link_set_start_position(link, gt.xform(start_position));
-			NavigationServer3D::get_singleton()->link_set_end_position(link, gt.xform(end_position));
+			if (start_node_path.is_empty()) {
+				NavigationServer3D::get_singleton()->link_set_start_position(link, gt.xform(start_position));
+			}
+			if (end_node_path.is_empty()) {
+				NavigationServer3D::get_singleton()->link_set_end_position(link, gt.xform(end_position));
+			}
 
 #ifdef DEBUG_ENABLED
 			if (is_inside_tree() && debug_instance.is_valid()) {
-				RS::get_singleton()->instance_set_transform(debug_instance, get_global_transform());
+				RS::get_singleton()->instance_set_transform(debug_instance, gt);
 			}
 #endif // DEBUG_ENABLED
+		} break;
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			if (!start_node_path.is_empty()) {
+				Node3D *start_node = Object::cast_to<Node3D>(get_node_or_null(start_node_path));
+				if (start_node) {
+					set_global_start_position(start_node->get_global_position());
+				}
+			}
+
+			if (!end_node_path.is_empty()) {
+				Node3D *end_node = Object::cast_to<Node3D>(get_node_or_null(end_node_path));
+				if (end_node) {
+					set_global_end_position(end_node->get_global_position());
+				}
+			}
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			NavigationServer3D::get_singleton()->link_set_map(link, RID());
@@ -422,6 +467,32 @@ Vector3 NavigationLink3D::get_global_end_position() const {
 	} else {
 		return end_position;
 	}
+}
+
+void NavigationLink3D::set_start_node_path(const NodePath &p_path) {
+	if (start_node_path == p_path) {
+		return;
+	}
+
+	start_node_path = p_path;
+
+	set_physics_process_internal(!start_node_path.is_empty() || !end_node_path.is_empty());
+
+	update_gizmos();
+	notify_property_list_changed();
+}
+
+void NavigationLink3D::set_end_node_path(const NodePath &p_path) {
+	if (end_node_path == p_path) {
+		return;
+	}
+
+	end_node_path = p_path;
+
+	set_physics_process_internal(!start_node_path.is_empty() || !end_node_path.is_empty());
+
+	update_gizmos();
+	notify_property_list_changed();
 }
 
 void NavigationLink3D::set_enter_cost(real_t p_enter_cost) {
