@@ -503,17 +503,19 @@ namespace Godot
             return new Vector2(value.X, value.Y);
         }
 
-        /// <summary>
-        /// Converts a <see cref="Vector2"/> to a <see cref="Vector2I"/>.
-        /// </summary>
-        /// <param name="value">The vector to convert.</param>
-        public static explicit operator Vector2I(Vector2 value)
-        {
-            return new Vector2I(
-                Mathf.RoundToInt(value.X),
-                Mathf.RoundToInt(value.Y)
-            );
-        }
+      /// <summary>
+    /// Converts a <see cref="Vector2"/> to a <see cref="Vector2I"/> by truncating
+    /// components' fractional parts (rounding towards zero). This ensures consistent
+    /// rounding behavior, but note that it may result in values that are different from
+    /// the behavior of <see cref="Vector2.Round"/> or other rounding methods when
+    /// converting float values that are exactly between two integer values.
+    /// </summary>
+    /// <param name="value">The vector to convert.</param>
+    public static implicit operator Vector2i(Vector2 value)
+    {
+        return new Vector2i((int)Math.Truncate(value.x), (int)Math.Truncate(value.y));
+    }
+
 
         /// <summary>
         /// Returns <see langword="true"/> if the vector is equal

@@ -579,19 +579,19 @@ namespace Godot
             return new Vector4(value.X, value.Y, value.Z, value.W);
         }
 
-        /// <summary>
-        /// Converts a <see cref="Vector4"/> to a <see cref="Vector4I"/>.
-        /// </summary>
-        /// <param name="value">The vector to convert.</param>
-        public static explicit operator Vector4I(Vector4 value)
-        {
-            return new Vector4I(
-                Mathf.RoundToInt(value.X),
-                Mathf.RoundToInt(value.Y),
-                Mathf.RoundToInt(value.Z),
-                Mathf.RoundToInt(value.W)
-            );
-        }
+    /// <summary>
+    /// Converts a <see cref="Vector4"/> to a <see cref="Vector4I"/> by truncating
+    /// components' fractional parts (rounding towards zero). This ensures consistent
+    /// rounding behavior, but note that it may result in values that are different from
+    /// the behavior of <see cref="Vector4.Round"/> or other rounding methods when
+    /// converting float values that are exactly between two integer values.
+    /// </summary>
+    /// <param name="value">The vector to convert.</param>
+    public static explicit operator Vector4I(Vector4 value)
+    {
+        return new Vector4I((int)Math.Truncate(value.X), (int)Math.Truncate(value.Y), (int)Math.Truncate(value.Z), (int)Math.Truncate(value.W));
+    }
+
 
         /// <summary>
         /// Returns <see langword="true"/> if the vector is equal
