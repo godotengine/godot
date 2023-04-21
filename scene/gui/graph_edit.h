@@ -345,6 +345,7 @@ public:
 	void remove_valid_left_disconnect_type(int p_type);
 
 	void set_scroll_ofs(const Vector2 &p_ofs);
+	void _set_scroll_ofs(const Vector2 &p_ofs);
 	Vector2 get_scroll_ofs() const;
 
 	void set_selected(Node *p_child);

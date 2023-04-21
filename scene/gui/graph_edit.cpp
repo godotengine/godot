@@ -187,7 +187,7 @@ void GraphEditMinimap::gui_input(const Ref<InputEvent> &p_ev) {
 
 void GraphEditMinimap::_adjust_graph_scroll(const Vector2 &p_offset) {
 	Vector2 graph_offset = _get_graph_offset();
-	ge->set_scroll_ofs(p_offset + graph_offset - camera_size / 2);
+	ge->_set_scroll_ofs(p_offset + graph_offset - camera_size / 2);
 }
 
 PackedStringArray GraphEdit::get_configuration_warnings() const {
@@ -246,10 +246,25 @@ void GraphEdit::get_connection_list(List<Connection> *r_connections) const {
 
 void GraphEdit::set_scroll_ofs(const Vector2 &p_ofs) {
 	setting_scroll_ofs = true;
+	_set_scroll_ofs(p_ofs);
+	setting_scroll_ofs = false;
+}
+
+void GraphEdit::_set_scroll_ofs(const Vector2 &p_ofs) {
+	bool is_being_set = setting_scroll_ofs;
+	// _scroll_moved is called when each scroll value is set.
+	// So suppress the scroll_offset_changed signal until after they're set.
+	setting_scroll_ofs = true;
+
 	h_scroll->set_value(p_ofs.x);
 	v_scroll->set_value(p_ofs.y);
-	_update_scroll();
-	setting_scroll_ofs = false;
+
+	setting_scroll_ofs = is_being_set;
+
+	// In Godot, signals on change value are avoided as a convention.
+	if (!setting_scroll_ofs) {
+		emit_signal(SNAME("scroll_offset_changed"), get_scroll_ofs());
+	}
 }
 
 Vector2 GraphEdit::get_scroll_ofs() const {
@@ -260,7 +275,13 @@ void GraphEdit::_scroll_moved(double) {
 	if (!awaiting_scroll_offset_update) {
 		call_deferred(SNAME("_update_scroll_offset"));
 		awaiting_scroll_offset_update = true;
+
+		// In Godot, signals on change value are avoided as a convention.
+		if (!setting_scroll_ofs) {
+			emit_signal(SNAME("scroll_offset_changed"), get_scroll_ofs());
+		}
 	}
+	
 	top_layer->queue_redraw();
 	minimap->queue_redraw();
 	queue_redraw();
@@ -286,10 +307,6 @@ void GraphEdit::_update_scroll_offset() {
 	connections_layer->set_position(-Point2(h_scroll->get_value(), v_scroll->get_value()));
 	set_block_minimum_size_adjust(false);
 	awaiting_scroll_offset_update = false;
-
-	if (!setting_scroll_ofs) { //in godot, signals on change value are avoided as a convention
-		emit_signal(SNAME("scroll_offset_changed"), get_scroll_ofs());
-	}
 }
 
 void GraphEdit::_update_scroll() {
@@ -1386,8 +1403,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 }
 
 void GraphEdit::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
-	h_scroll->set_value(h_scroll->get_value() - p_scroll_vec.x);
-	v_scroll->set_value(v_scroll->get_value() - p_scroll_vec.y);
+	_set_scroll_ofs(Vector2(h_scroll->get_value(), v_scroll->get_value()) - p_scroll_vec);
 }
 
 void GraphEdit::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
@@ -1460,15 +1476,14 @@ void GraphEdit::set_zoom_custom(float p_zoom, const Vector2 &p_center) {
 	zoom_minus->set_disabled(zoom == zoom_min);
 	zoom_plus->set_disabled(zoom == zoom_max);
 
+	if (is_visible_in_tree()) {
+		Vector2 ofs = sbofs * zoom - p_center;
+		_set_scroll_ofs(ofs);
+	}
+
 	_update_scroll();
 	minimap->queue_redraw();
 	connections_layer->queue_redraw();
-
-	if (is_visible_in_tree()) {
-		Vector2 ofs = sbofs * zoom - p_center;
-		h_scroll->set_value(ofs.x);
-		v_scroll->set_value(ofs.y);
-	}
 
 	_update_zoom_label();
 	queue_redraw();

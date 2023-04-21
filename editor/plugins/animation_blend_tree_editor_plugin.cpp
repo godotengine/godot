@@ -125,8 +125,6 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 
 	visible_properties.clear();
 
-	graph->set_scroll_ofs(blend_tree->get_graph_offset() * EDSCALE);
-
 	graph->clear_connections();
 	//erase all nodes
 	for (int i = 0; i < graph->get_child_count(); i++) {
