@@ -761,7 +761,11 @@ void GDScriptParser::parse_class_member(T *(GDScriptParser::*p_parse_function)()
 #ifdef TOOLS_ENABLED
 	// Consume doc comments.
 	class_doc_line = MIN(class_doc_line, doc_comment_line - 1);
-	if (has_comment(doc_comment_line)) {
+
+	// Check whether current line has a doc comment
+	if (has_comment(previous.start_line, true)) {
+		member->doc_description = get_doc_comment(previous.start_line, true);
+	} else if (has_comment(doc_comment_line, true)) {
 		if constexpr (std::is_same_v<T, ClassNode>) {
 			get_class_doc_comment(doc_comment_line, member->doc_brief_description, member->doc_description, member->doc_tutorials, true);
 		} else {
@@ -3296,8 +3300,15 @@ static bool _in_codeblock(String p_line, bool p_already_in, int *r_block_begins 
 	}
 }
 
-bool GDScriptParser::has_comment(int p_line) {
-	return tokenizer.get_comments().has(p_line);
+bool GDScriptParser::has_comment(int p_line, bool p_must_be_doc) {
+	bool has_comment = tokenizer.get_comments().has(p_line);
+	// If there are no comments or if we don't care whether the comment
+	// is a docstring, we have our result.
+	if (!p_must_be_doc || !has_comment) {
+		return has_comment;
+	}
+
+	return tokenizer.get_comments()[p_line].comment.begins_with("##");
 }
 
 String GDScriptParser::get_doc_comment(int p_line, bool p_single_line) {

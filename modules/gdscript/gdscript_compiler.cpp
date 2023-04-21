@@ -2152,12 +2152,6 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 
 	if (p_func) {
 		codegen.generator->set_initial_line(p_func->start_line);
-#ifdef TOOLS_ENABLED
-		if (!p_for_lambda) {
-			p_script->member_lines[func_name] = p_func->start_line;
-			p_script->doc_functions[func_name] = p_func->doc_description;
-		}
-#endif
 	} else {
 		codegen.generator->set_initial_line(0);
 	}
@@ -2226,23 +2220,6 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 	parsing_classes.insert(p_script);
 
 	p_script->clearing = true;
-#ifdef TOOLS_ENABLED
-	p_script->doc_functions.clear();
-	p_script->doc_variables.clear();
-	p_script->doc_constants.clear();
-	p_script->doc_enums.clear();
-	p_script->doc_signals.clear();
-	p_script->doc_tutorials.clear();
-
-	p_script->doc_brief_description = p_class->doc_brief_description;
-	p_script->doc_description = p_class->doc_description;
-	for (int i = 0; i < p_class->doc_tutorials.size(); i++) {
-		DocData::TutorialDoc td;
-		td.title = p_class->doc_tutorials[i].first;
-		td.link = p_class->doc_tutorials[i].second;
-		p_script->doc_tutorials.append(td);
-	}
-#endif
 
 	p_script->native = Ref<GDScriptNativeClass>();
 	p_script->base = Ref<GDScript>();
@@ -2386,9 +2363,6 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 				} else {
 					prop_info.usage = PROPERTY_USAGE_SCRIPT_VARIABLE;
 				}
-#ifdef TOOLS_ENABLED
-				p_script->doc_variables[name] = variable->doc_description;
-#endif
 
 				p_script->member_info[name] = prop_info;
 				p_script->member_indices[name] = minfo;
@@ -2401,7 +2375,6 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 				} else {
 					p_script->member_default_values.erase(name);
 				}
-				p_script->member_lines[name] = variable->start_line;
 #endif
 			} break;
 
@@ -2410,12 +2383,6 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 				StringName name = constant->identifier->name;
 
 				p_script->constants.insert(name, constant->initializer->reduced_value);
-#ifdef TOOLS_ENABLED
-				p_script->member_lines[name] = constant->start_line;
-				if (!constant->doc_description.is_empty()) {
-					p_script->doc_constants[name] = constant->doc_description;
-				}
-#endif
 			} break;
 
 			case GDScriptParser::ClassNode::Member::ENUM_VALUE: {
@@ -2423,18 +2390,6 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 				StringName name = enum_value.identifier->name;
 
 				p_script->constants.insert(name, enum_value.value);
-#ifdef TOOLS_ENABLED
-				p_script->member_lines[name] = enum_value.identifier->start_line;
-				if (!p_script->doc_enums.has("@unnamed_enums")) {
-					p_script->doc_enums["@unnamed_enums"] = DocData::EnumDoc();
-					p_script->doc_enums["@unnamed_enums"].name = "@unnamed_enums";
-				}
-				DocData::ConstantDoc const_doc;
-				const_doc.name = enum_value.identifier->name;
-				const_doc.value = Variant(enum_value.value).operator String(); // TODO-DOC: enum value currently is int.
-				const_doc.description = enum_value.doc_description;
-				p_script->doc_enums["@unnamed_enums"].values.push_back(const_doc);
-#endif
 			} break;
 
 			case GDScriptParser::ClassNode::Member::SIGNAL: {
@@ -2447,11 +2402,6 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 					parameters_names.write[j] = signal->parameters[j]->identifier->name;
 				}
 				p_script->_signals[name] = parameters_names;
-#ifdef TOOLS_ENABLED
-				if (!signal->doc_description.is_empty()) {
-					p_script->doc_signals[name] = signal->doc_description;
-				}
-#endif
 			} break;
 
 			case GDScriptParser::ClassNode::Member::ENUM: {
@@ -2459,19 +2409,6 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 				StringName name = enum_n->identifier->name;
 
 				p_script->constants.insert(name, enum_n->dictionary);
-#ifdef TOOLS_ENABLED
-				p_script->member_lines[name] = enum_n->start_line;
-				p_script->doc_enums[name] = DocData::EnumDoc();
-				p_script->doc_enums[name].name = name;
-				p_script->doc_enums[name].description = enum_n->doc_description;
-				for (int j = 0; j < enum_n->values.size(); j++) {
-					DocData::ConstantDoc const_doc;
-					const_doc.name = enum_n->values[j].identifier->name;
-					const_doc.value = Variant(enum_n->values[j].value).operator String();
-					const_doc.description = enum_n->values[j].doc_description;
-					p_script->doc_enums[name].values.push_back(const_doc);
-				}
-#endif
 			} break;
 
 			case GDScriptParser::ClassNode::Member::GROUP: {
@@ -2519,9 +2456,6 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 			}
 		}
 
-#ifdef TOOLS_ENABLED
-		p_script->member_lines[name] = inner_class->start_line;
-#endif
 		p_script->constants.insert(name, subclass); //once parsed, goes to the list of constants
 	}
 
@@ -2614,7 +2548,7 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 						//well, tough luck, not gonna do anything here
 					}
 				}
-#endif
+#endif // TOOLS_ENABLED
 			} else {
 				GDScriptInstance *gi = static_cast<GDScriptInstance *>(si);
 				gi->reload_members();
@@ -2623,7 +2557,7 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 			E = N;
 		}
 	}
-#endif
+#endif //DEBUG_ENABLED
 
 	for (int i = 0; i < p_class->members.size(); i++) {
 		if (p_class->members[i].type != GDScriptParser::ClassNode::Member::CLASS) {
@@ -2722,10 +2656,6 @@ Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_scri
 	if (err) {
 		return err;
 	}
-
-#ifdef TOOLS_ENABLED
-	p_script->_update_doc();
-#endif
 
 	return GDScriptCache::finish_compiling(main_script->get_path());
 }

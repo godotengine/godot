@@ -83,6 +83,7 @@ class GDScript : public Script {
 	friend class GDScriptFunction;
 	friend class GDScriptAnalyzer;
 	friend class GDScriptCompiler;
+	friend class GDScriptDocGen;
 	friend class GDScriptLanguage;
 	friend struct GDScriptUtilityFunctionsDefinitions;
 
@@ -113,16 +114,7 @@ class GDScript : public Script {
 
 	DocData::ClassDoc doc;
 	Vector<DocData::ClassDoc> docs;
-	String doc_brief_description;
-	String doc_description;
-	Vector<DocData::TutorialDoc> doc_tutorials;
-	HashMap<String, String> doc_functions;
-	HashMap<String, String> doc_variables;
-	HashMap<String, String> doc_constants;
-	HashMap<String, String> doc_signals;
-	HashMap<String, DocData::EnumDoc> doc_enums;
 	void _clear_doc();
-	void _update_doc();
 	void _add_doc(const DocData::ClassDoc &p_inner_class);
 
 #endif
