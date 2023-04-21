@@ -74,59 +74,69 @@ Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_motion, bool p_t
 	return Ref<KinematicCollision2D>();
 }
 
-bool PhysicsBody2D::move_and_collide(const PhysicsServer2D::MotionParameters &p_parameters, PhysicsServer2D::MotionResult &r_result, bool p_test_only, bool p_cancel_sliding) {
-	if (is_only_update_transform_changes_enabled()) {
-		ERR_PRINT("Move functions do not work together with 'sync to physics' option. Please read the documentation.");
-	}
+bool PhysicsBody2D::move_and_collide(const PhysicsServer2D::MotionParameters &motion_parameters, PhysicsServer2D::MotionResult &motion_result, bool is_test_only, bool should_cancel_sliding) {
+    check_transform_sync_option();
 
-	bool colliding = PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), p_parameters, &r_result);
+    bool is_colliding = PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), motion_parameters, &motion_result);
 
-	// Restore direction of motion to be along original motion,
-	// in order to avoid sliding due to recovery,
-	// but only if collision depth is low enough to avoid tunneling.
-	if (p_cancel_sliding) {
-		real_t motion_length = p_parameters.motion.length();
-		real_t precision = 0.001;
+    if (should_cancel_sliding) {
+        restore_motion_direction(motion_parameters, motion_result);
+        cancel_sliding(motion_parameters, motion_result);
+    }
 
-		if (colliding) {
-			// Can't just use margin as a threshold because collision depth is calculated on unsafe motion,
-			// so even in normal resting cases the depth can be a bit more than the margin.
-			precision += motion_length * (r_result.collision_unsafe_fraction - r_result.collision_safe_fraction);
+    if (!is_test_only) {
+        apply_motion(get_global_transform(), motion_result.travel);
+    }
 
-			if (r_result.collision_depth > p_parameters.margin + precision) {
-				p_cancel_sliding = false;
-			}
-		}
-
-		if (p_cancel_sliding) {
-			// When motion is null, recovery is the resulting motion.
-			Vector2 motion_normal;
-			if (motion_length > CMP_EPSILON) {
-				motion_normal = p_parameters.motion / motion_length;
-			}
-
-			// Check depth of recovery.
-			real_t projected_length = r_result.travel.dot(motion_normal);
-			Vector2 recovery = r_result.travel - motion_normal * projected_length;
-			real_t recovery_length = recovery.length();
-			// Fixes cases where canceling slide causes the motion to go too deep into the ground,
-			// because we're only taking rest information into account and not general recovery.
-			if (recovery_length < p_parameters.margin + precision) {
-				// Apply adjustment to motion.
-				r_result.travel = motion_normal * projected_length;
-				r_result.remainder = p_parameters.motion - r_result.travel;
-			}
-		}
-	}
-
-	if (!p_test_only) {
-		Transform2D gt = p_parameters.from;
-		gt.columns[2] += r_result.travel;
-		set_global_transform(gt);
-	}
-
-	return colliding;
+    return is_colliding;
 }
+
+void PhysicsBody2D::check_transform_sync_option() {
+    if (is_only_update_transform_changes_enabled()) {
+        ERR_PRINT("Move functions do not work together with 'sync to physics' option. Please read the documentation.");
+    }
+}
+
+void PhysicsBody2D::restore_motion_direction(const PhysicsServer2D::MotionParameters &motion_parameters, PhysicsServer2D::MotionResult &motion_result) {
+    const real_t motion_length = motion_parameters.motion.length();
+    const real_t precision = 0.001;
+
+    if (motion_result.is_colliding) {
+        const real_t collision_depth_threshold = motion_parameters.margin + precision + motion_length * (motion_result.collision_unsafe_fraction - motion_result.collision_safe_fraction);
+
+        if (motion_result.collision_depth > collision_depth_threshold) {
+            motion_result.is_sliding_cancelled = false;
+        }
+    }
+
+    if (motion_result.is_sliding_cancelled) {
+        const Vector2 motion_normal = motion_length > CMP_EPSILON ? motion_parameters.motion / motion_length : Vector2();
+
+        const real_t projected_length = motion_result.travel.dot(motion_normal);
+        const Vector2 recovery = motion_result.travel - motion_normal * projected_length;
+        const real_t recovery_length = recovery.length();
+
+        const real_t recovery_depth_threshold = motion_parameters.margin + precision;
+
+        if (recovery_length < recovery_depth_threshold) {
+            motion_result.travel = motion_normal * projected_length;
+            motion_result.remainder = motion_parameters.motion - motion_result.travel;
+        }
+    }
+}
+
+void PhysicsBody2D::cancel_sliding(const PhysicsServer2D::MotionParameters &motion_parameters, PhysicsServer2D::MotionResult &motion_result) {
+    if (motion_result.is_sliding_cancelled) {
+        motion_result.travel = motion_parameters.motion * motion_result.slide_collision_normal;
+        motion_result.remainder = Vector2();
+    }
+}
+
+void PhysicsBody2D::apply_motion(Transform2D global_transform, Vector2 travel) {
+    global_transform.columns[2] += travel;
+    set_global_transform(global_transform);
+}
+
 
 bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_motion, const Ref<KinematicCollision2D> &r_collision, real_t p_margin, bool p_recovery_as_collision) {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
