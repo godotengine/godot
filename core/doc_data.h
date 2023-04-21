@@ -315,61 +315,6 @@ public:
 		}
 	};
 
-	struct EnumDoc {
-		String name = "@unnamed_enum";
-		bool is_bitfield = false;
-		String description;
-		Vector<DocData::ConstantDoc> values;
-		static EnumDoc from_dict(const Dictionary &p_dict) {
-			EnumDoc doc;
-
-			if (p_dict.has("name")) {
-				doc.name = p_dict["name"];
-			}
-
-			if (p_dict.has("is_bitfield")) {
-				doc.is_bitfield = p_dict["is_bitfield"];
-			}
-
-			if (p_dict.has("description")) {
-				doc.description = p_dict["description"];
-			}
-
-			Array values;
-			if (p_dict.has("values")) {
-				values = p_dict["values"];
-			}
-			for (int i = 0; i < values.size(); i++) {
-				doc.values.push_back(ConstantDoc::from_dict(values[i]));
-			}
-
-			return doc;
-		}
-		static Dictionary to_dict(const EnumDoc &p_doc) {
-			Dictionary dict;
-
-			if (!p_doc.name.is_empty()) {
-				dict["name"] = p_doc.name;
-			}
-
-			dict["is_bitfield"] = p_doc.is_bitfield;
-
-			if (!p_doc.description.is_empty()) {
-				dict["description"] = p_doc.description;
-			}
-
-			if (!p_doc.values.is_empty()) {
-				Array values;
-				for (int i = 0; i < p_doc.values.size(); i++) {
-					values.push_back(ConstantDoc::to_dict(p_doc.values[i]));
-				}
-				dict["values"] = values;
-			}
-
-			return dict;
-		}
-	};
-
 	struct PropertyDoc {
 		String name;
 		String type;
