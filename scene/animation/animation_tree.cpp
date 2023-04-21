@@ -934,7 +934,7 @@ void AnimationTree::_process_graph(float p_delta) {
 							if (err != OK) {
 								continue;
 							}
-							
+
 							if (as.mix == AnimationNode::MIX_MODE_BLEND || as.mix == AnimationNode::MIX_MODE_ADD) {
 									t->loc = t->loc.linear_interpolate(loc, blend);
 									if (t->rot_blend_accum == 0) {
@@ -947,40 +947,18 @@ void AnimationTree::_process_graph(float p_delta) {
 									}
 									t->scale = t->scale.linear_interpolate(scale, blend);
 							} else if (as.mix == AnimationNode::MIX_MODE_ADD_DIRECT) {
-								//ERR_PRINT("add direct");
-
 								t->loc += loc * blend;
 								t->scale = t->scale.linear_interpolate(scale, blend);
 
 								Quat q = Quat().slerp(rot.normalized(),  blend).normalized();
 								t->rot = (t->rot * q).normalized();
-
-								//Quat q = Quat().slerp(rot.normalized(), blend).normalized();
-								//t->rot = (t->rot * q).normalized();
 							} else if (as.mix == AnimationNode::MIX_MODE_SUB) {
-								//ERR_PRINT("sub");
-
 								t->loc -= loc * blend;
 								t->scale = t->scale.linear_interpolate(scale, blend);
 
 								Quat q = Quat().slerp(rot.normalized().inverse(),  blend).normalized();
 								t->rot = (t->rot * q).normalized();
-
-								//Quat q = Quat().slerp(rot.normalized().inverse(), blend).normalized();
-								//t->rot = (t->rot * q).normalized();
 							}
-							/*
-							t->loc = t->loc.linear_interpolate(loc, blend);
-							if (t->rot_blend_accum == 0) {
-								t->rot = rot;
-								t->rot_blend_accum = blend;
-							} else {
-								float rot_total = t->rot_blend_accum + blend;
-								t->rot = rot.slerp(t->rot, t->rot_blend_accum / rot_total).normalized();
-								t->rot_blend_accum = rot_total;
-							}
-							t->scale = t->scale.linear_interpolate(scale, blend);
-							*/
 						}
 
 					} break;
