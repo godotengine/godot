@@ -2215,7 +2215,7 @@ void EditorHelp::_load_doc_thread(void *p_udata) {
 	} else {
 		// We have to go back to the main thread to start from scratch.
 		first_attempt = false;
-		callable_mp_static(&EditorHelp::generate_doc).call_deferred();
+		callable_mp_static(&EditorHelp::generate_doc).bind(true).call_deferred();
 	}
 }
 
