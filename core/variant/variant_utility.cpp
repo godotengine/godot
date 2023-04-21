@@ -374,6 +374,7 @@ struct VariantUtilityFunctions {
 		r_error.error = Callable::CallError::CALL_OK;
 		if (from.get_type() != to.get_type()) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.expected = from.get_type();
 			r_error.argument = 1;
 			return Variant();
 		}
