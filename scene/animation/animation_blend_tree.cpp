@@ -359,7 +359,6 @@ AnimationNodeOneShot::AnimationNodeOneShot() {
 	time_to_restart = "time_to_restart";
 }
 
-
 ////////////////////////////////////////////////
 
 void AnimationNodeSub2::get_parameter_list(List<PropertyInfo> *r_list) const {
