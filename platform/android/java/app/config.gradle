@@ -1,5 +1,5 @@
 ext.versions = [
-    androidGradlePlugin: '7.3.0',
+    androidGradlePlugin: '7.2.1',
     compileSdk         : 33,
     minSdk             : 19, // Also update 'platform/android/export/export_plugin.cpp#DEFAULT_MIN_SDK_VERSION'
     targetSdk          : 33, // Also update 'platform/android/export/export_plugin.cpp#DEFAULT_TARGET_SDK_VERSION'
