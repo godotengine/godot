@@ -79,7 +79,7 @@ struct _NO_DISCARD_CLASS_ Transform2D {
 	void translate(real_t p_tx, real_t p_ty);
 	void translate(const Vector2 &p_translation);
 
-	real_t basis_determinant() const;
+	real_t determinant() const;
 
 	Size2 get_scale() const;
 	void set_scale(const Size2 &p_scale);

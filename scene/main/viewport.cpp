@@ -1786,8 +1786,8 @@ Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_
 	}
 
 	Transform2D matrix = p_xform * p_node->get_transform();
-	// matrix.basis_determinant() == 0.0f implies that node does not exist on scene
-	if (matrix.basis_determinant() == 0.0f) {
+	// matrix.determinant() == 0.0f implies that node does not exist on scene
+	if (matrix.determinant() == 0.0f) {
 		return nullptr;
 	}
 
