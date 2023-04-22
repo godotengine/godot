@@ -281,7 +281,7 @@ void GraphEdit::_scroll_moved(double) {
 			emit_signal(SNAME("scroll_offset_changed"), get_scroll_ofs());
 		}
 	}
-	
+
 	top_layer->queue_redraw();
 	minimap->queue_redraw();
 	queue_redraw();
