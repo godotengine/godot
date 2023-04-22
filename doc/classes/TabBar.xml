@@ -77,6 +77,13 @@
 				Returns tab title language code.
 			</description>
 		</method>
+		<method name="get_tab_metadata" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Returns the metadata value set to the tab at index [param tab_idx] using [method set_tab_metadata]. If no metadata was previously set, returns [code]null[/code] by default.
+			</description>
+		</method>
 		<method name="get_tab_offset" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -179,6 +186,14 @@
 			<param index="1" name="language" type="String" />
 			<description>
 				Sets language code of tab title used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+			</description>
+		</method>
+		<method name="set_tab_metadata">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="metadata" type="Variant" />
+			<description>
+				Sets the metadata value for the tab at index [param tab_idx], which can be retrieved later using [method get_tab_metadata].
 			</description>
 		</method>
 		<method name="set_tab_text_direction">

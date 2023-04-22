@@ -465,7 +465,9 @@ void TabContainer::_drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 			if (from_tabc && from_tabc->get_tabs_rearrange_group() == get_tabs_rearrange_group()) {
 				// Get the tab properties before they get erased by the child removal.
 				String tab_title = from_tabc->get_tab_title(tab_from_id);
+				Ref<Texture2D> tab_icon = from_tabc->get_tab_icon(tab_from_id);
 				bool tab_disabled = from_tabc->is_tab_disabled(tab_from_id);
+				Variant tab_metadata = from_tabc->get_tab_metadata(tab_from_id);
 
 				// Drop the new tab to the left or right depending on where the target tab is being hovered.
 				if (hover_now != -1) {
@@ -482,7 +484,9 @@ void TabContainer::_drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 				add_child(moving_tabc, true);
 
 				set_tab_title(get_tab_count() - 1, tab_title);
+				set_tab_icon(get_tab_count() - 1, tab_icon);
 				set_tab_disabled(get_tab_count() - 1, tab_disabled);
+				set_tab_metadata(get_tab_count() - 1, tab_metadata);
 
 				move_child(moving_tabc, get_tab_control(hover_now)->get_index(false));
 				if (!is_tab_disabled(hover_now)) {
@@ -794,6 +798,14 @@ bool TabContainer::is_tab_hidden(int p_tab) const {
 	return tab_bar->is_tab_hidden(p_tab);
 }
 
+void TabContainer::set_tab_metadata(int p_tab, const Variant &p_metadata) {
+	tab_bar->set_tab_metadata(p_tab, p_metadata);
+}
+
+Variant TabContainer::get_tab_metadata(int p_tab) const {
+	return tab_bar->get_tab_metadata(p_tab);
+}
+
 void TabContainer::set_tab_button_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 	tab_bar->set_tab_button_icon(p_tab, p_icon);
 
@@ -941,6 +953,8 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_tab_disabled", "tab_idx"), &TabContainer::is_tab_disabled);
 	ClassDB::bind_method(D_METHOD("set_tab_hidden", "tab_idx", "hidden"), &TabContainer::set_tab_hidden);
 	ClassDB::bind_method(D_METHOD("is_tab_hidden", "tab_idx"), &TabContainer::is_tab_hidden);
+	ClassDB::bind_method(D_METHOD("set_tab_metadata", "tab_idx", "metadata"), &TabContainer::set_tab_metadata);
+	ClassDB::bind_method(D_METHOD("get_tab_metadata", "tab_idx"), &TabContainer::get_tab_metadata);
 	ClassDB::bind_method(D_METHOD("set_tab_button_icon", "tab_idx", "icon"), &TabContainer::set_tab_button_icon);
 	ClassDB::bind_method(D_METHOD("get_tab_button_icon", "tab_idx"), &TabContainer::get_tab_button_icon);
 	ClassDB::bind_method(D_METHOD("get_tab_idx_at_point", "point"), &TabContainer::get_tab_idx_at_point);
