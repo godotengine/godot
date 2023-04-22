@@ -52,6 +52,11 @@ public:
 
 	typedef uint64_t ID;
 
+	enum : ID {
+		UNASSIGNED_ID = 0,
+		MAIN_ID = 1
+	};
+
 	enum Priority {
 		PRIORITY_LOW,
 		PRIORITY_NORMAL,
@@ -74,11 +79,8 @@ public:
 private:
 	friend class Main;
 
-	static ID main_thread_id;
-
-	static uint64_t _thread_id_hash(const std::thread::id &p_t);
-
-	ID id = _thread_id_hash(std::thread::id());
+	ID id = UNASSIGNED_ID;
+	static SafeNumeric<uint64_t> id_counter;
 	static thread_local ID caller_id;
 	std::thread thread;
 
@@ -86,14 +88,22 @@ private:
 
 	static PlatformFunctions platform_functions;
 
+	static void make_main_thread() { caller_id = MAIN_ID; }
+	static void release_main_thread() { caller_id = UNASSIGNED_ID; }
+
 public:
 	static void _set_platform_functions(const PlatformFunctions &p_functions);
 
 	_FORCE_INLINE_ ID get_id() const { return id; }
 	// get the ID of the caller thread
-	_FORCE_INLINE_ static ID get_caller_id() { return caller_id; }
+	_FORCE_INLINE_ static ID get_caller_id() {
+		if (unlikely(caller_id == UNASSIGNED_ID)) {
+			caller_id = id_counter.increment();
+		}
+		return caller_id;
+	}
 	// get the ID of the main thread
-	_FORCE_INLINE_ static ID get_main_id() { return main_thread_id; }
+	_FORCE_INLINE_ static ID get_main_id() { return MAIN_ID; }
 
 	static Error set_name(const String &p_name);
 
