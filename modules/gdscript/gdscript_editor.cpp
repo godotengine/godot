@@ -2194,7 +2194,7 @@ static void _find_identifiers(const GDScriptCompletionContext &p_context, bool p
 
 	static const char *_keywords[] = {
 		"and", "in", "not", "or", "false", "PI", "TAU", "INF", "NAN", "self", "true", "as", "assert",
-		"breakpoint", "class", "extends", "is", "func", "preload", "setget", "signal", "tool", "yield",
+		"breakpoint", "class", "class_name", "extends", "is", "func", "preload", "setget", "signal", "tool", "yield",
 		"const", "enum", "export", "onready", "static", "var", "break", "continue", "if", "elif",
 		"else", "for", "pass", "return", "match", "while", "remote", "sync", "master", "puppet", "slave",
 		"remotesync", "mastersync", "puppetsync",
