@@ -373,6 +373,7 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 		for (const StringName &E : animations) {
 			_fill_animation(scene_tree, anim_node->get_animation(E), E, item);
 		}
+		anim_node->connect("animation_finished", callable_mp(this, &SceneImportSettings::_preview_animation_finished));
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -582,6 +583,11 @@ void SceneImportSettings::update_view() {
 }
 
 void SceneImportSettings::open_settings(const String &p_path, bool p_for_animation) {
+	if (animation_preview) {
+		memdelete(animation_preview);
+		animation_preview = nullptr;
+	}
+
 	if (scene) {
 		memdelete(scene);
 		scene = nullptr;
@@ -689,6 +695,13 @@ Node *SceneImportSettings::get_selected_node() {
 void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 	selecting = true;
 	scene_import_settings_data->hide_options = false;
+	animation_preview_button->set_visible(false);
+
+	if (animation_preview) {
+		animation_preview->stop();
+		animation_preview->seek(0, true);
+		animation_preview->clear_queue();
+	}
 
 	if (p_type == "Node") {
 		node_selected->hide(); //always hide just in case
@@ -739,13 +752,20 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 		if (Object::cast_to<Node3D>(scene)) {
 			Object::cast_to<Node3D>(scene)->show();
 		}
-		//NodeData &nd=node_map[p_id];
 		material_tree->deselect_all();
 		mesh_tree->deselect_all();
 		AnimationData &ad = animation_map[p_id];
 
 		scene_import_settings_data->settings = &ad.settings;
 		scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION;
+
+		String p_parent_id = p_from->get_selected()->get_parent()->get_meta("import_id");
+		animation_preview = Object::cast_to<AnimationPlayer>(node_map[p_parent_id].node);
+		animation_preview->play(p_id);
+		animation_preview->stop();
+
+		animation_preview_button->set_visible(true);
+		animation_preview_button->set_pressed(false);
 	} else if (p_type == "Mesh") {
 		node_selected->hide();
 		if (Object::cast_to<Node3D>(scene)) {
@@ -884,6 +904,38 @@ void SceneImportSettings::_scene_tree_selected() {
 	_select(scene_tree, type, import_id);
 }
 
+void SceneImportSettings::_animation_button_pressed() {
+	DEV_ASSERT(animation_preview);
+
+	if (selected_type == "Animation") {
+		if (animation_preview_button->is_pressed()) {
+			animation_preview->play(selected_id);
+		} else {
+			animation_preview->pause();
+		}
+	}
+}
+
+void SceneImportSettings::_preview_animation_finished(String anim_name) {
+	DEV_ASSERT(animation_preview);
+
+	HashMap<StringName, Variant> settings = animation_map[selected_id].settings;
+	Animation::LoopMode loop_mode = static_cast<Animation::LoopMode>((int)settings["settings/loop_mode"]);
+	if (loop_mode != Animation::LOOP_NONE) {
+		if (loop_mode == Animation::LOOP_LINEAR) {
+			animation_preview->play(selected_id);
+		} else if (loop_mode == Animation::LOOP_PINGPONG) {
+			if (animation_preview->get_current_animation_position() == animation_preview->get_current_animation_length()) {
+				animation_preview->play_backwards(selected_id);
+			} else {
+				animation_preview->play(selected_id);
+			}
+		}
+	} else {
+		animation_preview_button->set_pressed(false);
+	}
+}
+
 void SceneImportSettings::_viewport_input(const Ref<InputEvent> &p_input) {
 	float *rot_x = &cam_rot_x;
 	float *rot_y = &cam_rot_y;
@@ -995,10 +1047,26 @@ void SceneImportSettings::_re_import() {
 	EditorFileSystem::get_singleton()->reimport_file_with_custom_parameters(base_path, editing_animation ? "animation_library" : "scene", main_settings);
 }
 
+void SceneImportSettings::_update_theme_item_cache() {
+	ConfirmationDialog::_update_theme_item_cache();
+
+	theme_cache.animation_pause = get_theme_icon(SNAME("Pause"), SNAME("EditorIcons"));
+	theme_cache.animation_play = get_theme_icon(SNAME("Play"), SNAME("EditorIcons"));
+}
+
 void SceneImportSettings::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			connect("confirmed", callable_mp(this, &SceneImportSettings::_re_import));
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			action_menu->add_theme_style_override("normal", get_theme_stylebox("normal", "Button"));
+			action_menu->add_theme_style_override("hover", get_theme_stylebox("hover", "Button"));
+			action_menu->add_theme_style_override("pressed", get_theme_stylebox("pressed", "Button"));
+
+			animation_preview_button->set_texture_normal(theme_cache.animation_play);
+			animation_preview_button->set_texture_pressed(theme_cache.animation_pause);
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -1343,6 +1411,24 @@ SceneImportSettings::SceneImportSettings() {
 	vp_container->add_child(base_viewport);
 
 	base_viewport->set_use_own_world_3d(true);
+
+	HBoxContainer *hb = memnew(HBoxContainer);
+	vp_container->add_child(hb);
+	hb->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 2);
+
+	hb->add_spacer();
+
+	VBoxContainer *vb_toolbar = memnew(VBoxContainer);
+	vb_toolbar->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	hb->add_child(vb_toolbar);
+
+	animation_preview_button = memnew(TextureButton);
+	animation_preview_button->set_toggle_mode(true);
+	animation_preview_button->set_visible(false);
+	animation_preview_button->set_stretch_mode(TextureButton::STRETCH_KEEP_ASPECT_CENTERED);
+	animation_preview_button->set_custom_minimum_size(Size2(20, 20));
+	vb_toolbar->add_child(animation_preview_button);
+	animation_preview_button->connect("pressed", callable_mp(this, &SceneImportSettings::_animation_button_pressed));
 
 	camera = memnew(Camera3D);
 	base_viewport->add_child(camera);

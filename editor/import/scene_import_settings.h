@@ -78,6 +78,11 @@ class SceneImportSettings : public ConfirmationDialog {
 	bool first_aabb = false;
 	AABB contents_aabb;
 
+	struct ThemeCache {
+		Ref<Texture2D> animation_play;
+		Ref<Texture2D> animation_pause;
+	} theme_cache;
+
 	DirectionalLight3D *light = nullptr;
 	Ref<ArrayMesh> selection_mesh;
 	MeshInstance3D *node_selected = nullptr;
@@ -128,6 +133,8 @@ class SceneImportSettings : public ConfirmationDialog {
 		HashMap<StringName, Variant> settings;
 	};
 	HashMap<String, AnimationData> animation_map;
+	AnimationPlayer *animation_preview = nullptr;
+	TextureButton *animation_preview_button = nullptr;
 
 	struct NodeData {
 		Node *node = nullptr;
@@ -154,6 +161,8 @@ class SceneImportSettings : public ConfirmationDialog {
 	void _material_tree_selected();
 	void _mesh_tree_selected();
 	void _scene_tree_selected();
+	void _animation_button_pressed();
+	void _preview_animation_finished(String anim_name);
 
 	void _viewport_input(const Ref<InputEvent> &p_input);
 
@@ -196,6 +205,7 @@ class SceneImportSettings : public ConfirmationDialog {
 	Timer *update_view_timer = nullptr;
 
 protected:
+	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 
 public:
