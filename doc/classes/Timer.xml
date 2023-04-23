@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Counts down a specified interval and emits a signal on reaching 0. Can be set to repeat or "one-shot" mode.
+		[b]Note:[/b] Timers are affected by [member Engine.time_scale], a higher scale means quicker timeouts, and vice versa.
 		[b]Note:[/b] To create a one-shot timer without instantiating a node, use [method SceneTree.create_timer].
 	</description>
 	<tutorials>
@@ -52,7 +53,7 @@
 		</member>
 		<member name="wait_time" type="float" setter="set_wait_time" getter="get_wait_time" default="1.0">
 			The wait time in seconds.
-			[b]Note:[/b] Timers can only emit once per rendered frame at most (or once per physics frame if [member process_mode] is [constant TIMER_PROCESS_PHYSICS]). This means very low wait times (lower than 0.05 seconds) will behave in significantly different ways depending on the rendered framerate. For very low wait times, it is recommended to use a process loop in a script instead of using a Timer node.
+			[b]Note:[/b] Timers can only emit once per rendered frame at most (or once per physics frame if [member process_mode] is [constant TIMER_PROCESS_PHYSICS]). This means very low wait times (lower than 0.05 seconds) will behave in significantly different ways depending on the rendered framerate. For very low wait times, it is recommended to use a process loop in a script instead of using a Timer node. Timers are affected by [member Engine.time_scale], a higher scale means quicker timeouts, and vice versa.
 		</member>
 	</members>
 	<signals>
