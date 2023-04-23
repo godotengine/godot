@@ -86,6 +86,9 @@ class SceneImportSettings : public ConfirmationDialog {
 		Ref<Texture2D> light_1_off;
 		Ref<Texture2D> light_2_on;
 		Ref<Texture2D> light_2_off;
+
+		Ref<Texture2D> animation_play;
+		Ref<Texture2D> animation_pause;
 	} theme_cache;
 
 	DirectionalLight3D *light1 = nullptr;
@@ -139,6 +142,8 @@ class SceneImportSettings : public ConfirmationDialog {
 		HashMap<StringName, Variant> settings;
 	};
 	HashMap<String, AnimationData> animation_map;
+	AnimationPlayer *animation_preview = nullptr;
+	TextureButton *animation_preview_button = nullptr;
 
 	struct NodeData {
 		Node *node = nullptr;
@@ -166,6 +171,8 @@ class SceneImportSettings : public ConfirmationDialog {
 	void _mesh_tree_selected();
 	void _scene_tree_selected();
 	void _light_button_pressed(Node *p_button);
+	void _animation_button_pressed();
+	void _preview_animation_finished(String anim_name);
 
 	void _viewport_input(const Ref<InputEvent> &p_input);
 
