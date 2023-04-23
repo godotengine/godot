@@ -163,8 +163,11 @@ public:
 	virtual void hide_virtual_keyboard();
 	virtual int get_virtual_keyboard_height() const;
 
+	void _set_cursor_shape_helper(CursorShape p_shape, bool force = false);
 	virtual void set_cursor_shape(CursorShape p_shape);
 	virtual CursorShape get_cursor_shape() const;
+	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
+
 	virtual void set_mouse_mode(MouseMode p_mode);
 	virtual MouseMode get_mouse_mode() const;
 
@@ -216,6 +219,10 @@ public:
 
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = nullptr, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false);
 	virtual Error kill(const ProcessID &p_pid);
+
+	virtual void benchmark_begin_measure(const String &p_what);
+	virtual void benchmark_end_measure(const String &p_what);
+	virtual void benchmark_dump();
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
 	OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion);

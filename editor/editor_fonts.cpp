@@ -32,6 +32,7 @@
 
 #include "builtin_fonts.gen.h"
 #include "core/os/dir_access.h"
+#include "core/os/os.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
 #include "scene/resources/default_theme/default_theme.h"
@@ -100,6 +101,7 @@
 	MAKE_FALLBACKS(m_name);
 
 void editor_register_fonts(Ref<Theme> p_theme) {
+	OS::get_singleton()->benchmark_begin_measure("editor_register_fonts");
 	DirAccess *dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
 	/* Custom font */
@@ -285,4 +287,6 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	MAKE_SOURCE_FONT(df_text_editor_status_code, default_font_size);
 	p_theme->set_font("status_source", "EditorFonts", df_text_editor_status_code);
+
+	OS::get_singleton()->benchmark_end_measure("editor_register_fonts");
 }

@@ -866,8 +866,11 @@ void EditorNode::_sources_changed(bool p_exist) {
 		_load_docks();
 
 		if (defer_load_scene != "") {
+			OS::get_singleton()->benchmark_begin_measure("editor_load_scene");
 			load_scene(defer_load_scene);
 			defer_load_scene = "";
+			OS::get_singleton()->benchmark_end_measure("editor_load_scene");
+			OS::get_singleton()->benchmark_dump();
 		}
 	}
 }
@@ -3887,6 +3890,8 @@ bool EditorNode::is_scene_in_use(const String &p_path) {
 }
 
 void EditorNode::register_editor_types() {
+	OS::get_singleton()->benchmark_begin_measure("register_editor_types");
+
 	ResourceLoader::set_timestamp_on_load(true);
 	ResourceSaver::set_timestamp_on_save(true);
 
@@ -3922,12 +3927,18 @@ void EditorNode::register_editor_types() {
 	// FIXME: Is this stuff obsolete, or should it be ported to new APIs?
 	ClassDB::register_class<EditorScenePostImport>();
 	//ClassDB::register_type<EditorImportExport>();
+
+	OS::get_singleton()->benchmark_end_measure("register_editor_types");
 }
 
 void EditorNode::unregister_editor_types() {
+	OS::get_singleton()->benchmark_begin_measure("unregister_editor_types");
+
 	_init_callbacks.clear();
 
 	EditorResourcePicker::clear_caches();
+
+	OS::get_singleton()->benchmark_end_measure("unregister_editor_types");
 }
 
 void EditorNode::stop_child_process() {
@@ -5839,6 +5850,7 @@ int EditorNode::execute_and_show_output(const String &p_title, const String &p_p
 }
 
 EditorNode::EditorNode() {
+	OS::get_singleton()->benchmark_begin_measure("editor");
 	EditorPropertyNameProcessor *epnp = memnew(EditorPropertyNameProcessor);
 	add_child(epnp);
 
@@ -7226,6 +7238,8 @@ EditorNode::EditorNode() {
 
 	String exec = OS::get_singleton()->get_executable_path();
 	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "executable_path", exec); // Save editor executable path for third-party tools
+
+	OS::get_singleton()->benchmark_end_measure("editor");
 }
 
 EditorNode::~EditorNode() {

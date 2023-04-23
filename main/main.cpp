@@ -349,6 +349,8 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --doctool [<path>]               Dump the engine API reference to the given <path> (defaults to current dir) in XML format, merging if existing files are found.\n");
 	OS::get_singleton()->print("  --no-docbase                     Disallow dumping the base types (used with --doctool).\n");
 	OS::get_singleton()->print("  --build-solutions                Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.\n");
+	OS::get_singleton()->print("  --benchmark                      Benchmark the run time and print it to console.\n");
+	OS::get_singleton()->print("  --benchmark-file <path>          Benchmark the run time and save it to a given file in JSON format. The path should be absolute.\n");
 #ifdef DEBUG_METHODS_ENABLED
 	OS::get_singleton()->print("  --gdnative-generate-json-api     Generate JSON dump of the Godot API for GDNative bindings.\n");
 #endif
@@ -399,9 +401,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	OS::get_singleton()->initialize_core();
 
+	// Benchmark tracking must be done after `OS::get_singleton()->initialize_core()` as on some
+	// platforms, it's used to set up the time utilities.
+	OS::get_singleton()->benchmark_begin_measure("startup_begin");
+
 	engine = memnew(Engine);
 
 	MAIN_PRINT("Main: Initialize CORE");
+	OS::get_singleton()->benchmark_begin_measure("core");
 
 	register_core_types();
 	register_core_driver_types();
@@ -921,6 +928,20 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			OS::get_singleton()->disable_crash_handler();
 		} else if (I->get() == "--skip-breakpoints") {
 			skip_breakpoints = true;
+		} else if (I->get() == "--benchmark") {
+			OS::get_singleton()->set_use_benchmark(true);
+		} else if (I->get() == "--benchmark-file") {
+			if (I->next()) {
+				OS::get_singleton()->set_use_benchmark(true);
+				String benchmark_file = I->next()->get();
+				OS::get_singleton()->set_benchmark_file(benchmark_file);
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing <path> argument for --startup-benchmark-file <path>.\n");
+				OS::get_singleton()->print("Missing <path> argument for --benchmark-file <path>.\n");
+				goto error;
+			}
+
 		} else {
 			main_args.push_back(I->get());
 		}
@@ -1299,7 +1320,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (p_second_phase) {
 		return setup2();
 	}
-
+	OS::get_singleton()->benchmark_end_measure("core");
 	return OK;
 
 error:
@@ -1352,6 +1373,9 @@ error:
 	if (message_queue) {
 		memdelete(message_queue);
 	}
+
+	OS::get_singleton()->benchmark_end_measure("core");
+
 	OS::get_singleton()->finalize_core();
 	locale = String();
 
@@ -2197,6 +2221,8 @@ bool Main::start() {
 		}
 	}
 
+	OS::get_singleton()->benchmark_end_measure("startup_begin");
+	OS::get_singleton()->benchmark_dump();
 	return true;
 }
 
@@ -2456,6 +2482,7 @@ void Main::force_redraw() {
  * The order matters as some of those steps are linked with each other.
  */
 void Main::cleanup(bool p_force) {
+	OS::get_singleton()->benchmark_begin_measure("Main::cleanup");
 	if (!p_force) {
 		ERR_FAIL_COND(!_start_success);
 	}
@@ -2574,6 +2601,9 @@ void Main::cleanup(bool p_force) {
 
 	unregister_core_driver_types();
 	unregister_core_types();
+
+	OS::get_singleton()->benchmark_end_measure("Main::cleanup");
+	OS::get_singleton()->benchmark_dump();
 
 	OS::get_singleton()->finalize_core();
 

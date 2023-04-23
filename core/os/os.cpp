@@ -30,6 +30,7 @@
 
 #include "os.h"
 
+#include "core/io/json.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/input.h"
@@ -929,6 +930,58 @@ void OS::add_frame_delay(bool p_can_draw) {
 		current_ticks = get_ticks_usec();
 		target_ticks = MIN(MAX(target_ticks, current_ticks - dynamic_delay), current_ticks + dynamic_delay);
 	}
+}
+
+void OS::set_use_benchmark(bool p_use_benchmark) {
+	use_benchmark = p_use_benchmark;
+}
+
+bool OS::is_use_benchmark_set() {
+	return use_benchmark;
+}
+
+void OS::set_benchmark_file(const String &p_benchmark_file) {
+	benchmark_file = p_benchmark_file;
+}
+
+String OS::get_benchmark_file() {
+	return benchmark_file;
+}
+
+void OS::benchmark_begin_measure(const String &p_what) {
+#ifdef TOOLS_ENABLED
+	start_benchmark_from[p_what] = OS::get_singleton()->get_ticks_usec();
+#endif
+}
+void OS::benchmark_end_measure(const String &p_what) {
+#ifdef TOOLS_ENABLED
+	uint64_t total = OS::get_singleton()->get_ticks_usec() - start_benchmark_from[p_what];
+	double total_f = double(total) / double(1000000);
+
+	startup_benchmark_json[p_what] = total_f;
+#endif
+}
+
+void OS::benchmark_dump() {
+#ifdef TOOLS_ENABLED
+	if (!use_benchmark) {
+		return;
+	}
+	if (!benchmark_file.empty()) {
+		FileAccess *f = FileAccess::open(benchmark_file, FileAccess::WRITE);
+		if (f) {
+			f->store_string(JSON::print(startup_benchmark_json, "\t", false));
+		}
+	} else {
+		List<Variant> keys;
+		startup_benchmark_json.get_key_list(&keys);
+		print_line("BENCHMARK:");
+		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+			Variant &K = E->get();
+			print_line("\t-" + K.operator String() + ": " + startup_benchmark_json[K] + " sec.");
+		}
+	}
+#endif
 }
 
 OS::OS() {
