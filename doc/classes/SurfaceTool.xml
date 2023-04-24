@@ -45,7 +45,7 @@
 			<param index="2" name="colors" type="PackedColorArray" default="PackedColorArray()" />
 			<param index="3" name="uv2s" type="PackedVector2Array" default="PackedVector2Array()" />
 			<param index="4" name="normals" type="PackedVector3Array" default="PackedVector3Array()" />
-			<param index="5" name="tangents" type="Array" default="[]" />
+			<param index="5" name="tangents" type="Plane[]" default="[]" />
 			<description>
 				Inserts a triangle fan made of array data into [Mesh] being constructed.
 				Requires the primitive type be set to [constant Mesh.PRIMITIVE_TRIANGLES].

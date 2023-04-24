@@ -717,7 +717,7 @@ protected:
 		return &_class_name_static;
 	}
 
-	Vector<StringName> _get_meta_list_bind() const;
+	TypedArray<StringName> _get_meta_list_bind() const;
 	TypedArray<Dictionary> _get_property_list_bind() const;
 	TypedArray<Dictionary> _get_method_list_bind() const;
 

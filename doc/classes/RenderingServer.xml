@@ -1419,7 +1419,7 @@
 			</description>
 		</method>
 		<method name="global_shader_parameter_get_list" qualifiers="const">
-			<return type="PackedStringArray" />
+			<return type="StringName[]" />
 			<description>
 			</description>
 		</method>

@@ -14,7 +14,7 @@
 			</description>
 		</method>
 		<method name="get_version_list" qualifiers="const">
-			<return type="PackedStringArray" />
+			<return type="StringName[]" />
 			<description>
 			</description>
 		</method>

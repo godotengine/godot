@@ -124,7 +124,7 @@ void ShaderFileEditor::_update_options() {
 	int c = versions->get_current();
 	//remember current
 	versions->clear();
-	Vector<StringName> version_list = shader_file->get_version_list();
+	TypedArray<StringName> version_list = shader_file->get_version_list();
 
 	if (c >= version_list.size()) {
 		c = version_list.size() - 1;

@@ -50,6 +50,8 @@ class Mesh : public Resource {
 	mutable Vector<Vector3> debug_lines;
 	Size2i lightmap_size_hint;
 
+	Vector<Vector3> _get_faces() const;
+
 public:
 	enum PrimitiveType {
 		PRIMITIVE_POINTS = RenderingServer::PRIMITIVE_POINTS,
