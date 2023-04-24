@@ -193,12 +193,14 @@ void Tabs::_gui_input(const Ref<InputEvent> &p_event) {
 			for (int i = offset; i <= max_drawn_tab; i++) {
 				if (tabs[i].rb_rect.has_point(pos)) {
 					rb_pressing = true;
+					_update_hover();
 					update();
 					return;
 				}
 
 				if (tabs[i].cb_rect.has_point(pos) && (cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && i == current))) {
 					cb_pressing = true;
+					_update_hover();
 					update();
 					return;
 				}
