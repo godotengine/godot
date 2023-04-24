@@ -455,6 +455,7 @@ void TabContainer::_drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 
 			move_child(get_tab_control(tab_from_id), get_tab_control(hover_now)->get_index(false));
 			if (!is_tab_disabled(hover_now)) {
+				emit_signal(SNAME("active_tab_rearranged"), hover_now);
 				set_current_tab(hover_now);
 			}
 
@@ -497,6 +498,14 @@ void TabContainer::_drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 			}
 		}
 	}
+}
+
+void TabContainer::_on_tab_clicked(int p_tab) {
+	emit_signal(SNAME("tab_clicked"), p_tab);
+}
+
+void TabContainer::_on_tab_hovered(int p_tab) {
+	emit_signal(SNAME("tab_hovered"), p_tab);
 }
 
 void TabContainer::_on_tab_changed(int p_tab) {
@@ -973,7 +982,10 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_repaint"), &TabContainer::_repaint);
 	ClassDB::bind_method(D_METHOD("_on_theme_changed"), &TabContainer::_on_theme_changed);
 
+	ADD_SIGNAL(MethodInfo("active_tab_rearranged", PropertyInfo(Variant::INT, "idx_to")));
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_clicked", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_hovered", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_selected", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_button_pressed", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("pre_popup_pressed"));
@@ -994,6 +1006,8 @@ TabContainer::TabContainer() {
 	add_child(tab_bar, false, INTERNAL_MODE_FRONT);
 	tab_bar->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE);
 	tab_bar->connect("tab_changed", callable_mp(this, &TabContainer::_on_tab_changed));
+	tab_bar->connect("tab_clicked", callable_mp(this, &TabContainer::_on_tab_clicked));
+	tab_bar->connect("tab_hovered", callable_mp(this, &TabContainer::_on_tab_hovered));
 	tab_bar->connect("tab_selected", callable_mp(this, &TabContainer::_on_tab_selected));
 	tab_bar->connect("tab_button_pressed", callable_mp(this, &TabContainer::_on_tab_button_pressed));
 

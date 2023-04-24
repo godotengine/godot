@@ -184,6 +184,12 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="active_tab_rearranged">
+			<param index="0" name="idx_to" type="int" />
+			<description>
+				Emitted when the active tab is rearranged via mouse drag. See [member drag_to_rearrange_enabled].
+			</description>
+		</signal>
 		<signal name="pre_popup_pressed">
 			<description>
 				Emitted when the [TabContainer]'s [Popup] button is clicked. See [method set_popup] for details.
@@ -199,6 +205,18 @@
 			<param index="0" name="tab" type="int" />
 			<description>
 				Emitted when switching to another tab.
+			</description>
+		</signal>
+		<signal name="tab_clicked">
+			<param index="0" name="tab" type="int" />
+			<description>
+				Emitted when a tab is clicked, even if it is the current tab.
+			</description>
+		</signal>
+		<signal name="tab_hovered">
+			<param index="0" name="tab" type="int" />
+			<description>
+				Emitted when a tab is hovered by the mouse.
 			</description>
 		</signal>
 		<signal name="tab_selected">
