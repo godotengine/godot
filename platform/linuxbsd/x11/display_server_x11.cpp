@@ -753,23 +753,56 @@ int DisplayServerX11::get_screen_count() const {
 }
 
 int DisplayServerX11::get_primary_screen() const {
-	return XDefaultScreen(x11_display);
+	int event_base, error_base;
+	if (XineramaQueryExtension(x11_display, &event_base, &error_base)) {
+		return 0;
+	} else {
+		return XDefaultScreen(x11_display);
+	}
+}
+
+int DisplayServerX11::get_keyboard_focus_screen() const {
+	int count = get_screen_count();
+	if (count < 2) {
+		// Early exit with single monitor.
+		return 0;
+	}
+
+	Window focus = 0;
+	int revert_to = 0;
+
+	XGetInputFocus(x11_display, &focus, &revert_to);
+	if (focus) {
+		Window focus_child = 0;
+		int x = 0, y = 0;
+		XTranslateCoordinates(x11_display, focus, DefaultRootWindow(x11_display), 0, 0, &x, &y, &focus_child);
+
+		XWindowAttributes xwa;
+		XGetWindowAttributes(x11_display, focus, &xwa);
+		Rect2i window_rect = Rect2i(x, y, xwa.width, xwa.height);
+
+		// Find which monitor has the largest overlap with the given window.
+		int screen_index = 0;
+		int max_area = 0;
+		for (int i = 0; i < count; i++) {
+			Rect2i screen_rect = _screen_get_rect(i);
+			Rect2i intersection = screen_rect.intersection(window_rect);
+			int area = intersection.get_area();
+			if (area > max_area) {
+				max_area = area;
+				screen_index = i;
+			}
+		}
+		return screen_index;
+	}
+
+	return get_primary_screen();
 }
 
 Rect2i DisplayServerX11::_screen_get_rect(int p_screen) const {
 	Rect2i rect(0, 0, 0, 0);
 
-	switch (p_screen) {
-		case SCREEN_PRIMARY: {
-			p_screen = get_primary_screen();
-		} break;
-		case SCREEN_OF_MAIN_WINDOW: {
-			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
-		} break;
-		default:
-			break;
-	}
-
+	p_screen = _get_screen_index(p_screen);
 	ERR_FAIL_COND_V(p_screen < 0, rect);
 
 	// Using Xinerama Extension.
@@ -834,17 +867,7 @@ int bad_window_error_handler(Display *display, XErrorEvent *error) {
 Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	switch (p_screen) {
-		case SCREEN_PRIMARY: {
-			p_screen = get_primary_screen();
-		} break;
-		case SCREEN_OF_MAIN_WINDOW: {
-			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
-		} break;
-		default:
-			break;
-	}
-
+	p_screen = _get_screen_index(p_screen);
 	int screen_count = get_screen_count();
 
 	// Check if screen is valid.
@@ -1121,18 +1144,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 int DisplayServerX11::screen_get_dpi(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	switch (p_screen) {
-		case SCREEN_PRIMARY: {
-			p_screen = get_primary_screen();
-		} break;
-		case SCREEN_OF_MAIN_WINDOW: {
-			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
-		} break;
-		default:
-			break;
-	}
-
-	//invalid screen?
+	p_screen = _get_screen_index(p_screen);
 	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), 0);
 
 	//Get physical monitor Dimensions through XRandR and calculate dpi
@@ -1196,18 +1208,7 @@ Color DisplayServerX11::screen_get_pixel(const Point2i &p_position) const {
 float DisplayServerX11::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	switch (p_screen) {
-		case SCREEN_PRIMARY: {
-			p_screen = get_primary_screen();
-		} break;
-		case SCREEN_OF_MAIN_WINDOW: {
-			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
-		} break;
-		default:
-			break;
-	}
-
-	//invalid screen?
+	p_screen = _get_screen_index(p_screen);
 	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), SCREEN_REFRESH_RATE_FALLBACK);
 
 	//Use xrandr to get screen refresh rate.
@@ -1354,7 +1355,7 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	}
 	XDestroyWindow(x11_display, wd.x11_xim_window);
 #ifdef XKB_ENABLED
-	if (xkb_loaded) {
+	if (xkb_loaded_v05p) {
 		if (wd.xkb_state) {
 			xkb_compose_state_unref(wd.xkb_state);
 			wd.xkb_state = nullptr;
@@ -1570,18 +1571,7 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	switch (p_screen) {
-		case SCREEN_PRIMARY: {
-			p_screen = get_primary_screen();
-		} break;
-		case SCREEN_OF_MAIN_WINDOW: {
-			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
-		} break;
-		default:
-			break;
-	}
-
-	// Check if screen is valid
+	p_screen = _get_screen_index(p_screen);
 	ERR_FAIL_INDEX(p_screen, get_screen_count());
 
 	if (window_get_current_screen(p_window) == p_screen) {
@@ -2681,6 +2671,11 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 		Ref<Image> image = texture->get_image();
 
 		ERR_FAIL_COND(!image.is_valid());
+		if (image->is_compressed()) {
+			image = image->duplicate(true);
+			Error err = image->decompress();
+			ERR_FAIL_COND_MSG(err != OK, "Couldn't decompress VRAM-compressed custom mouse cursor image. Switch to a lossless compression mode in the Import dock.");
+		}
 
 		// Create the cursor structure
 		XcursorImage *cursor_image = XcursorImageCreate(texture_size.width, texture_size.height);
@@ -2982,7 +2977,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 
 	String keysym;
 #ifdef XKB_ENABLED
-	if (xkb_loaded) {
+	if (xkb_loaded_v08p) {
 		KeySym keysym_unicode_nm = 0; // keysym used to find unicode
 		XLookupString(&xkeyevent_no_mod, nullptr, 0, &keysym_unicode_nm, nullptr);
 		keysym = String::chr(xkb_keysym_to_utf32(xkb_keysym_to_upper(keysym_unicode_nm)));
@@ -3077,7 +3072,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 		} while (status == XBufferOverflow);
 #endif
 #ifdef XKB_ENABLED
-	} else if (xkeyevent->type == KeyPress && wd.xkb_state && xkb_loaded) {
+	} else if (xkeyevent->type == KeyPress && wd.xkb_state && xkb_loaded_v05p) {
 		xkb_compose_feed_result res = xkb_compose_state_feed(wd.xkb_state, keysym_unicode);
 		if (res == XKB_COMPOSE_FEED_ACCEPTED) {
 			if (xkb_compose_state_get_status(wd.xkb_state) == XKB_COMPOSE_COMPOSED) {
@@ -5004,7 +4999,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 
 		wd.x11_xim_window = XCreateWindow(x11_display, wd.x11_window, 0, 0, 1, 1, 0, CopyFromParent, InputOnly, CopyFromParent, CWEventMask, &window_attributes_ime);
 #ifdef XKB_ENABLED
-		if (dead_tbl && xkb_loaded) {
+		if (dead_tbl && xkb_loaded_v05p) {
 			wd.xkb_state = xkb_compose_state_new(dead_tbl, XKB_COMPOSE_STATE_NO_FLAGS);
 		}
 #endif
@@ -5288,9 +5283,16 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		ERR_FAIL_MSG("Can't load XCursor dynamically.");
 	}
 #ifdef XKB_ENABLED
-	xkb_loaded = (initialize_xkbcommon(dylibloader_verbose) == 0);
-	if (!xkb_context_new || !xkb_compose_table_new_from_locale || !xkb_compose_table_unref || !xkb_context_unref || !xkb_compose_state_feed || !xkb_compose_state_unref || !xkb_compose_state_new || !xkb_compose_state_get_status || !xkb_compose_state_get_utf8 || !xkb_keysym_to_utf32 || !xkb_keysym_to_upper) {
-		xkb_loaded = false;
+	bool xkb_loaded = (initialize_xkbcommon(dylibloader_verbose) == 0);
+	xkb_loaded_v05p = xkb_loaded;
+	if (!xkb_context_new || !xkb_compose_table_new_from_locale || !xkb_compose_table_unref || !xkb_context_unref || !xkb_compose_state_feed || !xkb_compose_state_unref || !xkb_compose_state_new || !xkb_compose_state_get_status || !xkb_compose_state_get_utf8) {
+		xkb_loaded_v05p = false;
+		print_verbose("Detected XKBcommon library version older than 0.5, dead key composition and Unicode key labels disabled.");
+	}
+	xkb_loaded_v08p = xkb_loaded;
+	if (!xkb_keysym_to_utf32 || !xkb_keysym_to_upper) {
+		xkb_loaded_v08p = false;
+		print_verbose("Detected XKBcommon library version older than 0.8, Unicode key labels disabled.");
 	}
 #endif
 	if (initialize_xext(dylibloader_verbose) != 0) {
@@ -5346,6 +5348,15 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 	r_error = OK;
 
+	{
+		if (!XcursorImageCreate || !XcursorImageLoadCursor || !XcursorImageDestroy || !XcursorGetDefaultSize || !XcursorGetTheme || !XcursorLibraryLoadImage) {
+			// There's no API to check version, check if functions are available instead.
+			ERR_PRINT("Unsupported Xcursor library version.");
+			r_error = ERR_UNAVAILABLE;
+			return;
+		}
+	}
+
 	for (int i = 0; i < CURSOR_MAX; i++) {
 		cursors[i] = None;
 		img[i] = nullptr;
@@ -5360,6 +5371,71 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		ERR_PRINT("X11 Display is not available");
 		r_error = ERR_UNAVAILABLE;
 		return;
+	}
+
+	{
+		int version_major = 0;
+		int version_minor = 0;
+		int rc = XShapeQueryVersion(x11_display, &version_major, &version_minor);
+		print_verbose(vformat("Xshape %d.%d detected.", version_major, version_minor));
+		if (rc != 1 || version_major < 1) {
+			ERR_PRINT("Unsupported Xshape library version.");
+			r_error = ERR_UNAVAILABLE;
+			XCloseDisplay(x11_display);
+			return;
+		}
+	}
+
+	{
+		int version_major = 0;
+		int version_minor = 0;
+		int rc = XineramaQueryVersion(x11_display, &version_major, &version_minor);
+		print_verbose(vformat("Xinerama %d.%d detected.", version_major, version_minor));
+		if (rc != 1 || version_major < 1) {
+			ERR_PRINT("Unsupported Xinerama library version.");
+			r_error = ERR_UNAVAILABLE;
+			XCloseDisplay(x11_display);
+			return;
+		}
+	}
+
+	{
+		int version_major = 0;
+		int version_minor = 0;
+		int rc = XRRQueryVersion(x11_display, &version_major, &version_minor);
+		print_verbose(vformat("Xrandr %d.%d detected.", version_major, version_minor));
+		if (rc != 1 || (version_major == 1 && version_minor < 3) || (version_major < 1)) {
+			ERR_PRINT("Unsupported Xrandr library version.");
+			r_error = ERR_UNAVAILABLE;
+			XCloseDisplay(x11_display);
+			return;
+		}
+	}
+
+	{
+		int version_major = 0;
+		int version_minor = 0;
+		int rc = XRenderQueryVersion(x11_display, &version_major, &version_minor);
+		print_verbose(vformat("Xrender %d.%d detected.", version_major, version_minor));
+		if (rc != 1 || (version_major == 0 && version_minor < 11)) {
+			ERR_PRINT("Unsupported Xrender library version.");
+			r_error = ERR_UNAVAILABLE;
+			XCloseDisplay(x11_display);
+			return;
+		}
+	}
+
+	{
+		int version_major = 2; // Report 2.2 as supported by engine, but should work with 2.1 or 2.0 library as well.
+		int version_minor = 2;
+		int rc = XIQueryVersion(x11_display, &version_major, &version_minor);
+		print_verbose(vformat("Xinput %d.%d detected.", version_major, version_minor));
+		if (rc != Success || (version_major < 2)) {
+			ERR_PRINT("Unsupported Xinput2 library version.");
+			r_error = ERR_UNAVAILABLE;
+			XCloseDisplay(x11_display);
+			return;
+		}
 	}
 
 	char *modifiers = nullptr;
@@ -5784,7 +5860,7 @@ DisplayServerX11::~DisplayServerX11() {
 		}
 		XDestroyWindow(x11_display, wd.x11_xim_window);
 #ifdef XKB_ENABLED
-		if (xkb_loaded) {
+		if (xkb_loaded_v05p) {
 			if (wd.xkb_state) {
 				xkb_compose_state_unref(wd.xkb_state);
 				wd.xkb_state = nullptr;
@@ -5796,7 +5872,7 @@ DisplayServerX11::~DisplayServerX11() {
 	}
 
 #ifdef XKB_ENABLED
-	if (xkb_loaded) {
+	if (xkb_loaded_v05p) {
 		if (dead_tbl) {
 			xkb_compose_table_unref(dead_tbl);
 		}

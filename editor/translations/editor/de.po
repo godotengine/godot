@@ -97,13 +97,15 @@
 # Luke Pucknat <lukesollichstun@gmail.com>, 2023.
 # Haoyu Qiu <timothyqiu32@gmail.com>, 2023.
 # Jan Werder <jan@werder.space>, 2023.
+# Benno <bennocrafterdev@googlemail.com>, 2023.
+# Janosch Lion <janorico@posteo.de>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-29 00:10+0000\n"
-"Last-Translator: ‎ <artism90@googlemail.com>\n"
+"PO-Revision-Date: 2023-04-13 17:34+0000\n"
+"Last-Translator: Janosch Lion <janorico@posteo.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -1773,7 +1775,7 @@ msgid "Thanks from the Godot community!"
 msgstr "Die Godot-Gemeinschaft bedankt sich!"
 
 msgid "Click to copy."
-msgstr "Zum Kopieren, klicken."
+msgstr "Zum kopieren klicken."
 
 msgid "Godot Engine contributors"
 msgstr "Mitwirkende der Godot Engine"
@@ -2983,6 +2985,9 @@ msgstr "Eigenschaft-Pfad kopieren"
 
 msgid "Select existing layout:"
 msgstr "Existierendes Layout wählen:"
+
+msgid "Or enter new layout name"
+msgstr "Oder neuen Layout-Namen eingeben"
 
 msgid "Changed Locale Language Filter"
 msgstr "Lokalisierungssprachenfilter geändert"
@@ -5336,8 +5341,17 @@ msgstr "Ordner zum speichern der Mesh-Ressourcen beim Import auswählen"
 msgid "Select folder where animations will save on import"
 msgstr "Ordner zum speichern der Animation beim Import auswählen"
 
+msgid "Warning: File exists"
+msgstr "Achtung: Datei existiert bereits"
+
 msgid "Existing file with the same name will be replaced."
 msgstr "Eine bereits existierende Datei mit dem gleichen Name wird ersetzt."
+
+msgid "Will create new file"
+msgstr "Erzeugt neue Datei"
+
+msgid "Already External"
+msgstr "Bereits extern"
 
 msgid ""
 "This material already references an external file, no action will be taken.\n"
@@ -5347,6 +5361,9 @@ msgstr ""
 "ignoriert.\n"
 "Um erneut zu extrahieren muss die externe Eigenschaft des Materials "
 "deaktiviert werden."
+
+msgid "No import ID"
+msgstr "Keine Import-ID"
 
 msgid ""
 "Material has no name nor any other way to identify on re-import.\n"
@@ -5363,6 +5380,9 @@ msgstr "Materialien in Ressourcen-Dateien extrahieren"
 msgid "Extract"
 msgstr "Extrahieren"
 
+msgid "Already Saving"
+msgstr "Bereits am Speichern"
+
 msgid ""
 "This mesh already saves to an external resource, no action will be taken."
 msgstr ""
@@ -5373,6 +5393,9 @@ msgid "Existing file with the same name will be replaced on import."
 msgstr ""
 "Existierende Datei mit dem gleichen Name wird ersetzt werden beim "
 "Importieren."
+
+msgid "Will save to new file"
+msgstr "Wird als neue Datei speichern"
 
 msgid ""
 "Mesh has no name nor any other way to identify on re-import.\n"
@@ -12039,6 +12062,13 @@ msgstr "Eine „project.godot” oder „.zip“-Datei auswählen."
 
 msgid "This directory already contains a Godot project."
 msgstr "Dieses Verzeichnis beinhaltet bereits ein Godot-Projekt."
+
+msgid ""
+"You cannot save a project in the selected path. Please make a new folder or "
+"choose a new path."
+msgstr ""
+"Projekt kann nicht im ausgewählten Pfad gespeichert werden. Bitte neuen "
+"Ordner erstellen oder anderen Pfad wählen."
 
 msgid ""
 "The selected path is not empty. Choosing an empty folder is highly "

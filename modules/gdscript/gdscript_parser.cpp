@@ -1439,27 +1439,32 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 		valid = false;
 	}
 
-	if (match(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
+	if (check(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
+		push_multiline(true);
+		advance();
 		// Arguments.
 		push_completion_call(annotation);
 		make_completion_context(COMPLETION_ANNOTATION_ARGUMENTS, annotation, 0, true);
-		if (!check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE) && !is_at_end()) {
-			push_multiline(true);
-			int argument_index = 0;
-			do {
-				make_completion_context(COMPLETION_ANNOTATION_ARGUMENTS, annotation, argument_index, true);
-				set_last_completion_call_arg(argument_index++);
-				ExpressionNode *argument = parse_expression(false);
-				if (argument == nullptr) {
-					valid = false;
-					continue;
-				}
-				annotation->arguments.push_back(argument);
-			} while (match(GDScriptTokenizer::Token::COMMA));
-			pop_multiline();
+		int argument_index = 0;
+		do {
+			if (check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE)) {
+				// Allow for trailing comma.
+				break;
+			}
 
-			consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected ")" after annotation arguments.)*");
-		}
+			make_completion_context(COMPLETION_ANNOTATION_ARGUMENTS, annotation, argument_index, true);
+			set_last_completion_call_arg(argument_index++);
+			ExpressionNode *argument = parse_expression(false);
+			if (argument == nullptr) {
+				push_error("Expected expression as the annotation argument.");
+				valid = false;
+				continue;
+			}
+			annotation->arguments.push_back(argument);
+		} while (match(GDScriptTokenizer::Token::COMMA) && !is_at_end());
+
+		pop_multiline();
+		consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected ")" after annotation arguments.)*");
 		pop_completion_call();
 	}
 	complete_extents(annotation);
@@ -2820,6 +2825,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *
 
 	attribute->base = p_previous_operand;
 
+	if (current.is_node_name()) {
+		current.type = GDScriptTokenizer::Token::IDENTIFIER;
+	}
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifier after "." for attribute access.)")) {
 		complete_extents(attribute);
 		return attribute;
@@ -3678,6 +3686,12 @@ bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation)
 }
 
 bool GDScriptParser::tool_annotation(const AnnotationNode *p_annotation, Node *p_node) {
+#ifdef DEBUG_ENABLED
+	if (this->_is_tool) {
+		push_error(R"("@tool" annotation can only be used once.)", p_annotation);
+		return false;
+	}
+#endif // DEBUG_ENABLED
 	this->_is_tool = true;
 	return true;
 }
@@ -3686,6 +3700,16 @@ bool GDScriptParser::icon_annotation(const AnnotationNode *p_annotation, Node *p
 	ERR_FAIL_COND_V_MSG(p_node->type != Node::CLASS, false, R"("@icon" annotation can only be applied to classes.)");
 	ERR_FAIL_COND_V(p_annotation->resolved_arguments.is_empty(), false);
 	ClassNode *p_class = static_cast<ClassNode *>(p_node);
+#ifdef DEBUG_ENABLED
+	if (!p_class->icon_path.is_empty()) {
+		push_error(R"("@icon" annotation can only be used once.)", p_annotation);
+		return false;
+	}
+	if (String(p_annotation->resolved_arguments[0]).is_empty()) {
+		push_error(R"("@icon" annotation argument must contain the path to the icon.)", p_annotation->arguments[0]);
+		return false;
+	}
+#endif // DEBUG_ENABLED
 	p_class->icon_path = p_annotation->resolved_arguments[0];
 	return true;
 }

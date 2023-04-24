@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorInterface" inherits="Node" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorInterface" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Godot editor's interface.
 	</brief_description>
@@ -34,7 +34,7 @@
 				Edits the given [Script]. The line and column on which to open the script can also be specified. The script will be open with the user-configured editor for the script's language which may be an external editor.
 			</description>
 		</method>
-		<method name="get_base_control">
+		<method name="get_base_control" qualifiers="const">
 			<return type="Control" />
 			<description>
 				Returns the main container of Godot editor's window. For example, you can use it to retrieve the size of the container and place your controls accordingly.
@@ -60,20 +60,20 @@
 				Returns the current path being viewed in the [FileSystemDock].
 			</description>
 		</method>
-		<method name="get_edited_scene_root">
+		<method name="get_edited_scene_root" qualifiers="const">
 			<return type="Node" />
 			<description>
 				Returns the edited (current) scene's root [Node].
 			</description>
 		</method>
-		<method name="get_editor_main_screen">
+		<method name="get_editor_main_screen" qualifiers="const">
 			<return type="VBoxContainer" />
 			<description>
 				Returns the editor control responsible for main screen plugins and tools. Use it with plugins that implement [method EditorPlugin._has_main_screen].
 				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
-		<method name="get_editor_paths">
+		<method name="get_editor_paths" qualifiers="const">
 			<return type="EditorPaths" />
 			<description>
 				Returns the [EditorPaths] singleton.
@@ -86,13 +86,13 @@
 				[b]Note:[/b] This value is set via the [code]interface/editor/display_scale[/code] and [code]interface/editor/custom_display_scale[/code] editor settings. Editor must be restarted for changes to be properly applied.
 			</description>
 		</method>
-		<method name="get_editor_settings">
+		<method name="get_editor_settings" qualifiers="const">
 			<return type="EditorSettings" />
 			<description>
 				Returns the editor's [EditorSettings] instance.
 			</description>
 		</method>
-		<method name="get_file_system_dock">
+		<method name="get_file_system_dock" qualifiers="const">
 			<return type="FileSystemDock" />
 			<description>
 				Returns the editor's [FileSystemDock] instance.
@@ -118,19 +118,19 @@
 				Returns the name of the scene that is being played. If no scene is currently being played, returns an empty string.
 			</description>
 		</method>
-		<method name="get_resource_filesystem">
+		<method name="get_resource_filesystem" qualifiers="const">
 			<return type="EditorFileSystem" />
 			<description>
 				Returns the editor's [EditorFileSystem] instance.
 			</description>
 		</method>
-		<method name="get_resource_previewer">
+		<method name="get_resource_previewer" qualifiers="const">
 			<return type="EditorResourcePreview" />
 			<description>
 				Returns the editor's [EditorResourcePreview] instance.
 			</description>
 		</method>
-		<method name="get_script_editor">
+		<method name="get_script_editor" qualifiers="const">
 			<return type="ScriptEditor" />
 			<description>
 				Returns the editor's [ScriptEditor] instance.
@@ -143,7 +143,7 @@
 				Returns an array containing the paths of the currently selected files (and directories) in the [FileSystemDock].
 			</description>
 		</method>
-		<method name="get_selection">
+		<method name="get_selection" qualifiers="const">
 			<return type="EditorSelection" />
 			<description>
 				Returns the editor's [EditorSelection] instance.
@@ -156,12 +156,6 @@
 			<param index="2" name="inspector_only" type="bool" default="false" />
 			<description>
 				Shows the given property on the given [param object] in the editor's Inspector dock. If [param inspector_only] is [code]true[/code], plugins will not attempt to edit [param object].
-			</description>
-		</method>
-		<method name="is_movie_maker_enabled" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if Movie Maker mode is enabled in the editor. See also [method set_movie_maker_enabled]. See [MovieWriter] for more information.
 			</description>
 		</method>
 		<method name="is_playing_scene" qualifiers="const">
@@ -253,13 +247,6 @@
 				Sets the editor's current main screen to the one specified in [param name]. [param name] must match the text of the tab in question exactly ([code]2D[/code], [code]3D[/code], [code]Script[/code], [code]AssetLib[/code]).
 			</description>
 		</method>
-		<method name="set_movie_maker_enabled">
-			<return type="void" />
-			<param index="0" name="enabled" type="bool" />
-			<description>
-				Sets whether Movie Maker mode is enabled in the editor. See also [method is_movie_maker_enabled]. See [MovieWriter] for more information.
-			</description>
-		</method>
 		<method name="set_plugin_enabled">
 			<return type="void" />
 			<param index="0" name="plugin" type="String" />
@@ -278,6 +265,9 @@
 	<members>
 		<member name="distraction_free_mode" type="bool" setter="set_distraction_free_mode" getter="is_distraction_free_mode_enabled">
 			If [code]true[/code], enables distraction-free mode which hides side docks to increase the space available for the main view.
+		</member>
+		<member name="movie_maker_enabled" type="bool" setter="set_movie_maker_enabled" getter="is_movie_maker_enabled">
+			If [code]true[/code], the Movie Maker mode is enabled in the editor. See [MovieWriter] for more information.
 		</member>
 	</members>
 </class>

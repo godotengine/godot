@@ -142,6 +142,10 @@ void CanvasItem::_redraw_callback() {
 	pending_update = false; // don't change to false until finished drawing (avoid recursive update)
 }
 
+void CanvasItem::_invalidate_global_transform() {
+	global_invalid = true;
+}
+
 Transform2D CanvasItem::get_global_transform_with_canvas() const {
 	if (canvas_layer) {
 		return canvas_layer->get_final_transform() * get_global_transform();
@@ -222,7 +226,7 @@ void CanvasItem::_enter_canvas() {
 		RenderingServer::get_singleton()->canvas_item_set_parent(canvas_item, canvas);
 		RenderingServer::get_singleton()->canvas_item_set_visibility_layer(canvas_item, visibility_layer);
 
-		canvas_group = "root_canvas" + itos(canvas.get_id());
+		canvas_group = "_root_canvas" + itos(canvas.get_id());
 
 		add_to_group(canvas_group);
 		if (canvas_layer) {
@@ -290,6 +294,7 @@ void CanvasItem::_notification(int p_what) {
 				}
 			}
 
+			global_invalid = true;
 			_enter_canvas();
 
 			RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, is_visible_in_tree()); // The visibility of the parent may change.
@@ -350,9 +355,7 @@ void CanvasItem::update_draw_order() {
 }
 
 void CanvasItem::_window_visibility_changed() {
-	if (visible) {
-		_propagate_visibility_changed(window->is_visible());
-	}
+	_propagate_visibility_changed(window->is_visible());
 }
 
 void CanvasItem::queue_redraw() {
@@ -405,6 +408,7 @@ void CanvasItem::set_as_top_level(bool p_top_level) {
 
 	if (!is_inside_tree()) {
 		top_level = p_top_level;
+		propagate_call(SNAME("_invalidate_global_transform"));
 		return;
 	}
 
@@ -952,6 +956,7 @@ void CanvasItem::_validate_property(PropertyInfo &p_property) const {
 
 void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_top_level_raise_self"), &CanvasItem::_top_level_raise_self);
+	ClassDB::bind_method(D_METHOD("_invalidate_global_transform"), &CanvasItem::_invalidate_global_transform);
 
 #ifdef TOOLS_ENABLED
 	ClassDB::bind_method(D_METHOD("_edit_set_state", "state"), &CanvasItem::_edit_set_state);

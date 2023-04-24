@@ -29,13 +29,14 @@
 # Alex <anna.loban@yahoo.com>, 2023.
 # Ivan Nosatlev <maxonyt2@gmail.com>, 2023.
 # Dmytro Kyrychuk <dmytro@kyrych.uk>, 2023.
+# Maksym <maksym@mowemax.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-16 01:44+0000\n"
-"Last-Translator: Dmytro Kyrychuk <dmytro@kyrych.uk>\n"
+"PO-Revision-Date: 2023-04-13 20:43+0000\n"
+"Last-Translator: Maksym <maksym@mowemax.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -44,7 +45,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.16.2-dev\n"
+"X-Generator: Weblate 4.17-dev\n"
 
 msgid "Unset"
 msgstr "Зняти"
@@ -171,6 +172,18 @@ msgstr "D-pad Праворуч"
 
 msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
 msgstr "Xbox Share, мікрофон PS5, захоплення Nintendo"
+
+msgid "Xbox Paddle 1"
+msgstr "Пелюстка Xbox 1"
+
+msgid "Xbox Paddle 2"
+msgstr "Пелюстка Xbox 2"
+
+msgid "Xbox Paddle 3"
+msgstr "Пелюстка Xbox 3"
+
+msgid "Xbox Paddle 4"
+msgstr "Пелюстка Xbox 4"
 
 msgid "PS4/5 Touchpad"
 msgstr "PS4/5 Тачпад"
@@ -1948,6 +1961,9 @@ msgstr "Просторова фізика"
 msgid "Navigation"
 msgstr "Навігація"
 
+msgid "XR"
+msgstr "XR"
+
 msgid "OpenGL"
 msgstr "OpenGL"
 
@@ -2687,6 +2703,22 @@ msgstr ""
 
 msgid "Open Documentation"
 msgstr "Відкрити документацію"
+
+msgid "Add element to property array with prefix %s."
+msgstr "Додати елемент до масиву властивостей із перфіксом %s."
+
+msgid "Remove element %d from property array with prefix %s."
+msgstr "Вилучити елемент %d з масиву властивостей із перфіксом %s."
+
+msgid "Move element %d to position %d in property array with prefix %s."
+msgstr ""
+"Перемістити елемент %d на позицію %d в масиві властивостей із перфіксом %s."
+
+msgid "Clear property array with prefix %s."
+msgstr "Очистити масив властивостей із перфіксом %s."
+
+msgid "Resize property array with prefix %s."
+msgstr "Змінити розмір масиву властивостей із перфіксом %s."
 
 msgid "Element %d: %s%d*"
 msgstr "Елемент %d: %s%d*"
@@ -4449,6 +4481,20 @@ msgstr "Керування шаблонами експорту"
 msgid "Export With Debug"
 msgstr "Експортувати із діагностикою"
 
+msgid ""
+"Canceling this dialog will disable the FBX importer.\n"
+"You can re-enable it in the Project Settings under Filesystem > Import > FBX "
+"> Enabled.\n"
+"\n"
+"The editor will restart as importers are registered when the editor starts."
+msgstr ""
+"Скасування цього діалового вікна зупинить імпорт FBX.\n"
+"Ви зможете заново увімкнути у Параметрах проекту у категорії Файлова система "
+"> FBX > Увімкнути.\n"
+"\n"
+"Редактор буде перезавантажено, оскільки процеси імпорту реєструються в "
+"момент запуску редактора."
+
 msgid "Path to FBX2glTF executable is empty."
 msgstr "Шлях до виконуваного файлу FBX2glTF порожній."
 
@@ -5031,8 +5077,14 @@ msgstr "Виберіть теку, куди будуть збережені ре
 msgid "Select folder where animations will save on import"
 msgstr "Виберіть теку, куди будуть збережені анімації після імпорту"
 
+msgid "Warning: File exists"
+msgstr "Попередження: Файл уже існує"
+
 msgid "Existing file with the same name will be replaced."
 msgstr "Існуючий файл з такою самою назвою буде замінено."
+
+msgid "Will create new file"
+msgstr "Створить файл скрипту"
 
 msgid ""
 "This material already references an external file, no action will be taken.\n"
@@ -5041,6 +5093,9 @@ msgstr ""
 "Цей матеріал вже посилається на зовнішній файл, ніяких дій не буде "
 "виконано.\n"
 "Вимкніть зовнішню властивість, щоб витягти його знову."
+
+msgid "No import ID"
+msgstr "Відсутній ідентифікатор імпорту"
 
 msgid ""
 "Material has no name nor any other way to identify on re-import.\n"
@@ -5065,6 +5120,9 @@ msgstr ""
 
 msgid "Existing file with the same name will be replaced on import."
 msgstr "Існуючий файл з такою самою назвою буде замінено при імпорті."
+
+msgid "Will save to new file"
+msgstr "Буде збережено до нового файлу"
 
 msgid ""
 "Mesh has no name nor any other way to identify on re-import.\n"

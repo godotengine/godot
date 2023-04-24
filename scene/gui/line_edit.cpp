@@ -284,7 +284,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 		_reset_caret_blink_timer();
 		if (b->is_pressed()) {
-			accept_event(); // don't pass event further when clicked on text field
+			accept_event(); // Don't pass event further when clicked on text field.
 			if (!text.is_empty() && is_editable() && _is_over_clear_button(b->get_position())) {
 				clear_button_status.press_attempt = true;
 				clear_button_status.pressing_inside = true;
@@ -429,7 +429,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		// Alt+ Unicode input:
+		// Alt + Unicode input:
 		if (k->is_alt_pressed()) {
 			if (!alt_start) {
 				if (k->get_keycode() == Key::KP_ADD) {
@@ -470,7 +470,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		// Default is ENTER and KP_ENTER. Cannot use ui_accept as default includes SPACE
+		// Default is ENTER and KP_ENTER. Cannot use ui_accept as default includes SPACE.
 		if (k->is_action("ui_text_submit", false)) {
 			emit_signal(SNAME("text_submitted"), text);
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
@@ -608,7 +608,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		bool allow_unicode_handling = !(k->is_command_or_control_pressed() || k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
 
 		if (allow_unicode_handling && editable && k->get_unicode() >= 32) {
-			// Handle Unicode (if no modifiers active)
+			// Handle Unicode if no modifiers are active.
 			selection_delete();
 			char32_t ucodestr[2] = { (char32_t)k->get_unicode(), 0 };
 			int prev_len = text.length();
@@ -1116,7 +1116,7 @@ void LineEdit::_notification(int p_what) {
 			ime_text = "";
 			ime_selection = Point2();
 			_shape();
-			set_caret_column(caret_column); // Update scroll_offset
+			set_caret_column(caret_column); // Update scroll_offset.
 
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 				DisplayServer::get_singleton()->virtual_keyboard_hide();
@@ -1137,7 +1137,7 @@ void LineEdit::_notification(int p_what) {
 				}
 
 				_shape();
-				set_caret_column(caret_column); // Update scroll_offset
+				set_caret_column(caret_column); // Update scroll_offset.
 
 				queue_redraw();
 			}
@@ -2360,7 +2360,7 @@ Key LineEdit::_get_menu_action_accelerator(const String &p_action) {
 		return Key::NONE;
 	}
 
-	// Use physical keycode if non-zero
+	// Use physical keycode if non-zero.
 	if (event->get_physical_keycode() != Key::NONE) {
 		return event->get_physical_keycode_with_modifiers();
 	} else {

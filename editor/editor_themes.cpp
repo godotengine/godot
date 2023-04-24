@@ -1296,13 +1296,20 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_itemlist_cursor->set_draw_center(false);
 	style_itemlist_cursor->set_border_width_all(border_width);
 	style_itemlist_cursor->set_border_color(highlight_color);
+
+	Ref<StyleBoxFlat> style_itemlist_hover = style_tree_selected->duplicate();
+	style_itemlist_hover->set_bg_color(highlight_color * Color(1, 1, 1, 0.3));
+	style_itemlist_hover->set_border_width_all(0);
+
 	theme->set_stylebox("panel", "ItemList", style_itemlist_bg);
 	theme->set_stylebox("focus", "ItemList", style_widget_focus);
 	theme->set_stylebox("cursor", "ItemList", style_itemlist_cursor);
 	theme->set_stylebox("cursor_unfocused", "ItemList", style_itemlist_cursor);
 	theme->set_stylebox("selected_focus", "ItemList", style_tree_focus);
 	theme->set_stylebox("selected", "ItemList", style_tree_selected);
+	theme->set_stylebox("hovered", "ItemList", style_itemlist_hover);
 	theme->set_color("font_color", "ItemList", font_color);
+	theme->set_color("font_hovered_color", "ItemList", mono_color);
 	theme->set_color("font_selected_color", "ItemList", mono_color);
 	theme->set_color("font_outline_color", "ItemList", font_outline_color);
 	theme->set_color("guide_color", "ItemList", guide_color);
@@ -1446,7 +1453,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("selection_color", "LineEdit", selection_color);
 	theme->set_color("clear_button_color", "LineEdit", font_color);
 	theme->set_color("clear_button_color_pressed", "LineEdit", accent_color);
+
+	theme->set_constant("minimum_character_width", "LineEdit", 4);
 	theme->set_constant("outline_size", "LineEdit", 0);
+	theme->set_constant("caret_width", "LineEdit", 1);
 
 	// TextEdit
 	theme->set_stylebox("normal", "TextEdit", style_line_edit);
@@ -1464,6 +1474,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_constant("line_spacing", "TextEdit", 4 * EDSCALE);
 	theme->set_constant("outline_size", "TextEdit", 0);
+	theme->set_constant("caret_width", "TextEdit", 1);
 
 	theme->set_icon("h_grabber", "SplitContainer", theme->get_icon(SNAME("GuiHsplitter"), SNAME("EditorIcons")));
 	theme->set_icon("v_grabber", "SplitContainer", theme->get_icon(SNAME("GuiVsplitter"), SNAME("EditorIcons")));

@@ -40,6 +40,7 @@ class CanvasItemEditorViewport;
 class ConfirmationDialog;
 class EditorData;
 class EditorZoomWidget;
+class EditorSelection;
 class HScrollBar;
 class HSplitContainer;
 class MenuButton;

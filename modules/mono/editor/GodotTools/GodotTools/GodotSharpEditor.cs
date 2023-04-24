@@ -25,6 +25,8 @@ namespace GodotTools
         public static class Settings
         {
             public const string ExternalEditor = "dotnet/editor/external_editor";
+            public const string CustomExecPath = "dotnet/editor/custom_exec_path";
+            public const string CustomExecPathArgs = "dotnet/editor/custom_exec_path_args";
             public const string VerbosityLevel = "dotnet/build/verbosity_level";
             public const string NoConsoleLogging = "dotnet/build/no_console_logging";
             public const string CreateBinaryLog = "dotnet/build/create_binary_log";
@@ -185,6 +187,66 @@ namespace GodotTools
                 case ExternalEditorId.None:
                     // Not an error. Tells the caller to fallback to the global external editor settings or the built-in editor.
                     return Error.Unavailable;
+                case ExternalEditorId.CustomEditor:
+                {
+                    string file = ProjectSettings.GlobalizePath(script.ResourcePath);
+                    var execCommand = _editorSettings.GetSetting(Settings.CustomExecPath).As<string>();
+                    var execArgs = _editorSettings.GetSetting(Settings.CustomExecPathArgs).As<string>();
+                    var args = new List<string>();
+                    var from = 0;
+                    var numChars = 0;
+                    var insideQuotes = false;
+                    var hasFileFlag = false;
+
+                    execArgs = execArgs.ReplaceN("{line}", line.ToString());
+                    execArgs = execArgs.ReplaceN("{col}", col.ToString());
+                    execArgs = execArgs.StripEdges(true, true);
+                    execArgs = execArgs.Replace("\\\\", "\\");
+
+                    for (int i = 0; i < execArgs.Length; ++i)
+                    {
+                        if ((execArgs[i] == '"' && (i == 0 || execArgs[i - 1] != '\\')) && i != execArgs.Length - 1)
+                        {
+                            if (!insideQuotes)
+                            {
+                                from++;
+                            }
+                            insideQuotes = !insideQuotes;
+                        }
+                        else if ((execArgs[i] == ' ' && !insideQuotes) || i == execArgs.Length - 1)
+                        {
+                            if (i == execArgs.Length - 1 && !insideQuotes)
+                            {
+                                numChars++;
+                            }
+
+                            var arg = execArgs.Substr(from, numChars);
+                            if (arg.Contains("{file}"))
+                            {
+                                hasFileFlag = true;
+                            }
+
+                            arg = arg.ReplaceN("{file}", file);
+                            args.Add(arg);
+
+                            from = i + 1;
+                            numChars = 0;
+                        }
+                        else
+                        {
+                            numChars++;
+                        }
+                    }
+
+                    if (!hasFileFlag)
+                    {
+                        args.Add(file);
+                    }
+
+                    OS.RunProcess(execCommand, args);
+
+                    break;
+                }
                 case ExternalEditorId.VisualStudio:
                 {
                     string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
@@ -463,6 +525,8 @@ namespace GodotTools
 
             // External editor settings
             EditorDef(Settings.ExternalEditor, Variant.From(ExternalEditorId.None));
+            EditorDef(Settings.CustomExecPath, "");
+            EditorDef(Settings.CustomExecPathArgs, "");
             EditorDef(Settings.VerbosityLevel, Variant.From(VerbosityLevelId.Normal));
             EditorDef(Settings.NoConsoleLogging, false);
             EditorDef(Settings.CreateBinaryLog, false);
@@ -474,20 +538,23 @@ namespace GodotTools
                 settingsHintStr += $",Visual Studio:{(int)ExternalEditorId.VisualStudio}" +
                                    $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
                                    $",Visual Studio Code:{(int)ExternalEditorId.VsCode}" +
-                                   $",JetBrains Rider:{(int)ExternalEditorId.Rider}";
+                                   $",JetBrains Rider:{(int)ExternalEditorId.Rider}" +
+                                   $",Custom:{(int)ExternalEditorId.CustomEditor}";
             }
             else if (OS.IsMacOS)
             {
                 settingsHintStr += $",Visual Studio:{(int)ExternalEditorId.VisualStudioForMac}" +
                                    $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
                                    $",Visual Studio Code:{(int)ExternalEditorId.VsCode}" +
-                                   $",JetBrains Rider:{(int)ExternalEditorId.Rider}";
+                                   $",JetBrains Rider:{(int)ExternalEditorId.Rider}" +
+                                   $",Custom:{(int)ExternalEditorId.CustomEditor}";
             }
             else if (OS.IsUnixLike)
             {
                 settingsHintStr += $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
                                    $",Visual Studio Code:{(int)ExternalEditorId.VsCode}" +
-                                   $",JetBrains Rider:{(int)ExternalEditorId.Rider}";
+                                   $",JetBrains Rider:{(int)ExternalEditorId.Rider}" +
+                                   $",Custom:{(int)ExternalEditorId.CustomEditor}";
             }
 
             _editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
@@ -497,6 +564,20 @@ namespace GodotTools
                 ["hint"] = (int)PropertyHint.Enum,
                 ["hint_string"] = settingsHintStr
             });
+
+            _editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
+            {
+                ["type"] = (int)Variant.Type.String,
+                ["name"] = Settings.CustomExecPath,
+                ["hint"] = (int)PropertyHint.GlobalFile,
+            });
+
+            _editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
+            {
+                ["type"] = (int)Variant.Type.String,
+                ["name"] = Settings.CustomExecPathArgs,
+            });
+            _editorSettings.SetInitialValue(Settings.CustomExecPathArgs, "{file}", false);
 
             var verbosityLevels = Enum.GetValues<VerbosityLevelId>().Select(level => $"{Enum.GetName(level)}:{(int)level}");
             _editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
@@ -513,7 +594,6 @@ namespace GodotTools
             // Export plugin
             var exportPlugin = new ExportPlugin();
             AddExportPlugin(exportPlugin);
-            exportPlugin.RegisterExportSettings();
             _exportPluginWeak = WeakRef(exportPlugin);
 
             BuildManager.Initialize();

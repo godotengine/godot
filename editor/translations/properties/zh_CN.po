@@ -58,7 +58,7 @@
 # idleman <1524328475@qq.com>, 2019.
 # king <wangding1992@126.com>, 2019.
 # silentbird <silentbird520@outlook.com>, 2019.
-# Haoyu Qiu <timothyqiu32@gmail.com>, 2019, 2020, 2021, 2022.
+# Haoyu Qiu <timothyqiu32@gmail.com>, 2019, 2020, 2021, 2022, 2023.
 # Revan Ji <jiruifancr@gmail.com>, 2020.
 # nieyuanhong <15625988003@163.com>, 2020.
 # binotaliu <binota@protonmail.ch>, 2020.
@@ -92,7 +92,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2023-03-28 02:34+0000\n"
+"PO-Revision-Date: 2023-04-13 04:06+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/zh_Hans/>\n"
@@ -330,6 +330,9 @@ msgstr "国际化"
 
 msgid "Force Right to Left Layout Direction"
 msgstr "强制从右至左的布局方向"
+
+msgid "Root Node Layout Direction"
+msgstr "根节点排版方向"
 
 msgid "GUI"
 msgstr "GUI"
@@ -1097,7 +1100,7 @@ msgid "Appearance"
 msgstr "外观"
 
 msgid "Caret"
-msgstr "光标"
+msgstr "（文本）光标"
 
 msgid "Caret Blink"
 msgstr "光标闪烁"
@@ -2556,6 +2559,9 @@ msgstr "参照空间"
 
 msgid "Submit Depth Buffer"
 msgstr "提交深度缓冲区"
+
+msgid "Startup Alert"
+msgstr "启动警报"
 
 msgid "In Editor"
 msgstr "在编辑器中"
@@ -4651,6 +4657,12 @@ msgstr "路径最大距离"
 msgid "Navigation Layers"
 msgstr "导航层"
 
+msgid "Pathfinding Algorithm"
+msgstr "寻路算法"
+
+msgid "Path Postprocessing"
+msgstr "路径后处理"
+
 msgid "Path Metadata Flags"
 msgstr "路径元数据标志"
 
@@ -6160,6 +6172,18 @@ msgstr "十六进制可见"
 msgid "Presets Visible"
 msgstr "预设可见"
 
+msgid "Theme Overrides"
+msgstr "主题覆盖"
+
+msgid "Constants"
+msgstr "常量"
+
+msgid "Font Sizes"
+msgstr "字体大小"
+
+msgid "Styles"
+msgstr "样式"
+
 msgid "Clip Contents"
 msgstr "裁剪内容"
 
@@ -6549,6 +6573,9 @@ msgstr "字形标志"
 
 msgid "Relative Index"
 msgstr "相对索引"
+
+msgid "BBCode Enabled"
+msgstr "启用 BBCode"
 
 msgid "Fit Content"
 msgstr "适配内容"
@@ -7688,10 +7715,10 @@ msgid "Relationship Line Color"
 msgstr "关系线颜色"
 
 msgid "Parent HL Line Color"
-msgstr "父 HL 线颜色"
+msgstr "父高亮线颜色"
 
 msgid "Children HL Line Color"
-msgstr "子 HL 线颜色"
+msgstr "子高亮线颜色"
 
 msgid "Custom Button Font Highlight"
 msgstr "自定义按钮字体高亮"
@@ -7709,13 +7736,13 @@ msgid "Relationship Line Width"
 msgstr "关系线宽度"
 
 msgid "Parent HL Line Width"
-msgstr "父 HL 线宽度"
+msgstr "父高亮线宽度"
 
 msgid "Children HL Line Width"
-msgstr "子 HL 线宽度"
+msgstr "子高亮线宽度"
 
 msgid "Parent HL Line Margin"
-msgstr "父 HL 线边距"
+msgstr "父高亮线边距"
 
 msgid "Draw Guides"
 msgstr "绘制参考线"
@@ -9205,12 +9232,6 @@ msgstr "电影文件"
 msgid "Disable V-Sync"
 msgstr "禁用垂直同步"
 
-msgid "Pathfinding Algorithm"
-msgstr "寻路算法"
-
-msgid "Path Postprocessing"
-msgstr "路径后处理"
-
 msgid "Metadata Flags"
 msgstr "元数据标志"
 
@@ -9744,6 +9765,9 @@ msgstr "有跟踪数据"
 
 msgid "Tracking Confidence"
 msgstr "追踪置信度"
+
+msgid "World Origin"
+msgstr "世界原点"
 
 msgid "Primary Interface"
 msgstr "主接口"

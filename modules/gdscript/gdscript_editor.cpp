@@ -54,6 +54,7 @@ void GDScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 	p_delimiters->push_back("\" \"");
 	p_delimiters->push_back("' '");
 	p_delimiters->push_back("\"\"\" \"\"\"");
+	p_delimiters->push_back("''' '''");
 }
 
 bool GDScriptLanguage::is_using_templates() {
@@ -73,9 +74,11 @@ Ref<Script> GDScriptLanguage::make_template(const String &p_template, const Stri
 									 .replace(": String", "")
 									 .replace(": Array[String]", "")
 									 .replace(": float", "")
+									 .replace(": CharFXTransform", "")
 									 .replace(":=", "=")
 									 .replace(" -> String", "")
 									 .replace(" -> int", "")
+									 .replace(" -> bool", "")
 									 .replace(" -> void", "");
 	}
 

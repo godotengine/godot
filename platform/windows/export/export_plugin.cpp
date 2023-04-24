@@ -262,21 +262,72 @@ List<String> EditorExportPlatformWindows::get_binary_extensions(const Ref<Editor
 	return list;
 }
 
-bool EditorExportPlatformWindows::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
+String EditorExportPlatformWindows::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {
+	if (p_preset) {
+		if (p_name == "application/icon") {
+			String icon_path = ProjectSettings::get_singleton()->globalize_path(p_preset->get("application/icon"));
+			if (!icon_path.is_empty() && !FileAccess::exists(icon_path)) {
+				return TTR("Invalid icon path.");
+			}
+		} else if (p_name == "application/file_version") {
+			String file_version = p_preset->get("application/file_version");
+			if (!file_version.is_empty()) {
+				PackedStringArray version_array = file_version.split(".", false);
+				if (version_array.size() != 4 || !version_array[0].is_valid_int() ||
+						!version_array[1].is_valid_int() || !version_array[2].is_valid_int() ||
+						!version_array[3].is_valid_int() || file_version.find("-") > -1) {
+					return TTR("Invalid file version.");
+				}
+			}
+		} else if (p_name == "application/product_version") {
+			String product_version = p_preset->get("application/product_version");
+			if (!product_version.is_empty()) {
+				PackedStringArray version_array = product_version.split(".", false);
+				if (version_array.size() != 4 || !version_array[0].is_valid_int() ||
+						!version_array[1].is_valid_int() || !version_array[2].is_valid_int() ||
+						!version_array[3].is_valid_int() || product_version.find("-") > -1) {
+					return TTR("Invalid product version.");
+				}
+			}
+		}
+	}
+	return EditorExportPlatformPC::get_export_option_warning(p_preset, p_name);
+}
+
+bool EditorExportPlatformWindows::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
 	// This option is not supported by "osslsigncode", used on non-Windows host.
 	if (!OS::get_singleton()->has_feature("windows") && p_option == "codesign/identity_type") {
 		return false;
 	}
+
+	// Hide codesign.
+	bool codesign = p_preset->get("codesign/enable");
+	if (!codesign && p_option != "codesign/enable" && p_option.begins_with("codesign/")) {
+		return false;
+	}
+
+	// Hide resources.
+	bool mod_res = p_preset->get("application/modify_resources");
+	if (!mod_res && p_option != "application/modify_resources" && p_option.begins_with("application/")) {
+		return false;
+	}
+
+	// Hide SSH options.
+	bool ssh = p_preset->get("ssh_remote_deploy/enabled");
+	if (!ssh && p_option != "ssh_remote_deploy/enabled" && p_option.begins_with("ssh_remote_deploy/")) {
+		return false;
+	}
+
 	return true;
 }
 
-void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_options) {
+void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_options) const {
 	EditorExportPlatformPC::get_export_options(r_options);
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "binary_format/architecture", PROPERTY_HINT_ENUM, "x86_64,x86_32,arm64"), "x86_64"));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/enable"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/identity_type", PROPERTY_HINT_ENUM, "Select automatically,Use PKCS12 file (specify *.PFX/*.P12 file),Use certificate store (specify SHA1 hash)"), 0));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/enable"), false, true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/identity_type", PROPERTY_HINT_ENUM, "Select automatically,Use PKCS12 file (specify *.PFX/*.P12 file),Use certificate store (specify SHA-1 hash)"), 0));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/identity", PROPERTY_HINT_GLOBAL_FILE, "*.pfx,*.p12"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/password", PROPERTY_HINT_PASSWORD), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/timestamp"), true));
@@ -285,12 +336,12 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/description"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "codesign/custom_options"), PackedStringArray()));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/modify_resources"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.ico,*.png,*.webp,*.svg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/modify_resources"), true, true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.ico,*.png,*.webp,*.svg"), "", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/console_wrapper_icon", PROPERTY_HINT_FILE, "*.ico,*.png,*.webp,*.svg"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/file_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0.0"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/product_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0.0"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/file_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0.0"), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/product_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0.0"), "", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/company_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Company Name"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/product_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/file_description"), ""));
@@ -311,7 +362,7 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 							"Unregister-ScheduledTask -TaskName godot_remote_debug -Confirm:$false -ErrorAction:SilentlyContinue\n"
 							"Remove-Item -Recurse -Force '{temp_dir}'";
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "ssh_remote_deploy/enabled"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "ssh_remote_deploy/enabled"), false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/host"), "user@host_ip"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/port"), "22"));
 
@@ -632,30 +683,17 @@ bool EditorExportPlatformWindows::has_valid_project_configuration(const Ref<Edit
 	String err = "";
 	bool valid = true;
 
-	String icon_path = ProjectSettings::get_singleton()->globalize_path(p_preset->get("application/icon"));
-	if (!icon_path.is_empty() && !FileAccess::exists(icon_path)) {
-		err += TTR("Invalid icon path:") + " " + icon_path + "\n";
-	}
-
-	// Only non-negative integers can exist in the version string.
-
-	String file_version = p_preset->get("application/file_version");
-	if (!file_version.is_empty()) {
-		PackedStringArray version_array = file_version.split(".", false);
-		if (version_array.size() != 4 || !version_array[0].is_valid_int() ||
-				!version_array[1].is_valid_int() || !version_array[2].is_valid_int() ||
-				!version_array[3].is_valid_int() || file_version.find("-") > -1) {
-			err += TTR("Invalid file version:") + " " + file_version + "\n";
-		}
-	}
-
-	String product_version = p_preset->get("application/product_version");
-	if (!product_version.is_empty()) {
-		PackedStringArray version_array = product_version.split(".", false);
-		if (version_array.size() != 4 || !version_array[0].is_valid_int() ||
-				!version_array[1].is_valid_int() || !version_array[2].is_valid_int() ||
-				!version_array[3].is_valid_int() || product_version.find("-") > -1) {
-			err += TTR("Invalid product version:") + " " + product_version + "\n";
+	List<ExportOption> options;
+	get_export_options(&options);
+	for (const EditorExportPlatform::ExportOption &E : options) {
+		if (get_export_option_visibility(p_preset.ptr(), E.option.name)) {
+			String warn = get_export_option_warning(p_preset.ptr(), E.option.name);
+			if (!warn.is_empty()) {
+				err += warn + "\n";
+				if (E.required) {
+					valid = false;
+				}
+			}
 		}
 	}
 
@@ -957,22 +995,24 @@ Error EditorExportPlatformWindows::run(const Ref<EditorExportPreset> &p_preset, 
 }
 
 EditorExportPlatformWindows::EditorExportPlatformWindows() {
+	if (EditorNode::get_singleton()) {
 #ifdef MODULE_SVG_ENABLED
-	Ref<Image> img = memnew(Image);
-	const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
+		Ref<Image> img = memnew(Image);
+		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-	ImageLoaderSVG img_loader;
-	img_loader.create_image_from_string(img, _windows_logo_svg, EDSCALE, upsample, false);
-	set_logo(ImageTexture::create_from_image(img));
+		ImageLoaderSVG img_loader;
+		img_loader.create_image_from_string(img, _windows_logo_svg, EDSCALE, upsample, false);
+		set_logo(ImageTexture::create_from_image(img));
 
-	img_loader.create_image_from_string(img, _windows_run_icon_svg, EDSCALE, upsample, false);
-	run_icon = ImageTexture::create_from_image(img);
+		img_loader.create_image_from_string(img, _windows_run_icon_svg, EDSCALE, upsample, false);
+		run_icon = ImageTexture::create_from_image(img);
 #endif
 
-	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
-	if (theme.is_valid()) {
-		stop_icon = theme->get_icon(SNAME("Stop"), SNAME("EditorIcons"));
-	} else {
-		stop_icon.instantiate();
+		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
+		if (theme.is_valid()) {
+			stop_icon = theme->get_icon(SNAME("Stop"), SNAME("EditorIcons"));
+		} else {
+			stop_icon.instantiate();
+		}
 	}
 }

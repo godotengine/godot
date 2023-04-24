@@ -131,9 +131,9 @@
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool" />
-			<param index="0" name="with" type="Vector4" />
+			<param index="0" name="to" type="Vector4" />
 			<description>
-				Returns [code]true[/code] if this vector and [param with] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
+				Returns [code]true[/code] if this vector and [param to] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
 			</description>
 		</method>
 		<method name="is_finite" qualifiers="const">
@@ -164,7 +164,8 @@
 		<method name="length_squared" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the squared length (squared magnitude) of this vector. This method runs faster than [method length].
+				Returns the squared length (squared magnitude) of this vector.
+				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
 		<method name="lerp" qualifiers="const">
@@ -198,14 +199,14 @@
 			<return type="Vector4" />
 			<param index="0" name="mod" type="float" />
 			<description>
-				Returns a new vector composed of the [method @GlobalScope.fposmod] of this vector's components and [param mod].
+				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [param mod].
 			</description>
 		</method>
 		<method name="posmodv" qualifiers="const">
 			<return type="Vector4" />
 			<param index="0" name="modv" type="Vector4" />
 			<description>
-				Returns a new vector composed of the [method @GlobalScope.fposmod] of this vector's components and [param modv]'s components.
+				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [param modv]'s components.
 			</description>
 		</method>
 		<method name="round" qualifiers="const">

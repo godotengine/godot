@@ -31,6 +31,7 @@
 #ifndef MACOS_EXPORT_H
 #define MACOS_EXPORT_H
 
+void register_macos_exporter_types();
 void register_macos_exporter();
 
 #endif // MACOS_EXPORT_H

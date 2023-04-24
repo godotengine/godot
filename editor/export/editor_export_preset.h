@@ -90,6 +90,10 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
+	String _get_property_warning(const StringName &p_name) const;
+
+	static void _bind_methods();
+
 public:
 	Ref<EditorExportPlatform> get_platform() const;
 

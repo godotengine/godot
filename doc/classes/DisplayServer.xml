@@ -123,6 +123,12 @@
 				Returns the unobscured area of the display where interactive controls should be rendered. See also [method get_display_cutouts].
 			</description>
 		</method>
+		<method name="get_keyboard_focus_screen" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the index of the screen containing the window with the keyboard focus, or the primary screen if there's no focused window.
+			</description>
+		</method>
 		<method name="get_name" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -1571,6 +1577,12 @@
 		<constant name="MOUSE_MODE_CONFINED_HIDDEN" value="4" enum="MouseMode">
 			Confines the mouse cursor to the game window, and make it hidden.
 		</constant>
+		<constant name="SCREEN_WITH_MOUSE_FOCUS" value="-4">
+			Represents the screen containing the mouse pointer.
+		</constant>
+		<constant name="SCREEN_WITH_KEYBOARD_FOCUS" value="-3">
+			Represents the screen containing the window with the keyboard focus.
+		</constant>
 		<constant name="SCREEN_PRIMARY" value="-2">
 			Represents the primary screen.
 		</constant>
@@ -1587,7 +1599,7 @@
 			Default landscape orientation.
 		</constant>
 		<constant name="SCREEN_PORTRAIT" value="1" enum="ScreenOrientation">
-			Default portrait orienstation.
+			Default portrait orientation.
 		</constant>
 		<constant name="SCREEN_REVERSE_LANDSCAPE" value="2" enum="ScreenOrientation">
 			Reverse landscape orientation (upside down).
@@ -1723,7 +1735,7 @@
 			The window can't be focused. No-focus window will ignore all input, except mouse clicks.
 		</constant>
 		<constant name="WINDOW_FLAG_POPUP" value="5" enum="WindowFlags">
-			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when the window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have [code]transient parent[/code] set (see [method window_set_transient]).
+			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when the window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have transient parent set (see [method window_set_transient]).
 		</constant>
 		<constant name="WINDOW_FLAG_EXTEND_TO_TITLE" value="6" enum="WindowFlags">
 			Window content is expanded to the full size of the window. Unlike borderless window, the frame is left intact and can be used to resize the window, title bar is transparent, but have minimize/maximize/close buttons.

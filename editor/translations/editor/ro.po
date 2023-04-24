@@ -24,13 +24,14 @@
 # Random Videos <istudordanadenis@gmail.com>, 2023.
 # Vlad Cuciureanu <vlad.cuciureanu@pm.me>, 2023.
 # "Hash Volt[ing]" <hashvolting@gmail.com>, 2023.
+# RaresX22 <raresadv22@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-29 00:11+0000\n"
-"Last-Translator: \"Hash Volt[ing]\" <hashvolting@gmail.com>\n"
+"PO-Revision-Date: 2023-04-19 00:15+0000\n"
+"Last-Translator: RaresX22 <raresadv22@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -39,10 +40,13 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
 msgstr "Nesetat"
+
+msgid "Physical"
+msgstr "Fizic"
 
 msgid "Left Mouse Button"
 msgstr "Clic stânga"
@@ -53,32 +57,110 @@ msgstr "Clic dreapta"
 msgid "Middle Mouse Button"
 msgstr "Clic la mijloc"
 
+msgid "Mouse Wheel Up"
+msgstr "Rotiță Mouse Sus"
+
+msgid "Mouse Wheel Down"
+msgstr "Rotiță Mouse Jos"
+
+msgid "Mouse Wheel Left"
+msgstr "Rotiță Mouse Stânga"
+
+msgid "Mouse Wheel Right"
+msgstr "Rotiță Mouse Dreapta"
+
+msgid "Mouse Thumb Button 1"
+msgstr "Buton Mouse Lateral 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "Buton Mouse Lateral 2"
+
 msgid "Button"
 msgstr "Buton"
 
 msgid "Double Click"
 msgstr "Dublu clic"
 
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "Mișcarea mouse-ului la poziția (%s) cu viteza (%s)"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Joystick Stâng axa X, Joystick 0 axa X"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "Joystick Stâng axa X, Joystick 0 axa X"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "Joystick Dreapta axa X, Joystick 1 axa X"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "Joystick Dreapta axa Y, Joystick 1 axa Y"
+
+msgid "Unknown Joypad Axis"
+msgstr "Axa necunoscută a joypad-ului"
+
 msgid "Select"
 msgstr "Selectează"
+
+msgid "Cancel"
+msgstr "Anuleaza"
+
+msgid "Focus Next"
+msgstr "Focalizează Urmatorul (UI)"
+
+msgid "Focus Prev"
+msgstr "Focalizează Anteriorul"
+
+msgid "Left"
+msgstr "Stânga"
+
+msgid "Right"
+msgstr "Dreapta"
 
 msgid "Up"
 msgstr "Sus"
 
 msgid "Down"
-msgstr "Descarcă"
+msgstr "Jos"
+
+msgid "Page Up"
+msgstr "Pagină Sus"
+
+msgid "Page Down"
+msgstr "Pagină Jos"
+
+msgid "Home"
+msgstr "Acasă"
+
+msgid "End"
+msgstr "Sfârșit"
+
+msgid "Cut"
+msgstr "Tăiere"
 
 msgid "Copy"
-msgstr "Copiază"
+msgstr "Copiaza"
 
-msgid "Undo"
-msgstr "Revenire"
+msgid "Paste"
+msgstr "Lipește"
 
-msgid "Redo"
-msgstr "Reîntoarcere"
+msgid "New Line"
+msgstr "Linie Nouă"
+
+msgid "New Line Above"
+msgstr "Linie Nouă Deasupra"
+
+msgid "Indent"
+msgstr "Alineat"
 
 msgid "Delete"
 msgstr "Ștergeți"
+
+msgid "Delete Word"
+msgstr "Șterge cuvânt"
+
+msgid "Delete all to Right"
+msgstr "Șterge tot la Dreapta"
 
 msgid "Refresh"
 msgstr "Reîmprospătare"
@@ -1372,6 +1454,9 @@ msgstr "Proprietăți"
 
 msgid "default:"
 msgstr "implicit:"
+
+msgid "Operators"
+msgstr "Operatori"
 
 msgid "Theme Properties"
 msgstr "Proprietățile Temei"
@@ -3757,3 +3842,30 @@ msgstr "Activează minimapa in format grilă."
 
 msgid "Filter"
 msgstr "Filtru:"
+
+msgid "Unmatched elif."
+msgstr "Altfel Dacă fără pereche."
+
+msgid "Missing condition."
+msgstr "Condiție lipsa."
+
+msgid "Condition evaluation error."
+msgstr "Eroare de evaluare a condiției."
+
+msgid "Unmatched else."
+msgstr "Altfel fără pereche."
+
+msgid "Invalid else."
+msgstr "Altfel invalid."
+
+msgid "Unmatched endif."
+msgstr "Sfârșit Dacă fără pereche."
+
+msgid "Invalid endif."
+msgstr "Sfârșit Dacă invalid."
+
+msgid "Invalid ifdef."
+msgstr "Dacă (este) Definit invalid."
+
+msgid "Invalid ifndef."
+msgstr "Dacă Nu Este Definit invalid."

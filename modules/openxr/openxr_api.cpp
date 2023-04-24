@@ -1282,7 +1282,7 @@ XrResult OpenXRAPI::get_instance_proc_addr(const char *p_name, PFN_xrVoidFunctio
 
 	if (result != XR_SUCCESS) {
 		String error_message = String("Symbol ") + p_name + " not found in OpenXR instance.";
-		ERR_FAIL_COND_V_MSG(true, result, error_message.utf8().get_data());
+		ERR_FAIL_V_MSG(result, error_message.utf8().get_data());
 	}
 
 	return result;

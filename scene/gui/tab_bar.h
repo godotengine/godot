@@ -66,6 +66,7 @@ private:
 
 		bool disabled = false;
 		bool hidden = false;
+		Variant metadata;
 		int ofs_cache = 0;
 		int size_cache = 0;
 		int size_text = 0;
@@ -183,6 +184,9 @@ public:
 
 	void set_tab_hidden(int p_tab, bool p_hidden);
 	bool is_tab_hidden(int p_tab) const;
+
+	void set_tab_metadata(int p_tab, const Variant &p_metadata);
+	Variant get_tab_metadata(int p_tab) const;
 
 	void set_tab_button_icon(int p_tab, const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_tab_button_icon(int p_tab) const;

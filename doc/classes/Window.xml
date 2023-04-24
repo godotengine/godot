@@ -730,7 +730,7 @@
 			The window can't be focused. No-focus window will ignore all input, except mouse clicks. Set with [member unfocusable].
 		</constant>
 		<constant name="FLAG_POPUP" value="5" enum="Flags">
-			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when the window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have [code]transient parent[/code] set (see [member transient]).
+			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when the window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have transient parent set (see [member transient]).
 		</constant>
 		<constant name="FLAG_EXTEND_TO_TITLE" value="6" enum="Flags">
 			Window content is expanded to the full size of the window. Unlike borderless window, the frame is left intact and can be used to resize the window, title bar is transparent, but have minimize/maximize/close buttons. Set with [member extend_to_title].
@@ -782,13 +782,19 @@
 			Initial window position is determined by [member position].
 		</constant>
 		<constant name="WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN" value="1" enum="WindowInitialPosition">
-			Initial window position is a center of the primary screen.
+			Initial window position is the center of the primary screen.
 		</constant>
 		<constant name="WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN" value="2" enum="WindowInitialPosition">
-			Initial window position is a center of the main window screen.
+			Initial window position is the center of the main window screen.
 		</constant>
 		<constant name="WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN" value="3" enum="WindowInitialPosition">
-			Initial window position is a center of [member current_screen] screen.
+			Initial window position is the center of [member current_screen] screen.
+		</constant>
+		<constant name="WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS" value="4" enum="WindowInitialPosition">
+			Initial window position is the center of the screen containing the mouse pointer.
+		</constant>
+		<constant name="WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS" value="5" enum="WindowInitialPosition">
+			Initial window position is the center of the screen containing the window with the keyboard focus.
 		</constant>
 	</constants>
 	<theme_items>

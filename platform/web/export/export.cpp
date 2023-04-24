@@ -33,6 +33,10 @@
 #include "editor/editor_settings.h"
 #include "export_plugin.h"
 
+void register_web_exporter_types() {
+	GDREGISTER_VIRTUAL_CLASS(EditorExportPlatformWeb);
+}
+
 void register_web_exporter() {
 #ifndef ANDROID_ENABLED
 	EDITOR_DEF("export/web/http_host", "localhost");

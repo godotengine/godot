@@ -472,7 +472,7 @@ void TextEdit::_notification(int p_what) {
 				// To ensure minimap is responsive override the speed setting.
 				double vel = ((target_y / dist) * ((minimap_clicked) ? 3000 : v_scroll_speed)) * get_physics_process_delta_time();
 
-				// Prevent too small velocity to block scrolling
+				// Prevent small velocities from blocking scrolling.
 				if (Math::abs(vel) < v_scroll->get_step()) {
 					vel = v_scroll->get_step() * SIGN(vel);
 				}
@@ -712,12 +712,12 @@ void TextEdit::_notification(int p_what) {
 				int minimap_line_height = (minimap_char_size.y + minimap_line_spacing);
 				int minimap_tab_size = minimap_char_size.x * text.get_tab_size();
 
-				// calculate viewport size and y offset
+				// Calculate viewport size and y offset.
 				int viewport_height = (draw_amount - 1) * minimap_line_height;
 				int control_height = _get_control_height() - viewport_height;
 				int viewport_offset_y = round(get_scroll_pos_for_line(first_vis_line + 1) * control_height) / ((v_scroll->get_max() <= minimap_visible_lines) ? (minimap_visible_lines - draw_amount) : (v_scroll->get_max() - draw_amount));
 
-				// calculate the first line.
+				// Calculate the first line.
 				int num_lines_before = round((viewport_offset_y) / minimap_line_height);
 				int minimap_line = (v_scroll->get_max() <= minimap_visible_lines) ? -1 : first_vis_line;
 				if (minimap_line >= 0) {
@@ -851,7 +851,7 @@ void TextEdit::_notification(int p_what) {
 
 							if (characters > 0) {
 								previous_color.a *= 0.6;
-								// take one for zero indexing, and if we hit whitespace / the end of a word.
+								// Take one for zero indexing, and if we hit whitespace / the end of a word.
 								int chars = MAX(0, (j - (characters - 1)) - (whitespace ? 1 : 0)) + 1;
 								int char_x_ofs = indent_px + ((xmargin_end + minimap_char_size.x) + (minimap_char_size.x * chars)) + tabs;
 								if (rtl) {
@@ -1110,7 +1110,7 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					int start = TS->shaped_text_get_range(rid).x;
-					if (!clipped && !search_text.is_empty()) { // Search highhlight
+					if (!clipped && !search_text.is_empty()) { // Search highlight
 						int search_text_col = _get_column_pos_of_word(search_text, str, search_flags, 0);
 						int search_text_len = search_text.length();
 						while (search_text_col != -1) {
@@ -1729,7 +1729,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					left_margin += gutters[i].width;
 				}
 
-				// minimap
+				// Minimap
 				if (draw_minimap) {
 					_update_minimap_click();
 					if (dragging_minimap) {
@@ -1778,7 +1778,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 						carets.write[caret].selection.to_column = carets[caret].column;
 						carets.write[caret].selection.to_line = carets[caret].line;
 
-						if (carets[caret].selection.from_line > carets[caret].selection.to_line || (carets[caret].selection.from_line == carets[caret].selection.to_line && carets[caret].selection.from_column > carets[caret].selection.to_column)) {
+						if (get_selection_from_line(caret) > get_selection_to_line(caret) || (get_selection_from_line(caret) == get_selection_to_line(caret) && get_selection_from_column(caret) > get_selection_to_column(caret))) {
 							SWAP(carets.write[caret].selection.from_column, carets.write[caret].selection.to_column);
 							SWAP(carets.write[caret].selection.from_line, carets.write[caret].selection.to_line);
 							carets.write[caret].selection.shiftclick_left = false;
@@ -1791,14 +1791,14 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 						merge_overlapping_carets();
 						queue_redraw();
 					} else {
-						if (carets[caret].line < carets[caret].selection.selecting_line || (carets[caret].line == carets[caret].selection.selecting_line && carets[caret].column < carets[caret].selection.selecting_column)) {
+						if (carets[caret].line < get_selection_line(caret) || (carets[caret].line == get_selection_line(caret) && carets[caret].column < get_selection_column(caret))) {
 							if (carets[caret].selection.shiftclick_left) {
 								carets.write[caret].selection.shiftclick_left = !carets[caret].selection.shiftclick_left;
 							}
 							carets.write[caret].selection.from_column = carets[caret].column;
 							carets.write[caret].selection.from_line = carets[caret].line;
 
-						} else if (carets[caret].line > carets[caret].selection.selecting_line || (carets[caret].line == carets[caret].selection.selecting_line && carets[caret].column > carets[caret].selection.selecting_column)) {
+						} else if (carets[caret].line > get_selection_line(caret) || (carets[caret].line == get_selection_line(caret) && carets[caret].column > get_selection_column(caret))) {
 							if (!carets[caret].selection.shiftclick_left) {
 								SWAP(carets.write[caret].selection.from_column, carets.write[caret].selection.to_column);
 								SWAP(carets.write[caret].selection.from_line, carets.write[caret].selection.to_line);
@@ -2022,7 +2022,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		// * No modifiers are pressed (except Shift and CapsLock)
 		bool allow_unicode_handling = !(k->is_command_or_control_pressed() || k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
 
-		// Check and handle all built in shortcuts.
+		// Check and handle all built-in shortcuts.
 
 		// NEWLINES.
 		if (k->is_action("ui_text_newline_above", true)) {
@@ -2376,11 +2376,11 @@ void TextEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
 
 void TextEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 	for (int i = 0; i < carets.size(); i++) {
-		// Handle selection
+		// Handle selection.
 		if (p_select) {
 			_pre_shift_selection(i);
 		} else if (has_selection(i) && !p_move_by_word) {
-			// If a selection is active, move caret to end of selection
+			// If a selection is active, move caret to end of selection.
 			set_caret_line(get_selection_to_line(i), false, true, 0, i);
 			set_caret_column(get_selection_to_column(i), i == 0, i);
 			deselect(i);
@@ -2739,7 +2739,7 @@ void TextEdit::_delete(bool p_word, bool p_all_to_right) {
 		int next_column;
 
 		if (p_all_to_right) {
-			// Get caret furthest to the left
+			// Get caret furthest to the left.
 			for (int j = i + 1; j < caret_edit_order.size(); j++) {
 				if (get_caret_line(caret_edit_order[j]) != get_caret_line(caret_idx)) {
 					break;
@@ -2759,7 +2759,7 @@ void TextEdit::_delete(bool p_word, bool p_all_to_right) {
 				continue;
 			}
 
-			// Delete everything to right of caret
+			// Delete everything to right of caret.
 			next_column = curline_len;
 			next_line = get_caret_line(caret_idx);
 
@@ -2772,7 +2772,7 @@ void TextEdit::_delete(bool p_word, bool p_all_to_right) {
 			}
 
 		} else if (p_word && get_caret_column(caret_idx) < curline_len - 1) {
-			// Delete next word to right of caret
+			// Delete next word to right of caret.
 			int line = get_caret_line(caret_idx);
 			int column = get_caret_column(caret_idx);
 
@@ -2799,7 +2799,7 @@ void TextEdit::_delete(bool p_word, bool p_all_to_right) {
 				carets_to_remove.push_back(caret_edit_order[j]);
 			}
 		} else {
-			// Delete one character
+			// Delete one character.
 			if (caret_mid_grapheme_enabled) {
 				next_column = get_caret_column(caret_idx) < curline_len ? (get_caret_column(caret_idx) + 1) : 0;
 			} else {
@@ -2882,7 +2882,7 @@ void TextEdit::_get_above_below_caret_line_column(int p_old_line, int p_old_wrap
 		p_last_fit_x = _get_column_x_offset_for_line(p_old_column, p_old_line, p_old_column);
 	}
 
-	// Calculate the new line and wrap index
+	// Calculate the new line and wrap index.
 	p_new_line = p_old_line;
 	int caret_wrap_index = p_old_wrap_index;
 	if (p_below) {
@@ -2901,7 +2901,7 @@ void TextEdit::_get_above_below_caret_line_column(int p_old_line, int p_old_wrap
 		}
 	}
 
-	// Boundary checks
+	// Boundary checks.
 	if (p_new_line < 0) {
 		p_new_line = 0;
 	}
@@ -3526,15 +3526,15 @@ void TextEdit::insert_line_at(int p_at, const String &p_text) {
 
 	for (int i = 0; i < carets.size(); i++) {
 		if (get_caret_line(i) >= p_at) {
-			// offset caret when located after inserted line
+			// Offset caret when located after inserted line.
 			set_caret_line(get_caret_line(i) + 1, false, true, 0, i);
 		}
 		if (has_selection(i)) {
 			if (get_selection_from_line(i) >= p_at) {
-				// offset selection when located after inserted line
+				// Offset selection when located after inserted line.
 				select(get_selection_from_line(i) + 1, get_selection_from_column(i), get_selection_to_line(i) + 1, get_selection_to_column(i), i);
 			} else if (get_selection_to_line(i) >= p_at) {
-				// extend selection that includes inserted line
+				// Extend selection that includes inserted line.
 				select(get_selection_from_line(i), get_selection_from_column(i), get_selection_to_line(i) + 1, get_selection_to_column(i), i);
 			}
 		}
@@ -4368,7 +4368,7 @@ int TextEdit::get_minimap_line_at_pos(const Point2i &p_pos) const {
 	rows /= (minimap_char_size.y + minimap_line_spacing);
 	rows += _get_v_scroll_offset();
 
-	// calculate visible lines
+	// Calculate visible lines.
 	int minimap_visible_lines = get_minimap_visible_lines();
 	int visible_rows = get_visible_line_count() + 1;
 	int first_vis_line = get_first_visible_line() - 1;
@@ -4376,12 +4376,12 @@ int TextEdit::get_minimap_line_at_pos(const Point2i &p_pos) const {
 	draw_amount += get_line_wrap_count(first_vis_line + 1);
 	int minimap_line_height = (minimap_char_size.y + minimap_line_spacing);
 
-	// calculate viewport size and y offset
+	// Calculate viewport size and y offset.
 	int viewport_height = (draw_amount - 1) * minimap_line_height;
 	int control_height = _get_control_height() - viewport_height;
 	int viewport_offset_y = round(get_scroll_pos_for_line(first_vis_line + 1) * control_height) / ((v_scroll->get_max() <= minimap_visible_lines) ? (minimap_visible_lines - draw_amount) : (v_scroll->get_max() - draw_amount));
 
-	// calculate the first line.
+	// Calculate the first line.
 	int num_lines_before = round((viewport_offset_y) / minimap_line_height);
 	int minimap_line = (v_scroll->get_max() <= minimap_visible_lines) ? -1 : first_vis_line;
 	if (first_vis_line > 0 && minimap_line >= 0) {
@@ -4589,7 +4589,7 @@ void TextEdit::merge_overlapping_carets() {
 				continue;
 			}
 
-			// Save the newest one for click+drag.
+			// Save the newest one for Click + Drag.
 			int caret_to_save = first_caret;
 			int caret_to_remove = second_caret;
 			if (first_caret < second_caret) {
@@ -4642,7 +4642,7 @@ void TextEdit::merge_overlapping_carets() {
 			continue;
 		}
 
-		// Only second has Selection.
+		// Only second has selection.
 		if (has_selection(second_caret)) {
 			if (get_caret_line(first_caret) >= get_selection_from_line(second_caret) && get_caret_line(first_caret) <= get_selection_to_line(second_caret) && (get_caret_line(first_caret) > get_selection_from_line(second_caret) || get_caret_column(first_caret) >= get_selection_from_column(second_caret)) && (get_caret_line(first_caret) < get_selection_to_line(second_caret) || get_caret_column(first_caret) <= get_selection_to_column(second_caret))) {
 				remove_caret(first_caret);
@@ -4654,7 +4654,7 @@ void TextEdit::merge_overlapping_carets() {
 
 		// Both have no selection.
 		if (get_caret_line(first_caret) == get_caret_line(second_caret) && get_caret_column(first_caret) == get_caret_column(second_caret)) {
-			// Save the newest one for click+drag.
+			// Save the newest one for Click + Drag.
 			if (first_caret < second_caret) {
 				remove_caret(first_caret);
 			} else {
@@ -4679,7 +4679,7 @@ void TextEdit::add_caret_at_carets(bool p_below) {
 
 		// The last fit x will be cleared if the caret has a selection,
 		// but if it does not have a selection the last fit x will be
-		// transferred to the new caret
+		// transferred to the new caret.
 		int caret_from_column = 0, caret_to_column = 0, caret_last_fit_x = carets[caret_index].last_fit_x;
 		if (has_selection(caret_index)) {
 			// If the selection goes over multiple lines, deselect it.
@@ -4693,15 +4693,15 @@ void TextEdit::add_caret_at_carets(bool p_below) {
 			}
 		}
 
-		// Get the line and column of the new caret as if you would move the caret by pressing the arrow keys
+		// Get the line and column of the new caret as if you would move the caret by pressing the arrow keys.
 		int new_caret_line, new_caret_column, new_caret_from_column = 0, new_caret_to_column = 0;
 		_get_above_below_caret_line_column(caret_line, get_caret_wrap_index(caret_index), caret_column, p_below, new_caret_line, new_caret_column, caret_last_fit_x);
 
-		// If the caret does have a selection calculate the new from and to columns
+		// If the caret does have a selection calculate the new from and to columns.
 		if (caret_from_column != caret_to_column) {
-			// We only need to calculate the selection columns if the column of the caret changed
+			// We only need to calculate the selection columns if the column of the caret changed.
 			if (caret_column != new_caret_column) {
-				int _; // unused placeholder for p_new_line
+				int _; // Unused placeholder for p_new_line.
 				_get_above_below_caret_line_column(caret_line, get_caret_wrap_index(caret_index), caret_from_column, p_below, _, new_caret_from_column);
 				_get_above_below_caret_line_column(caret_line, get_caret_wrap_index(caret_index), caret_to_column, p_below, _, new_caret_to_column);
 			} else {
@@ -4710,22 +4710,22 @@ void TextEdit::add_caret_at_carets(bool p_below) {
 			}
 		}
 
-		// Add the new caret
+		// Add the new caret.
 		const int new_caret_index = add_caret(new_caret_line, new_caret_column);
 
 		if (new_caret_index == -1) {
 			continue;
 		}
-		// Also add the selection if there should be one
+		// Also add the selection if there should be one.
 		if (new_caret_from_column != new_caret_to_column) {
 			select(new_caret_line, new_caret_from_column, new_caret_line, new_caret_to_column, new_caret_index);
-			// Necessary to properly modify the selection after adding the new caret
+			// Necessary to properly modify the selection after adding the new caret.
 			carets.write[new_caret_index].selection.selecting_line = new_caret_line;
 			carets.write[new_caret_index].selection.selecting_column = new_caret_column == new_caret_from_column ? new_caret_to_column : new_caret_from_column;
 			continue;
 		}
 
-		// Copy the last fit x over
+		// Copy the last fit x over.
 		carets.write[new_caret_index].last_fit_x = carets[caret_index].last_fit_x;
 	}
 
@@ -4743,13 +4743,13 @@ Vector<int> TextEdit::get_caret_index_edit_order() {
 	for (int i = 1; i < carets.size(); i++) {
 		int j = 0;
 
-		int line = carets[i].selection.active ? carets[i].selection.to_line : carets[i].line;
-		int col = carets[i].selection.active ? carets[i].selection.to_column : carets[i].column;
+		int line = has_selection(i) ? get_selection_to_line(i) : carets[i].line;
+		int col = has_selection(i) ? get_selection_to_column(i) : carets[i].column;
 
 		for (; j < caret_index_edit_order.size(); j++) {
 			int idx = caret_index_edit_order[j];
-			int other_line = carets[idx].selection.active ? carets[idx].selection.to_line : carets[idx].line;
-			int other_col = carets[idx].selection.active ? carets[idx].selection.to_column : carets[idx].column;
+			int other_line = has_selection(idx) ? get_selection_to_line(idx) : carets[idx].line;
+			int other_col = has_selection(idx) ? get_selection_to_column(idx) : carets[idx].column;
 			if (line > other_line || (line == other_line && col > other_col)) {
 				break;
 			}
@@ -4788,7 +4788,7 @@ void TextEdit::adjust_carets_after_edit(int p_caret, int p_from_line, int p_from
 			carets.write[caret_edit_order[j]].selection.from_line += edit_height;
 			carets.write[caret_edit_order[j]].selection.to_line += edit_height;
 		}
-		if (get_caret_line(p_caret) == carets[caret_edit_order[j]].selection.from_line) {
+		if (get_caret_line(p_caret) == get_selection_from_line(caret_edit_order[j])) {
 			carets.write[caret_edit_order[j]].selection.from_column += edit_size;
 		}
 	}
@@ -5098,29 +5098,10 @@ void TextEdit::select(int p_from_line, int p_from_column, int p_to_line, int p_t
 		return;
 	}
 
-	if (p_from_line < 0) {
-		p_from_line = 0;
-	} else if (p_from_line >= text.size()) {
-		p_from_line = text.size() - 1;
-	}
-	if (p_from_column >= text[p_from_line].length()) {
-		p_from_column = text[p_from_line].length();
-	}
-	if (p_from_column < 0) {
-		p_from_column = 0;
-	}
-
-	if (p_to_line < 0) {
-		p_to_line = 0;
-	} else if (p_to_line >= text.size()) {
-		p_to_line = text.size() - 1;
-	}
-	if (p_to_column >= text[p_to_line].length()) {
-		p_to_column = text[p_to_line].length();
-	}
-	if (p_to_column < 0) {
-		p_to_column = 0;
-	}
+	p_from_line = CLAMP(p_from_line, 0, text.size() - 1);
+	p_from_column = CLAMP(p_from_column, 0, text[p_from_line].length());
+	p_to_line = CLAMP(p_to_line, 0, text.size() - 1);
+	p_to_column = CLAMP(p_to_column, 0, text[p_to_line].length());
 
 	carets.write[p_caret].selection.from_line = p_from_line;
 	carets.write[p_caret].selection.from_column = p_from_column;
@@ -5129,17 +5110,17 @@ void TextEdit::select(int p_from_line, int p_from_column, int p_to_line, int p_t
 
 	carets.write[p_caret].selection.active = true;
 
-	if (carets[p_caret].selection.from_line == carets[p_caret].selection.to_line) {
-		if (carets[p_caret].selection.from_column == carets[p_caret].selection.to_column) {
+	if (get_selection_from_line(p_caret) == get_selection_to_line(p_caret)) {
+		if (get_selection_from_column(p_caret) == get_selection_to_column(p_caret)) {
 			carets.write[p_caret].selection.active = false;
 
-		} else if (carets[p_caret].selection.from_column > carets[p_caret].selection.to_column) {
+		} else if (get_selection_from_column(p_caret) > get_selection_to_column(p_caret)) {
 			carets.write[p_caret].selection.shiftclick_left = false;
 			SWAP(carets.write[p_caret].selection.from_column, carets.write[p_caret].selection.to_column);
 		} else {
 			carets.write[p_caret].selection.shiftclick_left = true;
 		}
-	} else if (carets[p_caret].selection.from_line > carets[p_caret].selection.to_line) {
+	} else if (get_selection_from_line(p_caret) > get_selection_to_line(p_caret)) {
 		carets.write[p_caret].selection.shiftclick_left = false;
 		SWAP(carets.write[p_caret].selection.from_line, carets.write[p_caret].selection.to_line);
 		SWAP(carets.write[p_caret].selection.from_column, carets.write[p_caret].selection.to_column);
@@ -5251,9 +5232,9 @@ void TextEdit::delete_selection(int p_caret) {
 		}
 
 		selecting_mode = SelectionMode::SELECTION_MODE_NONE;
-		_remove_text(carets[i].selection.from_line, carets[i].selection.from_column, carets[i].selection.to_line, carets[i].selection.to_column);
-		set_caret_line(carets[i].selection.from_line, false, false, 0, i);
-		set_caret_column(carets[i].selection.from_column, i == 0, i);
+		_remove_text(get_selection_from_line(i), get_selection_from_column(i), get_selection_to_line(i), get_selection_to_column(i));
+		set_caret_line(get_selection_from_line(i), false, false, 0, i);
+		set_caret_column(get_selection_from_column(i), i == 0, i);
 		carets.write[i].selection.active = false;
 
 		adjust_carets_after_edit(i, carets[i].selection.from_line, carets[i].selection.from_column, carets[i].selection.to_line, carets[i].selection.to_column);
@@ -5390,7 +5371,7 @@ int TextEdit::get_h_scroll() const {
 }
 
 void TextEdit::set_v_scroll_speed(float p_speed) {
-	// Prevent setting a vertical scroll speed value under 1.0
+	// Prevent setting a vertical scroll speed value under 1.
 	ERR_FAIL_COND(p_speed < 1.0);
 	v_scroll_speed = p_speed;
 }
@@ -5494,12 +5475,12 @@ int TextEdit::get_visible_line_count_in_range(int p_from_line, int p_to_line) co
 	ERR_FAIL_INDEX_V(p_from_line, text.size(), 0);
 	ERR_FAIL_INDEX_V(p_to_line, text.size(), 0);
 
-	// So we can handle inputs in whatever order
+	// So we can handle inputs in whatever order.
 	if (p_from_line > p_to_line) {
 		SWAP(p_from_line, p_to_line);
 	}
 
-	/* Returns the total number of (lines + wrapped - hidden). */
+	// Returns the total number of (lines + wrapped - hidden).
 	if (!_is_hiding_enabled() && get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
 		return (p_to_line - p_from_line) + 1;
 	}
@@ -5518,7 +5499,7 @@ int TextEdit::get_total_visible_line_count() const {
 	return get_visible_line_count_in_range(0, text.size() - 1);
 }
 
-// Auto adjust
+// Auto adjust.
 void TextEdit::adjust_viewport_to_caret(int p_caret) {
 	ERR_FAIL_INDEX(p_caret, carets.size());
 
@@ -6195,7 +6176,7 @@ void TextEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(CARET_TYPE_LINE);
 	BIND_ENUM_CONSTANT(CARET_TYPE_BLOCK);
 
-	// internal.
+	// Internal.
 	ClassDB::bind_method(D_METHOD("_emit_caret_changed"), &TextEdit::_emit_caret_changed);
 
 	ClassDB::bind_method(D_METHOD("set_caret_type", "type"), &TextEdit::set_caret_type);
@@ -6285,7 +6266,7 @@ void TextEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(LINE_WRAPPING_NONE);
 	BIND_ENUM_CONSTANT(LINE_WRAPPING_BOUNDARY);
 
-	// internal.
+	// Internal.
 	ClassDB::bind_method(D_METHOD("_update_wrap_at_column", "force"), &TextEdit::_update_wrap_at_column, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_line_wrapping_mode", "mode"), &TextEdit::set_line_wrapping_mode);
@@ -6551,9 +6532,9 @@ void TextEdit::_handle_unicode_input_internal(const uint32_t p_unicode, int p_ca
 			continue;
 		}
 
-		/* Remove the old character if in insert mode and no selection. */
+		// Remove the old character if in insert mode and no selection.
 		if (overtype_mode && !has_selection(i)) {
-			/* Make sure we don't try and remove empty space. */
+			// Make sure we don't try and remove empty space.
 			int cl = get_caret_line(i);
 			int cc = get_caret_column(i);
 			if (cc < get_line(cl).length()) {
@@ -6796,7 +6777,7 @@ Key TextEdit::_get_menu_action_accelerator(const String &p_action) {
 		return Key::NONE;
 	}
 
-	// Use physical keycode if non-zero
+	// Use physical keycode if non-zero.
 	if (event->get_physical_keycode() != Key::NONE) {
 		return event->get_physical_keycode_with_modifiers();
 	} else {
@@ -7170,11 +7151,11 @@ void TextEdit::_update_selection_mode_line() {
 
 	col = 0;
 	if (line < carets[caret_idx].selection.selecting_line) {
-		/* Caret is above us. */
+		// Caret is above us.
 		set_caret_line(line - 1, false, true, 0, caret_idx);
 		carets.write[caret_idx].selection.selecting_column = text[get_selection_line(caret_idx)].length();
 	} else {
-		/* Caret is below us. */
+		// Caret is below us.
 		set_caret_line(line + 1, false, true, 0, caret_idx);
 		carets.write[caret_idx].selection.selecting_column = 0;
 		col = text[line].length();

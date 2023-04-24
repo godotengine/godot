@@ -498,7 +498,7 @@
 			<return type="String" />
 			<param index="0" name="caret_index" type="int" default="-1" />
 			<description>
-				Returns the text inside the selection.
+				Returns the text inside the selection of a caret, or all the carets if [param caret_index] is its default value [code]-1[/code].
 			</description>
 		</method>
 		<method name="get_selection_column" qualifiers="const">
@@ -1378,7 +1378,7 @@
 			Select whole words as if the user double clicked.
 		</constant>
 		<constant name="SELECTION_MODE_LINE" value="4" enum="SelectionMode">
-			Select whole lines as if the user tripped clicked.
+			Select whole lines as if the user triple clicked.
 		</constant>
 		<constant name="LINE_WRAPPING_NONE" value="0" enum="LineWrappingMode">
 			Line wrapping is disabled.

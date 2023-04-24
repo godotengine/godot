@@ -62,7 +62,7 @@ void SpinBox::_text_submitted(const String &p_string) {
 	expr.instantiate();
 
 	String num = TS->parse_number(p_string);
-	// Ignore the prefix and suffix in the expression
+	// Ignore the prefix and suffix in the expression.
 	Error err = expr->parse(num.trim_prefix(prefix + " ").trim_suffix(" " + suffix));
 	if (err != OK) {
 		return;

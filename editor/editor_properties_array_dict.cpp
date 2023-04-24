@@ -203,8 +203,7 @@ void EditorPropertyArray::_property_changed(const String &p_property, Variant p_
 		index = p_property.get_slice("/", 1).to_int();
 	}
 
-	Array array;
-	array.assign(object->get_array().duplicate());
+	Variant array = object->get_array().duplicate();
 	array.set(index, p_value);
 	object->set_array(array);
 	emit_changed(get_edited_property(), array, "", true);

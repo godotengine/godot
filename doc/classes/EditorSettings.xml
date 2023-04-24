@@ -9,7 +9,7 @@
 		Accessing the settings can be done using the following methods, such as:
 		[codeblocks]
 		[gdscript]
-		var settings = EditorInterface.get_editor_settings()
+		var settings = get_editor_interface().get_editor_settings()
 		# `settings.set("some/property", 10)` also works as this class overrides `_set()` internally.
 		settings.set_setting("some/property", 10)
 		# `settings.get("some/property")` also works as this class overrides `_get()` internally.
@@ -513,6 +513,9 @@
 			The language to use for the editor interface.
 			Translations are provided by the community. If you spot a mistake, [url=$DOCS_URL/contributing/documentation/editor_and_docs_localization.html]contribute to editor translations on Weblate![/url]
 		</member>
+		<member name="interface/editor/editor_screen" type="int" setter="" getter="">
+			The preferred monitor to display the editor.
+		</member>
 		<member name="interface/editor/expand_to_title" type="bool" setter="" getter="">
 			Expanding main editor window content to the title, if supported by [DisplayServer]. See [constant DisplayServer.WINDOW_FLAG_EXTEND_TO_TITLE].
 			Specific to the macOS platform.
@@ -544,6 +547,9 @@
 		</member>
 		<member name="interface/editor/mouse_extra_buttons_navigate_history" type="bool" setter="" getter="">
 			If [code]true[/code], the mouse's additional side buttons will be usable to navigate in the script editor's file history. Set this to [code]false[/code] if you're using the side buttons for other purposes (such as a push-to-talk button in a VoIP program).
+		</member>
+		<member name="interface/editor/project_manager_screen" type="int" setter="" getter="">
+			The preferred monitor to display the project manager.
 		</member>
 		<member name="interface/editor/save_each_scene_on_quit" type="bool" setter="" getter="">
 			If [code]false[/code], the editor will save all scenes when confirming the [b]Save[/b] action when quitting the editor or quitting to the project list. If [code]true[/code], the editor will ask to save each scene individually.

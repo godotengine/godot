@@ -212,7 +212,8 @@ class DisplayServerX11 : public DisplayServer {
 	String im_text;
 
 #ifdef XKB_ENABLED
-	bool xkb_loaded = false;
+	bool xkb_loaded_v05p = false;
+	bool xkb_loaded_v08p = false;
 	xkb_context *xkb_ctx = nullptr;
 	xkb_compose_table *dead_tbl = nullptr;
 #endif
@@ -405,6 +406,7 @@ public:
 
 	virtual int get_screen_count() const override;
 	virtual int get_primary_screen() const override;
+	virtual int get_keyboard_focus_screen() const override;
 	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
