@@ -4144,9 +4144,6 @@ String GDScriptParser::DataType::to_string() const {
 			}
 			return native_type.operator String();
 		case CLASS:
-			if (is_meta_type) {
-				return GDScript::get_class_static();
-			}
 			if (class_type->identifier != nullptr) {
 				return class_type->identifier->name.operator String();
 			}
