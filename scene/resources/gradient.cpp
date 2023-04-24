@@ -69,7 +69,12 @@ void Gradient::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_interpolation_mode", "interpolation_mode"), &Gradient::set_interpolation_mode);
 	ClassDB::bind_method(D_METHOD("get_interpolation_mode"), &Gradient::get_interpolation_mode);
 
+	ClassDB::bind_method(D_METHOD("set_interpolation_color_space", "interpolation_color_space"), &Gradient::set_interpolation_color_space);
+	ClassDB::bind_method(D_METHOD("get_interpolation_color_space"), &Gradient::get_interpolation_color_space);
+
+	ADD_GROUP("Interpolation", "interpolation_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "interpolation_mode", PROPERTY_HINT_ENUM, "Linear,Constant,Cubic"), "set_interpolation_mode", "get_interpolation_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "interpolation_color_space", PROPERTY_HINT_ENUM, "sRGB,Linear sRGB,Oklab"), "set_interpolation_color_space", "get_interpolation_color_space");
 
 	ADD_GROUP("Raw Data", "");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "offsets"), "set_offsets", "get_offsets");
@@ -78,6 +83,16 @@ void Gradient::_bind_methods() {
 	BIND_ENUM_CONSTANT(GRADIENT_INTERPOLATE_LINEAR);
 	BIND_ENUM_CONSTANT(GRADIENT_INTERPOLATE_CONSTANT);
 	BIND_ENUM_CONSTANT(GRADIENT_INTERPOLATE_CUBIC);
+
+	BIND_ENUM_CONSTANT(GRADIENT_COLOR_SPACE_SRGB);
+	BIND_ENUM_CONSTANT(GRADIENT_COLOR_SPACE_LINEAR_SRGB);
+	BIND_ENUM_CONSTANT(GRADIENT_COLOR_SPACE_OKLAB);
+}
+
+void Gradient::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "interpolation_color_space" && interpolation_mode == GRADIENT_INTERPOLATE_CONSTANT) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
 }
 
 Vector<float> Gradient::get_offsets() const {
@@ -101,10 +116,20 @@ Vector<Color> Gradient::get_colors() const {
 void Gradient::set_interpolation_mode(Gradient::InterpolationMode p_interp_mode) {
 	interpolation_mode = p_interp_mode;
 	emit_signal(CoreStringNames::get_singleton()->changed);
+	notify_property_list_changed();
 }
 
 Gradient::InterpolationMode Gradient::get_interpolation_mode() {
 	return interpolation_mode;
+}
+
+void Gradient::set_interpolation_color_space(Gradient::ColorSpace p_color_space) {
+	interpolation_color_space = p_color_space;
+	emit_signal(CoreStringNames::get_singleton()->changed);
+}
+
+Gradient::ColorSpace Gradient::get_interpolation_color_space() {
+	return interpolation_color_space;
 }
 
 void Gradient::set_offsets(const Vector<float> &p_offsets) {
