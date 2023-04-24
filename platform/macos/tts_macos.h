@@ -46,16 +46,10 @@
 #endif
 
 @interface TTS_MacOS : NSObject <AVSpeechSynthesizerDelegate> {
-	// AVSpeechSynthesizer
 	bool speaking;
 	HashMap<id, int> ids;
 
-	// NSSpeechSynthesizer
-	bool paused;
-	bool have_utterance;
-	int last_utterance;
-
-	id synth; // NSSpeechSynthesizer or AVSpeechSynthesizer
+	id synth; // AVSpeechSynthesizer
 	List<DisplayServer::TTSUtterance> queue;
 }
 

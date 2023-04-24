@@ -532,50 +532,34 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 		for (const String &arg : p_arguments) {
 			[arguments addObject:[NSString stringWithUTF8String:arg.utf8().get_data()]];
 		}
-		if (@available(macOS 10.15, *)) {
-			NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
-			[configuration setArguments:arguments];
-			[configuration setCreatesNewApplicationInstance:YES];
-			__block dispatch_semaphore_t lock = dispatch_semaphore_create(0);
-			__block Error err = ERR_TIMEOUT;
-			__block pid_t pid = 0;
+		NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
+		[configuration setArguments:arguments];
+		[configuration setCreatesNewApplicationInstance:YES];
+		__block dispatch_semaphore_t lock = dispatch_semaphore_create(0);
+		__block Error err = ERR_TIMEOUT;
+		__block pid_t pid = 0;
 
-			[[NSWorkspace sharedWorkspace] openApplicationAtURL:url
-												  configuration:configuration
-											  completionHandler:^(NSRunningApplication *app, NSError *error) {
-												  if (error) {
-													  err = ERR_CANT_FORK;
-													  NSLog(@"Failed to execute: %@", error.localizedDescription);
-												  } else {
-													  pid = [app processIdentifier];
-													  err = OK;
-												  }
-												  dispatch_semaphore_signal(lock);
-											  }];
-			dispatch_semaphore_wait(lock, dispatch_time(DISPATCH_TIME_NOW, 20000000000)); // 20 sec timeout, wait for app to launch.
+		[[NSWorkspace sharedWorkspace] openApplicationAtURL:url
+											  configuration:configuration
+										  completionHandler:^(NSRunningApplication *app, NSError *error) {
+											  if (error) {
+												  err = ERR_CANT_FORK;
+												  NSLog(@"Failed to execute: %@", error.localizedDescription);
+											  } else {
+												  pid = [app processIdentifier];
+												  err = OK;
+											  }
+											  dispatch_semaphore_signal(lock);
+										  }];
+		dispatch_semaphore_wait(lock, dispatch_time(DISPATCH_TIME_NOW, 20000000000)); // 20 sec timeout, wait for app to launch.
 
-			if (err == OK) {
-				if (r_child_id) {
-					*r_child_id = (ProcessID)pid;
-				}
+		if (err == OK) {
+			if (r_child_id) {
+				*r_child_id = (ProcessID)pid;
 			}
-
-			return err;
-		} else {
-			Error err = ERR_TIMEOUT;
-			NSError *error = nullptr;
-			NSRunningApplication *app = [[NSWorkspace sharedWorkspace] launchApplicationAtURL:url options:NSWorkspaceLaunchNewInstance configuration:[NSDictionary dictionaryWithObject:arguments forKey:NSWorkspaceLaunchConfigurationArguments] error:&error];
-			if (error) {
-				err = ERR_CANT_FORK;
-				NSLog(@"Failed to execute: %@", error.localizedDescription);
-			} else {
-				if (r_child_id) {
-					*r_child_id = (ProcessID)[app processIdentifier];
-				}
-				err = OK;
-			}
-			return err;
 		}
+
+		return err;
 	} else {
 		return OS_Unix::create_process(p_path, p_arguments, r_child_id, p_open_console);
 	}
