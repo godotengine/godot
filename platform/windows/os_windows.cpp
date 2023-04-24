@@ -51,6 +51,7 @@
 #include <direct.h>
 #include <knownfolders.h>
 #include <process.h>
+#include <psapi.h>
 #include <regstr.h>
 #include <shlobj.h>
 #include <wbemcli.h>
@@ -681,6 +682,43 @@ static void _append_to_pipe(char *p_bytes, int p_size, String *r_pipe, Mutex *p_
 	if (p_pipe_mutex) {
 		p_pipe_mutex->unlock();
 	}
+}
+
+Dictionary OS_Windows::get_memory_info() const {
+	Dictionary meminfo;
+
+	meminfo["physical"] = -1;
+	meminfo["free"] = -1;
+	meminfo["available"] = -1;
+	meminfo["stack"] = -1;
+
+	PERFORMANCE_INFORMATION pref_info;
+	pref_info.cb = sizeof(pref_info);
+	GetPerformanceInfo(&pref_info, sizeof(pref_info));
+
+	typedef void(WINAPI * PGetCurrentThreadStackLimits)(PULONG_PTR, PULONG_PTR);
+	PGetCurrentThreadStackLimits GetCurrentThreadStackLimits = (PGetCurrentThreadStackLimits)GetProcAddress(GetModuleHandleA("kernel32.dll"), "GetCurrentThreadStackLimits");
+
+	ULONG_PTR LowLimit = 0;
+	ULONG_PTR HighLimit = 0;
+	if (GetCurrentThreadStackLimits) {
+		GetCurrentThreadStackLimits(&LowLimit, &HighLimit);
+	}
+
+	if (pref_info.PhysicalTotal * pref_info.PageSize != 0) {
+		meminfo["physical"] = pref_info.PhysicalTotal * pref_info.PageSize;
+	}
+	if (pref_info.PhysicalAvailable * pref_info.PageSize != 0) {
+		meminfo["free"] = pref_info.PhysicalAvailable * pref_info.PageSize;
+	}
+	if (pref_info.CommitLimit * pref_info.PageSize != 0) {
+		meminfo["available"] = pref_info.CommitLimit * pref_info.PageSize;
+	}
+	if (HighLimit - LowLimit != 0) {
+		meminfo["stack"] = HighLimit - LowLimit;
+	}
+
+	return meminfo;
 }
 
 Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {

@@ -425,6 +425,10 @@ uint64_t OS::get_static_memory_peak_usage() const {
 	return ::OS::get_singleton()->get_static_memory_peak_usage();
 }
 
+Dictionary OS::get_memory_info() const {
+	return ::OS::get_singleton()->get_memory_info();
+}
+
 /** This method uses a signed argument for better error reporting as it's used from the scripting API. */
 void OS::delay_usec(int p_usec) const {
 	ERR_FAIL_COND_MSG(
@@ -582,6 +586,7 @@ void OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_static_memory_usage"), &OS::get_static_memory_usage);
 	ClassDB::bind_method(D_METHOD("get_static_memory_peak_usage"), &OS::get_static_memory_peak_usage);
+	ClassDB::bind_method(D_METHOD("get_memory_info"), &OS::get_memory_info);
 
 	ClassDB::bind_method(D_METHOD("move_to_trash", "path"), &OS::move_to_trash);
 	ClassDB::bind_method(D_METHOD("get_user_data_dir"), &OS::get_user_data_dir);

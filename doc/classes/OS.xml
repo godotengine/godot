@@ -277,6 +277,16 @@
 				[b]Note:[/b] Thread IDs are not deterministic and may be reused across application restarts.
 			</description>
 		</method>
+		<method name="get_memory_info" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns the [Dictionary] with the following keys:
+				[code]"physical"[/code] - total amount of usable physical memory, in bytes or [code]-1[/code] if unknown. This value can be slightly less than the actual physical memory amount, since it does not include memory reserved by kernel and devices.
+				[code]"free"[/code] - amount of physical memory, that can be immediately allocated without disk access or other costly operation, in bytes or [code]-1[/code] if unknown. The process might be able to allocate more physical memory, but such allocation will require moving inactive pages to disk and can take some time.
+				[code]"available"[/code] - amount of memory, that can be allocated without extending the swap file(s), in bytes or [code]-1[/code] if unknown. This value include both physical memory and swap.
+				[code]"stack"[/code] - size of the current thread stack, in bytes or [code]-1[/code] if unknown.
+			</description>
+		</method>
 		<method name="get_model_name" qualifiers="const">
 			<return type="String" />
 			<description>

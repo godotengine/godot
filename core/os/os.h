@@ -229,7 +229,7 @@ public:
 
 	virtual uint64_t get_static_memory_usage() const;
 	virtual uint64_t get_static_memory_peak_usage() const;
-	virtual uint64_t get_free_static_memory() const;
+	virtual Dictionary get_memory_info() const;
 
 	RenderThreadMode get_render_thread_mode() const { return _render_thread_mode; }
 

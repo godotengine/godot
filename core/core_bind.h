@@ -190,6 +190,7 @@ public:
 
 	uint64_t get_static_memory_usage() const;
 	uint64_t get_static_memory_peak_usage() const;
+	Dictionary get_memory_info() const;
 
 	void delay_usec(int p_usec) const;
 	void delay_msec(int p_msec) const;
