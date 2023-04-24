@@ -44,7 +44,7 @@ Size2 TabBar::get_minimum_size() const {
 		return ms;
 	}
 
-	int y_margin = MAX(MAX(theme_cache.tab_unselected_style->get_minimum_size().height, theme_cache.tab_selected_style->get_minimum_size().height), theme_cache.tab_disabled_style->get_minimum_size().height);
+	int y_margin = MAX(MAX(MAX(theme_cache.tab_unselected_style->get_minimum_size().height, theme_cache.tab_hovered_style->get_minimum_size().height), theme_cache.tab_selected_style->get_minimum_size().height), theme_cache.tab_disabled_style->get_minimum_size().height);
 
 	for (int i = 0; i < tabs.size(); i++) {
 		if (tabs[i].hidden) {
@@ -58,6 +58,8 @@ Size2 TabBar::get_minimum_size() const {
 			style = theme_cache.tab_disabled_style;
 		} else if (current == i) {
 			style = theme_cache.tab_selected_style;
+		} else if (hover == i) {
+			style = theme_cache.tab_hovered_style;
 		} else {
 			style = theme_cache.tab_unselected_style;
 		}
@@ -309,6 +311,7 @@ void TabBar::_update_theme_item_cache() {
 	theme_cache.icon_max_width = get_theme_constant(SNAME("icon_max_width"));
 
 	theme_cache.tab_unselected_style = get_theme_stylebox(SNAME("tab_unselected"));
+	theme_cache.tab_hovered_style = get_theme_stylebox(SNAME("tab_hovered"));
 	theme_cache.tab_selected_style = get_theme_stylebox(SNAME("tab_selected"));
 	theme_cache.tab_disabled_style = get_theme_stylebox(SNAME("tab_disabled"));
 
@@ -324,6 +327,7 @@ void TabBar::_update_theme_item_cache() {
 	theme_cache.outline_size = get_theme_constant(SNAME("outline_size"));
 
 	theme_cache.font_selected_color = get_theme_color(SNAME("font_selected_color"));
+	theme_cache.font_hovered_color = get_theme_color(SNAME("font_hovered_color"));
 	theme_cache.font_unselected_color = get_theme_color(SNAME("font_unselected_color"));
 	theme_cache.font_disabled_color = get_theme_color(SNAME("font_disabled_color"));
 	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
@@ -399,6 +403,9 @@ void TabBar::_notification(int p_what) {
 					if (tabs[i].disabled) {
 						sb = theme_cache.tab_disabled_style;
 						col = theme_cache.font_disabled_color;
+					} else if (i == hover) {
+						sb = theme_cache.tab_hovered_style;
+						col = theme_cache.font_hovered_color;
 					} else {
 						sb = theme_cache.tab_unselected_style;
 						col = theme_cache.font_unselected_color;
@@ -874,6 +881,7 @@ void TabBar::_update_hover() {
 		if (hover != -1) {
 			emit_signal(SNAME("tab_hovered"), hover);
 		}
+		queue_redraw();
 	}
 
 	if (hover_buttons == -1) { // No hover.
@@ -1313,6 +1321,8 @@ int TabBar::get_tab_width(int p_idx) const {
 		style = theme_cache.tab_disabled_style;
 	} else if (current == p_idx) {
 		style = theme_cache.tab_selected_style;
+	} else if (hover == p_idx) {
+		style = theme_cache.tab_hovered_style;
 	} else {
 		style = theme_cache.tab_unselected_style;
 	}

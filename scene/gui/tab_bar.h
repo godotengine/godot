@@ -112,6 +112,7 @@ private:
 		int icon_max_width = 0;
 
 		Ref<StyleBox> tab_unselected_style;
+		Ref<StyleBox> tab_hovered_style;
 		Ref<StyleBox> tab_selected_style;
 		Ref<StyleBox> tab_disabled_style;
 
@@ -127,6 +128,7 @@ private:
 		int outline_size = 0;
 
 		Color font_selected_color;
+		Color font_hovered_color;
 		Color font_unselected_color;
 		Color font_disabled_color;
 		Color font_outline_color;
