@@ -1016,7 +1016,7 @@ void Variant::_register_variant_operators() {
 void Variant::_unregister_variant_operators() {
 }
 
-void Variant::evaluate(const Operator &p_op, const Variant &p_a,
+void Variant::evaluate(Operator p_op, const Variant &p_a,
 		const Variant &p_b, Variant &r_ret, bool &r_valid) {
 	ERR_FAIL_INDEX(p_op, Variant::OP_MAX);
 	Variant::Type type_a = p_a.get_type();

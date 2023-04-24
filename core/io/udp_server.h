@@ -61,7 +61,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void remove_peer(IPAddress p_ip, int p_port);
+	void remove_peer(const IPAddress &p_ip, int p_port);
 	Error listen(uint16_t p_port, const IPAddress &p_bind_address = IPAddress("*"));
 	Error poll();
 	int get_local_port() const;

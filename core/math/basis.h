@@ -69,8 +69,8 @@ struct _NO_DISCARD_ Basis {
 	Basis rotated(const Quaternion &p_quaternion) const;
 
 	Vector3 get_euler_normalized(EulerOrder p_order = EulerOrder::YXZ) const;
-	void get_rotation_axis_angle(Vector3 &p_axis, real_t &p_angle) const;
-	void get_rotation_axis_angle_local(Vector3 &p_axis, real_t &p_angle) const;
+	void get_rotation_axis_angle(Vector3 &r_axis, real_t &r_angle) const;
+	void get_rotation_axis_angle_local(Vector3 &r_axis, real_t &r_angle) const;
 	Quaternion get_rotation_quaternion() const;
 
 	void rotate_to_align(Vector3 p_start_direction, Vector3 p_end_direction);

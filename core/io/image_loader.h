@@ -91,7 +91,7 @@ class ImageLoader {
 
 protected:
 public:
-	static Error load_image(String p_file, Ref<Image> p_image, Ref<FileAccess> p_custom = Ref<FileAccess>(), BitField<ImageFormatLoader::LoaderFlags> p_flags = ImageFormatLoader::FLAG_NONE, float p_scale = 1.0);
+	static Error load_image(const String &p_file, Ref<Image> p_image, Ref<FileAccess> p_custom = Ref<FileAccess>(), BitField<ImageFormatLoader::LoaderFlags> p_flags = ImageFormatLoader::FLAG_NONE, float p_scale = 1.0);
 	static void get_recognized_extensions(List<String> *p_extensions);
 	static Ref<ImageFormatLoader> recognize(const String &p_extension);
 

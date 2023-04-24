@@ -151,7 +151,7 @@ public:
 	int create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console = false);
 	int create_instance(const Vector<String> &p_arguments);
 	Error kill(int p_pid);
-	Error shell_open(String p_uri);
+	Error shell_open(const String &p_uri);
 
 	bool is_process_running(int p_pid) const;
 	int get_process_id() const;
@@ -421,17 +421,17 @@ public:
 	bool can_instantiate(const StringName &p_class) const;
 	Variant instantiate(const StringName &p_class) const;
 
-	bool has_signal(StringName p_class, StringName p_signal) const;
-	Dictionary get_signal(StringName p_class, StringName p_signal) const;
-	TypedArray<Dictionary> get_signal_list(StringName p_class, bool p_no_inheritance = false) const;
+	bool has_signal(const StringName &p_class, const StringName &p_signal) const;
+	Dictionary get_signal(const StringName &p_class, const StringName &p_signal) const;
+	TypedArray<Dictionary> get_signal_list(const StringName &p_class, bool p_no_inheritance = false) const;
 
-	TypedArray<Dictionary> get_property_list(StringName p_class, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> get_property_list(const StringName &p_class, bool p_no_inheritance = false) const;
 	Variant get_property(Object *p_object, const StringName &p_property) const;
 	Error set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const;
 
-	bool has_method(StringName p_class, StringName p_method, bool p_no_inheritance = false) const;
+	bool has_method(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
 
-	TypedArray<Dictionary> get_method_list(StringName p_class, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> get_method_list(const StringName &p_class, bool p_no_inheritance = false) const;
 
 	PackedStringArray get_integer_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;
 	bool has_integer_constant(const StringName &p_class, const StringName &p_name) const;
@@ -442,7 +442,7 @@ public:
 	PackedStringArray get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
 	StringName get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
 
-	bool is_class_enabled(StringName p_class) const;
+	bool is_class_enabled(const StringName &p_class) const;
 
 	ClassDB() {}
 	~ClassDB() {}

@@ -303,7 +303,7 @@ void OS_Android::main_loop_focusin() {
 	audio_driver_android.set_pause(false);
 }
 
-Error OS_Android::shell_open(String p_uri) {
+Error OS_Android::shell_open(const String &p_uri) {
 	return godot_io_java->open_uri(p_uri);
 }
 

@@ -68,7 +68,7 @@ void remove_print_handler(const PrintHandlerList *p_handler) {
 	ERR_FAIL_COND(l == nullptr);
 }
 
-void __print_line(String p_string) {
+void __print_line(const String &p_string) {
 	if (!CoreGlobals::print_line_enabled) {
 		return;
 	}
@@ -85,7 +85,7 @@ void __print_line(String p_string) {
 	_global_unlock();
 }
 
-void __print_line_rich(String p_string) {
+void __print_line_rich(const String &p_string) {
 	if (!CoreGlobals::print_line_enabled) {
 		return;
 	}
@@ -176,7 +176,7 @@ void __print_line_rich(String p_string) {
 	_global_unlock();
 }
 
-void print_error(String p_string) {
+void print_error(const String &p_string) {
 	if (!CoreGlobals::print_error_enabled) {
 		return;
 	}
@@ -193,12 +193,12 @@ void print_error(String p_string) {
 	_global_unlock();
 }
 
-void print_verbose(String p_string) {
+void print_verbose(const String &p_string) {
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line(p_string);
 	}
 }
 
-String stringify_variants(Variant p_var) {
+String stringify_variants(const Variant &p_var) {
 	return p_var.operator String();
 }

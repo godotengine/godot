@@ -108,7 +108,7 @@ public:
 	virtual String get_version() const override;
 	virtual String get_model_name() const override;
 
-	virtual Error shell_open(String p_uri) override;
+	virtual Error shell_open(const String &p_uri) override;
 
 	virtual String get_user_data_dir() const override;
 

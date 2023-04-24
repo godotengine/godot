@@ -97,7 +97,7 @@ public:
 
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
 
-	virtual Error shell_open(String p_uri) override;
+	virtual Error shell_open(const String &p_uri) override;
 
 	virtual String get_locale() const override;
 

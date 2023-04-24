@@ -1327,7 +1327,7 @@ String OS_Windows::get_stdin_string() {
 	return String();
 }
 
-Error OS_Windows::shell_open(String p_uri) {
+Error OS_Windows::shell_open(const String &p_uri) {
 	INT_PTR ret = (INT_PTR)ShellExecuteW(nullptr, nullptr, (LPCWSTR)(p_uri.utf16().get_data()), nullptr, nullptr, SW_SHOWNORMAL);
 	if (ret > 32) {
 		return OK;

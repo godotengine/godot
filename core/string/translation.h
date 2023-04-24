@@ -94,13 +94,13 @@ class TranslationServer : public Object {
 	String pseudolocalization_suffix;
 
 	StringName tool_pseudolocalize(const StringName &p_message) const;
-	String get_override_string(String &p_message) const;
-	String double_vowels(String &p_message) const;
-	String replace_with_accented_string(String &p_message) const;
-	String wrap_with_fakebidi_characters(String &p_message) const;
+	String get_override_string(const String &p_message) const;
+	String double_vowels(const String &p_message) const;
+	String replace_with_accented_string(const String &p_message) const;
+	String wrap_with_fakebidi_characters(const String &p_message) const;
 	String add_padding(const String &p_message, int p_length) const;
 	const char32_t *get_accented_version(char32_t p_character) const;
-	bool is_placeholder(String &p_message, int p_index) const;
+	bool is_placeholder(const String &p_message, int p_index) const;
 
 	static TranslationServer *singleton;
 	bool _load_translations(const String &p_from);

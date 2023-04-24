@@ -294,7 +294,7 @@ String OS_IOS::get_model_name() const {
 	return OS_Unix::get_model_name();
 }
 
-Error OS_IOS::shell_open(String p_uri) {
+Error OS_IOS::shell_open(const String &p_uri) {
 	NSString *urlPath = [[NSString alloc] initWithUTF8String:p_uri.utf8().get_data()];
 	NSURL *url = [NSURL URLWithString:urlPath];
 

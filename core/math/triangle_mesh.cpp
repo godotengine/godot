@@ -384,7 +384,7 @@ bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, V
 	return inters;
 }
 
-bool TriangleMesh::inside_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count, Vector3 p_scale) const {
+bool TriangleMesh::inside_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count, const Vector3 &p_scale) const {
 	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * max_depth);
 
 	enum {

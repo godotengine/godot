@@ -96,7 +96,7 @@ class CompositeLogger : public Logger {
 	Vector<Logger *> loggers;
 
 public:
-	explicit CompositeLogger(Vector<Logger *> p_loggers);
+	explicit CompositeLogger(const Vector<Logger *> &p_loggers);
 
 	virtual void logv(const char *p_format, va_list p_list, bool p_err) override _PRINTF_FORMAT_ATTRIBUTE_2_0;
 	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type = ERR_ERROR) override;

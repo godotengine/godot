@@ -4327,7 +4327,7 @@ void ShaderLanguage::get_keyword_list(List<String> *r_keywords) {
 	}
 }
 
-bool ShaderLanguage::is_control_flow_keyword(String p_keyword) {
+bool ShaderLanguage::is_control_flow_keyword(const String &p_keyword) {
 	return p_keyword == "break" ||
 			p_keyword == "case" ||
 			p_keyword == "continue" ||

@@ -1030,7 +1030,7 @@ String String::get_with_code_lines() const {
 	return ret;
 }
 
-int String::get_slice_count(String p_splitter) const {
+int String::get_slice_count(const String &p_splitter) const {
 	if (is_empty()) {
 		return 0;
 	}
@@ -1049,7 +1049,7 @@ int String::get_slice_count(String p_splitter) const {
 	return slices;
 }
 
-String String::get_slice(String p_splitter, int p_slice) const {
+String String::get_slice(const String &p_splitter, int p_slice) const {
 	if (is_empty() || p_splitter.is_empty()) {
 		return "";
 	}
@@ -1351,7 +1351,7 @@ Vector<int> String::split_ints_mk(const Vector<String> &p_splitters, bool p_allo
 	return ret;
 }
 
-String String::join(Vector<String> parts) const {
+String String::join(const Vector<String> &parts) const {
 	String ret;
 	for (int i = 0; i < parts.size(); ++i) {
 		if (i > 0) {
@@ -5055,7 +5055,7 @@ String String::sprintf(const Array &values, bool *error) const {
 	return formatted;
 }
 
-String String::quote(String quotechar) const {
+String String::quote(const String &quotechar) const {
 	return quotechar + *this + quotechar;
 }
 

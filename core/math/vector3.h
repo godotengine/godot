@@ -91,26 +91,26 @@ struct _NO_DISCARD_ Vector3 {
 	_FORCE_INLINE_ Vector3 normalized() const;
 	_FORCE_INLINE_ bool is_normalized() const;
 	_FORCE_INLINE_ Vector3 inverse() const;
-	Vector3 limit_length(const real_t p_len = 1.0) const;
+	Vector3 limit_length(real_t p_len = 1.0) const;
 
 	_FORCE_INLINE_ void zero();
 
 	void snap(const Vector3 p_val);
 	Vector3 snapped(const Vector3 p_val) const;
 
-	void rotate(const Vector3 &p_axis, const real_t p_angle);
-	Vector3 rotated(const Vector3 &p_axis, const real_t p_angle) const;
+	void rotate(const Vector3 &p_axis, real_t p_angle);
+	Vector3 rotated(const Vector3 &p_axis, real_t p_angle) const;
 
 	/* Static Methods between 2 vector3s */
 
-	_FORCE_INLINE_ Vector3 lerp(const Vector3 &p_to, const real_t p_weight) const;
-	_FORCE_INLINE_ Vector3 slerp(const Vector3 &p_to, const real_t p_weight) const;
-	_FORCE_INLINE_ Vector3 cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight) const;
-	_FORCE_INLINE_ Vector3 cubic_interpolate_in_time(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight, const real_t &p_b_t, const real_t &p_pre_a_t, const real_t &p_post_b_t) const;
-	_FORCE_INLINE_ Vector3 bezier_interpolate(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, const real_t p_t) const;
-	_FORCE_INLINE_ Vector3 bezier_derivative(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, const real_t p_t) const;
+	_FORCE_INLINE_ Vector3 lerp(const Vector3 &p_to, real_t p_weight) const;
+	_FORCE_INLINE_ Vector3 slerp(const Vector3 &p_to, real_t p_weight) const;
+	_FORCE_INLINE_ Vector3 cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_weight) const;
+	_FORCE_INLINE_ Vector3 cubic_interpolate_in_time(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_weight, real_t p_b_t, real_t p_pre_a_t, real_t p_post_b_t) const;
+	_FORCE_INLINE_ Vector3 bezier_interpolate(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, real_t p_t) const;
+	_FORCE_INLINE_ Vector3 bezier_derivative(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, real_t p_t) const;
 
-	Vector3 move_toward(const Vector3 &p_to, const real_t p_delta) const;
+	Vector3 move_toward(const Vector3 &p_to, real_t p_delta) const;
 
 	Vector2 octahedron_encode() const;
 	static Vector3 octahedron_decode(const Vector2 &p_oct);
@@ -131,7 +131,7 @@ struct _NO_DISCARD_ Vector3 {
 	_FORCE_INLINE_ real_t distance_to(const Vector3 &p_to) const;
 	_FORCE_INLINE_ real_t distance_squared_to(const Vector3 &p_to) const;
 
-	_FORCE_INLINE_ Vector3 posmod(const real_t p_mod) const;
+	_FORCE_INLINE_ Vector3 posmod(real_t p_mod) const;
 	_FORCE_INLINE_ Vector3 posmodv(const Vector3 &p_modv) const;
 	_FORCE_INLINE_ Vector3 project(const Vector3 &p_to) const;
 
@@ -176,7 +176,7 @@ struct _NO_DISCARD_ Vector3 {
 	operator Vector3i() const;
 
 	_FORCE_INLINE_ Vector3() {}
-	_FORCE_INLINE_ Vector3(const real_t p_x, const real_t p_y, const real_t p_z) {
+	_FORCE_INLINE_ Vector3(real_t p_x, real_t p_y, real_t p_z) {
 		x = p_x;
 		y = p_y;
 		z = p_z;
@@ -216,7 +216,7 @@ Vector3 Vector3::round() const {
 	return Vector3(Math::round(x), Math::round(y), Math::round(z));
 }
 
-Vector3 Vector3::lerp(const Vector3 &p_to, const real_t p_weight) const {
+Vector3 Vector3::lerp(const Vector3 &p_to, real_t p_weight) const {
 	Vector3 res = *this;
 	res.x = Math::lerp(res.x, p_to.x, p_weight);
 	res.y = Math::lerp(res.y, p_to.y, p_weight);
@@ -224,7 +224,7 @@ Vector3 Vector3::lerp(const Vector3 &p_to, const real_t p_weight) const {
 	return res;
 }
 
-Vector3 Vector3::slerp(const Vector3 &p_to, const real_t p_weight) const {
+Vector3 Vector3::slerp(const Vector3 &p_to, real_t p_weight) const {
 	// This method seems more complicated than it really is, since we write out
 	// the internals of some methods for efficiency (mainly, checking length).
 	real_t start_length_sq = length_squared();
@@ -246,7 +246,7 @@ Vector3 Vector3::slerp(const Vector3 &p_to, const real_t p_weight) const {
 	return rotated(axis, angle * p_weight) * (result_length / start_length);
 }
 
-Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight) const {
+Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_weight) const {
 	Vector3 res = *this;
 	res.x = Math::cubic_interpolate(res.x, p_b.x, p_pre_a.x, p_post_b.x, p_weight);
 	res.y = Math::cubic_interpolate(res.y, p_b.y, p_pre_a.y, p_post_b.y, p_weight);
@@ -254,7 +254,7 @@ Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, c
 	return res;
 }
 
-Vector3 Vector3::cubic_interpolate_in_time(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight, const real_t &p_b_t, const real_t &p_pre_a_t, const real_t &p_post_b_t) const {
+Vector3 Vector3::cubic_interpolate_in_time(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_weight, real_t p_b_t, real_t p_pre_a_t, real_t p_post_b_t) const {
 	Vector3 res = *this;
 	res.x = Math::cubic_interpolate_in_time(res.x, p_b.x, p_pre_a.x, p_post_b.x, p_weight, p_b_t, p_pre_a_t, p_post_b_t);
 	res.y = Math::cubic_interpolate_in_time(res.y, p_b.y, p_pre_a.y, p_post_b.y, p_weight, p_b_t, p_pre_a_t, p_post_b_t);
@@ -262,7 +262,7 @@ Vector3 Vector3::cubic_interpolate_in_time(const Vector3 &p_b, const Vector3 &p_
 	return res;
 }
 
-Vector3 Vector3::bezier_interpolate(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, const real_t p_t) const {
+Vector3 Vector3::bezier_interpolate(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, real_t p_t) const {
 	Vector3 res = *this;
 	res.x = Math::bezier_interpolate(res.x, p_control_1.x, p_control_2.x, p_end.x, p_t);
 	res.y = Math::bezier_interpolate(res.y, p_control_1.y, p_control_2.y, p_end.y, p_t);
@@ -270,7 +270,7 @@ Vector3 Vector3::bezier_interpolate(const Vector3 &p_control_1, const Vector3 &p
 	return res;
 }
 
-Vector3 Vector3::bezier_derivative(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, const real_t p_t) const {
+Vector3 Vector3::bezier_derivative(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, real_t p_t) const {
 	Vector3 res = *this;
 	res.x = Math::bezier_derivative(res.x, p_control_1.x, p_control_2.x, p_end.x, p_t);
 	res.y = Math::bezier_derivative(res.y, p_control_1.y, p_control_2.y, p_end.y, p_t);
@@ -286,7 +286,7 @@ real_t Vector3::distance_squared_to(const Vector3 &p_to) const {
 	return (p_to - *this).length_squared();
 }
 
-Vector3 Vector3::posmod(const real_t p_mod) const {
+Vector3 Vector3::posmod(real_t p_mod) const {
 	return Vector3(Math::fposmod(x, p_mod), Math::fposmod(y, p_mod), Math::fposmod(z, p_mod));
 }
 

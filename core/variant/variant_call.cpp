@@ -1499,7 +1499,7 @@ void Variant::get_enums_for_type(Variant::Type p_type, List<StringName> *p_enums
 	}
 }
 
-void Variant::get_enumerations_for_enum(Variant::Type p_type, StringName p_enum_name, List<StringName> *p_enumerations) {
+void Variant::get_enumerations_for_enum(Variant::Type p_type, const StringName &p_enum_name, List<StringName> *p_enumerations) {
 	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
 
 	_VariantCall::EnumData &enum_data = _VariantCall::enum_data[p_type];
@@ -1511,7 +1511,7 @@ void Variant::get_enumerations_for_enum(Variant::Type p_type, StringName p_enum_
 	}
 }
 
-int Variant::get_enum_value(Variant::Type p_type, StringName p_enum_name, StringName p_enumeration, bool *r_valid) {
+int Variant::get_enum_value(Variant::Type p_type, const StringName &p_enum_name, const StringName &p_enumeration, bool *r_valid) {
 	if (r_valid) {
 		*r_valid = false;
 	}

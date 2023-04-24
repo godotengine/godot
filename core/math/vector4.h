@@ -94,11 +94,11 @@ struct _NO_DISCARD_ Vector4 {
 	Vector4 floor() const;
 	Vector4 ceil() const;
 	Vector4 round() const;
-	Vector4 lerp(const Vector4 &p_to, const real_t p_weight) const;
-	Vector4 cubic_interpolate(const Vector4 &p_b, const Vector4 &p_pre_a, const Vector4 &p_post_b, const real_t p_weight) const;
-	Vector4 cubic_interpolate_in_time(const Vector4 &p_b, const Vector4 &p_pre_a, const Vector4 &p_post_b, const real_t p_weight, const real_t &p_b_t, const real_t &p_pre_a_t, const real_t &p_post_b_t) const;
+	Vector4 lerp(const Vector4 &p_to, real_t p_weight) const;
+	Vector4 cubic_interpolate(const Vector4 &p_b, const Vector4 &p_pre_a, const Vector4 &p_post_b, real_t p_weight) const;
+	Vector4 cubic_interpolate_in_time(const Vector4 &p_b, const Vector4 &p_pre_a, const Vector4 &p_post_b, real_t p_weight, real_t p_b_t, real_t p_pre_a_t, real_t p_post_b_t) const;
 
-	Vector4 posmod(const real_t p_mod) const;
+	Vector4 posmod(real_t p_mod) const;
 	Vector4 posmodv(const Vector4 &p_modv) const;
 	void snap(const Vector4 &p_step);
 	Vector4 snapped(const Vector4 &p_step) const;

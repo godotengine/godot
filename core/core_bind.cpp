@@ -248,7 +248,7 @@ String OS::get_executable_path() const {
 	return ::OS::get_singleton()->get_executable_path();
 }
 
-Error OS::shell_open(String p_uri) {
+Error OS::shell_open(const String &p_uri) {
 	if (p_uri.begins_with("res://")) {
 		WARN_PRINT("Attempting to open an URL with the \"res://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_open()`.");
 	} else if (p_uri.begins_with("user://")) {
@@ -1283,11 +1283,11 @@ Variant ClassDB::instantiate(const StringName &p_class) const {
 	}
 }
 
-bool ClassDB::has_signal(StringName p_class, StringName p_signal) const {
+bool ClassDB::has_signal(const StringName &p_class, const StringName &p_signal) const {
 	return ::ClassDB::has_signal(p_class, p_signal);
 }
 
-Dictionary ClassDB::get_signal(StringName p_class, StringName p_signal) const {
+Dictionary ClassDB::get_signal(const StringName &p_class, const StringName &p_signal) const {
 	MethodInfo signal;
 	if (::ClassDB::get_signal(p_class, p_signal, &signal)) {
 		return signal.operator Dictionary();
@@ -1296,7 +1296,7 @@ Dictionary ClassDB::get_signal(StringName p_class, StringName p_signal) const {
 	}
 }
 
-TypedArray<Dictionary> ClassDB::get_signal_list(StringName p_class, bool p_no_inheritance) const {
+TypedArray<Dictionary> ClassDB::get_signal_list(const StringName &p_class, bool p_no_inheritance) const {
 	List<MethodInfo> signals;
 	::ClassDB::get_signal_list(p_class, &signals, p_no_inheritance);
 	TypedArray<Dictionary> ret;
@@ -1308,7 +1308,7 @@ TypedArray<Dictionary> ClassDB::get_signal_list(StringName p_class, bool p_no_in
 	return ret;
 }
 
-TypedArray<Dictionary> ClassDB::get_property_list(StringName p_class, bool p_no_inheritance) const {
+TypedArray<Dictionary> ClassDB::get_property_list(const StringName &p_class, bool p_no_inheritance) const {
 	List<PropertyInfo> plist;
 	::ClassDB::get_property_list(p_class, &plist, p_no_inheritance);
 	TypedArray<Dictionary> ret;
@@ -1336,11 +1336,11 @@ Error ClassDB::set_property(Object *p_object, const StringName &p_property, cons
 	return OK;
 }
 
-bool ClassDB::has_method(StringName p_class, StringName p_method, bool p_no_inheritance) const {
+bool ClassDB::has_method(const StringName &p_class, const StringName &p_method, bool p_no_inheritance) const {
 	return ::ClassDB::has_method(p_class, p_method, p_no_inheritance);
 }
 
-TypedArray<Dictionary> ClassDB::get_method_list(StringName p_class, bool p_no_inheritance) const {
+TypedArray<Dictionary> ClassDB::get_method_list(const StringName &p_class, bool p_no_inheritance) const {
 	List<MethodInfo> methods;
 	::ClassDB::get_method_list(p_class, &methods, p_no_inheritance);
 	TypedArray<Dictionary> ret;
@@ -1421,7 +1421,7 @@ StringName ClassDB::get_integer_constant_enum(const StringName &p_class, const S
 	return ::ClassDB::get_integer_constant_enum(p_class, p_name, p_no_inheritance);
 }
 
-bool ClassDB::is_class_enabled(StringName p_class) const {
+bool ClassDB::is_class_enabled(const StringName &p_class) const {
 	return ::ClassDB::is_class_enabled(p_class);
 }
 

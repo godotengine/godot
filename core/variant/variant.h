@@ -540,8 +540,8 @@ public:
 	};
 
 	static String get_operator_name(Operator p_op);
-	static void evaluate(const Operator &p_op, const Variant &p_a, const Variant &p_b, Variant &r_ret, bool &r_valid);
-	static _FORCE_INLINE_ Variant evaluate(const Operator &p_op, const Variant &p_a, const Variant &p_b) {
+	static void evaluate(Operator p_op, const Variant &p_a, const Variant &p_b, Variant &r_ret, bool &r_valid);
+	static _FORCE_INLINE_ Variant evaluate(Operator p_op, const Variant &p_a, const Variant &p_b) {
 		bool valid = true;
 		Variant res;
 		evaluate(p_op, p_a, p_b, res, valid);
@@ -764,8 +764,8 @@ public:
 	static Variant get_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid = nullptr);
 
 	static void get_enums_for_type(Variant::Type p_type, List<StringName> *p_enums);
-	static void get_enumerations_for_enum(Variant::Type p_type, StringName p_enum_name, List<StringName> *p_enumerations);
-	static int get_enum_value(Variant::Type p_type, StringName p_enum_name, StringName p_enumeration, bool *r_valid = nullptr);
+	static void get_enumerations_for_enum(Variant::Type p_type, const StringName &p_enum_name, List<StringName> *p_enumerations);
+	static int get_enum_value(Variant::Type p_type, const StringName &p_enum_name, const StringName &p_enumeration, bool *r_valid = nullptr);
 
 	typedef String (*ObjectDeConstruct)(const Variant &p_object, void *ud);
 	typedef void (*ObjectConstruct)(const String &p_text, void *ud, Variant &r_value);

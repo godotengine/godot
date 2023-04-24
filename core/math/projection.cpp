@@ -150,7 +150,7 @@ Projection Projection::create_frustum(real_t p_left, real_t p_right, real_t p_bo
 	return proj;
 }
 
-Projection Projection::create_frustum_aspect(real_t p_size, real_t p_aspect, Vector2 p_offset, real_t p_near, real_t p_far, bool p_flip_fov) {
+Projection Projection::create_frustum_aspect(real_t p_size, real_t p_aspect, const Vector2 &p_offset, real_t p_near, real_t p_far, bool p_flip_fov) {
 	Projection proj;
 	proj.set_frustum(p_size, p_aspect, p_offset, p_near, p_far, p_flip_fov);
 	return proj;
@@ -393,7 +393,7 @@ void Projection::set_frustum(real_t p_left, real_t p_right, real_t p_bottom, rea
 	te[15] = 0;
 }
 
-void Projection::set_frustum(real_t p_size, real_t p_aspect, Vector2 p_offset, real_t p_near, real_t p_far, bool p_flip_fov) {
+void Projection::set_frustum(real_t p_size, real_t p_aspect, const Vector2 &p_offset, real_t p_near, real_t p_far, bool p_flip_fov) {
 	if (!p_flip_fov) {
 		p_size *= p_aspect;
 	}

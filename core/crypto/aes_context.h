@@ -55,8 +55,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	Error start(Mode p_mode, PackedByteArray p_key, PackedByteArray p_iv = PackedByteArray());
-	PackedByteArray update(PackedByteArray p_src);
+	Error start(Mode p_mode, const PackedByteArray &p_key, const PackedByteArray &p_iv = PackedByteArray());
+	PackedByteArray update(const PackedByteArray &p_src);
 	PackedByteArray get_iv_state();
 	void finish();
 

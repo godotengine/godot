@@ -287,7 +287,7 @@ String OS_MacOS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	return ret;
 }
 
-Error OS_MacOS::shell_open(String p_uri) {
+Error OS_MacOS::shell_open(const String &p_uri) {
 	NSString *string = [NSString stringWithUTF8String:p_uri.utf8().get_data()];
 	NSURL *uri = [[NSURL alloc] initWithString:string];
 	// Escape special characters in filenames

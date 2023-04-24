@@ -146,7 +146,7 @@ String OS_Web::get_executable_path() const {
 	return OS::get_executable_path();
 }
 
-Error OS_Web::shell_open(String p_uri) {
+Error OS_Web::shell_open(const String &p_uri) {
 	// Open URI in a new tab, browser will deal with it by protocol.
 	godot_js_os_shell_open(p_uri.utf8().get_data());
 	return OK;

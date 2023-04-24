@@ -76,7 +76,7 @@ protected:
 	void _set_logger(CompositeLogger *p_logger);
 
 public:
-	typedef void (*ImeCallback)(void *p_inp, String p_text, Point2 p_selection);
+	typedef void (*ImeCallback)(void *p_inp, const String &p_text, const Point2 &p_selection);
 	typedef bool (*HasServerFeatureCallback)(const String &p_feature);
 
 	enum RenderThreadMode {
@@ -99,8 +99,8 @@ protected:
 	virtual void initialize() = 0;
 	virtual void initialize_joypads() = 0;
 
-	void set_current_rendering_driver_name(String p_driver_name) { _current_rendering_driver_name = p_driver_name; }
-	void set_current_rendering_method(String p_name) { _current_rendering_method = p_name; }
+	void set_current_rendering_driver_name(const String &p_driver_name) { _current_rendering_driver_name = p_driver_name; }
+	void set_current_rendering_method(const String &p_name) { _current_rendering_method = p_name; }
 
 	void set_display_driver_id(int p_display_driver_id) { _display_driver_id = p_display_driver_id; }
 
@@ -162,7 +162,7 @@ public:
 	virtual bool is_process_running(const ProcessID &p_pid) const = 0;
 	virtual void vibrate_handheld(int p_duration_ms = 500) {}
 
-	virtual Error shell_open(String p_uri);
+	virtual Error shell_open(const String &p_uri);
 	virtual Error set_cwd(const String &p_cwd);
 
 	virtual bool has_environment(const String &p_var) const = 0;

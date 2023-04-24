@@ -311,7 +311,7 @@ public:
 	String lpad(int min_length, const String &character = " ") const;
 	String rpad(int min_length, const String &character = " ") const;
 	String sprintf(const Array &values, bool *error) const;
-	String quote(String quotechar = "\"") const;
+	String quote(const String &quotechar = "\"") const;
 	String unquote() const;
 	static String num(double p_num, int p_decimals = -1);
 	static String num_scientific(double p_num);
@@ -345,8 +345,8 @@ public:
 	String to_snake_case() const;
 
 	String get_with_code_lines() const;
-	int get_slice_count(String p_splitter) const;
-	String get_slice(String p_splitter, int p_slice) const;
+	int get_slice_count(const String &p_splitter) const;
+	String get_slice(const String &p_splitter, int p_slice) const;
 	String get_slicec(char32_t p_splitter, int p_slice) const;
 
 	Vector<String> split(const String &p_splitter = "", bool p_allow_empty = true, int p_maxsplit = 0) const;
@@ -357,7 +357,7 @@ public:
 	Vector<int> split_ints(const String &p_splitter, bool p_allow_empty = true) const;
 	Vector<int> split_ints_mk(const Vector<String> &p_splitters, bool p_allow_empty = true) const;
 
-	String join(Vector<String> parts) const;
+	String join(const Vector<String> &parts) const;
 
 	static char32_t char_uppercase(char32_t p_char);
 	static char32_t char_lowercase(char32_t p_char);
@@ -554,7 +554,7 @@ String RTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 
 bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end);
 
-_FORCE_INLINE_ void sarray_add_str(Vector<String> &arr) {
+_FORCE_INLINE_ void sarray_add_str(const Vector<String> &arr) {
 }
 
 _FORCE_INLINE_ void sarray_add_str(Vector<String> &arr, const String &p_str) {

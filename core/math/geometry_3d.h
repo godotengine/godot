@@ -533,7 +533,7 @@ public:
 	}
 
 	// Create a "wrap" that encloses the given geometry.
-	static Vector<Face3> wrap_geometry(Vector<Face3> p_array, real_t *p_error = nullptr);
+	static Vector<Face3> wrap_geometry(const Vector<Face3> &p_array, real_t *p_error = nullptr);
 
 	struct MeshData {
 		struct Face {
@@ -578,7 +578,7 @@ public:
 		max = x2;                        \
 	}
 
-	_FORCE_INLINE_ static bool planeBoxOverlap(Vector3 normal, float d, Vector3 maxbox) {
+	_FORCE_INLINE_ static bool planeBoxOverlap(const Vector3 &normal, float d, const Vector3 &maxbox) {
 		int q;
 		Vector3 vmin, vmax;
 		for (q = 0; q <= 2; q++) {

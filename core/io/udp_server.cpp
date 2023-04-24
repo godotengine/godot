@@ -167,7 +167,7 @@ Ref<PacketPeerUDP> UDPServer::take_connection() {
 	return peer.peer;
 }
 
-void UDPServer::remove_peer(IPAddress p_ip, int p_port) {
+void UDPServer::remove_peer(const IPAddress &p_ip, int p_port) {
 	Peer peer;
 	peer.ip = p_ip;
 	peer.port = p_port;

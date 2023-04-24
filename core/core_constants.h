@@ -45,7 +45,7 @@ public:
 	static bool is_global_constant(const StringName &p_name);
 	static int get_global_constant_index(const StringName &p_name);
 	static bool is_global_enum(const StringName &p_enum);
-	static void get_enum_values(StringName p_enum, HashMap<StringName, int64_t> *p_values);
+	static void get_enum_values(const StringName &p_enum, HashMap<StringName, int64_t> *p_values);
 };
 
 #endif // CORE_CONSTANTS_H

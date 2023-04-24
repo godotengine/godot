@@ -421,7 +421,7 @@ struct PtrToArg<Vector<Face3>> {
 		}
 		return ret;
 	}
-	_FORCE_INLINE_ static void encode(Vector<Face3> p_vec, void *p_ptr) {
+	_FORCE_INLINE_ static void encode(const Vector<Face3> &p_vec, void *p_ptr) {
 		Vector<Vector3> *arr = reinterpret_cast<Vector<Vector3> *>(p_ptr);
 		int len = p_vec.size();
 		arr->resize(len * 3);

@@ -45,7 +45,7 @@ void PacketPeerUDP::set_broadcast_enabled(bool p_enabled) {
 	}
 }
 
-Error PacketPeerUDP::join_multicast_group(IPAddress p_multi_address, String p_if_name) {
+Error PacketPeerUDP::join_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) {
 	ERR_FAIL_COND_V(udp_server, ERR_LOCKED);
 	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(!p_multi_address.is_valid(), ERR_INVALID_PARAMETER);
@@ -60,7 +60,7 @@ Error PacketPeerUDP::join_multicast_group(IPAddress p_multi_address, String p_if
 	return _sock->join_multicast_group(p_multi_address, p_if_name);
 }
 
-Error PacketPeerUDP::leave_multicast_group(IPAddress p_multi_address, String p_if_name) {
+Error PacketPeerUDP::leave_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) {
 	ERR_FAIL_COND_V(udp_server, ERR_LOCKED);
 	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(!_sock->is_open(), ERR_UNCONFIGURED);
@@ -190,7 +190,7 @@ Error PacketPeerUDP::bind(int p_port, const IPAddress &p_bind_address, int p_rec
 	return OK;
 }
 
-Error PacketPeerUDP::connect_shared_socket(Ref<NetSocket> p_sock, IPAddress p_ip, uint16_t p_port, UDPServer *p_server) {
+Error PacketPeerUDP::connect_shared_socket(Ref<NetSocket> p_sock, const IPAddress &p_ip, uint16_t p_port, UDPServer *p_server) {
 	udp_server = p_server;
 	connected = true;
 	_sock = p_sock;
@@ -306,7 +306,7 @@ Error PacketPeerUDP::_poll() {
 	return OK;
 }
 
-Error PacketPeerUDP::store_packet(IPAddress p_ip, uint32_t p_port, uint8_t *p_buf, int p_buf_size) {
+Error PacketPeerUDP::store_packet(const IPAddress &p_ip, uint32_t p_port, uint8_t *p_buf, int p_buf_size) {
 	if (rb.space_left() < p_buf_size + 24) {
 		return ERR_OUT_OF_MEMORY;
 	}

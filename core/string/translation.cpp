@@ -864,7 +864,7 @@ StringName TranslationServer::tool_pseudolocalize(const StringName &p_message) c
 	return res;
 }
 
-String TranslationServer::get_override_string(String &p_message) const {
+String TranslationServer::get_override_string(const String &p_message) const {
 	String res;
 	for (int i = 0; i < p_message.size(); i++) {
 		if (pseudolocalization_skip_placeholders_enabled && is_placeholder(p_message, i)) {
@@ -878,7 +878,7 @@ String TranslationServer::get_override_string(String &p_message) const {
 	return res;
 }
 
-String TranslationServer::double_vowels(String &p_message) const {
+String TranslationServer::double_vowels(const String &p_message) const {
 	String res;
 	for (int i = 0; i < p_message.size(); i++) {
 		if (pseudolocalization_skip_placeholders_enabled && is_placeholder(p_message, i)) {
@@ -896,7 +896,7 @@ String TranslationServer::double_vowels(String &p_message) const {
 	return res;
 };
 
-String TranslationServer::replace_with_accented_string(String &p_message) const {
+String TranslationServer::replace_with_accented_string(const String &p_message) const {
 	String res;
 	for (int i = 0; i < p_message.size(); i++) {
 		if (pseudolocalization_skip_placeholders_enabled && is_placeholder(p_message, i)) {
@@ -915,7 +915,7 @@ String TranslationServer::replace_with_accented_string(String &p_message) const 
 	return res;
 }
 
-String TranslationServer::wrap_with_fakebidi_characters(String &p_message) const {
+String TranslationServer::wrap_with_fakebidi_characters(const String &p_message) const {
 	String res;
 	char32_t fakebidiprefix = U'\u202e';
 	char32_t fakebidisuffix = U'\u202c';
@@ -969,7 +969,7 @@ const char32_t *TranslationServer::get_accented_version(char32_t p_character) co
 	return nullptr;
 }
 
-bool TranslationServer::is_placeholder(String &p_message, int p_index) const {
+bool TranslationServer::is_placeholder(const String &p_message, int p_index) const {
 	return p_index < p_message.size() - 1 && p_message[p_index] == '%' &&
 			(p_message[p_index + 1] == 's' || p_message[p_index + 1] == 'c' || p_message[p_index + 1] == 'd' ||
 					p_message[p_index + 1] == 'o' || p_message[p_index + 1] == 'x' || p_message[p_index + 1] == 'X' || p_message[p_index + 1] == 'f');

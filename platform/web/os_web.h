@@ -85,7 +85,7 @@ public:
 	int get_default_thread_pool_size() const override { return 1; }
 
 	String get_executable_path() const override;
-	Error shell_open(String p_uri) override;
+	Error shell_open(const String &p_uri) override;
 	String get_name() const override;
 	// Override default OS implementation which would block the main thread with delay_usec.
 	// Implemented in web_main.cpp loop callback instead.
