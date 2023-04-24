@@ -527,7 +527,8 @@ Object *CanvasItemEditor::_get_editor_data(Object *p_what) {
 }
 
 void CanvasItemEditor::_keying_changed() {
-	if (AnimationPlayerEditor::get_singleton()->get_track_editor()->is_visible_in_tree()) {
+	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
+	if (te && te->is_visible_in_tree() && te->get_current_animation().is_valid()) {
 		animation_hb->show();
 	} else {
 		animation_hb->hide();
@@ -3948,6 +3949,7 @@ void CanvasItemEditor::_notification(int p_what) {
 			select_sb->set_content_margin_all(4);
 
 			AnimationPlayerEditor::get_singleton()->get_track_editor()->connect("visibility_changed", callable_mp(this, &CanvasItemEditor::_keying_changed));
+			AnimationPlayerEditor::get_singleton()->connect("animation_selected", callable_mp(this, &CanvasItemEditor::_keying_changed).unbind(1));
 			_keying_changed();
 			_update_editor_settings();
 		} break;
@@ -4135,6 +4137,8 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 	const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 
 	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
+	ERR_FAIL_COND_MSG(!te->get_current_animation().is_valid(), "Cannot insert animation key. No animation selected.");
+
 	te->make_insert_queue();
 	for (const KeyValue<Node *, Object *> &E : selection) {
 		CanvasItem *ci = Object::cast_to<CanvasItem>(E.key);
