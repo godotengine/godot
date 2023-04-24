@@ -61,6 +61,9 @@ bool AnimationNode::is_parameter_read_only(const StringName &p_parameter) const 
 }
 
 void AnimationNode::set_parameter(const StringName &p_name, const Variant &p_value) {
+	if (is_testing) {
+		return;
+	}
 	ERR_FAIL_COND(!state);
 	ERR_FAIL_COND(!state->tree->property_parent_map.has(base_path));
 	ERR_FAIL_COND(!state->tree->property_parent_map[base_path].has(p_name));
@@ -124,13 +127,13 @@ void AnimationNode::blend_animation(const StringName &p_animation, double p_time
 	state->animation_states.push_back(anim_state);
 }
 
-double AnimationNode::_pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, double p_time, bool p_seek, bool p_is_external_seeking, const Vector<StringName> &p_connections) {
+double AnimationNode::_pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, double p_time, bool p_seek, bool p_is_external_seeking, const Vector<StringName> &p_connections, bool p_test_only) {
 	base_path = p_base_path;
 	parent = p_parent;
 	connections = p_connections;
 	state = p_state;
 
-	double t = process(p_time, p_seek, p_is_external_seeking);
+	double t = process(p_time, p_seek, p_is_external_seeking, p_test_only);
 
 	state = nullptr;
 	parent = nullptr;
@@ -154,7 +157,7 @@ void AnimationNode::make_invalid(const String &p_reason) {
 	state->invalid_reasons += String::utf8("•  ") + p_reason;
 }
 
-double AnimationNode::blend_input(int p_input, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync) {
+double AnimationNode::blend_input(int p_input, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync, bool p_test_only) {
 	ERR_FAIL_INDEX_V(p_input, inputs.size(), 0);
 	ERR_FAIL_COND_V(!state, 0);
 
@@ -173,7 +176,7 @@ double AnimationNode::blend_input(int p_input, double p_time, bool p_seek, bool 
 
 	//inputs.write[p_input].last_pass = state->last_pass;
 	real_t activity = 0.0;
-	double ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), nullptr, node, p_time, p_seek, p_is_external_seeking, p_blend, p_filter, p_sync, &activity);
+	double ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), nullptr, node, p_time, p_seek, p_is_external_seeking, p_blend, p_filter, p_sync, &activity, p_test_only);
 
 	Vector<AnimationTree::Activity> *activity_ptr = state->tree->input_activity_map.getptr(base_path);
 
@@ -184,11 +187,11 @@ double AnimationNode::blend_input(int p_input, double p_time, bool p_seek, bool 
 	return ret;
 }
 
-double AnimationNode::blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync) {
-	return _blend_node(p_sub_path, Vector<StringName>(), this, p_node, p_time, p_seek, p_is_external_seeking, p_blend, p_filter, p_sync);
+double AnimationNode::blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync, bool p_test_only) {
+	return _blend_node(p_sub_path, Vector<StringName>(), this, p_node, p_time, p_seek, p_is_external_seeking, p_blend, p_filter, p_sync, nullptr, p_test_only);
 }
 
-double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync, real_t *r_max) {
+double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync, real_t *r_max, bool p_test_only) {
 	ERR_FAIL_COND_V(!p_node.is_valid(), 0);
 	ERR_FAIL_COND_V(!state, 0);
 
@@ -298,9 +301,9 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 	// This process, which depends on p_sync is needed to process sync correctly in the case of
 	// that a synced AnimationNodeSync exists under the un-synced AnimationNodeSync.
 	if (!p_seek && !p_sync && !any_valid) {
-		return p_node->_pre_process(new_path, new_parent, state, 0, p_seek, p_is_external_seeking, p_connections);
+		return p_node->_pre_process(new_path, new_parent, state, 0, p_seek, p_is_external_seeking, p_connections, p_test_only);
 	}
-	return p_node->_pre_process(new_path, new_parent, state, p_time, p_seek, p_is_external_seeking, p_connections);
+	return p_node->_pre_process(new_path, new_parent, state, p_time, p_seek, p_is_external_seeking, p_connections, p_test_only);
 }
 
 String AnimationNode::get_caption() const {
@@ -354,9 +357,14 @@ int AnimationNode::find_input(const String &p_name) const {
 	return idx;
 }
 
-double AnimationNode::process(double p_time, bool p_seek, bool p_is_external_seeking) {
+double AnimationNode::process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only) {
+	is_testing = p_test_only;
+	return _process(p_time, p_seek, p_is_external_seeking, p_test_only);
+}
+
+double AnimationNode::_process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only) {
 	double ret = 0;
-	GDVIRTUAL_CALL(_process, p_time, p_seek, p_is_external_seeking, ret);
+	GDVIRTUAL_CALL(_process, p_time, p_seek, p_is_external_seeking, p_test_only, ret);
 	return ret;
 }
 
@@ -410,9 +418,21 @@ void AnimationNode::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
-Ref<AnimationNode> AnimationNode::get_child_by_name(const StringName &p_name) {
+Ref<AnimationNode> AnimationNode::get_child_by_name(const StringName &p_name) const {
 	Ref<AnimationNode> ret;
 	GDVIRTUAL_CALL(_get_child_by_name, p_name, ret);
+	return ret;
+}
+
+Ref<AnimationNode> AnimationNode::find_node_by_path(const String &p_name) const {
+	Vector<String> split = p_name.split("/");
+	Ref<AnimationNode> ret = const_cast<AnimationNode *>(this);
+	for (int i = 0; i < split.size(); i++) {
+		ret = ret->get_child_by_name(split[i]);
+		if (!ret.is_valid()) {
+			break;
+		}
+	}
 	return ret;
 }
 
@@ -434,8 +454,8 @@ void AnimationNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_filters"), &AnimationNode::_get_filters);
 
 	ClassDB::bind_method(D_METHOD("blend_animation", "animation", "time", "delta", "seeked", "is_external_seeking", "blend", "looped_flag"), &AnimationNode::blend_animation, DEFVAL(Animation::LOOPED_FLAG_NONE));
-	ClassDB::bind_method(D_METHOD("blend_node", "name", "node", "time", "seek", "is_external_seeking", "blend", "filter", "sync"), &AnimationNode::blend_node, DEFVAL(FILTER_IGNORE), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("blend_input", "input_index", "time", "seek", "is_external_seeking", "blend", "filter", "sync"), &AnimationNode::blend_input, DEFVAL(FILTER_IGNORE), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("blend_node", "name", "node", "time", "seek", "is_external_seeking", "blend", "filter", "sync", "test_only"), &AnimationNode::blend_node, DEFVAL(FILTER_IGNORE), DEFVAL(true), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("blend_input", "input_index", "time", "seek", "is_external_seeking", "blend", "filter", "sync", "test_only"), &AnimationNode::blend_input, DEFVAL(FILTER_IGNORE), DEFVAL(true), DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_parameter", "name", "value"), &AnimationNode::set_parameter);
 	ClassDB::bind_method(D_METHOD("get_parameter", "name"), &AnimationNode::get_parameter);
@@ -448,7 +468,7 @@ void AnimationNode::_bind_methods() {
 	GDVIRTUAL_BIND(_get_child_by_name, "name");
 	GDVIRTUAL_BIND(_get_parameter_default_value, "parameter");
 	GDVIRTUAL_BIND(_is_parameter_read_only, "parameter");
-	GDVIRTUAL_BIND(_process, "time", "seek", "is_external_seeking");
+	GDVIRTUAL_BIND(_process, "time", "seek", "is_external_seeking", "test_only");
 	GDVIRTUAL_BIND(_get_caption);
 	GDVIRTUAL_BIND(_has_filter);
 

@@ -442,7 +442,7 @@ void AnimationNodeBlendSpace2D::_blend_triangle(const Vector2 &p_pos, const Vect
 	r_weights[2] = w;
 }
 
-double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek, bool p_is_external_seeking) {
+double AnimationNodeBlendSpace2D::_process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only) {
 	_update_triangles();
 
 	Vector2 blend_pos = get_parameter(blend_position);
@@ -512,7 +512,7 @@ double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek, bool p_is_
 			for (int j = 0; j < 3; j++) {
 				if (i == triangle_points[j]) {
 					//blend with the given weight
-					double t = blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_is_external_seeking, blend_weights[j], FILTER_IGNORE, true);
+					double t = blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_is_external_seeking, blend_weights[j], FILTER_IGNORE, true, p_test_only);
 					if (first || t < mind) {
 						mind = t;
 						first = false;
@@ -523,7 +523,7 @@ double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek, bool p_is_
 			}
 
 			if (sync && !found) {
-				blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_is_external_seeking, 0, FILTER_IGNORE, true);
+				blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_is_external_seeking, 0, FILTER_IGNORE, true, p_test_only);
 			}
 		}
 	} else {
@@ -548,22 +548,22 @@ double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek, bool p_is_
 					na_n->set_backward(na_c->is_backward());
 				}
 				//see how much animation remains
-				from = cur_length_internal - blend_node(blend_points[cur_closest].name, blend_points[cur_closest].node, p_time, false, p_is_external_seeking, 0.0, FILTER_IGNORE, true);
+				from = cur_length_internal - blend_node(blend_points[cur_closest].name, blend_points[cur_closest].node, p_time, false, p_is_external_seeking, 0.0, FILTER_IGNORE, true, p_test_only);
 			}
 
-			mind = blend_node(blend_points[new_closest].name, blend_points[new_closest].node, from, true, p_is_external_seeking, 1.0, FILTER_IGNORE, true);
+			mind = blend_node(blend_points[new_closest].name, blend_points[new_closest].node, from, true, p_is_external_seeking, 1.0, FILTER_IGNORE, true, p_test_only);
 			cur_length_internal = from + mind;
 
 			cur_closest = new_closest;
 
 		} else {
-			mind = blend_node(blend_points[cur_closest].name, blend_points[cur_closest].node, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, true);
+			mind = blend_node(blend_points[cur_closest].name, blend_points[cur_closest].node, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, true, p_test_only);
 		}
 
 		if (sync) {
 			for (int i = 0; i < blend_points_used; i++) {
 				if (i != cur_closest) {
-					blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_is_external_seeking, 0, FILTER_IGNORE, true);
+					blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_is_external_seeking, 0, FILTER_IGNORE, true, p_test_only);
 				}
 			}
 		}
@@ -604,7 +604,7 @@ bool AnimationNodeBlendSpace2D::get_auto_triangles() const {
 	return auto_triangles;
 }
 
-Ref<AnimationNode> AnimationNodeBlendSpace2D::get_child_by_name(const StringName &p_name) {
+Ref<AnimationNode> AnimationNodeBlendSpace2D::get_child_by_name(const StringName &p_name) const {
 	return get_blend_point_node(p_name.operator String().to_int());
 }
 
