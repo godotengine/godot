@@ -36,7 +36,9 @@
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/popup.h"
+#include "scene/gui/scroll_container.h"
 #include "scene/gui/texture_button.h"
+#include "scene/gui/tree.h"
 #include "scene/main/window.h"
 
 class LineEdit;
@@ -50,6 +52,7 @@ class AcceptDialog : public Window {
 	Label *message_label = nullptr;
 	HBoxContainer *buttons_hbox = nullptr;
 	Button *ok_button = nullptr;
+	ScrollContainer *scroll_bar = nullptr;
 
 	bool hide_on_ok = true;
 	bool close_on_escape = true;
@@ -68,6 +71,8 @@ class AcceptDialog : public Window {
 	void _parent_focused();
 
 protected:
+	VBoxContainer *content_vbox = nullptr;
+
 	virtual Size2 _get_contents_minimum_size() const override;
 	virtual void _update_theme_item_cache() override;
 
@@ -115,12 +120,16 @@ public:
 class ConfirmationDialog : public AcceptDialog {
 	GDCLASS(ConfirmationDialog, AcceptDialog);
 	Button *cancel = nullptr;
+	Tree *contents = nullptr;
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
 	Button *get_cancel_button();
+
+	void add_message(String p_message);
 
 	void set_cancel_button_text(String p_cancel_button_text);
 	String get_cancel_button_text() const;

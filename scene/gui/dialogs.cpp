@@ -395,12 +395,15 @@ AcceptDialog::AcceptDialog() {
 	bg_panel = memnew(Panel);
 	add_child(bg_panel, false, INTERNAL_MODE_FRONT);
 
+	content_vbox = memnew(VBoxContainer);
+	add_child(content_vbox, false, INTERNAL_MODE_FRONT);
+
 	buttons_hbox = memnew(HBoxContainer);
 
 	message_label = memnew(Label);
 	message_label->set_anchor(SIDE_RIGHT, Control::ANCHOR_END);
 	message_label->set_anchor(SIDE_BOTTOM, Control::ANCHOR_END);
-	add_child(message_label, false, INTERNAL_MODE_FRONT);
+	content_vbox->add_child(message_label, false, INTERNAL_MODE_FRONT);
 
 	add_child(buttons_hbox, false, INTERNAL_MODE_FRONT);
 
@@ -421,6 +424,20 @@ AcceptDialog::~AcceptDialog() {
 }
 
 // ConfirmationDialog
+void ConfirmationDialog::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible()) {
+				contents->get_root()->clear_children();
+			}
+		}
+	}
+}
+
+void ConfirmationDialog::add_message(String p_message) {
+	TreeItem *child = contents->create_item(contents->get_root());
+	child->set_text(0, p_message);
+}
 
 void ConfirmationDialog::set_cancel_button_text(String p_cancel_button_text) {
 	cancel->set_text(p_cancel_button_text);
@@ -445,6 +462,12 @@ Button *ConfirmationDialog::get_cancel_button() {
 ConfirmationDialog::ConfirmationDialog() {
 	set_title(TTRC("Please Confirm..."));
 	set_min_size(Size2(200, 70));
+
+	contents = memnew(Tree);
+	contents->create_item();
+	contents->set_hide_root(true);
+	contents->set_v_size_flags(Control::SizeFlags::SIZE_EXPAND_FILL);
+	content_vbox->add_child(contents, false, INTERNAL_MODE_FRONT);
 
 	cancel = add_cancel_button();
 }

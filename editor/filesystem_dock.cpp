@@ -1723,10 +1723,16 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		if (!conflicting_items.is_empty()) {
 			// Ask to do something.
 			overwrite_dialog->set_text(vformat(
-					p_copy ? TTR("The following files or folders conflict with items in the target location '%s':\n\n%s\n\nDo you wish to overwrite them or rename the copied files?")
-						   : TTR("The following files or folders conflict with items in the target location '%s':\n\n%s\n\nDo you wish to overwrite them or rename the moved files?"),
-					to_move_path,
-					String("\n").join(conflicting_items)));
+					p_copy ? TTR("The following files or folders conflict with items in the target location '%s':\n\nDo you wish to overwrite them or rename the copied files?")
+						   : TTR("The following files or folders conflict with items in the target location '%s':\n\nDo you wish to overwrite them or rename the moved files?"),
+					to_move_path));
+			for (int i = 0; i != conflicting_items.size(); ++i) {
+				overwrite_dialog->add_message(conflicting_items[i]);
+			}
+
+			Size2i dialog_size = overwrite_dialog->get_min_size();
+			dialog_size.y += 45 + 45 * MIN(conflicting_items.size(), 5);
+			overwrite_dialog->set_size(dialog_size);
 			overwrite_dialog->popup_centered();
 			return;
 		}
