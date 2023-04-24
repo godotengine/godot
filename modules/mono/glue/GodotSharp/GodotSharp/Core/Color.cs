@@ -1063,6 +1063,32 @@ namespace Godot
         }
 
         /// <summary>
+        /// Constructs a color from an OK HSV profile. The <paramref name="hue"/>,
+        /// <paramref name="saturation"/>, and <paramref name="value"/> are typically
+        /// between 0.0 and 1.0.
+        /// </summary>
+        /// <param name="hue">The OK HSV hue, typically on the range of 0 to 1.</param>
+        /// <param name="saturation">The OK HSV saturation, typically on the range of 0 to 1.</param>
+        /// <param name="value">The OK HSV value, typically on the range of 0 to 1.</param>
+        /// <param name="alpha">The alpha (transparency) value, typically on the range of 0 to 1.</param>
+        /// <returns>The constructed color.</returns>
+        public static Color FromOkHsv(float hue, float saturation, float value, float alpha = 1.0f)
+        {
+            return NativeFuncs.godotsharp_color_from_ok_hsv(hue, saturation, value, alpha);
+        }
+
+        /// <summary>
+        /// Converts a color to OK HSV values.
+        /// </summary>
+        /// <param name="hue">Output parameter for the OK HSV hue.</param>
+        /// <param name="saturation">Output parameter for the OK HSV saturation.</param>
+        /// <param name="value">Output parameter for the OK HSV value.</param>
+        public readonly void ToOkHsv(out float hue, out float saturation, out float value)
+        {
+            NativeFuncs.godotsharp_color_to_ok_hsv(this, out hue, out saturation, out value);
+        }
+
+        /// <summary>
         /// Constructs a color from an OK HSL profile. The <paramref name="hue"/>,
         /// <paramref name="saturation"/>, and <paramref name="lightness"/> are typically
         /// between 0.0 and 1.0.
@@ -1075,6 +1101,17 @@ namespace Godot
         public static Color FromOkHsl(float hue, float saturation, float lightness, float alpha = 1.0f)
         {
             return NativeFuncs.godotsharp_color_from_ok_hsl(hue, saturation, lightness, alpha);
+        }
+
+        /// <summary>
+        /// Converts a color to OK HSL values.
+        /// </summary>
+        /// <param name="hue">Output parameter for the OK HSL hue.</param>
+        /// <param name="saturation">Output parameter for the OK HSL saturation.</param>
+        /// <param name="lightness">Output parameter for the OK HSL lightness.</param>
+        public readonly void ToOkHsl(out float hue, out float saturation, out float lightness)
+        {
+            NativeFuncs.godotsharp_color_to_ok_hsl(this, out hue, out saturation, out lightness);
         }
 
         /// <summary>

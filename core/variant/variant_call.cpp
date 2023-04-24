@@ -2003,6 +2003,7 @@ static void _register_variant_builtin_methods() {
 	bind_static_method(Color, from_string, sarray("str", "default"), varray());
 	bind_static_method(Color, from_hsv, sarray("h", "s", "v", "alpha"), varray(1.0));
 	bind_static_method(Color, from_hsl, sarray("h", "s", "l", "alpha"), varray(1.0));
+	bind_static_method(Color, from_ok_hsv, sarray("h", "s", "v", "alpha"), varray(1.0));
 	bind_static_method(Color, from_ok_hsl, sarray("h", "s", "l", "alpha"), varray(1.0));
 
 	bind_static_method(Color, from_rgbe9995, sarray("rgbe"), varray());

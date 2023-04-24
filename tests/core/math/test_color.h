@@ -71,6 +71,17 @@ TEST_CASE("[Color] Constructor methods") {
 	CHECK_MESSAGE(
 			green_rgba.is_equal_approx(green_hsla),
 			"Creation with HSL notation should result in components approximately equal to the default constructor.");
+
+	const Color red_rgba = Color(1, 0, 0, 0.25);
+	const Color red_ok_hsva = Color(0, 0, 0).from_ok_hsv(0.081205, 1, 1, 0.25);
+	const Color red_ok_hsla = Color(0, 0, 0).from_ok_hsl(0.081205, 1, 0.568085, 0.25);
+
+	CHECK_MESSAGE(
+			red_rgba.is_equal_approx(red_ok_hsva),
+			"Creation with OK HSV notation should result in components approximately equal to the default constructor.");
+	CHECK_MESSAGE(
+			red_rgba.is_equal_approx(red_ok_hsla),
+			"Creation with OK HSL notation should result in components approximately equal to the default constructor.");
 }
 
 TEST_CASE("[Color] Operators") {
@@ -123,6 +134,26 @@ TEST_CASE("[Color] Reading methods") {
 	CHECK_MESSAGE(
 			dark_blue.get_hsl_l() == doctest::Approx(0.25f),
 			"The returned HSL lightness should match the expected value.");
+
+	CHECK_MESSAGE(
+			dark_blue.get_ok_hsv_h() == doctest::Approx(0.733478f),
+			"The returned OK HSV hue should match the expected value.");
+	CHECK_MESSAGE(
+			dark_blue.get_ok_hsv_s() == doctest::Approx(0.999991f),
+			"The returned OK HSV saturation should match the expected value.");
+	CHECK_MESSAGE(
+			dark_blue.get_ok_hsv_v() == doctest::Approx(0.474967f),
+			"The returned OK HSV value should match the expected value.");
+
+	CHECK_MESSAGE(
+			dark_blue.get_ok_hsl_h() == doctest::Approx(0.733478f),
+			"The returned OK HSL hue should match the expected value.");
+	CHECK_MESSAGE(
+			dark_blue.get_ok_hsl_s() == doctest::Approx(0.999998f),
+			"The returned OK HSL saturation should match the expected value.");
+	CHECK_MESSAGE(
+			dark_blue.get_ok_hsl_l() == doctest::Approx(0.167343f),
+			"The returned OK HSL lightness should match the expected value.");
 }
 
 TEST_CASE("[Color] Conversion methods") {

@@ -517,11 +517,32 @@ void godotsharp_callable_call_deferred(Callable *p_callable, const Variant **p_a
 	p_callable->call_deferredp(p_args, p_arg_count);
 }
 
+godot_color godotsharp_color_from_ok_hsv(float p_h, float p_s, float p_v, float p_alpha) {
+	godot_color ret;
+	Color *dest = (Color *)&ret;
+	memnew_placement(dest, Color(Color::from_ok_hsv(p_h, p_s, p_v, p_alpha)));
+	return ret;
+}
+
+void godotsharp_color_to_ok_hsv(godot_color *p_color, float *r_h, float *r_s, float *r_v) {
+	Color *color_val = (Color *)p_color;
+	*r_h = color_val->get_ok_hsv_h();
+	*r_s = color_val->get_ok_hsv_s();
+	*r_v = color_val->get_ok_hsv_v();
+}
+
 godot_color godotsharp_color_from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha) {
 	godot_color ret;
 	Color *dest = (Color *)&ret;
 	memnew_placement(dest, Color(Color::from_ok_hsl(p_h, p_s, p_l, p_alpha)));
 	return ret;
+}
+
+void godotsharp_color_to_ok_hsl(godot_color *p_color, float *r_h, float *r_s, float *r_l) {
+	Color *color_val = (Color *)p_color;
+	*r_h = color_val->get_ok_hsl_h();
+	*r_s = color_val->get_ok_hsl_s();
+	*r_l = color_val->get_ok_hsl_l();
 }
 
 // GDNative functions
@@ -1432,7 +1453,10 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_callable_get_data_for_marshalling,
 	(void *)godotsharp_callable_call,
 	(void *)godotsharp_callable_call_deferred,
+	(void *)godotsharp_color_from_ok_hsv,
+	(void *)godotsharp_color_to_ok_hsv,
 	(void *)godotsharp_color_from_ok_hsl,
+	(void *)godotsharp_color_to_ok_hsl,
 	(void *)godotsharp_method_bind_ptrcall,
 	(void *)godotsharp_method_bind_call,
 	(void *)godotsharp_variant_new_string_name,

@@ -195,6 +195,24 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="from_ok_hsv" qualifiers="static">
+			<return type="Color" />
+			<param index="0" name="h" type="float" />
+			<param index="1" name="s" type="float" />
+			<param index="2" name="v" type="float" />
+			<param index="3" name="alpha" type="float" default="1.0" />
+			<description>
+				Constructs a color from an [url=https://bottosson.github.io/posts/colorpicker/]OK HSV profile[/url]. The hue ([param h]), saturation ([param s]), and value ([param v]) are typically between 0.0 and 1.0.
+				[codeblocks]
+				[gdscript]
+				var color = Color.from_ok_hsv(0.58, 0.5, 0.79, 0.8)
+				[/gdscript]
+				[csharp]
+				var color = Color.FromOkHsv(0.58f, 0.5f, 0.79f, 0.8f);
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="from_rgbe9995" qualifiers="static">
 			<return type="Color" />
 			<param index="0" name="rgbe" type="int" />
@@ -519,6 +537,24 @@
 		</member>
 		<member name="hsl_s" type="float" setter="" getter="" default="0.0">
 			The HSL saturation of this color, on the range 0 to 1.
+		</member>
+		<member name="ok_hsl_h" type="float" setter="" getter="" default="0.0">
+			The OK HSL hue of this color, on the range 0 to 1.
+		</member>
+		<member name="ok_hsl_l" type="float" setter="" getter="" default="0.0">
+			The OK HSL lightness of this color, on the range 0 to 1.
+		</member>
+		<member name="ok_hsl_s" type="float" setter="" getter="" default="0.0">
+			The OK HSL saturation of this color, on the range 0 to 1.
+		</member>
+		<member name="ok_hsv_h" type="float" setter="" getter="" default="0.0">
+			The OK HSV hue of this color, on the range 0 to 1.
+		</member>
+		<member name="ok_hsv_s" type="float" setter="" getter="" default="0.0">
+			The OK HSV saturation of this color, on the range 0 to 1.
+		</member>
+		<member name="ok_hsv_v" type="float" setter="" getter="" default="0.0">
+			The OK HSV value (brightness) of this color, on the range 0 to 1.
 		</member>
 		<member name="r" type="float" setter="" getter="" default="0.0">
 			The color's red component, typically on the range of 0 to 1.

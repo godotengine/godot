@@ -61,6 +61,10 @@ struct _NO_DISCARD_ Color {
 	float get_hsl_s() const;
 	float get_hsl_l() const;
 	void set_hsl(float p_h, float p_s, float p_l, float p_alpha = 1.0f);
+	float get_ok_hsv_h() const;
+	float get_ok_hsv_s() const;
+	float get_ok_hsv_v() const;
+	void set_ok_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0f);
 	float get_ok_hsl_h() const;
 	float get_ok_hsl_s() const;
 	float get_ok_hsl_l() const;
@@ -203,6 +207,7 @@ struct _NO_DISCARD_ Color {
 	static Color from_string(const String &p_string, const Color &p_default);
 	static Color from_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0f);
 	static Color from_hsl(float p_h, float p_s, float p_l, float p_alpha = 1.0f);
+	static Color from_ok_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0f);
 	static Color from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha = 1.0f);
 	static Color from_rgbe9995(uint32_t p_rgbe);
 
@@ -225,6 +230,9 @@ struct _NO_DISCARD_ Color {
 	_FORCE_INLINE_ void set_hsl_h(float p_h) { set_hsl(p_h, get_hsl_s(), get_hsl_l(), a); }
 	_FORCE_INLINE_ void set_hsl_s(float p_s) { set_hsl(get_hsl_h(), p_s, get_hsl_l(), a); }
 	_FORCE_INLINE_ void set_hsl_l(float p_l) { set_hsl(get_hsl_h(), get_hsl_s(), p_l, a); }
+	_FORCE_INLINE_ void set_ok_hsv_h(float p_h) { set_ok_hsv(p_h, get_ok_hsv_s(), get_ok_hsv_v(), a); }
+	_FORCE_INLINE_ void set_ok_hsv_s(float p_s) { set_ok_hsv(get_ok_hsv_h(), p_s, get_ok_hsv_v(), a); }
+	_FORCE_INLINE_ void set_ok_hsv_v(float p_v) { set_ok_hsv(get_ok_hsv_h(), get_ok_hsv_s(), p_v, a); }
 	_FORCE_INLINE_ void set_ok_hsl_h(float p_h) { set_ok_hsl(p_h, get_ok_hsl_s(), get_ok_hsl_l(), a); }
 	_FORCE_INLINE_ void set_ok_hsl_s(float p_s) { set_ok_hsl(get_ok_hsl_h(), p_s, get_ok_hsl_l(), a); }
 	_FORCE_INLINE_ void set_ok_hsl_l(float p_l) { set_ok_hsl(get_ok_hsl_h(), get_ok_hsl_s(), p_l, a); }

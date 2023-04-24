@@ -321,6 +321,20 @@ void Color::set_hsl(float p_h, float p_s, float p_l, float p_alpha) {
 	}
 }
 
+void Color::set_ok_hsv(float p_h, float p_s, float p_v, float p_alpha) {
+	ok_color::HSV hsv;
+	hsv.h = p_h;
+	hsv.s = p_s;
+	hsv.v = p_v;
+	ok_color new_ok_color;
+	ok_color::RGB rgb = new_ok_color.okhsv_to_srgb(hsv);
+	Color c = Color(rgb.r, rgb.g, rgb.b, p_alpha).clamp();
+	r = c.r;
+	g = c.g;
+	b = c.b;
+	a = c.a;
+}
+
 void Color::set_ok_hsl(float p_h, float p_s, float p_l, float p_alpha) {
 	ok_color::HSL hsl;
 	hsl.h = p_h;
@@ -669,13 +683,71 @@ Color Color::operator-() const {
 			1.0f - a);
 }
 
+Color Color::from_ok_hsv(float p_h, float p_s, float p_v, float p_alpha) {
+	Color c;
+	c.set_ok_hsv(p_h, p_s, p_v, p_alpha);
+	return c;
+}
+
 Color Color::from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha) {
 	Color c;
 	c.set_ok_hsl(p_h, p_s, p_l, p_alpha);
 	return c;
 }
 
+float Color::get_ok_hsv_h() const {
+	if (r == g && g == b) {
+		return 0.0f;
+	}
+	ok_color::RGB rgb;
+	rgb.r = r;
+	rgb.g = g;
+	rgb.b = b;
+	ok_color new_ok_color;
+	ok_color::HSV ok_hsv = new_ok_color.srgb_to_okhsv(rgb);
+	if (Math::is_nan(ok_hsv.h)) {
+		return 0.0f;
+	}
+	return CLAMP(ok_hsv.h, 0.0f, 1.0f);
+}
+
+float Color::get_ok_hsv_s() const {
+	if (r == g && g == b) {
+		return 0.0f;
+	}
+	ok_color::RGB rgb;
+	rgb.r = r;
+	rgb.g = g;
+	rgb.b = b;
+	ok_color new_ok_color;
+	ok_color::HSV ok_hsv = new_ok_color.srgb_to_okhsv(rgb);
+	if (Math::is_nan(ok_hsv.s)) {
+		return 0.0f;
+	}
+	return CLAMP(ok_hsv.s, 0.0f, 1.0f);
+}
+
+float Color::get_ok_hsv_v() const {
+	if (r == g && g == b) {
+		// Workaround for edge cases causing NaN.
+		return get_ok_hsl_l();
+	}
+	ok_color::RGB rgb;
+	rgb.r = r;
+	rgb.g = g;
+	rgb.b = b;
+	ok_color new_ok_color;
+	ok_color::HSV ok_hsv = new_ok_color.srgb_to_okhsv(rgb);
+	if (Math::is_nan(ok_hsv.v)) {
+		return 0.0f;
+	}
+	return CLAMP(ok_hsv.v, 0.0f, 1.0f);
+}
+
 float Color::get_ok_hsl_h() const {
+	if (r == g && g == b) {
+		return 0.0f;
+	}
 	ok_color::RGB rgb;
 	rgb.r = r;
 	rgb.g = g;
@@ -689,6 +761,9 @@ float Color::get_ok_hsl_h() const {
 }
 
 float Color::get_ok_hsl_s() const {
+	if (r == g && g == b) {
+		return 0.0f;
+	}
 	ok_color::RGB rgb;
 	rgb.r = r;
 	rgb.g = g;
