@@ -67,9 +67,9 @@ template <class TKey, class TValue,
 		class Allocator = DefaultTypedAllocator<HashMapElement<TKey, TValue>>>
 class HashMap {
 public:
-	const uint32_t MIN_CAPACITY_INDEX = 2; // Use a prime.
-	const float MAX_OCCUPANCY = 0.75;
-	const uint32_t EMPTY_HASH = 0;
+	static constexpr uint32_t MIN_CAPACITY_INDEX = 2; // Use a prime.
+	static constexpr float MAX_OCCUPANCY = 0.75;
+	static constexpr uint32_t EMPTY_HASH = 0;
 
 private:
 	Allocator element_alloc;
