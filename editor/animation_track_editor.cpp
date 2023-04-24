@@ -4639,6 +4639,10 @@ void AnimationTrackEditor::_update_scroll(double) {
 }
 
 void AnimationTrackEditor::_update_step(double p_new_step) {
+	if (animation.is_null()) {
+		return;
+	}
+
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Change Animation Step"));
 	float step_value = p_new_step;

@@ -573,8 +573,13 @@ void EditorSpinSlider::_value_focus_exited() {
 		return;
 	}
 
+	if (is_read_only()) {
+		// Spin slider has become read only while it was being edited.
+		return;
+	}
+
 	_evaluate_input_text();
-	// focus is not on the same element after the vlalue_input was exited
+	// focus is not on the same element after the value_input was exited
 	// -> focus is on next element
 	// -> TAB was pressed
 	// -> modal_close was not called
@@ -604,6 +609,10 @@ void EditorSpinSlider::_grabber_mouse_exited() {
 
 void EditorSpinSlider::set_read_only(bool p_enable) {
 	read_only = p_enable;
+	if (read_only && value_input) {
+		value_input->release_focus();
+	}
+
 	queue_redraw();
 }
 
