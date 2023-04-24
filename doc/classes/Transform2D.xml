@@ -78,6 +78,13 @@
 				This method does not account for translation (the origin vector).
 			</description>
 		</method>
+		<method name="determinant" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the determinant of the basis matrix. If the basis is uniformly scaled, then its determinant equals the square of the scale factor.
+				A negative determinant means the basis was flipped, so one part of the scale is negative. A zero determinant means the basis isn't invertible, and is usually considered invalid.
+			</description>
+		</method>
 		<method name="get_origin" qualifiers="const">
 			<return type="Vector2" />
 			<description>
