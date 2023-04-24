@@ -1751,6 +1751,7 @@ static void _register_variant_builtin_methods() {
 	/* Vector2 */
 
 	bind_method(Vector2, angle, sarray(), varray());
+	bind_method(Vector2, cos_to, sarray("to"), varray());
 	bind_method(Vector2, angle_to, sarray("to"), varray());
 	bind_method(Vector2, angle_to_point, sarray("to"), varray());
 	bind_method(Vector2, direction_to, sarray("to"), varray());
@@ -1844,6 +1845,7 @@ static void _register_variant_builtin_methods() {
 
 	bind_method(Vector3, min_axis_index, sarray(), varray());
 	bind_method(Vector3, max_axis_index, sarray(), varray());
+	bind_method(Vector3, cos_to, sarray("to"), varray());
 	bind_method(Vector3, angle_to, sarray("to"), varray());
 	bind_method(Vector3, signed_angle_to, sarray("to", "axis"), varray());
 	bind_method(Vector3, direction_to, sarray("to"), varray());

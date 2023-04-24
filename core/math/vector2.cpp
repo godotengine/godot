@@ -77,6 +77,14 @@ real_t Vector2::distance_squared_to(const Vector2 &p_vector2) const {
 	return (x - p_vector2.x) * (x - p_vector2.x) + (y - p_vector2.y) * (y - p_vector2.y);
 }
 
+real_t Vector2::cos_to(const Vector2 &p_vector2) const {
+	if (is_zero_approx() || p_vector2.is_zero_approx()) {
+		return 0; // For consistency with `dot`.
+	} else {
+		return dot(p_vector2) / (length() * p_vector2.length());
+	}
+}
+
 real_t Vector2::angle_to(const Vector2 &p_vector2) const {
 	return Math::atan2(cross(p_vector2), dot(p_vector2));
 }

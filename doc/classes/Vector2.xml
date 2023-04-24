@@ -127,6 +127,13 @@
 				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
+		<method name="cos_to" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="to" type="Vector2" />
+			<description>
+				Returns the [method @GlobalScope.cos] of the angle between this vector and [param to].
+			</description>
+		</method>
 		<method name="cross" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="with" type="Vector2" />
