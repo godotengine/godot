@@ -30,7 +30,6 @@
 
 #include "register_editor_types.h"
 
-#include "editor/animation_track_editor.h"
 #include "editor/debugger/debug_adapter/debug_adapter_server.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_feature_profile.h"
@@ -144,7 +143,6 @@ void register_editor_types() {
 	GDREGISTER_CLASS(EditorInspector);
 	GDREGISTER_CLASS(EditorInspectorPlugin);
 	GDREGISTER_CLASS(EditorProperty);
-	GDREGISTER_CLASS(AnimationTrackEditPlugin);
 	GDREGISTER_CLASS(ScriptCreateDialog);
 	GDREGISTER_CLASS(EditorFeatureProfile);
 	GDREGISTER_CLASS(EditorSpinSlider);
