@@ -34,7 +34,6 @@
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
-#include "core/version_generated.gen.h"
 #include "doc_data_compressed.gen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
@@ -2202,16 +2201,18 @@ String EditorHelp::get_cache_full_path() {
 }
 
 static bool first_attempt = true;
-static List<StringName> classes_whitelist;
+
+static String _compute_doc_version_hash() {
+	return uitos(ClassDB::get_api_hash(ClassDB::API_CORE)) + "-" + uitos(ClassDB::get_api_hash(ClassDB::API_EDITOR));
+}
 
 void EditorHelp::_load_doc_thread(void *p_udata) {
 	DEV_ASSERT(first_attempt);
 	Ref<DocCache> cache_res = ResourceLoader::load(get_cache_full_path());
-	if (cache_res.is_valid() && cache_res->get_version_hash() == String(VERSION_HASH)) {
+	if (cache_res.is_valid() && cache_res->get_version_hash() == _compute_doc_version_hash()) {
 		for (int i = 0; i < cache_res->get_classes().size(); i++) {
 			doc->add_doc(DocData::ClassDoc::from_dict(cache_res->get_classes()[i]));
 		}
-		classes_whitelist.clear();
 	} else {
 		// We have to go back to the main thread to start from scratch.
 		first_attempt = false;
@@ -2226,7 +2227,7 @@ void EditorHelp::_gen_doc_thread(void *p_udata) {
 
 	Ref<DocCache> cache_res;
 	cache_res.instantiate();
-	cache_res->set_version_hash(VERSION_HASH);
+	cache_res->set_version_hash(_compute_doc_version_hash());
 	Array classes;
 	for (const KeyValue<String, DocData::ClassDoc> &E : doc->class_list) {
 		classes.push_back(DocData::ClassDoc::to_dict(E.value));
@@ -2249,9 +2250,6 @@ void EditorHelp::generate_doc(bool p_use_cache) {
 	DEV_ASSERT(first_attempt == (doc == nullptr));
 
 	if (!doc) {
-		// Classes registered after this point should not have documentation generated.
-		ClassDB::get_class_list(&classes_whitelist);
-
 		GDREGISTER_CLASS(DocCache);
 		doc = memnew(DocTools);
 	}
@@ -2264,22 +2262,6 @@ void EditorHelp::generate_doc(bool p_use_cache) {
 		}
 	} else {
 		print_verbose("Regenerating editor help cache");
-
-		if (!first_attempt) {
-			// Some classes that should not be exposed may have been registered by now. Unexpose them.
-			// Arduous, but happens only when regenerating.
-			List<StringName> current_classes;
-			ClassDB::get_class_list(&current_classes);
-			List<StringName>::Element *W = classes_whitelist.front();
-			for (const StringName &name : current_classes) {
-				if (W && W->get() == name) {
-					W = W->next();
-				} else {
-					ClassDB::classes[name].exposed = false;
-				}
-			}
-		}
-		classes_whitelist.clear();
 
 		// Not doable on threads unfortunately, since it instantiates all sorts of classes to get default values.
 		doc->generate(true);

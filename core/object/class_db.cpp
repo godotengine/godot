@@ -53,6 +53,7 @@ MethodDefinition D_METHODP(const char *p_name, const char *const **p_args, uint3
 #endif
 
 ClassDB::APIType ClassDB::current_api = API_CORE;
+HashMap<ClassDB::APIType, uint64_t> ClassDB::api_hashes_cache;
 
 void ClassDB::set_current_api(APIType p_api) {
 	current_api = p_api;
@@ -164,6 +165,10 @@ ClassDB::APIType ClassDB::get_api_type(const StringName &p_class) {
 uint64_t ClassDB::get_api_hash(APIType p_api) {
 	OBJTYPE_RLOCK;
 #ifdef DEBUG_METHODS_ENABLED
+
+	if (api_hashes_cache.has(p_api)) {
+		return api_hashes_cache[p_api];
+	}
 
 	uint64_t hash = hash_murmur3_one_64(HashMapHasherDefault::hash(VERSION_FULL_CONFIG));
 
@@ -290,7 +295,9 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 		}
 	}
 
-	return hash_fmix32(hash);
+	hash = hash_fmix32(hash);
+	api_hashes_cache[p_api] = hash;
+	return hash;
 #else
 	return 0;
 #endif
