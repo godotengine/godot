@@ -471,6 +471,8 @@ void Main::print_help(const char *p_binary) {
 // The order is the same as in `Main::setup()`, only core and some editor types
 // are initialized here. This also combines `Main::setup2()` initialization.
 Error Main::test_setup() {
+	Thread::make_main_thread();
+
 	OS::get_singleton()->initialize();
 
 	engine = memnew(Engine);
@@ -680,6 +682,8 @@ int Main::test_entrypoint(int argc, char *argv[], bool &tests_need_run) {
  */
 
 Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_phase) {
+	Thread::make_main_thread();
+
 	OS::get_singleton()->initialize();
 
 	engine = memnew(Engine);
@@ -1876,6 +1880,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	engine->startup_benchmark_end_measure(); // core
 
+	Thread::release_main_thread(); // If setup2() is called from another thread, that one will become main thread, so preventively release this one.
+
 	if (p_second_phase) {
 		return setup2();
 	}
@@ -1941,7 +1947,9 @@ error:
 	return exit_code;
 }
 
-Error Main::setup2(Thread::ID p_main_tid_override) {
+Error Main::setup2() {
+	Thread::make_main_thread(); // Make whatever thread call this the main thread.
+
 	// Print engine name and version
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
 
@@ -1961,10 +1969,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	register_server_types();
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	GDExtensionManager::get_singleton()->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
-
-	if (p_main_tid_override) {
-		Thread::main_thread_id = p_main_tid_override;
-	}
 
 #ifdef TOOLS_ENABLED
 	if (editor || project_manager || cmdline_tool) {
