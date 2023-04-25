@@ -1,16 +1,12 @@
 subdir('editor')
 
-_module_gdscript_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
+_module_gdscript_srcs += files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 
 _module_gdscript_cpp_args = []
 _module_gdscript_deps = [godotcore_dep]
 
 # do we have tools?
 if get_option('tools')
-    _module_gdscript_srcs += files(
-        'editor/gdscript_highlighter.cpp',
-        'editor/gdscript_translation_parser_plugin.cpp',
-    )
 
     if 'jsonrpc' in MODULES_ENABLED and 'websocket' in MODULES_ENABLED
         _module_gdscript_srcs += files(

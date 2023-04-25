@@ -206,7 +206,7 @@ if get_option('builtin_icu')
         'i18n/scriptset.cpp',
     )
 
-    _icu_data_name = 'icudt72l.dat'
+    _icu_data_name = 'icudt73l.dat'
 
     _builtin_icu_compile_dep_flags = [
         '-DU_STATIC_IMPLEMENTATION',

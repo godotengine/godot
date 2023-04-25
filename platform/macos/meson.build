@@ -67,5 +67,7 @@ if PLATFORM == 'macos'
                                                             'ForceFeedback',
                                                             'AVFoundation',
                                                             'AudioToolbox',
-                                                            'foundation'])
+                                                            'foundation',
+                                                            'security',
+                                                            ])
 endif
