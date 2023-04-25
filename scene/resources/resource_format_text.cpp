@@ -187,7 +187,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 	return err;
 }
 
-Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourceParser &parser) {
+Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourceParser &parser, List<String> *p_placeholder_paths) {
 	Ref<PackedScene> packed_scene;
 	packed_scene.instantiate();
 
@@ -248,6 +248,9 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 				}
 
 				instance = path_v | SceneState::FLAG_INSTANCE_IS_PLACEHOLDER;
+				if (p_placeholder_paths) {
+					p_placeholder_paths->push_back(path);
+				}
 			}
 
 			if (next_tag.fields.has("owner")) {
@@ -815,10 +818,25 @@ Error ResourceLoaderText::load() {
 			return error;
 		}
 
-		Ref<PackedScene> packed_scene = _parse_node_tag(rp);
+		List<String> placeholder_paths;
+		Ref<PackedScene> packed_scene = _parse_node_tag(rp, &placeholder_paths);
 
 		if (!packed_scene.is_valid()) {
 			return error;
+		}
+
+		for (List<String>::Element *E = placeholder_paths.front(); E; E = E->next()) {
+			String path = E->get();
+			if (!ResourceLoader::exists(path)) {
+				if (ResourceLoader::get_abort_on_missing_resources()) {
+					error = ERR_FILE_CORRUPT;
+					error_text = "[node] placeholder referenced broken scene resource at: " + path;
+					_printerr();
+					return error;
+				} else {
+					ResourceLoader::notify_dependency_error(local_path, path, "PackedScene");
+				}
+			}
 		}
 
 		error = OK;
@@ -913,6 +931,39 @@ void ResourceLoaderText::get_dependencies(Ref<FileAccess> p_f, List<String> *p_d
 			return;
 		}
 	}
+
+	if (is_scene) {
+		const String placeholder_match_start = "instance_placeholder=\"";
+		// Placeholder paths are strings, so search for occurences
+
+		while (!f->eof_reached()) {
+			String line = f->get_line();
+			if (line.is_empty()) {
+				continue;
+			}
+			if (!line.begins_with("[node")) { // Early skip, only handle node tag field.
+				continue;
+			}
+			int start_index = line.find(placeholder_match_start);
+			if (start_index > 0) {
+				start_index = start_index + placeholder_match_start.length();
+				int end_index = line.find_char('\"', start_index);
+				if (end_index > 0) {
+					String path = line.substr(start_index, end_index - start_index);
+					if (path.contains("://") && path.is_relative_path()) {
+						// Path is relative to file being loaded, so convert to a resource path.
+						path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().path_join(path));
+					}
+					if (p_add_types) {
+						path += "::PackedScene"; // Probably not necessary
+					}
+					if (p_dependencies->find(path) == nullptr) {
+						p_dependencies->push_back(path);
+					}
+				}
+			}
+		}
+	}
 }
 
 Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String &p_path, const HashMap<String, String> &p_map) {
@@ -936,24 +987,28 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 		}
 
 		if (next_tag.name != "ext_resource") {
-			//nothing was done
-			if (fw.is_null()) {
-				return OK;
-			}
-
 			break;
 
 		} else {
 			if (fw.is_null()) {
 				fw = FileAccess::open(p_path + ".depren", FileAccess::WRITE);
 				if (is_scene) {
-					fw->store_line("[gd_scene load_steps=" + itos(resources_total) + " format=" + itos(FORMAT_VERSION) + "]\n");
+					if (res_uid != ResourceUID::INVALID_ID) {
+						fw->store_line("[gd_scene load_steps=" + itos(resources_total) + " format=" + itos(FORMAT_VERSION) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(res_uid) + "\"]\n");
+					} else {
+						fw->store_line("[gd_scene load_steps=" + itos(resources_total) + " format=" + itos(FORMAT_VERSION) + "]\n");
+					}
+
 				} else {
 					String script_res_text;
 					if (!script_class.is_empty()) {
 						script_res_text = "script_class=\"" + script_class + "\" ";
 					}
-					fw->store_line("[gd_resource type=\"" + res_type + "\" " + script_res_text + "load_steps=" + itos(resources_total) + " format=" + itos(FORMAT_VERSION) + "]\n");
+					if (res_uid != ResourceUID::INVALID_ID) {
+						fw->store_line("[gd_resource type=\"" + res_type + "\" " + script_res_text + "load_steps=" + itos(resources_total) + " format=" + itos(FORMAT_VERSION) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(res_uid) + "\"]\n");
+					} else {
+						fw->store_line("[gd_resource type=\"" + res_type + "\" " + script_res_text + "load_steps=" + itos(resources_total) + " format=" + itos(FORMAT_VERSION) + "]\n");
+					}
 				}
 			}
 
@@ -1005,31 +1060,38 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 
 	f->seek(tag_end);
 
-	const uint32_t buffer_size = 2048;
-	uint8_t *buffer = (uint8_t *)alloca(buffer_size);
-	uint32_t num_read;
+	// Find and substitute changed placeholder path.
 
-	num_read = f->get_buffer(buffer, buffer_size);
-	ERR_FAIL_COND_V_MSG(num_read == UINT32_MAX, ERR_CANT_CREATE, "Failed to allocate memory for buffer.");
-	ERR_FAIL_COND_V(num_read == 0, ERR_FILE_CORRUPT);
-
-	if (*buffer == '\n') {
-		// Skip first newline character since we added one.
-		if (num_read > 1) {
-			fw->store_buffer(buffer + 1, num_read - 1);
-		}
+	if (fw.is_null()) { // No ext_resources declared
+		fw = FileAccess::open(p_path + ".depren", FileAccess::WRITE);
+		f->seek(0);
 	} else {
-		fw->store_buffer(buffer, num_read);
+		uint8_t next_char = f->get_8();
+		if (next_char != '\n') { // If ext resources were replaced newline might be caught.
+			f->seek(tag_end);
+		}
 	}
 
 	while (!f->eof_reached()) {
-		num_read = f->get_buffer(buffer, buffer_size);
-		fw->store_buffer(buffer, num_read);
+		String line = f->get_line();
+		if (is_scene) { // Skip Resources that cannot have InstancePlaceholders.
+			const String placeholder_replace_start = "instance_placeholder=\"";
+			int start_index = line.find(placeholder_replace_start);
+			if (start_index > 0) {
+				start_index = start_index + placeholder_replace_start.length();
+				int end_index = line.find_char('\"', start_index);
+				if (end_index > 0) {
+					String path_value = line.substr(start_index, end_index - start_index);
+					if (p_map.has(path_value)) {
+						line = line.replace(path_value, p_map.get(path_value));
+					}
+				}
+			}
+		}
+		fw->store_line(line);
 	}
 
-	bool all_ok = fw->get_error() == OK;
-
-	if (!all_ok) {
+	if (fw->get_error() != OK) {
 		return ERR_CANT_CREATE;
 	}
 
