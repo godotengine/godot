@@ -1351,6 +1351,51 @@ Error OS_Windows::shell_open(String p_uri) {
 	}
 }
 
+Error OS_Windows::shell_show_in_file_manager(String p_path, bool p_open_folder) {
+	p_path = p_path.trim_suffix("file://");
+
+	bool open_folder = false;
+	if (DirAccess::dir_exists_absolute(p_path) && p_open_folder) {
+		open_folder = true;
+	}
+
+	if (p_path.begins_with("\"")) {
+		p_path = String("\"") + p_path;
+	}
+	if (p_path.ends_with("\"")) {
+		p_path = p_path + String("\"");
+	}
+	p_path = p_path.replace("/", "\\");
+
+	INT_PTR ret = OK;
+	if (open_folder) {
+		ret = (INT_PTR)ShellExecuteW(nullptr, nullptr, L"explorer.exe", LPCWSTR(p_path.utf16().get_data()), nullptr, SW_SHOWNORMAL);
+	} else {
+		ret = (INT_PTR)ShellExecuteW(nullptr, nullptr, L"explorer.exe", LPCWSTR((String("/select,") + p_path).utf16().get_data()), nullptr, SW_SHOWNORMAL);
+	}
+
+	if (ret > 32) {
+		return OK;
+	} else {
+		switch (ret) {
+			case ERROR_FILE_NOT_FOUND:
+			case SE_ERR_DLLNOTFOUND:
+				return ERR_FILE_NOT_FOUND;
+			case ERROR_PATH_NOT_FOUND:
+				return ERR_FILE_BAD_PATH;
+			case ERROR_BAD_FORMAT:
+				return ERR_FILE_CORRUPT;
+			case SE_ERR_ACCESSDENIED:
+				return ERR_UNAUTHORIZED;
+			case 0:
+			case SE_ERR_OOM:
+				return ERR_OUT_OF_MEMORY;
+			default:
+				return FAILED;
+		}
+	}
+}
+
 String OS_Windows::get_locale() const {
 	const _WinLocale *wl = &_win_locales[0];
 

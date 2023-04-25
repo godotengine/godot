@@ -1881,11 +1881,8 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				fpath = p_selected[0];
 			}
 
-			if (!fpath.ends_with("/")) {
-				fpath = fpath.get_base_dir();
-			}
 			String dir = ProjectSettings::get_singleton()->globalize_path(fpath);
-			OS::get_singleton()->shell_open(String("file://") + dir);
+			OS::get_singleton()->shell_show_in_file_manager(dir, true);
 		} break;
 
 		case FILE_OPEN_EXTERNAL: {

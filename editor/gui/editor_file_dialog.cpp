@@ -713,11 +713,8 @@ void EditorFileDialog::_item_menu_id_pressed(int p_option) {
 				// Specific item was clicked. Open folders directly, or the folder containing a selected file.
 				Dictionary item_meta = item_list->get_item_metadata(idx);
 				path = ProjectSettings::get_singleton()->globalize_path(item_meta["path"]);
-				if (!item_meta["dir"]) {
-					path = path.get_base_dir();
-				}
 			}
-			OS::get_singleton()->shell_open(String("file://") + path);
+			OS::get_singleton()->shell_show_in_file_manager(path, true);
 		} break;
 	}
 }

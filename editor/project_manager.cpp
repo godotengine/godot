@@ -1829,7 +1829,7 @@ void ProjectList::_favorite_pressed(Node *p_hb) {
 }
 
 void ProjectList::_show_project(const String &p_path) {
-	OS::get_singleton()->shell_open(String("file://") + p_path);
+	OS::get_singleton()->shell_show_in_file_manager(p_path, true);
 }
 
 void ProjectList::_bind_methods() {

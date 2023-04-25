@@ -152,6 +152,7 @@ public:
 	int create_instance(const Vector<String> &p_arguments);
 	Error kill(int p_pid);
 	Error shell_open(String p_uri);
+	Error shell_show_in_file_manager(String p_path, bool p_open_folder = true);
 
 	bool is_process_running(int p_pid) const;
 	int get_process_id() const;
