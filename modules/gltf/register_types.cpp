@@ -32,6 +32,7 @@
 
 #include "extensions/gltf_document_extension_convert_importer_mesh.h"
 #include "extensions/gltf_spec_gloss.h"
+#include "extensions/physics/gltf_document_extension_physics.h"
 #include "gltf_document.h"
 
 #ifdef TOOLS_ENABLED
@@ -114,12 +115,14 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(GLTFAnimation);
 		GDREGISTER_CLASS(GLTFBufferView);
 		GDREGISTER_CLASS(GLTFCamera);
+		GDREGISTER_CLASS(GLTFCollider);
 		GDREGISTER_CLASS(GLTFDocument);
 		GDREGISTER_CLASS(GLTFDocumentExtension);
 		GDREGISTER_CLASS(GLTFDocumentExtensionConvertImporterMesh);
 		GDREGISTER_CLASS(GLTFLight);
 		GDREGISTER_CLASS(GLTFMesh);
 		GDREGISTER_CLASS(GLTFNode);
+		GDREGISTER_CLASS(GLTFPhysicsBody);
 		GDREGISTER_CLASS(GLTFSkeleton);
 		GDREGISTER_CLASS(GLTFSkin);
 		GDREGISTER_CLASS(GLTFSpecGloss);
@@ -127,6 +130,7 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(GLTFTexture);
 		GDREGISTER_CLASS(GLTFTextureSampler);
 		// Register GLTFDocumentExtension classes with GLTFDocument.
+		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionPhysics);
 		bool is_editor = ::Engine::get_singleton()->is_editor_hint();
 		if (!is_editor) {
 			GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionConvertImporterMesh);
