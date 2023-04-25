@@ -219,7 +219,7 @@ void CanvasItem::_enter_canvas() {
 		RenderingServer::get_singleton()->canvas_item_set_parent(canvas_item, canvas);
 		RenderingServer::get_singleton()->canvas_item_set_visibility_layer(canvas_item, visibility_layer);
 
-		canvas_group = "root_canvas" + itos(canvas.get_id());
+		canvas_group = "_root_canvas" + itos(canvas.get_id());
 
 		add_to_group(canvas_group);
 		if (canvas_layer) {
@@ -341,9 +341,7 @@ void CanvasItem::_notification(int p_what) {
 }
 
 void CanvasItem::_window_visibility_changed() {
-	if (visible) {
-		_propagate_visibility_changed(window->is_visible());
-	}
+	_propagate_visibility_changed(window->is_visible());
 }
 
 void CanvasItem::queue_redraw() {

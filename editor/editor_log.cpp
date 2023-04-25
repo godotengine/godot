@@ -91,7 +91,12 @@ void EditorLog::_update_theme() {
 		log->add_theme_font_override("mono_font", mono_font);
 	}
 
-	log->add_theme_font_size_override("normal_font_size", get_theme_font_size(SNAME("output_source_size"), SNAME("EditorFonts")));
+	const int font_size = get_theme_font_size(SNAME("output_source_size"), SNAME("EditorFonts"));
+	log->add_theme_font_size_override("normal_font_size", font_size);
+	log->add_theme_font_size_override("bold_font_size", font_size);
+	log->add_theme_font_size_override("italics_font_size", font_size);
+	log->add_theme_font_size_override("mono_font_size", font_size);
+
 	log->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
 
 	type_filter_map[MSG_TYPE_STD]->toggle_button->set_icon(get_theme_icon(SNAME("Popup"), SNAME("EditorIcons")));
@@ -270,6 +275,11 @@ void EditorLog::_rebuild_log() {
 void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	if (!is_inside_tree()) {
 		// The log will be built all at once when it enters the tree and has its theme items.
+		return;
+	}
+
+	if (unlikely(log->is_updating())) {
+		// The new message arrived during log RTL text processing/redraw (invalid BiDi control characters / font error), ignore it to avoid RTL data corruption.
 		return;
 	}
 

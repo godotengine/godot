@@ -2820,7 +2820,13 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				if (j == 0) {
 					const Array &target_names = extras.has("targetNames") ? (Array)extras["targetNames"] : Array();
 					for (int k = 0; k < targets.size(); k++) {
-						import_mesh->add_blend_shape(k < target_names.size() ? (String)target_names[k] : String("morph_") + itos(k));
+						String bs_name;
+						if (k < target_names.size() && ((String)target_names[k]).size() != 0) {
+							bs_name = (String)target_names[k];
+						} else {
+							bs_name = String("morph_") + itos(k);
+						}
+						import_mesh->add_blend_shape(bs_name);
 					}
 				}
 

@@ -34,8 +34,8 @@
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
 #include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
 #include "core/templates/list.h"
-#include "core/templates/rb_map.h"
 #include "core/variant/array.h"
 #include "servers/display_server.h"
 

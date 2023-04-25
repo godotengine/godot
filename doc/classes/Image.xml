@@ -78,7 +78,7 @@
 			<param index="2" name="astc_format" type="int" enum="Image.ASTCFormat" default="0" />
 			<description>
 				Compresses the image to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available.
-				The [param mode] parameter helps to pick the best compression method for DXT and ETC2 formats. It is ignored for ASTC compression.
+				The [param source] parameter helps to pick the best compression method for DXT and ETC2 formats. It is ignored for ASTC compression.
 				For ASTC compression, the [param astc_format] parameter must be supplied.
 			</description>
 		</method>
@@ -713,6 +713,12 @@
 		</constant>
 		<constant name="COMPRESS_BPTC" value="3" enum="CompressMode">
 			Use BPTC compression.
+		</constant>
+		<constant name="COMPRESS_ASTC" value="4" enum="CompressMode">
+			Use ASTC compression.
+		</constant>
+		<constant name="COMPRESS_MAX" value="5" enum="CompressMode">
+			Represents the size of the [enum CompressMode] enum.
 		</constant>
 		<constant name="USED_CHANNELS_L" value="0" enum="UsedChannels">
 		</constant>

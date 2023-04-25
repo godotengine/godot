@@ -347,8 +347,6 @@ void main() {
 #CODE : VERTEX
 	}
 
-	/* output */
-
 // using local coordinates (default)
 #if !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
 
@@ -361,7 +359,7 @@ void main() {
 		vertex = mat3(matrix) * vertex;
 		model_origin = double_add_vec3(model_origin, model_precision, matrix[3].xyz, vec3(0.0), model_precision);
 	}
-	vertex = mat3(model_matrix) * vertex;
+	vertex = mat3(inv_view_matrix * modelview) * vertex;
 	vec3 temp_precision;
 	vertex += double_add_vec3(model_origin, model_precision, scene_data.inv_view_matrix[3].xyz, view_precision, temp_precision);
 	vertex = mat3(scene_data.view_matrix) * vertex;

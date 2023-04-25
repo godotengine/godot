@@ -65,7 +65,8 @@
 		<method name="length_squared" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the squared length (squared magnitude) of this vector. This method runs faster than [method length].
+				Returns the squared length (squared magnitude) of this vector.
+				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
 		<method name="max_axis_index" qualifiers="const">
