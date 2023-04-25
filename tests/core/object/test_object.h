@@ -339,6 +339,48 @@ TEST_CASE("[Object] Signals") {
 		CHECK_EQ(signals_after.size(), signals_after_empty_added.size());
 	}
 
+	SUBCASE("Deleting an object with connected signals should disconnect them") {
+		List<Object::Connection> signal_connections;
+
+		{
+			Object target;
+			target.add_user_signal(MethodInfo("my_custom_signal"));
+
+			ERR_PRINT_OFF;
+			target.connect("nonexistent_signal1", callable_mp(&object, &Object::notify_property_list_changed));
+			target.connect("my_custom_signal", callable_mp(&object, &Object::notify_property_list_changed));
+			target.connect("nonexistent_signal2", callable_mp(&object, &Object::notify_property_list_changed));
+			ERR_PRINT_ON;
+
+			signal_connections.clear();
+			object.get_all_signal_connections(&signal_connections);
+			CHECK(signal_connections.size() == 0);
+			signal_connections.clear();
+			object.get_signals_connected_to_this(&signal_connections);
+			CHECK(signal_connections.size() == 1);
+
+			ERR_PRINT_OFF;
+			object.connect("nonexistent_signal1", callable_mp(&target, &Object::notify_property_list_changed));
+			object.connect("my_custom_signal", callable_mp(&target, &Object::notify_property_list_changed));
+			object.connect("nonexistent_signal2", callable_mp(&target, &Object::notify_property_list_changed));
+			ERR_PRINT_ON;
+
+			signal_connections.clear();
+			object.get_all_signal_connections(&signal_connections);
+			CHECK(signal_connections.size() == 1);
+			signal_connections.clear();
+			object.get_signals_connected_to_this(&signal_connections);
+			CHECK(signal_connections.size() == 1);
+		}
+
+		signal_connections.clear();
+		object.get_all_signal_connections(&signal_connections);
+		CHECK(signal_connections.size() == 0);
+		signal_connections.clear();
+		object.get_signals_connected_to_this(&signal_connections);
+		CHECK(signal_connections.size() == 0);
+	}
+
 	SUBCASE("Emitting a non existing signal will return an error") {
 		Error err = object.emit_signal("some_signal");
 		CHECK(err == ERR_UNAVAILABLE);
