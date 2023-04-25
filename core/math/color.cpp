@@ -188,6 +188,32 @@ float Color::get_v() const {
 	return max;
 }
 
+float Color::get_hsl_h() const {
+	return get_h();
+}
+
+float Color::get_hsl_s() const {
+	float min = MIN(MIN(r, g), b);
+	float max = MAX(MAX(r, g), b);
+
+	float mid = (min + max) / 2.0f;
+
+	if (mid == 0.0f || mid == 1.0f) {
+		return 0.0f;
+	}
+
+	float delta = max - min;
+
+	return delta / (1.0f - Math::abs(2.0f * mid - 1.0f));
+}
+
+float Color::get_hsl_l() const {
+	float min = MIN(MIN(r, g), b);
+	float max = MAX(MAX(r, g), b);
+
+	return (min + max) / 2.0f;
+}
+
 void Color::set_hsv(float p_h, float p_s, float p_v, float p_alpha) {
 	int i;
 	float f, p, q, t;
@@ -238,6 +264,59 @@ void Color::set_hsv(float p_h, float p_s, float p_v, float p_alpha) {
 			r = p_v;
 			g = p;
 			b = q;
+			break;
+	}
+}
+
+void Color::set_hsl(float p_h, float p_s, float p_l, float p_alpha) {
+	a = p_alpha;
+
+	if (p_s == 0.0f) {
+		// Achromatic (gray)
+		r = g = b = p_l;
+		return;
+	}
+
+	p_h *= 6.0f;
+	p_h = Math::fmod(p_h, 6.0f);
+
+	float c = (1.0f - Math::abs(2.0f * p_l - 1.0f)) * p_s;
+	float x = c * (1.0f - Math::abs(Math::fmod(p_h, 2.0f) - 1.0f));
+	float m = p_l - c / 2.0f;
+
+	c += m;
+	x += m;
+
+	switch ((int)p_h) {
+		case 0: // Red is the dominant color
+			r = c;
+			g = x;
+			b = m;
+			break;
+		case 1: // Green is the dominant color
+			r = x;
+			g = c;
+			b = m;
+			break;
+		case 2:
+			r = m;
+			g = c;
+			b = x;
+			break;
+		case 3: // Blue is the dominant color
+			r = m;
+			g = x;
+			b = c;
+			break;
+		case 4:
+			r = x;
+			g = m;
+			b = c;
+			break;
+		default: // (5) Red is the dominant color
+			r = c;
+			g = m;
+			b = x;
 			break;
 	}
 }
@@ -465,6 +544,12 @@ Color Color::from_string(const String &p_string, const Color &p_default) {
 Color Color::from_hsv(float p_h, float p_s, float p_v, float p_alpha) {
 	Color c;
 	c.set_hsv(p_h, p_s, p_v, p_alpha);
+	return c;
+}
+
+Color Color::from_hsl(float p_h, float p_s, float p_l, float p_alpha) {
+	Color c;
+	c.set_hsl(p_h, p_s, p_l, p_alpha);
 	return c;
 }
 

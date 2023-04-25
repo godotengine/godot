@@ -63,10 +63,14 @@ TEST_CASE("[Color] Constructor methods") {
 
 	const Color green_rgba = Color(0, 1, 0, 0.25);
 	const Color green_hsva = Color(0, 0, 0).from_hsv(120 / 360.0, 1, 1, 0.25);
+	const Color green_hsla = Color(0, 0, 0).from_hsl(120 / 360.0, 1, 0.5, 0.25);
 
 	CHECK_MESSAGE(
 			green_rgba.is_equal_approx(green_hsva),
 			"Creation with HSV notation should result in components approximately equal to the default constructor.");
+	CHECK_MESSAGE(
+			green_rgba.is_equal_approx(green_hsla),
+			"Creation with HSL notation should result in components approximately equal to the default constructor.");
 }
 
 TEST_CASE("[Color] Operators") {
@@ -109,6 +113,16 @@ TEST_CASE("[Color] Reading methods") {
 	CHECK_MESSAGE(
 			dark_blue.get_v() == doctest::Approx(0.5f),
 			"The returned HSV value should match the expected value.");
+
+	CHECK_MESSAGE(
+			dark_blue.get_hsl_h() == doctest::Approx(240.0f / 360.0f),
+			"The returned HSL hue should match the expected value.");
+	CHECK_MESSAGE(
+			dark_blue.get_hsl_s() == doctest::Approx(1.0f),
+			"The returned HSL saturation should match the expected value.");
+	CHECK_MESSAGE(
+			dark_blue.get_hsl_l() == doctest::Approx(0.25f),
+			"The returned HSL lightness should match the expected value.");
 }
 
 TEST_CASE("[Color] Conversion methods") {

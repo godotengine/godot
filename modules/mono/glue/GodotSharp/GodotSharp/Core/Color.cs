@@ -188,6 +188,69 @@ namespace Godot
         }
 
         /// <summary>
+        /// The HSL hue of this color, on the range 0 to 1.
+        /// </summary>
+        /// <value>Getting is a long process, refer to the source code for details. Setting uses <see cref="FromHsl"/>.</value>
+        public float HslH
+        {
+            readonly get
+            {
+                return H;
+            }
+            set
+            {
+                this = FromHsl(value, HslS, HslL, A);
+            }
+        }
+
+        /// <summary>
+        /// The HSL saturation of this color, on the range 0 to 1.
+        /// </summary>
+        /// <value>Getting is equivalent to the ratio between the min and max RGB value. Setting uses <see cref="FromHsl"/>.</value>
+        public float HslS
+        {
+            readonly get
+            {
+                float max = Math.Max(R, Math.Max(G, B));
+                float min = Math.Min(R, Math.Min(G, B));
+
+                float mid = (max + min) / 2.0f;
+
+                if (mid == 0.0f || mid == 1.0f)
+                {
+                    return 0.0f;
+                }
+
+                float delta = max - min;
+
+                return delta / (1.0f - Math.Abs(2.0f * mid - 1.0f));
+            }
+            set
+            {
+                this = FromHsl(HslH, value, HslL, A);
+            }
+        }
+
+        /// <summary>
+        /// The HSL lightness of this color, on the range 0 to 1.
+        /// </summary>
+        /// <value>Getting is equivalent to using <see cref="Math.Max(float, float)"/> on the RGB components. Setting uses <see cref="FromHsl"/>.</value>
+        public float HslL
+        {
+            readonly get
+            {
+                float max = Math.Max(R, Math.Max(G, B));
+                float min = Math.Min(R, Math.Min(G, B));
+
+                return (max + min) / 2.0f;
+            }
+            set
+            {
+                this = FromHsl(HslH, HslS, value, A);
+            }
+        }
+
+        /// <summary>
         /// Returns the light intensity of the color, as a value between 0.0 and 1.0 (inclusive).
         /// This is useful when determining light or dark color. Colors with a luminance smaller
         /// than 0.5 can be generally considered dark.
@@ -875,6 +938,104 @@ namespace Godot
                 saturation = 1 - (min / max);
 
             value = max;
+        }
+
+        /// <summary>
+        /// Constructs a color from an HSL profile. The <paramref name="hue"/>,
+        /// <paramref name="saturation"/>, and <paramref name="lightness"/> are typically
+        /// between 0.0 and 1.0.
+        /// </summary>
+        /// <param name="hue">The HSL hue, typically on the range of 0 to 1.</param>
+        /// <param name="saturation">The HSL saturation, typically on the range of 0 to 1.</param>
+        /// <param name="lightness">The HSL lightness, typically on the range of 0 to 1.</param>
+        /// <param name="alpha">The alpha (transparency) value, typically on the range of 0 to 1.</param>
+        /// <returns>The constructed color.</returns>
+        public static Color FromHsl(float hue, float saturation, float lightness, float alpha = 1.0f)
+        {
+            if (saturation == 0.0f)
+            {
+                // Achromatic (gray)
+                return new Color(lightness, lightness, lightness, alpha);
+            }
+
+            hue *= 6.0f;
+            hue %= 6.0f;
+
+            float c = (1.0f - Math.Abs(2.0f * lightness - 1.0f)) * saturation;
+            float x = c * (1.0f - Math.Abs(hue % 2.0f - 1.0f));
+            float m = lightness - c / 2.0f;
+
+            c += m;
+            x += m;
+
+            switch ((int)hue)
+            {
+                case 0: // Red is the dominant color
+                    return new Color(c, x, m, alpha);
+                case 1: // Green is the dominant color
+                    return new Color(x, c, m, alpha);
+                case 2:
+                    return new Color(m, c, x, alpha);
+                case 3: // Blue is the dominant color
+                    return new Color(m, x, c, alpha);
+                case 4:
+                    return new Color(x, m, c, alpha);
+                default: // (5) Red is the dominant color
+                    return new Color(c, m, x, alpha);
+            }
+        }
+
+        /// <summary>
+        /// Converts a color to HSL values. This is equivalent to using each of
+        /// the <c>h</c>/<c>s</c>/<c>l</c> properties, but much more efficient.
+        /// </summary>
+        /// <param name="hue">Output parameter for the HSL hue.</param>
+        /// <param name="saturation">Output parameter for the HSL saturation.</param>
+        /// <param name="lightness">Output parameter for the HSL lightness.</param>
+        public readonly void ToHsl(out float hue, out float saturation, out float lightness)
+        {
+            float max = (float)Mathf.Max(R, Mathf.Max(G, B));
+            float min = (float)Mathf.Min(R, Mathf.Min(G, B));
+
+            float delta = max - min;
+
+            if (delta == 0.0f)
+            {
+                hue = 0.0f;
+            }
+            else
+            {
+                if (R == max)
+                {
+                    hue = (G - B) / delta; // Between yellow & magenta
+                }
+                else if (G == max)
+                {
+                    hue = 2.0f + ((B - R) / delta); // Between cyan & yellow
+                }
+                else
+                {
+                    hue = 4.0f + ((R - G) / delta); // Between magenta & cyan
+                }
+
+                hue /= 6.0f;
+
+                if (hue < 0.0f)
+                {
+                    hue += 1.0f;
+                }
+            }
+
+            lightness = (max + min) / 2.0f;
+
+            if (lightness == 0.0f || lightness == 1.0f)
+            {
+                saturation = 0.0f;
+            }
+            else
+            {
+                saturation = delta / (1.0f - Math.Abs(2.0f * lightness - 1.0f));
+            }
         }
 
         private static int ParseCol4(ReadOnlySpan<char> str, int index)
