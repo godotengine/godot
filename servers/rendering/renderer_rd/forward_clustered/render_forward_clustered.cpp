@@ -3298,6 +3298,10 @@ void RenderForwardClustered::environment_set_ssao_quality(RS::EnvironmentSSAOQua
 	ss_effects->ssao_set_quality(p_quality, p_half_size, p_adaptive_target, p_blur_passes, p_fadeout_from, p_fadeout_to);
 }
 
+RS::EnvironmentSSAOQuality RenderForwardClustered::environment_get_ssao_quality() const {
+	return ss_effects->ssao_get_quality();
+}
+
 void RenderForwardClustered::environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
 	ss_effects->ssil_set_quality(p_quality, p_half_size, p_adaptive_target, p_blur_passes, p_fadeout_from, p_fadeout_to);
 }
