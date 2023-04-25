@@ -19,7 +19,7 @@ def run(target, source, env):
     src = source[0]
     dst = target[0]
     tmpfilename = dst + '~'
-    f = open(src, "r", encoding="utf-8")
+    f = open(src, "rb")
     g = open(tmpfilename, "w", encoding="utf-8")
 
     buf = f.read()

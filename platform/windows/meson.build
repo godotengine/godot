@@ -66,6 +66,8 @@ if PLATFORM == 'windows'
         _cpp.find_library('opengl32'),
         _cpp.find_library('ksuser'),
         _cpp.find_library('wbemuuid'),
+        _cpp.find_library('dbghelp'),
+        _cpp.find_library('crypt32'),
 ]
 
     CPP_ARGS += [
