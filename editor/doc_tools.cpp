@@ -374,6 +374,11 @@ void DocTools::generate(bool p_basic_types) {
 				classes.pop_front();
 				continue;
 			}
+			if (ClassDB::get_api_type(name) != ClassDB::API_CORE && ClassDB::get_api_type(name) != ClassDB::API_EDITOR) {
+				print_verbose(vformat("Class '%s' belongs neither to core nor editor, skipping.", name));
+				classes.pop_front();
+				continue;
+			}
 
 			String cname = name;
 			// Property setters and getters do not get exposed as individual methods.
