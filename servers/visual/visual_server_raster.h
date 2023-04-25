@@ -719,6 +719,8 @@ public:
 	BIND2(canvas_item_set_z_as_relative_to_parent, RID, bool)
 	BIND3(canvas_item_set_copy_to_backbuffer, RID, bool, const Rect2 &)
 	BIND2(canvas_item_attach_skeleton, RID, RID)
+	BIND2(canvas_item_set_skeleton_relative_xform, RID, Transform2D)
+	BIND1R(Rect2, _debug_canvas_item_get_rect, RID)
 
 	BIND1(canvas_item_clear, RID)
 	BIND2(canvas_item_set_draw_index, RID, int)

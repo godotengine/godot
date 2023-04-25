@@ -209,6 +209,8 @@ public:
 	void canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable);
 	void canvas_item_set_copy_to_backbuffer(RID p_item, bool p_enable, const Rect2 &p_rect);
 	void canvas_item_attach_skeleton(RID p_item, RID p_skeleton);
+	void canvas_item_set_skeleton_relative_xform(RID p_item, Transform2D p_relative_xform);
+	Rect2 _debug_canvas_item_get_rect(RID p_item);
 
 	void canvas_item_clear(RID p_item);
 	void canvas_item_set_draw_index(RID p_item, int p_index);

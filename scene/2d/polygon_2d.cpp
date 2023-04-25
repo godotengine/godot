@@ -111,6 +111,16 @@ void Polygon2D::_notification(int p_what) {
 			if (skeleton_node) {
 				VS::get_singleton()->canvas_item_attach_skeleton(get_canvas_item(), skeleton_node->get_skeleton());
 				new_skeleton_id = skeleton_node->get_instance_id();
+
+				// Sync the offset transform between the Polygon2D and the skeleton.
+				// This is needed for accurate culling in VisualServer.
+				Transform2D global_xform_skel = skeleton_node->get_global_transform();
+				Transform2D global_xform_poly = get_global_transform();
+
+				// find the difference
+				Transform2D global_xform_offset = global_xform_skel.affine_inverse() * global_xform_poly;
+				VS::get_singleton()->canvas_item_set_skeleton_relative_xform(get_canvas_item(), global_xform_offset);
+
 			} else {
 				VS::get_singleton()->canvas_item_attach_skeleton(get_canvas_item(), RID());
 			}

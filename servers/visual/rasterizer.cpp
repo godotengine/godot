@@ -561,3 +561,173 @@ int RasterizerStorage::multimesh_get_visible_instances(RID p_multimesh) const {
 AABB RasterizerStorage::multimesh_get_aabb(RID p_multimesh) const {
 	return _multimesh_get_aabb(p_multimesh);
 }
+
+// The bone bounds are determined by rigging,
+// as such they can be calculated as a one off operation,
+// rather than each call to get_rect().
+void RasterizerCanvas::Item::precalculate_polygon_bone_bounds(const Item::CommandPolygon &p_polygon) const {
+	p_polygon.skinning_data->dirty = false;
+	p_polygon.skinning_data->untransformed_bound = Rect2(Vector2(), Vector2(-1, -1)); // negative means unused.
+
+	int num_points = p_polygon.points.size();
+	const Point2 *pp = &p_polygon.points[0];
+
+	// Calculate bone AABBs.
+	int bone_count = RasterizerStorage::base_singleton->skeleton_get_bone_count(skeleton);
+
+	// Get some local aliases
+	LocalVector<Rect2> &active_bounds = p_polygon.skinning_data->active_bounds;
+	LocalVector<uint16_t> &active_bone_ids = p_polygon.skinning_data->active_bone_ids;
+	active_bounds.clear();
+	active_bone_ids.clear();
+
+	// Uses dynamic allocation, but shouldn't happen very often.
+	// If happens more often, use alloca.
+	LocalVector<int32_t> bone_to_active_bone_mapping;
+	bone_to_active_bone_mapping.resize(bone_count);
+
+	for (int n = 0; n < bone_count; n++) {
+		bone_to_active_bone_mapping[n] = -1;
+	}
+
+	const Transform2D &item_transform = skinning_data->skeleton_relative_xform;
+
+	bool some_were_untransformed = false;
+
+	for (int n = 0; n < num_points; n++) {
+		Point2 p = pp[n];
+		bool bone_space = false;
+		float total_weight = 0;
+
+		for (int k = 0; k < 4; k++) {
+			int bone_id = p_polygon.bones[n * 4 + k];
+			float w = p_polygon.weights[n * 4 + k];
+			if (w == 0) {
+				continue;
+			}
+			total_weight += w;
+
+			// Ensure the point is in "bone space" / rigged space.
+			if (!bone_space) {
+				bone_space = true;
+				p = item_transform.xform(p);
+			}
+
+			// get the active bone, or create a new active bone
+			DEV_ASSERT(bone_id < bone_count);
+			int32_t &active_bone = bone_to_active_bone_mapping[bone_id];
+			if (active_bone != -1) {
+				active_bounds[active_bone].expand_to(p);
+			} else {
+				// Increment the number of active bones stored.
+				active_bone = active_bounds.size();
+				active_bounds.resize(active_bone + 1);
+				active_bone_ids.resize(active_bone + 1);
+
+				// First point for the bone
+				DEV_ASSERT(bone_id <= UINT16_MAX);
+				active_bone_ids[active_bone] = bone_id;
+				active_bounds[active_bone] = Rect2(p, Vector2(0.00001, 0.00001));
+			}
+		}
+
+		// If some points were not rigged,
+		// we want to add them directly to an "untransformed bound",
+		// and merge this with the skinned bound later.
+		// Also do this if a point is not FULLY weighted,
+		// because the untransformed position is still having an influence.
+		if (!bone_space || (total_weight < 0.99f)) {
+			if (some_were_untransformed) {
+				p_polygon.skinning_data->untransformed_bound.expand_to(pp[n]);
+			} else {
+				// First point
+				some_were_untransformed = true;
+				p_polygon.skinning_data->untransformed_bound = Rect2(pp[n], Vector2());
+			}
+		}
+	}
+}
+
+Rect2 RasterizerCanvas::Item::calculate_polygon_bounds(const Item::CommandPolygon &p_polygon) const {
+	int num_points = p_polygon.points.size();
+
+	// If there is no skeleton, or the bones data is invalid...
+	// Note : Can we check the second more efficiently? by checking if polygon.skinning_data is set perhaps?
+	if (skeleton == RID() || !(num_points && p_polygon.bones.size() == num_points * 4 && p_polygon.weights.size() == p_polygon.bones.size())) {
+		// With no skeleton, all points are untransformed.
+		Rect2 r;
+		const Point2 *pp = &p_polygon.points[0];
+		r.position = pp[0];
+
+		for (int n = 1; n < num_points; n++) {
+			r.expand_to(pp[n]);
+		}
+
+		return r;
+	}
+
+	// Skinned skeleton is present.
+	ERR_FAIL_COND_V_MSG(!skinning_data, Rect2(), "Skinned Polygon2D must have skeleton_relative_xform set for correct culling.");
+
+	// Ensure the polygon skinning data is created...
+	// (This isn't stored on every polygon to save memory).
+	if (!p_polygon.skinning_data) {
+		p_polygon.skinning_data = memnew(Item::CommandPolygon::SkinningData);
+	}
+
+	Item::CommandPolygon::SkinningData &pdata = *p_polygon.skinning_data;
+
+	// This should only occur when rigging has changed.
+	// Usually a one off in games.
+	if (pdata.dirty) {
+		precalculate_polygon_bone_bounds(p_polygon);
+	}
+
+	// We only deal with the precalculated ACTIVE bone AABBs using the skeleton.
+	// (No need to bother with bones that are unused for this poly.)
+	int num_active_bones = pdata.active_bounds.size();
+	if (!num_active_bones) {
+		return pdata.untransformed_bound;
+	}
+
+	// No need to make a dynamic allocation here in 99% of cases.
+	Rect2 *bptr = nullptr;
+	LocalVector<Rect2> bone_aabbs;
+	if (num_active_bones <= 1024) {
+		bptr = (Rect2 *)alloca(sizeof(Rect2) * num_active_bones);
+	} else {
+		bone_aabbs.resize(num_active_bones);
+		bptr = bone_aabbs.ptr();
+	}
+
+	// Copy across the precalculated bone bounds.
+	memcpy(bptr, pdata.active_bounds.ptr(), sizeof(Rect2) * num_active_bones);
+
+	const Transform2D &item_transform_inv = skinning_data->skeleton_relative_xform_inv;
+
+	Rect2 aabb;
+	bool first_bone = true;
+
+	for (int n = 0; n < num_active_bones; n++) {
+		int bone_id = pdata.active_bone_ids[n];
+		const Transform2D &mtx = RasterizerStorage::base_singleton->skeleton_bone_get_transform_2d(skeleton, bone_id);
+		Rect2 baabb = mtx.xform(bptr[n]);
+
+		if (first_bone) {
+			aabb = baabb;
+			first_bone = false;
+		} else {
+			aabb = aabb.merge(baabb);
+		}
+	}
+
+	// Transform the polygon AABB back into local space from bone space.
+	aabb = item_transform_inv.xform(aabb);
+
+	// If some were untransformed...
+	if (pdata.untransformed_bound.size.x >= 0) {
+		return pdata.untransformed_bound.merge(aabb);
+	}
+
+	return aabb;
+}
