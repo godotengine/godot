@@ -452,6 +452,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="sampler_is_format_supported_for_filter" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="format" type="int" enum="RenderingDevice.DataFormat" />
+			<param index="1" name="sampler_filter" type="int" enum="RenderingDevice.SamplerFilter" />
+			<description>
+				Returns [code]true[/code] if implementation supports using a texture of [param format] with the given [param sampler_filter].
+			</description>
+		</method>
 		<method name="screen_get_framebuffer_format" qualifiers="const">
 			<return type="int" />
 			<description>

@@ -3493,6 +3493,9 @@ void GI::init(SkyRD *p_sky) {
 		if (RendererSceneRenderRD::get_singleton()->is_vrs_supported()) {
 			defines += "\n#define USE_VRS\n";
 		}
+		if (!RD::get_singleton()->sampler_is_format_supported_for_filter(RD::DATA_FORMAT_R8G8_UINT, RD::SAMPLER_FILTER_LINEAR)) {
+			defines += "\n#define SAMPLE_VOXEL_GI_NEAREST\n";
+		}
 
 		Vector<String> gi_modes;
 
@@ -3931,7 +3934,6 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 				u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 				uniforms.push_back(u);
 			}
-
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;

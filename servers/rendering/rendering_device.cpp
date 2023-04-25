@@ -723,6 +723,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("framebuffer_is_valid", "framebuffer"), &RenderingDevice::framebuffer_is_valid);
 
 	ClassDB::bind_method(D_METHOD("sampler_create", "state"), &RenderingDevice::_sampler_create);
+	ClassDB::bind_method(D_METHOD("sampler_is_format_supported_for_filter", "format", "sampler_filter"), &RenderingDevice::sampler_is_format_supported_for_filter);
 
 	ClassDB::bind_method(D_METHOD("vertex_buffer_create", "size_bytes", "data", "use_as_storage"), &RenderingDevice::vertex_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("vertex_format_create", "vertex_descriptions"), &RenderingDevice::_vertex_format_create);
