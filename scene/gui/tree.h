@@ -625,6 +625,7 @@ private:
 	bool scrolling = false;
 
 	bool allow_reselect = false;
+	bool allow_search = true;
 
 	bool force_edit_checkbox_only_on_checkbox = false;
 
@@ -752,6 +753,9 @@ public:
 
 	void set_allow_reselect(bool p_allow);
 	bool get_allow_reselect() const;
+
+	void set_allow_search(bool p_allow);
+	bool get_allow_search() const;
 
 	Size2 get_minimum_size() const override;
 
