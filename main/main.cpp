@@ -200,14 +200,24 @@ static bool init_use_custom_pos = false;
 static bool init_use_custom_screen = false;
 static Vector2 init_custom_pos;
 
-// Debug
-
+// Debug: Set to true when the --profiling command line argument is used.
 static bool use_debug_profiler = false;
+
+// Debug: Define DEBUG_ENABLED to support the --debug-xxxx command line arguments.
 #ifdef DEBUG_ENABLED
 static bool debug_collisions = false;
 static bool debug_paths = false;
 static bool debug_navigation = false;
 #endif
+
+// Debug: Define DEBUG_INIT to show the progress of Main::setup() and Main::setup2().
+// #define DEBUG_INIT
+#ifdef DEBUG_INIT
+#define MAIN_PRINT(m_txt) print_line(m_txt)
+#else
+#define MAIN_PRINT(m_txt)
+#endif
+
 static int frame_delay = 0;
 static bool disable_render_loop = false;
 static int fixed_fps = -1;
@@ -324,147 +334,145 @@ void finalize_theme_db() {
 	theme_db = nullptr;
 }
 
-//#define DEBUG_INIT
-#ifdef DEBUG_INIT
-#define MAIN_PRINT(m_txt) print_line(m_txt)
-#else
-#define MAIN_PRINT(m_txt)
-#endif
-
-void Main::print_help(const char *p_binary) {
-	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
-	OS::get_singleton()->print("Free and open source software under the terms of the MIT license.\n");
-	OS::get_singleton()->print("(c) 2014-present Godot Engine contributors.\n");
-	OS::get_singleton()->print("(c) 2007-2014 Juan Linietsky, Ariel Manzur.\n");
-	OS::get_singleton()->print("\n");
-	OS::get_singleton()->print("Usage: %s [options] [path to scene or 'project.godot' file]\n", p_binary);
-	OS::get_singleton()->print("\n");
-
-	OS::get_singleton()->print("General options:\n");
-	OS::get_singleton()->print("  -h, --help                        Display this help message.\n");
-	OS::get_singleton()->print("  --version                         Display the version string.\n");
-	OS::get_singleton()->print("  -v, --verbose                     Use verbose stdout mode.\n");
-	OS::get_singleton()->print("  -q, --quiet                       Quiet mode, silences stdout messages. Errors are still displayed.\n");
-	OS::get_singleton()->print("\n");
-
-	OS::get_singleton()->print("Run options:\n");
-	OS::get_singleton()->print("  --, ++                            Separator for user-provided arguments. Following arguments are not used by the engine, but can be read from `OS.get_cmdline_user_args()`.\n");
-#ifdef TOOLS_ENABLED
-	OS::get_singleton()->print("  -e, --editor                      Start the editor instead of running the scene.\n");
-	OS::get_singleton()->print("  -p, --project-manager             Start the project manager, even if a project is auto-detected.\n");
-	OS::get_singleton()->print("  --debug-server <uri>              Start the editor debug server (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007)\n");
-#endif
-	OS::get_singleton()->print("  --quit                            Quit after the first iteration.\n");
-	OS::get_singleton()->print("  -l, --language <locale>           Use a specific locale (<locale> being a two-letter code).\n");
-	OS::get_singleton()->print("  --path <directory>                Path to a project (<directory> must contain a 'project.godot' file).\n");
-	OS::get_singleton()->print("  -u, --upwards                     Scan folders upwards for project.godot file.\n");
-	OS::get_singleton()->print("  --main-pack <file>                Path to a pack (.pck) file to load.\n");
-	OS::get_singleton()->print("  --render-thread <mode>            Render thread mode ['unsafe', 'safe', 'separate'].\n");
-	OS::get_singleton()->print("  --remote-fs <address>             Remote filesystem (<host/IP>[:<port>] address).\n");
-	OS::get_singleton()->print("  --remote-fs-password <password>   Password for remote filesystem.\n");
-
-	OS::get_singleton()->print("  --audio-driver <driver>           Audio driver [");
+// Build a comma separated list of audio drivers.
+// For example: 'CoreAudio', 'Dummy'.
+// Helper function for Main::print_help(const char *).
+String get_audio_drivers() {
+	Vector<String> drivers;
 	for (int i = 0; i < AudioDriverManager::get_driver_count(); i++) {
-		if (i > 0) {
-			OS::get_singleton()->print(", ");
-		}
-		OS::get_singleton()->print("'%s'", AudioDriverManager::get_driver(i)->get_name());
+		String audio_driver = AudioDriverManager::get_driver(i)->get_name();
+		drivers.push_back("'" + audio_driver + "'");
 	}
-	OS::get_singleton()->print("].\n");
+	return String(", ").join(drivers);
+}
 
-	OS::get_singleton()->print("  --display-driver <driver>         Display driver (and rendering driver) [");
+// Build a comma separated list of display & rendering drivers.
+// For example: 'macos' ('vulkan', 'opengl3'), 'headless' ('dummy').
+// Helper function for Main::print_help(const char *).
+String get_display_drivers() {
+	Vector<String> drivers;
 	for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
-		if (i > 0) {
-			OS::get_singleton()->print(", ");
-		}
-		OS::get_singleton()->print("'%s' (", DisplayServer::get_create_function_name(i));
-		Vector<String> rd = DisplayServer::get_create_function_rendering_drivers(i);
-		for (int j = 0; j < rd.size(); j++) {
-			if (j > 0) {
-				OS::get_singleton()->print(", ");
-			}
-			OS::get_singleton()->print("'%s'", rd[j].utf8().get_data());
-		}
-		OS::get_singleton()->print(")");
+		String display_driver = DisplayServer::get_create_function_name(i);
+		String rendering_drivers = "'" + String("', '").join(DisplayServer::get_create_function_rendering_drivers(i)) + "'";
+		drivers.push_back("'" + display_driver + "' (" + rendering_drivers + ")");
 	}
-	OS::get_singleton()->print("].\n");
+	return String(", ").join(drivers);
+}
 
-	OS::get_singleton()->print("  --rendering-method <renderer>     Renderer name. Requires driver support.\n");
-	OS::get_singleton()->print("  --rendering-driver <driver>       Rendering driver (depends on display driver).\n");
-	OS::get_singleton()->print("  --gpu-index <device_index>        Use a specific GPU (run with --verbose to get available device list).\n");
-	OS::get_singleton()->print("  --text-driver <driver>            Text driver (Fonts, BiDi, shaping).\n");
-	OS::get_singleton()->print("  --tablet-driver <driver>          Pen tablet input driver.\n");
-	OS::get_singleton()->print("  --headless                        Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script.\n");
-	OS::get_singleton()->print("  --write-movie <file>              Writes a video to the specified path (usually with .avi or .png extension).\n");
-	OS::get_singleton()->print("                                    --fixed-fps is forced when enabled, but it can be used to change movie FPS.\n");
-	OS::get_singleton()->print("                                    --disable-vsync can speed up movie writing but makes interaction more difficult.\n");
+void print_engine_name_and_version() {
+	print_line(VERSION_NAME " v" + get_full_version_string() + " - " VERSION_WEBSITE);
+}
 
-	OS::get_singleton()->print("\n");
+// Use the --help command line argument to show all the options Godot supports.
+void Main::print_help(const char *p_binary) {
+	print_engine_name_and_version();
+	print_line("Free and open source software under the terms of the MIT license.");
+	print_line("(c) 2014-present Godot Engine contributors.");
+	print_line("(c) 2007-2014 Juan Linietsky, Ariel Manzur.");
+	print_line();
 
-	OS::get_singleton()->print("Display options:\n");
-	OS::get_singleton()->print("  -f, --fullscreen                  Request fullscreen mode.\n");
-	OS::get_singleton()->print("  -m, --maximized                   Request a maximized window.\n");
-	OS::get_singleton()->print("  -w, --windowed                    Request windowed mode.\n");
-	OS::get_singleton()->print("  -t, --always-on-top               Request an always-on-top window.\n");
-	OS::get_singleton()->print("  --resolution <W>x<H>              Request window resolution.\n");
-	OS::get_singleton()->print("  --position <X>,<Y>                Request window position (if set, screen argument is ignored).\n");
-	OS::get_singleton()->print("  --screen <N>                      Request window screen.\n");
-	OS::get_singleton()->print("  --single-window                   Use a single window (no separate subwindows).\n");
-	OS::get_singleton()->print("  --xr-mode <mode>                  Select XR (Extended Reality) mode ['default', 'off', 'on'].\n");
-	OS::get_singleton()->print("\n");
+	print_line("Usage: " + String(p_binary) + " [options] [path to scene or 'project.godot' file]");
+	print_line();
 
-	OS::get_singleton()->print("Debug options:\n");
-	OS::get_singleton()->print("  -d, --debug                       Debug (local stdout debugger).\n");
-	OS::get_singleton()->print("  -b, --breakpoints                 Breakpoint list as source::line comma-separated pairs, no spaces (use %%20 instead).\n");
-	OS::get_singleton()->print("  --profiling                       Enable profiling in the script debugger.\n");
-	OS::get_singleton()->print("  --gpu-profile                     Show a GPU profile of the tasks that took the most time during frame rendering.\n");
-	OS::get_singleton()->print("  --gpu-validation                  Enable graphics API validation layers for debugging.\n");
-#if DEBUG_ENABLED
-	OS::get_singleton()->print("  --gpu-abort                       Abort on graphics API usage errors (usually validation layer errors). May help see the problem if your system freezes.\n");
-#endif
-	OS::get_singleton()->print("  --remote-debug <uri>              Remote debug (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007).\n");
-#if defined(DEBUG_ENABLED)
-	OS::get_singleton()->print("  --debug-collisions                Show collision shapes when running the scene.\n");
-	OS::get_singleton()->print("  --debug-paths                     Show path lines when running the scene.\n");
-	OS::get_singleton()->print("  --debug-navigation                Show navigation polygons when running the scene.\n");
-	OS::get_singleton()->print("  --debug-stringnames               Print all StringName allocations to stdout when the engine quits.\n");
-#endif
-	OS::get_singleton()->print("  --frame-delay <ms>                Simulate high CPU load (delay each frame by <ms> milliseconds).\n");
-	OS::get_singleton()->print("  --time-scale <scale>              Force time scale (higher values are faster, 1.0 is normal speed).\n");
-	OS::get_singleton()->print("  --disable-vsync                   Forces disabling of vertical synchronization, even if enabled in the project settings. Does not override driver-level V-Sync enforcement.\n");
-	OS::get_singleton()->print("  --disable-render-loop             Disable render loop so rendering only occurs when called explicitly from script.\n");
-	OS::get_singleton()->print("  --disable-crash-handler           Disable crash handler when supported by the platform code.\n");
-	OS::get_singleton()->print("  --fixed-fps <fps>                 Force a fixed number of frames per second. This setting disables real-time synchronization.\n");
-	OS::get_singleton()->print("  --print-fps                       Print the frames per second to the stdout.\n");
-	OS::get_singleton()->print("\n");
+	print_line("General options:");
+	print_line("  -h, --help                        Display this help message.");
+	print_line("  --version                         Display the version string.");
+	print_line("  -v, --verbose                     Use verbose stdout mode.");
+	print_line("  -q, --quiet                       Quiet mode, silences stdout messages. Errors are still displayed.");
+	print_line();
 
-	OS::get_singleton()->print("Standalone tools:\n");
-	OS::get_singleton()->print("  -s, --script <script>             Run a script.\n");
-	OS::get_singleton()->print("  --check-only                      Only parse for errors and quit (use with --script).\n");
+	print_line("Run options:");
+	print_line("  --, ++                            Separator for user-provided arguments. Following arguments are not used by the engine, but can be read from `OS.get_cmdline_user_args()`.");
 #ifdef TOOLS_ENABLED
-	OS::get_singleton()->print("  --export-release <preset> <path>  Export the project in release mode using the given preset and output path. The preset name should match one defined in export_presets.cfg.\n");
-	OS::get_singleton()->print("                                    <path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe').\n");
-	OS::get_singleton()->print("                                    The target directory must exist.\n");
-	OS::get_singleton()->print("  --export-debug <preset> <path>    Export the project in debug mode using the given preset and output path. See --export-release description for other considerations.\n");
-	OS::get_singleton()->print("  --export-pack <preset> <path>     Export the project data only using the given preset and output path. The <path> extension determines whether it will be in PCK or ZIP format.\n");
+	print_line("  -e, --editor                      Start the editor instead of running the scene.");
+	print_line("  -p, --project-manager             Start the project manager, even if a project is auto-detected.");
+	print_line("  --debug-server <uri>              Start the editor debug server (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007)");
+#endif
+	print_line("  --quit                            Quit after the first iteration.");
+	print_line("  -l, --language <locale>           Use a specific locale (<locale> being a two-letter code).");
+	print_line("  --path <directory>                Path to a project (<directory> must contain a 'project.godot' file).");
+	print_line("  -u, --upwards                     Scan folders upwards for project.godot file.");
+	print_line("  --main-pack <file>                Path to a pack (.pck) file to load.");
+	print_line("  --render-thread <mode>            Render thread mode ['unsafe', 'safe', 'separate'].");
+	print_line("  --remote-fs <address>             Remote filesystem (<host/IP>[:<port>] address).");
+	print_line("  --remote-fs-password <password>   Password for remote filesystem.");
+	print_line("  --audio-driver <driver>           Audio driver [" + get_audio_drivers() + "].");
+	print_line("  --display-driver <driver>         Display driver (and rendering driver) [" + get_display_drivers() + "].");
+	print_line("  --rendering-method <renderer>     Renderer name. Requires driver support.");
+	print_line("  --rendering-driver <driver>       Rendering driver (depends on display driver).");
+	print_line("  --gpu-index <device_index>        Use a specific GPU (run with --verbose to get available device list).");
+	print_line("  --text-driver <driver>            Text driver (Fonts, BiDi, shaping).");
+	print_line("  --tablet-driver <driver>          Pen tablet input driver.");
+	print_line("  --headless                        Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script.");
+	print_line("  --write-movie <file>              Writes a video to the specified path (usually with .avi or .png extension).");
+	print_line("                                    --fixed-fps is forced when enabled, but it can be used to change movie FPS.");
+	print_line("                                    --disable-vsync can speed up movie writing but makes interaction more difficult.");
+	print_line();
+
+	print_line("Display options:");
+	print_line("  -f, --fullscreen                  Request fullscreen mode.");
+	print_line("  -m, --maximized                   Request a maximized window.");
+	print_line("  -w, --windowed                    Request windowed mode.");
+	print_line("  -t, --always-on-top               Request an always-on-top window.");
+	print_line("  --resolution <W>x<H>              Request window resolution.");
+	print_line("  --position <X>,<Y>                Request window position (if set, screen argument is ignored).");
+	print_line("  --screen <N>                      Request window screen.");
+	print_line("  --single-window                   Use a single window (no separate subwindows).");
+	print_line("  --xr-mode <mode>                  Select XR (Extended Reality) mode ['default', 'off', 'on'].");
+	print_line();
+
+	print_line("Debug options:");
+	print_line("  -d, --debug                       Debug (local stdout debugger).");
+	print_line("  -b, --breakpoints                 Breakpoint list as source::line comma-separated pairs, no spaces (use %20 instead).");
+	print_line("  --profiling                       Enable profiling in the script debugger.");
+	print_line("  --gpu-profile                     Show a GPU profile of the tasks that took the most time during frame rendering.");
+	print_line("  --gpu-validation                  Enable graphics API validation layers for debugging.");
+#if DEBUG_ENABLED
+	print_line("  --gpu-abort                       Abort on graphics API usage errors (usually validation layer errors). May help see the problem if your system freezes.");
+#endif
+	print_line("  --remote-debug <uri>              Remote debug (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007).");
+#if defined(DEBUG_ENABLED)
+	print_line("  --debug-collisions                Show collision shapes when running the scene.");
+	print_line("  --debug-paths                     Show path lines when running the scene.");
+	print_line("  --debug-navigation                Show navigation polygons when running the scene.");
+	print_line("  --debug-stringnames               Print all StringName allocations to stdout when the engine quits.");
+#endif
+	print_line("  --frame-delay <ms>                Simulate high CPU load (delay each frame by <ms> milliseconds).");
+	print_line("  --time-scale <scale>              Force time scale (higher values are faster, 1.0 is normal speed).");
+	print_line("  --disable-vsync                   Forces disabling of vertical synchronization, even if enabled in the project settings. Does not override driver-level V-Sync enforcement.");
+	print_line("  --disable-render-loop             Disable render loop so rendering only occurs when called explicitly from script.");
+	print_line("  --disable-crash-handler           Disable crash handler when supported by the platform code.");
+	print_line("  --fixed-fps <fps>                 Force a fixed number of frames per second. This setting disables real-time synchronization.");
+	print_line("  --print-fps                       Print the frames per second to the stdout.");
+	print_line();
+
+	print_line("Standalone tools:");
+	print_line("  -s, --script <script>             Run a script.");
+	print_line("  --check-only                      Only parse for errors and quit (use with --script).");
+#ifdef TOOLS_ENABLED
+	print_line("  --export-release <preset> <path>  Export the project in release mode using the given preset and output path. The preset name should match one defined in export_presets.cfg.");
+	print_line("                                    <path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe').");
+	print_line("                                    The target directory must exist.");
+	print_line("  --export-debug <preset> <path>    Export the project in debug mode using the given preset and output path. See --export-release description for other considerations.");
+	print_line("  --export-pack <preset> <path>     Export the project data only using the given preset and output path. The <path> extension determines whether it will be in PCK or ZIP format.");
 #ifndef DISABLE_DEPRECATED
-	OS::get_singleton()->print("  --convert-3to4 [<max_file_kb>] [<max_line_size>]\n");
-	OS::get_singleton()->print("                                    Converts project from Godot 3.x to Godot 4.x.\n");
-	OS::get_singleton()->print("  --validate-conversion-3to4 [<max_file_kb>] [<max_line_size>]\n");
-	OS::get_singleton()->print("                                    Shows what elements will be renamed when converting project from Godot 3.x to Godot 4.x.\n");
+	print_line("  --convert-3to4 [<max_file_kb>] [<max_line_size>]");
+	print_line("                                    Converts project from Godot 3.x to Godot 4.x.");
+	print_line("  --validate-conversion-3to4 [<max_file_kb>] [<max_line_size>]");
+	print_line("                                    Shows what elements will be renamed when converting project from Godot 3.x to Godot 4.x.");
 #endif // DISABLE_DEPRECATED
-	OS::get_singleton()->print("  --doctool [<path>]                Dump the engine API reference to the given <path> (defaults to current dir) in XML format, merging if existing files are found.\n");
-	OS::get_singleton()->print("  --no-docbase                      Disallow dumping the base types (used with --doctool).\n");
-	OS::get_singleton()->print("  --build-solutions                 Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.\n");
-	OS::get_singleton()->print("  --dump-gdextension-interface      Generate GDExtension header file 'gdextension_interface.h' in the current folder. This file is the base file required to implement a GDExtension.\n");
-	OS::get_singleton()->print("  --dump-extension-api              Generate JSON dump of the Godot API for GDExtension bindings named 'extension_api.json' in the current folder.\n");
-	OS::get_singleton()->print("  --startup-benchmark               Benchmark the startup time and print it to console.\n");
-	OS::get_singleton()->print("  --startup-benchmark-file <path>   Benchmark the startup time and save it to a given file in JSON format.\n");
+	print_line("  --doctool [<path>]                Dump the engine API reference to the given <path> (defaults to current dir) in XML format, merging if existing files are found.");
+	print_line("  --no-docbase                      Disallow dumping the base types (used with --doctool).");
+	print_line("  --build-solutions                 Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.");
+	print_line("  --dump-gdextension-interface      Generate GDExtension header file 'gdextension_interface.h' in the current folder. This file is the base file required to implement a GDExtension.");
+	print_line("  --dump-extension-api              Generate JSON dump of the Godot API for GDExtension bindings named 'extension_api.json' in the current folder.");
+	print_line("  --startup-benchmark               Benchmark the startup time and print it to console.");
+	print_line("  --startup-benchmark-file <path>   Benchmark the startup time and save it to a given file in JSON format.");
 #ifdef TESTS_ENABLED
-	OS::get_singleton()->print("  --test [--help]                   Run unit tests. Use --test --help for more information.\n");
-#endif
-#endif
-	OS::get_singleton()->print("\n");
+	print_line("  --test [--help]                   Run unit tests. Use --test --help for more information.");
+#endif // TESTS_ENABLED
+#endif // TOOLS_ENABLED
+	print_line();
 }
 
 #ifdef TESTS_ENABLED
@@ -1942,8 +1950,7 @@ error:
 }
 
 Error Main::setup2(Thread::ID p_main_tid_override) {
-	// Print engine name and version
-	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
+	print_engine_name_and_version();
 
 	engine->startup_benchmark_begin_measure("servers");
 
