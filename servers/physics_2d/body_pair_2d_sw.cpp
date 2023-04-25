@@ -32,7 +32,6 @@
 #include "collision_solver_2d_sw.h"
 #include "space_2d_sw.h"
 
-#define POSITION_CORRECTION
 #define ACCUMULATE_IMPULSES
 
 void BodyPair2DSW::_add_contact(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_self) {
@@ -423,9 +422,9 @@ bool BodyPair2DSW::setup(real_t p_step) {
 
 		c.bounce = combine_bounce(A, B);
 		if (c.bounce) {
-			Vector2 crA(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x);
-			Vector2 crB(-B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x);
-			Vector2 dv = B->get_linear_velocity() + crB - A->get_linear_velocity() - crA;
+			Vector2 crA(-A->get_prev_angular_velocity() * c.rA.y, A->get_prev_angular_velocity() * c.rA.x);
+			Vector2 crB(-B->get_prev_angular_velocity() * c.rB.y, B->get_prev_angular_velocity() * c.rB.x);
+			Vector2 dv = B->get_prev_linear_velocity() + crB - A->get_prev_linear_velocity() - crA;
 			c.bounce = c.bounce * dv.dot(c.normal);
 		}
 
