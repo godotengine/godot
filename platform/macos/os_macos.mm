@@ -287,6 +287,27 @@ String OS_MacOS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	return ret;
 }
 
+Error OS_MacOS::shell_show_in_file_manager(String p_path, bool p_open_folder) {
+	bool open_folder = false;
+	if (DirAccess::dir_exists_absolute(p_path) && p_open_folder) {
+		open_folder = true;
+	}
+
+	if (!p_path.begins_with("file://")) {
+		p_path = String("file://") + p_path;
+	}
+
+	NSString *string = [NSString stringWithUTF8String:p_path.utf8().get_data()];
+	NSURL *uri = [[NSURL alloc] initWithString:[string stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLFragmentAllowedCharacterSet]]];
+
+	if (open_folder) {
+		[[NSWorkspace sharedWorkspace] openURL:uri];
+	} else {
+		[[NSWorkspace sharedWorkspace] activateFileViewerSelectingURLs:@[ uri ]];
+	}
+	return OK;
+}
+
 Error OS_MacOS::shell_open(String p_uri) {
 	NSString *string = [NSString stringWithUTF8String:p_uri.utf8().get_data()];
 	NSURL *uri = [[NSURL alloc] initWithString:string];
