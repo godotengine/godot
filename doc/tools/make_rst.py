@@ -86,7 +86,6 @@ CLASS_GROUPS_BASE: Dict[str, str] = {
 }
 # Sync with editor\register_editor_types.cpp
 EDITOR_CLASSES: List[str] = [
-    "AnimationTrackEditPlugin",
     "FileSystemDock",
     "ScriptCreateDialog",
     "ScriptEditor",

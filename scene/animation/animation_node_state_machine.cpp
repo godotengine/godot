@@ -860,7 +860,7 @@ double AnimationNodeStateMachinePlayback::_process(const String &p_base_path, An
 	// Find next and see when to transition.
 	_transition_to_next_recursive(tree, p_state_machine, p_test_only);
 
-	// Predict reamin time.
+	// Predict remaining time.
 	double remain = rem; // If we can't predict the end of state machine, the time remaining must be INFINITY.
 
 	if (p_state_machine->get_state_machine_type() == AnimationNodeStateMachine::STATE_MACHINE_TYPE_NESTED) {
