@@ -350,6 +350,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_edit_multiline" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns [code]true[/code] if the given [param column] is multiline editable.
+			</description>
+		</method>
 		<method name="is_editable">
 			<return type="bool" />
 			<param index="0" name="column" type="int" />
@@ -456,7 +463,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="checked" type="bool" />
 			<description>
-				If [code]true[/code], the given [param column] is checked. Clears column's indeterminate status.
+				If [param checked] is [code]true[/code], the given [param column] is checked. Clears column's indeterminate status.
 			</description>
 		</method>
 		<method name="set_collapsed_recursive">
@@ -516,12 +523,21 @@
 				Sets custom font size used to draw text in the given [param column].
 			</description>
 		</method>
+		<method name="set_edit_multiline">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="multiline" type="bool" />
+			<description>
+				If [param multiline] is [code]true[/code], the given [param column] is multiline editable.
+				[b]Note:[/b] This option only affects the type of control ([LineEdit] or [TextEdit]) that appears when editing the column. You can set multiline values with [method set_text] even if the column is not multiline editable.
+			</description>
+		</method>
 		<method name="set_editable">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				If [code]true[/code], the given [param column] is editable.
+				If [param enabled] is [code]true[/code], the given [param column] is editable.
 			</description>
 		</method>
 		<method name="set_expand_right">
@@ -529,7 +545,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], the given [param column] is expanded to the right.
+				If [param enable] is [code]true[/code], the given [param column] is expanded to the right.
 			</description>
 		</method>
 		<method name="set_icon">
@@ -569,7 +585,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="indeterminate" type="bool" />
 			<description>
-				If [code]true[/code], the given [param column] is marked [param indeterminate].
+				If [param indeterminate] is [code]true[/code], the given [param column] is marked indeterminate.
 				[b]Note:[/b] If set [code]true[/code] from [code]false[/code], then column is cleared of checked status.
 			</description>
 		</method>
@@ -614,7 +630,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="selectable" type="bool" />
 			<description>
-				If [code]true[/code], the given column is selectable.
+				If [param selectable] is [code]true[/code], the given [param column] is selectable.
 			</description>
 		</method>
 		<method name="set_structured_text_bidi_override">
