@@ -1013,6 +1013,10 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 		return ERR_UNAVAILABLE;
 	}
 
+	// If this is a ref-counted object, prevent it from being destroyed during signal emission,
+	// which is needed in certain edge cases; e.g., https://github.com/godotengine/godot/issues/73889.
+	Ref<RefCounted> rc = Ref<RefCounted>(Object::cast_to<RefCounted>(this));
+
 	List<_ObjectSignalDisconnectData> disconnect_data;
 
 	//copy on write will ensure that disconnecting the signal or even deleting the object will not affect the signal calling.
