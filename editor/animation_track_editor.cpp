@@ -6084,7 +6084,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 								Pair<real_t, Variant> keydata;
 								keydata.first = delta_t;
 								Vector3 v;
-								animation->position_track_interpolate(i, delta_t, &v);
+								animation->try_position_track_interpolate(i, delta_t, &v);
 								keydata.second = v;
 								insert_queue_new.append(keydata);
 							}
@@ -6094,7 +6094,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 								Pair<real_t, Variant> keydata;
 								keydata.first = delta_t;
 								Quaternion v;
-								animation->rotation_track_interpolate(i, delta_t, &v);
+								animation->try_rotation_track_interpolate(i, delta_t, &v);
 								keydata.second = v;
 								insert_queue_new.append(keydata);
 							}
@@ -6104,7 +6104,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 								Pair<real_t, Variant> keydata;
 								keydata.first = delta_t;
 								Vector3 v;
-								animation->scale_track_interpolate(i, delta_t, &v);
+								animation->try_scale_track_interpolate(i, delta_t, &v);
 								keydata.second = v;
 								insert_queue_new.append(keydata);
 							}
@@ -6114,7 +6114,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 								Pair<real_t, Variant> keydata;
 								keydata.first = delta_t;
 								float v;
-								animation->blend_shape_track_interpolate(i, delta_t, &v);
+								animation->try_blend_shape_track_interpolate(i, delta_t, &v);
 								keydata.second = v;
 								insert_queue_new.append(keydata);
 							}
@@ -6760,7 +6760,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bake_fps->set_max(999);
 	bake_fps->set_step(1);
 	bake_fps->set_value(30); // Default
-	bake_grid->add_child(memnew(Label(TTR("Pos/Rot/Scl3D Track:"))));
+	bake_grid->add_child(memnew(Label(TTR("3D Pos/Rot/Scl Track:"))));
 	bake_grid->add_child(bake_trs);
 	bake_grid->add_child(memnew(Label(TTR("Blendshape Track:"))));
 	bake_grid->add_child(bake_blendshape);

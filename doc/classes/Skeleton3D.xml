@@ -300,7 +300,7 @@
 		<member name="animate_physical_bones" type="bool" setter="set_animate_physical_bones" getter="get_animate_physical_bones" default="true">
 		</member>
 		<member name="motion_scale" type="float" setter="set_motion_scale" getter="get_motion_scale" default="1.0">
-			Multiplies the position 3D track animation.
+			Multiplies the 3D position track animation.
 			[b]Note:[/b] Unless this value is [code]1.0[/code], the key value in animation will not match the actual position value.
 		</member>
 		<member name="show_rest_only" type="bool" setter="set_show_rest_only" getter="is_show_rest_only" default="false">

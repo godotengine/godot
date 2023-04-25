@@ -6478,7 +6478,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> p_sta
 			bool last = false;
 			while (true) {
 				Vector3 scale;
-				Error err = p_animation->scale_track_interpolate(p_track_i, time, &scale);
+				Error err = p_animation->try_scale_track_interpolate(p_track_i, time, &scale);
 				ERR_CONTINUE(err != OK);
 				p_track.scale_track.values.push_back(scale);
 				p_track.scale_track.times.push_back(time);
@@ -6513,7 +6513,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> p_sta
 			bool last = false;
 			while (true) {
 				Vector3 scale;
-				Error err = p_animation->position_track_interpolate(p_track_i, time, &scale);
+				Error err = p_animation->try_position_track_interpolate(p_track_i, time, &scale);
 				ERR_CONTINUE(err != OK);
 				p_track.position_track.values.push_back(scale);
 				p_track.position_track.times.push_back(time);
@@ -6548,7 +6548,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> p_sta
 			bool last = false;
 			while (true) {
 				Quaternion rotation;
-				Error err = p_animation->rotation_track_interpolate(p_track_i, time, &rotation);
+				Error err = p_animation->try_rotation_track_interpolate(p_track_i, time, &rotation);
 				ERR_CONTINUE(err != OK);
 				p_track.rotation_track.values.push_back(rotation);
 				p_track.rotation_track.times.push_back(time);
@@ -6588,7 +6588,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> p_sta
 				bool last = false;
 				while (true) {
 					Vector3 position;
-					Error err = p_animation->position_track_interpolate(p_track_i, time, &position);
+					Error err = p_animation->try_position_track_interpolate(p_track_i, time, &position);
 					ERR_CONTINUE(err != OK);
 					p_track.position_track.values.push_back(position);
 					p_track.position_track.times.push_back(time);
@@ -6621,7 +6621,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> p_sta
 				bool last = false;
 				while (true) {
 					Quaternion rotation;
-					Error err = p_animation->rotation_track_interpolate(p_track_i, time, &rotation);
+					Error err = p_animation->try_rotation_track_interpolate(p_track_i, time, &rotation);
 					ERR_CONTINUE(err != OK);
 					p_track.rotation_track.values.push_back(rotation);
 					p_track.rotation_track.times.push_back(time);
@@ -6657,7 +6657,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> p_sta
 				bool last = false;
 				while (true) {
 					Vector3 scale;
-					Error err = p_animation->scale_track_interpolate(p_track_i, time, &scale);
+					Error err = p_animation->try_scale_track_interpolate(p_track_i, time, &scale);
 					ERR_CONTINUE(err != OK);
 					p_track.scale_track.values.push_back(scale);
 					p_track.scale_track.times.push_back(time);

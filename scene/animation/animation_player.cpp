@@ -528,7 +528,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 
 				Vector3 loc;
 
-				Error err = a->position_track_interpolate(i, p_time, &loc);
+				Error err = a->try_position_track_interpolate(i, p_time, &loc);
 				//ERR_CONTINUE(err!=OK); //used for testing, should be removed
 
 				if (err != OK) {
@@ -556,7 +556,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 
 				Quaternion rot;
 
-				Error err = a->rotation_track_interpolate(i, p_time, &rot);
+				Error err = a->try_rotation_track_interpolate(i, p_time, &rot);
 				//ERR_CONTINUE(err!=OK); //used for testing, should be removed
 
 				if (err != OK) {
@@ -584,7 +584,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 
 				Vector3 scale;
 
-				Error err = a->scale_track_interpolate(i, p_time, &scale);
+				Error err = a->try_scale_track_interpolate(i, p_time, &scale);
 				//ERR_CONTINUE(err!=OK); //used for testing, should be removed
 
 				if (err != OK) {
@@ -612,7 +612,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 
 				float blend;
 
-				Error err = a->blend_shape_track_interpolate(i, p_time, &blend);
+				Error err = a->try_blend_shape_track_interpolate(i, p_time, &blend);
 				//ERR_CONTINUE(err!=OK); //used for testing, should be removed
 
 				if (err != OK) {

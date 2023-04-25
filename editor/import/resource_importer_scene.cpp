@@ -1455,22 +1455,22 @@ void ResourceImporterScene::_create_slices(AnimationPlayer *ap, Ref<Animation> a
 						if (kt > (from + 0.01) && k > 0) {
 							if (anim->track_get_type(j) == Animation::TYPE_POSITION_3D) {
 								Vector3 p;
-								anim->position_track_interpolate(j, from, &p);
+								anim->try_position_track_interpolate(j, from, &p);
 								new_anim->position_track_insert_key(dtrack, 0, p);
 							} else if (anim->track_get_type(j) == Animation::TYPE_ROTATION_3D) {
 								Quaternion r;
-								anim->rotation_track_interpolate(j, from, &r);
+								anim->try_rotation_track_interpolate(j, from, &r);
 								new_anim->rotation_track_insert_key(dtrack, 0, r);
 							} else if (anim->track_get_type(j) == Animation::TYPE_SCALE_3D) {
 								Vector3 s;
-								anim->scale_track_interpolate(j, from, &s);
+								anim->try_scale_track_interpolate(j, from, &s);
 								new_anim->scale_track_insert_key(dtrack, 0, s);
 							} else if (anim->track_get_type(j) == Animation::TYPE_VALUE) {
 								Variant var = anim->value_track_interpolate(j, from);
 								new_anim->track_insert_key(dtrack, 0, var);
 							} else if (anim->track_get_type(j) == Animation::TYPE_BLEND_SHAPE) {
 								float interp;
-								anim->blend_shape_track_interpolate(j, from, &interp);
+								anim->try_blend_shape_track_interpolate(j, from, &interp);
 								new_anim->blend_shape_track_insert_key(dtrack, 0, interp);
 							}
 						}
@@ -1501,22 +1501,22 @@ void ResourceImporterScene::_create_slices(AnimationPlayer *ap, Ref<Animation> a
 				if (dtrack != -1 && kt >= to) {
 					if (anim->track_get_type(j) == Animation::TYPE_POSITION_3D) {
 						Vector3 p;
-						anim->position_track_interpolate(j, to, &p);
+						anim->try_position_track_interpolate(j, to, &p);
 						new_anim->position_track_insert_key(dtrack, to - from, p);
 					} else if (anim->track_get_type(j) == Animation::TYPE_ROTATION_3D) {
 						Quaternion r;
-						anim->rotation_track_interpolate(j, to, &r);
+						anim->try_rotation_track_interpolate(j, to, &r);
 						new_anim->rotation_track_insert_key(dtrack, to - from, r);
 					} else if (anim->track_get_type(j) == Animation::TYPE_SCALE_3D) {
 						Vector3 s;
-						anim->scale_track_interpolate(j, to, &s);
+						anim->try_scale_track_interpolate(j, to, &s);
 						new_anim->scale_track_insert_key(dtrack, to - from, s);
 					} else if (anim->track_get_type(j) == Animation::TYPE_VALUE) {
 						Variant var = anim->value_track_interpolate(j, to);
 						new_anim->track_insert_key(dtrack, to - from, var);
 					} else if (anim->track_get_type(j) == Animation::TYPE_BLEND_SHAPE) {
 						float interp;
-						anim->blend_shape_track_interpolate(j, to, &interp);
+						anim->try_blend_shape_track_interpolate(j, to, &interp);
 						new_anim->blend_shape_track_insert_key(dtrack, to - from, interp);
 					}
 				}
@@ -1528,21 +1528,21 @@ void ResourceImporterScene::_create_slices(AnimationPlayer *ap, Ref<Animation> a
 				new_anim->track_set_path(dtrack, anim->track_get_path(j));
 				if (anim->track_get_type(j) == Animation::TYPE_POSITION_3D) {
 					Vector3 p;
-					anim->position_track_interpolate(j, from, &p);
+					anim->try_position_track_interpolate(j, from, &p);
 					new_anim->position_track_insert_key(dtrack, 0, p);
-					anim->position_track_interpolate(j, to, &p);
+					anim->try_position_track_interpolate(j, to, &p);
 					new_anim->position_track_insert_key(dtrack, to - from, p);
 				} else if (anim->track_get_type(j) == Animation::TYPE_ROTATION_3D) {
 					Quaternion r;
-					anim->rotation_track_interpolate(j, from, &r);
+					anim->try_rotation_track_interpolate(j, from, &r);
 					new_anim->rotation_track_insert_key(dtrack, 0, r);
-					anim->rotation_track_interpolate(j, to, &r);
+					anim->try_rotation_track_interpolate(j, to, &r);
 					new_anim->rotation_track_insert_key(dtrack, to - from, r);
 				} else if (anim->track_get_type(j) == Animation::TYPE_SCALE_3D) {
 					Vector3 s;
-					anim->scale_track_interpolate(j, from, &s);
+					anim->try_scale_track_interpolate(j, from, &s);
 					new_anim->scale_track_insert_key(dtrack, 0, s);
-					anim->scale_track_interpolate(j, to, &s);
+					anim->try_scale_track_interpolate(j, to, &s);
 					new_anim->scale_track_insert_key(dtrack, to - from, s);
 				} else if (anim->track_get_type(j) == Animation::TYPE_VALUE) {
 					Variant var = anim->value_track_interpolate(j, from);
@@ -1551,9 +1551,9 @@ void ResourceImporterScene::_create_slices(AnimationPlayer *ap, Ref<Animation> a
 					new_anim->track_insert_key(dtrack, to - from, to_var);
 				} else if (anim->track_get_type(j) == Animation::TYPE_BLEND_SHAPE) {
 					float interp;
-					anim->blend_shape_track_interpolate(j, from, &interp);
+					anim->try_blend_shape_track_interpolate(j, from, &interp);
 					new_anim->blend_shape_track_insert_key(dtrack, 0, interp);
-					anim->blend_shape_track_interpolate(j, to, &interp);
+					anim->try_blend_shape_track_interpolate(j, to, &interp);
 					new_anim->blend_shape_track_insert_key(dtrack, to - from, interp);
 				}
 			}

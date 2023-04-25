@@ -654,7 +654,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 
 						// If a value track without a key is cached first, the initial value cannot be determined.
 						// It is a corner case, but which may cause problems with blending.
-						ERR_CONTINUE_MSG(anim->track_get_key_count(i) == 0, "AnimationTree: '" + String(E) + "', value track:  '" + String(path) + "' must have at least one key to cache for blending.");
+						ERR_CONTINUE_MSG(anim->track_get_key_count(i) == 0, "AnimationTree: '" + String(E) + "', Value Track:  '" + String(path) + "' must have at least one key to cache for blending.");
 						track_value->init_value = anim->track_get_key_value(i, 0);
 						track_value->init_value.zero();
 
@@ -867,10 +867,10 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 				track_value->is_using_angle |= anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
 
 				if (was_discrete != track_value->is_discrete) {
-					ERR_PRINT_ED("Value track: " + String(path) + " with different update modes are blended. Blending prioritizes Discrete mode, so other update mode tracks will not be blended.");
+					ERR_PRINT_ED("Value Track: " + String(path) + " with different update modes are blended. Blending prioritizes Discrete mode, so other update mode tracks will not be blended.");
 				}
 				if (was_using_angle != track_value->is_using_angle) {
-					WARN_PRINT_ED("Value track: " + String(path) + " with different interpolation types for rotation are blended. Blending prioritizes angle interpolation, so the blending result uses the shortest path referenced to the initial (RESET animation) value.");
+					WARN_PRINT_ED("Value Track: " + String(path) + " with different interpolation types for rotation are blended. Blending prioritizes angle interpolation, so the blending result uses the shortest path referenced to the initial (RESET animation) value.");
 				}
 			}
 
@@ -1181,36 +1181,36 @@ void AnimationTree::_process_graph(double p_delta) {
 
 							if (!backward) {
 								if (prev_time > time) {
-									Error err = a->position_track_interpolate(i, prev_time, &loc[0]);
+									Error err = a->try_position_track_interpolate(i, prev_time, &loc[0]);
 									if (err != OK) {
 										continue;
 									}
 									loc[0] = post_process_key_value(a, i, loc[0], t->object, t->bone_idx);
-									a->position_track_interpolate(i, (double)a->get_length(), &loc[1]);
+									a->try_position_track_interpolate(i, (double)a->get_length(), &loc[1]);
 									loc[1] = post_process_key_value(a, i, loc[1], t->object, t->bone_idx);
 									root_motion_cache.loc += (loc[1] - loc[0]) * blend;
 									prev_time = 0;
 								}
 							} else {
 								if (prev_time < time) {
-									Error err = a->position_track_interpolate(i, prev_time, &loc[0]);
+									Error err = a->try_position_track_interpolate(i, prev_time, &loc[0]);
 									if (err != OK) {
 										continue;
 									}
 									loc[0] = post_process_key_value(a, i, loc[0], t->object, t->bone_idx);
-									a->position_track_interpolate(i, 0, &loc[1]);
+									a->try_position_track_interpolate(i, 0, &loc[1]);
 									loc[1] = post_process_key_value(a, i, loc[1], t->object, t->bone_idx);
 									root_motion_cache.loc += (loc[1] - loc[0]) * blend;
 									prev_time = (double)a->get_length();
 								}
 							}
 
-							Error err = a->position_track_interpolate(i, prev_time, &loc[0]);
+							Error err = a->try_position_track_interpolate(i, prev_time, &loc[0]);
 							if (err != OK) {
 								continue;
 							}
 							loc[0] = post_process_key_value(a, i, loc[0], t->object, t->bone_idx);
-							a->position_track_interpolate(i, time, &loc[1]);
+							a->try_position_track_interpolate(i, time, &loc[1]);
 							loc[1] = post_process_key_value(a, i, loc[1], t->object, t->bone_idx);
 							root_motion_cache.loc += (loc[1] - loc[0]) * blend;
 							prev_time = !backward ? 0 : (double)a->get_length();
@@ -1219,7 +1219,7 @@ void AnimationTree::_process_graph(double p_delta) {
 						{
 							Vector3 loc;
 
-							Error err = a->position_track_interpolate(i, time, &loc);
+							Error err = a->try_position_track_interpolate(i, time, &loc);
 							if (err != OK) {
 								continue;
 							}
@@ -1276,36 +1276,36 @@ void AnimationTree::_process_graph(double p_delta) {
 
 							if (!backward) {
 								if (prev_time > time) {
-									Error err = a->rotation_track_interpolate(i, prev_time, &rot[0]);
+									Error err = a->try_rotation_track_interpolate(i, prev_time, &rot[0]);
 									if (err != OK) {
 										continue;
 									}
 									rot[0] = post_process_key_value(a, i, rot[0], t->object, t->bone_idx);
-									a->rotation_track_interpolate(i, (double)a->get_length(), &rot[1]);
+									a->try_rotation_track_interpolate(i, (double)a->get_length(), &rot[1]);
 									rot[1] = post_process_key_value(a, i, rot[1], t->object, t->bone_idx);
 									root_motion_cache.rot = (root_motion_cache.rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
 									prev_time = 0;
 								}
 							} else {
 								if (prev_time < time) {
-									Error err = a->rotation_track_interpolate(i, prev_time, &rot[0]);
+									Error err = a->try_rotation_track_interpolate(i, prev_time, &rot[0]);
 									if (err != OK) {
 										continue;
 									}
 									rot[0] = post_process_key_value(a, i, rot[0], t->object, t->bone_idx);
-									a->rotation_track_interpolate(i, 0, &rot[1]);
+									a->try_rotation_track_interpolate(i, 0, &rot[1]);
 									root_motion_cache.rot = (root_motion_cache.rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
 									prev_time = (double)a->get_length();
 								}
 							}
 
-							Error err = a->rotation_track_interpolate(i, prev_time, &rot[0]);
+							Error err = a->try_rotation_track_interpolate(i, prev_time, &rot[0]);
 							if (err != OK) {
 								continue;
 							}
 							rot[0] = post_process_key_value(a, i, rot[0], t->object, t->bone_idx);
 
-							a->rotation_track_interpolate(i, time, &rot[1]);
+							a->try_rotation_track_interpolate(i, time, &rot[1]);
 							rot[1] = post_process_key_value(a, i, rot[1], t->object, t->bone_idx);
 							root_motion_cache.rot = (root_motion_cache.rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
 							prev_time = !backward ? 0 : (double)a->get_length();
@@ -1314,7 +1314,7 @@ void AnimationTree::_process_graph(double p_delta) {
 						{
 							Quaternion rot;
 
-							Error err = a->rotation_track_interpolate(i, time, &rot);
+							Error err = a->try_rotation_track_interpolate(i, time, &rot);
 							if (err != OK) {
 								continue;
 							}
@@ -1371,37 +1371,37 @@ void AnimationTree::_process_graph(double p_delta) {
 
 							if (!backward) {
 								if (prev_time > time) {
-									Error err = a->scale_track_interpolate(i, prev_time, &scale[0]);
+									Error err = a->try_scale_track_interpolate(i, prev_time, &scale[0]);
 									if (err != OK) {
 										continue;
 									}
 									scale[0] = post_process_key_value(a, i, scale[0], t->object, t->bone_idx);
-									a->scale_track_interpolate(i, (double)a->get_length(), &scale[1]);
+									a->try_scale_track_interpolate(i, (double)a->get_length(), &scale[1]);
 									root_motion_cache.scale += (scale[1] - scale[0]) * blend;
 									scale[1] = post_process_key_value(a, i, scale[1], t->object, t->bone_idx);
 									prev_time = 0;
 								}
 							} else {
 								if (prev_time < time) {
-									Error err = a->scale_track_interpolate(i, prev_time, &scale[0]);
+									Error err = a->try_scale_track_interpolate(i, prev_time, &scale[0]);
 									if (err != OK) {
 										continue;
 									}
 									scale[0] = post_process_key_value(a, i, scale[0], t->object, t->bone_idx);
-									a->scale_track_interpolate(i, 0, &scale[1]);
+									a->try_scale_track_interpolate(i, 0, &scale[1]);
 									scale[1] = post_process_key_value(a, i, scale[1], t->object, t->bone_idx);
 									root_motion_cache.scale += (scale[1] - scale[0]) * blend;
 									prev_time = (double)a->get_length();
 								}
 							}
 
-							Error err = a->scale_track_interpolate(i, prev_time, &scale[0]);
+							Error err = a->try_scale_track_interpolate(i, prev_time, &scale[0]);
 							if (err != OK) {
 								continue;
 							}
 							scale[0] = post_process_key_value(a, i, scale[0], t->object, t->bone_idx);
 
-							a->scale_track_interpolate(i, time, &scale[1]);
+							a->try_scale_track_interpolate(i, time, &scale[1]);
 							scale[1] = post_process_key_value(a, i, scale[1], t->object, t->bone_idx);
 							root_motion_cache.scale += (scale[1] - scale[0]) * blend;
 							prev_time = !backward ? 0 : (double)a->get_length();
@@ -1410,7 +1410,7 @@ void AnimationTree::_process_graph(double p_delta) {
 						{
 							Vector3 scale;
 
-							Error err = a->scale_track_interpolate(i, time, &scale);
+							Error err = a->try_scale_track_interpolate(i, time, &scale);
 							if (err != OK) {
 								continue;
 							}
@@ -1429,7 +1429,7 @@ void AnimationTree::_process_graph(double p_delta) {
 
 						float value;
 
-						Error err = a->blend_shape_track_interpolate(i, time, &value);
+						Error err = a->try_blend_shape_track_interpolate(i, time, &value);
 						//ERR_CONTINUE(err!=OK); //used for testing, should be removed
 
 						if (err != OK) {
