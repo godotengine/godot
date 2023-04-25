@@ -45,6 +45,7 @@ class CanvasLayer : public Node {
 	int layer;
 	Transform2D transform;
 	RID canvas;
+	uint32_t _layer_order_in_tree;
 
 	ObjectID custom_viewport_id; // to check validity
 	Viewport *custom_viewport;
@@ -61,6 +62,8 @@ class CanvasLayer : public Node {
 	void _update_xform();
 	void _update_locrotscale();
 	void _update_follow_viewport(bool p_force_exit = false);
+	void _calculate_layer_orders_in_tree(Node *p_node, uint32_t &r_order);
+	void _update_layer_orders();
 
 protected:
 	void _notification(int p_what);
