@@ -37,6 +37,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "editor/directory_create_dialog.h"
 #include "editor/scene_create_dialog.h"
 #include "editor_feature_profile.h"
 #include "editor_node.h"
@@ -1344,38 +1345,6 @@ void FileSystemDock::_save_scenes_after_move(const Map<String, String> &p_rename
 	editor->save_scene_list(new_filenames);
 }
 
-void FileSystemDock::_make_dir_confirm() {
-	String dir_name = make_dir_dialog_text->get_text().strip_edges();
-
-	if (dir_name.length() == 0) {
-		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
-		return;
-	} else if (dir_name.find("/") != -1 || dir_name.find("\\") != -1 || dir_name.find(":") != -1 || dir_name.find("*") != -1 ||
-			dir_name.find("|") != -1 || dir_name.find(">") != -1 || dir_name.ends_with(".") || dir_name.ends_with(" ")) {
-		EditorNode::get_singleton()->show_warning(TTR("Provided name contains invalid characters."));
-		return;
-	}
-
-	String directory = path;
-	if (!directory.ends_with("/")) {
-		directory = directory.get_base_dir();
-	}
-	print_verbose("Making folder " + dir_name + " in " + directory);
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	Error err = da->change_dir(directory);
-	if (err == OK) {
-		err = da->make_dir(dir_name);
-	}
-	memdelete(da);
-
-	if (err == OK) {
-		print_verbose("FileSystem: calling rescan.");
-		_rescan();
-	} else {
-		EditorNode::get_singleton()->show_warning(TTR("Could not create folder."));
-	}
-}
-
 void FileSystemDock::_make_scene_confirm() {
 	const String scene_path = make_scene_dialog->get_scene_path();
 
@@ -1877,10 +1846,12 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		} break;
 
 		case FILE_NEW_FOLDER: {
-			make_dir_dialog_text->set_text("new folder");
-			make_dir_dialog_text->select_all();
-			make_dir_dialog->popup_centered_minsize(Size2(250, 80) * EDSCALE);
-			make_dir_dialog_text->grab_focus();
+			String directory = path;
+			if (!directory.ends_with("/")) {
+				directory = directory.get_base_dir();
+			}
+			make_dir_dialog->config(directory);
+			make_dir_dialog->popup_centered(Size2(1, 1));
 		} break;
 
 		case FILE_NEW_SCENE: {
@@ -2744,7 +2715,6 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_bw_history"), &FileSystemDock::_bw_history);
 	ClassDB::bind_method(D_METHOD("_fs_changed"), &FileSystemDock::_fs_changed);
 	ClassDB::bind_method(D_METHOD("_tree_multi_selected"), &FileSystemDock::_tree_multi_selected);
-	ClassDB::bind_method(D_METHOD("_make_dir_confirm"), &FileSystemDock::_make_dir_confirm);
 	ClassDB::bind_method(D_METHOD("_make_scene_confirm"), &FileSystemDock::_make_scene_confirm);
 	ClassDB::bind_method(D_METHOD("_resource_created"), &FileSystemDock::_resource_created);
 	ClassDB::bind_method(D_METHOD("_move_operation_confirm", "to_path", "overwrite"), &FileSystemDock::_move_operation_confirm, DEFVAL(false));
@@ -2959,16 +2929,9 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	duplicate_dialog->register_text_enter(duplicate_dialog_text);
 	duplicate_dialog->connect("confirmed", this, "_duplicate_operation_confirm");
 
-	make_dir_dialog = memnew(ConfirmationDialog);
-	make_dir_dialog->set_title(TTR("Create Folder"));
-	VBoxContainer *make_folder_dialog_vb = memnew(VBoxContainer);
-	make_dir_dialog->add_child(make_folder_dialog_vb);
-
-	make_dir_dialog_text = memnew(LineEdit);
-	make_folder_dialog_vb->add_margin_child(TTR("Name:"), make_dir_dialog_text);
+	make_dir_dialog = memnew(DirectoryCreateDialog);
 	add_child(make_dir_dialog);
-	make_dir_dialog->register_text_enter(make_dir_dialog_text);
-	make_dir_dialog->connect("confirmed", this, "_make_dir_confirm");
+	make_dir_dialog->connect("dir_created", this, "_rescan");
 
 	make_scene_dialog = memnew(SceneCreateDialog);
 	add_child(make_scene_dialog);
