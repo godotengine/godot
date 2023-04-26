@@ -2558,8 +2558,6 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 		Transform3D ortho = transform.orthonormalized();
 		Transform3D diff = ortho.affine_inverse() * transform;
 
-		print_line(diff);
-
 		transform = ortho;
 		projection = projection * diff.affine_inverse();
 
