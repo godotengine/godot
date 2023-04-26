@@ -37,7 +37,7 @@
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering_server.h"
 
-// OpenXR requires us to submit sRGB textures so that it recognises the content
+// OpenXR requires us to submit sRGB textures so that it recognizes the content
 // as being in sRGB color space. We do fall back on "normal" textures but this
 // will likely result in incorrect colors as OpenXR will double the sRGB conversion.
 // All major XR runtimes support sRGB textures.

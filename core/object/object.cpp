@@ -38,6 +38,7 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
+#include "core/templates/local_vector.h"
 #include "core/variant/typed_array.h"
 
 #ifdef DEBUG_ENABLED
@@ -1013,22 +1014,29 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 		return ERR_UNAVAILABLE;
 	}
 
+	// If this is a ref-counted object, prevent it from being destroyed during signal emission,
+	// which is needed in certain edge cases; e.g., https://github.com/godotengine/godot/issues/73889.
+	Ref<RefCounted> rc = Ref<RefCounted>(Object::cast_to<RefCounted>(this));
+
 	List<_ObjectSignalDisconnectData> disconnect_data;
 
-	//copy on write will ensure that disconnecting the signal or even deleting the object will not affect the signal calling.
-	//this happens automatically and will not change the performance of calling.
-	//awesome, isn't it?
-	VMap<Callable, SignalData::Slot> slot_map = s->slot_map;
-
-	int ssize = slot_map.size();
+	// Ensure that disconnecting the signal or even deleting the object
+	// will not affect the signal calling.
+	LocalVector<Connection> slot_conns;
+	slot_conns.resize(s->slot_map.size());
+	{
+		uint32_t idx = 0;
+		for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
+			slot_conns[idx++] = slot_kv.value.conn;
+		}
+		DEV_ASSERT(idx == s->slot_map.size());
+	}
 
 	OBJ_DEBUG_LOCK
 
 	Error err = OK;
 
-	for (int i = 0; i < ssize; i++) {
-		const Connection &c = slot_map.getv(i).conn;
-
+	for (const Connection &c : slot_conns) {
 		Object *target = c.callable.get_object();
 		if (!target) {
 			// Target might have been deleted during signal callback, this is expected and OK.
@@ -1191,8 +1199,8 @@ void Object::get_all_signal_connections(List<Connection> *p_connections) const {
 	for (const KeyValue<StringName, SignalData> &E : signal_map) {
 		const SignalData *s = &E.value;
 
-		for (int i = 0; i < s->slot_map.size(); i++) {
-			p_connections->push_back(s->slot_map.getv(i).conn);
+		for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
+			p_connections->push_back(slot_kv.value.conn);
 		}
 	}
 }
@@ -1203,8 +1211,8 @@ void Object::get_signal_connection_list(const StringName &p_signal, List<Connect
 		return; //nothing
 	}
 
-	for (int i = 0; i < s->slot_map.size(); i++) {
-		p_connections->push_back(s->slot_map.getv(i).conn);
+	for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
+		p_connections->push_back(slot_kv.value.conn);
 	}
 }
 
@@ -1214,8 +1222,8 @@ int Object::get_persistent_signal_connection_count() const {
 	for (const KeyValue<StringName, SignalData> &E : signal_map) {
 		const SignalData *s = &E.value;
 
-		for (int i = 0; i < s->slot_map.size(); i++) {
-			if (s->slot_map.getv(i).conn.flags & CONNECT_PERSIST) {
+		for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
+			if (slot_kv.value.conn.flags & CONNECT_PERSIST) {
 				count += 1;
 			}
 		}
@@ -1800,11 +1808,8 @@ Object::~Object() {
 		SignalData *s = &E.value;
 
 		//brute force disconnect for performance
-		int slot_count = s->slot_map.size();
-		const VMap<Callable, SignalData::Slot>::Pair *slot_list = s->slot_map.get_array();
-
-		for (int i = 0; i < slot_count; i++) {
-			slot_list[i].value.conn.callable.get_object()->connections.erase(slot_list[i].value.cE);
+		for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
+			slot_kv.value.conn.callable.get_object()->connections.erase(slot_kv.value.cE);
 		}
 
 		signal_map.erase(E.key);

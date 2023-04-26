@@ -42,6 +42,7 @@
 #include "scene/gui/color_rect.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/gui/texture_button.h"
+#include "scene/main/viewport.h"
 #include "scene/resources/fog_material.h"
 #include "scene/resources/particle_process_material.h"
 #include "scene/resources/sky_material.h"

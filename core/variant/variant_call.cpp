@@ -2073,6 +2073,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Transform2D, scaled_local, sarray("scale"), varray());
 	bind_method(Transform2D, translated, sarray("offset"), varray());
 	bind_method(Transform2D, translated_local, sarray("offset"), varray());
+	bind_method(Transform2D, determinant, sarray(), varray());
 	bind_method(Transform2D, basis_xform, sarray("v"), varray());
 	bind_method(Transform2D, basis_xform_inv, sarray("v"), varray());
 	bind_method(Transform2D, interpolate_with, sarray("xform", "weight"), varray());

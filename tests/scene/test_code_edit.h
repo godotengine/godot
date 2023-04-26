@@ -2300,6 +2300,17 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			SEND_GUI_ACTION("ui_text_newline_blank");
 			CHECK(code_edit->get_line(0) == "test{}");
 			CHECK(code_edit->get_line(1) == "");
+
+			/* If there is something after a colon
+			and there is a colon in the comment it
+			should not indent. */
+			code_edit->add_comment_delimiter("#", "");
+			code_edit->set_text("");
+			code_edit->insert_text_at_caret("test:test#:");
+			SEND_GUI_ACTION("ui_text_newline");
+			CHECK(code_edit->get_line(0) == "test:test#:");
+			CHECK(code_edit->get_line(1) == "");
+			code_edit->remove_comment_delimiter("#");
 		}
 	}
 

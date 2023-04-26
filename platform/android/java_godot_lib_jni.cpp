@@ -199,10 +199,9 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, j
 			if (p_surface) {
 				ANativeWindow *native_window = ANativeWindow_fromSurface(env, p_surface);
 				os_android->set_native_window(native_window);
-
-				DisplayServerAndroid::get_singleton()->reset_window();
-				DisplayServerAndroid::get_singleton()->notify_surface_changed(p_width, p_height);
 			}
+			DisplayServerAndroid::get_singleton()->reset_window();
+			DisplayServerAndroid::get_singleton()->notify_surface_changed(p_width, p_height);
 		}
 	}
 }
@@ -244,7 +243,7 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 	if (step.get() == 0) {
 		// Since Godot is initialized on the UI thread, main_thread_id was set to that thread's id,
 		// but for Godot purposes, the main thread is the one running the game loop
-		Main::setup2(Thread::get_caller_id());
+		Main::setup2();
 		input_handler = new AndroidInputHandler();
 		step.increment();
 		return true;

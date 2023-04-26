@@ -713,6 +713,16 @@ int EditorData::get_edited_scene() const {
 	return current_edited_scene;
 }
 
+int EditorData::get_edited_scene_from_path(const String &p_path) const {
+	for (int i = 0; i < edited_scene.size(); i++) {
+		if (edited_scene[i].path == p_path) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
 void EditorData::set_edited_scene(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, edited_scene.size());
 	current_edited_scene = p_idx;

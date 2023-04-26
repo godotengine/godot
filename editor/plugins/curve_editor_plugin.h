@@ -36,6 +36,8 @@
 #include "editor/editor_resource_preview.h"
 #include "scene/resources/curve.h"
 
+class PopupMenu;
+
 // Edits a y(x) curve
 class CurveEditor : public Control {
 	GDCLASS(CurveEditor, Control);

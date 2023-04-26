@@ -3306,6 +3306,8 @@ EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 EditorExportPlatformAndroid::~EditorExportPlatformAndroid() {
 #ifndef ANDROID_ENABLED
 	quit_request.set();
-	check_for_changes_thread.wait_to_finish();
+	if (check_for_changes_thread.is_started()) {
+		check_for_changes_thread.wait_to_finish();
+	}
 #endif
 }

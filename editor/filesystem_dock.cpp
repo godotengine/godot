@@ -38,6 +38,7 @@
 #include "core/os/os.h"
 #include "core/templates/list.h"
 #include "editor/create_dialog.h"
+#include "editor/directory_create_dialog.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
@@ -1514,43 +1515,6 @@ void FileSystemDock::_save_scenes_after_move(const HashMap<String, String> &p_re
 	EditorNode::get_singleton()->save_scene_list(new_filenames);
 }
 
-void FileSystemDock::_make_dir_confirm() {
-	String dir_name = make_dir_dialog_text->get_text().strip_edges();
-
-	if (dir_name.length() == 0) {
-		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
-		return;
-	} else if (dir_name.contains("/") || dir_name.contains("\\") || dir_name.contains(":") || dir_name.contains("*") ||
-			dir_name.contains("|") || dir_name.contains(">") || dir_name.ends_with(".") || dir_name.ends_with(" ")) {
-		EditorNode::get_singleton()->show_warning(TTR("Provided name contains invalid characters."));
-		return;
-	}
-
-	String directory = path;
-	if (!directory.ends_with("/")) {
-		directory = directory.get_base_dir();
-	}
-
-	print_verbose("Making folder " + dir_name + " in " + directory);
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	Error err = da->change_dir(directory);
-	ERR_FAIL_COND_MSG(err != OK, "Cannot open directory '" + directory + "'.");
-
-	if (da->dir_exists(dir_name)) {
-		EditorNode::get_singleton()->show_warning(TTR("Could not create folder. File with that name already exists."));
-		return;
-	}
-
-	err = da->make_dir(dir_name);
-
-	if (err == OK) {
-		print_verbose("FileSystem: calling rescan.");
-		_rescan();
-	} else {
-		EditorNode::get_singleton()->show_warning(TTR("Could not create folder."));
-	}
-}
-
 void FileSystemDock::_make_scene_confirm() {
 	const String scene_path = make_scene_dialog->get_scene_path();
 
@@ -1881,11 +1845,8 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				fpath = p_selected[0];
 			}
 
-			if (!fpath.ends_with("/")) {
-				fpath = fpath.get_base_dir();
-			}
 			String dir = ProjectSettings::get_singleton()->globalize_path(fpath);
-			OS::get_singleton()->shell_open(String("file://") + dir);
+			OS::get_singleton()->shell_show_in_file_manager(dir, true);
 		} break;
 
 		case FILE_OPEN_EXTERNAL: {
@@ -2108,10 +2069,12 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		} break;
 
 		case FILE_NEW_FOLDER: {
-			make_dir_dialog_text->set_text("new folder");
-			make_dir_dialog_text->select_all();
-			make_dir_dialog->popup_centered(Size2(250, 80) * EDSCALE);
-			make_dir_dialog_text->grab_focus();
+			String directory = path;
+			if (!directory.ends_with("/")) {
+				directory = directory.get_base_dir();
+			}
+			make_dir_dialog->config(directory);
+			make_dir_dialog->popup_centered();
 		} break;
 
 		case FILE_NEW_SCENE: {
@@ -3352,16 +3315,9 @@ FileSystemDock::FileSystemDock() {
 	duplicate_dialog->register_text_enter(duplicate_dialog_text);
 	duplicate_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_duplicate_operation_confirm));
 
-	make_dir_dialog = memnew(ConfirmationDialog);
-	make_dir_dialog->set_title(TTR("Create Folder"));
-	VBoxContainer *make_folder_dialog_vb = memnew(VBoxContainer);
-	make_dir_dialog->add_child(make_folder_dialog_vb);
-
-	make_dir_dialog_text = memnew(LineEdit);
-	make_folder_dialog_vb->add_margin_child(TTR("Name:"), make_dir_dialog_text);
+	make_dir_dialog = memnew(DirectoryCreateDialog);
 	add_child(make_dir_dialog);
-	make_dir_dialog->register_text_enter(make_dir_dialog_text);
-	make_dir_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_make_dir_confirm));
+	make_dir_dialog->connect("dir_created", callable_mp(this, &FileSystemDock::_rescan));
 
 	make_scene_dialog = memnew(SceneCreateDialog);
 	add_child(make_scene_dialog);

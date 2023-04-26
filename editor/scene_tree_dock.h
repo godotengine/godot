@@ -36,6 +36,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/resources/animation.h"
 
+class CheckBox;
 class EditorData;
 class EditorSelection;
 class EditorQuickOpen;
@@ -148,6 +149,8 @@ class SceneTreeDock : public VBoxContainer {
 	ShaderCreateDialog *shader_create_dialog = nullptr;
 	AcceptDialog *accept = nullptr;
 	ConfirmationDialog *delete_dialog = nullptr;
+	Label *delete_dialog_label = nullptr;
+	CheckBox *delete_tracks_checkbox = nullptr;
 	ConfirmationDialog *editable_instance_remove_dialog = nullptr;
 	ConfirmationDialog *placeholder_editable_instance_remove_dialog = nullptr;
 
@@ -213,6 +216,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _shader_creation_closed();
 
 	void _delete_confirm(bool p_cut = false);
+	void _delete_dialog_closed();
 
 	void _toggle_editable_children_from_selection();
 	void _toggle_editable_children(Node *p_node);
@@ -234,6 +238,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _update_script_button();
 
 	void _fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, HashMap<Node *, NodePath> *p_renames);
+	bool _has_tracks_to_delete(Node *p_node, List<Node *> &p_to_delete) const;
 
 	void _normalize_drop(Node *&to_node, int &to_pos, int p_type);
 

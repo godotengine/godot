@@ -44,7 +44,7 @@ Size2 TabBar::get_minimum_size() const {
 		return ms;
 	}
 
-	int y_margin = MAX(MAX(theme_cache.tab_unselected_style->get_minimum_size().height, theme_cache.tab_selected_style->get_minimum_size().height), theme_cache.tab_disabled_style->get_minimum_size().height);
+	int y_margin = MAX(MAX(MAX(theme_cache.tab_unselected_style->get_minimum_size().height, theme_cache.tab_hovered_style->get_minimum_size().height), theme_cache.tab_selected_style->get_minimum_size().height), theme_cache.tab_disabled_style->get_minimum_size().height);
 
 	for (int i = 0; i < tabs.size(); i++) {
 		if (tabs[i].hidden) {
@@ -58,6 +58,8 @@ Size2 TabBar::get_minimum_size() const {
 			style = theme_cache.tab_disabled_style;
 		} else if (current == i) {
 			style = theme_cache.tab_selected_style;
+		} else if (hover == i) {
+			style = theme_cache.tab_hovered_style;
 		} else {
 			style = theme_cache.tab_unselected_style;
 		}
@@ -255,12 +257,14 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 
 				if (tabs[i].rb_rect.has_point(pos)) {
 					rb_pressing = true;
+					_update_hover();
 					queue_redraw();
 					return;
 				}
 
 				if (tabs[i].cb_rect.has_point(pos) && (cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && i == current))) {
 					cb_pressing = true;
+					_update_hover();
 					queue_redraw();
 					return;
 				}
@@ -307,6 +311,7 @@ void TabBar::_update_theme_item_cache() {
 	theme_cache.icon_max_width = get_theme_constant(SNAME("icon_max_width"));
 
 	theme_cache.tab_unselected_style = get_theme_stylebox(SNAME("tab_unselected"));
+	theme_cache.tab_hovered_style = get_theme_stylebox(SNAME("tab_hovered"));
 	theme_cache.tab_selected_style = get_theme_stylebox(SNAME("tab_selected"));
 	theme_cache.tab_disabled_style = get_theme_stylebox(SNAME("tab_disabled"));
 
@@ -322,6 +327,7 @@ void TabBar::_update_theme_item_cache() {
 	theme_cache.outline_size = get_theme_constant(SNAME("outline_size"));
 
 	theme_cache.font_selected_color = get_theme_color(SNAME("font_selected_color"));
+	theme_cache.font_hovered_color = get_theme_color(SNAME("font_hovered_color"));
 	theme_cache.font_unselected_color = get_theme_color(SNAME("font_unselected_color"));
 	theme_cache.font_disabled_color = get_theme_color(SNAME("font_disabled_color"));
 	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
@@ -397,6 +403,9 @@ void TabBar::_notification(int p_what) {
 					if (tabs[i].disabled) {
 						sb = theme_cache.tab_disabled_style;
 						col = theme_cache.font_disabled_color;
+					} else if (i == hover) {
+						sb = theme_cache.tab_hovered_style;
+						col = theme_cache.font_hovered_color;
 					} else {
 						sb = theme_cache.tab_unselected_style;
 						col = theme_cache.font_unselected_color;
@@ -791,6 +800,21 @@ bool TabBar::is_tab_hidden(int p_tab) const {
 	return tabs[p_tab].hidden;
 }
 
+void TabBar::set_tab_metadata(int p_tab, const Variant &p_metadata) {
+	ERR_FAIL_INDEX(p_tab, tabs.size());
+
+	if (tabs[p_tab].metadata == p_metadata) {
+		return;
+	}
+
+	tabs.write[p_tab].metadata = p_metadata;
+}
+
+Variant TabBar::get_tab_metadata(int p_tab) const {
+	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Variant());
+	return tabs[p_tab].metadata;
+}
+
 void TabBar::set_tab_button_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 	ERR_FAIL_INDEX(p_tab, tabs.size());
 
@@ -857,6 +881,7 @@ void TabBar::_update_hover() {
 		if (hover != -1) {
 			emit_signal(SNAME("tab_hovered"), hover);
 		}
+		queue_redraw();
 	}
 
 	if (hover_buttons == -1) { // No hover.
@@ -1296,6 +1321,8 @@ int TabBar::get_tab_width(int p_idx) const {
 		style = theme_cache.tab_disabled_style;
 	} else if (current == p_idx) {
 		style = theme_cache.tab_selected_style;
+	} else if (hover == p_idx) {
+		style = theme_cache.tab_hovered_style;
 	} else {
 		style = theme_cache.tab_unselected_style;
 	}
@@ -1607,6 +1634,8 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_tab_disabled", "tab_idx"), &TabBar::is_tab_disabled);
 	ClassDB::bind_method(D_METHOD("set_tab_hidden", "tab_idx", "hidden"), &TabBar::set_tab_hidden);
 	ClassDB::bind_method(D_METHOD("is_tab_hidden", "tab_idx"), &TabBar::is_tab_hidden);
+	ClassDB::bind_method(D_METHOD("set_tab_metadata", "tab_idx", "metadata"), &TabBar::set_tab_metadata);
+	ClassDB::bind_method(D_METHOD("get_tab_metadata", "tab_idx"), &TabBar::get_tab_metadata);
 	ClassDB::bind_method(D_METHOD("remove_tab", "tab_idx"), &TabBar::remove_tab);
 	ClassDB::bind_method(D_METHOD("add_tab", "title", "icon"), &TabBar::add_tab, DEFVAL(""), DEFVAL(Ref<Texture2D>()));
 	ClassDB::bind_method(D_METHOD("get_tab_idx_at_point", "point"), &TabBar::get_tab_idx_at_point);

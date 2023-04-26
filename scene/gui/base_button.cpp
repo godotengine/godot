@@ -40,7 +40,7 @@ void BaseButton::_unpress_group() {
 		return;
 	}
 
-	if (toggle_mode) {
+	if (toggle_mode && !button_group->is_allow_unpress()) {
 		status.pressed = true;
 	}
 
@@ -537,9 +537,20 @@ BaseButton *ButtonGroup::get_pressed_button() {
 	return nullptr;
 }
 
+void ButtonGroup::set_allow_unpress(bool p_enabled) {
+	allow_unpress = p_enabled;
+}
+bool ButtonGroup::is_allow_unpress() {
+	return allow_unpress;
+}
+
 void ButtonGroup::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pressed_button"), &ButtonGroup::get_pressed_button);
 	ClassDB::bind_method(D_METHOD("get_buttons"), &ButtonGroup::_get_buttons);
+	ClassDB::bind_method(D_METHOD("set_allow_unpress", "enabled"), &ButtonGroup::set_allow_unpress);
+	ClassDB::bind_method(D_METHOD("is_allow_unpress"), &ButtonGroup::is_allow_unpress);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_unpress"), "set_allow_unpress", "is_allow_unpress");
 
 	ADD_SIGNAL(MethodInfo("pressed", PropertyInfo(Variant::OBJECT, "button", PROPERTY_HINT_RESOURCE_TYPE, "BaseButton")));
 }

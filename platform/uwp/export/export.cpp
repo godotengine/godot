@@ -31,6 +31,7 @@
 #include "export.h"
 
 #include "editor/editor_settings.h"
+#include "editor/export/editor_export.h"
 #include "export_plugin.h"
 
 void register_uwp_exporter_types() {

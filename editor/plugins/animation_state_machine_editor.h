@@ -56,8 +56,6 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	LineEdit *name_edit = nullptr;
 
 	HBoxContainer *selection_tools_hb = nullptr;
-	Button *tool_group = nullptr;
-	Button *tool_ungroup = nullptr;
 	Button *tool_erase = nullptr;
 
 	HBoxContainer *transition_tools_hb = nullptr;
@@ -85,7 +83,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	static AnimationNodeStateMachineEditor *singleton;
 
 	void _state_machine_gui_input(const Ref<InputEvent> &p_event);
-	void _connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, bool p_enabled, bool p_selected, bool p_travel, float p_fade_ratio, bool p_auto_advance, bool p_multi_transitions);
+	void _connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, bool p_enabled, bool p_selected, bool p_travel, float p_fade_ratio, bool p_auto_advance, bool p_is_across_group);
 
 	void _state_machine_draw();
 
@@ -136,6 +134,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 		Rect2 play;
 		Rect2 name;
 		Rect2 edit;
+		bool can_edit;
 	};
 
 	Vector<NodeRect> node_rects;
@@ -156,7 +155,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 		float fade_ratio;
 		bool hidden;
 		int transition_index;
-		Vector<TransitionLine> multi_transitions;
+		bool is_across_group = false;
 	};
 
 	Vector<TransitionLine> transition_lines;
@@ -178,7 +177,6 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	StringName selected_transition_from;
 	StringName selected_transition_to;
 	int selected_transition_index;
-	TransitionLine selected_multi_transition;
 	void _add_transition(const bool p_nested_action = false);
 
 	StringName over_node;
@@ -190,18 +188,16 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	void _open_editor(const String &p_name);
 	void _scroll_changed(double);
 
+	String _get_root_playback_path(String &r_node_directory);
+
 	void _clip_src_line_to_rect(Vector2 &r_from, const Vector2 &p_to, const Rect2 &p_rect);
 	void _clip_dst_line_to_rect(const Vector2 &p_from, Vector2 &r_to, const Rect2 &p_rect);
 
 	void _erase_selected(const bool p_nested_action = false);
 	void _update_mode();
 	void _open_menu(const Vector2 &p_position);
-	void _open_connect_menu(const Vector2 &p_position);
-	bool _create_submenu(PopupMenu *p_menu, Ref<AnimationNodeStateMachine> p_nodesm, const StringName &p_name, const StringName &p_path, bool from_root = false, Vector<Ref<AnimationNodeStateMachine>> p_parents = Vector<Ref<AnimationNodeStateMachine>>());
+	bool _create_submenu(PopupMenu *p_menu, Ref<AnimationNodeStateMachine> p_nodesm, const StringName &p_name, const StringName &p_path);
 	void _stop_connecting();
-
-	void _group_selected_nodes();
-	void _ungroup_selected_nodes();
 
 	void _delete_selected();
 	void _delete_all();

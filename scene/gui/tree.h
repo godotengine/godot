@@ -36,8 +36,9 @@
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/slider.h"
-#include "scene/resources/text_line.h"
+#include "scene/resources/text_paragraph.h"
 
+class TextEdit;
 class Tree;
 
 class TreeItem : public Object {
@@ -61,8 +62,9 @@ private:
 		Ref<Texture2D> icon;
 		Rect2i icon_region;
 		String text;
+		bool edit_multiline = false;
 		String suffix;
-		Ref<TextLine> text_buf;
+		Ref<TextParagraph> text_buf;
 		String language;
 		TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 		Array st_args;
@@ -197,6 +199,10 @@ public:
 	/* cell mode */
 	void set_cell_mode(int p_column, TreeCellMode p_mode);
 	TreeCellMode get_cell_mode(int p_column) const;
+
+	/* multiline editable */
+	void set_edit_multiline(int p_column, bool p_multiline);
+	bool is_edit_multiline(int p_column) const;
 
 	/* check mode */
 	void set_checked(int p_column, bool p_checked);
@@ -436,7 +442,7 @@ private:
 		bool clip_content = false;
 		String title;
 		HorizontalAlignment title_alignment = HORIZONTAL_ALIGNMENT_CENTER;
-		Ref<TextLine> text_buf;
+		Ref<TextParagraph> text_buf;
 		String language;
 		Control::TextDirection text_direction = Control::TEXT_DIRECTION_INHERITED;
 		ColumnInfo() {
@@ -449,7 +455,8 @@ private:
 	VBoxContainer *popup_editor_vb = nullptr;
 
 	Popup *popup_editor = nullptr;
-	LineEdit *text_editor = nullptr;
+	LineEdit *line_editor = nullptr;
+	TextEdit *text_editor = nullptr;
 	HSlider *value_editor = nullptr;
 	bool updating_value_editor = false;
 	uint64_t focus_in_id = 0;
@@ -469,12 +476,14 @@ private:
 	void update_item_cell(TreeItem *p_item, int p_col);
 	void update_item_cache(TreeItem *p_item);
 	//void draw_item_text(String p_text,const Ref<Texture2D>& p_icon,int p_icon_max_w,bool p_tool,Rect2i p_rect,const Color& p_color);
-	void draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color, int p_ol_size, const Color &p_ol_color);
+	void draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Point2 &p_draw_ofs, const Color &p_color, const Color &p_icon_color, int p_ol_size, const Color &p_ol_color);
 	int draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item);
 	void select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev = nullptr, bool *r_in_range = nullptr, bool p_force_deselect = false);
 	int propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int x_limit, bool p_double_click, TreeItem *p_item, MouseButton p_button, const Ref<InputEventWithModifiers> &p_mod);
-	void _text_editor_submit(String p_text);
-	void _text_editor_modal_close();
+	void _line_editor_submit(String p_text);
+	void _apply_multiline_edit();
+	void _text_editor_popup_modal_close();
+	void _text_editor_gui_input(const Ref<InputEvent> &p_event);
 	void value_editor_changed(double p_value);
 
 	void popup_select(int p_option);
@@ -578,8 +587,6 @@ private:
 		TreeItem *hover_item = nullptr;
 		int hover_cell = -1;
 
-		Point2i text_editor_position;
-
 		bool rtl = false;
 	} cache;
 
@@ -625,6 +632,7 @@ private:
 	bool scrolling = false;
 
 	bool allow_reselect = false;
+	bool allow_search = true;
 
 	bool force_edit_checkbox_only_on_checkbox = false;
 
@@ -752,6 +760,9 @@ public:
 
 	void set_allow_reselect(bool p_allow);
 	bool get_allow_reselect() const;
+
+	void set_allow_search(bool p_allow);
+	bool get_allow_search() const;
 
 	Size2 get_minimum_size() const override;
 

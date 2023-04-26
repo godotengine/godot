@@ -24,6 +24,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="allow_unpress" type="bool" setter="set_allow_unpress" getter="is_allow_unpress" default="false">
+			If [code]true[/code], it is possible to unpress all buttons in this [ButtonGroup].
+		</member>
 		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="true" />
 	</members>
 	<signals>

@@ -49,13 +49,14 @@
 			<return type="void" />
 			<description>
 				Reverses/mirrors the gradient.
+				[b]Note:[/b] This method mirrors all points around the middle of the gradient, which may produce unexpected results when [member interpolation_mode] is set to [constant GRADIENT_INTERPOLATE_CONSTANT].
 			</description>
 		</method>
 		<method name="sample">
 			<return type="Color" />
 			<param index="0" name="offset" type="float" />
 			<description>
-				Returns the interpolated color specified by [code]offset[/code].
+				Returns the interpolated color specified by [param offset].
 			</description>
 		</method>
 		<method name="set_color">

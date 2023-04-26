@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_run_script.h                                                   */
+/*  gltf_physics_body.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,33 +28,48 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_RUN_SCRIPT_H
-#define EDITOR_RUN_SCRIPT_H
+#ifndef GLTF_PHYSICS_BODY_H
+#define GLTF_PHYSICS_BODY_H
 
-#include "core/object/gdvirtual.gen.inc"
-#include "core/object/ref_counted.h"
-#include "core/object/script_language.h"
+#include "scene/3d/physics_body_3d.h"
 
-class EditorInterface;
-class EditorNode;
+// GLTFPhysicsBody is an intermediary between OMI_physics_body and Godot's physics body nodes.
+// https://github.com/omigroup/gltf-extensions/tree/main/extensions/2.0/OMI_physics_body
 
-class EditorScript : public RefCounted {
-	GDCLASS(EditorScript, RefCounted);
-
-	EditorNode *editor = nullptr;
+class GLTFPhysicsBody : public Resource {
+	GDCLASS(GLTFPhysicsBody, Resource)
 
 protected:
 	static void _bind_methods();
-	GDVIRTUAL0(_run)
+
+private:
+	String body_type = "static";
+	real_t mass = 1.0;
+	Vector3 linear_velocity = Vector3();
+	Vector3 angular_velocity = Vector3();
+	Vector3 inertia = Vector3();
 
 public:
-	void add_root_node(Node *p_node);
-	Node *get_scene();
-	EditorInterface *get_editor_interface();
-	virtual void _run();
+	String get_body_type() const;
+	void set_body_type(String p_body_type);
 
-	void set_editor(EditorNode *p_editor);
-	EditorScript();
+	real_t get_mass() const;
+	void set_mass(real_t p_mass);
+
+	Vector3 get_linear_velocity() const;
+	void set_linear_velocity(Vector3 p_linear_velocity);
+
+	Vector3 get_angular_velocity() const;
+	void set_angular_velocity(Vector3 p_angular_velocity);
+
+	Vector3 get_inertia() const;
+	void set_inertia(Vector3 p_inertia);
+
+	static Ref<GLTFPhysicsBody> from_node(const CollisionObject3D *p_body_node);
+	CollisionObject3D *to_node() const;
+
+	static Ref<GLTFPhysicsBody> from_dictionary(const Dictionary p_dictionary);
+	Dictionary to_dictionary() const;
 };
 
-#endif // EDITOR_RUN_SCRIPT_H
+#endif // GLTF_PHYSICS_BODY_H

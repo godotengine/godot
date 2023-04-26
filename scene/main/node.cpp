@@ -2791,7 +2791,9 @@ void Node::request_ready() {
 }
 
 void Node::_call_input(const Ref<InputEvent> &p_event) {
-	GDVIRTUAL_CALL(_input, p_event);
+	if (p_event->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
+		GDVIRTUAL_CALL(_input, p_event);
+	}
 	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
 		return;
 	}
@@ -2799,7 +2801,9 @@ void Node::_call_input(const Ref<InputEvent> &p_event) {
 }
 
 void Node::_call_shortcut_input(const Ref<InputEvent> &p_event) {
-	GDVIRTUAL_CALL(_shortcut_input, p_event);
+	if (p_event->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
+		GDVIRTUAL_CALL(_shortcut_input, p_event);
+	}
 	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
 		return;
 	}
@@ -2807,7 +2811,9 @@ void Node::_call_shortcut_input(const Ref<InputEvent> &p_event) {
 }
 
 void Node::_call_unhandled_input(const Ref<InputEvent> &p_event) {
-	GDVIRTUAL_CALL(_unhandled_input, p_event);
+	if (p_event->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
+		GDVIRTUAL_CALL(_unhandled_input, p_event);
+	}
 	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
 		return;
 	}
@@ -2815,7 +2821,9 @@ void Node::_call_unhandled_input(const Ref<InputEvent> &p_event) {
 }
 
 void Node::_call_unhandled_key_input(const Ref<InputEvent> &p_event) {
-	GDVIRTUAL_CALL(_unhandled_key_input, p_event);
+	if (p_event->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
+		GDVIRTUAL_CALL(_unhandled_key_input, p_event);
+	}
 	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
 		return;
 	}

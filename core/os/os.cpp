@@ -281,6 +281,15 @@ Error OS::shell_open(String p_uri) {
 	return ERR_UNAVAILABLE;
 }
 
+Error OS::shell_show_in_file_manager(String p_path, bool p_open_folder) {
+	if (!p_path.begins_with("file://")) {
+		p_path = String("file://") + p_path;
+	}
+	if (!p_path.ends_with("/")) {
+		p_path = p_path.get_base_dir();
+	}
+	return shell_open(p_path);
+}
 // implement these with the canvas?
 
 uint64_t OS::get_static_memory_usage() const {
@@ -295,8 +304,15 @@ Error OS::set_cwd(const String &p_cwd) {
 	return ERR_CANT_OPEN;
 }
 
-uint64_t OS::get_free_static_memory() const {
-	return Memory::get_mem_available();
+Dictionary OS::get_memory_info() const {
+	Dictionary meminfo;
+
+	meminfo["physical"] = -1;
+	meminfo["free"] = -1;
+	meminfo["available"] = -1;
+	meminfo["stack"] = -1;
+
+	return meminfo;
 }
 
 void OS::yield() {

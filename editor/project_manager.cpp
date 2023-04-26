@@ -387,6 +387,8 @@ void ProjectDialog::_nonempty_confirmation_ok_pressed() {
 }
 
 void ProjectDialog::_renderer_selected() {
+	ERR_FAIL_COND(!renderer_button_group->get_pressed_button());
+
 	String renderer_type = renderer_button_group->get_pressed_button()->get_meta(SNAME("rendering_method"));
 
 	if (renderer_type == "forward_plus") {
@@ -1827,7 +1829,7 @@ void ProjectList::_favorite_pressed(Node *p_hb) {
 }
 
 void ProjectList::_show_project(const String &p_path) {
-	OS::get_singleton()->shell_open(String("file://") + p_path);
+	OS::get_singleton()->shell_show_in_file_manager(p_path, true);
 }
 
 void ProjectList::_bind_methods() {
@@ -2600,6 +2602,7 @@ ProjectManager::ProjectManager() {
 	DisplayServer::get_singleton()->window_set_title(VERSION_NAME + String(" - ") + TTR("Project Manager", "Application"));
 
 	EditorFileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
+	EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
 
 	int swap_cancel_ok = EDITOR_GET("interface/editor/accept_dialog_cancel_ok_buttons");
 	if (swap_cancel_ok != 0) { // 0 is auto, set in register_scene based on DisplayServer.

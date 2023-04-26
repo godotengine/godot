@@ -492,5 +492,8 @@
 		<constant name="COMPRESSION_GZIP" value="3" enum="CompressionMode">
 			Uses the [url=https://www.gzip.org/]gzip[/url] compression method.
 		</constant>
+		<constant name="COMPRESSION_BROTLI" value="4" enum="CompressionMode">
+			Uses the [url=https://github.com/google/brotli]brotli[/url] compression method (only decompression is supported).
+		</constant>
 	</constants>
 </class>

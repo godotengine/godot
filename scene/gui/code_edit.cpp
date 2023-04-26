@@ -1071,7 +1071,7 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 
 			for (; line_col < cc; line_col++) {
 				char32_t c = line[line_col];
-				if (auto_indent_prefixes.has(c)) {
+				if (auto_indent_prefixes.has(c) && is_in_comment(cl, line_col) == -1) {
 					should_indent = true;
 					indent_char = c;
 					continue;

@@ -134,6 +134,13 @@
 				Returns the coordinates of the tile for given physics body RID. Such RID can be retrieved from [method KinematicCollision2D.get_collider_rid], when colliding with a tile.
 			</description>
 		</method>
+		<method name="get_layer_for_body_rid">
+			<return type="int" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Returns the tilemap layer of the tile for given physics body RID. Such RID can be retrieved from [method KinematicCollision2D.get_collider_rid], when colliding with a tile.
+			</description>
+		</method>
 		<method name="get_layer_modulate" qualifiers="const">
 			<return type="Color" />
 			<param index="0" name="layer" type="int" />

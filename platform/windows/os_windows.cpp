@@ -51,6 +51,7 @@
 #include <direct.h>
 #include <knownfolders.h>
 #include <process.h>
+#include <psapi.h>
 #include <regstr.h>
 #include <shlobj.h>
 #include <wbemcli.h>
@@ -683,6 +684,43 @@ static void _append_to_pipe(char *p_bytes, int p_size, String *r_pipe, Mutex *p_
 	}
 }
 
+Dictionary OS_Windows::get_memory_info() const {
+	Dictionary meminfo;
+
+	meminfo["physical"] = -1;
+	meminfo["free"] = -1;
+	meminfo["available"] = -1;
+	meminfo["stack"] = -1;
+
+	PERFORMANCE_INFORMATION pref_info;
+	pref_info.cb = sizeof(pref_info);
+	GetPerformanceInfo(&pref_info, sizeof(pref_info));
+
+	typedef void(WINAPI * PGetCurrentThreadStackLimits)(PULONG_PTR, PULONG_PTR);
+	PGetCurrentThreadStackLimits GetCurrentThreadStackLimits = (PGetCurrentThreadStackLimits)GetProcAddress(GetModuleHandleA("kernel32.dll"), "GetCurrentThreadStackLimits");
+
+	ULONG_PTR LowLimit = 0;
+	ULONG_PTR HighLimit = 0;
+	if (GetCurrentThreadStackLimits) {
+		GetCurrentThreadStackLimits(&LowLimit, &HighLimit);
+	}
+
+	if (pref_info.PhysicalTotal * pref_info.PageSize != 0) {
+		meminfo["physical"] = pref_info.PhysicalTotal * pref_info.PageSize;
+	}
+	if (pref_info.PhysicalAvailable * pref_info.PageSize != 0) {
+		meminfo["free"] = pref_info.PhysicalAvailable * pref_info.PageSize;
+	}
+	if (pref_info.CommitLimit * pref_info.PageSize != 0) {
+		meminfo["available"] = pref_info.CommitLimit * pref_info.PageSize;
+	}
+	if (HighLimit - LowLimit != 0) {
+		meminfo["stack"] = HighLimit - LowLimit;
+	}
+
+	return meminfo;
+}
+
 Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 	String path = p_path.replace("/", "\\");
 	String command = _quote_command_line_argument(path);
@@ -1291,6 +1329,51 @@ String OS_Windows::get_stdin_string() {
 
 Error OS_Windows::shell_open(String p_uri) {
 	INT_PTR ret = (INT_PTR)ShellExecuteW(nullptr, nullptr, (LPCWSTR)(p_uri.utf16().get_data()), nullptr, nullptr, SW_SHOWNORMAL);
+	if (ret > 32) {
+		return OK;
+	} else {
+		switch (ret) {
+			case ERROR_FILE_NOT_FOUND:
+			case SE_ERR_DLLNOTFOUND:
+				return ERR_FILE_NOT_FOUND;
+			case ERROR_PATH_NOT_FOUND:
+				return ERR_FILE_BAD_PATH;
+			case ERROR_BAD_FORMAT:
+				return ERR_FILE_CORRUPT;
+			case SE_ERR_ACCESSDENIED:
+				return ERR_UNAUTHORIZED;
+			case 0:
+			case SE_ERR_OOM:
+				return ERR_OUT_OF_MEMORY;
+			default:
+				return FAILED;
+		}
+	}
+}
+
+Error OS_Windows::shell_show_in_file_manager(String p_path, bool p_open_folder) {
+	p_path = p_path.trim_suffix("file://");
+
+	bool open_folder = false;
+	if (DirAccess::dir_exists_absolute(p_path) && p_open_folder) {
+		open_folder = true;
+	}
+
+	if (p_path.begins_with("\"")) {
+		p_path = String("\"") + p_path;
+	}
+	if (p_path.ends_with("\"")) {
+		p_path = p_path + String("\"");
+	}
+	p_path = p_path.replace("/", "\\");
+
+	INT_PTR ret = OK;
+	if (open_folder) {
+		ret = (INT_PTR)ShellExecuteW(nullptr, nullptr, L"explorer.exe", LPCWSTR(p_path.utf16().get_data()), nullptr, SW_SHOWNORMAL);
+	} else {
+		ret = (INT_PTR)ShellExecuteW(nullptr, nullptr, L"explorer.exe", LPCWSTR((String("/select,") + p_path).utf16().get_data()), nullptr, SW_SHOWNORMAL);
+	}
+
 	if (ret > 32) {
 		return OK;
 	} else {

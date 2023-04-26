@@ -30,7 +30,6 @@
 
 #include "register_editor_types.h"
 
-#include "editor/animation_track_editor.h"
 #include "editor/debugger/debug_adapter/debug_adapter_server.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_feature_profile.h"
@@ -40,11 +39,13 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_resource_picker.h"
 #include "editor/editor_resource_preview.h"
-#include "editor/editor_run_script.h"
+#include "editor/editor_script.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/export/editor_export_platform.h"
 #include "editor/export/editor_export_platform_pc.h"
+#include "editor/export/editor_export_plugin.h"
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_spin_slider.h"
@@ -137,14 +138,15 @@ void register_editor_types() {
 	GDREGISTER_CLASS(EditorExportPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatform);
 	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatformPC);
+
 	register_exporter_types();
+
 	GDREGISTER_CLASS(EditorResourceConversionPlugin);
 	GDREGISTER_CLASS(EditorSceneFormatImporter);
 	GDREGISTER_CLASS(EditorScenePostImportPlugin);
 	GDREGISTER_CLASS(EditorInspector);
 	GDREGISTER_CLASS(EditorInspectorPlugin);
 	GDREGISTER_CLASS(EditorProperty);
-	GDREGISTER_CLASS(AnimationTrackEditPlugin);
 	GDREGISTER_CLASS(ScriptCreateDialog);
 	GDREGISTER_CLASS(EditorFeatureProfile);
 	GDREGISTER_CLASS(EditorSpinSlider);

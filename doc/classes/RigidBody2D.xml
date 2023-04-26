@@ -283,7 +283,7 @@
 			Kinematic body freeze mode. Similar to [constant FREEZE_MODE_STATIC], but collides with other bodies along its path when moved. Useful for a frozen body that needs to be animated.
 		</constant>
 		<constant name="CENTER_OF_MASS_MODE_AUTO" value="0" enum="CenterOfMassMode">
-			In this mode, the body's center of mass is calculated automatically based on its shapes.
+			In this mode, the body's center of mass is calculated automatically based on its shapes. This assumes that the shapes' origins are also their center of mass.
 		</constant>
 		<constant name="CENTER_OF_MASS_MODE_CUSTOM" value="1" enum="CenterOfMassMode">
 			In this mode, the body's center of mass is set through [member center_of_mass]. Defaults to the body's origin position.

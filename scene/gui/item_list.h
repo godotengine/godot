@@ -90,6 +90,7 @@ private:
 
 	bool ensure_selected_visible = false;
 	bool same_column_width = false;
+	bool allow_search = true;
 
 	bool auto_height = false;
 	float auto_height_value = 0.0;
@@ -257,6 +258,9 @@ public:
 
 	void set_allow_reselect(bool p_allow);
 	bool get_allow_reselect() const;
+
+	void set_allow_search(bool p_allow);
+	bool get_allow_search() const;
 
 	void ensure_current_is_visible();
 

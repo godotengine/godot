@@ -53,6 +53,8 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/popup.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_bar.h"
 #include "scene/gui/tab_container.h"
@@ -99,6 +101,7 @@
 #include "editor/fbx_importer_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_run_bar.h"
 #include "editor/gui/editor_title_bar.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/history_dock.h"
@@ -747,6 +750,9 @@ void EditorNode::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			scene_tabs->set_tab_close_display_policy((TabBar::CloseButtonDisplayPolicy)EDITOR_GET("interface/scene_tabs/display_close_button").operator int());
+			FileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
+			EditorFileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
+			EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
 
 			bool theme_changed =
 					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/theme") ||
@@ -801,20 +807,6 @@ void EditorNode::_notification(int p_what) {
 			}
 
 			_build_icon_type_cache();
-
-			if (write_movie_button->is_pressed()) {
-				launch_pad->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("LaunchPadMovieMode"), SNAME("EditorStyles")));
-				write_movie_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("MovieWriterButtonPressed"), SNAME("EditorStyles")));
-			} else {
-				launch_pad->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("LaunchPadNormal"), SNAME("EditorStyles")));
-				write_movie_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("MovieWriterButtonNormal"), SNAME("EditorStyles")));
-			}
-
-			play_button->set_icon(gui_base->get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
-			play_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayScene"), SNAME("EditorIcons")));
-			play_custom_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayCustom"), SNAME("EditorIcons")));
-			pause_button->set_icon(gui_base->get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
-			stop_button->set_icon(gui_base->get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
 
 			prev_scene->set_icon(gui_base->get_theme_icon(SNAME("PrevScene"), SNAME("EditorIcons")));
 			distraction_free->set_icon(gui_base->get_theme_icon(SNAME("DistractionFree"), SNAME("EditorIcons")));
@@ -1194,7 +1186,7 @@ void EditorNode::_vp_resized() {
 }
 
 void EditorNode::_titlebar_resized() {
-	DisplayServer::get_singleton()->window_set_window_buttons_offset(Vector2i(menu_hb->get_global_position().y + menu_hb->get_size().y / 2, menu_hb->get_global_position().y + menu_hb->get_size().y / 2), DisplayServer::MAIN_WINDOW_ID);
+	DisplayServer::get_singleton()->window_set_window_buttons_offset(Vector2i(title_bar->get_global_position().y + title_bar->get_size().y / 2, title_bar->get_global_position().y + title_bar->get_size().y / 2), DisplayServer::MAIN_WINDOW_ID);
 	const Vector3i &margin = DisplayServer::get_singleton()->window_get_safe_title_margins(DisplayServer::MAIN_WINDOW_ID);
 	if (left_menu_spacer) {
 		int w = (gui_base->is_layout_rtl()) ? margin.y : margin.x;
@@ -1204,8 +1196,8 @@ void EditorNode::_titlebar_resized() {
 		int w = (gui_base->is_layout_rtl()) ? margin.x : margin.y;
 		right_menu_spacer->set_custom_minimum_size(Size2(w, 0));
 	}
-	if (menu_hb) {
-		menu_hb->set_custom_minimum_size(Size2(0, margin.z - menu_hb->get_global_position().y));
+	if (title_bar) {
+		title_bar->set_custom_minimum_size(Size2(0, margin.z - title_bar->get_global_position().y));
 	}
 }
 
@@ -1814,7 +1806,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	editor_data.apply_changes_in_editors();
 	List<Ref<AnimatedValuesBackup>> anim_backups;
 	_reset_animation_players(scene, &anim_backups);
-	_save_default_environment();
+	save_default_environment();
 
 	_set_scene_metadata(p_file, idx);
 
@@ -1876,7 +1868,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 }
 
 void EditorNode::save_all_scenes() {
-	_menu_option_confirm(RUN_STOP, true);
+	project_run_bar->stop_playing();
 	_save_all_scenes();
 }
 
@@ -1890,11 +1882,33 @@ void EditorNode::save_scene_list(Vector<String> p_scene_filenames) {
 	}
 }
 
+void EditorNode::save_before_run() {
+	current_menu_option = FILE_SAVE_AND_RUN;
+	_menu_option_confirm(FILE_SAVE_AS_SCENE, true);
+	file->set_title(TTR("Save scene before running..."));
+}
+
+void EditorNode::try_autosave() {
+	if (!bool(EDITOR_GET("run/auto_save/save_before_running"))) {
+		return;
+	}
+
+	if (unsaved_cache) {
+		Node *scene = editor_data.get_edited_scene_root();
+
+		if (scene && !scene->get_scene_file_path().is_empty()) { // Only autosave if there is a scene and if it has a path.
+			_save_scene_with_preview(scene->get_scene_file_path());
+		}
+	}
+	_menu_option(FILE_SAVE_ALL_SCENES);
+	editor_data.save_editor_external_data();
+}
+
 void EditorNode::restart_editor() {
 	exiting = true;
 
-	if (editor_run.get_status() != EditorRun::STATUS_STOP) {
-		editor_run.stop();
+	if (project_run_bar->is_playing()) {
+		project_run_bar->stop_playing();
 	}
 
 	String to_reopen;
@@ -1942,7 +1956,7 @@ void EditorNode::_save_all_scenes() {
 	if (!all_saved) {
 		show_warning(TTR("Could not save one or more scenes!"), TTR("Save All Scenes"));
 	}
-	_save_default_environment();
+	save_default_environment();
 }
 
 void EditorNode::_mark_unsaved_scenes() {
@@ -1982,11 +1996,7 @@ void EditorNode::_dialog_action(String p_file) {
 			ProjectSettings::get_singleton()->save();
 			// TODO: Would be nice to show the project manager opened with the highlighted field.
 
-			if ((bool)pick_main_scene->get_meta("from_native", false)) {
-				run_native->resume_run_native();
-			} else {
-				_run(false, ""); // Automatically run the project.
-			}
+			project_run_bar->play_main_scene((bool)pick_main_scene->get_meta("from_native", false));
 		} break;
 		case FILE_CLOSE:
 		case SCENE_TAB_CLOSE:
@@ -2007,7 +2017,7 @@ void EditorNode::_dialog_action(String p_file) {
 					return;
 				}
 
-				_save_default_environment();
+				save_default_environment();
 				_save_scene_with_preview(p_file, scene_idx);
 				_add_to_recent_scenes(p_file);
 				save_layout();
@@ -2021,9 +2031,9 @@ void EditorNode::_dialog_action(String p_file) {
 
 		case FILE_SAVE_AND_RUN: {
 			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
-				_save_default_environment();
+				save_default_environment();
 				_save_scene_with_preview(p_file);
-				_run(false, p_file);
+				project_run_bar->play_custom_scene(p_file);
 			}
 		} break;
 
@@ -2032,13 +2042,9 @@ void EditorNode::_dialog_action(String p_file) {
 			ProjectSettings::get_singleton()->save();
 
 			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
-				_save_default_environment();
+				save_default_environment();
 				_save_scene_with_preview(p_file);
-				if ((bool)pick_main_scene->get_meta("from_native", false)) {
-					run_native->resume_run_native();
-				} else {
-					_run(false, p_file);
-				}
+				project_run_bar->play_main_scene((bool)pick_main_scene->get_meta("from_native", false));
 			}
 		} break;
 
@@ -2250,7 +2256,7 @@ void EditorNode::push_item(Object *p_object, const String &p_property, bool p_in
 	_edit_current();
 }
 
-void EditorNode::_save_default_environment() {
+void EditorNode::save_default_environment() {
 	Ref<Environment> fallback = get_tree()->get_root()->get_world_3d()->get_fallback_environment();
 
 	if (fallback.is_valid() && fallback->get_path().is_resource_file()) {
@@ -2496,157 +2502,6 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 	InspectorDock::get_singleton()->update(current_obj);
 }
 
-void EditorNode::_write_movie_toggled(bool p_enabled) {
-	if (p_enabled) {
-		launch_pad->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("LaunchPadMovieMode"), SNAME("EditorStyles")));
-		write_movie_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("MovieWriterButtonPressed"), SNAME("EditorStyles")));
-	} else {
-		launch_pad->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("LaunchPadNormal"), SNAME("EditorStyles")));
-		write_movie_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("MovieWriterButtonNormal"), SNAME("EditorStyles")));
-	}
-}
-
-void EditorNode::_run(bool p_current, const String &p_custom) {
-	if (editor_run.get_status() == EditorRun::STATUS_PLAY) {
-		play_button->set_pressed(!_playing_edited);
-		play_scene_button->set_pressed(_playing_edited);
-		return;
-	}
-
-	play_button->set_pressed(false);
-	play_button->set_icon(gui_base->get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
-	play_scene_button->set_pressed(false);
-	play_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayScene"), SNAME("EditorIcons")));
-	play_custom_scene_button->set_pressed(false);
-	play_custom_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayCustom"), SNAME("EditorIcons")));
-
-	String write_movie_file;
-	if (write_movie_button->is_pressed()) {
-		if (p_current && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->has_meta("movie_file")) {
-			// If the scene file has a movie_file metadata set, use this as file. Quick workaround if you want to have multiple scenes that write to multiple movies.
-			write_movie_file = get_tree()->get_edited_scene_root()->get_meta("movie_file");
-		} else {
-			write_movie_file = GLOBAL_GET("editor/movie_writer/movie_file");
-		}
-		if (write_movie_file == String()) {
-			show_accept(TTR("Movie Maker mode is enabled, but no movie file path has been specified.\nA default movie file path can be specified in the project settings under the Editor > Movie Writer category.\nAlternatively, for running single scenes, a `movie_file` string metadata can be added to the root node,\nspecifying the path to a movie file that will be used when recording that scene."), TTR("OK"));
-			return;
-		}
-	}
-
-	String run_filename;
-
-	if ((p_current && p_custom.is_empty()) || (editor_data.get_edited_scene_root() && !p_custom.is_empty() && p_custom == editor_data.get_edited_scene_root()->get_scene_file_path())) {
-		Node *scene = editor_data.get_edited_scene_root();
-
-		if (!scene) {
-			show_accept(TTR("There is no defined scene to run."), TTR("OK"));
-			return;
-		}
-
-		if (scene->get_scene_file_path().is_empty()) {
-			current_menu_option = FILE_SAVE_AND_RUN;
-			_menu_option_confirm(FILE_SAVE_AS_SCENE, true);
-			file->set_title(TTR("Save scene before running..."));
-			return;
-		}
-
-		run_filename = scene->get_scene_file_path();
-	} else if (!p_custom.is_empty()) {
-		run_filename = p_custom;
-	}
-
-	if (run_filename.is_empty()) {
-		// Evidently, run the scene.
-		if (!ensure_main_scene(false)) {
-			return;
-		}
-		run_filename = GLOBAL_DEF_BASIC("application/run/main_scene", "");
-	}
-
-	if (bool(EDITOR_GET("run/auto_save/save_before_running"))) {
-		if (unsaved_cache) {
-			Node *scene = editor_data.get_edited_scene_root();
-
-			if (scene && !scene->get_scene_file_path().is_empty()) { // Only autosave if there is a scene and if it has a path.
-				_save_scene_with_preview(scene->get_scene_file_path());
-			}
-		}
-		_menu_option(FILE_SAVE_ALL_SCENES);
-		editor_data.save_editor_external_data();
-	}
-
-	if (!call_build()) {
-		return;
-	}
-
-	if (bool(EDITOR_GET("run/output/always_clear_output_on_play"))) {
-		log->clear();
-	}
-
-	if (bool(EDITOR_GET("run/output/always_open_output_on_play"))) {
-		make_bottom_panel_item_visible(log);
-	}
-
-	EditorDebuggerNode::get_singleton()->start();
-	Error error = editor_run.run(run_filename, write_movie_file);
-	if (error != OK) {
-		EditorDebuggerNode::get_singleton()->stop();
-		show_accept(TTR("Could not start subprocess(es)!"), TTR("OK"));
-		return;
-	}
-
-	emit_signal(SNAME("play_pressed"));
-	if (p_current) {
-		run_current_filename = run_filename;
-		play_scene_button->set_pressed(true);
-		play_scene_button->set_icon(gui_base->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
-		play_scene_button->set_tooltip_text(TTR("Reload the played scene."));
-	} else if (!p_custom.is_empty()) {
-		run_custom_filename = p_custom;
-		play_custom_scene_button->set_pressed(true);
-		play_custom_scene_button->set_icon(gui_base->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
-		play_custom_scene_button->set_tooltip_text(TTR("Reload the played scene."));
-	} else {
-		play_button->set_pressed(true);
-		play_button->set_icon(gui_base->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
-		play_button->set_tooltip_text(TTR("Reload the played scene."));
-	}
-	stop_button->set_disabled(false);
-
-	_playing_edited = p_current;
-}
-
-void EditorNode::_run_native(const Ref<EditorExportPreset> &p_preset) {
-	bool autosave = EDITOR_GET("run/auto_save/save_before_running");
-	if (autosave) {
-		_menu_option_confirm(FILE_SAVE_ALL_SCENES, false);
-	}
-	if (run_native->is_deploy_debug_remote_enabled()) {
-		_menu_option_confirm(RUN_STOP, true);
-
-		if (!call_build()) {
-			return; // Build failed.
-		}
-
-		EditorDebuggerNode::get_singleton()->start(p_preset->get_platform()->get_debug_protocol());
-		emit_signal(SNAME("play_pressed"));
-		editor_run.run_native_notify();
-	}
-}
-
-void EditorNode::_reset_play_buttons() {
-	play_button->set_pressed(false);
-	play_button->set_icon(gui_base->get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
-	play_button->set_tooltip_text(TTR("Play the project."));
-	play_scene_button->set_pressed(false);
-	play_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayScene"), SNAME("EditorIcons")));
-	play_scene_button->set_tooltip_text(TTR("Play the edited scene."));
-	play_custom_scene_button->set_pressed(false);
-	play_custom_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayCustom"), SNAME("EditorIcons")));
-	play_custom_scene_button->set_tooltip_text(TTR("Play a custom scene."));
-}
-
 void EditorNode::_android_build_source_selected(const String &p_file) {
 	export_template_manager->install_android_template_from_file(p_file);
 }
@@ -2813,6 +2668,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			_save_all_scenes();
 		} break;
 
+		case FILE_RUN_SCENE: {
+			project_run_bar->play_current_scene();
+		} break;
+
 		case FILE_EXPORT_PROJECT: {
 			project_export->popup_export();
 		} break;
@@ -2917,45 +2776,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			scene_tabs->set_current_tab(cur_idx);
 
 		} break;
-		case RUN_PLAY: {
-			run_play();
-
-		} break;
-		case RUN_PLAY_CUSTOM_SCENE: {
-			if (run_custom_filename.is_empty() || editor_run.get_status() == EditorRun::STATUS_STOP) {
-				_menu_option_confirm(RUN_STOP, true);
-				quick_run->popup_dialog("PackedScene", true);
-				quick_run->set_title(TTR("Quick Run Scene..."));
-				play_custom_scene_button->set_pressed(false);
-			} else {
-				String last_custom_scene = run_custom_filename; // This is necessary to have a copy of the string.
-				run_play_custom(last_custom_scene);
-			}
-
-		} break;
-		case RUN_STOP: {
-			if (editor_run.get_status() == EditorRun::STATUS_STOP) {
-				break;
-			}
-
-			editor_run.stop();
-			run_custom_filename.clear();
-			run_current_filename.clear();
-			stop_button->set_disabled(true);
-			_reset_play_buttons();
-
-			if (bool(EDITOR_GET("run/output/always_close_output_on_stop"))) {
-				for (int i = 0; i < bottom_panel_items.size(); i++) {
-					if (bottom_panel_items[i].control == log) {
-						_bottom_panel_switch(false, i);
-						break;
-					}
-				}
-			}
-			EditorDebuggerNode::get_singleton()->stop();
-			emit_signal(SNAME("stop_pressed"));
-
-		} break;
 
 		case FILE_SHOW_IN_FILESYSTEM: {
 			String path = editor_data.get_scene_path(editor_data.get_edited_scene());
@@ -2964,15 +2784,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			}
 		} break;
 
-		case RUN_PLAY_SCENE: {
-			if (run_current_filename.is_empty() || editor_run.get_status() == EditorRun::STATUS_STOP) {
-				run_play_current();
-			} else {
-				String last_current_scene = run_current_filename; // This is necessary to have a copy of the string.
-				run_play_custom(last_current_scene);
-			}
-
-		} break;
 		case RUN_SETTINGS: {
 			project_settings_editor->popup_project_settings();
 		} break;
@@ -2995,10 +2806,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case RUN_USER_DATA_FOLDER: {
 			// Ensure_user_data_dir() to prevent the edge case: "Open User Data Folder" won't work after the project was renamed in ProjectSettingsEditor unless the project is saved.
 			OS::get_singleton()->ensure_user_data_dir();
-			OS::get_singleton()->shell_open(String("file://") + OS::get_singleton()->get_user_data_dir());
+			OS::get_singleton()->shell_show_in_file_manager(OS::get_singleton()->get_user_data_dir(), true);
 		} break;
 		case FILE_EXPLORE_ANDROID_BUILD_TEMPLATES: {
-			OS::get_singleton()->shell_open("file://" + ProjectSettings::get_singleton()->get_resource_path().path_join("android"));
+			OS::get_singleton()->shell_show_in_file_manager(ProjectSettings::get_singleton()->get_resource_path().path_join("android"), true);
 		} break;
 		case FILE_QUIT:
 		case RUN_PROJECT_MANAGER:
@@ -3070,10 +2881,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			editor_settings_dialog->popup_edit_settings();
 		} break;
 		case SETTINGS_EDITOR_DATA_FOLDER: {
-			OS::get_singleton()->shell_open(String("file://") + EditorPaths::get_singleton()->get_data_dir());
+			OS::get_singleton()->shell_show_in_file_manager(EditorPaths::get_singleton()->get_data_dir(), true);
 		} break;
 		case SETTINGS_EDITOR_CONFIG_FOLDER: {
-			OS::get_singleton()->shell_open(String("file://") + EditorPaths::get_singleton()->get_config_dir());
+			OS::get_singleton()->shell_show_in_file_manager(EditorPaths::get_singleton()->get_config_dir(), true);
 		} break;
 		case SETTINGS_MANAGE_EXPORT_TEMPLATES: {
 			export_template_manager->popup_manager();
@@ -3176,7 +2987,7 @@ void EditorNode::_screenshot(bool p_use_utc) {
 	NodePath path = String("user://") + name;
 	_save_screenshot(path);
 	if (EDITOR_GET("interface/editor/automatically_open_screenshots")) {
-		OS::get_singleton()->shell_open(String("file://") + ProjectSettings::get_singleton()->globalize_path(path));
+		OS::get_singleton()->shell_show_in_file_manager(ProjectSettings::get_singleton()->globalize_path(path), true);
 	}
 }
 
@@ -3296,12 +3107,12 @@ void EditorNode::_discard_changes(const String &p_str) {
 			_proceed_closing_scene_tabs();
 		} break;
 		case FILE_QUIT: {
-			_menu_option_confirm(RUN_STOP, true);
+			project_run_bar->stop_playing();
 			_exit_editor(EXIT_SUCCESS);
 
 		} break;
 		case RUN_PROJECT_MANAGER: {
-			_menu_option_confirm(RUN_STOP, true);
+			project_run_bar->stop_playing();
 			_exit_editor(EXIT_SUCCESS);
 			String exec = OS::get_singleton()->get_executable_path();
 
@@ -3582,14 +3393,6 @@ bool EditorNode::is_addon_plugin_enabled(const String &p_addon) const {
 	}
 
 	return addon_name_to_plugin.has("res://addons/" + p_addon + "/plugin.cfg");
-}
-
-void EditorNode::set_movie_maker_enabled(bool p_enabled) {
-	write_movie_button->set_pressed(p_enabled);
-}
-
-bool EditorNode::is_movie_maker_enabled() const {
-	return write_movie_button->is_pressed();
 }
 
 void EditorNode::_remove_edited_scene(bool p_change_tab) {
@@ -4260,14 +4063,31 @@ void EditorNode::_quick_opened() {
 	}
 }
 
-void EditorNode::_quick_run() {
-	_run(false, quick_run->get_selected());
+void EditorNode::_project_run_started() {
+	if (bool(EDITOR_GET("run/output/always_clear_output_on_play"))) {
+		log->clear();
+	}
+
+	if (bool(EDITOR_GET("run/output/always_open_output_on_play"))) {
+		make_bottom_panel_item_visible(log);
+	}
+}
+
+void EditorNode::_project_run_stopped() {
+	if (!bool(EDITOR_GET("run/output/always_close_output_on_stop"))) {
+		return;
+	}
+
+	for (int i = 0; i < bottom_panel_items.size(); i++) {
+		if (bottom_panel_items[i].control == log) {
+			_bottom_panel_switch(false, i);
+			break;
+		}
+	}
 }
 
 void EditorNode::notify_all_debug_sessions_exited() {
-	_menu_option_confirm(RUN_STOP, false);
-	stop_button->set_pressed(false);
-	editor_run.stop();
+	project_run_bar->stop_playing();
 }
 
 void EditorNode::add_io_error(const String &p_error) {
@@ -4305,13 +4125,12 @@ bool EditorNode::is_scene_in_use(const String &p_path) {
 	return false;
 }
 
+OS::ProcessID EditorNode::has_child_process(OS::ProcessID p_pid) const {
+	return project_run_bar->has_child_process(p_pid);
+}
+
 void EditorNode::stop_child_process(OS::ProcessID p_pid) {
-	if (has_child_process(p_pid)) {
-		editor_run.stop_child_process(p_pid);
-		if (!editor_run.get_child_process_count()) { // All children stopped. Closing.
-			_menu_option_confirm(RUN_STOP, false);
-		}
-	}
+	project_run_bar->stop_child_process(p_pid);
 }
 
 Ref<Script> EditorNode::get_object_custom_type_base(const Object *p_object) const {
@@ -5274,45 +5093,6 @@ bool EditorNode::ensure_main_scene(bool p_from_native) {
 	return true;
 }
 
-Error EditorNode::run_play_native(int p_id) {
-	return run_native->run_native(p_id);
-}
-
-void EditorNode::run_play() {
-	_menu_option_confirm(RUN_STOP, true);
-	_run(false);
-}
-
-void EditorNode::run_play_current() {
-	_save_default_environment();
-	_menu_option_confirm(RUN_STOP, true);
-	_run(true);
-}
-
-void EditorNode::run_play_custom(const String &p_custom) {
-	bool is_current = !run_current_filename.is_empty();
-	_menu_option_confirm(RUN_STOP, true);
-	_run(is_current, p_custom);
-}
-
-void EditorNode::run_stop() {
-	_menu_option_confirm(RUN_STOP, false);
-}
-
-bool EditorNode::is_run_playing() const {
-	EditorRun::Status status = editor_run.get_status();
-	return (status == EditorRun::STATUS_PLAY || status == EditorRun::STATUS_PAUSED);
-}
-
-String EditorNode::get_run_playing_scene() const {
-	String run_filename = editor_run.get_running_scene();
-	if (run_filename.is_empty() && is_run_playing()) {
-		run_filename = GLOBAL_GET("application/run/main_scene"); // Must be the main scene then.
-	}
-
-	return run_filename;
-}
-
 void EditorNode::_immediate_dialog_confirmed() {
 	immediate_dialog_confirmed = true;
 }
@@ -5533,7 +5313,7 @@ void EditorNode::_scene_tab_input(const Ref<InputEvent> &p_input) {
 			if (scene_tabs->get_hovered_tab() >= 0) {
 				scene_tabs_context_menu->add_separator();
 				scene_tabs_context_menu->add_item(TTR("Show in FileSystem"), FILE_SHOW_IN_FILESYSTEM);
-				scene_tabs_context_menu->add_item(TTR("Play This Scene"), RUN_PLAY_SCENE);
+				scene_tabs_context_menu->add_item(TTR("Play This Scene"), FILE_RUN_SCENE);
 
 				scene_tabs_context_menu->add_separator();
 				scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/close_scene"), FILE_CLOSE);
@@ -6546,8 +6326,6 @@ void EditorNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_gui_base"), &EditorNode::get_gui_base);
 
-	ADD_SIGNAL(MethodInfo("play_pressed"));
-	ADD_SIGNAL(MethodInfo("stop_pressed"));
 	ADD_SIGNAL(MethodInfo("request_help_search"));
 	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "args")));
 	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "obj")));
@@ -6931,8 +6709,8 @@ EditorNode::EditorNode() {
 	main_vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 8);
 	main_vbox->add_theme_constant_override("separation", 8 * EDSCALE);
 
-	menu_hb = memnew(EditorTitleBar);
-	main_vbox->add_child(menu_hb);
+	title_bar = memnew(EditorTitleBar);
+	main_vbox->add_child(title_bar);
 
 	left_l_hsplit = memnew(HSplitContainer);
 	main_vbox->add_child(left_l_hsplit);
@@ -7172,11 +6950,11 @@ EditorNode::EditorNode() {
 		// Add spacer to avoid other controls under window minimize/maximize/close buttons (left side).
 		left_menu_spacer = memnew(Control);
 		left_menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-		menu_hb->add_child(left_menu_spacer);
+		title_bar->add_child(left_menu_spacer);
 	}
 
 	main_menu = memnew(MenuBar);
-	menu_hb->add_child(main_menu);
+	title_bar->add_child(main_menu);
 
 	main_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
 	main_menu->set_flat(true);
@@ -7352,7 +7130,7 @@ EditorNode::EditorNode() {
 	HBoxContainer *left_spacer = memnew(HBoxContainer);
 	left_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	left_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	menu_hb->add_child(left_spacer);
+	title_bar->add_child(left_spacer);
 
 	if (can_expand && global_menu) {
 		project_title = memnew(Label);
@@ -7367,7 +7145,7 @@ EditorNode::EditorNode() {
 	}
 
 	main_editor_button_hb = memnew(HBoxContainer);
-	menu_hb->add_child(main_editor_button_hb);
+	title_bar->add_child(main_editor_button_hb);
 
 	// Options are added and handled by DebuggerEditorPlugin.
 	debug_menu = memnew(PopupMenu);
@@ -7452,104 +7230,15 @@ EditorNode::EditorNode() {
 	Control *right_spacer = memnew(Control);
 	right_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	right_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	menu_hb->add_child(right_spacer);
+	title_bar->add_child(right_spacer);
 
-	launch_pad = memnew(PanelContainer);
-	launch_pad->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("LaunchPadNormal"), SNAME("EditorStyles")));
-	menu_hb->add_child(launch_pad);
-
-	HBoxContainer *launch_pad_hb = memnew(HBoxContainer);
-	launch_pad->add_child(launch_pad_hb);
-
-	play_button = memnew(Button);
-	play_button->set_flat(true);
-	launch_pad_hb->add_child(play_button);
-	play_button->set_toggle_mode(true);
-	play_button->set_focus_mode(Control::FOCUS_NONE);
-	play_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_PLAY));
-	play_button->set_tooltip_text(TTR("Run the project's default scene."));
-
-	ED_SHORTCUT_AND_COMMAND("editor/run_project", TTR("Run Project"), Key::F5);
-	ED_SHORTCUT_OVERRIDE("editor/run_project", "macos", KeyModifierMask::META | Key::B);
-	play_button->set_shortcut(ED_GET_SHORTCUT("editor/run_project"));
-
-	pause_button = memnew(Button);
-	pause_button->set_flat(true);
-	pause_button->set_toggle_mode(true);
-	pause_button->set_icon(gui_base->get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
-	pause_button->set_focus_mode(Control::FOCUS_NONE);
-	pause_button->set_tooltip_text(TTR("Pause the running project's execution for debugging."));
-	pause_button->set_disabled(true);
-	launch_pad_hb->add_child(pause_button);
-
-	ED_SHORTCUT("editor/pause_running_project", TTR("Pause Running Project"), Key::F7);
-	ED_SHORTCUT_OVERRIDE("editor/pause_running_project", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::Y);
-	pause_button->set_shortcut(ED_GET_SHORTCUT("editor/pause_running_project"));
-
-	stop_button = memnew(Button);
-	stop_button->set_flat(true);
-	launch_pad_hb->add_child(stop_button);
-	stop_button->set_focus_mode(Control::FOCUS_NONE);
-	stop_button->set_icon(gui_base->get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
-	stop_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_STOP));
-	stop_button->set_tooltip_text(TTR("Stop the currently running project."));
-	stop_button->set_disabled(true);
-
-	ED_SHORTCUT("editor/stop_running_project", TTR("Stop Running Project"), Key::F8);
-	ED_SHORTCUT_OVERRIDE("editor/stop_running_project", "macos", KeyModifierMask::META | Key::PERIOD);
-	stop_button->set_shortcut(ED_GET_SHORTCUT("editor/stop_running_project"));
-
-	run_native = memnew(EditorRunNative);
-	launch_pad_hb->add_child(run_native);
-	run_native->connect("native_run", callable_mp(this, &EditorNode::_run_native));
-
-	play_scene_button = memnew(Button);
-	play_scene_button->set_flat(true);
-	launch_pad_hb->add_child(play_scene_button);
-	play_scene_button->set_toggle_mode(true);
-	play_scene_button->set_focus_mode(Control::FOCUS_NONE);
-	play_scene_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_PLAY_SCENE));
-	play_scene_button->set_tooltip_text(TTR("Run the currently edited scene."));
-
-	ED_SHORTCUT_AND_COMMAND("editor/run_current_scene", TTR("Run Current Scene"), Key::F6);
-	ED_SHORTCUT_OVERRIDE("editor/run_current_scene", "macos", KeyModifierMask::META | Key::R);
-	play_scene_button->set_shortcut(ED_GET_SHORTCUT("editor/run_current_scene"));
-
-	play_custom_scene_button = memnew(Button);
-	play_custom_scene_button->set_flat(true);
-	launch_pad_hb->add_child(play_custom_scene_button);
-	play_custom_scene_button->set_toggle_mode(true);
-	play_custom_scene_button->set_focus_mode(Control::FOCUS_NONE);
-	play_custom_scene_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_PLAY_CUSTOM_SCENE));
-	play_custom_scene_button->set_tooltip_text(TTR("Run a specific scene."));
-
-	_reset_play_buttons();
-
-	ED_SHORTCUT_AND_COMMAND("editor/run_specific_scene", TTR("Run Specific Scene"), KeyModifierMask::CTRL | KeyModifierMask::SHIFT | Key::F5);
-	ED_SHORTCUT_OVERRIDE("editor/run_specific_scene", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::R);
-	play_custom_scene_button->set_shortcut(ED_GET_SHORTCUT("editor/run_specific_scene"));
-
-	write_movie_panel = memnew(PanelContainer);
-	write_movie_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("MovieWriterButtonNormal"), SNAME("EditorStyles")));
-	launch_pad_hb->add_child(write_movie_panel);
-
-	write_movie_button = memnew(Button);
-	write_movie_button->set_flat(true);
-	write_movie_button->set_toggle_mode(true);
-	write_movie_panel->add_child(write_movie_button);
-	write_movie_button->set_pressed(false);
-	write_movie_button->set_icon(gui_base->get_theme_icon(SNAME("MainMovieWrite"), SNAME("EditorIcons")));
-	write_movie_button->set_focus_mode(Control::FOCUS_NONE);
-	write_movie_button->connect("toggled", callable_mp(this, &EditorNode::_write_movie_toggled));
-	write_movie_button->set_tooltip_text(TTR("Enable Movie Maker mode.\nThe project will run at stable FPS and the visual and audio output will be recorded to a video file."));
-
-	// This button behaves differently, so color it as such.
-	write_movie_button->add_theme_color_override("icon_normal_color", Color(1, 1, 1, 0.7));
-	write_movie_button->add_theme_color_override("icon_pressed_color", Color(0, 0, 0, 0.84));
-	write_movie_button->add_theme_color_override("icon_hover_color", Color(1, 1, 1, 0.9));
+	project_run_bar = memnew(EditorRunBar);
+	title_bar->add_child(project_run_bar);
+	project_run_bar->connect("play_pressed", callable_mp(this, &EditorNode::_project_run_started));
+	project_run_bar->connect("stop_pressed", callable_mp(this, &EditorNode::_project_run_stopped));
 
 	HBoxContainer *right_menu_hb = memnew(HBoxContainer);
-	menu_hb->add_child(right_menu_hb);
+	title_bar->add_child(right_menu_hb);
 
 	renderer = memnew(OptionButton);
 	renderer->set_visible(true);
@@ -7567,7 +7256,7 @@ EditorNode::EditorNode() {
 		// Add spacer to avoid other controls under the window minimize/maximize/close buttons (right side).
 		right_menu_spacer = memnew(Control);
 		right_menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-		menu_hb->add_child(right_menu_spacer);
+		title_bar->add_child(right_menu_spacer);
 	}
 
 	String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method");
@@ -8004,10 +7693,6 @@ EditorNode::EditorNode() {
 	gui_base->add_child(quick_open);
 	quick_open->connect("quick_open", callable_mp(this, &EditorNode::_quick_opened));
 
-	quick_run = memnew(EditorQuickOpen);
-	gui_base->add_child(quick_run);
-	quick_run->connect("quick_open", callable_mp(this, &EditorNode::_quick_run));
-
 	_update_recent_scenes();
 
 	set_process_shortcut_input(true);
@@ -8079,14 +7764,14 @@ EditorNode::EditorNode() {
 	screenshot_timer->set_owner(get_owner());
 
 	// Adjust spacers to center 2D / 3D / Script buttons.
-	int max_w = MAX(launch_pad->get_minimum_size().x + right_menu_hb->get_minimum_size().x, main_menu->get_minimum_size().x);
+	int max_w = MAX(project_run_bar->get_minimum_size().x + right_menu_hb->get_minimum_size().x, main_menu->get_minimum_size().x);
 	left_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - main_menu->get_minimum_size().x), 0));
-	right_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - launch_pad->get_minimum_size().x - right_menu_hb->get_minimum_size().x), 0));
+	right_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - project_run_bar->get_minimum_size().x - right_menu_hb->get_minimum_size().x), 0));
 
 	// Extend menu bar to window title.
 	if (can_expand) {
 		DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_EXTEND_TO_TITLE, true, DisplayServer::MAIN_WINDOW_ID);
-		menu_hb->set_can_move_window(true);
+		title_bar->set_can_move_window(true);
 	}
 
 	String exec = OS::get_singleton()->get_executable_path();

@@ -954,6 +954,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	ComputeList *compute_list = nullptr;
 
+	void _compute_list_add_barrier(BitField<BarrierMask> p_post_barrier, uint32_t p_barrier_flags, uint32_t p_access_flags);
+
 	/**************************/
 	/**** FRAME MANAGEMENT ****/
 	/**************************/

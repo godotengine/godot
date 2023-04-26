@@ -203,7 +203,18 @@ void EditorPropertyArray::_property_changed(const String &p_property, Variant p_
 		index = p_property.get_slice("/", 1).to_int();
 	}
 
-	Variant array = object->get_array().duplicate();
+	Variant array;
+	const Variant &original_array = object->get_array();
+
+	if (original_array.get_type() == Variant::ARRAY) {
+		// Needed to preserve type of TypedArrays in meta pointer properties.
+		Array temp;
+		temp.assign(original_array.duplicate());
+		array = temp;
+	} else {
+		array = original_array.duplicate();
+	}
+
 	array.set(index, p_value);
 	object->set_array(array);
 	emit_changed(get_edited_property(), array, "", true);
