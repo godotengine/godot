@@ -867,7 +867,7 @@
 			<description>
 				Moves the caret to the specified [param line] index.
 				If [param adjust_viewport] is [code]true[/code], the viewport will center at the caret position after the move occurs.
-				If [param can_be_hidden] is [code]true[/code], the specified [code]line[/code] can be hidden.
+				If [param can_be_hidden] is [code]true[/code], the specified [param line] can be hidden.
 				[b]Note:[/b] If supporting multiple carets this will not check for any overlap. See [method merge_overlapping_carets].
 			</description>
 		</method>
@@ -1061,7 +1061,7 @@
 			<return type="void" />
 			<param index="0" name="action" type="int" enum="TextEdit.EditAction" />
 			<description>
-				Starts an action, will end the current action if [code]action[/code] is different.
+				Starts an action, will end the current action if [param action] is different.
 				An action will also end after a call to [method end_action], after [member ProjectSettings.gui/timers/text_edit_idle_detect_sec] is triggered or a new undoable step outside the [method start_action] and [method end_action] calls.
 			</description>
 		</method>

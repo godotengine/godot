@@ -41,7 +41,7 @@
 			<return type="Node" />
 			<param index="0" name="data" type="Variant" default="null" />
 			<description>
-				Requests a custom spawn, with [code]data[/code] passed to [member spawn_function] on all peers. Returns the locally spawned node instance already inside the scene tree, and added as a child of the node pointed by [member spawn_path].
+				Requests a custom spawn, with [param data] passed to [member spawn_function] on all peers. Returns the locally spawned node instance already inside the scene tree, and added as a child of the node pointed by [member spawn_path].
 				[b]Note:[/b] Spawnable scenes are spawned automatically. [method spawn] is only needed for custom spawns.
 			</description>
 		</method>

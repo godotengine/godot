@@ -109,7 +109,7 @@
 			<return type="int" enum="WebXRInterface.TargetRayMode" />
 			<param index="0" name="input_source_id" type="int" />
 			<description>
-				Returns the target ray mode for the given [code]input_source_id[/code].
+				Returns the target ray mode for the given [param input_source_id].
 				This can help interpret the input coming from that input source. See [url=https://developer.mozilla.org/en-US/docs/Web/API/XRInputSource/targetRayMode]XRInputSource.targetRayMode[/url] for more information.
 			</description>
 		</method>
@@ -117,7 +117,7 @@
 			<return type="XRPositionalTracker" />
 			<param index="0" name="input_source_id" type="int" />
 			<description>
-				Gets an [XRPositionalTracker] for the given [code]input_source_id[/code].
+				Gets an [XRPositionalTracker] for the given [param input_source_id].
 				In the context of WebXR, an input source can be an advanced VR controller like the Oculus Touch or Index controllers, or even a tap on the screen, a spoken voice command or a button press on the device itself. When a non-traditional input source is used, interpret the position and orientation of the [XRPositionalTracker] as a ray pointing at the object the user wishes to interact with.
 				Use this method to get information about the input source that triggered one of these signals:
 				- [signal selectstart]
@@ -132,14 +132,14 @@
 			<return type="bool" />
 			<param index="0" name="input_source_id" type="int" />
 			<description>
-				Returns [code]true[/code] if there is an active input source with the given [code]input_source_id[/code].
+				Returns [code]true[/code] if there is an active input source with the given [param input_source_id].
 			</description>
 		</method>
 		<method name="is_session_supported">
 			<return type="void" />
 			<param index="0" name="session_mode" type="String" />
 			<description>
-				Checks if the given [code]session_mode[/code] is supported by the user's browser.
+				Checks if the given [param session_mode] is supported by the user's browser.
 				Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRSessionMode]WebXR's XRSessionMode[/url], including: [code]"immersive-vr"[/code], [code]"immersive-ar"[/code], and [code]"inline"[/code].
 				This method returns nothing, instead it emits the [signal session_supported] signal with the result.
 			</description>
@@ -229,7 +229,7 @@
 			<param index="0" name="message" type="String" />
 			<description>
 				Emitted by [method XRInterface.initialize] if the session fails to start.
-				[code]message[/code] may optionally contain an error message from WebXR, or an empty string if no message is available.
+				[param message] may optionally contain an error message from WebXR, or an empty string if no message is available.
 			</description>
 		</signal>
 		<signal name="session_started">
@@ -242,7 +242,7 @@
 			<param index="0" name="session_mode" type="String" />
 			<param index="1" name="supported" type="bool" />
 			<description>
-				Emitted by [method is_session_supported] to indicate if the given [code]session_mode[/code] is supported or not.
+				Emitted by [method is_session_supported] to indicate if the given [param session_mode] is supported or not.
 			</description>
 		</signal>
 		<signal name="squeeze">

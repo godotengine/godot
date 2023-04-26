@@ -348,16 +348,14 @@
 			<return type="void" />
 			<param index="0" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)" />
 			<description>
-				Shows the [Window] and makes it transient (see [member transient]). If [param rect] is provided, it will be set as the [Window]'s size.
-				Fails if called on the main window.
+				Shows the [Window] and makes it transient (see [member transient]). If [param rect] is provided, it will be set as the [Window]'s size. Fails if called on the main window.
 			</description>
 		</method>
 		<method name="popup_centered">
 			<return type="void" />
 			<param index="0" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
 			<description>
-				Popups the [Window] at the center of the current screen, with optionally given minimum size.
-				If the [Window] is embedded, it will be centered in the parent [Viewport] instead.
+				Popups the [Window] at the center of the current screen, with optionally given minimum size. If the [Window] is embedded, it will be centered in the parent [Viewport] instead.
 				[b]Note:[/b] Calling it with the default value of [param minsize] is equivalent to calling it with [member size].
 			</description>
 		</method>
@@ -366,8 +364,7 @@
 			<param index="0" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
 			<param index="1" name="fallback_ratio" type="float" default="0.75" />
 			<description>
-				Popups the [Window] centered inside its parent [Window].
-				[code]fallback_ratio[/code] determines the maximum size of the [Window], in relation to its parent.
+				Popups the [Window] centered inside its parent [Window]. [param fallback_ratio] determines the maximum size of the [Window], in relation to its parent.
 				[b]Note:[/b] Calling it with the default value of [param minsize] is equivalent to calling it with [member size].
 			</description>
 		</method>
@@ -382,8 +379,7 @@
 			<return type="void" />
 			<param index="0" name="parent_rect" type="Rect2i" />
 			<description>
-				Popups the [Window] with a position shifted by parent [Window]'s position.
-				If the [Window] is embedded, has the same effect as [method popup].
+				Popups the [Window] with a position shifted by parent [Window]'s position. If the [Window] is embedded, has the same effect as [method popup].
 			</description>
 		</method>
 		<method name="remove_theme_color_override">

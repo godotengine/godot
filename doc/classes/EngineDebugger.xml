@@ -50,7 +50,7 @@
 			<param index="1" name="enable" type="bool" />
 			<param index="2" name="arguments" type="Array" default="[]" />
 			<description>
-				Calls the [code]toggle[/code] callable of the profiler with given [param name] and [param arguments]. Enables/Disables the same profiler depending on [code]enable[/code] argument.
+				Calls the [code]toggle[/code] callable of the profiler with given [param name] and [param arguments]. Enables/Disables the same profiler depending on [param enable] argument.
 			</description>
 		</method>
 		<method name="register_message_capture">

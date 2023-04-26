@@ -143,7 +143,7 @@
 			<return type="Rect2i" />
 			<param index="0" name="b" type="Rect2i" />
 			<description>
-				Returns the intersection of this [Rect2i] and [code]b[/code].
+				Returns the intersection of this [Rect2i] and [param b].
 				If the rectangles do not intersect, an empty [Rect2i] is returned.
 			</description>
 		</method>
@@ -151,7 +151,7 @@
 			<return type="bool" />
 			<param index="0" name="b" type="Rect2i" />
 			<description>
-				Returns [code]true[/code] if the [Rect2i] overlaps with [code]b[/code] (i.e. they have at least one point in common).
+				Returns [code]true[/code] if the [Rect2i] overlaps with [param b] (i.e. they have at least one point in common).
 			</description>
 		</method>
 		<method name="merge" qualifiers="const">
