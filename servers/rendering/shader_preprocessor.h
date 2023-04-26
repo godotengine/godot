@@ -83,7 +83,7 @@ private:
 		int line;
 		int index;
 		int size;
-		Vector<Token> generated;
+		LocalVector<Token> generated;
 
 	private:
 		void add_generated(const Token &p_t);
@@ -95,7 +95,7 @@ private:
 		char32_t peek();
 		int consume_line_continuations(int p_offset);
 
-		void get_and_clear_generated(Vector<Token> *r_out);
+		void get_and_clear_generated(LocalVector<char32_t> *r_out);
 		void backtrack(char32_t p_what);
 		LocalVector<Token> advance(char32_t p_what);
 		void skip_whitespace();
