@@ -247,7 +247,7 @@ void TileAtlasView::_draw_base_tiles() {
 			for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(atlas_coords); frame++) {
 				// Update the y to max value.
 				Rect2i base_frame_rect = tile_set_atlas_source->get_tile_texture_region(atlas_coords, frame);
-				Vector2i offset_pos = base_frame_rect.get_center() + tile_set_atlas_source->get_tile_data(atlas_coords, 0)->get_texture_origin();
+				Vector2 offset_pos = Rect2(base_frame_rect).get_center() + Vector2(tile_set_atlas_source->get_tile_data(atlas_coords, 0)->get_texture_origin());
 
 				// Draw the tile.
 				TileMap::draw_tile(base_tiles_draw->get_canvas_item(), offset_pos, tile_set, source_id, atlas_coords, 0, frame);
@@ -331,7 +331,7 @@ void TileAtlasView::_draw_base_tiles_shape_grid() {
 				}
 				Rect2i texture_region = tile_set_atlas_source->get_tile_texture_region(tile_id, frame);
 				Transform2D tile_xform;
-				tile_xform.set_origin(texture_region.get_center() + in_tile_base_offset);
+				tile_xform.set_origin(Rect2(texture_region).get_center() + in_tile_base_offset);
 				tile_xform.set_scale(tile_shape_size);
 				tile_set->draw_tile_shape(base_tiles_shape_grid, tile_xform, color);
 			}

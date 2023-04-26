@@ -118,7 +118,7 @@ bool TTS_Windows::is_speaking() const {
 
 	SPVOICESTATUS status;
 	synth->GetStatus(&status, nullptr);
-	return (status.dwRunningState == SPRS_IS_SPEAKING);
+	return (status.dwRunningState == SPRS_IS_SPEAKING || status.dwRunningState == 0 /* Waiting To Speak */);
 }
 
 bool TTS_Windows::is_paused() const {
@@ -251,7 +251,6 @@ TTS_Windows *TTS_Windows::get_singleton() {
 
 TTS_Windows::TTS_Windows() {
 	singleton = this;
-	CoInitialize(nullptr);
 
 	if (SUCCEEDED(CoCreateInstance(CLSID_SpVoice, nullptr, CLSCTX_ALL, IID_ISpVoice, (void **)&synth))) {
 		ULONGLONG event_mask = SPFEI(SPEI_END_INPUT_STREAM) | SPFEI(SPEI_START_INPUT_STREAM) | SPFEI(SPEI_WORD_BOUNDARY);

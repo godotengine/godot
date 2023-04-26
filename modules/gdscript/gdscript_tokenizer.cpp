@@ -1099,7 +1099,7 @@ void GDScriptTokenizer::check_indent() {
 			_advance();
 		}
 
-		if (mixed) {
+		if (mixed && !(line_continuation || multiline_mode)) {
 			Token error = make_error("Mixed use of tabs and spaces for indentation.");
 			error.start_line = line;
 			error.start_column = 1;

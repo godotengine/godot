@@ -39,7 +39,8 @@ Error AudioDriverXAudio2::init() {
 	pcm_open = false;
 	samples_in = nullptr;
 
-	mix_rate = GLOBAL_GET("audio/driver/mix_rate");
+	mix_rate = _get_configured_mix_rate();
+
 	// FIXME: speaker_mode seems unused in the Xaudio2 driver so far
 	speaker_mode = SPEAKER_MODE_STEREO;
 	channels = 2;

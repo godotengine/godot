@@ -122,21 +122,18 @@ void EditorLayoutsDialog::_post_popup() {
 EditorLayoutsDialog::EditorLayoutsDialog() {
 	makevb = memnew(VBoxContainer);
 	add_child(makevb);
-	makevb->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 5);
-	makevb->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -5);
 
 	layout_names = memnew(ItemList);
-	makevb->add_margin_child(TTR("Select existing layout:"), layout_names);
 	layout_names->set_auto_height(true);
 	layout_names->set_custom_minimum_size(Size2(300 * EDSCALE, 50 * EDSCALE));
 	layout_names->set_visible(true);
 	layout_names->set_offset(SIDE_TOP, 5);
-	layout_names->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 5);
-	layout_names->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -5);
 	layout_names->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	layout_names->set_select_mode(ItemList::SELECT_MULTI);
 	layout_names->set_allow_rmb_select(true);
 	layout_names->connect("multi_selected", callable_mp(this, &EditorLayoutsDialog::_update_ok_disable_state).unbind(2));
+	MarginContainer *mc = makevb->add_margin_child(TTR("Select existing layout:"), layout_names);
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	name = memnew(LineEdit);
 	makevb->add_child(name);

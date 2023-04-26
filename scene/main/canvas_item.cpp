@@ -142,6 +142,10 @@ void CanvasItem::_redraw_callback() {
 	pending_update = false; // don't change to false until finished drawing (avoid recursive update)
 }
 
+void CanvasItem::_invalidate_global_transform() {
+	global_invalid = true;
+}
+
 Transform2D CanvasItem::get_global_transform_with_canvas() const {
 	if (canvas_layer) {
 		return canvas_layer->get_final_transform() * get_global_transform();
@@ -289,6 +293,7 @@ void CanvasItem::_notification(int p_what) {
 				}
 			}
 
+			global_invalid = true;
 			_enter_canvas();
 
 			RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, is_visible_in_tree()); // The visibility of the parent may change.
@@ -394,6 +399,7 @@ void CanvasItem::set_as_top_level(bool p_top_level) {
 
 	if (!is_inside_tree()) {
 		top_level = p_top_level;
+		propagate_call(SNAME("_invalidate_global_transform"));
 		return;
 	}
 
@@ -941,6 +947,7 @@ void CanvasItem::_validate_property(PropertyInfo &p_property) const {
 
 void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_top_level_raise_self"), &CanvasItem::_top_level_raise_self);
+	ClassDB::bind_method(D_METHOD("_invalidate_global_transform"), &CanvasItem::_invalidate_global_transform);
 
 #ifdef TOOLS_ENABLED
 	ClassDB::bind_method(D_METHOD("_edit_set_state", "state"), &CanvasItem::_edit_set_state);
