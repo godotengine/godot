@@ -1016,6 +1016,8 @@ void CSGBrushOperation::Build2DFaces::_merge_faces(const Vector<int> &p_segment_
 }
 
 void CSGBrushOperation::Build2DFaces::_find_edge_intersections(const Vector2 p_segment_points[2], Vector<int> &r_segment_indices) {
+	Vector<Pair<Pair<Pair<float, float>, Pair<float, float>>, Pair<Pair<float, float>, Pair<float, float>>>> processed_edges;
+
 	// For each face.
 	for (int face_idx = 0; face_idx < faces.size(); ++face_idx) {
 		Face2D face = faces[face_idx];
@@ -1035,6 +1037,26 @@ void CSGBrushOperation::Build2DFaces::_find_edge_intersections(const Vector2 p_s
 				face_vertices[face_edge_idx].uv,
 				face_vertices[(face_edge_idx + 1) % 3].uv
 			};
+
+			// Check if edge has already been processed.
+			Pair<float, float> edge_point_1(face_vertices[face_edge_idx].point.x, face_vertices[face_edge_idx].point.y);
+			Pair<float, float> edge_point_2(face_vertices[(face_edge_idx + 1) % 3].point.x, face_vertices[(face_edge_idx + 1) % 3].point.y);
+
+			Pair<float, float> edge_uv_1(face_vertices[face_edge_idx].uv.x, face_vertices[face_edge_idx].uv.y);
+			Pair<float, float> edge_uv_2(face_vertices[(face_edge_idx + 1) % 3].uv.x, face_vertices[(face_edge_idx + 1) % 3].uv.y);
+
+			Pair<Pair<float, float>, Pair<float, float>> combined_point(edge_point_1, edge_point_2);
+			Pair<Pair<float, float>, Pair<float, float>> combined_uv(edge_uv_1, edge_uv_2);
+
+			Pair<Pair<Pair<float, float>, Pair<float, float>>, Pair<Pair<float, float>, Pair<float, float>>> combined_edge(combined_point, combined_uv);
+
+			if (processed_edges.find(combined_edge) != -1) {
+				continue;
+			}
+
+			processed_edges.push_back(combined_edge);
+
+			// Else continue on
 			Vector2 intersection_point;
 
 			// First check if the ends of the segment are on the edge.
@@ -1092,6 +1114,7 @@ void CSGBrushOperation::Build2DFaces::_find_edge_intersections(const Vector2 p_s
 				right_face.vertex_idx[0] = opposite_vertex_idx;
 				right_face.vertex_idx[1] = face.vertex_idx[face_edge_idx];
 				right_face.vertex_idx[2] = new_vertex_idx;
+
 				faces.remove_at(face_idx);
 				faces.insert(face_idx, right_face);
 				faces.insert(face_idx, left_face);
