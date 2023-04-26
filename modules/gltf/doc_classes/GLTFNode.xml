@@ -31,30 +31,43 @@
 	</methods>
 	<members>
 		<member name="camera" type="int" setter="set_camera" getter="get_camera" default="-1">
+			If this GLTF node is a camera, the index of the [GLTFCamera] in the [GLTFState] that describes the camera's properties. If -1, this node is not a camera.
 		</member>
 		<member name="children" type="PoolIntArray" setter="set_children" getter="get_children" default="PoolIntArray(  )">
+			The indices of the children nodes in the [GLTFState]. If this GLTF node has no children, this will be an empty array.
 		</member>
 		<member name="height" type="int" setter="set_height" getter="get_height" default="-1">
+			How deep into the node hierarchy this node is. A root node will have a height of 0, its children will have a height of 1, and so on. If -1, the height has not been calculated.
 		</member>
 		<member name="joint" type="bool" setter="set_joint" getter="get_joint" default="false">
+			This property is unused and does nothing.
 		</member>
 		<member name="light" type="int" setter="set_light" getter="get_light" default="-1">
+			If this GLTF node is a light, the index of the [GLTFLight] in the [GLTFState] that describes the light's properties. If -1, this node is not a light.
 		</member>
 		<member name="mesh" type="int" setter="set_mesh" getter="get_mesh" default="-1">
+			If this GLTF node is a mesh, the index of the [GLTFMesh] in the [GLTFState] that describes the mesh's properties. If -1, this node is not a mesh.
 		</member>
 		<member name="parent" type="int" setter="set_parent" getter="get_parent" default="-1">
+			The index of the parent node in the [GLTFState]. If -1, this node is a root node.
 		</member>
 		<member name="rotation" type="Quat" setter="set_rotation" getter="get_rotation" default="Quat( 0, 0, 0, 1 )">
+			The rotation of the GLTF node relative to its parent.
 		</member>
 		<member name="scale" type="Vector3" setter="set_scale" getter="get_scale" default="Vector3( 1, 1, 1 )">
+			The scale of the GLTF node relative to its parent.
 		</member>
 		<member name="skeleton" type="int" setter="set_skeleton" getter="get_skeleton" default="-1">
+			If this GLTF node has a skeleton, the index of the [GLTFSkeleton] in the [GLTFState] that describes the skeleton's properties. If -1, this node does not have a skeleton.
 		</member>
 		<member name="skin" type="int" setter="set_skin" getter="get_skin" default="-1">
+			If this GLTF node has a skin, the index of the [GLTFSkin] in the [GLTFState] that describes the skin's properties. If -1, this node does not have a skin.
 		</member>
 		<member name="translation" type="Vector3" setter="set_translation" getter="get_translation" default="Vector3( 0, 0, 0 )">
+			The position of the GLTF node relative to its parent.
 		</member>
 		<member name="xform" type="Transform" setter="set_xform" getter="get_xform" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+			The transform of the GLTF node relative to its parent. This property is usually unused since the position, rotation, and scale properties are preferred.
 		</member>
 	</members>
 	<constants>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFPhysicsBody" inherits="Resource" version="3.6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Represents a GLTF physics body.
+	</brief_description>
+	<description>
+		Represents a physics body as defined by the [code]OMI_physics_body[/code] GLTF extension. This class is an intermediary between the GLTF data and Godot's nodes, and it's abstracted in a way that allows adding support for different GLTF physics extensions in the future.
+	</description>
+	<tutorials>
+		<link title="OMI_physics_body GLTF extension">https://github.com/omigroup/gltf-extensions/tree/main/extensions/2.0/OMI_physics_body</link>
+	</tutorials>
+	<methods>
+		<method name="to_dictionary" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Serializes this GLTFPhysicsBody instance into a [Dictionary].
+			</description>
+		</method>
+		<method name="to_node" qualifiers="const">
+			<return type="CollisionObject" />
+			<description>
+				Converts this GLTFPhysicsBody instance into a Godot [CollisionObject] node.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity" default="Vector3( 0, 0, 0 )">
+			The angular velocity of the physics body, in radians per second. This is only used when the body type is "rigid" or "vehicle".
+		</member>
+		<member name="body_type" type="String" setter="set_body_type" getter="get_body_type" default="&quot;static&quot;">
+			The type of the body. Valid values are "static", "kinematic", "character", "rigid", "vehicle", and "trigger".
+		</member>
+		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector3( 0, 0, 0 )">
+			The linear velocity of the physics body, in meters per second. This is only used when the body type is "rigid" or "vehicle".
+		</member>
+		<member name="mass" type="float" setter="set_mass" getter="get_mass" default="1.0">
+			The mass of the physics body, in kilograms. This is only used when the body type is "rigid" or "vehicle".
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
