@@ -664,6 +664,7 @@ public:
 #define server_name RSG::scene
 
 	FUNC1(voxel_gi_set_quality, VoxelGIQuality)
+	FUNC1(voxel_gi_set_min_roughness, float)
 
 	/* SKY API */
 
@@ -714,6 +715,7 @@ public:
 	FUNC1(environment_set_sdfgi_ray_count, EnvironmentSDFGIRayCount)
 	FUNC1(environment_set_sdfgi_frames_to_converge, EnvironmentSDFGIFramesToConverge)
 	FUNC1(environment_set_sdfgi_frames_to_update_light, EnvironmentSDFGIFramesToUpdateLight)
+	FUNC1(environment_set_sdfgi_min_roughness, float)
 
 	FUNC3R(Ref<Image>, environment_bake_panorama, RID, bool, const Size2i &)
 

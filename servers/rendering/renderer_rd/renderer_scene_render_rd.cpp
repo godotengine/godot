@@ -94,8 +94,13 @@ void RendererSceneRenderRD::environment_set_sdfgi_ray_count(RS::EnvironmentSDFGI
 void RendererSceneRenderRD::environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) {
 	gi.sdfgi_frames_to_converge = p_frames;
 }
+
 void RendererSceneRenderRD::environment_set_sdfgi_frames_to_update_light(RS::EnvironmentSDFGIFramesToUpdateLight p_update) {
 	gi.sdfgi_frames_to_update_light = p_update;
+}
+
+void RendererSceneRenderRD::environment_set_sdfgi_min_roughness(float p_roughness) {
+	gi.sdfgi_min_roughness = p_roughness;
 }
 
 Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) {

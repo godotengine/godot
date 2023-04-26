@@ -98,6 +98,7 @@ void voxel_gi_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3
 	out_diff += vec4(light * blend, blend);
 
 	//irradiance
+	// TODO: This part isn't used?
 	vec4 irr_light = voxel_cone_trace(voxel_gi_textures[index], cell_size, position, ref_vec, tan(roughness * 0.5 * M_PI * 0.99), max_distance, voxel_gi_instances.data[index].bias);
 	if (voxel_gi_instances.data[index].blend_ambient) {
 		irr_light.rgb = mix(environment, irr_light.rgb, min(1.0, irr_light.a / 0.95));

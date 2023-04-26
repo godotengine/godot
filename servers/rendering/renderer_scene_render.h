@@ -213,6 +213,7 @@ public:
 	virtual void environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count) = 0;
 	virtual void environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) = 0;
 	virtual void environment_set_sdfgi_frames_to_update_light(RS::EnvironmentSDFGIFramesToUpdateLight p_update) = 0;
+	virtual void environment_set_sdfgi_min_roughness(float p_roughness) = 0;
 
 	// Adjustment
 	void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction);
@@ -240,6 +241,7 @@ public:
 	virtual void voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RenderGeometryInstance *> &p_dynamic_objects) = 0;
 
 	virtual void voxel_gi_set_quality(RS::VoxelGIQuality) = 0;
+	virtual void voxel_gi_set_min_roughness(float p_roughness) = 0;
 
 	struct RenderShadowData {
 		RID light;

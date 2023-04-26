@@ -115,15 +115,15 @@ layout(r8ui, set = 0, binding = 19) uniform restrict readonly uimage2D vrs_buffe
 layout(push_constant, std430) uniform Params {
 	uint max_voxel_gi_instances;
 	bool high_quality_vct;
-	bool orthogonal;
-	uint view_index;
+	float voxel_gi_min_roughness;
+	float sdfgi_min_roughness;
 
 	vec4 proj_info;
 
+	uint view_index;
+	bool orthogonal;
 	float z_near;
 	float z_far;
-	float pad2;
-	float pad3;
 }
 params;
 
@@ -620,12 +620,18 @@ void process_gi(ivec2 pos, vec3 vertex, inout vec4 ambient_light, inout vec4 ref
 		vec3 reflection = normalize(reflect(-view, normal));
 
 #ifdef USE_SDFGI
+		// Optionally clamp minimum roughness to improve performance by avoiding
+		// the computation of sharp reflections.
+		roughness = max(params.sdfgi_min_roughness, roughness);
 		sdfgi_process(vertex, normal, reflection, roughness, ambient_light, reflection_light);
 #endif
 
 #ifdef USE_VOXEL_GI_INSTANCES
 		{
 			uvec2 voxel_gi_tex = texelFetch(usampler2D(voxel_gi_buffer, linear_sampler), pos, 0).rg;
+			// Optionally clamp minimum roughness to improve performance by avoiding
+			// the computation of sharp reflections.
+			roughness = max(params.voxel_gi_min_roughness, roughness);
 			roughness *= roughness;
 			//find arbitrary tangent and bitangent, then build a matrix
 			vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
