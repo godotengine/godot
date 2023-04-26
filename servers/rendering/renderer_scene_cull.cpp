@@ -2520,6 +2520,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 	if (p_xr_interface.is_null()) {
 		// Normal camera
 		Transform3D transform = camera->transform;
+
 		Projection projection;
 		bool vaspect = camera->vaspect;
 		bool is_orthogonal = false;
@@ -2553,6 +2554,14 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 						camera->vaspect);
 			} break;
 		}
+
+		Transform3D ortho = transform.orthonormalized();
+		Transform3D diff = ortho.affine_inverse() * transform;
+
+		print_line(diff);
+
+		transform = ortho;
+		projection = projection * diff.affine_inverse();
 
 		camera_data.set_camera(transform, projection, is_orthogonal, vaspect, jitter, camera->visible_layers);
 	} else {
