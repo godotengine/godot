@@ -43,6 +43,7 @@ class SceneState : public RefCounted {
 	Vector<NodePath> editable_instances;
 	mutable HashMap<NodePath, int> node_path_cache;
 	mutable HashMap<int, int> base_scene_node_remap;
+	HashSet<NodePath> inherited_nodes;
 
 	int base_scene_idx = -1;
 
@@ -182,6 +183,9 @@ public:
 	bool has_connection(const NodePath &p_node_from, const StringName &p_signal, const NodePath &p_node_to, const StringName &p_method, bool p_no_inheritance = false);
 
 	Vector<NodePath> get_editable_instances() const;
+
+	void set_inherited_nodes(HashSet<NodePath> p_inherited_node_paths) { inherited_nodes = p_inherited_node_paths; }
+	HashSet<NodePath> get_inherited_nodes() const { return inherited_nodes; }
 
 	//build API
 

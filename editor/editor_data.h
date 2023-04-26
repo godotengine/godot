@@ -120,6 +120,7 @@ public:
 		NodePath live_edit_root;
 		int history_id = 0;
 		uint64_t last_checked_version = 0;
+		HashSet<NodePath> inherited_nodes;
 	};
 
 private:
@@ -199,6 +200,8 @@ public:
 	Node *get_edited_scene_root(int p_idx = -1);
 	int get_edited_scene_count() const;
 	Vector<EditedScene> get_edited_scenes() const;
+	void update_edited_scene_inherited_nodes(int p_edited_scene);
+	void clear_edited_scene_inherited_nodes(int p_edited_scene);
 	String get_scene_title(int p_idx, bool p_always_strip_extension = false) const;
 	String get_scene_path(int p_idx) const;
 	String get_scene_type(int p_idx) const;
