@@ -67,6 +67,7 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 
 	HSplitContainer *tree_split = nullptr;
 	HSplitContainer *property_split = nullptr;
+	LineEdit *tree_filter_edit = nullptr;
 	TabContainer *data_mode = nullptr;
 	Tree *scene_tree = nullptr;
 	Tree *mesh_tree = nullptr;
@@ -157,6 +158,9 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 
 	String selected_type;
 	String selected_id;
+	String tree_filter;
+
+	Tree *current_tree = nullptr;
 
 	bool selecting = false;
 
@@ -176,6 +180,12 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	void _cleanup();
 
 	void _viewport_input(const Ref<InputEvent> &p_input);
+
+	void _tree_filter_edit_changed(const String &p_filter);
+	void _tree_tab_changed(int p_tab_id);
+	bool _update_tree_filter(TreeItem *p_parent, bool p_scroll_to_selected);
+
+	bool _item_matches_all_terms(TreeItem *p_item, PackedStringArray p_terms);
 
 	HashMap<StringName, Variant> defaults;
 
