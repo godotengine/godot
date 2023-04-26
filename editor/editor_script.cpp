@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_run_script.h                                                   */
+/*  editor_script.cpp                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,33 +28,48 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_RUN_SCRIPT_H
-#define EDITOR_RUN_SCRIPT_H
+#include "editor_script.h"
 
-#include "core/object/gdvirtual.gen.inc"
-#include "core/object/ref_counted.h"
-#include "core/object/script_language.h"
+#include "editor/editor_interface.h"
+#include "editor/editor_node.h"
 
-class EditorInterface;
-class EditorNode;
+void EditorScript::add_root_node(Node *p_node) {
+	if (!EditorNode::get_singleton()) {
+		EditorNode::add_io_error("EditorScript::add_root_node: " + TTR("Write your logic in the _run() method."));
+		return;
+	}
 
-class EditorScript : public RefCounted {
-	GDCLASS(EditorScript, RefCounted);
+	if (EditorNode::get_singleton()->get_edited_scene()) {
+		EditorNode::add_io_error("EditorScript::add_root_node: " + TTR("There is an edited scene already."));
+		return;
+	}
 
-	EditorNode *editor = nullptr;
+	//editor->set_edited_scene(p_node);
+}
 
-protected:
-	static void _bind_methods();
-	GDVIRTUAL0(_run)
+Node *EditorScript::get_scene() const {
+	if (!EditorNode::get_singleton()) {
+		EditorNode::add_io_error("EditorScript::get_scene: " + TTR("Write your logic in the _run() method."));
+		return nullptr;
+	}
 
-public:
-	void add_root_node(Node *p_node);
-	Node *get_scene();
-	EditorInterface *get_editor_interface();
-	virtual void _run();
+	return EditorNode::get_singleton()->get_edited_scene();
+}
 
-	void set_editor(EditorNode *p_editor);
-	EditorScript();
-};
+EditorInterface *EditorScript::get_editor_interface() const {
+	return EditorInterface::get_singleton();
+}
 
-#endif // EDITOR_RUN_SCRIPT_H
+void EditorScript::run() {
+	if (!GDVIRTUAL_CALL(_run)) {
+		EditorNode::add_io_error(TTR("Couldn't run editor script, did you forget to override the '_run' method?"));
+	}
+}
+
+void EditorScript::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("add_root_node", "node"), &EditorScript::add_root_node);
+	ClassDB::bind_method(D_METHOD("get_scene"), &EditorScript::get_scene);
+	ClassDB::bind_method(D_METHOD("get_editor_interface"), &EditorScript::get_editor_interface);
+
+	GDVIRTUAL_BIND(_run);
+}

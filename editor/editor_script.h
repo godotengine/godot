@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  export.cpp                                                            */
+/*  editor_script.h                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,29 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "export.h"
+#ifndef EDITOR_SCRIPT_H
+#define EDITOR_SCRIPT_H
 
-#include "editor/editor_settings.h"
-#include "editor/export/editor_export.h"
-#include "export_plugin.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/ref_counted.h"
+#include "core/object/script_language.h"
 
-void register_web_exporter_types() {
-	GDREGISTER_VIRTUAL_CLASS(EditorExportPlatformWeb);
-}
+class EditorInterface;
+class EditorNode;
 
-void register_web_exporter() {
-#ifndef ANDROID_ENABLED
-	EDITOR_DEF("export/web/http_host", "localhost");
-	EDITOR_DEF("export/web/http_port", 8060);
-	EDITOR_DEF("export/web/use_tls", false);
-	EDITOR_DEF("export/web/tls_key", "");
-	EDITOR_DEF("export/web/tls_certificate", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "export/web/http_port", PROPERTY_HINT_RANGE, "1,65535,1"));
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/web/tls_key", PROPERTY_HINT_GLOBAL_FILE, "*.key"));
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/web/tls_certificate", PROPERTY_HINT_GLOBAL_FILE, "*.crt,*.pem"));
-#endif
+class EditorScript : public RefCounted {
+	GDCLASS(EditorScript, RefCounted);
 
-	Ref<EditorExportPlatformWeb> platform;
-	platform.instantiate();
-	EditorExport::get_singleton()->add_export_platform(platform);
-}
+protected:
+	static void _bind_methods();
+
+	GDVIRTUAL0(_run)
+
+public:
+	void add_root_node(Node *p_node);
+	Node *get_scene() const;
+	EditorInterface *get_editor_interface() const;
+
+	virtual void run();
+
+	EditorScript() {}
+};
+
+#endif // EDITOR_SCRIPT_H

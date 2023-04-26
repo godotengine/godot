@@ -43,12 +43,13 @@
 #include "editor/editor_help_search.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_run_script.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_script.h"
 #include "editor/editor_settings.h"
 #include "editor/filesystem_dock.h"
 #include "editor/find_in_files.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_run_bar.h"
 #include "editor/inspector_dock.h"
 #include "editor/node_dock.h"
 #include "editor/plugins/shader_editor_plugin.h"
@@ -1375,9 +1376,7 @@ void ScriptEditor::_menu_option(int p_option) {
 
 				Ref<EditorScript> es = memnew(EditorScript);
 				es->set_script(scr);
-				es->set_editor(EditorNode::get_singleton());
-
-				es->_run();
+				es->run();
 			} break;
 			case FILE_CLOSE: {
 				if (current->is_unsaved()) {
@@ -1592,7 +1591,7 @@ void ScriptEditor::_tab_changed(int p_which) {
 void ScriptEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			EditorNode::get_singleton()->connect("stop_pressed", callable_mp(this, &ScriptEditor::_editor_stop));
+			EditorRunBar::get_singleton()->connect("stop_pressed", callable_mp(this, &ScriptEditor::_editor_stop));
 			EditorNode::get_singleton()->connect("script_add_function_request", callable_mp(this, &ScriptEditor::_add_callback));
 			EditorNode::get_singleton()->connect("resource_saved", callable_mp(this, &ScriptEditor::_res_saved_callback));
 			EditorNode::get_singleton()->connect("scene_saved", callable_mp(this, &ScriptEditor::_scene_saved_callback));
@@ -1646,7 +1645,7 @@ void ScriptEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			EditorNode::get_singleton()->disconnect("stop_pressed", callable_mp(this, &ScriptEditor::_editor_stop));
+			EditorRunBar::get_singleton()->disconnect("stop_pressed", callable_mp(this, &ScriptEditor::_editor_stop));
 		} break;
 
 		case NOTIFICATION_APPLICATION_FOCUS_IN: {

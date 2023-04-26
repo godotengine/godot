@@ -39,6 +39,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "scene/gui/popup_menu.h"
 
 CurveEditor::CurveEditor() {
 	_selected_point = -1;

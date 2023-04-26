@@ -35,6 +35,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
+#include "editor/export/editor_export.h"
 #include "platform/windows/logo_svg.gen.h"
 #include "platform/windows/run_icon_svg.gen.h"
 

@@ -42,6 +42,7 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_run_bar.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "main/main.h"
 
@@ -156,11 +157,11 @@ void godot_icall_Internal_EditorNodeShowScriptScreen() {
 }
 
 void godot_icall_Internal_EditorRunPlay() {
-	EditorNode::get_singleton()->run_play();
+	EditorRunBar::get_singleton()->play_main_scene();
 }
 
 void godot_icall_Internal_EditorRunStop() {
-	EditorNode::get_singleton()->run_stop();
+	EditorRunBar::get_singleton()->stop_playing();
 }
 
 void godot_icall_Internal_ScriptEditorDebugger_ReloadScripts() {
