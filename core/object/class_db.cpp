@@ -56,6 +56,7 @@ ClassDB::APIType ClassDB::current_api = API_CORE;
 HashMap<ClassDB::APIType, uint64_t> ClassDB::api_hashes_cache;
 
 void ClassDB::set_current_api(APIType p_api) {
+	DEV_ASSERT(!api_hashes_cache.has(p_api)); // This API type may not be suitable for caching of hash if it can change later.
 	current_api = p_api;
 }
 
@@ -296,7 +297,12 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 	}
 
 	hash = hash_fmix32(hash);
-	api_hashes_cache[p_api] = hash;
+
+	// Extension API changes at runtime; let's just not cache them by now.
+	if (p_api != API_EXTENSION && p_api != API_EDITOR_EXTENSION) {
+		api_hashes_cache[p_api] = hash;
+	}
+
 	return hash;
 #else
 	return 0;
