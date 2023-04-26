@@ -132,12 +132,15 @@ void MeshLibrary::create_item(int p_item) {
 	ERR_FAIL_COND(p_item < 0);
 	ERR_FAIL_COND(item_map.has(p_item));
 	item_map[p_item] = Item();
+	notify_change_to_owners();
+	emit_changed();
 	notify_property_list_changed();
 }
 
 void MeshLibrary::set_item_name(int p_item, const String &p_name) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	item_map[p_item].name = p_name;
+	notify_change_to_owners();
 	emit_changed();
 }
 
@@ -193,6 +196,7 @@ void MeshLibrary::set_item_navigation_layers(int p_item, uint32_t p_navigation_l
 void MeshLibrary::set_item_preview(int p_item, const Ref<Texture2D> &p_preview) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	item_map[p_item].preview = p_preview;
+	notify_change_to_owners();
 	emit_changed();
 	notify_property_list_changed();
 }

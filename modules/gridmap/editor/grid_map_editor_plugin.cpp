@@ -915,8 +915,13 @@ void GridMapEditor::update_palette() {
 }
 
 void GridMapEditor::edit(GridMap *p_gridmap) {
-	if (node && node->is_connected("cell_size_changed", callable_mp(this, &GridMapEditor::_draw_grids))) {
-		node->disconnect("cell_size_changed", callable_mp(this, &GridMapEditor::_draw_grids));
+	if (node) {
+		if (node->is_connected(SNAME("cell_size_changed"), callable_mp(this, &GridMapEditor::_draw_grids))) {
+			node->disconnect(SNAME("cell_size_changed"), callable_mp(this, &GridMapEditor::_draw_grids));
+		}
+		if (node->is_connected(SNAME("mesh_library_changed"), callable_mp(this, &GridMapEditor::update_palette))) {
+			node->disconnect(SNAME("mesh_library_changed"), callable_mp(this, &GridMapEditor::update_palette));
+		}
 	}
 
 	node = p_gridmap;
@@ -949,7 +954,12 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 	_draw_grids(node->get_cell_size());
 	update_grid();
 
-	node->connect("cell_size_changed", callable_mp(this, &GridMapEditor::_draw_grids));
+	if (!node->is_connected(SNAME("cell_size_changed"), callable_mp(this, &GridMapEditor::_draw_grids))) {
+		node->connect(SNAME("cell_size_changed"), callable_mp(this, &GridMapEditor::_draw_grids));
+	}
+	if (!node->is_connected(SNAME("mesh_library_changed"), callable_mp(this, &GridMapEditor::update_palette))) {
+		node->connect(SNAME("mesh_library_changed"), callable_mp(this, &GridMapEditor::update_palette));
+	}
 }
 
 void GridMapEditor::update_grid() {

@@ -228,6 +228,11 @@
 				Emitted when [member cell_size] changes.
 			</description>
 		</signal>
+		<signal name="mesh_library_changed">
+			<description>
+				Emitted when the assigned [member mesh_library] changes.
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="INVALID_CELL_ITEM" value="-1">

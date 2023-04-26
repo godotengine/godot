@@ -1007,6 +1007,7 @@ void GridMap::clear() {
 
 void GridMap::resource_changed(const Ref<Resource> &p_res) {
 	_recreate_octant_data();
+	emit_signal(SNAME("mesh_library_changed"));
 }
 
 void GridMap::_update_octants_callback() {
@@ -1119,6 +1120,7 @@ void GridMap::_bind_methods() {
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
 	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
+	ADD_SIGNAL(MethodInfo("mesh_library_changed"));
 }
 
 void GridMap::set_cell_scale(float p_scale) {
