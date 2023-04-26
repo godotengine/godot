@@ -2474,7 +2474,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	GDScriptParser::DataType base_type = p_base.type;
 
 	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
-	const bool is_external_editor = EDITOR_GET("text_editor/external/use_external_editor");;
+	const bool is_external_editor = EDITOR_GET("text_editor/external/use_external_editor");
 
 	while (base_type.is_set() && !base_type.is_variant()) {
 		switch (base_type.kind) {
@@ -2511,8 +2511,8 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 								if (opt.is_quoted()) {
 									opt = opt.unquote();
 								}
-								
-								if(!is_external_editor) {
+
+								if (!is_external_editor) {
 									opt = opt.quote(quote_style);
 								}
 
