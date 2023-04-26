@@ -178,7 +178,7 @@ class EditorHelp : public VBoxContainer {
 	void _class_desc_resized(bool p_force_update_theme);
 	int display_margin = 0;
 
-	Error _goto_desc(const String &p_class, int p_vscr = -1);
+	Error _goto_desc(const String &p_class);
 	//void _update_history_buttons();
 	void _update_method_list(const Vector<DocData::MethodDoc> p_methods);
 	void _update_method_descriptions(const DocData::ClassDoc p_classdoc, const Vector<DocData::MethodDoc> p_methods, const String &p_method_type);
@@ -210,7 +210,7 @@ public:
 	static String get_cache_full_path();
 
 	void go_to_help(const String &p_help);
-	void go_to_class(const String &p_class, int p_scroll = 0);
+	void go_to_class(const String &p_class);
 	void update_doc();
 
 	Vector<Pair<String, int>> get_sections();

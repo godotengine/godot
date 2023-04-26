@@ -52,6 +52,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_paths.h"
+#include "editor/gdscript_docgen.h"
 #endif
 
 ///////////////////////////
@@ -340,12 +341,11 @@ void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_incl
 			r_list->push_back(E);
 		}
 
-		props.clear();
-
 		if (!p_include_base) {
 			break;
 		}
 
+		props.clear();
 		sptr = sptr->_base;
 	}
 }
@@ -461,9 +461,9 @@ void GDScript::_update_exports_values(HashMap<StringName, Variant> &values, List
 }
 
 void GDScript::_add_doc(const DocData::ClassDoc &p_inner_class) {
-	if (_owner) {
+	if (_owner) { // Only the top-level class stores doc info
 		_owner->_add_doc(p_inner_class);
-	} else {
+	} else { // Remove old docs, add new
 		for (int i = 0; i < docs.size(); i++) {
 			if (docs[i].name == p_inner_class.name) {
 				docs.remove_at(i);
@@ -477,167 +477,6 @@ void GDScript::_add_doc(const DocData::ClassDoc &p_inner_class) {
 void GDScript::_clear_doc() {
 	docs.clear();
 	doc = DocData::ClassDoc();
-}
-
-void GDScript::_update_doc() {
-	_clear_doc();
-
-	doc.script_path = vformat(R"("%s")", get_script_path().get_slice("://", 1));
-	if (!name.is_empty()) {
-		doc.name = name;
-	} else {
-		doc.name = doc.script_path;
-	}
-
-	if (_owner) {
-		doc.name = _owner->doc.name + "." + doc.name;
-		doc.script_path = doc.script_path + "." + doc.name;
-	}
-
-	doc.is_script_doc = true;
-
-	if (base.is_valid() && base->is_valid()) {
-		if (!base->doc.name.is_empty()) {
-			doc.inherits = base->doc.name;
-		} else {
-			doc.inherits = base->get_instance_base_type();
-		}
-	} else if (native.is_valid()) {
-		doc.inherits = native->get_name();
-	}
-
-	doc.brief_description = doc_brief_description;
-	doc.description = doc_description;
-	doc.tutorials = doc_tutorials;
-
-	for (const KeyValue<String, DocData::EnumDoc> &E : doc_enums) {
-		if (!E.value.description.is_empty()) {
-			doc.enums[E.key] = E.value.description;
-		}
-	}
-
-	List<MethodInfo> methods;
-	_get_script_method_list(&methods, false);
-	for (int i = 0; i < methods.size(); i++) {
-		// Ignore internal methods.
-		if (methods[i].name[0] == '@') {
-			continue;
-		}
-
-		DocData::MethodDoc method_doc;
-		const String &class_name = methods[i].name;
-		if (member_functions.has(class_name)) {
-			GDScriptFunction *fn = member_functions[class_name];
-
-			// Change class name if return type is script reference.
-			GDScriptDataType return_type = fn->get_return_type();
-			if (return_type.kind == GDScriptDataType::GDSCRIPT) {
-				methods[i].return_val.class_name = _get_gdscript_reference_class_name(Object::cast_to<GDScript>(return_type.script_type));
-			}
-
-			// Change class name if argument is script reference.
-			for (int j = 0; j < fn->get_argument_count(); j++) {
-				GDScriptDataType arg_type = fn->get_argument_type(j);
-				if (arg_type.kind == GDScriptDataType::GDSCRIPT) {
-					methods[i].arguments[j].class_name = _get_gdscript_reference_class_name(Object::cast_to<GDScript>(arg_type.script_type));
-				}
-			}
-		}
-		if (doc_functions.has(methods[i].name)) {
-			DocData::method_doc_from_methodinfo(method_doc, methods[i], doc_functions[methods[i].name]);
-		} else {
-			DocData::method_doc_from_methodinfo(method_doc, methods[i], String());
-		}
-		doc.methods.push_back(method_doc);
-	}
-
-	List<PropertyInfo> props;
-	_get_script_property_list(&props, false);
-	for (int i = 0; i < props.size(); i++) {
-		if (props[i].usage & PROPERTY_USAGE_CATEGORY || props[i].usage & PROPERTY_USAGE_GROUP || props[i].usage & PROPERTY_USAGE_SUBGROUP) {
-			continue;
-		}
-		ScriptMemberInfo scr_member_info;
-		scr_member_info.propinfo = props[i];
-		scr_member_info.propinfo.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-		if (member_indices.has(props[i].name)) {
-			const MemberInfo &mi = member_indices[props[i].name];
-			scr_member_info.setter = mi.setter;
-			scr_member_info.getter = mi.getter;
-			if (mi.data_type.kind == GDScriptDataType::GDSCRIPT) {
-				scr_member_info.propinfo.class_name = _get_gdscript_reference_class_name(
-						Object::cast_to<GDScript>(mi.data_type.script_type));
-			}
-		}
-		if (member_default_values.has(props[i].name)) {
-			scr_member_info.has_default_value = true;
-			scr_member_info.default_value = member_default_values[props[i].name];
-		}
-		if (doc_variables.has(props[i].name)) {
-			scr_member_info.doc_string = doc_variables[props[i].name];
-		}
-
-		DocData::PropertyDoc prop_doc;
-		DocData::property_doc_from_scriptmemberinfo(prop_doc, scr_member_info);
-		doc.properties.push_back(prop_doc);
-	}
-
-	List<MethodInfo> signals;
-	_get_script_signal_list(&signals, false);
-	for (int i = 0; i < signals.size(); i++) {
-		DocData::MethodDoc signal_doc;
-		if (doc_signals.has(signals[i].name)) {
-			DocData::signal_doc_from_methodinfo(signal_doc, signals[i], doc_signals[signals[i].name]);
-		} else {
-			DocData::signal_doc_from_methodinfo(signal_doc, signals[i], String());
-		}
-		doc.signals.push_back(signal_doc);
-	}
-
-	for (const KeyValue<StringName, Variant> &E : constants) {
-		if (subclasses.has(E.key)) {
-			continue;
-		}
-
-		// Enums.
-		bool is_enum = false;
-		if (E.value.get_type() == Variant::DICTIONARY) {
-			if (doc_enums.has(E.key)) {
-				is_enum = true;
-				for (int i = 0; i < doc_enums[E.key].values.size(); i++) {
-					doc_enums[E.key].values.write[i].enumeration = E.key;
-					doc.constants.push_back(doc_enums[E.key].values[i]);
-				}
-			}
-		}
-		if (!is_enum && doc_enums.has("@unnamed_enums")) {
-			for (int i = 0; i < doc_enums["@unnamed_enums"].values.size(); i++) {
-				if (E.key == doc_enums["@unnamed_enums"].values[i].name) {
-					is_enum = true;
-					DocData::ConstantDoc constant_doc;
-					constant_doc.enumeration = "@unnamed_enums";
-					DocData::constant_doc_from_variant(constant_doc, E.key, E.value, doc_enums["@unnamed_enums"].values[i].description);
-					doc.constants.push_back(constant_doc);
-					break;
-				}
-			}
-		}
-		if (!is_enum) {
-			DocData::ConstantDoc constant_doc;
-			String const_description;
-			if (doc_constants.has(E.key)) {
-				const_description = doc_constants[E.key];
-			}
-			DocData::constant_doc_from_variant(constant_doc, E.key, E.value, const_description);
-			doc.constants.push_back(constant_doc);
-		}
-	}
-
-	for (KeyValue<StringName, Ref<GDScript>> &E : subclasses) {
-		E.value->_update_doc();
-	}
-
-	_add_doc(doc);
 }
 #endif
 
@@ -905,6 +744,13 @@ Error GDScript::reload(bool p_keep_state) {
 			return err;
 		}
 	}
+
+#ifdef TOOLS_ENABLED
+	// Done after compilation because it needs the GDScript object's inner class GDScript objects,
+	// which are made by calling make_scripts() within compiler.compile() above.
+	GDScriptDocGen::generate_docs(this, parser.get_tree());
+#endif
+
 #ifdef DEBUG_ENABLED
 	for (const GDScriptWarning &warning : parser.get_warnings()) {
 		if (EngineDebugger::is_active()) {
@@ -1266,7 +1112,6 @@ void GDScript::_get_script_signal_list(List<MethodInfo> *r_list, bool p_include_
 	else if (base_cache.is_valid()) {
 		base_cache->get_script_signal_list(r_list);
 	}
-
 #endif
 }
 

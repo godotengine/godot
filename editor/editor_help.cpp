@@ -32,6 +32,7 @@
 
 #include "core/core_constants.h"
 #include "core/input/input.h"
+#include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
 #include "doc_data_compressed.gen.h"
@@ -44,6 +45,8 @@
 
 #define CONTRIBUTE_URL vformat("%s/contributing/documentation/updating_the_class_reference.html", VERSION_DOCS_URL)
 
+// TODO: this is sometimes used directly as doc->something, other times as EditorHelp::get_doc_data(), which is thread-safe.
+// Might this be a problem?
 DocTools *EditorHelp::doc = nullptr;
 
 class DocCache : public Resource {
@@ -72,6 +75,49 @@ public:
 	Array get_classes() const { return classes; }
 	void set_classes(const Array &p_classes) { classes = p_classes; }
 };
+
+static bool _attempt_doc_load(const String &p_class) {
+	// Docgen always happens in the outer-most class: it also generates docs for inner classes.
+	String outer_class = p_class.get_slice(".", 0);
+	if (!ScriptServer::is_global_class(outer_class)) {
+		return false;
+	}
+
+	// ResourceLoader is used in order to have a script-agnostic way to load scripts.
+	// This forces GDScript to compile the code, which is unnecessary for docgen, but it's a good compromise right now.
+	Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(outer_class), outer_class);
+	if (script.is_valid()) {
+		Vector<DocData::ClassDoc> docs = script->get_documentation();
+		for (int j = 0; j < docs.size(); j++) {
+			const DocData::ClassDoc &doc = docs.get(j);
+			EditorHelp::get_doc_data()->add_doc(doc);
+		}
+		return true;
+	}
+
+	return false;
+}
+
+// Removes unnecessary prefix from p_class_specifier when within the p_edited_class context
+static String _contextualize_class_specifier(const String &p_class_specifier, const String &p_edited_class) {
+	// If this is a completely different context than the current class, then keep full path
+	if (!p_class_specifier.begins_with(p_edited_class)) {
+		return p_class_specifier;
+	}
+
+	// Here equal length + begins_with from above implies p_class_specifier == p_edited_class :)
+	if (p_class_specifier.length() == p_edited_class.length()) {
+		int rfind = p_class_specifier.rfind(".");
+		if (rfind == -1) { // Single identifier
+			return p_class_specifier;
+		}
+		// Multiple specifiers: keep last one only
+		return p_class_specifier.substr(rfind + 1);
+	}
+
+	// Remove prefix
+	return p_class_specifier.substr(p_edited_class.length() + 1);
+}
 
 void EditorHelp::_update_theme_item_cache() {
 	VBoxContainer::_update_theme_item_cache();
@@ -130,12 +176,13 @@ void EditorHelp::_class_list_select(const String &p_select) {
 }
 
 void EditorHelp::_class_desc_select(const String &p_select) {
-	if (p_select.begins_with("$")) { //enum
+	if (p_select.begins_with("$")) { // enum
 		String select = p_select.substr(1, p_select.length());
 		String class_name;
-		if (select.contains(".")) {
-			class_name = select.get_slice(".", 0);
-			select = select.get_slice(".", 1);
+		int rfind = select.rfind(".");
+		if (rfind != -1) {
+			class_name = select.substr(0, rfind);
+			select = select.substr(rfind + 1);
 		} else {
 			class_name = "@GlobalScope";
 		}
@@ -253,35 +300,35 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 	bool is_enum_type = !p_enum.is_empty();
 	bool can_ref = !p_type.contains("*") || is_enum_type;
 
-	String t = p_type;
+	String link_t = p_type; // For links in metadata
+	String display_t = link_t; // For display purposes
 	if (is_enum_type) {
-		if (p_enum.get_slice_count(".") > 1) {
-			t = p_enum.get_slice(".", 1);
-		} else {
-			t = p_enum.get_slice(".", 0);
-		}
+		link_t = p_enum; // The link for enums is always the full enum description
+		display_t = _contextualize_class_specifier(p_enum, edited_class);
+	} else {
+		display_t = _contextualize_class_specifier(p_type, edited_class);
 	}
 
 	class_desc->push_color(theme_cache.type_color);
 	bool add_array = false;
 	if (can_ref) {
-		if (t.ends_with("[]")) {
+		if (link_t.ends_with("[]")) {
 			add_array = true;
-			t = t.replace("[]", "");
+			link_t = link_t.replace("[]", "");
 
-			class_desc->push_meta("#Array"); //class
+			class_desc->push_meta("#Array"); // class
 			class_desc->add_text("Array");
 			class_desc->pop();
 			class_desc->add_text("[");
 		}
 
 		if (is_enum_type) {
-			class_desc->push_meta("$" + p_enum); //class
+			class_desc->push_meta("$" + link_t); // enum
 		} else {
-			class_desc->push_meta("#" + t); //class
+			class_desc->push_meta("#" + link_t); // class
 		}
 	}
-	class_desc->add_text(t);
+	class_desc->add_text(display_t);
 	if (can_ref) {
 		class_desc->pop(); // Pushed meta above.
 		if (add_array) {
@@ -338,7 +385,7 @@ String EditorHelp::_fix_constant(const String &p_constant) const {
 	class_desc->pop();
 
 void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview) {
-	method_line[p_method.name] = class_desc->get_paragraph_count() - 2; //gets overridden if description
+	method_line[p_method.name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description
 
 	const bool is_vararg = p_method.qualifiers.contains("vararg");
 
@@ -352,8 +399,8 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	_add_type(p_method.return_type, p_method.return_enum);
 
 	if (p_overview) {
-		class_desc->pop(); //align
-		class_desc->pop(); //cell
+		class_desc->pop(); // align
+		class_desc->pop(); // cell
 		class_desc->push_cell();
 	} else {
 		class_desc->add_text(" ");
@@ -368,7 +415,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	class_desc->pop();
 
 	if (p_overview && !p_method.description.strip_edges().is_empty()) {
-		class_desc->pop(); //meta
+		class_desc->pop(); // meta
 	}
 
 	class_desc->push_color(theme_cache.symbol_color);
@@ -447,7 +494,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	}
 
 	if (p_overview) {
-		class_desc->pop(); //cell
+		class_desc->pop(); // cell
 	}
 }
 
@@ -488,8 +535,9 @@ void EditorHelp::_pop_code_font() {
 	class_desc->pop();
 }
 
-Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
-	if (!doc->class_list.has(p_class)) {
+Error EditorHelp::_goto_desc(const String &p_class) {
+	// If class doesn't have docs listed, attempt on-demand docgen
+	if (!doc->class_list.has(p_class) && !_attempt_doc_load(p_class)) {
 		return ERR_DOES_NOT_EXIST;
 	}
 
@@ -529,9 +577,9 @@ void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods)
 
 		if (any_previous && !m.is_empty()) {
 			class_desc->push_cell();
-			class_desc->pop(); //cell
+			class_desc->pop(); // cell
 			class_desc->push_cell();
-			class_desc->pop(); //cell
+			class_desc->pop(); // cell
 		}
 
 		String group_prefix;
@@ -549,9 +597,9 @@ void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods)
 
 			if (is_new_group && pass == 1) {
 				class_desc->push_cell();
-				class_desc->pop(); //cell
+				class_desc->pop(); // cell
 				class_desc->push_cell();
-				class_desc->pop(); //cell
+				class_desc->pop(); // cell
 			}
 
 			_add_method(m[i], true);
@@ -560,7 +608,7 @@ void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods)
 		any_previous = !m.is_empty();
 	}
 
-	class_desc->pop(); //table
+	class_desc->pop(); // table
 	class_desc->pop();
 	_pop_code_font();
 
@@ -1196,7 +1244,7 @@ void EditorHelp::_update_doc() {
 
 				_add_text(cd.signals[i].arguments[j].name);
 				class_desc->add_text(": ");
-				_add_type(cd.signals[i].arguments[j].type);
+				_add_type(cd.signals[i].arguments[j].type, cd.signals[i].arguments[j].enumeration);
 				if (!cd.signals[i].arguments[j].default_value.is_empty()) {
 					class_desc->push_color(theme_cache.symbol_color);
 					class_desc->add_text(" = ");
@@ -1767,7 +1815,6 @@ void EditorHelp::_request_help(const String &p_string) {
 	if (err == OK) {
 		EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
 	}
-	//100 palabras
 }
 
 void EditorHelp::_help_callback(const String &p_topic) {
@@ -2178,7 +2225,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			tag_stack.push_front("font");
 
 		} else {
-			p_rt->add_text("["); //ignore
+			p_rt->add_text("["); // ignore
 			pos = brk_pos + 1;
 		}
 	}
@@ -2310,9 +2357,9 @@ void EditorHelp::go_to_help(const String &p_help) {
 	_help_callback(p_help);
 }
 
-void EditorHelp::go_to_class(const String &p_class, int p_scroll) {
+void EditorHelp::go_to_class(const String &p_class) {
 	_wait_for_thread();
-	_goto_desc(p_class, p_scroll);
+	_goto_desc(p_class);
 }
 
 void EditorHelp::update_doc() {
@@ -2443,14 +2490,15 @@ void EditorHelpBit::_go_to_help(String p_what) {
 }
 
 void EditorHelpBit::_meta_clicked(String p_select) {
-	if (p_select.begins_with("$")) { //enum
-
+	if (p_select.begins_with("$")) { // enum
 		String select = p_select.substr(1, p_select.length());
 		String class_name;
-		if (select.contains(".")) {
-			class_name = select.get_slice(".", 0);
+		int rfind = select.rfind(".");
+		if (rfind != -1) {
+			class_name = select.substr(0, rfind);
+			select = select.substr(rfind + 1);
 		} else {
-			class_name = "@Global";
+			class_name = "@GlobalScope";
 		}
 		_go_to_help("class_enum:" + class_name + ":" + select);
 		return;
