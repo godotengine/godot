@@ -167,7 +167,7 @@ static bool project_manager = false;
 static bool cmdline_tool = false;
 static String locale;
 static bool show_help = false;
-static bool auto_quit = false;
+static uint64_t quit_after = 0;
 static OS::ProcessID editor_pid = 0;
 #ifdef TOOLS_ENABLED
 static bool found_project = false;
@@ -355,6 +355,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --debug-server <uri>              Start the editor debug server (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007)\n");
 #endif
 	OS::get_singleton()->print("  --quit                            Quit after the first iteration.\n");
+	OS::get_singleton()->print("  --quit-after <int>                Quit after the given number of iterations. Set to 0 to disable.\n");
 	OS::get_singleton()->print("  -l, --language <locale>           Use a specific locale (<locale> being a two-letter code).\n");
 	OS::get_singleton()->print("  --path <directory>                Path to a project (<directory> must contain a 'project.godot' file).\n");
 	OS::get_singleton()->print("  -u, --upwards                     Scan folders upwards for project.godot file.\n");
@@ -398,6 +399,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --write-movie <file>              Writes a video to the specified path (usually with .avi or .png extension).\n");
 	OS::get_singleton()->print("                                    --fixed-fps is forced when enabled, but it can be used to change movie FPS.\n");
 	OS::get_singleton()->print("                                    --disable-vsync can speed up movie writing but makes interaction more difficult.\n");
+	OS::get_singleton()->print("                                    --quit-after can be used to specify the number of frames to write.\n");
 
 	OS::get_singleton()->print("\n");
 
@@ -1200,7 +1202,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "-u" || I->get() == "--upwards") { // scan folders upwards
 			upwards = true;
 		} else if (I->get() == "--quit") { // Auto quit at the end of the first main loop iteration
-			auto_quit = true;
+			quit_after = 1;
+		} else if (I->get() == "--quit-after") { // Quit after the given number of iterations
+			if (I->next()) {
+				quit_after = I->next()->get().to_int();
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing number of iterations, aborting.\n");
+				goto error;
+			}
 		} else if (I->get().ends_with("project.godot")) {
 			String path;
 			String file = I->get();
@@ -3301,6 +3311,10 @@ bool Main::iteration() {
 		movie_writer->add_frame(vp_tex);
 	}
 
+	if ((quit_after > 0) && (Engine::get_singleton()->_process_frames >= quit_after)) {
+		exit = true;
+	}
+
 	if (fixed_fps != -1) {
 		return exit;
 	}
@@ -3324,7 +3338,7 @@ bool Main::iteration() {
 	}
 #endif
 
-	return exit || auto_quit;
+	return exit;
 }
 
 void Main::force_redraw() {
