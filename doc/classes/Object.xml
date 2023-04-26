@@ -656,6 +656,7 @@
 			<description>
 				Returns [code]true[/code] if a metadata entry is found with the given [param name]. See also [method get_meta], [method set_meta] and [method remove_meta].
 				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
+				[b]Note:[/b] A metadata’s [param name] must be a valid identifier. A valid identifier cannot start with a number.
 			</description>
 		</method>
 		<method name="has_method" qualifiers="const">
