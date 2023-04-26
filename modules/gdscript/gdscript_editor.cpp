@@ -2508,7 +2508,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 							obj->get_argument_options(p_method, p_argidx, &options);
 							for (String &opt : options) {
 								if (opt.is_quoted()) {
-									opt = opt.unquote().quote(quote_style); // Handle user preference.
+									opt = opt.unquote();
 								}
 								ScriptLanguage::CodeCompletionOption option(opt, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
 								r_result.insert(option.display, option);
