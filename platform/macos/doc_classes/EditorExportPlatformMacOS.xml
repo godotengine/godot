@@ -46,7 +46,7 @@
 			Official export templates include [code]universal[/code] binaries only.
 		</member>
 		<member name="codesign/apple_team_id" type="String" setter="" getter="">
-			Apple Team ID, unique 10-character string. To locate your Team ID check "Membership details" section in your Apple developer account dashboard, or "Organisational Unit" of your code signing certificate. See [url=https://developer.apple.com/help/account/manage-your-team/locate-your-team-id]Locate your Team ID[/url].
+			Apple Team ID, unique 10-character string. To locate your Team ID check "Membership details" section in your Apple developer account dashboard, or "Organizational Unit" of your code signing certificate. See [url=https://developer.apple.com/help/account/manage-your-team/locate-your-team-id]Locate your Team ID[/url].
 		</member>
 		<member name="codesign/certificate_file" type="String" setter="" getter="">
 			PKCS #12 certificate file used to sign [code].app[/code] bundle.

@@ -10,7 +10,7 @@
 	</tutorials>
 	<members>
 		<member name="application/app_store_team_id" type="String" setter="" getter="">
-			Apple Team ID, unique 10-character string. To locate your Team ID check "Membership details" section in your Apple developer account dashboard, or "Organisational Unit" of your code signing certificate. See [url=https://developer.apple.com/help/account/manage-your-team/locate-your-team-id]Locate your Team ID[/url].
+			Apple Team ID, unique 10-character string. To locate your Team ID check "Membership details" section in your Apple developer account dashboard, or "Organizational Unit" of your code signing certificate. See [url=https://developer.apple.com/help/account/manage-your-team/locate-your-team-id]Locate your Team ID[/url].
 		</member>
 		<member name="application/bundle_identifier" type="String" setter="" getter="">
 			Unique application identifier in a reverse-DNS format, can only contain alphanumeric characters ([code]A-Z[/code], [code]a-z[/code], and [code]0-9[/code]), hyphens ([code]-[/code]), and periods ([code].[/code]).

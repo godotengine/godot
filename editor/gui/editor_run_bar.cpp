@@ -175,7 +175,7 @@ void EditorRunBar::_run_scene(const String &p_scene_path) {
 		}
 
 		if (write_movie_file.is_empty()) {
-			// TODO: Provide options to diretly resolve the issue with a custom dialog.
+			// TODO: Provide options to directly resolve the issue with a custom dialog.
 			EditorNode::get_singleton()->show_accept(TTR("Movie Maker mode is enabled, but no movie file path has been specified.\nA default movie file path can be specified in the project settings under the Editor > Movie Writer category.\nAlternatively, for running single scenes, a `movie_file` string metadata can be added to the root node,\nspecifying the path to a movie file that will be used when recording that scene."), TTR("OK"));
 			return;
 		}
