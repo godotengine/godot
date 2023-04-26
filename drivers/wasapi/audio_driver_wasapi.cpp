@@ -545,7 +545,7 @@ Error AudioDriverWASAPI::finish_input_device() {
 }
 
 Error AudioDriverWASAPI::init() {
-	mix_rate = GLOBAL_GET("audio/driver/mix_rate");
+	mix_rate = _get_configured_mix_rate();
 
 	target_latency_ms = GLOBAL_GET("audio/driver/output_latency");
 
