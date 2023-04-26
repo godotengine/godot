@@ -831,6 +831,15 @@ if selected_platform in platform_list:
     env.module_list = modules_enabled
     methods.sort_module_list(env)
 
+    if env.editor_build:
+        # Add editor-specific dependencies to the dependency graph.
+        env.module_add_dependencies("editor", ["freetype", "svg"])
+
+        # And check if they are met.
+        if not env.module_check_dependencies("editor"):
+            print("Not all modules required by editor builds are enabled.")
+            Exit(255)
+
     methods.generate_version_header(env.module_version_string)
 
     env["PROGSUFFIX_WRAP"] = suffix + env.module_version_string + ".console" + env["PROGSUFFIX"]
@@ -851,7 +860,7 @@ if selected_platform in platform_list:
 
     if env["disable_3d"]:
         if env.editor_build:
-            print("Build option 'disable_3d=yes' cannot be used for editor builds, but only for export templates.")
+            print("Build option 'disable_3d=yes' cannot be used for editor builds, only for export template builds.")
             Exit(255)
         else:
             env.Append(CPPDEFINES=["_3D_DISABLED"])
@@ -859,7 +868,7 @@ if selected_platform in platform_list:
         if env.editor_build:
             print(
                 "Build option 'disable_advanced_gui=yes' cannot be used for editor builds, "
-                "but only for export templates."
+                "only for export template builds."
             )
             Exit(255)
         else:
