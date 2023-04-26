@@ -81,7 +81,7 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 			!horizon.intersect_3(planes[0][Projection::PLANE_LEFT], planes[1][Projection::PLANE_RIGHT], &main_transform.origin), "Can't determine camera origin");
 
 	// handy to have the inverse of the transform we just build
-	Transform3D main_transform_inv = main_transform.inverse();
+	Transform3D main_transform_inv = main_transform.affine_inverse();
 
 	// 5. figure out far plane, this could use some improvement, we may have our far plane too close like this, not sure if this matters
 	Vector3 far_center = (planes[0][Projection::PLANE_FAR].get_center() + planes[1][Projection::PLANE_FAR].get_center()) * 0.5;
@@ -182,7 +182,7 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	// 3. Copy our view data
 	for (uint32_t v = 0; v < view_count; v++) {
 		view_offset[v] = main_transform_inv * p_transforms[v];
-		view_projection[v] = p_projections[v] * Projection(view_offset[v].inverse());
+		view_projection[v] = p_projections[v] * Projection(view_offset[v].affine_inverse());
 	}
 }
 

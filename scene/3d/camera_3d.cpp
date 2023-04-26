@@ -90,7 +90,7 @@ void Camera3D::_update_camera() {
 		return;
 	}
 
-	RenderingServer::get_singleton()->camera_set_transform(camera, get_camera_transform());
+	RenderingServer::get_singleton()->camera_set_transform(camera, get_camera_transform(), orthonormalization_forced);
 
 	if (get_tree()->is_node_being_edited(this) || !is_current()) {
 		return;
@@ -164,7 +164,9 @@ void Camera3D::_notification(int p_what) {
 }
 
 Transform3D Camera3D::get_camera_transform() const {
-	Transform3D tr = get_global_transform().orthonormalized();
+	Transform3D tr = get_global_transform();
+	if (orthonormalization_forced)
+		tr.orthonormalize();
 	tr.origin += tr.basis.get_column(1) * v_offset;
 	tr.origin += tr.basis.get_column(0) * h_offset;
 	return tr;
@@ -508,11 +510,13 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_current", "enabled"), &Camera3D::set_current);
 	ClassDB::bind_method(D_METHOD("is_current"), &Camera3D::is_current);
 	ClassDB::bind_method(D_METHOD("get_camera_transform"), &Camera3D::get_camera_transform);
+	ClassDB::bind_method(D_METHOD("is_orthonormalization_forced"), &Camera3D::is_orthonormalization_forced);
 	ClassDB::bind_method(D_METHOD("get_fov"), &Camera3D::get_fov);
 	ClassDB::bind_method(D_METHOD("get_frustum_offset"), &Camera3D::get_frustum_offset);
 	ClassDB::bind_method(D_METHOD("get_size"), &Camera3D::get_size);
 	ClassDB::bind_method(D_METHOD("get_far"), &Camera3D::get_far);
 	ClassDB::bind_method(D_METHOD("get_near"), &Camera3D::get_near);
+	ClassDB::bind_method(D_METHOD("set_orthonormalization_forced", "force"), &Camera3D::set_orthonormalization_forced);
 	ClassDB::bind_method(D_METHOD("set_fov", "fov"), &Camera3D::set_fov);
 	ClassDB::bind_method(D_METHOD("set_frustum_offset", "offset"), &Camera3D::set_frustum_offset);
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &Camera3D::set_size);
@@ -553,6 +557,7 @@ void Camera3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "projection", PROPERTY_HINT_ENUM, "Perspective,Orthogonal,Frustum"), "set_projection", "get_projection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "current"), "set_current", "is_current");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "orthonormalization_forced"), "set_orthonormalization_forced", "is_orthonormalization_forced");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fov", PROPERTY_HINT_RANGE, "1,179,0.1,degrees"), "set_fov", "get_fov");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size", PROPERTY_HINT_RANGE, "0.001,16384,0.001,or_greater,suffix:m"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frustum_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_frustum_offset", "get_frustum_offset");
@@ -569,6 +574,10 @@ void Camera3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_DISABLED);
 	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_IDLE_STEP);
 	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_PHYSICS_STEP);
+}
+
+bool Camera3D::is_orthonormalization_forced() const {
+	return orthonormalization_forced;
 }
 
 real_t Camera3D::get_fov() const {
@@ -593,6 +602,14 @@ real_t Camera3D::get_far() const {
 
 Camera3D::ProjectionType Camera3D::get_projection() const {
 	return mode;
+}
+
+void Camera3D::set_orthonormalization_forced(bool p_force) {
+	orthonormalization_forced = p_force;
+	set_disable_scale(p_force);
+	_update_camera();
+	update_gizmos();
+	notify_property_list_changed();
 }
 
 void Camera3D::set_fov(real_t p_fov) {

@@ -75,10 +75,13 @@ void RendererSceneCull::camera_set_frustum(RID p_camera, float p_size, Vector2 p
 	camera->zfar = p_z_far;
 }
 
-void RendererSceneCull::camera_set_transform(RID p_camera, const Transform3D &p_transform) {
+void RendererSceneCull::camera_set_transform(RID p_camera, const Transform3D &p_transform, bool p_orthonormalize) {
 	Camera *camera = camera_owner.get_or_null(p_camera);
 	ERR_FAIL_COND(!camera);
-	camera->transform = p_transform.orthonormalized();
+	if (p_orthonormalize)
+		camera->transform = p_transform.orthonormalized();
+	else
+		camera->transform = p_transform;
 }
 
 void RendererSceneCull::camera_set_cull_mask(RID p_camera, uint32_t p_layers) {

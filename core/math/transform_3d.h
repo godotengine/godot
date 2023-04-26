@@ -69,7 +69,6 @@ struct _NO_DISCARD_ Transform3D {
 
 	const Vector3 &get_origin() const { return origin; }
 	void set_origin(const Vector3 &p_origin) { origin = p_origin; }
-
 	void orthonormalize();
 	Transform3D orthonormalized() const;
 	void orthogonalize();
