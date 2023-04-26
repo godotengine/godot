@@ -93,6 +93,11 @@ godot_vector2 GDAPI godot_transform2d_get_scale(const godot_transform2d *p_self)
 	return dest;
 }
 
+godot_real GDAPI godot_transform2d_determinant(const godot_transform2d *p_self) {
+	const Transform2D *self = (const Transform2D *)p_self;
+	return self->determinant();
+}
+
 godot_transform2d GDAPI godot_transform2d_orthonormalized(const godot_transform2d *p_self) {
 	godot_transform2d dest;
 	const Transform2D *self = (const Transform2D *)p_self;

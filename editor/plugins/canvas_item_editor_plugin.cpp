@@ -1623,7 +1623,7 @@ void CanvasItemEditor::_solve_IK(Node2D *leaf_node, Point2 target_position) {
 				Point2 current = (joints_list[node_id - 1]->get_global_position() - joints_list[node_id]->get_global_position()).normalized();
 				Point2 target = (joints_pos[node_id - 1] - joints_list[node_id]->get_global_position()).normalized();
 				float rot = current.angle_to(target);
-				if (joints_list[node_id]->get_global_transform().basis_determinant() < 0) {
+				if (joints_list[node_id]->get_global_transform().determinant() < 0) {
 					rot = -rot;
 				}
 				joints_list[node_id]->rotate(rot);

@@ -4432,6 +4432,13 @@
         ]
       },
       {
+        "name": "godot_transform2d_determinant",
+        "return_type": "godot_real",
+        "arguments": [
+          ["const godot_transform2d *", "p_self"]
+        ]
+      },
+      {
         "name": "godot_transform2d_orthonormalized",
         "return_type": "godot_transform2d",
         "arguments": [

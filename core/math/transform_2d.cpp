@@ -44,7 +44,7 @@ Transform2D Transform2D::inverse() const {
 }
 
 void Transform2D::affine_invert() {
-	real_t det = basis_determinant();
+	real_t det = determinant();
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND(det == 0);
 #endif
@@ -93,7 +93,7 @@ Transform2D::Transform2D(real_t p_rot, const Vector2 &p_pos) {
 }
 
 Size2 Transform2D::get_scale() const {
-	real_t det_sign = SGN(basis_determinant());
+	real_t det_sign = SGN(determinant());
 	return Size2(elements[0].length(), det_sign * elements[1].length());
 }
 
@@ -217,7 +217,7 @@ Transform2D Transform2D::rotated(real_t p_angle) const {
 	return copy;
 }
 
-real_t Transform2D::basis_determinant() const {
+real_t Transform2D::determinant() const {
 	return elements[0].x * elements[1].y - elements[0].y * elements[1].x;
 }
 
