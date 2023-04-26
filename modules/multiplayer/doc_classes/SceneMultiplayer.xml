@@ -55,7 +55,7 @@
 			<param index="2" name="mode" type="int" enum="MultiplayerPeer.TransferMode" default="2" />
 			<param index="3" name="channel" type="int" default="0" />
 			<description>
-				Sends the given raw [code]bytes[/code] to a specific peer identified by [code]id[/code] (see [method MultiplayerPeer.set_target_peer]). Default ID is [code]0[/code], i.e. broadcast to all peers.
+				Sends the given raw [param bytes] to a specific peer identified by [param id] (see [method MultiplayerPeer.set_target_peer]). Default ID is [code]0[/code], i.e. broadcast to all peers.
 			</description>
 		</method>
 	</methods>
@@ -100,7 +100,7 @@
 			<param index="0" name="id" type="int" />
 			<param index="1" name="packet" type="PackedByteArray" />
 			<description>
-				Emitted when this MultiplayerAPI's [member MultiplayerAPI.multiplayer_peer] receives a [code]packet[/code] with custom data (see [method send_bytes]). ID is the peer ID of the peer that sent the packet.
+				Emitted when this MultiplayerAPI's [member MultiplayerAPI.multiplayer_peer] receives a [param packet] with custom data (see [method send_bytes]). ID is the peer ID of the peer that sent the packet.
 			</description>
 		</signal>
 	</signals>

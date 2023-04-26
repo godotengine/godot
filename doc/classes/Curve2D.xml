@@ -80,7 +80,7 @@
 			<return type="void" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Deletes the point [code]idx[/code] from the curve. Sends an error to the console if [code]idx[/code] is out of bounds.
+				Deletes the point [param idx] from the curve. Sends an error to the console if [param idx] is out of bounds.
 			</description>
 		</method>
 		<method name="sample" qualifiers="const">

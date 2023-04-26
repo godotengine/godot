@@ -610,7 +610,7 @@
 			<param index="3" name="transfer_channel" type="int" default="0" />
 			<description>
 				Mark the following method for remote procedure calls. See [url=$DOCS_URL/tutorials/networking/high_level_multiplayer.html]High-level multiplayer[/url].
-				The order of [code]mode[/code], [code]sync[/code] and [code]transfer_mode[/code] does not matter and all arguments can be omitted, but [code]transfer_channel[/code] always has to be the last argument. The accepted values for [code]mode[/code] are [code]"any_peer"[/code] or [code]"authority"[/code], for [code]sync[/code] are [code]"call_remote"[/code] or [code]"call_local"[/code] and for [code]transfer_mode[/code] are [code]"unreliable"[/code], [code]"unreliable_ordered"[/code] or [code]"reliable"[/code].
+				The order of [param mode], [param sync] and [param transfer_mode] does not matter and all arguments can be omitted, but [param transfer_channel] always has to be the last argument. The accepted values for [param mode] are [code]"any_peer"[/code] or [code]"authority"[/code], for [param sync] are [code]"call_remote"[/code] or [code]"call_local"[/code] and for [param transfer_mode] are [code]"unreliable"[/code], [code]"unreliable_ordered"[/code] or [code]"reliable"[/code].
 				[codeblock]
 				@rpc
 				func fn(): pass

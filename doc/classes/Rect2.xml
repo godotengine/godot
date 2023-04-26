@@ -154,7 +154,7 @@
 			<param index="0" name="b" type="Rect2" />
 			<param index="1" name="include_borders" type="bool" default="false" />
 			<description>
-				Returns [code]true[/code] if the [Rect2] overlaps with [code]b[/code] (i.e. they have at least one point in common).
+				Returns [code]true[/code] if the [Rect2] overlaps with [param b] (i.e. they have at least one point in common).
 				If [param include_borders] is [code]true[/code], they will also be considered overlapping if their borders touch, even without intersection.
 			</description>
 		</method>
