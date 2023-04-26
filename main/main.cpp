@@ -113,6 +113,10 @@
 #include "modules/mono/editor/bindings_generator.h"
 #endif
 
+#ifdef MODULE_GDSCRIPT_ENABLED
+#include "modules/gdscript/gdscript.h"
+#endif
+
 /* Static members */
 
 // Singletons
@@ -248,6 +252,31 @@ static String get_full_version_string() {
 	}
 	return String(VERSION_FULL_BUILD) + hash;
 }
+
+#if defined(TOOLS_ENABLED) && defined(MODULE_GDSCRIPT_ENABLED)
+static Vector<String> get_files_with_extension(const String &p_root, const String &p_extension) {
+	Vector<String> paths;
+
+	Ref<DirAccess> dir = DirAccess::open(p_root);
+	if (dir.is_valid()) {
+		dir->list_dir_begin();
+		String fn = dir->get_next();
+		while (!fn.is_empty()) {
+			if (!dir->current_is_hidden() && fn != "." && fn != "..") {
+				if (dir->current_is_dir()) {
+					paths.append_array(get_files_with_extension(p_root.path_join(fn), p_extension));
+				} else if (fn.get_extension() == p_extension) {
+					paths.append(p_root.path_join(fn));
+				}
+			}
+			fn = dir->get_next();
+		}
+		dir->list_dir_end();
+	}
+
+	return paths;
+}
+#endif
 
 // FIXME: Could maybe be moved to have less code in main.cpp.
 void initialize_physics() {
@@ -457,6 +486,9 @@ void Main::print_help(const char *p_binary) {
 #endif // DISABLE_DEPRECATED
 	OS::get_singleton()->print("  --doctool [<path>]                Dump the engine API reference to the given <path> (defaults to current dir) in XML format, merging if existing files are found.\n");
 	OS::get_singleton()->print("  --no-docbase                      Disallow dumping the base types (used with --doctool).\n");
+#ifdef MODULE_GDSCRIPT_ENABLED
+	OS::get_singleton()->print("  --gdscript-docs <path>            Rather than dumping the engine API, generate API reference from the inline documentation in the GDScript files found in <path> (used with --doctool).\n");
+#endif
 	OS::get_singleton()->print("  --build-solutions                 Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.\n");
 	OS::get_singleton()->print("  --dump-gdextension-interface      Generate GDExtension header file 'gdextension_interface.h' in the current folder. This file is the base file required to implement a GDExtension.\n");
 	OS::get_singleton()->print("  --dump-extension-api              Generate JSON dump of the Godot API for GDExtension bindings named 'extension_api.json' in the current folder.\n");
@@ -2470,6 +2502,9 @@ bool Main::start() {
 	String _export_preset;
 	bool export_debug = false;
 	bool export_pack_only = false;
+#ifdef MODULE_GDSCRIPT_ENABLED
+	String gdscript_docs_path;
+#endif
 #ifndef DISABLE_DEPRECATED
 	bool converting_project = false;
 	bool validating_converting_project = false;
@@ -2530,6 +2565,10 @@ bool Main::start() {
 					doc_tool_path = ".";
 					parsed_pair = false;
 				}
+#ifdef MODULE_GDSCRIPT_ENABLED
+			} else if (args[i] == "--gdscript-docs") {
+				gdscript_docs_path = args[i + 1];
+#endif
 			} else if (args[i] == "--export-release") {
 				editor = true; //needs editor
 				_export_preset = args[i + 1];
@@ -2561,6 +2600,38 @@ bool Main::start() {
 	uint64_t minimum_time_msec = GLOBAL_DEF(PropertyInfo(Variant::INT, "application/boot_splash/minimum_display_time", PROPERTY_HINT_RANGE, "0,100,1,or_greater,suffix:ms"), 0);
 
 #ifdef TOOLS_ENABLED
+#ifdef MODULE_GDSCRIPT_ENABLED
+	if (!doc_tool_path.is_empty() && !gdscript_docs_path.is_empty()) {
+		DocTools docs;
+		Error err;
+
+		Vector<String> paths = get_files_with_extension(gdscript_docs_path, "gd");
+		ERR_FAIL_COND_V_MSG(paths.size() == 0, false, "Couldn't find any GDScript files under the given directory: " + gdscript_docs_path);
+
+		for (const String &path : paths) {
+			Ref<GDScript> gdscript = ResourceLoader::load(path);
+			for (const DocData::ClassDoc &class_doc : gdscript->get_documentation()) {
+				docs.add_doc(class_doc);
+			}
+		}
+
+		if (doc_tool_path == ".") {
+			doc_tool_path = "./docs";
+		}
+
+		Ref<DirAccess> da = DirAccess::create_for_path(doc_tool_path);
+		err = da->make_dir_recursive(doc_tool_path);
+		ERR_FAIL_COND_V_MSG(err != OK, false, "Error: Can't create GDScript docs directory: " + doc_tool_path + ": " + itos(err));
+
+		HashMap<String, String> doc_data_classes;
+		err = docs.save_classes(doc_tool_path, doc_data_classes, false);
+		ERR_FAIL_COND_V_MSG(err != OK, false, "Error saving GDScript docs:" + itos(err));
+
+		OS::get_singleton()->set_exit_code(EXIT_SUCCESS);
+		return false;
+	}
+#endif // MODULE_GDSCRIPT_ENABLED
+
 	if (!doc_tool_path.is_empty()) {
 		// Needed to instance editor-only classes for their default values
 		Engine::get_singleton()->set_editor_hint(true);
