@@ -513,6 +513,7 @@ void SceneImportSettings::_update_view_gizmos() {
 
 void SceneImportSettings::_update_camera() {
 	AABB camera_aabb;
+	Vector3 center;
 
 	float rot_x = cam_rot_x;
 	float rot_y = cam_rot_y;
@@ -520,12 +521,15 @@ void SceneImportSettings::_update_camera() {
 
 	if (selected_type == "Node" || selected_type.is_empty()) {
 		camera_aabb = contents_aabb;
+		center = node_selected->to_global(node_selected->get_aabb().get_center());
 	} else {
 		if (mesh_preview->get_mesh().is_valid()) {
 			camera_aabb = mesh_preview->get_transform().xform(mesh_preview->get_mesh()->get_aabb());
 		} else {
 			camera_aabb = AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 		}
+		center = camera_aabb.get_center();
+
 		if (selected_type == "Mesh" && mesh_map.has(selected_id)) {
 			const MeshData &md = mesh_map[selected_id];
 			rot_x = md.cam_rot_x;
@@ -539,7 +543,6 @@ void SceneImportSettings::_update_camera() {
 		}
 	}
 
-	Vector3 center = camera_aabb.get_center();
 	float camera_size = camera_aabb.get_longest_axis_size();
 
 	camera->set_orthogonal(camera_size * zoom, 0.0001, camera_size * 2);
