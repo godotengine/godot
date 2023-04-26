@@ -48,6 +48,10 @@
 #endif
 #endif
 
+#if defined(DBUS_ENABLED)
+#include "freedesktop_file_manager.h"
+#endif
+
 class OS_LinuxBSD : public OS_Unix {
 	virtual void delete_main_loop() override;
 
@@ -74,6 +78,10 @@ class OS_LinuxBSD : public OS_Unix {
 
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverPulseAudio driver_pulseaudio;
+#endif
+
+#if defined(DBUS_ENABLED)
+	FreeDesktopFileManager *file_manager = nullptr;
 #endif
 
 	CrashHandler crash_handler;
@@ -117,6 +125,7 @@ public:
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
 
 	virtual Error shell_open(String p_uri) override;
+	virtual Error shell_show_in_file_manager(String p_path, bool p_open_folder) override;
 
 	virtual String get_unique_id() const override;
 	virtual String get_processor_name() const override;

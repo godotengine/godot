@@ -443,6 +443,30 @@ Vector<String> OS_LinuxBSD::lspci_get_device_value(Vector<String> vendor_device_
 	return values;
 }
 
+Error OS_LinuxBSD::shell_show_in_file_manager(String p_path, bool p_open_folder) {
+#ifdef DBUS_ENABLED
+	if (!file_manager || !file_manager->is_supported()) {
+		return OS_Unix::shell_show_in_file_manager(p_path, p_open_folder);
+	}
+
+	bool open_folder = false;
+	if (DirAccess::dir_exists_absolute(p_path) && p_open_folder) {
+		open_folder = true;
+	}
+
+	if (!p_path.begins_with("file://")) {
+		p_path = String("file://") + p_path;
+	}
+
+	Vector<String> urls;
+	urls.push_back(p_path);
+	bool success = file_manager->show_item(urls, String(), open_folder);
+	return success ? OK : FAILED;
+#else
+	return OS_Unix::shell_show_in_file_manager(p_path, p_open_folder);
+#endif
+}
+
 Error OS_LinuxBSD::shell_open(String p_uri) {
 	Error ok;
 	int err_code;
@@ -1091,6 +1115,10 @@ OS_LinuxBSD::OS_LinuxBSD() {
 	DisplayServerX11::register_x11_driver();
 #endif
 
+#ifdef DBUS_ENABLED
+	file_manager = memnew(FreeDesktopFileManager);
+#endif
+
 #ifdef FONTCONFIG_ENABLED
 #ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
@@ -1126,6 +1154,9 @@ OS_LinuxBSD::OS_LinuxBSD() {
 }
 
 OS_LinuxBSD::~OS_LinuxBSD() {
+#ifdef DBUS_ENABLED
+	memdelete(file_manager);
+#endif
 #ifdef FONTCONFIG_ENABLED
 	if (object_set) {
 		FcObjectSetDestroy(object_set);
