@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="InputEventMouseButton" inherits="InputEventMouse" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Input event type for mouse button events.
+		Represents a mouse button being pressed or released.
 	</brief_description>
 	<description>
-		Contains mouse click information. See [method Node._input].
+		Stores information about mouse click events. See [method Node._input].
 	</description>
 	<tutorials>
+		<link title="Using InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
 		<link title="Mouse and input coordinates">$DOCS_URL/tutorials/inputs/mouse_and_input_coordinates.html</link>
 	</tutorials>
 	<members>

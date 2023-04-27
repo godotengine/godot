@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="InputEventScreenTouch" inherits="InputEventFromWindow" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Input event type for screen touch events.
-		(only available on mobile devices)
+		Represents a screen touch event.
 	</brief_description>
 	<description>
-		Stores multi-touch press/release information. Supports touch press, touch release and [member index] for multi-touch count and order.
+		Stores information about multi-touch press/release input events. Supports touch press, touch release and [member index] for multi-touch count and order.
 	</description>
 	<tutorials>
-		<link title="InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
+		<link title="Using InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<members>
 		<member name="canceled" type="bool" setter="set_canceled" getter="is_canceled" default="false">
