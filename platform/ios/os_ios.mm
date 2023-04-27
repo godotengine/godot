@@ -240,8 +240,18 @@ Error OS_IOS::open_dynamic_library(const String p_path, void *&p_library_handle,
 	}
 
 	if (!FileAccess::exists(path)) {
+		// Load .dylib converted to framework from within the executable path.
+		path = get_framework_executable(get_executable_path().get_base_dir().path_join(p_path.get_file().get_basename() + ".framework"));
+	}
+
+	if (!FileAccess::exists(path)) {
 		// Load .dylib or framework from a standard iOS location.
 		path = get_framework_executable(get_executable_path().get_base_dir().path_join("Frameworks").path_join(p_path.get_file()));
+	}
+
+	if (!FileAccess::exists(path)) {
+		// Load .dylib converted to framework from a standard iOS location.
+		path = get_framework_executable(get_executable_path().get_base_dir().path_join("Frameworks").path_join(p_path.get_file().get_basename() + ".framework"));
 	}
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
