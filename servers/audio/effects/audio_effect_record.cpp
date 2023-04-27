@@ -120,7 +120,9 @@ void AudioEffectRecordInstance::init() {
 }
 
 void AudioEffectRecordInstance::finish() {
-	io_thread.wait_to_finish();
+	if (io_thread.is_started()) {
+		io_thread.wait_to_finish();
+	}
 }
 
 AudioEffectRecordInstance::~AudioEffectRecordInstance() {

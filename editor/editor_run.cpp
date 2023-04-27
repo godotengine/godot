@@ -264,7 +264,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line(vformat("Running: %s", exec));
 		for (const String &E : args) {
-			print_line(" %s", E);
+			print_line(vformat(" %s", E));
 		}
 	}
 

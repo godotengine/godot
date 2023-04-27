@@ -58,6 +58,9 @@ class Slider : public Range {
 		Ref<Texture2D> grabber_hl_icon;
 		Ref<Texture2D> grabber_disabled_icon;
 		Ref<Texture2D> tick_icon;
+
+		bool center_grabber = false;
+		int grabber_offset = 0;
 	} theme_cache;
 
 protected:

@@ -709,6 +709,8 @@ public:
 		ClassNode *outer = nullptr;
 		bool extends_used = false;
 		bool onready_used = false;
+		bool has_static_data = false;
+		bool annotated_static_unload = false;
 		String extends_path;
 		Vector<IdentifierNode *> extends; // List for indexing: extends A.B.C
 		DataType base_type;
@@ -847,6 +849,7 @@ public:
 			LOCAL_BIND, // Pattern bind.
 			MEMBER_SIGNAL,
 			MEMBER_VARIABLE,
+			STATIC_VARIABLE,
 			MEMBER_CONSTANT,
 			INHERITED_VARIABLE,
 		};
@@ -1202,6 +1205,7 @@ public:
 		bool onready = false;
 		PropertyInfo export_info;
 		int assignments = 0;
+		bool is_static = false;
 #ifdef TOOLS_ENABLED
 		String doc_description;
 #endif // TOOLS_ENABLED
@@ -1405,16 +1409,16 @@ private:
 
 	// Main blocks.
 	void parse_program();
-	ClassNode *parse_class();
+	ClassNode *parse_class(bool p_is_static);
 	void parse_class_name();
 	void parse_extends();
 	void parse_class_body(bool p_is_multiline);
 	template <class T>
-	void parse_class_member(T *(GDScriptParser::*p_parse_function)(), AnnotationInfo::TargetKind p_target, const String &p_member_kind);
-	SignalNode *parse_signal();
-	EnumNode *parse_enum();
+	void parse_class_member(T *(GDScriptParser::*p_parse_function)(bool), AnnotationInfo::TargetKind p_target, const String &p_member_kind, bool p_is_static = false);
+	SignalNode *parse_signal(bool p_is_static);
+	EnumNode *parse_enum(bool p_is_static);
 	ParameterNode *parse_parameter();
-	FunctionNode *parse_function();
+	FunctionNode *parse_function(bool p_is_static);
 	void parse_function_signature(FunctionNode *p_function, SuiteNode *p_body, const String &p_type);
 	SuiteNode *parse_suite(const String &p_context, SuiteNode *p_suite = nullptr, bool p_for_lambda = false);
 	// Annotations
@@ -1431,14 +1435,15 @@ private:
 	bool export_group_annotations(const AnnotationNode *p_annotation, Node *p_target);
 	bool warning_annotations(const AnnotationNode *p_annotation, Node *p_target);
 	bool rpc_annotation(const AnnotationNode *p_annotation, Node *p_target);
+	bool static_unload_annotation(const AnnotationNode *p_annotation, Node *p_target);
 	// Statements.
 	Node *parse_statement();
-	VariableNode *parse_variable();
-	VariableNode *parse_variable(bool p_allow_property);
+	VariableNode *parse_variable(bool p_is_static);
+	VariableNode *parse_variable(bool p_is_static, bool p_allow_property);
 	VariableNode *parse_property(VariableNode *p_variable, bool p_need_indent);
 	void parse_property_getter(VariableNode *p_variable);
 	void parse_property_setter(VariableNode *p_variable);
-	ConstantNode *parse_constant();
+	ConstantNode *parse_constant(bool p_is_static);
 	AssertNode *parse_assert();
 	BreakNode *parse_break();
 	ContinueNode *parse_continue();

@@ -86,6 +86,7 @@ public:
 		NATIVE_METHOD_OVERRIDE, // The script method overrides a native one, this may not work as intended.
 		GET_NODE_DEFAULT_WITHOUT_ONREADY, // A class variable uses `get_node()` (or the `$` notation) as its default value, but does not use the @onready annotation.
 		ONREADY_WITH_EXPORT, // The `@onready` annotation will set the value after `@export` which is likely not intended.
+		REDUNDANT_STATIC_UNLOAD, // The `@static_unload` annotation is used but the class does not have static data.
 		WARNING_MAX,
 	};
 
@@ -130,6 +131,7 @@ public:
 		ERROR, // NATIVE_METHOD_OVERRIDE // May not work as expected.
 		ERROR, // GET_NODE_DEFAULT_WITHOUT_ONREADY // May not work as expected.
 		ERROR, // ONREADY_WITH_EXPORT // May not work as expected.
+		WARN, // REDUNDANT_STATIC_UNLOAD
 	};
 
 	static_assert((sizeof(default_warning_levels) / sizeof(default_warning_levels[0])) == WARNING_MAX, "Amount of default levels does not match the amount of warnings.");

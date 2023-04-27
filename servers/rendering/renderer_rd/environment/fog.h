@@ -301,10 +301,25 @@ public:
 		RID emissive_map;
 
 		RID fog_uniform_set;
-		RID copy_uniform_set;
-		RID process_uniform_set_density;
-		RID process_uniform_set;
-		RID process_uniform_set2;
+
+		struct {
+			bool valid = false;
+			RID copy_uniform_set;
+			RID process_uniform_set_density;
+			RID process_uniform_set;
+			RID process_uniform_set2;
+
+#ifdef DEV_ENABLED
+			void assert_actual_validity() {
+				// It's all-or-nothing, or something else has changed that requires dev attention.
+				DEV_ASSERT(valid == RD::get_singleton()->uniform_set_is_valid(copy_uniform_set));
+				DEV_ASSERT(valid == RD::get_singleton()->uniform_set_is_valid(process_uniform_set_density));
+				DEV_ASSERT(valid == RD::get_singleton()->uniform_set_is_valid(process_uniform_set));
+				DEV_ASSERT(valid == RD::get_singleton()->uniform_set_is_valid(process_uniform_set2));
+			}
+#endif
+		} gi_dependent_sets;
+
 		RID sdfgi_uniform_set;
 		RID sky_uniform_set;
 

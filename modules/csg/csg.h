@@ -135,6 +135,17 @@ struct CSGBrushOperation {
 				return h;
 			}
 		};
+		struct Intersection {
+			bool found = false;
+			real_t conormal = FLT_MAX;
+			real_t distance_squared = FLT_MAX;
+			real_t origin_angle = FLT_MAX;
+		};
+
+		struct IntersectionDistance {
+			bool is_conormal;
+			real_t distance_squared;
+		};
 
 		Vector<Vector3> points;
 		Vector<Face> faces;
@@ -143,7 +154,7 @@ struct CSGBrushOperation {
 		OAHashMap<VertexKey, int, VertexKeyHash> snap_cache;
 		float vertex_snap = 0.0;
 
-		inline void _add_distance(List<real_t> &r_intersectionsA, List<real_t> &r_intersectionsB, bool p_from_B, real_t p_distance) const;
+		inline void _add_distance(List<IntersectionDistance> &r_intersectionsA, List<IntersectionDistance> &r_intersectionsB, bool p_from_B, real_t p_distance, bool p_is_conormal) const;
 		inline bool _bvh_inside(FaceBVH *facebvhptr, int p_max_depth, int p_bvh_first, int p_face_idx) const;
 		inline int _create_bvh(FaceBVH *facebvhptr, FaceBVH **facebvhptrptr, int p_from, int p_size, int p_depth, int &r_max_depth, int &r_max_alloc);
 

@@ -20,9 +20,9 @@
 			<param index="0" name="hint" type="Dictionary" />
 			<description>
 				Adds a custom property info to a property. The dictionary must contain:
-				- [code]name[/code]: [String] (the property's name)
-				- [code]type[/code]: [int] (see [enum Variant.Type])
-				- optionally [code]hint[/code]: [int] (see [enum PropertyHint]) and [code]hint_string[/code]: [String]
+				- [code]"name"[/code]: [String] (the property's name)
+				- [code]"type"[/code]: [int] (see [enum Variant.Type])
+				- optionally [code]"hint"[/code]: [int] (see [enum PropertyHint]) and [code]"hint_string"[/code]: [String]
 				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
@@ -455,6 +455,9 @@
 		</member>
 		<member name="debug/gdscript/warnings/redundant_await" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a function that is not a coroutine is called with await.
+		</member>
+		<member name="debug/gdscript/warnings/redundant_static_unload" type="int" setter="" getter="" default="1">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when the [code]@static_unload[/code] annotation is used in a script without any static variables.
 		</member>
 		<member name="debug/gdscript/warnings/renamed_in_godot_4_hint" type="bool" setter="" getter="" default="1">
 			When enabled, using a property, enum, or function that was renamed since Godot 3 will produce a hint if an error occurs.

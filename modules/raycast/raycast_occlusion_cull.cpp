@@ -604,7 +604,9 @@ RaycastOcclusionCull::~RaycastOcclusionCull() {
 	for (KeyValue<RID, Scenario> &K : scenarios) {
 		Scenario &scenario = K.value;
 		if (scenario.commit_thread) {
-			scenario.commit_thread->wait_to_finish();
+			if (scenario.commit_thread->is_started()) {
+				scenario.commit_thread->wait_to_finish();
+			}
 			memdelete(scenario.commit_thread);
 		}
 

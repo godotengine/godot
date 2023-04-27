@@ -2992,6 +2992,15 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 			List<MethodInfo> virtual_methods;
 			ClassDB::get_virtual_methods(class_name, &virtual_methods);
+
+			{
+				// Not truly a virtual method, but can also be "overridden".
+				MethodInfo static_init("_static_init");
+				static_init.return_val.type = Variant::NIL;
+				static_init.flags |= METHOD_FLAG_STATIC | METHOD_FLAG_VIRTUAL;
+				virtual_methods.push_back(static_init);
+			}
+
 			for (const MethodInfo &mi : virtual_methods) {
 				String method_hint = mi.name;
 				if (method_hint.contains(":")) {

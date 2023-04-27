@@ -680,10 +680,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	bool awaited = false;
 #endif
 #ifdef DEBUG_ENABLED
-	int variant_address_limits[ADDR_TYPE_MAX] = { _stack_size, _constant_count, p_instance ? p_instance->members.size() : 0 };
+	int variant_address_limits[ADDR_TYPE_MAX] = { _stack_size, _constant_count, p_instance ? p_instance->members.size() : 0, script->static_variables.size() };
 #endif
 
-	Variant *variant_addresses[ADDR_TYPE_MAX] = { stack, _constants_ptr, p_instance ? p_instance->members.ptrw() : nullptr };
+	Variant *variant_addresses[ADDR_TYPE_MAX] = { stack, _constants_ptr, p_instance ? p_instance->members.ptrw() : nullptr, script->static_variables.ptrw() };
 
 #ifdef DEBUG_ENABLED
 	OPCODE_WHILE(ip < _code_size) {
@@ -1651,10 +1651,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						bool was_freed = false;
 						Object *obj = ret->get_validated_object_with_check(was_freed);
 
-						if (was_freed) {
-							err_text = "Got a freed object as a result of the call.";
-							OPCODE_BREAK;
-						}
 						if (obj && obj->is_class_ptr(GDScriptFunctionState::get_class_ptr_static())) {
 							err_text = R"(Trying to call an async function without "await".)";
 							OPCODE_BREAK;

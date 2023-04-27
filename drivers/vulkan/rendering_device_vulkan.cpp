@@ -4305,6 +4305,18 @@ RID RenderingDeviceVulkan::sampler_create(const SamplerState &p_state) {
 	return id;
 }
 
+bool RenderingDeviceVulkan::sampler_is_format_supported_for_filter(DataFormat p_format, SamplerFilter p_sampler_filter) const {
+	ERR_FAIL_INDEX_V(p_format, DATA_FORMAT_MAX, false);
+
+	_THREAD_SAFE_METHOD_
+
+	// Validate that this image is supported for the intended filtering.
+	VkFormatProperties properties;
+	vkGetPhysicalDeviceFormatProperties(context->get_physical_device(), vulkan_formats[p_format], &properties);
+
+	return p_sampler_filter == RD::SAMPLER_FILTER_NEAREST || (p_sampler_filter == RD::SAMPLER_FILTER_LINEAR && (properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT));
+}
+
 /**********************/
 /**** VERTEX ARRAY ****/
 /**********************/

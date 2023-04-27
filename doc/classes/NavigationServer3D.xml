@@ -155,7 +155,7 @@
 			<return type="Vector3" />
 			<param index="0" name="link" type="RID" />
 			<description>
-				Returns the ending position of this [code]link[/code].
+				Returns the ending position of this [param link].
 			</description>
 		</method>
 		<method name="link_get_enter_cost" qualifiers="const">
@@ -169,14 +169,14 @@
 			<return type="RID" />
 			<param index="0" name="link" type="RID" />
 			<description>
-				Returns the navigation map [RID] the requested [code]link[/code] is currently assigned to.
+				Returns the navigation map [RID] the requested [param link] is currently assigned to.
 			</description>
 		</method>
 		<method name="link_get_navigation_layers" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="link" type="RID" />
 			<description>
-				Returns the navigation layers for this [code]link[/code].
+				Returns the navigation layers for this [param link].
 			</description>
 		</method>
 		<method name="link_get_owner_id" qualifiers="const">
@@ -190,7 +190,7 @@
 			<return type="Vector3" />
 			<param index="0" name="link" type="RID" />
 			<description>
-				Returns the starting position of this [code]link[/code].
+				Returns the starting position of this [param link].
 			</description>
 		</method>
 		<method name="link_get_travel_cost" qualifiers="const">
@@ -204,7 +204,7 @@
 			<return type="bool" />
 			<param index="0" name="link" type="RID" />
 			<description>
-				Returns whether this [code]link[/code] can be travelled in both directions.
+				Returns whether this [param link] can be travelled in both directions.
 			</description>
 		</method>
 		<method name="link_set_bidirectional">
@@ -212,7 +212,7 @@
 			<param index="0" name="link" type="RID" />
 			<param index="1" name="bidirectional" type="bool" />
 			<description>
-				Sets whether this [code]link[/code] can be travelled in both directions.
+				Sets whether this [param link] can be travelled in both directions.
 			</description>
 		</method>
 		<method name="link_set_end_position">
@@ -220,7 +220,7 @@
 			<param index="0" name="link" type="RID" />
 			<param index="1" name="position" type="Vector3" />
 			<description>
-				Sets the exit position for the [code]link[/code].
+				Sets the exit position for the [param link].
 			</description>
 		</method>
 		<method name="link_set_enter_cost">
@@ -228,7 +228,7 @@
 			<param index="0" name="link" type="RID" />
 			<param index="1" name="enter_cost" type="float" />
 			<description>
-				Sets the [code]enter_cost[/code] for this [code]link[/code].
+				Sets the [param enter_cost] for this [param link].
 			</description>
 		</method>
 		<method name="link_set_map">
@@ -260,7 +260,7 @@
 			<param index="0" name="link" type="RID" />
 			<param index="1" name="position" type="Vector3" />
 			<description>
-				Sets the entry position for this [code]link[/code].
+				Sets the entry position for this [param link].
 			</description>
 		</method>
 		<method name="link_set_travel_cost">
@@ -268,7 +268,7 @@
 			<param index="0" name="link" type="RID" />
 			<param index="1" name="travel_cost" type="float" />
 			<description>
-				Sets the [code]travel_cost[/code] for this [code]link[/code].
+				Sets the [param travel_cost] for this [param link].
 			</description>
 		</method>
 		<method name="map_create">
@@ -353,7 +353,7 @@
 			<return type="RID[]" />
 			<param index="0" name="map" type="RID" />
 			<description>
-				Returns all navigation link [RID]s that are currently assigned to the requested navigation [code]map[/code].
+				Returns all navigation link [RID]s that are currently assigned to the requested navigation [param map].
 			</description>
 		</method>
 		<method name="map_get_path" qualifiers="const">

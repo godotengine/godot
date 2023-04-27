@@ -565,6 +565,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("grabber_disabled", "HSlider", icons["slider_grabber_disabled"]);
 	theme->set_icon("tick", "HSlider", icons["hslider_tick"]);
 
+	theme->set_constant("center_grabber", "HSlider", 0);
 	theme->set_constant("grabber_offset", "HSlider", 0);
 
 	// VSlider
@@ -578,6 +579,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("grabber_disabled", "VSlider", icons["slider_grabber_disabled"]);
 	theme->set_icon("tick", "VSlider", icons["vslider_tick"]);
 
+	theme->set_constant("center_grabber", "VSlider", 0);
 	theme->set_constant("grabber_offset", "VSlider", 0);
 
 	// SpinBox
@@ -909,6 +911,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("sv_height", "ColorPicker", 256 * scale);
 	theme->set_constant("h_width", "ColorPicker", 30 * scale);
 	theme->set_constant("label_width", "ColorPicker", 10 * scale);
+	theme->set_constant("center_slider_grabbers", "ColorPicker", 1);
 
 	theme->set_icon("folded_arrow", "ColorPicker", icons["arrow_right"]);
 	theme->set_icon("expanded_arrow", "ColorPicker", icons["arrow_down"]);

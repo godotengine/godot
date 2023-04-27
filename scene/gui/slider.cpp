@@ -64,8 +64,8 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 
 				grab.pos = orientation == VERTICAL ? mb->get_position().y : mb->get_position().x;
 
-				double grab_width = (double)grabber->get_size().width;
-				double grab_height = (double)grabber->get_size().height;
+				double grab_width = (double)grabber->get_width();
+				double grab_height = (double)grabber->get_height();
 				double max = orientation == VERTICAL ? get_size().height - grab_height : get_size().width - grab_width;
 				if (orientation == VERTICAL) {
 					set_as_ratio(1 - (((double)grab.pos - (grab_height / 2.0)) / max));
@@ -103,7 +103,7 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 			if (orientation == VERTICAL) {
 				motion = -motion;
 			}
-			double areasize = orientation == VERTICAL ? size.height - grabber->get_size().height : size.width - grabber->get_size().width;
+			double areasize = orientation == VERTICAL ? size.height - grabber->get_height() : size.width - grabber->get_width();
 			if (areasize <= 0) {
 				return;
 			}
@@ -159,6 +159,9 @@ void Slider::_update_theme_item_cache() {
 	theme_cache.grabber_hl_icon = get_theme_icon(SNAME("grabber_highlight"));
 	theme_cache.grabber_disabled_icon = get_theme_icon(SNAME("grabber_disabled"));
 	theme_cache.tick_icon = get_theme_icon(SNAME("tick"));
+
+	theme_cache.center_grabber = get_theme_constant(SNAME("center_grabber"));
+	theme_cache.grabber_offset = get_theme_constant(SNAME("grabber_offset"));
 }
 
 void Slider::_notification(int p_what) {
@@ -213,39 +216,41 @@ void Slider::_notification(int p_what) {
 
 			if (orientation == VERTICAL) {
 				int widget_width = style->get_minimum_size().width;
-				double areasize = size.height - grabber->get_size().height;
+				double areasize = size.height - (theme_cache.center_grabber ? 0 : grabber->get_height());
+				int grabber_shift = theme_cache.center_grabber ? grabber->get_height() / 2 : 0;
 				style->draw(ci, Rect2i(Point2i(size.width / 2 - widget_width / 2, 0), Size2i(widget_width, size.height)));
-				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, size.height - areasize * ratio - grabber->get_size().height / 2), Size2i(widget_width, areasize * ratio + grabber->get_size().height / 2)));
+				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, size.height - areasize * ratio - grabber->get_height() / 2 + grabber_shift), Size2i(widget_width, areasize * ratio + grabber->get_height() / 2 - grabber_shift)));
 
 				if (ticks > 1) {
-					int grabber_offset = (grabber->get_size().height / 2 - tick->get_height() / 2);
+					int grabber_offset = (grabber->get_height() / 2 - tick->get_height() / 2);
 					for (int i = 0; i < ticks; i++) {
 						if (!ticks_on_borders && (i == 0 || i + 1 == ticks)) {
 							continue;
 						}
-						int ofs = (i * areasize / (ticks - 1)) + grabber_offset;
+						int ofs = (i * areasize / (ticks - 1)) + grabber_offset - grabber_shift;
 						tick->draw(ci, Point2i((size.width - widget_width) / 2, ofs));
 					}
 				}
-				grabber->draw(ci, Point2i(size.width / 2 - grabber->get_size().width / 2 + get_theme_constant(SNAME("grabber_offset")), size.height - ratio * areasize - grabber->get_size().height));
+				grabber->draw(ci, Point2i(size.width / 2 - grabber->get_width() / 2 + theme_cache.grabber_offset, size.height - ratio * areasize - grabber->get_height() + grabber_shift));
 			} else {
 				int widget_height = style->get_minimum_size().height;
-				double areasize = size.width - grabber->get_size().width;
+				double areasize = size.width - (theme_cache.center_grabber ? 0 : grabber->get_size().width);
+				int grabber_shift = theme_cache.center_grabber ? -grabber->get_width() / 2 : 0;
 
 				style->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(size.width, widget_height)));
-				grabber_area->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(areasize * ratio + grabber->get_size().width / 2, widget_height)));
+				grabber_area->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(areasize * ratio + grabber->get_width() / 2 + grabber_shift, widget_height)));
 
 				if (ticks > 1) {
-					int grabber_offset = (grabber->get_size().width / 2 - tick->get_width() / 2);
+					int grabber_offset = (grabber->get_width() / 2 - tick->get_width() / 2);
 					for (int i = 0; i < ticks; i++) {
 						if ((!ticks_on_borders) && ((i == 0) || ((i + 1) == ticks))) {
 							continue;
 						}
-						int ofs = (i * areasize / (ticks - 1)) + grabber_offset;
+						int ofs = (i * areasize / (ticks - 1)) + grabber_offset + grabber_shift;
 						tick->draw(ci, Point2i(ofs, (size.height - widget_height) / 2));
 					}
 				}
-				grabber->draw(ci, Point2i(ratio * areasize, size.height / 2 - grabber->get_size().height / 2 + get_theme_constant(SNAME("grabber_offset"))));
+				grabber->draw(ci, Point2i(ratio * areasize + grabber_shift, size.height / 2 - grabber->get_height() / 2 + theme_cache.grabber_offset));
 			}
 		} break;
 	}

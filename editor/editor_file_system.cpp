@@ -1256,7 +1256,9 @@ void EditorFileSystem::_notification(int p_what) {
 					if (scanning_changes_done) {
 						set_process(false);
 
-						thread_sources.wait_to_finish();
+						if (thread_sources.is_started()) {
+							thread_sources.wait_to_finish();
+						}
 						bool changed = _update_scan_actions();
 						_update_pending_script_classes();
 						if (changed) {

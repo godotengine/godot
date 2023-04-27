@@ -36,7 +36,7 @@
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />
 			<description>
-				Returns whether or not the specified layer of the [member layers] is enabled, given a [code]layer_number[/code] between 1 and 20.
+				Returns whether or not the specified layer of the [member layers] is enabled, given a [param layer_number] between 1 and 20.
 			</description>
 		</method>
 		<method name="set_base">
