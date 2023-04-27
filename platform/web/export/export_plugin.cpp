@@ -687,5 +687,7 @@ EditorExportPlatformWeb::~EditorExportPlatformWeb() {
 		server->stop();
 	}
 	server_quit = true;
-	server_thread.wait_to_finish();
+	if (server_thread.is_started()) {
+		server_thread.wait_to_finish();
+	}
 }
