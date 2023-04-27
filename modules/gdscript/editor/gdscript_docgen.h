@@ -33,10 +33,12 @@
 
 #include "../gdscript_parser.h"
 #include "core/doc_data.h"
+#include "core/object/object.h"
 
 class GDScriptDocGen {
 public:
 	static void generate_docs(GDScript *p_script, const GDScriptParser::ClassNode *p_class);
+	static MethodInfo method_info_from_node(const GDScriptParser::Node &p_func);
 };
 
 #endif // GDSCRIPT_DOCGEN_H

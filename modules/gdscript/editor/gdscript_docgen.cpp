@@ -71,6 +71,37 @@ static PropertyInfo _property_info_from_datatype(const GDType &p_type) {
 	return pi;
 }
 
+MethodInfo GDScriptDocGen::method_info_from_node(const GDP::Node &p_node) {
+	MethodInfo mi;
+	switch (p_node.type) {
+		case GDP::Node::FUNCTION: {
+			const GDP::FunctionNode *m_func = static_cast<const GDP::FunctionNode *>(&p_node);
+			mi.name = m_func->identifier->name;
+			if (m_func->return_type) {
+				mi.return_val = _property_info_from_datatype(m_func->return_type->get_datatype());
+			}
+			for (const GDScriptParser::ParameterNode *p : m_func->parameters) {
+				PropertyInfo pi = _property_info_from_datatype(p->get_datatype());
+				pi.name = p->identifier->name;
+				mi.arguments.push_back(pi);
+			}
+			mi.default_arguments = m_func->default_arg_values;
+		} break;
+		case GDP::Node::SIGNAL: {
+			const GDP::SignalNode *m_signal = static_cast<const GDP::SignalNode *>(&p_node);
+			mi.name = m_signal->identifier->name;
+			for (const GDScriptParser::ParameterNode *p : m_signal->parameters) {
+				PropertyInfo pi = _property_info_from_datatype(p->get_datatype());
+				pi.name = p->identifier->name;
+				mi.arguments.push_back(pi);
+			}
+		} break;
+		default:
+			break;
+	}
+	return mi;
+}
+
 void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_class) {
 	p_script->_clear_doc();
 
@@ -139,17 +170,7 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 
 				p_script->member_lines[func_name] = m_func->start_line;
 
-				MethodInfo mi;
-				mi.name = func_name;
-
-				if (m_func->return_type) {
-					mi.return_val = _property_info_from_datatype(m_func->return_type->get_datatype());
-				}
-				for (const GDScriptParser::ParameterNode *p : m_func->parameters) {
-					PropertyInfo pi = _property_info_from_datatype(p->get_datatype());
-					pi.name = p->identifier->name;
-					mi.arguments.push_back(pi);
-				}
+				MethodInfo mi = method_info_from_node(*m_func);
 
 				DocData::MethodDoc method_doc;
 				DocData::method_doc_from_methodinfo(method_doc, mi, m_func->doc_description);
@@ -162,13 +183,7 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 
 				p_script->member_lines[signal_name] = m_signal->start_line;
 
-				MethodInfo mi;
-				mi.name = signal_name;
-				for (const GDScriptParser::ParameterNode *p : m_signal->parameters) {
-					PropertyInfo pi = _property_info_from_datatype(p->get_datatype());
-					pi.name = p->identifier->name;
-					mi.arguments.push_back(pi);
-				}
+				MethodInfo mi = method_info_from_node(*m_signal);
 
 				DocData::MethodDoc signal_doc;
 				DocData::signal_doc_from_methodinfo(signal_doc, mi, m_signal->doc_description);
