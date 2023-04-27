@@ -350,12 +350,12 @@ void GDScriptTestRunner::handle_cmdline() {
 	for (List<String>::Element *E = cmdline_args.front(); E; E = E->next()) {
 		String &cmd = E->get();
 		if (cmd == "--gdscript-generate-tests") {
-			if (E->next() == nullptr) {
-				ERR_PRINT("Needed a path for the test files.");
-				exit(-1);
+			String path;
+			if (E->next()) {
+				path = E->next()->get();
+			} else {
+				path = "modules/gdscript/tests/scripts";
 			}
-
-			const String &path = E->next()->get();
 
 			GDScriptTestRunner runner(path, false, cmdline_args.find("--print-filenames") != nullptr);
 
