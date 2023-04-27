@@ -81,6 +81,8 @@ GDScriptParser::GDScriptParser() {
 	// TODO: Should this be static?
 	register_annotation(MethodInfo("@tool"), AnnotationInfo::SCRIPT, &GDScriptParser::tool_annotation);
 	register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
+	register_annotation(MethodInfo("@static_unload"), AnnotationInfo::SCRIPT, &GDScriptParser::static_unload_annotation);
+
 	register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
 	// Export annotations.
 	register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
@@ -623,7 +625,7 @@ bool GDScriptParser::has_class(const GDScriptParser::ClassNode *p_class) const {
 	return false;
 }
 
-GDScriptParser::ClassNode *GDScriptParser::parse_class() {
+GDScriptParser::ClassNode *GDScriptParser::parse_class(bool p_is_static) {
 	ClassNode *n_class = alloc_node<ClassNode>();
 
 	ClassNode *previous_class = current_class;
@@ -724,7 +726,7 @@ void GDScriptParser::parse_extends() {
 }
 
 template <class T>
-void GDScriptParser::parse_class_member(T *(GDScriptParser::*p_parse_function)(), AnnotationInfo::TargetKind p_target, const String &p_member_kind) {
+void GDScriptParser::parse_class_member(T *(GDScriptParser::*p_parse_function)(bool), AnnotationInfo::TargetKind p_target, const String &p_member_kind, bool p_is_static) {
 	advance();
 
 #ifdef TOOLS_ENABLED
@@ -749,7 +751,7 @@ void GDScriptParser::parse_class_member(T *(GDScriptParser::*p_parse_function)()
 #endif // TOOLS_ENABLED
 	}
 
-	T *member = (this->*p_parse_function)();
+	T *member = (this->*p_parse_function)(p_is_static);
 	if (member == nullptr) {
 		return;
 	}
@@ -803,10 +805,15 @@ void GDScriptParser::parse_class_member(T *(GDScriptParser::*p_parse_function)()
 
 void GDScriptParser::parse_class_body(bool p_is_multiline) {
 	bool class_end = false;
+	bool next_is_static = false;
 	while (!class_end && !is_at_end()) {
-		switch (current.type) {
+		GDScriptTokenizer::Token token = current;
+		switch (token.type) {
 			case GDScriptTokenizer::Token::VAR:
-				parse_class_member(&GDScriptParser::parse_variable, AnnotationInfo::VARIABLE, "variable");
+				parse_class_member(&GDScriptParser::parse_variable, AnnotationInfo::VARIABLE, "variable", next_is_static);
+				if (next_is_static) {
+					current_class->has_static_data = true;
+				}
 				break;
 			case GDScriptTokenizer::Token::CONST:
 				parse_class_member(&GDScriptParser::parse_constant, AnnotationInfo::CONSTANT, "constant");
@@ -814,9 +821,8 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 			case GDScriptTokenizer::Token::SIGNAL:
 				parse_class_member(&GDScriptParser::parse_signal, AnnotationInfo::SIGNAL, "signal");
 				break;
-			case GDScriptTokenizer::Token::STATIC:
 			case GDScriptTokenizer::Token::FUNC:
-				parse_class_member(&GDScriptParser::parse_function, AnnotationInfo::FUNCTION, "function");
+				parse_class_member(&GDScriptParser::parse_function, AnnotationInfo::FUNCTION, "function", next_is_static);
 				break;
 			case GDScriptTokenizer::Token::CLASS:
 				parse_class_member(&GDScriptParser::parse_class, AnnotationInfo::CLASS, "class");
@@ -824,6 +830,13 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 			case GDScriptTokenizer::Token::ENUM:
 				parse_class_member(&GDScriptParser::parse_enum, AnnotationInfo::NONE, "enum");
 				break;
+			case GDScriptTokenizer::Token::STATIC: {
+				advance();
+				next_is_static = true;
+				if (!check(GDScriptTokenizer::Token::FUNC) && !check(GDScriptTokenizer::Token::VAR)) {
+					push_error(R"(Expected "func" or "var" after "static".)");
+				}
+			} break;
 			case GDScriptTokenizer::Token::ANNOTATION: {
 				advance();
 
@@ -870,6 +883,9 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 				advance();
 				break;
 		}
+		if (token.type != GDScriptTokenizer::Token::STATIC) {
+			next_is_static = false;
+		}
 		if (panic_mode) {
 			synchronize();
 		}
@@ -879,11 +895,11 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 	}
 }
 
-GDScriptParser::VariableNode *GDScriptParser::parse_variable() {
-	return parse_variable(true);
+GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static) {
+	return parse_variable(p_is_static, true);
 }
 
-GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_allow_property) {
+GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, bool p_allow_property) {
 	VariableNode *variable = alloc_node<VariableNode>();
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected variable name after "var".)")) {
@@ -893,6 +909,7 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_allow_proper
 
 	variable->identifier = parse_identifier();
 	variable->export_info.name = variable->identifier->name;
+	variable->is_static = p_is_static;
 
 	if (match(GDScriptTokenizer::Token::COLON)) {
 		if (check(GDScriptTokenizer::Token::NEWLINE)) {
@@ -1036,6 +1053,7 @@ void GDScriptParser::parse_property_setter(VariableNode *p_variable) {
 			complete_extents(identifier);
 			identifier->name = "@" + p_variable->identifier->name + "_setter";
 			function->identifier = identifier;
+			function->is_static = p_variable->is_static;
 
 			consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, R"(Expected "(" after "set".)");
 
@@ -1087,6 +1105,7 @@ void GDScriptParser::parse_property_getter(VariableNode *p_variable) {
 			complete_extents(identifier);
 			identifier->name = "@" + p_variable->identifier->name + "_getter";
 			function->identifier = identifier;
+			function->is_static = p_variable->is_static;
 
 			FunctionNode *previous_function = current_function;
 			current_function = function;
@@ -1111,7 +1130,7 @@ void GDScriptParser::parse_property_getter(VariableNode *p_variable) {
 	}
 }
 
-GDScriptParser::ConstantNode *GDScriptParser::parse_constant() {
+GDScriptParser::ConstantNode *GDScriptParser::parse_constant(bool p_is_static) {
 	ConstantNode *constant = alloc_node<ConstantNode>();
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected constant name after "const".)")) {
@@ -1178,7 +1197,7 @@ GDScriptParser::ParameterNode *GDScriptParser::parse_parameter() {
 	return parameter;
 }
 
-GDScriptParser::SignalNode *GDScriptParser::parse_signal() {
+GDScriptParser::SignalNode *GDScriptParser::parse_signal(bool p_is_static) {
 	SignalNode *signal = alloc_node<SignalNode>();
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected signal name after "signal".)")) {
@@ -1223,7 +1242,7 @@ GDScriptParser::SignalNode *GDScriptParser::parse_signal() {
 	return signal;
 }
 
-GDScriptParser::EnumNode *GDScriptParser::parse_enum() {
+GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
 	EnumNode *enum_node = alloc_node<EnumNode>();
 	bool named = false;
 
@@ -1372,22 +1391,22 @@ void GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNod
 		}
 	}
 
+	if (!p_function->source_lambda && p_function->identifier && p_function->identifier->name == GDScriptLanguage::get_singleton()->strings._static_init) {
+		if (!p_function->is_static) {
+			push_error(R"(Static constructor must be declared static.)");
+		}
+		if (p_function->parameters.size() != 0) {
+			push_error(R"(Static constructor cannot have parameters.)");
+		}
+		current_class->has_static_data = true;
+	}
+
 	// TODO: Improve token consumption so it synchronizes to a statement boundary. This way we can get into the function body with unrecognized tokens.
 	consume(GDScriptTokenizer::Token::COLON, vformat(R"(Expected ":" after %s declaration.)", p_type));
 }
 
-GDScriptParser::FunctionNode *GDScriptParser::parse_function() {
+GDScriptParser::FunctionNode *GDScriptParser::parse_function(bool p_is_static) {
 	FunctionNode *function = alloc_node<FunctionNode>();
-
-	bool _static = false;
-	if (previous.type == GDScriptTokenizer::Token::STATIC) {
-		// TODO: Improve message if user uses "static" with "var" or "const"
-		if (!consume(GDScriptTokenizer::Token::FUNC, R"(Expected "func" after "static".)")) {
-			complete_extents(function);
-			return nullptr;
-		}
-		_static = true;
-	}
 
 	make_completion_context(COMPLETION_OVERRIDE_METHOD, function);
 
@@ -1400,7 +1419,7 @@ GDScriptParser::FunctionNode *GDScriptParser::parse_function() {
 	current_function = function;
 
 	function->identifier = parse_identifier();
-	function->is_static = _static;
+	function->is_static = p_is_static;
 
 	SuiteNode *body = alloc_node<SuiteNode>();
 	SuiteNode *previous_suite = current_suite;
@@ -1612,11 +1631,11 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 			break;
 		case GDScriptTokenizer::Token::VAR:
 			advance();
-			result = parse_variable();
+			result = parse_variable(false, false);
 			break;
 		case GDScriptTokenizer::Token::CONST:
 			advance();
-			result = parse_constant();
+			result = parse_constant(false);
 			break;
 		case GDScriptTokenizer::Token::IF:
 			advance();
@@ -1646,7 +1665,7 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 			advance();
 			ReturnNode *n_return = alloc_node<ReturnNode>();
 			if (!is_statement_end()) {
-				if (current_function && current_function->identifier->name == GDScriptLanguage::get_singleton()->strings._init) {
+				if (current_function && (current_function->identifier->name == GDScriptLanguage::get_singleton()->strings._init || current_function->identifier->name == GDScriptLanguage::get_singleton()->strings._static_init)) {
 					push_error(R"(Constructor cannot return a value.)");
 				}
 				n_return->return_value = parse_expression(false);
@@ -4098,6 +4117,17 @@ bool GDScriptParser::rpc_annotation(const AnnotationNode *p_annotation, Node *p_
 		}
 	}
 	function->rpc_config = rpc_config;
+	return true;
+}
+
+bool GDScriptParser::static_unload_annotation(const AnnotationNode *p_annotation, Node *p_target) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::CLASS, false, vformat(R"("%s" annotation can only be applied to classes.)", p_annotation->name));
+	ClassNode *p_class = static_cast<ClassNode *>(p_target);
+	if (p_class->annotated_static_unload) {
+		push_error(vformat(R"("%s" annotation can only be used once per script.)", p_annotation->name), p_annotation);
+		return false;
+	}
+	p_class->annotated_static_unload = true;
 	return true;
 }
 

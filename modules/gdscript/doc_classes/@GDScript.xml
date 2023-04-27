@@ -622,6 +622,12 @@
 				[/codeblock]
 			</description>
 		</annotation>
+		<annotation name="@static_unload">
+			<return type="void" />
+			<description>
+				Make a script with static variables to not persist after all references are lost. If the script is loaded again the static variables will revert to their default values.
+			</description>
+		</annotation>
 		<annotation name="@tool">
 			<return type="void" />
 			<description>

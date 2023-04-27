@@ -651,6 +651,49 @@ String GDScript::_get_debug_path() const {
 	}
 }
 
+Error GDScript::_static_init() {
+	if (static_initializer) {
+		Callable::CallError call_err;
+		static_initializer->call(nullptr, nullptr, 0, call_err);
+		if (call_err.error != Callable::CallError::CALL_OK) {
+			return ERR_CANT_CREATE;
+		}
+	}
+	Error err = OK;
+	for (KeyValue<StringName, Ref<GDScript>> &inner : subclasses) {
+		err = inner.value->_static_init();
+		if (err) {
+			break;
+		}
+	}
+	return err;
+}
+
+#ifdef TOOLS_ENABLED
+
+void GDScript::_save_old_static_data() {
+	old_static_variables_indices = static_variables_indices;
+	old_static_variables = static_variables;
+	for (KeyValue<StringName, Ref<GDScript>> &inner : subclasses) {
+		inner.value->_save_old_static_data();
+	}
+}
+
+void GDScript::_restore_old_static_data() {
+	for (KeyValue<StringName, MemberInfo> &E : old_static_variables_indices) {
+		if (static_variables_indices.has(E.key)) {
+			static_variables.write[static_variables_indices[E.key].index] = old_static_variables[E.value.index];
+		}
+	}
+	old_static_variables_indices.clear();
+	old_static_variables.clear();
+	for (KeyValue<StringName, Ref<GDScript>> &inner : subclasses) {
+		inner.value->_restore_old_static_data();
+	}
+}
+
+#endif
+
 Error GDScript::reload(bool p_keep_state) {
 	if (reloading) {
 		return OK;
@@ -696,6 +739,14 @@ Error GDScript::reload(bool p_keep_state) {
 		}
 	}
 
+	bool can_run = ScriptServer::is_scripting_enabled() || is_tool();
+
+#ifdef DEBUG_ENABLED
+	if (p_keep_state && can_run && is_valid()) {
+		_save_old_static_data();
+	}
+#endif
+
 	valid = false;
 	GDScriptParser parser;
 	Error err = parser.parse(source, path, false);
@@ -726,7 +777,7 @@ Error GDScript::reload(bool p_keep_state) {
 		return ERR_PARSE_ERROR;
 	}
 
-	bool can_run = ScriptServer::is_scripting_enabled() || parser.is_tool();
+	can_run = ScriptServer::is_scripting_enabled() || parser.is_tool();
 
 	GDScriptCompiler compiler;
 	err = compiler.compile(&parser, this, p_keep_state);
@@ -760,6 +811,19 @@ Error GDScript::reload(bool p_keep_state) {
 	}
 #endif
 
+	if (can_run) {
+		err = _static_init();
+		if (err) {
+			return err;
+		}
+	}
+
+#ifdef DEBUG_ENABLED
+	if (can_run && p_keep_state) {
+		_restore_old_static_data();
+	}
+#endif
+
 	reloading = false;
 	return OK;
 }
@@ -786,6 +850,10 @@ void GDScript::get_members(HashSet<StringName> *p_members) {
 
 const Variant GDScript::get_rpc_config() const {
 	return rpc_config;
+}
+
+void GDScript::unload_static() const {
+	GDScriptCache::remove_script(fully_qualified_name);
 }
 
 Variant GDScript::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -824,6 +892,19 @@ bool GDScript::_get(const StringName &p_name, Variant &r_ret) const {
 					return true;
 				}
 			}
+
+			{
+				HashMap<StringName, MemberInfo>::ConstIterator E = static_variables_indices.find(p_name);
+				if (E) {
+					if (E->value.getter) {
+						Callable::CallError ce;
+						r_ret = const_cast<GDScript *>(this)->callp(E->value.getter, nullptr, 0, ce);
+						return true;
+					}
+					r_ret = static_variables[E->value.index];
+					return true;
+				}
+			}
 			top = top->_base;
 		}
 
@@ -841,7 +922,32 @@ bool GDScript::_set(const StringName &p_name, const Variant &p_value) {
 		set_source_code(p_value);
 		reload();
 	} else {
-		return false;
+		const GDScript *top = this;
+		while (top) {
+			HashMap<StringName, MemberInfo>::ConstIterator E = static_variables_indices.find(p_name);
+			if (E) {
+				const GDScript::MemberInfo *member = &E->value;
+				Variant value = p_value;
+				if (member->data_type.has_type && !member->data_type.is_type(value)) {
+					const Variant *args = &p_value;
+					Callable::CallError err;
+					Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
+					if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(value)) {
+						return false;
+					}
+				}
+				if (member->setter) {
+					const Variant *args = &value;
+					Callable::CallError err;
+					callp(member->setter, &args, 1, err);
+					return err.error == Callable::CallError::CALL_OK;
+				} else {
+					static_variables.write[member->index] = value;
+					return true;
+				}
+			}
+			top = top->_base;
+		}
 	}
 
 	return true;
@@ -1293,6 +1399,13 @@ void GDScript::clear(GDScript::ClearData *p_clear_data) {
 		E.value.data_type.script_type_ref = Ref<Script>();
 	}
 
+	for (KeyValue<StringName, GDScript::MemberInfo> &E : static_variables_indices) {
+		clear_data->scripts.insert(E.value.data_type.script_type_ref);
+		E.value.data_type.script_type_ref = Ref<Script>();
+	}
+	static_variables.clear();
+	static_variables_indices.clear();
+
 	if (implicit_initializer) {
 		clear_data->functions.insert(implicit_initializer);
 		implicit_initializer = nullptr;
@@ -1301,6 +1414,11 @@ void GDScript::clear(GDScript::ClearData *p_clear_data) {
 	if (implicit_ready) {
 		clear_data->functions.insert(implicit_ready);
 		implicit_ready = nullptr;
+	}
+
+	if (static_initializer) {
+		clear_data->functions.insert(static_initializer);
+		static_initializer = nullptr;
 	}
 
 	_save_orphaned_subclasses(clear_data);
@@ -1356,10 +1474,6 @@ GDScript::~GDScript() {
 		MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
 
 		GDScriptLanguage::get_singleton()->script_list.remove(&script_list);
-	}
-
-	if (GDScriptCache::singleton) { // Cache may have been already destroyed at engine shutdown.
-		GDScriptCache::remove_script(get_path());
 	}
 }
 
@@ -2391,6 +2505,7 @@ GDScriptLanguage::GDScriptLanguage() {
 	ERR_FAIL_COND(singleton);
 	singleton = this;
 	strings._init = StaticCString::create("_init");
+	strings._static_init = StaticCString::create("_static_init");
 	strings._notification = StaticCString::create("_notification");
 	strings._set = StaticCString::create("_set");
 	strings._get = StaticCString::create("_get");
