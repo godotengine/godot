@@ -669,7 +669,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 						StringName bn = skin->get_bind_name(i);
 						int bone_idx = src_skeleton->find_bone(bn);
 						if (bone_idx >= 0) {
-							Transform3D new_rest = silhouette_diff[i] * src_skeleton->get_bone_global_rest(bone_idx);
+							Transform3D new_rest = silhouette_diff[bone_idx] * src_skeleton->get_bone_global_rest(bone_idx);
 							skin->set_bind_pose(i, new_rest.inverse() * ibm_diff[bone_idx]);
 						}
 					}
