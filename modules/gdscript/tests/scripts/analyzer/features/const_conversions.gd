@@ -5,7 +5,7 @@ const const_float_cast: float = 76 as float
 const const_packed_empty: PackedFloat64Array = []
 const const_packed_ints: PackedFloat64Array = [52]
 
-@warning_ignore("assert_always_true")
+@warning_ignore(assert_always_true)
 func test():
 	assert(typeof(const_float_int) == TYPE_FLOAT)
 	assert(str(const_float_int) == '19')

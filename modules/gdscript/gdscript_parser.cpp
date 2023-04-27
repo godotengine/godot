@@ -94,7 +94,7 @@ GDScriptParser::GDScriptParser() {
 	register_annotation(MethodInfo("@export_range", PropertyInfo(Variant::FLOAT, "min"), PropertyInfo(Variant::FLOAT, "max"), PropertyInfo(Variant::FLOAT, "step"), PropertyInfo(Variant::STRING, "extra_hints")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_RANGE, Variant::FLOAT>, varray(1.0, ""), true);
 	register_annotation(MethodInfo("@export_exp_easing", PropertyInfo(Variant::STRING, "hints")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_EXP_EASING, Variant::FLOAT>, varray(""), true);
 	register_annotation(MethodInfo("@export_color_no_alpha"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_COLOR_NO_ALPHA, Variant::COLOR>);
-	register_annotation(MethodInfo("@export_node_path", PropertyInfo(Variant::STRING, "type")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NODE_PATH_VALID_TYPES, Variant::NODE_PATH>, varray(""), true);
+	register_annotation(MethodInfo("@export_node_path", PropertyInfo(Variant::STRING, "type", PROPERTY_HINT_NODE_TYPE)), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NODE_PATH_VALID_TYPES, Variant::NODE_PATH>, varray(""), true);
 	register_annotation(MethodInfo("@export_flags", PropertyInfo(Variant::STRING, "names")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_FLAGS, Variant::INT>, varray(), true);
 	register_annotation(MethodInfo("@export_flags_2d_render"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_2D_RENDER, Variant::INT>);
 	register_annotation(MethodInfo("@export_flags_2d_physics"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_2D_PHYSICS, Variant::INT>);
@@ -107,9 +107,9 @@ GDScriptParser::GDScriptParser() {
 	register_annotation(MethodInfo("@export_group", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_GROUP>, varray(""));
 	register_annotation(MethodInfo("@export_subgroup", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_SUBGROUP>, varray(""));
 	// Warning annotations.
-	register_annotation(MethodInfo("@warning_ignore", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::CLASS | AnnotationInfo::VARIABLE | AnnotationInfo::SIGNAL | AnnotationInfo::CONSTANT | AnnotationInfo::FUNCTION | AnnotationInfo::STATEMENT, &GDScriptParser::warning_annotations, varray(), true);
+	register_annotation(MethodInfo("@warning_ignore", PropertyInfo(Variant::STRING, "warning", PROPERTY_HINT_ENUM)), AnnotationInfo::CLASS | AnnotationInfo::VARIABLE | AnnotationInfo::SIGNAL | AnnotationInfo::CONSTANT | AnnotationInfo::FUNCTION | AnnotationInfo::STATEMENT, &GDScriptParser::warning_annotations, varray(), true);
 	// Networking.
-	register_annotation(MethodInfo("@rpc", PropertyInfo(Variant::STRING, "mode"), PropertyInfo(Variant::STRING, "sync"), PropertyInfo(Variant::STRING, "transfer_mode"), PropertyInfo(Variant::INT, "transfer_channel")), AnnotationInfo::FUNCTION, &GDScriptParser::rpc_annotation, varray("authority", "call_remote", "unreliable", 0), true);
+	register_annotation(MethodInfo("@rpc", PropertyInfo(Variant::STRING, "mode", PROPERTY_HINT_ENUM), PropertyInfo(Variant::STRING, "sync", PROPERTY_HINT_ENUM), PropertyInfo(Variant::STRING, "transfer_mode", PROPERTY_HINT_ENUM), PropertyInfo(Variant::INT, "transfer_channel")), AnnotationInfo::FUNCTION, &GDScriptParser::rpc_annotation, varray("authority", "call_remote", "unreliable", 0), true);
 
 #ifdef DEBUG_ENABLED
 	is_ignoring_warnings = !(bool)GLOBAL_GET("debug/gdscript/warnings/enable");
@@ -3771,7 +3771,6 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 				return false;
 			}
 		}
-
 		if (p_annotation->name == SNAME("@export_flags")) {
 			const int64_t max_flags = 32;
 			Vector<String> t = arg_string.split(":", true, 1);
@@ -3797,6 +3796,20 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 				push_error(vformat(R"(Invalid argument %d of annotation "@export_flags": Starting from argument %d, the flag value must be specified explicitly.)", i + 1, max_flags + 1), p_annotation->arguments[i]);
 				return false;
 			}
+		} else if (p_annotation->name == SNAME("@export_node_path")) {
+			String base_class = arg_string;
+			bool is_custom = false;
+			if (ScriptServer::is_global_class(arg_string)) {
+				base_class = ScriptServer::get_global_class_native_base(arg_string);
+				is_custom = true;
+			}
+			if (!ClassDB::class_exists(base_class) && !is_custom) {
+				push_error(vformat(R"(Invalid argument %d of annotation "@export_node_path": The class "%s" was not found in the global scope.)", i + 1, arg_string), p_annotation->arguments[i]);
+				return false;
+			} else if (!ClassDB::is_parent_class(base_class, SNAME("Node"))) {
+				push_error(vformat(R"(Invalid argument %d of annotation "@export_node_path": The class "%s" does not inherit "Node".)", i + 1, arg_string), p_annotation->arguments[i]);
+				return false;
+			}
 		}
 
 		if (i > 0) {
@@ -3814,8 +3827,7 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 		if (export_type.builtin_type == Variant::INT) {
 			variable->export_info.type = Variant::INT;
 		}
-	}
-	if (p_annotation->name == SNAME("@export_multiline")) {
+	} else if (p_annotation->name == SNAME("@export_multiline")) {
 		if (export_type.builtin_type == Variant::ARRAY && export_type.has_container_element_type()) {
 			DataType inner_type = export_type.get_container_element_type();
 			if (inner_type.builtin_type != Variant::STRING) {
@@ -3841,9 +3853,7 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 
 			return true;
 		}
-	}
-
-	if (p_annotation->name == SNAME("@export")) {
+	} else if (p_annotation->name == SNAME("@export")) {
 		if (variable->datatype_specifier == nullptr && variable->initializer == nullptr) {
 			push_error(R"(Cannot use simple "@export" annotation with variable without type or initializer, since type can't be inferred.)", p_annotation);
 			return false;

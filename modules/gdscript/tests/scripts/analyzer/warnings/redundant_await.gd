@@ -7,7 +7,7 @@ func test_signals():
 	await t
 
 func coroutine() -> void:
-	@warning_ignore("redundant_await")
+	@warning_ignore(redundant_await)
 	await 0
 
 func not_coroutine_variant():

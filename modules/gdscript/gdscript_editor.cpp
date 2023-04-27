@@ -790,22 +790,30 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 		}
 	} else if (p_annotation->name == SNAME("@export_node_path")) {
 		ScriptLanguage::CodeCompletionOption node("Node", ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
-		node.insert_text = node.display.quote(p_quote_style);
 		r_result.insert(node.display, node);
 		List<StringName> node_types;
-		ClassDB::get_inheriters_from_class("Node", &node_types);
+		StringName node_class = SNAME("Node");
+		ClassDB::get_inheriters_from_class(node_class, &node_types);
 		for (const StringName &E : node_types) {
 			if (!ClassDB::is_class_exposed(E)) {
 				continue;
 			}
 			ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
-			option.insert_text = option.display.quote(p_quote_style);
+			r_result.insert(option.display, option);
+		}
+
+		List<StringName> global_script_classes;
+		ScriptServer::get_global_class_list(&global_script_classes);
+		for (const StringName &E : global_script_classes) {
+			if (!ClassDB::is_parent_class(ScriptServer::get_global_class_native_base(E), node_class)) {
+				continue;
+			}
+			ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
 			r_result.insert(option.display, option);
 		}
 	} else if (p_annotation->name == SNAME("@warning_ignore")) {
 		for (int warning_code = 0; warning_code < GDScriptWarning::WARNING_MAX; warning_code++) {
 			ScriptLanguage::CodeCompletionOption warning(GDScriptWarning::get_name_from_code((GDScriptWarning::Code)warning_code).to_lower(), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
-			warning.insert_text = warning.display.quote(p_quote_style);
 			r_result.insert(warning.display, warning);
 		}
 	} else if (p_annotation->name == SNAME("@rpc")) {
@@ -813,7 +821,6 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 			static const char *options[7] = { "call_local", "call_remote", "any_peer", "authority", "reliable", "unreliable", "unreliable_ordered" };
 			for (int i = 0; i < 7; i++) {
 				ScriptLanguage::CodeCompletionOption option(options[i], ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
-				option.insert_text = option.display.quote(p_quote_style);
 				r_result.insert(option.display, option);
 			}
 		}

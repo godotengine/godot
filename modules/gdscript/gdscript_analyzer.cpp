@@ -1435,14 +1435,34 @@ void GDScriptAnalyzer::resolve_annotation(GDScriptParser::AnnotationNode *p_anno
 			E = E->next();
 		}
 
-		reduce_expression(argument);
+		bool is_identifier = argument->type == GDScriptParser::Node::IDENTIFIER;
+		bool accept_id_as_string = argument_info.hint == PROPERTY_HINT_ENUM || argument_info.hint == PROPERTY_HINT_NODE_TYPE;
 
-		if (!argument->is_constant) {
-			push_error(vformat(R"(Argument %d of annotation "%s" isn't a constant expression.)", i + 1, p_annotation->name), argument);
-			return;
+		if (is_identifier) {
+			reduce_identifier(static_cast<GDScriptParser::IdentifierNode *>(argument), true, true);
+		} else {
+			reduce_expression(argument);
 		}
 
-		Variant value = argument->reduced_value;
+		Variant value;
+
+		if (argument->is_constant) {
+			value = argument->reduced_value;
+		} else {
+			if (!accept_id_as_string || !is_identifier) {
+				push_error(vformat(R"(Argument %d of annotation "%s" isn't a constant expression.)", i + 1, p_annotation->name), argument);
+				return;
+			} else if (is_identifier) {
+				value = static_cast<GDScriptParser::IdentifierNode *>(argument)->name.operator String();
+			}
+		}
+
+		GDScriptParser::DataType arg_type = argument->get_datatype();
+		if (argument_info.hint == PROPERTY_HINT_NODE_TYPE && arg_type.is_meta_type) {
+			// Make a constant with a type become the name of type, since the argument accepts a type.
+			arg_type.is_meta_type = false;
+			value = arg_type.to_string();
+		}
 
 		if (value.get_type() != argument_info.type) {
 #ifdef DEBUG_ENABLED
@@ -1450,7 +1470,6 @@ void GDScriptAnalyzer::resolve_annotation(GDScriptParser::AnnotationNode *p_anno
 				parser->push_warning(argument, GDScriptWarning::NARROWING_CONVERSION);
 			}
 #endif
-
 			if (!Variant::can_convert_strict(value.get_type(), argument_info.type)) {
 				push_error(vformat(R"(Invalid argument for annotation "%s": argument %d should be "%s" but is "%s".)", p_annotation->name, i + 1, Variant::get_type_name(argument_info.type), argument->get_datatype().to_string()), argument);
 				return;
@@ -3522,7 +3541,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 	}
 }
 
-void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_identifier, bool can_be_builtin) {
+void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_identifier, bool p_can_be_builtin, bool p_can_be_not_found) {
 	// TODO: This is an opportunity to further infer types.
 
 	// Check if we are inside an enum. This allows enum values to access other elements of the same enum.
@@ -3643,7 +3662,7 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 	// non-builtin types so we allow doing e.g. Object.new()
 	Variant::Type builtin_type = GDScriptParser::get_builtin_type(name);
 	if (builtin_type != Variant::OBJECT && builtin_type < Variant::VARIANT_MAX) {
-		if (can_be_builtin) {
+		if (p_can_be_builtin) {
 			p_identifier->set_datatype(make_builtin_meta_type(builtin_type));
 			return;
 		} else {
@@ -3726,14 +3745,14 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 
 	if (CoreConstants::is_global_enum(name)) {
 		p_identifier->set_datatype(make_global_enum_type(name, StringName(), true));
-		if (!can_be_builtin) {
+		if (!p_can_be_builtin) {
 			push_error(vformat(R"(Global enum "%s" cannot be used on its own.)", name), p_identifier);
 		}
 		return;
 	}
 
 	// Allow "Variant" here since it might be used for nested enums.
-	if (can_be_builtin && name == SNAME("Variant")) {
+	if (p_can_be_builtin && name == SNAME("Variant")) {
 		GDScriptParser::DataType variant;
 		variant.kind = GDScriptParser::DataType::VARIANT;
 		variant.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
@@ -3756,14 +3775,19 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 				rename_hint = " " + vformat(R"(Did you mean to use "%s"?)", renamed_identifier_name);
 			}
 		}
-		push_error(vformat(R"(Identifier "%s" not declared in the current scope.%s)", name, rename_hint), p_identifier);
+		if (!p_can_be_not_found) {
+			push_error(vformat(R"(Identifier "%s" not declared in the current scope.%s)", name, rename_hint), p_identifier);
+		}
 #else
-		push_error(vformat(R"(Identifier "%s" not declared in the current scope.)", name), p_identifier);
+		if (!p_can_be_not_found) {
+			push_error(vformat(R"(Identifier "%s" not declared in the current scope.)", name), p_identifier);
+		}
 #endif // SUGGEST_GODOT4_RENAMES
 	}
 	GDScriptParser::DataType dummy;
 	dummy.kind = GDScriptParser::DataType::VARIANT;
 	p_identifier->set_datatype(dummy); // Just so type is set to something.
+	return;
 }
 
 void GDScriptAnalyzer::reduce_lambda(GDScriptParser::LambdaNode *p_lambda) {

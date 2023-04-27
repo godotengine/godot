@@ -1,6 +1,6 @@
 var member: int = 0
 
-@warning_ignore("unused_variable")
+@warning_ignore(unused_variable)
 func test():
 	var Array := 'Array'
 	var Node := 'Node'

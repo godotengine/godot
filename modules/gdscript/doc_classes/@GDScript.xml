@@ -520,7 +520,7 @@
 				Export a [NodePath] property with a filter for allowed node types.
 				See also [constant PROPERTY_HINT_NODE_PATH_VALID_TYPES].
 				[codeblock]
-				@export_node_path("Button", "TouchScreenButton") var some_button
+				@export_node_path(Button, TouchScreenButton) var some_button
 				[/codeblock]
 			</description>
 		</annotation>
@@ -614,10 +614,10 @@
 				@rpc
 				func fn(): pass
 
-				@rpc("any_peer", "unreliable_ordered")
+				@rpc(any_peer, unreliable_ordered)
 				func fn_update_pos(): pass
 
-				@rpc("authority", "call_remote", "unreliable", 0) # Equivalent to @rpc
+				@rpc(authority, call_remote, unreliable, 0) # Equivalent to @rpc
 				func fn_default(): pass
 				[/codeblock]
 			</description>
@@ -642,7 +642,7 @@
 				func test():
 				    print("hello")
 				    return
-				    @warning_ignore("unreachable_code")
+				    @warning_ignore(unreachable_code)
 				    print("unreachable")
 				[/codeblock]
 			</description>

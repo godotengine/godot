@@ -92,7 +92,7 @@ class GDScriptAnalyzer {
 	void reduce_cast(GDScriptParser::CastNode *p_cast);
 	void reduce_dictionary(GDScriptParser::DictionaryNode *p_dictionary);
 	void reduce_get_node(GDScriptParser::GetNodeNode *p_get_node);
-	void reduce_identifier(GDScriptParser::IdentifierNode *p_identifier, bool can_be_builtin = false);
+	void reduce_identifier(GDScriptParser::IdentifierNode *p_identifier, bool p_can_be_builtin = false, bool p_can_be_not_found = false);
 	void reduce_identifier_from_base(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType *p_base = nullptr);
 	void reduce_lambda(GDScriptParser::LambdaNode *p_lambda);
 	void reduce_literal(GDScriptParser::LiteralNode *p_literal);

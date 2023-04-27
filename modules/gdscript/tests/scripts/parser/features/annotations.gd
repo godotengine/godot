@@ -22,20 +22,20 @@ var a4: int
 var a5: int
 
 @export() var a6: int
-@warning_ignore("onready_with_export") @onready @export var a7: int
-@warning_ignore("onready_with_export") @onready() @export() var a8: int
+@warning_ignore(onready_with_export) @onready @export var a7: int
+@warning_ignore(onready_with_export) @onready() @export() var a8: int
 
-@warning_ignore("onready_with_export")
+@warning_ignore(onready_with_export)
 @onready
 @export
 var a9: int
 
-@warning_ignore("onready_with_export")
+@warning_ignore(onready_with_export)
 @onready()
 @export()
 var a10: int
 
-@warning_ignore("onready_with_export")
+@warning_ignore(onready_with_export)
 @onready()
 @export()
 

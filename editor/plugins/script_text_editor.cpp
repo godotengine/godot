@@ -271,7 +271,7 @@ void ScriptTextEditor::_warning_clicked(Variant p_line) {
 			} else {
 				annotation_indent = String(" ").repeat(text_editor->get_indent_size() * indent);
 			}
-			text_editor->insert_line_at(line, annotation_indent + "@warning_ignore(" + code.quote(quote_style) + ")");
+			text_editor->insert_line_at(line, annotation_indent + "@warning_ignore(" + code + ")");
 		}
 
 		_validate_script();

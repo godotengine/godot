@@ -4,7 +4,7 @@ class A extends RefCounted:
 class B extends A:
 	pass
 
-@warning_ignore("assert_always_true")
+@warning_ignore(assert_always_true)
 func test():
 	var builtin: Variant = 3
 	assert((builtin is Variant) == true)
