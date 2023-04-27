@@ -1068,6 +1068,8 @@ void CSGBrushOperation::Build2DFaces::_merge_faces(const Vector<int> &p_segment_
 }
 
 void CSGBrushOperation::Build2DFaces::_find_edge_intersections(const Vector2 p_segment_points[2], Vector<int> &r_segment_indices) {
+	LocalVector<Vector<Vector2>> processed_edges;
+
 	// For each face.
 	for (int face_idx = 0; face_idx < faces.size(); ++face_idx) {
 		Face2D face = faces[face_idx];
@@ -1079,17 +1081,32 @@ void CSGBrushOperation::Build2DFaces::_find_edge_intersections(const Vector2 p_s
 
 		// Check each edge.
 		for (int face_edge_idx = 0; face_edge_idx < 3; ++face_edge_idx) {
-			Vector2 edge_points[2] = {
+			Vector<Vector2> edge_points_and_uvs = {
 				face_vertices[face_edge_idx].point,
-				face_vertices[(face_edge_idx + 1) % 3].point
-			};
-			Vector2 edge_uvs[2] = {
+				face_vertices[(face_edge_idx + 1) % 3].point,
 				face_vertices[face_edge_idx].uv,
 				face_vertices[(face_edge_idx + 1) % 3].uv
 			};
-			Vector2 intersection_point;
+
+			Vector2 edge_points[2] = {
+				edge_points_and_uvs[0],
+				edge_points_and_uvs[1],
+			};
+			Vector2 edge_uvs[2] = {
+				edge_points_and_uvs[2],
+				edge_points_and_uvs[3],
+			};
+
+			// Check if edge has already been processed.
+			if (processed_edges.find(edge_points_and_uvs) != -1) {
+				continue;
+			}
+
+			processed_edges.push_back(edge_points_and_uvs);
 
 			// First check if the ends of the segment are on the edge.
+			Vector2 intersection_point;
+
 			bool on_edge = false;
 			for (int edge_point_idx = 0; edge_point_idx < 2; ++edge_point_idx) {
 				intersection_point = Geometry2D::get_closest_point_to_segment(p_segment_points[edge_point_idx], edge_points);
