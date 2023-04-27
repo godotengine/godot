@@ -633,6 +633,27 @@
 				[b]Note:[/b] As annotations describe their subject, the [code]@tool[/code] annotation must be placed before the class definition and inheritance.
 			</description>
 		</annotation>
+		<annotation name="@tool_button" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="name" type="String" default="&quot;Tool Button&quot;" />
+			<param index="1" name="icon" type="String" default="&quot;&quot;" />
+			<description>
+				Mark a function to be displayed in the Inspector as a button. The [UndoRedo] associated with the object will be passed to the function when the button is clicked, so the function must have a parameter to accept it.
+				[codeblock]
+				@tool
+				extends Sprite2D
+
+				@tool_button("Randomize Color", "ColorRect")
+				func rand_col(history):
+				    var random_color = Color(randf_range(0, 1.0), randf_range(0, 1.0), randf_range(0, 1.0));
+				    history.create_action("Randomize Color");
+				    history.add_do_property(self, "modulate", random_color);
+				    history.add_undo_property(self, "modulate", modulate);
+				    history.commit_action();
+				[/codeblock]
+				[b]Note:[/b] Your tool button method should make use of the [UndoRedo] passed to it, otherwise you won't be able to undo any changes you make.
+			</description>
+		</annotation>
 		<annotation name="@warning_ignore" qualifiers="vararg">
 			<return type="void" />
 			<param index="0" name="warning" type="String" />

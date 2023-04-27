@@ -529,6 +529,7 @@ public:
 				ENUM,
 				ENUM_VALUE, // For unnamed enums.
 				GROUP, // For member grouping.
+				TOOL_BUTTON,
 			};
 
 			Type type = UNDEFINED;
@@ -565,6 +566,7 @@ public:
 					case ENUM_VALUE:
 						return enum_value.identifier->name;
 					case GROUP:
+					case TOOL_BUTTON:
 						return annotation->export_info.name;
 				}
 				return "";
@@ -590,6 +592,8 @@ public:
 						return "enum value";
 					case GROUP:
 						return "group";
+					case TOOL_BUTTON:
+						return "tool button";
 				}
 				return "";
 			}
@@ -611,6 +615,7 @@ public:
 					case SIGNAL:
 						return signal->start_line;
 					case GROUP:
+					case TOOL_BUTTON:
 						return annotation->start_line;
 					case UNDEFINED:
 						ERR_FAIL_V_MSG(-1, "Reaching undefined member type.");
@@ -635,6 +640,7 @@ public:
 					case SIGNAL:
 						return signal->get_datatype();
 					case GROUP:
+					case TOOL_BUTTON:
 						return DataType();
 					case UNDEFINED:
 						return DataType();
@@ -659,6 +665,7 @@ public:
 					case SIGNAL:
 						return signal;
 					case GROUP:
+					case TOOL_BUTTON:
 						return annotation;
 					case UNDEFINED:
 						return nullptr;
@@ -696,8 +703,8 @@ public:
 				type = ENUM_VALUE;
 				enum_value = p_enum_value;
 			}
-			Member(AnnotationNode *p_annotation) {
-				type = GROUP;
+			Member(AnnotationNode *p_annotation, Member::Type p_type) {
+				type = p_type;
 				annotation = p_annotation;
 			}
 		};
@@ -748,7 +755,11 @@ public:
 		}
 		void add_member_group(AnnotationNode *p_annotation_node) {
 			members_indices[p_annotation_node->export_info.name] = members.size();
-			members.push_back(Member(p_annotation_node));
+			members.push_back(Member(p_annotation_node, Member::Type::GROUP));
+		}
+		void add_tool_button_member(AnnotationNode *p_annotation_node) {
+			members_indices[p_annotation_node->export_info.name] = members.size();
+			members.push_back(Member(p_annotation_node, Member::Type::TOOL_BUTTON));
 		}
 
 		ClassNode() {
@@ -1430,6 +1441,7 @@ private:
 	template <PropertyUsageFlags t_usage>
 	bool export_group_annotations(const AnnotationNode *p_annotation, Node *p_target);
 	bool warning_annotations(const AnnotationNode *p_annotation, Node *p_target);
+	bool tool_button_annotation(const AnnotationNode *p_annotation, Node *p_node);
 	bool rpc_annotation(const AnnotationNode *p_annotation, Node *p_target);
 	// Statements.
 	Node *parse_statement();
