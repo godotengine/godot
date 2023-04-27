@@ -171,6 +171,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Fix multi-line string highlighting with single quotes ([GH-76170](https://github.com/godotengine/godot/pull/76170)).
 - Fix mixed tabs and spaces issues ([GH-76286](https://github.com/godotengine/godot/pull/76286)).
 - Fix wrong file name on function call error ([GH-76404](https://github.com/godotengine/godot/pull/76404)).
+- Don't fail when freed object is returned ([GH-76483](https://github.com/godotengine/godot/pull/76483)).
 
 #### GUI
 
@@ -228,10 +229,12 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Ensure that depth write state is updated before transparent pass in OpenGL3 renderer ([GH-75968](https://github.com/godotengine/godot/pull/75968)).
 - Fix editor lock on sdf collision bake on error ([GH-76257](https://github.com/godotengine/godot/pull/76257)).
 - Fix issues with Vulkan layout transitions ([GH-76315](https://github.com/godotengine/godot/pull/76315)).
+- Fix breakages of volumetric fog on voxel GI changes ([GH-76437](https://github.com/godotengine/godot/pull/76437)).
 
 #### Shaders
 
 - Fix crashes caused due to missing type specifier on visual shader editor ([GH-75809](https://github.com/godotengine/godot/pull/75809)).
+- Fix Shader Preprocessor line numbering when disabled ([GH-76479](https://github.com/godotengine/godot/pull/76479)).
 
 
 ## [4.0.2] - 2023-04-04
