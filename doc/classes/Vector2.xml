@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Vector2" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Vector used for 2D math using floating point coordinates.
+		A 2D vector using floating point coordinates.
 	</brief_description>
 	<description>
-		2-element structure that can be used to represent positions in 2D space or any other pair of numeric values.
+		A 2-element structure that can be used to represent 2D coordinates or any other pair of numeric values.
 		It uses floating-point coordinates. By default, these floating-point values use 32-bit precision, unlike [float] which is always 64-bit. If double precision is needed, compile the engine with the option [code]precision=double[/code].
 		See [Vector2i] for its integer counterpart.
 		[b]Note:[/b] In a boolean context, a Vector2 will evaluate to [code]false[/code] if it's equal to [code]Vector2(0, 0)[/code]. Otherwise, a Vector2 will always evaluate to [code]true[/code].

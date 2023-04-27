@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="@GDScript" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		Built-in GDScript functions.
+		Built-in GDScript constants, functions, and annotations.
 	</brief_description>
 	<description>
 		A list of GDScript-specific utility functions and annotations accessible from any script.
