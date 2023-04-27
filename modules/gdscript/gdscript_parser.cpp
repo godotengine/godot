@@ -113,6 +113,7 @@ GDScriptParser::GDScriptParser() {
 	register_annotation(MethodInfo("@export_category", PropertyInfo(Variant::STRING, "name")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_CATEGORY>);
 	register_annotation(MethodInfo("@export_group", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_GROUP>, varray(""));
 	register_annotation(MethodInfo("@export_subgroup", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_SUBGROUP>, varray(""));
+	register_annotation(MethodInfo("@tool_button", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "icon")), AnnotationInfo::FUNCTION, &GDScriptParser::tool_button_annotation, varray(""), true);
 	// Warning annotations.
 	register_annotation(MethodInfo("@warning_ignore", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::CLASS | AnnotationInfo::VARIABLE | AnnotationInfo::SIGNAL | AnnotationInfo::CONSTANT | AnnotationInfo::FUNCTION | AnnotationInfo::STATEMENT, &GDScriptParser::warning_annotations, varray(), true);
 	// Networking.
@@ -762,6 +763,9 @@ void GDScriptParser::parse_class_member(T *(GDScriptParser::*p_parse_function)(b
 	}
 
 	for (AnnotationNode *&annotation : annotations) {
+		if (annotation->name == SNAME("@tool_button")) {
+			current_class->add_tool_button_member(annotation);
+		}
 		member->annotations.push_back(annotation);
 	}
 
@@ -4174,6 +4178,44 @@ bool GDScriptParser::warning_annotations(const AnnotationNode *p_annotation, Nod
 #endif // DEBUG_ENABLED
 }
 
+bool GDScriptParser::tool_button_annotation(const AnnotationNode *p_annotation, Node *p_node) {
+#ifndef TOOLS_ENABLED // !TOOLS_ENABLED
+	// Only available in editor.
+	return true;
+#else // TOOLS_ENABLED
+	AnnotationNode *annotation = const_cast<AnnotationNode *>(p_annotation);
+	FunctionNode *func = static_cast<FunctionNode *>(p_node);
+	if (annotation->resolved_arguments.size() < 1) {
+		push_error("Tool buttons must specify a name.", p_annotation);
+		return false;
+	}
+
+	if (!this->is_tool()) {
+		push_error("Tool buttons can only be used in tool scripts.", p_annotation);
+		return false;
+	}
+
+	annotation->export_info.name = annotation->resolved_arguments[0];
+	annotation->export_info.type = Variant::Type::CALLABLE;
+	annotation->export_info.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_INTERNAL;
+	if (func->parameters.size() != 1) {
+		push_error("Tool button methods must have an UndoRedo as their only argument.", func);
+		return false;
+	}
+	if (func->parameters[0]->datatype_specifier != nullptr && func->parameters[0]->datatype_specifier->type_chain[0]->name != "UndoRedo") {
+		push_error("Tool button methods must have an UndoRedo as their only argument.", func);
+		return false;
+	}
+	String hint_string = vformat("%s,%s", annotation->resolved_arguments[0], func->identifier->name);
+	if (annotation->resolved_arguments.size() > 1) {
+		// Icon.
+		hint_string += "," + annotation->resolved_arguments[1].operator String();
+	}
+	annotation->export_info.hint_string = hint_string;
+	return true;
+#endif // TOOLS_ENABLED
+}
+
 bool GDScriptParser::rpc_annotation(const AnnotationNode *p_annotation, Node *p_node) {
 	ERR_FAIL_COND_V_MSG(p_node->type != Node::FUNCTION, false, vformat(R"("%s" annotation can only be applied to functions.)", p_annotation->name));
 
@@ -4688,6 +4730,7 @@ void GDScriptParser::TreePrinter::print_class(ClassNode *p_class) {
 			case ClassNode::Member::ENUM_VALUE:
 				break; // Nothing. Will be printed by enum.
 			case ClassNode::Member::GROUP:
+			case ClassNode::Member::TOOL_BUTTON:
 				break; // Nothing. Groups are only used by inspector.
 			case ClassNode::Member::UNDEFINED:
 				push_line("<unknown member>");

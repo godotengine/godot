@@ -307,6 +307,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				r_symbol.children.push_back(symbol);
 			} break;
 			case ClassNode::Member::GROUP:
+			case ClassNode::Member::TOOL_BUTTON:
 				break; // No-op, but silences warnings.
 			case ClassNode::Member::UNDEFINED:
 				break; // Unreachable.
@@ -828,6 +829,7 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 					methods.append(dump_function_api(m.function));
 				}
 			} break;
+			case ClassNode::Member::TOOL_BUTTON:
 			case ClassNode::Member::GROUP:
 				break; // No-op, but silences warnings.
 			case ClassNode::Member::UNDEFINED:

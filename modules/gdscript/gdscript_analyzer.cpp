@@ -1067,6 +1067,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				}
 				break;
 			case GDScriptParser::ClassNode::Member::GROUP:
+			case GDScriptParser::ClassNode::Member::TOOL_BUTTON:
 				// No-op, but needed to silence warnings.
 				break;
 			case GDScriptParser::ClassNode::Member::UNDEFINED:

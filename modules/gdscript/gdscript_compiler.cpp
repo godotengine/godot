@@ -2727,7 +2727,8 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 				p_script->constants.insert(name, enum_n->dictionary);
 			} break;
 
-			case GDScriptParser::ClassNode::Member::GROUP: {
+			case GDScriptParser::ClassNode::Member::GROUP:
+			case GDScriptParser::ClassNode::Member::TOOL_BUTTON: {
 				const GDScriptParser::AnnotationNode *annotation = member.annotation;
 				// Avoid name conflict. See GH-78252.
 				StringName name = vformat("@group_%d_%s", p_script->members.size(), annotation->export_info.name);
@@ -2739,6 +2740,7 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 				PropertyInfo prop_info;
 				prop_info.name = annotation->export_info.name;
 				prop_info.usage = annotation->export_info.usage;
+				prop_info.type = annotation->export_info.type;
 				prop_info.hint_string = annotation->export_info.hint_string;
 
 				p_script->member_info[name] = prop_info;

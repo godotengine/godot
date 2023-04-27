@@ -561,7 +561,8 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 						}
 						_signals[member.signal->identifier->name] = parameters_names;
 					} break;
-					case GDScriptParser::ClassNode::Member::GROUP: {
+					case GDScriptParser::ClassNode::Member::GROUP:
+					case GDScriptParser::ClassNode::Member::TOOL_BUTTON: {
 						members_cache.push_back(member.annotation->export_info);
 					} break;
 					default:

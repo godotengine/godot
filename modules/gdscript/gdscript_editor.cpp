@@ -1030,6 +1030,7 @@ static void _find_identifiers_in_class(const GDScriptParser::ClassNode *p_class,
 						option = ScriptLanguage::CodeCompletionOption(member.signal->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL, location);
 						break;
 					case GDScriptParser::ClassNode::Member::GROUP:
+					case GDScriptParser::ClassNode::Member::TOOL_BUTTON:
 						break; // No-op, but silences warnings.
 					case GDScriptParser::ClassNode::Member::UNDEFINED:
 						break;
@@ -2236,6 +2237,7 @@ static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &
 							r_type.type.class_type = member.m_class;
 							r_type.type.is_meta_type = true;
 							return true;
+						case GDScriptParser::ClassNode::Member::TOOL_BUTTON:
 						case GDScriptParser::ClassNode::Member::GROUP:
 							return false; // No-op, but silences warnings.
 						case GDScriptParser::ClassNode::Member::UNDEFINED:
