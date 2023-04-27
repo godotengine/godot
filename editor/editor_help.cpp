@@ -2371,9 +2371,6 @@ void EditorHelp::update_doc() {
 
 void EditorHelp::cleanup_doc() {
 	_wait_for_thread();
-	if (doc_gen_use_threads) {
-		thread.wait_to_finish();
-	}
 	memdelete(doc);
 }
 
