@@ -32,7 +32,7 @@
 
 #include <float.h>
 
-Ref<Image> Noise::get_seamless_image(int p_width, int p_height, bool p_invert, bool p_in_3d_space, real_t p_blend_skirt, bool p_normalize) const {
+Ref<Image> Noise::get_seamless_image(int p_width, int p_height, int p_depth, bool p_invert, bool p_in_3d_space, real_t p_blend_skirt, bool p_normalize) const {
 	ERR_FAIL_COND_V(p_width <= 0 || p_height <= 0, Ref<Image>());
 
 	int skirt_width = MAX(1, p_width * p_blend_skirt);
@@ -40,7 +40,7 @@ Ref<Image> Noise::get_seamless_image(int p_width, int p_height, bool p_invert, b
 	int src_width = p_width + skirt_width;
 	int src_height = p_height + skirt_height;
 
-	Ref<Image> src = get_image(src_width, src_height, p_invert, p_in_3d_space, p_normalize);
+	Ref<Image> src = get_image(src_width, src_height, p_depth, p_invert, p_in_3d_space, p_normalize);
 	bool grayscale = (src->get_format() == Image::FORMAT_L8);
 	if (grayscale) {
 		return _generate_seamless_image<uint8_t>(src, p_width, p_height, p_invert, p_blend_skirt);
@@ -58,7 +58,7 @@ uint8_t Noise::_alpha_blend<uint8_t>(uint8_t p_bg, uint8_t p_fg, int p_alpha) co
 	return (uint8_t)((alpha * p_fg + inv_alpha * p_bg) >> 8);
 }
 
-Ref<Image> Noise::get_image(int p_width, int p_height, bool p_invert, bool p_in_3d_space, bool p_normalize) const {
+Ref<Image> Noise::get_image(int p_width, int p_height, int p_depth, bool p_invert, bool p_in_3d_space, bool p_normalize) const {
 	ERR_FAIL_COND_V(p_width <= 0 || p_height <= 0, Ref<Image>());
 
 	Vector<uint8_t> data;
@@ -74,7 +74,7 @@ Ref<Image> Noise::get_image(int p_width, int p_height, bool p_invert, bool p_in_
 		real_t max_val = -FLT_MAX;
 		for (int y = 0, i = 0; y < p_height; y++) {
 			for (int x = 0; x < p_width; x++, i++) {
-				values.set(i, p_in_3d_space ? get_noise_3d(x, y, 0.0) : get_noise_2d(x, y));
+				values.set(i, p_in_3d_space ? get_noise_3d(x, y, p_depth) : get_noise_2d(x, y));
 				if (values[i] > max_val) {
 					max_val = values[i];
 				}
@@ -105,7 +105,7 @@ Ref<Image> Noise::get_image(int p_width, int p_height, bool p_invert, bool p_in_
 		uint8_t ivalue;
 		for (int y = 0, i = 0; y < p_height; y++) {
 			for (int x = 0; x < p_width; x++, i++) {
-				float value = (p_in_3d_space ? get_noise_3d(x, y, 0.0) : get_noise_2d(x, y));
+				float value = (p_in_3d_space ? get_noise_3d(x, y, p_depth) : get_noise_2d(x, y));
 				ivalue = static_cast<uint8_t>(CLAMP(value * 127.5f + 127.5f, 0.0f, 255.0f));
 				wd8[i] = p_invert ? (255 - ivalue) : ivalue;
 			}
@@ -124,6 +124,6 @@ void Noise::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_noise_3dv", "v"), &Noise::get_noise_3dv);
 
 	// Textures.
-	ClassDB::bind_method(D_METHOD("get_image", "width", "height", "invert", "in_3d_space", "normalize"), &Noise::get_image, DEFVAL(false), DEFVAL(false), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("get_seamless_image", "width", "height", "invert", "in_3d_space", "skirt", "normalize"), &Noise::get_seamless_image, DEFVAL(false), DEFVAL(false), DEFVAL(0.1), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_image", "width", "height", "depth", "invert", "in_3d_space", "normalize"), &Noise::get_image, DEFVAL(false), DEFVAL(false), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_seamless_image", "width", "height", "depth", "invert", "in_3d_space", "skirt", "normalize"), &Noise::get_seamless_image, DEFVAL(false), DEFVAL(false), DEFVAL(0.1), DEFVAL(true));
 }

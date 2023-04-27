@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  noise_texture_3d.h                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,36 +28,88 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#ifndef NOISE_TEXTURE_3D_H
+#define NOISE_TEXTURE_3D_H
 
-#include "fastnoise_lite.h"
 #include "noise.h"
-#include "noise_texture_2d.h"
-#include "noise_texture_3d.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/editor_plugin.h"
-#include "editor/noise_editor_plugin.h"
-#endif
+#include "core/object/ref_counted.h"
+#include "scene/resources/texture.h"
 
-void initialize_noise_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
-		GDREGISTER_CLASS(NoiseTexture3D);
-		GDREGISTER_CLASS(NoiseTexture2D);
-		GDREGISTER_ABSTRACT_CLASS(Noise);
-		GDREGISTER_CLASS(FastNoiseLite);
-		ClassDB::add_compatibility_class("NoiseTexture", "NoiseTexture2D");
-	}
+class NoiseTexture3D : public Texture3D {
+	GDCLASS(NoiseTexture3D, Texture3D);
 
-#ifdef TOOLS_ENABLED
-	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		EditorPlugins::add_by_type<NoiseEditorPlugin>();
-	}
-#endif
-}
+private:
+	Thread noise_thread;
 
-void uninitialize_noise_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-}
+	bool first_time = true;
+	bool update_queued = false;
+	bool regen_queued = false;
+
+	mutable RID texture;
+	uint32_t flags = 0;
+
+	int width = 64;
+	int height = 64;
+	int depth = 64;
+	bool invert = false;
+	bool seamless = false;
+	real_t seamless_blend_skirt = 0.1;
+	bool normalize = true;
+
+	Ref<Gradient> color_ramp;
+	Ref<Noise> noise;
+
+	void _thread_done(const TypedArray<Image> &p_data);
+	static void _thread_function(void *p_ud);
+
+	void _queue_update();
+	TypedArray<Image> _generate_texture();
+	void _update_texture();
+	void _set_texture_data(const TypedArray<Image> &p_data);
+
+	Vector<Ref<Image>> _get_seamless(int p_width, int p_height, int p_depth, bool p_invert, real_t p_blend_skirt);
+	Vector<Ref<Image>> _normalize(Vector<Ref<Image>> p_images);
+	Ref<Image> _modulate_with_gradient(Ref<Image> p_image, Ref<Gradient> p_gradient);
+
+protected:
+	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
+
+public:
+	void set_noise(Ref<Noise> p_noise);
+	Ref<Noise> get_noise();
+
+	void set_width(int p_width);
+	void set_height(int p_height);
+	void set_depth(int p_depth);
+
+	void set_invert(bool p_invert);
+	bool get_invert() const;
+
+	void set_seamless(bool p_seamless);
+	bool get_seamless();
+
+	void set_seamless_blend_skirt(real_t p_blend_skirt);
+	real_t get_seamless_blend_skirt();
+
+	void set_normalize(bool p_normalize);
+	bool is_normalized() const;
+
+	void set_color_ramp(const Ref<Gradient> &p_gradient);
+	Ref<Gradient> get_color_ramp() const;
+
+	virtual int get_width() const override;
+	virtual int get_height() const override;
+	virtual int get_depth() const override;
+
+	virtual RID get_rid() const override;
+
+	virtual Vector<Ref<Image>> get_data() const override;
+	virtual Image::Format get_format() const override;
+
+	NoiseTexture3D();
+	virtual ~NoiseTexture3D();
+};
+
+#endif // NOISE_TEXTURE_3D_H
