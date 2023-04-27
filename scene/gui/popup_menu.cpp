@@ -273,7 +273,12 @@ void PopupMenu::_parent_focused() {
 			window_parent = Object::cast_to<Window>(window_parent->get_parent()->get_viewport());
 		}
 
-		Rect2 safe_area = DisplayServer::get_singleton()->window_get_popup_safe_rect(get_window_id());
+		DisplayServer::WindowID p_window = get_window_id();
+		if (p_window == -1) {
+			return;
+		}
+
+		Rect2 safe_area = DisplayServer::get_singleton()->window_get_popup_safe_rect(p_window);
 		Point2 pos = DisplayServer::get_singleton()->mouse_get_position() - mouse_pos_adjusted;
 		if (safe_area == Rect2i() || !safe_area.has_point(pos)) {
 			Popup::_parent_focused();
