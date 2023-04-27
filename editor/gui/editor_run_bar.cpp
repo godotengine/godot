@@ -45,6 +45,10 @@ EditorRunBar *EditorRunBar::singleton = nullptr;
 
 void EditorRunBar::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			_reset_play_buttons();
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_play_buttons();
 			pause_button->set_icon(get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
@@ -433,8 +437,6 @@ EditorRunBar::EditorRunBar() {
 	write_movie_button->set_focus_mode(Control::FOCUS_NONE);
 	write_movie_button->set_tooltip_text(TTR("Enable Movie Maker mode.\nThe project will run at stable FPS and the visual and audio output will be recorded to a video file."));
 	write_movie_button->connect("toggled", callable_mp(this, &EditorRunBar::_write_movie_toggled));
-
-	_reset_play_buttons();
 
 	quick_run = memnew(EditorQuickOpen);
 	add_child(quick_run);
