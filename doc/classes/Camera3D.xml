@@ -190,6 +190,10 @@
 		<member name="near" type="float" setter="set_near" getter="get_near" default="0.05">
 			The distance to the near culling boundary for this camera relative to its local Z axis.
 		</member>
+		<member name="orthonormalization_forced" type="bool" setter="set_orthonormalization_forced" getter="is_orthonormalization_forced" default="true">
+			Forces orthonormalization of this camera's global transform. 
+			Set this to [code]false[/code] to allow non-orthonormalized basis.
+		</member>
 		<member name="projection" type="int" setter="set_projection" getter="get_projection" enum="Camera3D.ProjectionType" default="0">
 			The camera's projection mode. In [constant PROJECTION_PERSPECTIVE] mode, objects' Z distance from the camera's local space scales their perceived size.
 		</member>
