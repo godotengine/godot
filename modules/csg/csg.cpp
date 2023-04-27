@@ -1016,7 +1016,7 @@ void CSGBrushOperation::Build2DFaces::_merge_faces(const Vector<int> &p_segment_
 }
 
 void CSGBrushOperation::Build2DFaces::_find_edge_intersections(const Vector2 p_segment_points[2], Vector<int> &r_segment_indices) {
-	Vector<Pair<Pair<Pair<float, float>, Pair<float, float>>, Pair<Pair<float, float>, Pair<float, float>>>> processed_edges;
+	Vector<Vector<Vector2>> processed_edges;
 
 	// For each face.
 	for (int face_idx = 0; face_idx < faces.size(); ++face_idx) {
@@ -1029,32 +1029,28 @@ void CSGBrushOperation::Build2DFaces::_find_edge_intersections(const Vector2 p_s
 
 		// Check each edge.
 		for (int face_edge_idx = 0; face_edge_idx < 3; ++face_edge_idx) {
-			Vector2 edge_points[2] = {
+			Vector<Vector2> edge_points_and_uvs = {
 				face_vertices[face_edge_idx].point,
-				face_vertices[(face_edge_idx + 1) % 3].point
-			};
-			Vector2 edge_uvs[2] = {
+				face_vertices[(face_edge_idx + 1) % 3].point,
 				face_vertices[face_edge_idx].uv,
 				face_vertices[(face_edge_idx + 1) % 3].uv
 			};
 
+			Vector2 edge_points[2] = {
+				edge_points_and_uvs[0],
+				edge_points_and_uvs[1],
+			};
+			Vector2 edge_uvs[2] = {
+				edge_points_and_uvs[2],
+				edge_points_and_uvs[3],
+			};
+
 			// Check if edge has already been processed.
-			Pair<float, float> edge_point_1(face_vertices[face_edge_idx].point.x, face_vertices[face_edge_idx].point.y);
-			Pair<float, float> edge_point_2(face_vertices[(face_edge_idx + 1) % 3].point.x, face_vertices[(face_edge_idx + 1) % 3].point.y);
-
-			Pair<float, float> edge_uv_1(face_vertices[face_edge_idx].uv.x, face_vertices[face_edge_idx].uv.y);
-			Pair<float, float> edge_uv_2(face_vertices[(face_edge_idx + 1) % 3].uv.x, face_vertices[(face_edge_idx + 1) % 3].uv.y);
-
-			Pair<Pair<float, float>, Pair<float, float>> combined_point(edge_point_1, edge_point_2);
-			Pair<Pair<float, float>, Pair<float, float>> combined_uv(edge_uv_1, edge_uv_2);
-
-			Pair<Pair<Pair<float, float>, Pair<float, float>>, Pair<Pair<float, float>, Pair<float, float>>> combined_edge(combined_point, combined_uv);
-
-			if (processed_edges.find(combined_edge) != -1) {
+			if (processed_edges.find(edge_points_and_uvs) != -1) {
 				continue;
 			}
 
-			processed_edges.push_back(combined_edge);
+			processed_edges.push_back(edge_points_and_uvs);
 
 			// Else continue on
 			Vector2 intersection_point;
