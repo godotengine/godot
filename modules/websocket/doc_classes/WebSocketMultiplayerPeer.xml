@@ -32,7 +32,7 @@
 			<return type="WebSocketPeer" />
 			<param index="0" name="peer_id" type="int" />
 			<description>
-				Returns the [WebSocketPeer] associated to the given [code]peer_id[/code].
+				Returns the [WebSocketPeer] associated to the given [param peer_id].
 			</description>
 		</method>
 		<method name="get_peer_address" qualifiers="const">

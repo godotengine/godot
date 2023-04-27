@@ -203,7 +203,7 @@
 			[b]Note:[/b] [kbd]Backspace[/kbd] is always removing individual composite character components.
 		</member>
 		<member name="clear_button_enabled" type="bool" setter="set_clear_button_enabled" getter="is_clear_button_enabled" default="false">
-			If [code]true[/code], the [LineEdit] will show a clear button if [code]text[/code] is not empty, which can be used to clear the text quickly.
+			If [code]true[/code], the [LineEdit] will show a clear button if [member text] is not empty, which can be used to clear the text quickly.
 		</member>
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled" default="true">
 			If [code]true[/code], the context menu will appear when right-clicked.
@@ -302,7 +302,7 @@
 		<signal name="text_change_rejected">
 			<param index="0" name="rejected_substring" type="String" />
 			<description>
-				Emitted when appending text that overflows the [member max_length]. The appended text is truncated to fit [member max_length], and the part that couldn't fit is passed as the [code]rejected_substring[/code] argument.
+				Emitted when appending text that overflows the [member max_length]. The appended text is truncated to fit [member max_length], and the part that couldn't fit is passed as the [param rejected_substring] argument.
 			</description>
 		</signal>
 		<signal name="text_changed">
@@ -487,7 +487,7 @@
 			Texture for the clear button. See [member clear_button_enabled].
 		</theme_item>
 		<theme_item name="focus" data_type="style" type="StyleBox">
-			Background used when [LineEdit] has GUI focus. The [code]focus[/code] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
+			Background used when [LineEdit] has GUI focus. The [theme_item focus] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
 		</theme_item>
 		<theme_item name="normal" data_type="style" type="StyleBox">
 			Default background for the [LineEdit].
