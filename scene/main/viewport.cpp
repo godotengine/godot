@@ -290,6 +290,9 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 		}
 
 		Window *this_window = Object::cast_to<Window>(this);
+		if (!this_window && get_window_id() == DisplayServer::INVALID_WINDOW_ID) {
+			this_window = get_window();
+		}
 		if (this_window) {
 			this_window->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_IN);
 		}
@@ -318,6 +321,9 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 		gui.subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
 	} else {
 		Window *this_window = Object::cast_to<Window>(this);
+		if (!this_window && get_window_id() == DisplayServer::INVALID_WINDOW_ID) {
+			this_window = get_window();
+		}
 		if (this_window) {
 			this_window->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
 		}
