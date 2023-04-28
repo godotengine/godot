@@ -312,6 +312,11 @@ void UndoRedo::commit_action(bool p_execute) {
 }
 
 void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
+	const int PREALLOCATE_ARGS_COUNT = 16;
+
+	LocalVector<const Variant *> args;
+	args.reserve(PREALLOCATE_ARGS_COUNT);
+
 	for (; E; E = E->next()) {
 		Operation &op = E->get();
 
@@ -347,12 +352,13 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 					if (binds.is_empty()) {
 						method_callback(method_callback_ud, obj, op.name, nullptr, 0);
 					} else {
-						const Variant **args = (const Variant **)alloca(sizeof(const Variant **) * binds.size());
+						args.clear();
+
 						for (int i = 0; i < binds.size(); i++) {
-							args[i] = (const Variant *)&binds[i];
+							args.push_back(&binds[i]);
 						}
 
-						method_callback(method_callback_ud, obj, op.name, args, binds.size());
+						method_callback(method_callback_ud, obj, op.name, args.ptr(), binds.size());
 					}
 				}
 			} break;
