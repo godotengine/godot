@@ -151,6 +151,7 @@ public:
 	static ImageMemLoadFunc _bmp_mem_loader_func;
 	static ScalableImageMemLoadFunc _svg_scalable_mem_loader_func;
 	static ImageMemLoadFunc _dds_mem_loader_func;
+	static ImageMemLoadFunc _ktx_mem_loader_func;
 
 	static void (*_image_compress_bc_func)(Image *, UsedChannels p_channels);
 	static void (*_image_compress_bptc_func)(Image *, UsedChannels p_channels);
@@ -404,6 +405,7 @@ public:
 	Error load_tga_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_bmp_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_dds_from_buffer(const Vector<uint8_t> &p_array);
+	Error load_ktx_from_buffer(const Vector<uint8_t> &p_array);
 
 	Error load_svg_from_buffer(const Vector<uint8_t> &p_array, float scale = 1.0);
 	Error load_svg_from_string(const String &p_svg_str, float scale = 1.0);
