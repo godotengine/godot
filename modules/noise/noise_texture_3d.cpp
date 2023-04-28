@@ -156,7 +156,7 @@ TypedArray<Image> NoiseTexture3D::_generate_texture() {
 		}
 	}
 
-	// Normalize on whole texture at once rather than on each image individualy as it would result in visible artifacts on z (depth) axis.
+	// Normalize on whole texture at once rather than on each image individually as it would result in visible artifacts on z (depth) axis.
 	if (normalize) {
 		images = _normalize(images);
 	}

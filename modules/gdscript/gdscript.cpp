@@ -741,7 +741,7 @@ Error GDScript::reload(bool p_keep_state) {
 
 	bool can_run = ScriptServer::is_scripting_enabled() || is_tool();
 
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 	if (p_keep_state && can_run && is_valid()) {
 		_save_old_static_data();
 	}
@@ -818,7 +818,7 @@ Error GDScript::reload(bool p_keep_state) {
 		}
 	}
 
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 	if (can_run && p_keep_state) {
 		_restore_old_static_data();
 	}
