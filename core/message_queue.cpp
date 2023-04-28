@@ -251,8 +251,7 @@ void MessageQueue::statistics() {
 }
 
 int MessageQueue::get_max_buffer_usage() const {
-	// Note this may be better read_buffer, or a combination, depending when this is read.
-	return buffers[write_buffer].data.size();
+	return _buffer_size_monitor.max_size_overall;
 }
 
 void MessageQueue::_call_function(Object *p_target, const StringName &p_func, const Variant *p_args, int p_argcount, bool p_show_error) {
@@ -392,6 +391,7 @@ void MessageQueue::flush() {
 		_THREAD_SAFE_LOCK_
 		// keep track of the maximum used size, so we can downsize buffers when appropriate
 		_buffer_size_monitor.max_size = MAX(buffer_data_size, _buffer_size_monitor.max_size);
+		_buffer_size_monitor.max_size_overall = MAX(buffer_data_size, _buffer_size_monitor.max_size_overall);
 
 		// flip buffers, this is the only part that requires a lock
 		SWAP(read_buffer, write_buffer);

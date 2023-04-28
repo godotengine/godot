@@ -70,6 +70,9 @@ class MessageQueue {
 	struct BufferSizeMonitor {
 		uint32_t max_size = 0;
 		uint32_t flush_count = 0;
+
+		// Only used for performance statistics.
+		uint32_t max_size_overall = 0;
 	} _buffer_size_monitor;
 
 	void _call_function(Object *p_target, const StringName &p_func, const Variant *p_args, int p_argcount, bool p_show_error);
@@ -97,6 +100,7 @@ public:
 	bool is_flushing() const;
 
 	int get_max_buffer_usage() const;
+	int get_current_buffer_usage() const;
 
 	MessageQueue();
 	~MessageQueue();
