@@ -818,12 +818,56 @@ String EditorExportPlatform::_export_customize(const String &p_path, LocalVector
 	return save_path.is_empty() ? p_path : save_path;
 }
 
+Vector<String> EditorExportPlatform::get_forced_export_files() {
+	Vector<String> files;
+
+	files.push_back(ProjectSettings::get_singleton()->get_global_class_list_path());
+
+	String icon = GLOBAL_GET("application/config/icon");
+	String splash = GLOBAL_GET("application/boot_splash/image");
+	if (!icon.is_empty() && FileAccess::exists(icon)) {
+		files.push_back(icon);
+	}
+	if (!splash.is_empty() && FileAccess::exists(splash) && icon != splash) {
+		files.push_back(splash);
+	}
+	String resource_cache_file = ResourceUID::get_cache_file();
+	if (FileAccess::exists(resource_cache_file)) {
+		files.push_back(resource_cache_file);
+	}
+
+	String extension_list_config_file = GDExtension::get_extension_list_config_file();
+	if (FileAccess::exists(extension_list_config_file)) {
+		files.push_back(extension_list_config_file);
+	}
+
+	// Store text server data if it is supported.
+	if (TS->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA)) {
+		bool use_data = GLOBAL_GET("internationalization/locale/include_text_server_data");
+		if (use_data) {
+			// Try using user provided data file.
+			String ts_data = "res://" + TS->get_support_data_filename();
+			if (FileAccess::exists(ts_data)) {
+				files.push_back(ts_data);
+			} else {
+				// Use default text server data.
+				String icu_data_file = EditorPaths::get_singleton()->get_cache_dir().path_join("tmp_icu_data");
+				ERR_FAIL_COND_V(!TS->save_support_data(icu_data_file), files);
+				files.push_back(icu_data_file);
+				// Remove the file later.
+				MessageQueue::get_singleton()->push_callable(callable_mp_static(DirAccess::remove_absolute), icu_data_file);
+			}
+		}
+	}
+
+	return files;
+}
+
 Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &p_preset, bool p_debug, EditorExportSaveFunction p_func, void *p_udata, EditorExportSaveSharedObject p_so_func) {
 	//figure out paths of files that will be exported
 	HashSet<String> paths;
 	Vector<String> path_remaps;
 
-	paths.insert(ProjectSettings::get_singleton()->get_global_class_list_path());
 	if (p_preset->get_export_filter() == EditorExportPreset::EXPORT_ALL_RESOURCES) {
 		//find stuff
 		_export_find_resources(EditorFileSystem::get_singleton()->get_filesystem(), paths);
@@ -1295,66 +1339,12 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		}
 	}
 
-	// Store icon and splash images directly, they need to bypass the import system and be loaded as images
-	String icon = GLOBAL_GET("application/config/icon");
-	String splash = GLOBAL_GET("application/boot_splash/image");
-	if (!icon.is_empty() && FileAccess::exists(icon)) {
-		Vector<uint8_t> array = FileAccess::get_file_as_bytes(icon);
-		err = p_func(p_udata, icon, array, idx, total, enc_in_filters, enc_ex_filters, key);
+	Vector<String> forced_export = get_forced_export_files();
+	for (int i = 0; i < forced_export.size(); i++) {
+		Vector<uint8_t> array = FileAccess::get_file_as_bytes(forced_export[i]);
+		err = p_func(p_udata, forced_export[i], array, idx, total, enc_in_filters, enc_ex_filters, key);
 		if (err != OK) {
 			return err;
-		}
-	}
-	if (!splash.is_empty() && FileAccess::exists(splash) && icon != splash) {
-		Vector<uint8_t> array = FileAccess::get_file_as_bytes(splash);
-		err = p_func(p_udata, splash, array, idx, total, enc_in_filters, enc_ex_filters, key);
-		if (err != OK) {
-			return err;
-		}
-	}
-	String resource_cache_file = ResourceUID::get_cache_file();
-	if (FileAccess::exists(resource_cache_file)) {
-		Vector<uint8_t> array = FileAccess::get_file_as_bytes(resource_cache_file);
-		err = p_func(p_udata, resource_cache_file, array, idx, total, enc_in_filters, enc_ex_filters, key);
-		if (err != OK) {
-			return err;
-		}
-	}
-
-	String extension_list_config_file = GDExtension::get_extension_list_config_file();
-	if (FileAccess::exists(extension_list_config_file)) {
-		Vector<uint8_t> array = FileAccess::get_file_as_bytes(extension_list_config_file);
-		err = p_func(p_udata, extension_list_config_file, array, idx, total, enc_in_filters, enc_ex_filters, key);
-		if (err != OK) {
-			return err;
-		}
-	}
-
-	// Store text server data if it is supported.
-	if (TS->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA)) {
-		bool use_data = GLOBAL_GET("internationalization/locale/include_text_server_data");
-		if (use_data) {
-			// Try using user provided data file.
-			String ts_data = "res://" + TS->get_support_data_filename();
-			if (FileAccess::exists(ts_data)) {
-				Vector<uint8_t> array = FileAccess::get_file_as_bytes(ts_data);
-				err = p_func(p_udata, ts_data, array, idx, total, enc_in_filters, enc_ex_filters, key);
-				if (err != OK) {
-					return err;
-				}
-			} else {
-				// Use default text server data.
-				String icu_data_file = EditorPaths::get_singleton()->get_cache_dir().path_join("tmp_icu_data");
-				if (!TS->save_support_data(icu_data_file)) {
-					return ERR_INVALID_DATA;
-				}
-				Vector<uint8_t> array = FileAccess::get_file_as_bytes(icu_data_file);
-				err = p_func(p_udata, ts_data, array, idx, total, enc_in_filters, enc_ex_filters, key);
-				DirAccess::remove_file_or_error(icu_data_file);
-				if (err != OK) {
-					return err;
-				}
-			}
 		}
 	}
 

@@ -41,7 +41,6 @@
 #include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/io/dir_access.h"
-#include "core/io/file_access_network.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/file_access_zip.h"
 #include "core/io/image_loader.h"
@@ -129,7 +128,6 @@ static Time *time_singleton = nullptr;
 #ifdef MINIZIP_ENABLED
 static ZipArchive *zip_packed_data = nullptr;
 #endif
-static FileAccessNetworkClient *file_access_network_client = nullptr;
 static MessageQueue *message_queue = nullptr;
 
 // Initialized in setup2()
@@ -1384,9 +1382,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// Network file system needs to be configured before globals, since globals are based on the
 	// 'project.godot' file which will only be available through the network if this is enabled
-	FileAccessNetwork::configure();
 	if (!remotefs.is_empty()) {
-		file_access_network_client = memnew(FileAccessNetworkClient);
 		int port;
 		if (remotefs.contains(":")) {
 			port = remotefs.get_slicec(':', 1).to_int();
@@ -1394,14 +1390,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else {
 			port = 6010;
 		}
+		Error err = OS::get_singleton()->setup_remote_filesystem(remotefs, port, remotefs_pass, project_path);
 
-		Error err = file_access_network_client->connect(remotefs, port, remotefs_pass);
 		if (err) {
 			OS::get_singleton()->printerr("Could not connect to remotefs: %s:%i.\n", remotefs.utf8().get_data(), port);
 			goto error;
 		}
-
-		FileAccess::make_default<FileAccessNetwork>(FileAccess::ACCESS_RESOURCES);
 	}
 
 	if (globals->setup(project_path, main_pack, upwards, editor) == OK) {
@@ -1936,9 +1930,6 @@ error:
 	}
 	if (packed_data) {
 		memdelete(packed_data);
-	}
-	if (file_access_network_client) {
-		memdelete(file_access_network_client);
 	}
 
 	unregister_core_driver_types();
@@ -3447,9 +3438,6 @@ void Main::cleanup(bool p_force) {
 
 	if (packed_data) {
 		memdelete(packed_data);
-	}
-	if (file_access_network_client) {
-		memdelete(file_access_network_client);
 	}
 	if (performance) {
 		memdelete(performance);

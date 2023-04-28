@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_file_server.h                                                  */
+/*  remote_filesystem_client.h                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,34 +28,38 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_FILE_SERVER_H
-#define EDITOR_FILE_SERVER_H
+#ifndef REMOTE_FILESYSTEM_CLIENT_H
+#define REMOTE_FILESYSTEM_CLIENT_H
 
-#include "core/io/packet_peer.h"
-#include "core/io/tcp_server.h"
-#include "core/object/class_db.h"
-#include "core/os/thread.h"
-#include "editor/editor_file_system.h"
+#include "core/io/ip_address.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_set.h"
+#include "core/templates/local_vector.h"
 
-class EditorFileServer : public Object {
-	GDCLASS(EditorFileServer, Object);
+class RemoteFilesystemClient {
+	String cache_path;
+	HashSet<String> validated_directories;
 
-	Ref<TCPServer> server;
-	String password;
-	int port = 0;
-	bool active = false;
-	void _scan_files_changed(EditorFileSystemDirectory *efd, const Vector<String> &p_tags, HashMap<String, uint64_t> &files_to_send, HashMap<String, uint64_t> &cached_files);
+protected:
+	String _get_cache_path() { return cache_path; }
+	struct FileCache {
+		String path; // Local path (as in "folder/to/file.png")
+		uint64_t server_modified_time; // MD5 checksum.
+		uint64_t modified_time;
+	};
+	virtual bool _is_configured() { return !cache_path.is_empty(); }
+	// Can be re-implemented per platform. If so, feel free to ignore get_cache_path()
+	virtual Vector<FileCache> _load_cache_file();
+	virtual Error _store_file(const String &p_path, const LocalVector<uint8_t> &p_file, uint64_t &modified_time);
+	virtual Error _remove_file(const String &p_path);
+	virtual Error _store_cache_file(const Vector<FileCache> &p_cache);
+	virtual Error _synchronize_with_server(const String &p_host, int p_port, const String &p_password, String &r_cache_path);
+
+	virtual void _update_cache_path(String &r_cache_path);
 
 public:
-	void poll();
-
-	void start();
-	void stop();
-
-	bool is_active() const;
-
-	EditorFileServer();
-	~EditorFileServer();
+	Error synchronize_with_server(const String &p_host, int p_port, const String &p_password, String &r_cache_path);
+	virtual ~RemoteFilesystemClient() {}
 };
 
-#endif // EDITOR_FILE_SERVER_H
+#endif // REMOTE_FILESYSTEM_CLIENT_H

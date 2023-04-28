@@ -2791,7 +2791,11 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			CustomExportData user_data;
 			user_data.assets_directory = assets_directory;
 			user_data.debug = p_debug;
-			err = export_project_files(p_preset, p_debug, rename_and_store_file_in_gradle_project, &user_data, copy_gradle_so);
+			if (p_flags & DEBUG_FLAG_DUMB_CLIENT) {
+				err = export_project_files(p_preset, p_debug, ignore_apk_file, &user_data, copy_gradle_so);
+			} else {
+				err = export_project_files(p_preset, p_debug, rename_and_store_file_in_gradle_project, &user_data, copy_gradle_so);
+			}
 			if (err != OK) {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not export project files to gradle project."));
 				return err;

@@ -195,6 +195,10 @@ void OS_LinuxBSD::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
 }
 
+String OS_LinuxBSD::get_identifier() const {
+	return "linuxbsd";
+}
+
 String OS_LinuxBSD::get_name() const {
 #ifdef __linux__
 	return "Linux";
