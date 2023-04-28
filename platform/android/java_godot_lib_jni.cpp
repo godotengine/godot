@@ -446,38 +446,28 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_callobject(JNIEnv *en
 	Object *obj = ObjectDB::get_instance(ObjectID(ID));
 	ERR_FAIL_NULL(obj);
 
-	int res = env->PushLocalFrame(16);
-	ERR_FAIL_COND(res != 0);
-
 	String str_method = jstring_to_string(method, env);
 
 	int count = env->GetArrayLength(params);
+
 	Variant *vlist = (Variant *)alloca(sizeof(Variant) * count);
-	Variant **vptr = (Variant **)alloca(sizeof(Variant *) * count);
+	const Variant **vptr = (const Variant **)alloca(sizeof(Variant *) * count);
+
 	for (int i = 0; i < count; i++) {
 		jobject jobj = env->GetObjectArrayElement(params, i);
-		Variant v;
-		if (jobj) {
-			v = _jobject_to_variant(env, jobj);
-		}
-		memnew_placement(&vlist[i], Variant);
-		vlist[i] = v;
+		ERR_FAIL_NULL(jobj);
+		memnew_placement(&vlist[i], Variant(_jobject_to_variant(env, jobj)));
 		vptr[i] = &vlist[i];
 		env->DeleteLocalRef(jobj);
 	}
 
 	Callable::CallError err;
-	obj->callp(str_method, (const Variant **)vptr, count, err);
-
-	env->PopLocalFrame(nullptr);
+	obj->callp(str_method, vptr, count, err);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv *env, jclass clazz, jlong ID, jstring method, jobjectArray params) {
 	Object *obj = ObjectDB::get_instance(ObjectID(ID));
 	ERR_FAIL_NULL(obj);
-
-	int res = env->PushLocalFrame(16);
-	ERR_FAIL_COND(res != 0);
 
 	String str_method = jstring_to_string(method, env);
 
@@ -488,16 +478,13 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv *
 
 	for (int i = 0; i < count; i++) {
 		jobject jobj = env->GetObjectArrayElement(params, i);
-		if (jobj) {
-			args[i] = _jobject_to_variant(env, jobj);
-		}
-		env->DeleteLocalRef(jobj);
+		ERR_FAIL_NULL(jobj);
+		memnew_placement(&args[i], Variant(_jobject_to_variant(env, jobj)));
 		argptrs[i] = &args[i];
+		env->DeleteLocalRef(jobj);
 	}
 
-	MessageQueue::get_singleton()->push_callp(obj, str_method, (const Variant **)argptrs, count);
-
-	env->PopLocalFrame(nullptr);
+	MessageQueue::get_singleton()->push_callp(obj, str_method, argptrs, count);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_requestPermissionResult(JNIEnv *env, jclass clazz, jstring p_permission, jboolean p_result) {
