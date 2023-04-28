@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationNode" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base resource for [AnimationTree] nodes.
+		Base class for [AnimationTree] nodes. Not related to scene nodes.
 	</brief_description>
 	<description>
 		Base resource for [AnimationTree] nodes. In general, it's not used directly, but you can create custom ones with custom blending formulas.
 		Inherit this when creating nodes mainly for use in [AnimationNodeBlendTree], otherwise [AnimationRootNode] should be used instead.
 	</description>
 	<tutorials>
-		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="_get_caption" qualifiers="virtual const">

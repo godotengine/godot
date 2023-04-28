@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationRootNode" inherits="AnimationNode" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		The [AnimationNode] which can be set as the root of an [AnimationTree].
+		Base class for [AnimationNode]s that hold one or multiple composite animations. Usually used for [member AnimationTree.tree_root].
 	</brief_description>
 	<description>
+		[AnimationRootNode] is a base class for [AnimationNode]s that hold a complete animation. A complete animation refers to the output of an [AnimationNodeOutput] in an [AnimationNodeBlendTree] or the output of another [AnimationRootNode]. Used for [member AnimationTree.tree_root] or in other [AnimationRootNode]s.
 	</description>
 	<tutorials>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 </class>

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationNodeStateMachine" inherits="AnimationRootNode" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		State machine for control of animations.
+		A state machine with multiple [AnimationRootNode]s, used by [AnimationTree].
 	</brief_description>
 	<description>
-		Contains multiple nodes representing animation states, connected in a graph. Node transitions can be configured to happen automatically or via code, using a shortest-path algorithm. Retrieve the [AnimationNodeStateMachinePlayback] object from the [AnimationTree] node to control it programmatically.
+		Contains multiple [AnimationRootNode]s representing animation states, connected in a graph. Node transitions can be configured to happen automatically or via code, using a shortest-path algorithm. Retrieve the [AnimationNodeStateMachinePlayback] object from the [AnimationTree] node to control it programmatically.
 		[b]Example:[/b]
 		[codeblocks]
 		[gdscript]
@@ -18,7 +18,7 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
-		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_node">

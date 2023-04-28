@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationNodeBlendSpace2D" inherits="AnimationRootNode" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Blends linearly between three [AnimationNode] of any type placed in a 2D space.
+		A set of [AnimationRootNode]s placed on 2D coordinates, crossfading between the three adjacent ones. Used by [AnimationTree].
 	</brief_description>
 	<description>
-		A resource to add to an [AnimationNodeBlendTree].
-		This node allows you to blend linearly between three animations using a [Vector2] weight.
-		You can add vertices to the blend space with [method add_blend_point] and automatically triangulate it by setting [member auto_triangles] to [code]true[/code]. Otherwise, use [method add_triangle] and [method remove_triangle] to create up the blend space by hand.
+		A resource used by [AnimationNodeBlendTree].
+		[AnimationNodeBlendSpace1D] represents a virtual 2D space on which [AnimationRootNode]s are placed. Outputs the linear blend of the three adjacent animations using a [Vector2] weight. Adjacent in this context means the three [AnimationRootNode]s making up the triangle that contains the current value.
+		You can add vertices to the blend space with [method add_blend_point] and automatically triangulate it by setting [member auto_triangles] to [code]true[/code]. Otherwise, use [method add_triangle] and [method remove_triangle] to triangulate the blend space by hand.
 	</description>
 	<tutorials>
-		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>

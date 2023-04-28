@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SkeletonProfile" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Profile of a virtual skeleton used as a target for retargeting.
+		Base class for a profile of a virtual skeleton used as a target for retargeting.
 	</brief_description>
 	<description>
 		This resource is used in [EditorScenePostImport]. Some parameters are referring to bones in [Skeleton3D], [Skin], [Animation], and some other nodes are rewritten based on the parameters of [SkeletonProfile].

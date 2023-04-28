@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationPlayer" inherits="Node" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Player of [Animation] resources.
+		A node used for animation playback.
 	</brief_description>
 	<description>
-		An animation player is used for general-purpose playback of [Animation] resources. It contains a dictionary of [AnimationLibrary] resources and custom blend times between animation transitions.
+		An animation player is used for general-purpose playback of animations. It contains a dictionary of [AnimationLibrary] resources and custom blend times between animation transitions.
 		Some methods and properties use a single key to reference an animation directly. These keys are formatted as the key for the library, followed by a forward slash, then the key for the animation within the library, for example [code]"movement/run"[/code]. If the library's key is an empty string (known as the default library), the forward slash is omitted, being the same key used by the library.
-		[AnimationPlayer] is more suited than [Tween] for animations where you know the final values in advance. For example, fading a screen in and out is more easily done with an [AnimationPlayer] node thanks to the animation tools provided by the editor. That particular example can also be implemented with a [Tween], but it requires doing everything by code.
-		Updating the target properties of animations occurs at process time.
+		[AnimationPlayer] is better-suited than [Tween] for more complex animations, for example ones with non-trivial timings. It can also be used over [Tween] if the animation track editor is more convenient than doing it in code.
+		Updating the target properties of animations occurs at the process frame.
 	</description>
 	<tutorials>
 		<link title="2D Sprite animation">$DOCS_URL/tutorials/2d/2d_sprite_animation.html</link>
