@@ -2870,6 +2870,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_binary_operator(Expression
 			operation->operation = BinaryOpNode::OP_LOGIC_OR;
 			operation->variant_op = Variant::OP_OR;
 			break;
+		case GDScriptTokenizer::Token::XOR:
+		case GDScriptTokenizer::Token::CARET_CARET:
+			operation->operation = BinaryOpNode::OP_LOGIC_XOR;
+			operation->variant_op = Variant::OP_XOR;
+			break;
 		case GDScriptTokenizer::Token::IN:
 			operation->operation = BinaryOpNode::OP_CONTENT_TEST;
 			operation->variant_op = Variant::OP_IN;
@@ -4034,9 +4039,11 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		// Logical
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_LOGIC_AND }, // AND,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_LOGIC_OR }, // OR,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_LOGIC_XOR }, // XOR,
 		{ &GDScriptParser::parse_unary_operator,         	&GDScriptParser::parse_binary_not_in_operator,	PREC_CONTENT_TEST }, // NOT,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,			PREC_LOGIC_AND }, // AMPERSAND_AMPERSAND,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,			PREC_LOGIC_OR }, // PIPE_PIPE,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_LOGIC_XOR }, // CARET_CARET,
 		{ &GDScriptParser::parse_unary_operator,			nullptr,                                        PREC_NONE }, // BANG,
 		// Bitwise
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_BIT_AND }, // AMPERSAND,
@@ -5588,6 +5595,9 @@ void GDScriptParser::TreePrinter::print_binary_op(BinaryOpNode *p_binary_op) {
 			break;
 		case BinaryOpNode::OP_LOGIC_OR:
 			push_text(" OR ");
+			break;
+		case BinaryOpNode::OP_LOGIC_XOR:
+			push_text(" XOR ");
 			break;
 		case BinaryOpNode::OP_CONTENT_TEST:
 			push_text(" IN ");

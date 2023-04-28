@@ -78,6 +78,7 @@ private:
 		TK_OP_GREATER_EQUAL,
 		TK_OP_AND,
 		TK_OP_OR,
+		TK_OP_XOR,
 		TK_OP_NOT,
 		TK_OP_ADD,
 		TK_OP_SUB,
@@ -97,7 +98,6 @@ private:
 		TK_MAX
 	};
 
-	static const char *token_name[TK_MAX];
 	struct Token {
 		TokenType type;
 		Variant value;

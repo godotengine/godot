@@ -586,9 +586,13 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			in_string_name = false;
 		}
 
-		// '^^' has no special meaning, so unlike StringName, when binary, use NodePath color for the last caret.
-		if (!in_node_path && in_region == -1 && str[j] == '^' && !is_binary_op && (j == 0 || (j > 0 && str[j - 1] != '^') || prev_is_binary_op)) {
-			in_node_path = true;
+		// Keep symbol color for binary '^^'. In the case of '^^^' use NodePath color for the last caret.
+		if (!in_node_path && in_region == -1 && str[j] == '^' && !is_binary_op) {
+			if (j >= 2 && str[j - 1] == '^' && str[j - 2] != '^' && prev_is_binary_op) {
+				is_binary_op = true;
+			} else if (j == 0 || (j > 0 && str[j - 1] != '^') || prev_is_binary_op) {
+				in_node_path = true;
+			}
 		} else if (in_region != -1 || is_a_symbol) {
 			in_node_path = false;
 		}
