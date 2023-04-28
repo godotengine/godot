@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="NavigationPathQueryParameters3D" inherits="RefCounted" is_experimental="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Parameters to be sent to a 3D navigation path query.
+		Provides parameters for 3D navigation path queries.
 	</brief_description>
 	<description>
-		This class contains the start and target position and other parameters to be used with [method NavigationServer3D.query_path].
+		By changing various properties of this object, such as the start and target position, you can configure path queries to the [NavigationServer3D].
 	</description>
 	<tutorials>
 		<link title="Using NavigationPathQueryObjects">$DOCS_URL/tutorials/navigation/navigation_using_navigationpathqueryobjects.html</link>

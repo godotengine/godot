@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PhysicsBody2D" inherits="CollisionObject2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base class for all objects affected by physics in 2D space.
+		Abstract base class for 2D game objects affected by physics.
 	</brief_description>
 	<description>
-		PhysicsBody2D is an abstract base class for implementing a physics body. All *Body2D types inherit from it.
+		[PhysicsBody2D] is an abstract base class for 2D game objects affected by physics. All 2D physics bodies inherit from it.
 	</description>
 	<tutorials>
 		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
