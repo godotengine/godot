@@ -31,3 +31,10 @@ GH-104890
 Validate extension JSON: API was removed: classes/JSONRPC/methods/set_scope
 
 Replaced `set_scope` with `set_method`. Compatibility method registered for binary compatibility. Manual upgrade required by users to retain functionality.
+
+
+GH-76560
+--------
+Validate extension JSON: Error: Field 'classes/Node/methods/set_name/arguments/0': type changed value in new API, from "String" to "StringName".
+
+Change Node `set_name` to use StringName to improve performance.
