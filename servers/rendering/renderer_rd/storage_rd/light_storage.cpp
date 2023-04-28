@@ -634,10 +634,6 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 				light_data.size = 1.0 - Math::cos(Math::deg_to_rad(size)); //angle to cosine offset
 
-				if (RendererSceneRenderRD::get_singleton()->get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS) {
-					WARN_PRINT_ONCE("The DirectionalLight3D PSSM splits debug draw mode is not reimplemented yet.");
-				}
-
 				light_data.shadow_opacity = (p_using_shadows && light->shadow)
 						? light->param[RS::LIGHT_PARAM_SHADOW_OPACITY]
 						: 0.0;
