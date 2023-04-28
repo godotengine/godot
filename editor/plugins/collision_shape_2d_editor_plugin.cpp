@@ -552,16 +552,6 @@ void CollisionShape2DEditor::edit(Node *p_node) {
 	_shape_changed();
 }
 
-CollisionShape2DEditor::CollisionShape2DEditor() {
-	node = nullptr;
-	canvas_item_editor = nullptr;
-
-	edit_handle = -1;
-	pressed = false;
-
-	shape_type = 0;
-}
-
 void CollisionShape2DEditorPlugin::edit(Object *p_obj) {
 	collision_shape_2d_editor->edit(Object::cast_to<Node>(p_obj));
 }
