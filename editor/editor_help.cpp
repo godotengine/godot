@@ -115,7 +115,13 @@ static String _contextualize_class_specifier(const String &p_class_specifier, co
 		return p_class_specifier.substr(rfind + 1);
 	}
 
-	// Remove prefix
+	// They share a _name_ prefix but not a _class specifier_ prefix, e.g. Tree & TreeItem
+	// begins_with + lengths being different implies p_class_specifier.length() > p_edited_class.length() so this is safe
+	if (p_class_specifier[p_edited_class.length()] != '.') {
+		return p_class_specifier;
+	}
+
+	// Remove class specifier prefix
 	return p_class_specifier.substr(p_edited_class.length() + 1);
 }
 
