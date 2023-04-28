@@ -90,3 +90,10 @@ Validate extension JSON: API was removed: classes/RenderingServer/methods/instan
 Validate extension JSON: API was removed: classes/RenderingServer/methods/instance_reset_physics_interpolation
 
 Functionality moved out of server.
+
+
+GH-76560
+--------
+Validate extension JSON: Error: Field 'classes/Node/methods/set_name/arguments/0': type changed value in new API, from "String" to "StringName".
+
+Change Node `set_name` to use StringName to improve performance. Compatibility method registered.
