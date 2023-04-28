@@ -279,28 +279,10 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 				groups["<None>"]["<None>"].push_back(info);
 			}
 
-			const bool is_uniform_cached = param_cache.has(E->get().name);
-			bool is_uniform_type_changing = false;
-
-			if (is_uniform_cached) {
-				// Check if the uniform Variant type changed, for example vec3 to vec4.
-				const Variant &cached = param_cache.get(E->get().name);
-				is_uniform_type_changing = E->get().type != cached.get_type();
-
-				if (!is_uniform_type_changing && E->get().type == Variant::OBJECT && cached.get_type() == Variant::OBJECT) {
-					// Check if the Object class (hint string) changed, for example Texture2D sampler to Texture3D.
-					// Allow inheritance, for example Texture2D type sampler should also accept CompressedTexture2D.
-					Object *cached_obj = cached;
-					if (!cached_obj->is_class(E->get().hint_string)) {
-						is_uniform_type_changing = true;
-					}
-				}
-			}
-
 			PropertyInfo info = E->get();
 			info.name = "shader_parameter/" + info.name;
-			if (!is_uniform_cached || is_uniform_type_changing) {
-				// Property has never been edited or its type changed, retrieve with default value.
+			if (!param_cache.has(E->get().name)) {
+				// Property has never been edited, retrieve with default value.
 				Variant default_value = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), E->get().name);
 				param_cache.insert(E->get().name, default_value);
 				remap_cache.insert(info.name, E->get().name);
