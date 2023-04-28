@@ -1545,7 +1545,11 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		resolve_parameter(p_function->parameters[i]);
 #ifdef DEBUG_ENABLED
 		if (p_function->parameters[i]->usages == 0 && !String(p_function->parameters[i]->identifier->name).begins_with("_")) {
-			parser->push_warning(p_function->parameters[i]->identifier, GDScriptWarning::UNUSED_PARAMETER, function_name, p_function->parameters[i]->identifier->name);
+			String visible_name = function_name;
+			if (function_name == StringName()) {
+				visible_name = p_is_lambda ? "<anonymous lambda>" : "<unknown function>";
+			}
+			parser->push_warning(p_function->parameters[i]->identifier, GDScriptWarning::UNUSED_PARAMETER, visible_name, p_function->parameters[i]->identifier->name);
 		}
 		is_shadowing(p_function->parameters[i]->identifier, "function parameter");
 #endif // DEBUG_ENABLED
@@ -3173,7 +3177,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			String base_name = is_self && !p_call->is_super ? "self" : base_type.to_string();
 #ifdef SUGGEST_GODOT4_RENAMES
 			String rename_hint = String();
-			if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::Code::RENAMED_IN_GD4_HINT)).booleanize()) {
+			if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::Code::RENAMED_IN_GODOT_4_HINT)).booleanize()) {
 				const char *renamed_function_name = check_for_renamed_identifier(p_call->function_name, p_call->type);
 				if (renamed_function_name) {
 					rename_hint = " " + vformat(R"(Did you mean to use "%s"?)", String(renamed_function_name) + "()");
@@ -3374,7 +3378,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 			} else if (base.is_hard_type()) {
 #ifdef SUGGEST_GODOT4_RENAMES
 				String rename_hint = String();
-				if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::Code::RENAMED_IN_GD4_HINT)).booleanize()) {
+				if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::Code::RENAMED_IN_GODOT_4_HINT)).booleanize()) {
 					const char *renamed_identifier_name = check_for_renamed_identifier(name, p_identifier->type);
 					if (renamed_identifier_name) {
 						rename_hint = " " + vformat(R"(Did you mean to use "%s"?)", renamed_identifier_name);
@@ -3414,7 +3418,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 					if (base.is_hard_type()) {
 #ifdef SUGGEST_GODOT4_RENAMES
 						String rename_hint = String();
-						if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::Code::RENAMED_IN_GD4_HINT)).booleanize()) {
+						if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::Code::RENAMED_IN_GODOT_4_HINT)).booleanize()) {
 							const char *renamed_identifier_name = check_for_renamed_identifier(name, p_identifier->type);
 							if (renamed_identifier_name) {
 								rename_hint = " " + vformat(R"(Did you mean to use "%s"?)", renamed_identifier_name);
@@ -3803,7 +3807,7 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 	} else {
 #ifdef SUGGEST_GODOT4_RENAMES
 		String rename_hint = String();
-		if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::Code::RENAMED_IN_GD4_HINT)).booleanize()) {
+		if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::Code::RENAMED_IN_GODOT_4_HINT)).booleanize()) {
 			const char *renamed_identifier_name = check_for_renamed_identifier(name, p_identifier->type);
 			if (renamed_identifier_name) {
 				rename_hint = " " + vformat(R"(Did you mean to use "%s"?)", renamed_identifier_name);
