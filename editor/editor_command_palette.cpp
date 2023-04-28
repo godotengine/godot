@@ -75,9 +75,15 @@ void EditorCommandPalette::_update_command_search(const String &search_text) {
 		r.shortcut_text = E.value.shortcut;
 		r.last_used = E.value.last_used;
 
-		if (search_text.is_subsequence_ofn(r.display_name)) {
+		bool is_subsequence_of_key_name = search_text.is_subsequence_ofn(r.key_name);
+		bool is_subsequence_of_display_name = search_text.is_subsequence_ofn(r.display_name);
+
+		if (is_subsequence_of_key_name || is_subsequence_of_display_name) {
 			if (!search_text.is_empty()) {
-				r.score = _score_path(search_text, r.display_name.to_lower());
+				float key_name_score = is_subsequence_of_key_name ? _score_path(search_text, r.key_name.to_lower()) : .0f;
+				float display_name_score = is_subsequence_of_display_name ? _score_path(search_text, r.display_name.to_lower()) : .0f;
+
+				r.score = MAX(key_name_score, display_name_score);
 			}
 
 			entries.push_back(r);
