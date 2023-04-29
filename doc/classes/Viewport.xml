@@ -109,16 +109,24 @@
 				Returns the visible rectangle in global screen coordinates.
 			</description>
 		</method>
+		<method name="gui_get_active_focus_layer" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the active focus layer for this [Viewport]. Only [Control]s using this layer will be navigated to via keyboard and gamepad.
+			</description>
+		</method>
 		<method name="gui_get_drag_data" qualifiers="const">
 			<return type="Variant" />
 			<description>
 				Returns the drag data from the GUI, that was previously returned by [method Control._get_drag_data].
 			</description>
 		</method>
-		<method name="gui_get_focus_owner">
+		<method name="gui_get_focus_owner" qualifiers="const">
 			<return type="Control" />
+			<param index="0" name="focus_layer" type="int" />
 			<description>
-				Returns the [Control] having the focus within this viewport. If no [Control] has the focus, returns null.
+				Returns the focused [Control] within the provided focus layer in this viewport.
+				If no [Control] has the focus in the provided focus layer, returns [code]null[/code].
 			</description>
 		</method>
 		<method name="gui_is_drag_successful" qualifiers="const">
@@ -136,8 +144,18 @@
 		</method>
 		<method name="gui_release_focus">
 			<return type="void" />
+			<param index="0" name="focus_layer" type="int" />
 			<description>
-				Removes the focus from the currently focused [Control] within this viewport. If no [Control] has the focus, does nothing.
+				Removes the focus from the currently focused [Control] within this viewport that is also using the provided focus layer.
+				If no [Control] has the focus in the provided focus layer, does nothing.
+			</description>
+		</method>
+		<method name="gui_set_active_focus_layer">
+			<return type="void" />
+			<param index="0" name="focus_layer" type="int" />
+			<description>
+				Sets the active focus layer for this [Viewport]. The [Viewport] will only navigate to [Control]s using this focus layer.
+				Only one layer can be focused at a time.
 			</description>
 		</method>
 		<method name="is_input_handled" qualifiers="const">

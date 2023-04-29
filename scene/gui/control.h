@@ -182,6 +182,7 @@ private:
 		real_t offset[4] = { 0.0, 0.0, 0.0, 0.0 };
 		real_t anchor[4] = { ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN };
 		FocusMode focus_mode = FOCUS_NONE;
+		int focus_layer = 0;
 		GrowDirection h_grow = GROW_DIRECTION_END;
 		GrowDirection v_grow = GROW_DIRECTION_END;
 
@@ -519,8 +520,10 @@ public:
 
 	void set_focus_mode(FocusMode p_focus_mode);
 	FocusMode get_focus_mode() const;
+	void set_focus_layer(int p_layer_id);
+	int get_focus_layer() const;
 	bool has_focus() const;
-	void grab_focus();
+	bool grab_focus(bool p_auto_set_viewport_active_focus_layer = false);
 	void grab_click_focus();
 	void release_focus();
 

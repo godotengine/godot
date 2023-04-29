@@ -564,10 +564,12 @@
 			</description>
 		</method>
 		<method name="grab_focus">
-			<return type="void" />
+			<return type="bool" />
+			<param index="0" name="auto_set_viewport_active_focus_layer" type="bool" default="false" />
 			<description>
-				Steal the focus from another control and become the focused control (see [member focus_mode]).
-				[b]Note:[/b] Using this method together with [method Callable.call_deferred] makes it more reliable, especially when called inside [method Node._ready].
+				Steal the focus from another control and become the focused control (see [member focus_mode]). If [param auto_set_viewport_active_focus_layer] is [code]true[/code], also sets the focused layer to the layer this control belongs to.
+				Returns [code]true[/code] if it was able to grab focus. Returns [code]false[/code] if the control doesn't get focused (see [member focus_mode]).
+				[b]Note[/b]: Using this method together with [method Callable.call_deferred] makes it more reliable, especially when called inside [method Node._ready].
 			</description>
 		</method>
 		<method name="has_focus" qualifiers="const">
@@ -936,8 +938,12 @@
 		<member name="custom_minimum_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" default="Vector2(0, 0)">
 			The minimum size of the node's bounding rectangle. If you set it to a value greater than (0, 0), the node's bounding rectangle will always have at least this size, even if its content is smaller. If it's set to (0, 0), the node sizes automatically to fit its content, be it a texture or child nodes.
 		</member>
+		<member name="focus_layer" type="int" setter="set_focus_layer" getter="get_focus_layer" default="0">
+			The focus layer for this control. Each layer will only navigate to other [Control]s in the same layer. Each layer can only have one focus at a time.
+			Use [method Viewport.gui_set_active_focus_layer] to set the active focus layer that will be navigated.
+		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" enum="Control.FocusMode" default="0">
-			The focus access mode for the control (None, Click or All). Only one Control can be focused at the same time, and it will receive keyboard, gamepad, and mouse signals.
+			The focus access mode for the control (None, Click or All). Only one [Control] per focus layer can be focused at the same time, and it will receive keyboard, gamepad, and mouse signals.
 		</member>
 		<member name="focus_neighbor_bottom" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)">
 			Tells Godot which node it should give focus to if the user presses the down arrow on the keyboard or down on a gamepad by default. You can change the key by editing the [member ProjectSettings.input/ui_down] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the bottom of this one.

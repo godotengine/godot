@@ -708,7 +708,7 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (revert_rect.has_point(mpos)) {
 			accept_event();
-			get_viewport()->gui_release_focus();
+			get_viewport()->gui_release_focus(get_viewport()->gui_get_active_focus_layer());
 			bool is_valid_revert = false;
 			Variant revert_value = EditorPropertyRevert::get_property_revert_value(object, property, &is_valid_revert);
 			ERR_FAIL_COND(!is_valid_revert);
