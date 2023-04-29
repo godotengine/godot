@@ -2797,6 +2797,51 @@ func some_public_api_func() -> int:
 		CHECK_FORMAT(code, pre_formatted);
 	}
 
+	TEST_CASE("The custom newlines should be remembered") {
+		const String code = R"(extends Node2D
+
+
+class Light:
+	var energy
+
+var energy_slider := Range.new()
+var height_slider := Range.new()
+var light := Light.new()
+
+
+func _ready() -> void:
+	energy_slider.value_changed.connect(func(value):
+		light.energy = energy_slider.value)
+
+	height_slider.value_changed.connect(func(value):
+		light.height = height_slider.value)
+
+	height_slider.value_changed.connect(func(value):
+		light.height = height_slider.value))";
+		const String pre_formatted = R"(extends Node2D
+
+
+class Light:
+	var energy
+
+var energy_slider := Range.new()
+var height_slider := Range.new()
+var light := Light.new()
+
+
+func _ready() -> void:
+	energy_slider.value_changed.connect(func(value):
+		light.energy = energy_slider.value)
+
+	height_slider.value_changed.connect(func(value):
+		light.height = height_slider.value)
+
+	height_slider.value_changed.connect(func(value):
+		light.height = height_slider.value)
+)";
+		CHECK_FORMAT(code, pre_formatted);
+	}
+
 	TEST_CASE("A full commented function should output correctly") {
 		// Code by clayjohn at https://github.com/godotengine/godot-docs/issues/4834
 		const String code = R"(func _ready():

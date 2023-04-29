@@ -97,8 +97,8 @@ String GDScriptFormat::format(const String &p_code) {
 void GDScriptFormat::find_custom_newlines(const String &p_code) {
 	new_lines.clear();
 	const Vector<String> split_code = p_code.replace("\t", "").replace(" ", "").split("\n");
-	for (int i = 0; i < split_code.size(); ++i) {
-		if (i < split_code.size() - 1 && split_code[i].is_empty()) {
+	for (int i = 0; i < split_code.size() - 1; ++i) {
+		if (split_code[i].is_empty()) {
 			new_lines.insert(i);
 		}
 	}
@@ -1040,7 +1040,11 @@ String GDScriptFormat::parse_function_signature(const GDP::FunctionNode *p_node,
 }
 
 String GDScriptFormat::parse_lambda(const GDP::LambdaNode *p_node, const int p_indent_level) {
-	return parse_function(p_node->function, p_indent_level);
+	String lambda = parse_function(p_node->function, p_indent_level);
+	if (lambda.ends_with("\n")) {
+		lambda = lambda.substr(0, lambda.length() - 1);
+	}
+	return lambda;
 }
 
 String GDScriptFormat::parse_function(const GDP::FunctionNode *p_node, const int p_indent_level) {
