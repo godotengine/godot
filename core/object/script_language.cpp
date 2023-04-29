@@ -42,7 +42,7 @@ int ScriptServer::_language_count = 0;
 
 bool ScriptServer::scripting_enabled = true;
 bool ScriptServer::reload_scripts_on_save = false;
-bool ScriptServer::languages_finished = false;
+SafeFlag ScriptServer::languages_finished; // Used until GH-76581 is fixed properly.
 ScriptEditRequestFunction ScriptServer::edit_request_func = nullptr;
 
 void Script::_notification(int p_what) {
@@ -228,7 +228,7 @@ void ScriptServer::finish_languages() {
 		_languages[i]->finish();
 	}
 	global_classes_clear();
-	languages_finished = true;
+	languages_finished.set();
 }
 
 void ScriptServer::set_reload_scripts_on_save(bool p_enable) {
@@ -240,12 +240,18 @@ bool ScriptServer::is_reload_scripts_on_save_enabled() {
 }
 
 void ScriptServer::thread_enter() {
+	if (!languages_finished.is_set()) {
+		return;
+	}
 	for (int i = 0; i < _language_count; i++) {
 		_languages[i]->thread_enter();
 	}
 }
 
 void ScriptServer::thread_exit() {
+	if (!languages_finished.is_set()) {
+		return;
+	}
 	for (int i = 0; i < _language_count; i++) {
 		_languages[i]->thread_exit();
 	}
