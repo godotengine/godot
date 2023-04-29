@@ -4308,6 +4308,7 @@ RID TextServerAdvanced::_shaped_text_get_parent(const RID &p_shaped) const {
 }
 
 double TextServerAdvanced::_shaped_text_fit_to_width(const RID &p_shaped, double p_width, BitField<TextServer::JustificationFlag> p_jst_flags) {
+	_THREAD_SAFE_METHOD_
 	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, 0.0);
 
@@ -4465,6 +4466,7 @@ double TextServerAdvanced::_shaped_text_fit_to_width(const RID &p_shaped, double
 }
 
 double TextServerAdvanced::_shaped_text_tab_align(const RID &p_shaped, const PackedFloat32Array &p_tab_stops) {
+	_THREAD_SAFE_METHOD_
 	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, 0.0);
 
@@ -4521,6 +4523,7 @@ double TextServerAdvanced::_shaped_text_tab_align(const RID &p_shaped, const Pac
 }
 
 void TextServerAdvanced::_shaped_text_overrun_trim_to_width(const RID &p_shaped_line, double p_width, BitField<TextServer::TextOverrunFlag> p_trim_flags) {
+	_THREAD_SAFE_METHOD_
 	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped_line);
 	ERR_FAIL_COND_MSG(!sd, "ShapedTextDataAdvanced invalid.");
 
@@ -4720,6 +4723,7 @@ int64_t TextServerAdvanced::_shaped_text_get_ellipsis_glyph_count(const RID &p_s
 }
 
 bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
+	_THREAD_SAFE_METHOD_
 	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
 
@@ -4985,6 +4989,7 @@ _FORCE_INLINE_ int64_t _generate_kashida_justification_opportunies(const String 
 }
 
 bool TextServerAdvanced::_shaped_text_update_justification_ops(const RID &p_shaped) {
+	_THREAD_SAFE_METHOD_
 	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
 
@@ -5835,6 +5840,7 @@ bool TextServerAdvanced::_shaped_text_is_ready(const RID &p_shaped) const {
 }
 
 const Glyph *TextServerAdvanced::_shaped_text_get_glyphs(const RID &p_shaped) const {
+	_THREAD_SAFE_METHOD_
 	const ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, nullptr);
 
@@ -5846,6 +5852,7 @@ const Glyph *TextServerAdvanced::_shaped_text_get_glyphs(const RID &p_shaped) co
 }
 
 int64_t TextServerAdvanced::_shaped_text_get_glyph_count(const RID &p_shaped) const {
+	_THREAD_SAFE_METHOD_
 	const ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, 0);
 
@@ -5857,6 +5864,7 @@ int64_t TextServerAdvanced::_shaped_text_get_glyph_count(const RID &p_shaped) co
 }
 
 const Glyph *TextServerAdvanced::_shaped_text_sort_logical(const RID &p_shaped) {
+	_THREAD_SAFE_METHOD_
 	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, nullptr);
 
@@ -5875,6 +5883,7 @@ const Glyph *TextServerAdvanced::_shaped_text_sort_logical(const RID &p_shaped) 
 }
 
 Vector2i TextServerAdvanced::_shaped_text_get_range(const RID &p_shaped) const {
+	_THREAD_SAFE_METHOD_
 	const ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, Vector2i());
 
@@ -5883,6 +5892,7 @@ Vector2i TextServerAdvanced::_shaped_text_get_range(const RID &p_shaped) const {
 }
 
 Array TextServerAdvanced::_shaped_text_get_objects(const RID &p_shaped) const {
+	_THREAD_SAFE_METHOD_
 	Array ret;
 	const ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, ret);
@@ -5896,6 +5906,7 @@ Array TextServerAdvanced::_shaped_text_get_objects(const RID &p_shaped) const {
 }
 
 Rect2 TextServerAdvanced::_shaped_text_get_object_rect(const RID &p_shaped, const Variant &p_key) const {
+	_THREAD_SAFE_METHOD_
 	const ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, Rect2());
 
@@ -5908,6 +5919,7 @@ Rect2 TextServerAdvanced::_shaped_text_get_object_rect(const RID &p_shaped, cons
 }
 
 Size2 TextServerAdvanced::_shaped_text_get_size(const RID &p_shaped) const {
+	_THREAD_SAFE_METHOD_
 	const ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, Size2());
 
@@ -5923,6 +5935,7 @@ Size2 TextServerAdvanced::_shaped_text_get_size(const RID &p_shaped) const {
 }
 
 double TextServerAdvanced::_shaped_text_get_ascent(const RID &p_shaped) const {
+	_THREAD_SAFE_METHOD_
 	const ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, 0.0);
 
@@ -5934,6 +5947,7 @@ double TextServerAdvanced::_shaped_text_get_ascent(const RID &p_shaped) const {
 }
 
 double TextServerAdvanced::_shaped_text_get_descent(const RID &p_shaped) const {
+	_THREAD_SAFE_METHOD_
 	const ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, 0.0);
 
@@ -5945,6 +5959,7 @@ double TextServerAdvanced::_shaped_text_get_descent(const RID &p_shaped) const {
 }
 
 double TextServerAdvanced::_shaped_text_get_width(const RID &p_shaped) const {
+	_THREAD_SAFE_METHOD_
 	const ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, 0.0);
 
@@ -5956,6 +5971,7 @@ double TextServerAdvanced::_shaped_text_get_width(const RID &p_shaped) const {
 }
 
 double TextServerAdvanced::_shaped_text_get_underline_position(const RID &p_shaped) const {
+	_THREAD_SAFE_METHOD_
 	const ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, 0.0);
 
@@ -5968,6 +5984,7 @@ double TextServerAdvanced::_shaped_text_get_underline_position(const RID &p_shap
 }
 
 double TextServerAdvanced::_shaped_text_get_underline_thickness(const RID &p_shaped) const {
+	_THREAD_SAFE_METHOD_
 	const ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, 0.0);
 
