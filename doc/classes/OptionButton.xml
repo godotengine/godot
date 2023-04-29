@@ -6,7 +6,7 @@
 	<description>
 		OptionButton is a type button that provides a selectable list of items when pressed. The item selected becomes the "current" item and is displayed as the button text.
 		See also [BaseButton] which contains common properties and methods associated with this node.
-		[b]Note:[/b] Theme constant [code]icon_max_width[/code] in [Button] determines the icon width for [OptionButton], but is not shown in [OptionButton] theme constants.
+		[b]Note:[/b] Theme constant [theme_item Button.icon_max_width] determines the icon width for [OptionButton], but is not shown in the [OptionButton] theme constants. This can be used to match the [theme_item PopupMenu.icon_max_width] set in the [PopupMenu] obtained from [method get_popup], so that the icon sizes match.
 		[b]Note:[/b] Properties [member Button.text] and [member Button.icon] are automatically set based on the selected item. They shouldn't be changed manually.
 	</description>
 	<tutorials>
