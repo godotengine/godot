@@ -564,11 +564,11 @@ void TabContainer::add_child_notify(Node *p_child) {
 }
 
 void TabContainer::move_child_notify(Node *p_child) {
+	Container::move_child_notify(p_child);
+
 	if (p_child == tab_bar) {
 		return;
 	}
-
-	Container::move_child_notify(p_child);
 
 	Control *c = Object::cast_to<Control>(p_child);
 	if (c && !c->is_set_as_top_level()) {
@@ -588,11 +588,11 @@ void TabContainer::move_child_notify(Node *p_child) {
 }
 
 void TabContainer::remove_child_notify(Node *p_child) {
+	Container::remove_child_notify(p_child);
+
 	if (p_child == tab_bar) {
 		return;
 	}
-
-	Container::remove_child_notify(p_child);
 
 	Control *c = Object::cast_to<Control>(p_child);
 	if (!c || c->is_set_as_top_level()) {
