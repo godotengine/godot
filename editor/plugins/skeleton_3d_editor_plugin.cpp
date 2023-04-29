@@ -832,8 +832,8 @@ void Skeleton3DEditor::create_editors() {
 void Skeleton3DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+			create_editors();
 			update_joint_tree();
-			update_editors();
 
 			joint_tree->connect("item_selected", callable_mp(this, &Skeleton3DEditor::_joint_tree_selection_changed));
 			joint_tree->connect("item_mouse_selected", callable_mp(this, &Skeleton3DEditor::_joint_tree_rmb_select));
@@ -946,8 +946,6 @@ void fragment() {
 	handles_mesh_instance->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
 	handles_mesh.instantiate();
 	handles_mesh_instance->set_mesh(handles_mesh);
-
-	create_editors();
 }
 
 void Skeleton3DEditor::update_bone_original() {

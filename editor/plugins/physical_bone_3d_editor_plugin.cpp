@@ -96,8 +96,9 @@ void PhysicalBone3DEditorPlugin::make_visible(bool p_visible) {
 }
 
 void PhysicalBone3DEditorPlugin::edit(Object *p_node) {
-	selected = static_cast<PhysicalBone3D *>(p_node); // Trust it
-	ERR_FAIL_COND(!selected);
-
-	physical_bone_editor.set_selected(selected);
+	PhysicalBone3D *bone = Object::cast_to<PhysicalBone3D>(p_node);
+	if (bone) {
+		selected = bone;
+		physical_bone_editor.set_selected(selected);
+	}
 }
