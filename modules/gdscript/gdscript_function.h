@@ -539,12 +539,12 @@ private:
 
 	struct Profile {
 		StringName signature;
-		uint64_t call_count = 0;
-		uint64_t self_time = 0;
-		uint64_t total_time = 0;
-		uint64_t frame_call_count = 0;
-		uint64_t frame_self_time = 0;
-		uint64_t frame_total_time = 0;
+		SafeNumeric<uint64_t> call_count;
+		SafeNumeric<uint64_t> self_time;
+		SafeNumeric<uint64_t> total_time;
+		SafeNumeric<uint64_t> frame_call_count;
+		SafeNumeric<uint64_t> frame_self_time;
+		SafeNumeric<uint64_t> frame_total_time;
 		uint64_t last_frame_call_count = 0;
 		uint64_t last_frame_self_time = 0;
 		uint64_t last_frame_total_time = 0;
