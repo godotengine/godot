@@ -507,15 +507,20 @@ String ShaderGLES3::_version_get_sha1(Version *p_version) const {
 	return hash_build.as_string().sha1_text();
 }
 
-#ifndef GLES_OVER_GL
+#ifndef WEB_ENABLED // not supported in webgl
 static const char *shader_file_header = "GLSC";
 static const uint32_t cache_file_version = 3;
 #endif
 
 bool ShaderGLES3::_load_from_cache(Version *p_version) {
-#ifdef GLES_OVER_GL // glGetProgramBinary and glProgramBinary require GL version 4.1 while GLAD is only configured for 3.3 right now
+#ifdef WEB_ENABLED // not supported in webgl
 	return false;
 #else
+#ifdef GLES_OVER_GL
+	if (glProgramBinary == NULL) { // ARB_get_program_binary extension not available
+		return false;
+	}
+#endif
 	String sha1 = _version_get_sha1(p_version);
 	String path = shader_cache_dir.path_join(name).path_join(base_sha256).path_join(sha1) + ".cache";
 
@@ -533,14 +538,14 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 		return false; // wrong version
 	}
 
-	int variant_count = static_cast<int>(f->get_32());
-	ERR_FAIL_COND_V_MSG(variant_count != this->variant_count, false, "shader cache variant count mismatch, expected " + itos(this->variant_count) + " got " + itos(variant_count)); //should not happen but check
+	int cache_variant_count = static_cast<int>(f->get_32());
+	ERR_FAIL_COND_V_MSG(cache_variant_count != this->variant_count, false, "shader cache variant count mismatch, expected " + itos(this->variant_count) + " got " + itos(cache_variant_count)); //should not happen but check
 
 	LocalVector<OAHashMap<uint64_t, Version::Specialization>> variants;
-	for (int i = 0; i < variant_count; i++) {
-		uint32_t specialization_count = f->get_32();
+	for (int i = 0; i < cache_variant_count; i++) {
+		uint32_t cache_specialization_count = f->get_32();
 		OAHashMap<uint64_t, Version::Specialization> variant;
-		for (uint32_t j = 0; j < specialization_count; j++) {
+		for (uint32_t j = 0; j < cache_specialization_count; j++) {
 			uint64_t specialization_key = f->get_64();
 			uint32_t variant_size = f->get_32();
 			if (variant_size == 0) {
@@ -570,13 +575,18 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 	p_version->variants = variants;
 
 	return true;
-#endif
+#endif // WEB_ENABLED
 }
 
 void ShaderGLES3::_save_to_cache(Version *p_version) {
-#ifdef GLES_OVER_GL // glGetProgramBinary and glProgramBinary require GL version 4.1 while GLAD is only configured for 3.3 right now
+#ifdef WEB_ENABLED // not supported in webgl
 	return;
 #else
+#ifdef GLES_OVER_GL
+	if (glGetProgramBinary == NULL) { // ARB_get_program_binary extension not available
+		return;
+	}
+#endif
 	String sha1 = _version_get_sha1(p_version);
 	String path = shader_cache_dir.path_join(name).path_join(base_sha256).path_join(sha1) + ".cache";
 
@@ -588,8 +598,8 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 	f->store_32(variant_count);
 
 	for (int i = 0; i < variant_count; i++) {
-		int specialization_count = p_version->variants[i].get_num_elements();
-		f->store_32(specialization_count);
+		int cache_specialization_count = p_version->variants[i].get_num_elements();
+		f->store_32(cache_specialization_count);
 
 		for (OAHashMap<uint64_t, ShaderGLES3::Version::Specialization>::Iterator it = p_version->variants[i].iter(); it.valid; it = p_version->variants[i].next_iter(it)) {
 			const uint64_t specialization_key = *it.key;
@@ -619,7 +629,7 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 			f->store_buffer(compiled_program.ptr(), compiled_program.size());
 		}
 	}
-#endif
+#endif // WEB_ENABLED
 }
 
 void ShaderGLES3::_clear_version(Version *p_version) {
