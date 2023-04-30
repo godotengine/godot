@@ -347,7 +347,8 @@
 		<method name="get_line_height" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the height of a largest line.
+				Returns the maximum value of the line height among all lines.
+				[b]Note:[/b] The return value is influenced by [theme_item line_spacing] and [theme_item font_size]. And it will not be less than [code]1[/code].
 			</description>
 		</method>
 		<method name="get_line_width" qualifiers="const">
