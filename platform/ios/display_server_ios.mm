@@ -44,6 +44,8 @@
 
 #import <sys/utsname.h>
 
+#include <drivers/png/png_driver_common.h>
+
 static const float kDisplayServerIOSAcceleration = 1.f;
 
 DisplayServerIOS *DisplayServerIOS::get_singleton() {
@@ -658,6 +660,29 @@ String DisplayServerIOS::clipboard_get_text() const {
 	NSString *text = [UIPasteboard generalPasteboard].string;
 
 	return String::utf8([text UTF8String]);
+}
+
+bool DisplayServerIOS::clipboard_has_text() {
+	return [UIPasteboard generalPasteboard].hasStrings;
+}
+
+Ref<Image> DisplayServerIOS::clipboard_get_image() const {
+	Ref<Image> image;
+	UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+	if (!pasteboard.hasImages) {
+		return image;
+	}
+	UIImage *data = pasteboard.image;
+	NSData *pngData = UIImagePNGRepresentation(data);
+	image.instantiate();
+	UInt8 buf[pngData.length];
+	[pngData getBytes:buf length:pngData.length];
+	PNGDriverCommon::png_to_image(buf, pngData.length, false, image);
+	return image;
+}
+
+bool DisplayServerIOS::clipboard_has_image() {
+	return [UIPasteboard generalPasteboard].hasImages;
 }
 
 void DisplayServerIOS::screen_set_keep_on(bool p_enable) {

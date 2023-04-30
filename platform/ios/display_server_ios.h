@@ -216,6 +216,9 @@ public:
 
 	virtual void clipboard_set_text(const String &p_text) override;
 	virtual String clipboard_get_text() const override;
+	virtual Ref<Image> clipboard_get_image() const override;
+	virtual bool clipboard_has_text() const override;
+	virtual bool clipboard_has_image() const override;
 
 	virtual void screen_set_keep_on(bool p_enable) override;
 	virtual bool screen_is_kept_on() const override;
