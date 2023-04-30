@@ -1252,6 +1252,7 @@ float RendererViewport::viewport_get_measured_render_time_cpu(RID p_viewport) co
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND_V(!viewport, 0);
 
+	viewport->measure_render_time = true;
 	return double(viewport->time_cpu_end - viewport->time_cpu_begin) / 1000.0;
 }
 
@@ -1259,6 +1260,7 @@ float RendererViewport::viewport_get_measured_render_time_gpu(RID p_viewport) co
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND_V(!viewport, 0);
 
+	viewport->measure_render_time = true;
 	return double((viewport->time_gpu_end - viewport->time_gpu_begin) / 1000) / 1000.0;
 }
 
