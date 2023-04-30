@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="LinkButton" inherits="BaseButton" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Simple button used to represent a link to some resource.
+		A button that represents a link.
 	</brief_description>
 	<description>
-		This kind of button is primarily used when the interaction with the button causes a context change (like linking to a web page).
+		A button that represents a link. This type of button is primarily used for interactions that cause a context change (like linking to a web page).
 		See also [BaseButton] which contains common properties and methods associated with this node.
 	</description>
 	<tutorials>

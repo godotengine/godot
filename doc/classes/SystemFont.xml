@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SystemFont" inherits="Font" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Font loaded from a system font.
-		[b]Note:[/b] This class is implemented on iOS, Linux, macOS and Windows, on other platforms it will fallback to default theme font.
+		A font loaded from a system font. Falls back to a default theme font if not implemented on the host OS.
 	</brief_description>
 	<description>
 		[SystemFont] loads a font from a system font with the first matching name from [member font_names].
 		It will attempt to match font style, but it's not guaranteed.
 		The returned font might be part of a font collection or be a variable font with OpenType "weight", "width" and/or "italic" features set.
 		You can create [FontVariation] of the system font for fine control over its features.
+		[b]Note:[/b] This class is implemented on iOS, Linux, macOS and Windows, on other platforms it will fallback to default theme font.
 	</description>
 	<tutorials>
 	</tutorials>

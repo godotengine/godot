@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ButtonGroup" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Group of Buttons.
+		A group of buttons that doesn't allow more than one button to be pressed at a time.
 	</brief_description>
 	<description>
-		Group of [BaseButton]. The members of this group are treated like radio buttons in the sense that only one button can be pressed at the same time. Some types of buttons (such as [CheckBox]) may have a special appearance for this state.
-		Every member of the ButtonGroup should have [member BaseButton.toggle_mode] set to [code]true[/code].
+		A group of [BaseButton]-derived buttons. The buttons in a [ButtonGroup] are treated like radio buttons: No more than one button can be pressed at a time. Some types of buttons (such as [CheckBox]) may have a special appearance in this state.
+		Every member of a [ButtonGroup] should have [member BaseButton.toggle_mode] set to [code]true[/code].
 	</description>
 	<tutorials>
 	</tutorials>

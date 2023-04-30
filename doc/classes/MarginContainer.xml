@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="MarginContainer" inherits="Container" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Simple margin container.
+		A container that keeps a margin around its child controls.
 	</brief_description>
 	<description>
-		Adds a top, left, bottom, and right margin to all [Control] nodes that are direct children of the container. To control the [MarginContainer]'s margin, use the [code]margin_*[/code] theme properties listed below.
-		[b]Note:[/b] Be careful, [Control] margin values are different from the constant margin values. If you want to change the custom margin values of the [MarginContainer] by code, you should use the following examples:
+		[MarginContainer] adds an adjustable margin on each side of its child controls. The margins are added around all children, not around each individual one. To control the [MarginContainer]'s margins, use the [code]margin_*[/code] theme properties listed below.
+		[b]Note:[/b] The margin sizes are theme overrides, not normal properties. This is an example of how to change them in code:
 		[codeblocks]
 		[gdscript]
 		# This code sample assumes the current script is extending MarginContainer.
@@ -26,7 +26,7 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
-		<link title="GUI containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
+		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
 	</tutorials>
 	<theme_items>
 		<theme_item name="margin_bottom" data_type="constant" type="int" default="0">

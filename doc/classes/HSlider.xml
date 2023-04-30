@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="HSlider" inherits="Slider" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Horizontal slider.
+		A horizontal slider that goes from left (min) to right (max).
 	</brief_description>
 	<description>
-		Horizontal slider. See [Slider]. This one goes from left (min) to right (max).
-		[b]Note:[/b] The [signal Range.changed] and [signal Range.value_changed] signals are part of the [Range] class which this class inherits from.
+		A horizontal slider, used to adjust a value by moving a grabber along a horizontal axis. It is a [Range]-based control and goes from left (min) to right (max).
 	</description>
 	<tutorials>
 	</tutorials>

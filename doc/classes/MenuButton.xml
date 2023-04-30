@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="MenuButton" inherits="Button" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Special button that brings up a [PopupMenu] when clicked.
+		A button that brings up a [PopupMenu] when clicked.
 	</brief_description>
 	<description>
-		Special button that brings up a [PopupMenu] when clicked.
-		New items can be created inside this [PopupMenu] using [code]get_popup().add_item("My Item Name")[/code]. You can also create them directly from the editor. To do so, select the [MenuButton] node, then in the toolbar at the top of the 2D editor, click [b]Items[/b] then click [b]Add[/b] in the popup. You will be able to give each item new properties.
+		A button that brings up a [PopupMenu] when clicked. To create new items inside this [PopupMenu], use [code]get_popup().add_item("My Item Name")[/code]. You can also create them directly from Godot editor's inspector.
 		See also [BaseButton] which contains common properties and methods associated with this node.
 	</description>
 	<tutorials>

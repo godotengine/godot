@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CodeHighlighter" inherits="SyntaxHighlighter" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A syntax highlighter for code.
+		A syntax highlighter intended for code.
 	</brief_description>
 	<description>
-		A syntax highlighter for code.
+		By adjusting various properties of this resource, you can change the colors of strings, comments, numbers, and other text patterns inside a [TextEdit] control.
 	</description>
 	<tutorials>
 	</tutorials>
