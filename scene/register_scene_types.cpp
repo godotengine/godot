@@ -465,6 +465,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AnimationNodeAdd3);
 	GDREGISTER_CLASS(AnimationNodeBlend2);
 	GDREGISTER_CLASS(AnimationNodeBlend3);
+	GDREGISTER_CLASS(AnimationNodeSub2);
 	GDREGISTER_CLASS(AnimationNodeTimeScale);
 	GDREGISTER_CLASS(AnimationNodeTimeSeek);
 	GDREGISTER_CLASS(AnimationNodeTransition);
