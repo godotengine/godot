@@ -362,7 +362,7 @@ String DisplayServer::clipboard_get_text() const {
 	ERR_FAIL_V_MSG(String(), "Clipboard is not supported by this display server.");
 }
 
-ef<Image> DisplayServer::clipboard_get_image() const {
+Ref<Image> DisplayServer::clipboard_get_image() const {
 	ERR_FAIL_V_MSG(Ref<Image>(), "Clipboard is not supported by this display server.");
 }
 
@@ -372,7 +372,6 @@ bool DisplayServer::clipboard_has_text() const {
 
 bool DisplayServer::clipboard_has_image() const {
 	return !clipboard_get_image().is_valid();
-}
 }
 
 void DisplayServer::clipboard_set_primary(const String &p_text) {

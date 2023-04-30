@@ -4465,7 +4465,7 @@ void EditorNode::show_warning(const String &p_text, const String &p_title) {
 }
 
 void EditorNode::_copy_warning(const String &p_str) {
-	DisplayServer::get_singleton()->clipboard_set(warning->get_text());
+	DisplayServer::get_singleton()->clipboard_set_text(warning->get_text());
 }
 
 void EditorNode::_dock_floating_close_request(Control *p_control) {

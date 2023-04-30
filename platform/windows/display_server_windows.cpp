@@ -381,7 +381,7 @@ Ref<Image> DisplayServerWindows::clipboard_get_image() const {
 					}
 				}
 				image.instantiate();
-				image->create(info->biWidth, info->biHeight, false, Image::Format::FORMAT_RGBA8, pba);
+				image->create_from_data(info->biWidth, info->biHeight, false, Image::Format::FORMAT_RGBA8, pba);
 
 				GlobalUnlock(mem);
 			}
