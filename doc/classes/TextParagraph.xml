@@ -4,7 +4,7 @@
 		Holds a paragraph of text.
 	</brief_description>
 	<description>
-		Abstraction over [TextServer] for handling paragraph of text.
+		Abstraction over [TextServer] for handling a single paragraph of text.
 	</description>
 	<tutorials>
 	</tutorials>

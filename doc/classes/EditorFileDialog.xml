@@ -4,7 +4,7 @@
 		A modified version of [FileDialog] used by the editor.
 	</brief_description>
 	<description>
-		[EditorFileDialog] is an enhanced version of [FileDialog] available only to editor plugins. Additional features include list of favorited/recent files and ability to see files as thumbnails grid instead of list.
+		[EditorFileDialog] is an enhanced version of [FileDialog] available only to editor plugins. Additional features include list of favorited/recent files and the ability to see files as thumbnails grid instead of list.
 	</description>
 	<tutorials>
 	</tutorials>

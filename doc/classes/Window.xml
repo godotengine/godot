@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Window" inherits="Viewport" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base class for all windows.
+		Base class for all windows, dialogs, and popups.
 	</brief_description>
 	<description>
 		A node that creates a window. The window can either be a native system window or embedded inside another [Window] (see [member Viewport.gui_embed_subwindows]).
-		At runtime, [Window]s will not close automatically when requested. You need to handle it manually using [signal close_requested] (this applies both to clicking close button and clicking outside popup).
+		At runtime, [Window]s will not close automatically when requested. You need to handle it manually using the [signal close_requested] signal (this applies both to pressing the close button and clicking outside of a popup).
 	</description>
 	<tutorials>
 	</tutorials>
