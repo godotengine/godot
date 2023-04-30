@@ -2546,7 +2546,7 @@ void ProjectManager::_open_asset_library() {
 }
 
 void ProjectManager::_version_button_pressed() {
-	DisplayServer::get_singleton()->clipboard_set(version_btn->get_text());
+	DisplayServer::get_singleton()->clipboard_set_text(version_btn->get_text());
 }
 
 ProjectManager::ProjectManager() {

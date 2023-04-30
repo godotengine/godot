@@ -650,11 +650,11 @@ int DisplayServerIOS::virtual_keyboard_get_height() const {
 	return virtual_keyboard_height;
 }
 
-void DisplayServerIOS::clipboard_set(const String &p_text) {
+void DisplayServerIOS::clipboard_set_text(const String &p_text) {
 	[UIPasteboard generalPasteboard].string = [NSString stringWithUTF8String:p_text.utf8()];
 }
 
-String DisplayServerIOS::clipboard_get() const {
+String DisplayServerIOS::clipboard_get_text() const {
 	NSString *text = [UIPasteboard generalPasteboard].string;
 
 	return String::utf8([text UTF8String]);

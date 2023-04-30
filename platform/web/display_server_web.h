@@ -146,8 +146,8 @@ public:
 	virtual bool is_touchscreen_available() const override;
 
 	// clipboard
-	virtual void clipboard_set(const String &p_text) override;
-	virtual String clipboard_get() const override;
+	virtual void clipboard_set_text(const String &p_text) override;
+	virtual String clipboard_get_text() const override;
 
 	// screen
 	virtual int get_screen_count() const override;

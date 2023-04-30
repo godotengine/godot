@@ -300,7 +300,7 @@ class DisplayServerX11 : public DisplayServer {
 	void _update_window_mouse_passthrough(WindowID p_window);
 
 	String _clipboard_get_impl(Atom p_source, Window x11_window, Atom target) const;
-	String _clipboard_get(Atom p_source, Window x11_window) const;
+	String _clipboard_get_text(Atom p_source, Window x11_window) const;
 	void _clipboard_transfer_ownership(Atom p_source, Window x11_window) const;
 
 	bool do_mouse_warp = false;
@@ -399,8 +399,8 @@ public:
 	virtual Point2i mouse_get_position() const override;
 	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
 
-	virtual void clipboard_set(const String &p_text) override;
-	virtual String clipboard_get() const override;
+	virtual void clipboard_set_text(const String &p_text) override;
+	virtual String clipboard_get_text() const override;
 	virtual void clipboard_set_primary(const String &p_text) override;
 	virtual String clipboard_get_primary() const override;
 

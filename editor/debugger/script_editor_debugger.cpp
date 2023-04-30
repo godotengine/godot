@@ -85,7 +85,7 @@ void ScriptEditorDebugger::debug_copy() {
 	if (msg.is_empty()) {
 		return;
 	}
-	DisplayServer::get_singleton()->clipboard_set(msg);
+	DisplayServer::get_singleton()->clipboard_set_text(msg);
 }
 
 void ScriptEditorDebugger::debug_skip_breakpoints() {

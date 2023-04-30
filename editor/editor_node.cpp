@@ -1202,7 +1202,7 @@ void EditorNode::_titlebar_resized() {
 }
 
 void EditorNode::_version_button_pressed() {
-	DisplayServer::get_singleton()->clipboard_set(version_btn->get_meta(META_TEXT_TO_COPY));
+	DisplayServer::get_singleton()->clipboard_set_text(version_btn->get_meta(META_TEXT_TO_COPY));
 }
 
 void EditorNode::_update_undo_redo_allowed() {

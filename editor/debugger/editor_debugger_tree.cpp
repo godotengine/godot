@@ -347,7 +347,7 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 					text = text.substr(slash + 1);
 				}
 			}
-			DisplayServer::get_singleton()->clipboard_set(text);
+			DisplayServer::get_singleton()->clipboard_set_text(text);
 		} break;
 	}
 }

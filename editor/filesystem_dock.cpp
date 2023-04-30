@@ -2098,7 +2098,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case FILE_COPY_PATH: {
 			if (!p_selected.is_empty()) {
 				String fpath = p_selected[0];
-				DisplayServer::get_singleton()->clipboard_set(fpath);
+				DisplayServer::get_singleton()->clipboard_set_text(fpath);
 			}
 		} break;
 
@@ -2107,7 +2107,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				ResourceUID::ID uid = ResourceLoader::get_resource_uid(p_selected[0]);
 				if (uid != ResourceUID::INVALID_ID) {
 					String uid_string = ResourceUID::get_singleton()->id_to_text(uid);
-					DisplayServer::get_singleton()->clipboard_set(uid_string);
+					DisplayServer::get_singleton()->clipboard_set_text(uid_string);
 				}
 			}
 		} break;

@@ -54,6 +54,7 @@
 #import <IOKit/IOKitLib.h>
 #import <IOKit/hid/IOHIDKeys.h>
 #import <IOKit/hid/IOHIDLib.h>
+#include <drivers/png/png_driver_common.h>
 
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
@@ -2069,7 +2070,7 @@ BitField<MouseButtonMask> DisplayServerMacOS::mouse_get_button_state() const {
 	return last_button_state;
 }
 
-void DisplayServerMacOS::clipboard_set(const String &p_text) {
+void DisplayServerMacOS::clipboard_set_text(const String &p_text) {
 	_THREAD_SAFE_METHOD_
 
 	NSString *copiedString = [NSString stringWithUTF8String:p_text.utf8().get_data()];
@@ -2080,7 +2081,7 @@ void DisplayServerMacOS::clipboard_set(const String &p_text) {
 	[pasteboard writeObjects:copiedStringArray];
 }
 
-String DisplayServerMacOS::clipboard_get() const {
+String DisplayServerMacOS::clipboard_get_text() const {
 	_THREAD_SAFE_METHOD_
 
 	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
@@ -2099,6 +2100,37 @@ String DisplayServerMacOS::clipboard_get() const {
 	String ret;
 	ret.parse_utf8([string UTF8String]);
 	return ret;
+}
+
+Ref<Image> DisplayServerMacOS::clipboard_get_image() const {
+	Ref<Image> image;
+	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	NSString *result = [pasteboard availableTypeFromArray:[NSArray arrayWithObjects:NSPasteboardTypeTIFF, NSPasteboardTypePNG, nil]];
+	if (!result)
+		return image;
+	NSData *data = [pasteboard dataForType:result];
+	if (!data)
+		return image;
+	NSBitmapImageRep *bitmap = [NSBitmapImageRep imageRepWithData:data];
+	NSData *pngData = [bitmap representationUsingType:NSPNGFileType properties:@{}];
+	image.instantiate();
+	UInt8 buf[pngData.length];
+	[pngData getBytes:buf length:pngData.length];
+	PNGDriverCommon::png_to_image(buf, pngData.length, false, image);
+	return image;
+}
+
+bool DisplayServerMacOS::clipboard_has_text() const {
+	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	NSArray *classArray = [NSArray arrayWithObject:[NSString class]];
+	NSDictionary *options = [NSDictionary dictionary];
+	return [pasteboard canReadObjectForClasses:classArray options:options];
+}
+
+bool DisplayServerMacOS::clipboard_has_image() const {
+	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	NSString *result = [pasteboard availableTypeFromArray:[NSArray arrayWithObjects:NSPasteboardTypeTIFF, NSPasteboardTypePNG, nil]];
+	return result;
 }
 
 int DisplayServerMacOS::get_screen_count() const {
