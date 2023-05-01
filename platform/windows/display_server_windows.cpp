@@ -370,14 +370,14 @@ Ref<Image> DisplayServerWindows::clipboard_get_image() const {
 			if (ptr != NULL) {
 				BITMAPINFOHEADER *info = &ptr->bmiHeader;
 				PackedByteArray pba;
-	pba.resize(info->biHeight * info->biWidth * 4);
+				pba.resize(info->biHeight * info->biWidth * 4);
 				for (LONG y = info->biHeight - 1; y > -1; y--) {
 					for (LONG x = 0; x < info->biWidth; x++) {
 						tagRGBQUAD *rgbquad = ptr->bmiColors + (info->biWidth * y) + x;
-						pba.append(rgbquad->rgbRed);
-						pba.append(rgbquad->rgbGreen);
-						pba.append(rgbquad->rgbBlue);
-						pba.append(rgbquad->rgbReserved);
+						pba.write[x] = rgbquad->rgbRed;
+						pba.write[x + 1] = rgbquad->rgbGreen;
+						pba.write[x + 2] = rgbquad->rgbBlue;
+						pba.write[x + 3] = rgbquad->rgbReserved;
 					}
 				}
 				image.instantiate();
