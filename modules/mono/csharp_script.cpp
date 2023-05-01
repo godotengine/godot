@@ -93,6 +93,12 @@ String CSharpLanguage::get_extension() const {
 }
 
 void CSharpLanguage::init() {
+#ifdef TOOLS_ENABLED
+	if (OS::get_singleton()->get_cmdline_args().find("--generate-mono-glue")) {
+		print_verbose(".NET: Skipping runtime initialization because glue generation is enabled.");
+		return;
+	}
+#endif
 #ifdef DEBUG_METHODS_ENABLED
 	if (OS::get_singleton()->get_cmdline_args().find("--class-db-json")) {
 		class_db_api_to_json("user://class_db_api.json", ClassDB::API_CORE);
