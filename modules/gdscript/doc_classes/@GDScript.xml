@@ -228,7 +228,7 @@
 				[codeblock]
 				var array = [3, 6, 9]
 				for i in range(array.size() - 1, -1, -1):
-					print(array[i])
+				    print(array[i])
 				[/codeblock]
 				Output:
 				[codeblock]
