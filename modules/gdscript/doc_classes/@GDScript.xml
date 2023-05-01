@@ -139,7 +139,7 @@
 				print(is_instance_of(a, MyClass))
 				print(is_instance_of(a, MyClass.InnerClass))
 				[/codeblock]
-				[b]Note:[/b] If [param value] and/or [param type] are freed objects (see [method @GlobalScope.is_instance_valid]), or [param type] is not one of the above options, this method will raise an runtime error.
+				[b]Note:[/b] If [param value] and/or [param type] are freed objects (see [method @GlobalScope.is_instance_valid]), or [param type] is not one of the above options, this method will raise a runtime error.
 				See also [method @GlobalScope.typeof], [method type_exists], [method Array.is_same_typed] (and other [Array] methods).
 			</description>
 		</method>
