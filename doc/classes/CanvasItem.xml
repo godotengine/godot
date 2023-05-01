@@ -423,6 +423,7 @@
 			<return type="Vector2" />
 			<description>
 				Returns the mouse's position in the [CanvasLayer] that this [CanvasItem] is in using the coordinate system of the [CanvasLayer].
+				[b]Note:[/b] For screen-space coordinates (e.g. when using a non-embedded [Popup]), you can use [method DisplayServer.mouse_get_position].
 			</description>
 		</method>
 		<method name="get_global_transform" qualifiers="const">
