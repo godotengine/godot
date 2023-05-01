@@ -1,11 +1,29 @@
 #!/usr/bin/python3
 
+"""Functions used to generate source files during build time
+
+All such functions are invoked in a subprocess on Windows to prevent build flakiness.
+
+"""
+
 import os
 import os.path
 import shlex
 import subprocess
 from dataclasses import dataclass
 from typing import Optional, List
+
+target_filenames = [
+    "GodotSharp.dll",
+    "GodotSharp.pdb",
+    "GodotSharp.xml",
+    "GodotSharpEditor.dll",
+    "GodotSharpEditor.pdb",
+    "GodotSharpEditor.xml",
+    "GodotPlugins.dll",
+    "GodotPlugins.pdb",
+    "GodotPlugins.runtimeconfig.json",
+]
 
 
 def find_dotnet_cli():
@@ -121,6 +139,7 @@ class ToolsLocation:
     msbuild_standalone: str = ""
     msbuild_mono: str = ""
     mono_bin_dir: str = ""
+    nuget_tool: str = ""
 
 
 def find_any_msbuild_tool(mono_prefix):
@@ -142,11 +161,16 @@ def find_any_msbuild_tool(mono_prefix):
         if os.name == "nt":
             msbuild_mono = find_msbuild_mono_windows(mono_prefix)
             if msbuild_mono:
-                return ToolsLocation(msbuild_mono=msbuild_mono)
+                parts = os.path.split(msbuild_mono)
+                nuget_tool = os.path.join(parts[0], "nuget" + os.path.splitext(parts[1])[1])
+                return ToolsLocation(msbuild_mono=msbuild_mono, nuget_tool=nuget_tool)
+
         else:
             msbuild_mono = find_msbuild_mono_unix()
             if msbuild_mono:
-                return ToolsLocation(msbuild_mono=msbuild_mono)
+                parts = os.path.split(msbuild_mono)
+                nuget_tool = os.path.join(parts[0], "nuget" + os.path.splitext(parts[1])[1])
+                return ToolsLocation(msbuild_mono=msbuild_mono, nuget_tool=nuget_tool)
 
     return None
 
@@ -193,29 +217,24 @@ def run_msbuild(tools: ToolsLocation, sln: str, msbuild_args: Optional[List[str]
     return subprocess.call(args, env=msbuild_env)
 
 
-def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, precision):
-    target_filenames = [
-        "GodotSharp.dll",
-        "GodotSharp.pdb",
-        "GodotSharp.xml",
-        "GodotSharpEditor.dll",
-        "GodotSharpEditor.pdb",
-        "GodotSharpEditor.xml",
-        "GodotPlugins.dll",
-        "GodotPlugins.pdb",
-        "GodotPlugins.runtimeconfig.json",
-    ]
+def set_default_args(args: List[str], precision, push_nupkgs_local, clear_nuget_cache):
+    if clear_nuget_cache:
+        args += ["/p:ClearNuGetLocalCache=true"]
+    if push_nupkgs_local:
+        args += ["/p:PushNuGetToLocalSource=" + push_nupkgs_local]
+    if precision == "double":
+        args += ["/p:GodotFloat64=true"]
+    return args
 
+
+def build_godot_api(msbuild_tool, module_dir, output_dir, precision, push_nupkgs_local, clear_nuget_cache):
     for build_config in ["Debug", "Release"]:
         editor_api_dir = os.path.join(output_dir, "GodotSharp", "Api", build_config)
 
         targets = [os.path.join(editor_api_dir, filename) for filename in target_filenames]
 
         args = ["/restore", "/t:Build", "/p:Configuration=" + build_config, "/p:NoWarn=1591"]
-        if push_nupkgs_local:
-            args += ["/p:ClearNuGetLocalCache=true", "/p:PushNuGetToLocalSource=" + push_nupkgs_local]
-        if precision == "double":
-            args += ["/p:GodotFloat64=true"]
+        args = set_default_args(args, precision, push_nupkgs_local, clear_nuget_cache)
 
         sln = os.path.join(module_dir, "glue/GodotSharp/GodotSharp.sln")
         exit_code = run_msbuild(
@@ -317,12 +336,14 @@ def generate_sdk_package_versions():
         f.close()
 
 
-def build_all(msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, push_nupkgs_local, precision):
+def build_all(
+    msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, precision, push_nupkgs_local, clear_nuget_cache
+):
     # Generate SdkPackageVersions.props
     generate_sdk_package_versions()
 
     # Godot API
-    exit_code = build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, precision)
+    exit_code = build_godot_api(msbuild_tool, module_dir, output_dir, precision, push_nupkgs_local, clear_nuget_cache)
     if exit_code != 0:
         return exit_code
 
@@ -331,26 +352,91 @@ def build_all(msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, p
     args = ["/restore", "/t:Build", "/p:Configuration=" + ("Debug" if dev_debug else "Release")] + (
         ["/p:GodotPlatform=" + godot_platform] if godot_platform else []
     )
-    if push_nupkgs_local:
-        args += ["/p:ClearNuGetLocalCache=true", "/p:PushNuGetToLocalSource=" + push_nupkgs_local]
-    if precision == "double":
-        args += ["/p:GodotFloat64=true"]
+    args = set_default_args(args, precision, push_nupkgs_local, clear_nuget_cache)
     exit_code = run_msbuild(msbuild_tool, sln=sln, msbuild_args=args)
     if exit_code != 0:
         return exit_code
 
     # Godot.NET.Sdk
     args = ["/restore", "/t:Build", "/p:Configuration=Release"]
-    if push_nupkgs_local:
-        args += ["/p:ClearNuGetLocalCache=true", "/p:PushNuGetToLocalSource=" + push_nupkgs_local]
-    if precision == "double":
-        args += ["/p:GodotFloat64=true"]
+    args = set_default_args(args, precision, push_nupkgs_local, clear_nuget_cache)
     sln = os.path.join(module_dir, "editor/Godot.NET.Sdk/Godot.NET.Sdk.sln")
     exit_code = run_msbuild(msbuild_tool, sln=sln, msbuild_args=args)
     if exit_code != 0:
         return exit_code
 
     return 0
+
+
+def run_quiet(args):
+    try:
+        subprocess.check_output(args)
+    except Exception as e:
+        pass
+
+
+def make_assemblies(target, source, env):
+    exit_code = start_build(
+        godot_output_dir="bin/",
+        godot_platform=env["platform"],
+        dev_debug=env["dev_build"],
+        mono_prefix="",
+        precision=env["precision"],
+        push_nupkgs_local=False,
+        clear_nuget_cache=True,
+    )
+
+    if exit_code != 0:
+        return exit_code
+
+    nupkgs_dir = os.path.abspath("bin/GodotSharp/Tools/nupkgs")
+    tools = find_any_msbuild_tool("")
+
+    # configure a default nuget source pointing to the bin/GodotSharp/Tools/nupkgs dir, so packages can be picked up automatically
+    if tools.dotnet_cli:
+        # add/replace a nuget source using the dotnet nuget tool
+        args = [tools.dotnet_cli, "nuget"]
+        run_quiet(args + ["remove", "source", "GodotSourceBuild"])
+        run_quiet(args + ["add", "source", nupkgs_dir, "--name", "GodotSourceBuild"])
+    elif tools.nuget_tool:
+        # add/replace a nuget source using the .net framework nuget tool
+        args = [tools.nuget_tool, "sources"]
+        run_quiet(args + ["remove", "-Name", "GodotSourceBuild", "-NonInteractive"])
+        run_quiet(args + ["add", "-Name", "GodotSourceBuild", "-Source", nupkgs_dir, "-NonInteractive"])
+
+    return exit_code
+
+
+def start_build(
+    godot_output_dir, godot_platform, dev_debug, mono_prefix, precision, push_nupkgs_local, clear_nuget_cache=False
+):
+    this_script_dir = os.path.dirname(os.path.realpath(__file__))
+    module_dir = os.path.abspath(os.path.join(this_script_dir, os.pardir))
+
+    output_dir = os.path.abspath(godot_output_dir)
+
+    if push_nupkgs_local:
+        clear_nuget_cache = True
+        push_nupkgs_local = os.path.abspath(push_nupkgs_local)
+    else:
+        push_nupkgs_local = None
+
+    msbuild_tool = find_any_msbuild_tool(mono_prefix)
+
+    if msbuild_tool is None:
+        print("Unable to find MSBuild")
+        return 1
+
+    return build_all(
+        msbuild_tool,
+        module_dir,
+        output_dir,
+        godot_platform,
+        dev_debug,
+        precision,
+        push_nupkgs_local,
+        clear_nuget_cache,
+    )
 
 
 def main():
@@ -374,30 +460,22 @@ def main():
 
     args = parser.parse_args()
 
-    this_script_dir = os.path.dirname(os.path.realpath(__file__))
-    module_dir = os.path.abspath(os.path.join(this_script_dir, os.pardir))
-
-    output_dir = os.path.abspath(args.godot_output_dir)
-
-    push_nupkgs_local = os.path.abspath(args.push_nupkgs_local) if args.push_nupkgs_local else None
-
-    msbuild_tool = find_any_msbuild_tool(args.mono_prefix)
-
-    if msbuild_tool is None:
-        print("Unable to find MSBuild")
-        sys.exit(1)
-
-    exit_code = build_all(
-        msbuild_tool,
-        module_dir,
-        output_dir,
+    exit_code = start_build(
+        args.godot_output_dir,
         args.godot_platform,
         args.dev_debug,
-        push_nupkgs_local,
+        args.mono_prefix,
         args.precision,
+        args.push_nupkgs_local,
     )
     sys.exit(exit_code)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        # if this fails, it's because it's being invoked directly from the shell
+        from platform_methods import subprocess_main
+
+        subprocess_main(globals())
+    except Exception as e:
+        main()

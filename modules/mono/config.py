@@ -36,3 +36,13 @@ def get_doc_path():
 def is_enabled():
     # The module is disabled by default. Use module_mono_enabled=yes to enable it.
     return False
+
+
+def get_opts(platform):
+    from SCons.Variables import BoolVariable
+
+    return [
+        BoolVariable("generate_mono_glue", "Generate C# glue", False),
+        BoolVariable("build_assemblies", "Build C# assemblies", False),
+        BoolVariable("build_csharp", "Generate and build C# bindings", False),
+    ]
