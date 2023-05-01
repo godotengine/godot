@@ -38,7 +38,7 @@
 			<param index="2" name="max" type="float" />
 			<param index="3" name="invert" type="bool" />
 			<description>
-				Takes a angle and clamps it so it is within the passed-in [param min] and [param max] range. [param invert] will inversely clamp the angle, clamping it to the range outside of the given bounds.
+				Takes an angle and clamps it so it is within the passed-in [param min] and [param max] range. [param invert] will inversely clamp the angle, clamping it to the range outside of the given bounds.
 			</description>
 		</method>
 		<method name="get_editor_draw_gizmo" qualifiers="const">

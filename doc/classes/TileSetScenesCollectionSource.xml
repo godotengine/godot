@@ -79,7 +79,7 @@
 			<param index="0" name="id" type="int" />
 			<param index="1" name="new_id" type="int" />
 			<description>
-				Changes a scene tile's ID from [param id] to [param new_id]. This will fail if there is already a tile with a ID equal to [param new_id].
+				Changes a scene tile's ID from [param id] to [param new_id]. This will fail if there is already a tile with an ID equal to [param new_id].
 			</description>
 		</method>
 		<method name="set_scene_tile_scene">
