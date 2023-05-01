@@ -143,11 +143,8 @@ String Color::to_html(bool p_alpha) const {
 }
 
 float Color::get_h() const {
-	float min = MIN(r, g);
-	min = MIN(min, b);
-	float max = MAX(r, g);
-	max = MAX(max, b);
-
+	float max = MAX(MAX(r, g), b);
+	float min = MIN(MIN(r, g), b);
 	float delta = max - min;
 
 	if (delta == 0.0f) {
@@ -155,91 +152,53 @@ float Color::get_h() const {
 	}
 
 	float h;
-	if (r == max) {
-		h = (g - b) / delta; // between yellow & magenta
-	} else if (g == max) {
-		h = 2 + (b - r) / delta; // between cyan & yellow
+	if (max == r) {
+		h = (g - b) / delta; // Between yellow and magenta.
+	} else if (max == g) {
+		h = 2.0f + (b - r) / delta; // Between cyan and yellow.
 	} else {
-		h = 4 + (r - g) / delta; // between magenta & cyan
+		h = 4.0f + (r - g) / delta; // Between magenta and cyan.
 	}
 
-	h /= 6.0f;
-	if (h < 0.0f) {
-		h += 1.0f;
-	}
-
-	return h;
+	return Math::fposmod(h / 6.0f, 1.0f);
 }
 
 float Color::get_s() const {
-	float min = MIN(r, g);
-	min = MIN(min, b);
-	float max = MAX(r, g);
-	max = MAX(max, b);
+	float max = MAX(MAX(r, g), b);
 
+	if (max == 0.0f) {
+		return 0.0f;
+	}
+
+	float min = MIN(MIN(r, g), b);
 	float delta = max - min;
 
-	return (max != 0.0f) ? (delta / max) : 0.0f;
+	return delta / max;
 }
 
 float Color::get_v() const {
-	float max = MAX(r, g);
-	max = MAX(max, b);
+	float max = MAX(MAX(r, g), b);
+
 	return max;
 }
 
 void Color::set_hsv(float p_h, float p_s, float p_v, float p_alpha) {
-	int i;
-	float f, p, q, t;
-	a = p_alpha;
-
 	if (p_s == 0.0f) {
-		// Achromatic (gray)
+		// Achromatic (gray).
 		r = g = b = p_v;
+		a = p_alpha;
 		return;
 	}
 
 	p_h *= 6.0f;
-	p_h = Math::fmod(p_h, 6);
-	i = Math::floor(p_h);
+	float temp_r = Math::fmod(5.0f + p_h, 6.0f);
+	float temp_g = Math::fmod(3.0f + p_h, 6.0f);
+	float temp_b = Math::fmod(1.0f + p_h, 6.0f);
 
-	f = p_h - i;
-	p = p_v * (1.0f - p_s);
-	q = p_v * (1.0f - p_s * f);
-	t = p_v * (1.0f - p_s * (1.0f - f));
-
-	switch (i) {
-		case 0: // Red is the dominant color
-			r = p_v;
-			g = t;
-			b = p;
-			break;
-		case 1: // Green is the dominant color
-			r = q;
-			g = p_v;
-			b = p;
-			break;
-		case 2:
-			r = p;
-			g = p_v;
-			b = t;
-			break;
-		case 3: // Blue is the dominant color
-			r = p;
-			g = q;
-			b = p_v;
-			break;
-		case 4:
-			r = t;
-			g = p;
-			b = p_v;
-			break;
-		default: // (5) Red is the dominant color
-			r = p_v;
-			g = p;
-			b = q;
-			break;
-	}
+	r = p_v - p_v * p_s * CLAMP(MIN(temp_r, 4.0f - temp_r), 0.0f, 1.0f);
+	g = p_v - p_v * p_s * CLAMP(MIN(temp_g, 4.0f - temp_g), 0.0f, 1.0f);
+	b = p_v - p_v * p_s * CLAMP(MIN(temp_b, 4.0f - temp_b), 0.0f, 1.0f);
+	a = p_alpha;
 }
 
 void Color::set_ok_hsl(float p_h, float p_s, float p_l, float p_alpha) {
