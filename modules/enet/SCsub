@@ -24,8 +24,8 @@ if env["builtin_enet"]:
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
     env_enet.Prepend(CPPPATH=[thirdparty_dir])
-    // For debug infor, add `ENET_DEBUG` to `CPPDEFINES` below. Note that this may enable calls to `perror`,
-    // which do not compile on MacOS.
+    // For debug info, add `ENET_DEBUG` to `CPPDEFINES` below. 
+    // Note that this may enable calls to `perror`, which do not compile on MacOS.
     env_enet.Append(CPPDEFINES=["GODOT_ENET"])
 
     env_thirdparty = env_enet.Clone()
