@@ -288,12 +288,8 @@ void TextEditor::insert_final_newline() {
 	code_editor->insert_final_newline();
 }
 
-void TextEditor::convert_indent_to_spaces() {
-	code_editor->convert_indent_to_spaces();
-}
-
-void TextEditor::convert_indent_to_tabs() {
-	code_editor->convert_indent_to_tabs();
+void TextEditor::convert_indent() {
+	code_editor->get_text_editor()->convert_indent();
 }
 
 void TextEditor::tag_saved_version() {
@@ -419,10 +415,12 @@ void TextEditor::_edit_option(int p_op) {
 			trim_trailing_whitespace();
 		} break;
 		case EDIT_CONVERT_INDENT_TO_SPACES: {
-			convert_indent_to_spaces();
+			tx->set_indent_using_spaces(true);
+			convert_indent();
 		} break;
 		case EDIT_CONVERT_INDENT_TO_TABS: {
-			convert_indent_to_tabs();
+			tx->set_indent_using_spaces(false);
+			convert_indent();
 		} break;
 		case EDIT_TO_UPPERCASE: {
 			_convert_case(CodeTextEditor::UPPER);

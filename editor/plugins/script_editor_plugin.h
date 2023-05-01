@@ -169,8 +169,7 @@ public:
 	virtual void clear_executing_line() = 0;
 	virtual void trim_trailing_whitespace() = 0;
 	virtual void insert_final_newline() = 0;
-	virtual void convert_indent_to_spaces() = 0;
-	virtual void convert_indent_to_tabs() = 0;
+	virtual void convert_indent() = 0;
 	virtual void ensure_focus() = 0;
 	virtual void tag_saved_version() = 0;
 	virtual void reload(bool p_soft) {}
@@ -390,7 +389,6 @@ class ScriptEditor : public PanelContainer {
 
 	bool open_textfile_after_create = true;
 	bool trim_trailing_whitespace_on_save;
-	bool use_space_indentation;
 	bool convert_indent_on_save;
 
 	void _goto_script_line2(int p_line);
