@@ -370,7 +370,7 @@ Ref<Image> DisplayServerWindows::clipboard_get_image() const {
 			if (ptr != NULL) {
 				BITMAPINFOHEADER *info = &ptr->bmiHeader;
 				PackedByteArray pba;
-
+	pba.resize(info->biHeight * info->biWidth * 4);
 				for (LONG y = info->biHeight - 1; y > -1; y--) {
 					for (LONG x = 0; x < info->biWidth; x++) {
 						tagRGBQUAD *rgbquad = ptr->bmiColors + (info->biWidth * y) + x;
