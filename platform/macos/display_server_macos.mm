@@ -2114,9 +2114,7 @@ Ref<Image> DisplayServerMacOS::clipboard_get_image() const {
 	NSBitmapImageRep *bitmap = [NSBitmapImageRep imageRepWithData:data];
 	NSData *pngData = [bitmap representationUsingType:NSPNGFileType properties:@{}];
 	image.instantiate();
-	UInt8 buf[pngData.length];
-	[pngData getBytes:buf length:pngData.length];
-	PNGDriverCommon::png_to_image(buf, pngData.length, false, image);
+	PNGDriverCommon::png_to_image((const uint8_t *)pngData.bytes, pngData.length, false, image);
 	return image;
 }
 
