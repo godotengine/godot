@@ -1301,6 +1301,7 @@ int Node::get_descendant_count(bool p_include_internal) const {
 	}
 	return count;
 }
+
 TypedArray<Node> Node::get_descendants(bool p_include_internal) const {
 	TypedArray<Node> res = get_children(p_include_internal);
 	TypedArray<Node> children = get_children(p_include_internal);
