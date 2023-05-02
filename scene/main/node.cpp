@@ -1310,6 +1310,7 @@ TypedArray<Node> Node::get_descendants(bool p_include_internal) const {
 			res.append_array(node->get_descendants(p_include_internal));
 		}
 	}
+    return res;
 }
 
 Node *Node::get_node_or_null(const NodePath &p_path) const {
