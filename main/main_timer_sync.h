@@ -32,6 +32,7 @@
 #define MAIN_TIMER_SYNC_H
 
 #include "core/config/engine.h"
+#include "core/variant/native_ptr.h"
 
 // Uncomment this define to get more debugging logs for the delta smoothing.
 // #define GODOT_DEBUG_DELTA_SMOOTHER
@@ -161,5 +162,7 @@ public:
 	// advance one frame, return timesteps to take
 	MainFrameTime advance(double p_physics_step, int p_physics_ticks_per_second);
 };
+
+GDVIRTUAL_NATIVE_PTR(MainFrameTime);
 
 #endif // MAIN_TIMER_SYNC_H

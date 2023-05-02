@@ -107,8 +107,10 @@ public:
 
 	uint64_t get_frames_drawn();
 
+	void set_physics_frames(uint32_t p_physics_frames) { _physics_frames = p_physics_frames; }
 	uint64_t get_physics_frames() const { return _physics_frames; }
 	uint64_t get_process_frames() const { return _process_frames; }
+	void set_in_physics_frame(bool p_in_physics) { _in_physics = p_in_physics; }
 	bool is_in_physics_frame() const { return _in_physics; }
 	uint64_t get_frame_ticks() const { return _frame_ticks; }
 	double get_process_step() const { return _process_step; }

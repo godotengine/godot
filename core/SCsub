@@ -222,6 +222,7 @@ SConscript("templates/SCsub")
 SConscript("string/SCsub")
 SConscript("config/SCsub")
 SConscript("error/SCsub")
+SConscript("iteration/SCsub")
 
 
 # Build it all as a library

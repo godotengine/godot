@@ -106,6 +106,7 @@
 #endif // DISABLE_DEPRECATED
 #endif // TOOLS_ENABLED
 
+#include "core/iteration/iteration_server.h"
 #include "modules/modules_enabled.gen.h" // For mono.
 
 #if defined(MODULE_MONO_ENABLED) && defined(TOOLS_ENABLED)
@@ -734,6 +735,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	register_core_types();
 	register_core_driver_types();
+
+	MAIN_PRINT("Main: Initialize MAIN");
+	GDREGISTER_NATIVE_STRUCT(MainFrameTime, "double process_step = 0.;int physics_steps = 0;double interpolation_fraction = 0.;");
 
 	MAIN_PRINT("Main: Initialize Globals");
 
@@ -2954,6 +2958,18 @@ bool Main::start() {
 		ResourceLoader::add_custom_loaders();
 		ResourceSaver::add_custom_savers();
 
+		if (!project_manager) {
+#ifdef TOOLS_ENABLED
+			if (!IterationServer::is_iterator_enabled_for_process("main")) {
+				WARN_PRINT("Main process iterator is not enabled. This will result in _process and editor functionality not working, if none of the enabled iterators handles this.");
+			}
+
+			if (!IterationServer::is_iterator_enabled_for_physics("main")) {
+				WARN_PRINT("Main physics iterator is not enabled. This will result in _physics_process not working, if none of the enabled iterators handles this.");
+			}
+#endif
+		}
+
 		if (!project_manager && !editor) { // game
 			if (!game_path.is_empty() || !script.is_empty()) {
 				//autoload
@@ -3336,51 +3352,73 @@ bool Main::iteration() {
 	// process all our active interfaces
 	XRServer::get_singleton()->_process();
 
-	for (int iters = 0; iters < advance.physics_steps; ++iters) {
-		if (Input::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
-			Input::get_singleton()->flush_buffered_events();
+	for (int i = 0; i < IterationServer::_iterator_count; i++) {
+		auto iterator = IterationServer::_iterators[i];
+		if (!IterationServer::is_iterator_enabled_for_mixed(iterator)) {
+			continue;
 		}
-
-		Engine::get_singleton()->_in_physics = true;
-
-		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
-
-		PhysicsServer3D::get_singleton()->sync();
-		PhysicsServer3D::get_singleton()->flush_queries();
-
-		PhysicsServer2D::get_singleton()->sync();
-		PhysicsServer2D::get_singleton()->flush_queries();
-
-		if (OS::get_singleton()->get_main_loop()->physics_process(physics_step * time_scale)) {
-			PhysicsServer3D::get_singleton()->end_sync();
-			PhysicsServer2D::get_singleton()->end_sync();
-
+		if (iterator->mixed_iteration(process_step, physics_step, &advance, time_scale)) {
 			exit = true;
-			break;
 		}
+	}
 
-		uint64_t navigation_begin = OS::get_singleton()->get_ticks_usec();
+	for (int i = 0; i < IterationServer::_iterator_count; i++) {
+		auto iterator = IterationServer::_iterators[i];
+		if (!IterationServer::is_iterator_enabled_for_physics(iterator)) {
+			continue;
+		}
+		if (iterator->physics_iteration(process_step, physics_step, &advance, time_scale)) {
+			exit = true;
+		}
+	}
 
-		NavigationServer3D::get_singleton()->process(physics_step * time_scale);
+	if (IterationServer::is_iterator_enabled_for_physics("main")) {
+		for (int iters = 0; iters < advance.physics_steps; ++iters) {
+			if (Input::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
+				Input::get_singleton()->flush_buffered_events();
+			}
 
-		navigation_process_ticks = MAX(navigation_process_ticks, OS::get_singleton()->get_ticks_usec() - navigation_begin); // keep the largest one for reference
-		navigation_process_max = MAX(OS::get_singleton()->get_ticks_usec() - navigation_begin, navigation_process_max);
+			Engine::get_singleton()->_in_physics = true;
 
-		message_queue->flush();
+			uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
-		PhysicsServer3D::get_singleton()->end_sync();
-		PhysicsServer3D::get_singleton()->step(physics_step * time_scale);
+			PhysicsServer3D::get_singleton()->sync();
+			PhysicsServer3D::get_singleton()->flush_queries();
 
-		PhysicsServer2D::get_singleton()->end_sync();
-		PhysicsServer2D::get_singleton()->step(physics_step * time_scale);
+			PhysicsServer2D::get_singleton()->sync();
+			PhysicsServer2D::get_singleton()->flush_queries();
 
-		message_queue->flush();
+			if (OS::get_singleton()->get_main_loop()->physics_process(physics_step * time_scale)) {
+				PhysicsServer3D::get_singleton()->end_sync();
+				PhysicsServer2D::get_singleton()->end_sync();
 
-		physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - physics_begin); // keep the largest one for reference
-		physics_process_max = MAX(OS::get_singleton()->get_ticks_usec() - physics_begin, physics_process_max);
-		Engine::get_singleton()->_physics_frames++;
+				exit = true;
+				break;
+			}
 
-		Engine::get_singleton()->_in_physics = false;
+			uint64_t navigation_begin = OS::get_singleton()->get_ticks_usec();
+
+			NavigationServer3D::get_singleton()->process(physics_step * time_scale);
+
+			navigation_process_ticks = MAX(navigation_process_ticks, OS::get_singleton()->get_ticks_usec() - navigation_begin); // keep the largest one for reference
+			navigation_process_max = MAX(OS::get_singleton()->get_ticks_usec() - navigation_begin, navigation_process_max);
+
+			message_queue->flush();
+
+			PhysicsServer3D::get_singleton()->end_sync();
+			PhysicsServer3D::get_singleton()->step(physics_step * time_scale);
+
+			PhysicsServer2D::get_singleton()->end_sync();
+			PhysicsServer2D::get_singleton()->step(physics_step * time_scale);
+
+			message_queue->flush();
+
+			physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - physics_begin); // keep the largest one for reference
+			physics_process_max = MAX(OS::get_singleton()->get_ticks_usec() - physics_begin, physics_process_max);
+			Engine::get_singleton()->_physics_frames++;
+
+			Engine::get_singleton()->_in_physics = false;
+		}
 	}
 
 	if (Input::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
@@ -3389,8 +3427,20 @@ bool Main::iteration() {
 
 	uint64_t process_begin = OS::get_singleton()->get_ticks_usec();
 
-	if (OS::get_singleton()->get_main_loop()->process(process_step * time_scale)) {
-		exit = true;
+	for (int i = 0; i < IterationServer::_iterator_count; i++) {
+		auto iterator = IterationServer::_iterators[i];
+		if (!IterationServer::is_iterator_enabled_for_process(iterator)) {
+			continue;
+		}
+		if (iterator->process_iteration(process_step, physics_step, &advance, time_scale)) {
+			exit = true;
+		}
+	}
+
+	if (IterationServer::is_iterator_enabled_for_process("main")) {
+		if (OS::get_singleton()->get_main_loop()->process(process_step * time_scale)) {
+			exit = true;
+		}
 	}
 	message_queue->flush();
 
@@ -3418,7 +3468,19 @@ bool Main::iteration() {
 		ScriptServer::get_language(i)->frame();
 	}
 
-	AudioServer::get_singleton()->update();
+	for (int i = 0; i < IterationServer::_iterator_count; i++) {
+		auto iterator = IterationServer::_iterators[i];
+		if (!IterationServer::is_iterator_enabled_for_audio(iterator)) {
+			continue;
+		}
+		if (iterator->audio_iteration(process_step, physics_step, &advance, time_scale)) {
+			exit = true;
+		}
+	}
+
+	if (IterationServer::is_iterator_enabled_for_audio("main")) {
+		AudioServer::get_singleton()->update();
+	}
 
 	if (EngineDebugger::is_active()) {
 		EngineDebugger::get_singleton()->iteration(frame_time, process_ticks, physics_process_ticks, physics_step);

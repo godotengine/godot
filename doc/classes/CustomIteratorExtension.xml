@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CustomIteratorExtension" inherits="CustomIterator" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_audio_iteration" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="process_delta" type="float" />
+			<param index="1" name="physics_delta" type="float" />
+			<param index="2" name="frame_time" type="MainFrameTime*" />
+			<param index="3" name="time_scale" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_name" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_type" qualifiers="virtual const">
+			<return type="int" enum="IterationServer.IteratorType" />
+			<description>
+			</description>
+		</method>
+		<method name="_mixed_iteration" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="process_delta" type="float" />
+			<param index="1" name="physics_delta" type="float" />
+			<param index="2" name="frame_time" type="MainFrameTime*" />
+			<param index="3" name="time_scale" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_physics_iteration" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="process_delta" type="float" />
+			<param index="1" name="physics_delta" type="float" />
+			<param index="2" name="frame_time" type="MainFrameTime*" />
+			<param index="3" name="time_scale" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_process_iteration" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="process_delta" type="float" />
+			<param index="1" name="physics_delta" type="float" />
+			<param index="2" name="frame_time" type="MainFrameTime*" />
+			<param index="3" name="time_scale" type="float" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

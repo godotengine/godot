@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="IterationServer" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Iterator repository
+	</brief_description>
+	<description>
+		Enables registering of custom iterators and accessing of information about custom iterators.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_iterator" qualifiers="static">
+			<return type="CustomIterator" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns an instance of a [CustomIterator] with the given index.
+			</description>
+		</method>
+		<method name="get_iterator_count" qualifiers="static">
+			<return type="int" />
+			<description>
+				Returns the number of available iterators. Use with [method get_iterator].
+			</description>
+		</method>
+		<method name="register_iterator" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="iterator" type="CustomIterator" />
+			<description>
+				Registers a [CustomIterator] instance to be available with [code]IteratorDB[/code].
+				                Returns:
+				                - [constant OK] on success
+				                - [constant ERR_UNAVAILABLE] if [code]IteratorDB[/code] has reached it limit and cannot register any new iterator
+				                - [constant ERR_ALREADY_EXISTS] if [code]IteratorDB[/code] already contains an iterator with similar name
+			</description>
+		</method>
+		<method name="unregister_iterator" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="iterator" type="CustomIterator" />
+			<description>
+				Unregisters the [CustomIterator] instance from [code]IteratorDB[/code].
+				                Returns:
+				                - [constant OK] on success
+				                - [constant ERR_DOES_NOT_EXIST] if the iterator is already not registered in [code]IteratorDB[/code]
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="ITERATOR_TYPE_UNSET" value="0" enum="IteratorType">
+		</constant>
+		<constant name="ITERATOR_TYPE_MIXED" value="2" enum="IteratorType">
+		</constant>
+		<constant name="ITERATOR_TYPE_SEPARATE" value="1" enum="IteratorType">
+		</constant>
+	</constants>
+</class>

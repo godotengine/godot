@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  main.h                                                                */
+/* iteration_server.h                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,68 +28,55 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef GODOT_ITERATION_SERVER_H
+#define GODOT_ITERATION_SERVER_H
 
 #include "core/error/error_list.h"
-#include "core/iteration/custom_iterator.h"
-#include "core/os/thread.h"
-#include "core/typedefs.h"
+#include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/variant/binder_common.h"
 
-template <class T>
-class Vector;
+class CustomIterator;
+class Main;
 
-class Main {
-	static void print_help(const char *p_binary);
-	static uint64_t last_ticks;
-	static uint32_t hide_print_fps_attempts;
-	static uint32_t frames;
-	static uint32_t frame;
-	static bool force_redraw_requested;
-	static int iterating;
-	static bool agile_input_event_flushing;
+class IterationServer : public Object {
+	GDCLASS(IterationServer, Object)
+
+	friend class Main;
+
+	enum {
+		MAX_ITERATORS = 64
+	};
+
+	static CustomIterator *_iterators[MAX_ITERATORS];
+	static int _iterator_count;
+
+protected:
+	static void _bind_methods();
+	IterationServer(){};
+	~IterationServer(){};
 
 public:
-	static bool is_cmdline_tool();
-#ifdef TOOLS_ENABLED
-	enum CLIScope {
-		CLI_SCOPE_TOOL, // Editor and project manager.
-		CLI_SCOPE_PROJECT,
+	enum IteratorType {
+		ITERATOR_TYPE_UNSET = 0,
+		ITERATOR_TYPE_SEPARATE = 1 << 0,
+		ITERATOR_TYPE_MIXED = 1 << 1
 	};
-	static const Vector<String> &get_forwardable_cli_arguments(CLIScope p_scope);
-#endif
 
-	static int test_entrypoint(int argc, char *argv[], bool &tests_need_run);
-	static Error setup(const char *execpath, int argc, char *argv[], bool p_second_phase = true);
-	static Error setup2(); // The thread calling setup2() will effectively become the main thread.
-	static String get_rendering_driver_name();
-#ifdef TESTS_ENABLED
-	static Error test_setup();
-	static void test_cleanup();
-#endif
-	static bool start();
-
-	static bool iteration();
-	static void force_redraw();
-
-	static bool is_iterating();
-
-	static void cleanup(bool p_force = false);
+	static int get_iterator_count() { return _iterator_count; }
+	static CustomIterator *get_iterator(int p_idx);
+	static Error register_iterator(CustomIterator *p_iterator);
+	static Error unregister_iterator(const CustomIterator *p_iterator);
+	static bool is_iterator_enabled_for_process(const String &name);
+	static bool is_iterator_enabled_for_process(const CustomIterator *p_iterator);
+	static bool is_iterator_enabled_for_physics(const String &name);
+	static bool is_iterator_enabled_for_physics(const CustomIterator *p_iterator);
+	static bool is_iterator_enabled_for_audio(const String &name);
+	static bool is_iterator_enabled_for_audio(const CustomIterator *p_iterator);
+	static bool is_iterator_enabled_for_mixed(const String &name);
+	static bool is_iterator_enabled_for_mixed(const CustomIterator *p_iterator);
 };
 
-// Test main override is for the testing behavior.
-#define TEST_MAIN_OVERRIDE                                         \
-	bool run_test = false;                                         \
-	int return_code = Main::test_entrypoint(argc, argv, run_test); \
-	if (run_test) {                                                \
-		return return_code;                                        \
-	}
+VARIANT_ENUM_CAST(IterationServer::IteratorType);
 
-#define TEST_MAIN_PARAM_OVERRIDE(argc, argv)                       \
-	bool run_test = false;                                         \
-	int return_code = Main::test_entrypoint(argc, argv, run_test); \
-	if (run_test) {                                                \
-		return return_code;                                        \
-	}
-
-#endif // MAIN_H
+#endif //GODOT_ITERATION_SERVER_H

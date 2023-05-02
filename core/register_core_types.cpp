@@ -65,6 +65,9 @@
 #include "core/io/translation_loader_po.h"
 #include "core/io/udp_server.h"
 #include "core/io/xml_parser.h"
+#include "core/iteration/custom_iterator.h"
+#include "core/iteration/custom_iterator_extension.h"
+#include "core/iteration/iteration_server.h"
 #include "core/math/a_star.h"
 #include "core/math/a_star_grid_2d.h"
 #include "core/math/expression.h"
@@ -294,6 +297,11 @@ void register_core_types() {
 	GDREGISTER_NATIVE_STRUCT(ScriptLanguageExtensionProfilingInfo, "StringName signature;uint64_t call_count;uint64_t total_time;uint64_t self_time");
 
 	worker_thread_pool = memnew(WorkerThreadPool);
+
+	// Iterators
+	GDREGISTER_VIRTUAL_CLASS(IterationServer);
+	GDREGISTER_ABSTRACT_CLASS(CustomIterator);
+	GDREGISTER_VIRTUAL_CLASS(CustomIteratorExtension);
 }
 
 void register_core_settings() {
