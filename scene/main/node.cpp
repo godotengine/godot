@@ -1293,26 +1293,23 @@ int Node::get_descendant_count(bool p_include_internal) const {
     int count = 0;
     TypedArray<Node> children = get_children(p_include_internal);
     count += children.size();
-    for(int i = 0; i < children.size(); i++) {
+    for (int i = 0; i < children.size(); i++) {
         Node *node = Object::cast_to<Node>(children[i]);
-        if(node->get_child_count(p_include_internal)>0){
-            count+= node->get_descendant_count(p_include_internal);
+        if (node->get_child_count(p_include_internal) > 0) {
+            count += node->get_descendant_count(p_include_internal);
         }
     }
     return count;
 }
 TypedArray<Node> Node::get_descendants(bool p_include_internal) const {
     TypedArray<Node> res = get_children(p_include_internal);
-
     TypedArray<Node> children = get_children(p_include_internal);
-    for(int i = 0; i < children.size(); i++) {
+    for (int i = 0; i < children.size(); i++) {
         Node *node = Object::cast_to<Node>(children[i]);
-        if(node->get_child_count(p_include_internal)>0){
-            res.append_array( node->get_descendants(p_include_internal) );
+        if (node->get_child_count(p_include_internal) > 0) {
+            res.append_array(node->get_descendants(p_include_internal));
         }
     }
-
-    return res;
 }
 
 Node *Node::get_node_or_null(const NodePath &p_path) const {
