@@ -357,33 +357,22 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		}
 	}
 
-	// Display the node name in all tooltips so that long node names can be previewed
-	// without having to rename them.
-	if (p_node == get_scene_node() && p_node->get_scene_inherited_state().is_valid()) {
-		item->add_button(0, get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
+	{
+		// Display the node name in all tooltips so that long node names can be previewed
+		// without having to rename them.
+		String tooltip = String(p_node->get_name());
 
-		String tooltip = String(p_node->get_name()) + "\n" + TTR("Inherits:") + " " + p_node->get_scene_inherited_state()->get_path() + "\n" + TTR("Type:") + " " + p_node->get_class();
-		if (!p_node->get_editor_description().is_empty()) {
-			tooltip += "\n\n" + p_node->get_editor_description();
+		if (p_node == get_scene_node() && p_node->get_scene_inherited_state().is_valid()) {
+			item->add_button(0, get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
+			tooltip += String("\n" + TTR("Inherits:") + " " + p_node->get_scene_inherited_state()->get_path());
+		} else if (p_node != get_scene_node() && !p_node->get_scene_file_path().is_empty() && can_open_instance) {
+			item->add_button(0, get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
+			tooltip += String("\n" + TTR("Instance:") + " " + p_node->get_scene_file_path());
 		}
 
-		item->set_tooltip_text(0, tooltip);
-	} else if (p_node != get_scene_node() && !p_node->get_scene_file_path().is_empty() && can_open_instance) {
-		item->add_button(0, get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
+		StringName custom_type = EditorNode::get_singleton()->get_object_custom_type_name(p_node);
+		tooltip += String("\n" + TTR("Type:") + " " + (custom_type != StringName() ? String(custom_type) : p_node->get_class()));
 
-		String tooltip = String(p_node->get_name()) + "\n" + TTR("Instance:") + " " + p_node->get_scene_file_path() + "\n" + TTR("Type:") + " " + p_node->get_class();
-		if (!p_node->get_editor_description().is_empty()) {
-			tooltip += "\n\n" + p_node->get_editor_description();
-		}
-
-		item->set_tooltip_text(0, tooltip);
-	} else {
-		StringName type = EditorNode::get_singleton()->get_object_custom_type_name(p_node);
-		if (type == StringName()) {
-			type = p_node->get_class();
-		}
-
-		String tooltip = String(p_node->get_name()) + "\n" + TTR("Type:") + " " + type;
 		if (!p_node->get_editor_description().is_empty()) {
 			tooltip += "\n\n" + p_node->get_editor_description();
 		}
