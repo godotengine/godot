@@ -538,6 +538,7 @@ class EditorInspector : public ScrollContainer {
 	ConfirmationDialog *add_meta_dialog = nullptr;
 	LineEdit *add_meta_name = nullptr;
 	OptionButton *add_meta_type = nullptr;
+	PanelContainer *add_meta_error_panel = nullptr;
 	Label *add_meta_error = nullptr;
 
 	void _add_meta_confirm();
