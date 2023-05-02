@@ -280,6 +280,22 @@
 				If [param include_internal] is [code]false[/code], the returned array won't include internal children (see [code]internal[/code] parameter in [method add_child]).
 			</description>
 		</method>
+		<method name="get_descendant_count" qualifiers="const">
+			<return type="Node[]" />
+			<param index="0" name="include_internal" type="bool" default="false" />
+			<description>
+				Returns the number of descendant nodes.
+				If [param include_internal] is [code]false[/code], the returned array won't include internal descendants (see [code]internal[/code] parameter in [method add_child]).
+			</description>
+		</method>
+		<method name="get_descendants" qualifiers="const">
+			<return type="Node[]" />
+			<param index="0" name="include_internal" type="bool" default="false" />
+			<description>
+				Returns an array of references to node's descendants.
+				If [param include_internal] is [code]false[/code], the returned array won't include internal descendants (see [code]internal[/code] parameter in [method add_child]).
+			</description>
+		</method>
 		<method name="get_groups" qualifiers="const">
 			<return type="StringName[]" />
 			<description>
