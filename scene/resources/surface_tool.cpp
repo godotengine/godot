@@ -985,9 +985,21 @@ void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_sur
 	}
 	ERR_FAIL_COND(shape_idx == -1);
 	ERR_FAIL_COND(shape_idx >= arr.size());
-	Array mesh = arr[shape_idx];
-	ERR_FAIL_COND(mesh.size() != RS::ARRAY_MAX);
-	_create_list_from_arrays(arr[shape_idx], &vertex_array, &index_array, format);
+	Array blendshape_mesh_arrays = arr[shape_idx];
+	ERR_FAIL_COND(blendshape_mesh_arrays.size() != RS::ARRAY_MAX);
+
+	Array source_mesh_arrays = p_existing->surface_get_arrays(p_surface);
+	ERR_FAIL_COND(source_mesh_arrays.size() != RS::ARRAY_MAX);
+
+	// Copy BlendShape vertex data over while keeping e.g. bones, weights, index from existing mesh intact.
+	source_mesh_arrays[RS::ARRAY_VERTEX] = blendshape_mesh_arrays[RS::ARRAY_VERTEX];
+	source_mesh_arrays[RS::ARRAY_NORMAL] = blendshape_mesh_arrays[RS::ARRAY_NORMAL];
+	source_mesh_arrays[RS::ARRAY_TANGENT] = blendshape_mesh_arrays[RS::ARRAY_TANGENT];
+
+	_create_list_from_arrays(source_mesh_arrays, &vertex_array, &index_array, format);
+
+	material = p_existing->surface_get_material(p_surface);
+	format = p_existing->surface_get_format(p_surface);
 
 	for (int j = 0; j < RS::ARRAY_CUSTOM_COUNT; j++) {
 		if (format & custom_mask[j]) {
