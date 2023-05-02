@@ -1301,6 +1301,19 @@ int Node::get_descendant_count(bool p_include_internal) const {
     }
     return count;
 }
+TypedArray<Node> Node::get_descendants(bool p_include_internal) const {
+    TypedArray<Node> res = get_children(p_include_internal);
+
+    TypedArray<Node> children = get_children(p_include_internal);
+    for(int i = 0; i < children.size(); i++) {
+        Node *node = Object::cast_to<Node>(children[i]);
+        if(node->get_child_count(p_include_internal)>0){
+            res.append_array( node->get_descendants(p_include_internal) );
+        }
+    }
+
+    return res;
+}
 
 Node *Node::get_node_or_null(const NodePath &p_path) const {
 	if (p_path.is_empty()) {
@@ -2870,6 +2883,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_child_count", "include_internal"), &Node::get_child_count, DEFVAL(false)); // Note that the default value bound for include_internal is false, while the method is declared with true. This is because internal nodes are irrelevant for GDSCript.
 	ClassDB::bind_method(D_METHOD("get_children", "include_internal"), &Node::get_children, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_child", "idx", "include_internal"), &Node::get_child, DEFVAL(false));
+    ClassDB::bind_method(D_METHOD("get_descendants", "include_internal"), &Node::get_descendants, DEFVAL(false));
     ClassDB::bind_method(D_METHOD("get_descendant_count", "include_internal"), &Node::get_descendant_count, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("has_node", "path"), &Node::has_node);
 	ClassDB::bind_method(D_METHOD("get_node", "path"), &Node::get_node);
