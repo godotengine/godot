@@ -907,9 +907,7 @@ void RigidBody2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
-			if (Engine::get_singleton()->is_editor_hint()) {
-				update_configuration_warnings();
-			}
+			update_configuration_warnings();
 		} break;
 	}
 #endif
