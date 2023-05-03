@@ -833,14 +833,20 @@ bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem 
 
 void ProjectExportDialog::_propagate_file_export_mode(TreeItem *p_item, EditorExportPreset::FileExportMode p_inherited_export_mode) {
 	EditorExportPreset::FileExportMode file_export_mode = (EditorExportPreset::FileExportMode)(int)p_item->get_metadata(1);
+	bool is_inherited = false;
 	if (file_export_mode == EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED) {
 		file_export_mode = p_inherited_export_mode;
+		is_inherited = true;
 	}
 
 	if (file_export_mode == EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED) {
 		p_item->set_text(1, "");
 	} else {
-		p_item->set_text(1, file_mode_popup->get_item_text(file_mode_popup->get_item_index(file_export_mode)));
+		String text = file_mode_popup->get_item_text(file_mode_popup->get_item_index(file_export_mode));
+		if (is_inherited) {
+			text += " " + TTR("(Inherited)");
+		}
+		p_item->set_text(1, text);
 	}
 
 	for (int i = 0; i < p_item->get_child_count(); i++) {
