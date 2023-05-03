@@ -162,9 +162,9 @@ Ref<Image> NoiseTexture2D::_generate_texture() {
 	Ref<Image> new_image;
 
 	if (seamless) {
-		new_image = ref_noise->get_seamless_image(size.x, size.y, 0, invert, in_3d_space, seamless_blend_skirt, normalize);
+		new_image = ref_noise->get_seamless_image(size.x, size.y, invert, in_3d_space, seamless_blend_skirt, normalize);
 	} else {
-		new_image = ref_noise->get_image(size.x, size.y, 0, invert, in_3d_space, normalize);
+		new_image = ref_noise->get_image(size.x, size.y, invert, in_3d_space, normalize);
 	}
 	if (color_ramp.is_valid()) {
 		new_image = _modulate_with_gradient(new_image, color_ramp);

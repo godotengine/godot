@@ -68,8 +68,6 @@ private:
 	void _update_texture();
 	void _set_texture_data(const TypedArray<Image> &p_data);
 
-	Vector<Ref<Image>> _get_seamless(int p_width, int p_height, int p_depth, bool p_invert, real_t p_blend_skirt);
-	Vector<Ref<Image>> _normalize(Vector<Ref<Image>> p_images);
 	Ref<Image> _modulate_with_gradient(Ref<Image> p_image, Ref<Gradient> p_gradient);
 
 protected:

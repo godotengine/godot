@@ -605,7 +605,7 @@ TEST_CASE("[FastNoiseLite] Generating seamless 2D images (11x11px) and compare t
 	noise.set_cellular_jitter(0.0);
 
 	SUBCASE("Blend skirt 0.0") {
-		Ref<Image> img = noise.get_seamless_image(11, 11, 0, false, false, 0.0);
+		Ref<Image> img = noise.get_seamless_image(11, 11, false, false, 0.0);
 
 		Ref<Image> ref_img_1 = memnew(Image);
 		ref_img_1->set_data(11, 11, false, Image::FORMAT_L8, ref_img_1_data);
@@ -614,7 +614,7 @@ TEST_CASE("[FastNoiseLite] Generating seamless 2D images (11x11px) and compare t
 	}
 
 	SUBCASE("Blend skirt 0.1") {
-		Ref<Image> img = noise.get_seamless_image(11, 11, 0, false, false, 0.1);
+		Ref<Image> img = noise.get_seamless_image(11, 11, false, false, 0.1);
 
 		Ref<Image> ref_img_2 = memnew(Image);
 		ref_img_2->set_data(11, 11, false, Image::FORMAT_L8, ref_img_2_data);
@@ -623,7 +623,7 @@ TEST_CASE("[FastNoiseLite] Generating seamless 2D images (11x11px) and compare t
 	}
 
 	SUBCASE("Blend skirt 1.0") {
-		Ref<Image> img = noise.get_seamless_image(11, 11, 0, false, false, 0.1);
+		Ref<Image> img = noise.get_seamless_image(11, 11, false, false, 0.1);
 
 		Ref<Image> ref_img_3 = memnew(Image);
 		ref_img_3->set_data(11, 11, false, Image::FORMAT_L8, ref_img_3_data);
