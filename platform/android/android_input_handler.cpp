@@ -101,22 +101,19 @@ void AndroidInputHandler::process_key_event(int p_scancode, int p_physical_scanc
 }
 
 void AndroidInputHandler::_cancel_all_touch() {
-	_parse_all_touch(false, false, true);
+	_parse_all_touch(false, true);
 	touch.clear();
 }
 
-void AndroidInputHandler::_parse_all_touch(bool p_pressed, bool p_double_tap, bool reset_index) {
+void AndroidInputHandler::_parse_all_touch(bool p_pressed, bool p_canceled, bool p_double_tap) {
 	if (touch.size()) {
 		//end all if exist
 		for (int i = 0; i < touch.size(); i++) {
 			Ref<InputEventScreenTouch> ev;
 			ev.instance();
-			if (reset_index) {
-				ev->set_index(-1);
-			} else {
-				ev->set_index(touch[i].id);
-			}
+			ev->set_index(touch[i].id);
 			ev->set_pressed(p_pressed);
+			ev->set_canceled(p_canceled);
 			ev->set_position(touch[i].pos);
 			ev->set_double_tap(p_double_tap);
 			input->parse_input_event(ev);
@@ -125,7 +122,7 @@ void AndroidInputHandler::_parse_all_touch(bool p_pressed, bool p_double_tap, bo
 }
 
 void AndroidInputHandler::_release_all_touch() {
-	_parse_all_touch(false, false);
+	_parse_all_touch(false);
 	touch.clear();
 }
 
@@ -143,7 +140,7 @@ void AndroidInputHandler::process_touch_event(int p_event, int p_pointer, const 
 			}
 
 			//send touch
-			_parse_all_touch(true, p_double_tap);
+			_parse_all_touch(true, false, p_double_tap);
 
 		} break;
 		case AMOTION_EVENT_ACTION_MOVE: { //motion
@@ -220,11 +217,11 @@ void AndroidInputHandler::process_touch_event(int p_event, int p_pointer, const 
 
 void AndroidInputHandler::_cancel_mouse_event_info(bool p_source_mouse_relative) {
 	buttons_state = 0;
-	_parse_mouse_event_info(0, false, false, p_source_mouse_relative);
+	_parse_mouse_event_info(0, false, true, false, p_source_mouse_relative);
 	mouse_event_info.valid = false;
 }
 
-void AndroidInputHandler::_parse_mouse_event_info(int buttons_mask, bool p_pressed, bool p_double_click, bool p_source_mouse_relative) {
+void AndroidInputHandler::_parse_mouse_event_info(int buttons_mask, bool p_pressed, bool p_canceled, bool p_double_click, bool p_source_mouse_relative) {
 	if (!mouse_event_info.valid) {
 		return;
 	}
@@ -241,6 +238,7 @@ void AndroidInputHandler::_parse_mouse_event_info(int buttons_mask, bool p_press
 		hover_prev_pos = mouse_event_info.pos;
 	}
 	ev->set_pressed(p_pressed);
+	ev->set_canceled(p_canceled);
 	int changed_button_mask = buttons_state ^ buttons_mask;
 
 	buttons_state = buttons_mask;
@@ -252,7 +250,7 @@ void AndroidInputHandler::_parse_mouse_event_info(int buttons_mask, bool p_press
 }
 
 void AndroidInputHandler::_release_mouse_event_info(bool p_source_mouse_relative) {
-	_parse_mouse_event_info(0, false, false, p_source_mouse_relative);
+	_parse_mouse_event_info(0, false, false, false, p_source_mouse_relative);
 	mouse_event_info.valid = false;
 }
 
@@ -281,7 +279,7 @@ void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_an
 
 			mouse_event_info.valid = true;
 			mouse_event_info.pos = p_event_pos;
-			_parse_mouse_event_info(event_buttons_mask, true, p_double_click, p_source_mouse_relative);
+			_parse_mouse_event_info(event_buttons_mask, true, false, p_double_click, p_source_mouse_relative);
 		} break;
 
 		case AMOTION_EVENT_ACTION_CANCEL: {
