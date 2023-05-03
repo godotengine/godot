@@ -66,6 +66,10 @@ bool Texture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect
 	return true;
 }
 
+bool Texture::get_combined_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_combined_rect, Rect2 &r_combined_src_rect) const {
+	return get_rect_region(p_rect, p_src_rect, r_combined_rect, r_combined_src_rect);
+}
+
 void Texture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_width"), &Texture::get_width);
 	ClassDB::bind_method(D_METHOD("get_height"), &Texture::get_height);
@@ -1029,16 +1033,15 @@ void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile
 	atlas->draw_rect_region(p_canvas_item, dr, rc, p_modulate, p_transpose, p_normal_map);
 }
 void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map, bool p_clip_uv) const {
-	//this might not necessarily work well if using a rect, needs to be fixed properly
 	if (!atlas.is_valid()) {
 		return;
 	}
 
-	Rect2 dr;
-	Rect2 src_c;
-	get_rect_region(p_rect, p_src_rect, dr, src_c);
-
-	atlas->draw_rect_region(p_canvas_item, dr, src_c, p_modulate, p_transpose, p_normal_map);
+	Rect2 dst;
+	Rect2 src;
+	if (get_rect_region(p_rect, p_src_rect, dst, src)) {
+		atlas->draw_rect_region(p_canvas_item, dst, src, p_modulate, p_transpose, p_normal_map);
+	}
 }
 
 bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const {
@@ -1069,6 +1072,18 @@ bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect,
 	r_rect = Rect2(p_rect.position + ofs * scale, src_clipped.size * scale);
 	r_src_rect = src_clipped;
 	return true;
+}
+
+bool AtlasTexture::get_combined_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_combined_rect, Rect2 &r_combined_src_rect) const {
+	if (!atlas.is_valid()) {
+		return false;
+	}
+	Rect2 dst;
+	Rect2 src;
+	if (get_rect_region(p_rect, p_src_rect, dst, src)) {
+		return atlas->get_combined_rect_region(dst, src, r_combined_rect, r_combined_src_rect);
+	}
+	return false;
 }
 
 bool AtlasTexture::is_pixel_opaque(int p_x, int p_y) const {
@@ -1196,11 +1211,6 @@ void MeshTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const
 	}
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 	VisualServer::get_singleton()->canvas_item_add_mesh(p_canvas_item, mesh->get_rid(), xform, p_modulate, base_texture->get_rid(), normal_rid);
-}
-bool MeshTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const {
-	r_rect = p_rect;
-	r_src_rect = p_src_rect;
-	return true;
 }
 
 bool MeshTexture::is_pixel_opaque(int p_x, int p_y) const {
