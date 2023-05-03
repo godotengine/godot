@@ -563,6 +563,7 @@
 		</member>
 		<member name="position" type="Vector2i" setter="set_position" getter="get_position" default="Vector2i(0, 0)">
 			The window's position in pixels.
+			If [member ProjectSettings.display/window/subwindows/embed_subwindows] is [code]false[/code], the position is in absolute screen coordinates. This typically applies to editor plugins. If the setting is [code]false[/code], the window's position is in the coordinates of its parent [Viewport].
 		</member>
 		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(100, 100)">
 			The window's size in pixels.

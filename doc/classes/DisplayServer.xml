@@ -821,7 +821,7 @@
 		<method name="mouse_get_position" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
-				Returns the mouse cursor's current position.
+				Returns the mouse cursor's current position in screen coordinates.
 			</description>
 		</method>
 		<method name="mouse_set_mode">
