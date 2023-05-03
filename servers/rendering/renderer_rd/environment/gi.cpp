@@ -3695,20 +3695,6 @@ void GI::setup_voxel_gi_instances(RenderDataRD *p_render_data, Ref<RenderSceneBu
 			}
 			rbgi->uniform_set[v] = RID();
 		}
-		if (p_render_buffers->has_custom_data(RB_SCOPE_FOG)) {
-			Ref<Fog::VolumetricFog> fog = p_render_buffers->get_custom_data(RB_SCOPE_FOG);
-
-#ifdef DEV_ENABLED
-			fog->gi_dependent_sets.assert_actual_validity();
-#endif
-			if (fog->gi_dependent_sets.valid) {
-				RD::get_singleton()->free(fog->gi_dependent_sets.copy_uniform_set);
-				RD::get_singleton()->free(fog->gi_dependent_sets.process_uniform_set_density);
-				RD::get_singleton()->free(fog->gi_dependent_sets.process_uniform_set);
-				RD::get_singleton()->free(fog->gi_dependent_sets.process_uniform_set2);
-				fog->gi_dependent_sets.valid = false;
-			}
-		}
 	}
 
 	if (p_voxel_gi_instances.size() > 0) {
