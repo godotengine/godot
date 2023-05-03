@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Potentially unsafe for nullable "bar" to call "begins_with()".

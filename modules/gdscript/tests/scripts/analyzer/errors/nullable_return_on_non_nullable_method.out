@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Cannot return nullable value of type "Vector2?" because the function return type is "Vector2".

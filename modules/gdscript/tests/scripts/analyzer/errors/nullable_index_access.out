@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Potentially unsafe to access nullable "foo" with index "0".

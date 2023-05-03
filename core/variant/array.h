@@ -119,17 +119,18 @@ public:
 
 	const void *id() const;
 
-	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
+	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script, bool p_is_nullable = false);
 	bool is_typed() const;
 	bool is_same_typed(const Array &p_other) const;
 	uint32_t get_typed_builtin() const;
 	StringName get_typed_class_name() const;
 	Variant get_typed_script() const;
+	bool is_nullable() const;
 
 	void make_read_only();
 	bool is_read_only() const;
 
-	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
+	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script, bool p_is_nullable = false);
 	Array(const Array &p_from);
 	Array();
 	~Array();

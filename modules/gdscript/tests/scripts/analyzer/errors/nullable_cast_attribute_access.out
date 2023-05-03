@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Potentially unsafe to access nullable cast expression "nullable_instance as A?" with attribute "foo".

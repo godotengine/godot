@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Potentially unsafe for nullable "nullable_array" to be used in a for-loop.

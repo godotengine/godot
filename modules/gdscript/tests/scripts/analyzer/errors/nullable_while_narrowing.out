@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Potentially unsafe for nullable left-side operand, of type "int?", to be used with the "-" operator.

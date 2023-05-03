@@ -39,8 +39,34 @@
 #include "core/templates/hash_set.h"
 
 class GDScriptAnalyzer {
+	// Allows us to include the identifier's scope for the nullable narrowing computation
+	struct NullableNarrowingIdentifier {
+		StringName identifier;
+		StringName source_function;
+
+		bool operator==(const NullableNarrowingIdentifier &p_identifier) const {
+			return this->identifier == p_identifier.identifier && this->source_function == p_identifier.source_function;
+		}
+
+		NullableNarrowingIdentifier(GDScriptParser::IdentifierNode *p_identifier) {
+			identifier = p_identifier->name;
+			if (p_identifier->source_function && p_identifier->source_function->identifier) {
+				source_function = p_identifier->source_function->identifier->name;
+			}
+		}
+	};
+
+	struct HashMapHasherNullableNarrowingIdentifier : HashMapHasherDefault {
+		static _FORCE_INLINE_ uint32_t hash(const NullableNarrowingIdentifier &p_identifier) {
+			uint32_t h = p_identifier.identifier.hash();
+			h = hash_murmur3_one_32(p_identifier.source_function.hash(), h);
+			return hash_fmix32(h);
+		}
+	};
+
 	GDScriptParser *parser = nullptr;
 	HashMap<String, Ref<GDScriptParserRef>> depended_parsers;
+	HashSet<NullableNarrowingIdentifier, HashMapHasherNullableNarrowingIdentifier> narrowed_nullables_stack;
 
 	const GDScriptParser::EnumNode *current_enum = nullptr;
 	List<GDScriptParser::LambdaNode *> lambda_stack;
@@ -80,8 +106,8 @@ class GDScriptAnalyzer {
 	void resolve_while(GDScriptParser::WhileNode *p_while);
 	void resolve_assert(GDScriptParser::AssertNode *p_assert);
 	void resolve_match(GDScriptParser::MatchNode *p_match);
-	void resolve_match_branch(GDScriptParser::MatchBranchNode *p_match_branch, GDScriptParser::ExpressionNode *p_match_test);
-	void resolve_match_pattern(GDScriptParser::PatternNode *p_match_pattern, GDScriptParser::ExpressionNode *p_match_test);
+	void resolve_match_branch(GDScriptParser::MatchBranchNode *p_match_branch, GDScriptParser::ExpressionNode *p_match_test, Vector<GDScriptParser::IdentifierNode *> p_nullable_identifiers = {});
+	void resolve_match_pattern(GDScriptParser::PatternNode *p_match_pattern, GDScriptParser::ExpressionNode *p_match_test, bool *p_is_nullable = nullptr);
 	void resolve_return(GDScriptParser::ReturnNode *p_return);
 
 	// Reduction functions.
@@ -90,6 +116,7 @@ class GDScriptAnalyzer {
 	void reduce_assignment(GDScriptParser::AssignmentNode *p_assignment);
 	void reduce_await(GDScriptParser::AwaitNode *p_await);
 	void reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_op);
+	void reduce_coalesce_op(GDScriptParser::BinaryOpNode *p_coalesce_op);
 	void reduce_call(GDScriptParser::CallNode *p_call, bool p_is_await = false, bool p_is_root = false);
 	void reduce_cast(GDScriptParser::CastNode *p_cast);
 	void reduce_dictionary(GDScriptParser::DictionaryNode *p_dictionary);
@@ -132,6 +159,30 @@ class GDScriptAnalyzer {
 	bool class_exists(const StringName &p_class) const;
 	Ref<GDScriptParserRef> get_parser_for(const String &p_path);
 	void reduce_identifier_from_base_set_class(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType p_identifier_datatype);
+	String print_expression(GDScriptParser::ExpressionNode *p_expression);
+
+	// Nullity guards.
+	bool binary_op_nullity_guard(GDScriptParser::BinaryOpNode *p_binary_op);
+	bool subscript_nullity_guard(GDScriptParser::SubscriptNode *p_subscript);
+	bool call_nullity_guard(GDScriptParser::CallNode *p_call);
+	bool assignable_nullity_guard(GDScriptParser::ExpressionNode *p_assignee, GDScriptParser::ExpressionNode *p_assigned_value, GDScriptParser::Node *p_origin);
+	bool assignment_nullity_guard(GDScriptParser::AssignmentNode *p_assignment);
+	bool unary_op_nullity_guard(GDScriptParser::UnaryOpNode *p_unary_op);
+	bool for_nullity_guard(GDScriptParser::ForNode *p_for);
+	bool return_nullity_guard(GDScriptParser::ReturnNode *p_return, GDScriptParser::DataType p_expected_type);
+
+	// Nullable helpers.
+	Vector<GDScriptParser::IdentifierNode *> deduce_nullable_narrowing(GDScriptParser::ExpressionNode *p_node, bool p_should_be_false = false);
+	void push_narrowed_nullables(Vector<GDScriptParser::IdentifierNode *> p_identifiers);
+	void pop_narrowed_nullables(Vector<GDScriptParser::IdentifierNode *> p_identifiers);
+	bool is_effectively_non_nullable(GDScriptParser::ExpressionNode *p_expression) const;
+	bool is_effectively_nullable(GDScriptParser::ExpressionNode *p_expression) const { return !is_effectively_non_nullable(p_expression); }
+	bool is_deeply_nullable(GDScriptParser::DataType p_data_type, bool p_strict = false) const;
+	bool is_potentially_null_value(GDScriptParser::ExpressionNode *p_expression);
+	template <typename... Symbols>
+	void push_nullable_error(const String &p_message, Vector<GDScriptParser::ExpressionNode *> p_expressions, const GDScriptParser::Node *p_origin = nullptr, const Symbols &...p_symbols);
+	Vector<GDScriptParser::IdentifierNode *> find_nullable_identifier(GDScriptParser::ExpressionNode *left, GDScriptParser::ExpressionNode *right, bool should_be_false);
+
 #ifdef DEBUG_ENABLED
 	void is_shadowing(GDScriptParser::IdentifierNode *p_local, const String &p_context);
 #endif

@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Potentially unsafe for nullable "foo.c?[0]" to call "begins_with()".

@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Potentially unsafe to assign the nullable return of "_get_result()" to non-nullable "dict".

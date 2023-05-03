@@ -38,13 +38,15 @@ struct ContainerTypeValidate {
 	Variant::Type type = Variant::NIL;
 	StringName class_name;
 	Ref<Script> script;
+	bool is_nullable = false;
 	const char *where = "container";
 
 	_FORCE_INLINE_ bool can_reference(const ContainerTypeValidate &p_type) const {
 		if (type != p_type.type) {
 			return false;
 		} else if (type != Variant::OBJECT) {
-			return true;
+			// If this is not nullable, it can't safely be replaced by a nullable one.
+			return is_nullable || !p_type.is_nullable;
 		}
 
 		if (class_name == StringName()) {
@@ -67,15 +69,19 @@ struct ContainerTypeValidate {
 	}
 
 	_FORCE_INLINE_ bool operator==(const ContainerTypeValidate &p_type) const {
-		return type == p_type.type && class_name == p_type.class_name && script == p_type.script;
+		return type == p_type.type && class_name == p_type.class_name && script == p_type.script && is_nullable == p_type.is_nullable;
 	}
 	_FORCE_INLINE_ bool operator!=(const ContainerTypeValidate &p_type) const {
-		return type != p_type.type || class_name != p_type.class_name || script != p_type.script;
+		return type != p_type.type || class_name != p_type.class_name || script != p_type.script || is_nullable != p_type.is_nullable;
 	}
 
 	// Coerces String and StringName into each other and int into float when needed.
 	_FORCE_INLINE_ bool validate(Variant &inout_variant, const char *p_operation = "use") const {
 		if (type == Variant::NIL) {
+			return true;
+		}
+
+		if (inout_variant.get_type() == Variant::NIL && is_nullable) {
 			return true;
 		}
 

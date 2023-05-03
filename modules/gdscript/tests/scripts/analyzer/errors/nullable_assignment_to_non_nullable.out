@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Potentially unsafe to assign nullable "foo" to non-nullable "bar".

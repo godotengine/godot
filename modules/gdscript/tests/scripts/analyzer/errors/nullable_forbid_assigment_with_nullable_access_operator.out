@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+The left-hand side of an assignment expression may not contain a nullable access operator ("?.").

@@ -60,6 +60,7 @@ public:
 			GREATER_EQUAL,
 			EQUAL_EQUAL,
 			BANG_EQUAL,
+			COALESCE,
 			// Logical
 			AND,
 			OR,
@@ -278,6 +279,7 @@ public:
 	static String get_token_name(Token::Type p_token_type);
 	void push_expression_indented_block(); // For lambdas, or blocks inside expressions.
 	void pop_expression_indented_block(); // For lambdas, or blocks inside expressions.
+	String get_source() const;
 
 	GDScriptTokenizer();
 };
