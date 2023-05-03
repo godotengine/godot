@@ -164,9 +164,19 @@ void MaterialEditor::_button_pressed(Node *p_button) {
 MaterialEditor::MaterialEditor() {
 	// canvas item
 
+	vc_2d = memnew(SubViewportContainer);
+	vc_2d->set_stretch(true);
+	add_child(vc_2d);
+	vc_2d->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+
+	viewport_2d = memnew(SubViewport);
+	vc_2d->add_child(viewport_2d);
+	viewport_2d->set_disable_input(true);
+	viewport_2d->set_transparent_background(true);
+
 	layout_2d = memnew(HBoxContainer);
 	layout_2d->set_alignment(BoxContainer::ALIGNMENT_CENTER);
-	add_child(layout_2d);
+	viewport_2d->add_child(layout_2d);
 	layout_2d->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 
 	rect_instance = memnew(ColorRect);
