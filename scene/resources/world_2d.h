@@ -52,15 +52,15 @@ protected:
 	static void _bind_methods();
 	friend class Viewport;
 
-	void _register_viewport(Viewport *p_viewport);
-	void _remove_viewport(Viewport *p_viewport);
-
 public:
 	RID get_canvas() const;
 	RID get_space() const;
 	RID get_navigation_map() const;
 
 	PhysicsDirectSpaceState2D *get_direct_space_state();
+
+	void register_viewport(Viewport *p_viewport);
+	void remove_viewport(Viewport *p_viewport);
 
 	_FORCE_INLINE_ const HashSet<Viewport *> &get_viewports() { return viewports; }
 
