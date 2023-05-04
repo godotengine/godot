@@ -417,6 +417,7 @@ void DocTools::generate(bool p_basic_types) {
 				ClassDB::get_property_list(name, &own_properties, true);
 			}
 
+			// Sort is still needed here to handle inherited properties, even though it is done below, do not remove.
 			properties.sort();
 			own_properties.sort();
 
@@ -535,9 +536,10 @@ void DocTools::generate(bool p_basic_types) {
 				c.properties.push_back(prop);
 			}
 
+			c.properties.sort();
+
 			List<MethodInfo> method_list;
 			ClassDB::get_method_list(name, &method_list, true);
-			method_list.sort();
 
 			for (const MethodInfo &E : method_list) {
 				if (E.name.is_empty() || (E.name[0] == '_' && !(E.flags & METHOD_FLAG_VIRTUAL))) {
@@ -570,6 +572,8 @@ void DocTools::generate(bool p_basic_types) {
 
 				c.methods.push_back(method);
 			}
+
+			c.methods.sort();
 
 			List<MethodInfo> signal_list;
 			ClassDB::get_signal_list(name, &signal_list, true);
@@ -709,7 +713,6 @@ void DocTools::generate(bool p_basic_types) {
 
 		List<MethodInfo> method_list;
 		v.get_method_list(&method_list);
-		method_list.sort();
 		Variant::get_constructor_list(Variant::Type(i), &method_list);
 
 		for (int j = 0; j < Variant::OP_AND; j++) { // Showing above 'and' is pretty confusing and there are a lot of variations.
@@ -831,6 +834,8 @@ void DocTools::generate(bool p_basic_types) {
 				c.methods.push_back(method);
 			}
 		}
+
+		c.methods.sort();
 
 		List<PropertyInfo> properties;
 		v.get_property_list(&properties);
