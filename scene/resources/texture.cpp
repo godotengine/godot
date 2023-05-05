@@ -168,7 +168,8 @@ void ImageTexture::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 Ref<ImageTexture> ImageTexture::create_from_image(const Ref<Image> &p_image) {
-	ERR_FAIL_COND_V_MSG(p_image.is_null() || p_image->is_empty(), Ref<ImageTexture>(), "Invalid image");
+	ERR_FAIL_COND_V_MSG(p_image.is_null(), Ref<ImageTexture>(), "Invalid image: null");
+	ERR_FAIL_COND_V_MSG(p_image->is_empty(), Ref<ImageTexture>(), "Invalid image: image is empty");
 
 	Ref<ImageTexture> image_texture;
 	image_texture.instantiate();
