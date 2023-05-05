@@ -229,6 +229,19 @@ RID GodotNavigationServer::map_get_closest_point_owner(RID p_map, const Vector3 
 	return map->get_closest_point_owner(p_point);
 }
 
+NavigationUtilities::NavigationRaycastHitResult GodotNavigationServer::_raycast_to_point_result(RID p_map, Vector3 p_origin, Vector3 p_target, uint32_t p_navigation_layers) const {
+	const NavMap *map = map_owner.get_or_null(p_map);
+	NavigationUtilities::NavigationRaycastHitResult hit = NavigationUtilities::NavigationRaycastHitResult();
+	ERR_FAIL_COND_V(map == nullptr, hit);
+
+	hit.did_hit = false;
+	hit.hit_position = Vector3();
+	hit.hit_normal = Vector3();
+	hit.raycast_path = Vector<Vector3>();
+	hit.did_hit = map->get_raycast_to_point(p_origin, p_target, p_navigation_layers, &hit.hit_position, &hit.hit_normal, &hit.raycast_path);
+	return hit;
+}
+
 TypedArray<RID> GodotNavigationServer::map_get_links(RID p_map) const {
 	TypedArray<RID> link_rids;
 	const NavMap *map = map_owner.get_or_null(p_map);

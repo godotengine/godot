@@ -149,6 +149,8 @@ public:
 	gd::ClosestPointQueryResult get_closest_point_info(const Vector3 &p_point) const;
 	RID get_closest_point_owner(const Vector3 &p_point) const;
 
+	bool get_raycast_to_point(Vector3 p_origin, Vector3 p_target, uint32_t p_navigation_layers = 1, Vector3 *r_hit_position = nullptr, Vector3 *r_hit_normal = nullptr, Vector<Vector3> *r_path = nullptr) const;
+
 	void add_region(NavRegion *p_region);
 	void remove_region(NavRegion *p_region);
 	const LocalVector<NavRegion *> &get_regions() const {

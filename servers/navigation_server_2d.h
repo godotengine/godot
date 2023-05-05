@@ -37,6 +37,7 @@
 #include "scene/resources/navigation_polygon.h"
 #include "servers/navigation/navigation_path_query_parameters_2d.h"
 #include "servers/navigation/navigation_path_query_result_2d.h"
+#include "servers/navigation/navigation_raycast_hit_2d.h"
 
 // This server exposes the `NavigationServer3D` features in the 2D world.
 class NavigationServer2D : public Object {
@@ -242,6 +243,8 @@ public:
 
 	/// Returns a customized navigation path using a query parameters object
 	virtual void query_path(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result) const;
+
+	virtual bool map_get_raycast_to_point(RID p_map, Vector2 p_origin, Vector2 p_target, Ref<NavigationRaycastHit2D> p_hit, uint32_t p_navigation_layers = 1) const;
 
 	/// Destroy the `RID`
 	virtual void free(RID p_object);

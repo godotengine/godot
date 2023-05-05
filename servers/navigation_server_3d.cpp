@@ -53,6 +53,8 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("map_get_closest_point_normal", "map", "to_point"), &NavigationServer3D::map_get_closest_point_normal);
 	ClassDB::bind_method(D_METHOD("map_get_closest_point_owner", "map", "to_point"), &NavigationServer3D::map_get_closest_point_owner);
 
+	ClassDB::bind_method(D_METHOD("map_get_raycast_to_point", "map", "origin", "target", "hit_result", "navigation_layers"), &NavigationServer3D::map_get_raycast_to_point, DEFVAL(1));
+
 	ClassDB::bind_method(D_METHOD("map_get_links", "map"), &NavigationServer3D::map_get_links);
 	ClassDB::bind_method(D_METHOD("map_get_regions", "map"), &NavigationServer3D::map_get_regions);
 	ClassDB::bind_method(D_METHOD("map_get_agents", "map"), &NavigationServer3D::map_get_agents);
@@ -851,6 +853,18 @@ void NavigationServer3D::query_path(const Ref<NavigationPathQueryParameters3D> &
 	p_query_result->set_path_types(_query_result.path_types);
 	p_query_result->set_path_rids(_query_result.path_rids);
 	p_query_result->set_path_owner_ids(_query_result.path_owner_ids);
+}
+
+bool NavigationServer3D::map_get_raycast_to_point(RID p_map, Vector3 p_origin, Vector3 p_target, Ref<NavigationRaycastHit3D> p_hit, uint32_t p_navigation_layers) const {
+	ERR_FAIL_COND_V(!p_hit.is_valid(), false);
+	NavigationUtilities::NavigationRaycastHitResult hit = _raycast_to_point_result(p_map, p_origin, p_target, p_navigation_layers);
+
+	p_hit->set_did_hit(hit.did_hit);
+	p_hit->set_hit_position(hit.hit_position);
+	p_hit->set_hit_normal(hit.hit_normal);
+	p_hit->set_raycast_path(hit.raycast_path);
+
+	return hit.did_hit;
 }
 
 ///////////////////////////////////////////////////////

@@ -379,6 +379,8 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("map_get_closest_point", "map", "to_point"), &NavigationServer2D::map_get_closest_point);
 	ClassDB::bind_method(D_METHOD("map_get_closest_point_owner", "map", "to_point"), &NavigationServer2D::map_get_closest_point_owner);
 
+	ClassDB::bind_method(D_METHOD("map_get_raycast_to_point", "map", "origin", "target", "hit_result", "navigation_layers"), &NavigationServer2D::map_get_raycast_to_point, DEFVAL(1));
+
 	ClassDB::bind_method(D_METHOD("map_get_links", "map"), &NavigationServer2D::map_get_links);
 	ClassDB::bind_method(D_METHOD("map_get_regions", "map"), &NavigationServer2D::map_get_regions);
 	ClassDB::bind_method(D_METHOD("map_get_agents", "map"), &NavigationServer2D::map_get_agents);
@@ -611,4 +613,16 @@ void NavigationServer2D::query_path(const Ref<NavigationPathQueryParameters2D> &
 	p_query_result->set_path_types(_query_result.path_types);
 	p_query_result->set_path_rids(_query_result.path_rids);
 	p_query_result->set_path_owner_ids(_query_result.path_owner_ids);
+}
+
+bool NavigationServer2D::map_get_raycast_to_point(RID p_map, Vector2 p_origin, Vector2 p_target, Ref<NavigationRaycastHit2D> p_hit, uint32_t p_navigation_layers) const {
+	ERR_FAIL_COND_V(!p_hit.is_valid(), false);
+	NavigationUtilities::NavigationRaycastHitResult hit = NavigationServer3D::get_singleton()->_raycast_to_point_result(p_map, v2_to_v3(p_origin), v2_to_v3(p_target), p_navigation_layers);
+
+	p_hit->set_did_hit(hit.did_hit);
+	p_hit->set_hit_position(v3_to_v2(hit.hit_position));
+	p_hit->set_hit_normal(v3_to_v2(hit.hit_normal));
+	p_hit->set_raycast_path(vector_v3_to_v2(hit.raycast_path));
+
+	return hit.did_hit;
 }

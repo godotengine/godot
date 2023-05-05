@@ -37,6 +37,7 @@
 #include "scene/3d/navigation_region_3d.h"
 #include "servers/navigation/navigation_path_query_parameters_3d.h"
 #include "servers/navigation/navigation_path_query_result_3d.h"
+#include "servers/navigation/navigation_raycast_hit_3d.h"
 
 /// This server uses the concept of internal mutability.
 /// All the constant functions can be called in multithread because internally
@@ -99,6 +100,10 @@ public:
 	virtual Vector3 map_get_closest_point(RID p_map, const Vector3 &p_point) const = 0;
 	virtual Vector3 map_get_closest_point_normal(RID p_map, const Vector3 &p_point) const = 0;
 	virtual RID map_get_closest_point_owner(RID p_map, const Vector3 &p_point) const = 0;
+
+	// Returns whether a raycast hits, outputs data to hit result object
+	virtual bool map_get_raycast_to_point(RID p_map, Vector3 p_origin, Vector3 p_target, Ref<NavigationRaycastHit3D> p_hit, uint32_t p_navigation_layers = 1) const;
+	virtual NavigationUtilities::NavigationRaycastHitResult _raycast_to_point_result(RID p_map, Vector3 p_origin, Vector3 p_target, uint32_t p_navigation_layers) const = 0;
 
 	virtual TypedArray<RID> map_get_links(RID p_map) const = 0;
 	virtual TypedArray<RID> map_get_regions(RID p_map) const = 0;

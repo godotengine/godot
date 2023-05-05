@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  navigation_utilities.h                                                */
+/*  navigation_raycast_hit_3d.h                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,61 +28,37 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_UTILITIES_H
-#define NAVIGATION_UTILITIES_H
+#ifndef NAVIGATION_RAYCAST_HIT_3D_H
+#define NAVIGATION_RAYCAST_HIT_3D_H
 
-#include "core/math/vector3.h"
-#include "core/variant/typed_array.h"
+#include "core/object/ref_counted.h"
 
-namespace NavigationUtilities {
+class NavigationRaycastHit3D : public RefCounted {
+	GDCLASS(NavigationRaycastHit3D, RefCounted);
 
-enum PathfindingAlgorithm {
-	PATHFINDING_ALGORITHM_ASTAR = 0,
-};
-
-enum PathPostProcessing {
-	PATH_POSTPROCESSING_CORRIDORFUNNEL = 0,
-	PATH_POSTPROCESSING_EDGECENTERED,
-};
-
-enum PathSegmentType {
-	PATH_SEGMENT_TYPE_REGION = 0,
-	PATH_SEGMENT_TYPE_LINK
-};
-
-enum PathMetadataFlags {
-	PATH_INCLUDE_NONE = 0,
-	PATH_INCLUDE_TYPES = 1,
-	PATH_INCLUDE_RIDS = 2,
-	PATH_INCLUDE_OWNERS = 4,
-	PATH_INCLUDE_ALL = PATH_INCLUDE_TYPES | PATH_INCLUDE_RIDS | PATH_INCLUDE_OWNERS
-};
-
-struct PathQueryParameters {
-	PathfindingAlgorithm pathfinding_algorithm = PATHFINDING_ALGORITHM_ASTAR;
-	PathPostProcessing path_postprocessing = PATH_POSTPROCESSING_CORRIDORFUNNEL;
-	RID map;
-	Vector3 start_position;
-	Vector3 target_position;
-	uint32_t navigation_layers = 1;
-	BitField<PathMetadataFlags> metadata_flags = PATH_INCLUDE_ALL;
-};
-
-struct PathQueryResult {
-	PackedVector3Array path;
-	PackedInt32Array path_types;
-	TypedArray<RID> path_rids;
-	PackedInt64Array path_owner_ids;
-};
-
-struct NavigationRaycastHitResult {
 	bool did_hit;
 	Vector3 hit_position;
 	Vector3 hit_normal;
-	PackedVector3Array raycast_path;
+	Vector<Vector3> raycast_path;
 	real_t raycast_path_cost;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_did_hit(const bool &p_did_hit);
+	const bool &get_did_hit() const;
+
+	void set_hit_position(const Vector3 &p_hit_position);
+	const Vector3 &get_hit_position();
+
+	void set_hit_normal(const Vector3 &p_hit_normal);
+	const Vector3 &get_hit_normal();
+
+	void set_raycast_path(const Vector<Vector3> &p_raycast_path);
+	const Vector<Vector3> &get_raycast_path();
+
+	void reset();
 };
 
-} //namespace NavigationUtilities
-
-#endif // NAVIGATION_UTILITIES_H
+#endif // NAVIGATION_RAYCAST_HIT_3D_H

@@ -397,6 +397,17 @@
 				Returns the navigation path to reach the destination from the origin. [param navigation_layers] is a bitmask of all region navigation layers that are allowed to be in the path.
 			</description>
 		</method>
+		<method name="map_get_raycast_to_point" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="origin" type="Vector2" />
+			<param index="2" name="target" type="Vector2" />
+			<param index="3" name="hit_result" type="NavigationRaycastHit2D" />
+			<param index="4" name="navigation_layers" type="int" default="1" />
+			<description>
+				Returns true if a raycast from origin to target collides with an edge in the navigation [param map]. [param hit_result] is a NavigationRaycastHit2D to which will be assigned metadata of the raycast. [param navigation_layers] is a bitmask of all region navigation layers that the raycast may cross.
+			</description>
+		</method>
 		<method name="map_get_regions" qualifiers="const">
 			<return type="RID[]" />
 			<param index="0" name="map" type="RID" />

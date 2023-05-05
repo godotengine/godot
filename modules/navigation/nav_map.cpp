@@ -521,6 +521,155 @@ RID NavMap::get_closest_point_owner(const Vector3 &p_point) const {
 	return cp.owner;
 }
 
+bool NavMap::get_raycast_to_point(Vector3 p_origin, Vector3 p_target, uint32_t p_navigation_layers, Vector3 *r_hit_position, Vector3 *r_hit_normal, Vector<Vector3> *r_path) const {
+	// Find start poly (duplicated from get_path).
+	const gd::Polygon *begin_poly = nullptr;
+	Vector3 begin_point = p_origin;
+	real_t begin_d = FLT_MAX;
+
+	for (const gd::Polygon &p : polygons) {
+		// Only consider the polygon if it in a region with compatible layers.
+		if ((p_navigation_layers & p.owner->get_navigation_layers()) == 0) {
+			continue;
+		}
+
+		// For each face check the distance between the origin/destination.
+		for (size_t point_id = 2; point_id < p.points.size(); point_id++) {
+			const Face3 face(p.points[0].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
+
+			Vector3 point = face.get_closest_point_to(p_origin);
+			real_t distance_to_point = point.distance_to(p_origin);
+			if (distance_to_point < begin_d) {
+				begin_d = distance_to_point;
+				begin_poly = &p;
+				begin_point = point;
+			}
+		}
+	}
+
+	// Traverse polygons in a straight line.
+	if (r_path) {
+		r_path->clear();
+	}
+
+	// TODO: figure out if this ever happens, and what we should return if a ray is never cast. In this case the ray hit... the absence of a thing.
+	if (begin_poly == nullptr) {
+		return false;
+	}
+
+	// Direction is projected onto plane with normal up
+	Vector3 ray_dir = (p_target - p_origin);
+	ray_dir = (ray_dir - up.dot(ray_dir) * ray_dir).normalized();
+
+	real_t travel_limit = (p_target - p_origin).length();
+
+	Vector3 last_edge_vertices[] = { Vector3(), Vector3() };
+	real_t travel_d = 0;
+	//find edge that ray_dir crosses
+
+	if (r_path) {
+		r_path->push_back(begin_point);
+	}
+
+	bool new_point_to_search = true;
+	while ((travel_d <= travel_limit) && new_point_to_search) {
+		new_point_to_search = false;
+
+		for (size_t point_id = 0; point_id < begin_poly->points.size(); point_id++) {
+			gd::Point point_A = begin_poly->points[point_id];
+			gd::Point point_B = begin_poly->points[(point_id + 1) % begin_poly->points.size()];
+
+			Vector3 this_edge_vertices[2] = { point_A.pos.max(point_B.pos), point_A.pos.min(point_B.pos) };
+
+			// A ray going in through an edge will not return to that edge. So continue.
+			// HACK: This cannot be the best way of comparing these two edges.
+			if ((this_edge_vertices[0] == last_edge_vertices[0]) && (this_edge_vertices[1] == last_edge_vertices[1])) {
+				continue;
+			}
+
+			// Find the intersection along the line
+			Vector3 ray_orthogonal = ray_dir.cross(up).normalized();
+			Vector3 local_A = point_A.pos - begin_point;
+			Vector3 local_B = point_B.pos - begin_point;
+			real_t dot_of_A = local_A.dot(ray_orthogonal);
+			real_t dot_of_B = local_B.dot(ray_orthogonal);
+			// Compare which side of the ray points A and B fall on.
+			if ((dot_of_A * dot_of_B) > 0) {
+				continue;
+			}
+
+			Vector3 local_intersection = local_A + (local_A - local_B) * (dot_of_A / (dot_of_B - dot_of_A));
+
+			// Check if the intersection is in the right direction (it can be backwards).
+			if (ray_dir.dot(local_intersection) <= 0) {
+				continue;
+			}
+
+			// From here, we know the ray passes through this edge.
+
+			// If we've reached the target, push it to the path and return false, we didn't hit anything.
+			travel_d += (local_intersection).length();
+			if (travel_d > travel_limit) {
+				// Project target onto the intersection vector along up.
+				real_t i_dot_ray = local_intersection.dot(ray_dir);
+
+				if ((i_dot_ray != 0) && r_path) {
+					r_path->push_back(((p_target - begin_point).dot(ray_dir) / i_dot_ray) * local_intersection + begin_point);
+				} else {
+					r_path->push_back((p_target - begin_point).dot(ray_dir) * ray_dir + begin_point);
+				}
+
+				return false;
+			}
+
+			last_edge_vertices[0] = this_edge_vertices[0];
+			last_edge_vertices[1] = this_edge_vertices[1];
+
+			const gd::Edge e = begin_poly->edges[point_id];
+			bool connection_found = false;
+
+			for (const gd::Edge::Connection connection : e.connections) {
+				if (begin_poly == connection.polygon) {
+					continue;
+				}
+				// If the polygon connected is on an excluded navigation layer (is this possible?), treat it as a boundary.
+				if ((p_navigation_layers & connection.polygon->owner->get_navigation_layers()) == 0) {
+					continue;
+				}
+				if ((ray_orthogonal.dot(connection.pathway_start - begin_point) * ray_orthogonal.dot(connection.pathway_end - begin_point)) >= 0) {
+					continue;
+				}
+				begin_poly = connection.polygon;
+				if ((p_navigation_layers & begin_poly->owner->get_navigation_layers()) != 0) {
+					connection_found = true;
+				}
+			}
+
+			begin_point = begin_point + local_intersection;
+			new_point_to_search = true;
+
+			if (r_path) {
+				r_path->push_back(begin_point);
+			}
+			// If we didn't find a connection here, we found a boundary. That's a hit.
+			if (!connection_found) {
+				if (r_hit_position) {
+					*r_hit_position = begin_point;
+				}
+				if (r_hit_normal) {
+					Vector3 normal = (local_B - local_A).cross(up).normalized();
+					*r_hit_normal = normal.dot(ray_dir) <= 0 ? normal : -normal;
+				}
+
+				return true;
+			}
+			break;
+		}
+	}
+
+	return false;
+}
+
 gd::ClosestPointQueryResult NavMap::get_closest_point_info(const Vector3 &p_point) const {
 	gd::ClosestPointQueryResult result;
 	real_t closest_point_ds = FLT_MAX;

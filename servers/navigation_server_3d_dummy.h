@@ -54,6 +54,8 @@ public:
 	Vector3 map_get_closest_point(RID p_map, const Vector3 &p_point) const override { return Vector3(); }
 	Vector3 map_get_closest_point_normal(RID p_map, const Vector3 &p_point) const override { return Vector3(); }
 	RID map_get_closest_point_owner(RID p_map, const Vector3 &p_point) const override { return RID(); }
+	bool map_get_raycast_to_point(RID p_map, Vector3 p_origin, Vector3 p_target, Ref<NavigationRaycastHit3D> p_hit_result, uint32_t p_navigation_layers) const override { return false; }
+	NavigationUtilities::NavigationRaycastHitResult _raycast_to_point_result(RID p_map, Vector3 p_origin, Vector3 p_target, uint32_t p_navigation_layers) const override { return NavigationUtilities::NavigationRaycastHitResult(); }
 	TypedArray<RID> map_get_links(RID p_map) const override { return TypedArray<RID>(); }
 	TypedArray<RID> map_get_regions(RID p_map) const override { return TypedArray<RID>(); }
 	TypedArray<RID> map_get_agents(RID p_map) const override { return TypedArray<RID>(); }

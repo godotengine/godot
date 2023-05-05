@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NavigationRaycastHit3D" inherits="RefCounted" is_experimental="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Metadata container for map get raycast to point.
+	</brief_description>
+	<description>
+		This class contains the metadata from [method NavigationServer3D.map_get_raycast_to_point].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="did_hit" type="bool" setter="set_did_hit" getter="get_did_hit" default="false">
+			Whether the raycast hit anything. This is the same value as returned by [method NavigationServer3D.map_get_raycast_to_point].
+		</member>
+		<member name="hit_normal" type="Vector3" setter="set_hit_normal" getter="get_hit_normal" default="Vector3(0, 0, 0)">
+			The normal to the edge that the raycast hit.
+		</member>
+		<member name="hit_position" type="Vector3" setter="set_hit_position" getter="get_hit_position" default="Vector3(0, 0, 0)">
+			The position at which the raycast hit.
+		</member>
+		<member name="raycast_path" type="PackedVector3Array" setter="set_raycast_path" getter="get_raycast_path" default="PackedVector3Array()">
+			The path followed by the raycast, with points at the start, at each edge crossed, and the end.
+		</member>
+	</members>
+</class>

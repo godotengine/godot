@@ -167,6 +167,8 @@ void register_server_types() {
 	GDREGISTER_CLASS(NavigationPathQueryParameters3D);
 	GDREGISTER_CLASS(NavigationPathQueryResult2D);
 	GDREGISTER_CLASS(NavigationPathQueryResult3D);
+	GDREGISTER_CLASS(NavigationRaycastHit2D);
+	GDREGISTER_CLASS(NavigationRaycastHit3D);
 
 	GDREGISTER_CLASS(XRServer);
 	GDREGISTER_CLASS(CameraServer);

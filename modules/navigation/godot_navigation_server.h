@@ -120,6 +120,8 @@ public:
 	virtual Vector3 map_get_closest_point_normal(RID p_map, const Vector3 &p_point) const override;
 	virtual RID map_get_closest_point_owner(RID p_map, const Vector3 &p_point) const override;
 
+	virtual NavigationUtilities::NavigationRaycastHitResult _raycast_to_point_result(RID p_map, Vector3 p_origin, Vector3 p_target, uint32_t p_navigation_layers = 1) const override;
+
 	virtual TypedArray<RID> map_get_links(RID p_map) const override;
 	virtual TypedArray<RID> map_get_regions(RID p_map) const override;
 	virtual TypedArray<RID> map_get_agents(RID p_map) const override;
