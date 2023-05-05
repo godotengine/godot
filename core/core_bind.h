@@ -119,6 +119,8 @@ public:
 class OS : public Object {
 	GDCLASS(OS, Object);
 
+	mutable HashMap<String, bool> feature_cache;
+
 protected:
 	static void _bind_methods();
 	static OS *singleton;
