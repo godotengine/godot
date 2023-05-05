@@ -374,6 +374,10 @@ NavigationRegion3D::NavigationRegion3D() {
 }
 
 NavigationRegion3D::~NavigationRegion3D() {
+	if (bake_thread.is_started()) {
+		bake_thread.wait_to_finish();
+	}
+
 	if (navigation_mesh.is_valid()) {
 		navigation_mesh->disconnect("changed", callable_mp(this, &NavigationRegion3D::_navigation_changed));
 	}
