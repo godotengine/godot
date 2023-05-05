@@ -395,6 +395,12 @@ TEST_CASE("[String] Insertion") {
 	CHECK(s == "Who is Frederic Chopin?");
 }
 
+TEST_CASE("[String] Erasing") {
+	String s = "Josephine is such a cute girl!";
+	s = s.erase(s.find("cute "), String("cute ").length());
+	CHECK(s == "Josephine is such a girl!");
+}
+
 TEST_CASE("[String] Number to string") {
 	CHECK(String::num(0) == "0");
 	CHECK(String::num(0.0) == "0"); // No trailing zeros.
