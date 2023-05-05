@@ -236,6 +236,26 @@ void ShaderEditorPlugin::_close_shader(int p_index) {
 	EditorUndoRedoManager::get_singleton()->clear_history(); // To prevent undo on deleted graphs.
 }
 
+void ShaderEditorPlugin::_close_builtin_shaders_from_scene(const String &p_scene) {
+	for (uint32_t i = 0; i < edited_shaders.size();) {
+		Ref<Shader> &shader = edited_shaders[i].shader;
+		if (shader.is_valid()) {
+			if (shader->is_built_in() && shader->get_path().begins_with(p_scene)) {
+				_close_shader(i);
+				continue;
+			}
+		}
+		Ref<ShaderInclude> &include = edited_shaders[i].shader_inc;
+		if (include.is_valid()) {
+			if (include->is_built_in() && include->get_path().begins_with(p_scene)) {
+				_close_shader(i);
+				continue;
+			}
+		}
+		i++;
+	}
+}
+
 void ShaderEditorPlugin::_resource_saved(Object *obj) {
 	// May have been renamed on save.
 	for (EditedShader &edited_shader : edited_shaders) {
@@ -427,6 +447,14 @@ void ShaderEditorPlugin::drop_data_fw(const Point2 &p_point, const Variant &p_da
 				edit(res.ptr());
 			}
 		}
+	}
+}
+
+void ShaderEditorPlugin::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			EditorNode::get_singleton()->connect("scene_closed", callable_mp(this, &ShaderEditorPlugin::_close_builtin_shaders_from_scene));
+		} break;
 	}
 }
 
