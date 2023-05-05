@@ -126,12 +126,20 @@ void SkeletonModification2DTwoBoneIK::_execute(float p_delta) {
 		return;
 	}
 
+	if (joint_one_bone_idx <= -1) {
+		WARN_PRINT_ONCE("Joint one bone_idx is not selected.");
+		return;
+	}
 	Bone2D *joint_one_bone = stack->skeleton->get_bone(joint_one_bone_idx);
 	if (joint_one_bone == nullptr) {
 		ERR_PRINT_ONCE("Joint one bone_idx does not point to a valid bone! Cannot execute modification!");
 		return;
 	}
 
+	if (joint_two_bone_idx <= -1) {
+		WARN_PRINT_ONCE("Joint two bone_idx is not selected.");
+		return;
+	}
 	Bone2D *joint_two_bone = stack->skeleton->get_bone(joint_two_bone_idx);
 	if (joint_two_bone == nullptr) {
 		ERR_PRINT_ONCE("Joint two bone_idx does not point to a valid bone! Cannot execute modification!");
@@ -197,7 +205,7 @@ void SkeletonModification2DTwoBoneIK::_setup_modification(SkeletonModificationSt
 }
 
 void SkeletonModification2DTwoBoneIK::_draw_editor_gizmo() {
-	if (!enabled || !is_setup) {
+	if (!enabled || !is_setup || joint_one_bone_idx <= -1) {
 		return;
 	}
 
