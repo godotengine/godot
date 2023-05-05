@@ -1144,11 +1144,7 @@ void CodeTextEditor::insert_final_newline() {
 
 void CodeTextEditor::convert_indent_to_spaces() {
 	int indent_size = EDITOR_GET("text_editor/behavior/indent/size");
-	String indent = "";
-
-	for (int i = 0; i < indent_size; i++) {
-		indent += " ";
-	}
+	String indent = String(" ").repeat(indent_size);
 
 	Vector<int> cursor_columns;
 	cursor_columns.resize(text_editor->get_caret_count());
