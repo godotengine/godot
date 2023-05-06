@@ -31,6 +31,7 @@
 #include "animation_track_editor.h"
 
 #include "animation_track_editor_plugins.h"
+#include "core/core_string_names.h"
 #include "core/input/input.h"
 #include "editor/animation_bezier_editor.h"
 #include "editor/editor_node.h"
@@ -85,7 +86,7 @@ void AnimationTrackKeyEdit::_fix_node_path(Variant &value) {
 }
 
 void AnimationTrackKeyEdit::_update_obj(const Ref<Animation> &p_anim) {
-	if (setting || animation != p_anim) {
+	if (animation != p_anim) {
 		return;
 	}
 
@@ -664,7 +665,7 @@ void AnimationMultiTrackKeyEdit::_fix_node_path(Variant &value, NodePath &base) 
 }
 
 void AnimationMultiTrackKeyEdit::_update_obj(const Ref<Animation> &p_anim) {
-	if (setting || animation != p_anim) {
+	if (animation != p_anim) {
 		return;
 	}
 
@@ -5156,6 +5157,12 @@ void AnimationTrackEditor::_update_key_edit() {
 		key_edit->hint = _find_hint_for_track(key_edit->track, np);
 		key_edit->base = np;
 
+		// If we are editing the keyframe under the play position, we make sure
+		// to update the timeline when the properties are changed
+		if (Math::is_equal_approx(timeline->get_play_position(), ofs)) {
+			key_edit->connect(CoreStringNames::get_singleton()->property_list_changed, callable_mp(this, &AnimationTrackEditor::_timeline_changed).bind(ofs, false, false));
+		}
+
 		EditorNode::get_singleton()->push_item(key_edit);
 	} else if (selection.size() > 1) {
 		multi_key_edit = memnew(AnimationMultiTrackKeyEdit);
@@ -5165,6 +5172,7 @@ void AnimationTrackEditor::_update_key_edit() {
 		RBMap<int, List<float>> key_ofs_map;
 		RBMap<int, NodePath> base_map;
 		int first_track = -1;
+		bool timeline_changed_bound = false;
 		for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
 			int track = E.key.track;
 			if (first_track < 0) {
@@ -5181,7 +5189,17 @@ void AnimationTrackEditor::_update_key_edit() {
 				_clear_key_edit();
 				return; // Probably in the process of rearranging the keys.
 			}
-			key_ofs_map[track].push_back(animation->track_get_key_time(track, E.key.key));
+
+			float ofs = animation->track_get_key_time(track, E.key.key);
+			key_ofs_map[track].push_back(ofs);
+
+			// If we are editing the keyframe under the play position, we make sure
+			// to update the timeline when the properties are changed, we use the boolean
+			// to bind this signal once
+			if (!timeline_changed_bound && Math::is_equal_approx(timeline->get_play_position(), ofs)) {
+				timeline_changed_bound = true;
+				multi_key_edit->connect(CoreStringNames::get_singleton()->property_list_changed, callable_mp(this, &AnimationTrackEditor::_timeline_changed).bind(ofs, false, false));
+			}
 		}
 		multi_key_edit->key_ofs_map = key_ofs_map;
 		multi_key_edit->base_map = base_map;
