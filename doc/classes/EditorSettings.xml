@@ -295,7 +295,7 @@
 			If [code]true[/code], render the grid on an XZ plane.
 		</member>
 		<member name="editors/3d/grid_yz_plane" type="bool" setter="" getter="">
-			If [code]true[/code], render the grid on an YZ plane. This can be useful for 3D side-scrolling games.
+			If [code]true[/code], render the grid on a YZ plane. This can be useful for 3D side-scrolling games.
 		</member>
 		<member name="editors/3d/navigation/emulate_3_button_mouse" type="bool" setter="" getter="">
 			If [code]true[/code], enables 3-button mouse emulation mode. This is useful on laptops when using a trackpad.
@@ -704,7 +704,7 @@
 			If [code]true[/code], colors the background of the line the caret is currently on with [member text_editor/theme/highlighting/current_line_color].
 		</member>
 		<member name="text_editor/appearance/caret/type" type="int" setter="" getter="">
-			The shape of the caret to use in the script editor. [b]Line[/b] displays a vertical line to the left of the current character, whereas [b]Block[/b] displays a outline over the current character.
+			The shape of the caret to use in the script editor. [b]Line[/b] displays a vertical line to the left of the current character, whereas [b]Block[/b] displays an outline over the current character.
 		</member>
 		<member name="text_editor/appearance/guidelines/line_length_guideline_hard_column" type="int" setter="" getter="">
 			The column at which to display a subtle line as a line length guideline for scripts. This should generally be greater than [member text_editor/appearance/guidelines/line_length_guideline_soft_column].

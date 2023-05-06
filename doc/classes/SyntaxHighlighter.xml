@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Base syntax highlighter resource all syntax highlighters extend from, provides syntax highlighting data to [TextEdit].
-		The associated [TextEdit] node will call into the [SyntaxHighlighter] on a as needed basis.
+		The associated [TextEdit] node will call into the [SyntaxHighlighter] on an as-needed basis.
 		[b]Note:[/b] Each Syntax highlighter instance should not be shared across multiple [TextEdit] nodes.
 	</description>
 	<tutorials>

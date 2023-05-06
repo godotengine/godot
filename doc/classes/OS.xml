@@ -426,7 +426,7 @@
 			<description>
 				Returns an array of the system substitute font file paths, which are similar to the font with [param font_name] and style for the specified text, locale and script. Returns empty array if no matching fonts found.
 				The following aliases can be used to request default fonts: "sans-serif", "serif", "monospace", "cursive", and "fantasy".
-				[b]Note:[/b] Depending on OS, it's not guaranteed that any of the returned fonts is suitable for rendering specified text. Fonts should be loaded and checked in the order they are returned, and the first suitable one used.
+				[b]Note:[/b] Depending on OS, it's not guaranteed that any of the returned fonts will be suitable for rendering specified text. Fonts should be loaded and checked in the order they are returned, and the first suitable one used.
 				[b]Note:[/b] Returned fonts might have different style if the requested style is not available or belong to a different font family.
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>

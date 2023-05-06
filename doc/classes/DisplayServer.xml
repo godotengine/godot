@@ -468,7 +468,7 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
 			<description>
-				Returns number of states of an multistate item. See [method global_menu_add_multistate_item] for details.
+				Returns number of states of a multistate item. See [method global_menu_add_multistate_item] for details.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -477,7 +477,7 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
 			<description>
-				Returns the state of an multistate item. See [method global_menu_add_multistate_item] for details.
+				Returns the state of a multistate item. See [method global_menu_add_multistate_item] for details.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -654,7 +654,7 @@
 			<param index="1" name="idx" type="int" />
 			<param index="2" name="max_states" type="int" />
 			<description>
-				Sets number of state of an multistate item. See [method global_menu_add_multistate_item] for details.
+				Sets number of state of a multistate item. See [method global_menu_add_multistate_item] for details.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -675,7 +675,7 @@
 			<param index="1" name="idx" type="int" />
 			<param index="2" name="state" type="int" />
 			<description>
-				Sets the state of an multistate item. See [method global_menu_add_multistate_item] for details.
+				Sets the state of a multistate item. See [method global_menu_add_multistate_item] for details.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -1718,7 +1718,7 @@
 			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="WINDOW_FLAG_RESIZE_DISABLED" value="0" enum="WindowFlags">
-			The window can't be resizing by dragging its resize grip. It's still possible to resize the window using [method window_set_size]. This flag is ignored for full screen windows.
+			The window can't be resized by dragging its resize grip. It's still possible to resize the window using [method window_set_size]. This flag is ignored for full screen windows.
 		</constant>
 		<constant name="WINDOW_FLAG_BORDERLESS" value="1" enum="WindowFlags">
 			The window do not have native title bar and other decorations. This flag is ignored for full-screen windows.

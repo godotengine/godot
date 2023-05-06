@@ -711,7 +711,7 @@
 			Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="FLAG_RESIZE_DISABLED" value="0" enum="Flags">
-			The window can't be resizing by dragging its resize grip. It's still possible to resize the window using [member size]. This flag is ignored for full screen windows. Set with [member unresizable].
+			The window can't be resized by dragging its resize grip. It's still possible to resize the window using [member size]. This flag is ignored for full screen windows. Set with [member unresizable].
 		</constant>
 		<constant name="FLAG_BORDERLESS" value="1" enum="Flags">
 			The window do not have native title bar and other decorations. This flag is ignored for full-screen windows. Set with [member borderless].
