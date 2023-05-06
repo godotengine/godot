@@ -99,6 +99,8 @@ public:
 
 	virtual AABB get_aabb() const override;
 
+	void bake_mesh_from_current_blend_shape_mix(Ref<ArrayMesh> p_bake_mesh);
+
 	MeshInstance3D();
 	~MeshInstance3D();
 };
