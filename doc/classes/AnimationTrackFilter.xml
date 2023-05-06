@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationTrackFilter" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A filter to describe [AnimationNode]'s filters.
+	</brief_description>
+	<description>
+		A filter to describe [AnimationNode]'s filters.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear_tracks">
+			<return type="void" />
+			<description>
+				Clear all tracks.
+			</description>
+		</method>
+		<method name="get_track_amount" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="track_path" type="NodePath" />
+			<description>
+			</description>
+		</method>
+		<method name="has_trck" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="track_path" type="NodePath" />
+			<description>
+				Return [code]true[/code] if has [param track_path].
+			</description>
+		</method>
+		<method name="remove_track">
+			<return type="void" />
+			<param index="0" name="track_path" type="NodePath" />
+			<description>
+				Remove track, will do noting if this filter have not [param track_path].
+			</description>
+		</method>
+		<method name="set_track">
+			<return type="void" />
+			<param index="0" name="track_path" type="NodePath" />
+			<param index="1" name="amount" type="float" default="1.0" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="tracks" type="Dictionary" setter="set_tracks" getter="get_tracks" default="{}">
+			A array of animation tracks' Nodepath which should be filtered.
+		</member>
+	</members>
+</class>

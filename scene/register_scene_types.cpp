@@ -142,6 +142,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/animated_texture.h"
 #include "scene/resources/animation_library.h"
+#include "scene/resources/animation_track_filter.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/audio_stream_polyphonic.h"
 #include "scene/resources/audio_stream_wav.h"
@@ -901,6 +902,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(TextureCubemapArrayRD);
 	GDREGISTER_CLASS(Texture3DRD);
 
+	GDREGISTER_CLASS(AnimationTrackFilter);
 	GDREGISTER_CLASS(Animation);
 	GDREGISTER_CLASS(AnimationLibrary);
 
