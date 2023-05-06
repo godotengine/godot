@@ -197,7 +197,10 @@ internal class GodotGestureHandler : SimpleOnGestureListener(), OnScaleGestureLi
 		if (event.actionMasked == MotionEvent.ACTION_UP) {
 			nextDownIsDoubleTap = false
 			GodotInputHandler.handleMotionEvent(event)
+		} else if (event.actionMasked == MotionEvent.ACTION_MOVE && panningAndScalingEnabled == false) {
+			GodotInputHandler.handleMotionEvent(event)
 		}
+
 		return true
 	}
 
