@@ -2781,6 +2781,14 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 				return -1;
 			}
 
+			if (p_double_click && c.mode == TreeItem::CELL_MODE_STRING) {
+				// Emits the "item_activated" signal on double_click events.
+				propagate_mouse_activated = true;
+
+				incr_search.clear();
+				return -1;
+			}
+
 			if (select_mode == SELECT_MULTI && p_mod->is_command_or_control_pressed() && c.selectable) {
 				if (!c.selected || p_button == MouseButton::RIGHT) {
 					p_item->select(col);
@@ -3430,10 +3438,8 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 	} else if (p_event->is_action("ui_accept", true) && p_event->is_pressed()) {
 		if (selected_item) {
 			//bring up editor if possible
-			if (!edit_selected()) {
-				emit_signal(SNAME("item_activated"));
-				incr_search.clear();
-			}
+			emit_signal(SNAME("item_activated"));
+			incr_search.clear();
 		}
 		accept_event();
 	} else if (p_event->is_action("ui_select", true) && p_event->is_pressed()) {
@@ -3668,10 +3674,6 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 							mpos.x -= icon_size_x;
 						}
 						if (rect.has_point(mpos)) {
-							if (!edit_selected()) {
-								emit_signal(SNAME("item_icon_double_clicked"));
-							}
-						} else {
 							emit_signal(SNAME("item_icon_double_clicked"));
 						}
 					}
@@ -3957,6 +3959,15 @@ bool Tree::edit_selected() {
 
 bool Tree::is_editing() {
 	return popup_editor->is_visible();
+}
+
+void Tree::set_editor_selection(int p_from_line, int p_to_line, int p_from_column, int p_to_column, int p_caret) {
+	if (p_from_column == -1 || p_to_column == -1){
+		line_editor->select(p_from_line, p_to_line);
+	}
+	else {
+		text_editor->select(p_from_line, p_from_column, p_to_line, p_to_column, p_caret);
+	}
 }
 
 Size2 Tree::get_internal_min_size() const {

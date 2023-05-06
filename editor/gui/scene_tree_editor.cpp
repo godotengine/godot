@@ -797,6 +797,12 @@ void SceneTreeEditor::_tree_changed() {
 	pending_test_update = true;
 }
 
+void SceneTreeEditor::_item_activated() {
+	if (tree->is_anything_selected()) {
+		tree->edit_selected();
+	}
+}
+
 void SceneTreeEditor::_selected_changed() {
 	TreeItem *s = tree->get_selected();
 	ERR_FAIL_COND(!s);
@@ -1426,6 +1432,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 		tree->connect("empty_clicked", callable_mp(this, &SceneTreeEditor::_empty_clicked));
 	}
 
+	tree->connect("item_activated", callable_mp(this, &SceneTreeEditor::_item_activated));
 	tree->connect("cell_selected", callable_mp(this, &SceneTreeEditor::_selected_changed));
 	tree->connect("item_edited", callable_mp(this, &SceneTreeEditor::_renamed));
 	tree->connect("multi_selected", callable_mp(this, &SceneTreeEditor::_cell_multi_selected));
