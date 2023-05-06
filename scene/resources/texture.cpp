@@ -66,10 +66,6 @@ bool Texture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect
 	return true;
 }
 
-bool Texture::get_combined_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_combined_rect, Rect2 &r_combined_src_rect) const {
-	return get_rect_region(p_rect, p_src_rect, r_combined_rect, r_combined_src_rect);
-}
-
 void Texture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_width"), &Texture::get_width);
 	ClassDB::bind_method(D_METHOD("get_height"), &Texture::get_height);
@@ -1032,6 +1028,21 @@ void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile
 
 	atlas->draw_rect_region(p_canvas_item, dr, rc, p_modulate, p_transpose, p_normal_map);
 }
+
+Texture::RefineRectResult AtlasTexture::refine_rect_region(Rect2 &r_dst_rect, Rect2 &r_src_rect) const {
+	if (!atlas.is_valid()) {
+		return REFINE_RECT_RESULT_NO_DRAW;
+	}
+	Rect2 temp_rect = r_dst_rect;
+	Rect2 temp_src_rect = r_src_rect;
+
+	if (get_rect_region(temp_rect, temp_src_rect, r_dst_rect, r_src_rect)) {
+		return atlas->refine_rect_region(r_dst_rect, r_src_rect);
+	}
+
+	return REFINE_RECT_RESULT_NO_DRAW;
+}
+
 void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map, bool p_clip_uv) const {
 	if (!atlas.is_valid()) {
 		return;
@@ -1072,18 +1083,6 @@ bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect,
 	r_rect = Rect2(p_rect.position + ofs * scale, src_clipped.size * scale);
 	r_src_rect = src_clipped;
 	return true;
-}
-
-bool AtlasTexture::get_combined_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_combined_rect, Rect2 &r_combined_src_rect) const {
-	if (!atlas.is_valid()) {
-		return false;
-	}
-	Rect2 dst;
-	Rect2 src;
-	if (get_rect_region(p_rect, p_src_rect, dst, src)) {
-		return atlas->get_combined_rect_region(dst, src, r_combined_rect, r_combined_src_rect);
-	}
-	return false;
 }
 
 bool AtlasTexture::is_pixel_opaque(int p_x, int p_y) const {
