@@ -41,7 +41,13 @@ struct MainFrameTime {
 	int physics_steps; // number of times to iterate the physics engine
 	float interpolation_fraction; // fraction through the current physics tick
 
+	// Used for segmenting input processing to different physics ticks
+	// based on timestamps.
+	uint64_t first_physics_tick_logical_time_usecs = 0;
+	uint64_t usec_per_tick = 0;
+
 	void clamp_idle(float min_idle_step, float max_idle_step);
+	uint64_t get_logical_tick_time(uint32_t p_tick) const { return first_physics_tick_logical_time_usecs + (p_tick * usec_per_tick); }
 };
 
 class MainTimerSync {
