@@ -708,7 +708,7 @@ public:
 	Rect2 get_item_rect(TreeItem *p_item, int p_column = -1, int p_button = -1) const;
 	bool edit_selected();
 	bool is_editing();
-	void set_editor_selection(int start, int end);
+	void set_editor_selection(int p_start, int p_end);
 
 	// First item that starts with the text, from the current focused item down and wraps around.
 	TreeItem *search_item_text(const String &p_find, int *r_col = nullptr, bool p_selectable = false);
