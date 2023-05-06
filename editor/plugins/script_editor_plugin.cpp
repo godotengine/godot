@@ -4091,8 +4091,6 @@ ScriptEditor::ScriptEditor() {
 	Ref<EditorJSONSyntaxHighlighter> json_syntax_highlighter;
 	json_syntax_highlighter.instantiate();
 	register_syntax_highlighter(json_syntax_highlighter);
-
-	EditorNode::get_singleton()->connect("scene_closed", callable_mp(this, &ScriptEditor::_close_builtin_scripts_from_scene));
 }
 
 ScriptEditor::~ScriptEditor() {
