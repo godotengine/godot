@@ -990,7 +990,6 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseMotion> mm = p_ev;
 	if (resizing && mm.is_valid()) {
 		Vector2 mpos = mm->get_position();
-
 		Vector2 diff = mpos - resizing_from;
 
 		emit_signal(SNAME("resize_request"), resizing_from_size + diff);
@@ -1053,6 +1052,18 @@ void GraphNode::set_selectable(bool p_selectable) {
 
 bool GraphNode::is_selectable() {
 	return selectable;
+}
+
+Control::CursorShape GraphNode::get_cursor_shape(const Point2 &p_pos) const {
+	if (resizable) {
+		Ref<Texture2D> resizer = get_theme_icon(SNAME("resizer"));
+
+		if (resizing || (p_pos.x > get_size().x - resizer->get_width() && p_pos.y > get_size().y - resizer->get_height())) {
+			return CURSOR_FDIAGSIZE;
+		}
+	}
+
+	return Control::get_cursor_shape(p_pos);
 }
 
 Vector<int> GraphNode::get_allowed_size_flags_horizontal() const {

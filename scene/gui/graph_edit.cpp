@@ -62,6 +62,15 @@ GraphEditMinimap::GraphEditMinimap(GraphEdit *p_edit) {
 	is_resizing = false;
 }
 
+Control::CursorShape GraphEditMinimap::get_cursor_shape(const Point2 &p_pos) const {
+	Ref<Texture2D> resizer = get_theme_icon(SNAME("resizer"));
+	if (is_resizing || (p_pos.x < resizer->get_width() && p_pos.y < resizer->get_height())) {
+		return CURSOR_FDIAGSIZE;
+	}
+
+	return Control::get_cursor_shape(p_pos);
+}
+
 void GraphEditMinimap::update_minimap() {
 	Vector2 graph_offset = _get_graph_offset();
 	Vector2 graph_size = _get_graph_size();
@@ -188,6 +197,14 @@ void GraphEditMinimap::gui_input(const Ref<InputEvent> &p_ev) {
 void GraphEditMinimap::_adjust_graph_scroll(const Vector2 &p_offset) {
 	Vector2 graph_offset = _get_graph_offset();
 	ge->set_scroll_ofs(p_offset + graph_offset - camera_size / 2);
+}
+
+Control::CursorShape GraphEdit::get_cursor_shape(const Point2 &p_pos) const {
+	if (moving_selection) {
+		return CURSOR_MOVE;
+	}
+
+	return Control::get_cursor_shape(p_pos);
 }
 
 PackedStringArray GraphEdit::get_configuration_warnings() const {
