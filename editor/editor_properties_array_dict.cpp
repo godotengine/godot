@@ -208,8 +208,7 @@ void EditorPropertyArray::_property_changed(const String &p_property, Variant p_
 
 	if (original_array.get_type() == Variant::ARRAY) {
 		// Needed to preserve type of TypedArrays in meta pointer properties.
-		Array temp;
-		temp.assign(original_array.duplicate());
+		Array temp(original_array.duplicate());
 		array = temp;
 	} else {
 		array = original_array.duplicate();
