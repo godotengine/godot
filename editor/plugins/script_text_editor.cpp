@@ -1819,7 +1819,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 					}
 				}
 			}
-			if (!caret_clicked) {
+			if (caret_clicked < 0) {
 				tx->deselect();
 				tx->remove_secondary_carets();
 				caret_clicked = 0;
