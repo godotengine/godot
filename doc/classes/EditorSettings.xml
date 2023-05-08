@@ -510,10 +510,6 @@
 		<member name="interface/theme/custom_theme" type="String" setter="" getter="">
 			The custom theme resource to use for the editor. Must be a Godot theme resource in [code].tres[/code] or [code].res[/code] format.
 		</member>
-		<member name="interface/theme/enable_touchscreen_touch_area" type="bool" setter="" getter="">
-			If [code]true[/code], increases the touch area for the UI elements to improve usability on touchscreen devices.
-			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
-		</member>
 		<member name="interface/theme/highlight_tabs" type="bool" setter="" getter="">
 			If [code]true[/code], makes the background of selected tabs more contrasted in the editor theme (brighter on dark themes, darker on light themes).
 		</member>
@@ -531,6 +527,22 @@
 		</member>
 		<member name="interface/theme/use_graph_node_headers" type="bool" setter="" getter="">
 			If [code]true[/code], use colored header backgrounds for individual [GraphNode]s in the visual script and visual shader editors. This can improve usability when frequently using these editors at low zoom levels.
+		</member>
+		<member name="interface/touchscreen/enable_long_press_as_right_click" type="bool" setter="" getter="">
+			If [code]true[/code], long press on touchscreen is treated as right click.
+			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
+		</member>
+		<member name="interface/touchscreen/enable_pan_and_scale_gestures" type="bool" setter="" getter="">
+			If [code]true[/code], enable two finger pan and scale gestures on touchscreen devices.
+			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
+		</member>
+		<member name="interface/touchscreen/increase_scrollbar_touch_area" type="bool" setter="" getter="">
+			If [code]true[/code], increases the scrollbar touch area to improve usability on touchscreen devices.
+			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
+		</member>
+		<member name="interface/touchscreen/scale_gizmo_handles" type="float" setter="" getter="">
+			Specify the multiplier to apply to the scale for the editor gizmo handles to improve usability on touchscreen devices.
+			[b]Note:[/b] Defaults to [code]1[/code] on non-touchscreen devices.
 		</member>
 		<member name="network/debug/remote_host" type="String" setter="" getter="">
 			The address to listen to when starting the remote debugger. This can be set to [code]0.0.0.0[/code] to allow external clients to connect to the remote debugger (instead of restricting the remote debugger to connections from [code]localhost[/code]).

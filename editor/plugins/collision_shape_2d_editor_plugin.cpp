@@ -343,7 +343,7 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 		if (mb->get_button_index() == BUTTON_LEFT) {
 			if (mb->is_pressed()) {
 				for (int i = 0; i < handles.size(); i++) {
-					if (xform.xform(handles[i]).distance_to(gpoint) < 8) {
+					if (xform.xform(handles[i]).distance_to(gpoint) < grab_threshold) {
 						edit_handle = i;
 
 						break;
@@ -557,6 +557,10 @@ void CollisionShape2DEditor::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			get_tree()->disconnect("node_removed", this, "_node_removed");
 		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			grab_threshold = EDITOR_GET("editors/poly_editor/point_grab_radius");
+		} break;
 	}
 }
 
@@ -594,6 +598,7 @@ CollisionShape2DEditor::CollisionShape2DEditor(EditorNode *p_editor) {
 
 	edit_handle = -1;
 	pressed = false;
+	grab_threshold = EDITOR_GET("editors/poly_editor/point_grab_radius");
 }
 
 void CollisionShape2DEditorPlugin::edit(Object *p_obj) {

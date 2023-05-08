@@ -134,6 +134,27 @@ static Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color,
 #define ADD_CONVERT_COLOR(dictionary, old_color, new_color) dictionary[Color::html(old_color)] = Color::html(new_color)
 #endif
 
+float get_gizmo_handle_scale(const String &gizmo_handle_name = "") {
+	const float scale_gizmo_handles_for_touch = EDITOR_GET("interface/touchscreen/scale_gizmo_handles");
+	if (scale_gizmo_handles_for_touch > 1.0f) {
+		// The names of the icons that require custom scaling.
+		static Set<StringName> gizmo_to_scale;
+		if (gizmo_to_scale.empty()) {
+			gizmo_to_scale.insert("EditorHandle");
+			gizmo_to_scale.insert("EditorHandleAdd");
+			gizmo_to_scale.insert("EditorCurveHandle");
+			gizmo_to_scale.insert("EditorPathSharpHandle");
+			gizmo_to_scale.insert("EditorPathSmoothHandle");
+		}
+
+		if (gizmo_to_scale.has(gizmo_handle_name)) {
+			return EDSCALE * scale_gizmo_handles_for_touch;
+		}
+	}
+
+	return EDSCALE;
+}
+
 void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = true, int p_thumb_size = 32, bool p_only_thumbs = false) {
 	OS::get_singleton()->benchmark_begin_measure("editor_register_and_generate_icons_" + String((p_only_thumbs ? "with_only_thumbs" : "all")));
 #ifdef MODULE_SVG_ENABLED
@@ -258,10 +279,11 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	// Generate icons.
 	if (!p_only_thumbs) {
 		for (int i = 0; i < editor_icons_count; i++) {
-			const int is_exception = exceptions.has(editor_icons_names[i]);
-			const Ref<ImageTexture> icon = editor_generate_icon(i, !is_exception);
+			const String &editor_icon_name = editor_icons_names[i];
+			const int is_exception = exceptions.has(editor_icon_name);
+			const Ref<ImageTexture> icon = editor_generate_icon(i, !is_exception, get_gizmo_handle_scale(editor_icon_name));
 
-			p_theme->set_icon(editor_icons_names[i], "EditorIcons", icon);
+			p_theme->set_icon(editor_icon_name, "EditorIcons", icon);
 		}
 	}
 
@@ -309,7 +331,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	String preset = EDITOR_GET("interface/theme/preset");
 
-	bool enable_touchscreen_touch_area = EDITOR_GET("interface/theme/enable_touchscreen_touch_area");
+	bool increase_scrollbar_touch_area = EDITOR_GET("interface/touchscreen/increase_scrollbar_touch_area");
+	const float gizmo_handle_scale = EDITOR_GET("interface/touchscreen/scale_gizmo_handles");
 	bool highlight_tabs = EDITOR_GET("interface/theme/highlight_tabs");
 	int border_size = EDITOR_GET("interface/theme/border_size");
 
@@ -450,11 +473,18 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("scale", "Editor", EDSCALE);
 	theme->set_constant("thumb_size", "Editor", thumb_size);
 	theme->set_constant("dark_theme", "Editor", dark_theme);
+	theme->set_constant("gizmo_handle_scale", "Editor", gizmo_handle_scale);
 
 	//Register icons + font
+	bool keep_old_icons = false;
+	if (p_theme != nullptr) {
+		keep_old_icons = fabs(p_theme->get_constant("scale", "Editor") - EDSCALE) < 0.00001 &&
+				fabs(p_theme->get_constant("gizmo_handle_scale", "Editor") - gizmo_handle_scale) < 0.00001 &&
+				(bool)p_theme->get_constant("dark_theme", "Editor") == dark_theme;
+	}
 
 	// the resolution and the icon color (dark_theme bool) has not changed, so we do not regenerate the icons
-	if (p_theme != nullptr && fabs(p_theme->get_constant("scale", "Editor") - EDSCALE) < 0.00001 && (bool)p_theme->get_constant("dark_theme", "Editor") == dark_theme) {
+	if (keep_old_icons) {
 		// register already generated icons
 		for (int i = 0; i < editor_icons_count; i++) {
 			theme->set_icon(editor_icons_names[i], "EditorIcons", p_theme->get_icon(editor_icons_names[i], "EditorIcons"));
@@ -1054,7 +1084,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// HScrollBar
 	Ref<Texture> empty_icon = memnew(ImageTexture);
 
-	if (enable_touchscreen_touch_area) {
+	if (increase_scrollbar_touch_area) {
 		theme->set_stylebox("scroll", "HScrollBar", make_line_stylebox(separator_color, 50));
 	} else {
 		theme->set_stylebox("scroll", "HScrollBar", make_stylebox(theme->get_icon("GuiScrollBg", "EditorIcons"), 5, 5, 5, 5, 0, 0, 0, 0));
@@ -1072,7 +1102,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("decrement_pressed", "HScrollBar", empty_icon);
 
 	// VScrollBar
-	if (enable_touchscreen_touch_area) {
+	if (increase_scrollbar_touch_area) {
 		theme->set_stylebox("scroll", "VScrollBar", make_line_stylebox(separator_color, 50, 1, 1, true));
 	} else {
 		theme->set_stylebox("scroll", "VScrollBar", make_stylebox(theme->get_icon("GuiScrollBg", "EditorIcons"), 5, 5, 5, 5, 0, 0, 0, 0));

@@ -348,7 +348,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Theme
 	_initial_set("interface/theme/preset", "Default");
 	hints["interface/theme/preset"] = PropertyInfo(Variant::STRING, "interface/theme/preset", PROPERTY_HINT_ENUM, "Default,Alien,Arc,Godot 2,Grey,Light,Solarized (Dark),Solarized (Light),Custom", PROPERTY_USAGE_DEFAULT);
-	_initial_set("interface/theme/enable_touchscreen_touch_area", OS::get_singleton()->has_touchscreen_ui_hint());
 	_initial_set("interface/theme/icon_and_font_color", 0);
 	hints["interface/theme/icon_and_font_color"] = PropertyInfo(Variant::INT, "interface/theme/icon_and_font_color", PROPERTY_HINT_ENUM, "Auto,Dark,Light", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/theme/base_color", Color(0.2, 0.23, 0.31));
@@ -367,6 +366,16 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["interface/theme/additional_spacing"] = PropertyInfo(Variant::REAL, "interface/theme/additional_spacing", PROPERTY_HINT_RANGE, "0,5,0.1", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/theme/custom_theme", "");
 	hints["interface/theme/custom_theme"] = PropertyInfo(Variant::STRING, "interface/theme/custom_theme", PROPERTY_HINT_GLOBAL_FILE, "*.res,*.tres,*.theme", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+
+	// Touchscreen
+	bool has_touchscreen_ui = OS::get_singleton()->has_touchscreen_ui_hint();
+	_initial_set("interface/touchscreen/increase_scrollbar_touch_area", has_touchscreen_ui);
+	_initial_set("interface/touchscreen/enable_long_press_as_right_click", has_touchscreen_ui);
+	set_restart_if_changed("interface/touchscreen/enable_long_press_as_right_click", true);
+	_initial_set("interface/touchscreen/enable_pan_and_scale_gestures", has_touchscreen_ui);
+	set_restart_if_changed("interface/touchscreen/enable_pan_and_scale_gestures", true);
+	_initial_set("interface/touchscreen/scale_gizmo_handles", has_touchscreen_ui ? 3 : 1);
+	hints["interface/touchscreen/scale_gizmo_handles"] = PropertyInfo(Variant::REAL, "interface/touchscreen/scale_gizmo_handles", PROPERTY_HINT_RANGE, "1,5,1");
 
 	// Scene tabs
 	_initial_set("interface/scene_tabs/show_thumbnail_on_hover", true);
@@ -613,7 +622,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/2d/pan_speed", 20);
 
 	// Polygon editor
-	_initial_set("editors/poly_editor/point_grab_radius", 8);
+	_initial_set("editors/poly_editor/point_grab_radius", has_touchscreen_ui ? 32 : 8);
 	_initial_set("editors/poly_editor/show_previous_outline", true);
 
 	// Animation
