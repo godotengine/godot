@@ -3441,6 +3441,16 @@ void EditorInspector::set_property_name_style(EditorPropertyNameProcessor::Style
 	update_tree();
 }
 
+void EditorInspector::set_use_settings_name_style(bool p_enable) {
+	if (use_settings_name_style == p_enable) {
+		return;
+	}
+	use_settings_name_style = p_enable;
+	if (use_settings_name_style) {
+		set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
+	}
+}
+
 void EditorInspector::set_autoclear(bool p_enable) {
 	autoclear = p_enable;
 }
@@ -3973,7 +3983,20 @@ void EditorInspector::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_inspector_bg();
 
+			bool needs_update = false;
+
+			if (use_settings_name_style && EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
+				EditorPropertyNameProcessor::Style style = EditorPropertyNameProcessor::get_settings_style();
+				if (property_name_style != style) {
+					property_name_style = style;
+					needs_update = true;
+				}
+			}
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/inspector")) {
+				needs_update = true;
+			}
+
+			if (needs_update) {
 				update_tree();
 			}
 		} break;
@@ -4158,4 +4181,7 @@ EditorInspector::EditorInspector() {
 	ED_SHORTCUT("property_editor/copy_value", TTR("Copy Value"), KeyModifierMask::CMD_OR_CTRL | Key::C);
 	ED_SHORTCUT("property_editor/paste_value", TTR("Paste Value"), KeyModifierMask::CMD_OR_CTRL | Key::V);
 	ED_SHORTCUT("property_editor/copy_property_path", TTR("Copy Property Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
+
+	// `use_settings_name_style` is true by default, set the name style accordingly.
+	set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 }

@@ -465,6 +465,7 @@ class EditorInspector : public ScrollContainer {
 	bool hide_metadata = true;
 	bool use_doc_hints = false;
 	EditorPropertyNameProcessor::Style property_name_style = EditorPropertyNameProcessor::STYLE_CAPITALIZED;
+	bool use_settings_name_style = true;
 	bool use_filter = false;
 	bool autoclear = false;
 	bool use_folding = false;
@@ -569,6 +570,9 @@ public:
 
 	EditorPropertyNameProcessor::Style get_property_name_style() const;
 	void set_property_name_style(EditorPropertyNameProcessor::Style p_style);
+
+	// If true, the inspector will update its property name style according to the current editor settings.
+	void set_use_settings_name_style(bool p_enable);
 
 	void set_autoclear(bool p_enable);
 
