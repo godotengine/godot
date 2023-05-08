@@ -734,7 +734,8 @@
 			Changing this value allows setting up a multi-project scenario where there are multiple [code].csproj[/code]. Keep in mind that the Godot project is considered one of the C# projects in the workspace and it's root directory should contain the [code]project.godot[/code] and [code].csproj[/code] next to each other.
 		</member>
 		<member name="editor/export/convert_text_resources_to_binary" type="bool" setter="" getter="" default="true">
-			If [code]true[/code] text resources are converted to binary format on export.
+			If [code]true[/code], text resources are converted to a binary format on export. This decreases file sizes and speeds up loading slightly.
+			[b]Note:[/b] If [member editor/export/convert_text_resources_to_binary] is [code]true[/code], [method @GDScript.load] will not be able to return the converted files in an exported project. Some file paths within the exported PCK will also change, such as [code]project.godot[/code] becoming [code]project.binary[/code]. If you rely on run-time loading of files present within the PCK, set [member editor/export/convert_text_resources_to_binary] to [code]false[/code].
 		</member>
 		<member name="editor/import/reimport_missing_imported_files" type="bool" setter="" getter="" default="true">
 		</member>
