@@ -91,7 +91,7 @@
 			<param index="3" name="read_stderr" type="bool" default="false" />
 			<param index="4" name="open_console" type="bool" default="false" />
 			<description>
-				Executes a command. The file specified in [param path] must exist and be executable. Platform path resolution will be used. The [param arguments] are used in the given order and separated by a space. If an [param output] [Array] is provided, the complete shell output of the process will be appended as a single [String] element in [param output]. If [param read_stderr] is [code]true[/code], the output to the standard error stream will be included too.
+				Executes a command. The file specified in [param path] must exist and be executable. Platform path resolution will be used. The [param arguments] are used in the given order, separated by spaces, and wrapped in quotes. If an [param output] [Array] is provided, the complete shell output of the process will be appended as a single [String] element in [param output]. If [param read_stderr] is [code]true[/code], the output to the standard error stream will be included too.
 				On Windows, if [param open_console] is [code]true[/code] and the process is a console app, a new terminal window will be opened. This is ignored on other platforms.
 				If the command is successfully executed, the method will return the exit code of the command, or [code]-1[/code] if it fails.
 				[b]Note:[/b] The Godot thread will pause its execution until the executed command terminates. Use [Thread] to create a separate thread that will not pause the Godot thread, or use [method create_process] to create a completely independent process.
@@ -654,8 +654,8 @@
 			<param index="0" name="file_or_dir_path" type="String" />
 			<param index="1" name="open_folder" type="bool" default="true" />
 			<description>
-				Requests the OS to open file manager, then navigate to the given [param file_or_dir_path] and select the target file or folder.
-				If [param file_or_dir_path] is a valid directory path, and [param open_folder] is [code]true[/code], the method will open explorer and enter the target folder without selecting anything.
+				Requests the OS to open the file manager, then navigate to the given [param file_or_dir_path] and select the target file or folder.
+				If [param file_or_dir_path] is a valid directory path, and [param open_folder] is [code]true[/code], the method will open the file manager and enter the target folder without selecting anything.
 				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] path into a system path for use with this method.
 				[b]Note:[/b] Currently this method is only implemented on Windows. On other platforms, it will fallback to [method shell_open] with a directory path for [param file_or_dir_path].
 			</description>
