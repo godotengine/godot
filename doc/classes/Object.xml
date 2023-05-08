@@ -597,7 +597,7 @@
 			</description>
 		</method>
 		<method name="get_meta_list" qualifiers="const">
-			<return type="PackedStringArray" />
+			<return type="StringName[]" />
 			<description>
 				Returns the object's metadata entry names as a [PackedStringArray].
 			</description>

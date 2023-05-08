@@ -184,7 +184,7 @@
 			<param index="6" name="clear_depth" type="float" default="1.0" />
 			<param index="7" name="clear_stencil" type="int" default="0" />
 			<param index="8" name="region" type="Rect2" default="Rect2(0, 0, 0, 0)" />
-			<param index="9" name="storage_textures" type="Array" default="[]" />
+			<param index="9" name="storage_textures" type="RID[]" default="[]" />
 			<description>
 				Starts a list of raster drawing commands created with the [code]draw_*[/code] methods. The returned value should be passed to other [code]draw_list_*[/code] functions.
 				Multiple draw lists cannot be created at the same time; you must finish the previous draw list first using [method draw_list_end].

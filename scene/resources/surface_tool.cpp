@@ -374,6 +374,10 @@ void SurfaceTool::set_smooth_group(uint32_t p_group) {
 	last_smooth_group = p_group;
 }
 
+void SurfaceTool::_add_triangle_fan(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs, const Vector<Color> &p_colors, const Vector<Vector2> &p_uv2s, const Vector<Vector3> &p_normals, const TypedArray<Plane> &p_tangents) {
+	add_triangle_fan(p_vertices, p_uv2s, p_colors, p_uv2s, p_normals, Variant(p_tangents));
+}
+
 void SurfaceTool::add_triangle_fan(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs, const Vector<Color> &p_colors, const Vector<Vector2> &p_uv2s, const Vector<Vector3> &p_normals, const Vector<Plane> &p_tangents) {
 	ERR_FAIL_COND(!begun);
 	ERR_FAIL_COND(primitive != Mesh::PRIMITIVE_TRIANGLES);
@@ -1347,7 +1351,7 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom", "channel_index", "custom_color"), &SurfaceTool::set_custom);
 	ClassDB::bind_method(D_METHOD("set_smooth_group", "index"), &SurfaceTool::set_smooth_group);
 
-	ClassDB::bind_method(D_METHOD("add_triangle_fan", "vertices", "uvs", "colors", "uv2s", "normals", "tangents"), &SurfaceTool::add_triangle_fan, DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Color>()), DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Vector3>()), DEFVAL(Vector<Plane>()));
+	ClassDB::bind_method(D_METHOD("add_triangle_fan", "vertices", "uvs", "colors", "uv2s", "normals", "tangents"), &SurfaceTool::_add_triangle_fan, DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Color>()), DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Vector3>()), DEFVAL(TypedArray<Plane>()));
 
 	ClassDB::bind_method(D_METHOD("add_index", "index"), &SurfaceTool::add_index);
 

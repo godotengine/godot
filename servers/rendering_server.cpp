@@ -2718,7 +2718,7 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("global_shader_parameter_add", "name", "type", "default_value"), &RenderingServer::global_shader_parameter_add);
 	ClassDB::bind_method(D_METHOD("global_shader_parameter_remove", "name"), &RenderingServer::global_shader_parameter_remove);
-	ClassDB::bind_method(D_METHOD("global_shader_parameter_get_list"), &RenderingServer::global_shader_parameter_get_list);
+	ClassDB::bind_method(D_METHOD("global_shader_parameter_get_list"), &RenderingServer::_global_shader_parameter_get_list);
 	ClassDB::bind_method(D_METHOD("global_shader_parameter_set", "name", "value"), &RenderingServer::global_shader_parameter_set);
 	ClassDB::bind_method(D_METHOD("global_shader_parameter_set_override", "name", "value"), &RenderingServer::global_shader_parameter_set_override);
 	ClassDB::bind_method(D_METHOD("global_shader_parameter_get", "name"), &RenderingServer::global_shader_parameter_get);
@@ -2855,6 +2855,16 @@ RenderingServer::RenderingServer() {
 	//ERR_FAIL_COND(singleton);
 
 	singleton = this;
+}
+
+TypedArray<StringName> RenderingServer::_global_shader_parameter_get_list() const {
+	TypedArray<StringName> gsp;
+	Vector<StringName> gsp_sn = global_shader_parameter_get_list();
+	gsp.resize(gsp_sn.size());
+	for (int i = 0; i < gsp_sn.size(); i++) {
+		gsp[i] = gsp_sn[i];
+	}
+	return gsp;
 }
 
 void RenderingServer::init() {

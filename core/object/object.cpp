@@ -936,8 +936,8 @@ TypedArray<Dictionary> Object::_get_method_list_bind() const {
 	return ret;
 }
 
-Vector<StringName> Object::_get_meta_list_bind() const {
-	Vector<StringName> _metaret;
+TypedArray<StringName> Object::_get_meta_list_bind() const {
+	TypedArray<StringName> _metaret;
 
 	for (const KeyValue<StringName, Variant> &K : metadata) {
 		_metaret.push_back(K.key);

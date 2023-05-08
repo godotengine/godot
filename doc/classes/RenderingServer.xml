@@ -1497,7 +1497,7 @@
 			</description>
 		</method>
 		<method name="global_shader_parameter_get_list" qualifiers="const">
-			<return type="PackedStringArray" />
+			<return type="StringName[]" />
 			<description>
 				Returns the list of global shader uniform names.
 				[b]Note:[/b] [method global_shader_parameter_get] has a large performance penalty as the rendering thread needs to synchronize with the calling thread, which is slow. Do not use this method during gameplay to avoid stuttering. If you need to read values in a script after setting them, consider creating an autoload where you store the values you need to query at the same time you're setting them as global parameters.
