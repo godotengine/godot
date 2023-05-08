@@ -1209,13 +1209,19 @@ void VisualShaderEditor::clear_custom_types() {
 	}
 }
 
-void VisualShaderEditor::add_custom_type(const String &p_name, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, bool p_highend) {
+void VisualShaderEditor::add_custom_type(const String &p_name, const String &p_type, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, bool p_highend) {
 	ERR_FAIL_COND(!p_name.is_valid_identifier());
-	ERR_FAIL_COND(!p_script.is_valid());
+	ERR_FAIL_COND(p_type.is_empty() && !p_script.is_valid());
 
 	for (int i = 0; i < add_options.size(); i++) {
-		if (add_options[i].is_custom) {
-			if (add_options[i].script == p_script) {
+		const AddOption &op = add_options[i];
+
+		if (op.is_custom) {
+			if (!p_type.is_empty()) {
+				if (op.type == p_type) {
+					return;
+				}
+			} else if (op.script == p_script) {
 				return;
 			}
 		}
@@ -1223,12 +1229,14 @@ void VisualShaderEditor::add_custom_type(const String &p_name, const Ref<Script>
 
 	AddOption ao;
 	ao.name = p_name;
+	ao.type = p_type;
 	ao.script = p_script;
 	ao.return_type = p_return_icon_type;
 	ao.description = p_description;
 	ao.category = p_category;
 	ao.highend = p_highend;
 	ao.is_custom = true;
+	ao.is_native = !p_type.is_empty();
 
 	bool begin = false;
 	String root = p_category.split("/")[0];
@@ -1253,49 +1261,22 @@ void VisualShaderEditor::add_custom_type(const String &p_name, const Ref<Script>
 Dictionary VisualShaderEditor::get_custom_node_data(Ref<VisualShaderNodeCustom> &p_custom_node) {
 	Dictionary dict;
 	dict["script"] = p_custom_node->get_script();
+	dict["name"] = p_custom_node->_get_name();
+	dict["description"] = p_custom_node->_get_description();
+	dict["return_icon_type"] = p_custom_node->_get_return_icon_type();
+	dict["highend"] = p_custom_node->_is_highend();
 
-	String name;
-	if (p_custom_node->has_method("_get_name")) {
-		name = (String)p_custom_node->call("_get_name");
-	} else {
-		name = "Unnamed";
-	}
-	dict["name"] = name;
-
-	String description = "";
-	if (p_custom_node->has_method("_get_description")) {
-		description = (String)p_custom_node->call("_get_description");
-	}
-	dict["description"] = description;
-
-	int return_icon_type = -1;
-	if (p_custom_node->has_method("_get_return_icon_type")) {
-		return_icon_type = (int)p_custom_node->call("_get_return_icon_type");
-	}
-	dict["return_icon_type"] = return_icon_type;
-
-	String category = "";
-	if (p_custom_node->has_method("_get_category")) {
-		category = (String)p_custom_node->call("_get_category");
-	}
+	String category = p_custom_node->_get_category();
 	category = category.rstrip("/");
 	category = category.lstrip("/");
 	category = "Addons/" + category;
-
-	String subcategory = "";
 	if (p_custom_node->has_method("_get_subcategory")) {
-		subcategory = (String)p_custom_node->call("_get_subcategory");
-	}
-	if (!subcategory.is_empty()) {
-		category += "/" + subcategory;
+		String subcategory = (String)p_custom_node->call("_get_subcategory");
+		if (!subcategory.is_empty()) {
+			category += "/" + subcategory;
+		}
 	}
 	dict["category"] = category;
-
-	bool highend = false;
-	if (p_custom_node->has_method("_is_highend")) {
-		highend = (bool)p_custom_node->call("_is_highend");
-	}
-	dict["highend"] = highend;
 
 	return dict;
 }
@@ -1333,7 +1314,7 @@ void VisualShaderEditor::_script_created(const Ref<Script> &p_script) {
 	ref->set_script(p_script);
 
 	Dictionary dict = get_custom_node_data(ref);
-	add_custom_type(dict["name"], dict["script"], dict["description"], dict["return_icon_type"], dict["category"], dict["highend"]);
+	add_custom_type(dict["name"], String(), dict["script"], dict["description"], dict["return_icon_type"], dict["category"], dict["highend"]);
 
 	_update_options_menu();
 }
@@ -1456,7 +1437,7 @@ void VisualShaderEditor::_update_custom_script(const Ref<Script> &p_script) {
 	}
 
 	if (!found_type) {
-		add_custom_type(dict["name"], dict["script"], dict["description"], dict["return_icon_type"], dict["category"], dict["highend"]);
+		add_custom_type(dict["name"], String(), dict["script"], dict["description"], dict["return_icon_type"], dict["category"], dict["highend"]);
 	}
 
 	// To prevent updating options multiple times when multiple scripts are saved.
@@ -1595,29 +1576,60 @@ bool VisualShaderEditor::_is_available(int p_mode) {
 
 void VisualShaderEditor::_update_nodes() {
 	clear_custom_types();
-	List<StringName> class_list;
-	ScriptServer::get_global_class_list(&class_list);
 	Dictionary added;
-	for (int i = 0; i < class_list.size(); i++) {
-		if (ScriptServer::get_global_class_native_base(class_list[i]) == "VisualShaderNodeCustom") {
-			String script_path = ScriptServer::get_global_class_path(class_list[i]);
-			Ref<Resource> res = ResourceLoader::load(script_path);
-			ERR_FAIL_COND(res.is_null());
-			ERR_FAIL_COND(!res->is_class("Script"));
-			Ref<Script> scr = Ref<Script>(res);
 
-			Ref<VisualShaderNodeCustom> ref;
-			ref.instantiate();
-			ref->set_script(scr);
-			if (!ref->is_available(visual_shader->get_mode(), visual_shader->get_shader_type())) {
-				continue;
+	// Add GDScript classes.
+	{
+		List<StringName> class_list;
+		ScriptServer::get_global_class_list(&class_list);
+
+		for (int i = 0; i < class_list.size(); i++) {
+			if (ScriptServer::get_global_class_native_base(class_list[i]) == "VisualShaderNodeCustom") {
+				String script_path = ScriptServer::get_global_class_path(class_list[i]);
+				Ref<Resource> res = ResourceLoader::load(script_path);
+				ERR_CONTINUE(res.is_null());
+				ERR_CONTINUE(!res->is_class("Script"));
+				Ref<Script> scr = Ref<Script>(res);
+
+				Ref<VisualShaderNodeCustom> ref;
+				ref.instantiate();
+				ref->set_script(scr);
+				if (!ref->is_available(visual_shader->get_mode(), visual_shader->get_shader_type())) {
+					continue;
+				}
+				Dictionary dict = get_custom_node_data(ref);
+				dict["type"] = String();
+
+				String key;
+				key = String(dict["category"]) + "/" + String(dict["name"]);
+
+				added[key] = dict;
 			}
-			Dictionary dict = get_custom_node_data(ref);
+		}
+	}
 
-			String key;
-			key = String(dict["category"]) + "/" + String(dict["name"]);
+	// Add GDExtension classes.
+	{
+		List<StringName> class_list;
+		ClassDB::get_class_list(&class_list);
 
-			added[key] = dict;
+		for (int i = 0; i < class_list.size(); i++) {
+			if (ClassDB::get_parent_class(class_list[i]) == "VisualShaderNodeCustom") {
+				Object *instance = ClassDB::instantiate(class_list[i]);
+				Ref<VisualShaderNodeCustom> ref = Object::cast_to<VisualShaderNodeCustom>(instance);
+				ERR_CONTINUE(ref.is_null());
+				if (!ref->is_available(visual_shader->get_mode(), visual_shader->get_shader_type())) {
+					continue;
+				}
+				Dictionary dict = get_custom_node_data(ref);
+				dict["type"] = class_list[i];
+				dict["script"] = Ref<Script>();
+
+				String key;
+				key = String(dict["category"]) + "/" + String(dict["name"]);
+
+				added[key] = dict;
+			}
 		}
 	}
 
@@ -1655,7 +1667,7 @@ void VisualShaderEditor::_update_nodes() {
 
 		const Dictionary &value = (Dictionary)added[key];
 
-		add_custom_type(value["name"], value["script"], value["description"], value["return_icon_type"], value["category"], value["highend"]);
+		add_custom_type(value["name"], value["type"], value["script"], value["description"], value["return_icon_type"], value["category"], value["highend"]);
 	}
 
 	_update_options_menu();
@@ -3062,12 +3074,21 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 
 		vsnode = Ref<VisualShaderNode>(vsn);
 	} else {
-		ERR_FAIL_COND(add_options[p_idx].script.is_null());
-		StringName base_type = add_options[p_idx].script->get_instance_base_type();
+		StringName base_type;
+		bool is_native = add_options[p_idx].is_native;
+
+		if (is_native) {
+			base_type = add_options[p_idx].type;
+		} else {
+			ERR_FAIL_COND(add_options[p_idx].script.is_null());
+			base_type = add_options[p_idx].script->get_instance_base_type();
+		}
 		VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instantiate(base_type));
 		ERR_FAIL_COND(!vsn);
 		vsnode = Ref<VisualShaderNode>(vsn);
-		vsnode->set_script(add_options[p_idx].script);
+		if (!is_native) {
+			vsnode->set_script(add_options[p_idx].script);
+		}
 	}
 
 	bool is_texture2d = (Object::cast_to<VisualShaderNodeTexture>(vsnode.ptr()) != nullptr);
