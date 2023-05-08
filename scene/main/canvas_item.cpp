@@ -338,6 +338,10 @@ void CanvasItem::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 		} break;
+		case NOTIFICATION_WORLD_2D_CHANGED: {
+			_exit_canvas();
+			_enter_canvas();
+		}
 	}
 }
 
@@ -1120,6 +1124,7 @@ void CanvasItem::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_ENTER_CANVAS);
 	BIND_CONSTANT(NOTIFICATION_EXIT_CANVAS);
+	BIND_CONSTANT(NOTIFICATION_WORLD_2D_CHANGED);
 
 	BIND_ENUM_CONSTANT(TEXTURE_FILTER_PARENT_NODE);
 	BIND_ENUM_CONSTANT(TEXTURE_FILTER_NEAREST);
