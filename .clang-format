@@ -2,7 +2,7 @@
 # We can uncomment them if we want to change their value, or enforce the
 # chosen value in case the base style changes (last sync: Clang 14.0).
 ---
-### General config, applies to all languages ###
+### General   config, applies to all languages ###
 BasedOnStyle:  LLVM
 AccessModifierOffset: -4
 AlignAfterOpenBracket: DontAlign
