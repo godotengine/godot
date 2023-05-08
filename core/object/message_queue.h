@@ -61,7 +61,7 @@ private:
 	};
 
 	Mutex mutex;
-	typedef PagedAllocator<Page, true> Allocator;
+	typedef PagedAllocator<Page, false> Allocator;
 
 	Allocator *allocator = nullptr;
 	bool allocator_is_custom = false;
