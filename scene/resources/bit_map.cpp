@@ -318,7 +318,7 @@ Vector<Vector2> BitMap::_march_square(const Rect2i &rect, const Point2i &start) 
 		prevx = stepx;
 		prevy = stepy;
 
-		ERR_FAIL_COND_V((int)count > width * height, _points);
+		ERR_FAIL_COND_V((int)count > 2 * (width * height + 1), _points);
 	} while (curx != startx || cury != starty);
 	return _points;
 }
