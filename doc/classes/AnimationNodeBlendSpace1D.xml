@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationNodeBlendSpace1D" inherits="AnimationRootNode" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Blends linearly between two of any number of [AnimationNode] of any type placed on a virtual axis.
+		A set of [AnimationRootNode]s placed on a virtual axis, crossfading between the two adjacent ones. Used by [AnimationTree].
 	</brief_description>
 	<description>
-		A resource to add to an [AnimationNodeBlendTree].
-		This is a virtual axis on which you can add any type of [AnimationNode] using [method add_blend_point].
-		Outputs the linear blend of the two [AnimationNode]s closest to the node's current value.
-		You can set the extents of the axis using the [member min_space] and [member max_space].
+		A resource used by [AnimationNodeBlendTree].
+		[AnimationNodeBlendSpace1D] represents a virtual axis on which any type of [AnimationRootNode]s can be added using [method add_blend_point]. Outputs the linear blend of the two [AnimationRootNode]s adjacent to the current value.
+		You can set the extents of the axis with [member min_space] and [member max_space].
 	</description>
 	<tutorials>
-		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_blend_point">
