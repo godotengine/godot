@@ -1851,23 +1851,28 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				Point2i pos = get_line_column_at_pos(mpos);
 				int row = pos.y;
 				int col = pos.x;
-				int caret = carets.size() - 1;
 
+				bool selection_clicked = false;
 				if (is_move_caret_on_right_click_enabled()) {
-					if (has_selection(caret)) {
-						int from_line = get_selection_from_line(caret);
-						int to_line = get_selection_to_line(caret);
-						int from_column = get_selection_from_column(caret);
-						int to_column = get_selection_to_column(caret);
+					if (has_selection()) {
+						for (int i = 0; i < get_caret_count(); i++) {
+							int from_line = get_selection_from_line(i);
+							int to_line = get_selection_to_line(i);
+							int from_column = get_selection_from_column(i);
+							int to_column = get_selection_to_column(i);
 
-						if (row < from_line || row > to_line || (row == from_line && col < from_column) || (row == to_line && col > to_column)) {
-							// Right click is outside the selected text.
-							deselect(caret);
+							if (row >= from_line && row <= to_line && (row != from_line || col >= from_column) && (row != to_line || col <= to_column)) {
+								// Right click in one of the selected text
+								selection_clicked = true;
+								break;
+							}
 						}
 					}
-					if (!has_selection(caret)) {
-						set_caret_line(row, true, false, 0, caret);
-						set_caret_column(col, true, caret);
+					if (!selection_clicked) {
+						deselect();
+						remove_secondary_carets();
+						set_caret_line(row, false, false);
+						set_caret_column(col);
 					}
 					merge_overlapping_carets();
 				}
