@@ -1,5 +1,5 @@
 # This file contains a list of Git commit hashes that should be hidden from the
-# regular Git history. Typically, this includes commits involving mass auto-formatting
+# regular Git history . Typically, this includes commits involving mass auto-formatting
 # or other normalizations. Commit hashes *must* use the full 40-character notation.
 # To apply the ignore list in your local Git client, you must run:
 #
