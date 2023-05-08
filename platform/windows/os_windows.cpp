@@ -706,16 +706,16 @@ Dictionary OS_Windows::get_memory_info() const {
 	}
 
 	if (pref_info.PhysicalTotal * pref_info.PageSize != 0) {
-		meminfo["physical"] = pref_info.PhysicalTotal * pref_info.PageSize;
+		meminfo["physical"] = static_cast<int64_t>(pref_info.PhysicalTotal * pref_info.PageSize);
 	}
 	if (pref_info.PhysicalAvailable * pref_info.PageSize != 0) {
-		meminfo["free"] = pref_info.PhysicalAvailable * pref_info.PageSize;
+		meminfo["free"] = static_cast<int64_t>(pref_info.PhysicalAvailable * pref_info.PageSize);
 	}
 	if (pref_info.CommitLimit * pref_info.PageSize != 0) {
-		meminfo["available"] = pref_info.CommitLimit * pref_info.PageSize;
+		meminfo["available"] = static_cast<int64_t>(pref_info.CommitLimit * pref_info.PageSize);
 	}
 	if (HighLimit - LowLimit != 0) {
-		meminfo["stack"] = HighLimit - LowLimit;
+		meminfo["stack"] = static_cast<int64_t>(HighLimit - LowLimit);
 	}
 
 	return meminfo;
