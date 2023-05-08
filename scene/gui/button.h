@@ -51,7 +51,8 @@ private:
 	bool expand_icon = false;
 	bool clip_text = false;
 	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_CENTER;
-	HorizontalAlignment icon_alignment = HORIZONTAL_ALIGNMENT_LEFT;
+	HorizontalAlignment horizontal_icon_alignment = HORIZONTAL_ALIGNMENT_LEFT;
+	VerticalAlignment vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER;
 	float _internal_margin[4] = {};
 
 	struct ThemeCache {
@@ -135,7 +136,9 @@ public:
 	HorizontalAlignment get_text_alignment() const;
 
 	void set_icon_alignment(HorizontalAlignment p_alignment);
+	void set_vertical_icon_alignment(VerticalAlignment p_alignment);
 	HorizontalAlignment get_icon_alignment() const;
+	VerticalAlignment get_vertical_icon_alignment() const;
 
 	Button(const String &p_text = String());
 	~Button();
