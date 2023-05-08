@@ -44,7 +44,7 @@ static void _add_file(String f, const uint64_t &p_modified_time, HashMap<String,
 	const uint64_t *cached_mt = cached_files.getptr(f);
 	if (cached_mt && *cached_mt == p_modified_time) {
 		// File is good, skip it.
-		cached_files.erase(f); // Erase to mark this file as existing. Remaning files not added to files_to_send will be considered erased here, so they need to be erased in the client too.
+		cached_files.erase(f); // Erase to mark this file as existing. Remaining files not added to files_to_send will be considered erased here, so they need to be erased in the client too.
 		return;
 	}
 	files_to_send.insert(f, p_modified_time);
