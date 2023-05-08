@@ -40,8 +40,6 @@ void GridContainer::_notification(int p_what) {
 
 			int hsep = get_constant("hseparation");
 			int vsep = get_constant("vseparation");
-			int max_col = MIN(get_child_count(), columns);
-			int max_row = ceil((float)get_child_count() / (float)columns);
 
 			// Compute the per-column/per-row data.
 			int valid_controls_index = 0;
@@ -77,6 +75,9 @@ void GridContainer::_notification(int p_what) {
 					row_expanded.insert(row);
 				}
 			}
+
+			int max_col = MIN(valid_controls_index, columns);
+			int max_row = ceil((float)valid_controls_index / (float)columns);
 
 			// Consider all empty columns expanded.
 			for (int i = valid_controls_index; i < columns; i++) {
