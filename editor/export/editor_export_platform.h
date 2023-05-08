@@ -196,6 +196,8 @@ public:
 		return worst_type;
 	}
 
+	static Vector<String> get_forced_export_files();
+
 	virtual bool fill_log_messages(RichTextLabel *p_log, Error p_err);
 
 	virtual void get_export_options(List<ExportOption> *r_options) const = 0;

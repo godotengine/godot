@@ -96,6 +96,7 @@ protected:
 	virtual void set_main_loop(MainLoop *p_main_loop) override;
 
 public:
+	virtual String get_identifier() const override;
 	virtual String get_name() const override;
 	virtual String get_distribution_name() const override;
 	virtual String get_version() const override;

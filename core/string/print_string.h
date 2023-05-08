@@ -59,7 +59,15 @@ void remove_print_handler(const PrintHandlerList *p_handler);
 extern void __print_line(String p_string);
 extern void __print_line_rich(String p_string);
 extern void print_error(String p_string);
-extern void print_verbose(String p_string);
+extern bool is_print_verbose_enabled();
+
+// This version avoids processing the text to be printed until it actually has to be printed, saving some CPU usage.
+#define print_verbose(m_text)             \
+	{                                     \
+		if (is_print_verbose_enabled()) { \
+			print_line(m_text);           \
+		}                                 \
+	}
 
 inline void print_line(Variant v) {
 	__print_line(stringify_variants(v));

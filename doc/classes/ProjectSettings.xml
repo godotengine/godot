@@ -1788,12 +1788,6 @@
 		<member name="network/limits/webrtc/max_channel_in_buffer_kb" type="int" setter="" getter="" default="64">
 			Maximum size (in kiB) for the [WebRTCDataChannel] input buffer.
 		</member>
-		<member name="network/remote_fs/page_read_ahead" type="int" setter="" getter="" default="4">
-			Amount of read ahead used by remote filesystem. Higher values decrease the effects of latency at the cost of higher bandwidth usage.
-		</member>
-		<member name="network/remote_fs/page_size" type="int" setter="" getter="" default="65536">
-			Page size used by remote filesystem (in bytes).
-		</member>
 		<member name="network/tls/certificate_bundle_override" type="String" setter="" getter="" default="&quot;&quot;">
 			The CA certificates bundle to use for TLS connections. If this is set to a non-empty value, this will [i]override[/i] Godot's default [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]Mozilla certificate bundle[/url]. If left empty, the default certificate bundle will be used.
 			If in doubt, leave this setting empty.

@@ -126,8 +126,10 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 
 			if (ischecked) {
 				file_server->stop();
+				set_process(false);
 			} else {
 				file_server->start();
+				set_process(true);
 			}
 
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_FILE_SERVER), !ischecked);
@@ -189,6 +191,10 @@ void DebuggerEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			_update_debug_options();
+		} break;
+
+		case NOTIFICATION_PROCESS: {
+			file_server->poll();
 		} break;
 	}
 }
