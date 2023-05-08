@@ -962,7 +962,7 @@ void CopyEffects::set_color_raster(RID p_dest_texture, const Color &p_color, con
 	RD::get_singleton()->draw_list_end();
 }
 
-void CopyEffects::copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuffer, const Rect2 &p_rect, const Vector2 &p_dst_size, float p_z_near, float p_z_far, bool p_dp_flip) {
+void CopyEffects::copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuffer, const Rect2 &p_rect, const Vector2 &p_dst_size, float p_z_near, float p_z_far, bool p_dp_flip, BitField<RD::BarrierMask> p_post_barrier) {
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
@@ -994,7 +994,7 @@ void CopyEffects::copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuf
 
 	RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(CopyToDPPushConstant));
 	RD::get_singleton()->draw_list_draw(draw_list, true);
-	RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_TRANSFER);
+	RD::get_singleton()->draw_list_end(p_post_barrier);
 }
 
 void CopyEffects::cubemap_downsample(RID p_source_cubemap, RID p_dest_cubemap, const Size2i &p_size) {

@@ -76,8 +76,8 @@ public:
 	float time;
 	float time_step;
 
-	RID create_uniform_buffer();
-	void update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p_debug_mode, RID p_env, RID p_reflection_probe_instance, RID p_camera_attributes, bool p_flip_y, bool p_pancake_shadows, const Size2i &p_screen_size, const Color &p_default_bg_color, float p_luminance_multiplier, bool p_opaque_render_buffers);
+	RID create_uniform_buffer(bool p_including_previous_state = true);
+	void update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p_debug_mode, RID p_env, RID p_reflection_probe_instance, RID p_camera_attributes, bool p_flip_y, bool p_pancake_shadows, const Size2i &p_screen_size, const Color &p_default_bg_color, float p_luminance_multiplier, bool p_opaque_render_buffers, bool p_including_previous_state = true);
 	RID get_uniform_buffer();
 
 private:
