@@ -255,6 +255,28 @@ static Ref<ImageTexture> editor_generate_icon(int p_index, float p_scale, float 
 	return ImageTexture::create_from_image(img);
 }
 
+float get_gizmo_handle_scale(const String &gizmo_handle_name = "") {
+	const float scale_gizmo_handles_for_touch = EDITOR_GET("interface/touchscreen/scale_gizmo_handles");
+	if (scale_gizmo_handles_for_touch > 1.0f) {
+		// The names of the icons that require additional scaling.
+		static HashSet<StringName> gizmo_to_scale;
+		if (gizmo_to_scale.is_empty()) {
+			gizmo_to_scale.insert("EditorHandle");
+			gizmo_to_scale.insert("EditorHandleAdd");
+			gizmo_to_scale.insert("EditorHandleDisabled");
+			gizmo_to_scale.insert("EditorCurveHandle");
+			gizmo_to_scale.insert("EditorPathSharpHandle");
+			gizmo_to_scale.insert("EditorPathSmoothHandle");
+		}
+
+		if (gizmo_to_scale.has(gizmo_handle_name)) {
+			return EDSCALE * scale_gizmo_handles_for_touch;
+		}
+	}
+
+	return EDSCALE;
+}
+
 void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme, float p_icon_saturation, int p_thumb_size, bool p_only_thumbs = false) {
 	// Before we register the icons, we adjust their colors and saturation.
 	// Most icons follow the standard rules for color conversion to follow the editor
@@ -314,22 +336,23 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme, f
 		for (int i = 0; i < editor_icons_count; i++) {
 			Ref<ImageTexture> icon;
 
-			if (accent_color_icons.has(editor_icons_names[i])) {
-				icon = editor_generate_icon(i, EDSCALE, 1.0, accent_color_map);
+			const String &editor_icon_name = editor_icons_names[i];
+			if (accent_color_icons.has(editor_icon_name)) {
+				icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name), 1.0, accent_color_map);
 			} else {
 				float saturation = p_icon_saturation;
-				if (saturation_exceptions.has(editor_icons_names[i])) {
+				if (saturation_exceptions.has(editor_icon_name)) {
 					saturation = 1.0;
 				}
 
-				if (conversion_exceptions.has(editor_icons_names[i])) {
-					icon = editor_generate_icon(i, EDSCALE, saturation);
+				if (conversion_exceptions.has(editor_icon_name)) {
+					icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name), saturation);
 				} else {
-					icon = editor_generate_icon(i, EDSCALE, saturation, color_conversion_map);
+					icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name), saturation, color_conversion_map);
 				}
 			}
 
-			p_theme->set_icon(editor_icons_names[i], SNAME("EditorIcons"), icon);
+			p_theme->set_icon(editor_icon_name, SNAME("EditorIcons"), icon);
 		}
 	}
 
@@ -395,6 +418,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color base_color = EDITOR_GET("interface/theme/base_color");
 	float contrast = EDITOR_GET("interface/theme/contrast");
 	bool increase_scrollbar_touch_area = EDITOR_GET("interface/touchscreen/increase_scrollbar_touch_area");
+	const float gizmo_handle_scale = EDITOR_GET("interface/touchscreen/scale_gizmo_handles");
 	bool draw_extra_borders = EDITOR_GET("interface/theme/draw_extra_borders");
 	float icon_saturation = EDITOR_GET("interface/theme/icon_saturation");
 	float relationship_line_opacity = EDITOR_GET("interface/theme/relationship_line_opacity");
@@ -594,6 +618,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("class_icon_size", "Editor", 16 * EDSCALE);
 	theme->set_constant("dark_theme", "Editor", dark_theme);
 	theme->set_constant("color_picker_button_height", "Editor", 28 * EDSCALE);
+	theme->set_constant("gizmo_handle_scale", "Editor", gizmo_handle_scale);
 
 	// Register editor icons.
 	// If the settings are comparable to the old theme, then just copy them over.
@@ -609,8 +634,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		const bool prev_dark_theme = (bool)p_theme->get_constant(SNAME("dark_theme"), SNAME("Editor"));
 		const Color prev_accent_color = p_theme->get_color(SNAME("accent_color"), SNAME("Editor"));
 		const float prev_icon_saturation = p_theme->get_color(SNAME("icon_saturation"), SNAME("Editor")).r;
+		const float prev_gizmo_handle_scale = (float)p_theme->get_constant(SNAME("gizmo_handle_scale"), SNAME("Editor"));
 
 		keep_old_icons = (Math::is_equal_approx(prev_scale, EDSCALE) &&
+				Math::is_equal_approx(prev_gizmo_handle_scale, gizmo_handle_scale) &&
 				prev_dark_theme == dark_theme &&
 				prev_accent_color == accent_color &&
 				prev_icon_saturation == icon_saturation);

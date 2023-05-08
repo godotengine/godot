@@ -644,6 +644,10 @@
 			If [code]true[/code], increases the scrollbar touch area to improve usability on touchscreen devices.
 			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
 		</member>
+		<member name="interface/touchscreen/scale_gizmo_handles" type="float" setter="" getter="">
+			Specify the multiplier to apply to the scale for the editor gizmo handles to improve usability on touchscreen devices.
+			[b]Note:[/b] Defaults to [code]1[/code] on non-touchscreen devices.
+		</member>
 		<member name="network/debug/remote_host" type="String" setter="" getter="">
 			The address to listen to when starting the remote debugger. This can be set to [code]0.0.0.0[/code] to allow external clients to connect to the remote debugger (instead of restricting the remote debugger to connections from [code]localhost[/code]).
 		</member>
