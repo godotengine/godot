@@ -423,7 +423,14 @@ Error OS::set_thread_name(const String &p_name) {
 };
 
 bool OS::has_feature(const String &p_feature) const {
-	return ::OS::get_singleton()->has_feature(p_feature);
+	const bool *value_ptr = feature_cache.getptr(p_feature);
+	if (value_ptr) {
+		return *value_ptr;
+	} else {
+		const bool has = ::OS::get_singleton()->has_feature(p_feature);
+		feature_cache[p_feature] = has;
+		return has;
+	}
 }
 
 uint64_t OS::get_static_memory_usage() const {
