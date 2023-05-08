@@ -747,7 +747,7 @@
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="layer" type="int" />
 			<description>
-				Retruns the [param texture] data for the specified [param layer] as raw binary data. For 2D textures (which only have one layer), [param layer] must be [code]0[/code].
+				Returns the [param texture] data for the specified [param layer] as raw binary data. For 2D textures (which only have one layer), [param layer] must be [code]0[/code].
 				[b]Note:[/b] [param texture] can't be retrieved while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to retrieve this texture. Otherwise, an error is printed and a empty [PackedByteArray] is returned.
 				[b]Note:[/b] [param texture] requires the [constant TEXTURE_USAGE_CAN_COPY_FROM_BIT] to be retrieved. Otherwise, an error is printed and a empty [PackedByteArray] is returned.
 			</description>
@@ -1708,7 +1708,7 @@
 			Sample with repeating enabled.
 		</constant>
 		<constant name="SAMPLER_REPEAT_MODE_MIRRORED_REPEAT" value="1" enum="SamplerRepeatMode">
-			Sample with mirrored repeating enabled. When sampling outside the [code][0.0, 1.0][/code] range, return a mirrorred version of the sampler. This mirrored version is mirrored again if sampling further away, with the pattern repeating indefinitely.
+			Sample with mirrored repeating enabled. When sampling outside the [code][0.0, 1.0][/code] range, return a mirrored version of the sampler. This mirrored version is mirrored again if sampling further away, with the pattern repeating indefinitely.
 		</constant>
 		<constant name="SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE" value="2" enum="SamplerRepeatMode">
 			Sample with repeating disabled. When sampling outside the [code][0.0, 1.0][/code] range, return the color of the last pixel on the edge.
@@ -1717,7 +1717,7 @@
 			Sample with repeating disabled. When sampling outside the [code][0.0, 1.0][/code] range, return the specified [member RDSamplerState.border_color].
 		</constant>
 		<constant name="SAMPLER_REPEAT_MODE_MIRROR_CLAMP_TO_EDGE" value="4" enum="SamplerRepeatMode">
-			Sample with mirorred repeating enabled, but only once. When sampling in the [code][-1.0, 0.0][/code] range, return a mirrored version of the sampler. When sampling outside the [code][-1.0, 1.0][/code] range, return the color of the last pixel on the edge.
+			Sample with mirrored repeating enabled, but only once. When sampling in the [code][-1.0, 0.0][/code] range, return a mirrored version of the sampler. When sampling outside the [code][-1.0, 1.0][/code] range, return the color of the last pixel on the edge.
 		</constant>
 		<constant name="SAMPLER_REPEAT_MODE_MAX" value="5" enum="SamplerRepeatMode">
 			Represents the size of the [enum SamplerRepeatMode] enum.
