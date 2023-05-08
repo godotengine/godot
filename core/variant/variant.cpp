@@ -3080,7 +3080,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			return reinterpret_cast<const NodePath *>(_data._mem)->hash();
 		} break;
 		case DICTIONARY: {
-			return reinterpret_cast<const Dictionary *>(_data._mem)->recursive_hash(recursion_count);
+			return reinterpret_cast<const Dictionary *>(_data._mem)->recursive_hash(recursion_count + 1);
 
 		} break;
 		case CALLABLE: {
@@ -3094,7 +3094,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 		} break;
 		case ARRAY: {
 			const Array &arr = *reinterpret_cast<const Array *>(_data._mem);
-			return arr.recursive_hash(recursion_count);
+			return arr.recursive_hash(recursion_count + 1);
 
 		} break;
 		case PACKED_BYTE_ARRAY: {
