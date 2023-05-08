@@ -724,7 +724,7 @@ protected:
 
 	friend class ClassDB;
 
-	void _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
+	bool _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
 
 public: // Should be protected, but bug in clang++.
 	static void initialize_class();

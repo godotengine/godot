@@ -1323,28 +1323,28 @@ void Object::disconnect(const StringName &p_signal, const Callable &p_callable) 
 	_disconnect(p_signal, p_callable);
 }
 
-void Object::_disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force) {
-	ERR_FAIL_COND_MSG(p_callable.is_null(), "Cannot disconnect from '" + p_signal + "': the provided callable is null.");
+bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force) {
+	ERR_FAIL_COND_V_MSG(p_callable.is_null(), false, "Cannot disconnect from '" + p_signal + "': the provided callable is null.");
 
 	Object *target_object = p_callable.get_object();
-	ERR_FAIL_COND_MSG(!target_object, "Cannot disconnect '" + p_signal + "' from callable '" + p_callable + "': the callable object is null.");
+	ERR_FAIL_COND_V_MSG(!target_object, false, "Cannot disconnect '" + p_signal + "' from callable '" + p_callable + "': the callable object is null.");
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal) ||
 				(!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal));
-		ERR_FAIL_COND_MSG(signal_is_valid, "Attempt to disconnect a nonexistent connection from '" + to_string() + "'. Signal: '" + p_signal + "', callable: '" + p_callable + "'.");
+		ERR_FAIL_COND_V_MSG(signal_is_valid, false, "Attempt to disconnect a nonexistent connection from '" + to_string() + "'. Signal: '" + p_signal + "', callable: '" + p_callable + "'.");
 	}
-	ERR_FAIL_COND_MSG(!s, vformat("Disconnecting nonexistent signal '%s' in %s.", p_signal, to_string()));
+	ERR_FAIL_COND_V_MSG(!s, false, vformat("Disconnecting nonexistent signal '%s' in %s.", p_signal, to_string()));
 
-	ERR_FAIL_COND_MSG(!s->slot_map.has(*p_callable.get_base_comparator()), "Disconnecting nonexistent signal '" + p_signal + "', callable: " + p_callable + ".");
+	ERR_FAIL_COND_V_MSG(!s->slot_map.has(*p_callable.get_base_comparator()), false, "Disconnecting nonexistent signal '" + p_signal + "', callable: " + p_callable + ".");
 
 	SignalData::Slot *slot = &s->slot_map[*p_callable.get_base_comparator()];
 
 	if (!p_force) {
 		slot->reference_count--; // by default is zero, if it was not referenced it will go below it
 		if (slot->reference_count > 0) {
-			return;
+			return false;
 		}
 	}
 
@@ -1355,6 +1355,8 @@ void Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 		//not user signal, delete
 		signal_map.erase(p_signal);
 	}
+
+	return true;
 }
 
 void Object::_set_bind(const StringName &p_set, const Variant &p_value) {
@@ -1802,23 +1804,30 @@ Object::~Object() {
 		ERR_PRINT("Object " + to_string() + " was freed or unreferenced while a signal is being emitted from it. Try connecting to the signal using 'CONNECT_DEFERRED' flag, or use queue_free() to free the object (if this object is a Node) to avoid this error and potential crashes.");
 	}
 
+	// Drop all connections to the signals of this object.
 	while (signal_map.size()) {
 		// Avoid regular iteration so erasing is safe.
 		KeyValue<StringName, SignalData> &E = *signal_map.begin();
 		SignalData *s = &E.value;
 
-		//brute force disconnect for performance
 		for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
-			slot_kv.value.conn.callable.get_object()->connections.erase(slot_kv.value.cE);
+			Object *target = slot_kv.value.conn.callable.get_object();
+			if (likely(target)) {
+				target->connections.erase(slot_kv.value.cE);
+			}
 		}
 
 		signal_map.erase(E.key);
 	}
 
-	//signals from nodes that connect to this node
+	// Disconnect signals that connect to this object.
 	while (connections.size()) {
 		Connection c = connections.front()->get();
-		c.signal.get_object()->_disconnect(c.signal.get_name(), c.callable, true);
+		bool disconnected = c.signal.get_object()->_disconnect(c.signal.get_name(), c.callable, true);
+		if (unlikely(!disconnected)) {
+			// If the disconnect has failed, abandon the connection to avoid getting trapped in an infinite loop here.
+			connections.pop_front();
+		}
 	}
 
 	if (_instance_id != ObjectID()) {
