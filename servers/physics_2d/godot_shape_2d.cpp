@@ -179,7 +179,7 @@ Variant GodotSeparationRayShape2D::get_data() const {
 /*********************************************************/
 
 void GodotSegmentShape2D::get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const {
-	if (Math::abs(p_normal.dot(n)) > _SEGMENT_IS_VALID_SUPPORT_THRESHOLD) {
+	if (Math::abs(p_normal.dot(n)) > segment_is_valid_support_threshold) {
 		r_supports[0] = a;
 		r_supports[1] = b;
 		r_amount = 2;
@@ -308,7 +308,7 @@ void GodotRectangleShape2D::get_supports(const Vector2 &p_normal, Vector2 *r_sup
 		Vector2 ag;
 		ag[i] = 1.0;
 		real_t dp = ag.dot(p_normal);
-		if (Math::abs(dp) < _SEGMENT_IS_VALID_SUPPORT_THRESHOLD) {
+		if (Math::abs(dp) <= segment_is_valid_support_threshold) {
 			continue;
 		}
 
@@ -368,10 +368,9 @@ Variant GodotRectangleShape2D::get_data() const {
 void GodotCapsuleShape2D::get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const {
 	Vector2 n = p_normal;
 
-	real_t d = n.y;
 	real_t h = height * 0.5 - radius; // half-height of the rectangle part
 
-	if (h > 0 && Math::abs(d) < (1.0 - _SEGMENT_IS_VALID_SUPPORT_THRESHOLD)) {
+	if (h > 0 && Math::abs(n.x) > segment_is_valid_support_threshold) {
 		// make it flat
 		n.y = 0.0;
 		n.normalize();
@@ -384,7 +383,7 @@ void GodotCapsuleShape2D::get_supports(const Vector2 &p_normal, Vector2 *r_suppo
 		r_supports[1].y -= h;
 	} else {
 		n *= radius;
-		n.y += (d > 0) ? h : -h;
+		n.y += (n.y > 0) ? h : -h;
 		r_amount = 1;
 		*r_supports = n;
 	}
@@ -506,7 +505,7 @@ void GodotConvexPolygonShape2D::get_supports(const Vector2 &p_normal, Vector2 *r
 		}
 
 		//test segment
-		if (points[i].normal.dot(p_normal) > _SEGMENT_IS_VALID_SUPPORT_THRESHOLD) {
+		if (points[i].normal.dot(p_normal) > segment_is_valid_support_threshold) {
 			r_amount = 2;
 			r_supports[0] = points[i].pos;
 			r_supports[1] = points[(i + 1) % point_count].pos;
