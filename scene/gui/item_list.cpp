@@ -597,6 +597,7 @@ void ItemList::set_fixed_icon_size(const Size2i &p_size) {
 
 	fixed_icon_size = p_size;
 	queue_redraw();
+	shape_changed = true;
 }
 
 Size2i ItemList::get_fixed_icon_size() const {
@@ -656,13 +657,6 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mb.is_valid() && mb->is_pressed()) {
 		search_string = ""; //any mousepress cancels
-		Vector2 pos = mb->get_position();
-		pos -= theme_cache.panel_style->get_offset();
-		pos.y += scroll_bar->get_value();
-
-		if (is_layout_rtl()) {
-			pos.x = get_size().width - pos.x;
-		}
 
 		int closest = get_item_at_position(mb->get_position(), true);
 
