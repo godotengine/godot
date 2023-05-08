@@ -93,7 +93,6 @@ public:
 	StringName sort_children;
 
 	StringName finished;
-	StringName emission_finished;
 	StringName animation_finished;
 	StringName animation_changed;
 	StringName animation_started;

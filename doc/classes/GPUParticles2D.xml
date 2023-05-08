@@ -18,6 +18,7 @@
 			<return type="Rect2" />
 			<description>
 				Returns a rectangle containing the positions of all existing particles.
+				[b]Note:[/b] When using threaded rendering this method synchronizes the rendering thread. Calling it often may have a negative impact on performance.
 			</description>
 		</method>
 		<method name="emit_particle">
@@ -108,6 +109,14 @@
 			Grow the rect if particles suddenly appear/disappear when the node enters/exits the screen. The [Rect2] can be grown via code or with the [b]Particles → Generate Visibility Rect[/b] editor tool.
 		</member>
 	</members>
+	<signals>
+		<signal name="finished">
+			<description>
+				Emitted when all active particles have finished processing. When [member one_shot] is disabled, particles will process continuously, so this is never emitted.
+				[b]Note:[/b] Due to the particles being computed on the GPU there might be a delay before the signal gets emitted.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="DRAW_ORDER_INDEX" value="0" enum="DrawOrder">
 			Particles are drawn in the order emitted.
