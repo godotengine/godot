@@ -564,18 +564,19 @@ void TileMap::update_dirty_quadrants() {
 			}
 
 			Ref<Texture> normal_map = tile_set->tile_get_normal_map(c.id);
-			Color modulate = tile_set->tile_get_modulate(c.id);
-			Color self_modulate = get_self_modulate();
-			modulate = Color(modulate.r * self_modulate.r, modulate.g * self_modulate.g,
-					modulate.b * self_modulate.b, modulate.a * self_modulate.a);
+			Color modulate = tile_set->tile_get_modulate(c.id) * get_self_modulate();
 			if (r == Rect2()) {
 				tex->draw_rect(canvas_item, rect, false, modulate, c.transpose, normal_map);
 			} else {
-				if (!multirect_started) {
-					multirect_started = true;
-					VisualServerCanvasHelper::tilemap_begin();
+				Rect2 dst_rect;
+				Rect2 src_rect;
+				if (tex->get_combined_rect_region(rect, r, dst_rect, src_rect)) {
+					if (!multirect_started) {
+						multirect_started = true;
+						VisualServerCanvasHelper::tilemap_begin();
+					}
+					VisualServerCanvasHelper::tilemap_add_rect(canvas_item, dst_rect, tex->get_rid(), src_rect, modulate, c.transpose, normal_map.is_valid() ? normal_map->get_rid() : RID(), clip_uv);
 				}
-				VisualServerCanvasHelper::tilemap_add_rect(canvas_item, rect, tex->get_rid(), r, modulate, c.transpose, normal_map.is_valid() ? normal_map->get_rid() : RID(), clip_uv);
 			}
 
 			Vector<TileSet::ShapeData> shapes = tile_set->tile_get_shapes(c.id);
