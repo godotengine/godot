@@ -300,12 +300,13 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 	}
 
 	GLuint read_fbo = 0;
+	glGenFramebuffers(1, &read_fbo);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, read_fbo);
+
 	if (rt->view_count > 1) {
-		glGenFramebuffers(1, &read_fbo);
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, read_fbo);
 		glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rt->color, 0, p_layer);
 	} else {
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
+		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->color, 0);
 	}
 
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
