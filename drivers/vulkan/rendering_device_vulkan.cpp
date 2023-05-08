@@ -4325,10 +4325,6 @@ RID RenderingDeviceVulkan::vertex_buffer_create(uint32_t p_size_bytes, const Vec
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
-	ERR_FAIL_COND_V_MSG(draw_list != nullptr && p_data.size(), RID(),
-			"Creating buffers with data is forbidden during creation of a draw list");
-	ERR_FAIL_COND_V_MSG(compute_list != nullptr && p_data.size(), RID(),
-			"Creating buffers with data is forbidden during creation of a draw list");
 
 	uint32_t usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 	if (p_use_as_storage) {
@@ -4466,10 +4462,6 @@ RID RenderingDeviceVulkan::vertex_array_create(uint32_t p_vertex_count, VertexFo
 
 RID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_count, IndexBufferFormat p_format, const Vector<uint8_t> &p_data, bool p_use_restart_indices) {
 	_THREAD_SAFE_METHOD_
-	ERR_FAIL_COND_V_MSG(draw_list != nullptr && p_data.size(), RID(),
-			"Creating buffers with data is forbidden during creation of a draw list");
-	ERR_FAIL_COND_V_MSG(compute_list != nullptr && p_data.size(), RID(),
-			"Creating buffers with data is forbidden during creation of a draw list");
 
 	ERR_FAIL_COND_V(p_index_count == 0, RID());
 
@@ -5152,10 +5144,6 @@ RID RenderingDeviceVulkan::uniform_buffer_create(uint32_t p_size_bytes, const Ve
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
-	ERR_FAIL_COND_V_MSG(draw_list != nullptr && p_data.size(), RID(),
-			"Creating buffers with data is forbidden during creation of a draw list");
-	ERR_FAIL_COND_V_MSG(compute_list != nullptr && p_data.size(), RID(),
-			"Creating buffers with data is forbidden during creation of a draw list");
 
 	Buffer buffer;
 	Error err = _buffer_allocate(&buffer, p_size_bytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, 0);
@@ -5175,10 +5163,6 @@ RID RenderingDeviceVulkan::uniform_buffer_create(uint32_t p_size_bytes, const Ve
 
 RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<StorageBufferUsage> p_usage) {
 	_THREAD_SAFE_METHOD_
-	ERR_FAIL_COND_V_MSG(draw_list != nullptr && p_data.size(), RID(),
-			"Creating buffers with data is forbidden during creation of a draw list");
-	ERR_FAIL_COND_V_MSG(compute_list != nullptr && p_data.size(), RID(),
-			"Creating buffers with data is forbidden during creation of a draw list");
 
 	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
 
@@ -5201,10 +5185,6 @@ RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const Ve
 
 RID RenderingDeviceVulkan::texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data) {
 	_THREAD_SAFE_METHOD_
-	ERR_FAIL_COND_V_MSG(draw_list != nullptr && p_data.size(), RID(),
-			"Creating buffers with data is forbidden during creation of a draw list");
-	ERR_FAIL_COND_V_MSG(compute_list != nullptr && p_data.size(), RID(),
-			"Creating buffers with data is forbidden during creation of a draw list");
 
 	uint32_t element_size = get_format_vertex_size(p_format);
 	ERR_FAIL_COND_V_MSG(element_size == 0, RID(), "Format requested is not supported for texture buffers");
