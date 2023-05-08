@@ -280,8 +280,7 @@ typedef struct {
 } ICONDIR, *LPICONDIR;
 
 class DisplayServerWindows : public DisplayServer {
-	//No need to register, it's platform-specific and nothing is added
-	//GDCLASS(DisplayServerWindows, DisplayServer)
+	// No need to register with GDCLASS, it's platform-specific and nothing is added.
 
 	_THREAD_SAFE_CLASS_
 
