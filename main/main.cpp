@@ -166,19 +166,20 @@ static bool editor = false;
 static bool project_manager = false;
 static bool cmdline_tool = false;
 static String locale;
-static bool show_help = false;
-static uint64_t quit_after = 0;
 static OS::ProcessID editor_pid = 0;
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+static uint64_t quit_after = 0;
+static bool show_help = false;
+static String debug_server_uri;
+#endif
 #ifdef TOOLS_ENABLED
+HashMap<Main::CLIScope, Vector<String>> forwardable_cli_arguments;
 static bool found_project = false;
 static bool auto_build_solutions = false;
-static String debug_server_uri;
 #ifndef DISABLE_DEPRECATED
 static int converter_max_kb_file = 4 * 1024; // 4MB
 static int converter_max_line_length = 100000;
 #endif // DISABLE_DEPRECATED
-
-HashMap<Main::CLIScope, Vector<String>> forwardable_cli_arguments;
 #endif
 bool use_startup_benchmark = false;
 String startup_benchmark_file;
@@ -331,6 +332,7 @@ void finalize_theme_db() {
 #define MAIN_PRINT(m_txt)
 #endif
 
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
 void Main::print_help(const char *p_binary) {
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
 	OS::get_singleton()->print("Free and open source software under the terms of the MIT license.\n");
@@ -468,6 +470,7 @@ void Main::print_help(const char *p_binary) {
 #endif
 	OS::get_singleton()->print("\n");
 }
+#endif
 
 #ifdef TESTS_ENABLED
 // The order is the same as in `Main::setup()`, only core and some editor types
@@ -818,25 +821,26 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		if (adding_user_args) {
 			user_args.push_back(I->get());
-		} else if (I->get() == "-h" || I->get() == "--help" || I->get() == "/?") { // display help
+		}
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+		else if (I->get() == "-h" || I->get() == "--help" || I->get() == "/?") { // display help
 
 			show_help = true;
 			exit_code = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
 			goto error;
-
 		} else if (I->get() == "--version") {
 			print_line(get_full_version_string());
 			exit_code = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
 			goto error;
-
 		} else if (I->get() == "-v" || I->get() == "--verbose") { // verbose output
 
 			OS::get_singleton()->_verbose_stdout = true;
 		} else if (I->get() == "-q" || I->get() == "--quiet") { // quieter output
 
 			quiet_stdout = true;
-
-		} else if (I->get() == "--audio-driver") { // audio driver
+		}
+#endif // important args
+		else if (I->get() == "--audio-driver") { // audio driver
 
 			if (I->next()) {
 				audio_driver = I->next()->get();
@@ -952,12 +956,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing GPU index argument, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--gpu-validation") {
-			Engine::singleton->use_validation_layers = true;
-#ifdef DEBUG_ENABLED
-		} else if (I->get() == "--gpu-abort") {
-			Engine::singleton->abort_on_gpu_errors = true;
-#endif
 		} else if (I->get() == "--tablet-driver") {
 			if (I->next()) {
 				tablet_driver = I->next()->get();
@@ -966,7 +964,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing tablet driver argument, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--single-window") { // force single window
+		}
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+#ifdef DEBUG_ENABLED
+		else if (I->get() == "--gpu-validation") {
+			Engine::singleton->use_validation_layers = true;
+		} else if (I->get() == "--gpu-abort") {
+			Engine::singleton->abort_on_gpu_errors = true;
+		}
+#endif
+		else if (I->get() == "--single-window") { // force single window
 
 			single_window = true;
 		} else if (I->get() == "-t" || I->get() == "--always-on-top") { // force always-on-top window
@@ -1002,7 +1009,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing resolution argument, aborting.\n");
 				goto error;
 			}
-
 		} else if (I->get() == "--screen") { // set window screen
 
 			if (I->next()) {
@@ -1014,7 +1020,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing screen argument, aborting.\n");
 				goto error;
 			}
-
 		} else if (I->get() == "--position") { // set window position
 
 			if (I->next()) {
@@ -1038,16 +1043,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing position argument, aborting.\n");
 				goto error;
 			}
-
 		} else if (I->get() == "--headless") { // enable headless mode (no audio, no rendering).
 
 			audio_driver = NULL_AUDIO_DRIVER;
 			display_driver = NULL_DISPLAY_DRIVER;
-
 		} else if (I->get() == "--profiling") { // enable profiling
 
 			use_debug_profiler = true;
-
 		} else if (I->get() == "-l" || I->get() == "--language") { // language
 
 			if (I->next()) {
@@ -1057,7 +1059,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing language argument, aborting.\n");
 				goto error;
 			}
-
 		} else if (I->get() == "--remote-fs") { // remote filesystem
 
 			if (I->next()) {
@@ -1238,7 +1239,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing list of breakpoints, aborting.\n");
 				goto error;
 			}
-
 		} else if (I->get() == "--frame-delay") { // force frame delay
 
 			if (I->next()) {
@@ -1248,7 +1248,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing frame delay argument, aborting.\n");
 				goto error;
 			}
-
 		} else if (I->get() == "--time-scale") { // force time scale
 
 			if (I->next()) {
@@ -1258,8 +1257,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing time scale argument, aborting.\n");
 				goto error;
 			}
-
-		} else if (I->get() == "--main-pack") {
+		}
+#endif // essential arg for html builds
+		else if (I->get() == "--main-pack") {
 			if (I->next()) {
 				main_pack = I->next()->get();
 				N = I->next()->next();
@@ -1267,12 +1267,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing path to main pack file, aborting.\n");
 				goto error;
 			};
-
-		} else if (I->get() == "-d" || I->get() == "--debug") {
+		}
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+		else if (I->get() == "-d" || I->get() == "--debug") {
 			debug_uri = "local://";
 			OS::get_singleton()->_debug_stdout = true;
+		}
 #if defined(DEBUG_ENABLED)
-		} else if (I->get() == "--debug-collisions") {
+		else if (I->get() == "--debug-collisions") {
 			debug_collisions = true;
 		} else if (I->get() == "--debug-paths") {
 			debug_paths = true;
@@ -1352,7 +1354,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing --xr-mode argument, aborting.\n");
 				goto error;
 			}
-
 		} else if (I->get() == "--startup-benchmark") {
 			use_startup_benchmark = true;
 		} else if (I->get() == "--startup-benchmark-file") {
@@ -1364,24 +1365,21 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing <path> argument for --startup-benchmark-file <path>.\n");
 				goto error;
 			}
-
-		} else if (I->get() == "--" || I->get() == "++") {
+		}
+#endif
+		else if (I->get() == "--" || I->get() == "++") {
 			adding_user_args = true;
 		} else {
 			main_args.push_back(I->get());
 		}
-
 		I = N;
 	}
-
 #ifdef TOOLS_ENABLED
 	if (editor && project_manager) {
 		OS::get_singleton()->print(
 				"Error: Command line arguments implied opening both editor and project manager, which is not possible. Aborting.\n");
 		goto error;
 	}
-#endif
-
 	// Network file system needs to be configured before globals, since globals are based on the
 	// 'project.godot' file which will only be available through the network if this is enabled
 	FileAccessNetwork::configure();
@@ -1403,7 +1401,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		FileAccess::make_default<FileAccessNetwork>(FileAccess::ACCESS_RESOURCES);
 	}
-
+#endif
 	if (globals->setup(project_path, main_pack, upwards, editor) == OK) {
 #ifdef TOOLS_ENABLED
 		found_project = true;
@@ -1910,9 +1908,11 @@ error:
 	args.clear();
 	main_args.clear();
 
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
 	if (show_help) {
 		print_help(execpath);
 	}
+#endif
 
 	EngineDebugger::deinitialize();
 
@@ -3311,9 +3311,11 @@ bool Main::iteration() {
 		movie_writer->add_frame(vp_tex);
 	}
 
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
 	if ((quit_after > 0) && (Engine::get_singleton()->_process_frames >= quit_after)) {
 		exit = true;
 	}
+#endif
 
 	if (fixed_fps != -1) {
 		return exit;
