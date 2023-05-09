@@ -10,6 +10,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_8">
+			<return type="int" />
+			<description>
+				Gets a signed byte from the stream.
+			</description>
+		</method>
 		<method name="get_16">
 			<return type="int" />
 			<description>
@@ -26,12 +32,6 @@
 			<return type="int" />
 			<description>
 				Gets a signed 64-bit value from the stream.
-			</description>
-		</method>
-		<method name="get_8">
-			<return type="int" />
-			<description>
-				Gets a signed byte from the stream.
 			</description>
 		</method>
 		<method name="get_available_bytes" qualifiers="const">
@@ -73,6 +73,12 @@
 				Gets an ASCII string with byte-length [param bytes] from the stream. If [param bytes] is negative (default) the length will be read from the stream using the reverse process of [method put_string].
 			</description>
 		</method>
+		<method name="get_u8">
+			<return type="int" />
+			<description>
+				Gets an unsigned byte from the stream.
+			</description>
+		</method>
 		<method name="get_u16">
 			<return type="int" />
 			<description>
@@ -91,12 +97,6 @@
 				Gets an unsigned 64-bit value from the stream.
 			</description>
 		</method>
-		<method name="get_u8">
-			<return type="int" />
-			<description>
-				Gets an unsigned byte from the stream.
-			</description>
-		</method>
 		<method name="get_utf8_string">
 			<return type="String" />
 			<param index="0" name="bytes" type="int" default="-1" />
@@ -111,6 +111,13 @@
 				Gets a Variant from the stream. If [param allow_objects] is [code]true[/code], decoding objects is allowed.
 				Internally, this uses the same decoding mechanism as the [method @GlobalScope.bytes_to_var] method.
 				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
+			</description>
+		</method>
+		<method name="put_8">
+			<return type="void" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Puts a signed byte into the stream.
 			</description>
 		</method>
 		<method name="put_16">
@@ -132,13 +139,6 @@
 			<param index="0" name="value" type="int" />
 			<description>
 				Puts a signed 64-bit value into the stream.
-			</description>
-		</method>
-		<method name="put_8">
-			<return type="void" />
-			<param index="0" name="value" type="int" />
-			<description>
-				Puts a signed byte into the stream.
 			</description>
 		</method>
 		<method name="put_data">
@@ -185,6 +185,13 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="put_u8">
+			<return type="void" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Puts an unsigned byte into the stream.
+			</description>
+		</method>
 		<method name="put_u16">
 			<return type="void" />
 			<param index="0" name="value" type="int" />
@@ -204,13 +211,6 @@
 			<param index="0" name="value" type="int" />
 			<description>
 				Puts an unsigned 64-bit value into the stream.
-			</description>
-		</method>
-		<method name="put_u8">
-			<return type="void" />
-			<param index="0" name="value" type="int" />
-			<description>
-				Puts an unsigned byte into the stream.
 			</description>
 		</method>
 		<method name="put_utf8_string">
