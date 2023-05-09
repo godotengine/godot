@@ -309,6 +309,13 @@
 			Minimum tangent acceleration.
 		</member>
 	</members>
+	<signals>
+		<signal name="finished">
+			<description>
+				Emitted when all active particles have finished processing. When [member one_shot] is disabled, particles will process continuously, so this is never emitted.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="DRAW_ORDER_INDEX" value="0" enum="DrawOrder">
 			Particles are drawn in the order emitted.
