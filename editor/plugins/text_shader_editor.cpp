@@ -1065,11 +1065,6 @@ void TextShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) 
 }
 
 TextShaderEditor::TextShaderEditor() {
-	GLOBAL_DEF("debug/shader_language/warnings/enable", true);
-	GLOBAL_DEF("debug/shader_language/warnings/treat_warnings_as_errors", false);
-	for (int i = 0; i < (int)ShaderWarning::WARNING_MAX; i++) {
-		GLOBAL_DEF("debug/shader_language/warnings/" + ShaderWarning::get_name_from_code((ShaderWarning::Code)i).to_lower(), true);
-	}
 	_update_warnings(false);
 
 	shader_editor = memnew(ShaderTextEditor);
