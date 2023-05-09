@@ -74,11 +74,27 @@ public:
 	static _ALWAYS_INLINE_ double tanh(double p_x) { return ::tanh(p_x); }
 	static _ALWAYS_INLINE_ float tanh(float p_x) { return ::tanhf(p_x); }
 
-	static _ALWAYS_INLINE_ double asin(double p_x) { return ::asin(p_x); }
-	static _ALWAYS_INLINE_ float asin(float p_x) { return ::asinf(p_x); }
+	// GUIDELINES on use of asin / acos.
+	// Use safe version if you are SURE a clamp is needed.
+	// Use unsafe version if you are SURE a clamp is not needed, OR Nan is dealt with (and likely to be a bottleneck).
+	// Use generic version if you are not sure.
+	static _ALWAYS_INLINE_ double safe_asin(double p_x) { return p_x < -1 ? (-Math_PI / 2) : (p_x > 1 ? (Math_PI / 2) : ::asin(p_x)); }
+	static _ALWAYS_INLINE_ float safe_asin(float p_x) { return p_x < -1 ? (-Math_PI / 2) : (p_x > 1 ? (Math_PI / 2) : ::asinf(p_x)); }
 
-	static _ALWAYS_INLINE_ double acos(double p_x) { return ::acos(p_x); }
-	static _ALWAYS_INLINE_ float acos(float p_x) { return ::acosf(p_x); }
+	static _ALWAYS_INLINE_ double unsafe_asin(double p_x) { return ::asin(p_x); }
+	static _ALWAYS_INLINE_ float unsafe_asin(float p_x) { return ::asinf(p_x); }
+
+	static _ALWAYS_INLINE_ double asin(double p_x) { return safe_asin(p_x); }
+	static _ALWAYS_INLINE_ float asin(float p_x) { return safe_asin(p_x); }
+
+	static _ALWAYS_INLINE_ double safe_acos(double p_x) { return p_x < -1 ? Math_PI : (p_x > 1 ? 0 : ::acos(p_x)); }
+	static _ALWAYS_INLINE_ float safe_acos(float p_x) { return p_x < -1 ? Math_PI : (p_x > 1 ? 0 : ::acosf(p_x)); }
+
+	static _ALWAYS_INLINE_ double unsafe_acos(double p_x) { return ::acos(p_x); }
+	static _ALWAYS_INLINE_ float unsafe_acos(float p_x) { return ::acosf(p_x); }
+
+	static _ALWAYS_INLINE_ double acos(double p_x) { return safe_acos(p_x); }
+	static _ALWAYS_INLINE_ float acos(float p_x) { return safe_acos(p_x); }
 
 	static _ALWAYS_INLINE_ double atan(double p_x) { return ::atan(p_x); }
 	static _ALWAYS_INLINE_ float atan(float p_x) { return ::atanf(p_x); }
