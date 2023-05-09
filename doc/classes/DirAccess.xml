@@ -173,6 +173,7 @@
 			<description>
 				Returns a [PackedStringArray] containing filenames of the directory contents, excluding directories. The array is sorted alphabetically.
 				Affected by [member include_hidden].
+				[b]Note:[/b] When used on a [code]res://[/code] path in an exported project, only the files actually included in the PCK at the given folder level are returned. In practice, this means that since imported resources are stored in a top-level [code].godot/[/code] folder, only paths to [code]*.gd[/code] and [code]*.import[/code] files are returned (plus a few files such as [code]project.godot[/code] or [code]project.binary[code] and the project icon). In an exported project, the list of returned files will also vary depending on whether [member ProjectSettings.editor/export/convert_text_resources_to_binary] is [code]true[/code].
 			</description>
 		</method>
 		<method name="get_files_at" qualifiers="static">
