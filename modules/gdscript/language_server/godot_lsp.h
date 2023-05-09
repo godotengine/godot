@@ -1005,7 +1005,9 @@ struct CompletionItem {
 			if (commitCharacters.size()) {
 				dict["commitCharacters"] = commitCharacters;
 			}
-			dict["command"] = command.to_json();
+			if (!command.command.is_empty()) {
+				dict["command"] = command.to_json();
+			}
 		}
 		return dict;
 	}
