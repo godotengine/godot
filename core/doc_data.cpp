@@ -165,6 +165,7 @@ void DocData::method_doc_from_methodinfo(DocData::MethodDoc &p_method, const Met
 void DocData::constant_doc_from_variant(DocData::ConstantDoc &p_const, const StringName &p_name, const Variant &p_value, const String &p_desc) {
 	p_const.name = p_name;
 	p_const.value = p_value;
+	p_const.is_value_valid = (p_value.get_type() != Variant::OBJECT);
 	p_const.description = p_desc;
 }
 
