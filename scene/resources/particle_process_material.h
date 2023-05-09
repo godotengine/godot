@@ -261,7 +261,6 @@ private:
 	_FORCE_INLINE_ void _queue_shader_change();
 	_FORCE_INLINE_ bool _is_shader_dirty() const;
 
-	bool is_initialized = false;
 	Vector3 direction;
 	float spread = 0.0f;
 	float flatness = 0.0f;

@@ -915,7 +915,7 @@ void ParticleProcessMaterial::flush_changes() {
 void ParticleProcessMaterial::_queue_shader_change() {
 	MutexLock lock(material_mutex);
 
-	if (is_initialized && !element.in_list()) {
+	if (_is_initialized() && !element.in_list()) {
 		dirty_materials->add(&element);
 	}
 }
@@ -1889,8 +1889,7 @@ ParticleProcessMaterial::ParticleProcessMaterial() :
 
 	current_key.invalid_key = 1;
 
-	is_initialized = true;
-	_queue_shader_change();
+	_mark_initialized(callable_mp(this, &ParticleProcessMaterial::_queue_shader_change));
 }
 
 ParticleProcessMaterial::~ParticleProcessMaterial() {
