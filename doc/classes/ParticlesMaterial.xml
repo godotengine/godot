@@ -112,13 +112,16 @@
 			Animation speed randomness ratio.
 		</member>
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color( 1, 1, 1, 1 )">
-			Each particle's initial color. If the [Particles2D]'s [code]texture[/code] is defined, it will be multiplied by this color. To have particle display color in a [SpatialMaterial] make sure to set [member SpatialMaterial.vertex_color_use_as_albedo] to [code]true[/code].
+			Each particle's initial color. If the [Particles2D]'s or [Particles]'s [code]texture[/code] is defined, it will be multiplied by this color.
+			[b]Note:[/b] [member color] multiplies the particle mesh's vertex colors. To have a visible effect on a [SpatialMaterial], [member SpatialMaterial.vertex_color_use_as_albedo] [i]must[/i] be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function. Otherwise, [member color] will have no visible effect.
 		</member>
 		<member name="color_initial_ramp" type="Texture" setter="set_color_initial_ramp" getter="get_color_initial_ramp">
 			Each particle's initial color will vary along this [GradientTexture] (multiplied with [member color]).
+			[b]Note:[/b] [member color_initial_ramp] multiplies the particle mesh's vertex colors. To have a visible effect on a [SpatialMaterial], [member SpatialMaterial.vertex_color_use_as_albedo] [i]must[/i] be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function. Otherwise, [member color_initial_ramp] will have no visible effect.
 		</member>
 		<member name="color_ramp" type="Texture" setter="set_color_ramp" getter="get_color_ramp">
 			Each particle's color will vary along this [GradientTexture] over its lifetime (multiplied with [member color]).
+			[b]Note:[/b] [member color_ramp] multiplies the particle mesh's vertex colors. To have a visible effect on a [SpatialMaterial], [member SpatialMaterial.vertex_color_use_as_albedo] [i]must[/i] be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function. Otherwise, [member color_ramp] will have no visible effect.
 		</member>
 		<member name="damping" type="float" setter="set_param" getter="get_param" default="0.0">
 			The rate at which particles lose velocity.
@@ -137,6 +140,7 @@
 		</member>
 		<member name="emission_color_texture" type="Texture" setter="set_emission_color_texture" getter="get_emission_color_texture">
 			Particle color will be modulated by color determined by sampling this texture at the same point as the [member emission_point_texture].
+			[b]Note:[/b] [member emission_color_texture] multiplies the particle mesh's vertex colors. To have a visible effect on a [SpatialMaterial], [member SpatialMaterial.vertex_color_use_as_albedo] [i]must[/i] be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function. Otherwise, [member emission_color_texture] will have no visible effect.
 		</member>
 		<member name="emission_normal_texture" type="Texture" setter="set_emission_normal_texture" getter="get_emission_normal_texture">
 			Particle velocity and rotation will be set by sampling this texture at the same point as the [member emission_point_texture]. Used only in [constant EMISSION_SHAPE_DIRECTED_POINTS]. Can be created automatically from mesh or node by selecting "Create Emission Points from Mesh/Node" under the "Particles" tool in the toolbar.
