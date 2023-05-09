@@ -52,7 +52,7 @@
 			<return type="float" />
 			<argument index="0" name="s" type="float" />
 			<description>
-				Returns the arc cosine of [code]s[/code] in radians. Use to get the angle of cosine [code]s[/code]. [code]s[/code] must be between [code]-1.0[/code] and [code]1.0[/code] (inclusive), otherwise, [method acos] will return [constant NAN].
+				Returns the arc cosine of [code]s[/code] in radians. Use to get the angle of cosine [code]s[/code]. [code]s[/code] will be clamped between [code]-1.0[/code] and [code]1.0[/code] (inclusive), in order to prevent [method acos] from returning [constant NAN].
 				[codeblock]
 				# c is 0.523599 or 30 degrees if converted with rad2deg(s)
 				c = acos(0.866025)
@@ -63,7 +63,7 @@
 			<return type="float" />
 			<argument index="0" name="s" type="float" />
 			<description>
-				Returns the arc sine of [code]s[/code] in radians. Use to get the angle of sine [code]s[/code]. [code]s[/code] must be between [code]-1.0[/code] and [code]1.0[/code] (inclusive), otherwise, [method asin] will return [constant NAN].
+				Returns the arc sine of [code]s[/code] in radians. Use to get the angle of sine [code]s[/code]. [code]s[/code] will be clamped between [code]-1.0[/code] and [code]1.0[/code] (inclusive), in order to prevent [method asin] from returning [constant NAN].
 				[codeblock]
 				# s is 0.523599 or 30 degrees if converted with rad2deg(s)
 				s = asin(0.5)

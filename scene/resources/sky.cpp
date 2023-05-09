@@ -173,7 +173,8 @@ Ref<Image> ProceduralSky::_generate_sky() {
 
 				normal.normalize();
 
-				float v_angle = Math::acos(CLAMP(normal.y, -1.0, 1.0));
+				// acos does clamping.
+				float v_angle = Math::acos(normal.y);
 
 				Color color;
 
@@ -192,7 +193,8 @@ Ref<Image> ProceduralSky::_generate_sky() {
 					color.g *= sky_energy;
 					color.b *= sky_energy;
 
-					float sun_angle = Math::rad2deg(Math::acos(CLAMP(sun.dot(normal), -1.0, 1.0)));
+					// acos does clamping.
+					float sun_angle = Math::rad2deg(Math::acos(sun.dot(normal)));
 
 					if (sun_angle < sun_angle_min) {
 						color = color.blend(sun_linear);
