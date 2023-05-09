@@ -1633,6 +1633,7 @@ static void _register_variant_builtin_methods() {
 
 	bind_string_method(casecmp_to, sarray("to"), varray());
 	bind_string_method(nocasecmp_to, sarray("to"), varray());
+	bind_string_method(naturalcasecmp_to, sarray("to"), varray());
 	bind_string_method(naturalnocasecmp_to, sarray("to"), varray());
 	bind_string_method(length, sarray(), varray());
 	bind_string_method(substr, sarray("from", "len"), varray(-1));

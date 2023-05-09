@@ -262,6 +262,7 @@ public:
 
 	signed char casecmp_to(const String &p_str) const;
 	signed char nocasecmp_to(const String &p_str) const;
+	signed char naturalcasecmp_to(const String &p_str) const;
 	signed char naturalnocasecmp_to(const String &p_str) const;
 
 	const char32_t *get_data() const;
