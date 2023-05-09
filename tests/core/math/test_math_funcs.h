@@ -157,15 +157,15 @@ TEST_CASE_TEMPLATE("[Math] asin/acos/atan", T, float, double) {
 	CHECK(Math::asin((T)0.1) == doctest::Approx((T)0.1001674212));
 	CHECK(Math::asin((T)0.5) == doctest::Approx((T)0.5235987756));
 	CHECK(Math::asin((T)1.0) == doctest::Approx((T)1.5707963268));
-	CHECK(Math::is_nan(Math::asin((T)1.5)));
-	CHECK(Math::is_nan(Math::asin((T)450.0)));
+	CHECK(Math::asin((T)2.0) == doctest::Approx((T)1.5707963268));
+	CHECK(Math::asin((T)-2.0) == doctest::Approx((T)-1.5707963268));
 
 	CHECK(Math::acos((T)-0.1) == doctest::Approx((T)1.670963748));
 	CHECK(Math::acos((T)0.1) == doctest::Approx((T)1.4706289056));
 	CHECK(Math::acos((T)0.5) == doctest::Approx((T)1.0471975512));
 	CHECK(Math::acos((T)1.0) == doctest::Approx((T)0.0));
-	CHECK(Math::is_nan(Math::acos((T)1.5)));
-	CHECK(Math::is_nan(Math::acos((T)450.0)));
+	CHECK(Math::acos((T)2.0) == doctest::Approx((T)0.0));
+	CHECK(Math::acos((T)-2.0) == doctest::Approx((T)Math_PI));
 
 	CHECK(Math::atan((T)-0.1) == doctest::Approx((T)-0.0996686525));
 	CHECK(Math::atan((T)0.1) == doctest::Approx((T)0.0996686525));
