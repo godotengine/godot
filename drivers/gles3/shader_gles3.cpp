@@ -242,6 +242,41 @@ static void _display_error_with_code(const String &p_error, const String &p_code
 	ERR_PRINT(p_error);
 }
 
+void ShaderGLES3::_get_uniform_locations(Version::Specialization &spec, Version *p_version) {
+	glUseProgram(spec.id);
+
+	spec.uniform_location.resize(uniform_count);
+	for (int i = 0; i < uniform_count; i++) {
+		spec.uniform_location[i] = glGetUniformLocation(spec.id, uniform_names[i]);
+	}
+
+	for (int i = 0; i < texunit_pair_count; i++) {
+		GLint loc = glGetUniformLocation(spec.id, texunit_pairs[i].name);
+		if (loc >= 0) {
+			if (texunit_pairs[i].index < 0) {
+				glUniform1i(loc, max_image_units + texunit_pairs[i].index);
+			} else {
+				glUniform1i(loc, texunit_pairs[i].index);
+			}
+		}
+	}
+
+	for (int i = 0; i < ubo_count; i++) {
+		GLint loc = glGetUniformBlockIndex(spec.id, ubo_pairs[i].name);
+		if (loc >= 0) {
+			glUniformBlockBinding(spec.id, loc, ubo_pairs[i].index);
+		}
+	}
+	// textures
+	for (int i = 0; i < p_version->texture_uniforms.size(); i++) {
+		String native_uniform_name = _mkid(p_version->texture_uniforms[i]);
+		GLint location = glGetUniformLocation(spec.id, (native_uniform_name).ascii().get_data());
+		glUniform1i(location, i + base_texture_index);
+	}
+
+	glUseProgram(0);
+}
+
 void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_t p_variant, Version *p_version, uint64_t p_specialization) {
 	spec.id = glCreateProgram();
 	spec.ok = false;
@@ -402,40 +437,8 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 		ERR_FAIL();
 	}
 
-	// get uniform locations
+	_get_uniform_locations(spec, p_version);
 
-	glUseProgram(spec.id);
-
-	spec.uniform_location.resize(uniform_count);
-	for (int i = 0; i < uniform_count; i++) {
-		spec.uniform_location[i] = glGetUniformLocation(spec.id, uniform_names[i]);
-	}
-
-	for (int i = 0; i < texunit_pair_count; i++) {
-		GLint loc = glGetUniformLocation(spec.id, texunit_pairs[i].name);
-		if (loc >= 0) {
-			if (texunit_pairs[i].index < 0) {
-				glUniform1i(loc, max_image_units + texunit_pairs[i].index);
-			} else {
-				glUniform1i(loc, texunit_pairs[i].index);
-			}
-		}
-	}
-
-	for (int i = 0; i < ubo_count; i++) {
-		GLint loc = glGetUniformBlockIndex(spec.id, ubo_pairs[i].name);
-		if (loc >= 0) {
-			glUniformBlockBinding(spec.id, loc, ubo_pairs[i].index);
-		}
-	}
-	// textures
-	for (int i = 0; i < p_version->texture_uniforms.size(); i++) {
-		String native_uniform_name = _mkid(p_version->texture_uniforms[i]);
-		GLint location = glGetUniformLocation(spec.id, (native_uniform_name).ascii().get_data());
-		glUniform1i(location, i + base_texture_index);
-	}
-
-	glUseProgram(0);
 	spec.ok = true;
 }
 
@@ -504,11 +507,20 @@ String ShaderGLES3::_version_get_sha1(Version *p_version) const {
 	return hash_build.as_string().sha1_text();
 }
 
-//static const char *shader_file_header = "GLSC";
-//static const uint32_t cache_file_version = 2;
+#ifndef WEB_ENABLED // not supported in webgl
+static const char *shader_file_header = "GLSC";
+static const uint32_t cache_file_version = 3;
+#endif
 
 bool ShaderGLES3::_load_from_cache(Version *p_version) {
-#if 0
+#ifdef WEB_ENABLED // not supported in webgl
+	return false;
+#else
+#ifdef GLES_OVER_GL
+	if (glProgramBinary == NULL) { // ARB_get_program_binary extension not available
+		return false;
+	}
+#endif
 	String sha1 = _version_get_sha1(p_version);
 	String path = shader_cache_dir.path_join(name).path_join(base_sha256).path_join(sha1) + ".cache";
 
@@ -517,7 +529,7 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 		return false;
 	}
 
-	char header[5] = { 0, 0, 0, 0, 0 };
+	char header[5] = {};
 	f->get_buffer((uint8_t *)header, 4);
 	ERR_FAIL_COND_V(header != String(shader_file_header), false);
 
@@ -526,70 +538,98 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 		return false; // wrong version
 	}
 
-	uint32_t variant_count = f->get_32();
+	int cache_variant_count = static_cast<int>(f->get_32());
+	ERR_FAIL_COND_V_MSG(cache_variant_count != this->variant_count, false, "shader cache variant count mismatch, expected " + itos(this->variant_count) + " got " + itos(cache_variant_count)); //should not happen but check
 
-	ERR_FAIL_COND_V(variant_count != (uint32_t)variant_count, false); //should not happen but check
-
-	for (uint32_t i = 0; i < variant_count; i++) {
-		uint32_t variant_size = f->get_32();
-		ERR_FAIL_COND_V(variant_size == 0 && variants_enabled[i], false);
-		if (!variants_enabled[i]) {
-			continue;
-		}
-		Vector<uint8_t> variant_bytes;
-		variant_bytes.resize(variant_size);
-
-		uint32_t br = f->get_buffer(variant_bytes.ptrw(), variant_size);
-
-		ERR_FAIL_COND_V(br != variant_size, false);
-
-		p_version->variant_data[i] = variant_bytes;
-	}
-
-	for (uint32_t i = 0; i < variant_count; i++) {
-		if (!variants_enabled[i]) {
-			MutexLock lock(variant_set_mutex);
-			p_version->variants[i] = RID();
-			continue;
-		}
-		RID shader = GLES3::get_singleton()->shader_create_from_bytecode(p_version->variant_data[i]);
-		if (shader.is_null()) {
-			for (uint32_t j = 0; j < i; j++) {
-				GLES3::get_singleton()->free(p_version->variants[i]);
+	LocalVector<OAHashMap<uint64_t, Version::Specialization>> variants;
+	for (int i = 0; i < cache_variant_count; i++) {
+		uint32_t cache_specialization_count = f->get_32();
+		OAHashMap<uint64_t, Version::Specialization> variant;
+		for (uint32_t j = 0; j < cache_specialization_count; j++) {
+			uint64_t specialization_key = f->get_64();
+			uint32_t variant_size = f->get_32();
+			if (variant_size == 0) {
+				continue;
 			}
-			ERR_FAIL_COND_V(shader.is_null(), false);
-		}
-		{
-			MutexLock lock(variant_set_mutex);
-			p_version->variants[i] = shader;
-		}
-	}
+			uint32_t variant_format = f->get_32();
+			Vector<uint8_t> variant_bytes;
+			variant_bytes.resize(variant_size);
 
-	memdelete_arr(p_version->variant_data); //clear stages
-	p_version->variant_data = nullptr;
-	p_version->valid = true;
+			uint32_t br = f->get_buffer(variant_bytes.ptrw(), variant_size);
+
+			ERR_FAIL_COND_V(br != variant_size, false);
+
+			Version::Specialization specialization;
+
+			specialization.id = glCreateProgram();
+			glProgramBinary(specialization.id, variant_format, variant_bytes.ptr(), variant_bytes.size());
+
+			_get_uniform_locations(specialization, p_version);
+
+			specialization.ok = true;
+
+			variant.insert(specialization_key, specialization);
+		}
+		variants.push_back(variant);
+	}
+	p_version->variants = variants;
+
 	return true;
-#endif
-	return false;
+#endif // WEB_ENABLED
 }
 
 void ShaderGLES3::_save_to_cache(Version *p_version) {
-#if 0
+#ifdef WEB_ENABLED // not supported in webgl
+	return;
+#else
+#ifdef GLES_OVER_GL
+	if (glGetProgramBinary == NULL) { // ARB_get_program_binary extension not available
+		return;
+	}
+#endif
 	String sha1 = _version_get_sha1(p_version);
 	String path = shader_cache_dir.path_join(name).path_join(base_sha256).path_join(sha1) + ".cache";
 
-	Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE);
+	Error error;
+	Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE, &error);
 	ERR_FAIL_COND(f.is_null());
 	f->store_buffer((const uint8_t *)shader_file_header, 4);
-	f->store_32(cache_file_version); //file version
-	uint32_t variant_count = variant_count;
-	f->store_32(variant_count); //variant count
+	f->store_32(cache_file_version);
+	f->store_32(variant_count);
 
-	for (uint32_t i = 0; i < variant_count; i++) {
-		f->store_32(p_version->variant_data[i].size()); //stage count
-		f->store_buffer(p_version->variant_data[i].ptr(), p_version->variant_data[i].size());
+	for (int i = 0; i < variant_count; i++) {
+		int cache_specialization_count = p_version->variants[i].get_num_elements();
+		f->store_32(cache_specialization_count);
+
+		for (OAHashMap<uint64_t, ShaderGLES3::Version::Specialization>::Iterator it = p_version->variants[i].iter(); it.valid; it = p_version->variants[i].next_iter(it)) {
+			const uint64_t specialization_key = *it.key;
+			f->store_64(specialization_key);
+
+			const Version::Specialization *specialization = it.value;
+			if (specialization == nullptr) {
+				f->store_32(0);
+				continue;
+			}
+			GLint program_size = 0;
+			glGetProgramiv(specialization->id, GL_PROGRAM_BINARY_LENGTH, &program_size);
+			if (program_size == 0) {
+				f->store_32(0);
+				continue;
+			}
+			PackedByteArray compiled_program;
+			compiled_program.resize(program_size);
+			GLenum binary_format = 0;
+			glGetProgramBinary(specialization->id, program_size, nullptr, &binary_format, compiled_program.ptrw());
+			if (program_size != compiled_program.size()) {
+				f->store_32(0);
+				continue;
+			}
+			f->store_32(program_size);
+			f->store_32(binary_format);
+			f->store_buffer(compiled_program.ptr(), compiled_program.size());
+		}
 	}
-#endif
+#endif // WEB_ENABLED
 }
 
 void ShaderGLES3::_clear_version(Version *p_version) {
@@ -613,6 +653,9 @@ void ShaderGLES3::_clear_version(Version *p_version) {
 
 void ShaderGLES3::_initialize_version(Version *p_version) {
 	ERR_FAIL_COND(p_version->variants.size() > 0);
+	if (_load_from_cache(p_version)) {
+		return;
+	}
 	p_version->variants.reserve(variant_count);
 	for (int i = 0; i < variant_count; i++) {
 		OAHashMap<uint64_t, Version::Specialization> variant;
@@ -621,6 +664,7 @@ void ShaderGLES3::_initialize_version(Version *p_version) {
 		_compile_specialization(spec, i, p_version, specialization_default_mask);
 		p_version->variants[i].insert(specialization_default_mask, spec);
 	}
+	_save_to_cache(p_version);
 }
 
 void ShaderGLES3::version_set_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines, const Vector<StringName> &p_texture_uniforms, bool p_initialize) {

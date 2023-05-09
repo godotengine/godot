@@ -34,6 +34,7 @@
 #ifdef GLES3_ENABLED
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
 #include "core/os/os.h"
 #include "storage/texture_storage.h"
 
@@ -256,6 +257,36 @@ RasterizerGLES3::RasterizerGLES3() {
 	}
 #endif // GLES_OVER_GL
 #endif // CAN_DEBUG
+
+	{
+		String shader_cache_dir = Engine::get_singleton()->get_shader_cache_path();
+		if (shader_cache_dir.is_empty()) {
+			shader_cache_dir = "user://";
+		}
+		Ref<DirAccess> da = DirAccess::open(shader_cache_dir);
+		if (da.is_null()) {
+			ERR_PRINT("Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
+		} else {
+			Error err = da->change_dir("shader_cache");
+			if (err != OK) {
+				err = da->make_dir("shader_cache");
+			}
+			if (err != OK) {
+				ERR_PRINT("Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
+			} else {
+				shader_cache_dir = shader_cache_dir.path_join("shader_cache");
+
+				bool shader_cache_enabled = GLOBAL_GET("rendering/shader_compiler/shader_cache/enabled");
+				if (!Engine::get_singleton()->is_editor_hint() && !shader_cache_enabled) {
+					shader_cache_dir = String(); //disable only if not editor
+				}
+
+				if (!shader_cache_dir.is_empty()) {
+					ShaderGLES3::set_shader_cache_dir(shader_cache_dir);
+				}
+			}
+		}
+	}
 
 	// OpenGL needs to be initialized before initializing the Rasterizers
 	config = memnew(GLES3::Config);
