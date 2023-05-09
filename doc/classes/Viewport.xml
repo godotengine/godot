@@ -201,6 +201,7 @@
 			<return type="void" />
 			<description>
 				Stops the input from propagating further down the [SceneTree].
+				[b]Note:[/b] This does not affect the methods in [Input], only the way events are propagated.
 			</description>
 		</method>
 		<method name="set_positional_shadow_atlas_quadrant_subdiv">
