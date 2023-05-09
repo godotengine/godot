@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		A singleton that deals with inputs. This includes key presses, mouse buttons and movement, joypads, and input actions. Actions and their events can be set in the [b]Input Map[/b] tab in the [b]Project &gt; Project Settings[/b], or with the [InputMap] class.
+		[b]Note:[/b] For every [InputEventAction] in the [InputMap] there exists a [code]*_pressed[/code] and [code]*_released[/code] signal that can be connected to using [method Object.connect].
 	</description>
 	<tutorials>
 		<link title="Inputs documentation index">$DOCS_URL/tutorials/inputs/index.html</link>
@@ -390,6 +391,13 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="action_toggled">
+			<param index="0" name="action" type="String" />
+			<param index="1" name="pressed" type="bool" />
+			<description>
+				Emitted when an action is pressed or released. Only works for default actions, or those added in the project settings.
+			</description>
+		</signal>
 		<signal name="joy_connection_changed">
 			<param index="0" name="device" type="int" />
 			<param index="1" name="connected" type="bool" />

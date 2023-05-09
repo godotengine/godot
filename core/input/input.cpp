@@ -93,6 +93,22 @@ Input::MouseMode Input::get_mouse_mode() const {
 	return get_mouse_mode_func();
 }
 
+void Input::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			if (!InputMap::get_singleton()) {
+				return;
+			}
+			for (const KeyValue<StringName, InputMap::Action> &E : InputMap::get_singleton()->get_action_map()) {
+				MethodInfo signal_pressed(Variant::NIL, vformat("%s_pressed", E.key));
+				add_user_signal(signal_pressed);
+				MethodInfo signal_released(Variant::NIL, vformat("%s_released", E.key));
+				add_user_signal(signal_released);
+			}
+		} break;
+	}
+}
+
 void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_anything_pressed"), &Input::is_anything_pressed);
 	ClassDB::bind_method(D_METHOD("is_key_pressed", "keycode"), &Input::is_key_pressed);
@@ -169,6 +185,7 @@ void Input::_bind_methods() {
 	BIND_ENUM_CONSTANT(CURSOR_HSPLIT);
 	BIND_ENUM_CONSTANT(CURSOR_HELP);
 
+	ADD_SIGNAL(MethodInfo("action_toggled", PropertyInfo(Variant::STRING, "action"), PropertyInfo(Variant::BOOL, "pressed")));
 	ADD_SIGNAL(MethodInfo("joy_connection_changed", PropertyInfo(Variant::INT, "device"), PropertyInfo(Variant::BOOL, "connected")));
 }
 
@@ -694,6 +711,14 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 				action.raw_strength = 0.0f;
 				action.exact = InputMap::get_singleton()->event_is_action(p_event, E.key, true);
 				action_state[E.key] = action;
+				// For any action
+				emit_signal("action_toggled", E.key, action.pressed);
+				// For specific actions defined in 'InputMap'
+				if (action.pressed) {
+					emit_signal(vformat("%s_pressed", E.key));
+				} else {
+					emit_signal(vformat("%s_released", E.key));
+				}
 			}
 			action_state[E.key].strength = p_event->get_action_strength(E.key);
 			action_state[E.key].raw_strength = p_event->get_action_raw_strength(E.key);
