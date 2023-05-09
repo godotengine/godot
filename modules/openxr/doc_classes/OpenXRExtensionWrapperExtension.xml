@@ -11,8 +11,25 @@
 	<methods>
 		<method name="_get_composition_layer" qualifiers="virtual">
 			<return type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
-				Returns a pointer to an [code]XrCompositionLayerBaseHeader[/code] struct to provide a composition layer. This will only be called if the extension previously registered itself with [method OpenXRAPIExtension.register_composition_layer_provider].
+				Returns a pointer to an [code]XrCompositionLayerBaseHeader[/code] struct to provide the given composition layer.
+				This will only be called if the extension previously registered itself with [method OpenXRAPIExtension.register_composition_layer_provider].
+			</description>
+		</method>
+		<method name="_get_composition_layer_count" qualifiers="virtual">
+			<return type="int" />
+			<description>
+				Returns the number of composition layers this extension wrapper provides via [method _get_composition_layer].
+				This will only be called if the extension previously registered itself with [method OpenXRAPIExtension.register_composition_layer_provider].
+			</description>
+		</method>
+		<method name="_get_composition_layer_order" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns an integer that will be used to sort the given composition layer provided via [method _get_composition_layer]. Lower numbers will move the layer to the front of the list, and higher numbers to the end. The default projection layer has an order of [code]0[/code], so layers provided by this method should probably be above or below (but not exactly) [code]0[/code].
+				This will only be called if the extension previously registered itself with [method OpenXRAPIExtension.register_composition_layer_provider].
 			</description>
 		</method>
 		<method name="_get_requested_extensions" qualifiers="virtual">
