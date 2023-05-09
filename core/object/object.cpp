@@ -884,8 +884,13 @@ void Object::set_meta(const StringName &p_name, const Variant &p_value) {
 	if (p_value.get_type() == Variant::NIL) {
 		if (metadata.has(p_name)) {
 			metadata.erase(p_name);
-			metadata_properties.erase("metadata/" + p_name.operator String());
-			notify_property_list_changed();
+
+			const String &sname = p_name;
+			metadata_properties.erase("metadata/" + sname);
+			if (!sname.begins_with("_")) {
+				// Metadata starting with _ don't show up in the inspector, so no need to update.
+				notify_property_list_changed();
+			}
 		}
 		return;
 	}
@@ -896,8 +901,12 @@ void Object::set_meta(const StringName &p_name, const Variant &p_value) {
 	} else {
 		ERR_FAIL_COND(!p_name.operator String().is_valid_identifier());
 		Variant *V = &metadata.insert(p_name, p_value)->value;
-		metadata_properties["metadata/" + p_name.operator String()] = V;
-		notify_property_list_changed();
+
+		const String &sname = p_name;
+		metadata_properties["metadata/" + sname] = V;
+		if (!sname.begins_with("_")) {
+			notify_property_list_changed();
+		}
 	}
 }
 
