@@ -163,12 +163,12 @@ void OpenXRFbPassthroughExtensionWrapper::on_session_created(const XrSession ses
 	}
 }
 
-XrCompositionLayerBaseHeader *OpenXRFbPassthroughExtensionWrapper::get_composition_layer() {
+OpenXRCompositionLayerProvider::OrderedCompositionLayer OpenXRFbPassthroughExtensionWrapper::get_composition_layer() {
 	if (is_passthrough_enabled()) {
 		composition_passthrough_layer.layerHandle = passthrough_layer;
-		return (XrCompositionLayerBaseHeader *)&composition_passthrough_layer;
+		return { (XrCompositionLayerBaseHeader *)&composition_passthrough_layer, -9999 }; // -9999 so this will always be our bottom layer
 	} else {
-		return nullptr;
+		return { nullptr, 0 };
 	}
 }
 

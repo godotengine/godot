@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  openxr_composition_layer_depth_extension.h                            */
+/*  openxr_composition_layer_extension.h                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,27 +28,63 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_COMPOSITION_LAYER_DEPTH_EXTENSION_H
-#define OPENXR_COMPOSITION_LAYER_DEPTH_EXTENSION_H
+#ifndef OPENXR_COMPOSITION_LAYER_EXTENSION_H
+#define OPENXR_COMPOSITION_LAYER_EXTENSION_H
 
 #include "openxr_composition_layer_provider.h"
 #include "openxr_extension_wrapper.h"
 
-class OpenXRCompositionLayerDepthExtension : public OpenXRExtensionWrapper, public OpenXRCompositionLayerProvider {
-public:
-	static OpenXRCompositionLayerDepthExtension *get_singleton();
+#include "../openxr_api.h"
 
-	OpenXRCompositionLayerDepthExtension();
-	virtual ~OpenXRCompositionLayerDepthExtension() override;
+// This extension provides access to composition layers for displaying 2D content through the XR compositor.
+
+// OpenXRCompositionLayerExtension enables the extensions related to this functionality
+class OpenXRCompositionLayerExtension : public OpenXRExtensionWrapper {
+public:
+	enum CompositionLayerExtensions {
+		COMPOSITION_LAYER_EQUIRECT_EXT,
+		COMPOSITION_LAYER_EXT_MAX
+	};
+
+	static OpenXRCompositionLayerExtension *get_singleton();
+
+	OpenXRCompositionLayerExtension();
+	virtual ~OpenXRCompositionLayerExtension() override;
 
 	virtual HashMap<String, bool *> get_requested_extensions() override;
-	bool is_available();
-	virtual OpenXRCompositionLayerProvider::OrderedCompositionLayer get_composition_layer() override;
+	bool is_available(CompositionLayerExtensions p_which);
 
 private:
-	static OpenXRCompositionLayerDepthExtension *singleton;
+	static OpenXRCompositionLayerExtension *singleton;
 
-	bool available = false;
+	bool available[COMPOSITION_LAYER_EXT_MAX] = { false };
 };
 
-#endif // OPENXR_COMPOSITION_LAYER_DEPTH_EXTENSION_H
+class ViewportCompositionLayerProvider : public OpenXRCompositionLayerProvider {
+public:
+	ViewportCompositionLayerProvider();
+	virtual ~ViewportCompositionLayerProvider() override;
+
+	bool is_supported();
+	void setup_for_type(XrStructureType p_type);
+	virtual OrderedCompositionLayer get_composition_layer() override;
+	bool update_swapchain(uint32_t p_width, uint32_t p_height);
+	void free_swapchain();
+	RID get_image();
+
+private:
+	union {
+		XrCompositionLayerBaseHeader composition_layer;
+		XrCompositionLayerEquirect2KHR equirect_layer;
+	};
+	int sort_order = 1;
+
+	OpenXRAPI *openxr_api = nullptr;
+	OpenXRCompositionLayerExtension *composition_layer_extension = nullptr;
+
+	uint32_t width = 0;
+	uint32_t height = 0;
+	OpenXRAPI::OpenXRSwapChainInfo swapchain_info;
+};
+
+#endif // OPENXR_COMPOSITION_LAYER_EXTENSION_H

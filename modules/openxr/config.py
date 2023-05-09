@@ -19,6 +19,7 @@ def get_doc_classes():
         "OpenXRInteractionProfile",
         "OpenXRIPBinding",
         "OpenXRHand",
+        "OpenXRCompositionLayer",
     ]
 
 

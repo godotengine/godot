@@ -56,7 +56,7 @@ public:
 
 	void on_instance_destroyed() override;
 
-	XrCompositionLayerBaseHeader *get_composition_layer() override;
+	OpenXRCompositionLayerProvider::OrderedCompositionLayer get_composition_layer() override;
 
 	bool is_passthrough_supported() {
 		return fb_passthrough_ext;

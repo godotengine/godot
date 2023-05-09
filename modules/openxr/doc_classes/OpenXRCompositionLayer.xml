@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRCompositionLayer" inherits="SubViewport" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A special viewport that is submitted to the OpenXR compositor for display in headset.
+	</brief_description>
+	<description>
+		Composition layers allow 2D viewports to be displayed inside of the headset by the XR compositor through special projections that retain their quality. This allows for rendering clear text while keeping the layer at a native resolution.
+		[b]Note:[/b] composition layers are only rendered inside of the headset.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="is_supported">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the composition layer is supported by the platform. This requires OpenXR to be initialised.
+				[b]Note:[/b] when not supported, the viewport will still be rendered allowing you to create a fallback by displaying the viewport on a QuadMesh.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="composition_layer_type" type="int" setter="set_composition_layer_type" getter="get_composition_layer_type" enum="OpenXRCompositionLayer.CompositionLayerTypes" default="0">
+			The composition layer type determines how the viewport is displayed in headset.
+		</member>
+	</members>
+	<constants>
+		<constant name="COMPOSITION_LAYER_EQUIRECT2" value="0" enum="CompositionLayerTypes">
+			Composition layer is displayed on a curved rectangle.
+		</constant>
+		<constant name="COMPOSITION_LAYER_MAX" value="1" enum="CompositionLayerTypes">
+		</constant>
+	</constants>
+</class>

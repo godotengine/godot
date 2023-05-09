@@ -56,8 +56,8 @@ bool OpenXRCompositionLayerDepthExtension::is_available() {
 	return available;
 }
 
-XrCompositionLayerBaseHeader *OpenXRCompositionLayerDepthExtension::get_composition_layer() {
+OpenXRCompositionLayerProvider::OrderedCompositionLayer OpenXRCompositionLayerDepthExtension::get_composition_layer() {
 	// Seems this is all done in our base layer... Just in case this changes...
 
-	return nullptr;
+	return { nullptr, 0 };
 }
