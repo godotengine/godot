@@ -3482,9 +3482,9 @@ TEST_CASE("[SceneTree][CodeEdit] symbol lookup") {
 		SIGNAL_CHECK("symbol_validate", signal_args);
 
 		SIGNAL_UNWATCH(code_edit, "symbol_validate");
-
-		memdelete(code_edit);
 	}
+
+	memdelete(code_edit);
 }
 
 TEST_CASE("[SceneTree][CodeEdit] line length guidelines") {
