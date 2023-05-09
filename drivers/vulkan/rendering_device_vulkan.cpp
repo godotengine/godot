@@ -9380,6 +9380,9 @@ bool RenderingDeviceVulkan::has_feature(const Features p_feature) const {
 			VulkanContext::VRSCapabilities vrs_capabilities = context->get_vrs_capabilities();
 			return vrs_capabilities.attachment_vrs_supported && context->get_physical_device_features().shaderStorageImageExtendedFormats;
 		} break;
+		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS: {
+			return true;
+		} break;
 		default: {
 			return false;
 		}
