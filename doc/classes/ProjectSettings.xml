@@ -546,6 +546,39 @@
 		<member name="debug/settings/stdout/verbose_stdout" type="bool" setter="" getter="" default="false">
 			Print more information to standard output when running. It displays information such as memory leaks, which scenes and resources are being loaded, etc. This can also be enabled using the [code]--verbose[/code] or [code]-v[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url], even on an exported project. See also [method OS.is_stdout_verbose] and [method @GlobalScope.print_verbose].
 		</member>
+		<member name="debug/shader_language/warnings/device_limit_exceeded" type="bool" setter="" getter="" default="true">
+			When set to [code]true[/code], produces a warning when the shader exceeds certain device limits. Currently, the only device limit checked is the limit on uniform buffer size. More device limits will be added in the future.
+		</member>
+		<member name="debug/shader_language/warnings/enable" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], enables specific shader warnings (see [code]debug/shader_language/warnings/*[/code] settings). If [code]false[/code], disables all shader warnings.
+		</member>
+		<member name="debug/shader_language/warnings/float_comparison" type="bool" setter="" getter="" default="true">
+			When set to [code]true[/code], produces a warning when two floating point numbers are compared directly with the [code]==[/code] operator or the [code]!=[/code] operator.
+		</member>
+		<member name="debug/shader_language/warnings/formatting_error" type="bool" setter="" getter="" default="true">
+			When set to [code]true[/code], produces a warning upon encountering certain formatting errors. Currently this only checks for empty statements. More formatting errors may be added over time.
+		</member>
+		<member name="debug/shader_language/warnings/treat_warnings_as_errors" type="bool" setter="" getter="" default="false">
+			When set to [code]true[/code], warnings are treated as errors.
+		</member>
+		<member name="debug/shader_language/warnings/unused_constant" type="bool" setter="" getter="" default="true">
+			When set to [code]true[/code], produces a warning when a constant is never used.
+		</member>
+		<member name="debug/shader_language/warnings/unused_function" type="bool" setter="" getter="" default="true">
+			When set to [code]true[/code], produces a warning when a function is never used.
+		</member>
+		<member name="debug/shader_language/warnings/unused_local_variable" type="bool" setter="" getter="" default="true">
+			When set to [code]true[/code], produces a warning when a local variable is never used.
+		</member>
+		<member name="debug/shader_language/warnings/unused_struct" type="bool" setter="" getter="" default="true">
+			When set to [code]true[/code], produces a warning when a struct is never used.
+		</member>
+		<member name="debug/shader_language/warnings/unused_uniform" type="bool" setter="" getter="" default="true">
+			When set to [code]true[/code], produces a warning when a uniform is never used.
+		</member>
+		<member name="debug/shader_language/warnings/unused_varying" type="bool" setter="" getter="" default="true">
+			When set to [code]true[/code], produces a warning when a varying is never used.
+		</member>
 		<member name="debug/shapes/collision/contact_color" type="Color" setter="" getter="" default="Color(1, 0.2, 0.1, 0.8)">
 			Color of the contact points between collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
