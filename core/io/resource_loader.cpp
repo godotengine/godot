@@ -285,9 +285,14 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 void ResourceLoader::_thread_load_function(void *p_userdata) {
 	ThreadLoadTask &load_task = *(ThreadLoadTask *)p_userdata;
 	// Thread-safe either if it's the current thread or a brand new one.
+	CallQueue *mq_override = nullptr;
 	if (load_task.first_in_stack) {
 		if (!load_task.dependent_path.is_empty()) {
 			load_paths_stack.push_back(load_task.dependent_path);
+		}
+		if (!Thread::is_main_thread()) {
+			mq_override = memnew(CallQueue);
+			MessageQueue::set_thread_singleton_override(mq_override);
 		}
 	} else {
 		DEV_ASSERT(load_task.dependent_path.is_empty());
@@ -346,6 +351,11 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	print_lt("END: load count: " + itos(thread_active_count + thread_suspended_count) + " / wait count: " + itos(thread_waiting_count) + " / suspended count: " + itos(thread_suspended_count) + " / active: " + itos(thread_active_count));
 
 	thread_load_mutex.unlock();
+
+	if (load_task.first_in_stack && mq_override) {
+		memdelete(mq_override);
+		MessageQueue::set_thread_singleton_override(nullptr);
+	}
 }
 
 static String _validate_local_path(const String &p_path) {
