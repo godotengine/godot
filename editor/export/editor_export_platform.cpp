@@ -818,6 +818,14 @@ String EditorExportPlatform::_export_customize(const String &p_path, LocalVector
 	return save_path.is_empty() ? p_path : save_path;
 }
 
+String EditorExportPlatform::_get_script_encryption_key(const Ref<EditorExportPreset> &p_preset) const {
+	const String from_env = OS::get_singleton()->get_environment(ENV_SCRIPT_ENCRYPTION_KEY);
+	if (!from_env.is_empty()) {
+		return from_env.to_lower();
+	}
+	return p_preset->get_script_encryption_key().to_lower();
+}
+
 Vector<String> EditorExportPlatform::get_forced_export_files() {
 	Vector<String> files;
 
@@ -946,7 +954,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		}
 
 		// Get encryption key.
-		String script_key = p_preset->get_script_encryption_key().to_lower();
+		String script_key = _get_script_encryption_key(p_preset);
 		key.resize(32);
 		if (script_key.length() == 64) {
 			for (int i = 0; i < 32; i++) {
@@ -1577,7 +1585,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 	Ref<FileAccess> fhead = f;
 
 	if (enc_pck && enc_directory) {
-		String script_key = p_preset->get_script_encryption_key().to_lower();
+		String script_key = _get_script_encryption_key(p_preset);
 		Vector<uint8_t> key;
 		key.resize(32);
 		if (script_key.length() == 64) {
