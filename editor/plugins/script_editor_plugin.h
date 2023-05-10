@@ -47,6 +47,7 @@ class TabContainer;
 class TextureRect;
 class Tree;
 class VSplitContainer;
+class WindowWrapper;
 
 class EditorSyntaxHighlighter : public SyntaxHighlighter {
 	GDCLASS(EditorSyntaxHighlighter, SyntaxHighlighter)
@@ -236,7 +237,7 @@ class ScriptEditor : public PanelContainer {
 		WINDOW_NEXT,
 		WINDOW_PREV,
 		WINDOW_SORT,
-		WINDOW_SELECT_BASE = 100
+		WINDOW_SELECT_BASE = 100,
 	};
 
 	enum {
@@ -272,6 +273,7 @@ class ScriptEditor : public PanelContainer {
 
 	Button *help_search = nullptr;
 	Button *site_search = nullptr;
+	Button *make_floating = nullptr;
 	EditorHelpSearch *help_search_dialog = nullptr;
 
 	ItemList *script_list = nullptr;
@@ -307,6 +309,8 @@ class ScriptEditor : public PanelContainer {
 	FindInFilesDialog *find_in_files_dialog = nullptr;
 	FindInFilesPanel *find_in_files = nullptr;
 	Button *find_in_files_button = nullptr;
+
+	WindowWrapper *window_wrapper = nullptr;
 
 	enum {
 		SCRIPT_EDITOR_FUNC_MAX = 32,
@@ -479,6 +483,8 @@ class ScriptEditor : public PanelContainer {
 	void _start_find_in_files(bool with_replace);
 	void _on_find_in_files_modified_files(PackedStringArray paths);
 
+	void _window_changed(bool p_visible);
+
 	static void _open_script_request(const String &p_path);
 	void _close_builtin_scripts_from_scene(const String &p_scene);
 
@@ -538,7 +544,7 @@ public:
 
 	static void register_create_script_editor_function(CreateScriptEditorFunc p_func);
 
-	ScriptEditor();
+	ScriptEditor(WindowWrapper *p_wrapper);
 	~ScriptEditor();
 };
 
@@ -546,6 +552,17 @@ class ScriptEditorPlugin : public EditorPlugin {
 	GDCLASS(ScriptEditorPlugin, EditorPlugin);
 
 	ScriptEditor *script_editor = nullptr;
+	WindowWrapper *window_wrapper = nullptr;
+
+	String last_editor;
+
+	void _focus_another_editor();
+
+	void _save_last_editor(String p_editor);
+	void _window_visibility_changed(bool p_visible);
+
+protected:
+	void _notification(int p_what);
 
 public:
 	virtual String get_name() const override { return "Script"; }

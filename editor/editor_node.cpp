@@ -147,6 +147,7 @@
 #include "editor/project_settings_editor.h"
 #include "editor/register_exporters.h"
 #include "editor/scene_tree_dock.h"
+#include "editor/window_wrapper.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -4470,67 +4471,66 @@ void EditorNode::_copy_warning(const String &p_str) {
 	DisplayServer::get_singleton()->clipboard_set(warning->get_text());
 }
 
-void EditorNode::_dock_floating_close_request(Control *p_control) {
-	// Through the MarginContainer to the Window.
-	Window *window = static_cast<Window *>(p_control->get_parent()->get_parent());
-	int window_slot = window->get_meta("dock_slot");
+void EditorNode::_dock_floating_close_request(WindowWrapper *p_wrapper) {
+	int dock_slot_num = p_wrapper->get_meta("dock_slot");
+	int dock_slot_index = p_wrapper->get_meta("dock_index");
 
-	p_control->get_parent()->remove_child(p_control);
-	dock_slot[window_slot]->add_child(p_control);
-	dock_slot[window_slot]->move_child(p_control, MIN((int)window->get_meta("dock_index"), dock_slot[window_slot]->get_tab_count() - 1));
-	dock_slot[window_slot]->set_current_tab(dock_slot[window_slot]->get_tab_idx_from_control(p_control));
-	dock_slot[window_slot]->set_tab_title(dock_slot[window_slot]->get_tab_idx_from_control(p_control), TTRGET(p_control->get_name()));
+	// Give back the dock to the original owner.
+	Control *dock = p_wrapper->release_wrapped_control();
 
-	window->queue_free();
+	dock_slot[dock_slot_num]->add_child(dock);
+	dock_slot[dock_slot_num]->move_child(dock, MIN(dock_slot_index, dock_slot[dock_slot_num]->get_tab_count()));
+	dock_slot[dock_slot_num]->set_current_tab(dock_slot_index);
+
+	floating_docks.erase(p_wrapper);
+	p_wrapper->queue_free();
 
 	_update_dock_containers();
-
-	floating_docks.erase(p_control);
 
 	_edit_current();
 }
 
-void EditorNode::_dock_make_float() {
+void EditorNode::_dock_make_selected_float() {
 	Control *dock = dock_slot[dock_popup_selected_idx]->get_current_tab_control();
-	ERR_FAIL_COND(!dock);
+	_dock_make_float(dock, dock_popup_selected_idx);
+
+	dock_select_popup->hide();
+	_edit_current();
+}
+
+void EditorNode::_dock_make_float(Control *p_dock, int p_slot_index, bool p_show_window) {
+	ERR_FAIL_COND(!p_dock);
 
 	Size2 borders = Size2(4, 4) * EDSCALE;
 	// Remember size and position before removing it from the main window.
-	Size2 dock_size = dock->get_size() + borders * 2;
-	Point2 dock_screen_pos = dock->get_global_position() + get_tree()->get_root()->get_position() - borders;
+	Size2 dock_size = p_dock->get_size() + borders * 2;
+	Point2 dock_screen_pos = p_dock->get_screen_position();
 
-	int dock_index = dock->get_index(false);
-	dock_slot[dock_popup_selected_idx]->remove_child(dock);
+	int dock_index = p_dock->get_index() - 1;
+	dock_slot[p_slot_index]->remove_child(p_dock);
 
-	Window *window = memnew(Window);
-	window->set_title(TTRGET(dock->get_name()));
-	Panel *p = memnew(Panel);
-	p->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("PanelForeground"), SNAME("EditorStyles")));
-	p->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	window->add_child(p);
-	MarginContainer *margin = memnew(MarginContainer);
-	margin->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	margin->add_theme_constant_override("margin_right", borders.width);
-	margin->add_theme_constant_override("margin_top", borders.height);
-	margin->add_theme_constant_override("margin_left", borders.width);
-	margin->add_theme_constant_override("margin_bottom", borders.height);
-	window->add_child(margin);
-	dock->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	margin->add_child(dock);
-	window->set_wrap_controls(true);
-	window->set_size(dock_size);
-	window->set_position(dock_screen_pos);
-	window->set_transient(true);
-	window->connect("close_requested", callable_mp(this, &EditorNode::_dock_floating_close_request).bind(dock));
-	window->set_meta("dock_slot", dock_popup_selected_idx);
-	window->set_meta("dock_index", dock_index);
-	gui_base->add_child(window);
+	WindowWrapper *wrapper = memnew(WindowWrapper);
+	wrapper->set_window_title(vformat(TTR("%s - Godot Engine"), p_dock->get_name()));
+	wrapper->set_margins_enabled(true);
+
+	gui_base->add_child(wrapper);
+
+	wrapper->set_wrapped_control(p_dock);
+	wrapper->set_meta("dock_slot", p_slot_index);
+	wrapper->set_meta("dock_index", dock_index);
+	wrapper->set_meta("dock_name", p_dock->get_name().operator String());
+
+	wrapper->connect("window_close_requested", callable_mp(this, &EditorNode::_dock_floating_close_request).bind(wrapper));
 
 	dock_select_popup->hide();
 
+	if (p_show_window) {
+		wrapper->restore_window(Rect2i(dock_screen_pos, dock_size), get_window()->get_current_screen());
+	}
+
 	_update_dock_containers();
 
-	floating_docks.push_back(dock);
+	floating_docks.push_back(wrapper);
 
 	_edit_current();
 }
@@ -4772,6 +4772,35 @@ void EditorNode::_save_docks_to_config(Ref<ConfigFile> p_layout, const String &p
 		}
 	}
 
+	Dictionary floating_docks_dump;
+
+	for (WindowWrapper *wrapper : floating_docks) {
+		Control *dock = wrapper->get_wrapped_control();
+
+		Dictionary dock_dump;
+		dock_dump["window_rect"] = wrapper->get_window_rect();
+
+		int screen = wrapper->get_window_screen();
+		dock_dump["window_screen"] = wrapper->get_window_screen();
+		dock_dump["window_screen_rect"] = DisplayServer::get_singleton()->screen_get_usable_rect(screen);
+
+		String name = dock->get_name();
+		floating_docks_dump[name] = dock_dump;
+
+		int dock_slot_id = wrapper->get_meta("dock_slot");
+		String config_key = "dock_" + itos(dock_slot_id + 1);
+
+		String names = p_layout->get_value(p_section, config_key, "");
+		if (names.is_empty()) {
+			names = name;
+		} else {
+			names += "," + name;
+		}
+		p_layout->set_value(p_section, config_key, names);
+	}
+
+	p_layout->set_value(p_section, "dock_floating", floating_docks_dump);
+
 	p_layout->set_value(p_section, "dock_filesystem_split", FileSystemDock::get_singleton()->get_split_offset());
 	p_layout->set_value(p_section, "dock_filesystem_display_mode", FileSystemDock::get_singleton()->get_display_mode());
 	p_layout->set_value(p_section, "dock_filesystem_file_sort", FileSystemDock::get_singleton()->get_file_sort());
@@ -4918,7 +4947,24 @@ void EditorNode::_dock_tab_changed(int p_tab) {
 	}
 }
 
+void EditorNode::_restore_floating_dock(const Dictionary &p_dock_dump, Control *p_dock, int p_slot_index) {
+	WindowWrapper *wrapper = Object::cast_to<WindowWrapper>(p_dock);
+	if (!wrapper) {
+		_dock_make_float(p_dock, p_slot_index, false);
+		wrapper = floating_docks[floating_docks.size() - 1];
+	}
+
+	wrapper->restore_window_from_saved_position(
+			p_dock_dump.get("window_rect", Rect2i()),
+			p_dock_dump.get("window_screen", -1),
+			p_dock_dump.get("window_screen_rect", Rect2i()));
+}
+
 void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section) {
+	Dictionary floating_docks_dump = p_layout->get_value(p_section, "dock_floating", Dictionary());
+
+	bool restore_window_on_load = EDITOR_GET("interface/multi_window/restore_windows_on_load");
+
 	for (int i = 0; i < DOCK_SLOT_MAX; i++) {
 		if (!p_layout->has_section_key(p_section, "dock_" + itos(i + 1))) {
 			continue;
@@ -4928,6 +4974,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 
 		for (int j = names.size() - 1; j >= 0; j--) {
 			String name = names[j];
+
 			// FIXME: Find it, in a horribly inefficient way.
 			int atidx = -1;
 			Control *node = nullptr;
@@ -4942,24 +4989,45 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 				atidx = k;
 				break;
 			}
-			if (atidx == -1) { // Well, it's not anywhere.
+
+			if (atidx == -1) {
+				// Try floating docks.
+				for (WindowWrapper *wrapper : floating_docks) {
+					if (wrapper->get_meta("dock_name") == name) {
+						if (restore_window_on_load && floating_docks_dump.has(name)) {
+							_restore_floating_dock(floating_docks_dump[name], wrapper, i);
+							return;
+						} else {
+							_dock_floating_close_request(wrapper);
+							atidx = wrapper->get_meta("dock_index");
+						}
+					}
+				}
+
+				// Well, it's not anywhere.
 				continue;
 			}
 
 			if (atidx == i) {
 				dock_slot[i]->move_child(node, 0);
-				continue;
+			} else if (atidx != -1) {
+				dock_slot[atidx]->remove_child(node);
+
+				if (dock_slot[atidx]->get_tab_count() == 0) {
+					dock_slot[atidx]->hide();
+				}
+				dock_slot[i]->add_child(node);
+				dock_slot[i]->move_child(node, 0);
+				dock_slot[i]->set_tab_title(0, TTRGET(node->get_name()));
+				dock_slot[i]->show();
 			}
 
-			dock_slot[atidx]->remove_child(node);
-
-			if (dock_slot[atidx]->get_tab_count() == 0) {
-				dock_slot[atidx]->hide();
+			WindowWrapper *wrapper = Object::cast_to<WindowWrapper>(node);
+			if (restore_window_on_load && floating_docks_dump.has(name)) {
+				_restore_floating_dock(floating_docks_dump[name], node, i);
+			} else if (wrapper) {
+				_dock_floating_close_request(wrapper);
 			}
-			dock_slot[i]->add_child(node);
-			dock_slot[i]->move_child(node, 0);
-			dock_slot[i]->set_tab_title(0, TTRGET(node->get_name()));
-			dock_slot[i]->show();
 		}
 	}
 
@@ -6824,13 +6892,16 @@ EditorNode::EditorNode() {
 	dock_select->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	dock_vb->add_child(dock_select);
 
-	dock_float = memnew(Button);
-	dock_float->set_text(TTR("Make Floating"));
-	dock_float->set_focus_mode(Control::FOCUS_NONE);
-	dock_float->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	dock_float->connect("pressed", callable_mp(this, &EditorNode::_dock_make_float));
+	if (!SceneTree::get_singleton()->get_root()->is_embedding_subwindows() && EDITOR_GET("interface/multi_window/enable")) {
+		dock_float = memnew(Button);
+		dock_float->set_icon(theme->get_icon("MakeFloating", "EditorIcons"));
+		dock_float->set_text(TTR("Make Floating"));
+		dock_float->set_focus_mode(Control::FOCUS_NONE);
+		dock_float->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+		dock_float->connect("pressed", callable_mp(this, &EditorNode::_dock_make_selected_float));
 
-	dock_vb->add_child(dock_float);
+		dock_vb->add_child(dock_float);
+	}
 
 	dock_select_popup->reset_size();
 

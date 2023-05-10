@@ -113,6 +113,7 @@ class ProjectSettingsEditor;
 class RunSettingsDialog;
 class SceneImportSettings;
 class ScriptCreateDialog;
+class WindowWrapper;
 
 class EditorNode : public Node {
 	GDCLASS(EditorNode, Node);
@@ -420,7 +421,7 @@ private:
 	Button *new_inherited_button = nullptr;
 	String open_import_request;
 
-	Vector<Control *> floating_docks;
+	Vector<WindowWrapper *> floating_docks;
 
 	Button *dock_float = nullptr;
 	Button *dock_tab_move_left = nullptr;
@@ -628,8 +629,9 @@ private:
 	void _dock_pre_popup(int p_which);
 	void _dock_split_dragged(int ofs);
 	void _dock_popup_exit();
-	void _dock_floating_close_request(Control *p_control);
-	void _dock_make_float();
+	void _dock_floating_close_request(WindowWrapper *p_wrapper);
+	void _dock_make_selected_float();
+	void _dock_make_float(Control *p_control, int p_slot_index, bool p_show_window = true);
 	void _scene_tab_changed(int p_tab);
 	void _proceed_closing_scene_tabs();
 	bool _is_closing_editor() const;
@@ -649,6 +651,7 @@ private:
 	void _save_docks();
 	void _load_docks();
 	void _save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section);
+	void _restore_floating_dock(const Dictionary &p_dock_dump, Control *p_wrapper, int p_slot_index);
 	void _load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section);
 	void _update_dock_slots_visibility(bool p_keep_selected_tabs = false);
 	void _dock_tab_changed(int p_tab);

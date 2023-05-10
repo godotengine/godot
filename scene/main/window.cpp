@@ -551,9 +551,11 @@ void Window::_make_window() {
 		DisplayServer::get_singleton()->window_set_transient(window_id, transient_parent->window_id);
 	}
 
-	for (const Window *E : transient_children) {
-		if (E->window_id != DisplayServer::INVALID_WINDOW_ID) {
-			DisplayServer::get_singleton()->window_set_transient(E->window_id, transient_parent->window_id);
+	if (transient_parent) {
+		for (const Window *E : transient_children) {
+			if (E->window_id != DisplayServer::INVALID_WINDOW_ID) {
+				DisplayServer::get_singleton()->window_set_transient(E->window_id, transient_parent->window_id);
+			}
 		}
 	}
 

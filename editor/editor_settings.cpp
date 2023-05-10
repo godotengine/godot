@@ -485,6 +485,12 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "interface/scene_tabs/maximum_width", 350, "0,9999,1", PROPERTY_USAGE_DEFAULT)
 	_initial_set("interface/scene_tabs/show_script_button", false);
 
+	// Multi Window
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/multi_window/enable", true, "");
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/multi_window/restore_windows_on_load", true, "");
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/multi_window/maximize_window", false, "");
+	set_restart_if_changed("interface/multi_window/enable", true);
+
 	/* Filesystem */
 
 	// External Programs
