@@ -50,6 +50,7 @@ Tween::interpolater Tween::interpolaters[Tween::TRANS_MAX][Tween::EASE_MAX] = {
 	{ &circ::in, &circ::out, &circ::in_out, &circ::out_in },
 	{ &bounce::in, &bounce::out, &bounce::in_out, &bounce::out_in },
 	{ &back::in, &back::out, &back::in_out, &back::out_in },
+	{ &spring::in, &spring::out, &spring::in_out, &spring::out_in },
 };
 
 void Tweener::set_tween(const Ref<Tween> &p_tween) {
@@ -483,6 +484,7 @@ void Tween::_bind_methods() {
 	BIND_ENUM_CONSTANT(TRANS_CIRC);
 	BIND_ENUM_CONSTANT(TRANS_BOUNCE);
 	BIND_ENUM_CONSTANT(TRANS_BACK);
+	BIND_ENUM_CONSTANT(TRANS_SPRING);
 
 	BIND_ENUM_CONSTANT(EASE_IN);
 	BIND_ENUM_CONSTANT(EASE_OUT);
