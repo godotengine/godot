@@ -127,7 +127,7 @@
 			<return type="Vector3" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
-				Returns the contact position in the collider.
+				Returns the position of the contact point on the collider in the global coordinate system.
 			</description>
 		</method>
 		<method name="get_contact_collider_shape" qualifiers="const">
@@ -169,7 +169,7 @@
 			<return type="Vector3" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
-				Returns the local position of the contact point.
+				Returns the position of the contact point on the body in the global coordinate system.
 			</description>
 		</method>
 		<method name="get_contact_local_shape" qualifiers="const">
