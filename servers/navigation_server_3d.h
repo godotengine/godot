@@ -384,15 +384,40 @@ public:
 #endif // DEBUG_ENABLED
 };
 
-typedef NavigationServer3D *(*NavigationServer3DCallback)();
-
 /// Manager used for the server singleton registration
-class NavigationServer3DManager {
-	static NavigationServer3DCallback create_callback;
+class NavigationServer3DManager : public Object {
+	GDCLASS(NavigationServer3DManager, Object);
+
+	static NavigationServer3DManager *singleton;
+
+	struct ClassInfo {
+		String name;
+		Callable create_callback;
+	};
+
+	Vector<ClassInfo> navigation_servers;
+	int default_server_id = -1;
+	int default_server_priority = -1;
+
+	void on_servers_changed();
+
+protected:
+	static void _bind_methods();
 
 public:
-	static void set_default_server(NavigationServer3DCallback p_callback);
-	static NavigationServer3D *new_default_server();
+	static const String setting_property_name;
+
+	static NavigationServer3DManager *get_singleton();
+
+	void register_server(const String &p_name, const Callable &p_create_callback);
+	void set_default_server(const String &p_name, int p_priority = 0);
+	int find_server_id(const String &p_name) const;
+
+	NavigationServer3D *new_default_server() const;
+	NavigationServer3D *new_server(const String &p_name) const;
+
+	NavigationServer3DManager();
+	~NavigationServer3DManager() override;
 };
 
 VARIANT_ENUM_CAST(NavigationServer3D::ProcessInfo);

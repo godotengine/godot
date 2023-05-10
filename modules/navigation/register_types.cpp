@@ -53,7 +53,8 @@ NavigationServer3D *new_server() {
 
 void initialize_navigation_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		NavigationServer3DManager::set_default_server(new_server);
+		NavigationServer3DManager::get_singleton()->register_server("GodotNavigation3D", callable_mp_static(new_server));
+		NavigationServer3DManager::get_singleton()->set_default_server("GodotNavigation3D");
 
 #ifndef _3D_DISABLED
 		_nav_mesh_generator = memnew(NavigationMeshGenerator);

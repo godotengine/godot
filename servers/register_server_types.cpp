@@ -72,6 +72,7 @@
 #include "rendering/rendering_device.h"
 #include "rendering/rendering_device_binds.h"
 #include "rendering_server.h"
+#include "servers/extensions/navigation_server_3d_extension.h"
 #include "servers/extensions/physics_server_2d_extension.h"
 #include "servers/extensions/physics_server_3d_extension.h"
 #include "servers/rendering/shader_types.h"
@@ -161,12 +162,19 @@ void register_server_types() {
 	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionMotionCollision, "Vector3 position;Vector3 normal;Vector3 collider_velocity;Vector3 collider_angular_velocity;real_t depth;int local_shape;ObjectID collider_id;RID collider;int collider_shape");
 	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionMotionResult, "Vector3 travel;Vector3 remainder;real_t collision_depth;real_t collision_safe_fraction;real_t collision_unsafe_fraction;PhysicsServer3DExtensionMotionCollision collisions[32];int collision_count");
 
+	GDREGISTER_CLASS(NavigationServer3DManager);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer3DManager", NavigationServer3DManager::get_singleton(), "NavigationServer3DManager"));
+
 	GDREGISTER_ABSTRACT_CLASS(NavigationServer2D);
 	GDREGISTER_ABSTRACT_CLASS(NavigationServer3D);
+	GDREGISTER_VIRTUAL_CLASS(NavigationServer3DExtension);
 	GDREGISTER_CLASS(NavigationPathQueryParameters2D);
 	GDREGISTER_CLASS(NavigationPathQueryParameters3D);
 	GDREGISTER_CLASS(NavigationPathQueryResult2D);
 	GDREGISTER_CLASS(NavigationPathQueryResult3D);
+
+	GDREGISTER_NATIVE_STRUCT(NavigationServer3DExtensionPathQueryParameters, "int32_t pathfinding_algorithm;int32_t path_postprocessing;RID map;Vector3 start_position;Vector3 target_position;uint32_t navigation_layers;int64_t metadata_flags");
+	GDREGISTER_NATIVE_STRUCT(NavigationServer3DExtensionPathQueryResult, "PackedVector3Array path;PackedInt32Array path_types;Array path_rids;PackedInt64Array path_owner_ids");
 
 	GDREGISTER_CLASS(XRServer);
 	GDREGISTER_CLASS(CameraServer);
@@ -280,6 +288,10 @@ void register_server_types() {
 
 	PhysicsServer3DManager::get_singleton()->register_server("GodotPhysics3D", callable_mp_static(_createGodotPhysics3DCallback));
 	PhysicsServer3DManager::get_singleton()->set_default_server("GodotPhysics3D");
+
+	// Navigation 3D
+	GLOBAL_DEF(NavigationServer3DManager::setting_property_name, "DEFAULT");
+	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, NavigationServer3DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"));
 
 	writer_mjpeg = memnew(MovieWriterMJPEG);
 	MovieWriter::add_writer(writer_mjpeg);

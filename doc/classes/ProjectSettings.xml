@@ -1801,6 +1801,10 @@
 		<member name="navigation/3d/default_link_connection_radius" type="float" setter="" getter="" default="1.0">
 			Default link connection radius for 3D navigation maps. See [method NavigationServer3D.map_set_link_connection_radius].
 		</member>
+		<member name="navigation/3d/navigation_server" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
+			Sets which navigation server implementation to use.
+			"DEFAULT" is usually the same as "GodotNavigation3D" unless another module or extension overrides it.
+		</member>
 		<member name="network/limits/debugger/max_chars_per_second" type="int" setter="" getter="" default="32768">
 			Maximum number of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>

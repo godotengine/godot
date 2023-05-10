@@ -145,6 +145,7 @@ static PhysicsServer3DManager *physics_server_3d_manager = nullptr;
 static PhysicsServer3D *physics_server_3d = nullptr;
 static PhysicsServer2DManager *physics_server_2d_manager = nullptr;
 static PhysicsServer2D *physics_server_2d = nullptr;
+static NavigationServer3DManager *navigation_server_3d_manager = nullptr;
 static NavigationServer3D *navigation_server_3d = nullptr;
 static NavigationServer2D *navigation_server_2d = nullptr;
 static ThemeDB *theme_db = nullptr;
@@ -315,18 +316,22 @@ void finalize_display() {
 }
 
 void initialize_navigation_server() {
-	ERR_FAIL_COND(navigation_server_3d != nullptr);
+	// Init chosen 3D Navigation Server
+	const String &server_name = GLOBAL_GET(NavigationServer3DManager::setting_property_name);
+	navigation_server_3d = NavigationServer3DManager::get_singleton()->new_server(server_name);
 
-	// Init 3D Navigation Server
-	navigation_server_3d = NavigationServer3DManager::new_default_server();
+	// Fall back to default if not found
+	if (!navigation_server_3d) {
+		// Navigation server not found, so use the default.
+		navigation_server_3d = NavigationServer3DManager::get_singleton()->new_default_server();
+	}
 
 	// Fall back to dummy if no default server has been registered.
 	if (!navigation_server_3d) {
-		WARN_PRINT_ONCE("No NavigationServer3D implementation has been registered! Falling back to a dummy implementation: navigation features will be unavailable.");
+		ERR_PRINT("No NavigationServer3D implementation has been registered! Falling back to a dummy implementation: navigation features will be unavailable.");
 		navigation_server_3d = memnew(NavigationServer3DDummy);
 	}
 
-	// Should be impossible, but make sure it's not null.
 	ERR_FAIL_NULL_MSG(navigation_server_3d, "Failed to initialize NavigationServer3D.");
 
 	// Init 2D Navigation Server
@@ -530,6 +535,8 @@ Error Main::test_setup() {
 	physics_server_3d_manager = memnew(PhysicsServer3DManager);
 	physics_server_2d_manager = memnew(PhysicsServer2DManager);
 
+	navigation_server_3d_manager = memnew(NavigationServer3DManager);
+
 	// From `Main::setup2()`.
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	register_core_extensions();
@@ -646,6 +653,9 @@ void Main::test_cleanup() {
 	}
 	if (tsman) {
 		memdelete(tsman);
+	}
+	if (navigation_server_3d_manager) {
+		memdelete(navigation_server_3d_manager);
 	}
 	if (physics_server_3d_manager) {
 		memdelete(physics_server_3d_manager);
@@ -1998,6 +2008,8 @@ Error Main::setup2() {
 
 	physics_server_3d_manager = memnew(PhysicsServer3DManager);
 	physics_server_2d_manager = memnew(PhysicsServer2DManager);
+
+	navigation_server_3d_manager = memnew(NavigationServer3DManager);
 
 	register_server_types();
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
@@ -3521,6 +3533,9 @@ void Main::cleanup(bool p_force) {
 	}
 	if (tsman) {
 		memdelete(tsman);
+	}
+	if (navigation_server_3d_manager) {
+		memdelete(navigation_server_3d_manager);
 	}
 	if (physics_server_3d_manager) {
 		memdelete(physics_server_3d_manager);
