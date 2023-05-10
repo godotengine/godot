@@ -38,6 +38,7 @@
 #define RVO3D_AGENT_H_
 
 #include <cstddef>
+#include <cstdint>
 #include <utility>
 #include <vector>
 
