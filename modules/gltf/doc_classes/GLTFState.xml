@@ -70,6 +70,7 @@
 		<method name="get_images">
 			<return type="Texture2D[]" />
 			<description>
+				Gets the images of the GLTF file as an array of [Texture2D]s. These are the images that the [member GLTFTexture.src_image] index refers to.
 			</description>
 		</method>
 		<method name="get_lights">
@@ -182,6 +183,7 @@
 			<return type="void" />
 			<param index="0" name="images" type="Texture2D[]" />
 			<description>
+				Sets the images in the state stored as an array of [Texture2D]s. This can be used during export. These are the images that the [member GLTFTexture.src_image] index refers to.
 			</description>
 		</method>
 		<method name="set_lights">

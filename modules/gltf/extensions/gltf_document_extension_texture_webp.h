@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gltf_texture.h                                                        */
+/*  gltf_document_extension_texture_webp.h                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,27 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_TEXTURE_H
-#define GLTF_TEXTURE_H
+#ifndef GLTF_DOCUMENT_EXTENSION_TEXTURE_WEBP_H
+#define GLTF_DOCUMENT_EXTENSION_TEXTURE_WEBP_H
 
-#include "../gltf_defines.h"
-#include "core/io/resource.h"
+#include "gltf_document_extension.h"
 
-class GLTFTexture : public Resource {
-	GDCLASS(GLTFTexture, Resource);
-
-private:
-	GLTFImageIndex src_image = -1;
-	GLTFTextureSamplerIndex sampler = -1;
-
-protected:
-	static void _bind_methods();
+class GLTFDocumentExtensionTextureWebP : public GLTFDocumentExtension {
+	GDCLASS(GLTFDocumentExtensionTextureWebP, GLTFDocumentExtension);
 
 public:
-	GLTFImageIndex get_src_image() const;
-	void set_src_image(GLTFImageIndex val);
-	GLTFTextureSamplerIndex get_sampler() const;
-	void set_sampler(GLTFTextureSamplerIndex val);
+	// Import process.
+	Error import_preflight(Ref<GLTFState> p_state, Vector<String> p_extensions) override;
+	Vector<String> get_supported_extensions() override;
+	Error parse_image_data(Ref<GLTFState> p_state, const PackedByteArray &p_image_data, const String &p_mime_type, Ref<Image> r_image) override;
+	Error parse_texture_json(Ref<GLTFState> p_state, const Dictionary &p_texture_json, Ref<GLTFTexture> r_gltf_texture) override;
 };
 
-#endif // GLTF_TEXTURE_H
+#endif // GLTF_DOCUMENT_EXTENSION_TEXTURE_WEBP_H
