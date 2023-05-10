@@ -328,9 +328,9 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "binary_format/architecture", PROPERTY_HINT_ENUM, "x86_64,x86_32,arm64"), "x86_64"));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/enable"), false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/identity_type", PROPERTY_HINT_ENUM, "Select automatically,Use PKCS12 file (specify *.PFX/*.P12 file),Use certificate store (specify SHA-1 hash)"), 0));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/identity", PROPERTY_HINT_GLOBAL_FILE, "*.pfx,*.p12"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/password", PROPERTY_HINT_PASSWORD), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/identity_type", PROPERTY_HINT_ENUM, "Select automatically,Use PKCS12 file (specify *.PFX/*.P12 file),Use certificate store (specify SHA-1 hash)", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), 0));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/identity", PROPERTY_HINT_GLOBAL_FILE, "*.pfx,*.p12", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/password", PROPERTY_HINT_PASSWORD, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/timestamp"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/timestamp_server_url"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/digest_algorithm", PROPERTY_HINT_ENUM, "SHA1,SHA256"), 1));
@@ -518,21 +518,21 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 
 	//identity
 #ifdef WINDOWS_ENABLED
-	int id_type = p_preset->get("codesign/identity_type");
+	int id_type = p_preset->get_or_env("codesign/identity_type", ENV_WIN_CODESIGN_ID_TYPE);
 	if (id_type == 0) { //auto select
 		args.push_back("/a");
 	} else if (id_type == 1) { //pkcs12
-		if (p_preset->get("codesign/identity") != "") {
+		if (p_preset->get_or_env("codesign/identity", ENV_WIN_CODESIGN_ID) != "") {
 			args.push_back("/f");
-			args.push_back(p_preset->get("codesign/identity"));
+			args.push_back(p_preset->get_or_env("codesign/identity", ENV_WIN_CODESIGN_ID));
 		} else {
 			add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("No identity found."));
 			return FAILED;
 		}
 	} else if (id_type == 2) { //Windows certificate store
-		if (p_preset->get("codesign/identity") != "") {
+		if (p_preset->get_or_env("codesign/identity", ENV_WIN_CODESIGN_ID) != "") {
 			args.push_back("/sha1");
-			args.push_back(p_preset->get("codesign/identity"));
+			args.push_back(p_preset->get_or_env("codesign/identity", ENV_WIN_CODESIGN_ID));
 		} else {
 			add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("No identity found."));
 			return FAILED;
@@ -543,9 +543,9 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 	}
 #else
 	int id_type = 1;
-	if (p_preset->get("codesign/identity") != "") {
+	if (p_preset->get_or_env("codesign/identity", ENV_WIN_CODESIGN_ID) != "") {
 		args.push_back("-pkcs12");
-		args.push_back(p_preset->get("codesign/identity"));
+		args.push_back(p_preset->get_or_env("codesign/identity", ENV_WIN_CODESIGN_ID));
 	} else {
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("No identity found."));
 		return FAILED;
@@ -553,13 +553,13 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 #endif
 
 	//password
-	if ((id_type == 1) && (p_preset->get("codesign/password") != "")) {
+	if ((id_type == 1) && (p_preset->get_or_env("codesign/password", ENV_WIN_CODESIGN_PASS) != "")) {
 #ifdef WINDOWS_ENABLED
 		args.push_back("/p");
 #else
 		args.push_back("-pass");
 #endif
-		args.push_back(p_preset->get("codesign/password"));
+		args.push_back(p_preset->get_or_env("codesign/password", ENV_WIN_CODESIGN_PASS));
 	}
 
 	//timestamp

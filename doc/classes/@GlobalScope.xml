@@ -2842,6 +2842,9 @@
 		<constant name="PROPERTY_USAGE_READ_ONLY" value="268435456" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is read-only in the [EditorInspector].
 		</constant>
+		<constant name="PROPERTY_USAGE_SECRET" value="536870912" enum="PropertyUsageFlags" is_bitfield="true">
+			An export preset property with this flag contains confidential information and is stored separately from the rest of the export preset configuration.
+		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT" value="6" enum="PropertyUsageFlags" is_bitfield="true">
 			Default usage (storage, editor and network).
 		</constant>

@@ -35,9 +35,11 @@
 		</member>
 		<member name="application/provisioning_profile_uuid_debug" type="String" setter="" getter="">
 			UUID of the provisioning profile. If left empty, Xcode will download or create a provisioning profile automatically. See [url=https://developer.apple.com/help/account/manage-profiles/edit-download-or-delete-profiles]Edit, download, or delete provisioning profiles[/url].
+			Can be overridden with the environment variable [code]GODOT_IOS_PROVISIONING_PROFILE_UUID_DEBUG[/code].
 		</member>
 		<member name="application/provisioning_profile_uuid_release" type="String" setter="" getter="">
 			UUID of the provisioning profile. If left empty, Xcode will download or create a provisioning profile automatically. See [url=https://developer.apple.com/help/account/manage-profiles/edit-download-or-delete-profiles]Edit, download, or delete provisioning profiles[/url].
+			Can be overridden with the environment variable [code]GODOT_IOS_PROVISIONING_PROFILE_UUID_RELEASE[/code].
 		</member>
 		<member name="application/short_version" type="String" setter="" getter="">
 			Application version visible to the user, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).

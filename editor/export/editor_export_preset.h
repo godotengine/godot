@@ -152,6 +152,8 @@ public:
 	void set_script_encryption_key(const String &p_key);
 	String get_script_encryption_key() const;
 
+	Variant get_or_env(const StringName &p_name, const String &p_env_var, bool *r_valid = nullptr) const;
+
 	const List<PropertyInfo> &get_properties() const { return properties; }
 
 	EditorExportPreset();
