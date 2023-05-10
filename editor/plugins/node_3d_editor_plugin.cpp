@@ -8340,8 +8340,6 @@ Node3DEditor::Node3DEditor() {
 	snap_scale->set_select_all_on_focus(true);
 	snap_dialog_vbc->add_margin_child(TTR("Scale Snap (%):"), snap_scale);
 
-	_snap_update();
-
 	/* SETTINGS DIALOG */
 
 	settings_dialog = memnew(ConfirmationDialog);
@@ -8659,7 +8657,7 @@ void fragment() {
 		_load_default_preview_settings();
 		_preview_settings_changed();
 	}
-	clear(); // Make sure values are initialized.
+	clear(); // Make sure values are initialized. Will call _snap_update() for us.
 }
 Node3DEditor::~Node3DEditor() {
 	memdelete(preview_node);
