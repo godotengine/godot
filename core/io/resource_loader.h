@@ -34,6 +34,7 @@
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/script_language.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 
@@ -158,10 +159,10 @@ private:
 	static Ref<ResourceFormatLoader> _find_custom_resource_format_loader(String path);
 
 	struct ThreadLoadTask {
-		Thread *thread = nullptr;
-		Thread::ID loader_id = 0;
-		bool first_in_stack = false;
-		ConditionVariable *cond_var = nullptr;
+		WorkerThreadPool::TaskID task_id = 0; // Used if run on a worker thread from the pool.
+		Thread::ID thread_id = 0; // Used if running on an user thread (e.g., simple non-threaded load).
+		bool awaited = false; // If it's in the pool, this helps not awaiting from more than one dependent thread.
+		ConditionVariable *cond_var = nullptr; // In not in the worker pool or already awaiting, this is used as a secondary awaiting mechanism.
 		LoadToken *load_token = nullptr;
 		String local_path;
 		String remapped_path;
@@ -180,14 +181,10 @@ private:
 	static void _thread_load_function(void *p_userdata);
 
 	static thread_local int load_nesting;
+	static thread_local WorkerThreadPool::TaskID caller_task_id;
 	static thread_local Vector<String> load_paths_stack;
 	static SafeBinaryMutex<BINARY_MUTEX_TAG> thread_load_mutex;
 	static HashMap<String, ThreadLoadTask> thread_load_tasks;
-	static ConditionVariable thread_active_cond_var;
-	static int thread_active_count;
-	static int thread_waiting_count;
-	static int thread_suspended_count;
-	static int thread_active_max;
 	static bool cleaning_tasks;
 
 	static HashMap<String, LoadToken *> user_load_tokens;
