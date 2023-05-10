@@ -698,7 +698,8 @@ if selected_platform in platform_list:
             if env["warnings"] == "extra":
                 env.Append(CCFLAGS=["/W4"])
             elif env["warnings"] == "all":
-                env.Append(CCFLAGS=["/W3"])
+                # C4458 is like -Wshadow. Part of /W4 but let's apply it for the default /W3 too.
+                env.Append(CCFLAGS=["/W3", "/w4458"])
             elif env["warnings"] == "moderate":
                 env.Append(CCFLAGS=["/W2"])
             # Disable warnings which we don't plan to fix.
@@ -724,10 +725,10 @@ if selected_platform in platform_list:
         if env["werror"]:
             env.Append(CCFLAGS=["/WX"])
     else:  # GCC, Clang
-        common_warnings = []
+        common_warnings = ["-Wshadow"]
 
         if methods.using_gcc(env):
-            common_warnings += ["-Wshadow-local", "-Wno-misleading-indentation"]
+            common_warnings += ["-Wno-misleading-indentation"]
             if cc_version_major == 7:  # Bogus warning fixed in 8+.
                 common_warnings += ["-Wno-strict-overflow"]
             if cc_version_major < 11:
