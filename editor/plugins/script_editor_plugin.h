@@ -399,6 +399,7 @@ class ScriptEditor : public PanelContainer {
 	bool format_on_save;
 	bool use_space_indentation;
 	bool convert_indent_on_save;
+	void _format_code(ScriptEditorBase *se);
 
 	void _goto_script_line2(int p_line);
 	void _goto_script_line(Ref<RefCounted> p_script, int p_line);

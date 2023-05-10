@@ -944,19 +944,7 @@ void ScriptEditor::_resave_scripts(const String &p_str) {
 			continue; //internal script, who cares
 		}
 
-		if (!format_on_save) {
-			if (trim_trailing_whitespace_on_save) {
-				se->trim_trailing_whitespace();
-			}
-
-			se->insert_final_newline();
-
-			if (convert_indent_on_save) {
-				se->convert_indent();
-			}
-		} else {
-			se->format_code();
-		}
+		ScriptEditor::_format_code(se);
 
 		Ref<TextFile> text_file = scr;
 		if (text_file != nullptr) {
@@ -1012,6 +1000,23 @@ void ScriptEditor::_scene_saved_callback(const String &p_path) {
 		if (scr.is_valid() && scr->is_tool()) {
 			scr->reload(true);
 		}
+	}
+}
+
+void ScriptEditor::_format_code(ScriptEditorBase *se) {
+	if (!format_on_save) {
+		if (trim_trailing_whitespace_on_save) {
+			se->trim_trailing_whitespace();
+		}
+
+		se->insert_final_newline();
+
+		if (convert_indent_on_save) {
+			se->convert_indent();
+		}
+
+	} else {
+		se->format_code();
 	}
 }
 
@@ -1299,18 +1304,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				save_current_script();
 			} break;
 			case FILE_SAVE_AS: {
-				if (!format_on_save) {
-					if (trim_trailing_whitespace_on_save) {
-						current->trim_trailing_whitespace();
-					}
-					current->insert_final_newline();
-
-					if (convert_indent_on_save) {
-						current->convert_indent();
-					}
-				} else {
-					current->format_code();
-				}
+				ScriptEditor::_format_code(current);
 
 				Ref<Resource> resource = current->get_edited_resource();
 				Ref<TextFile> text_file = resource;
@@ -2485,19 +2479,7 @@ void ScriptEditor::save_current_script() {
 		return;
 	}
 
-	if (!format_on_save) {
-		if (trim_trailing_whitespace_on_save) {
-			current->trim_trailing_whitespace();
-		}
-
-		current->insert_final_newline();
-
-		if (convert_indent_on_save) {
-			current->convert_indent();
-		}
-	} else {
-		current->format_code();
-	}
+	ScriptEditor::_format_code(current);
 
 	Ref<Resource> resource = current->get_edited_resource();
 	Ref<TextFile> text_file = resource;
@@ -2539,19 +2521,7 @@ void ScriptEditor::save_all_scripts() {
 			continue;
 		}
 
-		if (!format_on_save) {
-			if (convert_indent_on_save) {
-				se->convert_indent();
-			}
-
-			if (trim_trailing_whitespace_on_save) {
-				se->trim_trailing_whitespace();
-			}
-
-			se->insert_final_newline();
-		} else {
-			se->format_code();
-		}
+		ScriptEditor::_format_code(se);
 
 		if (!se->is_unsaved()) {
 			continue;
