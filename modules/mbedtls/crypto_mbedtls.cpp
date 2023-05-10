@@ -42,6 +42,7 @@
 #endif
 #define PEM_BEGIN_CRT "-----BEGIN CERTIFICATE-----\n"
 #define PEM_END_CRT "-----END CERTIFICATE-----\n"
+#define PEM_MIN_SIZE 54
 
 #include <mbedtls/debug.h>
 #include <mbedtls/md.h>
@@ -178,6 +179,35 @@ Error X509CertificateMbedTLS::save(String p_path) {
 		f->store_buffer(w, wrote - 1); // don't write the string terminator
 		crt = crt->next;
 	}
+	return OK;
+}
+
+String X509CertificateMbedTLS::save_to_string() {
+	String buffer;
+	mbedtls_x509_crt *crt = &cert;
+	while (crt) {
+		unsigned char w[4096];
+		size_t wrote = 0;
+		int ret = mbedtls_pem_write_buffer(PEM_BEGIN_CRT, PEM_END_CRT, cert.raw.p, cert.raw.len, w, sizeof(w), &wrote);
+		ERR_FAIL_COND_V_MSG(ret != 0 || wrote == 0, String(), "Error saving the certificate.");
+
+		buffer += String((char *)w, wrote);
+		crt = crt->next;
+	}
+	if (buffer.length() <= PEM_MIN_SIZE) {
+		// When the returned value of variable 'buffer' would consist of no Base-64 data, return an empty String instead.
+		return String();
+	}
+	return buffer;
+}
+
+Error X509CertificateMbedTLS::load_from_string(const String &p_string_key) {
+	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Certificate is in use");
+	CharString cs = p_string_key.utf8();
+
+	int ret = mbedtls_x509_crt_parse(&cert, (const unsigned char *)cs.get_data(), cs.size());
+	ERR_FAIL_COND_V_MSG(ret, FAILED, "Error parsing some certificates: " + itos(ret));
+
 	return OK;
 }
 
