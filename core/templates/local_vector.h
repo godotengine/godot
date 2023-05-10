@@ -95,11 +95,13 @@ public:
 		}
 	}
 
-	void erase(const T &p_val) {
+	_FORCE_INLINE_ bool erase(const T &p_val) {
 		int64_t idx = find(p_val);
 		if (idx >= 0) {
 			remove_at(idx);
+			return true;
 		}
+		return false;
 	}
 
 	void invert() {

@@ -433,6 +433,17 @@ bool CallQueue::is_flushing() const {
 	return flushing;
 }
 
+bool CallQueue::has_messages() const {
+	if (pages_used == 0) {
+		return false;
+	}
+	if (pages_used == 1 && page_messages[0] == 0) {
+		return false;
+	}
+
+	return true;
+}
+
 int CallQueue::get_max_buffer_usage() const {
 	return pages.size() * PAGE_SIZE_BYTES;
 }

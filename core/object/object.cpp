@@ -201,6 +201,10 @@ bool Object::_predelete() {
 	return _predelete_ok;
 }
 
+void Object::cancel_free() {
+	_predelete_ok = false;
+}
+
 void Object::_postinitialize() {
 	_class_name_ptr = _get_class_namev(); // Set the direct pointer, which is much faster to obtain, but can only happen after postinitialize.
 	_initialize_classv();
@@ -1570,6 +1574,7 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tr_n", "message", "plural_message", "n", "context"), &Object::tr_n, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("is_queued_for_deletion"), &Object::is_queued_for_deletion);
+	ClassDB::bind_method(D_METHOD("cancel_free"), &Object::cancel_free);
 
 	ClassDB::add_virtual_method("Object", MethodInfo("free"), false);
 

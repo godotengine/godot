@@ -45,6 +45,14 @@ public:
 		PAGE_SIZE_BYTES = 4096
 	};
 
+	struct Page {
+		uint8_t data[PAGE_SIZE_BYTES];
+	};
+
+	// Needs to be public to be able to define it outside the class.
+	// Needs to lock because there can be multiple of these allocators in several threads.
+	typedef PagedAllocator<Page, true> Allocator;
+
 private:
 	enum {
 		TYPE_CALL,
@@ -56,12 +64,7 @@ private:
 		FLAG_MASK = FLAG_NULL_IS_OK - 1,
 	};
 
-	struct Page {
-		uint8_t data[PAGE_SIZE_BYTES];
-	};
-
 	Mutex mutex;
-	typedef PagedAllocator<Page, false> Allocator;
 
 	Allocator *allocator = nullptr;
 	bool allocator_is_custom = false;
@@ -139,6 +142,8 @@ public:
 	Error flush();
 	void clear();
 	void statistics();
+
+	bool has_messages() const;
 
 	bool is_flushing() const;
 	int get_max_buffer_usage() const;
