@@ -47,8 +47,56 @@ bool godotContactAddedCallback(btManifoldPoint &cp, const btCollisionObjectWrapp
 	return true;
 }
 
+uint32_t get_mask(uint32_t mask) {
+	// Removes the team_id and returns layer/mask
+	// 0x007FFFFF = 00000000 01111111 11111111 11111111
+	return mask & 0x007fffff;
+}
+
+uint32_t get_team_bits(uint32_t mask) {
+	// Removes the layer/mask bits and returns only the team.
+	// 0xFF000000 = 11111111 00000000 00000000 00000000
+	return mask & 0xff000000;
+}
+
+bool is_ally_only_mode(uint32_t mask) {
+	// Returns the 24th bit
+	// 0x00800000 = 00000000 10000000 00000000 00000000
+	return (mask & 0x00800000) > 0;
+}
+
+/// Returns true if the layer and the mask matches.
+/// This function assume that the `layer` & `mask` is composed as follow:
+/// - bits from 0 to 23: Usual layer/mask
+/// - bit 24: When this bit is `1` we assume that ally_only_mode is active.
+/// - bits from 25 to 32 contains the team_id as uint8.
+bool test_filters(uint32_t layer, uint32_t mask) {
+	if (get_mask(layer) & mask) {
+		// Check if the team is also satisfied.
+		const uint32_t team = get_team_bits(layer);
+		const uint32_t target = get_team_bits(mask);
+		if (team > 0 && target > 0) {
+			if (is_ally_only_mode(mask)) {
+				if (team == target) {
+					return true;
+				}
+			} else {
+				if (team != target) {
+					return true;
+				}
+			}
+		} else {
+			// No team set, always true.
+			return true;
+		}
+	}
+
+	// No collision.
+	return false;
+}
+
 bool GodotFilterCallback::test_collision_filters(uint32_t body0_collision_layer, uint32_t body0_collision_mask, uint32_t body1_collision_layer, uint32_t body1_collision_mask) {
-	return body0_collision_layer & body1_collision_mask || body1_collision_layer & body0_collision_mask;
+	return test_filters(body0_collision_layer, body1_collision_mask) || test_filters(body1_collision_layer, body0_collision_mask);
 }
 
 bool GodotFilterCallback::needBroadphaseCollision(btBroadphaseProxy *proxy0, btBroadphaseProxy *proxy1) const {
