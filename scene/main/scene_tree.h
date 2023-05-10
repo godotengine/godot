@@ -103,6 +103,7 @@ private:
 	bool debug_collisions_hint = false;
 	bool debug_paths_hint = false;
 	bool debug_navigation_hint = false;
+	bool debug_avoidance_hint = false;
 #endif
 	bool paused = false;
 	int root_lock = 0;
@@ -311,6 +312,9 @@ public:
 
 	void set_debug_navigation_hint(bool p_enabled);
 	bool is_debugging_navigation_hint() const;
+
+	void set_debug_avoidance_hint(bool p_enabled);
+	bool is_debugging_avoidance_hint() const;
 #else
 	void set_debug_collisions_hint(bool p_enabled) {}
 	bool is_debugging_collisions_hint() const { return false; }

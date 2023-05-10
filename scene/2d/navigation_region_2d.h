@@ -43,11 +43,16 @@ class NavigationRegion2D : public Node2D {
 	real_t travel_cost = 1.0;
 	Ref<NavigationPolygon> navigation_polygon;
 
+	bool constrain_avoidance = false;
+	LocalVector<RID> constrain_avoidance_obstacles;
+	uint32_t avoidance_layers = 1;
+
 	void _navigation_polygon_changed();
 	void _map_changed(RID p_RID);
 
 protected:
 	void _notification(int p_what);
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED
@@ -81,10 +86,22 @@ public:
 	void set_navigation_polygon(const Ref<NavigationPolygon> &p_navigation_polygon);
 	Ref<NavigationPolygon> get_navigation_polygon() const;
 
+	void set_constrain_avoidance(bool p_enabled);
+	bool get_constrain_avoidance() const;
+
+	void set_avoidance_layers(uint32_t p_layers);
+	uint32_t get_avoidance_layers() const;
+
+	void set_avoidance_layer_value(int p_layer_number, bool p_value);
+	bool get_avoidance_layer_value(int p_layer_number) const;
+
 	PackedStringArray get_configuration_warnings() const override;
 
 	NavigationRegion2D();
 	~NavigationRegion2D();
+
+private:
+	void _update_avoidance_constrain();
 };
 
 #endif // NAVIGATION_REGION_2D_H

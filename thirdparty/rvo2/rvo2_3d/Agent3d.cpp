@@ -30,15 +30,15 @@
  * <https://gamma.cs.unc.edu/RVO2/>
  */
 
-#include "Agent.h"
+#include "Agent3d.h"
 
 #include <cmath>
 #include <algorithm>
 
 #include "Definitions.h"
-#include "KdTree.h"
+#include "KdTree3d.h"
 
-namespace RVO {
+namespace RVO3D {
 	/**
 	 * \brief   A sufficiently small positive number.
 	 */
@@ -47,7 +47,7 @@ namespace RVO {
 	/**
 	 * \brief   Defines a directed line.
 	 */
-	class Line {
+	class Line3D {
 	public:
 		/**
 		 * \brief   The direction of the directed line.
@@ -71,7 +71,7 @@ namespace RVO {
 	 * \param   result        A reference to the result of the linear program.
 	 * \return  True if successful.
 	 */
-	bool linearProgram1(const std::vector<Plane> &planes, size_t planeNo, const Line &line, float radius, const Vector3 &optVelocity, bool directionOpt, Vector3 &result);
+	bool linearProgram1(const std::vector<Plane> &planes, size_t planeNo, const Line3D &line, float radius, const Vector3 &optVelocity, bool directionOpt, Vector3 &result);
 
 	/**
 	 * \brief   Solves a two-dimensional linear program on a specified plane subject to linear constraints defined by planes and a spherical constraint.
@@ -105,42 +105,34 @@ namespace RVO {
 	 */
 	void linearProgram4(const std::vector<Plane> &planes, size_t beginPlane, float radius, Vector3 &result);
 
-	Agent::Agent() : id_(0), maxNeighbors_(0), maxSpeed_(0.0f), neighborDist_(0.0f), radius_(0.0f), timeHorizon_(0.0f), ignore_y_(false) { }
+	Agent3D::Agent3D() : id_(0), maxNeighbors_(0), maxSpeed_(0.0f), neighborDist_(0.0f), radius_(0.0f), timeHorizon_(0.0f) { }
 
-	void Agent::computeNeighbors(KdTree *kdTree_)
+	void Agent3D::computeNeighbors(RVOSimulator3D *sim_)
 	{
 		agentNeighbors_.clear();
+
 		if (maxNeighbors_ > 0) {
-			kdTree_->computeAgentNeighbors(this, neighborDist_ * neighborDist_);
+			sim_->kdTree_->computeAgentNeighbors(this, neighborDist_ * neighborDist_);
 		}
 	}
 
-	void Agent::computeNewVelocity(float timeStep)
+	void Agent3D::computeNewVelocity(RVOSimulator3D *sim_)
 	{
 		orcaPlanes_.clear();
+
 		const float invTimeHorizon = 1.0f / timeHorizon_;
 
 		/* Create agent ORCA planes. */
 		for (size_t i = 0; i < agentNeighbors_.size(); ++i) {
-			const Agent *const other = agentNeighbors_[i].second;
+			const Agent3D *const other = agentNeighbors_[i].second;
 
-			Vector3 relativePosition = other->position_ - position_;
-			Vector3 relativeVelocity = velocity_ - other->velocity_;
-			const float combinedRadius = radius_ + other->radius_;
+			//const float timeHorizon_mod = (avoidance_priority_ - other->avoidance_priority_ + 1.0f) * 0.5f;
+			//const float invTimeHorizon = (1.0f / timeHorizon_) * timeHorizon_mod;
 
-			// This is a Godot feature that allow the agents to avoid the collision
-			// by moving only on the horizontal plane relative to the player velocity.
-			if (ignore_y_) {
-				// Skip if these are in two different heights
-#define ABS(m_v) (((m_v) < 0) ? (-(m_v)) : (m_v))
-				if (ABS(relativePosition[1]) > combinedRadius * 2) {
-					continue;
-				}
-				relativePosition[1] = 0;
-				relativeVelocity[1] = 0;
-			}
-
+			const Vector3 relativePosition = other->position_ - position_;
+			const Vector3 relativeVelocity = velocity_ - other->velocity_;
 			const float distSq = absSq(relativePosition);
+			const float combinedRadius = radius_ + other->radius_;
 			const float combinedRadiusSq = sqr(combinedRadius);
 
 			Plane plane;
@@ -168,17 +160,17 @@ namespace RVO {
 					const float b = relativePosition * relativeVelocity;
 					const float c = absSq(relativeVelocity) - absSq(cross(relativePosition, relativeVelocity)) / (distSq - combinedRadiusSq);
 					const float t = (b + std::sqrt(sqr(b) - a * c)) / a;
-					const Vector3 ww = relativeVelocity - t * relativePosition;
-					const float wwLength = abs(ww);
-					const Vector3 unitWW = ww / wwLength;
+					const Vector3 w = relativeVelocity - t * relativePosition;
+					const float wLength = abs(w);
+					const Vector3 unitW = w / wLength;
 
-					plane.normal = unitWW;
-					u = (combinedRadius * t - wwLength) * unitWW;
+					plane.normal = unitW;
+					u = (combinedRadius * t - wLength) * unitW;
 				}
 			}
 			else {
 				/* Collision. */
-				const float invTimeStep = 1.0f / timeStep;
+				const float invTimeStep = 1.0f / sim_->timeStep_;
 				const Vector3 w = relativeVelocity - invTimeStep * relativePosition;
 				const float wLength = abs(w);
 				const Vector3 unitW = w / wLength;
@@ -196,40 +188,52 @@ namespace RVO {
 		if (planeFail < orcaPlanes_.size()) {
 			linearProgram4(orcaPlanes_, planeFail, maxSpeed_, newVelocity_);
 		}
-
-		if (ignore_y_) {
-			// Not 100% necessary, but better to have.
-			newVelocity_[1] = prefVelocity_[1];
-		}
 	}
 
-	void Agent::insertAgentNeighbor(const Agent *agent, float &rangeSq)
+	void Agent3D::insertAgentNeighbor(const Agent3D *agent, float &rangeSq)
 	{
-		if (this != agent) {
-			const float distSq = absSq(position_ - agent->position_);
+		// no point processing same agent
+		if (this == agent) {
+			return;
+		}
+		// ignore other agent if layers/mask bitmasks have no matching bit
+		if ((avoidance_mask_ & agent->avoidance_layers_) == 0) {
+			return;
+		}
 
-			if (distSq < rangeSq) {
-				if (agentNeighbors_.size() < maxNeighbors_) {
-					agentNeighbors_.push_back(std::make_pair(distSq, agent));
-				}
+		if (avoidance_priority_ > agent->avoidance_priority_) {
+			return;
+		}
 
-				size_t i = agentNeighbors_.size() - 1;
+		const float distSq = absSq(position_ - agent->position_);
 
-				while (i != 0 && distSq < agentNeighbors_[i - 1].first) {
-					agentNeighbors_[i] = agentNeighbors_[i - 1];
-					--i;
-				}
+		if (distSq < rangeSq) {
+			if (agentNeighbors_.size() < maxNeighbors_) {
+				agentNeighbors_.push_back(std::make_pair(distSq, agent));
+			}
 
-				agentNeighbors_[i] = std::make_pair(distSq, agent);
+			size_t i = agentNeighbors_.size() - 1;
 
-				if (agentNeighbors_.size() == maxNeighbors_) {
-					rangeSq = agentNeighbors_.back().first;
-				}
+			while (i != 0 && distSq < agentNeighbors_[i - 1].first) {
+				agentNeighbors_[i] = agentNeighbors_[i - 1];
+				--i;
+			}
+
+			agentNeighbors_[i] = std::make_pair(distSq, agent);
+
+			if (agentNeighbors_.size() == maxNeighbors_) {
+				rangeSq = agentNeighbors_.back().first;
 			}
 		}
 	}
 
-	bool linearProgram1(const std::vector<Plane> &planes, size_t planeNo, const Line &line, float radius, const Vector3 &optVelocity, bool directionOpt, Vector3 &result)
+	void Agent3D::update(RVOSimulator3D *sim_)
+	{
+		velocity_ = newVelocity_;
+		position_ += velocity_ * sim_->timeStep_;
+	}
+
+	bool linearProgram1(const std::vector<Plane> &planes, size_t planeNo, const Line3D &line, float radius, const Vector3 &optVelocity, bool directionOpt, Vector3 &result)
 	{
 		const float dotProduct = line.point * line.direction;
 		const float discriminant = sqr(dotProduct) + sqr(radius) - absSq(line.point);
@@ -248,7 +252,7 @@ namespace RVO {
 			const float denominator = line.direction * planes[i].normal;
 
 			if (sqr(denominator) <= RVO3D_EPSILON) {
-				/* Lines line is (almost) parallel to plane i. */
+				/* Lines3D line is (almost) parallel to plane i. */
 				if (numerator > 0.0f) {
 					return false;
 				}
@@ -352,7 +356,7 @@ namespace RVO {
 					return false;
 				}
 
-				Line line;
+				Line3D line;
 				line.direction = normalize(crossProduct);
 				const Vector3 lineNormal = cross(line.direction, planes[planeNo].normal);
 				line.point = planes[planeNo].point + (((planes[i].point - planes[planeNo].point) * planes[i].normal) / (lineNormal * planes[i].normal)) * lineNormal;

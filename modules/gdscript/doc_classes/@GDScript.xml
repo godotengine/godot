@@ -458,6 +458,16 @@
 				[/codeblock]
 			</description>
 		</annotation>
+		<annotation name="@export_flags_avoidance">
+			<return type="void" />
+			<description>
+				Export an integer property as a bit flag field for navigation avoidance layers. The widget in the Inspector dock will use the layer names defined in [member ProjectSettings.layer_names/avoidance/layer_1].
+				See also [constant PROPERTY_HINT_LAYERS_AVOIDANCE].
+				[codeblock]
+				@export_flags_avoidance var avoidance_layers: int
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@export_global_dir">
 			<return type="void" />
 			<description>

@@ -38,7 +38,7 @@
 #ifndef RVO3D_DEFINITIONS_H_
 #define RVO3D_DEFINITIONS_H_
 
-namespace RVO {
+namespace RVO3D {
 	/**
 	 * \brief   Computes the square of a float.
 	 * \param   scalar  The float to be squared.

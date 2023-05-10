@@ -30,223 +30,280 @@
 
 #include "navigation_obstacle_2d.h"
 
-#include "scene/2d/collision_shape_2d.h"
-#include "scene/2d/physics_body_2d.h"
+#include "core/math/geometry_2d.h"
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"
+#include "servers/navigation_server_3d.h"
 
 void NavigationObstacle2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationObstacle2D::get_rid);
+	ClassDB::bind_method(D_METHOD("get_obstacle_rid"), &NavigationObstacle2D::get_obstacle_rid);
+	ClassDB::bind_method(D_METHOD("get_agent_rid"), &NavigationObstacle2D::get_agent_rid);
 
 	ClassDB::bind_method(D_METHOD("set_navigation_map", "navigation_map"), &NavigationObstacle2D::set_navigation_map);
 	ClassDB::bind_method(D_METHOD("get_navigation_map"), &NavigationObstacle2D::get_navigation_map);
 
-	ClassDB::bind_method(D_METHOD("set_estimate_radius", "estimate_radius"), &NavigationObstacle2D::set_estimate_radius);
-	ClassDB::bind_method(D_METHOD("is_radius_estimated"), &NavigationObstacle2D::is_radius_estimated);
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &NavigationObstacle2D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &NavigationObstacle2D::get_radius);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "estimate_radius"), "set_estimate_radius", "is_radius_estimated");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.01,500,0.01"), "set_radius", "get_radius");
-}
+	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &NavigationObstacle2D::set_velocity);
+	ClassDB::bind_method(D_METHOD("get_velocity"), &NavigationObstacle2D::get_velocity);
 
-void NavigationObstacle2D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "radius") {
-		if (estimate_radius) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		}
-	}
+	ClassDB::bind_method(D_METHOD("set_vertices", "vertices"), &NavigationObstacle2D::set_vertices);
+	ClassDB::bind_method(D_METHOD("get_vertices"), &NavigationObstacle2D::get_vertices);
+
+	ClassDB::bind_method(D_METHOD("set_avoidance_layers", "layers"), &NavigationObstacle2D::set_avoidance_layers);
+	ClassDB::bind_method(D_METHOD("get_avoidance_layers"), &NavigationObstacle2D::get_avoidance_layers);
+	ClassDB::bind_method(D_METHOD("set_avoidance_layer_value", "layer_number", "value"), &NavigationObstacle2D::set_avoidance_layer_value);
+	ClassDB::bind_method(D_METHOD("get_avoidance_layer_value", "layer_number"), &NavigationObstacle2D::get_avoidance_layer_value);
+
+	ADD_GROUP("Avoidance", "avoidance_");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_velocity", "get_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.0,500,0.01,suffix:px"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "vertices"), "set_vertices", "get_vertices");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "avoidance_layers", PROPERTY_HINT_LAYERS_AVOIDANCE), "set_avoidance_layers", "get_avoidance_layers");
 }
 
 void NavigationObstacle2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POST_ENTER_TREE: {
-			set_agent_parent(get_parent());
+			if (map_override.is_valid()) {
+				_update_map(map_override);
+			} else if (is_inside_tree()) {
+				_update_map(get_world_2d()->get_navigation_map());
+			} else {
+				_update_map(RID());
+			}
+			previous_transform = get_global_transform();
+			// need to trigger map controlled agent assignment somehow for the fake_agent since obstacles use no callback like regular agents
+			NavigationServer2D::get_singleton()->agent_set_avoidance_enabled(fake_agent, radius > 0);
+			_update_position(get_global_transform().get_origin());
 			set_physics_process_internal(true);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			set_agent_parent(nullptr);
 			set_physics_process_internal(false);
-		} break;
-
-		case NOTIFICATION_PARENTED: {
-			if (is_inside_tree() && (get_parent() != parent_node2d)) {
-				set_agent_parent(get_parent());
-				set_physics_process_internal(true);
-			}
-		} break;
-
-		case NOTIFICATION_UNPARENTED: {
-			set_agent_parent(nullptr);
-			set_physics_process_internal(false);
+			_update_map(RID());
 		} break;
 
 		case NOTIFICATION_PAUSED: {
-			if (parent_node2d && !parent_node2d->can_process()) {
-				map_before_pause = NavigationServer2D::get_singleton()->agent_get_map(get_rid());
-				NavigationServer2D::get_singleton()->agent_set_map(get_rid(), RID());
-			} else if (parent_node2d && parent_node2d->can_process() && !(map_before_pause == RID())) {
-				NavigationServer2D::get_singleton()->agent_set_map(get_rid(), map_before_pause);
+			if (!can_process()) {
+				map_before_pause = map_current;
+				_update_map(RID());
+			} else if (can_process() && !(map_before_pause == RID())) {
+				_update_map(map_before_pause);
 				map_before_pause = RID();
 			}
 		} break;
 
 		case NOTIFICATION_UNPAUSED: {
-			if (parent_node2d && !parent_node2d->can_process()) {
-				map_before_pause = NavigationServer2D::get_singleton()->agent_get_map(get_rid());
-				NavigationServer2D::get_singleton()->agent_set_map(get_rid(), RID());
-			} else if (parent_node2d && parent_node2d->can_process() && !(map_before_pause == RID())) {
-				NavigationServer2D::get_singleton()->agent_set_map(get_rid(), map_before_pause);
+			if (!can_process()) {
+				map_before_pause = map_current;
+				_update_map(RID());
+			} else if (can_process() && !(map_before_pause == RID())) {
+				_update_map(map_before_pause);
 				map_before_pause = RID();
 			}
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			if (parent_node2d && parent_node2d->is_inside_tree()) {
-				NavigationServer2D::get_singleton()->agent_set_position(agent, parent_node2d->get_global_position());
+			if (is_inside_tree()) {
+				_update_position(get_global_transform().get_origin());
+
+				if (velocity_submitted) {
+					velocity_submitted = false;
+					// only update if there is a noticeable change, else the rvo agent preferred velocity stays the same
+					if (!previous_velocity.is_equal_approx(velocity)) {
+						NavigationServer2D::get_singleton()->agent_set_velocity(fake_agent, velocity);
+					}
+					previous_velocity = velocity;
+				}
 			}
+		} break;
+
+		case NOTIFICATION_DRAW: {
+#ifdef DEBUG_ENABLED
+			if (is_inside_tree()) {
+				bool is_debug_enabled = false;
+				if (Engine::get_singleton()->is_editor_hint()) {
+					is_debug_enabled = true;
+				} else if (NavigationServer2D::get_singleton()->get_debug_enabled() && NavigationServer2D::get_singleton()->get_debug_avoidance_enabled()) {
+					is_debug_enabled = true;
+				}
+
+				if (is_debug_enabled) {
+					_update_fake_agent_radius_debug();
+					_update_static_obstacle_debug();
+				}
+			}
+#endif // DEBUG_ENABLED
 		} break;
 	}
 }
 
 NavigationObstacle2D::NavigationObstacle2D() {
-	agent = NavigationServer2D::get_singleton()->agent_create();
-	initialize_agent();
+	obstacle = NavigationServer2D::get_singleton()->obstacle_create();
+	fake_agent = NavigationServer2D::get_singleton()->agent_create();
+
+	// change properties of the fake agent so it can act as fake obstacle with a radius
+	NavigationServer2D::get_singleton()->agent_set_neighbor_distance(fake_agent, 0.0);
+	NavigationServer2D::get_singleton()->agent_set_max_neighbors(fake_agent, 0);
+	NavigationServer2D::get_singleton()->agent_set_time_horizon_agents(fake_agent, 0.0);
+	NavigationServer2D::get_singleton()->agent_set_time_horizon_obstacles(fake_agent, 0.0);
+	NavigationServer2D::get_singleton()->agent_set_max_speed(fake_agent, 0.0);
+	NavigationServer2D::get_singleton()->agent_set_avoidance_mask(fake_agent, 0);
+	NavigationServer2D::get_singleton()->agent_set_avoidance_priority(fake_agent, 1.0);
+	NavigationServer2D::get_singleton()->agent_set_avoidance_enabled(fake_agent, radius > 0);
+
+	set_radius(radius);
+	set_vertices(vertices);
+	set_avoidance_layers(avoidance_layers);
 }
 
 NavigationObstacle2D::~NavigationObstacle2D() {
 	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
-	NavigationServer2D::get_singleton()->free(agent);
-	agent = RID(); // Pointless
+
+	NavigationServer2D::get_singleton()->free(obstacle);
+	obstacle = RID();
+
+	NavigationServer2D::get_singleton()->free(fake_agent);
+	fake_agent = RID();
 }
 
-PackedStringArray NavigationObstacle2D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
-
-	if (!Object::cast_to<Node2D>(get_parent())) {
-		warnings.push_back(RTR("The NavigationObstacle2D only serves to provide collision avoidance to a Node2D object."));
+void NavigationObstacle2D::set_vertices(const Vector<Vector2> &p_vertices) {
+	vertices = p_vertices;
+	NavigationServer2D::get_singleton()->obstacle_set_vertices(obstacle, vertices);
+	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())) {
+		queue_redraw();
 	}
-
-	if (Object::cast_to<StaticBody2D>(get_parent())) {
-		warnings.push_back(RTR("The NavigationObstacle2D is intended for constantly moving bodies like CharacterBody2D or RigidBody2D as it creates only an RVO avoidance radius and does not follow scene geometry exactly."
-							   "\nNot constantly moving or complete static objects should be captured with a refreshed NavigationPolygon so agents can not only avoid them but also move along those objects outline at high detail"));
-	}
-
-	return warnings;
-}
-
-void NavigationObstacle2D::initialize_agent() {
-	NavigationServer2D::get_singleton()->agent_set_neighbor_distance(agent, 0.0);
-	NavigationServer2D::get_singleton()->agent_set_max_neighbors(agent, 0);
-	NavigationServer2D::get_singleton()->agent_set_time_horizon(agent, 0.0);
-	NavigationServer2D::get_singleton()->agent_set_max_speed(agent, 0.0);
-}
-
-void NavigationObstacle2D::reevaluate_agent_radius() {
-	if (!estimate_radius) {
-		NavigationServer2D::get_singleton()->agent_set_radius(agent, radius);
-	} else if (parent_node2d && parent_node2d->is_inside_tree()) {
-		NavigationServer2D::get_singleton()->agent_set_radius(agent, estimate_agent_radius());
-	}
-}
-
-real_t NavigationObstacle2D::estimate_agent_radius() const {
-	if (parent_node2d && parent_node2d->is_inside_tree()) {
-		// Estimate the radius of this physics body
-		real_t max_radius = 0.0;
-		for (int i(0); i < parent_node2d->get_child_count(); i++) {
-			// For each collision shape
-			CollisionShape2D *cs = Object::cast_to<CollisionShape2D>(parent_node2d->get_child(i));
-			if (cs && cs->is_inside_tree()) {
-				// Take the distance between the Body center to the shape center
-				real_t r = cs->get_transform().get_origin().length();
-				if (cs->get_shape().is_valid()) {
-					// and add the enclosing shape radius
-					r += cs->get_shape()->get_enclosing_radius();
-				}
-				Size2 s = cs->get_global_scale();
-				r *= MAX(s.x, s.y);
-				// Takes the biggest radius
-				max_radius = MAX(max_radius, r);
-			} else if (cs && !cs->is_inside_tree()) {
-				WARN_PRINT("A CollisionShape2D of the NavigationObstacle2D parent node was not inside the SceneTree when estimating the obstacle radius."
-						   "\nMove the NavigationObstacle2D to a child position below any CollisionShape2D node of the parent node so the CollisionShape2D is already inside the SceneTree.");
-			}
-		}
-		Vector2 s = parent_node2d->get_global_scale();
-		max_radius *= MAX(s.x, s.y);
-
-		if (max_radius > 0.0) {
-			return max_radius;
-		}
-	}
-	return 1.0; // Never a 0 radius
-}
-
-void NavigationObstacle2D::set_agent_parent(Node *p_agent_parent) {
-	if (parent_node2d == p_agent_parent) {
-		return;
-	}
-
-	if (Object::cast_to<Node2D>(p_agent_parent) != nullptr) {
-		parent_node2d = Object::cast_to<Node2D>(p_agent_parent);
-		if (map_override.is_valid()) {
-			NavigationServer2D::get_singleton()->agent_set_map(get_rid(), map_override);
-		} else {
-			NavigationServer2D::get_singleton()->agent_set_map(get_rid(), parent_node2d->get_world_2d()->get_navigation_map());
-		}
-		// Need to register Callback as obstacle requires a valid Callback to be added to avoidance simulation.
-		NavigationServer2D::get_singleton()->agent_set_callback(get_rid(), callable_mp(this, &NavigationObstacle2D::_avoidance_done));
-		reevaluate_agent_radius();
-	} else {
-		parent_node2d = nullptr;
-		NavigationServer2D::get_singleton()->agent_set_map(get_rid(), RID());
-		NavigationServer2D::get_singleton()->agent_set_callback(agent, Callable());
-	}
-}
-
-void NavigationObstacle2D::_avoidance_done(Vector3 p_new_velocity) {
-	// Dummy function as obstacle requires a valid Callback to be added to avoidance simulation.
 }
 
 void NavigationObstacle2D::set_navigation_map(RID p_navigation_map) {
 	if (map_override == p_navigation_map) {
 		return;
 	}
-
 	map_override = p_navigation_map;
-
-	NavigationServer2D::get_singleton()->agent_set_map(agent, map_override);
+	_update_map(map_override);
 }
 
 RID NavigationObstacle2D::get_navigation_map() const {
 	if (map_override.is_valid()) {
 		return map_override;
-	} else if (parent_node2d != nullptr) {
-		return parent_node2d->get_world_2d()->get_navigation_map();
+	} else if (is_inside_tree()) {
+		return get_world_2d()->get_navigation_map();
 	}
 	return RID();
 }
 
-void NavigationObstacle2D::set_estimate_radius(bool p_estimate_radius) {
-	if (estimate_radius == p_estimate_radius) {
-		return;
-	}
-
-	estimate_radius = p_estimate_radius;
-
-	notify_property_list_changed();
-	reevaluate_agent_radius();
-}
-
 void NavigationObstacle2D::set_radius(real_t p_radius) {
-	ERR_FAIL_COND_MSG(p_radius <= 0.0, "Radius must be greater than 0.");
+	ERR_FAIL_COND_MSG(p_radius < 0.0, "Radius must be positive.");
 	if (Math::is_equal_approx(radius, p_radius)) {
 		return;
 	}
 
 	radius = p_radius;
 
-	reevaluate_agent_radius();
+	NavigationServer2D::get_singleton()->agent_set_avoidance_enabled(fake_agent, radius > 0.0);
+	NavigationServer2D::get_singleton()->agent_set_radius(fake_agent, radius);
+	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())) {
+		queue_redraw();
+	}
 }
+
+void NavigationObstacle2D::set_avoidance_layers(uint32_t p_layers) {
+	avoidance_layers = p_layers;
+	NavigationServer2D::get_singleton()->obstacle_set_avoidance_layers(obstacle, avoidance_layers);
+	NavigationServer2D::get_singleton()->agent_set_avoidance_layers(fake_agent, avoidance_layers);
+}
+
+uint32_t NavigationObstacle2D::get_avoidance_layers() const {
+	return avoidance_layers;
+}
+
+void NavigationObstacle2D::set_avoidance_layer_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Avoidance layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Avoidance layer number must be between 1 and 32 inclusive.");
+	uint32_t avoidance_layers_new = get_avoidance_layers();
+	if (p_value) {
+		avoidance_layers_new |= 1 << (p_layer_number - 1);
+	} else {
+		avoidance_layers_new &= ~(1 << (p_layer_number - 1));
+	}
+	set_avoidance_layers(avoidance_layers_new);
+}
+
+bool NavigationObstacle2D::get_avoidance_layer_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Avoidance layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Avoidance layer number must be between 1 and 32 inclusive.");
+	return get_avoidance_layers() & (1 << (p_layer_number - 1));
+}
+
+void NavigationObstacle2D::set_velocity(const Vector2 p_velocity) {
+	velocity = p_velocity;
+	velocity_submitted = true;
+}
+
+void NavigationObstacle2D::_update_map(RID p_map) {
+	NavigationServer2D::get_singleton()->obstacle_set_map(obstacle, p_map);
+	NavigationServer2D::get_singleton()->agent_set_map(fake_agent, p_map);
+	map_current = p_map;
+}
+
+void NavigationObstacle2D::_update_position(const Vector2 p_position) {
+	if (vertices.size() > 0) {
+		NavigationServer2D::get_singleton()->obstacle_set_position(obstacle, p_position);
+	}
+	if (radius > 0.0) {
+		NavigationServer2D::get_singleton()->agent_set_position(fake_agent, p_position);
+	}
+}
+
+#ifdef DEBUG_ENABLED
+void NavigationObstacle2D::_update_fake_agent_radius_debug() {
+	if (radius > 0.0 && NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_enable_obstacles_radius()) {
+		Color debug_radius_color = NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_obstacles_radius_color();
+		draw_circle(get_global_transform().get_origin(), radius, debug_radius_color);
+	}
+}
+#endif // DEBUG_ENABLED
+
+#ifdef DEBUG_ENABLED
+void NavigationObstacle2D::_update_static_obstacle_debug() {
+	if (get_vertices().size() > 2 && NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_enable_obstacles_static()) {
+		bool obstacle_pushes_inward = Geometry2D::is_polygon_clockwise(get_vertices());
+
+		Color debug_static_obstacle_face_color;
+
+		if (obstacle_pushes_inward) {
+			debug_static_obstacle_face_color = NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_static_obstacle_pushin_face_color();
+		} else {
+			debug_static_obstacle_face_color = NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_static_obstacle_pushout_face_color();
+		}
+
+		Vector<Vector2> debug_obstacle_polygon_vertices = get_vertices();
+
+		Vector<Color> debug_obstacle_polygon_colors;
+		debug_obstacle_polygon_colors.resize(debug_obstacle_polygon_vertices.size());
+		debug_obstacle_polygon_colors.fill(debug_static_obstacle_face_color);
+
+		RS::get_singleton()->canvas_item_add_polygon(get_canvas_item(), debug_obstacle_polygon_vertices, debug_obstacle_polygon_colors);
+
+		Color debug_static_obstacle_edge_color;
+
+		if (obstacle_pushes_inward) {
+			debug_static_obstacle_edge_color = NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_static_obstacle_pushin_edge_color();
+		} else {
+			debug_static_obstacle_edge_color = NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_static_obstacle_pushout_edge_color();
+		}
+
+		Vector<Vector2> debug_obstacle_line_vertices = get_vertices();
+		debug_obstacle_line_vertices.push_back(debug_obstacle_line_vertices[0]);
+		debug_obstacle_line_vertices.resize(debug_obstacle_line_vertices.size());
+
+		Vector<Color> debug_obstacle_line_colors;
+		debug_obstacle_line_colors.resize(debug_obstacle_line_vertices.size());
+		debug_obstacle_line_colors.fill(debug_static_obstacle_edge_color);
+
+		RS::get_singleton()->canvas_item_add_polyline(get_canvas_item(), debug_obstacle_line_vertices, debug_obstacle_line_colors, 4.0);
+	}
+}
+#endif // DEBUG_ENABLED

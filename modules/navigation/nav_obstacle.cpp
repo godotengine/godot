@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  navigation_obstacle_2d.h                                              */
+/*  nav_obstacle.cpp                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,75 +28,59 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_OBSTACLE_2D_H
-#define NAVIGATION_OBSTACLE_2D_H
+#include "nav_obstacle.h"
 
-#include "scene/2d/node_2d.h"
+#include "nav_map.h"
 
-class NavigationObstacle2D : public Node2D {
-	GDCLASS(NavigationObstacle2D, Node2D);
+NavObstacle::NavObstacle() {}
 
-	RID obstacle;
-	RID map_before_pause;
-	RID map_override;
-	RID map_current;
+NavObstacle::~NavObstacle() {}
 
-	real_t radius = 0.0;
+void NavObstacle::set_map(NavMap *p_map) {
+	if (map != p_map) {
+		map = p_map;
+		obstacle_dirty = true;
+	}
+}
 
-	Vector<Vector2> vertices;
+void NavObstacle::set_position(const Vector3 p_position) {
+	if (position != p_position) {
+		position = p_position;
+		obstacle_dirty = true;
+	}
+}
 
-	RID fake_agent;
-	uint32_t avoidance_layers = 1;
+void NavObstacle::set_height(const real_t p_height) {
+	if (height != p_height) {
+		height = p_height;
+		obstacle_dirty = true;
+	}
+}
 
-	Transform2D previous_transform;
+void NavObstacle::set_vertices(const Vector<Vector3> &p_vertices) {
+	if (vertices != p_vertices) {
+		vertices = p_vertices;
+		obstacle_dirty = true;
+	}
+}
 
-	Vector2 velocity;
-	Vector2 previous_velocity;
-	bool velocity_submitted = false;
+bool NavObstacle::is_map_changed() {
+	if (map) {
+		bool is_changed = map->get_map_update_id() != map_update_id;
+		map_update_id = map->get_map_update_id();
+		return is_changed;
+	} else {
+		return false;
+	}
+}
 
-#ifdef DEBUG_ENABLED
-private:
-	void _update_fake_agent_radius_debug();
-	void _update_static_obstacle_debug();
-#endif // DEBUG_ENABLED
+void NavObstacle::set_avoidance_layers(uint32_t p_layers) {
+	avoidance_layers = p_layers;
+	obstacle_dirty = true;
+}
 
-protected:
-	static void _bind_methods();
-	void _notification(int p_what);
-
-public:
-	NavigationObstacle2D();
-	virtual ~NavigationObstacle2D();
-
-	RID get_obstacle_rid() const { return obstacle; }
-	RID get_agent_rid() const { return fake_agent; }
-
-	void set_navigation_map(RID p_navigation_map);
-	RID get_navigation_map() const;
-
-	void set_radius(real_t p_radius);
-	real_t get_radius() const { return radius; }
-
-	void set_vertices(const Vector<Vector2> &p_vertices);
-	const Vector<Vector2> &get_vertices() const { return vertices; };
-
-	void set_avoidance_layers(uint32_t p_layers);
-	uint32_t get_avoidance_layers() const;
-
-	void set_avoidance_mask(uint32_t p_mask);
-	uint32_t get_avoidance_mask() const;
-
-	void set_avoidance_layer_value(int p_layer_number, bool p_value);
-	bool get_avoidance_layer_value(int p_layer_number) const;
-
-	void set_velocity(const Vector2 p_velocity);
-	Vector2 get_velocity() const { return velocity; };
-
-	void _avoidance_done(Vector3 p_new_velocity); // Dummy
-
-private:
-	void _update_map(RID p_map);
-	void _update_position(const Vector2 p_position);
-};
-
-#endif // NAVIGATION_OBSTACLE_2D_H
+bool NavObstacle::check_dirty() {
+	const bool was_dirty = obstacle_dirty;
+	obstacle_dirty = false;
+	return was_dirty;
+}

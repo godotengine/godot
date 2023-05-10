@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  navigation_obstacle_3d.h                                              */
+/*  nav_obstacle.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,88 +28,51 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_OBSTACLE_3D_H
-#define NAVIGATION_OBSTACLE_3D_H
+#ifndef NAV_OBSTACLE_H
+#define NAV_OBSTACLE_H
 
-#include "scene/3d/node_3d.h"
+#include "core/object/class_db.h"
+#include "core/templates/local_vector.h"
+#include "nav_agent.h"
+#include "nav_rid.h"
 
-class NavigationObstacle3D : public Node3D {
-	GDCLASS(NavigationObstacle3D, Node3D);
+class NavMap;
 
-	RID obstacle;
-	RID map_before_pause;
-	RID map_override;
-	RID map_current;
-
-	real_t height = 1.0;
-	real_t radius = 0.0;
-
+class NavObstacle : public NavRid {
+	NavMap *map = nullptr;
+	Vector3 position;
 	Vector<Vector3> vertices;
 
-	RID fake_agent;
+	real_t height = 0.0;
+
 	uint32_t avoidance_layers = 1;
 
-	bool use_3d_avoidance = false;
+	bool obstacle_dirty = true;
 
-	Transform3D previous_transform;
-
-	Vector3 velocity;
-	Vector3 previous_velocity;
-	bool velocity_submitted = false;
-
-#ifdef DEBUG_ENABLED
-	RID fake_agent_radius_debug_instance;
-	Ref<ArrayMesh> fake_agent_radius_debug_mesh;
-
-	RID static_obstacle_debug_instance;
-	Ref<ArrayMesh> static_obstacle_debug_mesh;
-
-private:
-	void _update_fake_agent_radius_debug();
-	void _update_static_obstacle_debug();
-#endif // DEBUG_ENABLED
-
-protected:
-	static void _bind_methods();
-	void _notification(int p_what);
+	uint32_t map_update_id = 0;
 
 public:
-	NavigationObstacle3D();
-	virtual ~NavigationObstacle3D();
+	NavObstacle();
+	~NavObstacle();
 
-	RID get_obstacle_rid() const { return obstacle; }
-	RID get_agent_rid() const { return fake_agent; }
+	void set_map(NavMap *p_map);
+	NavMap *get_map() { return map; }
 
-	void set_navigation_map(RID p_navigation_map);
-	RID get_navigation_map() const;
+	void set_position(const Vector3 p_position);
+	const Vector3 &get_position() const { return position; }
 
-	void set_radius(real_t p_radius);
-	real_t get_radius() const { return radius; }
-
-	void set_height(real_t p_height);
+	void set_height(const real_t p_height);
 	real_t get_height() const { return height; }
 
 	void set_vertices(const Vector<Vector3> &p_vertices);
-	const Vector<Vector3> &get_vertices() const { return vertices; };
+	const Vector<Vector3> &get_vertices() const { return vertices; }
+
+	bool is_map_changed();
 
 	void set_avoidance_layers(uint32_t p_layers);
-	uint32_t get_avoidance_layers() const;
+	uint32_t get_avoidance_layers() const { return avoidance_layers; };
 
-	void set_avoidance_layer_value(int p_layer_number, bool p_value);
-	bool get_avoidance_layer_value(int p_layer_number) const;
-
-	void set_use_3d_avoidance(bool p_use_3d_avoidance);
-	bool get_use_3d_avoidance() const { return use_3d_avoidance; }
-
-	void set_velocity(const Vector3 p_velocity);
-	Vector3 get_velocity() const { return velocity; };
-
-	void _avoidance_done(Vector3 p_new_velocity); // Dummy
-
-private:
-	void _update_map(RID p_map);
-	void _update_position(const Vector3 p_position);
-	void _update_use_3d_avoidance(bool p_use_3d_avoidance);
+	bool check_dirty();
 };
 
-#endif // NAVIGATION_OBSTACLE_3D_H
+#endif // NAV_OBSTACLE_H

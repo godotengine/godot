@@ -41,13 +41,11 @@
 #include <cstddef>
 #include <ostream>
 
-#define RVO3D_EXPORT
-
-namespace RVO {
+namespace RVO3D {
 	/**
 	 * \brief  Defines a three-dimensional vector.
 	 */
-	class RVO3D_EXPORT Vector3 {
+	class Vector3 {
 	public:
 		/**
 		 * \brief   Constructs and initializes a three-dimensional vector instance to zero.
@@ -57,6 +55,17 @@ namespace RVO {
 			val_[0] = 0.0f;
 			val_[1] = 0.0f;
 			val_[2] = 0.0f;
+		}
+
+		/**
+		 * \brief   Constructs and initializes a three-dimensional vector from the specified three-dimensional vector.
+		 * \param   vector  The three-dimensional vector containing the xyz-coordinates.
+		 */
+		inline Vector3(const Vector3 &vector)
+		{
+			val_[0] = vector[0];
+			val_[1] = vector[1];
+			val_[2] = vector[2];
 		}
 
 		/**
@@ -255,6 +264,15 @@ namespace RVO {
 			return *this;
 		}
 
+		inline Vector3 &operator=(const Vector3 &vector)
+		{
+			val_[0] = vector[0];
+			val_[1] = vector[1];
+			val_[2] = vector[2];
+
+			return *this;
+		}
+
 	private:
 		float val_[3];
 	};
@@ -267,7 +285,7 @@ namespace RVO {
 	 * \param    vector  The three-dimensional vector with which the scalar multiplication should be computed.
 	 * \return   The scalar multiplication of the three-dimensional vector with the scalar value.
 	 */
-	RVO3D_EXPORT inline Vector3 operator*(float scalar, const Vector3 &vector)
+	inline Vector3 operator*(float scalar, const Vector3 &vector)
 	{
 		return Vector3(scalar * vector[0], scalar * vector[1], scalar * vector[2]);
 	}
@@ -279,7 +297,7 @@ namespace RVO {
 	 * \param    vector2  The second vector with which the cross product should be computed.
 	 * \return   The cross product of the two specified vectors.
 	 */
-	RVO3D_EXPORT inline Vector3 cross(const Vector3 &vector1, const Vector3 &vector2)
+	inline Vector3 cross(const Vector3 &vector1, const Vector3 &vector2)
 	{
 		return Vector3(vector1[1] * vector2[2] - vector1[2] * vector2[1], vector1[2] * vector2[0] - vector1[0] * vector2[2], vector1[0] * vector2[1] - vector1[1] * vector2[0]);
 	}
@@ -291,7 +309,7 @@ namespace RVO {
 	 * \param    vector  The three-dimensional vector which to insert into the output stream.
 	 * \return   A reference to the output stream.
 	 */
-	RVO3D_EXPORT inline std::ostream &operator<<(std::ostream &os, const Vector3 &vector)
+	inline std::ostream &operator<<(std::ostream &os, const Vector3 &vector)
 	{
 		os << "(" << vector[0] << "," << vector[1] << "," << vector[2] << ")";
 
@@ -304,7 +322,7 @@ namespace RVO {
 	 * \param    vector  The three-dimensional vector whose length is to be computed.
 	 * \return   The length of the three-dimensional vector.
 	 */
-	RVO3D_EXPORT inline float abs(const Vector3 &vector)
+	inline float abs(const Vector3 &vector)
 	{
 		return std::sqrt(vector * vector);
 	}
@@ -315,7 +333,7 @@ namespace RVO {
 	 * \param    vector  The three-dimensional vector whose squared length is to be computed.
 	 * \return   The squared length of the three-dimensional vector.
 	 */
-	RVO3D_EXPORT inline float absSq(const Vector3 &vector)
+	inline float absSq(const Vector3 &vector)
 	{
 		return vector * vector;
 	}
@@ -326,7 +344,7 @@ namespace RVO {
 	 * \param    vector  The three-dimensional vector whose normalization is to be computed.
 	 * \return   The normalization of the three-dimensional vector.
 	 */
-	RVO3D_EXPORT inline Vector3 normalize(const Vector3 &vector)
+	inline Vector3 normalize(const Vector3 &vector)
 	{
 		return vector / abs(vector);
 	}

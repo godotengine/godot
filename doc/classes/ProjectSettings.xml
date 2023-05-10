@@ -579,6 +579,33 @@
 		<member name="debug/shader_language/warnings/unused_varying" type="bool" setter="" getter="" default="true">
 			When set to [code]true[/code], produces a warning when a varying is never used.
 		</member>
+		<member name="debug/shapes/avoidance/agents_radius_color" type="Color" setter="" getter="" default="Color(1, 1, 0, 0.25)">
+			Color of the avoidance agents radius, visible when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/enable_agents_radius" type="bool" setter="" getter="" default="true">
+			If enabled, displays avoidance agents radius when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/enable_obstacles_radius" type="bool" setter="" getter="" default="true">
+			If enabled, displays avoidance obstacles radius when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/enable_obstacles_static" type="bool" setter="" getter="" default="true">
+			If enabled, displays static avoidance obstacles when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/obstacles_radius_color" type="Color" setter="" getter="" default="Color(1, 0.5, 0, 0.25)">
+			Color of the avoidance obstacles radius, visible when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/obstacles_static_edge_pushin_color" type="Color" setter="" getter="" default="Color(1, 0, 0, 1)">
+			Color of the static avoidance obstacles edges when their vertices are winded in order to push agents in, visible when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/obstacles_static_edge_pushout_color" type="Color" setter="" getter="" default="Color(1, 1, 0, 1)">
+			Color of the static avoidance obstacles edges when their vertices are winded in order to push agents out, visible when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/obstacles_static_face_pushin_color" type="Color" setter="" getter="" default="Color(1, 0, 0, 0)">
+			Color of the static avoidance obstacles faces when their vertices are winded in order to push agents in, visible when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/obstacles_static_face_pushout_color" type="Color" setter="" getter="" default="Color(1, 1, 0, 0.5)">
+			Color of the static avoidance obstacles faces when their vertices are winded in order to push agents out, visible when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
 		<member name="debug/shapes/collision/contact_color" type="Color" setter="" getter="" default="Color(1, 0.2, 0.1, 0.8)">
 			Color of the contact points between collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
@@ -1777,6 +1804,102 @@
 		<member name="layer_names/3d_render/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D render layer 20. If left empty, the layer will display as "Layer 20".
 		</member>
+		<member name="layer_names/avoidance/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 1. If left empty, the layer will display as "Layer 1".
+		</member>
+		<member name="layer_names/avoidance/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 2. If left empty, the layer will display as "Layer 2".
+		</member>
+		<member name="layer_names/avoidance/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 3. If left empty, the layer will display as "Layer 3".
+		</member>
+		<member name="layer_names/avoidance/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 4. If left empty, the layer will display as "Layer 4".
+		</member>
+		<member name="layer_names/avoidance/layer_5" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 5. If left empty, the layer will display as "Layer 5".
+		</member>
+		<member name="layer_names/avoidance/layer_6" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 6. If left empty, the layer will display as "Layer 6".
+		</member>
+		<member name="layer_names/avoidance/layer_7" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 7. If left empty, the layer will display as "Layer 7".
+		</member>
+		<member name="layer_names/avoidance/layer_8" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 8. If left empty, the layer will display as "Layer 8".
+		</member>
+		<member name="layer_names/avoidance/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 9. If left empty, the layer will display as "Layer 9".
+		</member>
+		<member name="layer_names/avoidance/layer_10" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 10. If left empty, the layer will display as "Layer 10".
+		</member>
+		<member name="layer_names/avoidance/layer_11" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 11. If left empty, the layer will display as "Layer 11".
+		</member>
+		<member name="layer_names/avoidance/layer_12" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 12. If left empty, the layer will display as "Layer 12".
+		</member>
+		<member name="layer_names/avoidance/layer_13" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 13. If left empty, the layer will display as "Layer 13".
+		</member>
+		<member name="layer_names/avoidance/layer_14" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 14. If left empty, the layer will display as "Layer 14".
+		</member>
+		<member name="layer_names/avoidance/layer_15" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 15. If left empty, the layer will display as "Layer 15".
+		</member>
+		<member name="layer_names/avoidance/layer_16" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 16. If left empty, the layer will display as "Layer 16".
+		</member>
+		<member name="layer_names/avoidance/layer_17" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 17. If left empty, the layer will display as "Layer 17".
+		</member>
+		<member name="layer_names/avoidance/layer_18" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 18. If left empty, the layer will display as "Layer 18".
+		</member>
+		<member name="layer_names/avoidance/layer_19" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 19. If left empty, the layer will display as "Layer 19".
+		</member>
+		<member name="layer_names/avoidance/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 20. If left empty, the layer will display as "Layer 20".
+		</member>
+		<member name="layer_names/avoidance/layer_21" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 21. If left empty, the layer will display as "Layer 21".
+		</member>
+		<member name="layer_names/avoidance/layer_22" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 22. If left empty, the layer will display as "Layer 22".
+		</member>
+		<member name="layer_names/avoidance/layer_23" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 23. If left empty, the layer will display as "Layer 23".
+		</member>
+		<member name="layer_names/avoidance/layer_24" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 24. If left empty, the layer will display as "Layer 24".
+		</member>
+		<member name="layer_names/avoidance/layer_25" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 25. If left empty, the layer will display as "Layer 25".
+		</member>
+		<member name="layer_names/avoidance/layer_26" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 26. If left empty, the layer will display as "Layer 26".
+		</member>
+		<member name="layer_names/avoidance/layer_27" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 27. If left empty, the layer will display as "Layer 27".
+		</member>
+		<member name="layer_names/avoidance/layer_28" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 28. If left empty, the layer will display as "Layer 28".
+		</member>
+		<member name="layer_names/avoidance/layer_29" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 29. If left empty, the layer will display as "Layer 29".
+		</member>
+		<member name="layer_names/avoidance/layer_30" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 30. If left empty, the layer will display as "Layer 30".
+		</member>
+		<member name="layer_names/avoidance/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 31. If left empty, the layer will display as "Layer 31".
+		</member>
+		<member name="layer_names/avoidance/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 32. If left empty, the layer will display as "Layer 32".
+		</member>
 		<member name="memory/limits/message_queue/max_size_mb" type="int" setter="" getter="" default="32">
 			Godot uses a message queue to defer some function calls. If you run out of space on it (you will see an error), you can increase the size here.
 		</member>
@@ -1800,6 +1923,12 @@
 		</member>
 		<member name="navigation/3d/default_link_connection_radius" type="float" setter="" getter="" default="1.0">
 			Default link connection radius for 3D navigation maps. See [method NavigationServer3D.map_set_link_connection_radius].
+		</member>
+		<member name="navigation/avoidance/thread_model/avoidance_use_high_priority_threads" type="bool" setter="" getter="" default="true">
+			If enabled and avoidance calculations use multiple threads the threads run with high priority.
+		</member>
+		<member name="navigation/avoidance/thread_model/avoidance_use_multiple_threads" type="bool" setter="" getter="" default="true">
+			If enabled the avoidance calculations use multiple threads.
 		</member>
 		<member name="network/limits/debugger/max_chars_per_second" type="int" setter="" getter="" default="32768">
 			Maximum number of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.

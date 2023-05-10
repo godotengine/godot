@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  navigation_obstacle_2d.h                                              */
+/*  navigation_obstacle_2d_editor_plugin.cpp                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,75 +28,39 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_OBSTACLE_2D_H
-#define NAVIGATION_OBSTACLE_2D_H
+#include "navigation_obstacle_2d_editor_plugin.h"
 
-#include "scene/2d/node_2d.h"
+#include "editor/editor_node.h"
+#include "editor/editor_undo_redo_manager.h"
 
-class NavigationObstacle2D : public Node2D {
-	GDCLASS(NavigationObstacle2D, Node2D);
+Node2D *NavigationObstacle2DEditor::_get_node() const {
+	return node;
+}
 
-	RID obstacle;
-	RID map_before_pause;
-	RID map_override;
-	RID map_current;
+void NavigationObstacle2DEditor::_set_node(Node *p_polygon) {
+	node = Object::cast_to<NavigationObstacle2D>(p_polygon);
+}
 
-	real_t radius = 0.0;
+void NavigationObstacle2DEditor::_action_add_polygon(const Variant &p_polygon) {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->add_do_method(node, "set_vertices", p_polygon);
+	undo_redo->add_undo_method(node, "set_vertices", node->get_vertices());
+}
 
-	Vector<Vector2> vertices;
+void NavigationObstacle2DEditor::_action_remove_polygon(int p_idx) {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->add_do_method(node, "set_vertices", Variant(Vector<Vector2>()));
+	undo_redo->add_undo_method(node, "set_vertices", node->get_vertices());
+}
 
-	RID fake_agent;
-	uint32_t avoidance_layers = 1;
+void NavigationObstacle2DEditor::_action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon) {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->add_do_method(node, "set_vertices", p_polygon);
+	undo_redo->add_undo_method(node, "set_vertices", node->get_vertices());
+}
 
-	Transform2D previous_transform;
+NavigationObstacle2DEditor::NavigationObstacle2DEditor() {}
 
-	Vector2 velocity;
-	Vector2 previous_velocity;
-	bool velocity_submitted = false;
-
-#ifdef DEBUG_ENABLED
-private:
-	void _update_fake_agent_radius_debug();
-	void _update_static_obstacle_debug();
-#endif // DEBUG_ENABLED
-
-protected:
-	static void _bind_methods();
-	void _notification(int p_what);
-
-public:
-	NavigationObstacle2D();
-	virtual ~NavigationObstacle2D();
-
-	RID get_obstacle_rid() const { return obstacle; }
-	RID get_agent_rid() const { return fake_agent; }
-
-	void set_navigation_map(RID p_navigation_map);
-	RID get_navigation_map() const;
-
-	void set_radius(real_t p_radius);
-	real_t get_radius() const { return radius; }
-
-	void set_vertices(const Vector<Vector2> &p_vertices);
-	const Vector<Vector2> &get_vertices() const { return vertices; };
-
-	void set_avoidance_layers(uint32_t p_layers);
-	uint32_t get_avoidance_layers() const;
-
-	void set_avoidance_mask(uint32_t p_mask);
-	uint32_t get_avoidance_mask() const;
-
-	void set_avoidance_layer_value(int p_layer_number, bool p_value);
-	bool get_avoidance_layer_value(int p_layer_number) const;
-
-	void set_velocity(const Vector2 p_velocity);
-	Vector2 get_velocity() const { return velocity; };
-
-	void _avoidance_done(Vector3 p_new_velocity); // Dummy
-
-private:
-	void _update_map(RID p_map);
-	void _update_position(const Vector2 p_position);
-};
-
-#endif // NAVIGATION_OBSTACLE_2D_H
+NavigationObstacle2DEditorPlugin::NavigationObstacle2DEditorPlugin() :
+		AbstractPolygon2DEditorPlugin(memnew(NavigationObstacle2DEditor), "NavigationObstacle2D") {
+}
