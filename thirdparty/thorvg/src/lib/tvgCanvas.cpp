@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #include "tvgCanvasImpl.h"
 
 /************************************************************************/
@@ -57,13 +58,21 @@ Result Canvas::clear(bool free) noexcept
 
 Result Canvas::draw() noexcept
 {
-    return pImpl->draw();
+    TVGLOG("COMMON", "Draw S. -------------------------------- Canvas(%p)", this);
+    auto ret = pImpl->draw();
+    TVGLOG("COMMON", "Draw E. -------------------------------- Canvas(%p)", this);
+
+    return ret;
 }
 
 
 Result Canvas::update(Paint* paint) noexcept
 {
-    return pImpl->update(paint, false);
+    TVGLOG("COMMON", "Update S. ------------------------------ Canvas(%p)", this);
+    auto ret = pImpl->update(paint, false);
+    TVGLOG("COMMON", "Update E. ------------------------------ Canvas(%p)", this);
+
+    return ret;
 }
 
 
