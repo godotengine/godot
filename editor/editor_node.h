@@ -430,7 +430,7 @@ private:
 	PopupPanel *dock_select_popup = nullptr;
 	Rect2 dock_select_rect[DOCK_SLOT_MAX];
 	TabContainer *dock_slot[DOCK_SLOT_MAX];
-	Timer *dock_drag_timer = nullptr;
+	Timer *editor_layout_save_delay_timer = nullptr;
 	bool docks_visible = true;
 	int dock_popup_selected_idx = -1;
 	int dock_select_rect_over_idx = -1;
@@ -559,8 +559,8 @@ private:
 	void _node_renamed();
 	void _editor_select_next();
 	void _editor_select_prev();
-	void _set_scene_metadata(const String &p_file, int p_idx = -1);
-	void _get_scene_metadata(const String &p_file);
+	void _save_editor_states(const String &p_file, int p_idx = -1);
+	void _load_editor_plugin_states_from_config(const Ref<ConfigFile> &p_config_file);
 	void _update_title();
 	void _update_scene_tabs();
 	void _version_control_menu_option(int p_idx);
@@ -648,16 +648,19 @@ private:
 
 	int _get_current_main_editor();
 
-	void _save_docks();
-	void _load_docks();
+	void _save_editor_layout();
+	void _load_editor_layout();
 	void _save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section);
 	void _restore_floating_dock(const Dictionary &p_dock_dump, Control *p_wrapper, int p_slot_index);
 	void _load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section);
 	void _update_dock_slots_visibility(bool p_keep_selected_tabs = false);
 	void _dock_tab_changed(int p_tab);
 
-	void _save_open_scenes_to_config(Ref<ConfigFile> p_layout, const String &p_section);
-	void _load_open_scenes_from_config(Ref<ConfigFile> p_layout, const String &p_section);
+	void _save_central_editor_layout_to_config(Ref<ConfigFile> p_config_file);
+	void _load_central_editor_layout_from_config(Ref<ConfigFile> p_config_file);
+
+	void _save_open_scenes_to_config(Ref<ConfigFile> p_layout);
+	void _load_open_scenes_from_config(Ref<ConfigFile> p_layout);
 
 	void _update_layouts_menu();
 	void _layout_menu_option(int p_id);
@@ -884,7 +887,7 @@ public:
 
 	bool is_scene_in_use(const String &p_path);
 
-	void save_layout();
+	void save_editor_layout_delayed();
 	void save_default_environment();
 
 	void open_export_template_manager();

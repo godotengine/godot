@@ -471,7 +471,7 @@ bool EditorPlugin::build() {
 }
 
 void EditorPlugin::queue_save_layout() {
-	EditorNode::get_singleton()->save_layout();
+	EditorNode::get_singleton()->save_editor_layout_delayed();
 }
 
 void EditorPlugin::make_bottom_panel_item_visible(Control *p_item) {
