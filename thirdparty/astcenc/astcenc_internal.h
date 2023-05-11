@@ -293,11 +293,13 @@ struct partition_lines3
 	/** @brief Post-processed line for correlated chroma, passing though the origin. */
 	processed_line3 samec_pline;
 
-	/** @brief The length of the line for uncorrelated chroma. */
-	float uncor_line_len;
-
-	/** @brief The length of the line for correlated chroma. */
-	float samec_line_len;
+	/**
+	 * @brief The length of the line for uncorrelated chroma.
+	 *
+	 * This is used for both the uncorrelated and same chroma lines - they are normally very similar
+	 * and only used for the relative ranking of partitionings against one another.
+	 */
+	float line_length;
 };
 
 /**
@@ -319,8 +321,8 @@ struct partition_info
 	/**
 	 * @brief The number of texels in each partition.
 	 *
-	 * Note that some seeds result in zero texels assigned to a partition are valid, but are skipped
-	 * by this compressor as there is no point spending bits encoding an unused color endpoint.
+	 * Note that some seeds result in zero texels assigned to a partition. These are valid, but are
+	 * skipped by this compressor as there is no point spending bits encoding an unused endpoints.
 	 */
 	uint8_t partition_texel_count[BLOCK_MAX_PARTITIONS];
 
@@ -455,23 +457,23 @@ struct decimation_mode
 	 *
 	 * Bit 0 = QUANT_2, Bit 1 = QUANT_3, etc.
 	 */
-	uint16_t refprec_1_plane;
+	uint16_t refprec_1plane;
 
 	/**
 	 * @brief Bitvector indicating weight quant methods used by active 2 plane block modes.
 	 *
 	 * Bit 0 = QUANT_2, Bit 1 = QUANT_3, etc.
 	 */
-	uint16_t refprec_2_planes;
+	uint16_t refprec_2planes;
 
 	/**
 	 * @brief Set a 1 plane weight quant as active.
 	 *
 	 * @param weight_quant   The quant method to set.
 	 */
-	void set_ref_1_plane(quant_method weight_quant)
+	void set_ref_1plane(quant_method weight_quant)
 	{
-		refprec_1_plane |= (1 << weight_quant);
+		refprec_1plane |= (1 << weight_quant);
 	}
 
 	/**
@@ -479,10 +481,10 @@ struct decimation_mode
 	 *
 	 * @param max_weight_quant   The max quant method to test.
 	 */
-	bool is_ref_1_plane(quant_method max_weight_quant) const
+	bool is_ref_1plane(quant_method max_weight_quant) const
 	{
 		uint16_t mask = static_cast<uint16_t>((1 << (max_weight_quant + 1)) - 1);
-		return (refprec_1_plane & mask) != 0;
+		return (refprec_1plane & mask) != 0;
 	}
 
 	/**
@@ -490,9 +492,9 @@ struct decimation_mode
 	 *
 	 * @param weight_quant   The quant method to set.
 	 */
-	void set_ref_2_plane(quant_method weight_quant)
+	void set_ref_2plane(quant_method weight_quant)
 	{
-		refprec_2_planes |= static_cast<uint16_t>(1 << weight_quant);
+		refprec_2planes |= static_cast<uint16_t>(1 << weight_quant);
 	}
 
 	/**
@@ -500,10 +502,10 @@ struct decimation_mode
 	 *
 	 * @param max_weight_quant   The max quant method to test.
 	 */
-	bool is_ref_2_plane(quant_method max_weight_quant) const
+	bool is_ref_2plane(quant_method max_weight_quant) const
 	{
 		uint16_t mask = static_cast<uint16_t>((1 << (max_weight_quant + 1)) - 1);
-		return (refprec_2_planes & mask) != 0;
+		return (refprec_2planes & mask) != 0;
 	}
 };
 
@@ -1336,9 +1338,14 @@ bool is_legal_3d_block_size(
  * Converts unquant value in 0-255 range into quant value in 0-255 range.
  * No BISE scrambling is applied at this stage.
  *
- * Indexed by [quant_mode - 4][data_value].
+ * The BISE encoding results in ties where available quant<256> values are
+ * equidistant the available quant<BISE> values. This table stores two values
+ * for each input - one for use with a negative residual, and one for use with
+ * a positive residual.
+ *
+ * Indexed by [quant_mode - 4][data_value * 2 + residual].
  */
-extern const uint8_t color_unquant_to_uquant_tables[17][256];
+extern const uint8_t color_unquant_to_uquant_tables[17][512];
 
 /**
  * @brief The precomputed table for packing quantized color values.
@@ -1528,8 +1535,7 @@ void compute_error_squared_rgb(
  * @param      blk             The image block color data to be compressed.
  * @param      uncor_plines    Processed uncorrelated partition lines for each partition.
  * @param      samec_plines    Processed same chroma partition lines for each partition.
- * @param[out] uncor_lengths   The length of each components deviation from the line.
- * @param[out] samec_lengths   The length of each components deviation from the line.
+ * @param[out] line_lengths    The length of each components deviation from the line.
  * @param[out] uncor_error     The cumulative error for using the uncorrelated line.
  * @param[out] samec_error     The cumulative error for using the same chroma line.
  */
@@ -1538,8 +1544,7 @@ void compute_error_squared_rgba(
 	const image_block& blk,
 	const processed_line4 uncor_plines[BLOCK_MAX_PARTITIONS],
 	const processed_line4 samec_plines[BLOCK_MAX_PARTITIONS],
-	float uncor_lengths[BLOCK_MAX_PARTITIONS],
-	float samec_lengths[BLOCK_MAX_PARTITIONS],
+	float line_lengths[BLOCK_MAX_PARTITIONS],
 	float& uncor_error,
 	float& samec_error);
 
@@ -2120,34 +2125,6 @@ void physical_to_symbolic(
 /* ============================================================================
 Platform-specific functions.
 ============================================================================ */
-/**
- * @brief Run-time detection if the host CPU supports the POPCNT extension.
- *
- * @return @c true if supported, @c false if not.
- */
-bool cpu_supports_popcnt();
-
-/**
- * @brief Run-time detection if the host CPU supports F16C extension.
- *
- * @return @c true if supported, @c false if not.
- */
-bool cpu_supports_f16c();
-
-/**
- * @brief Run-time detection if the host CPU supports SSE 4.1 extension.
- *
- * @return @c true if supported, @c false if not.
- */
-bool cpu_supports_sse41();
-
-/**
- * @brief Run-time detection if the host CPU supports AVX 2 extension.
- *
- * @return @c true if supported, @c false if not.
- */
-bool cpu_supports_avx2();
-
 /**
  * @brief Allocate an aligned memory buffer.
  *
