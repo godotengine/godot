@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2021 Arm Limited
+// Copyright 2011-2023 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -44,17 +44,43 @@
  * @brief Determine the quantized value given a quantization level.
  *
  * @param quant_level   The quantization level to use.
- * @param value         The value to convert. This may be outside of the 0-255 range and will be
- *                      clamped before the value is looked up.
+ * @param value         The value to convert. This must be in the 0-255 range.
  *
- * @return The encoded quantized value. These are not necessarily in order; the compressor
- *         scrambles the values slightly to make hardware implementation easier.
+ * @return The unpacked quantized value, returned in 0-255 range.
  */
 static inline uint8_t quant_color(
 	quant_method quant_level,
 	int value
 ) {
-	return color_unquant_to_uquant_tables[quant_level - QUANT_6][value];
+	int index = value * 2 + 1;
+	return color_unquant_to_uquant_tables[quant_level - QUANT_6][index];
+}
+
+/**
+ * @brief Determine the quantized value given a quantization level and residual.
+ *
+ * @param quant_level   The quantization level to use.
+ * @param value         The value to convert. This must be in the 0-255 range.
+ * @param valuef        The original value before rounding, used to compute a residual.
+ *
+ * @return The unpacked quantized value, returned in 0-255 range.
+ */
+static inline uint8_t quant_color(
+	quant_method quant_level,
+	int value,
+	float valuef
+) {
+	int index = value * 2;
+
+	// Compute the residual to determine if we should round down or up ties.
+	// Test should be residual >= 0, but empirical testing shows small bias helps.
+	float residual = valuef - static_cast<float>(value);
+	if (residual >= -0.1f)
+	{
+		index++;
+	}
+
+	return color_unquant_to_uquant_tables[quant_level - QUANT_6][index];
 }
 
 /**
@@ -86,16 +112,16 @@ static void quantize_rgb(
 	float b1 = astc::clamp255f(color1.lane<2>() * scale);
 
 	int ri0, gi0, bi0, ri1, gi1, bi1;
-	float rgb0_addon = 0.5f;
-	float rgb1_addon = 0.5f;
+	float rgb0_addon = 0.0f;
+	float rgb1_addon = 0.0f;
 	do
 	{
-		ri0 = quant_color(quant_level, astc::max(astc::flt2int_rd(r0 + rgb0_addon), 0));
-		gi0 = quant_color(quant_level, astc::max(astc::flt2int_rd(g0 + rgb0_addon), 0));
-		bi0 = quant_color(quant_level, astc::max(astc::flt2int_rd(b0 + rgb0_addon), 0));
-		ri1 = quant_color(quant_level, astc::min(astc::flt2int_rd(r1 + rgb1_addon), 255));
-		gi1 = quant_color(quant_level, astc::min(astc::flt2int_rd(g1 + rgb1_addon), 255));
-		bi1 = quant_color(quant_level, astc::min(astc::flt2int_rd(b1 + rgb1_addon), 255));
+		ri0 = quant_color(quant_level, astc::max(astc::flt2int_rtn(r0 + rgb0_addon), 0), r0 + rgb0_addon);
+		gi0 = quant_color(quant_level, astc::max(astc::flt2int_rtn(g0 + rgb0_addon), 0), g0 + rgb0_addon);
+		bi0 = quant_color(quant_level, astc::max(astc::flt2int_rtn(b0 + rgb0_addon), 0), b0 + rgb0_addon);
+		ri1 = quant_color(quant_level, astc::min(astc::flt2int_rtn(r1 + rgb1_addon), 255), r1 + rgb1_addon);
+		gi1 = quant_color(quant_level, astc::min(astc::flt2int_rtn(g1 + rgb1_addon), 255), g1 + rgb1_addon);
+		bi1 = quant_color(quant_level, astc::min(astc::flt2int_rtn(b1 + rgb1_addon), 255), b1 + rgb1_addon);
 
 		rgb0_addon -= 0.2f;
 		rgb1_addon += 0.2f;
@@ -133,8 +159,8 @@ static void quantize_rgba(
 	float a0 = astc::clamp255f(color0.lane<3>() * scale);
 	float a1 = astc::clamp255f(color1.lane<3>() * scale);
 
-	output[6] = quant_color(quant_level, astc::flt2int_rtn(a0));
-	output[7] = quant_color(quant_level, astc::flt2int_rtn(a1));
+	output[6] = quant_color(quant_level, astc::flt2int_rtn(a0), a0);
+	output[7] = quant_color(quant_level, astc::flt2int_rtn(a1), a1);
 
 	quantize_rgb(color0, color1, output, quant_level);
 }
@@ -180,13 +206,13 @@ static bool try_quantize_rgb_blue_contract(
 	}
 
 	// Quantize the inverse-blue-contracted color
-	int ri0 = quant_color(quant_level, astc::flt2int_rtn(r0));
-	int gi0 = quant_color(quant_level, astc::flt2int_rtn(g0));
-	int bi0 = quant_color(quant_level, astc::flt2int_rtn(b0));
+	int ri0 = quant_color(quant_level, astc::flt2int_rtn(r0), r0);
+	int gi0 = quant_color(quant_level, astc::flt2int_rtn(g0), g0);
+	int bi0 = quant_color(quant_level, astc::flt2int_rtn(b0), b0);
 
-	int ri1 = quant_color(quant_level, astc::flt2int_rtn(r1));
-	int gi1 = quant_color(quant_level, astc::flt2int_rtn(g1));
-	int bi1 = quant_color(quant_level, astc::flt2int_rtn(b1));
+	int ri1 = quant_color(quant_level, astc::flt2int_rtn(r1), r1);
+	int gi1 = quant_color(quant_level, astc::flt2int_rtn(g1), g1);
+	int bi1 = quant_color(quant_level, astc::flt2int_rtn(b1), b1);
 
 	// If color #1 is not larger than color #0 then blue-contraction cannot be used. Note that
 	// blue-contraction and quantization change this order, which is why we must test afterwards.
@@ -217,7 +243,7 @@ static bool try_quantize_rgb_blue_contract(
  *
  * @return Returns @c false on failure, @c true on success.
  */
-static int try_quantize_rgba_blue_contract(
+static bool try_quantize_rgba_blue_contract(
 	vfloat4 color0,
 	vfloat4 color1,
 	uint8_t output[8],
@@ -228,8 +254,8 @@ static int try_quantize_rgba_blue_contract(
 	float a0 = astc::clamp255f(color0.lane<3>() * scale);
 	float a1 = astc::clamp255f(color1.lane<3>() * scale);
 
-	output[6] = quant_color(quant_level, astc::flt2int_rtn(a1));
-	output[7] = quant_color(quant_level, astc::flt2int_rtn(a0));
+	output[6] = quant_color(quant_level, astc::flt2int_rtn(a1), a1);
+	output[7] = quant_color(quant_level, astc::flt2int_rtn(a0), a0);
 
 	return try_quantize_rgb_blue_contract(color0, color1, output, quant_level);
 }
@@ -433,7 +459,7 @@ static bool try_quantize_rgb_delta_blue_contract(
 	g1d |= (g0b & 0x100) >> 1;
 	b1d |= (b0b & 0x100) >> 1;
 
-	// Then quantize and  unquantize; if this causes any of the top two bits to flip,
+	// Then quantize and unquantize; if this causes any of the top two bits to flip,
 	// then encoding fails, since we have then corrupted either the top bit of the base
 	// or the sign bit of the offset.
 	int r1de = quant_color(quant_level, r1d);
@@ -728,9 +754,9 @@ static void quantize_rgbs(
 	float g = astc::clamp255f(color.lane<1>() * scale);
 	float b = astc::clamp255f(color.lane<2>() * scale);
 
-	int ri = quant_color(quant_level, astc::flt2int_rtn(r));
-	int gi = quant_color(quant_level, astc::flt2int_rtn(g));
-	int bi = quant_color(quant_level, astc::flt2int_rtn(b));
+	int ri = quant_color(quant_level, astc::flt2int_rtn(r), r);
+	int gi = quant_color(quant_level, astc::flt2int_rtn(g), g);
+	int bi = quant_color(quant_level, astc::flt2int_rtn(b), b);
 
 	float oldcolorsum = hadd_rgb_s(color) * scale;
 	float newcolorsum = static_cast<float>(ri + gi + bi);
@@ -764,8 +790,8 @@ static void quantize_rgbs_alpha(
 	float a0 = astc::clamp255f(color0.lane<3>() * scale);
 	float a1 = astc::clamp255f(color1.lane<3>() * scale);
 
-	output[4] = quant_color(quant_level, astc::flt2int_rtn(a0));
-	output[5] = quant_color(quant_level, astc::flt2int_rtn(a1));
+	output[4] = quant_color(quant_level, astc::flt2int_rtn(a0), a0);
+	output[5] = quant_color(quant_level, astc::flt2int_rtn(a1), a1);
 
 	quantize_rgbs(color, output, quant_level);
 }
@@ -799,8 +825,8 @@ static void quantize_luminance(
 		lum1 = avg;
 	}
 
-	output[0] = quant_color(quant_level, astc::flt2int_rtn(lum0));
-	output[1] = quant_color(quant_level, astc::flt2int_rtn(lum1));
+	output[0] = quant_color(quant_level, astc::flt2int_rtn(lum0), lum0);
+	output[1] = quant_color(quant_level, astc::flt2int_rtn(lum1), lum1);
 }
 
 /**
@@ -828,48 +854,10 @@ static void quantize_luminance_alpha(
 	float a0 = astc::clamp255f(color0.lane<3>());
 	float a1 = astc::clamp255f(color1.lane<3>());
 
-	// If endpoints are close then pull apart slightly; this gives > 8 bit normal map precision.
-	if (quant_level > 18)
-	{
-		if (fabsf(lum0 - lum1) < 3.0f)
-		{
-			if (lum0 < lum1)
-			{
-				lum0 -= 0.5f;
-				lum1 += 0.5f;
-			}
-			else
-			{
-				lum0 += 0.5f;
-				lum1 -= 0.5f;
-			}
-
-			lum0 = astc::clamp255f(lum0);
-			lum1 = astc::clamp255f(lum1);
-		}
-
-		if (fabsf(a0 - a1) < 3.0f)
-		{
-			if (a0 < a1)
-			{
-				a0 -= 0.5f;
-				a1 += 0.5f;
-			}
-			else
-			{
-				a0 += 0.5f;
-				a1 -= 0.5f;
-			}
-
-			a0 = astc::clamp255f(a0);
-			a1 = astc::clamp255f(a1);
-		}
-	}
-
-	output[0] = quant_color(quant_level, astc::flt2int_rtn(lum0));
-	output[1] = quant_color(quant_level, astc::flt2int_rtn(lum1));
-	output[2] = quant_color(quant_level, astc::flt2int_rtn(a0));
-	output[3] = quant_color(quant_level, astc::flt2int_rtn(a1));
+	output[0] = quant_color(quant_level, astc::flt2int_rtn(lum0), lum0);
+	output[1] = quant_color(quant_level, astc::flt2int_rtn(lum1), lum1);
+	output[2] = quant_color(quant_level, astc::flt2int_rtn(a0), a0);
+	output[3] = quant_color(quant_level, astc::flt2int_rtn(a1), a1);
 }
 
 /**
@@ -1661,8 +1649,8 @@ static void quantize_hdr_rgb_ldr_alpha(
 	float a0 = astc::clamp255f(color0.lane<3>() * scale);
 	float a1 = astc::clamp255f(color1.lane<3>() * scale);
 
-	output[6] = quant_color(quant_level, astc::flt2int_rtn(a0));
-	output[7] = quant_color(quant_level, astc::flt2int_rtn(a1));
+	output[6] = quant_color(quant_level, astc::flt2int_rtn(a0), a0);
+	output[7] = quant_color(quant_level, astc::flt2int_rtn(a1), a1);
 
 	quantize_hdr_rgb(color0, color1, output, quant_level);
 }
