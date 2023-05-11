@@ -217,8 +217,8 @@ private:
 	void _propagate_check_through_children(int p_column, bool p_checked, bool p_emit_signal);
 	void _propagate_check_through_parents(int p_column, bool p_emit_signal);
 
-	TreeItem *_get_prev_visible(bool p_wrap = false);
-	TreeItem *_get_next_visible(bool p_wrap = false);
+	TreeItem *_get_prev_in_tree(bool p_wrap = false, bool p_include_invisible = false);
+	TreeItem *_get_next_in_tree(bool p_wrap = false, bool p_include_invisible = false);
 
 public:
 	void set_text(int p_column, String p_text);
@@ -343,6 +343,9 @@ public:
 	TreeItem *get_next() const;
 	TreeItem *get_parent() const;
 	TreeItem *get_first_child() const;
+
+	TreeItem *get_prev_in_tree(bool p_wrap = false);
+	TreeItem *get_next_in_tree(bool p_wrap = false);
 
 	TreeItem *get_prev_visible(bool p_wrap = false);
 	TreeItem *get_next_visible(bool p_wrap = false);
@@ -731,6 +734,7 @@ public:
 	TreeItem *search_item_text(const String &p_find, int *r_col = nullptr, bool p_selectable = false);
 	// First item that matches the whole text, from the first item down.
 	TreeItem *get_item_with_text(const String &p_find) const;
+	TreeItem *get_item_with_metadata(const Variant &p_find, int p_column = -1) const;
 
 	Point2 get_scroll() const;
 	void scroll_to_item(TreeItem *p_item, bool p_center_on_item = false);

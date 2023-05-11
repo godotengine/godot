@@ -180,6 +180,24 @@ void ShaderEditorPlugin::make_visible(bool p_visible) {
 void ShaderEditorPlugin::selected_notify() {
 }
 
+TextShaderEditor *ShaderEditorPlugin::get_shader_editor(const Ref<Shader> &p_for_shader) {
+	for (EditedShader &edited_shader : edited_shaders) {
+		if (edited_shader.shader == p_for_shader) {
+			return edited_shader.shader_editor;
+		}
+	}
+	return nullptr;
+}
+
+VisualShaderEditor *ShaderEditorPlugin::get_visual_shader_editor(const Ref<Shader> &p_for_shader) {
+	for (EditedShader &edited_shader : edited_shaders) {
+		if (edited_shader.shader == p_for_shader) {
+			return edited_shader.visual_shader_editor;
+		}
+	}
+	return nullptr;
+}
+
 void ShaderEditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
 	if (EDITOR_GET("interface/multi_window/restore_windows_on_load") && window_wrapper->is_window_available() && p_layout->has_section_key("ShaderEditor", "window_rect")) {
 		window_wrapper->restore_window_from_saved_position(
@@ -189,6 +207,38 @@ void ShaderEditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
 	} else {
 		window_wrapper->set_window_enabled(false);
 	}
+
+	if (!bool(EDITOR_GET("editors/shader_editor/behavior/files/restore_shaders_on_load"))) {
+		return;
+	}
+	if (!p_layout->has_section("ShaderEditor")) {
+		return;
+	}
+	if (!p_layout->has_section_key("ShaderEditor", "open_shaders") ||
+			!p_layout->has_section_key("ShaderEditor", "selected_shader")) {
+		return;
+	}
+
+	Array shaders = p_layout->get_value("ShaderEditor", "open_shaders");
+	int selected_shader_idx = 0;
+	String selected_shader = p_layout->get_value("ShaderEditor", "selected_shader");
+	for (int i = 0; i < shaders.size(); i++) {
+		String path = shaders[i];
+		Ref<Resource> res = ResourceLoader::load(path);
+		if (res.is_valid()) {
+			edit(res.ptr());
+		}
+		if (selected_shader == path) {
+			selected_shader_idx = i;
+		}
+	}
+
+	if (p_layout->has_section_key("ShaderEditor", "split_offset")) {
+		main_split->set_split_offset(p_layout->get_value("ShaderEditor", "split_offset"));
+	}
+
+	_update_shader_list();
+	_shader_selected(selected_shader_idx);
 }
 
 void ShaderEditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
@@ -209,24 +259,25 @@ void ShaderEditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
 			p_layout->erase_section_key("ShaderEditor", "window_screen_rect");
 		}
 	}
-}
 
-TextShaderEditor *ShaderEditorPlugin::get_shader_editor(const Ref<Shader> &p_for_shader) {
-	for (EditedShader &edited_shader : edited_shaders) {
-		if (edited_shader.shader == p_for_shader) {
-			return edited_shader.shader_editor;
+	Array shaders;
+	String selected_shader;
+	for (int i = 0; i < shader_tabs->get_tab_count(); i++) {
+		EditedShader edited_shader = edited_shaders[i];
+		if (edited_shader.shader_editor || edited_shader.visual_shader_editor) {
+			shaders.push_back(edited_shader.shader->get_path());
+
+			TextShaderEditor *shader_editor = Object::cast_to<TextShaderEditor>(shader_tabs->get_current_tab_control());
+			VisualShaderEditor *visual_shader_editor = Object::cast_to<VisualShaderEditor>(shader_tabs->get_current_tab_control());
+
+			if ((shader_editor && edited_shader.shader_editor == shader_editor) || (visual_shader_editor && edited_shader.visual_shader_editor == visual_shader_editor)) {
+				selected_shader = edited_shader.shader->get_path();
+			}
 		}
 	}
-	return nullptr;
-}
-
-VisualShaderEditor *ShaderEditorPlugin::get_visual_shader_editor(const Ref<Shader> &p_for_shader) {
-	for (EditedShader &edited_shader : edited_shaders) {
-		if (edited_shader.shader == p_for_shader) {
-			return edited_shader.visual_shader_editor;
-		}
-	}
-	return nullptr;
+	p_layout->set_value("ShaderEditor", "open_shaders", shaders);
+	p_layout->set_value("ShaderEditor", "split_offset", main_split->get_split_offset());
+	p_layout->set_value("ShaderEditor", "selected_shader", selected_shader);
 }
 
 void ShaderEditorPlugin::save_external_data() {
@@ -247,6 +298,10 @@ void ShaderEditorPlugin::apply_changes() {
 }
 
 void ShaderEditorPlugin::_shader_selected(int p_index) {
+	if (p_index >= (int)edited_shaders.size()) {
+		return;
+	}
+
 	if (edited_shaders[p_index].shader_editor) {
 		edited_shaders[p_index].shader_editor->validate_script();
 	}

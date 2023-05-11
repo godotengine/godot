@@ -284,6 +284,8 @@ public:
 
 	void add_debugger_tab(Control *p_control);
 	void remove_debugger_tab(Control *p_control);
+	int get_current_debugger_tab() const;
+	void switch_to_debugger(int p_debugger_tab_idx);
 
 	void send_message(const String &p_message, const Array &p_args);
 	void toggle_profiler(const String &p_profiler, bool p_enable, const Array &p_data);

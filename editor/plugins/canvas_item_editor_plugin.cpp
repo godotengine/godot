@@ -3981,10 +3981,6 @@ void CanvasItemEditor::edit(CanvasItem *p_canvas_item) {
 	Array selection = editor_selection->get_selected_nodes();
 	if (selection.size() != 1 || Object::cast_to<Node>(selection[0]) != p_canvas_item) {
 		_reset_drag();
-
-		// Clear the selection
-		editor_selection->clear(); //_clear_canvas_items();
-		editor_selection->add_node(p_canvas_item);
 	}
 }
 

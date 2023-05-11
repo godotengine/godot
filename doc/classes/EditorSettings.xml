@@ -416,6 +416,9 @@
 		<member name="editors/polygon_editor/show_previous_outline" type="bool" setter="" getter="">
 			If [code]true[/code], displays the polygon's previous shape in the 2D polygon editors with an opaque gray outline. This outline is displayed while dragging a point until the left mouse button is released.
 		</member>
+		<member name="editors/shader_editor/behavior/files/restore_shaders_on_load" type="bool" setter="" getter="">
+			If [code]true[/code], reopens shader files that were open in the shader editor when the project was last closed.
+		</member>
 		<member name="editors/tiles_editor/display_grid" type="bool" setter="" getter="">
 			If [code]true[/code], displays a grid while the TileMap editor is active. See also [member editors/tiles_editor/grid_color].
 		</member>

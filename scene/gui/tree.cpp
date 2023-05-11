@@ -748,7 +748,7 @@ TreeItem *TreeItem::get_first_child() const {
 	return first_child;
 }
 
-TreeItem *TreeItem::_get_prev_visible(bool p_wrap) {
+TreeItem *TreeItem::_get_prev_in_tree(bool p_wrap, bool p_include_invisible) {
 	TreeItem *current = this;
 
 	TreeItem *prev_item = current->get_prev();
@@ -771,7 +771,7 @@ TreeItem *TreeItem::_get_prev_visible(bool p_wrap) {
 		}
 	} else {
 		current = prev_item;
-		while (!current->collapsed && current->first_child) {
+		while ((!current->collapsed || p_include_invisible) && current->first_child) {
 			//go to the very end
 
 			current = current->first_child;
@@ -786,9 +786,9 @@ TreeItem *TreeItem::_get_prev_visible(bool p_wrap) {
 
 TreeItem *TreeItem::get_prev_visible(bool p_wrap) {
 	TreeItem *loop = this;
-	TreeItem *prev_item = this->_get_prev_visible(p_wrap);
+	TreeItem *prev_item = this->_get_prev_in_tree(p_wrap);
 	while (prev_item && !prev_item->is_visible()) {
-		prev_item = prev_item->_get_prev_visible(p_wrap);
+		prev_item = prev_item->_get_prev_in_tree(p_wrap);
 		if (prev_item == loop) {
 			// Check that we haven't looped all the way around to the start.
 			prev_item = nullptr;
@@ -798,10 +798,10 @@ TreeItem *TreeItem::get_prev_visible(bool p_wrap) {
 	return prev_item;
 }
 
-TreeItem *TreeItem::_get_next_visible(bool p_wrap) {
+TreeItem *TreeItem::_get_next_in_tree(bool p_wrap, bool p_include_invisible) {
 	TreeItem *current = this;
 
-	if (!current->collapsed && current->first_child) {
+	if ((!current->collapsed || p_include_invisible) && current->first_child) {
 		current = current->first_child;
 
 	} else if (current->next) {
@@ -827,15 +827,25 @@ TreeItem *TreeItem::_get_next_visible(bool p_wrap) {
 
 TreeItem *TreeItem::get_next_visible(bool p_wrap) {
 	TreeItem *loop = this;
-	TreeItem *next_item = this->_get_next_visible(p_wrap);
+	TreeItem *next_item = this->_get_next_in_tree(p_wrap);
 	while (next_item && !next_item->is_visible()) {
-		next_item = next_item->_get_next_visible(p_wrap);
+		next_item = next_item->_get_next_in_tree(p_wrap);
 		if (next_item == loop) {
 			// Check that we haven't looped all the way around to the start.
 			next_item = nullptr;
 			break;
 		}
 	}
+	return next_item;
+}
+
+TreeItem *TreeItem::get_prev_in_tree(bool p_wrap) {
+	TreeItem *prev_item = this->_get_prev_in_tree(p_wrap, true);
+	return prev_item;
+}
+
+TreeItem *TreeItem::get_next_in_tree(bool p_wrap) {
+	TreeItem *next_item = this->_get_next_in_tree(p_wrap, true);
 	return next_item;
 }
 
@@ -1538,6 +1548,9 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_prev"), &TreeItem::get_prev);
 	ClassDB::bind_method(D_METHOD("get_parent"), &TreeItem::get_parent);
 	ClassDB::bind_method(D_METHOD("get_first_child"), &TreeItem::get_first_child);
+
+	ClassDB::bind_method(D_METHOD("get_next_in_tree", "wrap"), &TreeItem::get_next_in_tree, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_prev_in_tree", "wrap"), &TreeItem::get_prev_in_tree, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("get_next_visible", "wrap"), &TreeItem::get_next_visible, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_prev_visible", "wrap"), &TreeItem::get_prev_visible, DEFVAL(false));
@@ -4990,6 +5003,26 @@ TreeItem *Tree::get_item_with_text(const String &p_find) const {
 			if (current->get_text(i) == p_find) {
 				return current;
 			}
+		}
+	}
+	return nullptr;
+}
+
+TreeItem *Tree::get_item_with_metadata(const Variant &p_find, int p_column) const {
+	if (p_column < 0) {
+		for (TreeItem *current = root; current; current = current->get_next_in_tree()) {
+			for (int i = 0; i < columns.size(); i++) {
+				if (current->get_metadata(i) == p_find) {
+					return current;
+				}
+			}
+		}
+		return nullptr;
+	}
+
+	for (TreeItem *current = root; current; current = current->get_next_in_tree()) {
+		if (current->get_metadata(p_column) == p_find) {
+			return current;
 		}
 	}
 	return nullptr;

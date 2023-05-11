@@ -2325,7 +2325,6 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 
 				if (tab_container->get_current_tab() != i) {
 					_go_to_tab(i);
-					_update_script_names();
 				}
 				if (is_visible_in_tree()) {
 					se->ensure_focus();
@@ -2707,7 +2706,7 @@ void ScriptEditor::_save_layout() {
 		return;
 	}
 
-	EditorNode::get_singleton()->save_layout();
+	EditorNode::get_singleton()->save_editor_layout_delayed();
 }
 
 void ScriptEditor::_editor_settings_changed() {
@@ -3251,18 +3250,34 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 	restoring_layout = false;
 
 	_update_script_names();
+
+	if (p_layout->has_section_key("ScriptEditor", "selected_script")) {
+		String selected_script = p_layout->get_value("ScriptEditor", "selected_script");
+		// If the selected script is not in the list of open scripts, select nothing.
+		for (int i = 0; i < tab_container->get_tab_count(); i++) {
+			ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
+			if (se && se->get_edited_resource()->get_path() == selected_script) {
+				_go_to_tab(i);
+				break;
+			}
+		}
+	}
 }
 
 void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
 	Array scripts;
 	Array helps;
-
+	String selected_script;
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
 		if (se) {
 			String path = se->get_edited_resource()->get_path();
 			if (!path.is_resource_file()) {
 				continue;
+			}
+
+			if (tab_container->get_current_tab_control() == tab_container->get_tab_control(i)) {
+				selected_script = path;
 			}
 
 			_save_editor_state(se);
@@ -3277,6 +3292,7 @@ void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
 	}
 
 	p_layout->set_value("ScriptEditor", "open_scripts", scripts);
+	p_layout->set_value("ScriptEditor", "selected_script", selected_script);
 	p_layout->set_value("ScriptEditor", "open_help", helps);
 	p_layout->set_value("ScriptEditor", "script_split_offset", script_split->get_split_offset());
 	p_layout->set_value("ScriptEditor", "list_split_offset", list_split->get_split_offset());
