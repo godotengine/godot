@@ -281,7 +281,7 @@
 			</description>
 		</method>
 		<method name="get_descendant_count" qualifiers="const">
-			<return type="Node[]" />
+			<return type="int" />
 			<param index="0" name="include_internal" type="bool" default="false" />
 			<description>
 				Returns the number of descendant nodes.
