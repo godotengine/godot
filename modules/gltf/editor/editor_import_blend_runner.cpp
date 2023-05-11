@@ -154,14 +154,30 @@ String dict_to_xmlrpc(const Dictionary &p_dict) {
 
 Error EditorImportBlendRunner::start_blender(const String &p_python_script, bool p_blocking) {
 	String blender_path = EDITOR_GET("filesystem/import/blender/blender3_path");
-
-#ifdef WINDOWS_ENABLED
-	blender_path = blender_path.path_join("blender.exe");
-#else
-	blender_path = blender_path.path_join("blender");
-#endif
-
+	String flags = EDITOR_GET("filesystem/import/blender/blender3_flags");
+	
 	List<String> args;
+	if (flags.size()) {
+		int from = 0;
+		int num_chars = 0;
+		bool inside_quotes = false;
+
+		for (int i = 0; i < flags.size(); i++) {
+			if (flags[i] == '"' && (!i || flags[i - 1] != '\\')) {
+				if (!inside_quotes) {
+					from++;
+				}
+				inside_quotes = !inside_quotes;
+			} else if (flags[i] == '\0' || (!inside_quotes && flags[i] == ' ')) {
+				String arg = flags.substr(from, num_chars);
+				args.push_back(arg);
+				from = i + 1;
+				num_chars = 0;
+			} else {
+				num_chars++;
+			}
+		}
+	}
 	args.push_back("--background");
 	args.push_back("--python-expr");
 	args.push_back(p_python_script);

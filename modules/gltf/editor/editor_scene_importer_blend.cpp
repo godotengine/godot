@@ -269,25 +269,37 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 
 static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 	String path = p_path;
-#ifdef WINDOWS_ENABLED
-	path = path.path_join("blender.exe");
-#else
-	path = path.path_join("blender");
-#endif
 
-#if defined(MACOS_ENABLED)
-	if (!FileAccess::exists(path)) {
-		path = path.path_join("Blender");
-	}
-#endif
-
-	if (!FileAccess::exists(path)) {
+	if (path.is_empty()) {
 		if (r_err) {
-			*r_err = TTR("Path does not contain a Blender installation.");
+			*r_err = TTR("Path is not a Blender installation.");
 		}
 		return false;
 	}
+	String flags = EDITOR_GET("filesystem/import/blender/blender3_flags");
+	
 	List<String> args;
+	if (flags.size()) {
+		int from = 0;
+		int num_chars = 0;
+		bool inside_quotes = false;
+
+		for (int i = 0; i < flags.size(); i++) {
+			if (flags[i] == '"' && (!i || flags[i - 1] != '\\')) {
+				if (!inside_quotes) {
+					from++;
+				}
+				inside_quotes = !inside_quotes;
+			} else if (flags[i] == '\0' || (!inside_quotes && flags[i] == ' ')) {
+				String arg = flags.substr(from, num_chars);
+				args.push_back(arg);
+				from = i + 1;
+				num_chars = 0;
+			} else {
+				num_chars++;
+			}
+		}
+	}
 	args.push_back("--version");
 	String pipe;
 	Error err = OS::get_singleton()->execute(path, args, &pipe);
@@ -406,7 +418,7 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 		configure_blender_dialog->set_close_on_escape(false);
 
 		VBoxContainer *vb = memnew(VBoxContainer);
-		vb->add_child(memnew(Label(TTR("Blender 3.0+ is required to import '.blend' files.\nPlease provide a valid path to a Blender installation:"))));
+		vb->add_child(memnew(Label(TTR("Blender 3.0+ is required to import '.blend' files.\nPlease provide a valid path to a Blender executable:"))));
 
 		HBoxContainer *hb = memnew(HBoxContainer);
 
@@ -438,8 +450,8 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 
 		browse_dialog = memnew(EditorFileDialog);
 		browse_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-		browse_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
-		browse_dialog->connect("dir_selected", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_select_install));
+		browse_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+		browse_dialog->connect("file_selected", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_select_install));
 
 		EditorNode::get_singleton()->get_gui_base()->add_child(browse_dialog);
 	}
@@ -467,25 +479,25 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 
 			bool found = false;
 			for (const String &path : mdfind_paths) {
-				found = _autodetect_path(path.path_join("Contents/MacOS"));
+				found = _autodetect_path(path.path_join("Contents/MacOS/blender"));
 				if (found) {
 					break;
 				}
 			}
 			if (!found) {
-				found = _autodetect_path("/opt/homebrew/bin");
+				found = _autodetect_path("/opt/homebrew/bin/blender");
 			}
 			if (!found) {
-				found = _autodetect_path("/opt/local/bin");
+				found = _autodetect_path("/opt/local/bin/blender");
 			}
 			if (!found) {
-				found = _autodetect_path("/usr/local/bin");
+				found = _autodetect_path("/usr/local/bin/blender");
 			}
 			if (!found) {
-				found = _autodetect_path("/usr/local/opt");
+				found = _autodetect_path("/usr/local/opt/blender");
 			}
 			if (!found) {
-				found = _autodetect_path("/Applications/Blender.app/Contents/MacOS");
+				found = _autodetect_path("/Applications/Blender.app/Contents/MacOS/blender");
 			}
 		}
 #elif defined(WINDOWS_ENABLED)
@@ -495,20 +507,20 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 			HRESULT res = AssocQueryString(0, ASSOCSTR_EXECUTABLE, ".blend", "open", blender_opener_path, &path_len);
 			if (res == S_OK && _autodetect_path(String(blender_opener_path).get_base_dir())) {
 				// Good.
-			} else if (_autodetect_path("C:\\Program Files\\Blender Foundation")) {
+			} else if (_autodetect_path("C:\\Program Files\\Blender Foundation\\blender.exe")) {
 				// Good.
 			} else {
-				_autodetect_path("C:\\Program Files (x86)\\Blender Foundation");
+				_autodetect_path("C:\\Program Files (x86)\\Blender Foundation\\blender.exe");
 			}
 		}
 
 #elif defined(UNIX_ENABLED)
-		if (_autodetect_path("/usr/bin")) {
+		if (_autodetect_path("/usr/bin/blender")) {
 			// Good.
-		} else if (_autodetect_path("/usr/local/bin")) {
+		} else if (_autodetect_path("/usr/local/bin/blender")) {
 			// Good
 		} else {
-			_autodetect_path("/opt/blender/bin");
+			_autodetect_path("/opt/blender/bin/blender");
 		}
 #endif
 		if (auto_detected_path != "") {
