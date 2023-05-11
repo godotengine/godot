@@ -494,6 +494,11 @@ bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
 		return true;
 	}
 
+	// Match against the specific OS (linux, freebsd, etc).
+	if (p_feature == get_name().to_lower()) {
+		return true;
+	}
+
 	return false;
 }
 
