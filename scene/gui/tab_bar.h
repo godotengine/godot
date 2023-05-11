@@ -66,6 +66,7 @@ private:
 
 		bool disabled = false;
 		bool hidden = false;
+		Variant metadata;
 		int ofs_cache = 0;
 		int size_cache = 0;
 		int size_text = 0;
@@ -111,6 +112,7 @@ private:
 		int icon_max_width = 0;
 
 		Ref<StyleBox> tab_unselected_style;
+		Ref<StyleBox> tab_hovered_style;
 		Ref<StyleBox> tab_selected_style;
 		Ref<StyleBox> tab_disabled_style;
 
@@ -126,6 +128,7 @@ private:
 		int outline_size = 0;
 
 		Color font_selected_color;
+		Color font_hovered_color;
 		Color font_unselected_color;
 		Color font_disabled_color;
 		Color font_outline_color;
@@ -183,6 +186,9 @@ public:
 
 	void set_tab_hidden(int p_tab, bool p_hidden);
 	bool is_tab_hidden(int p_tab) const;
+
+	void set_tab_metadata(int p_tab, const Variant &p_metadata);
+	Variant get_tab_metadata(int p_tab) const;
 
 	void set_tab_button_icon(int p_tab, const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_tab_button_icon(int p_tab) const;

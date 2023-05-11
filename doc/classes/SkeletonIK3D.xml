@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SkeletonIK3D" inherits="Node" is_deprecated="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		SkeletonIK3D is used to place the end bone of a [Skeleton3D] bone chain at a certain point in 3D by rotating all bones in the chain accordingly.
+		A node used to rotate all bones of a [Skeleton3D] bone chain a way that places the end bone at a desired 3D position.
 	</brief_description>
 	<description>
-		SkeletonIK3D is used to place the end bone of a [Skeleton3D] bone chain at a certain point in 3D by rotating all bones in the chain accordingly. A typical scenario for IK in games is to place a characters feet on the ground or a characters hands on a currently hold object. SkeletonIK uses FabrikInverseKinematic internally to solve the bone chain and applies the results to the [Skeleton3D] [code]bones_global_pose_override[/code] property for all affected bones in the chain. If fully applied this overwrites any bone transform from [Animation]s or bone custom poses set by users. The applied amount can be controlled with the [code]interpolation[/code] property.
+		SkeletonIK3D is used to rotate all bones of a [Skeleton3D] bone chain a way that places the end bone at a desired 3D position. A typical scenario for IK in games is to place a character's feet on the ground or a character's hands on a currently held object. SkeletonIK uses FabrikInverseKinematic internally to solve the bone chain and applies the results to the [Skeleton3D] [code]bones_global_pose_override[/code] property for all affected bones in the chain. If fully applied, this overwrites any bone transform from [Animation]s or bone custom poses set by users. The applied amount can be controlled with the [member interpolation] property.
 		[codeblock]
 		# Apply IK effect automatically on every new frame (not the current)
 		skeleton_ik_node.start()
@@ -45,7 +45,7 @@
 			<return type="void" />
 			<param index="0" name="one_time" type="bool" default="false" />
 			<description>
-				Starts applying IK effects on each frame to the [Skeleton3D] bones but will only take effect starting on the next frame. If [code]one_time[/code] is [code]true[/code], this will take effect immediately but also reset on the next frame.
+				Starts applying IK effects on each frame to the [Skeleton3D] bones but will only take effect starting on the next frame. If [param one_time] is [code]true[/code], this will take effect immediately but also reset on the next frame.
 			</description>
 		</method>
 		<method name="stop">

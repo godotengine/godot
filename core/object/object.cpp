@@ -38,6 +38,7 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
+#include "core/templates/local_vector.h"
 #include "core/variant/typed_array.h"
 
 #ifdef DEBUG_ENABLED
@@ -198,6 +199,10 @@ bool Object::_predelete() {
 		_class_name_ptr = nullptr; // Must restore, so constructors/destructors have proper class name access at each stage.
 	}
 	return _predelete_ok;
+}
+
+void Object::cancel_free() {
+	_predelete_ok = false;
 }
 
 void Object::_postinitialize() {
@@ -883,8 +888,13 @@ void Object::set_meta(const StringName &p_name, const Variant &p_value) {
 	if (p_value.get_type() == Variant::NIL) {
 		if (metadata.has(p_name)) {
 			metadata.erase(p_name);
-			metadata_properties.erase("metadata/" + p_name.operator String());
-			notify_property_list_changed();
+
+			const String &sname = p_name;
+			metadata_properties.erase("metadata/" + sname);
+			if (!sname.begins_with("_")) {
+				// Metadata starting with _ don't show up in the inspector, so no need to update.
+				notify_property_list_changed();
+			}
 		}
 		return;
 	}
@@ -895,8 +905,12 @@ void Object::set_meta(const StringName &p_name, const Variant &p_value) {
 	} else {
 		ERR_FAIL_COND(!p_name.operator String().is_valid_identifier());
 		Variant *V = &metadata.insert(p_name, p_value)->value;
-		metadata_properties["metadata/" + p_name.operator String()] = V;
-		notify_property_list_changed();
+
+		const String &sname = p_name;
+		metadata_properties["metadata/" + sname] = V;
+		if (!sname.begins_with("_")) {
+			notify_property_list_changed();
+		}
 	}
 }
 
@@ -935,8 +949,8 @@ TypedArray<Dictionary> Object::_get_method_list_bind() const {
 	return ret;
 }
 
-Vector<StringName> Object::_get_meta_list_bind() const {
-	Vector<StringName> _metaret;
+TypedArray<StringName> Object::_get_meta_list_bind() const {
+	TypedArray<StringName> _metaret;
 
 	for (const KeyValue<StringName, Variant> &K : metadata) {
 		_metaret.push_back(K.key);
@@ -1013,22 +1027,29 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 		return ERR_UNAVAILABLE;
 	}
 
+	// If this is a ref-counted object, prevent it from being destroyed during signal emission,
+	// which is needed in certain edge cases; e.g., https://github.com/godotengine/godot/issues/73889.
+	Ref<RefCounted> rc = Ref<RefCounted>(Object::cast_to<RefCounted>(this));
+
 	List<_ObjectSignalDisconnectData> disconnect_data;
 
-	//copy on write will ensure that disconnecting the signal or even deleting the object will not affect the signal calling.
-	//this happens automatically and will not change the performance of calling.
-	//awesome, isn't it?
-	VMap<Callable, SignalData::Slot> slot_map = s->slot_map;
-
-	int ssize = slot_map.size();
+	// Ensure that disconnecting the signal or even deleting the object
+	// will not affect the signal calling.
+	LocalVector<Connection> slot_conns;
+	slot_conns.resize(s->slot_map.size());
+	{
+		uint32_t idx = 0;
+		for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
+			slot_conns[idx++] = slot_kv.value.conn;
+		}
+		DEV_ASSERT(idx == s->slot_map.size());
+	}
 
 	OBJ_DEBUG_LOCK
 
 	Error err = OK;
 
-	for (int i = 0; i < ssize; i++) {
-		const Connection &c = slot_map.getv(i).conn;
-
+	for (const Connection &c : slot_conns) {
 		Object *target = c.callable.get_object();
 		if (!target) {
 			// Target might have been deleted during signal callback, this is expected and OK.
@@ -1191,8 +1212,8 @@ void Object::get_all_signal_connections(List<Connection> *p_connections) const {
 	for (const KeyValue<StringName, SignalData> &E : signal_map) {
 		const SignalData *s = &E.value;
 
-		for (int i = 0; i < s->slot_map.size(); i++) {
-			p_connections->push_back(s->slot_map.getv(i).conn);
+		for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
+			p_connections->push_back(slot_kv.value.conn);
 		}
 	}
 }
@@ -1203,8 +1224,8 @@ void Object::get_signal_connection_list(const StringName &p_signal, List<Connect
 		return; //nothing
 	}
 
-	for (int i = 0; i < s->slot_map.size(); i++) {
-		p_connections->push_back(s->slot_map.getv(i).conn);
+	for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
+		p_connections->push_back(slot_kv.value.conn);
 	}
 }
 
@@ -1214,8 +1235,8 @@ int Object::get_persistent_signal_connection_count() const {
 	for (const KeyValue<StringName, SignalData> &E : signal_map) {
 		const SignalData *s = &E.value;
 
-		for (int i = 0; i < s->slot_map.size(); i++) {
-			if (s->slot_map.getv(i).conn.flags & CONNECT_PERSIST) {
+		for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
+			if (slot_kv.value.conn.flags & CONNECT_PERSIST) {
 				count += 1;
 			}
 		}
@@ -1315,28 +1336,28 @@ void Object::disconnect(const StringName &p_signal, const Callable &p_callable) 
 	_disconnect(p_signal, p_callable);
 }
 
-void Object::_disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force) {
-	ERR_FAIL_COND_MSG(p_callable.is_null(), "Cannot disconnect from '" + p_signal + "': the provided callable is null.");
+bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force) {
+	ERR_FAIL_COND_V_MSG(p_callable.is_null(), false, "Cannot disconnect from '" + p_signal + "': the provided callable is null.");
 
 	Object *target_object = p_callable.get_object();
-	ERR_FAIL_COND_MSG(!target_object, "Cannot disconnect '" + p_signal + "' from callable '" + p_callable + "': the callable object is null.");
+	ERR_FAIL_COND_V_MSG(!target_object, false, "Cannot disconnect '" + p_signal + "' from callable '" + p_callable + "': the callable object is null.");
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal) ||
 				(!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal));
-		ERR_FAIL_COND_MSG(signal_is_valid, "Attempt to disconnect a nonexistent connection from '" + to_string() + "'. Signal: '" + p_signal + "', callable: '" + p_callable + "'.");
+		ERR_FAIL_COND_V_MSG(signal_is_valid, false, "Attempt to disconnect a nonexistent connection from '" + to_string() + "'. Signal: '" + p_signal + "', callable: '" + p_callable + "'.");
 	}
-	ERR_FAIL_COND_MSG(!s, vformat("Disconnecting nonexistent signal '%s' in %s.", p_signal, to_string()));
+	ERR_FAIL_COND_V_MSG(!s, false, vformat("Disconnecting nonexistent signal '%s' in %s.", p_signal, to_string()));
 
-	ERR_FAIL_COND_MSG(!s->slot_map.has(*p_callable.get_base_comparator()), "Disconnecting nonexistent signal '" + p_signal + "', callable: " + p_callable + ".");
+	ERR_FAIL_COND_V_MSG(!s->slot_map.has(*p_callable.get_base_comparator()), false, "Disconnecting nonexistent signal '" + p_signal + "', callable: " + p_callable + ".");
 
 	SignalData::Slot *slot = &s->slot_map[*p_callable.get_base_comparator()];
 
 	if (!p_force) {
 		slot->reference_count--; // by default is zero, if it was not referenced it will go below it
 		if (slot->reference_count > 0) {
-			return;
+			return false;
 		}
 	}
 
@@ -1347,6 +1368,8 @@ void Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 		//not user signal, delete
 		signal_map.erase(p_signal);
 	}
+
+	return true;
 }
 
 void Object::_set_bind(const StringName &p_set, const Variant &p_value) {
@@ -1551,6 +1574,7 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tr_n", "message", "plural_message", "n", "context"), &Object::tr_n, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("is_queued_for_deletion"), &Object::is_queued_for_deletion);
+	ClassDB::bind_method(D_METHOD("cancel_free"), &Object::cancel_free);
 
 	ClassDB::add_virtual_method("Object", MethodInfo("free"), false);
 
@@ -1794,26 +1818,30 @@ Object::~Object() {
 		ERR_PRINT("Object " + to_string() + " was freed or unreferenced while a signal is being emitted from it. Try connecting to the signal using 'CONNECT_DEFERRED' flag, or use queue_free() to free the object (if this object is a Node) to avoid this error and potential crashes.");
 	}
 
+	// Drop all connections to the signals of this object.
 	while (signal_map.size()) {
 		// Avoid regular iteration so erasing is safe.
 		KeyValue<StringName, SignalData> &E = *signal_map.begin();
 		SignalData *s = &E.value;
 
-		//brute force disconnect for performance
-		int slot_count = s->slot_map.size();
-		const VMap<Callable, SignalData::Slot>::Pair *slot_list = s->slot_map.get_array();
-
-		for (int i = 0; i < slot_count; i++) {
-			slot_list[i].value.conn.callable.get_object()->connections.erase(slot_list[i].value.cE);
+		for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
+			Object *target = slot_kv.value.conn.callable.get_object();
+			if (likely(target)) {
+				target->connections.erase(slot_kv.value.cE);
+			}
 		}
 
 		signal_map.erase(E.key);
 	}
 
-	//signals from nodes that connect to this node
+	// Disconnect signals that connect to this object.
 	while (connections.size()) {
 		Connection c = connections.front()->get();
-		c.signal.get_object()->_disconnect(c.signal.get_name(), c.callable, true);
+		bool disconnected = c.signal.get_object()->_disconnect(c.signal.get_name(), c.callable, true);
+		if (unlikely(!disconnected)) {
+			// If the disconnect has failed, abandon the connection to avoid getting trapped in an infinite loop here.
+			connections.pop_front();
+		}
 	}
 
 	if (_instance_id != ObjectID()) {

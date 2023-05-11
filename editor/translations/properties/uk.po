@@ -18,7 +18,7 @@
 # Miroslav <zinmirx@gmail.com>, 2020.
 # IllusiveMan196 <hamsterrv@gmail.com>, 2021, 2022.
 # KazanskiyMaks <kazanskiy.maks@gmail.com>, 2022, 2023.
-# Мирослав <hlopukmyroslav@gmail.com>, 2022.
+# Мирослав <hlopukmyroslav@gmail.com>, 2022, 2023.
 # Ostap <ostapbataj79@gmail.com>, 2022.
 # Wald Sin <naaveranos@gmail.com>, 2022.
 # Гліб Соколов <ramithes@i.ua>, 2022.
@@ -27,12 +27,13 @@
 # Teashrock <kajitsu22@gmail.com>, 2022, 2023.
 # kirill7606 <k7606irill@gmail.com>, 2022.
 # Alex <anna.loban@yahoo.com>, 2023.
+# Maksym <maksym@mowemax.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-30 00:03+0000\n"
+"PO-Revision-Date: 2023-04-20 03:46+0000\n"
 "Last-Translator: Мирослав <hlopukmyroslav@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/uk/>\n"
@@ -42,7 +43,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Application"
 msgstr "Програма"
@@ -173,6 +174,9 @@ msgstr "Скрипт"
 msgid "Search in File Extensions"
 msgstr "Пошук у розширеннях файлів"
 
+msgid "Subwindows"
+msgstr "Підвікна"
+
 msgid "Physics"
 msgstr "Фізика"
 
@@ -263,6 +267,9 @@ msgstr "Інтернаціоналізація"
 msgid "Force Right to Left Layout Direction"
 msgstr "Примусовий напрямок макета справа наліво"
 
+msgid "Root Node Layout Direction"
+msgstr "Напрямок макета кореневого вузла"
+
 msgid "GUI"
 msgstr "Інтерфейс"
 
@@ -274,6 +281,9 @@ msgstr "Максимальний інтервал інкрементальног
 
 msgid "Common"
 msgstr "Загальні"
+
+msgid "Snap Controls to Pixels"
+msgstr "Прив'язка елементів керування до пікселів"
 
 msgid "Fonts"
 msgstr "Шрифти"
@@ -307,6 +317,15 @@ msgstr "Макс. кількість дескрипторів на пул"
 
 msgid "Textures"
 msgstr "Текстури"
+
+msgid "Canvas Textures"
+msgstr "Текстури полотна"
+
+msgid "Default Texture Filter"
+msgstr "Фільтр текстур за замовчуванням"
+
+msgid "Default Texture Repeat"
+msgstr "Повторення текстури за замовчуванням"
 
 msgid "Low Processor Usage Mode"
 msgstr "Режим низького використання процесора"
@@ -2184,6 +2203,9 @@ msgstr "iOS"
 
 msgid "Hide Home Indicator"
 msgstr "Приховати індикатор домівки"
+
+msgid "XR"
+msgstr "XR"
 
 msgid "Boot Splash"
 msgstr "Вітання системи"

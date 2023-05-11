@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Shape casting allows to detect collision objects by sweeping the [member shape] along the cast direction determined by [member target_position] (useful for things like beam weapons).
-		Immediate collision overlaps can be done with the [member target_position] set to [code]Vector3(0, 0, 0)[/code] and by calling [method force_shapecast_update] within the same [b]physics_frame[/b]. This also helps to overcome some limitations of [Area3D] when used as a continuous detection area, often requiring waiting a couple of frames before collision information is available to [Area3D] nodes, and when using the signals creates unnecessary complexity.
+		Immediate collision overlaps can be done with the [member target_position] set to [code]Vector3(0, 0, 0)[/code] and by calling [method force_shapecast_update] within the same [b]physics frame[/b]. This also helps to overcome some limitations of [Area3D] when used as a continuous detection area, often requiring waiting a couple of frames before collision information is available to [Area3D] nodes, and when using the signals creates unnecessary complexity.
 		The node can detect multiple collision objects, but it's usually used to detect the first collision.
 		[b]Note:[/b] Shape casting is more computationally expensive compared to ray casting.
 	</description>

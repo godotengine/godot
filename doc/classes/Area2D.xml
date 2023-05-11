@@ -107,8 +107,8 @@
 		<member name="monitoring" type="bool" setter="set_monitoring" getter="is_monitoring" default="true">
 			If [code]true[/code], the area detects bodies or areas entering and exiting it.
 		</member>
-		<member name="priority" type="float" setter="set_priority" getter="get_priority" default="0.0">
-			The area's priority. Higher priority areas are processed first.
+		<member name="priority" type="int" setter="set_priority" getter="get_priority" default="0">
+			The area's priority. Higher priority areas are processed first. The [World2D]'s physics is always processed last, after all areas.
 		</member>
 	</members>
 	<signals>

@@ -7,7 +7,7 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="buffer_view" type="int" setter="set_buffer_view" getter="get_buffer_view" default="0">
+		<member name="buffer_view" type="int" setter="set_buffer_view" getter="get_buffer_view" default="-1">
 		</member>
 		<member name="byte_offset" type="int" setter="set_byte_offset" getter="get_byte_offset" default="0">
 		</member>

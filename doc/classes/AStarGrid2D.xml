@@ -5,11 +5,11 @@
 	</brief_description>
 	<description>
 		Compared to [AStar2D] you don't need to manually create points or connect them together. It also supports multiple type of heuristics and modes for diagonal movement. This class also provides a jumping mode which is faster to calculate than without it in the [AStar2D] class.
-		In contrast to [AStar2D], you only need set the [member size] of the grid, optionally set the [member cell_size] and then call the [method update] method:
+		In contrast to [AStar2D], you only need set the [member region] of the grid, optionally set the [member cell_size] and then call the [method update] method:
 		[codeblocks]
 		[gdscript]
 		var astar_grid = AStarGrid2D.new()
-		astar_grid.size = Vector2i(32, 32)
+		astar_grid.region = Rect2i(0, 0, 32, 32)
 		astar_grid.cell_size = Vector2(16, 16)
 		astar_grid.update()
 		print(astar_grid.get_id_path(Vector2i(0, 0), Vector2i(3, 4))) # prints (0, 0), (1, 1), (2, 2), (3, 3), (3, 4)
@@ -49,7 +49,7 @@
 		<method name="clear">
 			<return type="void" />
 			<description>
-				Clears the grid and sets the [member size] to [constant Vector2i.ZERO].
+				Clears the grid and sets the [member region] to [code]Rect2i(0, 0, 0, 0)[/code].
 			</description>
 		</method>
 		<method name="get_id_path">
@@ -132,7 +132,8 @@
 		<method name="update">
 			<return type="void" />
 			<description>
-				Updates the internal state of the grid according to the parameters to prepare it to search the path. Needs to be called if parameters like [member size], [member cell_size] or [member offset] are changed. [method is_dirty] will return [code]true[/code] if this is the case and this needs to be called.
+				Updates the internal state of the grid according to the parameters to prepare it to search the path. Needs to be called if parameters like [member region], [member cell_size] or [member offset] are changed. [method is_dirty] will return [code]true[/code] if this is the case and this needs to be called.
+				[b]Note:[/b] All point data (solidity and weight scale) will be cleared.
 			</description>
 		</method>
 	</methods>
@@ -156,8 +157,12 @@
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The offset of the grid which will be applied to calculate the resulting point position returned by [method get_point_path]. If changed, [method update] needs to be called before finding the next path.
 		</member>
+		<member name="region" type="Rect2i" setter="set_region" getter="get_region" default="Rect2i(0, 0, 0, 0)">
+			The region of grid cells available for pathfinding. If changed, [method update] needs to be called before finding the next path.
+		</member>
 		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(0, 0)">
 			The size of the grid (number of cells of size [member cell_size] on each axis). If changed, [method update] needs to be called before finding the next path.
+			[b]Note:[/b] This property is deprecated, use [member region] instead.
 		</member>
 	</members>
 	<constants>

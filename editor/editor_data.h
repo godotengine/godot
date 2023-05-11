@@ -156,9 +156,9 @@ public:
 	void copy_object_params(Object *p_object);
 	void paste_object_params(Object *p_object);
 
-	Dictionary get_editor_states() const;
+	Dictionary get_editor_plugin_states() const;
 	Dictionary get_scene_editor_states(int p_idx) const;
-	void set_editor_states(const Dictionary &p_states);
+	void set_editor_plugin_states(const Dictionary &p_states);
 	void get_editor_breakpoints(List<String> *p_breakpoints);
 	void clear_editor_states();
 	void save_editor_external_data();
@@ -196,9 +196,11 @@ public:
 	void set_edited_scene(int p_idx);
 	void set_edited_scene_root(Node *p_root);
 	int get_edited_scene() const;
+	int get_edited_scene_from_path(const String &p_path) const;
 	Node *get_edited_scene_root(int p_idx = -1);
 	int get_edited_scene_count() const;
 	Vector<EditedScene> get_edited_scenes() const;
+
 	String get_scene_title(int p_idx, bool p_always_strip_extension = false) const;
 	String get_scene_path(int p_idx) const;
 	String get_scene_type(int p_idx) const;
@@ -211,6 +213,7 @@ public:
 	NodePath get_edited_scene_live_edit_root();
 	bool check_and_update_scene(int p_idx);
 	void move_edited_scene_to_index(int p_idx);
+
 	bool call_build();
 
 	void set_scene_as_saved(int p_idx);

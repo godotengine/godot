@@ -62,7 +62,7 @@ void EditorExportPlatformUWP::get_preset_features(const Ref<EditorExportPreset> 
 	r_features->push_back(p_preset->get("binary_format/architecture"));
 }
 
-void EditorExportPlatformUWP::get_export_options(List<ExportOption> *r_options) {
+void EditorExportPlatformUWP::get_export_options(List<ExportOption> *r_options) const {
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
@@ -80,8 +80,8 @@ void EditorExportPlatformUWP::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "identity/product_guid", PROPERTY_HINT_PLACEHOLDER_TEXT, "00000000-0000-0000-0000-000000000000"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "identity/publisher_guid", PROPERTY_HINT_PLACEHOLDER_TEXT, "00000000-0000-0000-0000-000000000000"), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "signing/certificate", PROPERTY_HINT_GLOBAL_FILE, "*.pfx"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "signing/password"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "signing/certificate", PROPERTY_HINT_GLOBAL_FILE, "*.pfx", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "signing/password", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "signing/algorithm", PROPERTY_HINT_ENUM, "MD5,SHA1,SHA256"), 2));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "version/major"), 1));
@@ -465,8 +465,8 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 	int cert_alg = EDITOR_GET("export/uwp/debug_algorithm");
 
 	if (!p_debug) {
-		cert_path = p_preset->get("signing/certificate");
-		cert_pass = p_preset->get("signing/password");
+		cert_path = p_preset->get_or_env("signing/certificate", ENV_UWP_SIGNING_CERT);
+		cert_pass = p_preset->get_or_env("signing/password", ENV_UWP_SIGNING_PASS);
 		cert_alg = p_preset->get("signing/algorithm");
 	}
 

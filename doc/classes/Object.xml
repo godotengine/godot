@@ -354,6 +354,12 @@
 				Returns [code]true[/code] if the object is allowed to translate messages with [method tr] and [method tr_n]. See also [method set_message_translation].
 			</description>
 		</method>
+		<method name="cancel_free">
+			<return type="void" />
+			<description>
+				If this method is called during [constant NOTIFICATION_PREDELETE], this object will reject being freed and will remain allocated. This is mostly an internal function used for error handling to avoid the user from freeing objects when they are not intended to.
+			</description>
+		</method>
 		<method name="connect">
 			<return type="int" enum="Error" />
 			<param index="0" name="signal" type="StringName" />
@@ -597,7 +603,7 @@
 			</description>
 		</method>
 		<method name="get_meta_list" qualifiers="const">
-			<return type="PackedStringArray" />
+			<return type="StringName[]" />
 			<description>
 				Returns the object's metadata entry names as a [PackedStringArray].
 			</description>
@@ -662,7 +668,7 @@
 			<return type="bool" />
 			<param index="0" name="method" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the the given [param method] name exists in the object.
+				Returns [code]true[/code] if the given [param method] name exists in the object.
 				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>

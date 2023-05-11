@@ -83,13 +83,9 @@ void CollisionObject3D::_notification(int p_what) {
 			_update_pickable();
 		} break;
 
-#ifdef TOOLS_ENABLED
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
-			if (Engine::get_singleton()->is_editor_hint()) {
-				update_configuration_warnings();
-			}
+			update_configuration_warnings();
 		} break;
-#endif
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (only_update_transform_changes) {

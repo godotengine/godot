@@ -49,6 +49,7 @@ class LineEdit;
 class ProgressBar;
 class SceneCreateDialog;
 class ShaderCreateDialog;
+class DirectoryCreateDialog;
 
 class FileSystemDock : public VBoxContainer {
 	GDCLASS(FileSystemDock, VBoxContainer);
@@ -124,7 +125,7 @@ private:
 	Button *button_file_list_display_mode = nullptr;
 	Button *button_hist_next = nullptr;
 	Button *button_hist_prev = nullptr;
-	LineEdit *current_path = nullptr;
+	LineEdit *current_path_line_edit = nullptr;
 
 	HBoxContainer *toolbar2_hbc = nullptr;
 	LineEdit *tree_search_box = nullptr;
@@ -151,12 +152,9 @@ private:
 	DependencyRemoveDialog *remove_dialog = nullptr;
 
 	EditorDirDialog *move_dialog = nullptr;
-	ConfirmationDialog *rename_dialog = nullptr;
-	LineEdit *rename_dialog_text = nullptr;
 	ConfirmationDialog *duplicate_dialog = nullptr;
 	LineEdit *duplicate_dialog_text = nullptr;
-	ConfirmationDialog *make_dir_dialog = nullptr;
-	LineEdit *make_dir_dialog_text = nullptr;
+	DirectoryCreateDialog *make_dir_dialog = nullptr;
 	ConfirmationDialog *overwrite_dialog = nullptr;
 	SceneCreateDialog *make_scene_dialog = nullptr;
 	ScriptCreateDialog *make_script_dialog = nullptr;
@@ -185,7 +183,7 @@ private:
 	int history_pos;
 	int history_max_size;
 
-	String path;
+	String current_path;
 
 	bool initialized = false;
 
@@ -204,7 +202,6 @@ private:
 
 	Ref<Texture2D> _get_tree_item_icon(bool p_is_valid, String p_file_type);
 	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path = false);
-	Vector<String> _compute_uncollapsed_paths();
 	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_select_in_favorites = false, bool p_unfold_path = false);
 	void _navigate_to_path(const String &p_path, bool p_select_in_favorites = false);
 
@@ -241,7 +238,6 @@ private:
 	void _folder_removed(String p_folder);
 
 	void _resource_created();
-	void _make_dir_confirm();
 	void _make_scene_confirm();
 	void _rename_operation_confirm();
 	void _duplicate_operation_confirm();
@@ -296,7 +292,7 @@ private:
 
 	void _search(EditorFileSystemDirectory *p_path, List<FileInfo> *matches, int p_max_items);
 
-	void _set_current_path_text(const String &p_path);
+	void _set_current_path_line_edit_text(const String &p_path);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
@@ -328,6 +324,7 @@ protected:
 
 public:
 	Vector<String> get_selected_paths() const;
+	Vector<String> get_uncollapsed_paths() const;
 
 	String get_current_path() const;
 	String get_current_directory() const;
@@ -351,6 +348,8 @@ public:
 
 	void set_file_list_display_mode(FileListDisplayMode p_mode);
 	FileListDisplayMode get_file_list_display_mode() { return file_list_display_mode; };
+
+	Tree *get_tree_control() { return tree; }
 
 	FileSystemDock();
 	~FileSystemDock();

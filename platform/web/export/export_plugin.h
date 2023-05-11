@@ -99,7 +99,7 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
 
-	virtual void get_export_options(List<ExportOption> *r_options) override;
+	virtual void get_export_options(List<ExportOption> *r_options) const override;
 
 	virtual String get_name() const override;
 	virtual String get_os_name() const override;

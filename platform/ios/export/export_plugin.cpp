@@ -33,6 +33,7 @@
 #include "core/string/translation.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/export/editor_export.h"
 #include "platform/ios/logo_svg.gen.h"
 
 #include "modules/modules_enabled.gen.h" // For svg.
@@ -111,16 +112,44 @@ static const LoadingScreenInfo loading_screen_infos[] = {
 	{ PNAME("landscape_launch_screens/ipad_1024x768"), "Default-Landscape.png", 1024, 768, false },
 	{ PNAME("landscape_launch_screens/ipad_2048x1536"), "Default-Landscape@2x.png", 2048, 1536, false },
 
-	{ PNAME("portrait_launch_screens/iphone_640x960"), "Default-480h@2x.png", 640, 960, true },
-	{ PNAME("portrait_launch_screens/iphone_640x1136"), "Default-568h@2x.png", 640, 1136, true },
-	{ PNAME("portrait_launch_screens/iphone_750x1334"), "Default-667h@2x.png", 750, 1334, true },
-	{ PNAME("portrait_launch_screens/iphone_1125x2436"), "Default-Portrait-X.png", 1125, 2436, true },
-	{ PNAME("portrait_launch_screens/ipad_768x1024"), "Default-Portrait.png", 768, 1024, true },
-	{ PNAME("portrait_launch_screens/ipad_1536x2048"), "Default-Portrait@2x.png", 1536, 2048, true },
-	{ PNAME("portrait_launch_screens/iphone_1242x2208"), "Default-Portrait-736h@3x.png", 1242, 2208, true }
+	{ PNAME("portrait_launch_screens/iphone_640x960"), "Default-480h@2x.png", 640, 960, false },
+	{ PNAME("portrait_launch_screens/iphone_640x1136"), "Default-568h@2x.png", 640, 1136, false },
+	{ PNAME("portrait_launch_screens/iphone_750x1334"), "Default-667h@2x.png", 750, 1334, false },
+	{ PNAME("portrait_launch_screens/iphone_1125x2436"), "Default-Portrait-X.png", 1125, 2436, false },
+	{ PNAME("portrait_launch_screens/ipad_768x1024"), "Default-Portrait.png", 768, 1024, false },
+	{ PNAME("portrait_launch_screens/ipad_1536x2048"), "Default-Portrait@2x.png", 1536, 2048, false },
+	{ PNAME("portrait_launch_screens/iphone_1242x2208"), "Default-Portrait-736h@3x.png", 1242, 2208, false }
 };
 
-void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) {
+String EditorExportPlatformIOS::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {
+	if (p_preset) {
+		if (p_name == "application/app_store_team_id") {
+			String team_id = p_preset->get("application/app_store_team_id");
+			if (team_id.is_empty()) {
+				return TTR("App Store Team ID not specified.") + "\n";
+			}
+		} else if (p_name == "application/bundle_identifier") {
+			String identifier = p_preset->get("application/bundle_identifier");
+			String pn_err;
+			if (!is_package_name_valid(identifier, &pn_err)) {
+				return TTR("Invalid Identifier:") + " " + pn_err;
+			}
+		}
+	}
+	return String();
+}
+
+bool EditorExportPlatformIOS::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
+	if (p_preset) {
+		bool sb = p_preset->get("storyboard/use_launch_screen_storyboard");
+		if (!sb && p_option != "storyboard/use_launch_screen_storyboard" && p_option.begins_with("storyboard/")) {
+			return false;
+		}
+	}
+	return true;
+}
+
+void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) const {
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
@@ -129,18 +158,18 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("architectures"), architectures[i].name)), architectures[i].is_default));
 	}
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/app_store_team_id"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/app_store_team_id"), "", false, true));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/provisioning_profile_uuid_debug"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/provisioning_profile_uuid_debug", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/code_sign_identity_debug", PROPERTY_HINT_PLACEHOLDER_TEXT, "iPhone Developer"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/export_method_debug", PROPERTY_HINT_ENUM, "App Store,Development,Ad-Hoc,Enterprise"), 1));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/provisioning_profile_uuid_release"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/provisioning_profile_uuid_release", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/code_sign_identity_release", PROPERTY_HINT_PLACEHOLDER_TEXT, "iPhone Distribution"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/export_method_release", PROPERTY_HINT_ENUM, "App Store,Development,Ad-Hoc,Enterprise"), 0));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/targeted_device_family", PROPERTY_HINT_ENUM, "iPhone,iPad,iPhone & iPad"), 2));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/bundle_identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/bundle_identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), "", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/signature"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version"), "1.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version"), "1.0"));
@@ -197,7 +226,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, icon_infos[i].preset_key, PROPERTY_HINT_FILE, "*.png,*.jpg,*.jpeg"), ""));
 		}
 	}
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "storyboard/use_launch_screen_storyboard"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "storyboard/use_launch_screen_storyboard"), false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "storyboard/image_scale_mode", PROPERTY_HINT_ENUM, "Same as Logo,Center,Scale to Fit,Scale to Fill,Scale"), 0));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "storyboard/custom_image@2x", PROPERTY_HINT_FILE, "*.png,*.jpg,*.jpeg"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "storyboard/custom_image@3x", PROPERTY_HINT_FILE, "*.png,*.jpg,*.jpeg"), ""));
@@ -224,8 +253,8 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 	};
 	String dbg_sign_id = p_preset->get("application/code_sign_identity_debug").operator String().is_empty() ? "iPhone Developer" : p_preset->get("application/code_sign_identity_debug");
 	String rel_sign_id = p_preset->get("application/code_sign_identity_release").operator String().is_empty() ? "iPhone Distribution" : p_preset->get("application/code_sign_identity_release");
-	bool dbg_manual = !p_preset->get("application/provisioning_profile_uuid_debug").operator String().is_empty() || (dbg_sign_id != "iPhone Developer");
-	bool rel_manual = !p_preset->get("application/provisioning_profile_uuid_release").operator String().is_empty() || (rel_sign_id != "iPhone Distribution");
+	bool dbg_manual = !p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_IOS_PROFILE_UUID_DEBUG).operator String().is_empty() || (dbg_sign_id != "iPhone Developer");
+	bool rel_manual = !p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_IOS_PROFILE_UUID_RELEASE).operator String().is_empty() || (rel_sign_id != "iPhone Distribution");
 	String str;
 	String strnew;
 	str.parse_utf8((const char *)pfile.ptr(), pfile.size());
@@ -259,9 +288,9 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			int export_method = p_preset->get(p_debug ? "application/export_method_debug" : "application/export_method_release");
 			strnew += lines[i].replace("$export_method", export_method_string[export_method]) + "\n";
 		} else if (lines[i].find("$provisioning_profile_uuid_release") != -1) {
-			strnew += lines[i].replace("$provisioning_profile_uuid_release", p_preset->get("application/provisioning_profile_uuid_release")) + "\n";
+			strnew += lines[i].replace("$provisioning_profile_uuid_release", p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_IOS_PROFILE_UUID_RELEASE)) + "\n";
 		} else if (lines[i].find("$provisioning_profile_uuid_debug") != -1) {
-			strnew += lines[i].replace("$provisioning_profile_uuid_debug", p_preset->get("application/provisioning_profile_uuid_debug")) + "\n";
+			strnew += lines[i].replace("$provisioning_profile_uuid_debug", p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_IOS_PROFILE_UUID_DEBUG)) + "\n";
 		} else if (lines[i].find("$code_sign_style_debug") != -1) {
 			if (dbg_manual) {
 				strnew += lines[i].replace("$code_sign_style_debug", "Manual") + "\n";
@@ -275,7 +304,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 				strnew += lines[i].replace("$code_sign_style_release", "Automatic") + "\n";
 			}
 		} else if (lines[i].find("$provisioning_profile_uuid") != -1) {
-			String uuid = p_debug ? p_preset->get("application/provisioning_profile_uuid_debug") : p_preset->get("application/provisioning_profile_uuid_release");
+			String uuid = p_debug ? p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_IOS_PROFILE_UUID_DEBUG) : p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_IOS_PROFILE_UUID_RELEASE);
 			strnew += lines[i].replace("$provisioning_profile_uuid", uuid) + "\n";
 		} else if (lines[i].find("$code_sign_identity_debug") != -1) {
 			strnew += lines[i].replace("$code_sign_identity_debug", dbg_sign_id) + "\n";
@@ -1907,17 +1936,18 @@ bool EditorExportPlatformIOS::has_valid_project_configuration(const Ref<EditorEx
 
 	// Validate the project configuration.
 
-	String team_id = p_preset->get("application/app_store_team_id");
-	if (team_id.length() == 0) {
-		err += TTR("App Store Team ID not specified - cannot configure the project.") + "\n";
-		valid = false;
-	}
-
-	String identifier = p_preset->get("application/bundle_identifier");
-	String pn_err;
-	if (!is_package_name_valid(identifier, &pn_err)) {
-		err += TTR("Invalid Identifier:") + " " + pn_err + "\n";
-		valid = false;
+	List<ExportOption> options;
+	get_export_options(&options);
+	for (const EditorExportPlatform::ExportOption &E : options) {
+		if (get_export_option_visibility(p_preset.ptr(), E.option.name)) {
+			String warn = get_export_option_warning(p_preset.ptr(), E.option.name);
+			if (!warn.is_empty()) {
+				err += warn + "\n";
+				if (E.required) {
+					valid = false;
+				}
+			}
+		}
 	}
 
 	const String etc_error = test_etc2();
@@ -1934,24 +1964,28 @@ bool EditorExportPlatformIOS::has_valid_project_configuration(const Ref<EditorEx
 }
 
 EditorExportPlatformIOS::EditorExportPlatformIOS() {
+	if (EditorNode::get_singleton()) {
 #ifdef MODULE_SVG_ENABLED
-	Ref<Image> img = memnew(Image);
-	const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
+		Ref<Image> img = memnew(Image);
+		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-	ImageLoaderSVG img_loader;
-	img_loader.create_image_from_string(img, _ios_logo_svg, EDSCALE, upsample, false);
-	logo = ImageTexture::create_from_image(img);
+		ImageLoaderSVG img_loader;
+		img_loader.create_image_from_string(img, _ios_logo_svg, EDSCALE, upsample, false);
+		logo = ImageTexture::create_from_image(img);
 #endif
 
-	plugins_changed.set();
+		plugins_changed.set();
 #ifndef ANDROID_ENABLED
-	check_for_changes_thread.start(_check_for_changes_poll_thread, this);
+		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
 #endif
+	}
 }
 
 EditorExportPlatformIOS::~EditorExportPlatformIOS() {
 #ifndef ANDROID_ENABLED
 	quit_request.set();
-	check_for_changes_thread.wait_to_finish();
+	if (check_for_changes_thread.is_started()) {
+		check_for_changes_thread.wait_to_finish();
+	}
 #endif
 }

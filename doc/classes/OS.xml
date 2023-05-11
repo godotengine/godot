@@ -91,7 +91,7 @@
 			<param index="3" name="read_stderr" type="bool" default="false" />
 			<param index="4" name="open_console" type="bool" default="false" />
 			<description>
-				Executes a command. The file specified in [param path] must exist and be executable. Platform path resolution will be used. The [param arguments] are used in the given order and separated by a space. If an [param output] [Array] is provided, the complete shell output of the process will be appended as a single [String] element in [param output]. If [param read_stderr] is [code]true[/code], the output to the standard error stream will be included too.
+				Executes a command. The file specified in [param path] must exist and be executable. Platform path resolution will be used. The [param arguments] are used in the given order, separated by spaces, and wrapped in quotes. If an [param output] [Array] is provided, the complete shell output of the process will be appended as a single [String] element in [param output]. If [param read_stderr] is [code]true[/code], the output to the standard error stream will be included too.
 				On Windows, if [param open_console] is [code]true[/code] and the process is a console app, a new terminal window will be opened. This is ignored on other platforms.
 				If the command is successfully executed, the method will return the exit code of the command, or [code]-1[/code] if it fails.
 				[b]Note:[/b] The Godot thread will pause its execution until the executed command terminates. Use [Thread] to create a separate thread that will not pause the Godot thread, or use [method create_process] to create a completely independent process.
@@ -277,6 +277,16 @@
 				[b]Note:[/b] Thread IDs are not deterministic and may be reused across application restarts.
 			</description>
 		</method>
+		<method name="get_memory_info" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns the [Dictionary] with the following keys:
+				[code]"physical"[/code] - total amount of usable physical memory, in bytes or [code]-1[/code] if unknown. This value can be slightly less than the actual physical memory amount, since it does not include memory reserved by kernel and devices.
+				[code]"free"[/code] - amount of physical memory, that can be immediately allocated without disk access or other costly operation, in bytes or [code]-1[/code] if unknown. The process might be able to allocate more physical memory, but such allocation will require moving inactive pages to disk and can take some time.
+				[code]"available"[/code] - amount of memory, that can be allocated without extending the swap file(s), in bytes or [code]-1[/code] if unknown. This value include both physical memory and swap.
+				[code]"stack"[/code] - size of the current thread stack, in bytes or [code]-1[/code] if unknown.
+			</description>
+		</method>
 		<method name="get_model_name" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -416,7 +426,7 @@
 			<description>
 				Returns an array of the system substitute font file paths, which are similar to the font with [param font_name] and style for the specified text, locale and script. Returns empty array if no matching fonts found.
 				The following aliases can be used to request default fonts: "sans-serif", "serif", "monospace", "cursive", and "fantasy".
-				[b]Note:[/b] Depending on OS, it's not guaranteed that any of the returned fonts is suitable for rendering specified text. Fonts should be loaded and checked in the order they are returned, and the first suitable one used.
+				[b]Note:[/b] Depending on OS, it's not guaranteed that any of the returned fonts will be suitable for rendering specified text. Fonts should be loaded and checked in the order they are returned, and the first suitable one used.
 				[b]Note:[/b] Returned fonts might have different style if the requested style is not available or belong to a different font family.
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
@@ -471,7 +481,7 @@
 		<method name="get_video_adapter_driver_info" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
-				Returns the video adapter driver name and version for the user's currently active graphics card.
+				Returns the video adapter driver name and version for the user's currently active graphics card. See also [method RenderingServer.get_video_adapter_api_version].
 				The first element holds the driver name, such as [code]nvidia[/code], [code]amdgpu[/code], etc.
 				The second element holds the driver version. For e.g. the [code]nvidia[/code] driver on a Linux/BSD platform, the version is in the format [code]510.85.02[/code]. For Windows, the driver's format is [code]31.0.15.1659[/code].
 				[b]Note:[/b] This method is only supported on the platforms Linux/BSD and Windows when not running in headless mode. It returns an empty array on other platforms.
@@ -637,6 +647,17 @@
 				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] path into a system path for use with this method.
 				[b]Note:[/b] Use [method String.uri_encode] to encode characters within URLs in a URL-safe, portable way. This is especially required for line breaks. Otherwise, [method shell_open] may not work correctly in a project exported to the Web platform.
 				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="shell_show_in_file_manager">
+			<return type="int" enum="Error" />
+			<param index="0" name="file_or_dir_path" type="String" />
+			<param index="1" name="open_folder" type="bool" default="true" />
+			<description>
+				Requests the OS to open the file manager, then navigate to the given [param file_or_dir_path] and select the target file or folder.
+				If [param file_or_dir_path] is a valid directory path, and [param open_folder] is [code]true[/code], the method will open the file manager and enter the target folder without selecting anything.
+				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] path into a system path for use with this method.
+				[b]Note:[/b] Currently this method is only implemented on Windows. On other platforms, it will fallback to [method shell_open] with a directory path for [param file_or_dir_path].
 			</description>
 		</method>
 		<method name="unset_environment" qualifiers="const">

@@ -98,7 +98,6 @@ private:
 			GLuint frag_id;
 			LocalVector<GLint> uniform_location;
 			LocalVector<GLint> texture_uniform_locations;
-			HashMap<StringName, GLint> custom_uniform_locations;
 			bool build_queued = false;
 			bool ok = false;
 			Specialization() {
@@ -113,6 +112,7 @@ private:
 
 	Mutex variant_set_mutex;
 
+	void _get_uniform_locations(Version::Specialization &spec, Version *p_version);
 	void _compile_specialization(Version::Specialization &spec, uint32_t p_variant, Version *p_version, uint64_t p_specialization);
 
 	void _clear_version(Version *p_version);
@@ -209,6 +209,7 @@ protected:
 				_compile_specialization(s, p_variant, version, p_specialization);
 				version->variants[p_variant].insert(p_specialization, s);
 				spec = version->variants[p_variant].lookup_ptr(p_specialization);
+				_save_to_cache(version);
 			}
 		} else if (spec->build_queued) {
 			// Still queued, wait

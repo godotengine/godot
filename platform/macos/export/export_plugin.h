@@ -43,6 +43,17 @@
 
 #include <sys/stat.h>
 
+// Optional environment variables for defining confidential information. If any
+// of these is set, they will override the values set in the credentials file.
+const String ENV_MAC_CODESIGN_CERT_FILE = "GODOT_MACOS_CODESIGN_CERTIFICATE_FILE";
+const String ENV_MAC_CODESIGN_CERT_PASS = "GODOT_MACOS_CODESIGN_CERTIFICATE_PASSWORD";
+const String ENV_MAC_CODESIGN_PROFILE = "GODOT_MACOS_CODESIGN_PROVISIONING_PROFILE";
+const String ENV_MAC_NOTARIZATION_UUID = "GODOT_MACOS_NOTARIZATION_API_UUID";
+const String ENV_MAC_NOTARIZATION_KEY = "GODOT_MACOS_NOTARIZATION_API_KEY";
+const String ENV_MAC_NOTARIZATION_KEY_ID = "GODOT_MACOS_NOTARIZATION_API_KEY_ID";
+const String ENV_MAC_NOTARIZATION_APPLE_ID = "GODOT_MACOS_NOTARIZATION_APPLE_ID_NAME";
+const String ENV_MAC_NOTARIZATION_APPLE_PASS = "GODOT_MACOS_NOTARIZATION_APPLE_ID_PASSWORD";
+
 class EditorExportPlatformMacOS : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformMacOS, EditorExportPlatform);
 
@@ -87,18 +98,10 @@ class EditorExportPlatformMacOS : public EditorExportPlatform {
 			Ref<DirAccess> &dir_access, bool p_sign_enabled, const Ref<EditorExportPreset> &p_preset,
 			const String &p_ent_path);
 	Error _create_dmg(const String &p_dmg_path, const String &p_pkg_name, const String &p_app_path_name);
+	Error _create_pkg(const Ref<EditorExportPreset> &p_preset, const String &p_pkg_path, const String &p_app_path_name);
 	Error _export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path);
 
 	bool use_codesign() const { return true; }
-#ifdef MACOS_ENABLED
-	bool use_dmg() const {
-		return true;
-	}
-#else
-	bool use_dmg() const {
-		return false;
-	}
-#endif
 
 	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const {
 		String pname = p_package;
@@ -126,8 +129,9 @@ class EditorExportPlatformMacOS : public EditorExportPlatform {
 
 protected:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
-	virtual void get_export_options(List<ExportOption> *r_options) override;
-	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
+	virtual void get_export_options(List<ExportOption> *r_options) const override;
+	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const override;
+	virtual String get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const override;
 
 public:
 	virtual String get_name() const override {
@@ -141,15 +145,7 @@ public:
 	}
 
 	virtual bool is_executable(const String &p_path) const override;
-	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override {
-		List<String> list;
-		if (use_dmg()) {
-			list.push_back("dmg");
-		}
-		list.push_back("zip");
-		list.push_back("app");
-		return list;
-	}
+	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
 
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;

@@ -104,11 +104,7 @@ void CollisionPolygon3D::_notification(int p_what) {
 			if (parent) {
 				_update_in_shape_owner(true);
 			}
-#ifdef TOOLS_ENABLED
-			if (Engine::get_singleton()->is_editor_hint()) {
-				update_configuration_warnings();
-			}
-#endif
+			update_configuration_warnings();
 		} break;
 
 		case NOTIFICATION_UNPARENTED: {

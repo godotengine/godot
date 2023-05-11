@@ -9,7 +9,7 @@
 		Accessing the settings can be done using the following methods, such as:
 		[codeblocks]
 		[gdscript]
-		var settings = EditorInterface.get_editor_settings()
+		var settings = get_editor_interface().get_editor_settings()
 		# `settings.set("some/property", 10)` also works as this class overrides `_set()` internally.
 		settings.set_setting("some/property", 10)
 		# `settings.get("some/property")` also works as this class overrides `_get()` internally.
@@ -295,7 +295,7 @@
 			If [code]true[/code], render the grid on an XZ plane.
 		</member>
 		<member name="editors/3d/grid_yz_plane" type="bool" setter="" getter="">
-			If [code]true[/code], render the grid on an YZ plane. This can be useful for 3D side-scrolling games.
+			If [code]true[/code], render the grid on a YZ plane. This can be useful for 3D side-scrolling games.
 		</member>
 		<member name="editors/3d/navigation/emulate_3_button_mouse" type="bool" setter="" getter="">
 			If [code]true[/code], enables 3-button mouse emulation mode. This is useful on laptops when using a trackpad.
@@ -416,6 +416,9 @@
 		<member name="editors/polygon_editor/show_previous_outline" type="bool" setter="" getter="">
 			If [code]true[/code], displays the polygon's previous shape in the 2D polygon editors with an opaque gray outline. This outline is displayed while dragging a point until the left mouse button is released.
 		</member>
+		<member name="editors/shader_editor/behavior/files/restore_shaders_on_load" type="bool" setter="" getter="">
+			If [code]true[/code], reopens shader files that were open in the shader editor when the project was last closed.
+		</member>
 		<member name="editors/tiles_editor/display_grid" type="bool" setter="" getter="">
 			If [code]true[/code], displays a grid while the TileMap editor is active. See also [member editors/tiles_editor/grid_color].
 		</member>
@@ -513,6 +516,9 @@
 			The language to use for the editor interface.
 			Translations are provided by the community. If you spot a mistake, [url=$DOCS_URL/contributing/documentation/editor_and_docs_localization.html]contribute to editor translations on Weblate![/url]
 		</member>
+		<member name="interface/editor/editor_screen" type="int" setter="" getter="">
+			The preferred monitor to display the editor.
+		</member>
 		<member name="interface/editor/expand_to_title" type="bool" setter="" getter="">
 			Expanding main editor window content to the title, if supported by [DisplayServer]. See [constant DisplayServer.WINDOW_FLAG_EXTEND_TO_TITLE].
 			Specific to the macOS platform.
@@ -545,6 +551,9 @@
 		<member name="interface/editor/mouse_extra_buttons_navigate_history" type="bool" setter="" getter="">
 			If [code]true[/code], the mouse's additional side buttons will be usable to navigate in the script editor's file history. Set this to [code]false[/code] if you're using the side buttons for other purposes (such as a push-to-talk button in a VoIP program).
 		</member>
+		<member name="interface/editor/project_manager_screen" type="int" setter="" getter="">
+			The preferred monitor to display the project manager.
+		</member>
 		<member name="interface/editor/save_each_scene_on_quit" type="bool" setter="" getter="">
 			If [code]false[/code], the editor will save all scenes when confirming the [b]Save[/b] action when quitting the editor or quitting to the project list. If [code]true[/code], the editor will ask to save each scene individually.
 		</member>
@@ -565,11 +574,25 @@
 			If [code]true[/code], editor main menu is using embedded [MenuBar] instead of system global menu.
 			Specific to the macOS platform.
 		</member>
+		<member name="interface/inspector/float_drag_speed" type="float" setter="" getter="">
+			Base speed for increasing/decreasing float values by dragging them in the inspector.
+		</member>
 		<member name="interface/inspector/max_array_dictionary_items_per_page" type="int" setter="" getter="">
 			The number of [Array] or [Dictionary] items to display on each "page" in the inspector. Higher values allow viewing more values per page, but take more time to load. This increased load time is noticeable when selecting nodes that have array or dictionary properties in the editor.
 		</member>
 		<member name="interface/inspector/show_low_level_opentype_features" type="bool" setter="" getter="">
 			If [code]true[/code], display OpenType features marked as [code]hidden[/code] by the font file in the [Font] editor.
+		</member>
+		<member name="interface/multi_window/enable" type="bool" setter="" getter="">
+			If [code]true[/code], the multi window support in editor is enabled. The following panels can become dedicated windows (made floating): Docks, Script editor, and Shader editor.
+			[b]Note:[/b] When [member interface/editor/single_window_mode] is [code]true[/code], the multi window support is always disabled.
+		</member>
+		<member name="interface/multi_window/maximize_window" type="bool" setter="" getter="">
+			If [code]true[/code], when panels are made floating they will be maximized.
+			If [code]false[/code], when panels are made floating their position and size will match the ones when they are attached (excluding window border) to the editor window.
+		</member>
+		<member name="interface/multi_window/restore_windows_on_load" type="bool" setter="" getter="">
+			If [code]true[/code], the floating panel position, size, and screen will be saved on editor exit. On next launch the panels that were floating will be made floating in the saved positions, sizes and screens, if possible.
 		</member>
 		<member name="interface/scene_tabs/display_close_button" type="int" setter="" getter="">
 			Controls when the Close (X) button is displayed on scene tabs at the top of the editor.
@@ -635,6 +658,10 @@
 			If [code]true[/code], increases the scrollbar touch area to improve usability on touchscreen devices.
 			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
 		</member>
+		<member name="interface/touchscreen/scale_gizmo_handles" type="float" setter="" getter="">
+			Specify the multiplier to apply to the scale for the editor gizmo handles to improve usability on touchscreen devices.
+			[b]Note:[/b] Defaults to [code]1[/code] on non-touchscreen devices.
+		</member>
 		<member name="network/debug/remote_host" type="String" setter="" getter="">
 			The address to listen to when starting the remote debugger. This can be set to [code]0.0.0.0[/code] to allow external clients to connect to the remote debugger (instead of restricting the remote debugger to connections from [code]localhost[/code]).
 		</member>
@@ -695,7 +722,7 @@
 			If [code]true[/code], colors the background of the line the caret is currently on with [member text_editor/theme/highlighting/current_line_color].
 		</member>
 		<member name="text_editor/appearance/caret/type" type="int" setter="" getter="">
-			The shape of the caret to use in the script editor. [b]Line[/b] displays a vertical line to the left of the current character, whereas [b]Block[/b] displays a outline over the current character.
+			The shape of the caret to use in the script editor. [b]Line[/b] displays a vertical line to the left of the current character, whereas [b]Block[/b] displays an outline over the current character.
 		</member>
 		<member name="text_editor/appearance/guidelines/line_length_guideline_hard_column" type="int" setter="" getter="">
 			The column at which to display a subtle line as a line length guideline for scripts. This should generally be greater than [member text_editor/appearance/guidelines/line_length_guideline_soft_column].

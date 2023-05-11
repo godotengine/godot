@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Skeleton3D" inherits="Node3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Skeleton for characters and animated objects.
+		A node containing a bone hierarchy, used to create a 3D skeletal animation.
 	</brief_description>
 	<description>
-		Skeleton3D provides a hierarchical interface for managing bones, including pose, rest and animation (see [Animation]). It can also use ragdoll physics.
+		[Skeleton3D] provides an interface for managing a hierarchy of bones, including pose, rest and animation (see [Animation]). It can also use ragdoll physics.
 		The overall transform of a bone with respect to the skeleton is determined by the following hierarchical order: rest pose, custom pose and pose.
 		Note that "global pose" below refers to the overall transform of the bone with respect to skeleton, so it not the actual global/world transform of the bone.
 		To setup different types of inverse kinematics, consider using [SkeletonIK3D], or add a custom IK implementation in [method Node._process] as a child node.
@@ -300,7 +300,7 @@
 		<member name="animate_physical_bones" type="bool" setter="set_animate_physical_bones" getter="get_animate_physical_bones" default="true">
 		</member>
 		<member name="motion_scale" type="float" setter="set_motion_scale" getter="get_motion_scale" default="1.0">
-			Multiplies the position 3D track animation.
+			Multiplies the 3D position track animation.
 			[b]Note:[/b] Unless this value is [code]1.0[/code], the key value in animation will not match the actual position value.
 		</member>
 		<member name="show_rest_only" type="bool" setter="set_show_rest_only" getter="is_show_rest_only" default="false">

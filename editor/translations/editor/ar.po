@@ -83,7 +83,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-01 01:47+0000\n"
+"PO-Revision-Date: 2023-04-15 13:04+0000\n"
 "Last-Translator: بسام العوفي <co-able@hotmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
@@ -377,7 +377,7 @@ msgid "Caret Up"
 msgstr "علامة الإقحام العليا"
 
 msgid "Caret Down"
-msgstr "عالمة الإقحام السفلى"
+msgstr "علامة الإقحام السفلى"
 
 msgid "Caret Line Start"
 msgstr "علامة إقحام بداية السطر"
@@ -467,10 +467,10 @@ msgid "On call to '%s':"
 msgstr "عند استدعاء '%s':"
 
 msgid "Built-in script"
-msgstr "النص المُدمج:"
+msgstr "النص المُدمج"
 
 msgid "Built-in"
-msgstr "مُدمج:"
+msgstr "مُدمج"
 
 msgid "B"
 msgstr "بايت (Byte)"
@@ -543,7 +543,7 @@ msgid "Clear All"
 msgstr "مسح الكل"
 
 msgid "Add New Action"
-msgstr "إضافة اكشن جديد"
+msgstr "إضافة إجراء جديد"
 
 msgid "Add"
 msgstr "أضف"
@@ -570,13 +570,13 @@ msgid "Insert Key Here"
 msgstr "أدخل المفتاح هنا"
 
 msgid "Duplicate Selected Key(s)"
-msgstr "تكرار المفتاح(المفاتيح) المحدد(ة)"
+msgstr "مضاعفة المفاتيح المحددة"
 
 msgid "Delete Selected Key(s)"
-msgstr "إمسح المفتاح(المفاتيح) المحدد(ة)"
+msgstr "امسح المفاتيح المحددة"
 
 msgid "Make Handles Free"
-msgstr "اجعل المقابض مجانية"
+msgstr "اجعل المقابض حرة"
 
 msgid "Make Handles Linear"
 msgstr "اجعل المقابض خطية"
@@ -755,6 +755,9 @@ msgstr "وضع المقبض: معكوس\n"
 msgid "Stream:"
 msgstr "تدفق:"
 
+msgid "Start (s):"
+msgstr "البداية (ثواني):"
+
 msgid "Toggle Track Enabled"
 msgstr "ترجيح المسار المُفعل"
 
@@ -768,7 +771,7 @@ msgid "Discrete"
 msgstr "متقطع"
 
 msgid "Capture"
-msgstr "إلتقط"
+msgstr "الْتقطْ"
 
 msgid "Nearest"
 msgstr "الأقرب"
@@ -1085,17 +1088,23 @@ msgstr "الإتصال بالمخطوطة:"
 msgid "From Signal:"
 msgstr "من إشارة:"
 
+msgid "Filter Nodes"
+msgstr "تصفية العُقد"
+
 msgid "Scene does not contain any script."
 msgstr "لا يحتوي المشهد علي اي برنامج نصي."
 
 msgid "Select Method"
-msgstr "إختر طريقة"
+msgstr "اختر دالة"
+
+msgid "Filter Methods"
+msgstr "تصفية الدوال"
 
 msgid "No method found matching given filters."
 msgstr "لم يتم العثور على طريقة تطابق المرشحات المعطاة."
 
 msgid "Remove"
-msgstr "إمسح"
+msgstr "امسح"
 
 msgid "Add Extra Call Argument:"
 msgstr "إضافة وسيطة إستدعاء إضافية:"
@@ -1366,7 +1375,7 @@ msgid "Collapse All"
 msgstr "طوي الكل"
 
 msgid "Profiler"
-msgstr "مُنشئ الملفات التعريفية Profiler"
+msgstr "المحلل"
 
 msgid "List of Video Memory Usage by Resource:"
 msgstr "قائمة باستخدام ذاكرة الفيديو لكل من الموارد:"
@@ -1809,6 +1818,9 @@ msgstr "تنقل"
 
 msgid "XR"
 msgstr "XR"
+
+msgid "Vulkan"
+msgstr "فُلقَان"
 
 msgid "Text Server: Advanced"
 msgstr "خادم النص: متقدم"
@@ -2331,6 +2343,9 @@ msgstr "ثوابت"
 msgid "Fonts"
 msgstr "الخطوط"
 
+msgid "Font Sizes"
+msgstr "أحجام الخط"
+
 msgid "Icons"
 msgstr "الأيقونات"
 
@@ -2695,13 +2710,25 @@ msgid "Quick Open Scene..."
 msgstr "فتح سريع للمشهد..."
 
 msgid "Quick Open Script..."
-msgstr "فتح سريع للكود..."
+msgstr "فتح سريع للرمز..."
+
+msgid "Save & Reload"
+msgstr "حفظ وإعادة تشغيل"
+
+msgid "Save modified resources before reloading?"
+msgstr "هل تريد حفظ التغييرات قبل الإعادة؟"
 
 msgid "Save & Quit"
 msgstr "حفظ و خروج"
 
+msgid "Save modified resources before closing?"
+msgstr "هل تريد حفظ التغييرات قبل الإغلاق؟"
+
+msgid "Save changes to '%s' before reloading?"
+msgstr "هل تريد حفظ التغييرات إلى'%s' قبل الإعادة؟"
+
 msgid "Save changes to '%s' before closing?"
-msgstr "هل تريد حفظ التغييرات إلي'%s' قبل الإغلاق؟"
+msgstr "هل تريد حفظ التغييرات إلى'%s' قبل الإغلاق؟"
 
 msgid "%s no longer exists! Please specify a new save location."
 msgstr "%s لم يعد موجوداً! من فضلك حدد موقعاً جديداً للحفظ."
@@ -2926,6 +2953,9 @@ msgstr "اذهب الي المشهد المفتوح مسبقا."
 msgid "Copy Text"
 msgstr "نسخ النص"
 
+msgid "Command Palette"
+msgstr "منتَخِب الأوامر"
+
 msgid "New Scene"
 msgstr "مشهد جديد"
 
@@ -2944,6 +2974,9 @@ msgstr "فُتح مؤخراً"
 msgid "Save Scene"
 msgstr "حفظ المشهد"
 
+msgid "Export As..."
+msgstr "تصدير بِنَوْع..."
+
 msgid "MeshLibrary..."
 msgstr "مكتبة مجسّمات..."
 
@@ -2958,6 +2991,9 @@ msgstr "مشروع"
 
 msgid "Project Settings..."
 msgstr "إعدادات المشروع..."
+
+msgid "Project Settings"
+msgstr "إعدادات المشروع"
 
 msgid "Version Control"
 msgstr "إدارة الإصدارات (Version Control)"
@@ -2988,6 +3024,9 @@ msgstr "المحرّر"
 
 msgid "Editor Settings..."
 msgstr "إعدادات المحرّر…"
+
+msgid "Command Palette..."
+msgstr "منتخِب الأوامر..."
 
 msgid "Editor Layout"
 msgstr "تنسيق المحرّر"
@@ -4004,10 +4043,10 @@ msgid "Localization not available for current language."
 msgstr "الترجمة غير متوفرة للغة الحالية."
 
 msgid "Copy Properties"
-msgstr "إنسخ الخاصيات"
+msgstr "انسخ الخصائص"
 
 msgid "Paste Properties"
-msgstr "إلصق الخاصيات"
+msgstr "ألصقْ الخصائص"
 
 msgid "Make Sub-Resources Unique"
 msgstr "إجعل الموارد الجانبية مميزة"
@@ -4036,11 +4075,20 @@ msgstr "نسخ الموارد"
 msgid "Make Resource Built-In"
 msgstr "إجعل المورد مُدمج"
 
+msgid "Go to previous edited object in history."
+msgstr "عُدْ إلى العنصر المعدل سابقاً في السجل."
+
+msgid "Go to next edited object in history."
+msgstr "اذهب إلى العنصر المُعدل تالياً في السجل."
+
 msgid "History of recently edited objects."
-msgstr "تاريخ العناصر المعدلة حالياً."
+msgstr "سجل العناصر المعدلة حالياً."
 
 msgid "Open documentation for this object."
 msgstr "إفتح الوثائق لهذا الكائن."
+
+msgid "Filter Properties"
+msgstr "تصفية الخصائص"
 
 msgid "Manage object properties."
 msgstr "إدارة خصائص الكائن."
@@ -4890,6 +4938,12 @@ msgstr "إقفال الوحدة(الوحدات) المحددة"
 msgid "Unlock Selected Node(s)"
 msgstr "إلغاء فقل الوحدة(الوحدات) المحددة"
 
+msgid "Make selected node's children not selectable."
+msgstr "اجعل فروع العُقدة المُختارة غير قابلة للاختيار."
+
+msgid "Make selected node's children selectable."
+msgstr "اجعل فروع هذه العُقدة تقبل الاختيار."
+
 msgid "Ungroup Selected Node(s)"
 msgstr "إلغاء جمعْ الوحدة(الوحدات) المحددة"
 
@@ -5643,13 +5697,16 @@ msgid "Lock View Rotation"
 msgstr "قفل تدوير الواجهة"
 
 msgid "Display Normal"
-msgstr "عرض الطبيعي"
+msgstr "العرض الطبيعي"
 
 msgid "Display Wireframe"
-msgstr "عرض المُخطط Wireframe"
+msgstr "العرض المُخطط"
 
 msgid "Display Overdraw"
-msgstr "عرض تراكبات الرسم Overdraw"
+msgstr "عرض تراكبات الرسم"
+
+msgid "Display Lighting"
+msgstr "عرض الإضاءة"
 
 msgid "Display Unshaded"
 msgstr "عرض من غير ظلال"
@@ -5702,6 +5759,9 @@ msgstr "مُعدّل سرعة الرؤية الحُرة"
 msgid "Freelook Slow Modifier"
 msgstr "مُعدّل تباطؤ الرؤية الحُرة"
 
+msgid "Cancel Transformation"
+msgstr "إلغاء التحول"
+
 msgid "Toggle Camera Preview"
 msgstr "تفعيل/تعطيل العرض المسبق للكاميرا"
 
@@ -5744,22 +5804,22 @@ msgid "Use Snap"
 msgstr "استخدام المحاذاة"
 
 msgid "Bottom View"
-msgstr "الواجهة View السفلية"
+msgstr "المنظر السُّفلي"
 
 msgid "Top View"
-msgstr "الواجهة View العلوية"
+msgstr "المنظر العلوي"
 
 msgid "Rear View"
-msgstr "الواجهة View الخلفية"
+msgstr "المنظر الخلفي"
 
 msgid "Front View"
-msgstr "الواجهة View الأمامية"
+msgstr "المنظر الأمامي"
 
 msgid "Left View"
-msgstr "الواجهة View اليُسرى"
+msgstr "المنظر الأيسر"
 
 msgid "Right View"
-msgstr "الواجهة View اليُمنى"
+msgstr "المنظر الأيمن"
 
 msgid "Orbit View Down"
 msgstr "تحريك المسار للأسفل"
@@ -6715,7 +6775,7 @@ msgstr ""
 "بصورة معتبرة."
 
 msgid "Collapse types."
-msgstr "إطوي الأنواع."
+msgstr "اطوِ الأنواع."
 
 msgid "Expand types."
 msgstr "توسيع كل الأنواع."
@@ -7958,6 +8018,15 @@ msgstr "الاحتفاظ بالتحوّل الشمولي Global"
 msgid "Reparent"
 msgstr "إعادة اختيار الأبوة"
 
+msgid "Scene name is empty."
+msgstr "اسم المشهد فارغ."
+
+msgid "File already exists."
+msgstr "الملف موجود سلفا."
+
+msgid "Root Type:"
+msgstr "نوع الجذر:"
+
 msgid "2D Scene"
 msgstr "مشهد ثنائي البُعد"
 
@@ -7967,11 +8036,34 @@ msgstr "مشهد ثلاثي الأبعاد"
 msgid "User Interface"
 msgstr "واجهة المستخدم"
 
+msgid "Leave empty to use scene name"
+msgstr "اتركْه فارغا إذا تريد استعمال اسم المشهد"
+
+msgid "Create New Scene"
+msgstr "إنشاء مشهد جديد"
+
+msgid "No parent to instantiate a child at."
+msgstr "لا يوجد أصل لتنسيخ الفرع عليه."
+
+msgid "No parent to instantiate the scenes at."
+msgstr "لا يوجد أصل لتنسيخ المشهد عنده."
+
 msgid "Error loading scene from %s"
 msgstr "خطأ في تحميل المشهد من %s"
 
+msgid ""
+"Cannot instantiate the scene '%s' because the current scene exists within "
+"one of its nodes."
+msgstr "لا يمكن تنسيخ المشهد '%s' لأن المشهد الحالي مُضَمّن في واحد من عُقده."
+
+msgid "Instantiate Scene(s)"
+msgstr "تنسيخ المشهد(المشاهد)"
+
 msgid "Replace with Branch Scene"
 msgstr "استبدال بمشهد فرعي"
+
+msgid "Instantiate Child Scene"
+msgstr "تنسيخ المشهد الفرعي"
 
 msgid "Detach Script"
 msgstr "فصل النص البرمجي"
@@ -7980,10 +8072,10 @@ msgid "This operation can't be done on the tree root."
 msgstr "لا يمكن إجراء هذه العملية على الجذر الرئيسي."
 
 msgid "Move Node In Parent"
-msgstr "نقل العُقدة عند الأب"
+msgstr "نقل العُقدة عند الأصل"
 
 msgid "Move Nodes In Parent"
-msgstr "تحريك العُقد عند الأب"
+msgstr "تحريك العُقد عند الأصل"
 
 msgid "Duplicate Node(s)"
 msgstr "مضاعفة العُقدة(العُقد)"
@@ -8088,17 +8180,35 @@ msgstr "خطأ في مضاعفة المشهد لحفظه."
 msgid "Sub-Resources"
 msgstr "مورد فرعي"
 
+msgid "Revoke Unique Name"
+msgstr "إبطال الاسم الفريد"
+
+msgid "Access as Unique Name"
+msgstr "الدخول باسم فريد"
+
 msgid "Clear Inheritance"
 msgstr "مسح الميراث"
 
 msgid "Editable Children"
-msgstr "أبناء قابلين للتعديل"
+msgstr "فروع قابلة للتعديل"
 
 msgid "Load As Placeholder"
 msgstr "تحميله كعنصر نائب"
 
+msgid "Auto Expand to Selected"
+msgstr "التوسيع التلقائي للمختارة"
+
 msgid "Filters"
 msgstr "مرشحات"
+
+msgid "Filter by Type"
+msgstr "التصفية بالنوع"
+
+msgid "Filter by Group"
+msgstr "التصفية بالمجموعة"
+
+msgid "Selects all Nodes of the given type."
+msgstr "يختار كل عُقد النوع المُحدد."
 
 msgid ""
 "Cannot attach a script: there are no languages registered.\n"
@@ -8112,7 +8222,10 @@ msgid "Can't paste root node into the same scene."
 msgstr "لا يمكن لصق عقدة الجذر في نفس المشهد."
 
 msgid "Add Child Node"
-msgstr "إضافة عُقدة ابن"
+msgstr "إضافة عُقدة فرعية"
+
+msgid "Expand/Collapse Branch"
+msgstr "توسيع / طي الفروع"
 
 msgid "Change Type"
 msgstr "تغيير النوع"
@@ -8122,6 +8235,9 @@ msgstr "تعين لعقدة جديدة"
 
 msgid "Make Scene Root"
 msgstr "جعل المشهد الرئيس"
+
+msgid "Toggle Access as Unique Name"
+msgstr "تبديل الدخول إلى اسم فريد"
 
 msgid "Delete (No Confirm)"
 msgstr "حذف (دون تأكيد)"
@@ -8134,6 +8250,9 @@ msgstr "إلحاق نص برمجي موجود أو جديد للعُقدة ال�
 
 msgid "Detach the script from the selected node."
 msgstr "فصل النص البرمجي من العُقدة المختارة."
+
+msgid "Extra scene options."
+msgstr "خيارات المشهد الإضافية."
 
 msgid "Remote"
 msgstr "عن بعد"
@@ -8159,11 +8278,20 @@ msgstr "إلغاء تأمين العقدة"
 msgid "Button Group"
 msgstr "مجموعة الأزرار"
 
+msgid "Disable Scene Unique Name"
+msgstr "تعطيل اسم المشهد الفريد"
+
 msgid "(Connecting From)"
-msgstr "(الإتصال من)"
+msgstr "(الاتصال من)"
 
 msgid "Node configuration warning:"
 msgstr "تحذير تهيئة العُقدة:"
+
+msgid "This script is currently running in the editor."
+msgstr "هذا النص البرمجي يعمل الآن في المُحرر."
+
+msgid "This script is a custom type."
+msgstr "هذا النص البرمجي نوعٌ مخصص."
 
 msgid "Open Script:"
 msgstr "فتح النص البرمجي:"
@@ -8173,7 +8301,14 @@ msgid ""
 "Click to unlock it."
 msgstr ""
 "إن العُقدة مقفولة. \n"
-"اضغط لفكّ القفل."
+"اضغط لفكّها."
+
+msgid ""
+"Children are not selectable.\n"
+"Click to make them selectable."
+msgstr ""
+"الفروع لا تقبل الاختيار.\n"
+"اضغط لجعلها مختارة."
 
 msgid ""
 "AnimationPlayer is pinned.\n"
@@ -8184,6 +8319,9 @@ msgstr ""
 
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "اسم عُقدة غير صالح، إن الأحرف التالية غير مسموحة:"
+
+msgid "Another node already uses this unique name in the scene."
+msgstr "عقدة أخرى في المشهد تستعمل هذا الاسم الفريد سابقا."
 
 msgid "Rename Node"
 msgstr "إعادة تسمية العُقدة"
@@ -8203,6 +8341,9 @@ msgstr "المسار فارغ!."
 msgid "Filename is empty."
 msgstr "اسم الملف فارغ."
 
+msgid "Filename is invalid."
+msgstr "اسم الملف غير صالح."
+
 msgid "Path is not local."
 msgstr "المسار ليس محلياً."
 
@@ -8214,6 +8355,9 @@ msgstr "الملف غير موجود."
 
 msgid "Invalid extension."
 msgstr "صيغة غير صالحة."
+
+msgid "Extension doesn't match chosen language."
+msgstr "الإضافة أو الامتداد لا يتطابق مع اللغة المختارة."
 
 msgid "Template:"
 msgstr "القالب:"

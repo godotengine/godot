@@ -36,7 +36,15 @@
 #include "editor/editor_settings.h"
 #include "editor/export/editor_export_platform_pc.h"
 
+// Optional environment variables for defining confidential information. If any
+// of these is set, they will override the values set in the credentials file.
+const String ENV_WIN_CODESIGN_ID_TYPE = "GODOT_WINDOWS_CODESIGN_IDENTITY_TYPE";
+const String ENV_WIN_CODESIGN_ID = "GODOT_WINDOWS_CODESIGN_IDENTITY";
+const String ENV_WIN_CODESIGN_PASS = "GODOT_WINDOWS_CODESIGN_PASSWORD";
+
 class EditorExportPlatformWindows : public EditorExportPlatformPC {
+	GDCLASS(EditorExportPlatformWindows, EditorExportPlatformPC);
+
 	struct SSHCleanupCommand {
 		String host;
 		String port;
@@ -70,10 +78,12 @@ public:
 	virtual Error modify_template(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) override;
 	virtual Error sign_shared_object(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path) override;
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
-	virtual void get_export_options(List<ExportOption> *r_options) override;
+	virtual void get_export_options(List<ExportOption> *r_options) const override;
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;
-	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
+	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const override;
+	virtual String get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const override;
+
 	virtual String get_template_file_name(const String &p_target, const String &p_arch) const override;
 	virtual Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) override;
 

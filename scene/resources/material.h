@@ -46,6 +46,12 @@ class Material : public Resource {
 	Ref<Material> next_pass;
 	int render_priority;
 
+	enum {
+		INIT_STATE_UNINITIALIZED,
+		INIT_STATE_INITIALIZING,
+		INIT_STATE_READY,
+	} init_state = INIT_STATE_UNINITIALIZED;
+
 	void inspect_native_shader_code();
 
 protected:
@@ -55,6 +61,9 @@ protected:
 	virtual bool _can_use_render_priority() const;
 
 	void _validate_property(PropertyInfo &p_property) const;
+
+	void _mark_initialized(const Callable &p_queue_shader_change_callable);
+	bool _is_initialized() { return init_state == INIT_STATE_READY; }
 
 	GDVIRTUAL0RC(RID, _get_shader_rid)
 	GDVIRTUAL0RC(Shader::Mode, _get_shader_mode)
@@ -452,7 +461,6 @@ private:
 	_FORCE_INLINE_ void _queue_shader_change();
 	_FORCE_INLINE_ bool _is_shader_dirty() const;
 
-	bool is_initialized = false;
 	bool orm;
 
 	Color albedo;

@@ -416,7 +416,7 @@ void FastNoiseLite::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "noise_type", PROPERTY_HINT_ENUM, "Simplex,Simplex Smooth,Cellular,Perlin,Value Cubic,Value"), "set_noise_type", "get_noise_type");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed"), "set_seed", "get_seed");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frequency", PROPERTY_HINT_RANGE, ".001,1"), "set_frequency", "get_frequency");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frequency", PROPERTY_HINT_RANGE, ".0001,1,.0001"), "set_frequency", "get_frequency");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "offset", PROPERTY_HINT_RANGE, "-999999999,999999999,0.01"), "set_offset", "get_offset");
 
 	ADD_GROUP("Fractal", "fractal_");

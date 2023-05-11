@@ -912,7 +912,7 @@ See the [release announcement](https://godotengine.org/article/godot-3-4-is-rele
 - Fix reloading `tool` scripts in the editor ([GH-52883](https://github.com/godotengine/godot/pull/52883)).
 - Fix C# bindings generator for default value types ([GH-49702](https://github.com/godotengine/godot/pull/49702)).
 - Ignore paths with invalid chars in `PathWhich` ([GH-50918](https://github.com/godotengine/godot/pull/50918)).
-- Fix `List<T>` marshalling ([GH-53628](https://github.com/godotengine/godot/pull/53628)).
+- Fix `List<T>` marshaling ([GH-53628](https://github.com/godotengine/godot/pull/53628)).
 - Fix `hint_string` for enum arrays ([GH-53638](https://github.com/godotengine/godot/pull/53638)).
 - Keep order for C# exported members ([GH-54199](https://github.com/godotengine/godot/pull/54199)).
 
@@ -1276,7 +1276,7 @@ See the [release announcement](https://godotengine.org/article/godot-3-3-has-arr
 #### Mono (C#)
 
 - [Fix targeting .NETFramework with .NET 5](https://github.com/godotengine/godot/pull/44135).
-- [Fix System.Collections.Generic.List marshalling](https://github.com/godotengine/godot/pull/45029).
+- [Fix System.Collections.Generic.List marshaling](https://github.com/godotengine/godot/pull/45029).
 - [Fix support for Unicode identifiers](https://github.com/godotengine/godot/pull/45310).
 - [Fixes to Mono on WebAssembly](https://github.com/godotengine/godot/pull/44374).
 

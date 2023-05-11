@@ -88,13 +88,15 @@
 # Felix Bitsch <felix.a.bitsch@gmail.com>, 2022.
 # miguel <miguel-gonzalez@gmx.de>, 2022.
 # Least Significant Bite <leastsignificantbite@proton.me>, 2023.
+# Benno <bennocrafterdev@googlemail.com>, 2023.
+# Janosch Lion <janorico@posteo.de>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-27 01:56+0000\n"
-"Last-Translator: ‎ <artism90@googlemail.com>\n"
+"PO-Revision-Date: 2023-04-13 17:34+0000\n"
+"Last-Translator: Janosch Lion <janorico@posteo.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/de/>\n"
 "Language: de\n"
@@ -260,6 +262,9 @@ msgstr "Debuggen"
 msgid "Settings"
 msgstr "Einstellungen"
 
+msgid "Profiler"
+msgstr "Profiler"
+
 msgid "Max Functions"
 msgstr "Max Funktionen"
 
@@ -317,6 +322,9 @@ msgstr "Internationalisierung"
 msgid "Force Right to Left Layout Direction"
 msgstr "Layoutrichtung von rechts nach links erzwingen"
 
+msgid "Root Node Layout Direction"
+msgstr "Wurzelnode Layout Richtung"
+
 msgid "GUI"
 msgstr "GUI"
 
@@ -361,6 +369,12 @@ msgstr "Max Deskriptoren pro Pool"
 
 msgid "Textures"
 msgstr "Texturen"
+
+msgid "Default Texture Filter"
+msgstr "Standardtexturfilter"
+
+msgid "Default Texture Repeat"
+msgstr "Standardtexturwiederholung"
 
 msgid "Low Processor Usage Mode"
 msgstr "Niedrige-Prozessorauslastungsmodus"

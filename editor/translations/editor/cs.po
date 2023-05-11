@@ -36,13 +36,15 @@
 # ElisHoli <eliskaholz@seznam.cz>, 2023.
 # Bluie <hruza.ondrej@gmail.com>, 2023.
 # Matej Fary <farymatej@gmail.com>, 2023.
+# Petr Novák <novakpeta06@gmail.com>, 2023.
+# Erik Mičulek <erikmiculek@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-18 08:29+0000\n"
-"Last-Translator: Matej Fary <farymatej@gmail.com>\n"
+"PO-Revision-Date: 2023-04-17 06:03+0000\n"
+"Last-Translator: Erik Mičulek <erikmiculek@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -50,7 +52,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 4.16.2-dev\n"
+"X-Generator: Weblate 4.17-dev\n"
+
+msgid "Unset"
+msgstr "Nenastaveno"
 
 msgid "Physical"
 msgstr "Fyzická Klávesa"
@@ -70,11 +75,125 @@ msgstr "Kolečko nahoru"
 msgid "Mouse Wheel Down"
 msgstr "Kolečko dolů"
 
+msgid "Mouse Wheel Left"
+msgstr "Levé tlačítko kolečka myši"
+
+msgid "Mouse Wheel Right"
+msgstr "Pravé tlačítko kolečka myši"
+
+msgid "Mouse Thumb Button 1"
+msgstr "Tlačítko myši 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "Tlačítko myši 2"
+
 msgid "Button"
 msgstr "Tlačítko"
 
 msgid "Double Click"
 msgstr "Dvojklik"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "Pohyb myši na pozici (%s) s rychlostí (%s)"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Osa X Levé Páčky, Osa X Joysticku 0"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "Osy Y Levé Páčky, Joystick 0 Osa Y"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "Osa X Pravé Páčky, Osa X Joysticku 1"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "Osa Y Pravé Páčky, Osa Y Joysticku 1"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "Joystick 2 Osa X, Levý Trigger, Sony L2, Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "Joystick 2 Osa Y, Pravý Trigger, Sony R2, Xbox RT"
+
+msgid "Joystick 3 X-Axis"
+msgstr "Joystick 3 Osa X"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "Joystick 3 Osa Y"
+
+msgid "Joystick 4 X-Axis"
+msgstr "Joystick 4 Osa X"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "Joystick 4 Osa Y"
+
+msgid "Unknown Joypad Axis"
+msgstr "Neznámá Osa Gamepadu"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "Spodní Akce, Sony Kříž, Xbox A, Nintendo B"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "Pravá Akce, Sony Kruh, Xbox B, Nintendo A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "Levá Akce, Sony Čtverec, Xbox X, Nintendo Y"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "Horní Akce, Sony Trojúhelník, Xbox Y, Nintendo X"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "Zpět, Sony Vybrat, Xbox Zpět, Nintendo -"
+
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "Průvodce, Sony PS, Xbox Home"
+
+msgid "Start, Nintendo +"
+msgstr "Start, Nintendo +"
+
+msgid "Left Stick, Sony L3, Xbox L/LS"
+msgstr "Levá páčka, Sony L3, Xbox L/LS"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "Pravá páčka, Sony R3, Xbox R/RS"
+
+msgid "Left Shoulder, Sony L1, Xbox LB"
+msgstr "Levý Shoulder, Sony L1, Xbox LB"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "Pravé Shoulder, Sony R1, Xbox RB"
+
+msgid "D-pad Up"
+msgstr "D-pad nahoru"
+
+msgid "D-pad Down"
+msgstr "D-pad dolů"
+
+msgid "D-pad Left"
+msgstr "D-pad vlevo"
+
+msgid "D-pad Right"
+msgstr "D-pad vpravo"
+
+msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "Xbox Sdílet, PS5 Mikrofon, Nintendo Capture"
+
+msgid "Xbox Paddle 1"
+msgstr "Xbox Pádlo 1"
+
+msgid "Xbox Paddle 2"
+msgstr "Xbox Pádlo 2"
+
+msgid "Xbox Paddle 3"
+msgstr "Xbox Pádlo 3"
+
+msgid "Xbox Paddle 4"
+msgstr "Xbox Pádlo 4"
+
+msgid "PS4/5 Touchpad"
+msgstr "PS4/5 Dotykový panel"
+
+msgid "Accept"
+msgstr "Potvrdit"
 
 msgid "Select"
 msgstr "Vybrat"
@@ -82,14 +201,35 @@ msgstr "Vybrat"
 msgid "Cancel"
 msgstr "Zrušit"
 
+msgid "Focus Next"
+msgstr "Zvýraznit Dalši"
+
+msgid "Focus Prev"
+msgstr "Zvýraznit Předchozí"
+
+msgid "Left"
+msgstr "Vlevo"
+
+msgid "Right"
+msgstr "Vpravo"
+
 msgid "Up"
 msgstr "Nahoru"
 
 msgid "Down"
 msgstr "Dolů"
 
+msgid "Page Up"
+msgstr "Page Up"
+
+msgid "Page Down"
+msgstr "Page Down"
+
+msgid "Home"
+msgstr "Home"
+
 msgid "End"
-msgstr "Konec"
+msgstr "End"
 
 msgid "Cut"
 msgstr "Vyjmout"
@@ -106,11 +246,44 @@ msgstr "Zpět"
 msgid "Redo"
 msgstr "Znovu"
 
+msgid "New Line"
+msgstr "Nová linka"
+
+msgid "New Blank Line"
+msgstr "Nový prázdný řádek"
+
+msgid "New Line Above"
+msgstr "Nový řádek výše"
+
 msgid "Indent"
 msgstr "Odsazení"
 
+msgid "Backspace"
+msgstr "Backspace"
+
+msgid "Backspace Word"
+msgstr "Backspace Slovo"
+
+msgid "Backspace all to Left"
+msgstr "Backspace vše vlevo"
+
 msgid "Delete"
 msgstr "Odstranit"
+
+msgid "Delete Word"
+msgstr "Odstranit slovo"
+
+msgid "Delete all to Right"
+msgstr "Odstranit vše vpravo"
+
+msgid "Caret Left"
+msgstr "Caret vlevo"
+
+msgid "Caret Word Left"
+msgstr "Caret Slovo vlevo"
+
+msgid "Caret Right"
+msgstr "Caret vpravo"
 
 msgid "Select All"
 msgstr "Vybrat vše"
@@ -396,6 +569,9 @@ msgstr "Přidat stopu volání metody"
 
 msgid "Method not found in object:"
 msgstr "Tato metoda nebyla v objektu nalezena:"
+
+msgid "Position"
+msgstr "Pozice"
 
 msgid "Rotation"
 msgstr "Rotace"
@@ -720,7 +896,7 @@ msgid "Debugger"
 msgstr "Ladicí program"
 
 msgid "Debug"
-msgstr "Ladění"
+msgstr "Debug"
 
 msgid "Save Branch as Scene"
 msgstr "Uložit větev jako scénu"
@@ -1290,6 +1466,9 @@ msgstr "Navigace"
 
 msgid "OpenGL"
 msgstr "OpenGL"
+
+msgid "Vulkan"
+msgstr "Vulkan"
 
 msgid "File saving failed."
 msgstr "Ukládání souboru selhalo."
@@ -2550,11 +2729,14 @@ msgstr "Napište svůj kód v _run() metodě."
 msgid "There is an edited scene already."
 msgstr "Nějaka scéna už je upravována."
 
+msgid "Common"
+msgstr "Společný"
+
 msgid "Editor Settings"
 msgstr "Nastavení editoru"
 
 msgid "General"
-msgstr "Všeobecné"
+msgstr "Obecné"
 
 msgid "The editor must be restarted for changes to take effect."
 msgstr "Pro projevení změn, je nutné restartovat editor."
@@ -6019,6 +6201,12 @@ msgstr "Převrátit vertikálně"
 
 msgid "Scattering:"
 msgstr "Rozptyl:"
+
+msgid "Rendering"
+msgstr "Vykreslování"
+
+msgid "Physics"
+msgstr "Fyzika"
 
 msgid "Yes"
 msgstr "Ano"

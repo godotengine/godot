@@ -150,32 +150,31 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 
 		String path = ext_resources[id].path;
 		String type = ext_resources[id].type;
+		Ref<ResourceLoader::LoadToken> &load_token = ext_resources[id].load_token;
 
-		if (ext_resources[id].cache.is_valid()) {
-			r_res = ext_resources[id].cache;
-		} else if (use_sub_threads) {
-			Ref<Resource> res = ResourceLoader::load_threaded_get(path);
+		if (load_token.is_valid()) { // If not valid, it's OK since then we know this load accepts broken dependencies.
+			Ref<Resource> res = ResourceLoader::_load_complete(*load_token.ptr(), &err);
 			if (res.is_null()) {
-				if (ResourceLoader::get_abort_on_missing_resources()) {
-					error = ERR_FILE_MISSING_DEPENDENCIES;
-					error_text = "[ext_resource] referenced nonexistent resource at: " + path;
-					_printerr();
-					err = error;
-				} else {
-					ResourceLoader::notify_dependency_error(local_path, path, type);
+				if (!ResourceLoader::is_cleaning_tasks()) {
+					if (ResourceLoader::get_abort_on_missing_resources()) {
+						error = ERR_FILE_MISSING_DEPENDENCIES;
+						error_text = "[ext_resource] referenced non-existent resource at: " + path;
+						_printerr();
+						err = error;
+					} else {
+						ResourceLoader::notify_dependency_error(local_path, path, type);
+					}
 				}
 			} else {
-				ext_resources[id].cache = res;
+#ifdef TOOLS_ENABLED
+				//remember ID for saving
+				res->set_id_for_path(path, id);
+#endif
 				r_res = res;
 			}
 		} else {
-			error = ERR_FILE_MISSING_DEPENDENCIES;
-			error_text = "[ext_resource] referenced non-loaded resource at: " + path;
-			_printerr();
-			err = error;
+			r_res = Ref<Resource>();
 		}
-	} else {
-		r_res = Ref<Resource>();
 	}
 
 	VariantParser::get_token(p_stream, token, line, r_err_str);
@@ -462,47 +461,19 @@ Error ResourceLoaderText::load() {
 			path = remaps[path];
 		}
 
-		ExtResource er;
-		er.path = path;
-		er.type = type;
-
-		if (use_sub_threads) {
-			Error err = ResourceLoader::load_threaded_request(path, type, use_sub_threads, ResourceFormatLoader::CACHE_MODE_REUSE, local_path);
-
-			if (err != OK) {
-				if (ResourceLoader::get_abort_on_missing_resources()) {
-					error = ERR_FILE_CORRUPT;
-					error_text = "[ext_resource] referenced broken resource at: " + path;
-					_printerr();
-					return error;
-				} else {
-					ResourceLoader::notify_dependency_error(local_path, path, type);
-				}
-			}
-
-		} else {
-			Ref<Resource> res = ResourceLoader::load(path, type);
-
-			if (res.is_null()) {
-				if (ResourceLoader::get_abort_on_missing_resources()) {
-					error = ERR_FILE_CORRUPT;
-					error_text = "[ext_resource] referenced nonexistent resource at: " + path;
-					_printerr();
-					return error;
-				} else {
-					ResourceLoader::notify_dependency_error(local_path, path, type);
-				}
+		ext_resources[id].path = path;
+		ext_resources[id].type = type;
+		ext_resources[id].load_token = ResourceLoader::_load_start(path, type, use_sub_threads ? ResourceLoader::LOAD_THREAD_DISTRIBUTE : ResourceLoader::LOAD_THREAD_FROM_CURRENT, ResourceFormatLoader::CACHE_MODE_REUSE);
+		if (!ext_resources[id].load_token.is_valid()) {
+			if (ResourceLoader::get_abort_on_missing_resources()) {
+				error = ERR_FILE_CORRUPT;
+				error_text = "[ext_resource] referenced non-existent resource at: " + path;
+				_printerr();
+				return error;
 			} else {
-#ifdef TOOLS_ENABLED
-				//remember ID for saving
-				res->set_id_for_path(local_path, id);
-#endif
+				ResourceLoader::notify_dependency_error(local_path, path, type);
 			}
-
-			er.cache = res;
 		}
-
-		ext_resources[id] = er;
 
 		error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp);
 
@@ -946,14 +917,24 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 		} else {
 			if (fw.is_null()) {
 				fw = FileAccess::open(p_path + ".depren", FileAccess::WRITE);
+
+				if (res_uid == ResourceUID::INVALID_ID) {
+					res_uid = ResourceSaver::get_resource_id_for_path(p_path);
+				}
+
+				String uid_text = "";
+				if (res_uid != ResourceUID::INVALID_ID) {
+					uid_text = " uid=\"" + ResourceUID::get_singleton()->id_to_text(res_uid) + "\"";
+				}
+
 				if (is_scene) {
-					fw->store_line("[gd_scene load_steps=" + itos(resources_total) + " format=" + itos(FORMAT_VERSION) + "]\n");
+					fw->store_line("[gd_scene load_steps=" + itos(resources_total) + " format=" + itos(FORMAT_VERSION) + uid_text + "]\n");
 				} else {
 					String script_res_text;
 					if (!script_class.is_empty()) {
 						script_res_text = "script_class=\"" + script_class + "\" ";
 					}
-					fw->store_line("[gd_resource type=\"" + res_type + "\" " + script_res_text + "load_steps=" + itos(resources_total) + " format=" + itos(FORMAT_VERSION) + "]\n");
+					fw->store_line("[gd_resource type=\"" + res_type + "\" " + script_res_text + "load_steps=" + itos(resources_total) + " format=" + itos(FORMAT_VERSION) + uid_text + "]\n");
 				}
 			}
 

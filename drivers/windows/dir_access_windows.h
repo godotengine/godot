@@ -53,6 +53,9 @@ class DirAccessWindows : public DirAccess {
 	bool _cisdir = false;
 	bool _cishidden = false;
 
+protected:
+	virtual String fix_path(String p_path) const override;
+
 public:
 	virtual Error list_dir_begin() override; ///< This starts dir listing
 	virtual String get_next() override;

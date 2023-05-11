@@ -94,6 +94,12 @@
 				[b]Note:[/b] Only call [method flush] when you actually need it. Otherwise, it will decrease performance due to constant disk writes.
 			</description>
 		</method>
+		<method name="get_8" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the next 8 bits from the file as an integer. See [method store_8] for details on what values can be stored and retrieved this way.
+			</description>
+		</method>
 		<method name="get_16" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -110,12 +116,6 @@
 			<return type="int" />
 			<description>
 				Returns the next 64 bits from the file as an integer. See [method store_64] for details on what values can be stored and retrieved this way.
-			</description>
-		</method>
-		<method name="get_8" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns the next 8 bits from the file as an integer. See [method store_8] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_as_text" qualifiers="const">
@@ -204,7 +204,7 @@
 			<return type="int" />
 			<param index="0" name="file" type="String" />
 			<description>
-				Returns the last time the [param file] was modified in Unix timestamp format or returns a [String] "ERROR IN [code]file[/code]". This Unix timestamp can be converted to another format using the [Time] singleton.
+				Returns the last time the [param file] was modified in Unix timestamp format or returns a [String] "ERROR IN [param file]". This Unix timestamp can be converted to another format using the [Time] singleton.
 			</description>
 		</method>
 		<method name="get_open_error" qualifiers="static">
@@ -322,6 +322,15 @@
 				[b]Note:[/b] This is an offset, so you should use negative numbers or the cursor will be at the end of the file.
 			</description>
 		</method>
+		<method name="store_8">
+			<return type="void" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Stores an integer as 8 bits in the file.
+				[b]Note:[/b] The [param value] should lie in the interval [code][0, 255][/code]. Any other value will overflow and wrap around.
+				To store a signed integer, use [method store_64], or convert it manually (see [method store_16] for an example).
+			</description>
+		</method>
 		<method name="store_16">
 			<return type="void" />
 			<param index="0" name="value" type="int" />
@@ -378,15 +387,6 @@
 			<description>
 				Stores an integer as 64 bits in the file.
 				[b]Note:[/b] The [param value] must lie in the interval [code][-2^63, 2^63 - 1][/code] (i.e. be a valid [int] value).
-			</description>
-		</method>
-		<method name="store_8">
-			<return type="void" />
-			<param index="0" name="value" type="int" />
-			<description>
-				Stores an integer as 8 bits in the file.
-				[b]Note:[/b] The [param value] should lie in the interval [code][0, 255][/code]. Any other value will overflow and wrap around.
-				To store a signed integer, use [method store_64], or convert it manually (see [method store_16] for an example).
 			</description>
 		</method>
 		<method name="store_buffer">
@@ -491,6 +491,9 @@
 		</constant>
 		<constant name="COMPRESSION_GZIP" value="3" enum="CompressionMode">
 			Uses the [url=https://www.gzip.org/]gzip[/url] compression method.
+		</constant>
+		<constant name="COMPRESSION_BROTLI" value="4" enum="CompressionMode">
+			Uses the [url=https://github.com/google/brotli]brotli[/url] compression method (only decompression is supported).
 		</constant>
 	</constants>
 </class>

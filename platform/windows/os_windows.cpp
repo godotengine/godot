@@ -51,9 +51,16 @@
 #include <direct.h>
 #include <knownfolders.h>
 #include <process.h>
+#include <psapi.h>
 #include <regstr.h>
 #include <shlobj.h>
 #include <wbemcli.h>
+
+#ifdef DEBUG_ENABLED
+#pragma pack(push, before_imagehlp, 8)
+#include <imagehlp.h>
+#pragma pack(pop, before_imagehlp)
+#endif
 
 extern "C" {
 __declspec(dllexport) DWORD NvOptimusEnablement = 1;
@@ -88,7 +95,7 @@ static String format_error_message(DWORD id) {
 
 	LocalFree(messageBuffer);
 
-	return msg;
+	return msg.replace("\r", "").replace("\n", "");
 }
 
 void RedirectStream(const char *p_file_name, const char *p_mode, FILE *p_cpp_stream, const DWORD p_std_handle) {
@@ -195,7 +202,6 @@ void OS_Windows::initialize() {
 	IPUnix::make_default();
 	main_loop = nullptr;
 
-	CoInitialize(nullptr);
 	HRESULT hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown **>(&dwrite_factory));
 	if (SUCCEEDED(hr)) {
 		hr = dwrite_factory->GetSystemFontCollection(&font_collection, false);
@@ -277,6 +283,73 @@ Error OS_Windows::get_entropy(uint8_t *r_buffer, int p_bytes) {
 	return OK;
 }
 
+#ifdef DEBUG_ENABLED
+void debug_dynamic_library_check_dependencies(const String &p_root_path, const String &p_path, HashSet<String> &r_checked, HashSet<String> &r_missing) {
+	if (r_checked.has(p_path)) {
+		return;
+	}
+	r_checked.insert(p_path);
+
+	LOADED_IMAGE loaded_image;
+	HANDLE file = CreateFileW((LPCWSTR)p_path.utf16().get_data(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
+	if (file != INVALID_HANDLE_VALUE) {
+		HANDLE file_mapping = CreateFileMappingW(file, nullptr, PAGE_READONLY | SEC_COMMIT, 0, 0, nullptr);
+		if (file_mapping != INVALID_HANDLE_VALUE) {
+			PVOID mapping = MapViewOfFile(file_mapping, FILE_MAP_READ, 0, 0, 0);
+			if (mapping) {
+				PIMAGE_DOS_HEADER dos_header = (PIMAGE_DOS_HEADER)mapping;
+				PIMAGE_NT_HEADERS nt_header = nullptr;
+				if (dos_header->e_magic == IMAGE_DOS_SIGNATURE) {
+					PCHAR nt_header_ptr;
+					nt_header_ptr = ((PCHAR)mapping) + dos_header->e_lfanew;
+					nt_header = (PIMAGE_NT_HEADERS)nt_header_ptr;
+					if (nt_header->Signature != IMAGE_NT_SIGNATURE) {
+						nt_header = nullptr;
+					}
+				}
+				if (nt_header) {
+					loaded_image.ModuleName = nullptr;
+					loaded_image.hFile = file;
+					loaded_image.MappedAddress = (PUCHAR)mapping;
+					loaded_image.FileHeader = nt_header;
+					loaded_image.Sections = (PIMAGE_SECTION_HEADER)((LPBYTE)&nt_header->OptionalHeader + nt_header->FileHeader.SizeOfOptionalHeader);
+					loaded_image.NumberOfSections = nt_header->FileHeader.NumberOfSections;
+					loaded_image.SizeOfImage = GetFileSize(file, nullptr);
+					loaded_image.Characteristics = nt_header->FileHeader.Characteristics;
+					loaded_image.LastRvaSection = loaded_image.Sections;
+					loaded_image.fSystemImage = false;
+					loaded_image.fDOSImage = false;
+					loaded_image.Links.Flink = &loaded_image.Links;
+					loaded_image.Links.Blink = &loaded_image.Links;
+
+					ULONG size = 0;
+					const IMAGE_IMPORT_DESCRIPTOR *import_desc = (const IMAGE_IMPORT_DESCRIPTOR *)ImageDirectoryEntryToData((HMODULE)loaded_image.MappedAddress, false, IMAGE_DIRECTORY_ENTRY_IMPORT, &size);
+					if (import_desc) {
+						for (; import_desc->Name && import_desc->FirstThunk; import_desc++) {
+							char16_t full_name_wc[MAX_PATH];
+							const char *name_cs = (const char *)ImageRvaToVa(loaded_image.FileHeader, loaded_image.MappedAddress, import_desc->Name, 0);
+							String name = String(name_cs);
+							if (name.begins_with("api-ms-win-")) {
+								r_checked.insert(name);
+							} else if (SearchPathW(nullptr, (LPCWSTR)name.utf16().get_data(), nullptr, MAX_PATH, (LPWSTR)full_name_wc, nullptr)) {
+								debug_dynamic_library_check_dependencies(p_root_path, String::utf16(full_name_wc), r_checked, r_missing);
+							} else if (SearchPathW((LPCWSTR)(p_path.get_base_dir().utf16().get_data()), (LPCWSTR)name.utf16().get_data(), nullptr, MAX_PATH, (LPWSTR)full_name_wc, nullptr)) {
+								debug_dynamic_library_check_dependencies(p_root_path, String::utf16(full_name_wc), r_checked, r_missing);
+							} else {
+								r_missing.insert(name);
+							}
+						}
+					}
+				}
+				UnmapViewOfFile(mapping);
+			}
+			CloseHandle(file_mapping);
+		}
+		CloseHandle(file);
+	}
+}
+#endif
+
 Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String path = p_path.replace("/", "\\");
 
@@ -299,7 +372,29 @@ Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_han
 	}
 
 	p_library_handle = (void *)LoadLibraryExW((LPCWSTR)(path.utf16().get_data()), nullptr, (p_also_set_library_path && has_dll_directory_api) ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
-	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + format_error_message(GetLastError()) + ".");
+#ifdef DEBUG_ENABLED
+	if (!p_library_handle) {
+		DWORD err_code = GetLastError();
+
+		HashSet<String> checekd_libs;
+		HashSet<String> missing_libs;
+		debug_dynamic_library_check_dependencies(path, path, checekd_libs, missing_libs);
+		if (!missing_libs.is_empty()) {
+			String missing;
+			for (const String &E : missing_libs) {
+				if (!missing.is_empty()) {
+					missing += ", ";
+				}
+				missing += E;
+			}
+			ERR_FAIL_V_MSG(ERR_CANT_OPEN, vformat("Can't open dynamic library: %s, missing dependencies: (%s), error: \"%s\".", p_path, missing, format_error_message(err_code)));
+		} else {
+			ERR_FAIL_V_MSG(ERR_CANT_OPEN, vformat("Can't open dynamic library: %s, error: \"%s\"." + p_path, format_error_message(err_code)));
+		}
+	}
+#else
+	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s, error: \"%s\"." + p_path, format_error_message(GetLastError())));
+#endif
 
 	if (cookie) {
 		remove_dll_directory(cookie);
@@ -323,7 +418,7 @@ Error OS_Windows::get_dynamic_library_symbol_handle(void *p_library_handle, cons
 	p_symbol_handle = (void *)GetProcAddress((HMODULE)p_library_handle, p_name.utf8().get_data());
 	if (!p_symbol_handle) {
 		if (!p_optional) {
-			ERR_FAIL_V_MSG(ERR_CANT_RESOLVE, "Can't resolve symbol " + p_name + ", error: " + String::num(GetLastError()) + ".");
+			ERR_FAIL_V_MSG(ERR_CANT_RESOLVE, vformat("Can't resolve symbol %s, error: \"%s\".", p_name, format_error_message(GetLastError())));
 		} else {
 			return ERR_CANT_RESOLVE;
 		}
@@ -372,8 +467,6 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 	if (device_name.is_empty()) {
 		return Vector<String>();
 	}
-
-	CoInitialize(nullptr);
 
 	HRESULT hr = CoCreateInstance(clsid, NULL, CLSCTX_INPROC_SERVER, uuid, (LPVOID *)&wbemLocator);
 	if (hr != S_OK) {
@@ -589,6 +682,43 @@ static void _append_to_pipe(char *p_bytes, int p_size, String *r_pipe, Mutex *p_
 	if (p_pipe_mutex) {
 		p_pipe_mutex->unlock();
 	}
+}
+
+Dictionary OS_Windows::get_memory_info() const {
+	Dictionary meminfo;
+
+	meminfo["physical"] = -1;
+	meminfo["free"] = -1;
+	meminfo["available"] = -1;
+	meminfo["stack"] = -1;
+
+	PERFORMANCE_INFORMATION pref_info;
+	pref_info.cb = sizeof(pref_info);
+	GetPerformanceInfo(&pref_info, sizeof(pref_info));
+
+	typedef void(WINAPI * PGetCurrentThreadStackLimits)(PULONG_PTR, PULONG_PTR);
+	PGetCurrentThreadStackLimits GetCurrentThreadStackLimits = (PGetCurrentThreadStackLimits)GetProcAddress(GetModuleHandleA("kernel32.dll"), "GetCurrentThreadStackLimits");
+
+	ULONG_PTR LowLimit = 0;
+	ULONG_PTR HighLimit = 0;
+	if (GetCurrentThreadStackLimits) {
+		GetCurrentThreadStackLimits(&LowLimit, &HighLimit);
+	}
+
+	if (pref_info.PhysicalTotal * pref_info.PageSize != 0) {
+		meminfo["physical"] = static_cast<int64_t>(pref_info.PhysicalTotal * pref_info.PageSize);
+	}
+	if (pref_info.PhysicalAvailable * pref_info.PageSize != 0) {
+		meminfo["free"] = static_cast<int64_t>(pref_info.PhysicalAvailable * pref_info.PageSize);
+	}
+	if (pref_info.CommitLimit * pref_info.PageSize != 0) {
+		meminfo["available"] = static_cast<int64_t>(pref_info.CommitLimit * pref_info.PageSize);
+	}
+	if (HighLimit - LowLimit != 0) {
+		meminfo["stack"] = static_cast<int64_t>(HighLimit - LowLimit);
+	}
+
+	return meminfo;
 }
 
 Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
@@ -1221,6 +1351,51 @@ Error OS_Windows::shell_open(String p_uri) {
 	}
 }
 
+Error OS_Windows::shell_show_in_file_manager(String p_path, bool p_open_folder) {
+	p_path = p_path.trim_suffix("file://");
+
+	bool open_folder = false;
+	if (DirAccess::dir_exists_absolute(p_path) && p_open_folder) {
+		open_folder = true;
+	}
+
+	if (p_path.begins_with("\"")) {
+		p_path = String("\"") + p_path;
+	}
+	if (p_path.ends_with("\"")) {
+		p_path = p_path + String("\"");
+	}
+	p_path = p_path.replace("/", "\\");
+
+	INT_PTR ret = OK;
+	if (open_folder) {
+		ret = (INT_PTR)ShellExecuteW(nullptr, nullptr, L"explorer.exe", LPCWSTR(p_path.utf16().get_data()), nullptr, SW_SHOWNORMAL);
+	} else {
+		ret = (INT_PTR)ShellExecuteW(nullptr, nullptr, L"explorer.exe", LPCWSTR((String("/select,") + p_path).utf16().get_data()), nullptr, SW_SHOWNORMAL);
+	}
+
+	if (ret > 32) {
+		return OK;
+	} else {
+		switch (ret) {
+			case ERROR_FILE_NOT_FOUND:
+			case SE_ERR_DLLNOTFOUND:
+				return ERR_FILE_NOT_FOUND;
+			case ERROR_PATH_NOT_FOUND:
+				return ERR_FILE_BAD_PATH;
+			case ERROR_BAD_FORMAT:
+				return ERR_FILE_CORRUPT;
+			case SE_ERR_ACCESSDENIED:
+				return ERR_UNAUTHORIZED;
+			case 0:
+			case SE_ERR_OOM:
+				return ERR_OUT_OF_MEMORY;
+			default:
+				return FAILED;
+		}
+	}
+}
+
 String OS_Windows::get_locale() const {
 	const _WinLocale *wl = &_win_locales[0];
 
@@ -1505,6 +1680,8 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	hInstance = _hInstance;
 
+	CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+
 #ifdef WASAPI_ENABLED
 	AudioDriverManager::add_driver(&driver_wasapi);
 #endif
@@ -1532,4 +1709,5 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 }
 
 OS_Windows::~OS_Windows() {
+	CoUninitialize();
 }

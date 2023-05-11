@@ -17,14 +17,14 @@
 			<param index="0" name="filter" type="Callable" />
 			<description>
 				Adds a peer visibility filter for this synchronizer.
-				[code]filter[/code] should take a peer ID [int] and return a [bool].
+				[param filter] should take a peer ID [int] and return a [bool].
 			</description>
 		</method>
 		<method name="get_visibility_for" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="peer" type="int" />
 			<description>
-				Queries the current visibility for peer [code]peer[/code].
+				Queries the current visibility for peer [param peer].
 			</description>
 		</method>
 		<method name="remove_visibility_filter">
@@ -39,14 +39,14 @@
 			<param index="0" name="peer" type="int" />
 			<param index="1" name="visible" type="bool" />
 			<description>
-				Sets the visibility of [code]peer[/code] to [code]visible[/code]. If [code]peer[/code] is [code]0[/code], the value of [member public_visibility] will be updated instead.
+				Sets the visibility of [param peer] to [param visible]. If [param peer] is [code]0[/code], the value of [member public_visibility] will be updated instead.
 			</description>
 		</method>
 		<method name="update_visibility">
 			<return type="void" />
 			<param index="0" name="for_peer" type="int" default="0" />
 			<description>
-				Updates the visibility of [code]peer[/code] according to visibility filters. If [code]peer[/code] is [code]0[/code] (the default), all peers' visibilties are updated.
+				Updates the visibility of [param for_peer] according to visibility filters. If [param for_peer] is [code]0[/code] (the default), all peers' visibilties are updated.
 			</description>
 		</method>
 	</methods>
@@ -77,7 +77,7 @@
 		<signal name="visibility_changed">
 			<param index="0" name="for_peer" type="int" />
 			<description>
-				Emitted when visibility of [code]for_peer[/code] is updated. See [method update_visibility].
+				Emitted when visibility of [param for_peer] is updated. See [method update_visibility].
 			</description>
 		</signal>
 	</signals>

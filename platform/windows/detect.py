@@ -192,6 +192,16 @@ def get_opts():
     ]
 
 
+def get_doc_classes():
+    return [
+        "EditorExportPlatformWindows",
+    ]
+
+
+def get_doc_path():
+    return "doc_classes"
+
+
 def get_flags():
     arch = detect_build_env_arch() or detect_arch()
 
@@ -409,6 +419,9 @@ def configure_msvc(env, vcvars_msvc_config):
         "wbemuuid",
     ]
 
+    if env.debug_features:
+        LIBS += ["psapi", "dbghelp"]
+
     if env["vulkan"]:
         env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
         if not env["use_volk"]:
@@ -586,6 +599,9 @@ def configure_mingw(env):
             "wbemuuid",
         ]
     )
+
+    if env.debug_features:
+        env.Append(LIBS=["psapi", "dbghelp"])
 
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED"])

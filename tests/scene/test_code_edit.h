@@ -2300,7 +2300,155 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			SEND_GUI_ACTION("ui_text_newline_blank");
 			CHECK(code_edit->get_line(0) == "test{}");
 			CHECK(code_edit->get_line(1) == "");
+
+			/* If there is something after a colon
+			and there is a colon in the comment it
+			should not indent. */
+			code_edit->add_comment_delimiter("#", "");
+			code_edit->set_text("");
+			code_edit->insert_text_at_caret("test:test#:");
+			SEND_GUI_ACTION("ui_text_newline");
+			CHECK(code_edit->get_line(0) == "test:test#:");
+			CHECK(code_edit->get_line(1) == "");
+			code_edit->remove_comment_delimiter("#");
 		}
+	}
+
+	SUBCASE("[CodeEdit] convert indent to tabs") {
+		code_edit->set_indent_size(4);
+		code_edit->set_indent_using_spaces(false);
+
+		// Only line.
+		code_edit->insert_text_at_caret("        test");
+		code_edit->set_caret_line(0);
+		code_edit->set_caret_column(8);
+		code_edit->select(0, 8, 0, 9);
+		code_edit->convert_indent();
+		CHECK(code_edit->get_line(0) == "\t\ttest");
+		CHECK(code_edit->get_caret_column() == 2);
+		CHECK(code_edit->get_selection_from_column() == 2);
+		CHECK(code_edit->get_selection_to_column() == 3);
+
+		// First line.
+		code_edit->set_text("");
+		code_edit->insert_text_at_caret("        test\n");
+		code_edit->set_caret_line(0);
+		code_edit->set_caret_column(8);
+		code_edit->select(0, 8, 0, 9);
+		code_edit->convert_indent();
+		CHECK(code_edit->get_line(0) == "\t\ttest");
+		CHECK(code_edit->get_caret_column() == 2);
+		CHECK(code_edit->get_selection_from_column() == 2);
+		CHECK(code_edit->get_selection_to_column() == 3);
+
+		// Middle line.
+		code_edit->set_text("");
+		code_edit->insert_text_at_caret("\n        test\n");
+		code_edit->set_caret_line(1);
+		code_edit->set_caret_column(8);
+		code_edit->select(1, 8, 1, 9);
+		code_edit->convert_indent();
+		CHECK(code_edit->get_line(1) == "\t\ttest");
+		CHECK(code_edit->get_caret_column() == 2);
+		CHECK(code_edit->get_selection_from_column() == 2);
+		CHECK(code_edit->get_selection_to_column() == 3);
+
+		// End line.
+		code_edit->set_text("");
+		code_edit->insert_text_at_caret("\n        test");
+		code_edit->set_caret_line(1);
+		code_edit->set_caret_column(8);
+		code_edit->select(1, 8, 1, 9);
+		code_edit->convert_indent();
+		CHECK(code_edit->get_line(1) == "\t\ttest");
+		CHECK(code_edit->get_caret_column() == 2);
+		CHECK(code_edit->get_selection_from_column() == 2);
+		CHECK(code_edit->get_selection_to_column() == 3);
+
+		// Within provided range.
+		code_edit->set_text("");
+		code_edit->insert_text_at_caret("    test\n        test\n");
+		code_edit->set_caret_line(1);
+		code_edit->set_caret_column(8);
+		code_edit->select(1, 8, 1, 9);
+		code_edit->convert_indent(1, 1);
+		CHECK(code_edit->get_line(0) == "    test");
+		CHECK(code_edit->get_line(1) == "\t\ttest");
+		CHECK(code_edit->get_caret_column() == 2);
+		CHECK(code_edit->get_selection_from_column() == 2);
+		CHECK(code_edit->get_selection_to_column() == 3);
+	}
+
+	SUBCASE("[CodeEdit] convert indent to spaces") {
+		code_edit->set_indent_size(4);
+		code_edit->set_indent_using_spaces(true);
+
+		// Only line.
+		code_edit->insert_text_at_caret("\t\ttest");
+		code_edit->set_caret_line(0);
+		code_edit->set_caret_column(2);
+		code_edit->select(0, 2, 0, 3);
+		code_edit->convert_indent();
+		CHECK(code_edit->get_line(0) == "        test");
+		CHECK(code_edit->get_caret_column() == 8);
+		CHECK(code_edit->get_selection_from_column() == 8);
+		CHECK(code_edit->get_selection_to_column() == 9);
+
+		// First line.
+		code_edit->set_text("");
+		code_edit->insert_text_at_caret("\t\ttest\n");
+		code_edit->set_caret_line(0);
+		code_edit->set_caret_column(2);
+		code_edit->select(0, 2, 0, 3);
+		code_edit->convert_indent();
+		CHECK(code_edit->get_line(0) == "        test");
+		CHECK(code_edit->get_caret_column() == 8);
+		CHECK(code_edit->get_selection_from_column() == 8);
+		CHECK(code_edit->get_selection_to_column() == 9);
+
+		// Middle line.
+		code_edit->set_text("");
+		code_edit->insert_text_at_caret("\n\t\ttest\n");
+		code_edit->set_caret_line(1);
+		code_edit->set_caret_column(2);
+		code_edit->select(1, 2, 1, 3);
+		code_edit->convert_indent();
+		CHECK(code_edit->get_line(1) == "        test");
+		CHECK(code_edit->get_caret_column() == 8);
+		CHECK(code_edit->get_selection_from_column() == 8);
+		CHECK(code_edit->get_selection_to_column() == 9);
+
+		// End line.
+		code_edit->set_text("");
+		code_edit->insert_text_at_caret("\n\t\ttest");
+		code_edit->set_caret_line(1);
+		code_edit->set_caret_column(2);
+		code_edit->select(1, 2, 1, 3);
+		code_edit->convert_indent();
+		CHECK(code_edit->get_line(1) == "        test");
+		CHECK(code_edit->get_caret_column() == 8);
+		CHECK(code_edit->get_selection_from_column() == 8);
+		CHECK(code_edit->get_selection_to_column() == 9);
+
+		// Within provided range.
+		code_edit->set_text("");
+		code_edit->insert_text_at_caret("\ttest\n\t\ttest\n");
+		code_edit->set_caret_line(1);
+		code_edit->set_caret_column(2);
+		code_edit->select(1, 2, 1, 3);
+		code_edit->convert_indent(1, 1);
+		CHECK(code_edit->get_line(0) == "\ttest");
+		CHECK(code_edit->get_line(1) == "        test");
+		CHECK(code_edit->get_caret_column() == 8);
+		CHECK(code_edit->get_selection_from_column() == 8);
+		CHECK(code_edit->get_selection_to_column() == 9);
+
+		// Outside of range.
+		ERR_PRINT_OFF;
+		code_edit->convert_indent(0, 4);
+		code_edit->convert_indent(4, 5);
+		code_edit->convert_indent(4, 1);
+		ERR_PRINT_ON;
 	}
 
 	memdelete(code_edit);
@@ -3334,9 +3482,9 @@ TEST_CASE("[SceneTree][CodeEdit] symbol lookup") {
 		SIGNAL_CHECK("symbol_validate", signal_args);
 
 		SIGNAL_UNWATCH(code_edit, "symbol_validate");
-
-		memdelete(code_edit);
 	}
+
+	memdelete(code_edit);
 }
 
 TEST_CASE("[SceneTree][CodeEdit] line length guidelines") {

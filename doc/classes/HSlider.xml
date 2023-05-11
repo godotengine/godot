@@ -10,6 +10,9 @@
 	<tutorials>
 	</tutorials>
 	<theme_items>
+		<theme_item name="center_grabber" data_type="constant" type="int" default="0">
+			Boolean constant. If [code]1[/code], the grabber texture size will be ignored and it will fit within slider's bounds based only on its center position.
+		</theme_item>
 		<theme_item name="grabber_offset" data_type="constant" type="int" default="0">
 			Vertical offset of the grabber.
 		</theme_item>

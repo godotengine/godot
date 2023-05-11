@@ -288,12 +288,8 @@ void TextEditor::insert_final_newline() {
 	code_editor->insert_final_newline();
 }
 
-void TextEditor::convert_indent_to_spaces() {
-	code_editor->convert_indent_to_spaces();
-}
-
-void TextEditor::convert_indent_to_tabs() {
-	code_editor->convert_indent_to_tabs();
+void TextEditor::convert_indent() {
+	code_editor->get_text_editor()->convert_indent();
 }
 
 void TextEditor::tag_saved_version() {
@@ -419,10 +415,12 @@ void TextEditor::_edit_option(int p_op) {
 			trim_trailing_whitespace();
 		} break;
 		case EDIT_CONVERT_INDENT_TO_SPACES: {
-			convert_indent_to_spaces();
+			tx->set_indent_using_spaces(true);
+			convert_indent();
 		} break;
 		case EDIT_CONVERT_INDENT_TO_TABS: {
-			convert_indent_to_tabs();
+			tx->set_indent_using_spaces(false);
+			convert_indent();
 		} break;
 		case EDIT_TO_UPPERCASE: {
 			_convert_case(CodeTextEditor::UPPER);
@@ -432,6 +430,10 @@ void TextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_CAPITALIZE: {
 			_convert_case(CodeTextEditor::CAPITALIZE);
+		} break;
+		case EDIT_TOGGLE_WORD_WRAP: {
+			TextEdit::LineWrappingMode wrap = code_editor->get_text_editor()->get_line_wrapping_mode();
+			code_editor->get_text_editor()->set_line_wrapping_mode(wrap == TextEdit::LINE_WRAPPING_BOUNDARY ? TextEdit::LINE_WRAPPING_NONE : TextEdit::LINE_WRAPPING_BOUNDARY);
 		} break;
 		case SEARCH_FIND: {
 			code_editor->get_find_replace_bar()->popup_search();
@@ -649,6 +651,7 @@ TextEditor::TextEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_all_lines"), EDIT_UNFOLD_ALL_LINES);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_selection"), EDIT_DUPLICATE_SELECTION);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_word_wrap"), EDIT_TOGGLE_WORD_WRAP);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/trim_trailing_whitespace"), EDIT_TRIM_TRAILING_WHITESAPCE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_spaces"), EDIT_CONVERT_INDENT_TO_SPACES);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_tabs"), EDIT_CONVERT_INDENT_TO_TABS);

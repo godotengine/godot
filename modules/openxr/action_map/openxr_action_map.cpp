@@ -415,7 +415,7 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
 	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
 	profile->add_new_binding(menu_button, "/user/hand/left/input/menu/click");
-	profile->add_new_binding(select_button, "/user/hand/left/input/system/click"); // we'll map system to select
+	profile->add_new_binding(select_button, "/user/hand/right/input/system/click"); // we'll map system to select
 	profile->add_new_binding(ax_button, "/user/hand/left/input/x/click,/user/hand/right/input/a/click"); // x on left hand, a on right hand
 	profile->add_new_binding(by_button, "/user/hand/left/input/y/click,/user/hand/right/input/b/click"); // y on left hand, b on right hand
 	profile->add_new_binding(trigger, "/user/hand/left/input/trigger/value,/user/hand/right/input/trigger/value");
@@ -439,7 +439,7 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
 	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
 	profile->add_new_binding(menu_button, "/user/hand/left/input/menu/click");
-	profile->add_new_binding(select_button, "/user/hand/left/input/system/click"); // we'll map system to select
+	profile->add_new_binding(select_button, "/user/hand/right/input/system/click"); // we'll map system to select
 	profile->add_new_binding(ax_button, "/user/hand/left/input/x/click,/user/hand/right/input/a/click"); // x on left hand, a on right hand
 	profile->add_new_binding(by_button, "/user/hand/left/input/y/click,/user/hand/right/input/b/click"); // y on left hand, b on right hand
 	profile->add_new_binding(trigger, "/user/hand/left/input/trigger/value,/user/hand/right/input/trigger/value");

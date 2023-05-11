@@ -314,6 +314,8 @@ public:
 	void indent_lines();
 	void unindent_lines();
 
+	void convert_indent(int p_from_line = -1, int p_to_line = -1);
+
 	/* Auto brace completion */
 	void set_auto_brace_completion_enabled(bool p_enabled);
 	bool is_auto_brace_completion_enabled() const;

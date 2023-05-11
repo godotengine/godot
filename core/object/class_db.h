@@ -154,6 +154,7 @@ public:
 #endif
 
 	static APIType current_api;
+	static HashMap<APIType, uint64_t> api_hashes_cache;
 
 	static void _add_class2(const StringName &p_class, const StringName &p_inherits);
 

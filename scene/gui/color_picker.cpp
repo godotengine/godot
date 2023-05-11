@@ -67,9 +67,11 @@ void ColorPicker::_notification(int p_what) {
 
 			for (int i = 0; i < SLIDER_COUNT; i++) {
 				labels[i]->set_custom_minimum_size(Size2(theme_cache.label_width, 0));
+				sliders[i]->add_theme_constant_override(SNAME("center_grabber"), theme_cache.center_slider_grabbers);
 				set_offset((Side)i, get_offset((Side)i) + theme_cache.content_margin);
 			}
 			alpha_label->set_custom_minimum_size(Size2(theme_cache.label_width, 0));
+			alpha_label->add_theme_constant_override(SNAME("center_grabber"), theme_cache.center_slider_grabbers);
 			set_offset((Side)0, get_offset((Side)0) + theme_cache.content_margin);
 
 			for (int i = 0; i < MODE_BUTTON_COUNT; i++) {
@@ -121,6 +123,8 @@ void ColorPicker::_update_theme_item_cache() {
 	theme_cache.sv_width = get_theme_constant(SNAME("sv_width"));
 	theme_cache.sv_height = get_theme_constant(SNAME("sv_height"));
 	theme_cache.h_width = get_theme_constant(SNAME("h_width"));
+
+	theme_cache.center_slider_grabbers = get_theme_constant(SNAME("center_slider_grabbers"));
 
 	theme_cache.screen_picker = get_theme_icon(SNAME("screen_picker"));
 	theme_cache.expanded_arrow = get_theme_icon(SNAME("expanded_arrow"));
@@ -967,9 +971,9 @@ bool ColorPicker::is_deferred_mode() const {
 void ColorPicker::_update_text_value() {
 	bool text_visible = true;
 	if (text_is_constructor) {
-		String t = "Color(" + String::num(color.r) + ", " + String::num(color.g) + ", " + String::num(color.b);
+		String t = "Color(" + String::num(color.r, 3) + ", " + String::num(color.g, 3) + ", " + String::num(color.b, 3);
 		if (edit_alpha && color.a < 1) {
-			t += ", " + String::num(color.a) + ")";
+			t += ", " + String::num(color.a, 3) + ")";
 		} else {
 			t += ")";
 		}
@@ -1909,34 +1913,23 @@ void ColorPickerButton::_modal_closed() {
 void ColorPickerButton::pressed() {
 	_update_picker();
 
-	Size2 size = get_size() * get_viewport()->get_canvas_transform().get_scale();
+	Size2 minsize = popup->get_contents_minimum_size();
+	float viewport_height = get_viewport_rect().size.y;
 
 	popup->reset_size();
 	picker->_update_presets();
 	picker->_update_recent_presets();
 
-	Rect2i usable_rect = popup->get_usable_parent_rect();
-	//let's try different positions to see which one we can use
-
-	Rect2i cp_rect(Point2i(), popup->get_size());
-	for (int i = 0; i < 4; i++) {
-		if (i > 1) {
-			cp_rect.position.y = get_screen_position().y - cp_rect.size.y;
-		} else {
-			cp_rect.position.y = get_screen_position().y + size.height;
-		}
-
-		if (i & 1) {
-			cp_rect.position.x = get_screen_position().x;
-		} else {
-			cp_rect.position.x = get_screen_position().x - MAX(0, (cp_rect.size.x - size.x));
-		}
-
-		if (usable_rect.encloses(cp_rect)) {
-			break;
-		}
+	// Determine in which direction to show the popup. By default popup horizontally centered below the button.
+	// But if the popup doesn't fit below and the button is in the bottom half of the viewport, show above.
+	bool show_above = false;
+	if (get_global_position().y + get_size().y + minsize.y > viewport_height && get_global_position().y * 2 + get_size().y > viewport_height) {
+		show_above = true;
 	}
-	popup->set_position(cp_rect.position);
+
+	float h_offset = (get_size().x - minsize.x) / 2;
+	float v_offset = show_above ? -minsize.y : get_size().y;
+	popup->set_position(get_screen_position() + Vector2(h_offset, v_offset));
 	popup->popup();
 	picker->set_focus_on_line_edit();
 }

@@ -72,6 +72,10 @@ void OS::add_logger(Logger *p_logger) {
 	}
 }
 
+String OS::get_identifier() const {
+	return get_name().to_lower();
+}
+
 void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, Logger::ErrorType p_type) {
 	if (!_stderr_enabled) {
 		return;
@@ -281,6 +285,15 @@ Error OS::shell_open(String p_uri) {
 	return ERR_UNAVAILABLE;
 }
 
+Error OS::shell_show_in_file_manager(String p_path, bool p_open_folder) {
+	if (!p_path.begins_with("file://")) {
+		p_path = String("file://") + p_path;
+	}
+	if (!p_path.ends_with("/")) {
+		p_path = p_path.get_base_dir();
+	}
+	return shell_open(p_path);
+}
 // implement these with the canvas?
 
 uint64_t OS::get_static_memory_usage() const {
@@ -295,8 +308,15 @@ Error OS::set_cwd(const String &p_cwd) {
 	return ERR_CANT_OPEN;
 }
 
-uint64_t OS::get_free_static_memory() const {
-	return Memory::get_mem_available();
+Dictionary OS::get_memory_info() const {
+	Dictionary meminfo;
+
+	meminfo["physical"] = -1;
+	meminfo["free"] = -1;
+	meminfo["available"] = -1;
+	meminfo["stack"] = -1;
+
+	return meminfo;
 }
 
 void OS::yield() {
@@ -341,13 +361,7 @@ void OS::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
 
 bool OS::has_feature(const String &p_feature) {
 	// Feature tags are always lowercase for consistency.
-	if (p_feature == get_name().to_lower()) {
-		return true;
-	}
-
-	// Catch-all `linuxbsd` feature tag that matches on both Linux and BSD.
-	// This is the one exposed in the project settings dialog.
-	if (p_feature == "linuxbsd" && (get_name() == "Linux" || get_name() == "FreeBSD" || get_name() == "NetBSD" || get_name() == "OpenBSD" || get_name() == "BSD")) {
+	if (p_feature == get_identifier()) {
 		return true;
 	}
 
@@ -551,6 +565,10 @@ void OS::add_frame_delay(bool p_can_draw) {
 		current_ticks = get_ticks_usec();
 		target_ticks = MIN(MAX(target_ticks, current_ticks - dynamic_delay), current_ticks + dynamic_delay);
 	}
+}
+
+Error OS::setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) {
+	return default_rfs.synchronize_with_server(p_server_host, p_port, p_password, r_project_path);
 }
 
 OS::PreferredTextureFormat OS::get_preferred_texture_format() const {

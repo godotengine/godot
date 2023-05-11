@@ -38,6 +38,7 @@
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/object/message_queue.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
@@ -60,7 +61,6 @@
 #include "servers/physics_server_2d.h"
 #include "servers/physics_server_3d.h"
 #include "window.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -78,7 +78,7 @@ void SceneTreeTimer::set_time_left(double p_time) {
 }
 
 double SceneTreeTimer::get_time_left() const {
-	return time_left;
+	return MAX(time_left, 0.0);
 }
 
 void SceneTreeTimer::set_process_always(bool p_process_always) {
@@ -126,12 +126,13 @@ void SceneTree::node_added(Node *p_node) {
 }
 
 void SceneTree::node_removed(Node *p_node) {
+	// Nodes can only be removed from the main thread.
 	if (current_scene == p_node) {
 		current_scene = nullptr;
 	}
 	emit_signal(node_removed_name, p_node);
-	if (call_lock > 0) {
-		call_skip.insert(p_node);
+	if (nodes_removed_on_group_call_lock) {
+		nodes_removed_on_group_call.insert(p_node);
 	}
 }
 
@@ -140,6 +141,8 @@ void SceneTree::node_renamed(Node *p_node) {
 }
 
 SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_node) {
+	_THREAD_SAFE_METHOD_
+
 	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		E = group_map.insert(p_group, Group());
@@ -153,6 +156,8 @@ SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_nod
 }
 
 void SceneTree::remove_from_group(const StringName &p_group, Node *p_node) {
+	_THREAD_SAFE_METHOD_
+
 	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	ERR_FAIL_COND(!E);
 
@@ -163,6 +168,7 @@ void SceneTree::remove_from_group(const StringName &p_group, Node *p_node) {
 }
 
 void SceneTree::make_group_changed(const StringName &p_group) {
+	_THREAD_SAFE_METHOD_
 	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (E) {
 		E->value.changed = true;
@@ -170,6 +176,8 @@ void SceneTree::make_group_changed(const StringName &p_group) {
 }
 
 void SceneTree::flush_transform_notifications() {
+	_THREAD_SAFE_METHOD_
+
 	SelfList<Node> *n = xform_change_list.first();
 	while (n) {
 		Node *node = n->self();
@@ -200,7 +208,7 @@ void SceneTree::_flush_ugc() {
 	ugc_locked = false;
 }
 
-void SceneTree::_update_group_order(Group &g, bool p_use_priority) {
+void SceneTree::_update_group_order(Group &g) {
 	if (!g.changed) {
 		return;
 	}
@@ -211,57 +219,62 @@ void SceneTree::_update_group_order(Group &g, bool p_use_priority) {
 	Node **gr_nodes = g.nodes.ptrw();
 	int gr_node_count = g.nodes.size();
 
-	if (p_use_priority) {
-		SortArray<Node *, Node::ComparatorWithPriority> node_sort;
-		node_sort.sort(gr_nodes, gr_node_count);
-	} else {
-		SortArray<Node *, Node::Comparator> node_sort;
-		node_sort.sort(gr_nodes, gr_node_count);
-	}
+	SortArray<Node *, Node::Comparator> node_sort;
+	node_sort.sort(gr_nodes, gr_node_count);
+
 	g.changed = false;
 }
 
 void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, const Variant **p_args, int p_argcount) {
-	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
-	if (!E) {
-		return;
-	}
-	Group &g = E->value;
-	if (g.nodes.is_empty()) {
-		return;
-	}
+	Vector<Node *> nodes_copy;
 
-	if (p_call_flags & GROUP_CALL_UNIQUE && p_call_flags & GROUP_CALL_DEFERRED) {
-		ERR_FAIL_COND(ugc_locked);
+	{
+		_THREAD_SAFE_METHOD_
 
-		UGCall ug;
-		ug.call = p_function;
-		ug.group = p_group;
-
-		if (unique_group_calls.has(ug)) {
+		HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
+		if (!E) {
+			return;
+		}
+		Group &g = E->value;
+		if (g.nodes.is_empty()) {
 			return;
 		}
 
-		Vector<Variant> args;
-		for (int i = 0; i < p_argcount; i++) {
-			args.push_back(*p_args[i]);
+		if (p_call_flags & GROUP_CALL_UNIQUE && p_call_flags & GROUP_CALL_DEFERRED) {
+			ERR_FAIL_COND(ugc_locked);
+
+			UGCall ug;
+			ug.call = p_function;
+			ug.group = p_group;
+
+			if (unique_group_calls.has(ug)) {
+				return;
+			}
+
+			Vector<Variant> args;
+			for (int i = 0; i < p_argcount; i++) {
+				args.push_back(*p_args[i]);
+			}
+
+			unique_group_calls[ug] = args;
+			return;
 		}
 
-		unique_group_calls[ug] = args;
-		return;
+		_update_group_order(g);
+		nodes_copy = g.nodes;
 	}
 
-	_update_group_order(g);
-
-	Vector<Node *> nodes_copy = g.nodes;
 	Node **gr_nodes = nodes_copy.ptrw();
 	int gr_node_count = nodes_copy.size();
 
-	call_lock++;
+	{
+		_THREAD_SAFE_METHOD_
+		nodes_removed_on_group_call_lock++;
+	}
 
 	if (p_call_flags & GROUP_CALL_REVERSE) {
 		for (int i = gr_node_count - 1; i >= 0; i--) {
-			if (call_lock && call_skip.has(gr_nodes[i])) {
+			if (nodes_removed_on_group_call_lock && nodes_removed_on_group_call.has(gr_nodes[i])) {
 				continue;
 			}
 
@@ -275,7 +288,7 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 
 	} else {
 		for (int i = 0; i < gr_node_count; i++) {
-			if (call_lock && call_skip.has(gr_nodes[i])) {
+			if (nodes_removed_on_group_call_lock && nodes_removed_on_group_call.has(gr_nodes[i])) {
 				continue;
 			}
 
@@ -288,33 +301,44 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 		}
 	}
 
-	call_lock--;
-	if (call_lock == 0) {
-		call_skip.clear();
+	{
+		_THREAD_SAFE_METHOD_
+		nodes_removed_on_group_call_lock--;
+		if (nodes_removed_on_group_call_lock == 0) {
+			nodes_removed_on_group_call.clear();
+		}
 	}
 }
 
 void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_group, int p_notification) {
-	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
-	if (!E) {
-		return;
-	}
-	Group &g = E->value;
-	if (g.nodes.is_empty()) {
-		return;
+	Vector<Node *> nodes_copy;
+	{
+		_THREAD_SAFE_METHOD_
+		HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
+		if (!E) {
+			return;
+		}
+		Group &g = E->value;
+		if (g.nodes.is_empty()) {
+			return;
+		}
+
+		_update_group_order(g);
+
+		nodes_copy = g.nodes;
 	}
 
-	_update_group_order(g);
-
-	Vector<Node *> nodes_copy = g.nodes;
 	Node **gr_nodes = nodes_copy.ptrw();
 	int gr_node_count = nodes_copy.size();
 
-	call_lock++;
+	{
+		_THREAD_SAFE_METHOD_
+		nodes_removed_on_group_call_lock++;
+	}
 
 	if (p_call_flags & GROUP_CALL_REVERSE) {
 		for (int i = gr_node_count - 1; i >= 0; i--) {
-			if (call_lock && call_skip.has(gr_nodes[i])) {
+			if (nodes_removed_on_group_call.has(gr_nodes[i])) {
 				continue;
 			}
 
@@ -327,7 +351,7 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 
 	} else {
 		for (int i = 0; i < gr_node_count; i++) {
-			if (call_lock && call_skip.has(gr_nodes[i])) {
+			if (nodes_removed_on_group_call.has(gr_nodes[i])) {
 				continue;
 			}
 
@@ -339,33 +363,44 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 		}
 	}
 
-	call_lock--;
-	if (call_lock == 0) {
-		call_skip.clear();
+	{
+		_THREAD_SAFE_METHOD_
+		nodes_removed_on_group_call_lock--;
+		if (nodes_removed_on_group_call_lock == 0) {
+			nodes_removed_on_group_call.clear();
+		}
 	}
 }
 
 void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group, const String &p_name, const Variant &p_value) {
-	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
-	if (!E) {
-		return;
-	}
-	Group &g = E->value;
-	if (g.nodes.is_empty()) {
-		return;
-	}
+	Vector<Node *> nodes_copy;
+	{
+		_THREAD_SAFE_METHOD_
 
-	_update_group_order(g);
+		HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
+		if (!E) {
+			return;
+		}
+		Group &g = E->value;
+		if (g.nodes.is_empty()) {
+			return;
+		}
 
-	Vector<Node *> nodes_copy = g.nodes;
+		_update_group_order(g);
+
+		nodes_copy = g.nodes;
+	}
 	Node **gr_nodes = nodes_copy.ptrw();
 	int gr_node_count = nodes_copy.size();
 
-	call_lock++;
+	{
+		_THREAD_SAFE_METHOD_
+		nodes_removed_on_group_call_lock++;
+	}
 
 	if (p_call_flags & GROUP_CALL_REVERSE) {
 		for (int i = gr_node_count - 1; i >= 0; i--) {
-			if (call_lock && call_skip.has(gr_nodes[i])) {
+			if (nodes_removed_on_group_call.has(gr_nodes[i])) {
 				continue;
 			}
 
@@ -378,7 +413,7 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 
 	} else {
 		for (int i = 0; i < gr_node_count; i++) {
-			if (call_lock && call_skip.has(gr_nodes[i])) {
+			if (nodes_removed_on_group_call.has(gr_nodes[i])) {
 				continue;
 			}
 
@@ -390,9 +425,12 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 		}
 	}
 
-	call_lock--;
-	if (call_lock == 0) {
-		call_skip.clear();
+	{
+		_THREAD_SAFE_METHOD_
+		nodes_removed_on_group_call_lock--;
+		if (nodes_removed_on_group_call_lock == 0) {
+			nodes_removed_on_group_call.clear();
+		}
 	}
 }
 
@@ -423,9 +461,10 @@ bool SceneTree::physics_process(double p_time) {
 
 	emit_signal(SNAME("physics_frame"));
 
-	_notify_group_pause(SNAME("_physics_process_internal"), Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	call_group(SNAME("_picking_viewports"), SNAME("_process_picking"));
-	_notify_group_pause(SNAME("_physics_process"), Node::NOTIFICATION_PHYSICS_PROCESS);
+
+	_process(true);
+
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
 
@@ -462,8 +501,7 @@ bool SceneTree::process(double p_time) {
 
 	flush_transform_notifications();
 
-	_notify_group_pause(SNAME("_process_internal"), Node::NOTIFICATION_INTERNAL_PROCESS);
-	_notify_group_pause(SNAME("_process"), Node::NOTIFICATION_PROCESS);
+	_process(false);
 
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
@@ -512,6 +550,7 @@ bool SceneTree::process(double p_time) {
 }
 
 void SceneTree::process_timers(double p_delta, bool p_physics_frame) {
+	_THREAD_SAFE_METHOD_
 	List<Ref<SceneTreeTimer>>::Element *L = timers.back(); //last element
 
 	for (List<Ref<SceneTreeTimer>>::Element *E = timers.front(); E;) {
@@ -544,6 +583,7 @@ void SceneTree::process_timers(double p_delta, bool p_physics_frame) {
 }
 
 void SceneTree::process_tweens(double p_delta, bool p_physics) {
+	_THREAD_SAFE_METHOD_
 	// This methods works similarly to how SceneTreeTimers are handled.
 	List<Ref<Tween>>::Element *L = tweens.back();
 
@@ -603,6 +643,8 @@ void SceneTree::finalize() {
 }
 
 void SceneTree::quit(int p_exit_code) {
+	_THREAD_SAFE_METHOD_
+
 	OS::get_singleton()->set_exit_code(p_exit_code);
 	_quit = true;
 }
@@ -695,6 +737,14 @@ void SceneTree::set_debug_navigation_hint(bool p_enabled) {
 bool SceneTree::is_debugging_navigation_hint() const {
 	return debug_navigation_hint;
 }
+
+void SceneTree::set_debug_avoidance_hint(bool p_enabled) {
+	debug_avoidance_hint = p_enabled;
+}
+
+bool SceneTree::is_debugging_avoidance_hint() const {
+	return debug_avoidance_hint;
+}
 #endif
 
 void SceneTree::set_debug_collisions_color(const Color &p_color) {
@@ -730,6 +780,8 @@ float SceneTree::get_debug_paths_width() const {
 }
 
 Ref<Material> SceneTree::get_debug_paths_material() {
+	_THREAD_SAFE_METHOD_
+
 	if (debug_paths_material.is_valid()) {
 		return debug_paths_material;
 	}
@@ -747,6 +799,8 @@ Ref<Material> SceneTree::get_debug_paths_material() {
 }
 
 Ref<Material> SceneTree::get_debug_collision_material() {
+	_THREAD_SAFE_METHOD_
+
 	if (collision_material.is_valid()) {
 		return collision_material;
 	}
@@ -764,6 +818,8 @@ Ref<Material> SceneTree::get_debug_collision_material() {
 }
 
 Ref<ArrayMesh> SceneTree::get_debug_contact_mesh() {
+	_THREAD_SAFE_METHOD_
+
 	if (debug_contact_mesh.is_valid()) {
 		return debug_contact_mesh;
 	}
@@ -821,6 +877,8 @@ Ref<ArrayMesh> SceneTree::get_debug_contact_mesh() {
 }
 
 void SceneTree::set_pause(bool p_enabled) {
+	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Pause can only be set from the main thread.");
+
 	if (p_enabled == paused) {
 		return;
 	}
@@ -836,70 +894,282 @@ bool SceneTree::is_paused() const {
 	return paused;
 }
 
-void SceneTree::_notify_group_pause(const StringName &p_group, int p_notification) {
-	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
-	if (!E) {
+void SceneTree::_process_group(ProcessGroup *p_group, bool p_physics) {
+	// When reading this function, keep in mind that this code must work in a way where
+	// if any node is removed, this needs to continue working.
+
+	p_group->call_queue.flush(); // Flush messages before processing.
+
+	Vector<Node *> &nodes = p_physics ? p_group->physics_nodes : p_group->nodes;
+	if (nodes.is_empty()) {
 		return;
 	}
-	Group &g = E->value;
-	if (g.nodes.is_empty()) {
+
+	bool &node_order_dirty = p_physics ? p_group->physics_node_order_dirty : p_group->node_order_dirty;
+
+	if (node_order_dirty) {
+		nodes.sort_custom<Node::ComparatorWithPhysicsPriority>();
+		node_order_dirty = false;
+	}
+
+	// Make a copy, so if nodes are added/removed from process, this does not break
+	Vector<Node *> nodes_copy = nodes;
+
+	uint32_t node_count = nodes_copy.size();
+	Node **nodes_ptr = (Node **)nodes_copy.ptr(); // Force cast, pointer will not change.
+
+	for (uint32_t i = 0; i < node_count; i++) {
+		Node *n = nodes_ptr[i];
+		if (nodes_removed_on_group_call.has(n)) {
+			// Node may have been removed during process, skip it.
+			// Keep in mind removals can only happen on the main thread.
+			continue;
+		}
+
+		if (!n->can_process() || !n->is_inside_tree()) {
+			continue;
+		}
+
+		if (p_physics) {
+			if (n->is_physics_processing()) {
+				n->notification(Node::NOTIFICATION_PHYSICS_PROCESS);
+			}
+			if (n->is_physics_processing_internal()) {
+				n->notification(Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
+			}
+		} else {
+			if (n->is_processing()) {
+				n->notification(Node::NOTIFICATION_PROCESS);
+			}
+			if (n->is_processing_internal()) {
+				n->notification(Node::NOTIFICATION_INTERNAL_PROCESS);
+			}
+		}
+	}
+
+	p_group->call_queue.flush(); // Flush messages also after processing (for potential deferred calls).
+}
+
+void SceneTree::_process_groups_thread(uint32_t p_index, bool p_physics) {
+	Node::current_process_thread_group = local_process_group_cache[p_index]->owner;
+	_process_group(local_process_group_cache[p_index], p_physics);
+	Node::current_process_thread_group = nullptr;
+}
+
+void SceneTree::_process(bool p_physics) {
+	if (process_groups_dirty) {
+		{
+			// First, remove dirty groups.
+			// This needs to be done when not processing to avoid problems.
+			ProcessGroup **pg_ptr = (ProcessGroup **)process_groups.ptr(); // discard constness.
+			uint32_t pg_count = process_groups.size();
+
+			for (uint32_t i = 0; i < pg_count; i++) {
+				if (pg_ptr[i]->removed) {
+					// Replace removed with last.
+					pg_ptr[i] = pg_ptr[pg_count - 1];
+					// Retry
+					i--;
+					pg_count--;
+				}
+			}
+			if (pg_count != process_groups.size()) {
+				process_groups.resize(pg_count);
+			}
+		}
+		{
+			// Then, re-sort groups.
+			process_groups.sort_custom<ProcessGroupSort>();
+		}
+
+		process_groups_dirty = false;
+	}
+
+	// Cache the group count, because during processing new groups may be added.
+	// They will be added at the end, hence for consistency they will be ignored by this process loop.
+	// No group will be removed from the array during processing (this is done earlier in this function by marking the groups dirty).
+	uint32_t group_count = process_groups.size();
+
+	if (group_count == 0) {
 		return;
 	}
 
-	_update_group_order(g, p_notification == Node::NOTIFICATION_PROCESS || p_notification == Node::NOTIFICATION_INTERNAL_PROCESS || p_notification == Node::NOTIFICATION_PHYSICS_PROCESS || p_notification == Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
+	process_last_pass++; // Increment pass
+	uint32_t from = 0;
+	uint32_t process_count = 0;
+	nodes_removed_on_group_call_lock++;
 
-	//copy, so copy on write happens in case something is removed from process while being called
-	//performance is not lost because only if something is added/removed the vector is copied.
-	Vector<Node *> nodes_copy = g.nodes;
+	int current_order = process_groups[0]->owner ? process_groups[0]->owner->data.process_thread_group_order : 0;
+	bool current_threaded = process_groups[0]->owner ? process_groups[0]->owner->data.process_thread_group == Node::PROCESS_THREAD_GROUP_SUB_THREAD : false;
 
-	int gr_node_count = nodes_copy.size();
-	Node **gr_nodes = nodes_copy.ptrw();
+	for (uint32_t i = 0; i <= group_count; i++) {
+		int order = i < group_count && process_groups[i]->owner ? process_groups[i]->owner->data.process_thread_group_order : 0;
+		bool threaded = i < group_count && process_groups[i]->owner ? process_groups[i]->owner->data.process_thread_group == Node::PROCESS_THREAD_GROUP_SUB_THREAD : false;
 
-	call_lock++;
+		if (i == group_count || current_order != order || current_threaded != threaded) {
+			if (process_count > 0) {
+				// Proceed to process the group.
+				bool using_threads = process_groups[from]->owner && process_groups[from]->owner->data.process_thread_group == Node::PROCESS_THREAD_GROUP_SUB_THREAD && !node_threading_disabled;
 
-	for (int i = 0; i < gr_node_count; i++) {
-		Node *n = gr_nodes[i];
-		if (call_lock && call_skip.has(n)) {
+				if (using_threads) {
+					local_process_group_cache.clear();
+				}
+				for (uint32_t j = from; j < i; j++) {
+					if (process_groups[j]->last_pass == process_last_pass) {
+						if (using_threads) {
+							local_process_group_cache.push_back(process_groups[j]);
+						} else {
+							_process_group(process_groups[j], p_physics);
+						}
+					}
+				}
+
+				if (using_threads) {
+					WorkerThreadPool::GroupID id = WorkerThreadPool::get_singleton()->add_template_group_task(this, &SceneTree::_process_groups_thread, p_physics, local_process_group_cache.size(), -1, true);
+					WorkerThreadPool::get_singleton()->wait_for_group_task_completion(id);
+				}
+			}
+
+			if (i == group_count) {
+				// This one is invalid, no longer process
+				break;
+			}
+
+			from = i;
+			current_threaded = threaded;
+			current_order = order;
+		}
+
+		if (process_groups[i]->removed) {
 			continue;
 		}
 
-		if (!n->can_process()) {
-			continue;
-		}
-		if (!n->can_process_notification(p_notification)) {
-			continue;
+		ProcessGroup *pg = process_groups[i];
+
+		// Validate group for processing
+		bool process_valid = false;
+		if (p_physics) {
+			if (!pg->physics_nodes.is_empty()) {
+				process_valid = true;
+			} else if (pg->owner != nullptr && pg->owner->data.process_thread_messages.has_flag(Node::FLAG_PROCESS_THREAD_MESSAGES_PHYSICS) && pg->call_queue.has_messages()) {
+				process_valid = true;
+			}
+		} else {
+			if (!pg->nodes.is_empty()) {
+				process_valid = true;
+			} else if (pg->owner != nullptr && pg->owner->data.process_thread_messages.has_flag(Node::FLAG_PROCESS_THREAD_MESSAGES) && pg->call_queue.has_messages()) {
+				process_valid = true;
+			}
 		}
 
-		n->notification(p_notification);
-		//ERR_FAIL_COND(gr_node_count != g.nodes.size());
+		if (process_valid) {
+			pg->last_pass = process_last_pass; // Enable for processing
+			process_count++;
+		}
 	}
 
-	call_lock--;
-	if (call_lock == 0) {
-		call_skip.clear();
+	nodes_removed_on_group_call_lock--;
+	if (nodes_removed_on_group_call_lock == 0) {
+		nodes_removed_on_group_call.clear();
+	}
+}
+
+bool SceneTree::ProcessGroupSort::operator()(const ProcessGroup *p_left, const ProcessGroup *p_right) const {
+	int left_order = p_left->owner ? p_left->owner->data.process_thread_group_order : 0;
+	int right_order = p_right->owner ? p_right->owner->data.process_thread_group_order : 0;
+
+	if (left_order == right_order) {
+		int left_threaded = p_left->owner != nullptr && p_left->owner->data.process_thread_group == Node::PROCESS_THREAD_GROUP_SUB_THREAD ? 0 : 1;
+		int right_threaded = p_right->owner != nullptr && p_right->owner->data.process_thread_group == Node::PROCESS_THREAD_GROUP_SUB_THREAD ? 0 : 1;
+		return left_threaded < right_threaded;
+	} else {
+		return left_order < right_order;
+	}
+}
+
+void SceneTree::_remove_process_group(Node *p_node) {
+	_THREAD_SAFE_METHOD_
+	ProcessGroup *pg = (ProcessGroup *)p_node->data.process_group;
+	ERR_FAIL_COND(!pg);
+	ERR_FAIL_COND(pg->removed);
+	pg->removed = true;
+	pg->owner = nullptr;
+	p_node->data.process_group = nullptr;
+	process_groups_dirty = true;
+}
+
+void SceneTree::_add_process_group(Node *p_node) {
+	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND(!p_node);
+
+	ProcessGroup *pg = memnew(ProcessGroup);
+
+	pg->owner = p_node;
+	p_node->data.process_group = pg;
+
+	process_groups.push_back(pg);
+
+	process_groups_dirty = true;
+}
+
+void SceneTree::_remove_node_from_process_group(Node *p_node, Node *p_owner) {
+	_THREAD_SAFE_METHOD_
+	ProcessGroup *pg = p_owner ? (ProcessGroup *)p_owner->data.process_group : &default_process_group;
+
+	if (p_node->is_processing() || p_node->is_processing_internal()) {
+		bool found = pg->nodes.erase(p_node);
+		ERR_FAIL_COND(!found);
+	}
+
+	if (p_node->is_physics_processing() || p_node->is_physics_processing_internal()) {
+		bool found = pg->physics_nodes.erase(p_node);
+		ERR_FAIL_COND(!found);
+	}
+}
+
+void SceneTree::_add_node_to_process_group(Node *p_node, Node *p_owner) {
+	_THREAD_SAFE_METHOD_
+	ProcessGroup *pg = p_owner ? (ProcessGroup *)p_owner->data.process_group : &default_process_group;
+
+	if (p_node->is_processing() || p_node->is_processing_internal()) {
+		pg->nodes.push_back(p_node);
+		pg->node_order_dirty = true;
+	}
+
+	if (p_node->is_physics_processing() || p_node->is_physics_processing_internal()) {
+		pg->physics_nodes.push_back(p_node);
+		pg->physics_node_order_dirty = true;
 	}
 }
 
 void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_call_type, const Ref<InputEvent> &p_input, Viewport *p_viewport) {
-	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
-	if (!E) {
-		return;
-	}
-	Group &g = E->value;
-	if (g.nodes.is_empty()) {
-		return;
-	}
+	Vector<Node *> nodes_copy;
+	{
+		_THREAD_SAFE_METHOD_
 
-	_update_group_order(g);
+		HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
+		if (!E) {
+			return;
+		}
+		Group &g = E->value;
+		if (g.nodes.is_empty()) {
+			return;
+		}
 
-	//copy, so copy on write happens in case something is removed from process while being called
-	//performance is not lost because only if something is added/removed the vector is copied.
-	Vector<Node *> nodes_copy = g.nodes;
+		_update_group_order(g);
+
+		//copy, so copy on write happens in case something is removed from process while being called
+		//performance is not lost because only if something is added/removed the vector is copied.
+		nodes_copy = g.nodes;
+	}
 
 	int gr_node_count = nodes_copy.size();
 	Node **gr_nodes = nodes_copy.ptrw();
 
-	call_lock++;
+	{
+		_THREAD_SAFE_METHOD_
+		nodes_removed_on_group_call_lock++;
+	}
 
 	Vector<ObjectID> no_context_node_ids; // Nodes may be deleted due to this shortcut input.
 
@@ -909,7 +1179,7 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 		}
 
 		Node *n = gr_nodes[i];
-		if (call_lock && call_skip.has(n)) {
+		if (nodes_removed_on_group_call.has(n)) {
 			continue;
 		}
 
@@ -956,9 +1226,12 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 		}
 	}
 
-	call_lock--;
-	if (call_lock == 0) {
-		call_skip.clear();
+	{
+		_THREAD_SAFE_METHOD_
+		nodes_removed_on_group_call_lock--;
+		if (nodes_removed_on_group_call_lock == 0) {
+			nodes_removed_on_group_call.clear();
+		}
 	}
 }
 
@@ -995,6 +1268,7 @@ int64_t SceneTree::get_frame() const {
 }
 
 TypedArray<Node> SceneTree::_get_nodes_in_group(const StringName &p_group) {
+	_THREAD_SAFE_METHOD_
 	TypedArray<Node> ret;
 	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
@@ -1018,10 +1292,12 @@ TypedArray<Node> SceneTree::_get_nodes_in_group(const StringName &p_group) {
 }
 
 bool SceneTree::has_group(const StringName &p_identifier) const {
+	_THREAD_SAFE_METHOD_
 	return group_map.has(p_identifier);
 }
 
 Node *SceneTree::get_first_node_in_group(const StringName &p_group) {
+	_THREAD_SAFE_METHOD_
 	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return nullptr; // No group.
@@ -1037,6 +1313,7 @@ Node *SceneTree::get_first_node_in_group(const StringName &p_group) {
 }
 
 void SceneTree::get_nodes_in_group(const StringName &p_group, List<Node *> *p_list) {
+	_THREAD_SAFE_METHOD_
 	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return;
@@ -1073,7 +1350,7 @@ void SceneTree::queue_delete(Object *p_object) {
 }
 
 int SceneTree::get_node_count() const {
-	return node_count;
+	return nodes_in_tree_count;
 }
 
 void SceneTree::set_edited_scene_root(Node *p_node) {
@@ -1091,6 +1368,7 @@ Node *SceneTree::get_edited_scene_root() const {
 }
 
 void SceneTree::set_current_scene(Node *p_scene) {
+	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Changing scene can only be done from the main thread.");
 	ERR_FAIL_COND(p_scene && p_scene->get_parent() != root);
 	current_scene = p_scene;
 }
@@ -1100,6 +1378,7 @@ Node *SceneTree::get_current_scene() const {
 }
 
 void SceneTree::_change_scene(Node *p_to) {
+	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Changing scene can only be done from the main thread.");
 	if (current_scene) {
 		memdelete(current_scene);
 		current_scene = nullptr;
@@ -1121,6 +1400,7 @@ void SceneTree::_change_scene(Node *p_to) {
 }
 
 Error SceneTree::change_scene_to_file(const String &p_path) {
+	ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), ERR_INVALID_PARAMETER, "Changing scene can only be done from the main thread.");
 	Ref<PackedScene> new_scene = ResourceLoader::load(p_path);
 	if (new_scene.is_null()) {
 		return ERR_CANT_OPEN;
@@ -1140,12 +1420,14 @@ Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
 }
 
 Error SceneTree::reload_current_scene() {
+	ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), ERR_INVALID_PARAMETER, "Reloading scene can only be done from the main thread.");
 	ERR_FAIL_COND_V(!current_scene, ERR_UNCONFIGURED);
 	String fname = current_scene->get_scene_file_path();
 	return change_scene_to_file(fname);
 }
 
 void SceneTree::unload_current_scene() {
+	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Unloading the current scene can only be done from the main thread.");
 	if (current_scene) {
 		memdelete(current_scene);
 		current_scene = nullptr;
@@ -1153,11 +1435,13 @@ void SceneTree::unload_current_scene() {
 }
 
 void SceneTree::add_current_scene(Node *p_current) {
+	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Adding a current scene can only be done from the main thread.");
 	current_scene = p_current;
 	root->add_child(p_current);
 }
 
 Ref<SceneTreeTimer> SceneTree::create_timer(double p_delay_sec, bool p_process_always, bool p_process_in_physics, bool p_ignore_time_scale) {
+	_THREAD_SAFE_METHOD_
 	Ref<SceneTreeTimer> stt;
 	stt.instantiate();
 	stt->set_process_always(p_process_always);
@@ -1169,12 +1453,14 @@ Ref<SceneTreeTimer> SceneTree::create_timer(double p_delay_sec, bool p_process_a
 }
 
 Ref<Tween> SceneTree::create_tween() {
+	_THREAD_SAFE_METHOD_
 	Ref<Tween> tween = memnew(Tween(true));
 	tweens.push_back(tween);
 	return tween;
 }
 
 TypedArray<Tween> SceneTree::get_processed_tweens() {
+	_THREAD_SAFE_METHOD_
 	TypedArray<Tween> ret;
 	ret.resize(tweens.size());
 
@@ -1188,6 +1474,7 @@ TypedArray<Tween> SceneTree::get_processed_tweens() {
 }
 
 Ref<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const {
+	ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), Ref<MultiplayerAPI>(), "Multiplayer can only be manipulated from the main thread.");
 	Ref<MultiplayerAPI> out = multiplayer;
 	for (const KeyValue<NodePath, Ref<MultiplayerAPI>> &E : custom_multiplayers) {
 		const Vector<StringName> snames = E.key.get_names();
@@ -1213,6 +1500,7 @@ Ref<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const
 }
 
 void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePath &p_root_path) {
+	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Multiplayer can only be manipulated from the main thread.");
 	if (p_root_path.is_empty()) {
 		ERR_FAIL_COND(!p_multiplayer.is_valid());
 		if (multiplayer.is_valid()) {
@@ -1232,6 +1520,7 @@ void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePat
 }
 
 void SceneTree::set_multiplayer_poll_enabled(bool p_enabled) {
+	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Multiplayer can only be manipulated from the main thread.");
 	multiplayer_poll = p_enabled;
 }
 
@@ -1385,6 +1674,10 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 	}
 }
 
+void SceneTree::set_disable_node_threading(bool p_disable) {
+	node_threading_disabled = p_disable;
+}
+
 SceneTree::SceneTree() {
 	if (singleton == nullptr) {
 		singleton = this;
@@ -1397,6 +1690,7 @@ SceneTree::SceneTree() {
 
 	GLOBAL_DEF("debug/shapes/collision/draw_2d_outlines", true);
 
+	process_group_call_queue_allocator = memnew(CallQueue::Allocator(64));
 	Math::randomize();
 
 	// Create with mainloop.
@@ -1534,6 +1828,8 @@ SceneTree::SceneTree() {
 #ifdef TOOLS_ENABLED
 	edited_scene_root = nullptr;
 #endif
+
+	process_groups.push_back(&default_process_group);
 }
 
 SceneTree::~SceneTree() {
@@ -1542,6 +1838,15 @@ SceneTree::~SceneTree() {
 		root->_propagate_after_exit_tree();
 		memdelete(root);
 	}
+
+	// Process groups are not deleted immediately, they may remain around. Delete them now.
+	for (uint32_t i = 0; i < process_groups.size(); i++) {
+		if (process_groups[i] != &default_process_group) {
+			memdelete(process_groups[i]);
+		}
+	}
+
+	memdelete(process_group_call_queue_allocator);
 
 	if (singleton == this) {
 		singleton = nullptr;

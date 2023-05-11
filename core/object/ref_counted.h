@@ -295,4 +295,16 @@ struct GetTypeInfo<const Ref<T> &> {
 	}
 };
 
+template <class T>
+struct VariantInternalAccessor<Ref<T>> {
+	static _FORCE_INLINE_ Ref<T> get(const Variant *v) { return Ref<T>(*VariantInternal::get_object(v)); }
+	static _FORCE_INLINE_ void set(Variant *v, const Ref<T> &p_ref) { VariantInternal::refcounted_object_assign(v, p_ref.ptr()); }
+};
+
+template <class T>
+struct VariantInternalAccessor<const Ref<T> &> {
+	static _FORCE_INLINE_ Ref<T> get(const Variant *v) { return Ref<T>(*VariantInternal::get_object(v)); }
+	static _FORCE_INLINE_ void set(Variant *v, const Ref<T> &p_ref) { VariantInternal::refcounted_object_assign(v, p_ref.ptr()); }
+};
+
 #endif // REF_COUNTED_H

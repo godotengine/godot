@@ -426,7 +426,12 @@ void DisplayServerWeb::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 
 		ERR_FAIL_COND(!image.is_valid());
 
-		image = image->duplicate();
+		image = image->duplicate(true);
+
+		if (image->is_compressed()) {
+			Error err = image->decompress();
+			ERR_FAIL_COND_MSG(err != OK, "Couldn't decompress VRAM-compressed custom mouse cursor image. Switch to a lossless compression mode in the Import dock.");
+		}
 
 		if (atlas_texture.is_valid()) {
 			image->crop_from_point(

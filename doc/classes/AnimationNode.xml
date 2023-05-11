@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationNode" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base resource for [AnimationTree] nodes.
+		Base class for [AnimationTree] nodes. Not related to scene nodes.
 	</brief_description>
 	<description>
 		Base resource for [AnimationTree] nodes. In general, it's not used directly, but you can create custom ones with custom blending formulas.
 		Inherit this when creating nodes mainly for use in [AnimationNodeBlendTree], otherwise [AnimationRootNode] should be used instead.
 	</description>
 	<tutorials>
-		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="_get_caption" qualifiers="virtual const">
@@ -61,6 +61,7 @@
 			<param index="0" name="time" type="float" />
 			<param index="1" name="seek" type="bool" />
 			<param index="2" name="is_external_seeking" type="bool" />
+			<param index="3" name="test_only" type="bool" />
 			<description>
 				When inheriting from [AnimationRootNode], implement this virtual method to run some code when this node is processed. The [param time] parameter is a relative delta, unless [param seek] is [code]true[/code], in which case it is absolute.
 				Here, call the [method blend_input], [method blend_node] or [method blend_animation] functions. You can also use [method get_parameter] and [method set_parameter] to modify local memory.
@@ -97,6 +98,7 @@
 			<param index="4" name="blend" type="float" />
 			<param index="5" name="filter" type="int" enum="AnimationNode.FilterAction" default="0" />
 			<param index="6" name="sync" type="bool" default="true" />
+			<param index="7" name="test_only" type="bool" default="false" />
 			<description>
 				Blend an input. This is only useful for nodes created for an [AnimationNodeBlendTree]. The [param time] parameter is a relative delta, unless [param seek] is [code]true[/code], in which case it is absolute. A filter mode may be optionally passed (see [enum FilterAction] for options).
 			</description>
@@ -111,6 +113,7 @@
 			<param index="5" name="blend" type="float" />
 			<param index="6" name="filter" type="int" enum="AnimationNode.FilterAction" default="0" />
 			<param index="7" name="sync" type="bool" default="true" />
+			<param index="8" name="test_only" type="bool" default="false" />
 			<description>
 				Blend another animation node (in case this node contains children animation nodes). This function is only useful if you inherit from [AnimationRootNode] instead, else editors will not display your node for addition.
 			</description>

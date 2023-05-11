@@ -127,7 +127,7 @@
 			<return type="Vector2" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
-				Returns the contact position in the collider.
+				Returns the position of the contact point on the collider in the global coordinate system.
 			</description>
 		</method>
 		<method name="get_contact_collider_shape" qualifiers="const">
@@ -141,7 +141,7 @@
 			<return type="Vector2" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
-				Returns the linear velocity vector at the collider's contact point.
+				Returns the velocity vector at the collider's contact point.
 			</description>
 		</method>
 		<method name="get_contact_count" qualifiers="const">
@@ -169,7 +169,7 @@
 			<return type="Vector2" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
-				Returns the local position of the contact point.
+				Returns the position of the contact point on the body in the global coordinate system.
 			</description>
 		</method>
 		<method name="get_contact_local_shape" qualifiers="const">
@@ -177,6 +177,13 @@
 			<param index="0" name="contact_idx" type="int" />
 			<description>
 				Returns the local shape index of the collision.
+			</description>
+		</method>
+		<method name="get_contact_local_velocity_at_position" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="contact_idx" type="int" />
+			<description>
+				Returns the velocity vector at the body's contact point.
 			</description>
 		</method>
 		<method name="get_space_state">

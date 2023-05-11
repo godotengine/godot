@@ -293,8 +293,8 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 							vertex_array.resize((heightmap_depth - 1) * (heightmap_width - 1) * 6);
 							int map_data_current_index = 0;
 
-							for (int d = 0; d < heightmap_depth - 1; d++) {
-								for (int w = 0; w < heightmap_width - 1; w++) {
+							for (int d = 0; d < heightmap_depth; d++) {
+								for (int w = 0; w < heightmap_width; w++) {
 									if (map_data_current_index + 1 + heightmap_depth < map_data.size()) {
 										float top_left_height = map_data[map_data_current_index];
 										float top_right_height = map_data[map_data_current_index + 1];
@@ -422,8 +422,8 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 							vertex_array.resize((heightmap_depth - 1) * (heightmap_width - 1) * 6);
 							int map_data_current_index = 0;
 
-							for (int d = 0; d < heightmap_depth - 1; d++) {
-								for (int w = 0; w < heightmap_width - 1; w++) {
+							for (int d = 0; d < heightmap_depth; d++) {
+								for (int w = 0; w < heightmap_width; w++) {
 									if (map_data_current_index + 1 + heightmap_depth < map_data.size()) {
 										float top_left_height = map_data[map_data_current_index];
 										float top_right_height = map_data[map_data_current_index + 1];

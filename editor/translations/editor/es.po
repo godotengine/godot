@@ -108,8 +108,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-01 01:47+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2023-04-17 17:39+0000\n"
+"Last-Translator: Luis Ortiz <luisortiz66@hotmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -117,7 +117,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.17\n"
 
 msgid "Unset"
 msgstr "Desactivar"
@@ -2871,6 +2871,23 @@ msgstr "Fijar un valor obliga a guardarlo aunque sea igual al predeterminado."
 msgid "Open Documentation"
 msgstr "Abrir Documentación"
 
+msgid "Add element to property array with prefix %s."
+msgstr "Añadir elemento a la matriz de propiedades con el prefijo %s."
+
+msgid "Remove element %d from property array with prefix %s."
+msgstr "Borrar elemento %d de la matriz de propiedades con el prefijo %s."
+
+msgid "Move element %d to position %d in property array with prefix %s."
+msgstr ""
+"Mueva el elemento %d a la posición %d en la matriz de propiedades con el "
+"prefijo %s."
+
+msgid "Clear property array with prefix %s."
+msgstr "Limpiar la matriz de propiedades con el prefijo %s."
+
+msgid "Resize property array with prefix %s."
+msgstr "Redimensionar la matriz de propiedades con el prefijo %s."
+
 msgid "Element %d: %s%d*"
 msgstr "Elemento %d: %s%d*"
 
@@ -2955,7 +2972,10 @@ msgid "Copy Property Path"
 msgstr "Copiar Ruta de Propiedad"
 
 msgid "Select existing layout:"
-msgstr "Selecciona un diseño existente:"
+msgstr "Selecciona un layout existente:"
+
+msgid "Or enter new layout name"
+msgstr "Introduce un nuevo nombre de layout"
 
 msgid "Changed Locale Language Filter"
 msgstr "Cambiar Filtro de Idioma"
@@ -4711,6 +4731,20 @@ msgstr "Exportar Con Depuración"
 msgid "Disable FBX & Restart"
 msgstr "Desactivar FBX y Reiniciar"
 
+msgid ""
+"Canceling this dialog will disable the FBX importer.\n"
+"You can re-enable it in the Project Settings under Filesystem > Import > FBX "
+"> Enabled.\n"
+"\n"
+"The editor will restart as importers are registered when the editor starts."
+msgstr ""
+"Cancelar este cuadro de diálogo desactivará el importador FBX.\n"
+"Puede volver a habilitarlo en Configuración del proyecto en Sistema de "
+"archivos > Importar > FBX > Habilitado.\n"
+"\n"
+"El editor se reiniciará a medida que los importadores estén registrados "
+"cuando se inicie el editor."
+
 msgid "Path to FBX2glTF executable is empty."
 msgstr "La ruta al ejecutable FBX2glTF está vacía."
 
@@ -5311,8 +5345,17 @@ msgstr ""
 "Select the folder in which the mesh resources will be saved when importing "
 "them"
 
+msgid "Warning: File exists"
+msgstr "Advertencia: El archivo ya existe"
+
 msgid "Existing file with the same name will be replaced."
 msgstr "Se sustituirá el archivo existente con el mismo nombre."
+
+msgid "Will create new file"
+msgstr "Creará un nuevo archivo"
+
+msgid "Already External"
+msgstr "Ya es externo"
 
 msgid ""
 "This material already references an external file, no action will be taken.\n"
@@ -5321,6 +5364,9 @@ msgstr ""
 "Este material ya hace referencia a un fichero externo, no se realizará "
 "ninguna acción.\n"
 "Desactiva la propiedad externa para que vuelva a ser extraído."
+
+msgid "No import ID"
+msgstr "Sin ID de importación"
 
 msgid ""
 "Material has no name nor any other way to identify on re-import.\n"
@@ -5336,6 +5382,9 @@ msgstr "Extraer Materiales a Archivos de Recursos"
 msgid "Extract"
 msgstr "Extraer"
 
+msgid "Already Saving"
+msgstr "Ya se está Guardando"
+
 msgid ""
 "This mesh already saves to an external resource, no action will be taken."
 msgstr ""
@@ -5345,6 +5394,9 @@ msgstr ""
 msgid "Existing file with the same name will be replaced on import."
 msgstr ""
 "El archivo existente con el mismo nombre será sustituido en la importación."
+
+msgid "Will save to new file"
+msgstr "Se guardará en un nuevo archivo"
 
 msgid ""
 "Mesh has no name nor any other way to identify on re-import.\n"
@@ -5467,6 +5519,9 @@ msgid ""
 msgstr ""
 "Selecciona un archivo de recursos en el sistema de archivos o en el "
 "inspector para ajustar la configuración de importación."
+
+msgid "No Event Configured"
+msgstr "Ningún evento configurado"
 
 msgid "Keyboard Keys"
 msgstr "Teclas del Teclado"
@@ -7087,10 +7142,10 @@ msgid "Align with Expand"
 msgstr "Alinear y Expandir"
 
 msgid "Change Anchors, Offsets, Grow Direction"
-msgstr "Cambiar Anclas, Desplazamientos y Dirección de Crecimiento"
+msgstr "Cambiar Anclajes, Desplazamientos y Dirección de Crecimiento"
 
 msgid "Change Anchors, Offsets (Keep Ratio)"
-msgstr "Cambiar Anclas, Offsets (Mantener Ratio)"
+msgstr "Cambiar Anclajes, Offsets (Mantener Ratio)"
 
 msgid "Change Vertical Size Flags"
 msgstr "Cambiar Indicadores de Tamaño Vertical"
@@ -7107,12 +7162,20 @@ msgstr "Configuración preestablecida de anclaje"
 msgid "Set to Current Ratio"
 msgstr "Establecer a Proporción Actual"
 
+msgid "Adjust anchors and offsets to match the current rect size."
+msgstr ""
+"Ajuste anclajes y compensaciones para que coincidan con el tamaño del "
+"rectángulo actual."
+
 msgid ""
 "When active, moving Control nodes changes their anchors instead of their "
 "offsets."
 msgstr ""
 "Cuando está activo, mover nodos de Control cambia sus anclas en lugar de sus "
 "desplazamientos."
+
+msgid "Sizing settings for children of a Container node."
+msgstr "Ajustes de tamaño para los hijos de un nodo Contenedor."
 
 msgid "Horizontal alignment"
 msgstr "Alineación Horizontal"
@@ -7304,6 +7367,17 @@ msgstr ""
 msgid "Keep Debug Server Open"
 msgstr "Mantener Abierto el Servidor de Depuración"
 
+msgid ""
+"When this option is enabled, the editor debug server will stay open and "
+"listen for new sessions started outside of the editor itself."
+msgstr ""
+"Cuando esta opción está habilitada, el servidor de depuración del editor "
+"permanecerá abierto y escuchará las nuevas sesiones iniciadas fuera del "
+"propio editor."
+
+msgid "Run Multiple Instances"
+msgstr "Ejecutar múltiples instancias"
+
 msgid "Run %d Instance"
 msgid_plural "Run %d Instances"
 msgstr[0] "Ejecutar %d Instancia"
@@ -7325,11 +7399,17 @@ msgstr "Coordenadas de Variación (%d)"
 msgid "No supported features"
 msgstr "Características no soportadas"
 
+msgid "Features (%d of %d set)"
+msgstr "Funciones (%d de conjunto %d)"
+
 msgid "Add Feature"
 msgstr "Añadir Característica"
 
 msgid " - Variation"
 msgstr " - Variación"
+
+msgid "Unable to preview font"
+msgstr "No se puede obtener una vista previa de la fuente"
 
 msgid "Convert to CPUParticles2D"
 msgstr "Convertir a CPUParticles2D"
@@ -7394,6 +7474,9 @@ msgstr "Se requiere un material procesador de tipo 'ParticleProcessMaterial'."
 msgid "Convert to CPUParticles3D"
 msgstr "Convertir a CPUParticles3D"
 
+msgid "Generating Visibility AABB (Waiting for Particle Simulation)"
+msgstr "Generando Visibilidad AABB (Esperando Simulación de Partículas)"
+
 msgid "Generate Visibility AABB"
 msgstr "Generar AABB de visibilidad"
 
@@ -7412,14 +7495,26 @@ msgstr "Moderado"
 msgid "High"
 msgstr "Alto"
 
+msgid "Subdivisions: %s"
+msgstr "Subdivisiones: %s"
+
 msgid "Cell size: %s"
 msgstr "Tamaño de la celda: %s"
+
+msgid "Video RAM size: %s MB (%s)"
+msgstr "Tamaño de RAM de video: %s MB (%s)"
 
 msgid "Bake SDF"
 msgstr "Bakear SDF"
 
+msgid "Select path for SDF Texture"
+msgstr "Seleccione la ruta para la textura SDF"
+
 msgid "Gradient Edited"
 msgstr "Degradado Editado"
+
+msgid "Reverse/mirror gradient."
+msgstr "Gradiente inverso/espejo."
 
 msgid "Swap GradientTexture2D Fill Points"
 msgstr "Intercambiar Puntos de Relleno de GradientTexture2D"
@@ -7458,6 +7553,9 @@ msgstr ""
 
 msgid "No editor scene root found."
 msgstr "No se encontró la raíz de la escena del editor."
+
+msgid "Lightmap data is not local to the scene."
+msgstr "Datos del mapa de luz no son locales a la escena."
 
 msgid "Bake Lightmaps"
 msgstr "Bakear Lightmaps"
@@ -7523,6 +7621,13 @@ msgid ""
 msgstr ""
 "La malla no puede desplegar los UVs porque no pertenece a la escena editada. "
 "Primero haz que sea única."
+
+msgid ""
+"Mesh cannot unwrap UVs because it belongs to another resource which was "
+"imported from another file type. Make it unique first."
+msgstr ""
+"La malla no puede desenvolver los UV porque pertenece a otro recurso que se "
+"importó de otro tipo de archivo. Hazlo único primero."
 
 msgid ""
 "Mesh cannot unwrap UVs because it was imported from another file type. Make "
@@ -8103,8 +8208,14 @@ msgstr "Modificador de Velocidad de Vista Libre"
 msgid "Freelook Slow Modifier"
 msgstr "Modificador de Velocidad de Vista Libre"
 
+msgid "Lock Transformation to XY plane"
+msgstr "Bloquear Transformación al plano XY"
+
 msgid "Cancel Transformation"
 msgstr "Cancelar Transformación"
+
+msgid "Begin Translate Transformation"
+msgstr "Comenzar la transformación de traducción"
 
 msgid "Begin Rotate Transformation"
 msgstr "Iniciar Transformación de Rotación"
@@ -8126,6 +8237,14 @@ msgstr ""
 
 msgid "Overriding material..."
 msgstr "Material de anulación..."
+
+msgid ""
+"Drag and drop to override the material of any geometry node.\n"
+"Hold Ctrl when dropping to override a specific surface."
+msgstr ""
+"Arrastre y suelte para anular el material de cualquier nodo de geometría.\n"
+"Mantenga presionada la tecla Ctrl al soltar para anular una superficie "
+"específica."
 
 msgid "XForm Dialog"
 msgstr "Diálogo XForm"
@@ -8155,6 +8274,15 @@ msgstr "Añadir Vista Previa del Sol a la Escena"
 
 msgid "Add Preview Environment to Scene"
 msgstr "Añadir Entorno de Vista Previa a la Escena"
+
+msgid ""
+"Scene contains\n"
+"DirectionalLight3D.\n"
+"Preview disabled."
+msgstr ""
+"La escena contiene\n"
+"DirectionalLight3D.\n"
+"Vista previa deshabilitada."
 
 msgid "Preview disabled."
 msgstr "Vista previa desactivada."
@@ -12783,8 +12911,86 @@ msgstr ""
 msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr "El diccionario de instancias no es correcto (subclases erróneas)"
 
+msgid "Value of type '%s' can't provide a length."
+msgstr "El valor del tipo '%s' no puede proporcionar una longitud."
+
+msgid ""
+"Invalid type argument for is_instance_of(), use TYPE_* constants for built-"
+"in types."
+msgstr ""
+"Tipo de argumento inválido para is_instance_of(), usa constantes TYPE_* para "
+"tipos integrados."
+
+msgid "Type argument is a previously freed instance."
+msgstr "El argumento de tipo es una instancia previamente liberada."
+
+msgid ""
+"Invalid type argument for is_instance_of(), should be a TYPE_* constant, a "
+"class or a script."
+msgstr ""
+"Argumento de tipo inválido para is_instance_of(), debe ser una constante "
+"TYPE_*, una clase o un script."
+
+msgid "Value argument is a previously freed instance."
+msgstr "El argumento de valor es una instancia previamente liberada."
+
+msgid "Export Scene to glTF 2.0 File"
+msgstr "Exportar escena a archivo glTF 2.0"
+
+msgid "glTF 2.0 Scene..."
+msgstr "Escena glTF 2.0..."
+
+msgid "Path does not contain a Blender installation."
+msgstr "La ruta no contiene una instalación de Blender."
+
+msgid "Can't execute Blender binary."
+msgstr "No se puede ejecutar el binario de Blender."
+
+msgid "Unexpected --version output from Blender binary at: %s"
+msgstr "Salida inesperada de --version del binario de Blender en: %s"
+
+msgid "Path supplied lacks a Blender binary."
+msgstr "La ruta suministrada no tiene un binario de Blender."
+
+msgid "This Blender installation is too old for this importer (not 3.0+)."
+msgstr ""
+"Esta instalación de Blender es demasiado antigua para este importador (no es "
+"3.0+)."
+
+msgid "This Blender installation is too new for this importer (not 3.x)."
+msgstr ""
+"Esta instalación de Blender es demasiado nueva para este importador (no es 3."
+"x)."
+
+msgid "Path to Blender installation is valid (Autodetected)."
+msgstr "La ruta de instalación de Blender es válida (Autodetectada)."
+
 msgid "Path to Blender installation is valid."
 msgstr "La ruta de instalación de Blender es válida."
+
+msgid "Configure Blender Importer"
+msgstr "Configurar el Importador de Blender"
+
+msgid ""
+"Blender 3.0+ is required to import '.blend' files.\n"
+"Please provide a valid path to a Blender installation:"
+msgstr ""
+"Se requiere Blender 3.0+ para importar archivos '.blend'.\n"
+"Proporciona una ruta válida a una instalación de Blender:"
+
+msgid "Disable '.blend' Import"
+msgstr "Desactivar Importación '.blend'"
+
+msgid ""
+"Disables Blender '.blend' files import for this project. Can be re-enabled "
+"in Project Settings."
+msgstr ""
+"Desactiva la importación de archivos '.blend' de Blender para este proyecto. "
+"Se puede volver a activar en la Configuración del Proyecto."
+
+msgid "Disabling '.blend' file import requires restarting the editor."
+msgstr ""
+"Desactivar la importación de archivos '.blend' requiere reiniciar el editor."
 
 msgid "Next Plane"
 msgstr "Siguiente Plano"
@@ -12870,11 +13076,41 @@ msgstr "Configuración de GridMap"
 msgid "Pick Distance:"
 msgstr "Seleccionar Distancia:"
 
+msgid "Filter Meshes"
+msgstr "Filtrar Mallas"
+
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr "Añade un recurso MeshLibrary a este GridMap para usar sus mallas."
 
 msgid "Begin Bake"
 msgstr "Empezar a Bakear"
+
+msgid "Preparing shaders"
+msgstr "Preparando shaders"
+
+msgid "Un-occluding geometry"
+msgstr "Desocultando geometría"
+
+msgid "Plot direct lighting"
+msgstr "Trazar iluminación directa"
+
+msgid "Integrate indirect lighting"
+msgstr "Integrar iluminación indirecta"
+
+msgid "Bounce %d/%d: Integrate indirect lighting %d%%"
+msgstr "Rebote %d/%d: Integrando iluminación indirecta %d%%"
+
+msgid "Baking lightprobes"
+msgstr "Bakear lightprobes"
+
+msgid "Integrating light probes %d%%"
+msgstr "Integrando sondas de luz %d%%"
+
+msgid "Denoising"
+msgstr "Eliminación de ruido"
+
+msgid "Retrieving textures"
+msgstr "Recuperar texturas"
 
 msgid "Class name can't be a reserved keyword"
 msgstr "El nombre de la clase no puede ser una palabra reservada"
@@ -12893,14 +13129,28 @@ msgstr ""
 msgid "Failed to load .NET runtime"
 msgstr "Error al cargar el tiempo de ejecución .NET"
 
+msgid "%d (%s)"
+msgstr "%d (%s)"
+
 msgid "%s/s"
 msgstr "%s/s"
+
+msgctxt "Network"
+msgid "Down"
+msgstr "Abajo"
+
+msgctxt "Network"
+msgid "Up"
+msgstr "Arriba"
 
 msgid "Incoming RPC"
 msgstr "RPC Entrante"
 
 msgid "Outgoing RPC"
 msgstr "RPC Saliente"
+
+msgid "Synchronizer"
+msgstr "Sincronizador"
 
 msgid "Config"
 msgstr "Configuración"
@@ -12914,12 +13164,21 @@ msgstr "Tamaño"
 msgid "Network Profiler"
 msgstr "Profiler de Red"
 
+msgid "Replication"
+msgstr "Replicación"
+
+msgid "Select a replicator node in order to pick a property to add to it."
+msgstr "Selecciona un nodo replicante para elegir una propiedad que añadirle."
+
 msgid "Not possible to add a new property to synchronize without a root."
 msgstr ""
 "No es posible añadir una nueva propiedad para sincronizar sin una raíz."
 
 msgid "Delete Property?"
 msgstr "¿Eliminar Propiedad?"
+
+msgid "Remove Property"
+msgstr "Eliminar Propiedad"
 
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
@@ -13845,6 +14104,9 @@ msgid ""
 msgstr ""
 "No hay nada visible porque no se han asignado mallas para los pases de "
 "dibujo."
+
+msgid "Finding meshes, lights and probes"
+msgstr "Encontrar mallas, luces y sondas"
 
 msgid "Creating probes"
 msgstr "Crear sondas"

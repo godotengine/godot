@@ -30,11 +30,7 @@ String _debug_aabb_to_string(const BVHABB_CLASS &aabb) const {
 void _debug_recursive_print_tree_node(uint32_t p_node_id, int depth = 0) const {
 	const TNode &tnode = _nodes[p_node_id];
 
-	String sz = "";
-	for (int n = 0; n < depth; n++) {
-		sz += "\t";
-	}
-	sz += itos(p_node_id);
+	String sz = String("\t").repeat(depth) + itos(p_node_id);
 
 	if (tnode.is_leaf()) {
 		sz += " L";

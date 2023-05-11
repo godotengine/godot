@@ -77,6 +77,13 @@
 				Returns tab title language code.
 			</description>
 		</method>
+		<method name="get_tab_metadata" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Returns the metadata value set to the tab at index [param tab_idx] using [method set_tab_metadata]. If no metadata was previously set, returns [code]null[/code] by default.
+			</description>
+		</method>
 		<method name="get_tab_offset" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -181,6 +188,14 @@
 				Sets language code of tab title used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 			</description>
 		</method>
+		<method name="set_tab_metadata">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="metadata" type="Variant" />
+			<description>
+				Sets the metadata value for the tab at index [param tab_idx], which can be retrieved later using [method get_tab_metadata].
+			</description>
+		</method>
 		<method name="set_tab_text_direction">
 			<return type="void" />
 			<param index="0" name="tab_idx" type="int" />
@@ -212,7 +227,7 @@
 			Sets the maximum width which all tabs should be limited to. Unlimited if set to [code]0[/code].
 		</member>
 		<member name="scroll_to_selected" type="bool" setter="set_scroll_to_selected" getter="get_scroll_to_selected" default="true">
-			If [code]true[/code], the tab offset will be changed to keep the the currently selected tab visible.
+			If [code]true[/code], the tab offset will be changed to keep the currently selected tab visible.
 		</member>
 		<member name="scrolling_enabled" type="bool" setter="set_scrolling_enabled" getter="get_scrolling_enabled" default="true">
 			if [code]true[/code], the mouse's scroll wheel can be used to navigate the scroll view.
@@ -326,6 +341,9 @@
 		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
 			Font color of disabled tabs.
 		</theme_item>
+		<theme_item name="font_hovered_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
+			Font color of the currently hovered tab. Does not apply to the selected tab.
+		</theme_item>
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The tint of text outline of the tab name.
 		</theme_item>
@@ -377,6 +395,9 @@
 		</theme_item>
 		<theme_item name="tab_disabled" data_type="style" type="StyleBox">
 			The style of disabled tabs.
+		</theme_item>
+		<theme_item name="tab_hovered" data_type="style" type="StyleBox">
+			The style of the currently hovered tab. Does not apply to the selected tab.
 		</theme_item>
 		<theme_item name="tab_selected" data_type="style" type="StyleBox">
 			The style of the currently selected tab.

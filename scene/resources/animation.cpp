@@ -1088,7 +1088,7 @@ Error Animation::position_track_get_key(int p_track, int p_key, Vector3 *r_posit
 	return OK;
 }
 
-Error Animation::position_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation) const {
+Error Animation::try_position_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), ERR_INVALID_PARAMETER);
 	Track *t = tracks[p_track];
 	ERR_FAIL_COND_V(t->type != TYPE_POSITION_3D, ERR_INVALID_PARAMETER);
@@ -1112,6 +1112,14 @@ Error Animation::position_track_interpolate(int p_track, double p_time, Vector3 
 	}
 	*r_interpolation = tk;
 	return OK;
+}
+
+Vector3 Animation::position_track_interpolate(int p_track, double p_time) const {
+	Vector3 ret = Vector3(0, 0, 0);
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), ret);
+	bool err = try_position_track_interpolate(p_track, p_time, &ret);
+	ERR_FAIL_COND_V_MSG(err, ret, "3D Position Track: '" + tracks[p_track]->path + "' is unavailable.");
+	return ret;
 }
 
 ////
@@ -1160,7 +1168,7 @@ Error Animation::rotation_track_get_key(int p_track, int p_key, Quaternion *r_ro
 	return OK;
 }
 
-Error Animation::rotation_track_interpolate(int p_track, double p_time, Quaternion *r_interpolation) const {
+Error Animation::try_rotation_track_interpolate(int p_track, double p_time, Quaternion *r_interpolation) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), ERR_INVALID_PARAMETER);
 	Track *t = tracks[p_track];
 	ERR_FAIL_COND_V(t->type != TYPE_ROTATION_3D, ERR_INVALID_PARAMETER);
@@ -1184,6 +1192,14 @@ Error Animation::rotation_track_interpolate(int p_track, double p_time, Quaterni
 	}
 	*r_interpolation = tk;
 	return OK;
+}
+
+Quaternion Animation::rotation_track_interpolate(int p_track, double p_time) const {
+	Quaternion ret = Quaternion(0, 0, 0, 1);
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), ret);
+	bool err = try_rotation_track_interpolate(p_track, p_time, &ret);
+	ERR_FAIL_COND_V_MSG(err, ret, "3D Rotation Track: '" + tracks[p_track]->path + "' is unavailable.");
+	return ret;
 }
 
 ////
@@ -1232,7 +1248,7 @@ Error Animation::scale_track_get_key(int p_track, int p_key, Vector3 *r_scale) c
 	return OK;
 }
 
-Error Animation::scale_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation) const {
+Error Animation::try_scale_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), ERR_INVALID_PARAMETER);
 	Track *t = tracks[p_track];
 	ERR_FAIL_COND_V(t->type != TYPE_SCALE_3D, ERR_INVALID_PARAMETER);
@@ -1257,6 +1273,16 @@ Error Animation::scale_track_interpolate(int p_track, double p_time, Vector3 *r_
 	*r_interpolation = tk;
 	return OK;
 }
+
+Vector3 Animation::scale_track_interpolate(int p_track, double p_time) const {
+	Vector3 ret = Vector3(1, 1, 1);
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), ret);
+	bool err = try_scale_track_interpolate(p_track, p_time, &ret);
+	ERR_FAIL_COND_V_MSG(err, ret, "3D Scale Track: '" + tracks[p_track]->path + "' is unavailable.");
+	return ret;
+}
+
+////
 
 int Animation::blend_shape_track_insert_key(int p_track, double p_time, float p_blend_shape) {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
@@ -1302,7 +1328,7 @@ Error Animation::blend_shape_track_get_key(int p_track, int p_key, float *r_blen
 	return OK;
 }
 
-Error Animation::blend_shape_track_interpolate(int p_track, double p_time, float *r_interpolation) const {
+Error Animation::try_blend_shape_track_interpolate(int p_track, double p_time, float *r_interpolation) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), ERR_INVALID_PARAMETER);
 	Track *t = tracks[p_track];
 	ERR_FAIL_COND_V(t->type != TYPE_BLEND_SHAPE, ERR_INVALID_PARAMETER);
@@ -1327,6 +1353,16 @@ Error Animation::blend_shape_track_interpolate(int p_track, double p_time, float
 	*r_interpolation = tk;
 	return OK;
 }
+
+float Animation::blend_shape_track_interpolate(int p_track, double p_time) const {
+	float ret = 0;
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), ret);
+	bool err = try_blend_shape_track_interpolate(p_track, p_time, &ret);
+	ERR_FAIL_COND_V_MSG(err, ret, "Blend Shape Track: '" + tracks[p_track]->path + "' is unavailable.");
+	return ret;
+}
+
+////
 
 void Animation::track_remove_key_at_time(int p_track, double p_time) {
 	int idx = track_find_key(p_track, p_time, FIND_MODE_APPROX);
@@ -3796,6 +3832,11 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("scale_track_insert_key", "track_idx", "time", "scale"), &Animation::scale_track_insert_key);
 	ClassDB::bind_method(D_METHOD("blend_shape_track_insert_key", "track_idx", "time", "amount"), &Animation::blend_shape_track_insert_key);
 
+	ClassDB::bind_method(D_METHOD("position_track_interpolate", "track_idx", "time_sec"), &Animation::position_track_interpolate);
+	ClassDB::bind_method(D_METHOD("rotation_track_interpolate", "track_idx", "time_sec"), &Animation::rotation_track_interpolate);
+	ClassDB::bind_method(D_METHOD("scale_track_interpolate", "track_idx", "time_sec"), &Animation::scale_track_interpolate);
+	ClassDB::bind_method(D_METHOD("blend_shape_track_interpolate", "track_idx", "time_sec"), &Animation::blend_shape_track_interpolate);
+
 	ClassDB::bind_method(D_METHOD("track_insert_key", "track_idx", "time", "key", "transition"), &Animation::track_insert_key, DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("track_remove_key", "track_idx", "key_idx"), &Animation::track_remove_key);
 	ClassDB::bind_method(D_METHOD("track_remove_key_at_time", "track_idx", "time"), &Animation::track_remove_key_at_time);
@@ -4551,7 +4592,7 @@ Vector3i Animation::_compress_key(uint32_t p_track, const AABB &p_bounds, int32_
 			if (p_key >= 0) {
 				position_track_get_key(p_track, p_key, &pos);
 			} else {
-				position_track_interpolate(p_track, p_time, &pos);
+				try_position_track_interpolate(p_track, p_time, &pos);
 			}
 			pos = (pos - p_bounds.position) / p_bounds.size;
 			for (int j = 0; j < 3; j++) {
@@ -4563,7 +4604,7 @@ Vector3i Animation::_compress_key(uint32_t p_track, const AABB &p_bounds, int32_
 			if (p_key >= 0) {
 				rotation_track_get_key(p_track, p_key, &rot);
 			} else {
-				rotation_track_interpolate(p_track, p_time, &rot);
+				try_rotation_track_interpolate(p_track, p_time, &rot);
 			}
 			Vector3 axis = rot.get_axis();
 			float angle = rot.get_angle();
@@ -4580,7 +4621,7 @@ Vector3i Animation::_compress_key(uint32_t p_track, const AABB &p_bounds, int32_
 			if (p_key >= 0) {
 				scale_track_get_key(p_track, p_key, &scale);
 			} else {
-				scale_track_interpolate(p_track, p_time, &scale);
+				try_scale_track_interpolate(p_track, p_time, &scale);
 			}
 			scale = (scale - p_bounds.position) / p_bounds.size;
 			for (int j = 0; j < 3; j++) {
@@ -4592,7 +4633,7 @@ Vector3i Animation::_compress_key(uint32_t p_track, const AABB &p_bounds, int32_
 			if (p_key >= 0) {
 				blend_shape_track_get_key(p_track, p_key, &blend);
 			} else {
-				blend_shape_track_interpolate(p_track, p_time, &blend);
+				try_blend_shape_track_interpolate(p_track, p_time, &blend);
 			}
 
 			blend = (blend / float(Compression::BLEND_SHAPE_RANGE)) * 0.5 + 0.5;

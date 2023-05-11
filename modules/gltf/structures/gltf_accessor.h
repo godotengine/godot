@@ -39,7 +39,7 @@ struct GLTFAccessor : public Resource {
 	friend class GLTFDocument;
 
 private:
-	GLTFBufferViewIndex buffer_view = 0;
+	GLTFBufferViewIndex buffer_view = -1;
 	int byte_offset = 0;
 	int component_type = 0;
 	bool normalized = false;

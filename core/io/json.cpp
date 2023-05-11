@@ -47,13 +47,7 @@ const char *JSON::tk_name[TK_MAX] = {
 };
 
 String JSON::_make_indent(const String &p_indent, int p_size) {
-	String indent_text = "";
-	if (!p_indent.is_empty()) {
-		for (int i = 0; i < p_size; i++) {
-			indent_text += p_indent;
-		}
-	}
-	return indent_text;
+	return p_indent.repeat(p_size);
 }
 
 String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, HashSet<const void *> &p_markers, bool p_full_precision) {

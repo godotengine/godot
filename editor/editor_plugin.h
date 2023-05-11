@@ -38,101 +38,20 @@
 class Node3D;
 class Button;
 class PopupMenu;
-class EditorCommandPalette;
 class EditorDebuggerPlugin;
 class EditorExport;
 class EditorExportPlugin;
-class EditorFileSystem;
 class EditorImportPlugin;
-class EditorInspector;
 class EditorInspectorPlugin;
+class EditorInterface;
 class EditorNode3DGizmoPlugin;
-class EditorPaths;
 class EditorResourceConversionPlugin;
-class EditorResourcePreview;
 class EditorSceneFormatImporter;
 class EditorScenePostImportPlugin;
-class EditorSelection;
-class EditorSettings;
 class EditorToolAddons;
 class EditorTranslationParserPlugin;
 class EditorUndoRedoManager;
-class FileSystemDock;
 class ScriptCreateDialog;
-class ScriptEditor;
-class VBoxContainer;
-
-class EditorInterface : public Node {
-	GDCLASS(EditorInterface, Node);
-
-protected:
-	static void _bind_methods();
-	static EditorInterface *singleton;
-
-	TypedArray<Texture2D> _make_mesh_previews(const TypedArray<Mesh> &p_meshes, int p_preview_size);
-
-public:
-	static EditorInterface *get_singleton() { return singleton; }
-
-	VBoxContainer *get_editor_main_screen();
-	void edit_resource(const Ref<Resource> &p_resource);
-	void edit_node(Node *p_node);
-	void edit_script(const Ref<Script> &p_script, int p_line = -1, int p_col = 0, bool p_grab_focus = true);
-	void open_scene_from_path(const String &scene_path);
-	void reload_scene_from_path(const String &scene_path);
-
-	void play_main_scene();
-	void play_current_scene();
-	void play_custom_scene(const String &scene_path);
-	void stop_playing_scene();
-	bool is_playing_scene() const;
-	String get_playing_scene() const;
-
-	Node *get_edited_scene_root();
-	PackedStringArray get_open_scenes() const;
-	ScriptEditor *get_script_editor();
-
-	EditorCommandPalette *get_command_palette() const;
-
-	void select_file(const String &p_file);
-	Vector<String> get_selected_paths() const;
-	String get_current_path() const;
-	String get_current_directory() const;
-
-	void inspect_object(Object *p_obj, const String &p_for_property = String(), bool p_inspector_only = false);
-
-	EditorSelection *get_selection();
-	//EditorImportExport *get_import_export();
-	Ref<EditorSettings> get_editor_settings();
-	EditorPaths *get_editor_paths();
-	EditorResourcePreview *get_resource_previewer();
-	EditorFileSystem *get_resource_file_system();
-
-	FileSystemDock *get_file_system_dock();
-
-	Control *get_base_control();
-	float get_editor_scale() const;
-
-	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
-	bool is_plugin_enabled(const String &p_plugin) const;
-
-	void set_movie_maker_enabled(bool p_enabled);
-	bool is_movie_maker_enabled() const;
-
-	EditorInspector *get_inspector() const;
-
-	Error save_scene();
-	void save_scene_as(const String &p_scene, bool p_with_preview = true);
-	void restart_editor(bool p_save = true);
-
-	Vector<Ref<Texture2D>> make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform3D> *p_transforms, int p_preview_size);
-
-	void set_main_screen_editor(const String &p_name);
-	void set_distraction_free_mode(bool p_enter);
-	bool is_distraction_free_mode_enabled() const;
-
-	EditorInterface();
-};
 
 class EditorPlugin : public Node {
 	GDCLASS(EditorPlugin, Node);

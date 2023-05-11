@@ -31,14 +31,13 @@
 #ifndef EDITOR_SETTINGS_H
 #define EDITOR_SETTINGS_H
 
+#include "core/input/shortcut.h"
 #include "core/io/config_file.h"
 #include "core/io/resource.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/rb_set.h"
 
 class EditorPlugin;
-class InputEvent;
-class Shortcut;
 
 class EditorSettings : public Resource {
 	GDCLASS(EditorSettings, Resource);

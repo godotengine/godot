@@ -50,7 +50,7 @@ void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &
 	r_features->push_back(p_preset->get("binary_format/architecture"));
 }
 
-void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) {
+void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) const {
 	String ext_filter = (get_os_name() == "Windows") ? "*.exe" : "";
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, ext_filter), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, ext_filter), ""));

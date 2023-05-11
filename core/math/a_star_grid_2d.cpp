@@ -32,6 +32,8 @@
 
 #include "core/variant/typed_array.h"
 
+#define GET_POINT_UNCHECKED(m_id) points[m_id.y - region.position.y][m_id.x - region.position.x]
+
 static real_t heuristic_euclidian(const Vector2i &p_from, const Vector2i &p_to) {
 	real_t dx = (real_t)ABS(p_to.x - p_from.x);
 	real_t dy = (real_t)ABS(p_to.y - p_from.y);
@@ -59,16 +61,29 @@ static real_t heuristic_chebyshev(const Vector2i &p_from, const Vector2i &p_to) 
 
 static real_t (*heuristics[AStarGrid2D::HEURISTIC_MAX])(const Vector2i &, const Vector2i &) = { heuristic_euclidian, heuristic_manhattan, heuristic_octile, heuristic_chebyshev };
 
+void AStarGrid2D::set_region(const Rect2i &p_region) {
+	ERR_FAIL_COND(p_region.size.x < 0 || p_region.size.y < 0);
+	if (p_region != region) {
+		region = p_region;
+		dirty = true;
+	}
+}
+
+Rect2i AStarGrid2D::get_region() const {
+	return region;
+}
+
 void AStarGrid2D::set_size(const Size2i &p_size) {
+	WARN_DEPRECATED_MSG(R"(The "size" property is deprecated, use "region" instead.)");
 	ERR_FAIL_COND(p_size.x < 0 || p_size.y < 0);
-	if (p_size != size) {
-		size = p_size;
+	if (p_size != region.size) {
+		region.size = p_size;
 		dirty = true;
 	}
 }
 
 Size2i AStarGrid2D::get_size() const {
-	return size;
+	return region.size;
 }
 
 void AStarGrid2D::set_offset(const Vector2 &p_offset) {
@@ -95,9 +110,11 @@ Size2 AStarGrid2D::get_cell_size() const {
 
 void AStarGrid2D::update() {
 	points.clear();
-	for (int64_t y = 0; y < size.y; y++) {
+	const int64_t end_x = region.position.x + region.size.width;
+	const int64_t end_y = region.position.y + region.size.height;
+	for (int64_t y = region.position.y; y < end_y; y++) {
 		LocalVector<Point> line;
-		for (int64_t x = 0; x < size.x; x++) {
+		for (int64_t x = region.position.x; x < end_x; x++) {
 			line.push_back(Point(Vector2i(x, y), offset + Vector2(x, y) * cell_size));
 		}
 		points.push_back(line);
@@ -106,11 +123,11 @@ void AStarGrid2D::update() {
 }
 
 bool AStarGrid2D::is_in_bounds(int p_x, int p_y) const {
-	return p_x >= 0 && p_x < size.width && p_y >= 0 && p_y < size.height;
+	return region.has_point(Vector2i(p_x, p_y));
 }
 
 bool AStarGrid2D::is_in_boundsv(const Vector2i &p_id) const {
-	return p_id.x >= 0 && p_id.x < size.width && p_id.y >= 0 && p_id.y < size.height;
+	return region.has_point(p_id);
 }
 
 bool AStarGrid2D::is_dirty() const {
@@ -154,27 +171,27 @@ AStarGrid2D::Heuristic AStarGrid2D::get_default_estimate_heuristic() const {
 
 void AStarGrid2D::set_point_solid(const Vector2i &p_id, bool p_solid) {
 	ERR_FAIL_COND_MSG(dirty, "Grid is not initialized. Call the update method.");
-	ERR_FAIL_COND_MSG(!is_in_boundsv(p_id), vformat("Can't set if point is disabled. Point out of bounds (%s/%s, %s/%s).", p_id.x, size.width, p_id.y, size.height));
-	points[p_id.y][p_id.x].solid = p_solid;
+	ERR_FAIL_COND_MSG(!is_in_boundsv(p_id), vformat("Can't set if point is disabled. Point %s out of bounds %s.", p_id, region));
+	GET_POINT_UNCHECKED(p_id).solid = p_solid;
 }
 
 bool AStarGrid2D::is_point_solid(const Vector2i &p_id) const {
 	ERR_FAIL_COND_V_MSG(dirty, false, "Grid is not initialized. Call the update method.");
-	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_id), false, vformat("Can't get if point is disabled. Point out of bounds (%s/%s, %s/%s).", p_id.x, size.width, p_id.y, size.height));
-	return points[p_id.y][p_id.x].solid;
+	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_id), false, vformat("Can't get if point is disabled. Point %s out of bounds %s.", p_id, region));
+	return GET_POINT_UNCHECKED(p_id).solid;
 }
 
 void AStarGrid2D::set_point_weight_scale(const Vector2i &p_id, real_t p_weight_scale) {
 	ERR_FAIL_COND_MSG(dirty, "Grid is not initialized. Call the update method.");
-	ERR_FAIL_COND_MSG(!is_in_boundsv(p_id), vformat("Can't set point's weight scale. Point out of bounds (%s/%s, %s/%s).", p_id.x, size.width, p_id.y, size.height));
+	ERR_FAIL_COND_MSG(!is_in_boundsv(p_id), vformat("Can't set point's weight scale. Point %s out of bounds %s.", p_id, region));
 	ERR_FAIL_COND_MSG(p_weight_scale < 0.0, vformat("Can't set point's weight scale less than 0.0: %f.", p_weight_scale));
-	points[p_id.y][p_id.x].weight_scale = p_weight_scale;
+	GET_POINT_UNCHECKED(p_id).weight_scale = p_weight_scale;
 }
 
 real_t AStarGrid2D::get_point_weight_scale(const Vector2i &p_id) const {
 	ERR_FAIL_COND_V_MSG(dirty, 0, "Grid is not initialized. Call the update method.");
-	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_id), 0, vformat("Can't get point's weight scale. Point out of bounds (%s/%s, %s/%s).", p_id.x, size.width, p_id.y, size.height));
-	return points[p_id.y][p_id.x].weight_scale;
+	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_id), 0, vformat("Can't get point's weight scale. Point %s out of bounds %s.", p_id, region));
+	return GET_POINT_UNCHECKED(p_id).weight_scale;
 }
 
 AStarGrid2D::Point *AStarGrid2D::_jump(Point *p_from, Point *p_to) {
@@ -285,15 +302,15 @@ void AStarGrid2D::_get_nbors(Point *p_point, LocalVector<Point *> &r_nbors) {
 		bool has_left = false;
 		bool has_right = false;
 
-		if (p_point->id.x - 1 >= 0) {
+		if (p_point->id.x - 1 >= region.position.x) {
 			left = _get_point_unchecked(p_point->id.x - 1, p_point->id.y);
 			has_left = true;
 		}
-		if (p_point->id.x + 1 < size.width) {
+		if (p_point->id.x + 1 < region.position.x + region.size.width) {
 			right = _get_point_unchecked(p_point->id.x + 1, p_point->id.y);
 			has_right = true;
 		}
-		if (p_point->id.y - 1 >= 0) {
+		if (p_point->id.y - 1 >= region.position.y) {
 			top = _get_point_unchecked(p_point->id.x, p_point->id.y - 1);
 			if (has_left) {
 				top_left = _get_point_unchecked(p_point->id.x - 1, p_point->id.y - 1);
@@ -302,7 +319,7 @@ void AStarGrid2D::_get_nbors(Point *p_point, LocalVector<Point *> &r_nbors) {
 				top_right = _get_point_unchecked(p_point->id.x + 1, p_point->id.y - 1);
 			}
 		}
-		if (p_point->id.y + 1 < size.height) {
+		if (p_point->id.y + 1 < region.position.y + region.size.height) {
 			bottom = _get_point_unchecked(p_point->id.x, p_point->id.y + 1);
 			if (has_left) {
 				bottom_left = _get_point_unchecked(p_point->id.x - 1, p_point->id.y + 1);
@@ -461,19 +478,19 @@ real_t AStarGrid2D::_compute_cost(const Vector2i &p_from_id, const Vector2i &p_t
 
 void AStarGrid2D::clear() {
 	points.clear();
-	size = Vector2i();
+	region = Rect2i();
 }
 
 Vector2 AStarGrid2D::get_point_position(const Vector2i &p_id) const {
 	ERR_FAIL_COND_V_MSG(dirty, Vector2(), "Grid is not initialized. Call the update method.");
-	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_id), Vector2(), vformat("Can't get point's position. Point out of bounds (%s/%s, %s/%s).", p_id.x, size.width, p_id.y, size.height));
-	return points[p_id.y][p_id.x].pos;
+	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_id), Vector2(), vformat("Can't get point's position. Point %s out of bounds %s.", p_id, region));
+	return GET_POINT_UNCHECKED(p_id).pos;
 }
 
 Vector<Vector2> AStarGrid2D::get_point_path(const Vector2i &p_from_id, const Vector2i &p_to_id) {
 	ERR_FAIL_COND_V_MSG(dirty, Vector<Vector2>(), "Grid is not initialized. Call the update method.");
-	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_from_id), Vector<Vector2>(), vformat("Can't get id path. Point out of bounds (%s/%s, %s/%s)", p_from_id.x, size.width, p_from_id.y, size.height));
-	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_to_id), Vector<Vector2>(), vformat("Can't get id path. Point out of bounds (%s/%s, %s/%s)", p_to_id.x, size.width, p_to_id.y, size.height));
+	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_from_id), Vector<Vector2>(), vformat("Can't get id path. Point %s out of bounds %s.", p_from_id, region));
+	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_to_id), Vector<Vector2>(), vformat("Can't get id path. Point %s out of bounds %s.", p_to_id, region));
 
 	Point *a = _get_point(p_from_id.x, p_from_id.y);
 	Point *b = _get_point(p_to_id.x, p_to_id.y);
@@ -520,8 +537,8 @@ Vector<Vector2> AStarGrid2D::get_point_path(const Vector2i &p_from_id, const Vec
 
 TypedArray<Vector2i> AStarGrid2D::get_id_path(const Vector2i &p_from_id, const Vector2i &p_to_id) {
 	ERR_FAIL_COND_V_MSG(dirty, TypedArray<Vector2i>(), "Grid is not initialized. Call the update method.");
-	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_from_id), TypedArray<Vector2i>(), vformat("Can't get id path. Point out of bounds (%s/%s, %s/%s)", p_from_id.x, size.width, p_from_id.y, size.height));
-	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_to_id), TypedArray<Vector2i>(), vformat("Can't get id path. Point out of bounds (%s/%s, %s/%s)", p_to_id.x, size.width, p_to_id.y, size.height));
+	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_from_id), TypedArray<Vector2i>(), vformat("Can't get id path. Point %s out of bounds %s.", p_from_id, region));
+	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_to_id), TypedArray<Vector2i>(), vformat("Can't get id path. Point %s out of bounds %s.", p_to_id, region));
 
 	Point *a = _get_point(p_from_id.x, p_from_id.y);
 	Point *b = _get_point(p_to_id.x, p_to_id.y);
@@ -565,6 +582,8 @@ TypedArray<Vector2i> AStarGrid2D::get_id_path(const Vector2i &p_from_id, const V
 }
 
 void AStarGrid2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_region", "region"), &AStarGrid2D::set_region);
+	ClassDB::bind_method(D_METHOD("get_region"), &AStarGrid2D::get_region);
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &AStarGrid2D::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &AStarGrid2D::get_size);
 	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &AStarGrid2D::set_offset);
@@ -596,6 +615,7 @@ void AStarGrid2D::_bind_methods() {
 	GDVIRTUAL_BIND(_estimate_cost, "from_id", "to_id")
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
 
+	ADD_PROPERTY(PropertyInfo(Variant::RECT2I, "region"), "set_region", "get_region");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "cell_size"), "set_cell_size", "get_cell_size");
@@ -617,3 +637,5 @@ void AStarGrid2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES);
 	BIND_ENUM_CONSTANT(DIAGONAL_MODE_MAX);
 }
+
+#undef GET_POINT_UNCHECKED

@@ -122,7 +122,11 @@ Callable Callable::unbind(int p_argcount) const {
 }
 
 bool Callable::is_valid() const {
-	return get_object() && (is_custom() || get_object()->has_method(get_method()));
+	if (is_custom()) {
+		return get_custom()->is_valid();
+	} else {
+		return get_object() && get_object()->has_method(get_method());
+	}
 }
 
 Object *Callable::get_object() const {
@@ -371,6 +375,11 @@ Callable::~Callable() {
 			memdelete(custom);
 		}
 	}
+}
+
+bool CallableCustom::is_valid() const {
+	// Sensible default implementation so most custom callables don't need their own.
+	return ObjectDB::get_instance(get_object());
 }
 
 StringName CallableCustom::get_method() const {

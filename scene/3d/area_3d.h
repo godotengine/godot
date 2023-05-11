@@ -179,8 +179,8 @@ public:
 	void set_linear_damp(real_t p_linear_damp);
 	real_t get_linear_damp() const;
 
-	void set_priority(real_t p_priority);
-	real_t get_priority() const;
+	void set_priority(int p_priority);
+	int get_priority() const;
 
 	void set_wind_force_magnitude(real_t p_wind_force_magnitude);
 	real_t get_wind_force_magnitude() const;

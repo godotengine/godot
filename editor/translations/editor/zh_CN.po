@@ -95,7 +95,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2023-03-18 08:29+0000\n"
+"PO-Revision-Date: 2023-04-08 06:27+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -104,7 +104,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.16.2-dev\n"
+"X-Generator: Weblate 4.17-dev\n"
 
 msgid "Unset"
 msgstr "未设置"
@@ -2883,6 +2883,9 @@ msgstr "复制属性路径"
 msgid "Select existing layout:"
 msgstr "选择现存布局："
 
+msgid "Or enter new layout name"
+msgstr "或者输入新的布局名称"
+
 msgid "Changed Locale Language Filter"
 msgstr "修改区域设置语言筛选"
 
@@ -5112,8 +5115,17 @@ msgstr "选择导入时保存网格资源的文件夹"
 msgid "Select folder where animations will save on import"
 msgstr "选择导入时保存动画的文件夹"
 
+msgid "Warning: File exists"
+msgstr "警告：文件已存在"
+
 msgid "Existing file with the same name will be replaced."
 msgstr "已存在的同名文件将被替换。"
+
+msgid "Will create new file"
+msgstr "将创建新文件"
+
+msgid "Already External"
+msgstr "已为外部"
 
 msgid ""
 "This material already references an external file, no action will be taken.\n"
@@ -5121,6 +5133,9 @@ msgid ""
 msgstr ""
 "该材质已引用一个外部文件，故不采取任何操作。\n"
 "禁用该外部属性以再次提取它。"
+
+msgid "No import ID"
+msgstr "无导入 ID"
 
 msgid ""
 "Material has no name nor any other way to identify on re-import.\n"
@@ -5135,12 +5150,18 @@ msgstr "提取材质到资源文件"
 msgid "Extract"
 msgstr "提取"
 
+msgid "Already Saving"
+msgstr "已在保存"
+
 msgid ""
 "This mesh already saves to an external resource, no action will be taken."
 msgstr "这个网格已经保存到一个外部资源，故不采取任何行动。"
 
 msgid "Existing file with the same name will be replaced on import."
 msgstr "现有的同名文件将在导入时被替换。"
+
+msgid "Will save to new file"
+msgstr "将保存至新文件"
 
 msgid ""
 "Mesh has no name nor any other way to identify on re-import.\n"
@@ -5746,7 +5767,7 @@ msgstr "无法保存此动画库，因为它不属于编辑的场景。请先唯
 msgid ""
 "This animation library can't be saved because it was imported from another "
 "file. Make it unique first."
-msgstr "无法保存此动画库，因为它是从另一个文件导入的。请先唯一化它。"
+msgstr "无法保存此动画库，因为它是从其他文件导入的。请先将其唯一化。"
 
 msgid "Save Library"
 msgstr "保存库"
@@ -5762,7 +5783,7 @@ msgstr "无法保存此动画，因为它不属于已编辑的场景。请先唯
 msgid ""
 "This animation can't be saved because it was imported from another file. "
 "Make it unique first."
-msgstr "无法保存此动画，因为它是从另一个文件导入的。请先唯一化。"
+msgstr "无法保存此动画，因为它是从其他文件导入的。请先将其唯一化。"
 
 msgid "Save Animation"
 msgstr "保存动画"
@@ -9604,7 +9625,7 @@ msgstr "从可用类型列表中选择该变种的基础类型。"
 msgid ""
 "A type associated with a built-in class cannot be marked as a variation of "
 "another type."
-msgstr "与内置类关联的类型无法被标记为另一个类型的变种。"
+msgstr "与内置类关联的类型无法被标记为其他类型的变种。"
 
 msgid "Theme:"
 msgstr "主题："
@@ -11528,6 +11549,11 @@ msgstr "请选择 “project.godot” 或 “.zip” 文件。"
 
 msgid "This directory already contains a Godot project."
 msgstr "该目录已经包含 Godot 项目。"
+
+msgid ""
+"You cannot save a project in the selected path. Please make a new folder or "
+"choose a new path."
+msgstr "不能在选定的路径中保存项目。请新建文件夹或选择其他路径。"
 
 msgid ""
 "The selected path is not empty. Choosing an empty folder is highly "

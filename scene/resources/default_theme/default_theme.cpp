@@ -565,6 +565,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("grabber_disabled", "HSlider", icons["slider_grabber_disabled"]);
 	theme->set_icon("tick", "HSlider", icons["hslider_tick"]);
 
+	theme->set_constant("center_grabber", "HSlider", 0);
 	theme->set_constant("grabber_offset", "HSlider", 0);
 
 	// VSlider
@@ -578,6 +579,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("grabber_disabled", "VSlider", icons["slider_grabber_disabled"]);
 	theme->set_icon("tick", "VSlider", icons["vslider_tick"]);
 
+	theme->set_constant("center_grabber", "VSlider", 0);
 	theme->set_constant("grabber_offset", "VSlider", 0);
 
 	// SpinBox
@@ -803,9 +805,11 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("font_size", "ItemList", -1);
 
 	theme->set_color("font_color", "ItemList", control_font_lower_color);
+	theme->set_color("font_hovered_color", "ItemList", control_font_hover_color);
 	theme->set_color("font_selected_color", "ItemList", control_font_pressed_color);
 	theme->set_color("font_outline_color", "ItemList", Color(1, 1, 1));
 	theme->set_color("guide_color", "ItemList", Color(0.7, 0.7, 0.7, 0.25));
+	theme->set_stylebox("hovered", "ItemList", make_flat_stylebox(Color(1, 1, 1, 0.07)));
 	theme->set_stylebox("selected", "ItemList", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("selected_focus", "ItemList", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("cursor", "ItemList", focus);
@@ -825,8 +829,11 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	style_tab_unselected->set_border_color(style_popup_border_color);
 	Ref<StyleBoxFlat> style_tab_disabled = style_tab_unselected->duplicate();
 	style_tab_disabled->set_bg_color(style_disabled_color);
+	Ref<StyleBoxFlat> style_tab_hovered = style_tab_unselected->duplicate();
+	style_tab_hovered->set_bg_color(Color(0.1, 0.1, 0.1, 0.3));
 
 	theme->set_stylebox("tab_selected", "TabContainer", style_tab_selected);
+	theme->set_stylebox("tab_hovered", "TabContainer", style_tab_hovered);
 	theme->set_stylebox("tab_unselected", "TabContainer", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "TabContainer", style_tab_disabled);
 	theme->set_stylebox("panel", "TabContainer", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
@@ -844,6 +851,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("font_size", "TabContainer", -1);
 
 	theme->set_color("font_selected_color", "TabContainer", control_font_hover_color);
+	theme->set_color("font_hovered_color", "TabContainer", control_font_hover_color);
 	theme->set_color("font_unselected_color", "TabContainer", control_font_low_color);
 	theme->set_color("font_disabled_color", "TabContainer", control_font_disabled_color);
 	theme->set_color("font_outline_color", "TabContainer", Color(1, 1, 1));
@@ -857,6 +865,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// TabBar
 
 	theme->set_stylebox("tab_selected", "TabBar", style_tab_selected);
+	theme->set_stylebox("tab_hovered", "TabBar", style_tab_hovered);
 	theme->set_stylebox("tab_unselected", "TabBar", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "TabBar", style_tab_disabled);
 	theme->set_stylebox("button_pressed", "TabBar", button_pressed);
@@ -873,6 +882,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("font_size", "TabBar", -1);
 
 	theme->set_color("font_selected_color", "TabBar", control_font_hover_color);
+	theme->set_color("font_hovered_color", "TabBar", control_font_hover_color);
 	theme->set_color("font_unselected_color", "TabBar", control_font_low_color);
 	theme->set_color("font_disabled_color", "TabBar", control_font_disabled_color);
 	theme->set_color("font_outline_color", "TabBar", Color(1, 1, 1));
@@ -901,6 +911,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("sv_height", "ColorPicker", 256 * scale);
 	theme->set_constant("h_width", "ColorPicker", 30 * scale);
 	theme->set_constant("label_width", "ColorPicker", 10 * scale);
+	theme->set_constant("center_slider_grabbers", "ColorPicker", 1);
 
 	theme->set_icon("folded_arrow", "ColorPicker", icons["arrow_right"]);
 	theme->set_icon("expanded_arrow", "ColorPicker", icons["arrow_down"]);
@@ -1080,9 +1091,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("minimum_grab_thickness", "SplitContainer", 6 * scale);
 	theme->set_constant("minimum_grab_thickness", "HSplitContainer", 6 * scale);
 	theme->set_constant("minimum_grab_thickness", "VSplitContainer", 6 * scale);
-	theme->set_constant("autohide", "SplitContainer", 1 * scale);
-	theme->set_constant("autohide", "HSplitContainer", 1 * scale);
-	theme->set_constant("autohide", "VSplitContainer", 1 * scale);
+	theme->set_constant("autohide", "SplitContainer", 1);
+	theme->set_constant("autohide", "HSplitContainer", 1);
+	theme->set_constant("autohide", "VSplitContainer", 1);
 	theme->set_constant("h_separation", "FlowContainer", 4 * scale);
 	theme->set_constant("v_separation", "FlowContainer", 4 * scale);
 	theme->set_constant("h_separation", "HFlowContainer", 4 * scale);

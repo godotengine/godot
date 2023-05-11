@@ -119,6 +119,8 @@ public:
 class OS : public Object {
 	GDCLASS(OS, Object);
 
+	mutable HashMap<String, bool> feature_cache;
+
 protected:
 	static void _bind_methods();
 	static OS *singleton;
@@ -152,6 +154,7 @@ public:
 	int create_instance(const Vector<String> &p_arguments);
 	Error kill(int p_pid);
 	Error shell_open(String p_uri);
+	Error shell_show_in_file_manager(String p_path, bool p_open_folder = true);
 
 	bool is_process_running(int p_pid) const;
 	int get_process_id() const;
@@ -190,6 +193,7 @@ public:
 
 	uint64_t get_static_memory_usage() const;
 	uint64_t get_static_memory_peak_usage() const;
+	Dictionary get_memory_info() const;
 
 	void delay_usec(int p_usec) const;
 	void delay_msec(int p_msec) const;
@@ -322,7 +326,7 @@ public:
 
 	Vector<Vector3> segment_intersects_sphere(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_sphere_pos, real_t p_sphere_radius);
 	Vector<Vector3> segment_intersects_cylinder(const Vector3 &p_from, const Vector3 &p_to, float p_height, float p_radius);
-	Vector<Vector3> segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const Vector<Plane> &p_planes);
+	Vector<Vector3> segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const TypedArray<Plane> &p_planes);
 
 	Vector<Vector3> clip_polygon(const Vector<Vector3> &p_points, const Plane &p_plane);
 

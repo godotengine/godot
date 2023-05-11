@@ -68,6 +68,14 @@ bool FileAccessWindows::is_path_invalid(const String &p_path) {
 	return invalid_files.has(fname);
 }
 
+String FileAccessWindows::fix_path(const String &p_path) const {
+	String r_path = FileAccess::fix_path(p_path);
+	if (r_path.is_absolute_path() && !r_path.is_network_share_path() && r_path.length() > MAX_PATH) {
+		r_path = "\\\\?\\" + r_path.replace("/", "\\");
+	}
+	return r_path;
+}
+
 Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 	if (is_path_invalid(p_path)) {
 #ifdef DEBUG_ENABLED

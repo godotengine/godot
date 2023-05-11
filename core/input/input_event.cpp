@@ -484,7 +484,10 @@ Ref<InputEventKey> InputEventKey::create_reference(Key p_keycode, bool p_physica
 		ie->set_keycode(p_keycode & KeyModifierMask::CODE_MASK);
 	}
 
-	ie->set_unicode(char32_t(p_keycode & KeyModifierMask::CODE_MASK));
+	char32_t ch = char32_t(p_keycode & KeyModifierMask::CODE_MASK);
+	if (ch < 0xd800 || (ch > 0xdfff && ch <= 0x10ffff)) {
+		ie->set_unicode(ch);
+	}
 
 	if ((p_keycode & KeyModifierMask::SHIFT) != Key::NONE) {
 		ie->set_shift_pressed(true);

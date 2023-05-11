@@ -44,6 +44,7 @@ public:
 			CLASS,
 			MEMBER,
 			CONSTANT,
+			STATIC_VARIABLE,
 			LOCAL_VARIABLE,
 			FUNCTION_PARAMETER,
 			TEMPORARY,
@@ -72,6 +73,7 @@ public:
 	virtual uint32_t add_or_get_name(const StringName &p_name) = 0;
 	virtual uint32_t add_temporary(const GDScriptDataType &p_type) = 0;
 	virtual void pop_temporary() = 0;
+	virtual void clean_temporaries() = 0;
 
 	virtual void start_parameters() = 0;
 	virtual void end_parameters() = 0;

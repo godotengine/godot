@@ -134,6 +134,13 @@
 				Returns the coordinates of the tile for given physics body RID. Such RID can be retrieved from [method KinematicCollision2D.get_collider_rid], when colliding with a tile.
 			</description>
 		</method>
+		<method name="get_layer_for_body_rid">
+			<return type="int" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Returns the tilemap layer of the tile for given physics body RID. Such RID can be retrieved from [method KinematicCollision2D.get_collider_rid], when colliding with a tile.
+			</description>
+		</method>
 		<method name="get_layer_modulate" qualifiers="const">
 			<return type="Color" />
 			<param index="0" name="layer" type="int" />
@@ -303,7 +310,7 @@
 			<description>
 				Update all the cells in the [param cells] coordinates array so that they use the given [param terrain] for the given [param terrain_set]. If an updated cell has the same terrain as one of its neighboring cells, this function tries to join the two. This function might update neighboring tiles if needed to create correct terrain transitions.
 				If [param ignore_empty_terrains] is true, empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
-				[b]Note:[/b] To work correctly, [code]set_cells_terrain_connect[/code] requires the TileMap's TileSet to have terrains set up with all required terrain combinations. Otherwise, it may produce unexpected results.
+				[b]Note:[/b] To work correctly, this method requires the TileMap's TileSet to have terrains set up with all required terrain combinations. Otherwise, it may produce unexpected results.
 			</description>
 		</method>
 		<method name="set_cells_terrain_path">
@@ -316,7 +323,7 @@
 			<description>
 				Update all the cells in the [param path] coordinates array so that they use the given [param terrain] for the given [param terrain_set]. The function will also connect two successive cell in the path with the same terrain. This function might update neighboring tiles if needed to create correct terrain transitions.
 				If [param ignore_empty_terrains] is true, empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
-				[b]Note:[/b] To work correctly, [code]set_cells_terrain_path[/code] requires the TileMap's TileSet to have terrains set up with all required terrain combinations. Otherwise, it may produce unexpected results.
+				[b]Note:[/b] To work correctly, this method requires the TileMap's TileSet to have terrains set up with all required terrain combinations. Otherwise, it may produce unexpected results.
 			</description>
 		</method>
 		<method name="set_layer_enabled">
@@ -334,7 +341,7 @@
 			<param index="1" name="modulate" type="Color" />
 			<description>
 				Sets a layer's color. It will be multiplied by tile's color and TileMap's modulate.
-				If [code]layer[/code] is negative, the layers are accessed from the last one.
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="set_layer_name">
@@ -343,7 +350,7 @@
 			<param index="1" name="name" type="String" />
 			<description>
 				Sets a layer's name. This is mostly useful in the editor.
-				If [code]layer[/code] is negative, the layers are accessed from the last one.
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="set_layer_y_sort_enabled">
@@ -353,7 +360,7 @@
 			<description>
 				Enables or disables a layer's Y-sorting. If a layer is Y-sorted, the layer will behave as a CanvasItem node where each of its tile gets Y-sorted.
 				Y-sorted layers should usually be on different Z-index values than not Y-sorted layers, otherwise, each of those layer will be Y-sorted as whole with the Y-sorted one. This is usually an undesired behavior.
-				If [code]layer[/code] is negative, the layers are accessed from the last one.
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="set_layer_y_sort_origin">
@@ -363,7 +370,7 @@
 			<description>
 				Sets a layer's Y-sort origin value. This Y-sort origin value is added to each tile's Y-sort origin value.
 				This allows, for example, to fake a different height level on each layer. This can be useful for top-down view games.
-				If [code]layer[/code] is negative, the layers are accessed from the last one.
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="set_layer_z_index">
@@ -372,7 +379,7 @@
 			<param index="1" name="z_index" type="int" />
 			<description>
 				Sets a layers Z-index value. This Z-index is added to each tile's Z-index value.
-				If [code]layer[/code] is negative, the layers are accessed from the last one.
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="set_navigation_map">
@@ -401,7 +408,7 @@
 		</member>
 		<member name="collision_animatable" type="bool" setter="set_collision_animatable" getter="is_collision_animatable" default="false">
 			If enabled, the TileMap will see its collisions synced to the physics tick and change its collision type from static to kinematic. This is required to create TileMap-based moving platform.
-			[b]Note:[/b] Enabling [code]collision_animatable[/code] may have a small performance impact, only do it if the TileMap is moving and has colliding tiles.
+			[b]Note:[/b] Enabling [member collision_animatable] may have a small performance impact, only do it if the TileMap is moving and has colliding tiles.
 		</member>
 		<member name="collision_visibility_mode" type="int" setter="set_collision_visibility_mode" getter="get_collision_visibility_mode" enum="TileMap.VisibilityMode" default="0">
 			Show or hide the TileMap's collision shapes. If set to [constant VISIBILITY_MODE_DEFAULT], this depends on the show collision debug settings.

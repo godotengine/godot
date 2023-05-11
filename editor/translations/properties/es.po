@@ -92,13 +92,14 @@
 # Luis Miguel Soto Sánchez <luismiguelsoto@jerez.es>, 2022.
 # Victor Stancioiu <victorstancioiu@gmail.com>, 2022, 2023.
 # Daniel Miranda <danmiranda@gmail.com>, 2023.
+# Sebas Echazú <sebastianechazu@outlook.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-31 00:19+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2023-04-08 06:27+0000\n"
+"Last-Translator: Sebas Echazú <sebastianechazu@outlook.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/es/>\n"
 "Language: es\n"
@@ -152,6 +153,9 @@ msgstr "Tipo de Bucle Principal"
 
 msgid "Auto Accept Quit"
 msgstr "Aceptar Cierre Del Programa Automáticamente"
+
+msgid "Quit on Go Back"
+msgstr "Salir y volver"
 
 msgid "Display"
 msgstr "Monitor"

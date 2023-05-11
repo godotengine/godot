@@ -282,7 +282,8 @@
 			Minimum equivalent of [member tangential_accel_max].
 		</member>
 		<member name="turbulence_enabled" type="bool" setter="set_turbulence_enabled" getter="get_turbulence_enabled" default="false">
-			Enables and disables Turbulence for the particle system.
+			If [code]true[/code], enables turbulence for the particle system. Turbulence can be used to vary particle movement according to its position (based on a 3D noise pattern). In 3D, [GPUParticlesAttractorVectorField3D] with [NoiseTexture3D] can be used as an alternative to turbulence that works in world space and with multiple particle systems reacting in the same way.
+			[b]Note:[/b] Enabling turbulence has a high performance cost on the GPU. Only enable turbulence on a few particle systems at once at most, and consider disabling it when targeting mobile/web platforms.
 		</member>
 		<member name="turbulence_influence_max" type="float" setter="set_param_max" getter="get_param_max" default="0.1">
 			Maximum turbulence influence on each particle.
@@ -296,11 +297,11 @@
 			Each particle's amount of turbulence will be influenced along this [CurveTexture] over its life time.
 		</member>
 		<member name="turbulence_initial_displacement_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
-			Maximum displacement of each particles spawn position by the turbulence.
+			Maximum displacement of each particle's spawn position by the turbulence.
 			The actual amount of displacement will be a factor of the underlying turbulence multiplied by a random value between [member turbulence_initial_displacement_min] and [member turbulence_initial_displacement_max].
 		</member>
 		<member name="turbulence_initial_displacement_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
-			Minimum displacement of each particles spawn position by the turbulence.
+			Minimum displacement of each particle's spawn position by the turbulence.
 			The actual amount of displacement will be a factor of the underlying turbulence multiplied by a random value between [member turbulence_initial_displacement_min] and [member turbulence_initial_displacement_max].
 		</member>
 		<member name="turbulence_noise_scale" type="float" setter="set_turbulence_noise_scale" getter="get_turbulence_noise_scale" default="9.0">
@@ -312,10 +313,10 @@
 			A value of [code]Vector3(0.0, 0.0, 0.0)[/code] will freeze the turbulence pattern in place.
 		</member>
 		<member name="turbulence_noise_speed_random" type="float" setter="set_turbulence_noise_speed_random" getter="get_turbulence_noise_speed_random" default="0.0">
-			Use to influence the noise speed in a random pattern. This helps to break up visible movement patterns.
+			Use to influence the noise speed in a random pattern. This helps break up visible movement patterns.
 		</member>
 		<member name="turbulence_noise_strength" type="float" setter="set_turbulence_noise_strength" getter="get_turbulence_noise_strength" default="1.0">
-			The turbulence noise strength. Increasing this will result in a stronger, more contrasting, noise pattern.
+			The turbulence noise strength. Increasing this will result in a stronger, more contrasting noise pattern.
 		</member>
 	</members>
 	<constants>

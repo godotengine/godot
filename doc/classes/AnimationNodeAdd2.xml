@@ -7,6 +7,6 @@
 		A resource to add to an [AnimationNodeBlendTree]. Blends two animations additively based on an amount value in the [code][0.0, 1.0][/code] range.
 	</description>
 	<tutorials>
-		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 </class>

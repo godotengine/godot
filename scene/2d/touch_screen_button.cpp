@@ -31,9 +31,19 @@
 #include "touch_screen_button.h"
 
 #include "scene/main/window.h"
+#include "scene/scene_string_names.h"
 
 void TouchScreenButton::set_texture_normal(const Ref<Texture2D> &p_texture) {
+	if (texture_normal == p_texture) {
+		return;
+	}
+	if (texture_normal.is_valid()) {
+		texture_normal->disconnect(SceneStringNames::get_singleton()->changed, callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+	}
 	texture_normal = p_texture;
+	if (texture_normal.is_valid()) {
+		texture_normal->connect(SceneStringNames::get_singleton()->changed, callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+	}
 	queue_redraw();
 }
 
@@ -42,7 +52,16 @@ Ref<Texture2D> TouchScreenButton::get_texture_normal() const {
 }
 
 void TouchScreenButton::set_texture_pressed(const Ref<Texture2D> &p_texture_pressed) {
+	if (texture_pressed == p_texture_pressed) {
+		return;
+	}
+	if (texture_pressed.is_valid()) {
+		texture_pressed->disconnect(SceneStringNames::get_singleton()->changed, callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+	}
 	texture_pressed = p_texture_pressed;
+	if (texture_pressed.is_valid()) {
+		texture_pressed->connect(SceneStringNames::get_singleton()->changed, callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+	}
 	queue_redraw();
 }
 
@@ -59,16 +78,16 @@ Ref<BitMap> TouchScreenButton::get_bitmask() const {
 }
 
 void TouchScreenButton::set_shape(const Ref<Shape2D> &p_shape) {
+	if (shape == p_shape) {
+		return;
+	}
 	if (shape.is_valid()) {
 		shape->disconnect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 	}
-
 	shape = p_shape;
-
 	if (shape.is_valid()) {
 		shape->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 	}
-
 	queue_redraw();
 }
 

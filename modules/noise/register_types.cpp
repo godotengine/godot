@@ -33,6 +33,7 @@
 #include "fastnoise_lite.h"
 #include "noise.h"
 #include "noise_texture_2d.h"
+#include "noise_texture_3d.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_plugin.h"
@@ -41,6 +42,7 @@
 
 void initialize_noise_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		GDREGISTER_CLASS(NoiseTexture3D);
 		GDREGISTER_CLASS(NoiseTexture2D);
 		GDREGISTER_ABSTRACT_CLASS(Noise);
 		GDREGISTER_CLASS(FastNoiseLite);

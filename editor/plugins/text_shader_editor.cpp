@@ -663,6 +663,10 @@ void TextShaderEditor::_menu_option(int p_option) {
 		case EDIT_DUPLICATE_SELECTION: {
 			shader_editor->duplicate_selection();
 		} break;
+		case EDIT_TOGGLE_WORD_WRAP: {
+			TextEdit::LineWrappingMode wrap = shader_editor->get_text_editor()->get_line_wrapping_mode();
+			shader_editor->get_text_editor()->set_line_wrapping_mode(wrap == TextEdit::LINE_WRAPPING_BOUNDARY ? TextEdit::LINE_WRAPPING_NONE : TextEdit::LINE_WRAPPING_BOUNDARY);
+		} break;
 		case EDIT_TOGGLE_COMMENT: {
 			if (shader.is_null()) {
 				return;
@@ -1061,11 +1065,6 @@ void TextShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) 
 }
 
 TextShaderEditor::TextShaderEditor() {
-	GLOBAL_DEF("debug/shader_language/warnings/enable", true);
-	GLOBAL_DEF("debug/shader_language/warnings/treat_warnings_as_errors", false);
-	for (int i = 0; i < (int)ShaderWarning::WARNING_MAX; i++) {
-		GLOBAL_DEF("debug/shader_language/warnings/" + ShaderWarning::get_name_from_code((ShaderWarning::Code)i).to_lower(), true);
-	}
 	_update_warnings(false);
 
 	shader_editor = memnew(ShaderTextEditor);
@@ -1117,6 +1116,7 @@ TextShaderEditor::TextShaderEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/delete_line"), EDIT_DELETE_LINE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_selection"), EDIT_DUPLICATE_SELECTION);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_word_wrap"), EDIT_TOGGLE_WORD_WRAP);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_text_completion_query"), EDIT_COMPLETE);
 	edit_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextShaderEditor::_menu_option));

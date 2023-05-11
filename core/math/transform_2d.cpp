@@ -46,7 +46,7 @@ Transform2D Transform2D::inverse() const {
 }
 
 void Transform2D::affine_invert() {
-	real_t det = basis_determinant();
+	real_t det = determinant();
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND(det == 0);
 #endif
@@ -70,12 +70,12 @@ void Transform2D::rotate(const real_t p_angle) {
 }
 
 real_t Transform2D::get_skew() const {
-	real_t det = basis_determinant();
+	real_t det = determinant();
 	return Math::acos(columns[0].normalized().dot(SIGN(det) * columns[1].normalized())) - (real_t)Math_PI * 0.5f;
 }
 
 void Transform2D::set_skew(const real_t p_angle) {
-	real_t det = basis_determinant();
+	real_t det = determinant();
 	columns[1] = SIGN(det) * columns[0].rotated(((real_t)Math_PI * 0.5f + p_angle)).normalized() * columns[1].length();
 }
 
@@ -113,7 +113,7 @@ Transform2D::Transform2D(const real_t p_rot, const Size2 &p_scale, const real_t 
 }
 
 Size2 Transform2D::get_scale() const {
-	real_t det_sign = SIGN(basis_determinant());
+	real_t det_sign = SIGN(determinant());
 	return Size2(columns[0].length(), det_sign * columns[1].length());
 }
 
@@ -259,7 +259,7 @@ Transform2D Transform2D::rotated_local(const real_t p_angle) const {
 	return (*this) * Transform2D(p_angle, Vector2()); // Could be optimized, because origin transform can be skipped.
 }
 
-real_t Transform2D::basis_determinant() const {
+real_t Transform2D::determinant() const {
 	return columns[0].x * columns[1].y - columns[0].y * columns[1].x;
 }
 

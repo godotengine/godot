@@ -58,7 +58,7 @@
 			To edit margin and spacing of the icon, use [theme_item h_separation] theme property and [code]content_margin_*[/code] properties of the used [StyleBox]es.
 		</member>
 		<member name="icon_alignment" type="int" setter="set_icon_alignment" getter="get_icon_alignment" enum="HorizontalAlignment" default="0">
-			Specifies if the icon should be aligned to the left, right, or center of a button. Uses the same [enum HorizontalAlignment] constants as the text alignment. If centered, text will draw on top of the icon.
+			Specifies if the icon should be aligned horizontally to the left, right, or center of a button. Uses the same [enum HorizontalAlignment] constants as the text alignment. If centered horizontally and vertically, text will draw on top of the icon.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
@@ -71,6 +71,9 @@
 		</member>
 		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextServer.OverrunBehavior" default="0">
 			Sets the clipping behavior when the text exceeds the node's bounding rectangle. See [enum TextServer.OverrunBehavior] for a description of all modes.
+		</member>
+		<member name="vertical_icon_alignment" type="int" setter="set_vertical_icon_alignment" getter="get_vertical_icon_alignment" enum="VerticalAlignment" default="1">
+			Specifies if the icon should be aligned vertically to the top, bottom, or center of a button. Uses the same [enum VerticalAlignment] constants as the text alignment. If centered horizontally and vertically, text will draw on top of the icon.
 		</member>
 	</members>
 	<theme_items>

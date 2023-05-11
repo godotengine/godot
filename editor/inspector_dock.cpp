@@ -767,7 +767,8 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	inspector->set_use_doc_hints(true);
 	inspector->set_hide_script(false);
 	inspector->set_hide_metadata(false);
-	inspector->set_property_name_style(EditorPropertyNameProcessor::get_default_inspector_style());
+	inspector->set_use_settings_name_style(false);
+	inspector->set_property_name_style(property_name_style);
 	inspector->set_use_folding(!bool(EDITOR_GET("interface/inspector/disable_folding")));
 	inspector->register_text_enter(search);
 

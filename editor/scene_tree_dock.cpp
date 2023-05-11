@@ -53,6 +53,7 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/reparent_dialog.h"
 #include "editor/shader_create_dialog.h"
+#include "scene/gui/check_box.h"
 #include "scene/main/window.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
@@ -274,6 +275,8 @@ void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base)
 		accept->popup_centered();
 		return;
 	}
+
+	instantiated_scene->set_unique_name_in_owner(base->is_unique_name_in_owner());
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Replace with Branch Scene"));
@@ -850,9 +853,10 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			if (p_confirm_override) {
+			bool allow_ask_delete_tracks = EDITOR_GET("docks/scene_tree/ask_before_deleting_related_animation_tracks").operator bool();
+			bool has_tracks_to_delete = allow_ask_delete_tracks && _has_tracks_to_delete(edited_scene, remove_list);
+			if (p_confirm_override && !has_tracks_to_delete) {
 				_delete_confirm();
-
 			} else {
 				String msg;
 				if (remove_list.size() > 1) {
@@ -863,18 +867,30 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 					msg = vformat(any_children ? TTR("Delete %d nodes and any children?") : TTR("Delete %d nodes?"), remove_list.size());
 				} else {
-					Node *node = remove_list[0];
-					if (node == editor_data->get_edited_scene_root()) {
-						msg = vformat(TTR("Delete the root node \"%s\"?"), node->get_name());
-					} else if (node->get_scene_file_path().is_empty() && node->get_child_count() > 0) {
-						// Display this message only for non-instantiated scenes
-						msg = vformat(TTR("Delete node \"%s\" and its children?"), node->get_name());
+					if (!p_confirm_override) {
+						Node *node = remove_list[0];
+						if (node == editor_data->get_edited_scene_root()) {
+							msg = vformat(TTR("Delete the root node \"%s\"?"), node->get_name());
+						} else if (node->get_scene_file_path().is_empty() && node->get_child_count() > 0) {
+							// Display this message only for non-instantiated scenes
+							msg = vformat(TTR("Delete node \"%s\" and its children?"), node->get_name());
+						} else {
+							msg = vformat(TTR("Delete node \"%s\"?"), node->get_name());
+						}
+					}
+
+					if (has_tracks_to_delete) {
+						if (!msg.is_empty()) {
+							msg += "\n";
+						}
+						msg += TTR("Some nodes are referenced by animation tracks.");
+						delete_tracks_checkbox->show();
 					} else {
-						msg = vformat(TTR("Delete node \"%s\"?"), node->get_name());
+						delete_tracks_checkbox->hide();
 					}
 				}
 
-				delete_dialog->set_text(msg);
+				delete_dialog_label->set_text(msg);
 
 				// Resize the dialog to its minimum size.
 				// This prevents the dialog from being too wide after displaying
@@ -1496,12 +1512,10 @@ void SceneTreeDock::_set_owners(Node *p_owner, const Array &p_nodes) {
 
 void SceneTreeDock::_fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, HashMap<Node *, NodePath> *p_renames) {
 	base_path.push_back(p_node->get_name());
-	if (new_base_path.size()) {
-		new_base_path.push_back(p_node->get_name());
-	}
 
 	NodePath new_path;
-	if (new_base_path.size()) {
+	if (!new_base_path.is_empty()) {
+		new_base_path.push_back(p_node->get_name());
 		new_path = NodePath(new_base_path, true);
 	}
 
@@ -1510,6 +1524,43 @@ void SceneTreeDock::_fill_path_renames(Vector<StringName> base_path, Vector<Stri
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_fill_path_renames(base_path, new_base_path, p_node->get_child(i), p_renames);
 	}
+}
+
+bool SceneTreeDock::_has_tracks_to_delete(Node *p_node, List<Node *> &p_to_delete) const {
+	AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
+	if (ap) {
+		Node *root = ap->get_node(ap->get_root());
+		if (root && !p_to_delete.find(root)) {
+			List<StringName> anims;
+			ap->get_animation_list(&anims);
+
+			for (const StringName &E : anims) {
+				Ref<Animation> anim = ap->get_animation(E);
+				if (anim.is_null()) {
+					continue;
+				}
+
+				for (int i = 0; i < anim->get_track_count(); i++) {
+					NodePath track_np = anim->track_get_path(i);
+					Node *n = root->get_node_or_null(track_np);
+					if (n) {
+						for (const Node *F : p_to_delete) {
+							if (F == n || F->is_ancestor_of(n)) {
+								return true;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		if (_has_tracks_to_delete(p_node->get_child(i), p_to_delete)) {
+			return true;
+		}
+	}
+	return false;
 }
 
 void SceneTreeDock::fill_path_renames(Node *p_node, Node *p_new_parent, HashMap<Node *, NodePath> *p_renames) {
@@ -1701,7 +1752,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 						HashMap<Node *, NodePath>::Iterator found_path = p_renames->find(n);
 						EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 						if (found_path) {
-							if (found_path->value == NodePath()) {
+							if (found_path->value.is_empty()) {
 								//will be erased
 
 								int idx = 0;
@@ -2094,11 +2145,6 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 		return;
 	}
 
-	EditorNode::get_singleton()->hide_unused_editors(this);
-
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(p_cut ? TTR("Cut Node(s)") : TTR("Remove Node(s)"), UndoRedo::MERGE_DISABLE, remove_list.front()->get());
-
 	bool entire_scene = false;
 
 	for (const Node *E : remove_list) {
@@ -2108,27 +2154,34 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 		}
 	}
 
+	EditorNode::get_singleton()->hide_unused_editors(this);
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(p_cut ? TTR("Cut Node(s)") : TTR("Remove Node(s)"), UndoRedo::MERGE_DISABLE, remove_list.front()->get());
+
 	if (entire_scene) {
 		undo_redo->add_do_method(EditorNode::get_singleton(), "set_edited_scene", (Object *)nullptr);
 		undo_redo->add_undo_method(EditorNode::get_singleton(), "set_edited_scene", edited_scene);
 		undo_redo->add_undo_method(edited_scene, "set_owner", edited_scene->get_owner());
 		undo_redo->add_undo_method(scene_tree, "update_tree");
 		undo_redo->add_undo_reference(edited_scene);
-
 	} else {
-		remove_list.sort_custom<Node::Comparator>(); //sort nodes to keep positions
-		HashMap<Node *, NodePath> path_renames;
+		if (delete_tracks_checkbox->is_pressed() || p_cut) {
+			remove_list.sort_custom<Node::Comparator>(); // Sort nodes to keep positions.
+			HashMap<Node *, NodePath> path_renames;
 
-		//delete from animation
-		for (Node *n : remove_list) {
-			if (!n->is_inside_tree() || !n->get_parent()) {
-				continue;
+			//delete from animation
+			for (Node *n : remove_list) {
+				if (!n->is_inside_tree() || !n->get_parent()) {
+					continue;
+				}
+
+				fill_path_renames(n, nullptr, &path_renames);
 			}
 
-			fill_path_renames(n, nullptr, &path_renames);
+			perform_node_renames(nullptr, &path_renames);
 		}
 
-		perform_node_renames(nullptr, &path_renames);
 		//delete for read
 		for (Node *n : remove_list) {
 			if (!n->is_inside_tree() || !n->get_parent()) {
@@ -3774,6 +3827,16 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	add_child(delete_dialog);
 	delete_dialog->connect("confirmed", callable_mp(this, &SceneTreeDock::_delete_confirm).bind(false));
 
+	VBoxContainer *vb = memnew(VBoxContainer);
+	delete_dialog->add_child(vb);
+
+	delete_dialog_label = memnew(Label);
+	vb->add_child(delete_dialog_label);
+
+	delete_tracks_checkbox = memnew(CheckBox(TTR("Delete Related Animation Tracks")));
+	delete_tracks_checkbox->set_pressed(true);
+	vb->add_child(delete_tracks_checkbox);
+
 	editable_instance_remove_dialog = memnew(ConfirmationDialog);
 	add_child(editable_instance_remove_dialog);
 	editable_instance_remove_dialog->connect("confirmed", callable_mp(this, &SceneTreeDock::_toggle_editable_children_from_selection));
@@ -3810,6 +3873,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 
 	EDITOR_DEF("interface/editors/show_scene_tree_root_selection", true);
 	EDITOR_DEF("interface/editors/derive_script_globals_by_name", true);
+	EDITOR_DEF("docks/scene_tree/ask_before_deleting_related_animation_tracks", true);
 	EDITOR_DEF("_use_favorites_root_selection", false);
 
 	Resource::_update_configuration_warning = _update_configuration_warning;

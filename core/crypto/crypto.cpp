@@ -63,6 +63,8 @@ X509Certificate *X509Certificate::create() {
 void X509Certificate::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save", "path"), &X509Certificate::save);
 	ClassDB::bind_method(D_METHOD("load", "path"), &X509Certificate::load);
+	ClassDB::bind_method(D_METHOD("save_to_string"), &X509Certificate::save_to_string);
+	ClassDB::bind_method(D_METHOD("load_from_string", "string"), &X509Certificate::load_from_string);
 }
 
 /// TLSOptions

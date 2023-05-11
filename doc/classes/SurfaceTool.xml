@@ -45,7 +45,7 @@
 			<param index="2" name="colors" type="PackedColorArray" default="PackedColorArray()" />
 			<param index="3" name="uv2s" type="PackedVector2Array" default="PackedVector2Array()" />
 			<param index="4" name="normals" type="PackedVector3Array" default="PackedVector3Array()" />
-			<param index="5" name="tangents" type="Array" default="[]" />
+			<param index="5" name="tangents" type="Plane[]" default="[]" />
 			<description>
 				Inserts a triangle fan made of array data into [Mesh] being constructed.
 				Requires the primitive type be set to [constant Mesh.PRIMITIVE_TRIANGLES].
@@ -242,6 +242,7 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Specifies the smooth group to use for the [i]next[/i] vertex. If this is never called, all vertices will have the default smooth group of [code]0[/code] and will be smoothed with adjacent vertices of the same group. To produce a mesh with flat normals, set the smooth group to [code]-1[/code].
+				[b]Note:[/b] This function actually takes an [code]uint32_t[/code], so C# users should use [code]uint32.MaxValue[/code] instead of [code]-1[/code] to produce a mesh with flat normals.
 			</description>
 		</method>
 		<method name="set_tangent">

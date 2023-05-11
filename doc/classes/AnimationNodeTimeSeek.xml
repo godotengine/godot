@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationNodeTimeSeek" inherits="AnimationNode" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A time-seeking animation node to be used with [AnimationTree].
+		A time-seeking animation node used in [AnimationTree].
 	</brief_description>
 	<description>
 		This node can be used to cause a seek command to happen to any sub-children of the animation graph. Use this node type to play an [Animation] from the start or a certain playback position inside the [AnimationNodeBlendTree].
@@ -28,6 +28,6 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
-		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 </class>

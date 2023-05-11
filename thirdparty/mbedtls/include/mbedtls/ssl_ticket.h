@@ -48,8 +48,7 @@ extern "C" {
 /**
  * \brief   Information for session ticket protection
  */
-typedef struct mbedtls_ssl_ticket_key
-{
+typedef struct mbedtls_ssl_ticket_key {
     unsigned char name[4];          /*!< random key identifier              */
     uint32_t generation_time;       /*!< key generation timestamp (seconds) */
     mbedtls_cipher_context_t ctx;   /*!< context for auth enc/decryption    */
@@ -59,8 +58,7 @@ mbedtls_ssl_ticket_key;
 /**
  * \brief   Context for session ticket handling functions
  */
-typedef struct mbedtls_ssl_ticket_context
-{
+typedef struct mbedtls_ssl_ticket_context {
     mbedtls_ssl_ticket_key keys[2]; /*!< ticket protection keys             */
     unsigned char active;           /*!< index of the currently active key  */
 
@@ -83,7 +81,7 @@ mbedtls_ssl_ticket_context;
  *
  * \param ctx       Context to be initialized
  */
-void mbedtls_ssl_ticket_init( mbedtls_ssl_ticket_context *ctx );
+void mbedtls_ssl_ticket_init(mbedtls_ssl_ticket_context *ctx);
 
 /**
  * \brief           Prepare context to be actually used
@@ -107,10 +105,10 @@ void mbedtls_ssl_ticket_init( mbedtls_ssl_ticket_context *ctx );
  * \return          0 if successful,
  *                  or a specific MBEDTLS_ERR_XXX error code
  */
-int mbedtls_ssl_ticket_setup( mbedtls_ssl_ticket_context *ctx,
-    int (*f_rng)(void *, unsigned char *, size_t), void *p_rng,
-    mbedtls_cipher_type_t cipher,
-    uint32_t lifetime );
+int mbedtls_ssl_ticket_setup(mbedtls_ssl_ticket_context *ctx,
+                             int (*f_rng)(void *, unsigned char *, size_t), void *p_rng,
+                             mbedtls_cipher_type_t cipher,
+                             uint32_t lifetime);
 
 /**
  * \brief           Implementation of the ticket write callback
@@ -131,7 +129,7 @@ mbedtls_ssl_ticket_parse_t mbedtls_ssl_ticket_parse;
  *
  * \param ctx       Context to be cleaned up
  */
-void mbedtls_ssl_ticket_free( mbedtls_ssl_ticket_context *ctx );
+void mbedtls_ssl_ticket_free(mbedtls_ssl_ticket_context *ctx);
 
 #ifdef __cplusplus
 }
