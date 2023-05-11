@@ -485,6 +485,24 @@ EditorPlugin *EditorData::get_editor_plugin(int p_idx) {
 	return editor_plugins[p_idx];
 }
 
+void EditorData::add_extension_editor_plugin(const StringName &p_class_name, EditorPlugin *p_plugin) {
+	ERR_FAIL_COND(extension_editor_plugins.has(p_class_name));
+	extension_editor_plugins.insert(p_class_name, p_plugin);
+}
+
+void EditorData::remove_extension_editor_plugin(const StringName &p_class_name) {
+	extension_editor_plugins.erase(p_class_name);
+}
+
+bool EditorData::has_extension_editor_plugin(const StringName &p_class_name) {
+	return extension_editor_plugins.has(p_class_name);
+}
+
+EditorPlugin *EditorData::get_extension_editor_plugin(const StringName &p_class_name) {
+	EditorPlugin **plugin = extension_editor_plugins.getptr(p_class_name);
+	return plugin == nullptr ? nullptr : *plugin;
+}
+
 void EditorData::add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon) {
 	ERR_FAIL_COND_MSG(p_script.is_null(), "It's not a reference to a valid Script object.");
 	CustomType ct;
