@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #include <float.h>
 #include <math.h>
 #include "tvgBezier.h"
@@ -114,7 +115,7 @@ float bezAt(const Bezier& bz, float at)
     auto t = 0.5f;
 
     //just in case to prevent an infinite loop
-    if (at <= 0) return 0.0f; 
+    if (at <= 0) return 0.0f;
 
     if (at >= len) return 1.0f;
 

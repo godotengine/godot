@@ -2,11 +2,12 @@
  * @file thorvg.h
  *
  * The main APIs enabling the TVG initialization, preparation of the canvas and provisioning of its content:
- * - drawing shapes such as line, curve, arc, rectangle, circle or user-defined
- * - drawing pictures - SVG, PNG, JPG, RAW
- * - solid or gradient filling
- * - continuous and dashed stroking
- * - clipping and masking
+ * - drawing shapes: line, arc, curve, path, polygon...
+ * - drawing pictures: tvg, svg, png, jpg, bitmap...
+ * - drawing fillings: solid, linear and radial gradient...
+ * - drawing stroking: continuous stroking with arbitrary width, join, cap, dash styles.
+ * - drawing composition: blending, masking, path clipping...
+ * - drawing scene graph & affine transformation (translation, rotation, scale, ...)
  * and finally drawing the canvas and TVG termination.
  */
 
@@ -14,20 +15,36 @@
 #ifndef _THORVG_H_
 #define _THORVG_H_
 
+#include <functional>
 #include <memory>
 #include <string>
 
-#ifdef TVG_BUILD
-    #if defined(_WIN32) && !defined(__clang__)
-        #define TVG_EXPORT __declspec(dllexport)
-        #define TVG_DEPRECATED __declspec(deprecated)
+#ifdef TVG_API
+    #undef TVG_API
+#endif
+
+#if defined(_WIN32) && !defined(__clang__)
+    #if TVG_BUILD
+        #if TVG_EXPORT
+            #define TVG_API __declspec(dllexport)
+        #else
+            #define TVG_API
+        #endif
     #else
-        #define TVG_EXPORT __attribute__ ((visibility ("default")))
-        #define TVG_DEPRECATED __attribute__ ((__deprecated__))
+        #define TVG_API
     #endif
+    #define TVG_DEPRECATED __declspec(deprecated)
 #else
-    #define TVG_EXPORT
-    #define TVG_DEPRECATED
+    #if TVG_BUILD
+        #if TVG_EXPORT
+            #define TVG_API __attribute__ ((visibility ("default")))
+        #else
+            #define TVG_API
+        #endif
+    #else
+        #define TVG_API
+    #endif
+    #define TVG_DEPRECATED __attribute__ ((__deprecated__))
 #endif
 
 #ifdef __cplusplus
@@ -147,7 +164,7 @@ enum class CompositeMethod
     ClipPath,     ///< The intersection of the source and the target is determined and only the resulting pixels from the source are rendered.
     AlphaMask,    ///< The pixels of the source and the target are alpha blended. As a result, only the part of the source, which alpha intersects with the target is visible.
     InvAlphaMask, ///< The pixels of the source and the complement to the target's pixels are alpha blended. As a result, only the part of the source which alpha is not covered by the target is visible.
-    LumaMask      ///< @BETA_API The source pixels are converted to the grayscale (luma value) and alpha blended with the target. As a result, only the part of the source, which intersects with the target is visible.
+    LumaMask      ///< The source pixels are converted to the grayscale (luma value) and alpha blended with the target. As a result, only the part of the source, which intersects with the target is visible. @since 0.9
 };
 
 /**
@@ -183,6 +200,33 @@ struct Matrix
     float e31, e32, e33;
 };
 
+/**
+ * @brief A data structure representing a texture mesh vertex
+ *
+ * @param pt The vertex coordinate
+ * @param uv The normalized texture coordinate in the range (0.0..1.0, 0.0..1.0)
+ *
+ * @BETA_API
+ */
+struct Vertex
+{
+   Point pt;
+   Point uv;
+};
+
+
+/**
+ * @brief A data structure representing a triange in a texture mesh
+ *
+ * @param vertex The three vertices that make up the polygon
+ *
+ * @BETA_API
+ */
+struct Polygon
+{
+   Vertex vertex[3];
+};
+
 
 /**
  * @class Paint
@@ -193,7 +237,7 @@ struct Matrix
  * Paint represents such a graphical object and its behaviors such as duplication, transformation and composition.
  * TVG recommends the user to regard a paint as a set of volatile commands. They can prepare a Paint and then request a Canvas to run them.
  */
-class TVG_EXPORT Paint
+class TVG_API Paint
 {
 public:
     virtual ~Paint();
@@ -263,6 +307,7 @@ public:
      * @return Result::Success when succeed.
      *
      * @note Setting the opacity with this API may require multiple render pass for composition. It is recommended to avoid changing the opacity if possible.
+     * @note ClipPath won't use the opacity value. (see: enum class CompositeMethod::ClipPath)
      */
     Result opacity(uint8_t o) noexcept;
 
@@ -336,27 +381,11 @@ public:
     CompositeMethod composite(const Paint** target) const noexcept;
 
     /**
-     * @brief Gets the composition source object and the composition method.
-     *
-     * @param[out] source The paint of the composition source object.
-     * @param[out] method The method used to composite the source object with the target.
-     *
-     * @return Result::Success when the paint object used as a composition target, Result::InsufficientCondition otherwise.
-     *
-     * @warning Please do not use it, this API is not official one. It could be modified in the next version.
-     *
-     * @BETA_API
-     */
-    Result composite(const Paint** source, CompositeMethod* method) const noexcept;
-
-    /**
      * @brief Return the unique id value of the paint instance.
      *
      * This method can be called for checking the current concrete instance type.
      *
      * @return The type id of the Paint instance.
-     *
-     * @BETA_API
      */
     uint32_t identifier() const noexcept;
 
@@ -376,7 +405,7 @@ public:
  * It specifies the gradient behavior in case the area defined by the gradient bounds
  * is smaller than the area to be filled.
  */
-class TVG_EXPORT Fill
+class TVG_API Fill
 {
 public:
     /**
@@ -463,8 +492,6 @@ public:
      * This method can be called for checking the current concrete instance type.
      *
      * @return The type id of the Fill instance.
-     *
-     * @BETA_API
      */
     uint32_t identifier() const noexcept;
 
@@ -482,7 +509,7 @@ public:
  * @note A Canvas behavior depends on the raster engine though the final content of the buffer is expected to be identical.
  * @warning The Paint objects belonging to one Canvas can't be shared among multiple Canvases.
  */
-class TVG_EXPORT Canvas
+class TVG_API Canvas
 {
 public:
     Canvas(RenderMethod*);
@@ -578,7 +605,7 @@ public:
  * Besides the APIs inherited from the Fill class, it enables setting and getting the linear gradient bounds.
  * The behavior outside the gradient bounds depends on the value specified in the spread API.
  */
-class TVG_EXPORT LinearGradient final : public Fill
+class TVG_API LinearGradient final : public Fill
 {
 public:
     ~LinearGradient();
@@ -630,8 +657,6 @@ public:
      * This method can be referred for identifying the LinearGradient class type.
      *
      * @return The type id of the LinearGradient class.
-     *
-     * @BETA_API
      */
     static uint32_t identifier() noexcept;
 
@@ -645,7 +670,7 @@ public:
  * @brief A class representing the radial gradient fill of the Shape object.
  *
  */
-class TVG_EXPORT RadialGradient final : public Fill
+class TVG_API RadialGradient final : public Fill
 {
 public:
     ~RadialGradient();
@@ -689,8 +714,6 @@ public:
      * This method can be referred for identifying the RadialGradient class type.
      *
      * @return The type id of the RadialGradient class.
-     *
-     * @BETA_API
      */
     static uint32_t identifier() noexcept;
 
@@ -710,7 +733,7 @@ public:
  * The stroke of Shape is an optional property in case the Shape needs to be represented with/without the outline borders.
  * It's efficient since the shape path and the stroking path can be shared with each other. It's also convenient when controlling both in one context.
  */
-class TVG_EXPORT Shape final : public Paint
+class TVG_API Shape final : public Paint
 {
 public:
     ~Shape();
@@ -943,6 +966,7 @@ public:
      * @return Result::Success when succeed.
      *
      * @note Either a solid color or a gradient fill is applied, depending on what was set as last.
+     * @note ClipPath won't use the fill values. (see: enum class CompositeMethod::ClipPath)
      */
     Result fill(uint8_t r, uint8_t g, uint8_t b, uint8_t a) noexcept;
 
@@ -967,6 +991,18 @@ public:
      * @return Result::Success when succeed.
      */
     Result fill(FillRule r) noexcept;
+
+
+    /**
+     * @brief Sets the rendering order of the stroke and the fill.
+     *
+     * @param[in] strokeFirst If @c true the stroke is rendered before the fill, otherwise the stroke is rendered as the second one (the default option).
+     *
+     * @return Result::Success when succeed, Result::FailedAllocation otherwise.
+     * @BETA_API
+     */
+    Result order(bool strokeFirst) noexcept;
+
 
     /**
      * @brief Gets the commands data of the path.
@@ -1074,8 +1110,6 @@ public:
      * This method can be referred for identifying the Shape class type.
      *
      * @return The type id of the Shape class.
-     *
-     * @BETA_API
      */
     static uint32_t identifier() noexcept;
 
@@ -1091,7 +1125,7 @@ public:
  *
  * @note Supported formats are depended on the available TVG loaders.
  */
-class TVG_EXPORT Picture final : public Paint
+class TVG_API Picture final : public Paint
 {
 public:
     ~Picture();
@@ -1185,11 +1219,50 @@ public:
     /**
      * @brief Loads a raw data from a memory block with a given size.
      *
+     * @retval Result::Success When succeed, Result::InsufficientCondition otherwise.
+     * @retval Result::FailedAllocation An internal error possibly with memory allocation.
+     *
+     * @since 0.9
+     */
+    Result load(uint32_t* data, uint32_t w, uint32_t h, bool copy) noexcept;
+
+    /**
+     * @brief Sets or removes the triangle mesh to deform the image.
+     *
+     * If a mesh is provided, the transform property of the Picture will apply to the triangle mesh, and the
+     * image data will be used as the texture.
+     *
+     * If @p triangles is @c nullptr, or @p triangleCnt is 0, the mesh will be removed.
+     *
+     * Only raster image types are supported at this time (png, jpg). Vector types like svg and tvg do not support.
+     * mesh deformation. However, if required you should be able to render a vector image to a raster image and then apply a mesh.
+     *
+     * @param[in] triangles An array of Polygons(triangles) that make up the mesh, or null to remove the mesh.
+     * @param[in] triangleCnt The number of Polygons(triangles) provided, or 0 to remove the mesh.
+     *
+     * @return Result::Success When succeed.
+     * @return Result::Unknown If fails
+     *
+     * @note The Polygons are copied internally, so modifying them after calling Mesh::mesh has no affect.
      * @warning Please do not use it, this API is not official one. It could be modified in the next version.
      *
      * @BETA_API
      */
-    Result load(uint32_t* data, uint32_t w, uint32_t h, bool copy) noexcept;
+    Result mesh(const Polygon* triangles, uint32_t triangleCnt) noexcept;
+
+    /**
+     * @brief Return the number of triangles in the mesh, and optionally get a pointer to the array of triangles in the mesh.
+     *
+     * @param[out] triangles Optional. A pointer to the array of Polygons used by this mesh.
+     *
+     * @return uint32_t The number of polygons in the array.
+     *
+     * @note Modifying the triangles returned by this method will modify them directly within the mesh.
+     * @warning Please do not use it, this API is not official one. It could be modified in the next version.
+     *
+     * @BETA_API
+     */
+    uint32_t mesh(const Polygon** triangles) const noexcept;
 
     /**
      * @brief Gets the position and the size of the loaded SVG picture.
@@ -1213,8 +1286,6 @@ public:
      * This method can be referred for identifying the Picture class type.
      *
      * @return The type id of the Picture class.
-     *
-     * @BETA_API
      */
     static uint32_t identifier() noexcept;
 
@@ -1233,7 +1304,7 @@ public:
  * As a group, the scene can be transformed, made translucent and composited with other target paints,
  * its children will be affected by the scene world.
  */
-class TVG_EXPORT Scene final : public Paint
+class TVG_API Scene final : public Paint
 {
 public:
     ~Scene();
@@ -1293,8 +1364,6 @@ public:
      * This method can be referred for identifying the Scene class type.
      *
      * @return The type id of the Scene class.
-     *
-     * @BETA_API
      */
     static uint32_t identifier() noexcept;
 
@@ -1307,7 +1376,7 @@ public:
  *
  * @brief A class for the rendering graphical elements with a software raster engine.
  */
-class TVG_EXPORT SwCanvas final : public Canvas
+class TVG_API SwCanvas final : public Canvas
 {
 public:
     ~SwCanvas();
@@ -1398,7 +1467,7 @@ public:
  *
  * @BETA_API
  */
-class TVG_EXPORT GlCanvas final : public Canvas
+class TVG_API GlCanvas final : public Canvas
 {
 public:
     ~GlCanvas();
@@ -1430,7 +1499,7 @@ public:
  *
  * @brief A class that enables initialization and termination of the TVG engines.
  */
-class TVG_EXPORT Initializer final
+class TVG_API Initializer final
 {
 public:
     /**
@@ -1492,7 +1561,7 @@ public:
  *
  * @since 0.5
  */
-class TVG_EXPORT Saver final
+class TVG_API Saver final
 {
 public:
     ~Saver();
@@ -1562,13 +1631,13 @@ public:
  *
  * @BETA_API
  */
-class TVG_EXPORT Accessor final
+class TVG_API Accessor final
 {
 public:
     ~Accessor();
 
     /**
-     * @brief Access the Picture scene stree nodes.
+     * @brief Set the access function for traversing the Picture scene tree nodes.
      *
      * @param[in] picture The picture node to traverse the internal scene-tree.
      * @param[in] func The callback function calling for every paint nodes of the Picture.
@@ -1579,7 +1648,7 @@ public:
      *
      * @BETA_API
      */
-    std::unique_ptr<Picture> access(std::unique_ptr<Picture> picture, bool(*func)(const Paint* paint)) noexcept;
+    std::unique_ptr<Picture> set(std::unique_ptr<Picture> picture, std::function<bool(const Paint* paint)> func) noexcept;
 
     /**
      * @brief Creates a new Accessor object.
