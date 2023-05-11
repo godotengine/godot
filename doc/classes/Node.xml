@@ -296,6 +296,18 @@
 				If [param include_internal] is [code]false[/code], the returned array won't include internal descendants (see [code]internal[/code] parameter in [method add_child]).
 			</description>
 		</method>
+		<method name="get_ancestor_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of ancestor nodes.
+			</description>
+		</method>
+		<method name="get_ancestors" qualifiers="const">
+			<return type="Node[]" />
+			<description>
+				Returns an array of references to node's ancestors.
+			</description>
+		</method>
 		<method name="get_groups" qualifiers="const">
 			<return type="StringName[]" />
 			<description>
