@@ -1799,27 +1799,24 @@ String GDScriptFormat::parse_literal(const GDP::LiteralNode *p_node) {
 			default:
 				break;
 		}
-	} else if (p_node->value.get_type() == Variant::Type::STRING || p_node->value.get_type() == Variant::Type::NODE_PATH || p_node->value.get_type() == Variant::Type::STRING_NAME) {
-		const String string_contents = p_node->value;
-		if (p_node->value.get_type() == Variant::Type::NODE_PATH) {
-			value_string += "^";
-		} else if (p_node->value.get_type() == Variant::Type::STRING_NAME) {
-			value_string += "&";
+	}
+
+	switch (p_node->value.get_type()) {
+		case Variant::Type::STRING:
+		case Variant::Type::NODE_PATH:
+		case Variant::Type::STRING_NAME:
+		case Variant::Type::INT:
+		case Variant::Type::FLOAT: {
+			value_string += p_node->source;
+		} break;
+
+		case Variant::Type::NIL: {
+			value_string += "null";
+		} break;
+
+		default: {
+			value_string += String(p_node->value);
 		}
-		if (string_contents.contains("\"")) {
-			value_string += '\'' + string_contents + '\'';
-		} else {
-			value_string += '\"' + string_contents + '\"';
-		}
-	} else if (p_node->value.get_type() == Variant::Type::FLOAT) {
-		value_string += String(p_node->value);
-		if (!value_string.as_string().contains(".")) {
-			value_string += ".0";
-		}
-	} else if (p_node->value.get_type() == Variant::Type::NIL) {
-		value_string += "null";
-	} else {
-		value_string += String(p_node->value);
 	}
 
 	return value_string;

@@ -2754,6 +2754,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_literal(ExpressionNode *p_
 	LiteralNode *literal = alloc_node<LiteralNode>();
 	complete_extents(literal);
 	literal->value = previous.literal;
+	literal->source = previous.source;
 	if (check(GDScriptTokenizer::Token::COMMENT)) {
 		literal->inline_comment = check_for_comment();
 	}

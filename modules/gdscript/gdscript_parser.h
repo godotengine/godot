@@ -942,6 +942,7 @@ public:
 
 	struct LiteralNode : public ExpressionNode {
 		Variant value;
+		String source;
 		bool is_builtin_constant = false;
 		GDScriptTokenizer::Token::Type constant_type = GDScriptTokenizer::Token::EMPTY;
 
