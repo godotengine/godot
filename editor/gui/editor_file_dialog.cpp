@@ -688,7 +688,7 @@ void EditorFileDialog::_item_menu_id_pressed(int p_option) {
 	switch (p_option) {
 		case ITEM_MENU_COPY_PATH: {
 			Dictionary item_meta = item_list->get_item_metadata(item_list->get_current());
-			DisplayServer::get_singleton()->clipboard_set(item_meta["path"]);
+			DisplayServer::get_singleton()->clipboard_set_text(item_meta["path"]);
 		} break;
 
 		case ITEM_MENU_DELETE: {

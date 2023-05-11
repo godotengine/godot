@@ -591,7 +591,7 @@ void ExportTemplateManager::_mirror_options_button_cbk(int p_id) {
 				return;
 			}
 
-			DisplayServer::get_singleton()->clipboard_set(mirror_url);
+			DisplayServer::get_singleton()->clipboard_set_text(mirror_url);
 		} break;
 	}
 }

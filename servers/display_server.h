@@ -243,9 +243,11 @@ public:
 	virtual Point2i mouse_get_position() const;
 	virtual BitField<MouseButtonMask> mouse_get_button_state() const;
 
-	virtual void clipboard_set(const String &p_text);
-	virtual String clipboard_get() const;
-	virtual bool clipboard_has() const;
+	virtual void clipboard_set_text(const String &p_text);
+	virtual String clipboard_get_text() const;
+	virtual Ref<Image> clipboard_get_image() const;
+	virtual bool clipboard_has_text() const;
+	virtual bool clipboard_has_image() const;
 	virtual void clipboard_set_primary(const String &p_text);
 	virtual String clipboard_get_primary() const;
 

@@ -44,6 +44,8 @@
 
 #import <sys/utsname.h>
 
+#include <drivers/png/png_driver_common.h>
+
 static const float kDisplayServerIOSAcceleration = 1.f;
 
 DisplayServerIOS *DisplayServerIOS::get_singleton() {
@@ -650,14 +652,35 @@ int DisplayServerIOS::virtual_keyboard_get_height() const {
 	return virtual_keyboard_height;
 }
 
-void DisplayServerIOS::clipboard_set(const String &p_text) {
+void DisplayServerIOS::clipboard_set_text(const String &p_text) {
 	[UIPasteboard generalPasteboard].string = [NSString stringWithUTF8String:p_text.utf8()];
 }
 
-String DisplayServerIOS::clipboard_get() const {
+String DisplayServerIOS::clipboard_get_text() const {
 	NSString *text = [UIPasteboard generalPasteboard].string;
 
 	return String::utf8([text UTF8String]);
+}
+
+bool DisplayServerIOS::clipboard_has_text() {
+	return [UIPasteboard generalPasteboard].hasStrings;
+}
+
+Ref<Image> DisplayServerIOS::clipboard_get_image() const {
+	Ref<Image> image;
+	UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+	if (!pasteboard.hasImages) {
+		return image;
+	}
+	UIImage *data = pasteboard.image;
+	NSData *pngData = UIImagePNGRepresentation(data);
+	image.instantiate();
+	PNGDriverCommon::png_to_image((const uint8_t *)pngData.bytes, pngData.length, false, image);
+	return image;
+}
+
+bool DisplayServerIOS::clipboard_has_image() {
+	return [UIPasteboard generalPasteboard].hasImages;
 }
 
 void DisplayServerIOS::screen_set_keep_on(bool p_enable) {

@@ -1210,7 +1210,7 @@ void EditorNode::_titlebar_resized() {
 }
 
 void EditorNode::_version_button_pressed() {
-	DisplayServer::get_singleton()->clipboard_set(version_btn->get_meta(META_TEXT_TO_COPY));
+	DisplayServer::get_singleton()->clipboard_set_text(version_btn->get_meta(META_TEXT_TO_COPY));
 }
 
 void EditorNode::_update_undo_redo_allowed() {
@@ -4488,7 +4488,7 @@ void EditorNode::show_warning(const String &p_text, const String &p_title) {
 }
 
 void EditorNode::_copy_warning(const String &p_str) {
-	DisplayServer::get_singleton()->clipboard_set(warning->get_text());
+	DisplayServer::get_singleton()->clipboard_set_text(warning->get_text());
 }
 
 void EditorNode::_dock_floating_close_request(WindowWrapper *p_wrapper) {

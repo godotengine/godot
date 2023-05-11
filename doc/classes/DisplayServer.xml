@@ -10,38 +10,50 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="clipboard_get" qualifiers="const">
-			<return type="String" />
+		<method name="clipboard_get_image" qualifiers="const">
+			<return type="Image" />
 			<description>
-				Returns the user's clipboard as a string if possible.
+				Returns the user's clipboard as an image if possible.
 			</description>
 		</method>
 		<method name="clipboard_get_primary" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the user's [url=https://unix.stackexchange.com/questions/139191/whats-the-difference-between-primary-selection-and-clipboard-buffer]primary[/url] clipboard as a string if possible. This is the clipboard that is set when the user selects text in any application, rather than when pressing [kbd]Ctrl + C[/kbd]. The clipboard data can then be pasted by clicking the middle mouse button in any application that supports the primary clipboard mechanism.
-				[b]Note:[/b] This method is only implemented on Linux (X11).
+				Returns the user's primary clipboard as a string if possible.
+				[b]Note:[/b] This method is only implemented on Linux.
 			</description>
 		</method>
-		<method name="clipboard_has" qualifiers="const">
+		<method name="clipboard_get_text" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the user's clipboard as a string if possible.
+			</description>
+		</method>
+		<method name="clipboard_has_image" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if there is content on the user's clipboard.
+				Returns [code]true[/code] if there is an image content on the user's clipboard.
 			</description>
 		</method>
-		<method name="clipboard_set">
-			<return type="void" />
-			<param index="0" name="clipboard" type="String" />
+		<method name="clipboard_has_text" qualifiers="const">
+			<return type="bool" />
 			<description>
-				Sets the user's clipboard content to the given string.
+				Returns [code]true[/code] if there is a text content on the user's clipboard.
 			</description>
 		</method>
 		<method name="clipboard_set_primary">
 			<return type="void" />
-			<param index="0" name="clipboard_primary" type="String" />
+			<argument index="0" name="clipboard_primary" type="String" />
 			<description>
-				Sets the user's [url=https://unix.stackexchange.com/questions/139191/whats-the-difference-between-primary-selection-and-clipboard-buffer]primary[/url] clipboard content to the given string. This is the clipboard that is set when the user selects text in any application, rather than when pressing [kbd]Ctrl + C[/kbd]. The clipboard data can then be pasted by clicking the middle mouse button in any application that supports the primary clipboard mechanism.
-				[b]Note:[/b] This method is only implemented on Linux (X11).
+				Sets the user's primary clipboard content to the given string.
+				[b]Note:[/b] This method is only implemented on Linux.
+			</description>
+		</method>
+		<method name="clipboard_set_text">
+			<return type="void" />
+			<argument index="0" name="clipboard" type="String" />
+			<description>
+				Sets the user's clipboard content to the given string.
 			</description>
 		</method>
 		<method name="cursor_get_shape" qualifiers="const">

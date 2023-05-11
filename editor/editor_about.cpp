@@ -65,7 +65,7 @@ void EditorAbout::_license_tree_selected() {
 }
 
 void EditorAbout::_version_button_pressed() {
-	DisplayServer::get_singleton()->clipboard_set(version_btn->get_meta(META_TEXT_TO_COPY));
+	DisplayServer::get_singleton()->clipboard_set_text(version_btn->get_meta(META_TEXT_TO_COPY));
 }
 
 void EditorAbout::_bind_methods() {

@@ -103,9 +103,9 @@ public:
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;
 
-	virtual void clipboard_set(const String &p_text) override;
-	virtual String clipboard_get() const override;
-	virtual bool clipboard_has() const override;
+	virtual void clipboard_set_text(const String &p_text) override;
+	virtual String clipboard_get_text() const override;
+	virtual bool clipboard_has_text() const override;
 
 	virtual TypedArray<Rect2> get_display_cutouts() const override;
 	virtual Rect2i get_display_safe_area() const override;

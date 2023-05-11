@@ -359,7 +359,7 @@ void GroupDialog::_modify_group_pressed(Object *p_item, int p_column, int p_id, 
 			undo_redo->commit_action();
 		} break;
 		case COPY_GROUP: {
-			DisplayServer::get_singleton()->clipboard_set(ti->get_text(p_column));
+			DisplayServer::get_singleton()->clipboard_set_text(ti->get_text(p_column));
 		} break;
 	}
 }
@@ -705,7 +705,7 @@ void GroupsEditor::_modify_group(Object *p_item, int p_column, int p_id, MouseBu
 			undo_redo->commit_action();
 		} break;
 		case COPY_GROUP: {
-			DisplayServer::get_singleton()->clipboard_set(ti->get_text(p_column));
+			DisplayServer::get_singleton()->clipboard_set_text(ti->get_text(p_column));
 		} break;
 	}
 }
