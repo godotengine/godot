@@ -38,7 +38,7 @@ struct _XKBTranslatePair {
 };
 
 static _XKBTranslatePair _xkb_keysym_to_keycode[] = {
-	// misc keys
+	// Misc keys.
 
 	{ XKB_KEY_Escape, Key::ESCAPE },
 	{ XKB_KEY_Tab, Key::TAB },
@@ -90,8 +90,8 @@ static _XKBTranslatePair _xkb_keysym_to_keycode[] = {
 	{ XKB_KEY_Begin, Key::CLEAR },
 	{ XKB_KEY_Insert, Key::INSERT },
 	{ XKB_KEY_Delete, Key::KEY_DELETE },
-	//{ XKB_KEY_KP_Equal,                Key::EQUAL   },
-	//{ XKB_KEY_KP_Separator,            Key::COMMA   },
+	{ XKB_KEY_KP_Equal, Key::EQUAL },
+	{ XKB_KEY_KP_Separator, Key::COMMA },
 	{ XKB_KEY_KP_Decimal, Key::KP_PERIOD },
 	{ XKB_KEY_KP_Delete, Key::KP_PERIOD },
 	{ XKB_KEY_KP_Multiply, Key::KP_MULTIPLY },
@@ -109,7 +109,7 @@ static _XKBTranslatePair _xkb_keysym_to_keycode[] = {
 	{ XKB_KEY_KP_8, Key::KP_8 },
 	{ XKB_KEY_KP_9, Key::KP_9 },
 
-	// same but with numlock
+	// Same but with numlock.
 	{ XKB_KEY_KP_Insert, Key::KP_0 },
 	{ XKB_KEY_KP_End, Key::KP_1 },
 	{ XKB_KEY_KP_Down, Key::KP_2 },
@@ -137,7 +137,7 @@ static _XKBTranslatePair _xkb_keysym_to_keycode[] = {
 	{ XKB_KEY_F15, Key::F15 },
 	{ XKB_KEY_F16, Key::F16 },
 
-	// media keys
+	// Media keys.
 	{ XKB_KEY_XF86Back, Key::BACK },
 	{ XKB_KEY_XF86Forward, Key::FORWARD },
 	{ XKB_KEY_XF86Stop, Key::STOP },
@@ -156,7 +156,7 @@ static _XKBTranslatePair _xkb_keysym_to_keycode[] = {
 	{ XKB_KEY_XF86AudioNext, Key::MEDIANEXT },
 	{ XKB_KEY_XF86AudioRecord, Key::MEDIARECORD },
 
-	// launch keys
+	// Launch keys.
 	{ XKB_KEY_XF86Mail, Key::LAUNCHMAIL },
 	{ XKB_KEY_XF86MyComputer, Key::LAUNCH0 },
 	{ XKB_KEY_XF86Calculator, Key::LAUNCH1 },
@@ -214,7 +214,7 @@ static _TranslatePair _scancode_to_keycode[] = {
 	{ Key::BRACELEFT, 0x22 },
 	{ Key::BRACERIGHT, 0x23 },
 	{ Key::ENTER, 0x24 },
-	{ Key::CTRL, 0x25 },
+	{ Key::CTRL, 0x25 }, // Left.
 	{ Key::A, 0x26 },
 	{ Key::S, 0x27 },
 	{ Key::D, 0x28 },
@@ -227,7 +227,7 @@ static _TranslatePair _scancode_to_keycode[] = {
 	{ Key::SEMICOLON, 0x2F },
 	{ Key::APOSTROPHE, 0x30 },
 	{ Key::QUOTELEFT, 0x31 },
-	{ Key::SHIFT, 0x32 },
+	{ Key::SHIFT, 0x32 }, // Left.
 	{ Key::BACKSLASH, 0x33 },
 	{ Key::Z, 0x34 },
 	{ Key::X, 0x35 },
@@ -239,7 +239,7 @@ static _TranslatePair _scancode_to_keycode[] = {
 	{ Key::COMMA, 0x3B },
 	{ Key::PERIOD, 0x3C },
 	{ Key::SLASH, 0x3D },
-	{ Key::SHIFT, 0x3E },
+	{ Key::SHIFT, 0x3E }, // Right.
 	{ Key::KP_MULTIPLY, 0x3F },
 	{ Key::ALT, 0x40 },
 	{ Key::SPACE, 0x41 },
@@ -269,14 +269,26 @@ static _TranslatePair _scancode_to_keycode[] = {
 	{ Key::KP_3, 0x59 },
 	{ Key::KP_0, 0x5A },
 	{ Key::KP_PERIOD, 0x5B },
-	//{ Key::???, 0x5E }, //NON US BACKSLASH
+	//{ Key::???, 0x5E }, // NON US BACKSLASH.
 	{ Key::F11, 0x5F },
 	{ Key::F12, 0x60 },
+	//{ Key::???, 0x5C },
+	//{ Key::???, 0x5D }, // Zenkaku Hankaku.
+	{ Key::SECTION, 0x5E },
+	{ Key::F11, 0x5F },
+	{ Key::F12, 0x60 },
+	//{ Key::???, 0x61 }, // Romaji.
+	//{ Key::???, 0x62 }, // Katakana.
+	//{ Key::???, 0x63 }, // Hiragana.
+	//{ Key::???, 0x64 }, // Henkan.
+	//{ Key::???, 0x65 }, // Hiragana Katakana.
+	//{ Key::???, 0x66 }, // Muhenkan.
+	{ Key::COMMA, 0x67 },
 	{ Key::KP_ENTER, 0x68 },
-	{ Key::CTRL, 0x69 },
+	{ Key::CTRL, 0x69 }, // Right.
 	{ Key::KP_DIVIDE, 0x6A },
 	{ Key::PRINT, 0x6B },
-	{ Key::ALT, 0x6C },
+	{ Key::ALT, 0x6C }, // Right.
 	{ Key::ENTER, 0x6D },
 	{ Key::HOME, 0x6E },
 	{ Key::UP, 0x6F },
@@ -288,13 +300,26 @@ static _TranslatePair _scancode_to_keycode[] = {
 	{ Key::PAGEDOWN, 0x75 },
 	{ Key::INSERT, 0x76 },
 	{ Key::KEY_DELETE, 0x77 },
+	//{ Key::???, 0x78 }, // Macro.
 	{ Key::VOLUMEMUTE, 0x79 },
 	{ Key::VOLUMEDOWN, 0x7A },
 	{ Key::VOLUMEUP, 0x7B },
+	//{ Key::???, 0x7C }, // Power.
+	{ Key::EQUAL, 0x7D },
+	//{ Key::???, 0x7E }, // KP_PlusMinus.
 	{ Key::PAUSE, 0x7F },
-	{ Key::SUPER_L, 0x85 },
-	{ Key::SUPER_R, 0x86 },
+	{ Key::LAUNCH0, 0x80 },
+	{ Key::COMMA, 0x81 }, // KP_Comma.
+	{ Key::YEN, 0x84 },
+	{ Key::META, 0x85 }, // Left.
+	{ Key::META, 0x86 }, // Right.
 	{ Key::MENU, 0x87 },
+
+	{ Key::BACK, 0xA6 }, // On Chromebooks.
+	{ Key::FORWARD, 0xA7 }, // On Chromebooks.
+
+	{ Key::REFRESH, 0xB5 }, // On Chromebooks.
+
 	{ Key::UNKNOWN, 0 }
 };
 
@@ -323,12 +348,12 @@ xkb_keycode_t KeyMappingXKB::get_xkb_keycode(Key p_keysym) {
 }
 
 Key KeyMappingXKB::get_keycode(xkb_keysym_t p_keysym) {
-	// kinda bruteforce.. could optimize.
+	// Kinda bruteforce.. could optimize.
 
 	if (p_keysym < 0x100) // Latin 1, maps 1-1
 		return (Key)p_keysym;
 
-	// look for special key
+	// Look for special key.
 	for (int idx = 0; _xkb_keysym_to_keycode[idx].keysym != 0; idx++) {
 		if (_xkb_keysym_to_keycode[idx].keysym == p_keysym)
 			return _xkb_keysym_to_keycode[idx].keycode;
