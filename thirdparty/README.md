@@ -35,7 +35,7 @@ Includes some patches in the `patches` folder which have been sent upstream.
 ## certs
 
 - Upstream: Mozilla, via https://github.com/bagder/ca-bundle
-- Version: git (b2f7415648411b6fd7c298c6c92d6552f0165f60, 2022)
+- Version: git (8bcd1092d29849d9fe0a3261ab3bb875eb410694, 2023)
 - License: MPL 2.0
 
 
