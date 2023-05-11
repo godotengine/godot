@@ -253,6 +253,18 @@
 				[b]Note:[/b] As this method walks upwards in the scene tree, it can be slow in large, deeply nested scene trees. Whenever possible, consider using [method get_node] with unique names instead (see [member unique_name_in_owner]), or caching the node references into variable.
 			</description>
 		</method>
+		<method name="get_ancestor_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of ancestor nodes.
+			</description>
+		</method>
+		<method name="get_ancestors" qualifiers="const">
+			<return type="Node[]" />
+			<description>
+				Returns an array of references to node's ancestors.
+			</description>
+		</method>
 		<method name="get_child" qualifiers="const">
 			<return type="Node" />
 			<param index="0" name="idx" type="int" />
@@ -294,18 +306,6 @@
 			<description>
 				Returns an array of references to node's descendants.
 				If [param include_internal] is [code]false[/code], the returned array won't include internal descendants (see [code]internal[/code] parameter in [method add_child]).
-			</description>
-		</method>
-		<method name="get_ancestor_count" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns the number of ancestor nodes.
-			</description>
-		</method>
-		<method name="get_ancestors" qualifiers="const">
-			<return type="Node[]" />
-			<description>
-				Returns an array of references to node's ancestors.
 			</description>
 		</method>
 		<method name="get_groups" qualifiers="const">
