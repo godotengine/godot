@@ -1301,6 +1301,15 @@ int Node::get_descendant_count(bool p_include_internal) const {
 	}
 	return count;
 }
+int Node::get_ancestor_count() const {
+	int count = 0;
+	const Node* current_node = this;
+	while (current_node->get_parent() != nullptr){
+		count++;
+		current_node = current_node->get_parent();
+	}
+	return count;
+}
 
 TypedArray<Node> Node::get_descendants(bool p_include_internal) const {
 	TypedArray<Node> res = get_children(p_include_internal);
@@ -2884,6 +2893,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_child", "idx", "include_internal"), &Node::get_child, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_descendants", "include_internal"), &Node::get_descendants, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_descendant_count", "include_internal"), &Node::get_descendant_count, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_ancestor_count"), &Node::get_ancestor_count);
 	ClassDB::bind_method(D_METHOD("has_node", "path"), &Node::has_node);
 	ClassDB::bind_method(D_METHOD("get_node", "path"), &Node::get_node);
 	ClassDB::bind_method(D_METHOD("get_node_or_null", "path"), &Node::get_node_or_null);
