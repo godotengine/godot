@@ -112,6 +112,8 @@
 	for (pos = (decltype(pos))(array)->data; (const char *)pos < ((const char *)(array)->data + (array)->size); (pos)++)
 
 class DisplayServerWayland : public DisplayServer {
+	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+
 	enum class Gesture {
 		NONE,
 		MAGNIFY,
