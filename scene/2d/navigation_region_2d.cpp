@@ -160,15 +160,12 @@ void NavigationRegion2D::_notification(int p_what) {
 					}
 				}
 			}
+			current_global_transform = get_global_transform();
+			NavigationServer2D::get_singleton()->region_set_transform(region, current_global_transform);
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			NavigationServer2D::get_singleton()->region_set_transform(region, get_global_transform());
-			for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
-				if (constrain_avoidance_obstacles[i].is_valid()) {
-					NavigationServer2D::get_singleton()->obstacle_set_position(constrain_avoidance_obstacles[i], get_global_position());
-				}
-			}
+			set_physics_process_internal(true);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -179,6 +176,24 @@ void NavigationRegion2D::_notification(int p_what) {
 			for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
 				if (constrain_avoidance_obstacles[i].is_valid()) {
 					NavigationServer2D::get_singleton()->obstacle_set_map(constrain_avoidance_obstacles[i], RID());
+				}
+			}
+		} break;
+
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			set_physics_process_internal(false);
+			if (is_inside_tree()) {
+				Transform2D new_global_transform = get_global_transform();
+				if (current_global_transform != new_global_transform) {
+					current_global_transform = new_global_transform;
+					NavigationServer2D::get_singleton()->region_set_transform(region, current_global_transform);
+					queue_redraw();
+
+					for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
+						if (constrain_avoidance_obstacles[i].is_valid()) {
+							NavigationServer2D::get_singleton()->obstacle_set_position(constrain_avoidance_obstacles[i], get_global_position());
+						}
+					}
 				}
 			}
 		} break;

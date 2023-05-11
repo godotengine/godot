@@ -54,21 +54,33 @@
 	}
 
 void NavMap::set_up(Vector3 p_up) {
+	if (up == p_up) {
+		return;
+	}
 	up = p_up;
 	regenerate_polygons = true;
 }
 
 void NavMap::set_cell_size(real_t p_cell_size) {
+	if (cell_size == p_cell_size) {
+		return;
+	}
 	cell_size = p_cell_size;
 	regenerate_polygons = true;
 }
 
 void NavMap::set_edge_connection_margin(real_t p_edge_connection_margin) {
+	if (edge_connection_margin == p_edge_connection_margin) {
+		return;
+	}
 	edge_connection_margin = p_edge_connection_margin;
 	regenerate_links = true;
 }
 
 void NavMap::set_link_connection_radius(real_t p_link_connection_radius) {
+	if (link_connection_radius == p_link_connection_radius) {
+		return;
+	}
 	link_connection_radius = p_link_connection_radius;
 	regenerate_links = true;
 }

@@ -47,6 +47,8 @@ class NavigationRegion2D : public Node2D {
 	LocalVector<RID> constrain_avoidance_obstacles;
 	uint32_t avoidance_layers = 1;
 
+	Transform2D current_global_transform;
+
 	void _navigation_polygon_changed();
 	void _map_changed(RID p_RID);
 
