@@ -871,56 +871,75 @@ String EditorPropertyLayersGrid::get_tooltip(const Point2 &p_pos) const {
 	return String();
 }
 
+void EditorPropertyLayersGrid::_update_hovered(const Vector2 &p_position) {
+	bool expand_was_hovered = expand_hovered;
+	expand_hovered = expand_rect.has_point(p_position);
+	if (expand_hovered != expand_was_hovered) {
+		queue_redraw();
+	}
+
+	if (!expand_hovered) {
+		for (int i = 0; i < flag_rects.size(); i++) {
+			if (flag_rects[i].has_point(p_position)) {
+				// Used to highlight the hovered flag in the layers grid.
+				hovered_index = i;
+				queue_redraw();
+				return;
+			}
+		}
+	}
+
+	// Remove highlight when no square is hovered.
+	if (hovered_index != -1) {
+		hovered_index = -1;
+		queue_redraw();
+	}
+}
+
+void EditorPropertyLayersGrid::_on_hover_exit() {
+	if (expand_hovered) {
+		expand_hovered = false;
+		queue_redraw();
+	}
+	if (hovered_index != -1) {
+		hovered_index = -1;
+		queue_redraw();
+	}
+}
+
+void EditorPropertyLayersGrid::_update_flag() {
+	if (hovered_index >= 0) {
+		// Toggle the flag.
+		// We base our choice on the hovered flag, so that it always matches the hovered flag.
+		if (value & (1 << hovered_index)) {
+			value &= ~(1 << hovered_index);
+		} else {
+			value |= (1 << hovered_index);
+		}
+
+		emit_signal(SNAME("flag_changed"), value);
+		queue_redraw();
+	} else if (expand_hovered) {
+		expanded = !expanded;
+		update_minimum_size();
+		queue_redraw();
+	}
+}
+
 void EditorPropertyLayersGrid::gui_input(const Ref<InputEvent> &p_ev) {
 	if (read_only) {
 		return;
 	}
 	const Ref<InputEventMouseMotion> mm = p_ev;
 	if (mm.is_valid()) {
-		bool expand_was_hovered = expand_hovered;
-		expand_hovered = expand_rect.has_point(mm->get_position());
-		if (expand_hovered != expand_was_hovered) {
-			queue_redraw();
-		}
-
-		if (!expand_hovered) {
-			for (int i = 0; i < flag_rects.size(); i++) {
-				if (flag_rects[i].has_point(mm->get_position())) {
-					// Used to highlight the hovered flag in the layers grid.
-					hovered_index = i;
-					queue_redraw();
-					return;
-				}
-			}
-		}
-
-		// Remove highlight when no square is hovered.
-		if (hovered_index != -1) {
-			hovered_index = -1;
-			queue_redraw();
-		}
-
+		_update_hovered(mm->get_position());
 		return;
 	}
 
 	const Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
-		if (hovered_index >= 0) {
-			// Toggle the flag.
-			// We base our choice on the hovered flag, so that it always matches the hovered flag.
-			if (value & (1 << hovered_index)) {
-				value &= ~(1 << hovered_index);
-			} else {
-				value |= (1 << hovered_index);
-			}
-
-			emit_signal(SNAME("flag_changed"), value);
-			queue_redraw();
-		} else if (expand_hovered) {
-			expanded = !expanded;
-			update_minimum_size();
-			queue_redraw();
-		}
+		_update_hovered(mb->get_position());
+		_update_flag();
 	}
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 		if (hovered_index >= 0) {
@@ -1055,14 +1074,7 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_MOUSE_EXIT: {
-			if (expand_hovered) {
-				expand_hovered = false;
-				queue_redraw();
-			}
-			if (hovered_index != -1) {
-				hovered_index = -1;
-				queue_redraw();
-			}
+			_on_hover_exit();
 		} break;
 	}
 }
@@ -1140,6 +1152,12 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 
 		case LAYER_NAVIGATION_3D: {
 			basename = "layer_names/3d_navigation";
+			layer_group_size = 4;
+			layer_count = 32;
+		} break;
+
+		case LAYER_AVOIDANCE: {
+			basename = "layer_names/avoidance";
 			layer_group_size = 4;
 			layer_count = 32;
 		} break;
@@ -3989,7 +4007,6 @@ void EditorPropertyResource::_viewport_selected(const NodePath &p_path) {
 	Ref<ViewportTexture> vt;
 	vt.instantiate();
 	vt->set_viewport_path_in_scene(get_tree()->get_edited_scene_root()->get_path_to(to_node));
-	vt->setup_local_to_scene();
 
 	emit_changed(get_edited_property(), vt);
 	update_property();
@@ -4272,7 +4289,8 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 					p_hint == PROPERTY_HINT_LAYERS_2D_NAVIGATION ||
 					p_hint == PROPERTY_HINT_LAYERS_3D_PHYSICS ||
 					p_hint == PROPERTY_HINT_LAYERS_3D_RENDER ||
-					p_hint == PROPERTY_HINT_LAYERS_3D_NAVIGATION) {
+					p_hint == PROPERTY_HINT_LAYERS_3D_NAVIGATION ||
+					p_hint == PROPERTY_HINT_LAYERS_AVOIDANCE) {
 				EditorPropertyLayers::LayerType lt = EditorPropertyLayers::LAYER_RENDER_2D;
 				switch (p_hint) {
 					case PROPERTY_HINT_LAYERS_2D_RENDER:
@@ -4292,6 +4310,9 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 						break;
 					case PROPERTY_HINT_LAYERS_3D_NAVIGATION:
 						lt = EditorPropertyLayers::LAYER_NAVIGATION_3D;
+						break;
+					case PROPERTY_HINT_LAYERS_AVOIDANCE:
+						lt = EditorPropertyLayers::LAYER_AVOIDANCE;
 						break;
 					default: {
 					} //compiler could be smarter here and realize this can't happen

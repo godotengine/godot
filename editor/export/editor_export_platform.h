@@ -43,6 +43,8 @@ struct EditorProgress;
 
 class EditorExportPlugin;
 
+const String ENV_SCRIPT_ENCRYPTION_KEY = "GODOT_SCRIPT_ENCRYPTION_KEY";
+
 class EditorExportPlatform : public RefCounted {
 	GDCLASS(EditorExportPlatform, RefCounted);
 
@@ -116,6 +118,7 @@ private:
 	bool _is_editable_ancestor(Node *p_root, Node *p_node);
 
 	String _export_customize(const String &p_path, LocalVector<Ref<EditorExportPlugin>> &customize_resources_plugins, LocalVector<Ref<EditorExportPlugin>> &customize_scenes_plugins, HashMap<String, FileExportCache> &export_cache, const String &export_base_path, bool p_force_save);
+	String _get_script_encryption_key(const Ref<EditorExportPreset> &p_preset) const;
 
 protected:
 	struct ExportNotifier {
@@ -143,11 +146,13 @@ public:
 		PropertyInfo option;
 		Variant default_value;
 		bool update_visibility = false;
+		bool required = false;
 
-		ExportOption(const PropertyInfo &p_info, const Variant &p_default, bool p_update_visibility = false) :
+		ExportOption(const PropertyInfo &p_info, const Variant &p_default, bool p_update_visibility = false, bool p_required = false) :
 				option(p_info),
 				default_value(p_default),
-				update_visibility(p_update_visibility) {
+				update_visibility(p_update_visibility),
+				required(p_required) {
 		}
 		ExportOption() {}
 	};
@@ -194,11 +199,14 @@ public:
 		return worst_type;
 	}
 
+	static Vector<String> get_forced_export_files();
+
 	virtual bool fill_log_messages(RichTextLabel *p_log, Error p_err);
 
-	virtual void get_export_options(List<ExportOption> *r_options) = 0;
+	virtual void get_export_options(List<ExportOption> *r_options) const = 0;
 	virtual bool should_update_export_options() { return false; }
-	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option, const HashMap<StringName, Variant> &p_options) const { return true; }
+	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const { return true; }
+	virtual String get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const { return String(); }
 
 	virtual String get_os_name() const = 0;
 	virtual String get_name() const = 0;

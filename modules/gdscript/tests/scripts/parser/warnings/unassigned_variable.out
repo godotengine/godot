@@ -2,4 +2,4 @@ GDTEST_OK
 >> WARNING
 >> Line: 2
 >> UNASSIGNED_VARIABLE
->> The variable '__' was used but never assigned a value.
+>> The variable "__" was used but never assigned a value.

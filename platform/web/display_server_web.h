@@ -37,6 +37,8 @@
 #include <emscripten/html5.h>
 
 class DisplayServerWeb : public DisplayServer {
+	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+
 private:
 	struct JSTouchEvent {
 		uint32_t identifier[32] = { 0 };

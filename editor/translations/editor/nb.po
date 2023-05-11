@@ -23,13 +23,14 @@
 # Imre Kristoffer Eilertsen <imreeil42@gmail.com>, 2022.
 # Edvard Ekrem Sæther <edvardekrem@gmail.com>, 2022.
 # Changry <c@changry.no>, 2022.
+# Karl-Robert Rønning <karlyarly@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-01-17 13:54+0000\n"
-"Last-Translator: Elias <eliasnykrem@gmail.com>\n"
+"PO-Revision-Date: 2023-04-10 08:37+0000\n"
+"Last-Translator: Karl-Robert Rønning <karlyarly@gmail.com>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb_NO/>\n"
 "Language: nb\n"
@@ -37,7 +38,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.15.1-dev\n"
+"X-Generator: Weblate 4.17-dev\n"
 
 msgid "Button"
 msgstr "Knapp"
@@ -303,7 +304,7 @@ msgid "Methods"
 msgstr "Metoder"
 
 msgid "Audio"
-msgstr "Lyd"
+msgstr "lyd"
 
 msgid "Clipboard is empty!"
 msgstr "Utklippsbordet er tomt!"
@@ -556,6 +557,9 @@ msgstr "Skjermer"
 
 msgid "Monitor"
 msgstr "Skjerm"
+
+msgid "Value"
+msgstr "Verdi"
 
 msgid "Stop"
 msgstr "Stopp avspilling"
@@ -899,6 +903,9 @@ msgstr "Nodenavn:"
 msgid "Navigation"
 msgstr "Navigasjon"
 
+msgid "OpenGL"
+msgstr "OpenGL"
+
 msgid "File '%s' format is invalid, import aborted."
 msgstr "Filformatet til '%s' er ugyldig, importen ble avbrutt."
 
@@ -1070,6 +1077,9 @@ msgstr "Gjennomsøk kilder"
 msgid "(Re)Importing Assets"
 msgstr "(Re)Importerer Assets"
 
+msgid "Experimental"
+msgstr "Eksperimentell"
+
 msgid "Top"
 msgstr "Topp"
 
@@ -1104,7 +1114,7 @@ msgid "Styles"
 msgstr "Stiler"
 
 msgid "Enumerations"
-msgstr "Nummereringer"
+msgstr "Opplistinger"
 
 msgid ""
 "There is currently no description for this property. Please help us by "
@@ -2162,6 +2172,9 @@ msgstr "Blend-Tid:"
 msgid "Transition exists!"
 msgstr "Overgang eksisterer!"
 
+msgid "To"
+msgstr "Til"
+
 msgid "Immediate"
 msgstr "Umiddelbart"
 
@@ -2495,6 +2508,9 @@ msgstr "Tilfeldig Skala:"
 msgid "Amount:"
 msgstr "Mengde:"
 
+msgid "Orthogonal"
+msgstr "Ortogonal"
+
 msgid "Perspective"
 msgstr "Perspektiv"
 
@@ -2515,6 +2531,9 @@ msgstr "Oversett"
 
 msgid "Rotating %s degrees."
 msgstr "Roterer %s grader."
+
+msgid "Shadow Atlas"
+msgstr "Skyggeatlas"
 
 msgid "View Information"
 msgstr "Vis Informasjon"
@@ -2547,7 +2566,7 @@ msgid "Switch Perspective/Orthogonal View"
 msgstr "Bytt Perspektiv/Ortogonal Fremvisning"
 
 msgid "Transform"
-msgstr "Transformer"
+msgstr "Omforme"
 
 msgid "Snap Object to Floor"
 msgstr "Snap Objekt til Gulv"
@@ -2909,6 +2928,15 @@ msgstr "Vend horisontalt"
 msgid "Flip Vertically"
 msgstr "Vend loddrett"
 
+msgid "Tiles"
+msgstr "Fliser"
+
+msgid "Atlas"
+msgstr "Atlas"
+
+msgid "Custom Data"
+msgstr "Egendefinerte data"
+
 msgid "Yes"
 msgstr "Ja"
 
@@ -2917,6 +2945,9 @@ msgstr "Feil"
 
 msgid "Commit"
 msgstr "Sjekk inn"
+
+msgid "SSH Passphrase"
+msgstr "SSH-passord"
 
 msgid "Commit Changes"
 msgstr "Sjekk inn endringer"
@@ -2932,6 +2963,9 @@ msgstr "Legg til inndata"
 
 msgid "Boolean"
 msgstr "Boolsk verdi"
+
+msgid "Fragment"
+msgstr "Fragment"
 
 msgid "Light"
 msgstr "Lys"
@@ -3062,6 +3096,9 @@ msgstr "Slett objektet"
 msgid "Localization"
 msgstr "Lokalisering"
 
+msgid "Autoload"
+msgstr "Last automatisk"
+
 msgid "Plugins"
 msgstr "Plugins"
 
@@ -3153,7 +3190,7 @@ msgid "%s/s"
 msgstr "%s/s"
 
 msgid "Config"
-msgstr "Konfig"
+msgstr "konfigurer"
 
 msgid "Size"
 msgstr "Størrelse"
@@ -3169,6 +3206,9 @@ msgstr "Lager konturer..."
 
 msgid "Done!"
 msgstr "Ferdig"
+
+msgid "Pose"
+msgstr "Positur"
 
 msgid "Select device from the list"
 msgstr "Velg enhet fra listen"

@@ -226,6 +226,11 @@ void Skeleton3D::_update_process_order() {
 
 void Skeleton3D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if (dirty) {
+				notification(NOTIFICATION_UPDATE_SKELETON);
+			}
+		} break;
 		case NOTIFICATION_UPDATE_SKELETON: {
 			RenderingServer *rs = RenderingServer::get_singleton();
 			Bone *bonesptr = bones.ptrw();
@@ -629,7 +634,9 @@ void Skeleton3D::_make_dirty() {
 		return;
 	}
 
-	MessageQueue::get_singleton()->push_notification(this, NOTIFICATION_UPDATE_SKELETON);
+	if (is_inside_tree()) {
+		notify_deferred_thread_group(NOTIFICATION_UPDATE_SKELETON);
+	}
 	dirty = true;
 }
 

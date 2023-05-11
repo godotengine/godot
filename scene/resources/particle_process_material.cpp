@@ -419,7 +419,7 @@ void ParticleProcessMaterial::_update_shader() {
 	if (tex_parameters[PARAM_ANGLE].is_valid()) {
 		code += "	float tex_angle = textureLod(angle_texture, vec2(0.0, 0.0), 0.0).r;\n";
 	} else {
-		code += "	float tex_angle = 0.0;\n";
+		code += "	float tex_angle = 1.0;\n";
 	}
 
 	if (tex_parameters[PARAM_ANIM_OFFSET].is_valid()) {
@@ -737,7 +737,7 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "			VELOCITY = normalize(VELOCITY) * v;\n";
 	code += "		}\n";
 	code += "	}\n";
-	code += "	float base_angle = (tex_angle) * mix(initial_angle_min, initial_angle_max, rand_from_seed(alt_seed));\n";
+	code += "	float base_angle = (tex_angle) * mix(initial_angle_min, initial_angle_max, angle_rand);\n";
 	code += "	base_angle += CUSTOM.y * LIFETIME * (tex_angular_velocity) * mix(angular_velocity_min,angular_velocity_max, rand_from_seed(alt_seed));\n";
 	code += "	CUSTOM.x = base_angle * degree_to_rad;\n"; // angle
 	code += "	CUSTOM.z = (tex_anim_offset) * mix(anim_offset_min, anim_offset_max, rand_from_seed(alt_seed)) + tv * tex_anim_speed * mix(anim_speed_min, anim_speed_max, rand_from_seed(alt_seed));\n"; // angle
@@ -915,7 +915,7 @@ void ParticleProcessMaterial::flush_changes() {
 void ParticleProcessMaterial::_queue_shader_change() {
 	MutexLock lock(material_mutex);
 
-	if (is_initialized && !element.in_list()) {
+	if (_is_initialized() && !element.in_list()) {
 		dirty_materials->add(&element);
 	}
 }
@@ -1889,8 +1889,7 @@ ParticleProcessMaterial::ParticleProcessMaterial() :
 
 	current_key.invalid_key = 1;
 
-	is_initialized = true;
-	_queue_shader_change();
+	_mark_initialized(callable_mp(this, &ParticleProcessMaterial::_queue_shader_change));
 }
 
 ParticleProcessMaterial::~ParticleProcessMaterial() {

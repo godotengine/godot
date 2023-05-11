@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationNodeTransition" inherits="AnimationNodeSync" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A generic animation transition node for [AnimationTree].
+		A transition within an [AnimationTree] connecting two [AnimationNode]s.
 	</brief_description>
 	<description>
 		Simple state machine for cases which don't require a more advanced [AnimationNodeStateMachine]. Animations can be connected to the inputs and transition times can be specified.
@@ -37,7 +37,7 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
-		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>

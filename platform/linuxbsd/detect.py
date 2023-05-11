@@ -58,6 +58,16 @@ def get_opts():
     ]
 
 
+def get_doc_classes():
+    return [
+        "EditorExportPlatformLinuxBSD",
+    ]
+
+
+def get_doc_path():
+    return "doc_classes"
+
+
 def get_flags():
     return [
         ("arch", detect_arch()),
@@ -489,6 +499,9 @@ def configure(env: "Environment"):
                 env.Append(LINKFLAGS=["-T", "platform/linuxbsd/pck_embed.ld"])
             else:
                 env.Append(LINKFLAGS=["-T", "platform/linuxbsd/pck_embed.legacy.ld"])
+
+    if platform.system() == "FreeBSD":
+        env.Append(LINKFLAGS=["-lkvm"])
 
     ## Cross-compilation
     # TODO: Support cross-compilation on architectures other than x86.

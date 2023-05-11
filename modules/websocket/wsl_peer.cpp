@@ -379,7 +379,6 @@ void WSLPeer::_do_client_handshake() {
 				// Header is too big
 				close(-1);
 				ERR_FAIL_MSG("Response headers too big.");
-				return;
 			}
 
 			uint8_t byte;
@@ -402,7 +401,6 @@ void WSLPeer::_do_client_handshake() {
 				if (!_verify_server_response()) {
 					close(-1);
 					ERR_FAIL_MSG("Invalid response headers.");
-					return;
 				}
 				wslay_event_context_client_init(&wsl_ctx, &_wsl_callbacks, this);
 				wslay_event_config_set_max_recv_msg_length(wsl_ctx, inbound_buffer_size);
@@ -469,7 +467,6 @@ bool WSLPeer::_verify_server_response() {
 		}
 		if (!valid) {
 			ERR_FAIL_V_MSG(false, "Received unrequested sub-protocol -> " + selected_protocol);
-			return false;
 		}
 	}
 	return true;

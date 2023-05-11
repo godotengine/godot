@@ -472,7 +472,7 @@ TEST_CASE_TEMPLATE("[Math] wrapf", T, float, double) {
 
 	CHECK(Math::wrapf(300'000'000'000.0, -20.0, 160.0) == doctest::Approx((T)120.0));
 	// float's precision is too low for 300'000'000'000.0, so we reduce it by a factor of 1000.
-	CHECK(Math::wrapf((float)300'000'000.0, (float)-20.0, (float)160.0) == doctest::Approx((T)128.0));
+	CHECK(Math::wrapf((float)15'000'000.0, (float)-20.0, (float)160.0) == doctest::Approx((T)60.0));
 }
 
 TEST_CASE_TEMPLATE("[Math] fract", T, float, double) {

@@ -584,6 +584,7 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		//builtins
 
 		actions.renames["TIME"] = "global_time";
+		actions.renames["EXPOSURE"] = "(1.0 / scene_data_block.data.emissive_exposure_normalization)";
 		actions.renames["PI"] = _MKSTR(Math_PI);
 		actions.renames["TAU"] = _MKSTR(Math_TAU);
 		actions.renames["E"] = _MKSTR(Math_E);
@@ -631,7 +632,7 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["CAMERA_POSITION_WORLD"] = "scene_data.inv_view_matrix[3].xyz";
 		actions.renames["CAMERA_DIRECTION_WORLD"] = "scene_data.view_matrix[3].xyz";
 		actions.renames["CAMERA_VISIBLE_LAYERS"] = "scene_data.camera_visible_layers";
-		actions.renames["NODE_POSITION_VIEW"] = "(read_model_matrix * scene_data.view_matrix)[3].xyz";
+		actions.renames["NODE_POSITION_VIEW"] = "(scene_data.view_matrix * read_model_matrix)[3].xyz";
 
 		actions.renames["VIEW_INDEX"] = "ViewIndex";
 		actions.renames["VIEW_MONO_LEFT"] = "0";
@@ -640,7 +641,9 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 
 		//for light
 		actions.renames["VIEW"] = "view";
+		actions.renames["SPECULAR_AMOUNT"] = "specular_amount";
 		actions.renames["LIGHT_COLOR"] = "light_color";
+		actions.renames["LIGHT_IS_DIRECTIONAL"] = "is_directional";
 		actions.renames["LIGHT"] = "light";
 		actions.renames["ATTENUATION"] = "attenuation";
 		actions.renames["DIFFUSE_LIGHT"] = "diffuse_light";

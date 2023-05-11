@@ -47,6 +47,7 @@ class TabContainer;
 class TextureRect;
 class Tree;
 class VSplitContainer;
+class WindowWrapper;
 
 class EditorSyntaxHighlighter : public SyntaxHighlighter {
 	GDCLASS(EditorSyntaxHighlighter, SyntaxHighlighter)
@@ -169,8 +170,7 @@ public:
 	virtual void clear_executing_line() = 0;
 	virtual void trim_trailing_whitespace() = 0;
 	virtual void insert_final_newline() = 0;
-	virtual void convert_indent_to_spaces() = 0;
-	virtual void convert_indent_to_tabs() = 0;
+	virtual void convert_indent() = 0;
 	virtual void ensure_focus() = 0;
 	virtual void tag_saved_version() = 0;
 	virtual void reload(bool p_soft) {}
@@ -237,7 +237,7 @@ class ScriptEditor : public PanelContainer {
 		WINDOW_NEXT,
 		WINDOW_PREV,
 		WINDOW_SORT,
-		WINDOW_SELECT_BASE = 100
+		WINDOW_SELECT_BASE = 100,
 	};
 
 	enum {
@@ -273,6 +273,7 @@ class ScriptEditor : public PanelContainer {
 
 	Button *help_search = nullptr;
 	Button *site_search = nullptr;
+	Button *make_floating = nullptr;
 	EditorHelpSearch *help_search_dialog = nullptr;
 
 	ItemList *script_list = nullptr;
@@ -308,6 +309,8 @@ class ScriptEditor : public PanelContainer {
 	FindInFilesDialog *find_in_files_dialog = nullptr;
 	FindInFilesPanel *find_in_files = nullptr;
 	Button *find_in_files_button = nullptr;
+
+	WindowWrapper *window_wrapper = nullptr;
 
 	enum {
 		SCRIPT_EDITOR_FUNC_MAX = 32,
@@ -390,7 +393,6 @@ class ScriptEditor : public PanelContainer {
 
 	bool open_textfile_after_create = true;
 	bool trim_trailing_whitespace_on_save;
-	bool use_space_indentation;
 	bool convert_indent_on_save;
 
 	void _goto_script_line2(int p_line);
@@ -481,7 +483,10 @@ class ScriptEditor : public PanelContainer {
 	void _start_find_in_files(bool with_replace);
 	void _on_find_in_files_modified_files(PackedStringArray paths);
 
+	void _window_changed(bool p_visible);
+
 	static void _open_script_request(const String &p_path);
+	void _close_builtin_scripts_from_scene(const String &p_scene);
 
 	static ScriptEditor *script_editor;
 
@@ -523,8 +528,6 @@ public:
 	void notify_script_close(const Ref<Script> &p_script);
 	void notify_script_changed(const Ref<Script> &p_script);
 
-	void close_builtin_scripts_from_scene(const String &p_scene);
-
 	void goto_help(const String &p_desc) { _help_class_goto(p_desc); }
 	void update_doc(const String &p_name);
 	void clear_docs_from_script(const Ref<Script> &p_script);
@@ -541,7 +544,7 @@ public:
 
 	static void register_create_script_editor_function(CreateScriptEditorFunc p_func);
 
-	ScriptEditor();
+	ScriptEditor(WindowWrapper *p_wrapper);
 	~ScriptEditor();
 };
 
@@ -549,6 +552,17 @@ class ScriptEditorPlugin : public EditorPlugin {
 	GDCLASS(ScriptEditorPlugin, EditorPlugin);
 
 	ScriptEditor *script_editor = nullptr;
+	WindowWrapper *window_wrapper = nullptr;
+
+	String last_editor;
+
+	void _focus_another_editor();
+
+	void _save_last_editor(String p_editor);
+	void _window_visibility_changed(bool p_visible);
+
+protected:
+	void _notification(int p_what);
 
 public:
 	virtual String get_name() const override { return "Script"; }

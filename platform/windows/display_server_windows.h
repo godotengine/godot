@@ -280,8 +280,7 @@ typedef struct {
 } ICONDIR, *LPICONDIR;
 
 class DisplayServerWindows : public DisplayServer {
-	//No need to register, it's platform-specific and nothing is added
-	//GDCLASS(DisplayServerWindows, DisplayServer)
+	// No need to register with GDCLASS, it's platform-specific and nothing is added.
 
 	_THREAD_SAFE_CLASS_
 
@@ -523,6 +522,7 @@ public:
 
 	virtual int get_screen_count() const override;
 	virtual int get_primary_screen() const override;
+	virtual int get_keyboard_focus_screen() const override;
 	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;

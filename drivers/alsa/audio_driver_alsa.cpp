@@ -44,7 +44,8 @@ extern int initialize_pulse(int verbose);
 #endif
 
 Error AudioDriverALSA::init_output_device() {
-	mix_rate = GLOBAL_GET("audio/driver/mix_rate");
+	mix_rate = _get_configured_mix_rate();
+
 	speaker_mode = SPEAKER_MODE_STEREO;
 	channels = 2;
 
@@ -169,6 +170,18 @@ Error AudioDriverALSA::init() {
 		return ERR_CANT_OPEN;
 	}
 #endif
+	bool ver_ok = false;
+	String version = String::utf8(snd_asoundlib_version());
+	Vector<String> ver_parts = version.split(".");
+	if (ver_parts.size() >= 2) {
+		ver_ok = ((ver_parts[0].to_int() == 1 && ver_parts[1].to_int() >= 1)) || (ver_parts[0].to_int() > 1); // 1.1.0
+	}
+	print_verbose(vformat("ALSA %s detected.", version));
+	if (!ver_ok) {
+		print_verbose("Unsupported ALSA library version!");
+		return ERR_CANT_OPEN;
+	}
+
 	active.clear();
 	exit_thread.clear();
 
@@ -326,7 +339,9 @@ void AudioDriverALSA::finish_output_device() {
 
 void AudioDriverALSA::finish() {
 	exit_thread.set();
-	thread.wait_to_finish();
+	if (thread.is_started()) {
+		thread.wait_to_finish();
+	}
 
 	finish_output_device();
 }

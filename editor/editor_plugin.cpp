@@ -31,15 +31,13 @@
 #include "editor_plugin.h"
 
 #include "editor/debugger/editor_debugger_node.h"
-#include "editor/editor_command_palette.h"
+#include "editor/editor_file_system.h"
+#include "editor/editor_inspector.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_resource_preview.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/export/editor_export.h"
-#include "editor/filesystem_dock.h"
 #include "editor/gui/editor_title_bar.h"
 #include "editor/import/editor_import_plugin.h"
 #include "editor/import/resource_importer_scene.h"
@@ -51,362 +49,10 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/project_settings_editor.h"
 #include "editor/scene_tree_dock.h"
-#include "main/main.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/popup_menu.h"
 #include "servers/rendering_server.h"
 
-TypedArray<Texture2D> EditorInterface::_make_mesh_previews(const TypedArray<Mesh> &p_meshes, int p_preview_size) {
-	Vector<Ref<Mesh>> meshes;
-
-	for (int i = 0; i < p_meshes.size(); i++) {
-		meshes.push_back(p_meshes[i]);
-	}
-
-	Vector<Ref<Texture2D>> textures = make_mesh_previews(meshes, nullptr, p_preview_size);
-	TypedArray<Texture2D> ret;
-	for (int i = 0; i < textures.size(); i++) {
-		ret.push_back(textures[i]);
-	}
-
-	return ret;
-}
-
-Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform3D> *p_transforms, int p_preview_size) {
-	int size = p_preview_size;
-
-	RID scenario = RS::get_singleton()->scenario_create();
-
-	RID viewport = RS::get_singleton()->viewport_create();
-	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ALWAYS);
-	RS::get_singleton()->viewport_set_scenario(viewport, scenario);
-	RS::get_singleton()->viewport_set_size(viewport, size, size);
-	RS::get_singleton()->viewport_set_transparent_background(viewport, true);
-	RS::get_singleton()->viewport_set_active(viewport, true);
-	RID viewport_texture = RS::get_singleton()->viewport_get_texture(viewport);
-
-	RID camera = RS::get_singleton()->camera_create();
-	RS::get_singleton()->viewport_attach_camera(viewport, camera);
-
-	RID light = RS::get_singleton()->directional_light_create();
-	RID light_instance = RS::get_singleton()->instance_create2(light, scenario);
-
-	RID light2 = RS::get_singleton()->directional_light_create();
-	RS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
-	RID light_instance2 = RS::get_singleton()->instance_create2(light2, scenario);
-
-	EditorProgress ep("mlib", TTR("Creating Mesh Previews"), p_meshes.size());
-
-	Vector<Ref<Texture2D>> textures;
-
-	for (int i = 0; i < p_meshes.size(); i++) {
-		Ref<Mesh> mesh = p_meshes[i];
-		if (!mesh.is_valid()) {
-			textures.push_back(Ref<Texture2D>());
-			continue;
-		}
-
-		Transform3D mesh_xform;
-		if (p_transforms != nullptr) {
-			mesh_xform = (*p_transforms)[i];
-		}
-
-		RID inst = RS::get_singleton()->instance_create2(mesh->get_rid(), scenario);
-		RS::get_singleton()->instance_set_transform(inst, mesh_xform);
-
-		AABB aabb = mesh->get_aabb();
-		Vector3 ofs = aabb.get_center();
-		aabb.position -= ofs;
-		Transform3D xform;
-		xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math_PI / 6);
-		xform.basis = Basis().rotated(Vector3(1, 0, 0), Math_PI / 6) * xform.basis;
-		AABB rot_aabb = xform.xform(aabb);
-		float m = MAX(rot_aabb.size.x, rot_aabb.size.y) * 0.5;
-		if (m == 0) {
-			textures.push_back(Ref<Texture2D>());
-			continue;
-		}
-		xform.origin = -xform.basis.xform(ofs); //-ofs*m;
-		xform.origin.z -= rot_aabb.size.z * 2;
-		xform.invert();
-		xform = mesh_xform * xform;
-
-		RS::get_singleton()->camera_set_transform(camera, xform * Transform3D(Basis(), Vector3(0, 0, 3)));
-		RS::get_singleton()->camera_set_orthogonal(camera, m * 2, 0.01, 1000.0);
-
-		RS::get_singleton()->instance_set_transform(light_instance, xform * Transform3D().looking_at(Vector3(-2, -1, -1), Vector3(0, 1, 0)));
-		RS::get_singleton()->instance_set_transform(light_instance2, xform * Transform3D().looking_at(Vector3(+1, -1, -2), Vector3(0, 1, 0)));
-
-		ep.step(TTR("Thumbnail..."), i);
-		DisplayServer::get_singleton()->process_events();
-		Main::iteration();
-		Main::iteration();
-		Ref<Image> img = RS::get_singleton()->texture_2d_get(viewport_texture);
-		ERR_CONTINUE(!img.is_valid() || img->is_empty());
-		Ref<ImageTexture> it = ImageTexture::create_from_image(img);
-
-		RS::get_singleton()->free(inst);
-
-		textures.push_back(it);
-	}
-
-	RS::get_singleton()->free(viewport);
-	RS::get_singleton()->free(light);
-	RS::get_singleton()->free(light_instance);
-	RS::get_singleton()->free(light2);
-	RS::get_singleton()->free(light_instance2);
-	RS::get_singleton()->free(camera);
-	RS::get_singleton()->free(scenario);
-
-	return textures;
-}
-
-void EditorInterface::set_main_screen_editor(const String &p_name) {
-	EditorNode::get_singleton()->select_editor_by_name(p_name);
-}
-
-VBoxContainer *EditorInterface::get_editor_main_screen() {
-	return EditorNode::get_singleton()->get_main_screen_control();
-}
-
-void EditorInterface::edit_resource(const Ref<Resource> &p_resource) {
-	EditorNode::get_singleton()->edit_resource(p_resource);
-}
-
-void EditorInterface::edit_node(Node *p_node) {
-	EditorNode::get_singleton()->edit_node(p_node);
-}
-
-void EditorInterface::edit_script(const Ref<Script> &p_script, int p_line, int p_col, bool p_grab_focus) {
-	ScriptEditor::get_singleton()->edit(p_script, p_line, p_col, p_grab_focus);
-}
-
-void EditorInterface::open_scene_from_path(const String &scene_path) {
-	if (EditorNode::get_singleton()->is_changing_scene()) {
-		return;
-	}
-
-	EditorNode::get_singleton()->open_request(scene_path);
-}
-
-void EditorInterface::reload_scene_from_path(const String &scene_path) {
-	if (EditorNode::get_singleton()->is_changing_scene()) {
-		return;
-	}
-
-	EditorNode::get_singleton()->reload_scene(scene_path);
-}
-
-void EditorInterface::play_main_scene() {
-	EditorNode::get_singleton()->run_play();
-}
-
-void EditorInterface::play_current_scene() {
-	EditorNode::get_singleton()->run_play_current();
-}
-
-void EditorInterface::play_custom_scene(const String &scene_path) {
-	EditorNode::get_singleton()->run_play_custom(scene_path);
-}
-
-void EditorInterface::stop_playing_scene() {
-	EditorNode::get_singleton()->run_stop();
-}
-
-bool EditorInterface::is_playing_scene() const {
-	return EditorNode::get_singleton()->is_run_playing();
-}
-
-String EditorInterface::get_playing_scene() const {
-	return EditorNode::get_singleton()->get_run_playing_scene();
-}
-
-Node *EditorInterface::get_edited_scene_root() {
-	return EditorNode::get_singleton()->get_edited_scene();
-}
-
-PackedStringArray EditorInterface::get_open_scenes() const {
-	PackedStringArray ret;
-	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
-
-	int scns_amount = scenes.size();
-	for (int idx_scn = 0; idx_scn < scns_amount; idx_scn++) {
-		if (scenes[idx_scn].root == nullptr) {
-			continue;
-		}
-		ret.push_back(scenes[idx_scn].root->get_scene_file_path());
-	}
-	return ret;
-}
-
-ScriptEditor *EditorInterface::get_script_editor() {
-	return ScriptEditor::get_singleton();
-}
-
-void EditorInterface::select_file(const String &p_file) {
-	FileSystemDock::get_singleton()->select_file(p_file);
-}
-
-Vector<String> EditorInterface::get_selected_paths() const {
-	return FileSystemDock::get_singleton()->get_selected_paths();
-}
-
-String EditorInterface::get_current_path() const {
-	return FileSystemDock::get_singleton()->get_current_path();
-}
-
-String EditorInterface::get_current_directory() const {
-	return FileSystemDock::get_singleton()->get_current_directory();
-}
-
-void EditorInterface::inspect_object(Object *p_obj, const String &p_for_property, bool p_inspector_only) {
-	EditorNode::get_singleton()->push_item(p_obj, p_for_property, p_inspector_only);
-}
-
-EditorFileSystem *EditorInterface::get_resource_file_system() {
-	return EditorFileSystem::get_singleton();
-}
-
-FileSystemDock *EditorInterface::get_file_system_dock() {
-	return FileSystemDock::get_singleton();
-}
-
-EditorSelection *EditorInterface::get_selection() {
-	return EditorNode::get_singleton()->get_editor_selection();
-}
-
-Ref<EditorSettings> EditorInterface::get_editor_settings() {
-	return EditorSettings::get_singleton();
-}
-EditorPaths *EditorInterface::get_editor_paths() {
-	return EditorPaths::get_singleton();
-}
-
-EditorResourcePreview *EditorInterface::get_resource_previewer() {
-	return EditorResourcePreview::get_singleton();
-}
-
-Control *EditorInterface::get_base_control() {
-	return EditorNode::get_singleton()->get_gui_base();
-}
-
-float EditorInterface::get_editor_scale() const {
-	return EDSCALE;
-}
-
-void EditorInterface::set_plugin_enabled(const String &p_plugin, bool p_enabled) {
-	EditorNode::get_singleton()->set_addon_plugin_enabled(p_plugin, p_enabled, true);
-}
-
-bool EditorInterface::is_plugin_enabled(const String &p_plugin) const {
-	return EditorNode::get_singleton()->is_addon_plugin_enabled(p_plugin);
-}
-
-void EditorInterface::set_movie_maker_enabled(bool p_enabled) {
-	EditorNode::get_singleton()->set_movie_maker_enabled(p_enabled);
-}
-
-bool EditorInterface::is_movie_maker_enabled() const {
-	return EditorNode::get_singleton()->is_movie_maker_enabled();
-}
-
-EditorInspector *EditorInterface::get_inspector() const {
-	return InspectorDock::get_inspector_singleton();
-}
-
-Error EditorInterface::save_scene() {
-	if (!get_edited_scene_root()) {
-		return ERR_CANT_CREATE;
-	}
-	if (get_edited_scene_root()->get_scene_file_path().is_empty()) {
-		return ERR_CANT_CREATE;
-	}
-
-	save_scene_as(get_edited_scene_root()->get_scene_file_path());
-	return OK;
-}
-
-void EditorInterface::save_scene_as(const String &p_scene, bool p_with_preview) {
-	EditorNode::get_singleton()->save_scene_to_path(p_scene, p_with_preview);
-}
-
-void EditorInterface::set_distraction_free_mode(bool p_enter) {
-	EditorNode::get_singleton()->set_distraction_free_mode(p_enter);
-}
-
-void EditorInterface::restart_editor(bool p_save) {
-	if (p_save) {
-		EditorNode::get_singleton()->save_all_scenes();
-	}
-	EditorNode::get_singleton()->restart_editor();
-}
-
-bool EditorInterface::is_distraction_free_mode_enabled() const {
-	return EditorNode::get_singleton()->is_distraction_free_mode_enabled();
-}
-
-EditorCommandPalette *EditorInterface::get_command_palette() const {
-	return EditorCommandPalette::get_singleton();
-}
-
-EditorInterface *EditorInterface::singleton = nullptr;
-
-void EditorInterface::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("inspect_object", "object", "for_property", "inspector_only"), &EditorInterface::inspect_object, DEFVAL(String()), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("get_selection"), &EditorInterface::get_selection);
-	ClassDB::bind_method(D_METHOD("get_editor_settings"), &EditorInterface::get_editor_settings);
-	ClassDB::bind_method(D_METHOD("get_script_editor"), &EditorInterface::get_script_editor);
-	ClassDB::bind_method(D_METHOD("get_base_control"), &EditorInterface::get_base_control);
-	ClassDB::bind_method(D_METHOD("get_editor_scale"), &EditorInterface::get_editor_scale);
-	ClassDB::bind_method(D_METHOD("edit_resource", "resource"), &EditorInterface::edit_resource);
-	ClassDB::bind_method(D_METHOD("edit_node", "node"), &EditorInterface::edit_node);
-	ClassDB::bind_method(D_METHOD("edit_script", "script", "line", "column", "grab_focus"), &EditorInterface::edit_script, DEFVAL(-1), DEFVAL(0), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("open_scene_from_path", "scene_filepath"), &EditorInterface::open_scene_from_path);
-	ClassDB::bind_method(D_METHOD("reload_scene_from_path", "scene_filepath"), &EditorInterface::reload_scene_from_path);
-	ClassDB::bind_method(D_METHOD("play_main_scene"), &EditorInterface::play_main_scene);
-	ClassDB::bind_method(D_METHOD("play_current_scene"), &EditorInterface::play_current_scene);
-	ClassDB::bind_method(D_METHOD("play_custom_scene", "scene_filepath"), &EditorInterface::play_custom_scene);
-	ClassDB::bind_method(D_METHOD("stop_playing_scene"), &EditorInterface::stop_playing_scene);
-	ClassDB::bind_method(D_METHOD("is_playing_scene"), &EditorInterface::is_playing_scene);
-	ClassDB::bind_method(D_METHOD("get_playing_scene"), &EditorInterface::get_playing_scene);
-	ClassDB::bind_method(D_METHOD("get_open_scenes"), &EditorInterface::get_open_scenes);
-	ClassDB::bind_method(D_METHOD("get_edited_scene_root"), &EditorInterface::get_edited_scene_root);
-	ClassDB::bind_method(D_METHOD("get_resource_previewer"), &EditorInterface::get_resource_previewer);
-	ClassDB::bind_method(D_METHOD("get_resource_filesystem"), &EditorInterface::get_resource_file_system);
-	ClassDB::bind_method(D_METHOD("get_editor_main_screen"), &EditorInterface::get_editor_main_screen);
-	ClassDB::bind_method(D_METHOD("make_mesh_previews", "meshes", "preview_size"), &EditorInterface::_make_mesh_previews);
-	ClassDB::bind_method(D_METHOD("select_file", "file"), &EditorInterface::select_file);
-	ClassDB::bind_method(D_METHOD("get_selected_paths"), &EditorInterface::get_selected_paths);
-	ClassDB::bind_method(D_METHOD("get_current_path"), &EditorInterface::get_current_path);
-	ClassDB::bind_method(D_METHOD("get_current_directory"), &EditorInterface::get_current_directory);
-	ClassDB::bind_method(D_METHOD("get_file_system_dock"), &EditorInterface::get_file_system_dock);
-	ClassDB::bind_method(D_METHOD("get_editor_paths"), &EditorInterface::get_editor_paths);
-	ClassDB::bind_method(D_METHOD("get_command_palette"), &EditorInterface::get_command_palette);
-
-	ClassDB::bind_method(D_METHOD("set_plugin_enabled", "plugin", "enabled"), &EditorInterface::set_plugin_enabled);
-	ClassDB::bind_method(D_METHOD("is_plugin_enabled", "plugin"), &EditorInterface::is_plugin_enabled);
-
-	ClassDB::bind_method(D_METHOD("set_movie_maker_enabled", "enabled"), &EditorInterface::set_movie_maker_enabled);
-	ClassDB::bind_method(D_METHOD("is_movie_maker_enabled"), &EditorInterface::is_movie_maker_enabled);
-
-	ClassDB::bind_method(D_METHOD("get_inspector"), &EditorInterface::get_inspector);
-
-	ClassDB::bind_method(D_METHOD("save_scene"), &EditorInterface::save_scene);
-	ClassDB::bind_method(D_METHOD("save_scene_as", "path", "with_preview"), &EditorInterface::save_scene_as, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("restart_editor", "save"), &EditorInterface::restart_editor, DEFVAL(true));
-
-	ClassDB::bind_method(D_METHOD("set_main_screen_editor", "name"), &EditorInterface::set_main_screen_editor);
-	ClassDB::bind_method(D_METHOD("set_distraction_free_mode", "enter"), &EditorInterface::set_distraction_free_mode);
-	ClassDB::bind_method(D_METHOD("is_distraction_free_mode_enabled"), &EditorInterface::is_distraction_free_mode_enabled);
-
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distraction_free_mode"), "set_distraction_free_mode", "is_distraction_free_mode_enabled");
-}
-
-EditorInterface::EditorInterface() {
-	singleton = this;
-}
-
-///////////////////////////////////////////
 void EditorPlugin::add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon) {
 	EditorNode::get_editor_data().add_custom_type(p_type, p_base, p_script, p_icon);
 }
@@ -448,7 +94,7 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location, C
 
 	switch (p_location) {
 		case CONTAINER_TOOLBAR: {
-			EditorNode::get_menu_hb()->add_child(p_control);
+			EditorNode::get_title_bar()->add_child(p_control);
 		} break;
 
 		case CONTAINER_SPATIAL_EDITOR_MENU: {
@@ -501,7 +147,7 @@ void EditorPlugin::remove_control_from_container(CustomControlContainer p_locati
 
 	switch (p_location) {
 		case CONTAINER_TOOLBAR: {
-			EditorNode::get_menu_hb()->remove_child(p_control);
+			EditorNode::get_title_bar()->remove_child(p_control);
 		} break;
 
 		case CONTAINER_SPATIAL_EDITOR_MENU: {
@@ -825,7 +471,7 @@ bool EditorPlugin::build() {
 }
 
 void EditorPlugin::queue_save_layout() {
-	EditorNode::get_singleton()->save_layout();
+	EditorNode::get_singleton()->save_editor_layout_delayed();
 }
 
 void EditorPlugin::make_bottom_panel_item_visible(Control *p_item) {

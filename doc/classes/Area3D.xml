@@ -106,8 +106,8 @@
 		<member name="monitoring" type="bool" setter="set_monitoring" getter="is_monitoring" default="true">
 			If [code]true[/code], the area detects bodies or areas entering and exiting it.
 		</member>
-		<member name="priority" type="float" setter="set_priority" getter="get_priority" default="0.0">
-			The area's priority. Higher priority areas are processed first.
+		<member name="priority" type="int" setter="set_priority" getter="get_priority" default="0">
+			The area's priority. Higher priority areas are processed first. The [World3D]'s physics is always processed last, after all areas.
 		</member>
 		<member name="reverb_bus_amount" type="float" setter="set_reverb_amount" getter="get_reverb_amount" default="0.0">
 			The degree to which this area applies reverb to its associated audio. Ranges from [code]0[/code] to [code]1[/code] with [code]0.1[/code] precision.
@@ -128,7 +128,7 @@
 			The magnitude of area-specific wind force.
 		</member>
 		<member name="wind_source_path" type="NodePath" setter="set_wind_source_path" getter="get_wind_source_path" default="NodePath(&quot;&quot;)">
-			The [Node3D] which is used to specify the the direction and origin of an area-specific wind force. The direction is opposite to the z-axis of the [Node3D]'s local transform, and its origin is the origin of the [Node3D]'s local transform.
+			The [Node3D] which is used to specify the direction and origin of an area-specific wind force. The direction is opposite to the z-axis of the [Node3D]'s local transform, and its origin is the origin of the [Node3D]'s local transform.
 		</member>
 	</members>
 	<signals>

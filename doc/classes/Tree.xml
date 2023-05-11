@@ -60,8 +60,11 @@
 		</method>
 		<method name="edit_selected">
 			<return type="bool" />
+			<param index="0" name="force_edit" type="bool" default="false" />
 			<description>
-				Edits the selected tree item as if it was clicked. The item must be set editable with [method TreeItem.set_editable]. Returns [code]true[/code] if the item could be edited. Fails if no item is selected.
+				Edits the selected tree item as if it was clicked.
+				Either the item must be set editable with [method TreeItem.set_editable] or [param force_edit] must be [code]true[/code].
+				Returns [code]true[/code] if the item could be edited. Fails if no item is selected.
 			</description>
 		</method>
 		<method name="ensure_cursor_is_visible">
@@ -334,6 +337,9 @@
 		</member>
 		<member name="allow_rmb_select" type="bool" setter="set_allow_rmb_select" getter="get_allow_rmb_select" default="false">
 			If [code]true[/code], a right mouse button click can select items.
+		</member>
+		<member name="allow_search" type="bool" setter="set_allow_search" getter="get_allow_search" default="true">
+			If [code]true[/code], allows navigating the [Tree] with letter keys through incremental search.
 		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="column_titles_visible" type="bool" setter="set_column_titles_visible" getter="are_column_titles_visible" default="false">

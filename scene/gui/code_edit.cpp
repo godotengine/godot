@@ -584,7 +584,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		return;
 	}
 
-	// Override new line actions, for auto indent
+	// Override new line actions, for auto indent.
 	if (k->is_action("ui_text_newline_above", true)) {
 		_new_line(false, true);
 		accept_event();
@@ -601,7 +601,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		return;
 	}
 
-	/* Remove shift otherwise actions will not match. */
+	// Remove shift, otherwise actions will not match.
 	k = k->duplicate();
 	k->set_shift_pressed(false);
 
@@ -774,8 +774,7 @@ void CodeEdit::_backspace_internal(int p_caret) {
 			}
 		}
 
-		// For space indentation we need to do a simple unindent if there are no chars to the left, acting in the
-		// same way as tabs.
+		// For space indentation we need to do a basic unindent if there are no chars to the left, acting the same way as tabs.
 		if (indent_using_spaces && cc != 0) {
 			if (get_first_non_whitespace_column(cl) >= cc) {
 				prev_column = cc - _calculate_spaces_till_next_left_indent(cc);
@@ -1008,6 +1007,116 @@ void CodeEdit::unindent_lines() {
 	queue_redraw();
 }
 
+void CodeEdit::convert_indent(int p_from_line, int p_to_line) {
+	if (!is_editable()) {
+		return;
+	}
+
+	// Check line range.
+	p_from_line = (p_from_line < 0) ? 0 : p_from_line;
+	p_to_line = (p_to_line < 0) ? get_line_count() - 1 : p_to_line;
+
+	ERR_FAIL_COND(p_from_line >= get_line_count());
+	ERR_FAIL_COND(p_to_line >= get_line_count());
+	ERR_FAIL_COND(p_to_line < p_from_line);
+
+	// Store caret states.
+	Vector<int> caret_columns;
+	Vector<Pair<int, int>> from_selections;
+	Vector<Pair<int, int>> to_selections;
+	caret_columns.resize(get_caret_count());
+	from_selections.resize(get_caret_count());
+	to_selections.resize(get_caret_count());
+	for (int c = 0; c < get_caret_count(); c++) {
+		caret_columns.write[c] = get_caret_column(c);
+
+		// Set "selection_from_line" to -1 to allow checking if there was a selection later.
+		if (!has_selection(c)) {
+			from_selections.write[c].first = -1;
+			continue;
+		}
+		from_selections.write[c].first = get_selection_from_line(c);
+		from_selections.write[c].second = get_selection_from_column(c);
+		to_selections.write[c].first = get_selection_to_line(c);
+		to_selections.write[c].second = get_selection_to_column(c);
+	}
+
+	// Check lines within range.
+	const char32_t from_indent_char = indent_using_spaces ? '\t' : ' ';
+	int size_diff = indent_using_spaces ? indent_size - 1 : -(indent_size - 1);
+	bool changed_indentation = false;
+	for (int i = p_from_line; i <= p_to_line; i++) {
+		String line = get_line(i);
+
+		if (line.length() <= 0) {
+			continue;
+		}
+
+		// Check chars in the line.
+		int j = 0;
+		int space_count = 0;
+		bool line_changed = false;
+		while (j < line.length() && (line[j] == ' ' || line[j] == '\t')) {
+			if (line[j] != from_indent_char) {
+				space_count = 0;
+				j++;
+				continue;
+			}
+			space_count++;
+
+			if (!indent_using_spaces && space_count != indent_size) {
+				j++;
+				continue;
+			}
+
+			line_changed = true;
+			if (!changed_indentation) {
+				begin_complex_operation();
+				changed_indentation = true;
+			}
+
+			// Calculate new caret state.
+			for (int c = 0; c < get_caret_count(); c++) {
+				if (get_caret_line(c) != i || caret_columns[c] <= j) {
+					continue;
+				}
+				caret_columns.write[c] += size_diff;
+
+				if (from_selections.write[c].first == -1) {
+					continue;
+				}
+				from_selections.write[c].second = from_selections[c].first == i ? from_selections[c].second + size_diff : from_selections[c].second;
+				to_selections.write[c].second = to_selections[c].first == i ? to_selections[c].second + size_diff : to_selections[c].second;
+			}
+
+			// Calculate new line.
+			line = line.left(j + ((size_diff < 0) ? size_diff : 0)) + indent_text + line.substr(j + 1);
+
+			space_count = 0;
+			j += size_diff;
+		}
+
+		if (line_changed) {
+			set_line(i, line);
+		}
+	}
+
+	if (!changed_indentation) {
+		return;
+	}
+
+	// Restore caret states.
+	for (int c = 0; c < get_caret_count(); c++) {
+		set_caret_column(caret_columns[c], c == 0, c);
+		if (from_selections.write[c].first != -1) {
+			select(from_selections.write[c].first, from_selections.write[c].second, to_selections.write[c].first, to_selections.write[c].second, c);
+		}
+	}
+	merge_overlapping_carets();
+	end_complex_operation();
+	queue_redraw();
+}
+
 int CodeEdit::_calculate_spaces_till_next_left_indent(int p_column) const {
 	int spaces_till_indent = p_column % indent_size;
 	if (spaces_till_indent == 0) {
@@ -1072,7 +1181,7 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 
 			for (; line_col < cc; line_col++) {
 				char32_t c = line[line_col];
-				if (auto_indent_prefixes.has(c)) {
+				if (auto_indent_prefixes.has(c) && is_in_comment(cl, line_col) == -1) {
 					should_indent = true;
 					indent_char = c;
 					continue;
@@ -1369,7 +1478,7 @@ PackedInt32Array CodeEdit::get_bookmarked_lines() const {
 	return ret;
 }
 
-// executing lines
+// Executing lines
 void CodeEdit::set_line_as_executing(int p_line, bool p_executing) {
 	int mask = get_line_gutter_metadata(p_line, main_gutter);
 	set_line_gutter_metadata(p_line, main_gutter, p_executing ? mask | MAIN_GUTTER_EXECUTING : mask & ~MAIN_GUTTER_EXECUTING);
@@ -2061,7 +2170,7 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 			insert_text_at_caret(insert_text.substr(matching_chars), i);
 		}
 
-		//* Handle merging of symbols eg strings, brackets.
+		// Handle merging of symbols eg strings, brackets.
 		const String line = get_line(caret_line);
 		char32_t next_char = line[get_caret_column(i)];
 		char32_t last_completion_char = insert_text[insert_text.length() - 1];
@@ -2198,6 +2307,8 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("indent_lines"), &CodeEdit::indent_lines);
 	ClassDB::bind_method(D_METHOD("unindent_lines"), &CodeEdit::unindent_lines);
 
+	ClassDB::bind_method(D_METHOD("convert_indent", "from_line", "to_line"), &CodeEdit::convert_indent, DEFVAL(-1), DEFVAL(-1));
+
 	/* Auto brace completion */
 	ClassDB::bind_method(D_METHOD("set_auto_brace_completion_enabled", "enable"), &CodeEdit::set_auto_brace_completion_enabled);
 	ClassDB::bind_method(D_METHOD("is_auto_brace_completion_enabled"), &CodeEdit::is_auto_brace_completion_enabled);
@@ -2236,7 +2347,7 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_bookmarked_lines"), &CodeEdit::clear_bookmarked_lines);
 	ClassDB::bind_method(D_METHOD("get_bookmarked_lines"), &CodeEdit::get_bookmarked_lines);
 
-	// executing lines
+	// Executing lines
 	ClassDB::bind_method(D_METHOD("set_line_as_executing", "line", "executing"), &CodeEdit::set_line_as_executing);
 	ClassDB::bind_method(D_METHOD("is_line_executing", "line"), &CodeEdit::is_line_executing);
 	ClassDB::bind_method(D_METHOD("clear_executing_lines"), &CodeEdit::clear_executing_lines);

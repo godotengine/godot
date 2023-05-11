@@ -257,6 +257,15 @@ Error OS::shell_open(String p_uri) {
 	return ::OS::get_singleton()->shell_open(p_uri);
 }
 
+Error OS::shell_show_in_file_manager(String p_path, bool p_open_folder) {
+	if (p_path.begins_with("res://")) {
+		WARN_PRINT("Attempting to explore file path with the \"res://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_show_in_file_manager()`.");
+	} else if (p_path.begins_with("user://")) {
+		WARN_PRINT("Attempting to explore file path with the \"user://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_show_in_file_manager()`.");
+	}
+	return ::OS::get_singleton()->shell_show_in_file_manager(p_path, p_open_folder);
+}
+
 String OS::read_string_from_stdin() {
 	return ::OS::get_singleton()->get_stdin_string();
 }
@@ -414,7 +423,14 @@ Error OS::set_thread_name(const String &p_name) {
 };
 
 bool OS::has_feature(const String &p_feature) const {
-	return ::OS::get_singleton()->has_feature(p_feature);
+	const bool *value_ptr = feature_cache.getptr(p_feature);
+	if (value_ptr) {
+		return *value_ptr;
+	} else {
+		const bool has = ::OS::get_singleton()->has_feature(p_feature);
+		feature_cache[p_feature] = has;
+		return has;
+	}
 }
 
 uint64_t OS::get_static_memory_usage() const {
@@ -423,6 +439,10 @@ uint64_t OS::get_static_memory_usage() const {
 
 uint64_t OS::get_static_memory_peak_usage() const {
 	return ::OS::get_singleton()->get_static_memory_peak_usage();
+}
+
+Dictionary OS::get_memory_info() const {
+	return ::OS::get_singleton()->get_memory_info();
 }
 
 /** This method uses a signed argument for better error reporting as it's used from the scripting API. */
@@ -549,6 +569,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_instance", "arguments"), &OS::create_instance);
 	ClassDB::bind_method(D_METHOD("kill", "pid"), &OS::kill);
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &OS::shell_open);
+	ClassDB::bind_method(D_METHOD("shell_show_in_file_manager", "file_or_dir_path", "open_folder"), &OS::shell_show_in_file_manager, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_process_running", "pid"), &OS::is_process_running);
 	ClassDB::bind_method(D_METHOD("get_process_id"), &OS::get_process_id);
 
@@ -582,6 +603,7 @@ void OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_static_memory_usage"), &OS::get_static_memory_usage);
 	ClassDB::bind_method(D_METHOD("get_static_memory_peak_usage"), &OS::get_static_memory_peak_usage);
+	ClassDB::bind_method(D_METHOD("get_memory_info"), &OS::get_memory_info);
 
 	ClassDB::bind_method(D_METHOD("move_to_trash", "path"), &OS::move_to_trash);
 	ClassDB::bind_method(D_METHOD("get_user_data_dir"), &OS::get_user_data_dir);
@@ -960,10 +982,11 @@ Vector<Vector3> Geometry3D::segment_intersects_cylinder(const Vector3 &p_from, c
 	return r;
 }
 
-Vector<Vector3> Geometry3D::segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const Vector<Plane> &p_planes) {
+Vector<Vector3> Geometry3D::segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const TypedArray<Plane> &p_planes) {
 	Vector<Vector3> r;
 	Vector3 res, norm;
-	if (!::Geometry3D::segment_intersects_convex(p_from, p_to, p_planes.ptr(), p_planes.size(), &res, &norm)) {
+	Vector<Plane> planes = Variant(p_planes);
+	if (!::Geometry3D::segment_intersects_convex(p_from, p_to, planes.ptr(), planes.size(), &res, &norm)) {
 		return r;
 	}
 

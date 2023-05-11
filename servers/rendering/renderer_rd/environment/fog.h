@@ -301,10 +301,14 @@ public:
 		RID emissive_map;
 
 		RID fog_uniform_set;
-		RID copy_uniform_set;
-		RID process_uniform_set_density;
-		RID process_uniform_set;
-		RID process_uniform_set2;
+
+		struct {
+			RID copy_uniform_set;
+			RID process_uniform_set_density;
+			RID process_uniform_set;
+			RID process_uniform_set2;
+		} gi_dependent_sets;
+
 		RID sdfgi_uniform_set;
 		RID sky_uniform_set;
 
@@ -312,6 +316,8 @@ public:
 
 		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override{};
 		virtual void free_data() override{};
+
+		bool sync_gi_dependent_sets_validity(bool p_ensure_freed = false);
 
 		void init(const Vector3i &fog_size, RID p_sky_shader);
 		~VolumetricFog();

@@ -142,6 +142,10 @@ void CanvasItem::_redraw_callback() {
 	pending_update = false; // don't change to false until finished drawing (avoid recursive update)
 }
 
+void CanvasItem::_invalidate_global_transform() {
+	global_invalid = true;
+}
+
 Transform2D CanvasItem::get_global_transform_with_canvas() const {
 	if (canvas_layer) {
 		return canvas_layer->get_final_transform() * get_global_transform();
@@ -222,7 +226,7 @@ void CanvasItem::_enter_canvas() {
 		RenderingServer::get_singleton()->canvas_item_set_parent(canvas_item, canvas);
 		RenderingServer::get_singleton()->canvas_item_set_visibility_layer(canvas_item, visibility_layer);
 
-		canvas_group = "root_canvas" + itos(canvas.get_id());
+		canvas_group = "_root_canvas" + itos(canvas.get_id());
 
 		add_to_group(canvas_group);
 		if (canvas_layer) {
@@ -290,6 +294,7 @@ void CanvasItem::_notification(int p_what) {
 				}
 			}
 
+			global_invalid = true;
 			_enter_canvas();
 
 			RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, is_visible_in_tree()); // The visibility of the parent may change.
@@ -333,6 +338,10 @@ void CanvasItem::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 		} break;
+		case NOTIFICATION_WORLD_2D_CHANGED: {
+			_exit_canvas();
+			_enter_canvas();
+		}
 	}
 }
 
@@ -350,9 +359,7 @@ void CanvasItem::update_draw_order() {
 }
 
 void CanvasItem::_window_visibility_changed() {
-	if (visible) {
-		_propagate_visibility_changed(window->is_visible());
-	}
+	_propagate_visibility_changed(window->is_visible());
 }
 
 void CanvasItem::queue_redraw() {
@@ -405,6 +412,7 @@ void CanvasItem::set_as_top_level(bool p_top_level) {
 
 	if (!is_inside_tree()) {
 		top_level = p_top_level;
+		propagate_call(SNAME("_invalidate_global_transform"));
 		return;
 	}
 
@@ -565,8 +573,7 @@ void CanvasItem::draw_line(const Point2 &p_from, const Point2 &p_to, const Color
 void CanvasItem::draw_polyline(const Vector<Point2> &p_points, const Color &p_color, real_t p_width, bool p_antialiased) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
-	Vector<Color> colors;
-	colors.push_back(p_color);
+	Vector<Color> colors = { p_color };
 	RenderingServer::get_singleton()->canvas_item_add_polyline(canvas_item, p_points, colors, p_width, p_antialiased);
 }
 
@@ -594,8 +601,7 @@ void CanvasItem::draw_arc(const Vector2 &p_center, real_t p_radius, real_t p_sta
 void CanvasItem::draw_multiline(const Vector<Point2> &p_points, const Color &p_color, real_t p_width) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
-	Vector<Color> colors;
-	colors.push_back(p_color);
+	Vector<Color> colors = { p_color };
 	RenderingServer::get_singleton()->canvas_item_add_multiline(canvas_item, p_points, colors, p_width);
 }
 
@@ -723,8 +729,7 @@ void CanvasItem::draw_polygon(const Vector<Point2> &p_points, const Vector<Color
 void CanvasItem::draw_colored_polygon(const Vector<Point2> &p_points, const Color &p_color, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
-	Vector<Color> colors;
-	colors.push_back(p_color);
+	Vector<Color> colors = { p_color };
 	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 	RenderingServer::get_singleton()->canvas_item_add_polygon(canvas_item, p_points, colors, p_uvs, rid);
 }
@@ -952,6 +957,7 @@ void CanvasItem::_validate_property(PropertyInfo &p_property) const {
 
 void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_top_level_raise_self"), &CanvasItem::_top_level_raise_self);
+	ClassDB::bind_method(D_METHOD("_invalidate_global_transform"), &CanvasItem::_invalidate_global_transform);
 
 #ifdef TOOLS_ENABLED
 	ClassDB::bind_method(D_METHOD("_edit_set_state", "state"), &CanvasItem::_edit_set_state);
@@ -1118,6 +1124,7 @@ void CanvasItem::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_ENTER_CANVAS);
 	BIND_CONSTANT(NOTIFICATION_EXIT_CANVAS);
+	BIND_CONSTANT(NOTIFICATION_WORLD_2D_CHANGED);
 
 	BIND_ENUM_CONSTANT(TEXTURE_FILTER_PARENT_NODE);
 	BIND_ENUM_CONSTANT(TEXTURE_FILTER_NEAREST);

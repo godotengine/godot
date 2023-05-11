@@ -72,6 +72,13 @@
 				Returns the index of the tab tied to the given [param control]. The control must be a child of the [TabContainer].
 			</description>
 		</method>
+		<method name="get_tab_metadata" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Returns the metadata value set to the tab at index [param tab_idx] using [method set_tab_metadata]. If no metadata was previously set, returns [code]null[/code] by default.
+			</description>
+		</method>
 		<method name="get_tab_title" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="tab_idx" type="int" />
@@ -132,6 +139,14 @@
 				Sets an icon for the tab at index [param tab_idx].
 			</description>
 		</method>
+		<method name="set_tab_metadata">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="metadata" type="Variant" />
+			<description>
+				Sets the metadata value for the tab at index [param tab_idx], which can be retrieved later using [method get_tab_metadata].
+			</description>
+		</method>
 		<method name="set_tab_title">
 			<return type="void" />
 			<param index="0" name="tab_idx" type="int" />
@@ -169,6 +184,12 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="active_tab_rearranged">
+			<param index="0" name="idx_to" type="int" />
+			<description>
+				Emitted when the active tab is rearranged via mouse drag. See [member drag_to_rearrange_enabled].
+			</description>
+		</signal>
 		<signal name="pre_popup_pressed">
 			<description>
 				Emitted when the [TabContainer]'s [Popup] button is clicked. See [method set_popup] for details.
@@ -186,6 +207,18 @@
 				Emitted when switching to another tab.
 			</description>
 		</signal>
+		<signal name="tab_clicked">
+			<param index="0" name="tab" type="int" />
+			<description>
+				Emitted when a tab is clicked, even if it is the current tab.
+			</description>
+		</signal>
+		<signal name="tab_hovered">
+			<param index="0" name="tab" type="int" />
+			<description>
+				Emitted when a tab is hovered by the mouse.
+			</description>
+		</signal>
 		<signal name="tab_selected">
 			<param index="0" name="tab" type="int" />
 			<description>
@@ -199,6 +232,9 @@
 		</theme_item>
 		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
 			Font color of disabled tabs.
+		</theme_item>
+		<theme_item name="font_hovered_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
+			Font color of the currently hovered tab.
 		</theme_item>
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The tint of text outline of the tab name.
@@ -255,6 +291,9 @@
 		</theme_item>
 		<theme_item name="tab_disabled" data_type="style" type="StyleBox">
 			The style of disabled tabs.
+		</theme_item>
+		<theme_item name="tab_hovered" data_type="style" type="StyleBox">
+			The style of the currently hovered tab.
 		</theme_item>
 		<theme_item name="tab_selected" data_type="style" type="StyleBox">
 			The style of the currently selected tab.

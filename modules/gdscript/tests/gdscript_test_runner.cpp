@@ -350,12 +350,12 @@ void GDScriptTestRunner::handle_cmdline() {
 	for (List<String>::Element *E = cmdline_args.front(); E; E = E->next()) {
 		String &cmd = E->get();
 		if (cmd == "--gdscript-generate-tests") {
-			if (E->next() == nullptr) {
-				ERR_PRINT("Needed a path for the test files.");
-				exit(-1);
+			String path;
+			if (E->next()) {
+				path = E->next()->get();
+			} else {
+				path = "modules/gdscript/tests/scripts";
 			}
-
-			const String &path = E->next()->get();
 
 			GDScriptTestRunner runner(path, false, cmdline_args.find("--print-filenames") != nullptr);
 
@@ -566,6 +566,14 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		ERR_FAIL_V_MSG(result, "\nCould not find test function on: '" + source_file + "'");
 	}
 
+	// Setup output handlers.
+	ErrorHandlerData error_data(&result, this);
+
+	_print_handler.userdata = &result;
+	_error_handler.userdata = &error_data;
+	add_print_handler(&_print_handler);
+	add_error_handler(&_error_handler);
+
 	script->reload();
 
 	// Create object instance for test.
@@ -576,14 +584,6 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	}
 	obj->set_script(script);
 	GDScriptInstance *instance = static_cast<GDScriptInstance *>(obj->get_script_instance());
-
-	// Setup output handlers.
-	ErrorHandlerData error_data(&result, this);
-
-	_print_handler.userdata = &result;
-	_error_handler.userdata = &error_data;
-	add_print_handler(&_print_handler);
-	add_error_handler(&_error_handler);
 
 	// Call test function.
 	Callable::CallError call_err;

@@ -63,6 +63,7 @@ class TabContainer : public Container {
 		int outline_size = 0;
 
 		Ref<StyleBox> tab_unselected_style;
+		Ref<StyleBox> tab_hovered_style;
 		Ref<StyleBox> tab_selected_style;
 		Ref<StyleBox> tab_disabled_style;
 
@@ -90,6 +91,8 @@ class TabContainer : public Container {
 	void _update_margins();
 	void _on_mouse_exited();
 	void _on_tab_changed(int p_tab);
+	void _on_tab_clicked(int p_tab);
+	void _on_tab_hovered(int p_tab);
 	void _on_tab_selected(int p_tab);
 	void _on_tab_button_pressed(int p_tab);
 
@@ -134,6 +137,9 @@ public:
 
 	void set_tab_hidden(int p_tab, bool p_hidden);
 	bool is_tab_hidden(int p_tab) const;
+
+	void set_tab_metadata(int p_tab, const Variant &p_metadata);
+	Variant get_tab_metadata(int p_tab) const;
 
 	void set_tab_button_icon(int p_tab, const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_tab_button_icon(int p_tab) const;

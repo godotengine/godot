@@ -111,7 +111,7 @@
 			<description>
 				Performs a case-sensitive comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "Less than" and "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order.
 				With different string lengths, returns [code]1[/code] if this string is longer than the [param to] string, or [code]-1[/code] if shorter. Note that the length of empty strings is [i]always[/i] [code]0[/code].
-				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method nocasecmp_to] and [method naturalnocasecmp_to].
+				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method nocasecmp_to], [method naturalcasecmp_to], and [method naturalnocasecmp_to].
 			</description>
 		</method>
 		<method name="chr" qualifiers="static">
@@ -173,6 +173,14 @@
 			<param index="0" name="text" type="String" />
 			<description>
 				Returns [code]true[/code] if the string ends with the given [param text]. See also [method begins_with].
+			</description>
+		</method>
+		<method name="erase" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="position" type="int" />
+			<param index="1" name="chars" type="int" default="1" />
+			<description>
+				Returns a string with [param chars] characters erased starting from [param position]. If [param chars] goes beyond the string's length given the specified [param position], fewer characters will be erased from the returned string. Returns an empty string if either [code]position[/code] or [code]chars[/code] is negative. Returns the original string unmodified if [param chars] is [code]0[/code].
 			</description>
 		</method>
 		<method name="find" qualifiers="const">
@@ -570,6 +578,16 @@
 				Returns the [url=https://en.wikipedia.org/wiki/MD5]MD5 hash[/url] of the string as another [String].
 			</description>
 		</method>
+		<method name="naturalcasecmp_to" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="to" type="String" />
+			<description>
+				Performs a [b]case-sensitive[/b], [i]natural order[/i] comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "Less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order.
+				When used for sorting, natural order comparison orders sequences of numbers by the combined value of each digit as is often expected, instead of the single digit's value. A sorted sequence of numbered strings will be [code]["1", "2", "3", ...][/code], not [code]["1", "10", "2", "3", ...][/code].
+				With different string lengths, returns [code]1[/code] if this string is longer than the [param to] string, or [code]-1[/code] if shorter. Note that the length of empty strings is [i]always[/i] [code]0[/code].
+				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method naturalnocasecmp_to], [method nocasecmp_to], and [method casecmp_to].
+			</description>
+		</method>
 		<method name="naturalnocasecmp_to" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="to" type="String" />
@@ -577,7 +595,7 @@
 				Performs a [b]case-insensitive[/b], [i]natural order[/i] comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "Less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order. Internally, lowercase characters are converted to uppercase for the comparison.
 				When used for sorting, natural order comparison orders sequences of numbers by the combined value of each digit as is often expected, instead of the single digit's value. A sorted sequence of numbered strings will be [code]["1", "2", "3", ...][/code], not [code]["1", "10", "2", "3", ...][/code].
 				With different string lengths, returns [code]1[/code] if this string is longer than the [param to] string, or [code]-1[/code] if shorter. Note that the length of empty strings is [i]always[/i] [code]0[/code].
-				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method nocasecmp_to] and [method casecmp_to].
+				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method naturalcasecmp_to], [method nocasecmp_to], and [method casecmp_to].
 			</description>
 		</method>
 		<method name="nocasecmp_to" qualifiers="const">
@@ -586,7 +604,7 @@
 			<description>
 				Performs a [b]case-insensitive[/b] comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "Less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order. Internally, lowercase characters are converted to uppercase for the comparison.
 				With different string lengths, returns [code]1[/code] if this string is longer than the [param to] string, or [code]-1[/code] if shorter. Note that the length of empty strings is [i]always[/i] [code]0[/code].
-				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method casecmp_to] and [method naturalnocasecmp_to].
+				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method casecmp_to], [method naturalcasecmp_to], and [method naturalnocasecmp_to].
 			</description>
 		</method>
 		<method name="num" qualifiers="static">
@@ -946,6 +964,12 @@
 				Returns the string converted to uppercase.
 			</description>
 		</method>
+		<method name="to_utf8_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-8]UTF-8[/url] encoded [PackedByteArray]. This method is slightly slower than [method to_ascii_buffer], but supports all UTF-8 characters. For most cases, prefer using this method.
+			</description>
+		</method>
 		<method name="to_utf16_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
@@ -956,12 +980,6 @@
 			<return type="PackedByteArray" />
 			<description>
 				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-32]UTF-32[/url] encoded [PackedByteArray].
-			</description>
-		</method>
-		<method name="to_utf8_buffer" qualifiers="const">
-			<return type="PackedByteArray" />
-			<description>
-				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-8]UTF-8[/url] encoded [PackedByteArray]. This method is slightly slower than [method to_ascii_buffer], but supports all UTF-8 characters. For most cases, prefer using this method.
 			</description>
 		</method>
 		<method name="to_wchar_buffer" qualifiers="const">

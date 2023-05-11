@@ -954,6 +954,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	ComputeList *compute_list = nullptr;
 
+	void _compute_list_add_barrier(BitField<BarrierMask> p_post_barrier, uint32_t p_barrier_flags, uint32_t p_access_flags);
+
 	/**************************/
 	/**** FRAME MANAGEMENT ****/
 	/**************************/
@@ -1055,6 +1057,7 @@ public:
 	virtual bool texture_is_shared(RID p_texture);
 	virtual bool texture_is_valid(RID p_texture);
 	virtual Size2i texture_size(RID p_texture);
+	virtual uint64_t texture_native_handle(RID p_texture);
 
 	virtual Error texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
 	virtual Error texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
@@ -1082,6 +1085,7 @@ public:
 	/*****************/
 
 	virtual RID sampler_create(const SamplerState &p_state);
+	virtual bool sampler_is_format_supported_for_filter(DataFormat p_format, SamplerFilter p_sampler_filter) const;
 
 	/**********************/
 	/**** VERTEX ARRAY ****/

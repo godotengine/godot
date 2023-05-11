@@ -1140,6 +1140,13 @@ RID TextureStorage::texture_get_rd_texture(RID p_texture, bool p_srgb) const {
 	return RID();
 }
 
+uint64_t TextureStorage::texture_get_native_handle(RID p_texture, bool p_srgb) const {
+	const Texture *texture = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_COND_V(!texture, 0);
+
+	return texture->tex_id;
+}
+
 void TextureStorage::texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer) {
 	Texture *texture = texture_owner.get_or_null(p_texture);
 

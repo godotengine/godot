@@ -221,33 +221,6 @@ bool SubViewportContainer::_is_propagated_in_gui_input(const Ref<InputEvent> &p_
 	return false;
 }
 
-void SubViewportContainer::unhandled_input(const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND(p_event.is_null());
-
-	if (Engine::get_singleton()->is_editor_hint()) {
-		return;
-	}
-
-	Transform2D xform = get_global_transform_with_canvas();
-
-	if (stretch) {
-		Transform2D scale_xf;
-		scale_xf.scale(Vector2(shrink, shrink));
-		xform *= scale_xf;
-	}
-
-	Ref<InputEvent> ev = p_event->xformed_by(xform.affine_inverse());
-
-	for (int i = 0; i < get_child_count(); i++) {
-		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
-		if (!c || c->is_input_disabled()) {
-			continue;
-		}
-
-		c->push_unhandled_input(ev);
-	}
-}
-
 void SubViewportContainer::add_child_notify(Node *p_child) {
 	if (Object::cast_to<SubViewport>(p_child)) {
 		queue_redraw();
@@ -290,5 +263,4 @@ void SubViewportContainer::_bind_methods() {
 
 SubViewportContainer::SubViewportContainer() {
 	set_process_input(true);
-	set_process_unhandled_input(true);
 }

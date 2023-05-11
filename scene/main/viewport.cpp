@@ -61,6 +61,10 @@
 #include "servers/rendering/rendering_server_globals.h"
 
 void ViewportTexture::setup_local_to_scene() {
+	if (vp_pending) {
+		return;
+	}
+
 	Node *loc_scene = get_local_scene();
 	if (!loc_scene) {
 		return;
@@ -68,26 +72,14 @@ void ViewportTexture::setup_local_to_scene() {
 
 	if (vp) {
 		vp->viewport_textures.erase(this);
+		vp = nullptr;
 	}
 
-	vp = nullptr;
-
-	Node *vpn = loc_scene->get_node(path);
-	ERR_FAIL_COND_MSG(!vpn, "ViewportTexture: Path to node is invalid.");
-
-	vp = Object::cast_to<Viewport>(vpn);
-
-	ERR_FAIL_COND_MSG(!vp, "ViewportTexture: Path to node does not point to a viewport.");
-
-	vp->viewport_textures.insert(this);
-
-	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	if (proxy_ph.is_valid()) {
-		RS::get_singleton()->texture_proxy_update(proxy, vp->texture_rid);
-		RS::get_singleton()->free(proxy_ph);
+	if (loc_scene->is_ready()) {
+		_setup_local_to_scene(loc_scene);
 	} else {
-		ERR_FAIL_COND(proxy.is_valid()); // Should be invalid.
-		proxy = RS::get_singleton()->texture_proxy_create(vp->texture_rid);
+		loc_scene->connect(SNAME("ready"), callable_mp(this, &ViewportTexture::_setup_local_to_scene).bind(loc_scene), CONNECT_ONE_SHOT);
+		vp_pending = true;
 	}
 }
 
@@ -98,8 +90,24 @@ void ViewportTexture::set_viewport_path_in_scene(const NodePath &p_path) {
 
 	path = p_path;
 
-	if (get_local_scene()) {
+	if (vp) {
+		vp->viewport_textures.erase(this);
+		vp = nullptr;
+	}
+
+	if (proxy_ph.is_valid()) {
+		RS::get_singleton()->free(proxy_ph);
+	}
+	if (proxy.is_valid()) {
+		RS::get_singleton()->free(proxy);
+	}
+	proxy_ph = RID();
+	proxy = RID();
+
+	if (get_local_scene() && !path.is_empty()) {
 		setup_local_to_scene();
+	} else {
+		emit_changed();
 	}
 }
 
@@ -108,17 +116,32 @@ NodePath ViewportTexture::get_viewport_path_in_scene() const {
 }
 
 int ViewportTexture::get_width() const {
-	ERR_FAIL_COND_V_MSG(!vp, 0, "Viewport Texture must be set to use it.");
+	if (!vp) {
+		if (!vp_pending) {
+			ERR_PRINT("Viewport Texture must be set to use it.");
+		}
+		return 0;
+	}
 	return vp->size.width;
 }
 
 int ViewportTexture::get_height() const {
-	ERR_FAIL_COND_V_MSG(!vp, 0, "Viewport Texture must be set to use it.");
+	if (!vp) {
+		if (!vp_pending) {
+			ERR_PRINT("Viewport Texture must be set to use it.");
+		}
+		return 0;
+	}
 	return vp->size.height;
 }
 
 Size2 ViewportTexture::get_size() const {
-	ERR_FAIL_COND_V_MSG(!vp, Size2(), "Viewport Texture must be set to use it.");
+	if (!vp) {
+		if (!vp_pending) {
+			ERR_PRINT("Viewport Texture must be set to use it.");
+		}
+		return Size2();
+	}
 	return vp->size;
 }
 
@@ -135,8 +158,36 @@ bool ViewportTexture::has_alpha() const {
 }
 
 Ref<Image> ViewportTexture::get_image() const {
-	ERR_FAIL_COND_V_MSG(!vp, Ref<Image>(), "Viewport Texture must be set to use it.");
+	if (!vp) {
+		if (!vp_pending) {
+			ERR_PRINT("Viewport Texture must be set to use it.");
+		}
+		return Ref<Image>();
+	}
 	return RS::get_singleton()->texture_2d_get(vp->texture_rid);
+}
+
+void ViewportTexture::_setup_local_to_scene(const Node *p_loc_scene) {
+	Node *vpn = p_loc_scene->get_node(path);
+	ERR_FAIL_COND_MSG(!vpn, "ViewportTexture: Path to node is invalid.");
+
+	vp = Object::cast_to<Viewport>(vpn);
+
+	ERR_FAIL_COND_MSG(!vp, "ViewportTexture: Path to node does not point to a viewport.");
+
+	vp->viewport_textures.insert(this);
+
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+	if (proxy_ph.is_valid()) {
+		RS::get_singleton()->texture_proxy_update(proxy, vp->texture_rid);
+		RS::get_singleton()->free(proxy_ph);
+	} else {
+		ERR_FAIL_COND(proxy.is_valid()); // Should be invalid.
+		proxy = RS::get_singleton()->texture_proxy_create(vp->texture_rid);
+	}
+	vp_pending = false;
+
+	emit_changed();
 }
 
 void ViewportTexture::_bind_methods() {
@@ -399,9 +450,28 @@ int Viewport::_sub_window_find(Window *p_window) {
 	return -1;
 }
 
+void Viewport::_update_viewport_path() {
+	if (viewport_textures.is_empty()) {
+		return;
+	}
+
+	Node *scene_root = get_scene_file_path().is_empty() ? get_owner() : this;
+	if (!scene_root && is_inside_tree()) {
+		scene_root = get_tree()->get_edited_scene_root();
+	}
+	if (scene_root && (scene_root == this || scene_root->is_ancestor_of(this))) {
+		NodePath path_in_scene = scene_root->get_path_to(this);
+		for (ViewportTexture *E : viewport_textures) {
+			E->path = path_in_scene;
+		}
+	}
+}
+
 void Viewport::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+			_update_viewport_path();
+
 			if (get_parent()) {
 				parent = get_parent()->get_viewport();
 				RenderingServer::get_singleton()->viewport_set_parent_viewport(viewport, parent->get_viewport_rid());
@@ -492,6 +562,10 @@ void Viewport::_notification(int p_what) {
 
 			RS::get_singleton()->viewport_set_active(viewport, false);
 			RenderingServer::get_singleton()->viewport_set_parent_viewport(viewport, RID());
+		} break;
+
+		case NOTIFICATION_PATH_RENAMED: {
+			_update_viewport_path();
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
@@ -1091,7 +1165,11 @@ void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
 	}
 
 	if (p_world_2d.is_valid()) {
+		bool do_propagate = world_2d.is_valid() && is_inside_tree();
 		world_2d = p_world_2d;
+		if (do_propagate) {
+			_propagate_world_2d_changed(this);
+		}
 	} else {
 		WARN_PRINT("Invalid world_2d");
 		world_2d = Ref<World2D>(memnew(World2D));
@@ -1519,8 +1597,8 @@ Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_
 	}
 
 	Transform2D matrix = p_xform * p_node->get_transform();
-	// matrix.basis_determinant() == 0.0f implies that node does not exist on scene
-	if (matrix.basis_determinant() == 0.0f) {
+	// matrix.determinant() == 0.0f implies that node does not exist on scene
+	if (matrix.determinant() == 0.0f) {
 		return nullptr;
 	}
 
@@ -2601,6 +2679,10 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 				}
 
 				gui.subwindow_focused->_rect_changed_callback(new_rect);
+
+				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
+					DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CURSOR_MOVE);
+				}
 			}
 			if (gui.subwindow_drag == SUB_WINDOW_DRAG_CLOSE) {
 				gui.subwindow_drag_close_inside = gui.subwindow_drag_close_rect.has_point(mm->get_position());
@@ -2863,6 +2945,10 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	} else {
 		// Cleanup internal GUI state after accepting event during _input().
 		_gui_cleanup_internal_state(ev);
+	}
+
+	if (!is_input_handled()) {
+		push_unhandled_input(ev, true);
 	}
 
 	event_count++;
@@ -3834,6 +3920,25 @@ float Viewport::get_texture_mipmap_bias() const {
 }
 
 #endif // _3D_DISABLED
+
+void Viewport::_propagate_world_2d_changed(Node *p_node) {
+	if (p_node != this) {
+		if (Object::cast_to<CanvasItem>(p_node)) {
+			p_node->notification(CanvasItem::NOTIFICATION_WORLD_2D_CHANGED);
+		} else {
+			Viewport *v = Object::cast_to<Viewport>(p_node);
+			if (v) {
+				if (v->world_2d.is_valid()) {
+					return;
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); ++i) {
+		_propagate_world_2d_changed(p_node->get_child(i));
+	}
+}
 
 void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_world_2d", "world_2d"), &Viewport::set_world_2d);

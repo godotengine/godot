@@ -649,6 +649,7 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_screen_count"), &DisplayServer::get_screen_count);
 	ClassDB::bind_method(D_METHOD("get_primary_screen"), &DisplayServer::get_primary_screen);
+	ClassDB::bind_method(D_METHOD("get_keyboard_focus_screen"), &DisplayServer::get_keyboard_focus_screen);
 	ClassDB::bind_method(D_METHOD("get_screen_from_rect", "rect"), &DisplayServer::get_screen_from_rect);
 	ClassDB::bind_method(D_METHOD("screen_get_position", "screen"), &DisplayServer::screen_get_position, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_get_size", "screen"), &DisplayServer::screen_get_size, DEFVAL(SCREEN_OF_MAIN_WINDOW));
@@ -794,6 +795,8 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED_HIDDEN);
 
+	BIND_CONSTANT(SCREEN_WITH_MOUSE_FOCUS);
+	BIND_CONSTANT(SCREEN_WITH_KEYBOARD_FOCUS);
 	BIND_CONSTANT(SCREEN_PRIMARY);
 	BIND_CONSTANT(SCREEN_OF_MAIN_WINDOW);
 

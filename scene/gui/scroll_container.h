@@ -98,6 +98,12 @@ public:
 	void set_v_scroll(int p_pos);
 	int get_v_scroll() const;
 
+	void set_horizontal_custom_step(float p_custom_step);
+	float get_horizontal_custom_step() const;
+
+	void set_vertical_custom_step(float p_custom_step);
+	float get_vertical_custom_step() const;
+
 	void set_horizontal_scroll_mode(ScrollMode p_mode);
 	ScrollMode get_horizontal_scroll_mode() const;
 

@@ -58,7 +58,6 @@ void image_decompress_squish(Image *p_image) {
 		squish_flags = squish::kBc5;
 	} else {
 		ERR_FAIL_MSG("Squish: Can't decompress unknown format: " + itos(p_image->get_format()) + ".");
-		return;
 	}
 
 	for (int i = 0; i <= mm_count; i++) {

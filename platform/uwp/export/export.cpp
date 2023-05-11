@@ -31,7 +31,12 @@
 #include "export.h"
 
 #include "editor/editor_settings.h"
+#include "editor/export/editor_export.h"
 #include "export_plugin.h"
+
+void register_uwp_exporter_types() {
+	// GDREGISTER_VIRTUAL_CLASS(EditorExportPlatformUWP);
+}
 
 void register_uwp_exporter() {
 #ifdef WINDOWS_ENABLED

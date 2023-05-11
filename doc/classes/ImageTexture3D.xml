@@ -26,7 +26,7 @@
 			<return type="void" />
 			<param index="0" name="data" type="Image[]" />
 			<description>
-				Replaces the texture's existing data with the layers specified in [code]data[/code]. The size of [code]data[/code] must match the parameters that were used for [method create]. In other words, the texture cannot be resized or have its format changed by calling [method update].
+				Replaces the texture's existing data with the layers specified in [param data]. The size of [param data] must match the parameters that were used for [method create]. In other words, the texture cannot be resized or have its format changed by calling [method update].
 			</description>
 		</method>
 	</methods>

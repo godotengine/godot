@@ -765,7 +765,7 @@ void Control::set_anchor_and_offset(Side p_side, real_t p_anchor, real_t p_pos, 
 	set_offset(p_side, p_pos);
 }
 
-void Control::set_begin(const Size2 &p_point) {
+void Control::set_begin(const Point2 &p_point) {
 	ERR_FAIL_COND(!isfinite(p_point.x) || !isfinite(p_point.y));
 	if (data.offset[0] == p_point.x && data.offset[1] == p_point.y) {
 		return;
@@ -776,11 +776,11 @@ void Control::set_begin(const Size2 &p_point) {
 	_size_changed();
 }
 
-Size2 Control::get_begin() const {
-	return Size2(data.offset[0], data.offset[1]);
+Point2 Control::get_begin() const {
+	return Point2(data.offset[0], data.offset[1]);
 }
 
-void Control::set_end(const Size2 &p_point) {
+void Control::set_end(const Point2 &p_point) {
 	if (data.offset[2] == p_point.x && data.offset[3] == p_point.y) {
 		return;
 	}
@@ -790,8 +790,8 @@ void Control::set_end(const Size2 &p_point) {
 	_size_changed();
 }
 
-Size2 Control::get_end() const {
-	return Size2(data.offset[2], data.offset[3]);
+Point2 Control::get_end() const {
+	return Point2(data.offset[2], data.offset[3]);
 }
 
 void Control::set_h_grow_direction(GrowDirection p_direction) {
@@ -1358,11 +1358,11 @@ void Control::set_grow_direction_preset(LayoutPreset p_preset) {
 
 /// Manual positioning.
 
-void Control::_set_position(const Size2 &p_point) {
+void Control::_set_position(const Point2 &p_point) {
 	set_position(p_point);
 }
 
-void Control::set_position(const Size2 &p_point, bool p_keep_offsets) {
+void Control::set_position(const Point2 &p_point, bool p_keep_offsets) {
 	if (p_keep_offsets) {
 		_compute_anchors(Rect2(p_point, data.size_cache), data.offset, data.anchor);
 	} else {
@@ -1735,13 +1735,18 @@ real_t Control::get_stretch_ratio() const {
 // Input events.
 
 void Control::_call_gui_input(const Ref<InputEvent> &p_event) {
-	emit_signal(SceneStringNames::get_singleton()->gui_input, p_event); //signal should be first, so it's possible to override an event (and then accept it)
-	if (!is_inside_tree() || get_viewport()->is_input_handled()) {
-		return; //input was handled, abort
+	if (p_event->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
+		emit_signal(SceneStringNames::get_singleton()->gui_input, p_event); // Signal should be first, so it's possible to override an event (and then accept it).
 	}
-	GDVIRTUAL_CALL(_gui_input, p_event);
 	if (!is_inside_tree() || get_viewport()->is_input_handled()) {
-		return; //input was handled, abort
+		return; // Input was handled, abort.
+	}
+
+	if (p_event->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
+		GDVIRTUAL_CALL(_gui_input, p_event);
+	}
+	if (!is_inside_tree() || get_viewport()->is_input_handled()) {
+		return; // Input was handled, abort.
 	}
 	gui_input(p_event);
 }

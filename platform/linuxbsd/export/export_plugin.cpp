@@ -34,6 +34,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
+#include "editor/export/editor_export.h"
 #include "platform/linuxbsd/logo_svg.gen.h"
 #include "platform/linuxbsd/run_icon_svg.gen.h"
 
@@ -142,7 +143,18 @@ List<String> EditorExportPlatformLinuxBSD::get_binary_extensions(const Ref<Edito
 	return list;
 }
 
-void EditorExportPlatformLinuxBSD::get_export_options(List<ExportOption> *r_options) {
+bool EditorExportPlatformLinuxBSD::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
+	if (p_preset) {
+		// Hide SSH options.
+		bool ssh = p_preset->get("ssh_remote_deploy/enabled");
+		if (!ssh && p_option != "ssh_remote_deploy/enabled" && p_option.begins_with("ssh_remote_deploy/")) {
+			return false;
+		}
+	}
+	return true;
+}
+
+void EditorExportPlatformLinuxBSD::get_export_options(List<ExportOption> *r_options) const {
 	EditorExportPlatformPC::get_export_options(r_options);
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "binary_format/architecture", PROPERTY_HINT_ENUM, "x86_64,x86_32,arm64,arm32,rv64,ppc64,ppc32"), "x86_64"));
@@ -156,7 +168,7 @@ void EditorExportPlatformLinuxBSD::get_export_options(List<ExportOption> *r_opti
 							"kill $(pgrep -x -f \"{temp_dir}/{exe_name} {cmd_args}\")\n"
 							"rm -rf \"{temp_dir}\"";
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "ssh_remote_deploy/enabled"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "ssh_remote_deploy/enabled"), false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/host"), "user@host_ip"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/port"), "22"));
 
@@ -503,22 +515,24 @@ Error EditorExportPlatformLinuxBSD::run(const Ref<EditorExportPreset> &p_preset,
 }
 
 EditorExportPlatformLinuxBSD::EditorExportPlatformLinuxBSD() {
+	if (EditorNode::get_singleton()) {
 #ifdef MODULE_SVG_ENABLED
-	Ref<Image> img = memnew(Image);
-	const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
+		Ref<Image> img = memnew(Image);
+		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-	ImageLoaderSVG img_loader;
-	img_loader.create_image_from_string(img, _linuxbsd_logo_svg, EDSCALE, upsample, false);
-	set_logo(ImageTexture::create_from_image(img));
+		ImageLoaderSVG img_loader;
+		img_loader.create_image_from_string(img, _linuxbsd_logo_svg, EDSCALE, upsample, false);
+		set_logo(ImageTexture::create_from_image(img));
 
-	img_loader.create_image_from_string(img, _linuxbsd_run_icon_svg, EDSCALE, upsample, false);
-	run_icon = ImageTexture::create_from_image(img);
+		img_loader.create_image_from_string(img, _linuxbsd_run_icon_svg, EDSCALE, upsample, false);
+		run_icon = ImageTexture::create_from_image(img);
 #endif
 
-	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
-	if (theme.is_valid()) {
-		stop_icon = theme->get_icon(SNAME("Stop"), SNAME("EditorIcons"));
-	} else {
-		stop_icon.instantiate();
+		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
+		if (theme.is_valid()) {
+			stop_icon = theme->get_icon(SNAME("Stop"), SNAME("EditorIcons"));
+		} else {
+			stop_icon.instantiate();
+		}
 	}
 }

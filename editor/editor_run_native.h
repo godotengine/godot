@@ -52,10 +52,10 @@ protected:
 	void _notification(int p_what);
 
 public:
-	Error run_native(int p_id);
-	bool is_deploy_debug_remote_enabled() const;
-
+	Error start_run_native(int p_id);
 	void resume_run_native();
+
+	bool is_deploy_debug_remote_enabled() const;
 
 	EditorRunNative();
 };

@@ -1633,6 +1633,7 @@ static void _register_variant_builtin_methods() {
 
 	bind_string_method(casecmp_to, sarray("to"), varray());
 	bind_string_method(nocasecmp_to, sarray("to"), varray());
+	bind_string_method(naturalcasecmp_to, sarray("to"), varray());
 	bind_string_method(naturalnocasecmp_to, sarray("to"), varray());
 	bind_string_method(length, sarray(), varray());
 	bind_string_method(substr, sarray("from", "len"), varray(-1));
@@ -1659,6 +1660,7 @@ static void _register_variant_builtin_methods() {
 	bind_string_method(replacen, sarray("what", "forwhat"), varray());
 	bind_string_method(repeat, sarray("count"), varray());
 	bind_string_method(insert, sarray("position", "what"), varray());
+	bind_string_method(erase, sarray("position", "chars"), varray(1));
 	bind_string_method(capitalize, sarray(), varray());
 	bind_string_method(to_camel_case, sarray(), varray());
 	bind_string_method(to_pascal_case, sarray(), varray());
@@ -1921,7 +1923,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector4, distance_squared_to, sarray("to"), varray());
 	bind_method(Vector4, dot, sarray("with"), varray());
 	bind_method(Vector4, inverse, sarray(), varray());
-	bind_method(Vector4, is_equal_approx, sarray("with"), varray());
+	bind_method(Vector4, is_equal_approx, sarray("to"), varray());
 	bind_method(Vector4, is_zero_approx, sarray(), varray());
 	bind_method(Vector4, is_finite, sarray(), varray());
 
@@ -2000,6 +2002,7 @@ static void _register_variant_builtin_methods() {
 	bind_static_method(Color, html_is_valid, sarray("color"), varray());
 	bind_static_method(Color, from_string, sarray("str", "default"), varray());
 	bind_static_method(Color, from_hsv, sarray("h", "s", "v", "alpha"), varray(1.0));
+	bind_static_method(Color, from_hsl, sarray("h", "s", "l", "alpha"), varray(1.0));
 	bind_static_method(Color, from_ok_hsl, sarray("h", "s", "l", "alpha"), varray(1.0));
 
 	bind_static_method(Color, from_rgbe9995, sarray("rgbe"), varray());
@@ -2073,6 +2076,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Transform2D, scaled_local, sarray("scale"), varray());
 	bind_method(Transform2D, translated, sarray("offset"), varray());
 	bind_method(Transform2D, translated_local, sarray("offset"), varray());
+	bind_method(Transform2D, determinant, sarray(), varray());
 	bind_method(Transform2D, basis_xform, sarray("v"), varray());
 	bind_method(Transform2D, basis_xform_inv, sarray("v"), varray());
 	bind_method(Transform2D, interpolate_with, sarray("xform", "weight"), varray());

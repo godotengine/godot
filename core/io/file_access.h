@@ -64,7 +64,8 @@ public:
 		COMPRESSION_FASTLZ = Compression::MODE_FASTLZ,
 		COMPRESSION_DEFLATE = Compression::MODE_DEFLATE,
 		COMPRESSION_ZSTD = Compression::MODE_ZSTD,
-		COMPRESSION_GZIP = Compression::MODE_GZIP
+		COMPRESSION_GZIP = Compression::MODE_GZIP,
+		COMPRESSION_BROTLI = Compression::MODE_BROTLI,
 	};
 
 	typedef void (*FileCloseFailNotify)(const String &);
@@ -80,7 +81,7 @@ protected:
 	static void _bind_methods();
 
 	AccessType get_access_type() const;
-	String fix_path(const String &p_path) const;
+	virtual String fix_path(const String &p_path) const;
 	virtual Error open_internal(const String &p_path, int p_mode_flags) = 0; ///< open a file
 	virtual uint64_t _get_modified_time(const String &p_file) = 0;
 	virtual void _set_access_type(AccessType p_access);

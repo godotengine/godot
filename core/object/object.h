@@ -41,7 +41,6 @@
 #include "core/templates/list.h"
 #include "core/templates/rb_map.h"
 #include "core/templates/safe_refcount.h"
-#include "core/templates/vmap.h"
 #include "core/variant/callable_bind.h"
 #include "core/variant/variant.h"
 
@@ -62,6 +61,7 @@ enum PropertyHint {
 	PROPERTY_HINT_LAYERS_3D_RENDER,
 	PROPERTY_HINT_LAYERS_3D_PHYSICS,
 	PROPERTY_HINT_LAYERS_3D_NAVIGATION,
+	PROPERTY_HINT_LAYERS_AVOIDANCE,
 	PROPERTY_HINT_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"
 	PROPERTY_HINT_DIR, ///< a directory path must be passed
 	PROPERTY_HINT_GLOBAL_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"
@@ -119,6 +119,7 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT = 1 << 26, // For Object properties, instantiate them when creating in editor.
 	PROPERTY_USAGE_EDITOR_BASIC_SETTING = 1 << 27, //for project or editor settings, show when basic settings are selected.
 	PROPERTY_USAGE_READ_ONLY = 1 << 28, // Mark a property as read-only in the inspector.
+	PROPERTY_USAGE_SECRET = 1 << 29, // Export preset credentials that should be stored separately from the rest of the export config.
 
 	PROPERTY_USAGE_DEFAULT = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR,
 	PROPERTY_USAGE_NO_EDITOR = PROPERTY_USAGE_STORAGE,
@@ -587,7 +588,7 @@ private:
 		};
 
 		MethodInfo user;
-		VMap<Callable, Slot> slot_map;
+		HashMap<Callable, Slot, HashableHasher<Callable>> slot_map;
 	};
 
 	HashMap<StringName, SignalData> signal_map;
@@ -717,7 +718,7 @@ protected:
 		return &_class_name_static;
 	}
 
-	Vector<StringName> _get_meta_list_bind() const;
+	TypedArray<StringName> _get_meta_list_bind() const;
 	TypedArray<Dictionary> _get_property_list_bind() const;
 	TypedArray<Dictionary> _get_method_list_bind() const;
 
@@ -725,7 +726,7 @@ protected:
 
 	friend class ClassDB;
 
-	void _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
+	bool _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
 
 public: // Should be protected, but bug in clang++.
 	static void initialize_class();
@@ -923,6 +924,8 @@ public:
 	void clear_internal_resource_paths();
 
 	_ALWAYS_INLINE_ bool is_ref_counted() const { return type_is_reference; }
+
+	void cancel_free();
 
 	Object();
 	virtual ~Object();

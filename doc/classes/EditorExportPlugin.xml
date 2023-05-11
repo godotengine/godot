@@ -99,11 +99,29 @@
 				Return a [PackedStringArray] of additional features this preset, for the given [param platform], should have.
 			</description>
 		</method>
+		<method name="_get_export_options" qualifiers="virtual const">
+			<return type="Dictionary[]" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<description>
+				Return a list of export options that can be configured for this export plugin.
+				Each element in the return value is a [Dictionary] with the following keys:
+				- [code]option[/code]: A dictionary with the structure documented by [method Object.get_property_list], but all keys are optional.
+				- [code]default_value[/code]: The default value for this option.
+				- [code]update_visibility[/code]: An optional boolean value. If set to [code]true[/code], the preset will emit [signal Object.property_list_changed] when the option is changed.
+			</description>
+		</method>
 		<method name="_get_name" qualifiers="virtual const">
 			<return type="String" />
 			<description>
 				Return the name identifier of this plugin (for future identification by the exporter). The plugins are sorted by name before exporting.
 				Implementing this method is required.
+			</description>
+		</method>
+		<method name="_should_update_export_options" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<description>
+				Return [code]true[/code], if the result of [method _get_export_options] has changed and the export options of preset corresponding to [param platform] should be updated.
 			</description>
 		</method>
 		<method name="add_file">
@@ -183,6 +201,13 @@
 				Adds a shared object or a directory containing only shared objects with the given [param tags] and destination [param path].
 				[b]Note:[/b] In case of macOS exports, those shared objects will be added to [code]Frameworks[/code] directory of app bundle.
 				In case of a directory code-sign will error if you place non code object in directory.
+			</description>
+		</method>
+		<method name="get_option" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns the current value of an export option supplied by [method _get_export_options].
 			</description>
 		</method>
 		<method name="skip">

@@ -907,9 +907,7 @@ void RigidBody2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
-			if (Engine::get_singleton()->is_editor_hint()) {
-				update_configuration_warnings();
-			}
+			update_configuration_warnings();
 		} break;
 	}
 #endif
@@ -1036,7 +1034,7 @@ void RigidBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "linear_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_linear_damp_mode", "get_linear_damp_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_linear_damp", "get_linear_damp");
 	ADD_GROUP("Angular", "angular_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_velocity", PROPERTY_HINT_NONE, "suffix:rad/s"), "set_angular_velocity", "get_angular_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_velocity", PROPERTY_HINT_NONE, U"radians,suffix:\u00B0/s"), "set_angular_velocity", "get_angular_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "angular_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_angular_damp_mode", "get_angular_damp_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
 	ADD_GROUP("Constant Forces", "constant_");

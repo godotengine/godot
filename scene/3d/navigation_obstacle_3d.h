@@ -33,53 +33,83 @@
 
 #include "scene/3d/node_3d.h"
 
-class NavigationObstacle3D : public Node {
-	GDCLASS(NavigationObstacle3D, Node);
+class NavigationObstacle3D : public Node3D {
+	GDCLASS(NavigationObstacle3D, Node3D);
 
-	Node3D *parent_node3d = nullptr;
-
-	RID agent;
+	RID obstacle;
 	RID map_before_pause;
 	RID map_override;
+	RID map_current;
 
-	bool estimate_radius = true;
-	real_t radius = 1.0;
+	real_t height = 1.0;
+	real_t radius = 0.0;
+
+	Vector<Vector3> vertices;
+
+	RID fake_agent;
+	uint32_t avoidance_layers = 1;
+
+	bool use_3d_avoidance = false;
+
+	Transform3D previous_transform;
+
+	Vector3 velocity;
+	Vector3 previous_velocity;
+	bool velocity_submitted = false;
+
+#ifdef DEBUG_ENABLED
+	RID fake_agent_radius_debug_instance;
+	Ref<ArrayMesh> fake_agent_radius_debug_mesh;
+
+	RID static_obstacle_debug_instance;
+	Ref<ArrayMesh> static_obstacle_debug_mesh;
+
+private:
+	void _update_fake_agent_radius_debug();
+	void _update_static_obstacle_debug();
+#endif // DEBUG_ENABLED
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
 
 public:
 	NavigationObstacle3D();
 	virtual ~NavigationObstacle3D();
 
-	RID get_rid() const {
-		return agent;
-	}
-
-	void set_agent_parent(Node *p_agent_parent);
+	RID get_obstacle_rid() const { return obstacle; }
+	RID get_agent_rid() const { return fake_agent; }
 
 	void set_navigation_map(RID p_navigation_map);
 	RID get_navigation_map() const;
 
-	void set_estimate_radius(bool p_estimate_radius);
-	bool is_radius_estimated() const {
-		return estimate_radius;
-	}
 	void set_radius(real_t p_radius);
-	real_t get_radius() const {
-		return radius;
-	}
+	real_t get_radius() const { return radius; }
 
-	PackedStringArray get_configuration_warnings() const override;
+	void set_height(real_t p_height);
+	real_t get_height() const { return height; }
+
+	void set_vertices(const Vector<Vector3> &p_vertices);
+	const Vector<Vector3> &get_vertices() const { return vertices; };
+
+	void set_avoidance_layers(uint32_t p_layers);
+	uint32_t get_avoidance_layers() const;
+
+	void set_avoidance_layer_value(int p_layer_number, bool p_value);
+	bool get_avoidance_layer_value(int p_layer_number) const;
+
+	void set_use_3d_avoidance(bool p_use_3d_avoidance);
+	bool get_use_3d_avoidance() const { return use_3d_avoidance; }
+
+	void set_velocity(const Vector3 p_velocity);
+	Vector3 get_velocity() const { return velocity; };
 
 	void _avoidance_done(Vector3 p_new_velocity); // Dummy
 
 private:
-	void initialize_agent();
-	void reevaluate_agent_radius();
-	real_t estimate_agent_radius() const;
+	void _update_map(RID p_map);
+	void _update_position(const Vector3 p_position);
+	void _update_use_3d_avoidance(bool p_use_3d_avoidance);
 };
 
 #endif // NAVIGATION_OBSTACLE_3D_H

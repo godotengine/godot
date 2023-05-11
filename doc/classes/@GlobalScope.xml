@@ -826,17 +826,21 @@
 		</method>
 		<method name="print_rich" qualifiers="vararg">
 			<description>
-				Converts one or more arguments of any type to string in the best way possible and prints them to the console. The following BBCode tags are supported: b, i, u, s, indent, code, url, center, right, color, bgcolor, fgcolor. Color tags only support named colors such as [code]red[/code], [i]not[/i] hexadecimal color codes. Unsupported tags will be left as-is in standard output.
-				When printing to standard output, the supported subset of BBCode is converted to ANSI escape codes for the terminal emulator to display. Displaying ANSI escape codes is currently only supported on Linux and macOS. Support for ANSI escape codes may vary across terminal emulators, especially for italic and strikethrough.
+				Converts one or more arguments of any type to string in the best way possible and prints them to the console.
+				The following BBCode tags are supported: [code]b[/code], [code]i[/code], [code]u[/code], [code]s[/code], [code]indent[/code], [code]code[/code], [code]url[/code], [code]center[/code], [code]right[/code], [code]color[/code], [code]bgcolor[/code], [code]fgcolor[/code].
+				Color tags only support the following named colors: [code]black[/code], [code]red[/code], [code]green[/code], [code]yellow[/code], [code]blue[/code], [code]magenta[/code], [code]pink[/code], [code]purple[/code], [code]cyan[/code], [code]white[/code], [code]orange[/code], [code]gray[/code]. Hexadecimal color codes are not supported.
+				URL tags only support URLs wrapped by an URL tag, not URLs with a different title.
+				When printing to standard output, the supported subset of BBCode is converted to ANSI escape codes for the terminal emulator to display. Support for ANSI escape codes varies across terminal emulators, especially for italic and strikethrough. In standard output, [code]code[/code] is represented with faint text but without any font change. Unsupported tags are left as-is in standard output.
 				[codeblocks]
 				[gdscript]
-				print_rich("[code][b]Hello world![/b][/code]") # Prints out: [b]Hello world![/b]
+				print_rich("[color=green][b]Hello world![/b][/color]") # Prints out "Hello world!" in green with a bold font
 				[/gdscript]
 				[csharp]
-				GD.PrintRich("[code][b]Hello world![/b][/code]"); // Prints out: [b]Hello world![/b]
+				GD.PrintRich("[color=green][b]Hello world![/b][/color]"); // Prints out "Hello world!" in green with a bold font
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
+				[b]Note:[/b] On Windows, only Windows 10 and later correctly displays ANSI escape codes in standard output.
 			</description>
 		</method>
 		<method name="print_verbose" qualifiers="vararg">
@@ -2691,36 +2695,39 @@
 		<constant name="PROPERTY_HINT_LAYERS_3D_NAVIGATION" value="12" enum="PropertyHint">
 			Hints that an [int] property is a bitmask using the optionally named 3D navigation layers.
 		</constant>
-		<constant name="PROPERTY_HINT_FILE" value="13" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_AVOIDANCE" value="13" enum="PropertyHint">
+			Hints that an integer property is a bitmask using the optionally named avoidance layers.
+		</constant>
+		<constant name="PROPERTY_HINT_FILE" value="14" enum="PropertyHint">
 			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_DIR" value="14" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_DIR" value="15" enum="PropertyHint">
 			Hints that a [String] property is a path to a directory. Editing it will show a file dialog for picking the path.
 		</constant>
-		<constant name="PROPERTY_HINT_GLOBAL_FILE" value="15" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_FILE" value="16" enum="PropertyHint">
 			Hints that a [String] property is an absolute path to a file outside the project folder. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards, like [code]"*.png,*.jpg"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_GLOBAL_DIR" value="16" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_DIR" value="17" enum="PropertyHint">
 			Hints that a [String] property is an absolute path to a directory outside the project folder. Editing it will show a file dialog for picking the path.
 		</constant>
-		<constant name="PROPERTY_HINT_RESOURCE_TYPE" value="17" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_RESOURCE_TYPE" value="18" enum="PropertyHint">
 			Hints that a property is an instance of a [Resource]-derived type, optionally specified via the hint string (e.g. [code]"Texture2D"[/code]). Editing it will show a popup menu of valid resource types to instantiate.
 		</constant>
-		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="18" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="19" enum="PropertyHint">
 			Hints that a [String] property is text with line breaks. Editing it will show a text input field where line breaks can be typed.
 		</constant>
-		<constant name="PROPERTY_HINT_EXPRESSION" value="19" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_EXPRESSION" value="20" enum="PropertyHint">
 			Hints that a [String] property is an [Expression].
 		</constant>
-		<constant name="PROPERTY_HINT_PLACEHOLDER_TEXT" value="20" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PLACEHOLDER_TEXT" value="21" enum="PropertyHint">
 			Hints that a [String] property should show a placeholder text on its input field, if empty. The hint string is the placeholder text to use.
 		</constant>
-		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="21" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="22" enum="PropertyHint">
 			Hints that a [Color] property should be edited without affecting its transparency ([member Color.a] is not editable).
 		</constant>
-		<constant name="PROPERTY_HINT_OBJECT_ID" value="22" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_OBJECT_ID" value="23" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_TYPE_STRING" value="23" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_TYPE_STRING" value="24" enum="PropertyHint">
 			Hint that a property represents a particular type. If a property is [constant TYPE_STRING], allows to set a type from the create dialog. If you need to create an [Array] to contain elements of a specific type, the [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code] for specifying [Resource] types. For instance:
 			[codeblock]
 			hint_string = "%s:" % [TYPE_INT] # Array of integers.
@@ -2730,37 +2737,37 @@
 			[/codeblock]
 			[b]Note:[/b] The final colon is required for properly detecting built-in types.
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="24" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="25" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="25" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="26" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="26" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="27" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_SAVE_FILE" value="27" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_SAVE_FILE" value="28" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_GLOBAL_SAVE_FILE" value="28" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_SAVE_FILE" value="29" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="29" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="30" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="30" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="31" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="31" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="32" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_LOCALE_ID" value="32" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LOCALE_ID" value="33" enum="PropertyHint">
 			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
 		</constant>
-		<constant name="PROPERTY_HINT_LOCALIZABLE_STRING" value="33" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LOCALIZABLE_STRING" value="34" enum="PropertyHint">
 			Hints that a dictionary property is string translation map. Dictionary keys are locale codes and, values are translated strings.
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_TYPE" value="34" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_TYPE" value="35" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_HIDE_QUATERNION_EDIT" value="35" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_HIDE_QUATERNION_EDIT" value="36" enum="PropertyHint">
 			Hints that a quaternion property should disable the temporary euler editor.
 		</constant>
-		<constant name="PROPERTY_HINT_PASSWORD" value="36" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PASSWORD" value="37" enum="PropertyHint">
 			Hints that a string property is a password, and every character is replaced with the secret character.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="37" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_MAX" value="38" enum="PropertyHint">
 			Represents the size of the [enum PropertyHint] enum.
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">
@@ -2837,6 +2844,9 @@
 		</constant>
 		<constant name="PROPERTY_USAGE_READ_ONLY" value="268435456" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is read-only in the [EditorInspector].
+		</constant>
+		<constant name="PROPERTY_USAGE_SECRET" value="536870912" enum="PropertyUsageFlags" is_bitfield="true">
+			An export preset property with this flag contains confidential information and is stored separately from the rest of the export preset configuration.
 		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT" value="6" enum="PropertyUsageFlags" is_bitfield="true">
 			Default usage (storage, editor and network).

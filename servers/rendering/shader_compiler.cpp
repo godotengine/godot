@@ -38,12 +38,7 @@
 #define SL ShaderLanguage
 
 static String _mktab(int p_level) {
-	String tb;
-	for (int i = 0; i < p_level; i++) {
-		tb += "\t";
-	}
-
-	return tb;
+	return String("\t").repeat(p_level);
 }
 
 static String _typestr(SL::DataType p_type) {

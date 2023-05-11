@@ -32,6 +32,16 @@ def get_opts():
     ]
 
 
+def get_doc_classes():
+    return [
+        "EditorExportPlatformAndroid",
+    ]
+
+
+def get_doc_path():
+    return "doc_classes"
+
+
 # Return the ANDROID_SDK_ROOT environment variable.
 def get_env_android_sdk_root():
     return os.environ.get("ANDROID_SDK_ROOT", -1)

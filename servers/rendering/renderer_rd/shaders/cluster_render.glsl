@@ -100,6 +100,10 @@ layout(set = 0, binding = 3, std430) buffer restrict ClusterRender {
 }
 cluster_render;
 
+#ifdef USE_ATTACHMENT
+layout(location = 0) out vec4 frag_color;
+#endif
+
 void main() {
 	//convert from screen to cluster
 	uvec2 cluster = uvec2(gl_FragCoord.xy) >> state.screen_to_clusters_shift;
@@ -112,6 +116,8 @@ void main() {
 	//find the current element in the list and plot the bit to mark it as used
 	uint usage_write_offset = cluster_offset + (element_index >> 5);
 	uint usage_write_bit = 1 << (element_index & 0x1F);
+
+	uint aux = 0;
 
 #ifdef USE_SUBGROUPS
 
@@ -138,7 +144,7 @@ void main() {
 		cluster_thread_group_index = subgroupBallotExclusiveBitCount(mask);
 
 		if (cluster_thread_group_index == 0) {
-			atomicOr(cluster_render.data[usage_write_offset], usage_write_bit);
+			aux = atomicOr(cluster_render.data[usage_write_offset], usage_write_bit);
 		}
 	}
 #else
@@ -147,7 +153,7 @@ void main() {
 	if (!gl_HelperInvocation)
 #endif
 	{
-		atomicOr(cluster_render.data[usage_write_offset], usage_write_bit);
+		aux = atomicOr(cluster_render.data[usage_write_offset], usage_write_bit);
 	}
 #endif
 	//find the current element in the depth usage list and mark the current depth as used
@@ -162,7 +168,7 @@ void main() {
 	if (!gl_HelperInvocation) {
 		z_write_bit = subgroupOr(z_write_bit); //merge all Zs
 		if (cluster_thread_group_index == 0) {
-			atomicOr(cluster_render.data[z_write_offset], z_write_bit);
+			aux = atomicOr(cluster_render.data[z_write_offset], z_write_bit);
 		}
 	}
 #else
@@ -171,7 +177,11 @@ void main() {
 	if (!gl_HelperInvocation)
 #endif
 	{
-		atomicOr(cluster_render.data[z_write_offset], z_write_bit);
+		aux = atomicOr(cluster_render.data[z_write_offset], z_write_bit);
 	}
+#endif
+
+#ifdef USE_ATTACHMENT
+	frag_color = vec4(float(aux));
 #endif
 }

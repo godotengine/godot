@@ -76,14 +76,16 @@
 		<method name="bind" qualifiers="vararg const">
 			<return type="Callable" />
 			<description>
-				Returns a copy of this [Callable] with one or more arguments bound. When called, the bound arguments are passed [i]after[/i] the arguments supplied by [method call].
+				Returns a copy of this [Callable] with one or more arguments bound. When called, the bound arguments are passed [i]after[/i] the arguments supplied by [method call]. See also [method unbind].
+				[b]Note:[/b] When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left.
 			</description>
 		</method>
 		<method name="bindv">
 			<return type="Callable" />
 			<param index="0" name="arguments" type="Array" />
 			<description>
-				Returns a copy of this [Callable] with one or more arguments bound, reading them from an array. When called, the bound arguments are passed [i]after[/i] the arguments supplied by [method call].
+				Returns a copy of this [Callable] with one or more arguments bound, reading them from an array. When called, the bound arguments are passed [i]after[/i] the arguments supplied by [method call]. See also [method unbind].
+				[b]Note:[/b] When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left.
 			</description>
 		</method>
 		<method name="call" qualifiers="vararg const">
@@ -187,7 +189,13 @@
 			<return type="Callable" />
 			<param index="0" name="argcount" type="int" />
 			<description>
-				Returns a copy of this [Callable] with the arguments unbound, as defined by [param argcount]. Calling the returned [Callable] will call the method without the extra arguments that are supplied in the [Callable] on which you are calling this method.
+				Returns a copy of this [Callable] with a number of arguments unbound. In other words, when the new callable is called the last few arguments supplied by the user are ignored, according to [param argcount]. The remaining arguments are passed to the callable. This allows to use the original callable in a context that attempts to pass more arguments than this callable can handle, e.g. a signal with a fixed number of arguments. See also [method bind].
+				[b]Note:[/b] When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left.
+				[codeblock]
+				func _ready():
+				    foo.unbind(1).call(1, 2) # Calls foo(1).
+				    foo.bind(3, 4).unbind(1).call(1, 2) # Calls foo(1, 3, 4), note that it does not change the arguments from bind.
+				[/codeblock]
 			</description>
 		</method>
 	</methods>

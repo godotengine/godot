@@ -37,7 +37,9 @@ EditorExport *EditorExport::singleton = nullptr;
 
 void EditorExport::_save() {
 	Ref<ConfigFile> config;
+	Ref<ConfigFile> credentials;
 	config.instantiate();
+	credentials.instantiate();
 	for (int i = 0; i < export_presets.size(); i++) {
 		Ref<EditorExportPreset> preset = export_presets[i];
 		String section = "preset." + itos(i);
@@ -83,16 +85,21 @@ void EditorExport::_save() {
 		config->set_value(section, "encryption_exclude_filters", preset->get_enc_ex_filter());
 		config->set_value(section, "encrypt_pck", preset->get_enc_pck());
 		config->set_value(section, "encrypt_directory", preset->get_enc_directory());
-		config->set_value(section, "script_encryption_key", preset->get_script_encryption_key());
+		credentials->set_value(section, "script_encryption_key", preset->get_script_encryption_key());
 
 		String option_section = "preset." + itos(i) + ".options";
 
 		for (const PropertyInfo &E : preset->get_properties()) {
-			config->set_value(option_section, E.name, preset->get(E.name));
+			if (E.usage & PROPERTY_USAGE_SECRET) {
+				credentials->set_value(option_section, E.name, preset->get(E.name));
+			} else {
+				config->set_value(option_section, E.name, preset->get(E.name));
+			}
 		}
 	}
 
 	config->save("res://export_presets.cfg");
+	credentials->save("res://.godot/export_credentials.cfg");
 }
 
 void EditorExport::save_presets() {
@@ -202,6 +209,13 @@ void EditorExport::load_config() {
 		return;
 	}
 
+	Ref<ConfigFile> credentials;
+	credentials.instantiate();
+	err = credentials->load("res://.godot/export_credentials.cfg");
+	if (!(err == OK || err == ERR_FILE_NOT_FOUND)) {
+		return;
+	}
+
 	block_save = true;
 
 	int index = 0;
@@ -284,20 +298,28 @@ void EditorExport::load_config() {
 		if (config->has_section_key(section, "encryption_exclude_filters")) {
 			preset->set_enc_ex_filter(config->get_value(section, "encryption_exclude_filters"));
 		}
-		if (config->has_section_key(section, "script_encryption_key")) {
-			preset->set_script_encryption_key(config->get_value(section, "script_encryption_key"));
+		if (credentials->has_section_key(section, "script_encryption_key")) {
+			preset->set_script_encryption_key(credentials->get_value(section, "script_encryption_key"));
 		}
 
 		String option_section = "preset." + itos(index) + ".options";
 
 		List<String> options;
-
 		config->get_section_keys(option_section, &options);
 
 		for (const String &E : options) {
 			Variant value = config->get_value(option_section, E);
-
 			preset->set(E, value);
+		}
+
+		if (credentials->has_section(option_section)) {
+			options.clear();
+			credentials->get_section_keys(option_section, &options);
+
+			for (const String &E : options) {
+				Variant value = credentials->get_value(option_section, E);
+				preset->set(E, value);
+			}
 		}
 
 		add_export_preset(preset);
@@ -313,9 +335,18 @@ void EditorExport::update_export_presets() {
 	for (int i = 0; i < export_platforms.size(); i++) {
 		Ref<EditorExportPlatform> platform = export_platforms[i];
 
-		if (platform->should_update_export_options()) {
+		bool should_update = platform->should_update_export_options();
+		for (int j = 0; j < export_plugins.size(); j++) {
+			should_update |= export_plugins.write[j]->_should_update_export_options(platform);
+		}
+
+		if (should_update) {
 			List<EditorExportPlatform::ExportOption> options;
 			platform->get_export_options(&options);
+
+			for (int j = 0; j < export_plugins.size(); j++) {
+				export_plugins.write[j]->_get_export_options(platform, &options);
+			}
 
 			platform_options[platform->get_name()] = options;
 		}

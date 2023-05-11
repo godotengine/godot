@@ -32,6 +32,10 @@
 
 #include "export_plugin.h"
 
+void register_macos_exporter_types() {
+	GDREGISTER_VIRTUAL_CLASS(EditorExportPlatformMacOS);
+}
+
 void register_macos_exporter() {
 #ifndef ANDROID_ENABLED
 	EDITOR_DEF("export/macos/rcodesign", "");

@@ -348,16 +348,14 @@
 			<return type="void" />
 			<param index="0" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)" />
 			<description>
-				Shows the [Window] and makes it transient (see [member transient]). If [param rect] is provided, it will be set as the [Window]'s size.
-				Fails if called on the main window.
+				Shows the [Window] and makes it transient (see [member transient]). If [param rect] is provided, it will be set as the [Window]'s size. Fails if called on the main window.
 			</description>
 		</method>
 		<method name="popup_centered">
 			<return type="void" />
 			<param index="0" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
 			<description>
-				Popups the [Window] at the center of the current screen, with optionally given minimum size.
-				If the [Window] is embedded, it will be centered in the parent [Viewport] instead.
+				Popups the [Window] at the center of the current screen, with optionally given minimum size. If the [Window] is embedded, it will be centered in the parent [Viewport] instead.
 				[b]Note:[/b] Calling it with the default value of [param minsize] is equivalent to calling it with [member size].
 			</description>
 		</method>
@@ -366,8 +364,7 @@
 			<param index="0" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
 			<param index="1" name="fallback_ratio" type="float" default="0.75" />
 			<description>
-				Popups the [Window] centered inside its parent [Window].
-				[code]fallback_ratio[/code] determines the maximum size of the [Window], in relation to its parent.
+				Popups the [Window] centered inside its parent [Window]. [param fallback_ratio] determines the maximum size of the [Window], in relation to its parent.
 				[b]Note:[/b] Calling it with the default value of [param minsize] is equivalent to calling it with [member size].
 			</description>
 		</method>
@@ -382,8 +379,7 @@
 			<return type="void" />
 			<param index="0" name="parent_rect" type="Rect2i" />
 			<description>
-				Popups the [Window] with a position shifted by parent [Window]'s position.
-				If the [Window] is embedded, has the same effect as [method popup].
+				Popups the [Window] with a position shifted by parent [Window]'s position. If the [Window] is embedded, has the same effect as [method popup].
 			</description>
 		</method>
 		<method name="remove_theme_color_override">
@@ -567,6 +563,7 @@
 		</member>
 		<member name="position" type="Vector2i" setter="set_position" getter="get_position" default="Vector2i(0, 0)">
 			The window's position in pixels.
+			If [member ProjectSettings.display/window/subwindows/embed_subwindows] is [code]false[/code], the position is in absolute screen coordinates. This typically applies to editor plugins. If the setting is [code]false[/code], the window's position is in the coordinates of its parent [Viewport].
 		</member>
 		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(100, 100)">
 			The window's size in pixels.
@@ -714,7 +711,7 @@
 			Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="FLAG_RESIZE_DISABLED" value="0" enum="Flags">
-			The window can't be resizing by dragging its resize grip. It's still possible to resize the window using [member size]. This flag is ignored for full screen windows. Set with [member unresizable].
+			The window can't be resized by dragging its resize grip. It's still possible to resize the window using [member size]. This flag is ignored for full screen windows. Set with [member unresizable].
 		</constant>
 		<constant name="FLAG_BORDERLESS" value="1" enum="Flags">
 			The window do not have native title bar and other decorations. This flag is ignored for full-screen windows. Set with [member borderless].
@@ -730,7 +727,7 @@
 			The window can't be focused. No-focus window will ignore all input, except mouse clicks. Set with [member unfocusable].
 		</constant>
 		<constant name="FLAG_POPUP" value="5" enum="Flags">
-			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when the window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have [code]transient parent[/code] set (see [member transient]).
+			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when the window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have transient parent set (see [member transient]).
 		</constant>
 		<constant name="FLAG_EXTEND_TO_TITLE" value="6" enum="Flags">
 			Window content is expanded to the full size of the window. Unlike borderless window, the frame is left intact and can be used to resize the window, title bar is transparent, but have minimize/maximize/close buttons. Set with [member extend_to_title].
@@ -782,13 +779,19 @@
 			Initial window position is determined by [member position].
 		</constant>
 		<constant name="WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN" value="1" enum="WindowInitialPosition">
-			Initial window position is a center of the primary screen.
+			Initial window position is the center of the primary screen.
 		</constant>
 		<constant name="WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN" value="2" enum="WindowInitialPosition">
-			Initial window position is a center of the main window screen.
+			Initial window position is the center of the main window screen.
 		</constant>
 		<constant name="WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN" value="3" enum="WindowInitialPosition">
-			Initial window position is a center of [member current_screen] screen.
+			Initial window position is the center of [member current_screen] screen.
+		</constant>
+		<constant name="WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS" value="4" enum="WindowInitialPosition">
+			Initial window position is the center of the screen containing the mouse pointer.
+		</constant>
+		<constant name="WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS" value="5" enum="WindowInitialPosition">
+			Initial window position is the center of the screen containing the window with the keyboard focus.
 		</constant>
 	</constants>
 	<theme_items>

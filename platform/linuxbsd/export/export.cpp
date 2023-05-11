@@ -33,6 +33,10 @@
 #include "editor/export/editor_export.h"
 #include "export_plugin.h"
 
+void register_linuxbsd_exporter_types() {
+	GDREGISTER_VIRTUAL_CLASS(EditorExportPlatformLinuxBSD);
+}
+
 void register_linuxbsd_exporter() {
 	Ref<EditorExportPlatformLinuxBSD> platform;
 	platform.instantiate();

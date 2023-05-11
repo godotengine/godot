@@ -146,9 +146,11 @@ String GDExtension::find_extension_library(const String &p_path, Ref<ConfigFile>
 
 class GDExtensionMethodBind : public MethodBind {
 	GDExtensionClassMethodCall call_func;
+	GDExtensionClassMethodValidatedCall validated_call_func;
 	GDExtensionClassMethodPtrCall ptrcall_func;
 	void *method_userdata;
 	bool vararg;
+	uint32_t argument_count;
 	PropertyInfo return_value_info;
 	GodotTypeInfo::Metadata return_value_metadata;
 	List<PropertyInfo> arguments_info;
@@ -191,6 +193,40 @@ public:
 		r_error.expected = ce.expected;
 		return ret;
 	}
+	virtual void validated_call(Object *p_object, const Variant **p_args, Variant *r_ret) const override {
+		ERR_FAIL_COND_MSG(vararg, "Validated methods don't have ptrcall support. This is most likely an engine bug.");
+		GDExtensionClassInstancePtr extension_instance = is_static() ? nullptr : p_object->_get_extension_instance();
+
+		if (validated_call_func) {
+			// This is added here, but it's unlikely to be provided by most extensions.
+			validated_call_func(method_userdata, extension_instance, reinterpret_cast<GDExtensionConstVariantPtr *>(p_args), (GDExtensionVariantPtr)r_ret);
+		} else {
+#if 1
+			// Slow code-path, but works for the time being.
+			Callable::CallError ce;
+			call(p_object, p_args, argument_count, ce);
+#else
+			// This is broken, because it needs more information to do the calling properly
+
+			// If not provided, go via ptrcall, which is faster than resorting to regular call.
+			const void **argptrs = (const void **)alloca(argument_count * sizeof(void *));
+			for (uint32_t i = 0; i < argument_count; i++) {
+				argptrs[i] = VariantInternal::get_opaque_pointer(p_args[i]);
+			}
+
+			bool returns = true;
+			void *ret_opaque;
+			if (returns) {
+				ret_opaque = VariantInternal::get_opaque_pointer(r_ret);
+			} else {
+				ret_opaque = nullptr; // May be unnecessary as this is ignored, but just in case.
+			}
+
+			ptrcall(p_object, argptrs, ret_opaque);
+#endif
+		}
+	}
+
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {
 		ERR_FAIL_COND_MSG(vararg, "Vararg methods don't have ptrcall support. This is most likely an engine bug.");
 		GDExtensionClassInstancePtr extension_instance = p_object->_get_extension_instance();
@@ -204,6 +240,7 @@ public:
 	explicit GDExtensionMethodBind(const GDExtensionClassMethodInfo *p_method_info) {
 		method_userdata = p_method_info->method_userdata;
 		call_func = p_method_info->call_func;
+		validated_call_func = nullptr;
 		ptrcall_func = p_method_info->ptrcall_func;
 		set_name(*reinterpret_cast<StringName *>(p_method_info->name));
 
@@ -218,7 +255,7 @@ public:
 		}
 
 		set_hint_flags(p_method_info->method_flags);
-
+		argument_count = p_method_info->argument_count;
 		vararg = p_method_info->method_flags & GDEXTENSION_METHOD_FLAG_VARARG;
 		_set_returns(p_method_info->has_return_value);
 		_set_const(p_method_info->method_flags & GDEXTENSION_METHOD_FLAG_CONST);

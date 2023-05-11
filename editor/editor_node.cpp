@@ -53,6 +53,8 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/popup.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_bar.h"
 #include "scene/gui/tab_container.h"
@@ -65,6 +67,7 @@
 
 #include "editor/audio_stream_preview.h"
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/debugger/script_editor_debugger.h"
 #include "editor/dependency_editor.h"
 #include "editor/editor_about.h"
 #include "editor/editor_audio_buses.h"
@@ -75,6 +78,7 @@
 #include "editor/editor_folding.h"
 #include "editor/editor_help.h"
 #include "editor/editor_inspector.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_layouts_dialog.h"
 #include "editor/editor_log.h"
 #include "editor/editor_native_shader_source_visualizer.h"
@@ -98,6 +102,7 @@
 #include "editor/fbx_importer_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_run_bar.h"
 #include "editor/gui/editor_title_bar.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/history_dock.h"
@@ -143,6 +148,7 @@
 #include "editor/project_settings_editor.h"
 #include "editor/register_exporters.h"
 #include "editor/scene_tree_dock.h"
+#include "editor/window_wrapper.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -151,6 +157,8 @@ EditorNode *EditorNode::singleton = nullptr;
 
 // The metadata key used to store and retrieve the version text to copy to the clipboard.
 static const String META_TEXT_TO_COPY = "text_to_copy";
+
+static const String EDITOR_NODE_CONFIG_SECTION = "EditorNode";
 
 class AcceptDialogAutoReparent : public AcceptDialog {
 	GDCLASS(AcceptDialogAutoReparent, AcceptDialog);
@@ -632,6 +640,8 @@ void EditorNode::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
+			get_tree()->set_disable_node_threading(true); // No node threading while running editor.
+
 			Engine::get_singleton()->set_editor_hint(true);
 
 			Window *window = get_window();
@@ -746,6 +756,9 @@ void EditorNode::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			scene_tabs->set_tab_close_display_policy((TabBar::CloseButtonDisplayPolicy)EDITOR_GET("interface/scene_tabs/display_close_button").operator int());
+			FileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
+			EditorFileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
+			EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
 
 			bool theme_changed =
 					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/theme") ||
@@ -755,7 +768,9 @@ void EditorNode::_notification(int p_what) {
 					EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/theme") ||
 					EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/help/help") ||
 					EditorSettings::get_singleton()->check_changed_settings_in_group("filesystem/file_dialog/thumbnail_size") ||
-					EditorSettings::get_singleton()->check_changed_settings_in_group("run/output/font_size");
+					EditorSettings::get_singleton()->check_changed_settings_in_group("run/output/font_size") ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/increase_scrollbar_touch_area") ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/scale_gizmo_handles");
 
 			if (theme_changed) {
 				theme = create_custom_theme(theme_base->get_theme());
@@ -800,20 +815,6 @@ void EditorNode::_notification(int p_what) {
 			}
 
 			_build_icon_type_cache();
-
-			if (write_movie_button->is_pressed()) {
-				launch_pad->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("LaunchPadMovieMode"), SNAME("EditorStyles")));
-				write_movie_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("MovieWriterButtonPressed"), SNAME("EditorStyles")));
-			} else {
-				launch_pad->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("LaunchPadNormal"), SNAME("EditorStyles")));
-				write_movie_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("MovieWriterButtonNormal"), SNAME("EditorStyles")));
-			}
-
-			play_button->set_icon(gui_base->get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
-			play_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayScene"), SNAME("EditorIcons")));
-			play_custom_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayCustom"), SNAME("EditorIcons")));
-			pause_button->set_icon(gui_base->get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
-			stop_button->set_icon(gui_base->get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
 
 			prev_scene->set_icon(gui_base->get_theme_icon(SNAME("PrevScene"), SNAME("EditorIcons")));
 			distraction_free->set_icon(gui_base->get_theme_icon(SNAME("DistractionFree"), SNAME("EditorIcons")));
@@ -1096,7 +1097,7 @@ void EditorNode::_sources_changed(bool p_exist) {
 			EditorResourcePreview::get_singleton()->start();
 		}
 
-		_load_docks();
+		_load_editor_layout();
 
 		if (!defer_load_scene.is_empty()) {
 			Engine::get_singleton()->startup_benchmark_begin_measure("editor_load_scene");
@@ -1193,7 +1194,7 @@ void EditorNode::_vp_resized() {
 }
 
 void EditorNode::_titlebar_resized() {
-	DisplayServer::get_singleton()->window_set_window_buttons_offset(Vector2i(menu_hb->get_global_position().y + menu_hb->get_size().y / 2, menu_hb->get_global_position().y + menu_hb->get_size().y / 2), DisplayServer::MAIN_WINDOW_ID);
+	DisplayServer::get_singleton()->window_set_window_buttons_offset(Vector2i(title_bar->get_global_position().y + title_bar->get_size().y / 2, title_bar->get_global_position().y + title_bar->get_size().y / 2), DisplayServer::MAIN_WINDOW_ID);
 	const Vector3i &margin = DisplayServer::get_singleton()->window_get_safe_title_margins(DisplayServer::MAIN_WINDOW_ID);
 	if (left_menu_spacer) {
 		int w = (gui_base->is_layout_rtl()) ? margin.y : margin.x;
@@ -1203,8 +1204,8 @@ void EditorNode::_titlebar_resized() {
 		int w = (gui_base->is_layout_rtl()) ? margin.x : margin.y;
 		right_menu_spacer->set_custom_minimum_size(Size2(w, 0));
 	}
-	if (menu_hb) {
-		menu_hb->set_custom_minimum_size(Size2(0, margin.z - menu_hb->get_global_position().y));
+	if (title_bar) {
+		title_bar->set_custom_minimum_size(Size2(0, margin.z - title_bar->get_global_position().y));
 	}
 }
 
@@ -1465,39 +1466,28 @@ void EditorNode::_dialog_display_load_error(String p_file, Error p_error) {
 	}
 }
 
-void EditorNode::_get_scene_metadata(const String &p_file) {
+void EditorNode::_load_editor_plugin_states_from_config(const Ref<ConfigFile> &p_config_file) {
 	Node *scene = editor_data.get_edited_scene_root();
 
 	if (!scene) {
 		return;
 	}
 
-	String path = EditorPaths::get_singleton()->get_project_settings_dir().path_join(p_file.get_file() + "-editstate-" + p_file.md5_text() + ".cfg");
-
-	Ref<ConfigFile> cf;
-	cf.instantiate();
-
-	Error err = cf->load(path);
-	if (err != OK || !cf->has_section("editor_states")) {
-		// Must not exist.
-		return;
-	}
-
 	List<String> esl;
-	cf->get_section_keys("editor_states", &esl);
+	p_config_file->get_section_keys("editor_states", &esl);
 
 	Dictionary md;
 	for (const String &E : esl) {
-		Variant st = cf->get_value("editor_states", E);
+		Variant st = p_config_file->get_value("editor_states", E);
 		if (st.get_type() != Variant::NIL) {
 			md[E] = st;
 		}
 	}
 
-	editor_data.set_editor_states(md);
+	editor_data.set_editor_plugin_states(md);
 }
 
-void EditorNode::_set_scene_metadata(const String &p_file, int p_idx) {
+void EditorNode::_save_editor_states(const String &p_file, int p_idx) {
 	Node *scene = editor_data.get_edited_scene_root(p_idx);
 
 	if (!scene) {
@@ -1510,19 +1500,26 @@ void EditorNode::_set_scene_metadata(const String &p_file, int p_idx) {
 	cf.instantiate();
 
 	Dictionary md;
-
 	if (p_idx < 0 || editor_data.get_edited_scene() == p_idx) {
-		md = editor_data.get_editor_states();
+		md = editor_data.get_editor_plugin_states();
 	} else {
 		md = editor_data.get_scene_editor_states(p_idx);
 	}
 
 	List<Variant> keys;
 	md.get_key_list(&keys);
-
 	for (const Variant &E : keys) {
 		cf->set_value("editor_states", E, md[E]);
 	}
+
+	// Save the currently selected nodes.
+
+	List<Node *> selection = editor_selection->get_full_selected_node_list();
+	TypedArray<NodePath> selection_paths;
+	for (Node *selected_node : selection) {
+		selection_paths.push_back(selected_node->get_path());
+	}
+	cf->set_value("editor_states", "selected_nodes", selection_paths);
 
 	Error err = cf->save(path);
 	ERR_FAIL_COND_MSG(err != OK, "Cannot save config file to '" + path + "'.");
@@ -1813,9 +1810,9 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	editor_data.apply_changes_in_editors();
 	List<Ref<AnimatedValuesBackup>> anim_backups;
 	_reset_animation_players(scene, &anim_backups);
-	_save_default_environment();
+	save_default_environment();
 
-	_set_scene_metadata(p_file, idx);
+	_save_editor_states(p_file, idx);
 
 	Ref<PackedScene> sdata;
 
@@ -1875,7 +1872,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 }
 
 void EditorNode::save_all_scenes() {
-	_menu_option_confirm(RUN_STOP, true);
+	project_run_bar->stop_playing();
 	_save_all_scenes();
 }
 
@@ -1889,11 +1886,33 @@ void EditorNode::save_scene_list(Vector<String> p_scene_filenames) {
 	}
 }
 
+void EditorNode::save_before_run() {
+	current_menu_option = FILE_SAVE_AND_RUN;
+	_menu_option_confirm(FILE_SAVE_AS_SCENE, true);
+	file->set_title(TTR("Save scene before running..."));
+}
+
+void EditorNode::try_autosave() {
+	if (!bool(EDITOR_GET("run/auto_save/save_before_running"))) {
+		return;
+	}
+
+	if (unsaved_cache) {
+		Node *scene = editor_data.get_edited_scene_root();
+
+		if (scene && !scene->get_scene_file_path().is_empty()) { // Only autosave if there is a scene and if it has a path.
+			_save_scene_with_preview(scene->get_scene_file_path());
+		}
+	}
+	_menu_option(FILE_SAVE_ALL_SCENES);
+	editor_data.save_editor_external_data();
+}
+
 void EditorNode::restart_editor() {
 	exiting = true;
 
-	if (editor_run.get_status() != EditorRun::STATUS_STOP) {
-		editor_run.stop();
+	if (project_run_bar->is_playing()) {
+		project_run_bar->stop_playing();
 	}
 
 	String to_reopen;
@@ -1941,7 +1960,7 @@ void EditorNode::_save_all_scenes() {
 	if (!all_saved) {
 		show_warning(TTR("Could not save one or more scenes!"), TTR("Save All Scenes"));
 	}
-	_save_default_environment();
+	save_default_environment();
 }
 
 void EditorNode::_mark_unsaved_scenes() {
@@ -1981,11 +2000,7 @@ void EditorNode::_dialog_action(String p_file) {
 			ProjectSettings::get_singleton()->save();
 			// TODO: Would be nice to show the project manager opened with the highlighted field.
 
-			if ((bool)pick_main_scene->get_meta("from_native", false)) {
-				run_native->resume_run_native();
-			} else {
-				_run(false, ""); // Automatically run the project.
-			}
+			project_run_bar->play_main_scene((bool)pick_main_scene->get_meta("from_native", false));
 		} break;
 		case FILE_CLOSE:
 		case SCENE_TAB_CLOSE:
@@ -2006,10 +2021,10 @@ void EditorNode::_dialog_action(String p_file) {
 					return;
 				}
 
-				_save_default_environment();
+				save_default_environment();
 				_save_scene_with_preview(p_file, scene_idx);
 				_add_to_recent_scenes(p_file);
-				save_layout();
+				save_editor_layout_delayed();
 
 				if (scene_idx != -1) {
 					_discard_changes();
@@ -2020,9 +2035,9 @@ void EditorNode::_dialog_action(String p_file) {
 
 		case FILE_SAVE_AND_RUN: {
 			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
-				_save_default_environment();
+				save_default_environment();
 				_save_scene_with_preview(p_file);
-				_run(false, p_file);
+				project_run_bar->play_custom_scene(p_file);
 			}
 		} break;
 
@@ -2031,13 +2046,9 @@ void EditorNode::_dialog_action(String p_file) {
 			ProjectSettings::get_singleton()->save();
 
 			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
-				_save_default_environment();
+				save_default_environment();
 				_save_scene_with_preview(p_file);
-				if ((bool)pick_main_scene->get_meta("from_native", false)) {
-					run_native->resume_run_native();
-				} else {
-					_run(false, p_file);
-				}
+				project_run_bar->play_main_scene((bool)pick_main_scene->get_meta("from_native", false));
 			}
 		} break;
 
@@ -2249,7 +2260,7 @@ void EditorNode::push_item(Object *p_object, const String &p_property, bool p_in
 	_edit_current();
 }
 
-void EditorNode::_save_default_environment() {
+void EditorNode::save_default_environment() {
 	Ref<Environment> fallback = get_tree()->get_root()->get_world_3d()->get_fallback_environment();
 
 	if (fallback.is_valid() && fallback->get_path().is_resource_file()) {
@@ -2495,157 +2506,6 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 	InspectorDock::get_singleton()->update(current_obj);
 }
 
-void EditorNode::_write_movie_toggled(bool p_enabled) {
-	if (p_enabled) {
-		launch_pad->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("LaunchPadMovieMode"), SNAME("EditorStyles")));
-		write_movie_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("MovieWriterButtonPressed"), SNAME("EditorStyles")));
-	} else {
-		launch_pad->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("LaunchPadNormal"), SNAME("EditorStyles")));
-		write_movie_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("MovieWriterButtonNormal"), SNAME("EditorStyles")));
-	}
-}
-
-void EditorNode::_run(bool p_current, const String &p_custom) {
-	if (editor_run.get_status() == EditorRun::STATUS_PLAY) {
-		play_button->set_pressed(!_playing_edited);
-		play_scene_button->set_pressed(_playing_edited);
-		return;
-	}
-
-	play_button->set_pressed(false);
-	play_button->set_icon(gui_base->get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
-	play_scene_button->set_pressed(false);
-	play_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayScene"), SNAME("EditorIcons")));
-	play_custom_scene_button->set_pressed(false);
-	play_custom_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayCustom"), SNAME("EditorIcons")));
-
-	String write_movie_file;
-	if (write_movie_button->is_pressed()) {
-		if (p_current && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->has_meta("movie_file")) {
-			// If the scene file has a movie_file metadata set, use this as file. Quick workaround if you want to have multiple scenes that write to multiple movies.
-			write_movie_file = get_tree()->get_edited_scene_root()->get_meta("movie_file");
-		} else {
-			write_movie_file = GLOBAL_GET("editor/movie_writer/movie_file");
-		}
-		if (write_movie_file == String()) {
-			show_accept(TTR("Movie Maker mode is enabled, but no movie file path has been specified.\nA default movie file path can be specified in the project settings under the Editor > Movie Writer category.\nAlternatively, for running single scenes, a `movie_file` string metadata can be added to the root node,\nspecifying the path to a movie file that will be used when recording that scene."), TTR("OK"));
-			return;
-		}
-	}
-
-	String run_filename;
-
-	if ((p_current && p_custom.is_empty()) || (editor_data.get_edited_scene_root() && !p_custom.is_empty() && p_custom == editor_data.get_edited_scene_root()->get_scene_file_path())) {
-		Node *scene = editor_data.get_edited_scene_root();
-
-		if (!scene) {
-			show_accept(TTR("There is no defined scene to run."), TTR("OK"));
-			return;
-		}
-
-		if (scene->get_scene_file_path().is_empty()) {
-			current_menu_option = FILE_SAVE_AND_RUN;
-			_menu_option_confirm(FILE_SAVE_AS_SCENE, true);
-			file->set_title(TTR("Save scene before running..."));
-			return;
-		}
-
-		run_filename = scene->get_scene_file_path();
-	} else if (!p_custom.is_empty()) {
-		run_filename = p_custom;
-	}
-
-	if (run_filename.is_empty()) {
-		// Evidently, run the scene.
-		if (!ensure_main_scene(false)) {
-			return;
-		}
-		run_filename = GLOBAL_DEF_BASIC("application/run/main_scene", "");
-	}
-
-	if (bool(EDITOR_GET("run/auto_save/save_before_running"))) {
-		if (unsaved_cache) {
-			Node *scene = editor_data.get_edited_scene_root();
-
-			if (scene && !scene->get_scene_file_path().is_empty()) { // Only autosave if there is a scene and if it has a path.
-				_save_scene_with_preview(scene->get_scene_file_path());
-			}
-		}
-		_menu_option(FILE_SAVE_ALL_SCENES);
-		editor_data.save_editor_external_data();
-	}
-
-	if (!call_build()) {
-		return;
-	}
-
-	if (bool(EDITOR_GET("run/output/always_clear_output_on_play"))) {
-		log->clear();
-	}
-
-	if (bool(EDITOR_GET("run/output/always_open_output_on_play"))) {
-		make_bottom_panel_item_visible(log);
-	}
-
-	EditorDebuggerNode::get_singleton()->start();
-	Error error = editor_run.run(run_filename, write_movie_file);
-	if (error != OK) {
-		EditorDebuggerNode::get_singleton()->stop();
-		show_accept(TTR("Could not start subprocess(es)!"), TTR("OK"));
-		return;
-	}
-
-	emit_signal(SNAME("play_pressed"));
-	if (p_current) {
-		run_current_filename = run_filename;
-		play_scene_button->set_pressed(true);
-		play_scene_button->set_icon(gui_base->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
-		play_scene_button->set_tooltip_text(TTR("Reload the played scene."));
-	} else if (!p_custom.is_empty()) {
-		run_custom_filename = p_custom;
-		play_custom_scene_button->set_pressed(true);
-		play_custom_scene_button->set_icon(gui_base->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
-		play_custom_scene_button->set_tooltip_text(TTR("Reload the played scene."));
-	} else {
-		play_button->set_pressed(true);
-		play_button->set_icon(gui_base->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
-		play_button->set_tooltip_text(TTR("Reload the played scene."));
-	}
-	stop_button->set_disabled(false);
-
-	_playing_edited = p_current;
-}
-
-void EditorNode::_run_native(const Ref<EditorExportPreset> &p_preset) {
-	bool autosave = EDITOR_GET("run/auto_save/save_before_running");
-	if (autosave) {
-		_menu_option_confirm(FILE_SAVE_ALL_SCENES, false);
-	}
-	if (run_native->is_deploy_debug_remote_enabled()) {
-		_menu_option_confirm(RUN_STOP, true);
-
-		if (!call_build()) {
-			return; // Build failed.
-		}
-
-		EditorDebuggerNode::get_singleton()->start(p_preset->get_platform()->get_debug_protocol());
-		emit_signal(SNAME("play_pressed"));
-		editor_run.run_native_notify();
-	}
-}
-
-void EditorNode::_reset_play_buttons() {
-	play_button->set_pressed(false);
-	play_button->set_icon(gui_base->get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
-	play_button->set_tooltip_text(TTR("Play the project."));
-	play_scene_button->set_pressed(false);
-	play_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayScene"), SNAME("EditorIcons")));
-	play_scene_button->set_tooltip_text(TTR("Play the edited scene."));
-	play_custom_scene_button->set_pressed(false);
-	play_custom_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayCustom"), SNAME("EditorIcons")));
-	play_custom_scene_button->set_tooltip_text(TTR("Play a custom scene."));
-}
-
 void EditorNode::_android_build_source_selected(const String &p_file) {
 	export_template_manager->install_android_template_from_file(p_file);
 }
@@ -2744,7 +2604,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					if (scene_idx != -1) {
 						_discard_changes();
 					}
-					save_layout();
+					save_editor_layout_delayed();
 				} else {
 					show_save_accept(vformat(TTR("%s no longer exists! Please specify a new save location."), scene->get_scene_file_path().get_base_dir()), TTR("OK"));
 				}
@@ -2810,6 +2670,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		case FILE_SAVE_ALL_SCENES: {
 			_save_all_scenes();
+		} break;
+
+		case FILE_RUN_SCENE: {
+			project_run_bar->play_current_scene();
 		} break;
 
 		case FILE_EXPORT_PROJECT: {
@@ -2916,45 +2780,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			scene_tabs->set_current_tab(cur_idx);
 
 		} break;
-		case RUN_PLAY: {
-			run_play();
-
-		} break;
-		case RUN_PLAY_CUSTOM_SCENE: {
-			if (run_custom_filename.is_empty() || editor_run.get_status() == EditorRun::STATUS_STOP) {
-				_menu_option_confirm(RUN_STOP, true);
-				quick_run->popup_dialog("PackedScene", true);
-				quick_run->set_title(TTR("Quick Run Scene..."));
-				play_custom_scene_button->set_pressed(false);
-			} else {
-				String last_custom_scene = run_custom_filename; // This is necessary to have a copy of the string.
-				run_play_custom(last_custom_scene);
-			}
-
-		} break;
-		case RUN_STOP: {
-			if (editor_run.get_status() == EditorRun::STATUS_STOP) {
-				break;
-			}
-
-			editor_run.stop();
-			run_custom_filename.clear();
-			run_current_filename.clear();
-			stop_button->set_disabled(true);
-			_reset_play_buttons();
-
-			if (bool(EDITOR_GET("run/output/always_close_output_on_stop"))) {
-				for (int i = 0; i < bottom_panel_items.size(); i++) {
-					if (bottom_panel_items[i].control == log) {
-						_bottom_panel_switch(false, i);
-						break;
-					}
-				}
-			}
-			EditorDebuggerNode::get_singleton()->stop();
-			emit_signal(SNAME("stop_pressed"));
-
-		} break;
 
 		case FILE_SHOW_IN_FILESYSTEM: {
 			String path = editor_data.get_scene_path(editor_data.get_edited_scene());
@@ -2963,15 +2788,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			}
 		} break;
 
-		case RUN_PLAY_SCENE: {
-			if (run_current_filename.is_empty() || editor_run.get_status() == EditorRun::STATUS_STOP) {
-				run_play_current();
-			} else {
-				String last_current_scene = run_current_filename; // This is necessary to have a copy of the string.
-				run_play_custom(last_current_scene);
-			}
-
-		} break;
 		case RUN_SETTINGS: {
 			project_settings_editor->popup_project_settings();
 		} break;
@@ -2994,10 +2810,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case RUN_USER_DATA_FOLDER: {
 			// Ensure_user_data_dir() to prevent the edge case: "Open User Data Folder" won't work after the project was renamed in ProjectSettingsEditor unless the project is saved.
 			OS::get_singleton()->ensure_user_data_dir();
-			OS::get_singleton()->shell_open(String("file://") + OS::get_singleton()->get_user_data_dir());
+			OS::get_singleton()->shell_show_in_file_manager(OS::get_singleton()->get_user_data_dir(), true);
 		} break;
 		case FILE_EXPLORE_ANDROID_BUILD_TEMPLATES: {
-			OS::get_singleton()->shell_open("file://" + ProjectSettings::get_singleton()->get_resource_path().path_join("android"));
+			OS::get_singleton()->shell_show_in_file_manager(ProjectSettings::get_singleton()->get_resource_path().path_join("android"), true);
 		} break;
 		case FILE_QUIT:
 		case RUN_PROJECT_MANAGER:
@@ -3069,10 +2885,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			editor_settings_dialog->popup_edit_settings();
 		} break;
 		case SETTINGS_EDITOR_DATA_FOLDER: {
-			OS::get_singleton()->shell_open(String("file://") + EditorPaths::get_singleton()->get_data_dir());
+			OS::get_singleton()->shell_show_in_file_manager(EditorPaths::get_singleton()->get_data_dir(), true);
 		} break;
 		case SETTINGS_EDITOR_CONFIG_FOLDER: {
-			OS::get_singleton()->shell_open(String("file://") + EditorPaths::get_singleton()->get_config_dir());
+			OS::get_singleton()->shell_show_in_file_manager(EditorPaths::get_singleton()->get_config_dir(), true);
 		} break;
 		case SETTINGS_MANAGE_EXPORT_TEMPLATES: {
 			export_template_manager->popup_manager();
@@ -3175,7 +2991,7 @@ void EditorNode::_screenshot(bool p_use_utc) {
 	NodePath path = String("user://") + name;
 	_save_screenshot(path);
 	if (EDITOR_GET("interface/editor/automatically_open_screenshots")) {
-		OS::get_singleton()->shell_open(String("file://") + ProjectSettings::get_singleton()->globalize_path(path));
+		OS::get_singleton()->shell_show_in_file_manager(ProjectSettings::get_singleton()->globalize_path(path), true);
 	}
 }
 
@@ -3267,7 +3083,7 @@ int EditorNode::_next_unsaved_scene(bool p_valid_filename, int p_start) {
 void EditorNode::_exit_editor(int p_exit_code) {
 	exiting = true;
 	resource_preview->stop(); // Stop early to avoid crashes.
-	_save_docks();
+	_save_editor_layout();
 
 	// Dim the editor window while it's quitting to make it clearer that it's busy.
 	dim_editor(true);
@@ -3295,12 +3111,12 @@ void EditorNode::_discard_changes(const String &p_str) {
 			_proceed_closing_scene_tabs();
 		} break;
 		case FILE_QUIT: {
-			_menu_option_confirm(RUN_STOP, true);
+			project_run_bar->stop_playing();
 			_exit_editor(EXIT_SUCCESS);
 
 		} break;
 		case RUN_PROJECT_MANAGER: {
-			_menu_option_confirm(RUN_STOP, true);
+			project_run_bar->stop_playing();
 			_exit_editor(EXIT_SUCCESS);
 			String exec = OS::get_singleton()->get_executable_path();
 
@@ -3581,14 +3397,6 @@ bool EditorNode::is_addon_plugin_enabled(const String &p_addon) const {
 	}
 
 	return addon_name_to_plugin.has("res://addons/" + p_addon + "/plugin.cfg");
-}
-
-void EditorNode::set_movie_maker_enabled(bool p_enabled) {
-	write_movie_button->set_pressed(p_enabled);
-}
-
-bool EditorNode::is_movie_maker_enabled() const {
-	return write_movie_button->is_pressed();
 }
 
 void EditorNode::_remove_edited_scene(bool p_change_tab) {
@@ -3944,7 +3752,14 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	new_scene->set_scene_instance_state(Ref<SceneState>());
 
 	set_edited_scene(new_scene);
-	_get_scene_metadata(p_scene);
+
+	String config_file_path = EditorPaths::get_singleton()->get_project_settings_dir().path_join(p_scene.get_file() + "-editstate-" + p_scene.md5_text() + ".cfg");
+	Ref<ConfigFile> editor_state_cf;
+	editor_state_cf.instantiate();
+	Error editor_state_cf_err = editor_state_cf->load(config_file_path);
+	if (editor_state_cf_err == OK || editor_state_cf->has_section("editor_states")) {
+		_load_editor_plugin_states_from_config(editor_state_cf);
+	}
 
 	_update_title();
 	_update_scene_tabs();
@@ -3965,8 +3780,20 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	push_item(new_scene);
 
+	// Load the selected nodes.
+	if (editor_state_cf->has_section_key("editor_states", "selected_nodes")) {
+		TypedArray<NodePath> selected_node_list = editor_state_cf->get_value("editor_states", "selected_nodes", TypedArray<String>());
+
+		for (int i = 0; i < selected_node_list.size(); i++) {
+			Node *selected_node = new_scene->get_node_or_null(selected_node_list[i]);
+			if (selected_node) {
+				editor_selection->add_node(selected_node);
+			}
+		}
+	}
+
 	if (!restoring_scenes) {
-		save_layout();
+		save_editor_layout_delayed();
 	}
 
 	return OK;
@@ -4259,14 +4086,31 @@ void EditorNode::_quick_opened() {
 	}
 }
 
-void EditorNode::_quick_run() {
-	_run(false, quick_run->get_selected());
+void EditorNode::_project_run_started() {
+	if (bool(EDITOR_GET("run/output/always_clear_output_on_play"))) {
+		log->clear();
+	}
+
+	if (bool(EDITOR_GET("run/output/always_open_output_on_play"))) {
+		make_bottom_panel_item_visible(log);
+	}
+}
+
+void EditorNode::_project_run_stopped() {
+	if (!bool(EDITOR_GET("run/output/always_close_output_on_stop"))) {
+		return;
+	}
+
+	for (int i = 0; i < bottom_panel_items.size(); i++) {
+		if (bottom_panel_items[i].control == log) {
+			_bottom_panel_switch(false, i);
+			break;
+		}
+	}
 }
 
 void EditorNode::notify_all_debug_sessions_exited() {
-	_menu_option_confirm(RUN_STOP, false);
-	stop_button->set_pressed(false);
-	editor_run.stop();
+	project_run_bar->stop_playing();
 }
 
 void EditorNode::add_io_error(const String &p_error) {
@@ -4304,13 +4148,12 @@ bool EditorNode::is_scene_in_use(const String &p_path) {
 	return false;
 }
 
+OS::ProcessID EditorNode::has_child_process(OS::ProcessID p_pid) const {
+	return project_run_bar->has_child_process(p_pid);
+}
+
 void EditorNode::stop_child_process(OS::ProcessID p_pid) {
-	if (has_child_process(p_pid)) {
-		editor_run.stop_child_process(p_pid);
-		if (!editor_run.get_child_process_count()) { // All children stopped. Closing.
-			_menu_option_confirm(RUN_STOP, false);
-		}
-	}
+	project_run_bar->stop_child_process(p_pid);
 }
 
 Ref<Script> EditorNode::get_object_custom_type_base(const Object *p_object) const {
@@ -4648,67 +4491,66 @@ void EditorNode::_copy_warning(const String &p_str) {
 	DisplayServer::get_singleton()->clipboard_set(warning->get_text());
 }
 
-void EditorNode::_dock_floating_close_request(Control *p_control) {
-	// Through the MarginContainer to the Window.
-	Window *window = static_cast<Window *>(p_control->get_parent()->get_parent());
-	int window_slot = window->get_meta("dock_slot");
+void EditorNode::_dock_floating_close_request(WindowWrapper *p_wrapper) {
+	int dock_slot_num = p_wrapper->get_meta("dock_slot");
+	int dock_slot_index = p_wrapper->get_meta("dock_index");
 
-	p_control->get_parent()->remove_child(p_control);
-	dock_slot[window_slot]->add_child(p_control);
-	dock_slot[window_slot]->move_child(p_control, MIN((int)window->get_meta("dock_index"), dock_slot[window_slot]->get_tab_count() - 1));
-	dock_slot[window_slot]->set_current_tab(dock_slot[window_slot]->get_tab_idx_from_control(p_control));
-	dock_slot[window_slot]->set_tab_title(dock_slot[window_slot]->get_tab_idx_from_control(p_control), TTRGET(p_control->get_name()));
+	// Give back the dock to the original owner.
+	Control *dock = p_wrapper->release_wrapped_control();
 
-	window->queue_free();
+	dock_slot[dock_slot_num]->add_child(dock);
+	dock_slot[dock_slot_num]->move_child(dock, MIN(dock_slot_index, dock_slot[dock_slot_num]->get_tab_count()));
+	dock_slot[dock_slot_num]->set_current_tab(dock_slot_index);
+
+	floating_docks.erase(p_wrapper);
+	p_wrapper->queue_free();
 
 	_update_dock_containers();
-
-	floating_docks.erase(p_control);
 
 	_edit_current();
 }
 
-void EditorNode::_dock_make_float() {
+void EditorNode::_dock_make_selected_float() {
 	Control *dock = dock_slot[dock_popup_selected_idx]->get_current_tab_control();
-	ERR_FAIL_COND(!dock);
+	_dock_make_float(dock, dock_popup_selected_idx);
+
+	dock_select_popup->hide();
+	_edit_current();
+}
+
+void EditorNode::_dock_make_float(Control *p_dock, int p_slot_index, bool p_show_window) {
+	ERR_FAIL_COND(!p_dock);
 
 	Size2 borders = Size2(4, 4) * EDSCALE;
 	// Remember size and position before removing it from the main window.
-	Size2 dock_size = dock->get_size() + borders * 2;
-	Point2 dock_screen_pos = dock->get_global_position() + get_tree()->get_root()->get_position() - borders;
+	Size2 dock_size = p_dock->get_size() + borders * 2;
+	Point2 dock_screen_pos = p_dock->get_screen_position();
 
-	int dock_index = dock->get_index(false);
-	dock_slot[dock_popup_selected_idx]->remove_child(dock);
+	int dock_index = p_dock->get_index() - 1;
+	dock_slot[p_slot_index]->remove_child(p_dock);
 
-	Window *window = memnew(Window);
-	window->set_title(TTRGET(dock->get_name()));
-	Panel *p = memnew(Panel);
-	p->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("PanelForeground"), SNAME("EditorStyles")));
-	p->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	window->add_child(p);
-	MarginContainer *margin = memnew(MarginContainer);
-	margin->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	margin->add_theme_constant_override("margin_right", borders.width);
-	margin->add_theme_constant_override("margin_top", borders.height);
-	margin->add_theme_constant_override("margin_left", borders.width);
-	margin->add_theme_constant_override("margin_bottom", borders.height);
-	window->add_child(margin);
-	dock->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	margin->add_child(dock);
-	window->set_wrap_controls(true);
-	window->set_size(dock_size);
-	window->set_position(dock_screen_pos);
-	window->set_transient(true);
-	window->connect("close_requested", callable_mp(this, &EditorNode::_dock_floating_close_request).bind(dock));
-	window->set_meta("dock_slot", dock_popup_selected_idx);
-	window->set_meta("dock_index", dock_index);
-	gui_base->add_child(window);
+	WindowWrapper *wrapper = memnew(WindowWrapper);
+	wrapper->set_window_title(vformat(TTR("%s - Godot Engine"), p_dock->get_name()));
+	wrapper->set_margins_enabled(true);
+
+	gui_base->add_child(wrapper);
+
+	wrapper->set_wrapped_control(p_dock);
+	wrapper->set_meta("dock_slot", p_slot_index);
+	wrapper->set_meta("dock_index", dock_index);
+	wrapper->set_meta("dock_name", p_dock->get_name().operator String());
+
+	wrapper->connect("window_close_requested", callable_mp(this, &EditorNode::_dock_floating_close_request).bind(wrapper));
 
 	dock_select_popup->hide();
 
+	if (p_show_window) {
+		wrapper->restore_window(Rect2i(dock_screen_pos, dock_size), get_window()->get_current_screen());
+	}
+
 	_update_dock_containers();
 
-	floating_docks.push_back(dock);
+	floating_docks.push_back(wrapper);
 
 	_edit_current();
 }
@@ -4785,7 +4627,7 @@ void EditorNode::_dock_select_input(const Ref<InputEvent> &p_input) {
 			_update_dock_containers();
 
 			_edit_current();
-			_save_docks();
+			_save_editor_layout();
 		}
 	}
 }
@@ -4811,7 +4653,7 @@ void EditorNode::_dock_move_left() {
 	dock_slot[dock_popup_selected_idx]->move_child(current_ctl, prev_ctl->get_index(false));
 	dock_select->queue_redraw();
 	_edit_current();
-	_save_docks();
+	_save_editor_layout();
 }
 
 void EditorNode::_dock_move_right() {
@@ -4823,7 +4665,7 @@ void EditorNode::_dock_move_right() {
 	dock_slot[dock_popup_selected_idx]->move_child(next_ctl, current_ctl->get_index(false));
 	dock_select->queue_redraw();
 	_edit_current();
-	_save_docks();
+	_save_editor_layout();
 }
 
 void EditorNode::_dock_select_draw() {
@@ -4912,7 +4754,7 @@ void EditorNode::_dock_select_draw() {
 	}
 }
 
-void EditorNode::_save_docks() {
+void EditorNode::_save_editor_layout() {
 	if (waiting_for_first_scan) {
 		return; // Scanning, do not touch docks.
 	}
@@ -4922,7 +4764,8 @@ void EditorNode::_save_docks() {
 	config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
 
 	_save_docks_to_config(config, "docks");
-	_save_open_scenes_to_config(config, "EditorNode");
+	_save_open_scenes_to_config(config);
+	_save_central_editor_layout_to_config(config);
 	editor_data.get_plugin_window_layout(config);
 
 	config->save(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
@@ -4948,12 +4791,41 @@ void EditorNode::_save_docks_to_config(Ref<ConfigFile> p_layout, const String &p
 		if (!names.is_empty()) {
 			p_layout->set_value(p_section, config_key, names);
 		}
+
+		int selected_tab_idx = dock_slot[i]->get_current_tab();
+		if (selected_tab_idx >= 0) {
+			p_layout->set_value(p_section, "dock_" + itos(i + 1) + "_selected_tab_idx", selected_tab_idx);
+		}
 	}
 
-	p_layout->set_value(p_section, "dock_filesystem_split", FileSystemDock::get_singleton()->get_split_offset());
-	p_layout->set_value(p_section, "dock_filesystem_display_mode", FileSystemDock::get_singleton()->get_display_mode());
-	p_layout->set_value(p_section, "dock_filesystem_file_sort", FileSystemDock::get_singleton()->get_file_sort());
-	p_layout->set_value(p_section, "dock_filesystem_file_list_display_mode", FileSystemDock::get_singleton()->get_file_list_display_mode());
+	Dictionary floating_docks_dump;
+
+	for (WindowWrapper *wrapper : floating_docks) {
+		Control *dock = wrapper->get_wrapped_control();
+
+		Dictionary dock_dump;
+		dock_dump["window_rect"] = wrapper->get_window_rect();
+
+		int screen = wrapper->get_window_screen();
+		dock_dump["window_screen"] = wrapper->get_window_screen();
+		dock_dump["window_screen_rect"] = DisplayServer::get_singleton()->screen_get_usable_rect(screen);
+
+		String name = dock->get_name();
+		floating_docks_dump[name] = dock_dump;
+
+		int dock_slot_id = wrapper->get_meta("dock_slot");
+		String config_key = "dock_" + itos(dock_slot_id + 1);
+
+		String names = p_layout->get_value(p_section, config_key, "");
+		if (names.is_empty()) {
+			names = name;
+		} else {
+			names += "," + name;
+		}
+		p_layout->set_value(p_section, config_key, names);
+	}
+
+	p_layout->set_value(p_section, "dock_floating", floating_docks_dump);
 
 	for (int i = 0; i < vsplits.size(); i++) {
 		if (vsplits[i]->is_visible_in_tree()) {
@@ -4964,10 +4836,21 @@ void EditorNode::_save_docks_to_config(Ref<ConfigFile> p_layout, const String &p
 	for (int i = 0; i < hsplits.size(); i++) {
 		p_layout->set_value(p_section, "dock_hsplit_" + itos(i + 1), hsplits[i]->get_split_offset());
 	}
+
+	// Save FileSystemDock state.
+
+	p_layout->set_value(p_section, "dock_filesystem_split", FileSystemDock::get_singleton()->get_split_offset());
+	p_layout->set_value(p_section, "dock_filesystem_display_mode", FileSystemDock::get_singleton()->get_display_mode());
+	p_layout->set_value(p_section, "dock_filesystem_file_sort", FileSystemDock::get_singleton()->get_file_sort());
+	p_layout->set_value(p_section, "dock_filesystem_file_list_display_mode", FileSystemDock::get_singleton()->get_file_list_display_mode());
+	PackedStringArray selected_files = FileSystemDock::get_singleton()->get_selected_paths();
+	p_layout->set_value(p_section, "dock_filesystem_selected_paths", selected_files);
+	Vector<String> uncollapsed_paths = FileSystemDock::get_singleton()->get_uncollapsed_paths();
+	p_layout->set_value(p_section, "dock_filesystem_uncollapsed_paths", uncollapsed_paths);
 }
 
-void EditorNode::_save_open_scenes_to_config(Ref<ConfigFile> p_layout, const String &p_section) {
-	Array scenes;
+void EditorNode::_save_open_scenes_to_config(Ref<ConfigFile> p_layout) {
+	PackedStringArray scenes;
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 		String path = editor_data.get_scene_path(i);
 		if (path.is_empty()) {
@@ -4975,18 +4858,21 @@ void EditorNode::_save_open_scenes_to_config(Ref<ConfigFile> p_layout, const Str
 		}
 		scenes.push_back(path);
 	}
-	p_layout->set_value(p_section, "open_scenes", scenes);
+	p_layout->set_value(EDITOR_NODE_CONFIG_SECTION, "open_scenes", scenes);
+
+	String currently_edited_scene_path = editor_data.get_scene_path(editor_data.get_edited_scene());
+	p_layout->set_value(EDITOR_NODE_CONFIG_SECTION, "current_scene", currently_edited_scene_path);
 }
 
-void EditorNode::save_layout() {
-	dock_drag_timer->start();
+void EditorNode::save_editor_layout_delayed() {
+	editor_layout_save_delay_timer->start();
 }
 
 void EditorNode::_dock_split_dragged(int ofs) {
-	dock_drag_timer->start();
+	editor_layout_save_delay_timer->start();
 }
 
-void EditorNode::_load_docks() {
+void EditorNode::_load_editor_layout() {
 	Ref<ConfigFile> config;
 	config.instantiate();
 	Error err = config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
@@ -4999,7 +4885,8 @@ void EditorNode::_load_docks() {
 	}
 
 	_load_docks_from_config(config, "docks");
-	_load_open_scenes_from_config(config, "EditorNode");
+	_load_open_scenes_from_config(config);
+	_load_central_editor_layout_from_config(config);
 
 	editor_data.set_plugin_window_layout(config);
 }
@@ -5096,7 +4983,24 @@ void EditorNode::_dock_tab_changed(int p_tab) {
 	}
 }
 
+void EditorNode::_restore_floating_dock(const Dictionary &p_dock_dump, Control *p_dock, int p_slot_index) {
+	WindowWrapper *wrapper = Object::cast_to<WindowWrapper>(p_dock);
+	if (!wrapper) {
+		_dock_make_float(p_dock, p_slot_index, false);
+		wrapper = floating_docks[floating_docks.size() - 1];
+	}
+
+	wrapper->restore_window_from_saved_position(
+			p_dock_dump.get("window_rect", Rect2i()),
+			p_dock_dump.get("window_screen", -1),
+			p_dock_dump.get("window_screen_rect", Rect2i()));
+}
+
 void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section) {
+	Dictionary floating_docks_dump = p_layout->get_value(p_section, "dock_floating", Dictionary());
+
+	bool restore_window_on_load = EDITOR_GET("interface/multi_window/restore_windows_on_load");
+
 	for (int i = 0; i < DOCK_SLOT_MAX; i++) {
 		if (!p_layout->has_section_key(p_section, "dock_" + itos(i + 1))) {
 			continue;
@@ -5106,6 +5010,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 
 		for (int j = names.size() - 1; j >= 0; j--) {
 			String name = names[j];
+
 			// FIXME: Find it, in a horribly inefficient way.
 			int atidx = -1;
 			Control *node = nullptr;
@@ -5120,45 +5025,55 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 				atidx = k;
 				break;
 			}
-			if (atidx == -1) { // Well, it's not anywhere.
+
+			if (atidx == -1) {
+				// Try floating docks.
+				for (WindowWrapper *wrapper : floating_docks) {
+					if (wrapper->get_meta("dock_name") == name) {
+						if (restore_window_on_load && floating_docks_dump.has(name)) {
+							_restore_floating_dock(floating_docks_dump[name], wrapper, i);
+							return;
+						} else {
+							_dock_floating_close_request(wrapper);
+							atidx = wrapper->get_meta("dock_index");
+						}
+					}
+				}
+
+				// Well, it's not anywhere.
 				continue;
 			}
 
 			if (atidx == i) {
 				dock_slot[i]->move_child(node, 0);
-				continue;
+			} else if (atidx != -1) {
+				dock_slot[atidx]->remove_child(node);
+
+				if (dock_slot[atidx]->get_tab_count() == 0) {
+					dock_slot[atidx]->hide();
+				}
+				dock_slot[i]->add_child(node);
+				dock_slot[i]->move_child(node, 0);
+				dock_slot[i]->set_tab_title(0, TTRGET(node->get_name()));
+				dock_slot[i]->show();
 			}
 
-			dock_slot[atidx]->remove_child(node);
-
-			if (dock_slot[atidx]->get_tab_count() == 0) {
-				dock_slot[atidx]->hide();
+			WindowWrapper *wrapper = Object::cast_to<WindowWrapper>(node);
+			if (restore_window_on_load && floating_docks_dump.has(name)) {
+				_restore_floating_dock(floating_docks_dump[name], node, i);
+			} else if (wrapper) {
+				_dock_floating_close_request(wrapper);
 			}
-			dock_slot[i]->add_child(node);
-			dock_slot[i]->move_child(node, 0);
-			dock_slot[i]->set_tab_title(0, TTRGET(node->get_name()));
-			dock_slot[i]->show();
 		}
-	}
 
-	if (p_layout->has_section_key(p_section, "dock_filesystem_split")) {
-		int fs_split_ofs = p_layout->get_value(p_section, "dock_filesystem_split");
-		FileSystemDock::get_singleton()->set_split_offset(fs_split_ofs);
-	}
+		if (!p_layout->has_section_key(p_section, "dock_" + itos(i + 1) + "_selected_tab_idx")) {
+			continue;
+		}
 
-	if (p_layout->has_section_key(p_section, "dock_filesystem_display_mode")) {
-		FileSystemDock::DisplayMode dock_filesystem_display_mode = FileSystemDock::DisplayMode(int(p_layout->get_value(p_section, "dock_filesystem_display_mode")));
-		FileSystemDock::get_singleton()->set_display_mode(dock_filesystem_display_mode);
-	}
-
-	if (p_layout->has_section_key(p_section, "dock_filesystem_file_sort")) {
-		FileSystemDock::FileSortOption dock_filesystem_file_sort = FileSystemDock::FileSortOption(int(p_layout->get_value(p_section, "dock_filesystem_file_sort")));
-		FileSystemDock::get_singleton()->set_file_sort(dock_filesystem_file_sort);
-	}
-
-	if (p_layout->has_section_key(p_section, "dock_filesystem_file_list_display_mode")) {
-		FileSystemDock::FileListDisplayMode dock_filesystem_file_list_display_mode = FileSystemDock::FileListDisplayMode(int(p_layout->get_value(p_section, "dock_filesystem_file_list_display_mode")));
-		FileSystemDock::get_singleton()->set_file_list_display_mode(dock_filesystem_file_list_display_mode);
+		int selected_tab_idx = p_layout->get_value(p_section, "dock_" + itos(i + 1) + "_selected_tab_idx");
+		if (selected_tab_idx >= 0 && selected_tab_idx < dock_slot[i]->get_tab_count()) {
+			dock_slot[i]->call_deferred("set_current_tab", selected_tab_idx);
+		}
 	}
 
 	for (int i = 0; i < vsplits.size(); i++) {
@@ -5198,24 +5113,141 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 			dock_slot[i]->set_current_tab(0);
 		}
 	}
+
+	// FileSystemDock.
+
+	if (p_layout->has_section_key(p_section, "dock_filesystem_split")) {
+		int fs_split_ofs = p_layout->get_value(p_section, "dock_filesystem_split");
+		FileSystemDock::get_singleton()->set_split_offset(fs_split_ofs);
+	}
+
+	if (p_layout->has_section_key(p_section, "dock_filesystem_display_mode")) {
+		FileSystemDock::DisplayMode dock_filesystem_display_mode = FileSystemDock::DisplayMode(int(p_layout->get_value(p_section, "dock_filesystem_display_mode")));
+		FileSystemDock::get_singleton()->set_display_mode(dock_filesystem_display_mode);
+	}
+
+	if (p_layout->has_section_key(p_section, "dock_filesystem_file_sort")) {
+		FileSystemDock::FileSortOption dock_filesystem_file_sort = FileSystemDock::FileSortOption(int(p_layout->get_value(p_section, "dock_filesystem_file_sort")));
+		FileSystemDock::get_singleton()->set_file_sort(dock_filesystem_file_sort);
+	}
+
+	if (p_layout->has_section_key(p_section, "dock_filesystem_file_list_display_mode")) {
+		FileSystemDock::FileListDisplayMode dock_filesystem_file_list_display_mode = FileSystemDock::FileListDisplayMode(int(p_layout->get_value(p_section, "dock_filesystem_file_list_display_mode")));
+		FileSystemDock::get_singleton()->set_file_list_display_mode(dock_filesystem_file_list_display_mode);
+	}
+
+	if (p_layout->has_section_key(p_section, "dock_filesystem_selected_paths")) {
+		PackedStringArray dock_filesystem_selected_paths = p_layout->get_value(p_section, "dock_filesystem_selected_paths");
+		for (int i = 0; i < dock_filesystem_selected_paths.size(); i++) {
+			FileSystemDock::get_singleton()->select_file(dock_filesystem_selected_paths[i]);
+		}
+	}
+
+	// Restore collapsed state of FileSystemDock.
+	if (p_layout->has_section_key(p_section, "dock_filesystem_uncollapsed_paths")) {
+		PackedStringArray uncollapsed_tis = p_layout->get_value(p_section, "dock_filesystem_uncollapsed_paths");
+		for (int i = 0; i < uncollapsed_tis.size(); i++) {
+			TreeItem *uncollapsed_ti = FileSystemDock::get_singleton()->get_tree_control()->get_item_with_metadata(uncollapsed_tis[i], 0);
+			if (uncollapsed_ti) {
+				uncollapsed_ti->set_collapsed(false);
+			}
+		}
+		FileSystemDock::get_singleton()->get_tree_control()->queue_redraw();
+	}
 }
 
-void EditorNode::_load_open_scenes_from_config(Ref<ConfigFile> p_layout, const String &p_section) {
+void EditorNode::_save_central_editor_layout_to_config(Ref<ConfigFile> p_config_file) {
+	// Bottom panel.
+
+	int center_split_offset = center_split->get_split_offset();
+	p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "center_split_offset", center_split_offset);
+
+	int selected_bottom_panel_item_idx = -1;
+	for (int i = 0; i < bottom_panel_items.size(); i++) {
+		if (bottom_panel_items[i].button->is_pressed()) {
+			selected_bottom_panel_item_idx = i;
+			break;
+		}
+	}
+	if (selected_bottom_panel_item_idx != -1) {
+		p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "selected_bottom_panel_item", selected_bottom_panel_item_idx);
+	}
+
+	// Debugger tab.
+
+	int selected_default_debugger_tab_idx = EditorDebuggerNode::get_singleton()->get_default_debugger()->get_current_debugger_tab();
+	p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "selected_default_debugger_tab_idx", selected_default_debugger_tab_idx);
+
+	// Main editor (plugin).
+
+	int selected_main_editor_idx = -1;
+	for (int i = 0; i < main_editor_buttons.size(); i++) {
+		if (main_editor_buttons[i]->is_pressed()) {
+			selected_main_editor_idx = i;
+			break;
+		}
+	}
+	if (selected_main_editor_idx != -1) {
+		p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "selected_main_editor_idx", selected_main_editor_idx);
+	}
+}
+
+void EditorNode::_load_central_editor_layout_from_config(Ref<ConfigFile> p_config_file) {
+	// Bottom panel.
+
+	if (p_config_file->has_section_key(EDITOR_NODE_CONFIG_SECTION, "center_split_offset")) {
+		int center_split_offset = p_config_file->get_value(EDITOR_NODE_CONFIG_SECTION, "center_split_offset");
+		center_split->set_split_offset(center_split_offset);
+	}
+
+	if (p_config_file->has_section_key(EDITOR_NODE_CONFIG_SECTION, "selected_bottom_panel_item")) {
+		int selected_bottom_panel_item_idx = p_config_file->get_value(EDITOR_NODE_CONFIG_SECTION, "selected_bottom_panel_item");
+		if (selected_bottom_panel_item_idx >= 0 && selected_bottom_panel_item_idx < bottom_panel_items.size()) {
+			_bottom_panel_switch(true, selected_bottom_panel_item_idx);
+		}
+	}
+
+	// Debugger tab.
+
+	if (p_config_file->has_section_key(EDITOR_NODE_CONFIG_SECTION, "selected_default_debugger_tab_idx")) {
+		int selected_default_debugger_tab_idx = p_config_file->get_value(EDITOR_NODE_CONFIG_SECTION, "selected_default_debugger_tab_idx");
+		EditorDebuggerNode::get_singleton()->get_default_debugger()->switch_to_debugger(selected_default_debugger_tab_idx);
+	}
+
+	// Main editor (plugin).
+
+	if (p_config_file->has_section_key(EDITOR_NODE_CONFIG_SECTION, "selected_main_editor_idx")) {
+		int selected_main_editor_idx = p_config_file->get_value(EDITOR_NODE_CONFIG_SECTION, "selected_main_editor_idx");
+		if (selected_main_editor_idx >= 0 && selected_main_editor_idx < main_editor_buttons.size()) {
+			callable_mp(this, &EditorNode::editor_select).call_deferred(selected_main_editor_idx);
+		}
+	}
+}
+
+void EditorNode::_load_open_scenes_from_config(Ref<ConfigFile> p_layout) {
 	if (!bool(EDITOR_GET("interface/scene_tabs/restore_scenes_on_load"))) {
 		return;
 	}
 
-	if (!p_layout->has_section(p_section) || !p_layout->has_section_key(p_section, "open_scenes")) {
+	if (!p_layout->has_section(EDITOR_NODE_CONFIG_SECTION) ||
+			!p_layout->has_section_key(EDITOR_NODE_CONFIG_SECTION, "open_scenes")) {
 		return;
 	}
 
 	restoring_scenes = true;
 
-	Array scenes = p_layout->get_value(p_section, "open_scenes");
+	PackedStringArray scenes = p_layout->get_value(EDITOR_NODE_CONFIG_SECTION, "open_scenes");
 	for (int i = 0; i < scenes.size(); i++) {
 		load_scene(scenes[i]);
 	}
-	save_layout();
+
+	if (p_layout->has_section_key(EDITOR_NODE_CONFIG_SECTION, "current_scene")) {
+		String current_scene = p_layout->get_value(EDITOR_NODE_CONFIG_SECTION, "current_scene");
+		int current_scene_idx = scenes.find(current_scene);
+		set_current_scene(current_scene_idx);
+	}
+
+	save_editor_layout_delayed();
 
 	restoring_scenes = false;
 }
@@ -5230,10 +5262,10 @@ bool EditorNode::has_scenes_in_session() {
 	if (err != OK) {
 		return false;
 	}
-	if (!config->has_section("EditorNode") || !config->has_section_key("EditorNode", "open_scenes")) {
+	if (!config->has_section(EDITOR_NODE_CONFIG_SECTION) || !config->has_section_key(EDITOR_NODE_CONFIG_SECTION, "open_scenes")) {
 		return false;
 	}
-	Array scenes = config->get_value("EditorNode", "open_scenes");
+	Array scenes = config->get_value(EDITOR_NODE_CONFIG_SECTION, "open_scenes");
 	return !scenes.is_empty();
 }
 
@@ -5271,45 +5303,6 @@ bool EditorNode::ensure_main_scene(bool p_from_native) {
 	}
 
 	return true;
-}
-
-Error EditorNode::run_play_native(int p_id) {
-	return run_native->run_native(p_id);
-}
-
-void EditorNode::run_play() {
-	_menu_option_confirm(RUN_STOP, true);
-	_run(false);
-}
-
-void EditorNode::run_play_current() {
-	_save_default_environment();
-	_menu_option_confirm(RUN_STOP, true);
-	_run(true);
-}
-
-void EditorNode::run_play_custom(const String &p_custom) {
-	bool is_current = !run_current_filename.is_empty();
-	_menu_option_confirm(RUN_STOP, true);
-	_run(is_current, p_custom);
-}
-
-void EditorNode::run_stop() {
-	_menu_option_confirm(RUN_STOP, false);
-}
-
-bool EditorNode::is_run_playing() const {
-	EditorRun::Status status = editor_run.get_status();
-	return (status == EditorRun::STATUS_PLAY || status == EditorRun::STATUS_PAUSED);
-}
-
-String EditorNode::get_run_playing_scene() const {
-	String run_filename = editor_run.get_running_scene();
-	if (run_filename.is_empty() && is_run_playing()) {
-		run_filename = GLOBAL_GET("application/run/main_scene"); // Must be the main scene then.
-	}
-
-	return run_filename;
 }
 
 void EditorNode::_immediate_dialog_confirmed() {
@@ -5398,7 +5391,7 @@ void EditorNode::_layout_menu_option(int p_id) {
 		} break;
 		case SETTINGS_LAYOUT_DEFAULT: {
 			_load_docks_from_config(default_layout, "docks");
-			_save_docks();
+			_save_editor_layout();
 		} break;
 		default: {
 			Ref<ConfigFile> config;
@@ -5409,7 +5402,7 @@ void EditorNode::_layout_menu_option(int p_id) {
 			}
 
 			_load_docks_from_config(config, editor_layouts->get_item_text(p_id));
-			_save_docks();
+			_save_editor_layout();
 		}
 	}
 }
@@ -5481,7 +5474,7 @@ void EditorNode::_scene_tab_closed(int p_tab, int p_option) {
 		_discard_changes();
 	}
 
-	save_layout();
+	save_editor_layout_delayed();
 	_update_scene_tabs();
 }
 
@@ -5532,7 +5525,7 @@ void EditorNode::_scene_tab_input(const Ref<InputEvent> &p_input) {
 			if (scene_tabs->get_hovered_tab() >= 0) {
 				scene_tabs_context_menu->add_separator();
 				scene_tabs_context_menu->add_item(TTR("Show in FileSystem"), FILE_SHOW_IN_FILESYSTEM);
-				scene_tabs_context_menu->add_item(TTR("Play This Scene"), RUN_PLAY_SCENE);
+				scene_tabs_context_menu->add_item(TTR("Play This Scene"), FILE_RUN_SCENE);
 
 				scene_tabs_context_menu->add_separator();
 				scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/close_scene"), FILE_CLOSE);
@@ -5982,7 +5975,7 @@ void EditorNode::reload_scene(const String &p_path) {
 
 	if (current_tab == scene_idx) {
 		editor_data.apply_changes_in_editors();
-		_set_scene_metadata(p_path);
+		_save_editor_states(p_path);
 	}
 
 	// Reload scene.
@@ -6545,14 +6538,13 @@ void EditorNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_gui_base"), &EditorNode::get_gui_base);
 
-	ADD_SIGNAL(MethodInfo("play_pressed"));
-	ADD_SIGNAL(MethodInfo("stop_pressed"));
 	ADD_SIGNAL(MethodInfo("request_help_search"));
 	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "args")));
 	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "obj")));
 	ADD_SIGNAL(MethodInfo("scene_saved", PropertyInfo(Variant::STRING, "path")));
 	ADD_SIGNAL(MethodInfo("project_settings_changed"));
 	ADD_SIGNAL(MethodInfo("scene_changed"));
+	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "path")));
 }
 
 static Node *_resource_get_edited_scene() {
@@ -6930,8 +6922,8 @@ EditorNode::EditorNode() {
 	main_vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 8);
 	main_vbox->add_theme_constant_override("separation", 8 * EDSCALE);
 
-	menu_hb = memnew(EditorTitleBar);
-	main_vbox->add_child(menu_hb);
+	title_bar = memnew(EditorTitleBar);
+	main_vbox->add_child(title_bar);
 
 	left_l_hsplit = memnew(HSplitContainer);
 	main_vbox->add_child(left_l_hsplit);
@@ -7042,13 +7034,16 @@ EditorNode::EditorNode() {
 	dock_select->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	dock_vb->add_child(dock_select);
 
-	dock_float = memnew(Button);
-	dock_float->set_text(TTR("Make Floating"));
-	dock_float->set_focus_mode(Control::FOCUS_NONE);
-	dock_float->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	dock_float->connect("pressed", callable_mp(this, &EditorNode::_dock_make_float));
+	if (!SceneTree::get_singleton()->get_root()->is_embedding_subwindows() && EDITOR_GET("interface/multi_window/enable")) {
+		dock_float = memnew(Button);
+		dock_float->set_icon(theme->get_icon("MakeFloating", "EditorIcons"));
+		dock_float->set_text(TTR("Make Floating"));
+		dock_float->set_focus_mode(Control::FOCUS_NONE);
+		dock_float->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+		dock_float->connect("pressed", callable_mp(this, &EditorNode::_dock_make_selected_float));
 
-	dock_vb->add_child(dock_float);
+		dock_vb->add_child(dock_float);
+	}
 
 	dock_select_popup->reset_size();
 
@@ -7063,11 +7058,11 @@ EditorNode::EditorNode() {
 		dock_slot[i]->set_use_hidden_tabs_for_min_size(true);
 	}
 
-	dock_drag_timer = memnew(Timer);
-	add_child(dock_drag_timer);
-	dock_drag_timer->set_wait_time(0.5);
-	dock_drag_timer->set_one_shot(true);
-	dock_drag_timer->connect("timeout", callable_mp(this, &EditorNode::_save_docks));
+	editor_layout_save_delay_timer = memnew(Timer);
+	add_child(editor_layout_save_delay_timer);
+	editor_layout_save_delay_timer->set_wait_time(0.5);
+	editor_layout_save_delay_timer->set_one_shot(true);
+	editor_layout_save_delay_timer->connect("timeout", callable_mp(this, &EditorNode::_save_editor_layout));
 
 	top_split = memnew(VSplitContainer);
 	center_split->add_child(top_split);
@@ -7171,11 +7166,11 @@ EditorNode::EditorNode() {
 		// Add spacer to avoid other controls under window minimize/maximize/close buttons (left side).
 		left_menu_spacer = memnew(Control);
 		left_menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-		menu_hb->add_child(left_menu_spacer);
+		title_bar->add_child(left_menu_spacer);
 	}
 
 	main_menu = memnew(MenuBar);
-	menu_hb->add_child(main_menu);
+	title_bar->add_child(main_menu);
 
 	main_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
 	main_menu->set_flat(true);
@@ -7351,7 +7346,7 @@ EditorNode::EditorNode() {
 	HBoxContainer *left_spacer = memnew(HBoxContainer);
 	left_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	left_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	menu_hb->add_child(left_spacer);
+	title_bar->add_child(left_spacer);
 
 	if (can_expand && global_menu) {
 		project_title = memnew(Label);
@@ -7366,7 +7361,7 @@ EditorNode::EditorNode() {
 	}
 
 	main_editor_button_hb = memnew(HBoxContainer);
-	menu_hb->add_child(main_editor_button_hb);
+	title_bar->add_child(main_editor_button_hb);
 
 	// Options are added and handled by DebuggerEditorPlugin.
 	debug_menu = memnew(PopupMenu);
@@ -7451,104 +7446,15 @@ EditorNode::EditorNode() {
 	Control *right_spacer = memnew(Control);
 	right_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	right_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	menu_hb->add_child(right_spacer);
+	title_bar->add_child(right_spacer);
 
-	launch_pad = memnew(PanelContainer);
-	launch_pad->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("LaunchPadNormal"), SNAME("EditorStyles")));
-	menu_hb->add_child(launch_pad);
-
-	HBoxContainer *launch_pad_hb = memnew(HBoxContainer);
-	launch_pad->add_child(launch_pad_hb);
-
-	play_button = memnew(Button);
-	play_button->set_flat(true);
-	launch_pad_hb->add_child(play_button);
-	play_button->set_toggle_mode(true);
-	play_button->set_focus_mode(Control::FOCUS_NONE);
-	play_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_PLAY));
-	play_button->set_tooltip_text(TTR("Run the project's default scene."));
-
-	ED_SHORTCUT_AND_COMMAND("editor/run_project", TTR("Run Project"), Key::F5);
-	ED_SHORTCUT_OVERRIDE("editor/run_project", "macos", KeyModifierMask::META | Key::B);
-	play_button->set_shortcut(ED_GET_SHORTCUT("editor/run_project"));
-
-	pause_button = memnew(Button);
-	pause_button->set_flat(true);
-	pause_button->set_toggle_mode(true);
-	pause_button->set_icon(gui_base->get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
-	pause_button->set_focus_mode(Control::FOCUS_NONE);
-	pause_button->set_tooltip_text(TTR("Pause the running project's execution for debugging."));
-	pause_button->set_disabled(true);
-	launch_pad_hb->add_child(pause_button);
-
-	ED_SHORTCUT("editor/pause_running_project", TTR("Pause Running Project"), Key::F7);
-	ED_SHORTCUT_OVERRIDE("editor/pause_running_project", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::Y);
-	pause_button->set_shortcut(ED_GET_SHORTCUT("editor/pause_running_project"));
-
-	stop_button = memnew(Button);
-	stop_button->set_flat(true);
-	launch_pad_hb->add_child(stop_button);
-	stop_button->set_focus_mode(Control::FOCUS_NONE);
-	stop_button->set_icon(gui_base->get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
-	stop_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_STOP));
-	stop_button->set_tooltip_text(TTR("Stop the currently running project."));
-	stop_button->set_disabled(true);
-
-	ED_SHORTCUT("editor/stop_running_project", TTR("Stop Running Project"), Key::F8);
-	ED_SHORTCUT_OVERRIDE("editor/stop_running_project", "macos", KeyModifierMask::META | Key::PERIOD);
-	stop_button->set_shortcut(ED_GET_SHORTCUT("editor/stop_running_project"));
-
-	run_native = memnew(EditorRunNative);
-	launch_pad_hb->add_child(run_native);
-	run_native->connect("native_run", callable_mp(this, &EditorNode::_run_native));
-
-	play_scene_button = memnew(Button);
-	play_scene_button->set_flat(true);
-	launch_pad_hb->add_child(play_scene_button);
-	play_scene_button->set_toggle_mode(true);
-	play_scene_button->set_focus_mode(Control::FOCUS_NONE);
-	play_scene_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_PLAY_SCENE));
-	play_scene_button->set_tooltip_text(TTR("Run the currently edited scene."));
-
-	ED_SHORTCUT_AND_COMMAND("editor/run_current_scene", TTR("Run Current Scene"), Key::F6);
-	ED_SHORTCUT_OVERRIDE("editor/run_current_scene", "macos", KeyModifierMask::META | Key::R);
-	play_scene_button->set_shortcut(ED_GET_SHORTCUT("editor/run_current_scene"));
-
-	play_custom_scene_button = memnew(Button);
-	play_custom_scene_button->set_flat(true);
-	launch_pad_hb->add_child(play_custom_scene_button);
-	play_custom_scene_button->set_toggle_mode(true);
-	play_custom_scene_button->set_focus_mode(Control::FOCUS_NONE);
-	play_custom_scene_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_PLAY_CUSTOM_SCENE));
-	play_custom_scene_button->set_tooltip_text(TTR("Run a specific scene."));
-
-	_reset_play_buttons();
-
-	ED_SHORTCUT_AND_COMMAND("editor/run_specific_scene", TTR("Run Specific Scene"), KeyModifierMask::CTRL | KeyModifierMask::SHIFT | Key::F5);
-	ED_SHORTCUT_OVERRIDE("editor/run_specific_scene", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::R);
-	play_custom_scene_button->set_shortcut(ED_GET_SHORTCUT("editor/run_specific_scene"));
-
-	write_movie_panel = memnew(PanelContainer);
-	write_movie_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("MovieWriterButtonNormal"), SNAME("EditorStyles")));
-	launch_pad_hb->add_child(write_movie_panel);
-
-	write_movie_button = memnew(Button);
-	write_movie_button->set_flat(true);
-	write_movie_button->set_toggle_mode(true);
-	write_movie_panel->add_child(write_movie_button);
-	write_movie_button->set_pressed(false);
-	write_movie_button->set_icon(gui_base->get_theme_icon(SNAME("MainMovieWrite"), SNAME("EditorIcons")));
-	write_movie_button->set_focus_mode(Control::FOCUS_NONE);
-	write_movie_button->connect("toggled", callable_mp(this, &EditorNode::_write_movie_toggled));
-	write_movie_button->set_tooltip_text(TTR("Enable Movie Maker mode.\nThe project will run at stable FPS and the visual and audio output will be recorded to a video file."));
-
-	// This button behaves differently, so color it as such.
-	write_movie_button->add_theme_color_override("icon_normal_color", Color(1, 1, 1, 0.7));
-	write_movie_button->add_theme_color_override("icon_pressed_color", Color(0, 0, 0, 0.84));
-	write_movie_button->add_theme_color_override("icon_hover_color", Color(1, 1, 1, 0.9));
+	project_run_bar = memnew(EditorRunBar);
+	title_bar->add_child(project_run_bar);
+	project_run_bar->connect("play_pressed", callable_mp(this, &EditorNode::_project_run_started));
+	project_run_bar->connect("stop_pressed", callable_mp(this, &EditorNode::_project_run_stopped));
 
 	HBoxContainer *right_menu_hb = memnew(HBoxContainer);
-	menu_hb->add_child(right_menu_hb);
+	title_bar->add_child(right_menu_hb);
 
 	renderer = memnew(OptionButton);
 	renderer->set_visible(true);
@@ -7566,7 +7472,7 @@ EditorNode::EditorNode() {
 		// Add spacer to avoid other controls under the window minimize/maximize/close buttons (right side).
 		right_menu_spacer = memnew(Control);
 		right_menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-		menu_hb->add_child(right_menu_spacer);
+		title_bar->add_child(right_menu_spacer);
 	}
 
 	String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method");
@@ -7637,7 +7543,7 @@ EditorNode::EditorNode() {
 	FileSystemDock *filesystem_dock = memnew(FileSystemDock);
 	filesystem_dock->connect("inherit", callable_mp(this, &EditorNode::_inherit_request));
 	filesystem_dock->connect("instantiate", callable_mp(this, &EditorNode::_instantiate_request));
-	filesystem_dock->connect("display_mode_changed", callable_mp(this, &EditorNode::_save_docks));
+	filesystem_dock->connect("display_mode_changed", callable_mp(this, &EditorNode::_save_editor_layout));
 	get_project_settings()->connect_filesystem_dock_signals(filesystem_dock);
 
 	history_dock = memnew(HistoryDock);
@@ -7901,11 +7807,6 @@ EditorNode::EditorNode() {
 		print_verbose("Asset Library not available (due to using Web editor, or SSL support disabled).");
 	}
 
-	// Add interface before adding plugins.
-
-	editor_interface = memnew(EditorInterface);
-	add_child(editor_interface);
-
 	// More visually meaningful to have this later.
 	raise_bottom_panel_item(AnimationPlayerEditor::get_singleton());
 
@@ -8008,10 +7909,6 @@ EditorNode::EditorNode() {
 	gui_base->add_child(quick_open);
 	quick_open->connect("quick_open", callable_mp(this, &EditorNode::_quick_opened));
 
-	quick_run = memnew(EditorQuickOpen);
-	gui_base->add_child(quick_run);
-	quick_run->connect("quick_open", callable_mp(this, &EditorNode::_quick_run));
-
 	_update_recent_scenes();
 
 	set_process_shortcut_input(true);
@@ -8083,14 +7980,14 @@ EditorNode::EditorNode() {
 	screenshot_timer->set_owner(get_owner());
 
 	// Adjust spacers to center 2D / 3D / Script buttons.
-	int max_w = MAX(launch_pad->get_minimum_size().x + right_menu_hb->get_minimum_size().x, main_menu->get_minimum_size().x);
+	int max_w = MAX(project_run_bar->get_minimum_size().x + right_menu_hb->get_minimum_size().x, main_menu->get_minimum_size().x);
 	left_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - main_menu->get_minimum_size().x), 0));
-	right_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - launch_pad->get_minimum_size().x - right_menu_hb->get_minimum_size().x), 0));
+	right_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - project_run_bar->get_minimum_size().x - right_menu_hb->get_minimum_size().x), 0));
 
 	// Extend menu bar to window title.
 	if (can_expand) {
 		DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_EXTEND_TO_TITLE, true, DisplayServer::MAIN_WINDOW_ID);
-		menu_hb->set_can_move_window(true);
+		title_bar->set_can_move_window(true);
 	}
 
 	String exec = OS::get_singleton()->get_executable_path();

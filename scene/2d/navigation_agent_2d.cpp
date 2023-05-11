@@ -56,8 +56,11 @@ void NavigationAgent2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_neighbors", "max_neighbors"), &NavigationAgent2D::set_max_neighbors);
 	ClassDB::bind_method(D_METHOD("get_max_neighbors"), &NavigationAgent2D::get_max_neighbors);
 
-	ClassDB::bind_method(D_METHOD("set_time_horizon", "time_horizon"), &NavigationAgent2D::set_time_horizon);
-	ClassDB::bind_method(D_METHOD("get_time_horizon"), &NavigationAgent2D::get_time_horizon);
+	ClassDB::bind_method(D_METHOD("set_time_horizon_agents", "time_horizon"), &NavigationAgent2D::set_time_horizon_agents);
+	ClassDB::bind_method(D_METHOD("get_time_horizon_agents"), &NavigationAgent2D::get_time_horizon_agents);
+
+	ClassDB::bind_method(D_METHOD("set_time_horizon_obstacles", "time_horizon"), &NavigationAgent2D::set_time_horizon_obstacles);
+	ClassDB::bind_method(D_METHOD("get_time_horizon_obstacles"), &NavigationAgent2D::get_time_horizon_obstacles);
 
 	ClassDB::bind_method(D_METHOD("set_max_speed", "max_speed"), &NavigationAgent2D::set_max_speed);
 	ClassDB::bind_method(D_METHOD("get_max_speed"), &NavigationAgent2D::get_max_speed);
@@ -87,9 +90,16 @@ void NavigationAgent2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_target_position"), &NavigationAgent2D::get_target_position);
 
 	ClassDB::bind_method(D_METHOD("get_next_path_position"), &NavigationAgent2D::get_next_path_position);
-	ClassDB::bind_method(D_METHOD("distance_to_target"), &NavigationAgent2D::distance_to_target);
+
+	ClassDB::bind_method(D_METHOD("set_velocity_forced", "velocity"), &NavigationAgent2D::set_velocity_forced);
+
 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &NavigationAgent2D::set_velocity);
+	ClassDB::bind_method(D_METHOD("get_velocity"), &NavigationAgent2D::get_velocity);
+
+	ClassDB::bind_method(D_METHOD("distance_to_target"), &NavigationAgent2D::distance_to_target);
+
 	ClassDB::bind_method(D_METHOD("get_current_navigation_result"), &NavigationAgent2D::get_current_navigation_result);
+
 	ClassDB::bind_method(D_METHOD("get_current_navigation_path"), &NavigationAgent2D::get_current_navigation_path);
 	ClassDB::bind_method(D_METHOD("get_current_navigation_path_index"), &NavigationAgent2D::get_current_navigation_path_index);
 	ClassDB::bind_method(D_METHOD("is_target_reached"), &NavigationAgent2D::is_target_reached);
@@ -98,6 +108,17 @@ void NavigationAgent2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_final_position"), &NavigationAgent2D::get_final_position);
 
 	ClassDB::bind_method(D_METHOD("_avoidance_done", "new_velocity"), &NavigationAgent2D::_avoidance_done);
+
+	ClassDB::bind_method(D_METHOD("set_avoidance_layers", "layers"), &NavigationAgent2D::set_avoidance_layers);
+	ClassDB::bind_method(D_METHOD("get_avoidance_layers"), &NavigationAgent2D::get_avoidance_layers);
+	ClassDB::bind_method(D_METHOD("set_avoidance_mask", "mask"), &NavigationAgent2D::set_avoidance_mask);
+	ClassDB::bind_method(D_METHOD("get_avoidance_mask"), &NavigationAgent2D::get_avoidance_mask);
+	ClassDB::bind_method(D_METHOD("set_avoidance_layer_value", "layer_number", "value"), &NavigationAgent2D::set_avoidance_layer_value);
+	ClassDB::bind_method(D_METHOD("get_avoidance_layer_value", "layer_number"), &NavigationAgent2D::get_avoidance_layer_value);
+	ClassDB::bind_method(D_METHOD("set_avoidance_mask_value", "mask_number", "value"), &NavigationAgent2D::set_avoidance_mask_value);
+	ClassDB::bind_method(D_METHOD("get_avoidance_mask_value", "mask_number"), &NavigationAgent2D::get_avoidance_mask_value);
+	ClassDB::bind_method(D_METHOD("set_avoidance_priority", "priority"), &NavigationAgent2D::set_avoidance_priority);
+	ClassDB::bind_method(D_METHOD("get_avoidance_priority"), &NavigationAgent2D::get_avoidance_priority);
 
 	ADD_GROUP("Pathfinding", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "target_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_target_position", "get_target_position");
@@ -111,11 +132,16 @@ void NavigationAgent2D::_bind_methods() {
 
 	ADD_GROUP("Avoidance", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "avoidance_enabled"), "set_avoidance_enabled", "get_avoidance_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.1,500,0.01,or_greater,suffix:px"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_velocity", "get_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.01,500,0.01,or_greater,suffix:px"), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "neighbor_distance", PROPERTY_HINT_RANGE, "0.1,100000,0.01,or_greater,suffix:px"), "set_neighbor_distance", "get_neighbor_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_neighbors", PROPERTY_HINT_RANGE, "1,10000,or_greater,1"), "set_max_neighbors", "get_max_neighbors");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_horizon", PROPERTY_HINT_RANGE, "0.1,10,0.01,or_greater,suffix:s"), "set_time_horizon", "get_time_horizon");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_speed", PROPERTY_HINT_RANGE, "0.1,10000,0.01,or_greater,suffix:px/s"), "set_max_speed", "get_max_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_neighbors", PROPERTY_HINT_RANGE, "1,10000,1,or_greater"), "set_max_neighbors", "get_max_neighbors");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_horizon_agents", PROPERTY_HINT_RANGE, "0.0,10,0.01,or_greater,suffix:s"), "set_time_horizon_agents", "get_time_horizon_agents");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_horizon_obstacles", PROPERTY_HINT_RANGE, "0.0,10,0.01,or_greater,suffix:s"), "set_time_horizon_obstacles", "get_time_horizon_obstacles");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_speed", PROPERTY_HINT_RANGE, "0.01,100000,0.01,or_greater,suffix:px/s"), "set_max_speed", "get_max_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "avoidance_layers", PROPERTY_HINT_LAYERS_AVOIDANCE), "set_avoidance_layers", "get_avoidance_layers");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "avoidance_mask", PROPERTY_HINT_LAYERS_AVOIDANCE), "set_avoidance_mask", "get_avoidance_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "avoidance_priority", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_avoidance_priority", "get_avoidance_priority");
 
 	ClassDB::bind_method(D_METHOD("set_debug_enabled", "enabled"), &NavigationAgent2D::set_debug_enabled);
 	ClassDB::bind_method(D_METHOD("get_debug_enabled"), &NavigationAgent2D::get_debug_enabled);
@@ -143,6 +169,34 @@ void NavigationAgent2D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("velocity_computed", PropertyInfo(Variant::VECTOR2, "safe_velocity")));
 }
 
+#ifndef DISABLE_DEPRECATED
+// Compatibility with Godot 4.0 beta 10 or below.
+// Functions in block below all renamed or replaced in 4.0 beta 1X avoidance rework.
+bool NavigationAgent2D::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "time_horizon") {
+		set_time_horizon_agents(p_value);
+		return true;
+	}
+	if (p_name == "target_location") {
+		set_target_position(p_value);
+		return true;
+	}
+	return false;
+}
+
+bool NavigationAgent2D::_get(const StringName &p_name, Variant &r_ret) const {
+	if (p_name == "time_horizon") {
+		r_ret = get_time_horizon_agents();
+		return true;
+	}
+	if (p_name == "target_location") {
+		r_ret = get_target_position();
+		return true;
+	}
+	return false;
+}
+#endif // DISABLE_DEPRECATED
+
 void NavigationAgent2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POST_ENTER_TREE: {
@@ -151,11 +205,16 @@ void NavigationAgent2D::_notification(int p_what) {
 			set_agent_parent(get_parent());
 			set_physics_process_internal(true);
 
+			if (agent_parent && avoidance_enabled) {
+				NavigationServer2D::get_singleton()->agent_set_position(agent, agent_parent->get_global_position());
+			}
+
 #ifdef DEBUG_ENABLED
 			if (NavigationServer2D::get_singleton()->get_debug_enabled()) {
 				debug_path_dirty = true;
 			}
 #endif // DEBUG_ENABLED
+
 		} break;
 
 		case NOTIFICATION_PARENTED: {
@@ -208,10 +267,18 @@ void NavigationAgent2D::_notification(int p_what) {
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (agent_parent && target_position_submitted) {
-				if (avoidance_enabled) {
-					// agent_position on NavigationServer is avoidance only and has nothing to do with pathfinding
-					// no point in flooding NavigationServer queue with agent position updates that get send to the void if avoidance is not used
-					NavigationServer2D::get_singleton()->agent_set_position(agent, agent_parent->get_global_position());
+				if (velocity_submitted) {
+					velocity_submitted = false;
+					if (avoidance_enabled) {
+						NavigationServer2D::get_singleton()->agent_set_position(agent, agent_parent->get_global_position());
+						NavigationServer2D::get_singleton()->agent_set_velocity(agent, velocity);
+					}
+				}
+				if (velocity_forced_submitted) {
+					velocity_forced_submitted = false;
+					if (avoidance_enabled) {
+						NavigationServer2D::get_singleton()->agent_set_velocity_forced(agent, velocity_forced);
+					}
 				}
 				_check_distance_to_target();
 			}
@@ -226,9 +293,11 @@ void NavigationAgent2D::_notification(int p_what) {
 
 NavigationAgent2D::NavigationAgent2D() {
 	agent = NavigationServer2D::get_singleton()->agent_create();
+
 	NavigationServer2D::get_singleton()->agent_set_neighbor_distance(agent, neighbor_distance);
 	NavigationServer2D::get_singleton()->agent_set_max_neighbors(agent, max_neighbors);
-	NavigationServer2D::get_singleton()->agent_set_time_horizon(agent, time_horizon);
+	NavigationServer2D::get_singleton()->agent_set_time_horizon_agents(agent, time_horizon_agents);
+	NavigationServer2D::get_singleton()->agent_set_time_horizon_obstacles(agent, time_horizon_obstacles);
 	NavigationServer2D::get_singleton()->agent_set_radius(agent, radius);
 	NavigationServer2D::get_singleton()->agent_set_max_speed(agent, max_speed);
 
@@ -238,6 +307,11 @@ NavigationAgent2D::NavigationAgent2D() {
 
 	navigation_result = Ref<NavigationPathQueryResult2D>();
 	navigation_result.instantiate();
+
+	set_avoidance_layers(avoidance_layers);
+	set_avoidance_mask(avoidance_mask);
+	set_avoidance_priority(avoidance_priority);
+	set_avoidance_enabled(avoidance_enabled);
 
 #ifdef DEBUG_ENABLED
 	NavigationServer2D::get_singleton()->connect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationAgent2D::_navigation_debug_changed));
@@ -267,9 +341,11 @@ void NavigationAgent2D::set_avoidance_enabled(bool p_enabled) {
 	avoidance_enabled = p_enabled;
 
 	if (avoidance_enabled) {
-		NavigationServer2D::get_singleton()->agent_set_callback(agent, callable_mp(this, &NavigationAgent2D::_avoidance_done));
+		NavigationServer2D::get_singleton()->agent_set_avoidance_enabled(agent, true);
+		NavigationServer2D::get_singleton()->agent_set_avoidance_callback(agent, callable_mp(this, &NavigationAgent2D::_avoidance_done));
 	} else {
-		NavigationServer2D::get_singleton()->agent_set_callback(agent, Callable());
+		NavigationServer2D::get_singleton()->agent_set_avoidance_enabled(agent, false);
+		NavigationServer2D::get_singleton()->agent_set_avoidance_callback(agent, Callable());
 	}
 }
 
@@ -283,7 +359,7 @@ void NavigationAgent2D::set_agent_parent(Node *p_agent_parent) {
 	}
 
 	// remove agent from any avoidance map before changing parent or there will be leftovers on the RVO map
-	NavigationServer2D::get_singleton()->agent_set_callback(agent, Callable());
+	NavigationServer2D::get_singleton()->agent_set_avoidance_callback(agent, Callable());
 
 	if (Object::cast_to<Node2D>(p_agent_parent) != nullptr) {
 		// place agent on navigation map first or else the RVO agent callback creation fails silently later
@@ -296,7 +372,7 @@ void NavigationAgent2D::set_agent_parent(Node *p_agent_parent) {
 
 		// create new avoidance callback if enabled
 		if (avoidance_enabled) {
-			NavigationServer2D::get_singleton()->agent_set_callback(agent, callable_mp(this, &NavigationAgent2D::_avoidance_done));
+			NavigationServer2D::get_singleton()->agent_set_avoidance_callback(agent, callable_mp(this, &NavigationAgent2D::_avoidance_done));
 		}
 	} else {
 		agent_parent = nullptr;
@@ -401,6 +477,7 @@ void NavigationAgent2D::set_target_desired_distance(real_t p_target_desired_dist
 }
 
 void NavigationAgent2D::set_radius(real_t p_radius) {
+	ERR_FAIL_COND_MSG(p_radius < 0.0, "Radius must be positive.");
 	if (Math::is_equal_approx(radius, p_radius)) {
 		return;
 	}
@@ -430,21 +507,29 @@ void NavigationAgent2D::set_max_neighbors(int p_count) {
 	NavigationServer2D::get_singleton()->agent_set_max_neighbors(agent, max_neighbors);
 }
 
-void NavigationAgent2D::set_time_horizon(real_t p_time) {
-	if (Math::is_equal_approx(time_horizon, p_time)) {
+void NavigationAgent2D::set_time_horizon_agents(real_t p_time_horizon) {
+	ERR_FAIL_COND_MSG(p_time_horizon < 0.0, "Time horizion must be positive.");
+	if (Math::is_equal_approx(time_horizon_agents, p_time_horizon)) {
 		return;
 	}
+	time_horizon_agents = p_time_horizon;
+	NavigationServer2D::get_singleton()->agent_set_time_horizon_agents(agent, time_horizon_agents);
+}
 
-	time_horizon = p_time;
-
-	NavigationServer2D::get_singleton()->agent_set_time_horizon(agent, time_horizon);
+void NavigationAgent2D::set_time_horizon_obstacles(real_t p_time_horizon) {
+	ERR_FAIL_COND_MSG(p_time_horizon < 0.0, "Time horizion must be positive.");
+	if (Math::is_equal_approx(time_horizon_obstacles, p_time_horizon)) {
+		return;
+	}
+	time_horizon_obstacles = p_time_horizon;
+	NavigationServer2D::get_singleton()->agent_set_time_horizon_obstacles(agent, time_horizon_obstacles);
 }
 
 void NavigationAgent2D::set_max_speed(real_t p_max_speed) {
+	ERR_FAIL_COND_MSG(p_max_speed < 0.0, "Max speed must be positive.");
 	if (Math::is_equal_approx(max_speed, p_max_speed)) {
 		return;
 	}
-
 	max_speed = p_max_speed;
 
 	NavigationServer2D::get_singleton()->agent_set_max_speed(agent, max_speed);
@@ -516,29 +601,24 @@ Vector2 NavigationAgent2D::get_final_position() {
 	return navigation_path[navigation_path.size() - 1];
 }
 
-void NavigationAgent2D::set_velocity(Vector2 p_velocity) {
+void NavigationAgent2D::set_velocity_forced(Vector2 p_velocity) {
 	// Intentionally not checking for equality of the parameter.
 	// We need to always submit the velocity to the navigation server, even when it is the same, in order to run avoidance every frame.
 	// Revisit later when the navigation server can update avoidance without users resubmitting the velocity.
 
-	target_velocity = p_velocity;
-	velocity_submitted = true;
+	velocity_forced = p_velocity;
+	velocity_forced_submitted = true;
+}
 
-	NavigationServer2D::get_singleton()->agent_set_target_velocity(agent, target_velocity);
-	NavigationServer2D::get_singleton()->agent_set_velocity(agent, prev_safe_velocity);
+void NavigationAgent2D::set_velocity(const Vector2 p_velocity) {
+	velocity = p_velocity;
+	velocity_submitted = true;
 }
 
 void NavigationAgent2D::_avoidance_done(Vector3 p_new_velocity) {
-	const Vector2 velocity = Vector2(p_new_velocity.x, p_new_velocity.z);
-	prev_safe_velocity = velocity;
-
-	if (!velocity_submitted) {
-		target_velocity = Vector2();
-		return;
-	}
-	velocity_submitted = false;
-
-	emit_signal(SNAME("velocity_computed"), velocity);
+	const Vector2 new_safe_velocity = Vector2(p_new_velocity.x, p_new_velocity.z);
+	safe_velocity = new_safe_velocity;
+	emit_signal(SNAME("velocity_computed"), safe_velocity);
 }
 
 PackedStringArray NavigationAgent2D::get_configuration_warnings() const {
@@ -559,9 +639,6 @@ void NavigationAgent2D::update_navigation() {
 		return;
 	}
 	if (!target_position_submitted) {
-		return;
-	}
-	if (update_frame_id == Engine::get_singleton()->get_physics_frames()) {
 		return;
 	}
 
@@ -707,6 +784,71 @@ void NavigationAgent2D::_check_distance_to_target() {
 			emit_signal(SNAME("target_reached"));
 		}
 	}
+}
+
+void NavigationAgent2D::set_avoidance_layers(uint32_t p_layers) {
+	avoidance_layers = p_layers;
+	NavigationServer2D::get_singleton()->agent_set_avoidance_layers(get_rid(), avoidance_layers);
+}
+
+uint32_t NavigationAgent2D::get_avoidance_layers() const {
+	return avoidance_layers;
+}
+
+void NavigationAgent2D::set_avoidance_mask(uint32_t p_mask) {
+	avoidance_mask = p_mask;
+	NavigationServer2D::get_singleton()->agent_set_avoidance_mask(get_rid(), p_mask);
+}
+
+uint32_t NavigationAgent2D::get_avoidance_mask() const {
+	return avoidance_mask;
+}
+
+void NavigationAgent2D::set_avoidance_layer_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Avoidance layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Avoidance layer number must be between 1 and 32 inclusive.");
+	uint32_t avoidance_layers_new = get_avoidance_layers();
+	if (p_value) {
+		avoidance_layers_new |= 1 << (p_layer_number - 1);
+	} else {
+		avoidance_layers_new &= ~(1 << (p_layer_number - 1));
+	}
+	set_avoidance_layers(avoidance_layers_new);
+}
+
+bool NavigationAgent2D::get_avoidance_layer_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Avoidance layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Avoidance layer number must be between 1 and 32 inclusive.");
+	return get_avoidance_layers() & (1 << (p_layer_number - 1));
+}
+
+void NavigationAgent2D::set_avoidance_mask_value(int p_mask_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_mask_number < 1, "Avoidance mask number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_mask_number > 32, "Avoidance mask number must be between 1 and 32 inclusive.");
+	uint32_t mask = get_avoidance_mask();
+	if (p_value) {
+		mask |= 1 << (p_mask_number - 1);
+	} else {
+		mask &= ~(1 << (p_mask_number - 1));
+	}
+	set_avoidance_mask(mask);
+}
+
+bool NavigationAgent2D::get_avoidance_mask_value(int p_mask_number) const {
+	ERR_FAIL_COND_V_MSG(p_mask_number < 1, false, "Avoidance mask number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_mask_number > 32, false, "Avoidance mask number must be between 1 and 32 inclusive.");
+	return get_avoidance_mask() & (1 << (p_mask_number - 1));
+}
+
+void NavigationAgent2D::set_avoidance_priority(real_t p_priority) {
+	ERR_FAIL_COND_MSG(p_priority < 0.0, "Avoidance priority must be between 0.0 and 1.0 inclusive.");
+	ERR_FAIL_COND_MSG(p_priority > 1.0, "Avoidance priority must be between 0.0 and 1.0 inclusive.");
+	avoidance_priority = p_priority;
+	NavigationServer2D::get_singleton()->agent_set_avoidance_priority(get_rid(), p_priority);
+}
+
+real_t NavigationAgent2D::get_avoidance_priority() const {
+	return avoidance_priority;
 }
 
 ////////DEBUG////////////////////////////////////////////////////////////

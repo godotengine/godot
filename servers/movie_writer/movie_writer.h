@@ -42,6 +42,9 @@ class MovieWriter : public Object {
 	uint64_t mix_rate = 0;
 	uint32_t audio_channels = 0;
 
+	float cpu_time = 0.0f;
+	float gpu_time = 0.0f;
+
 	String project_name;
 
 	LocalVector<int32_t> audio_mix_buffer;
@@ -80,7 +83,7 @@ public:
 	static MovieWriter *find_writer_for_file(const String &p_file);
 
 	void begin(const Size2i &p_movie_size, uint32_t p_fps, const String &p_base_path);
-	void add_frame(const Ref<Image> &p_image);
+	void add_frame();
 
 	static void set_extensions_hint();
 

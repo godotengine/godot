@@ -39,7 +39,7 @@ vec3 F0(float metallic, float specular, vec3 albedo) {
 	return mix(vec3(dielectric), albedo, vec3(metallic));
 }
 
-void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float attenuation, vec3 f0, uint orms, float specular_amount, vec3 albedo, inout float alpha,
+void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_directional, float attenuation, vec3 f0, uint orms, float specular_amount, vec3 albedo, inout float alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 		vec3 backlight,
 #endif
@@ -67,6 +67,8 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 
 #if defined(LIGHT_CODE_USED)
 	// light is written by the light shader
+
+	mat4 inv_view_matrix = scene_data_block.data.inv_view_matrix;
 
 	vec3 normal = N;
 	vec3 light = L;
@@ -652,7 +654,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 
 	light_attenuation *= shadow;
 
-	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, light_attenuation, f0, orms, omni_lights.data[idx].specular_amount, albedo, alpha,
+	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, false, light_attenuation, f0, orms, omni_lights.data[idx].specular_amount, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,
 #endif
@@ -859,7 +861,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 	}
 	light_attenuation *= shadow;
 
-	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, light_attenuation, f0, orms, spot_lights.data[idx].specular_amount, albedo, alpha,
+	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, false, light_attenuation, f0, orms, spot_lights.data[idx].specular_amount, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,
 #endif

@@ -82,7 +82,13 @@ JoypadLinux::JoypadLinux(Input *in) {
 #endif
 	use_udev = initialize_libudev(dylibloader_verbose) == 0;
 	if (use_udev) {
-		print_verbose("JoypadLinux: udev enabled and loaded successfully.");
+		if (!udev_new || !udev_unref || !udev_enumerate_new || !udev_enumerate_add_match_subsystem || !udev_enumerate_scan_devices || !udev_enumerate_get_list_entry || !udev_list_entry_get_next || !udev_list_entry_get_name || !udev_device_new_from_syspath || !udev_device_get_devnode || !udev_device_get_action || !udev_device_unref || !udev_enumerate_unref || !udev_monitor_new_from_netlink || !udev_monitor_filter_add_match_subsystem_devtype || !udev_monitor_enable_receiving || !udev_monitor_get_fd || !udev_monitor_receive_device || !udev_monitor_unref) {
+			// There's no API to check version, check if functions are available instead.
+			use_udev = false;
+			print_verbose("JoypadLinux: Unsupported udev library version!");
+		} else {
+			print_verbose("JoypadLinux: udev enabled and loaded successfully.");
+		}
 	} else {
 		print_verbose("JoypadLinux: udev enabled, but couldn't be loaded. Falling back to /dev/input to detect joypads.");
 	}

@@ -47,13 +47,14 @@
 # jaehun choe <jayden.choe@gmail.com>, 2023.
 # 설동훈 <tjfehdgns@gmail.com>, 2023.
 # Rocream <kbg4660@gmail.com>, 2023.
+# Seania Twix <admin@ez.is>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-01 13:00+0000\n"
-"Last-Translator: Rocream <kbg4660@gmail.com>\n"
+"PO-Revision-Date: 2023-04-06 16:01+0000\n"
+"Last-Translator: Seania Twix <admin@ez.is>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -2210,8 +2211,14 @@ msgstr ""
 "현재 이 속성의 설명이 없습니다. [color=$color][url=$url]관련 정보를 기여하여"
 "[/url][/color] 개선할 수 있도록 도와주세요!"
 
+msgid "Constructor Descriptions"
+msgstr "생성자 설명"
+
 msgid "Method Descriptions"
 msgstr "메서드 설명"
+
+msgid "Operator Descriptions"
+msgstr "연산자 설명"
 
 msgid "%d match."
 msgstr "%d개 일치."

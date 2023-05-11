@@ -476,6 +476,7 @@ class TextServerAdvanced : public TextServerExtension {
 
 		/* Shaped data */
 		TextServer::Direction para_direction = DIRECTION_LTR; // Detected text direction.
+		int base_para_direction = UBIDI_DEFAULT_LTR;
 		bool valid = false; // String is shaped.
 		bool line_breaks_valid = false; // Line and word break flags are populated (and virtual zero width spaces inserted).
 		bool justification_ops_valid = false; // Virtual elongation glyphs are added to the string.

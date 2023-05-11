@@ -365,7 +365,7 @@ Files extracted from upstream source:
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 2.18.2 (89f040a5c938985c5f30728baed21e49d0846a53, 2022)
+- Version: 2.18.3 (981743de6fcdbe672e482b6fd724d31d0a0d2476, 2023)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -373,11 +373,12 @@ File extracted from upstream release tarball:
 - All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/` except `config_psa.h` and `psa_util.h`.
 - All `*.c` and `*.h` from `library/` to `thirdparty/mbedtls/library/` except those starting with `psa_*`.
 - The `LICENSE` file.
-- Applied the patch in `patches/1453.diff` (upstream PR:
+- Applied the patch in `patches/1453.diff` to fix UWP build (upstream PR:
   https://github.com/ARMmbed/mbedtls/pull/1453).
   Applied the patch in `patches/windows-arm64-hardclock.diff`
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core.
+- Added the file `godot_module_mbedtls_config.h` to customize the build configuration when bundling the full library.
 
 
 ## meshoptimizer
@@ -622,18 +623,27 @@ Files extracted from upstream source:
 
 ## rvo2
 
+For 2D in `rvo2_2d` folder
+
+- Upstream: https://github.com/snape/RVO2
+- Version: git (f7c5380235f6c9ac8d19cbf71fc94e2d4758b0a3, 2021)
+- License: Apache 2.0
+
+For 3D in `rvo2_3d` folder
+
 - Upstream: https://github.com/snape/RVO2-3D
 - Version: git (bfc048670a4e85066e86a1f923d8ea92e3add3b2, 2021)
 - License: Apache 2.0
 
 Files extracted from upstream source:
 
-- All .cpp and .h files in the `src/` folder except for Export.h, RVO.h, RVOSimulator.cpp and RVOSimulator.h
+- All .cpp and .h files in the `src/` folder except for Export.h and RVO.h
 - LICENSE
 
-Important: Some files have Godot-made changes; so to enrich the features
-originally proposed by this library and better integrate this library with
-Godot. See the patch in the `patches` folder for details.
+Important: Nearly all files have Godot-made changes and renames
+to make the 2D and 3D rvo libraries compatible with each other
+and solve conflicts and also enrich the feature set originally
+proposed by these libraries and better integrate them with Godot.
 
 
 ## spirv-reflect

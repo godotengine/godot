@@ -150,6 +150,7 @@ void TabContainer::_update_theme_item_cache() {
 	theme_cache.outline_size = get_theme_constant(SNAME("outline_size"));
 
 	theme_cache.tab_unselected_style = get_theme_stylebox(SNAME("tab_unselected"));
+	theme_cache.tab_hovered_style = get_theme_stylebox(SNAME("tab_hovered"));
 	theme_cache.tab_selected_style = get_theme_stylebox(SNAME("tab_selected"));
 	theme_cache.tab_disabled_style = get_theme_stylebox(SNAME("tab_disabled"));
 
@@ -227,6 +228,7 @@ void TabContainer::_on_theme_changed() {
 	}
 
 	tab_bar->add_theme_style_override(SNAME("tab_unselected"), theme_cache.tab_unselected_style);
+	tab_bar->add_theme_style_override(SNAME("tab_hovered"), theme_cache.tab_hovered_style);
 	tab_bar->add_theme_style_override(SNAME("tab_selected"), theme_cache.tab_selected_style);
 	tab_bar->add_theme_style_override(SNAME("tab_disabled"), theme_cache.tab_disabled_style);
 
@@ -453,6 +455,7 @@ void TabContainer::_drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 
 			move_child(get_tab_control(tab_from_id), get_tab_control(hover_now)->get_index(false));
 			if (!is_tab_disabled(hover_now)) {
+				emit_signal(SNAME("active_tab_rearranged"), hover_now);
 				set_current_tab(hover_now);
 			}
 
@@ -465,7 +468,9 @@ void TabContainer::_drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 			if (from_tabc && from_tabc->get_tabs_rearrange_group() == get_tabs_rearrange_group()) {
 				// Get the tab properties before they get erased by the child removal.
 				String tab_title = from_tabc->get_tab_title(tab_from_id);
+				Ref<Texture2D> tab_icon = from_tabc->get_tab_icon(tab_from_id);
 				bool tab_disabled = from_tabc->is_tab_disabled(tab_from_id);
+				Variant tab_metadata = from_tabc->get_tab_metadata(tab_from_id);
 
 				// Drop the new tab to the left or right depending on where the target tab is being hovered.
 				if (hover_now != -1) {
@@ -482,7 +487,9 @@ void TabContainer::_drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 				add_child(moving_tabc, true);
 
 				set_tab_title(get_tab_count() - 1, tab_title);
+				set_tab_icon(get_tab_count() - 1, tab_icon);
 				set_tab_disabled(get_tab_count() - 1, tab_disabled);
+				set_tab_metadata(get_tab_count() - 1, tab_metadata);
 
 				move_child(moving_tabc, get_tab_control(hover_now)->get_index(false));
 				if (!is_tab_disabled(hover_now)) {
@@ -491,6 +498,14 @@ void TabContainer::_drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 			}
 		}
 	}
+}
+
+void TabContainer::_on_tab_clicked(int p_tab) {
+	emit_signal(SNAME("tab_clicked"), p_tab);
+}
+
+void TabContainer::_on_tab_hovered(int p_tab) {
+	emit_signal(SNAME("tab_hovered"), p_tab);
 }
 
 void TabContainer::_on_tab_changed(int p_tab) {
@@ -549,11 +564,11 @@ void TabContainer::add_child_notify(Node *p_child) {
 }
 
 void TabContainer::move_child_notify(Node *p_child) {
+	Container::move_child_notify(p_child);
+
 	if (p_child == tab_bar) {
 		return;
 	}
-
-	Container::move_child_notify(p_child);
 
 	Control *c = Object::cast_to<Control>(p_child);
 	if (c && !c->is_set_as_top_level()) {
@@ -573,11 +588,11 @@ void TabContainer::move_child_notify(Node *p_child) {
 }
 
 void TabContainer::remove_child_notify(Node *p_child) {
+	Container::remove_child_notify(p_child);
+
 	if (p_child == tab_bar) {
 		return;
 	}
-
-	Container::remove_child_notify(p_child);
 
 	Control *c = Object::cast_to<Control>(p_child);
 	if (!c || c->is_set_as_top_level()) {
@@ -794,6 +809,14 @@ bool TabContainer::is_tab_hidden(int p_tab) const {
 	return tab_bar->is_tab_hidden(p_tab);
 }
 
+void TabContainer::set_tab_metadata(int p_tab, const Variant &p_metadata) {
+	tab_bar->set_tab_metadata(p_tab, p_metadata);
+}
+
+Variant TabContainer::get_tab_metadata(int p_tab) const {
+	return tab_bar->get_tab_metadata(p_tab);
+}
+
 void TabContainer::set_tab_button_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 	tab_bar->set_tab_button_icon(p_tab, p_icon);
 
@@ -941,6 +964,8 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_tab_disabled", "tab_idx"), &TabContainer::is_tab_disabled);
 	ClassDB::bind_method(D_METHOD("set_tab_hidden", "tab_idx", "hidden"), &TabContainer::set_tab_hidden);
 	ClassDB::bind_method(D_METHOD("is_tab_hidden", "tab_idx"), &TabContainer::is_tab_hidden);
+	ClassDB::bind_method(D_METHOD("set_tab_metadata", "tab_idx", "metadata"), &TabContainer::set_tab_metadata);
+	ClassDB::bind_method(D_METHOD("get_tab_metadata", "tab_idx"), &TabContainer::get_tab_metadata);
 	ClassDB::bind_method(D_METHOD("set_tab_button_icon", "tab_idx", "icon"), &TabContainer::set_tab_button_icon);
 	ClassDB::bind_method(D_METHOD("get_tab_button_icon", "tab_idx"), &TabContainer::get_tab_button_icon);
 	ClassDB::bind_method(D_METHOD("get_tab_idx_at_point", "point"), &TabContainer::get_tab_idx_at_point);
@@ -957,7 +982,10 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_repaint"), &TabContainer::_repaint);
 	ClassDB::bind_method(D_METHOD("_on_theme_changed"), &TabContainer::_on_theme_changed);
 
+	ADD_SIGNAL(MethodInfo("active_tab_rearranged", PropertyInfo(Variant::INT, "idx_to")));
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_clicked", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_hovered", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_selected", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_button_pressed", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("pre_popup_pressed"));
@@ -978,6 +1006,8 @@ TabContainer::TabContainer() {
 	add_child(tab_bar, false, INTERNAL_MODE_FRONT);
 	tab_bar->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE);
 	tab_bar->connect("tab_changed", callable_mp(this, &TabContainer::_on_tab_changed));
+	tab_bar->connect("tab_clicked", callable_mp(this, &TabContainer::_on_tab_clicked));
+	tab_bar->connect("tab_hovered", callable_mp(this, &TabContainer::_on_tab_hovered));
 	tab_bar->connect("tab_selected", callable_mp(this, &TabContainer::_on_tab_selected));
 	tab_bar->connect("tab_button_pressed", callable_mp(this, &TabContainer::_on_tab_button_pressed));
 
