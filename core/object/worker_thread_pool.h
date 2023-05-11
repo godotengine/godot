@@ -107,7 +107,7 @@ private:
 	};
 
 	TightLocalVector<ThreadData> threads;
-	SafeFlag exit_threads;
+	bool exit_threads = false;
 
 	HashMap<Thread::ID, int> thread_ids;
 	HashMap<TaskID, Task *> tasks;
@@ -115,7 +115,7 @@ private:
 
 	bool use_native_low_priority_threads = false;
 	uint32_t max_low_priority_threads = 0;
-	SafeNumeric<uint32_t> low_priority_threads_used;
+	uint32_t low_priority_threads_used = 0;
 
 	uint64_t last_task = 1;
 
