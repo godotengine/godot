@@ -38,7 +38,6 @@
 
 #include <avrt.h>
 #include <dwmapi.h>
-#include <drivers/png/png_driver_common.h>
 
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
@@ -263,7 +262,7 @@ BitField<MouseButtonMask> DisplayServerWindows::mouse_get_button_state() const {
 	return last_button_state;
 }
 
-void DisplayServerWindows::clipboard_set_text(const String &p_text) {
+void DisplayServerWindows::clipboard_set(const String &p_text) {
 	_THREAD_SAFE_METHOD_
 
 	if (!windows.has(MAIN_WINDOW_ID)) {
@@ -304,7 +303,7 @@ void DisplayServerWindows::clipboard_set_text(const String &p_text) {
 	CloseClipboard();
 }
 
-String DisplayServerWindows::clipboard_get_text() const {
+String DisplayServerWindows::clipboard_get() const {
 	_THREAD_SAFE_METHOD_
 
 	if (!windows.has(MAIN_WINDOW_ID)) {
@@ -340,67 +339,6 @@ String DisplayServerWindows::clipboard_get_text() const {
 	CloseClipboard();
 
 	return ret;
-}
-
-Ref<Image> DisplayServerWindows::clipboard_get_image() const {
-	Ref<Image> image;
-	if (!windows.has(last_focused_window)) {
-		return image; // No focused window?
-	}
-	if (!OpenClipboard(windows[last_focused_window].hWnd)) {
-		ERR_FAIL_V_MSG(image, "Unable to open clipboard.");
-	}
-	UINT png_format = RegisterClipboardFormatA("PNG");
-	if (png_format && IsClipboardFormatAvailable(png_format)) {
-		HANDLE png_handle = GetClipboardData(png_format);
-		if (png_handle) {
-			size_t png_size = GlobalSize(png_handle);
-			uint8_t *png_data = (uint8_t *)GlobalLock(png_handle);
-			image.instantiate();
-
-			PNGDriverCommon::png_to_image(png_data, png_size, false, image);
-
-			GlobalUnlock(png_handle);
-		}
-	} else if (IsClipboardFormatAvailable(CF_DIB)) {
-		HGLOBAL mem = GetClipboardData(CF_DIB);
-		if (mem != NULL) {
-			BITMAPINFO *ptr = static_cast<BITMAPINFO *>(GlobalLock(mem));
-
-			if (ptr != NULL) {
-				BITMAPINFOHEADER *info = &ptr->bmiHeader;
-				PackedByteArray pba;
-				pba.resize(info->biHeight * info->biWidth * 4);
-				for (LONG y = info->biHeight - 1; y > -1; y--) {
-					for (LONG x = 0; x < info->biWidth; x++) {
-						tagRGBQUAD *rgbquad = ptr->bmiColors + (info->biWidth * y) + x;
-						pba.write[x] = rgbquad->rgbRed;
-						pba.write[x + 1] = rgbquad->rgbGreen;
-						pba.write[x + 2] = rgbquad->rgbBlue;
-						pba.write[x + 3] = rgbquad->rgbReserved;
-					}
-				}
-				image.instantiate();
-				image->create_from_data(info->biWidth, info->biHeight, false, Image::Format::FORMAT_RGBA8, pba);
-
-				GlobalUnlock(mem);
-			}
-		}
-	}
-
-	CloseClipboard();
-
-	return image;
-}
-
-bool DisplayServerWindows::clipboard_has_text() const {
-	return (IsClipboardFormatAvailable(CF_TEXT) ||
-			IsClipboardFormatAvailable(CF_UNICODETEXT) ||
-			IsClipboardFormatAvailable(CF_OEMTEXT));
-}
-
-bool DisplayServerWindows::clipboard_has_image() const {
-	return IsClipboardFormatAvailable(CF_DIB);
 }
 
 typedef struct {

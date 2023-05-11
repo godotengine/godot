@@ -204,8 +204,8 @@ public:
 	virtual String get_environment(const String &p_var) const;
 	virtual bool set_environment(const String &p_var, const String &p_value) const;
 
-	virtual void set_clipboard_text(const String &p_text);
-	virtual String get_clipboard_text() const;
+	virtual void set_clipboard(const String &p_text);
+	virtual String get_clipboard() const;
 
 	void set_cursor_shape(CursorShape p_shape);
 	CursorShape get_cursor_shape() const;

@@ -280,7 +280,7 @@ Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	return OK;
 }
 
-void OS_UWP::set_clipboard_text(const String &p_text) {
+void OS_UWP::set_clipboard(const String &p_text) {
 	DataPackage ^ clip = ref new DataPackage();
 	clip->RequestedOperation = DataPackageOperation::Copy;
 	clip->SetText(ref new Platform::String((LPCWSTR)(p_text.utf16().get_data())));
@@ -288,7 +288,7 @@ void OS_UWP::set_clipboard_text(const String &p_text) {
 	Clipboard::SetContent(clip);
 }
 
-String OS_UWP::get_clipboard_text() const {
+String OS_UWP::get_clipboard() const {
 	if (managed_object->clipboard != nullptr) {
 		return managed_object->clipboard->Data();
 	} else {

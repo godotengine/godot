@@ -354,24 +354,16 @@ BitField<MouseButtonMask> DisplayServer::mouse_get_button_state() const {
 	ERR_FAIL_V_MSG(0, "Mouse is not supported by this display server.");
 }
 
-void DisplayServer::clipboard_set_text(const String &p_text) {
+void DisplayServer::clipboard_set(const String &p_text) {
 	WARN_PRINT("Clipboard is not supported by this display server.");
 }
 
-String DisplayServer::clipboard_get_text() const {
+String DisplayServer::clipboard_get() const {
 	ERR_FAIL_V_MSG(String(), "Clipboard is not supported by this display server.");
 }
 
-Ref<Image> DisplayServer::clipboard_get_image() const {
-	ERR_FAIL_V_MSG(Ref<Image>(), "Clipboard is not supported by this display server.");
-}
-
-bool DisplayServer::clipboard_has_text() const {
-	return !clipboard_get_text().is_empty();
-}
-
-bool DisplayServer::clipboard_has_image() const {
-	return !clipboard_get_image().is_valid();
+bool DisplayServer::clipboard_has() const {
+	return !clipboard_get().is_empty();
 }
 
 void DisplayServer::clipboard_set_primary(const String &p_text) {
@@ -646,11 +638,9 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("mouse_get_position"), &DisplayServer::mouse_get_position);
 	ClassDB::bind_method(D_METHOD("mouse_get_button_state"), &DisplayServer::mouse_get_button_state);
 
-	ClassDB::bind_method(D_METHOD("clipboard_set_text", "clipboard"), &DisplayServer::clipboard_set_text);
-	ClassDB::bind_method(D_METHOD("clipboard_get_text"), &DisplayServer::clipboard_get_text);
-	ClassDB::bind_method(D_METHOD("clipboard_get_image"), &DisplayServer::clipboard_get_image);
-	ClassDB::bind_method(D_METHOD("clipboard_has_text"), &DisplayServer::clipboard_has_text);
-	ClassDB::bind_method(D_METHOD("clipboard_has_image"), &DisplayServer::clipboard_has_image);
+	ClassDB::bind_method(D_METHOD("clipboard_set", "clipboard"), &DisplayServer::clipboard_set);
+	ClassDB::bind_method(D_METHOD("clipboard_get"), &DisplayServer::clipboard_get);
+	ClassDB::bind_method(D_METHOD("clipboard_has"), &DisplayServer::clipboard_has);
 	ClassDB::bind_method(D_METHOD("clipboard_set_primary", "clipboard_primary"), &DisplayServer::clipboard_set_primary);
 	ClassDB::bind_method(D_METHOD("clipboard_get_primary"), &DisplayServer::clipboard_get_primary);
 
