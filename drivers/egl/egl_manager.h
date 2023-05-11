@@ -70,7 +70,7 @@ private:
 
 	GLWindow *current_window = nullptr;
 
-	// On EGL the default swap interval is 1 and thus vsync is on by defualt.
+	// On EGL the default swap interval is 1 and thus vsync is on by default.
 	bool use_vsync = true;
 
 	virtual const char *_get_platform_extension_name() const = 0;

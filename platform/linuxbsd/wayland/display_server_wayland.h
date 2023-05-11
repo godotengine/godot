@@ -206,7 +206,7 @@ class DisplayServerWayland : public DisplayServer {
 		struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration = nullptr;
 
 #ifdef LIBDECOR_ENABLED
-		// If this is null the xdg_* variables must be set and viceversa. This way we
+		// If this is null the xdg_* variables must be set and vice-versa. This way we
 		// can handle this mess gracely enough to hopefully being able of getting rid
 		// of this cleanly once we have our own CSDs.
 		struct libdecor_frame *libdecor_frame = nullptr;
