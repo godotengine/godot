@@ -1302,12 +1302,14 @@ int Node::get_descendant_count(bool p_include_internal) const {
 	return count;
 }
 
-TypedArray<Node> Node::get_ancestors() const {
-	TypedArray<Node> res;
-	const Node* current_node = this;
-	while (current_node->get_parent() != nullptr){
-		res.append(current_node);
-		current_node = current_node->get_parent();
+TypedArray<Node> Node::get_descendants(bool p_include_internal) const {
+	TypedArray<Node> res = get_children(p_include_internal);
+	TypedArray<Node> children = get_children(p_include_internal);
+	for (int i = 0; i < children.size(); i++) {
+		Node *node = Object::cast_to<Node>(children[i]);
+		if (node->get_child_count(p_include_internal) > 0) {
+			res.append_array(node->get_descendants(p_include_internal));
+		}
 	}
 	return res;
 }
@@ -1322,14 +1324,12 @@ int Node::get_ancestor_count() const {
 	return count;
 }
 
-TypedArray<Node> Node::get_descendants(bool p_include_internal) const {
-	TypedArray<Node> res = get_children(p_include_internal);
-	TypedArray<Node> children = get_children(p_include_internal);
-	for (int i = 0; i < children.size(); i++) {
-		Node *node = Object::cast_to<Node>(children[i]);
-		if (node->get_child_count(p_include_internal) > 0) {
-			res.append_array(node->get_descendants(p_include_internal));
-		}
+TypedArray<Node> Node::get_ancestors() const {
+	TypedArray<Node> res;
+	const Node* current_node = this;
+	while (current_node->get_parent() != nullptr){
+		res.append(current_node);
+		current_node = current_node->get_parent();
 	}
 	return res;
 }
