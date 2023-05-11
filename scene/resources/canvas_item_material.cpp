@@ -161,7 +161,7 @@ void CanvasItemMaterial::flush_changes() {
 void CanvasItemMaterial::_queue_shader_change() {
 	MutexLock lock(material_mutex);
 
-	if (is_initialized && !element.in_list()) {
+	if (_is_initialized() && !element.in_list()) {
 		dirty_materials->add(&element);
 	}
 }
@@ -287,8 +287,8 @@ CanvasItemMaterial::CanvasItemMaterial() :
 	set_particles_anim_loop(false);
 
 	current_key.invalid_key = 1;
-	is_initialized = true;
-	_queue_shader_change();
+
+	_mark_initialized(callable_mp(this, &CanvasItemMaterial::_queue_shader_change));
 }
 
 CanvasItemMaterial::~CanvasItemMaterial() {

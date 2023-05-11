@@ -70,10 +70,9 @@ private:
 	bool allocator_is_custom = false;
 
 	LocalVector<Page *> pages;
-	LocalVector<uint32_t> page_messages;
+	LocalVector<uint32_t> page_bytes;
 	uint32_t max_pages = 0;
 	uint32_t pages_used = 0;
-	uint32_t page_offset = 0;
 	bool flushing = false;
 
 	struct Message {
@@ -88,7 +87,7 @@ private:
 	_FORCE_INLINE_ void _ensure_first_page() {
 		if (unlikely(pages.is_empty())) {
 			pages.push_back(allocator->alloc());
-			page_messages.push_back(0);
+			page_bytes.push_back(0);
 			pages_used = 1;
 		}
 	}
@@ -153,10 +152,15 @@ public:
 };
 
 class MessageQueue : public CallQueue {
-	static MessageQueue *singleton;
+	static CallQueue *main_singleton;
+	static thread_local CallQueue *thread_singleton;
+	friend class CallQueue;
 
 public:
-	_FORCE_INLINE_ static MessageQueue *get_singleton() { return singleton; }
+	_FORCE_INLINE_ static CallQueue *get_singleton() { return thread_singleton ? thread_singleton : main_singleton; }
+
+	static void set_thread_singleton_override(CallQueue *p_thread_singleton);
+
 	MessageQueue();
 	~MessageQueue();
 };
