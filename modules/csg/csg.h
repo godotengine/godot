@@ -155,8 +155,8 @@ struct CSGBrushOperation {
 		float vertex_snap = 0.0;
 
 		inline void _add_distance(List<IntersectionDistance> &r_intersectionsA, List<IntersectionDistance> &r_intersectionsB, bool p_from_B, real_t p_distance, bool p_is_conormal) const;
-		inline bool _bvh_inside(FaceBVH *facebvhptr, int p_max_depth, int p_bvh_first, int p_face_idx) const;
-		inline int _create_bvh(FaceBVH *facebvhptr, FaceBVH **facebvhptrptr, int p_from, int p_size, int p_depth, int &r_max_depth, int &r_max_alloc);
+		inline bool _bvh_inside(FaceBVH *r_facebvhptr, int p_max_depth, int p_bvh_first, int p_face_idx) const;
+		inline int _create_bvh(FaceBVH *r_facebvhptr, FaceBVH **r_facebvhptrptr, int p_from, int p_size, int p_depth, int &r_max_depth, int &r_max_alloc);
 
 		void add_face(const Vector3 p_points[3], const Vector2 p_uvs[3], bool p_smooth, bool p_invert, const Ref<Material> &p_material, bool p_from_b);
 		void mark_inside_faces();

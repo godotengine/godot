@@ -60,6 +60,9 @@
 
 typedef GLXContext (*GLXCREATECONTEXTATTRIBSARBPROC)(Display *, GLXFBConfig, GLXContext, Bool, const int *);
 
+// To prevent shadowing warnings
+#undef glGetString
+
 struct vendor {
 	const char *glxvendor = nullptr;
 	int priority = 0;
