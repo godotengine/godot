@@ -3304,6 +3304,13 @@ void DisplayServerWayland::cursor_set_custom_image(const Ref<Resource> &p_cursor
 		ERR_FAIL_COND(texture_size.height == 0 || texture_size.width == 0);
 
 		Ref<Image> image = texture->get_image();
+		ERR_FAIL_COND(!image.is_valid());
+
+		if (image->is_compressed()) {
+			image = image->duplicate(true);
+			Error err = image->decompress();
+			ERR_FAIL_COND_MSG(err != OK, "Couldn't decompress VRAM-compressed custom mouse cursor image. Switch to a lossless compression mode in the Import dock.");
+		}
 
 		// NOTE: The stride is the width of the image in bytes.
 		unsigned int texture_stride = texture_size.width * 4;
