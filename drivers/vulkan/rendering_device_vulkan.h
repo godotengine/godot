@@ -954,6 +954,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	ComputeList *compute_list = nullptr;
 
+	void _compute_list_add_barrier(BitField<BarrierMask> p_post_barrier, uint32_t p_barrier_flags, uint32_t p_access_flags);
+
 	/**************************/
 	/**** FRAME MANAGEMENT ****/
 	/**************************/
@@ -1082,6 +1084,7 @@ public:
 	/*****************/
 
 	virtual RID sampler_create(const SamplerState &p_state);
+	virtual bool sampler_is_format_supported_for_filter(DataFormat p_format, SamplerFilter p_sampler_filter) const;
 
 	/**********************/
 	/**** VERTEX ARRAY ****/

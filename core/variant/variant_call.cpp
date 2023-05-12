@@ -1906,7 +1906,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector4, distance_squared_to, sarray("to"), varray());
 	bind_method(Vector4, dot, sarray("with"), varray());
 	bind_method(Vector4, inverse, sarray(), varray());
-	bind_method(Vector4, is_equal_approx, sarray("with"), varray());
+	bind_method(Vector4, is_equal_approx, sarray("to"), varray());
 	bind_method(Vector4, is_zero_approx, sarray(), varray());
 	bind_method(Vector4, is_finite, sarray(), varray());
 

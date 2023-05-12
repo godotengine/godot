@@ -1651,10 +1651,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						bool was_freed = false;
 						Object *obj = ret->get_validated_object_with_check(was_freed);
 
-						if (was_freed) {
-							err_text = "Got a freed object as a result of the call.";
-							OPCODE_BREAK;
-						}
 						if (obj && obj->is_class_ptr(GDScriptFunctionState::get_class_ptr_static())) {
 							err_text = R"(Trying to call an async function without "await".)";
 							OPCODE_BREAK;
@@ -3572,8 +3568,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		//error
 		// function, file, line, error, explanation
 		String err_file;
-		if (p_instance && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid() && !p_instance->script->path.is_empty()) {
-			err_file = p_instance->script->path;
+		bool instance_valid_with_script = p_instance && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid();
+		if (instance_valid_with_script && !get_script()->path.is_empty()) {
+			err_file = get_script()->path;
 		} else if (script) {
 			err_file = script->path;
 		}
@@ -3581,7 +3578,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			err_file = "<built-in>";
 		}
 		String err_func = name;
-		if (p_instance && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid() && !p_instance->script->name.is_empty()) {
+		if (instance_valid_with_script && !p_instance->script->name.is_empty()) {
 			err_func = p_instance->script->name + "." + err_func;
 		}
 		int err_line = line;

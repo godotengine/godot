@@ -119,7 +119,7 @@ void ConnectDialog::ok_pressed() {
 		return;
 	}
 
-	if (!method_name.strip_edges().is_valid_identifier()) {
+	if (!TS->is_valid_identifier(method_name.strip_edges())) {
 		error->set_text(TTR("Method name must be a valid identifier."));
 		error->popup_centered();
 		return;
@@ -228,7 +228,7 @@ StringName ConnectDialog::generate_method_callback_name(Node *p_source, String p
 	String node_name = p_source->get_name();
 	for (int i = 0; i < node_name.length(); i++) { // TODO: Regex filter may be cleaner.
 		char32_t c = node_name[i];
-		if (!is_ascii_identifier_char(c)) {
+		if ((i == 0 && !is_unicode_identifier_start(c)) || (i > 0 && !is_unicode_identifier_continue(c))) {
 			if (c == ' ') {
 				// Replace spaces with underlines.
 				c = '_';
@@ -338,11 +338,6 @@ void ConnectDialog::_update_method_tree() {
 	// If a script is attached, get methods from it.
 	ScriptInstance *si = target->get_script_instance();
 	if (si) {
-		TreeItem *si_item = method_tree->create_item(root_item);
-		si_item->set_text(0, TTR("Attached Script"));
-		si_item->set_icon(0, get_theme_icon(SNAME("Script"), SNAME("EditorIcons")));
-		si_item->set_selectable(0, false);
-
 		if (si->get_script()->is_built_in()) {
 			si->get_script()->reload();
 		}
@@ -350,9 +345,12 @@ void ConnectDialog::_update_method_tree() {
 		si->get_method_list(&methods);
 		methods = _filter_method_list(methods, signal_info, search_string);
 
-		if (methods.is_empty()) {
-			si_item->set_custom_color(0, disabled_color);
-		} else {
+		if (!methods.is_empty()) {
+			TreeItem *si_item = method_tree->create_item(root_item);
+			si_item->set_text(0, TTR("Attached Script"));
+			si_item->set_icon(0, get_theme_icon(SNAME("Script"), SNAME("EditorIcons")));
+			si_item->set_selectable(0, false);
+
 			_create_method_tree_items(methods, si_item);
 		}
 	}
@@ -687,8 +685,10 @@ ConnectDialog::ConnectDialog() {
 	method_tree->connect("item_activated", callable_mp((Window *)method_popup, &Window::hide));
 
 	empty_tree_label = memnew(Label(TTR("No method found matching given filters.")));
-	method_tree->add_child(empty_tree_label);
-	empty_tree_label->set_anchors_and_offsets_preset(Control::PRESET_CENTER);
+	method_popup->add_child(empty_tree_label);
+	empty_tree_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	empty_tree_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	empty_tree_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 
 	script_methods_only = memnew(CheckButton(TTR("Script Methods Only")));
 	method_vbc->add_child(script_methods_only);

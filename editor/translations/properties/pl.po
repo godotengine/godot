@@ -70,13 +70,14 @@
 # Piotr Ślusarz <piotrekslusarz@outlook.com>, 2022.
 # Jan Kurzak <Iqaz0oki@outlook.com>, 2022.
 # Wojciech Pluta <wojciech.pluta@oracle.com>, 2022.
+# Piotr Komorowski <mikolajk11@o2.pl>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-24 01:41+0000\n"
-"Last-Translator: Michał Biernat <michalbiernat@windowslive.com>\n"
+"PO-Revision-Date: 2023-04-20 03:46+0000\n"
+"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/pl/>\n"
 "Language: pl\n"
@@ -85,7 +86,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.16.2-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Application"
 msgstr "Aplikacja"
@@ -126,8 +127,14 @@ msgstr "Własna nazwa katalogu użytkownika"
 msgid "Project Settings Override"
 msgstr "Nadpisanie ustawień projektu"
 
+msgid "Main Loop Type"
+msgstr "Typ Głównej Pętli"
+
 msgid "Auto Accept Quit"
 msgstr "Automatyczne akceptowanie zamknięcia"
+
+msgid "Quit on Go Back"
+msgstr "Wyjdź i cofnij się"
 
 msgid "Display"
 msgstr "Wyświetlanie"
@@ -772,7 +779,7 @@ msgid "Minimap Width"
 msgstr "Szerokość minimapy"
 
 msgid "Code Folding"
-msgstr "Zawijanie kodu"
+msgstr "Zwijanie kodu"
 
 msgid "Word Wrap"
 msgstr "Zawijanie tekstu"
@@ -1214,6 +1221,9 @@ msgstr "Własny szablon"
 
 msgid "Release"
 msgstr "Wydanie"
+
+msgid "Export Console Script"
+msgstr "Eksportuj skrypt konsoli"
 
 msgid "Binary Format"
 msgstr "Format binarny"
@@ -2350,7 +2360,7 @@ msgid "Degrees Mode"
 msgstr "Tryb stopni"
 
 msgid "Custom"
-msgstr "Niestandardowe"
+msgstr "Własny"
 
 msgid "Default Font Subpixel Positioning"
 msgstr "Domyślne pozycjonowanie subpikselowe czcionki"

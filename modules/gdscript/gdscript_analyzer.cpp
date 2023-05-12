@@ -478,7 +478,24 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 					}
 					if (look_class->has_member(name)) {
 						resolve_class_member(look_class, name, p_class);
-						base = look_class->get_member(name).get_datatype();
+						GDScriptParser::ClassNode::Member member = look_class->get_member(name);
+						GDScriptParser::DataType member_datatype = member.get_datatype();
+
+						switch (member.type) {
+							case GDScriptParser::ClassNode::Member::CLASS:
+								break; // OK.
+							case GDScriptParser::ClassNode::Member::CONSTANT:
+								if (member_datatype.kind != GDScriptParser::DataType::SCRIPT && member_datatype.kind != GDScriptParser::DataType::CLASS) {
+									push_error(vformat(R"(Constant "%s" is not a preloaded script or class.)", name), p_class);
+									return ERR_PARSE_ERROR;
+								}
+								break;
+							default:
+								push_error(vformat(R"(Cannot use %s "%s" in extends chain.)", member.get_type_name(), name), p_class);
+								return ERR_PARSE_ERROR;
+						}
+
+						base = member_datatype;
 						found = true;
 						break;
 					}
@@ -506,6 +523,10 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 			GDScriptParser::DataType id_type = id->get_datatype();
 			if (!id_type.is_set()) {
 				push_error(vformat(R"(Could not find type "%s" under base "%s".)", id->name, base.to_string()), p_class);
+				return ERR_PARSE_ERROR;
+			} else if (id_type.kind != GDScriptParser::DataType::SCRIPT && id_type.kind != GDScriptParser::DataType::CLASS) {
+				push_error(vformat(R"(Identifier "%s" is not a preloaded script or class.)", id->name), p_class);
+				return ERR_PARSE_ERROR;
 			}
 
 			base = id_type;

@@ -2649,7 +2649,7 @@ Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels
 			_image_compress_bptc_func(this, p_channels);
 		} break;
 		case COMPRESS_ASTC: {
-			ERR_FAIL_COND_V(!_image_compress_bptc_func, ERR_UNAVAILABLE);
+			ERR_FAIL_COND_V(!_image_compress_astc_func, ERR_UNAVAILABLE);
 			_image_compress_astc_func(this, p_astc_format);
 		} break;
 		case COMPRESS_MAX: {
@@ -3535,6 +3535,8 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(COMPRESS_ETC);
 	BIND_ENUM_CONSTANT(COMPRESS_ETC2);
 	BIND_ENUM_CONSTANT(COMPRESS_BPTC);
+	BIND_ENUM_CONSTANT(COMPRESS_ASTC);
+	BIND_ENUM_CONSTANT(COMPRESS_MAX);
 
 	BIND_ENUM_CONSTANT(USED_CHANNELS_L);
 	BIND_ENUM_CONSTANT(USED_CHANNELS_LA);

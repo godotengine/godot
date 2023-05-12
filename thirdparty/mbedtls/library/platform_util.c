@@ -62,14 +62,15 @@
  * mbedtls_platform_zeroize() to use a suitable implementation for their
  * platform and needs.
  */
-static void * (* const volatile memset_func)( void *, int, size_t ) = memset;
+static void *(*const volatile memset_func)(void *, int, size_t) = memset;
 
-void mbedtls_platform_zeroize( void *buf, size_t len )
+void mbedtls_platform_zeroize(void *buf, size_t len)
 {
-    MBEDTLS_INTERNAL_VALIDATE( len == 0 || buf != NULL );
+    MBEDTLS_INTERNAL_VALIDATE(len == 0 || buf != NULL);
 
-    if( len > 0 )
-        memset_func( buf, 0, len );
+    if (len > 0) {
+        memset_func(buf, 0, len);
+    }
 }
 #endif /* MBEDTLS_PLATFORM_ZEROIZE_ALT */
 
@@ -82,9 +83,9 @@ void mbedtls_platform_zeroize( void *buf, size_t len )
 #endif /* !_WIN32 && (unix || __unix || __unix__ ||
         * (__APPLE__ && __MACH__)) */
 
-#if !( ( defined(_POSIX_VERSION) && _POSIX_VERSION >= 200809L ) ||     \
-       ( defined(_POSIX_THREAD_SAFE_FUNCTIONS ) &&                     \
-         _POSIX_THREAD_SAFE_FUNCTIONS >= 200112L ) )
+#if !((defined(_POSIX_VERSION) && _POSIX_VERSION >= 200809L) ||     \
+    (defined(_POSIX_THREAD_SAFE_FUNCTIONS) &&                     \
+    _POSIX_THREAD_SAFE_FUNCTIONS >= 200112L))
 /*
  * This is a convenience shorthand macro to avoid checking the long
  * preprocessor conditions above. Ideally, we could expose this macro in
@@ -92,42 +93,43 @@ void mbedtls_platform_zeroize( void *buf, size_t len )
  * threading.h. However, this macro is not part of the Mbed TLS public API, so
  * we keep it private by only defining it in this file
  */
-#if ! ( defined(_WIN32) && !defined(EFIX64) && !defined(EFI32) )
+#if !(defined(_WIN32) && !defined(EFIX64) && !defined(EFI32))
 #define PLATFORM_UTIL_USE_GMTIME
 #endif /* ! ( defined(_WIN32) && !defined(EFIX64) && !defined(EFI32) ) */
 
-#endif /* !( ( defined(_POSIX_VERSION) && _POSIX_VERSION >= 200809L ) ||     \
-             ( defined(_POSIX_THREAD_SAFE_FUNCTIONS ) &&                     \
+#endif /* !( ( defined(_POSIX_VERSION) && _POSIX_VERSION >= 200809L ) || \
+             ( defined(_POSIX_THREAD_SAFE_FUNCTIONS ) && \
                 _POSIX_THREAD_SAFE_FUNCTIONS >= 200112L ) ) */
 
-struct tm *mbedtls_platform_gmtime_r( const mbedtls_time_t *tt,
-                                      struct tm *tm_buf )
+struct tm *mbedtls_platform_gmtime_r(const mbedtls_time_t *tt,
+                                     struct tm *tm_buf)
 {
 #if defined(_WIN32) && !defined(EFIX64) && !defined(EFI32)
-    return( ( gmtime_s( tm_buf, tt ) == 0 ) ? tm_buf : NULL );
+    return (gmtime_s(tm_buf, tt) == 0) ? tm_buf : NULL;
 #elif !defined(PLATFORM_UTIL_USE_GMTIME)
-    return( gmtime_r( tt, tm_buf ) );
+    return gmtime_r(tt, tm_buf);
 #else
     struct tm *lt;
 
 #if defined(MBEDTLS_THREADING_C)
-    if( mbedtls_mutex_lock( &mbedtls_threading_gmtime_mutex ) != 0 )
-        return( NULL );
+    if (mbedtls_mutex_lock(&mbedtls_threading_gmtime_mutex) != 0) {
+        return NULL;
+    }
 #endif /* MBEDTLS_THREADING_C */
 
-    lt = gmtime( tt );
+    lt = gmtime(tt);
 
-    if( lt != NULL )
-    {
-        memcpy( tm_buf, lt, sizeof( struct tm ) );
+    if (lt != NULL) {
+        memcpy(tm_buf, lt, sizeof(struct tm));
     }
 
 #if defined(MBEDTLS_THREADING_C)
-    if( mbedtls_mutex_unlock( &mbedtls_threading_gmtime_mutex ) != 0 )
-        return( NULL );
+    if (mbedtls_mutex_unlock(&mbedtls_threading_gmtime_mutex) != 0) {
+        return NULL;
+    }
 #endif /* MBEDTLS_THREADING_C */
 
-    return( ( lt == NULL ) ? NULL : tm_buf );
+    return (lt == NULL) ? NULL : tm_buf;
 #endif /* _WIN32 && !EFIX64 && !EFI32 */
 }
 #endif /* MBEDTLS_HAVE_TIME_DATE && MBEDTLS_PLATFORM_GMTIME_R_ALT */

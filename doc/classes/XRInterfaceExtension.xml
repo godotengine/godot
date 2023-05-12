@@ -159,13 +159,13 @@
 		<method name="_pre_render" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				Called if this [XRInterfaceExtension] is active before rendering starts, most XR interfaces will sync tracking at this point in time.
+				Called if this [XRInterfaceExtension] is active before rendering starts. Most XR interfaces will sync tracking at this point in time.
 			</description>
 		</method>
 		<method name="_process" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				Called if this [XRInterfaceExtension] is active before our physics and game process is called. most XR interfaces will update its [XRPositionalTracker]s at this point in time.
+				Called if this [XRInterfaceExtension] is active before our physics and game process is called. Most XR interfaces will update its [XRPositionalTracker]s at this point in time.
 			</description>
 		</method>
 		<method name="_set_anchor_detection_is_enabled" qualifiers="virtual">

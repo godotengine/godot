@@ -145,6 +145,12 @@ void EditorToaster::_notification(int p_what) {
 }
 
 void EditorToaster::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
+	// This may be called from a thread. Since we will deal with non-thread-safe elements,
+	// we have to put it in the queue for safety.
+	callable_mp_static(&EditorToaster::_error_handler_impl).bind(p_file, p_line, p_error, p_errorexp, p_editor_notify, p_type).call_deferred();
+}
+
+void EditorToaster::_error_handler_impl(const String &p_file, int p_line, const String &p_error, const String &p_errorexp, bool p_editor_notify, int p_type) {
 	if (!EditorToaster::get_singleton() || !EditorToaster::get_singleton()->is_inside_tree()) {
 		return;
 	}
@@ -158,13 +164,8 @@ void EditorToaster::_error_handler(void *p_self, const char *p_func, const char 
 	int show_all_setting = EDITOR_GET("interface/editor/show_internal_errors_in_toast_notifications");
 
 	if (p_editor_notify || (show_all_setting == 0 && in_dev) || show_all_setting == 1) {
-		String err_str;
-		if (p_errorexp && p_errorexp[0]) {
-			err_str = String::utf8(p_errorexp);
-		} else {
-			err_str = String::utf8(p_error);
-		}
-		String tooltip_str = String::utf8(p_file) + ":" + itos(p_line);
+		String err_str = !p_errorexp.is_empty() ? p_errorexp : p_error;
+		String tooltip_str = p_file + ":" + itos(p_line);
 
 		if (!p_editor_notify) {
 			if (p_type == ERR_HANDLER_WARNING) {
@@ -174,7 +175,7 @@ void EditorToaster::_error_handler(void *p_self, const char *p_func, const char 
 			}
 		}
 
-		Severity severity = (p_type == ERR_HANDLER_WARNING) ? SEVERITY_WARNING : SEVERITY_ERROR;
+		Severity severity = ((ErrorHandlerType)p_type == ERR_HANDLER_WARNING) ? SEVERITY_WARNING : SEVERITY_ERROR;
 		EditorToaster::get_singleton()->popup_str(err_str, severity, tooltip_str);
 	}
 }

@@ -653,6 +653,7 @@ public:
 	};
 
 	virtual RID sampler_create(const SamplerState &p_state) = 0;
+	virtual bool sampler_is_format_supported_for_filter(DataFormat p_format, SamplerFilter p_sampler_filter) const = 0;
 
 	/**********************/
 	/**** VERTEX ARRAY ****/

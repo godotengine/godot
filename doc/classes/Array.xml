@@ -441,12 +441,23 @@
 			<return type="Variant" />
 			<description>
 				Returns the maximum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
+				To find the maximum value using a custom comparator, you can use [method reduce]. In this example every array element is checked and the first maximum value is returned:
+				[codeblock]
+				func _ready():
+				    var arr = [Vector2(0, 1), Vector2(2, 0), Vector2(1, 1), Vector2(1, 0), Vector2(0, 2)]
+				    # In this example we compare the lengths.
+				    print(arr.reduce(func(max, val): return val if is_length_greater(val, max) else max))
+
+				func is_length_greater(a, b):
+				    return a.length() &gt; b.length()
+				[/codeblock]
 			</description>
 		</method>
 		<method name="min" qualifiers="const">
 			<return type="Variant" />
 			<description>
 				Returns the minimum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
+				See also [method max] for an example of using a custom comparator.
 			</description>
 		</method>
 		<method name="pick_random" qualifiers="const">

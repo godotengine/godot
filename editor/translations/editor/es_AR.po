@@ -23,13 +23,15 @@
 # Mau_Restor <restor@gmail.com>, 2022.
 # Leonardo Martínez <leonardomartinez85@gmail.com>, 2022.
 # LR <nancok@tuta.io>, 2023.
+# Tefa <gassmannstefano@gmail.com>, 2023.
+# Maximiliano Gamón <maximilianogamon@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-01-01 05:48+0000\n"
-"Last-Translator: LR <nancok@tuta.io>\n"
+"PO-Revision-Date: 2023-04-11 13:46+0000\n"
+"Last-Translator: Tefa <gassmannstefano@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -37,13 +39,61 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.15.1-dev\n"
+"X-Generator: Weblate 4.17-dev\n"
+
+msgid "Unset"
+msgstr "Desactivar"
 
 msgid "Physical"
 msgstr "Física"
 
+msgid "Left Mouse Button"
+msgstr "Botón Izquierdo del Mouse"
+
+msgid "Right Mouse Button"
+msgstr "Botón Derecho del Mouse"
+
+msgid "Middle Mouse Button"
+msgstr "Botón del Medio del Mouse"
+
+msgid "Mouse Wheel Up"
+msgstr "Rueda del Mouse Arriba"
+
+msgid "Mouse Wheel Down"
+msgstr "Rueda del Mouse Abajo"
+
+msgid "Mouse Wheel Left"
+msgstr "Rueda del Mouse - Izquierda"
+
+msgid "Mouse Wheel Right"
+msgstr "Rueda del Mouse - Derecha"
+
+msgid "Mouse Thumb Button 1"
+msgstr "Botón Pulgar del Mouse 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "Botón Pulgar del Mouse 2"
+
 msgid "Button"
 msgstr "Botón"
+
+msgid "Double Click"
+msgstr "Doble click"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "Movimiento del mouse en la posición (%s) con velocidad (%s)"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Eje X del joystick izquierdo, eje X del joystick 0"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "Eje Y del joystick izquierdo, eje Y del joystick 0"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "Eje X del joystick derecho, eje X del joystick 1"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "Eje Y del joystick derecho, eje Y del joystick 1"
 
 msgid "Select"
 msgstr "Seleccionar"
@@ -1597,7 +1647,7 @@ msgid "Styles"
 msgstr "Estilos"
 
 msgid "Enumerations"
-msgstr "Enumeraciones"
+msgstr "Enumerados"
 
 msgid "Property Descriptions"
 msgstr "Descripción de Propiedades"
@@ -7709,6 +7759,9 @@ msgstr "RPC Entrante"
 
 msgid "Outgoing RPC"
 msgstr "RPC Saliente"
+
+msgid "Config"
+msgstr "Configuraciones"
 
 msgid "Size"
 msgstr "Tamaño"

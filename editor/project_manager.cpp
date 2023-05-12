@@ -434,6 +434,8 @@ private:
 	}
 
 	void _renderer_selected() {
+		ERR_FAIL_COND(!renderer_button_group->get_pressed_button());
+
 		String renderer_type = renderer_button_group->get_pressed_button()->get_meta(SNAME("rendering_method"));
 
 		if (renderer_type == "forward_plus") {
@@ -2256,7 +2258,7 @@ void ProjectManager::_open_selected_projects_ask() {
 		return;
 	}
 
-	const Size2i popup_min_size = Size2i(600.0 * EDSCALE, 400.0 * EDSCALE);
+	const Size2i popup_min_size = Size2i(600.0 * EDSCALE, 0);
 
 	if (selected_list.size() > 1) {
 		multi_open_ask->set_text(vformat(TTR("You requested to open %d projects in parallel. Do you confirm?\nNote that usual checks for engine version compatibility will be bypassed."), selected_list.size()));
@@ -2341,7 +2343,7 @@ void ProjectManager::_open_selected_projects_ask() {
 
 void ProjectManager::_full_convert_button_pressed() {
 	ask_update_settings->hide();
-	ask_full_convert_dialog->popup_centered(Size2i(600.0 * EDSCALE, 400.0 * EDSCALE));
+	ask_full_convert_dialog->popup_centered(Size2i(600.0 * EDSCALE, 0));
 	ask_full_convert_dialog->get_cancel_button()->grab_focus();
 }
 
@@ -2683,6 +2685,7 @@ ProjectManager::ProjectManager() {
 	DisplayServer::get_singleton()->window_set_title(VERSION_NAME + String(" - ") + TTR("Project Manager", "Application"));
 
 	EditorFileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
+	EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
 
 	int swap_cancel_ok = EDITOR_GET("interface/editor/accept_dialog_cancel_ok_buttons");
 	if (swap_cancel_ok != 0) { // 0 is auto, set in register_scene based on DisplayServer.
