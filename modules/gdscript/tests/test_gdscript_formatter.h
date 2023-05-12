@@ -2798,16 +2798,16 @@ func some_public_api_func() -> int:
 	}
 
 	TEST_CASE("The custom newlines should be remembered") {
-		const String code = R"(extends Node2D
-
-
+		// `vformat` because "misc/scripts/header_guards.sh"
+		// don't like two consecutive new lines.
+		const String code = vformat(R"(extends Node2D
+%s
 class Light:
 	var energy
 
 var energy_slider := Range.new()
 var height_slider := Range.new()
 var light := Light.new()
-
 
 func _ready() -> void:
 	energy_slider.value_changed.connect(func(value):
@@ -2817,18 +2817,17 @@ func _ready() -> void:
 		light.height = height_slider.value)
 
 	height_slider.value_changed.connect(func(value):
-		light.height = height_slider.value))";
-		const String pre_formatted = R"(extends Node2D
-
-
+		light.height = height_slider.value))",
+				"\n");
+		const String pre_formatted = vformat(R"(extends Node2D
+%s
 class Light:
 	var energy
 
 var energy_slider := Range.new()
 var height_slider := Range.new()
 var light := Light.new()
-
-
+%s
 func _ready() -> void:
 	energy_slider.value_changed.connect(func(value):
 		light.energy = energy_slider.value)
@@ -2838,7 +2837,8 @@ func _ready() -> void:
 
 	height_slider.value_changed.connect(func(value):
 		light.height = height_slider.value)
-)";
+)",
+				"\n", "\n");
 		CHECK_FORMAT(code, pre_formatted);
 	}
 
