@@ -90,6 +90,7 @@ private:
 	void _update_shape_data(uint32_t p_owner);
 	void _shape_changed(const Ref<Shape3D> &p_shape);
 	void _update_debug_shapes();
+	void _update_debug_shapes_visiblity();
 	void _clear_debug_shapes();
 
 	void _apply_disabled();

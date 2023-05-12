@@ -103,6 +103,9 @@ void CollisionObject3D::_notification(int p_what) {
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			_update_pickable();
+			if (_are_collision_shapes_visible()) {
+				_update_debug_shapes_visiblity();
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_WORLD: {
@@ -405,10 +408,21 @@ void CollisionObject3D::_update_debug_shapes() {
 				Ref<Mesh> mesh = s.shape->get_debug_mesh();
 				RS::get_singleton()->instance_set_base(s.debug_shape, mesh->get_rid());
 				RS::get_singleton()->instance_set_transform(s.debug_shape, get_global_transform() * shapedata.xform);
+				RS::get_singleton()->instance_set_visible(s.debug_shape, is_visible_in_tree());
 			}
 		}
 	}
 	debug_shapes_to_update.clear();
+}
+
+void CollisionObject3D::_update_debug_shapes_visiblity() {
+	for (KeyValue<uint32_t, ShapeData> &E : shapes) {
+		for (const ShapeData::ShapeBase &s : E.value.shapes) {
+			if (s.debug_shape.is_valid()) {
+				RS::get_singleton()->instance_set_visible(s.debug_shape, is_visible_in_tree());
+			}
+		}
+	}
 }
 
 void CollisionObject3D::_clear_debug_shapes() {
