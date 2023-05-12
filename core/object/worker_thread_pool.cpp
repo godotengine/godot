@@ -258,15 +258,20 @@ void WorkerThreadPool::wait_for_task_completion(TaskID p_task_id) {
 
 		if (index) {
 			// We are an actual process thread, we must not be blocked so continue processing stuff if available.
+			bool must_exit = false;
 			while (true) {
 				if (task->done_semaphore.try_wait()) {
 					// If done, exit
 					break;
 				}
-				if (task_available_semaphore.try_wait()) {
-					// Solve tasks while they are around.
-					_process_task_queue();
-					continue;
+				if (!must_exit && task_available_semaphore.try_wait()) {
+					if (exit_threads) {
+						must_exit = true;
+					} else {
+						// Solve tasks while they are around.
+						_process_task_queue();
+						continue;
+					}
 				}
 				OS::get_singleton()->delay_usec(1); // Microsleep, this could be converted to waiting for multiple objects in supported platforms for a bit more performance.
 			}
