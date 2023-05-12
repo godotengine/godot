@@ -31,6 +31,7 @@
 #ifndef RENDERING_SERVER_DEFAULT_H
 #define RENDERING_SERVER_DEFAULT_H
 
+#include "core/object/worker_thread_pool.h"
 #include "core/os/thread.h"
 #include "core/templates/command_queue_mt.h"
 #include "core/templates/hash_map.h"
@@ -78,22 +79,17 @@ class RenderingServerDefault : public RenderingServer {
 	static void _thread_callback(void *_instance);
 	void _thread_loop();
 
-	Thread::ID server_thread = 0;
+	Thread::ID server_thread = Thread::MAIN_ID; // Using main thread by default
 	SafeFlag exit;
 	Thread thread;
+
 	SafeFlag draw_thread_up;
 	bool create_thread;
+	WorkerThreadPool::TaskID render_task = WorkerThreadPool::INVALID_TASK_ID;
 
-	void _thread_draw(bool p_swap_buffers, double frame_step);
-	void _thread_flush();
-
-	void _thread_exit();
-
-	Mutex alloc_mutex;
+	void _main_thread_sync();
 
 	void _draw(bool p_swap_buffers, double frame_step);
-	void _init();
-	void _finish();
 
 	void _free(RID p_rid);
 
@@ -125,6 +121,16 @@ public:
 #define SYNC_DEBUG print_line("sync on: " + String(__FUNCTION__));
 #else
 #define SYNC_DEBUG
+#endif
+
+#ifdef DEBUG_ENABLED
+#define MAIN_THREAD_SYNC                                                                                                                                     \
+	if (Engine::get_singleton()->notify_frame_server_synced()) {                                                                                             \
+		WARN_PRINT("Call to " + String(__FUNCTION__) + " causing RenderingServer synchronizations on every frame. This significantly affects performance."); \
+	}                                                                                                                                                        \
+	const_cast<RenderingServerDefault *>(this)->_main_thread_sync();
+#else
+#define MAIN_THREAD_SYNC const_cast<RenderingServerDefault *>(this)->_main_thread_sync();
 #endif
 
 #include "servers/server_wrap_mt_common.h"
@@ -973,6 +979,7 @@ public:
 #undef ServerName
 #undef WRITE_ACTION
 #undef SYNC_DEBUG
+#undef MAIN_THREAD_SYNC
 
 	virtual uint64_t get_rendering_info(RenderingInfo p_info) override;
 	virtual RenderingDevice::DeviceType get_video_adapter_type() const override;

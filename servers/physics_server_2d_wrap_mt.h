@@ -32,6 +32,7 @@
 #define PHYSICS_SERVER_2D_WRAP_MT_H
 
 #include "core/config/project_settings.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/os/thread.h"
 #include "core/templates/command_queue_mt.h"
 #include "core/templates/safe_refcount.h"
@@ -43,29 +44,38 @@
 #define SYNC_DEBUG
 #endif
 
+#ifdef DEBUG_ENABLED
+#define MAIN_THREAD_SYNC                                                                                                                                     \
+	if (Engine::get_singleton()->notify_frame_server_synced()) {                                                                                             \
+		WARN_PRINT("Call to " + String(__FUNCTION__) + " causing PhysicsServer2D synchronizations on every frame. This significantly affects performance."); \
+	}                                                                                                                                                        \
+	const_cast<PhysicsServer2DWrapMT *>(this)->_main_thread_sync();
+#else
+#define MAIN_THREAD_SYNC const_cast<PhysicsServer2DWrapMT *>(this)->_main_thread_sync();
+#endif
+
 class PhysicsServer2DWrapMT : public PhysicsServer2D {
 	mutable PhysicsServer2D *physics_server_2d;
 
 	mutable CommandQueueMT command_queue;
 
 	static void _thread_callback(void *_instance);
-	void thread_loop();
 
 	Thread::ID server_thread;
 	Thread::ID main_thread;
-	SafeFlag exit;
-	Thread thread;
-	SafeFlag step_thread_up;
 	bool create_thread = false;
+	WorkerThreadPool::TaskID task_id = WorkerThreadPool::INVALID_TASK_ID;
 
-	Semaphore step_sem;
 	void thread_step(real_t p_delta);
 
 	void thread_exit();
 
+	void _main_thread_sync();
+
 	bool first_frame = true;
 
 	Mutex alloc_mutex;
+	int pool_max_size = 0;
 
 public:
 #define ServerName PhysicsServer2D
@@ -337,5 +347,6 @@ public:
 #undef DEBUG_SYNC
 #endif
 #undef SYNC_DEBUG
+#undef MAIN_THREAD_SYNC
 
 #endif // PHYSICS_SERVER_2D_WRAP_MT_H

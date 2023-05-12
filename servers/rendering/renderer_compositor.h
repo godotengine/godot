@@ -109,6 +109,8 @@ public:
 	static bool is_low_end() { return low_end; };
 	virtual bool is_xr_enabled() const;
 
+	virtual void context_move_to_current_thread() {}
+
 	static RendererCompositor *get_singleton() { return singleton; }
 	RendererCompositor();
 	virtual ~RendererCompositor() {}

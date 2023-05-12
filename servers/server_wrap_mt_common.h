@@ -31,17 +31,19 @@
 #ifndef SERVER_WRAP_MT_COMMON_H
 #define SERVER_WRAP_MT_COMMON_H
 
-#define FUNC0R(m_r, m_type)                                                     \
-	virtual m_r m_type() override {                                             \
-		if (Thread::get_caller_id() != server_thread) {                         \
-			m_r ret;                                                            \
-			command_queue.push_and_ret(server_name, &ServerName::m_type, &ret); \
-			SYNC_DEBUG                                                          \
-			return ret;                                                         \
-		} else {                                                                \
-			command_queue.flush_if_pending();                                   \
-			return server_name->m_type();                                       \
-		}                                                                       \
+#define FUNC0R(m_r, m_type)                                                         \
+	virtual m_r m_type() override {                                                 \
+		if (Thread::get_caller_id() != server_thread) {                             \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                       \
+				m_r ret;                                                            \
+				command_queue.push_and_ret(server_name, &ServerName::m_type, &ret); \
+				SYNC_DEBUG                                                          \
+				return ret;                                                         \
+			}                                                                       \
+			MAIN_THREAD_SYNC                                                        \
+		}                                                                           \
+		command_queue.flush_if_pending();                                           \
+		return server_name->m_type();                                               \
 	}
 
 #define FUNCRIDSPLIT(m_type)                                                        \
@@ -61,18 +63,20 @@
 		return server_name->m_type##_create(); \
 	}
 
-#define FUNC0RC(m_r, m_type)                                                    \
-	virtual m_r m_type() const override {                                       \
-		WRITE_ACTION                                                            \
-		if (Thread::get_caller_id() != server_thread) {                         \
-			m_r ret;                                                            \
-			command_queue.push_and_ret(server_name, &ServerName::m_type, &ret); \
-			SYNC_DEBUG                                                          \
-			return ret;                                                         \
-		} else {                                                                \
-			command_queue.flush_if_pending();                                   \
-			return server_name->m_type();                                       \
-		}                                                                       \
+#define FUNC0RC(m_r, m_type)                                                        \
+	virtual m_r m_type() const override {                                           \
+		WRITE_ACTION                                                                \
+		if (Thread::get_caller_id() != server_thread) {                             \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                       \
+				m_r ret;                                                            \
+				command_queue.push_and_ret(server_name, &ServerName::m_type, &ret); \
+				SYNC_DEBUG                                                          \
+				return ret;                                                         \
+			}                                                                       \
+			MAIN_THREAD_SYNC                                                        \
+		}                                                                           \
+		command_queue.flush_if_pending();                                           \
+		return server_name->m_type();                                               \
 	}
 
 #define FUNC0(m_type)                                             \
@@ -96,79 +100,97 @@
 		}                                                         \
 	}
 
-#define FUNC0S(m_type)                                                     \
-	virtual void m_type() override {                                       \
-		WRITE_ACTION                                                       \
-		if (Thread::get_caller_id() != server_thread) {                    \
-			command_queue.push_and_sync(server_name, &ServerName::m_type); \
-			SYNC_DEBUG                                                     \
-		} else {                                                           \
-			command_queue.flush_if_pending();                              \
-			server_name->m_type();                                         \
-		}                                                                  \
+#define FUNC0S(m_type)                                                         \
+	virtual void m_type() override {                                           \
+		WRITE_ACTION                                                           \
+		if (Thread::get_caller_id() != server_thread) {                        \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                  \
+				command_queue.push_and_sync(server_name, &ServerName::m_type); \
+				SYNC_DEBUG                                                     \
+				return;                                                        \
+			}                                                                  \
+			MAIN_THREAD_SYNC                                                   \
+		} else {                                                               \
+			command_queue.flush_if_pending();                                  \
+			server_name->m_type();                                             \
+		}                                                                      \
 	}
 
-#define FUNC0SC(m_type)                                                    \
-	virtual void m_type() const override {                                 \
-		if (Thread::get_caller_id() != server_thread) {                    \
-			command_queue.push_and_sync(server_name, &ServerName::m_type); \
-			SYNC_DEBUG                                                     \
-		} else {                                                           \
-			command_queue.flush_if_pending();                              \
-			server_name->m_type();                                         \
-		}                                                                  \
+#define FUNC0SC(m_type)                                                        \
+	virtual void m_type() const override {                                     \
+		if (Thread::get_caller_id() != server_thread) {                        \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                  \
+				command_queue.push_and_sync(server_name, &ServerName::m_type); \
+				SYNC_DEBUG                                                     \
+				return;                                                        \
+			}                                                                  \
+			MAIN_THREAD_SYNC                                                   \
+		} else {                                                               \
+			command_queue.flush_if_pending();                                  \
+			server_name->m_type();                                             \
+		}                                                                      \
 	}
 
 ///////////////////////////////////////////////
 
-#define FUNC1R(m_r, m_type, m_arg1)                                                 \
-	virtual m_r m_type(m_arg1 p1) override {                                        \
-		WRITE_ACTION                                                                \
-		if (Thread::get_caller_id() != server_thread) {                             \
-			m_r ret;                                                                \
-			command_queue.push_and_ret(server_name, &ServerName::m_type, p1, &ret); \
-			SYNC_DEBUG                                                              \
-			return ret;                                                             \
-		} else {                                                                    \
-			command_queue.flush_if_pending();                                       \
-			return server_name->m_type(p1);                                         \
-		}                                                                           \
+#define FUNC1R(m_r, m_type, m_arg1)                                                     \
+	virtual m_r m_type(m_arg1 p1) override {                                            \
+		WRITE_ACTION                                                                    \
+		if (Thread::get_caller_id() != server_thread) {                                 \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                           \
+				m_r ret;                                                                \
+				command_queue.push_and_ret(server_name, &ServerName::m_type, p1, &ret); \
+				SYNC_DEBUG                                                              \
+				return ret;                                                             \
+			}                                                                           \
+			MAIN_THREAD_SYNC                                                            \
+		}                                                                               \
+		command_queue.flush_if_pending();                                               \
+		return server_name->m_type(p1);                                                 \
 	}
 
-#define FUNC1RC(m_r, m_type, m_arg1)                                                \
-	virtual m_r m_type(m_arg1 p1) const override {                                  \
-		if (Thread::get_caller_id() != server_thread) {                             \
-			m_r ret;                                                                \
-			command_queue.push_and_ret(server_name, &ServerName::m_type, p1, &ret); \
-			SYNC_DEBUG                                                              \
-			return ret;                                                             \
-		} else {                                                                    \
-			command_queue.flush_if_pending();                                       \
-			return server_name->m_type(p1);                                         \
-		}                                                                           \
+#define FUNC1RC(m_r, m_type, m_arg1)                                                    \
+	virtual m_r m_type(m_arg1 p1) const override {                                      \
+		if (Thread::get_caller_id() != server_thread) {                                 \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                           \
+				m_r ret;                                                                \
+				command_queue.push_and_ret(server_name, &ServerName::m_type, p1, &ret); \
+				SYNC_DEBUG                                                              \
+				return ret;                                                             \
+			}                                                                           \
+			MAIN_THREAD_SYNC                                                            \
+		}                                                                               \
+		command_queue.flush_if_pending();                                               \
+		return server_name->m_type(p1);                                                 \
 	}
 
-#define FUNC1S(m_type, m_arg1)                                                 \
-	virtual void m_type(m_arg1 p1) override {                                  \
-		WRITE_ACTION                                                           \
-		if (Thread::get_caller_id() != server_thread) {                        \
-			command_queue.push_and_sync(server_name, &ServerName::m_type, p1); \
-			SYNC_DEBUG                                                         \
-		} else {                                                               \
-			command_queue.flush_if_pending();                                  \
-			server_name->m_type(p1);                                           \
-		}                                                                      \
+#define FUNC1S(m_type, m_arg1)                                                     \
+	virtual void m_type(m_arg1 p1) override {                                      \
+		WRITE_ACTION                                                               \
+		if (Thread::get_caller_id() != server_thread) {                            \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                      \
+				command_queue.push_and_sync(server_name, &ServerName::m_type, p1); \
+				SYNC_DEBUG                                                         \
+				return;                                                            \
+			}                                                                      \
+			MAIN_THREAD_SYNC                                                       \
+		}                                                                          \
+		command_queue.flush_if_pending();                                          \
+		server_name->m_type(p1);                                                   \
 	}
 
-#define FUNC1SC(m_type, m_arg1)                                                \
-	virtual void m_type(m_arg1 p1) const override {                            \
-		if (Thread::get_caller_id() != server_thread) {                        \
-			command_queue.push_and_sync(server_name, &ServerName::m_type, p1); \
-			SYNC_DEBUG                                                         \
-		} else {                                                               \
-			command_queue.flush_if_pending();                                  \
-			server_name->m_type(p1);                                           \
-		}                                                                      \
+#define FUNC1SC(m_type, m_arg1)                                                    \
+	virtual void m_type(m_arg1 p1) const override {                                \
+		if (Thread::get_caller_id() != server_thread) {                            \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                      \
+				command_queue.push_and_sync(server_name, &ServerName::m_type, p1); \
+				SYNC_DEBUG                                                         \
+				return;                                                            \
+			}                                                                      \
+			MAIN_THREAD_SYNC                                                       \
+		}                                                                          \
+		command_queue.flush_if_pending();                                          \
+		server_name->m_type(p1);                                                   \
 	}
 
 #define FUNC1(m_type, m_arg1)                                         \
@@ -192,54 +214,64 @@
 		}                                                             \
 	}
 
-#define FUNC2R(m_r, m_type, m_arg1, m_arg2)                                             \
-	virtual m_r m_type(m_arg1 p1, m_arg2 p2) override {                                 \
-		WRITE_ACTION                                                                    \
-		if (Thread::get_caller_id() != server_thread) {                                 \
-			m_r ret;                                                                    \
-			command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, &ret); \
-			SYNC_DEBUG                                                                  \
-			return ret;                                                                 \
-		} else {                                                                        \
-			command_queue.flush_if_pending();                                           \
-			return server_name->m_type(p1, p2);                                         \
-		}                                                                               \
+#define FUNC2R(m_r, m_type, m_arg1, m_arg2)                                                 \
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2) override {                                     \
+		WRITE_ACTION                                                                        \
+		if (Thread::get_caller_id() != server_thread) {                                     \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                               \
+				m_r ret;                                                                    \
+				command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, &ret); \
+				SYNC_DEBUG                                                                  \
+				return ret;                                                                 \
+			}                                                                               \
+			MAIN_THREAD_SYNC                                                                \
+		}                                                                                   \
+		command_queue.flush_if_pending();                                                   \
+		return server_name->m_type(p1, p2);                                                 \
 	}
 
-#define FUNC2RC(m_r, m_type, m_arg1, m_arg2)                                            \
-	virtual m_r m_type(m_arg1 p1, m_arg2 p2) const override {                           \
-		if (Thread::get_caller_id() != server_thread) {                                 \
-			m_r ret;                                                                    \
-			command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, &ret); \
-			SYNC_DEBUG                                                                  \
-			return ret;                                                                 \
-		} else {                                                                        \
-			command_queue.flush_if_pending();                                           \
-			return server_name->m_type(p1, p2);                                         \
-		}                                                                               \
+#define FUNC2RC(m_r, m_type, m_arg1, m_arg2)                                                \
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2) const override {                               \
+		if (Thread::get_caller_id() != server_thread) {                                     \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                               \
+				m_r ret;                                                                    \
+				command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, &ret); \
+				SYNC_DEBUG                                                                  \
+				return ret;                                                                 \
+			}                                                                               \
+			MAIN_THREAD_SYNC                                                                \
+		}                                                                                   \
+		command_queue.flush_if_pending();                                                   \
+		return server_name->m_type(p1, p2);                                                 \
 	}
 
-#define FUNC2S(m_type, m_arg1, m_arg2)                                             \
-	virtual void m_type(m_arg1 p1, m_arg2 p2) override {                           \
-		WRITE_ACTION                                                               \
-		if (Thread::get_caller_id() != server_thread) {                            \
-			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2); \
-			SYNC_DEBUG                                                             \
-		} else {                                                                   \
-			command_queue.flush_if_pending();                                      \
-			server_name->m_type(p1, p2);                                           \
-		}                                                                          \
+#define FUNC2S(m_type, m_arg1, m_arg2)                                                 \
+	virtual void m_type(m_arg1 p1, m_arg2 p2) override {                               \
+		WRITE_ACTION                                                                   \
+		if (Thread::get_caller_id() != server_thread) {                                \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                          \
+				command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2); \
+				SYNC_DEBUG                                                             \
+				return;                                                                \
+			}                                                                          \
+			MAIN_THREAD_SYNC                                                           \
+		}                                                                              \
+		command_queue.flush_if_pending();                                              \
+		server_name->m_type(p1, p2);                                                   \
 	}
 
-#define FUNC2SC(m_type, m_arg1, m_arg2)                                            \
-	virtual void m_type(m_arg1 p1, m_arg2 p2) const override {                     \
-		if (Thread::get_caller_id() != server_thread) {                            \
-			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2); \
-			SYNC_DEBUG                                                             \
-		} else {                                                                   \
-			command_queue.flush_if_pending();                                      \
-			server_name->m_type(p1, p2);                                           \
-		}                                                                          \
+#define FUNC2SC(m_type, m_arg1, m_arg2)                                                \
+	virtual void m_type(m_arg1 p1, m_arg2 p2) const override {                         \
+		if (Thread::get_caller_id() != server_thread) {                                \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                          \
+				command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2); \
+				SYNC_DEBUG                                                             \
+				return;                                                                \
+			}                                                                          \
+			MAIN_THREAD_SYNC                                                           \
+		}                                                                              \
+		command_queue.flush_if_pending();                                              \
+		server_name->m_type(p1, p2);                                                   \
 	}
 
 #define FUNC2(m_type, m_arg1, m_arg2)                                     \
@@ -263,54 +295,64 @@
 		}                                                                 \
 	}
 
-#define FUNC3R(m_r, m_type, m_arg1, m_arg2, m_arg3)                                         \
-	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3) override {                          \
-		WRITE_ACTION                                                                        \
-		if (Thread::get_caller_id() != server_thread) {                                     \
-			m_r ret;                                                                        \
-			command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, &ret); \
-			SYNC_DEBUG                                                                      \
-			return ret;                                                                     \
-		} else {                                                                            \
-			command_queue.flush_if_pending();                                               \
-			return server_name->m_type(p1, p2, p3);                                         \
-		}                                                                                   \
+#define FUNC3R(m_r, m_type, m_arg1, m_arg2, m_arg3)                                             \
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3) override {                              \
+		WRITE_ACTION                                                                            \
+		if (Thread::get_caller_id() != server_thread) {                                         \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                                   \
+				m_r ret;                                                                        \
+				command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, &ret); \
+				SYNC_DEBUG                                                                      \
+				return ret;                                                                     \
+			}                                                                                   \
+			MAIN_THREAD_SYNC                                                                    \
+		}                                                                                       \
+		command_queue.flush_if_pending();                                                       \
+		return server_name->m_type(p1, p2, p3);                                                 \
 	}
 
-#define FUNC3RC(m_r, m_type, m_arg1, m_arg2, m_arg3)                                        \
-	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3) const override {                    \
-		if (Thread::get_caller_id() != server_thread) {                                     \
-			m_r ret;                                                                        \
-			command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, &ret); \
-			SYNC_DEBUG                                                                      \
-			return ret;                                                                     \
-		} else {                                                                            \
-			command_queue.flush_if_pending();                                               \
-			return server_name->m_type(p1, p2, p3);                                         \
-		}                                                                                   \
+#define FUNC3RC(m_r, m_type, m_arg1, m_arg2, m_arg3)                                            \
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3) const override {                        \
+		if (Thread::get_caller_id() != server_thread) {                                         \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                                   \
+				m_r ret;                                                                        \
+				command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, &ret); \
+				SYNC_DEBUG                                                                      \
+				return ret;                                                                     \
+			}                                                                                   \
+			MAIN_THREAD_SYNC                                                                    \
+		}                                                                                       \
+		command_queue.flush_if_pending();                                                       \
+		return server_name->m_type(p1, p2, p3);                                                 \
 	}
 
-#define FUNC3S(m_type, m_arg1, m_arg2, m_arg3)                                         \
-	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3) override {                    \
-		WRITE_ACTION                                                                   \
-		if (Thread::get_caller_id() != server_thread) {                                \
-			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3); \
-			SYNC_DEBUG                                                                 \
-		} else {                                                                       \
-			command_queue.flush_if_pending();                                          \
-			server_name->m_type(p1, p2, p3);                                           \
-		}                                                                              \
+#define FUNC3S(m_type, m_arg1, m_arg2, m_arg3)                                             \
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3) override {                        \
+		WRITE_ACTION                                                                       \
+		if (Thread::get_caller_id() != server_thread) {                                    \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                              \
+				command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3); \
+				SYNC_DEBUG                                                                 \
+				return;                                                                    \
+			}                                                                              \
+			MAIN_THREAD_SYNC                                                               \
+		}                                                                                  \
+		command_queue.flush_if_pending();                                                  \
+		server_name->m_type(p1, p2, p3);                                                   \
 	}
 
-#define FUNC3SC(m_type, m_arg1, m_arg2, m_arg3)                                        \
-	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3) const override {              \
-		if (Thread::get_caller_id() != server_thread) {                                \
-			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3); \
-			SYNC_DEBUG                                                                 \
-		} else {                                                                       \
-			command_queue.flush_if_pending();                                          \
-			server_name->m_type(p1, p2, p3);                                           \
-		}                                                                              \
+#define FUNC3SC(m_type, m_arg1, m_arg2, m_arg3)                                            \
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3) const override {                  \
+		if (Thread::get_caller_id() != server_thread) {                                    \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                              \
+				command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3); \
+				SYNC_DEBUG                                                                 \
+				return;                                                                    \
+			}                                                                              \
+			MAIN_THREAD_SYNC                                                               \
+		}                                                                                  \
+		command_queue.flush_if_pending();                                                  \
+		server_name->m_type(p1, p2, p3);                                                   \
 	}
 
 #define FUNC3(m_type, m_arg1, m_arg2, m_arg3)                                 \
@@ -334,54 +376,64 @@
 		}                                                                     \
 	}
 
-#define FUNC4R(m_r, m_type, m_arg1, m_arg2, m_arg3, m_arg4)                                     \
-	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) override {                   \
-		WRITE_ACTION                                                                            \
-		if (Thread::get_caller_id() != server_thread) {                                         \
-			m_r ret;                                                                            \
-			command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, p4, &ret); \
-			SYNC_DEBUG                                                                          \
-			return ret;                                                                         \
-		} else {                                                                                \
-			command_queue.flush_if_pending();                                                   \
-			return server_name->m_type(p1, p2, p3, p4);                                         \
-		}                                                                                       \
+#define FUNC4R(m_r, m_type, m_arg1, m_arg2, m_arg3, m_arg4)                                         \
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) override {                       \
+		WRITE_ACTION                                                                                \
+		if (Thread::get_caller_id() != server_thread) {                                             \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                                       \
+				m_r ret;                                                                            \
+				command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, p4, &ret); \
+				SYNC_DEBUG                                                                          \
+				return ret;                                                                         \
+			}                                                                                       \
+			MAIN_THREAD_SYNC                                                                        \
+		}                                                                                           \
+		command_queue.flush_if_pending();                                                           \
+		return server_name->m_type(p1, p2, p3, p4);                                                 \
 	}
 
-#define FUNC4RC(m_r, m_type, m_arg1, m_arg2, m_arg3, m_arg4)                                    \
-	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) const override {             \
-		if (Thread::get_caller_id() != server_thread) {                                         \
-			m_r ret;                                                                            \
-			command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, p4, &ret); \
-			SYNC_DEBUG                                                                          \
-			return ret;                                                                         \
-		} else {                                                                                \
-			command_queue.flush_if_pending();                                                   \
-			return server_name->m_type(p1, p2, p3, p4);                                         \
-		}                                                                                       \
+#define FUNC4RC(m_r, m_type, m_arg1, m_arg2, m_arg3, m_arg4)                                        \
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) const override {                 \
+		if (Thread::get_caller_id() != server_thread) {                                             \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                                       \
+				m_r ret;                                                                            \
+				command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, p4, &ret); \
+				SYNC_DEBUG                                                                          \
+				return ret;                                                                         \
+			}                                                                                       \
+			MAIN_THREAD_SYNC                                                                        \
+		}                                                                                           \
+		command_queue.flush_if_pending();                                                           \
+		return server_name->m_type(p1, p2, p3, p4);                                                 \
 	}
 
-#define FUNC4S(m_type, m_arg1, m_arg2, m_arg3, m_arg4)                                     \
-	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) override {             \
-		WRITE_ACTION                                                                       \
-		if (Thread::get_caller_id() != server_thread) {                                    \
-			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4); \
-			SYNC_DEBUG                                                                     \
-		} else {                                                                           \
-			command_queue.flush_if_pending();                                              \
-			server_name->m_type(p1, p2, p3, p4);                                           \
-		}                                                                                  \
+#define FUNC4S(m_type, m_arg1, m_arg2, m_arg3, m_arg4)                                         \
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) override {                 \
+		WRITE_ACTION                                                                           \
+		if (Thread::get_caller_id() != server_thread) {                                        \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                                  \
+				command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4); \
+				SYNC_DEBUG                                                                     \
+				return;                                                                        \
+			}                                                                                  \
+			MAIN_THREAD_SYNC                                                                   \
+		}                                                                                      \
+		command_queue.flush_if_pending();                                                      \
+		server_name->m_type(p1, p2, p3, p4);                                                   \
 	}
 
-#define FUNC4SC(m_type, m_arg1, m_arg2, m_arg3, m_arg4)                                    \
-	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) const override {       \
-		if (Thread::get_caller_id() != server_thread) {                                    \
-			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4); \
-			SYNC_DEBUG                                                                     \
-		} else {                                                                           \
-			command_queue.flush_if_pending();                                              \
-			server_name->m_type(p1, p2, p3, p4);                                           \
-		}                                                                                  \
+#define FUNC4SC(m_type, m_arg1, m_arg2, m_arg3, m_arg4)                                        \
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) const override {           \
+		if (Thread::get_caller_id() != server_thread) {                                        \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                                  \
+				command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4); \
+				SYNC_DEBUG                                                                     \
+				return;                                                                        \
+			}                                                                                  \
+			MAIN_THREAD_SYNC                                                                   \
+		}                                                                                      \
+		command_queue.flush_if_pending();                                                      \
+		server_name->m_type(p1, p2, p3, p4);                                                   \
 	}
 
 #define FUNC4(m_type, m_arg1, m_arg2, m_arg3, m_arg4)                             \
@@ -405,54 +457,65 @@
 		}                                                                            \
 	}
 
-#define FUNC5R(m_r, m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)                                 \
-	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) {                     \
-		WRITE_ACTION                                                                                \
-		if (Thread::get_caller_id() != server_thread) {                                             \
-			m_r ret;                                                                                \
-			command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, &ret); \
-			SYNC_DEBUG                                                                              \
-			return ret;                                                                             \
-		} else {                                                                                    \
-			command_queue.flush_if_pending();                                                       \
-			return server_name->m_type(p1, p2, p3, p4, p5);                                         \
-		}                                                                                           \
+#define FUNC5R(m_r, m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)                                     \
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) {                         \
+		WRITE_ACTION                                                                                    \
+		if (Thread::get_caller_id() != server_thread) {                                                 \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                                           \
+				m_r ret;                                                                                \
+				command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, &ret); \
+				SYNC_DEBUG                                                                              \
+				return ret;                                                                             \
+			}                                                                                           \
+			MAIN_THREAD_SYNC                                                                            \
+		}                                                                                               \
+		command_queue.flush_if_pending();                                                               \
+		return server_name->m_type(p1, p2, p3, p4, p5);                                                 \
 	}
 
-#define FUNC5RC(m_r, m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)                                \
-	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) const override {      \
-		if (Thread::get_caller_id() != server_thread) {                                             \
-			m_r ret;                                                                                \
-			command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, &ret); \
-			SYNC_DEBUG                                                                              \
-			return ret;                                                                             \
-		} else {                                                                                    \
-			command_queue.flush_if_pending();                                                       \
-			return server_name->m_type(p1, p2, p3, p4, p5);                                         \
-		}                                                                                           \
+#define FUNC5RC(m_r, m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)                                    \
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) const override {          \
+		if (Thread::get_caller_id() != server_thread) {                                                 \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                                           \
+				m_r ret;                                                                                \
+				command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, &ret); \
+				SYNC_DEBUG                                                                              \
+				return ret;                                                                             \
+			}                                                                                           \
+			MAIN_THREAD_SYNC                                                                            \
+		}                                                                                               \
+		command_queue.flush_if_pending();                                                               \
+		return server_name->m_type(p1, p2, p3, p4, p5);                                                 \
 	}
 
-#define FUNC5S(m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)                                 \
-	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) override {      \
-		WRITE_ACTION                                                                           \
-		if (Thread::get_caller_id() != server_thread) {                                        \
-			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5); \
-			SYNC_DEBUG                                                                         \
-		} else {                                                                               \
-			command_queue.flush_if_pending();                                                  \
-			server_name->m_type(p1, p2, p3, p4, p5);                                           \
-		}                                                                                      \
+#define FUNC5S(m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)                                     \
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) override {          \
+		WRITE_ACTION                                                                               \
+		if (Thread::get_caller_id() != server_thread) {                                            \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                                      \
+				command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5); \
+				SYNC_DEBUG                                                                         \
+				return;                                                                            \
+			}                                                                                      \
+			MAIN_THREAD_SYNC                                                                       \
+		}                                                                                          \
+		command_queue.flush_if_pending();                                                          \
+		server_name->m_type(p1, p2, p3, p4, p5);                                                   \
 	}
 
-#define FUNC5SC(m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)                                 \
-	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) const override { \
-		if (Thread::get_caller_id() != server_thread) {                                         \
-			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5);  \
-			SYNC_DEBUG                                                                          \
-		} else {                                                                                \
-			command_queue.flush_if_pending();                                                   \
-			server_name->m_type(p1, p2, p3, p4, p5);                                            \
-		}                                                                                       \
+#define FUNC5SC(m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)                                    \
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) const override {    \
+		if (Thread::get_caller_id() != server_thread) {                                            \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                                      \
+				command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5); \
+				SYNC_DEBUG                                                                         \
+				return;                                                                            \
+			}                                                                                      \
+			MAIN_THREAD_SYNC                                                                       \
+		} else {                                                                                   \
+			command_queue.flush_if_pending();                                                      \
+			server_name->m_type(p1, p2, p3, p4, p5);                                               \
+		}                                                                                          \
 	}
 
 #define FUNC5(m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)                             \
@@ -476,54 +539,64 @@
 		}                                                                                       \
 	}
 
-#define FUNC6R(m_r, m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6)                             \
-	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6) {              \
-		WRITE_ACTION                                                                                    \
-		if (Thread::get_caller_id() != server_thread) {                                                 \
-			m_r ret;                                                                                    \
-			command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, &ret); \
-			SYNC_DEBUG                                                                                  \
-			return ret;                                                                                 \
-		} else {                                                                                        \
-			command_queue.flush_if_pending();                                                           \
-			return server_name->m_type(p1, p2, p3, p4, p5, p6);                                         \
-		}                                                                                               \
+#define FUNC6R(m_r, m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6)                                 \
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6) {                  \
+		WRITE_ACTION                                                                                        \
+		if (Thread::get_caller_id() != server_thread) {                                                     \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                                               \
+				m_r ret;                                                                                    \
+				command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, &ret); \
+				SYNC_DEBUG                                                                                  \
+				return ret;                                                                                 \
+			}                                                                                               \
+			MAIN_THREAD_SYNC                                                                                \
+		}                                                                                                   \
+		command_queue.flush_if_pending();                                                                   \
+		return server_name->m_type(p1, p2, p3, p4, p5, p6);                                                 \
 	}
 
-#define FUNC6RC(m_r, m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6)                              \
-	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6) const override { \
-		if (Thread::get_caller_id() != server_thread) {                                                   \
-			m_r ret;                                                                                      \
-			command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, &ret);   \
-			SYNC_DEBUG                                                                                    \
-			return ret;                                                                                   \
-		} else {                                                                                          \
-			command_queue.flush_if_pending();                                                             \
-			return server_name->m_type(p1, p2, p3, p4, p5, p6);                                           \
-		}                                                                                                 \
+#define FUNC6RC(m_r, m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6)                                \
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6) const override {   \
+		if (Thread::get_caller_id() != server_thread) {                                                     \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                                               \
+				m_r ret;                                                                                    \
+				command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, &ret); \
+				SYNC_DEBUG                                                                                  \
+				return ret;                                                                                 \
+			}                                                                                               \
+			MAIN_THREAD_SYNC                                                                                \
+		}                                                                                                   \
+		command_queue.flush_if_pending();                                                                   \
+		return server_name->m_type(p1, p2, p3, p4, p5, p6);                                                 \
 	}
 
-#define FUNC6S(m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6)                               \
-	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6) override { \
-		WRITE_ACTION                                                                                 \
-		if (Thread::get_caller_id() != server_thread) {                                              \
-			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6);   \
-			SYNC_DEBUG                                                                               \
-		} else {                                                                                     \
-			command_queue.flush_if_pending();                                                        \
-			server_name->m_type(p1, p2, p3, p4, p5, p6);                                             \
-		}                                                                                            \
+#define FUNC6S(m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6)                                 \
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6) override {   \
+		WRITE_ACTION                                                                                   \
+		if (Thread::get_caller_id() != server_thread) {                                                \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                                          \
+				command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6); \
+				SYNC_DEBUG                                                                             \
+				return;                                                                                \
+			}                                                                                          \
+			MAIN_THREAD_SYNC                                                                           \
+		}                                                                                              \
+		command_queue.flush_if_pending();                                                              \
+		server_name->m_type(p1, p2, p3, p4, p5, p6);                                                   \
 	}
 
 #define FUNC6SC(m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6)                                    \
 	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6) const override { \
 		if (Thread::get_caller_id() != server_thread) {                                                    \
-			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6);         \
-			SYNC_DEBUG                                                                                     \
-		} else {                                                                                           \
-			command_queue.flush_if_pending();                                                              \
-			server_name->m_type(p1, p2, p3, p4, p5, p6);                                                   \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                                              \
+				command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6);     \
+				SYNC_DEBUG                                                                                 \
+				return;                                                                                    \
+			}                                                                                              \
+			MAIN_THREAD_SYNC                                                                               \
 		}                                                                                                  \
+		command_queue.flush_if_pending();                                                                  \
+		server_name->m_type(p1, p2, p3, p4, p5, p6);                                                       \
 	}
 
 #define FUNC6(m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6)                                \
@@ -547,54 +620,64 @@
 		}                                                                                                  \
 	}
 
-#define FUNC7R(m_r, m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7)                            \
-	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7) override { \
-		WRITE_ACTION                                                                                           \
-		if (Thread::get_caller_id() != server_thread) {                                                        \
-			m_r ret;                                                                                           \
-			command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, &ret);    \
-			SYNC_DEBUG                                                                                         \
-			return ret;                                                                                        \
-		} else {                                                                                               \
-			command_queue.flush_if_pending();                                                                  \
-			return server_name->m_type(p1, p2, p3, p4, p5, p6, p7);                                            \
-		}                                                                                                      \
+#define FUNC7R(m_r, m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7)                             \
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7) override {  \
+		WRITE_ACTION                                                                                            \
+		if (Thread::get_caller_id() != server_thread) {                                                         \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                                                   \
+				m_r ret;                                                                                        \
+				command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, &ret); \
+				SYNC_DEBUG                                                                                      \
+				return ret;                                                                                     \
+			}                                                                                                   \
+			MAIN_THREAD_SYNC                                                                                    \
+		}                                                                                                       \
+		command_queue.flush_if_pending();                                                                       \
+		return server_name->m_type(p1, p2, p3, p4, p5, p6, p7);                                                 \
 	}
 
 #define FUNC7RC(m_r, m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7)                                 \
 	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7) const override { \
 		if (Thread::get_caller_id() != server_thread) {                                                              \
-			m_r ret;                                                                                                 \
-			command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, &ret);          \
-			SYNC_DEBUG                                                                                               \
-			return ret;                                                                                              \
-		} else {                                                                                                     \
-			command_queue.flush_if_pending();                                                                        \
-			return server_name->m_type(p1, p2, p3, p4, p5, p6, p7);                                                  \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                                                        \
+				m_r ret;                                                                                             \
+				command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, &ret);      \
+				SYNC_DEBUG                                                                                           \
+				return ret;                                                                                          \
+			}                                                                                                        \
+			MAIN_THREAD_SYNC                                                                                         \
 		}                                                                                                            \
+		command_queue.flush_if_pending();                                                                            \
+		return server_name->m_type(p1, p2, p3, p4, p5, p6, p7);                                                      \
 	}
 
 #define FUNC7S(m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7)                                  \
 	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7) override { \
 		WRITE_ACTION                                                                                            \
 		if (Thread::get_caller_id() != server_thread) {                                                         \
-			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7);          \
-			SYNC_DEBUG                                                                                          \
-		} else {                                                                                                \
-			command_queue.flush_if_pending();                                                                   \
-			server_name->m_type(p1, p2, p3, p4, p5, p6, p7);                                                    \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                                                   \
+				command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7);      \
+				SYNC_DEBUG                                                                                      \
+				return;                                                                                         \
+			}                                                                                                   \
+			MAIN_THREAD_SYNC                                                                                    \
 		}                                                                                                       \
+		command_queue.flush_if_pending();                                                                       \
+		server_name->m_type(p1, p2, p3, p4, p5, p6, p7);                                                        \
 	}
 
 #define FUNC7SC(m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7)                                       \
 	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7) const override { \
 		if (Thread::get_caller_id() != server_thread) {                                                               \
-			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7);                \
-			SYNC_DEBUG                                                                                                \
-		} else {                                                                                                      \
-			command_queue.flush_if_pending();                                                                         \
-			server_name->m_type(p1, p2, p3, p4, p5, p6, p7);                                                          \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                                                         \
+				command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7);            \
+				SYNC_DEBUG                                                                                            \
+				return;                                                                                               \
+			}                                                                                                         \
+			MAIN_THREAD_SYNC                                                                                          \
 		}                                                                                                             \
+		command_queue.flush_if_pending();                                                                             \
+		server_name->m_type(p1, p2, p3, p4, p5, p6, p7);                                                              \
 	}
 
 #define FUNC7(m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7)                                   \
@@ -622,50 +705,60 @@
 	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7, m_arg8 p8) override { \
 		WRITE_ACTION                                                                                                      \
 		if (Thread::get_caller_id() != server_thread) {                                                                   \
-			m_r ret;                                                                                                      \
-			command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8, &ret);           \
-			SYNC_DEBUG                                                                                                    \
-			return ret;                                                                                                   \
-		} else {                                                                                                          \
-			command_queue.flush_if_pending();                                                                             \
-			return server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);                                                   \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                                                             \
+				m_r ret;                                                                                                  \
+				command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8, &ret);       \
+				SYNC_DEBUG                                                                                                \
+				return ret;                                                                                               \
+			}                                                                                                             \
+			MAIN_THREAD_SYNC                                                                                              \
 		}                                                                                                                 \
+		command_queue.flush_if_pending();                                                                                 \
+		return server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);                                                       \
 	}
 
 #define FUNC8RC(m_r, m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7, m_arg8)                                    \
 	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7, m_arg8 p8) const override { \
 		if (Thread::get_caller_id() != server_thread) {                                                                         \
-			m_r ret;                                                                                                            \
-			command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8, &ret);                 \
-			SYNC_DEBUG                                                                                                          \
-			return ret;                                                                                                         \
-		} else {                                                                                                                \
-			command_queue.flush_if_pending();                                                                                   \
-			return server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);                                                         \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                                                                   \
+				m_r ret;                                                                                                        \
+				command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8, &ret);             \
+				SYNC_DEBUG                                                                                                      \
+				return ret;                                                                                                     \
+			}                                                                                                                   \
+			MAIN_THREAD_SYNC                                                                                                    \
 		}                                                                                                                       \
+		command_queue.flush_if_pending();                                                                                       \
+		return server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);                                                             \
 	}
 
 #define FUNC8S(m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7, m_arg8)                                     \
 	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7, m_arg8 p8) override { \
 		WRITE_ACTION                                                                                                       \
 		if (Thread::get_caller_id() != server_thread) {                                                                    \
-			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8);                 \
-			SYNC_DEBUG                                                                                                     \
-		} else {                                                                                                           \
-			command_queue.flush_if_pending();                                                                              \
-			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);                                                           \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                                                              \
+				command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8);             \
+				SYNC_DEBUG                                                                                                 \
+				return;                                                                                                    \
+			}                                                                                                              \
+			MAIN_THREAD_SYNC                                                                                               \
 		}                                                                                                                  \
+		command_queue.flush_if_pending();                                                                                  \
+		server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);                                                               \
 	}
 
 #define FUNC8SC(m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7, m_arg8)                                          \
 	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7, m_arg8 p8) const override { \
 		if (Thread::get_caller_id() != server_thread) {                                                                          \
-			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8);                       \
-			SYNC_DEBUG                                                                                                           \
-		} else {                                                                                                                 \
-			command_queue.flush_if_pending();                                                                                    \
-			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);                                                                 \
+			if (Thread::get_caller_id() != Thread::MAIN_ID) {                                                                    \
+				command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8);                   \
+				SYNC_DEBUG                                                                                                       \
+				return;                                                                                                          \
+			}                                                                                                                    \
+			MAIN_THREAD_SYNC                                                                                                     \
 		}                                                                                                                        \
+		command_queue.flush_if_pending();                                                                                        \
+		server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);                                                                     \
 	}
 
 #define FUNC8(m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7, m_arg8)                                      \

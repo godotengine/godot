@@ -115,6 +115,8 @@ public:
 	_ALWAYS_INLINE_ double get_frame_delta_time() const { return delta; }
 	_ALWAYS_INLINE_ double get_total_time() const { return time_total; }
 
+	virtual void context_move_to_current_thread();
+
 	static RasterizerGLES3 *get_singleton() { return singleton; }
 	RasterizerGLES3();
 	~RasterizerGLES3();

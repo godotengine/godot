@@ -115,6 +115,10 @@ void RasterizerGLES3::end_viewport(bool p_swap_buffers) {
 	}
 }
 
+void RasterizerGLES3::context_move_to_current_thread() {
+	DisplayServer::get_singleton()->make_rendering_thread();
+}
+
 void RasterizerGLES3::clear_depth(float p_depth) {
 #ifdef GL_API_ENABLED
 	if (is_gles_over_gl()) {
