@@ -165,11 +165,24 @@ void WorkerThreadPool::_native_low_priority_thread_function(void *p_user) {
 }
 
 void WorkerThreadPool::_post_task(Task *p_task, bool p_high_priority) {
+	// Fall back to processing on the calling thread if there are no worker threads.
+	// Separated into its own variable to make it easier to extend this logic
+	// in custom builds.
+	bool process_on_calling_thread = threads.size() == 0;
+	if (process_on_calling_thread) {
+		_process_task(p_task);
+		return;
+	}
+
 	task_mutex.lock();
 	p_task->low_priority = !p_high_priority;
 	if (!p_high_priority && use_native_low_priority_threads) {
 		p_task->low_priority_thread = native_thread_allocator.alloc();
 		task_mutex.unlock();
+
+		if (p_task->group) {
+			p_task->group->low_priority_native_tasks.push_back(p_task);
+		}
 		p_task->low_priority_thread->start(_native_low_priority_thread_function, p_task); // Pask task directly to thread.
 	} else if (p_high_priority || low_priority_threads_used < max_low_priority_threads) {
 		task_queue.add_last(&p_task->task_elem);
@@ -329,15 +342,8 @@ WorkerThreadPool::GroupID WorkerThreadPool::_add_group_task(const Callable &p_ca
 	groups[id] = group;
 	task_mutex.unlock();
 
-	if (!p_high_priority && use_native_low_priority_threads) {
-		group->low_priority_native_tasks.resize(p_tasks);
-	}
-
 	for (int i = 0; i < p_tasks; i++) {
 		_post_task(tasks_posted[i], p_high_priority);
-		if (!p_high_priority && use_native_low_priority_threads) {
-			group->low_priority_native_tasks[i] = tasks_posted[i];
-		}
 	}
 
 	return id;
