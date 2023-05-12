@@ -678,6 +678,8 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const Ref<Resource> &p_f
 		}
 	}
 
+	p_metadata["length"] = stream->get_length();
+
 	//post_process_preview(img);
 
 	Ref<Image> image = Image::create_from_data(w, h, false, Image::FORMAT_RGB8, img);
