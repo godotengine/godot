@@ -504,12 +504,12 @@ private:
 	static int plugin_init_callback_count;
 	static Vector<EditorNodeInitCallback> _init_callbacks;
 
-	static void _dependency_error_report(void *ud, const String &p_path, const String &p_dep, const String &p_type) {
-		EditorNode *en = static_cast<EditorNode *>(ud);
-		if (!en->dependency_errors.has(p_path)) {
-			en->dependency_errors[p_path] = HashSet<String>();
+	static void _dependency_error_report(const String &p_path, const String &p_dep, const String &p_type) {
+		DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
+		if (!singleton->dependency_errors.has(p_path)) {
+			singleton->dependency_errors[p_path] = HashSet<String>();
 		}
-		en->dependency_errors[p_path].insert(p_dep + "::" + p_type);
+		singleton->dependency_errors[p_path].insert(p_dep + "::" + p_type);
 	}
 
 	static Ref<Texture2D> _file_dialog_get_icon(const String &p_path);
@@ -518,7 +518,6 @@ private:
 	static void _editor_file_dialog_register(EditorFileDialog *p_dialog);
 	static void _editor_file_dialog_unregister(EditorFileDialog *p_dialog);
 
-	static void _load_error_notify(void *p_ud, const String &p_text);
 	static void _file_access_close_error_notify(const String &p_str);
 
 	static void _print_handler(void *p_this, const String &p_string, bool p_error, bool p_rich);

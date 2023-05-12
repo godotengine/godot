@@ -1136,10 +1136,7 @@ void ResourceLoader::initialize() {}
 void ResourceLoader::finalize() {}
 
 ResourceLoadErrorNotify ResourceLoader::err_notify = nullptr;
-void *ResourceLoader::err_notify_ud = nullptr;
-
 DependencyErrorNotify ResourceLoader::dep_err_notify = nullptr;
-void *ResourceLoader::dep_err_notify_ud = nullptr;
 
 bool ResourceLoader::create_missing_resources_if_class_unavailable = false;
 bool ResourceLoader::abort_on_missing_resource = true;
