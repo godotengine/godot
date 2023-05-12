@@ -202,6 +202,10 @@ void Node::_notification(int p_notification) {
 				return;
 			}
 
+			if (data.owner) {
+				_clean_up_owner();
+			}
+
 			if (data.parent) {
 				data.parent->remove_child(this);
 			}
@@ -301,11 +305,7 @@ void Node::_propagate_after_exit_tree() {
 		}
 
 		if (!found) {
-			if (data.unique_name_in_owner) {
-				_release_unique_name_in_owner();
-			}
-			data.owner->data.owned.erase(data.OW);
-			data.owner = nullptr;
+			_clean_up_owner();
 		}
 	}
 
@@ -1876,12 +1876,7 @@ bool Node::is_unique_name_in_owner() const {
 void Node::set_owner(Node *p_owner) {
 	ERR_MAIN_THREAD_GUARD
 	if (data.owner) {
-		if (data.unique_name_in_owner) {
-			_release_unique_name_in_owner();
-		}
-		data.owner->data.owned.erase(data.OW);
-		data.OW = nullptr;
-		data.owner = nullptr;
+		_clean_up_owner();
 	}
 
 	ERR_FAIL_COND(p_owner == this);
@@ -1913,6 +1908,17 @@ void Node::set_owner(Node *p_owner) {
 
 Node *Node::get_owner() const {
 	return data.owner;
+}
+
+void Node::_clean_up_owner() {
+	ERR_FAIL_NULL(data.owner); // Sanity check.
+
+	if (data.unique_name_in_owner) {
+		_release_unique_name_in_owner();
+	}
+	data.owner->data.owned.erase(data.OW);
+	data.owner = nullptr;
+	data.OW = nullptr;
 }
 
 Node *Node::find_common_parent_with(const Node *p_node) const {
@@ -2747,6 +2753,8 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 		for (int i = 0; i < get_child_count(); i++) {
 			find_owned_by(data.owner, get_child(i), &owned_by_owner);
 		}
+
+		_clean_up_owner();
 	}
 
 	Node *parent = data.parent;
