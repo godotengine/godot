@@ -656,6 +656,9 @@
 		<member name="interface/editor/font_subpixel_positioning" type="int" setter="" getter="">
 			The subpixel positioning mode to use when rendering editor font glyphs. This affects both the main and code fonts. [b]Disabled[/b] is the fastest to render and uses the least memory. [b]Auto[/b] only uses subpixel positioning for small font sizes (where the benefit is the most noticeable). [b]One Half of a Pixel[/b] and [b]One Quarter of a Pixel[/b] force the same subpixel positioning mode for all editor fonts, regardless of their size (with [b]One Quarter of a Pixel[/b] being the highest-quality option).
 		</member>
+		<member name="interface/editor/import_resources_when_unfocused" type="bool" setter="" getter="">
+			If [code]true[/code], (re)imports resources even if the editor window is unfocused or minimized. If [code]false[/code], resources are only (re)imported when the editor window is focused. This can be set to [code]true[/code] to speed up iteration by starting the import process earlier when saving files in the project folder. This also allows getting visual feedback on changes without having to click the editor window, which is useful with multi-monitor setups. The downside of setting this to [code]true[/code] is that it increases idle CPU usage and may steal CPU time from other applications when importing resources.
+		</member>
 		<member name="interface/editor/localize_settings" type="bool" setter="" getter="">
 			If [code]true[/code], setting names in the editor are localized when possible.
 			[b]Note:[/b] This setting affects most [EditorInspector]s in the editor UI, primarily Project Settings and Editor Settings. To control names displayed in the Inspector dock, use [member interface/inspector/default_property_name_style] instead.

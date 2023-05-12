@@ -771,6 +771,12 @@ void EditorNode::_notification(int p_what) {
 				EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
 			}
 
+			if (EDITOR_GET("interface/editor/import_resources_when_unfocused")) {
+				scan_changes_timer->start();
+			} else {
+				scan_changes_timer->stop();
+			}
+
 			follow_system_theme = EDITOR_GET("interface/theme/follow_system_theme");
 			use_system_accent_color = EDITOR_GET("interface/theme/use_system_accent_color");
 
@@ -6576,6 +6582,12 @@ EditorNode::EditorNode() {
 	editor_layout_save_delay_timer->set_wait_time(0.5);
 	editor_layout_save_delay_timer->set_one_shot(true);
 	editor_layout_save_delay_timer->connect("timeout", callable_mp(this, &EditorNode::_save_editor_layout));
+
+	scan_changes_timer = memnew(Timer);
+	scan_changes_timer->set_wait_time(0.5);
+	scan_changes_timer->set_autostart(EDITOR_GET("interface/editor/import_resources_when_unfocused"));
+	scan_changes_timer->connect("timeout", callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan_changes));
+	add_child(scan_changes_timer);
 
 	top_split = memnew(VSplitContainer);
 	center_split->add_child(top_split);

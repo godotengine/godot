@@ -445,7 +445,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/main_font", "", "*.ttf,*.otf,*.woff,*.woff2,*.pfb,*.pfm")
 	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/main_font_bold", "", "*.ttf,*.otf,*.woff,*.woff2,*.pfb,*.pfm")
 	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/code_font", "", "*.ttf,*.otf,*.woff,*.woff2,*.pfb,*.pfm")
-
 	_initial_set("interface/editor/separate_distraction_mode", false);
 	_initial_set("interface/editor/automatically_open_screenshots", true);
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/single_window_mode", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
@@ -470,6 +469,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// low FPS limits, the editor can take a small while to become usable after
 	// being focused again, so this should be used at the user's discretion.
 	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/unfocused_low_processor_mode_sleep_usec", 100000, "1,1000000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/import_resources_when_unfocused", false, "")
 
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/vsync_mode", 1, "Disabled,Enabled,Adaptive,Mailbox")
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/update_continuously", false, "")
