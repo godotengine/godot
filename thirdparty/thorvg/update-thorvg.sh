@@ -1,9 +1,9 @@
-VERSION=0.8.4
+VERSION=0.9.0
 rm -rf AUTHORS inc LICENSE src *.zip
 curl -L -O https://github.com/thorvg/thorvg/archive/v$VERSION.zip
 bsdtar --strip-components=1 -xvf *.zip
 rm *.zip
-rm -rf .github docs pc res test tools tvgcompat .git* *.md *.txt wasm_build.sh
+rm -rf .github docs pc res test tools tvgcompat .git* *.md *.txt wasm_build.sh CODEOWNERS
 find . -type f -name 'meson.build' -delete
 rm -rf src/bin src/bindings src/examples src/wasm
 rm -rf src/lib/gl_engine src/loaders/external_jpg src/loaders/png

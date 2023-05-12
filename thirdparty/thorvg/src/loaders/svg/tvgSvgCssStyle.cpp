@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2022 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,13 +32,13 @@ static void _copyStyle(SvgStyleProperty* to, const SvgStyleProperty* from)
 {
     if (from == nullptr) return;
     //Copy the properties of 'from' only if they were explicitly set (not the default ones).
-    if (from->curColorSet && !((int)to->flags & (int)SvgStyleFlags::Color)) {
+    if (from->curColorSet && !(to->flags & SvgStyleFlags::Color)) {
         to->color = from->color;
         to->curColorSet = true;
-        to->flags = (SvgStyleFlags)((int)to->flags | (int)SvgStyleFlags::Color);
+        to->flags = (to->flags | SvgStyleFlags::Color);
     }
     //Fill
-    if (((int)from->fill.flags & (int)SvgFillFlags::Paint) && !((int)to->flags & (int)SvgStyleFlags::Fill)) {
+    if ((from->fill.flags & SvgFillFlags::Paint) && !(to->flags & SvgStyleFlags::Fill)) {
         to->fill.paint.color = from->fill.paint.color;
         to->fill.paint.none = from->fill.paint.none;
         to->fill.paint.curColor = from->fill.paint.curColor;
@@ -46,21 +46,21 @@ static void _copyStyle(SvgStyleProperty* to, const SvgStyleProperty* from)
             if (to->fill.paint.url) free(to->fill.paint.url);
             to->fill.paint.url = strdup(from->fill.paint.url);
         }
-        to->fill.flags = (SvgFillFlags)((int)to->fill.flags | (int)SvgFillFlags::Paint);
-        to->flags = (SvgStyleFlags)((int)to->flags | (int)SvgStyleFlags::Fill);
+        to->fill.flags = (to->fill.flags | SvgFillFlags::Paint);
+        to->flags = (to->flags | SvgStyleFlags::Fill);
     }
-    if (((int)from->fill.flags & (int)SvgFillFlags::Opacity) && !((int)to->flags & (int)SvgStyleFlags::FillOpacity)) {
+    if ((from->fill.flags & SvgFillFlags::Opacity) && !(to->flags & SvgStyleFlags::FillOpacity)) {
         to->fill.opacity = from->fill.opacity;
-        to->fill.flags = (SvgFillFlags)((int)to->fill.flags | (int)SvgFillFlags::Opacity);
-        to->flags = (SvgStyleFlags)((int)to->flags | (int)SvgStyleFlags::FillOpacity);
+        to->fill.flags = (to->fill.flags | SvgFillFlags::Opacity);
+        to->flags = (to->flags | SvgStyleFlags::FillOpacity);
     }
-    if (((int)from->fill.flags & (int)SvgFillFlags::FillRule) && !((int)to->flags & (int)SvgStyleFlags::FillRule)) {
+    if ((from->fill.flags & SvgFillFlags::FillRule) && !(to->flags & SvgStyleFlags::FillRule)) {
         to->fill.fillRule = from->fill.fillRule;
-        to->fill.flags = (SvgFillFlags)((int)to->fill.flags | (int)SvgFillFlags::FillRule);
-        to->flags = (SvgStyleFlags)((int)to->flags | (int)SvgStyleFlags::FillRule);
+        to->fill.flags = (to->fill.flags | SvgFillFlags::FillRule);
+        to->flags = (to->flags | SvgStyleFlags::FillRule);
     }
     //Stroke
-    if (((int)from->stroke.flags & (int)SvgStrokeFlags::Paint) && !((int)to->flags & (int)SvgStyleFlags::Stroke)) {
+    if ((from->stroke.flags & SvgStrokeFlags::Paint) && !(to->flags & SvgStyleFlags::Stroke)) {
         to->stroke.paint.color = from->stroke.paint.color;
         to->stroke.paint.none = from->stroke.paint.none;
         to->stroke.paint.curColor = from->stroke.paint.curColor;
@@ -68,45 +68,45 @@ static void _copyStyle(SvgStyleProperty* to, const SvgStyleProperty* from)
             if (to->stroke.paint.url) free(to->stroke.paint.url);
             to->stroke.paint.url = strdup(from->stroke.paint.url);
         }
-        to->stroke.flags = (SvgStrokeFlags)((int)to->stroke.flags | (int)SvgStrokeFlags::Paint);
-        to->flags = (SvgStyleFlags)((int)to->flags | (int)SvgStyleFlags::Stroke);
+        to->stroke.flags = (to->stroke.flags | SvgStrokeFlags::Paint);
+        to->flags = (to->flags | SvgStyleFlags::Stroke);
     }
-    if (((int)from->stroke.flags & (int)SvgStrokeFlags::Opacity) && !((int)to->flags & (int)SvgStyleFlags::StrokeOpacity)) {
+    if ((from->stroke.flags & SvgStrokeFlags::Opacity) && !(to->flags & SvgStyleFlags::StrokeOpacity)) {
         to->stroke.opacity = from->stroke.opacity;
-        to->stroke.flags = (SvgStrokeFlags)((int)to->stroke.flags | (int)SvgStrokeFlags::Opacity);
-        to->flags = (SvgStyleFlags)((int)to->flags | (int)SvgStyleFlags::StrokeOpacity);
+        to->stroke.flags = (to->stroke.flags | SvgStrokeFlags::Opacity);
+        to->flags = (to->flags | SvgStyleFlags::StrokeOpacity);
     }
-    if (((int)from->stroke.flags & (int)SvgStrokeFlags::Width) && !((int)to->flags & (int)SvgStyleFlags::StrokeWidth)) {
+    if ((from->stroke.flags & SvgStrokeFlags::Width) && !(to->flags & SvgStyleFlags::StrokeWidth)) {
         to->stroke.width = from->stroke.width;
-        to->stroke.flags = (SvgStrokeFlags)((int)to->stroke.flags | (int)SvgStrokeFlags::Width);
-        to->flags = (SvgStyleFlags)((int)to->flags | (int)SvgStyleFlags::StrokeWidth);
+        to->stroke.flags = (to->stroke.flags | SvgStrokeFlags::Width);
+        to->flags = (to->flags | SvgStyleFlags::StrokeWidth);
     }
-    if (((int)from->stroke.flags & (int)SvgStrokeFlags::Dash) && !((int)to->flags & (int)SvgStyleFlags::StrokeDashArray)) {
+    if ((from->stroke.flags & SvgStrokeFlags::Dash) && !(to->flags & SvgStyleFlags::StrokeDashArray)) {
         if (from->stroke.dash.array.count > 0) {
             to->stroke.dash.array.clear();
             to->stroke.dash.array.reserve(from->stroke.dash.array.count);
             for (uint32_t i = 0; i < from->stroke.dash.array.count; ++i) {
                 to->stroke.dash.array.push(from->stroke.dash.array.data[i]);
             }
-            to->stroke.flags = (SvgStrokeFlags)((int)to->stroke.flags | (int)SvgStrokeFlags::Dash);
-            to->flags = (SvgStyleFlags)((int)to->flags | (int)SvgStyleFlags::StrokeDashArray);
+            to->stroke.flags = (to->stroke.flags | SvgStrokeFlags::Dash);
+            to->flags = (to->flags | SvgStyleFlags::StrokeDashArray);
         }
     }
-    if (((int)from->stroke.flags & (int)SvgStrokeFlags::Cap) && !((int)to->flags & (int)SvgStyleFlags::StrokeLineCap)) {
+    if ((from->stroke.flags & SvgStrokeFlags::Cap) && !(to->flags & SvgStyleFlags::StrokeLineCap)) {
         to->stroke.cap = from->stroke.cap;
-        to->stroke.flags = (SvgStrokeFlags)((int)to->stroke.flags | (int)SvgStrokeFlags::Cap);
-        to->flags = (SvgStyleFlags)((int)to->flags | (int)SvgStyleFlags::StrokeLineCap);
+        to->stroke.flags = (to->stroke.flags | SvgStrokeFlags::Cap);
+        to->flags = (to->flags | SvgStyleFlags::StrokeLineCap);
     }
-    if (((int)from->stroke.flags & (int)SvgStrokeFlags::Join) && !((int)to->flags & (int)SvgStyleFlags::StrokeLineJoin)) {
+    if ((from->stroke.flags & SvgStrokeFlags::Join) && !(to->flags & SvgStyleFlags::StrokeLineJoin)) {
         to->stroke.join = from->stroke.join;
-        to->stroke.flags = (SvgStrokeFlags)((int)to->stroke.flags | (int)SvgStrokeFlags::Join);
-        to->flags = (SvgStyleFlags)((int)to->flags | (int)SvgStyleFlags::StrokeLineJoin);
+        to->stroke.flags = (to->stroke.flags | SvgStrokeFlags::Join);
+        to->flags = (to->flags | SvgStyleFlags::StrokeLineJoin);
     }
     //Opacity
     //TODO: it can be set to be 255 and shouldn't be changed by attribute 'opacity'
-    if (from->opacity < 255 && !((int)to->flags & (int)SvgStyleFlags::Opacity)) {
+    if (from->opacity < 255 && !(to->flags & SvgStyleFlags::Opacity)) {
         to->opacity = from->opacity;
-        to->flags = (SvgStyleFlags)((int)to->flags | (int)SvgStyleFlags::Opacity);
+        to->flags = (to->flags | SvgStyleFlags::Opacity);
     }
 }
 
@@ -118,11 +118,11 @@ static void _copyStyle(SvgStyleProperty* to, const SvgStyleProperty* from)
 void cssCopyStyleAttr(SvgNode* to, const SvgNode* from)
 {
     //Copy matrix attribute
-    if (from->transform && !((int)to->style->flags & (int)SvgStyleFlags::Transform)) {
+    if (from->transform && !(to->style->flags & SvgStyleFlags::Transform)) {
         to->transform = (Matrix*)malloc(sizeof(Matrix));
         if (to->transform) {
             *to->transform = *from->transform;
-            to->style->flags = (SvgStyleFlags)((int)to->style->flags | (int)SvgStyleFlags::Transform);
+            to->style->flags = (to->style->flags | SvgStyleFlags::Transform);
         }
     }
     //Copy style attribute
@@ -155,12 +155,12 @@ SvgNode* cssFindStyleNode(const SvgNode* style, const char* title, SvgNodeType t
 
 SvgNode* cssFindStyleNode(const SvgNode* style, const char* title)
 {
-    if (!style) return nullptr;
+    if (!style || !title) return nullptr;
 
     auto child = style->child.data;
     for (uint32_t i = 0; i < style->child.count; ++i, ++child) {
         if ((*child)->type == SvgNodeType::CssStyle) {
-            if ((title && (*child)->id && !strcmp((*child)->id, title))) return (*child);
+            if ((*child)->id && !strcmp((*child)->id, title)) return (*child);
         }
     }
     return nullptr;
@@ -173,9 +173,6 @@ void cssUpdateStyle(SvgNode* doc, SvgNode* style)
         auto child = doc->child.data;
         for (uint32_t i = 0; i < doc->child.count; ++i, ++child) {
             if (auto cssNode = cssFindStyleNode(style, nullptr, (*child)->type)) {
-                cssCopyStyleAttr(*child, cssNode);
-            }
-            if (auto cssNode = cssFindStyleNode(style, nullptr)) {
                 cssCopyStyleAttr(*child, cssNode);
             }
             cssUpdateStyle(*child, style);
