@@ -175,7 +175,9 @@ void PathFollow::_update_transform(bool p_update_xyz_rot) {
 
 			Vector3 axis = t_prev.cross(t_cur);
 			float dot = t_prev.dot(t_cur);
-			float angle = Math::acos(CLAMP(dot, -1, 1));
+
+			// acos does clamping.
+			float angle = Math::acos(dot);
 
 			if (likely(!Math::is_zero_approx(angle))) {
 				if (rotation_mode == ROTATION_Y) {
