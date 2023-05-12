@@ -2112,7 +2112,8 @@ String GDScriptFormat::parse_call_arguments(const Vector<GDP::ExpressionNode *> 
 		output += print_comment(node, true, p_indent_level);
 		output += parameter_string;
 
-		if (i < p_nodes.size() - 1 || p_break_type != NONE) {
+		// TODO: handle trailing comma here:
+		if (i < p_nodes.size() - 1) {
 			output += ",";
 			if (p_break_type == NONE) {
 				output += " ";
