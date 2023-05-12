@@ -43,6 +43,13 @@ void NavRegion::set_map(NavMap *p_map) {
 	}
 }
 
+void NavRegion::set_use_edge_connections(bool p_enabled) {
+	if (use_edge_connections != p_enabled) {
+		use_edge_connections = p_enabled;
+		polygons_dirty = true;
+	}
+}
+
 void NavRegion::set_transform(Transform3D p_transform) {
 	if (transform == p_transform) {
 		return;

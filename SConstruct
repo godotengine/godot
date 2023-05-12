@@ -698,7 +698,8 @@ if selected_platform in platform_list:
             if env["warnings"] == "extra":
                 env.Append(CCFLAGS=["/W4"])
             elif env["warnings"] == "all":
-                env.Append(CCFLAGS=["/W3"])
+                # C4458 is like -Wshadow. Part of /W4 but let's apply it for the default /W3 too.
+                env.Append(CCFLAGS=["/W3", "/w4458"])
             elif env["warnings"] == "moderate":
                 env.Append(CCFLAGS=["/W2"])
             # Disable warnings which we don't plan to fix.
@@ -727,7 +728,7 @@ if selected_platform in platform_list:
         common_warnings = []
 
         if methods.using_gcc(env):
-            common_warnings += ["-Wshadow-local", "-Wno-misleading-indentation"]
+            common_warnings += ["-Wshadow", "-Wno-misleading-indentation"]
             if cc_version_major == 7:  # Bogus warning fixed in 8+.
                 common_warnings += ["-Wno-strict-overflow"]
             if cc_version_major < 11:
@@ -737,6 +738,7 @@ if selected_platform in platform_list:
             if cc_version_major >= 12:  # False positives in our error macros, see GH-58747.
                 common_warnings += ["-Wno-return-type"]
         elif methods.using_clang(env) or methods.using_emcc(env):
+            common_warnings += ["-Wshadow-field-in-constructor", "-Wshadow-uncaptured-local"]
             # We often implement `operator<` for structs of pointers as a requirement
             # for putting them in `Set` or `Map`. We don't mind about unreliable ordering.
             common_warnings += ["-Wno-ordered-compare-function-pointers"]

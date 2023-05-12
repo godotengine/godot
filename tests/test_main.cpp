@@ -135,6 +135,8 @@ int test_main(int argc, char *argv[]) {
 	OS::get_singleton()->set_cmdline("", args, List<String>());
 	DisplayServerMock::register_mock_driver();
 
+	WorkerThreadPool::get_singleton()->init();
+
 	// Run custom test tools.
 	if (test_commands) {
 		for (const KeyValue<String, TestFunc> &E : (*test_commands)) {

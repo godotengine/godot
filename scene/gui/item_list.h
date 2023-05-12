@@ -211,6 +211,8 @@ public:
 	void set_item_custom_fg_color(int p_idx, const Color &p_custom_fg_color);
 	Color get_item_custom_fg_color(int p_idx) const;
 
+	Rect2 get_item_rect(int p_idx, bool p_expand = true) const;
+
 	void set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior);
 	TextServer::OverrunBehavior get_text_overrun_behavior() const;
 

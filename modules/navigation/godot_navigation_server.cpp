@@ -166,6 +166,20 @@ real_t GodotNavigationServer::map_get_cell_size(RID p_map) const {
 	return map->get_cell_size();
 }
 
+COMMAND_2(map_set_use_edge_connections, RID, p_map, bool, p_enabled) {
+	NavMap *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_COND(map == nullptr);
+
+	map->set_use_edge_connections(p_enabled);
+}
+
+bool GodotNavigationServer::map_get_use_edge_connections(RID p_map) const {
+	NavMap *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_COND_V(map == nullptr, false);
+
+	return map->get_use_edge_connections();
+}
+
 COMMAND_2(map_set_edge_connection_margin, RID, p_map, real_t, p_connection_margin) {
 	NavMap *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_COND(map == nullptr);
@@ -310,6 +324,20 @@ RID GodotNavigationServer::region_create() {
 	NavRegion *reg = region_owner.get_or_null(rid);
 	reg->set_self(rid);
 	return rid;
+}
+
+COMMAND_2(region_set_use_edge_connections, RID, p_region, bool, p_enabled) {
+	NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_COND(region == nullptr);
+
+	region->set_use_edge_connections(p_enabled);
+}
+
+bool GodotNavigationServer::region_get_use_edge_connections(RID p_region) const {
+	NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_COND_V(region == nullptr, false);
+
+	return region->get_use_edge_connections();
 }
 
 COMMAND_2(region_set_map, RID, p_region, RID, p_map) {

@@ -80,6 +80,9 @@ public:
 	/// Returns the map cell size.
 	virtual real_t map_get_cell_size(RID p_map) const = 0;
 
+	virtual void map_set_use_edge_connections(RID p_map, bool p_enabled) = 0;
+	virtual bool map_get_use_edge_connections(RID p_map) const = 0;
+
 	/// Set the map edge connection margin used to weld the compatible region edges.
 	virtual void map_set_edge_connection_margin(RID p_map, real_t p_connection_margin) = 0;
 
@@ -109,6 +112,9 @@ public:
 
 	/// Creates a new region.
 	virtual RID region_create() = 0;
+
+	virtual void region_set_use_edge_connections(RID p_region, bool p_enabled) = 0;
+	virtual bool region_get_use_edge_connections(RID p_region) const = 0;
 
 	/// Set the enter_cost of a region
 	virtual void region_set_enter_cost(RID p_region, real_t p_enter_cost) = 0;

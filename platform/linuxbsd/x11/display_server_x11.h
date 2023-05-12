@@ -306,7 +306,7 @@ class DisplayServerX11 : public DisplayServer {
 
 	const char *cursor_theme = nullptr;
 	int cursor_size = 0;
-	XcursorImage *img[CURSOR_MAX];
+	XcursorImage *cursor_img[CURSOR_MAX];
 	Cursor cursors[CURSOR_MAX];
 	Cursor null_cursor;
 	CursorShape current_cursor = CURSOR_ARROW;

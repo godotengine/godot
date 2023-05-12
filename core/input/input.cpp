@@ -847,6 +847,7 @@ bool Input::is_emulating_touch_from_mouse() const {
 // Calling this whenever the game window is focused helps unsticking the "touch mouse"
 // if the OS or its abstraction class hasn't properly reported that touch pointers raised
 void Input::ensure_touch_mouse_raised() {
+	_THREAD_SAFE_METHOD_
 	if (mouse_from_touch_index != -1) {
 		mouse_from_touch_index = -1;
 
