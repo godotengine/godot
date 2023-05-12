@@ -1941,6 +1941,17 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 		lambda_ended = true;
 	}
 	current_suite = suite->parent_block;
+
+	if (suite->statements.size() == 0) {
+		Node *context = nullptr;
+		if (suite->parent_block) {
+			context = suite->parent_block;
+		} else if (suite->parent_function) {
+			context = suite->parent_function;
+		}
+		push_error(vformat(R"(No statements were found in %s.)", p_context), context);
+	}
+
 	return suite;
 }
 
