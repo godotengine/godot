@@ -2087,36 +2087,38 @@ String GDScriptFormat::parse_preload(const GDP::PreloadNode *p_node, const int p
 String GDScriptFormat::parse_call_arguments(const Vector<GDP::ExpressionNode *> &p_nodes, const int p_indent_level, const BreakType p_break_type) {
 	StringBuilder output;
 	for (int i = 0; i < p_nodes.size(); ++i) {
+		GDP::ExpressionNode *node = p_nodes[i];
+
 		if (p_break_type != NONE) {
-			if (p_nodes[i]->type != GDP::Node::ARRAY && p_nodes[i]->type != GDP::Node::DICTIONARY) {
+			if (node->type != GDP::Node::ARRAY && node->type != GDP::Node::DICTIONARY) {
 				output += indent(p_indent_level);
 			}
 		}
 
 		int indent_mod = 0;
-		if (p_nodes[i]->type == GDP::Node::ARRAY || p_nodes[i]->type == GDP::Node::DICTIONARY) {
+		if (node->type == GDP::Node::ARRAY || node->type == GDP::Node::DICTIONARY) {
 			indent_mod = 1;
 		}
 
 		String parameter_string;
-		if (children_have_comments(p_nodes[i])) {
-			parameter_string = parse_expression(p_nodes[i], p_indent_level - indent_mod, p_break_type);
+		if (children_have_comments(node)) {
+			parameter_string = parse_expression(node, p_indent_level - indent_mod, p_break_type);
 		} else {
-			parameter_string = parse_expression(p_nodes[i], p_indent_level);
+			parameter_string = parse_expression(node, p_indent_level);
 			if (p_break_type != NONE && parameter_string.length() > line_length_maximum) {
-				parameter_string = parse_expression(p_nodes[i], p_indent_level - indent_mod, p_break_type);
+				parameter_string = parse_expression(node, p_indent_level - indent_mod, p_break_type);
 			}
 		}
-		output += print_comment(p_nodes[i], true, p_indent_level);
+		output += print_comment(node, true, p_indent_level);
 		output += parameter_string;
 
-		if (i < p_nodes.size() - 1) {
+		if (i < p_nodes.size() - 1 || p_break_type != NONE) {
 			output += ",";
 			if (p_break_type == NONE) {
 				output += " ";
 			}
 		}
-		output += print_comment(p_nodes[i], false);
+		output += print_comment(node, false);
 	}
 
 	return output;
