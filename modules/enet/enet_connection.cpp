@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  enet_connection.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  enet_connection.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "enet_connection.h"
 
@@ -273,10 +273,11 @@ TypedArray<ENetPacketPeer> ENetConnection::_get_peers() {
 	return out;
 }
 
-Error ENetConnection::dtls_server_setup(Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert) {
+Error ENetConnection::dtls_server_setup(const Ref<TLSOptions> &p_options) {
 #ifdef GODOT_ENET
 	ERR_FAIL_COND_V_MSG(!host, ERR_UNCONFIGURED, "The ENetConnection instance isn't currently active.");
-	return enet_host_dtls_server_setup(host, p_key.ptr(), p_cert.ptr()) ? FAILED : OK;
+	ERR_FAIL_COND_V(p_options.is_null() || !p_options->is_server(), ERR_INVALID_PARAMETER);
+	return enet_host_dtls_server_setup(host, const_cast<TLSOptions *>(p_options.ptr())) ? FAILED : OK;
 #else
 	ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "ENet DTLS support not available in this build.");
 #endif
@@ -291,10 +292,11 @@ void ENetConnection::refuse_new_connections(bool p_refuse) {
 #endif
 }
 
-Error ENetConnection::dtls_client_setup(Ref<X509Certificate> p_cert, const String &p_hostname, bool p_verify) {
+Error ENetConnection::dtls_client_setup(const String &p_hostname, const Ref<TLSOptions> &p_options) {
 #ifdef GODOT_ENET
 	ERR_FAIL_COND_V_MSG(!host, ERR_UNCONFIGURED, "The ENetConnection instance isn't currently active.");
-	return enet_host_dtls_client_setup(host, p_cert.ptr(), p_verify, p_hostname.utf8().get_data()) ? FAILED : OK;
+	ERR_FAIL_COND_V(p_options.is_null() || p_options->is_server(), ERR_INVALID_PARAMETER);
+	return enet_host_dtls_client_setup(host, p_hostname.utf8().get_data(), const_cast<TLSOptions *>(p_options.ptr())) ? FAILED : OK;
 #else
 	ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "ENet DTLS support not available in this build.");
 #endif
@@ -351,8 +353,8 @@ void ENetConnection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("channel_limit", "limit"), &ENetConnection::channel_limit);
 	ClassDB::bind_method(D_METHOD("broadcast", "channel", "packet", "flags"), &ENetConnection::_broadcast);
 	ClassDB::bind_method(D_METHOD("compress", "mode"), &ENetConnection::compress);
-	ClassDB::bind_method(D_METHOD("dtls_server_setup", "key", "certificate"), &ENetConnection::dtls_server_setup);
-	ClassDB::bind_method(D_METHOD("dtls_client_setup", "certificate", "hostname", "verify"), &ENetConnection::dtls_client_setup, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("dtls_server_setup", "server_options"), &ENetConnection::dtls_server_setup);
+	ClassDB::bind_method(D_METHOD("dtls_client_setup", "hostname", "client_options"), &ENetConnection::dtls_client_setup, DEFVAL(Ref<TLSOptions>()));
 	ClassDB::bind_method(D_METHOD("refuse_new_connections", "refuse"), &ENetConnection::refuse_new_connections);
 	ClassDB::bind_method(D_METHOD("pop_statistic", "statistic"), &ENetConnection::pop_statistic);
 	ClassDB::bind_method(D_METHOD("get_max_channels"), &ENetConnection::get_max_channels);

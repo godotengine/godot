@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  test_geometry_3d.h                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  test_geometry_3d.h                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef TEST_GEOMETRY_3D_H
 #define TEST_GEOMETRY_3D_H
@@ -388,13 +388,13 @@ TEST_CASE("[Geometry3D] Segment Intersects Triangle") {
 
 TEST_CASE("[Geometry3D] Triangle and Box Overlap") {
 	struct Case {
-		Vector3 box_centre;
+		Vector3 box_center;
 		Vector3 box_half_size;
 		Vector3 *tri_verts = nullptr;
 		bool want;
 		Case(){};
-		Case(Vector3 p_centre, Vector3 p_half_size, Vector3 *p_verts, bool p_want) :
-				box_centre(p_centre), box_half_size(p_half_size), tri_verts(p_verts), want(p_want){};
+		Case(Vector3 p_center, Vector3 p_half_size, Vector3 *p_verts, bool p_want) :
+				box_center(p_center), box_half_size(p_half_size), tri_verts(p_verts), want(p_want){};
 	};
 	Vector<Case> tt;
 	Vector3 GoodTriangle[3] = { Vector3(3, 2, 3), Vector3(2, 2, 1), Vector3(2, 1, 1) };
@@ -403,7 +403,7 @@ TEST_CASE("[Geometry3D] Triangle and Box Overlap") {
 	tt.push_back(Case(Vector3(1000, 1000, 1000), Vector3(1, 1, 1), BadTriangle, false));
 	for (int i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
-		bool output = Geometry3D::triangle_box_overlap(current_case.box_centre, current_case.box_half_size, current_case.tri_verts);
+		bool output = Geometry3D::triangle_box_overlap(current_case.box_center, current_case.box_half_size, current_case.tri_verts);
 		CHECK(output == current_case.want);
 	}
 }

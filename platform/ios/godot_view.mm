@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  godot_view.mm                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  godot_view.mm                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #import "godot_view.h"
 
@@ -35,12 +35,11 @@
 #include "core/string/ustring.h"
 #import "display_layer.h"
 #include "display_server_ios.h"
-#import "godot_view_gesture_recognizer.h"
 #import "godot_view_renderer.h"
 
 #import <CoreMotion/CoreMotion.h>
 
-static const int max_touches = 8;
+static const int max_touches = 32;
 static const float earth_gravity = 9.80665;
 
 @interface GodotView () {
@@ -60,8 +59,6 @@ static const float earth_gravity = 9.80665;
 
 @property(strong, nonatomic) CMMotionManager *motionManager;
 
-@property(strong, nonatomic) GodotViewGestureRecognizer *delayGestureRecognizer;
-
 @end
 
 @implementation GodotView
@@ -74,16 +71,20 @@ static const float earth_gravity = 9.80665;
 	CALayer<DisplayLayer> *layer;
 
 	if ([driverName isEqualToString:@"vulkan"]) {
+#if defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
+		if (@available(iOS 13, *)) {
+			layer = [GodotMetalLayer layer];
+		} else {
+			return nil;
+		}
+#else
 		layer = [GodotMetalLayer layer];
+#endif
 	} else if ([driverName isEqualToString:@"opengl3"]) {
 		if (@available(iOS 13, *)) {
 			NSLog(@"OpenGL ES is deprecated on iOS 13");
 		}
-#if defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
-		return nil;
-#else
 		layer = [GodotOpenGLLayer layer];
-#endif
 	} else {
 		return nil;
 	}
@@ -144,10 +145,6 @@ static const float earth_gravity = 9.80665;
 		[self.animationTimer invalidate];
 		self.animationTimer = nil;
 	}
-
-	if (self.delayGestureRecognizer) {
-		self.delayGestureRecognizer = nil;
-	}
 }
 
 - (void)godot_commonInit {
@@ -167,11 +164,6 @@ static const float earth_gravity = 9.80665;
 			self.motionManager = nil;
 		}
 	}
-
-	// Initialize delay gesture recognizer
-	GodotViewGestureRecognizer *gestureRecognizer = [[GodotViewGestureRecognizer alloc] init];
-	self.delayGestureRecognizer = gestureRecognizer;
-	[self addGestureRecognizer:self.delayGestureRecognizer];
 }
 
 - (void)stopRendering {
@@ -181,7 +173,7 @@ static const float earth_gravity = 9.80665;
 
 	self.isActive = NO;
 
-	printf("******** stop animation!\n");
+	print_verbose("Stop animation!");
 
 	if (self.useCADisplayLink) {
 		[self.displayLink invalidate];
@@ -201,7 +193,7 @@ static const float earth_gravity = 9.80665;
 
 	self.isActive = YES;
 
-	printf("start animation!\n");
+	print_verbose("Start animation!");
 
 	if (self.useCADisplayLink) {
 		self.displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(drawView)];
@@ -221,7 +213,7 @@ static const float earth_gravity = 9.80665;
 
 - (void)drawView {
 	if (!self.isActive) {
-		printf("draw view not active!\n");
+		print_verbose("Draw view not active!");
 		return;
 	}
 
@@ -238,7 +230,7 @@ static const float earth_gravity = 9.80665;
 		[self.displayLink setPaused:NO];
 	}
 
-	[self.renderingLayer renderDisplayLayer];
+	[self.renderingLayer startRenderDisplayLayer];
 
 	if (!self.renderer) {
 		return;
@@ -258,6 +250,8 @@ static const float earth_gravity = 9.80665;
 
 	[self handleMotion];
 	[self.renderer renderOnView:self];
+
+	[self.renderingLayer stopRenderDisplayLayer];
 }
 
 - (BOOL)canRender {
@@ -341,58 +335,42 @@ static const float earth_gravity = 9.80665;
 	}
 }
 
-- (void)godotTouchesBegan:(NSSet *)touchesSet withEvent:(UIEvent *)event {
-	NSArray *tlist = [event.allTouches allObjects];
-	for (unsigned int i = 0; i < [tlist count]; i++) {
-		if ([touchesSet containsObject:[tlist objectAtIndex:i]]) {
-			UITouch *touch = [tlist objectAtIndex:i];
-			int tid = [self getTouchIDForTouch:touch];
-			ERR_FAIL_COND(tid == -1);
-			CGPoint touchPoint = [touch locationInView:self];
-			DisplayServerIOS::get_singleton()->touch_press(tid, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, true, touch.tapCount > 1);
-		}
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+	for (UITouch *touch in touches) {
+		int tid = [self getTouchIDForTouch:touch];
+		ERR_FAIL_COND(tid == -1);
+		CGPoint touchPoint = [touch locationInView:self];
+		DisplayServerIOS::get_singleton()->touch_press(tid, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, true, touch.tapCount > 1);
 	}
 }
 
-- (void)godotTouchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
-	NSArray *tlist = [event.allTouches allObjects];
-	for (unsigned int i = 0; i < [tlist count]; i++) {
-		if ([touches containsObject:[tlist objectAtIndex:i]]) {
-			UITouch *touch = [tlist objectAtIndex:i];
-			int tid = [self getTouchIDForTouch:touch];
-			ERR_FAIL_COND(tid == -1);
-			CGPoint touchPoint = [touch locationInView:self];
-			CGPoint prev_point = [touch previousLocationInView:self];
-			CGFloat alt = [touch altitudeAngle];
-			CGVector azim = [touch azimuthUnitVectorInView:self];
-			DisplayServerIOS::get_singleton()->touch_drag(tid, prev_point.x * self.contentScaleFactor, prev_point.y * self.contentScaleFactor, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, [touch force] / [touch maximumPossibleForce], Vector2(azim.dx, azim.dy) * Math::cos(alt));
-		}
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
+	for (UITouch *touch in touches) {
+		int tid = [self getTouchIDForTouch:touch];
+		ERR_FAIL_COND(tid == -1);
+		CGPoint touchPoint = [touch locationInView:self];
+		CGPoint prev_point = [touch previousLocationInView:self];
+		CGFloat alt = [touch altitudeAngle];
+		CGVector azim = [touch azimuthUnitVectorInView:self];
+		DisplayServerIOS::get_singleton()->touch_drag(tid, prev_point.x * self.contentScaleFactor, prev_point.y * self.contentScaleFactor, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, [touch force] / [touch maximumPossibleForce], Vector2(azim.dx, azim.dy) * Math::cos(alt));
 	}
 }
 
-- (void)godotTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
-	NSArray *tlist = [event.allTouches allObjects];
-	for (unsigned int i = 0; i < [tlist count]; i++) {
-		if ([touches containsObject:[tlist objectAtIndex:i]]) {
-			UITouch *touch = [tlist objectAtIndex:i];
-			int tid = [self getTouchIDForTouch:touch];
-			ERR_FAIL_COND(tid == -1);
-			[self removeTouch:touch];
-			CGPoint touchPoint = [touch locationInView:self];
-			DisplayServerIOS::get_singleton()->touch_press(tid, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, false, false);
-		}
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
+	for (UITouch *touch in touches) {
+		int tid = [self getTouchIDForTouch:touch];
+		ERR_FAIL_COND(tid == -1);
+		[self removeTouch:touch];
+		CGPoint touchPoint = [touch locationInView:self];
+		DisplayServerIOS::get_singleton()->touch_press(tid, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, false, false);
 	}
 }
 
-- (void)godotTouchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
-	NSArray *tlist = [event.allTouches allObjects];
-	for (unsigned int i = 0; i < [tlist count]; i++) {
-		if ([touches containsObject:[tlist objectAtIndex:i]]) {
-			UITouch *touch = [tlist objectAtIndex:i];
-			int tid = [self getTouchIDForTouch:touch];
-			ERR_FAIL_COND(tid == -1);
-			DisplayServerIOS::get_singleton()->touches_cancelled(tid);
-		}
+- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
+	for (UITouch *touch in touches) {
+		int tid = [self getTouchIDForTouch:touch];
+		ERR_FAIL_COND(tid == -1);
+		DisplayServerIOS::get_singleton()->touches_canceled(tid);
 	}
 	[self clearTouches];
 }

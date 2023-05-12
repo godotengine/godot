@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Window" inherits="Viewport" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Window" inherits="Viewport" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for all windows.
 	</brief_description>
@@ -348,16 +348,15 @@
 			<return type="void" />
 			<param index="0" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)" />
 			<description>
-				Shows the [Window] and makes it transient (see [member transient]). If [param rect] is provided, it will be set as the [Window]'s size.
-				Fails if called on the main window.
+				Shows the [Window] and makes it transient (see [member transient]). If [param rect] is provided, it will be set as the [Window]'s size. Fails if called on the main window.
 			</description>
 		</method>
 		<method name="popup_centered">
 			<return type="void" />
 			<param index="0" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
 			<description>
-				Popups the [Window] at the center of the current screen, with optionally given minimum size.
-				If the [Window] is embedded, it will be centered in the parent [Viewport] instead.
+				Popups the [Window] at the center of the current screen, with optionally given minimum size. If the [Window] is embedded, it will be centered in the parent [Viewport] instead.
+				[b]Note:[/b] Calling it with the default value of [param minsize] is equivalent to calling it with [member size].
 			</description>
 		</method>
 		<method name="popup_centered_clamped">
@@ -365,8 +364,8 @@
 			<param index="0" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
 			<param index="1" name="fallback_ratio" type="float" default="0.75" />
 			<description>
-				Popups the [Window] centered inside its parent [Window].
-				[code]fallback_ratio[/code] determines the maximum size of the [Window], in relation to its parent.
+				Popups the [Window] centered inside its parent [Window]. [param fallback_ratio] determines the maximum size of the [Window], in relation to its parent.
+				[b]Note:[/b] Calling it with the default value of [param minsize] is equivalent to calling it with [member size].
 			</description>
 		</method>
 		<method name="popup_centered_ratio">
@@ -380,8 +379,7 @@
 			<return type="void" />
 			<param index="0" name="parent_rect" type="Rect2i" />
 			<description>
-				Popups the [Window] with a position shifted by parent [Window]'s position.
-				If the [Window] is embedded, has the same effect as [method popup].
+				Popups the [Window] with a position shifted by parent [Window]'s position. If the [Window] is embedded, has the same effect as [method popup].
 			</description>
 		</method>
 		<method name="remove_theme_color_override">
@@ -503,7 +501,7 @@
 		<member name="content_scale_size" type="Vector2i" setter="set_content_scale_size" getter="get_content_scale_size" default="Vector2i(0, 0)">
 			Base size of the content (i.e. nodes that are drawn inside the window). If non-zero, [Window]'s content will be scaled when the window is resized to a different size.
 		</member>
-		<member name="current_screen" type="int" setter="set_current_screen" getter="get_current_screen" default="0">
+		<member name="current_screen" type="int" setter="set_current_screen" getter="get_current_screen">
 			The screen the window is currently on.
 		</member>
 		<member name="exclusive" type="bool" setter="set_exclusive" getter="is_exclusive" default="false">
@@ -512,6 +510,8 @@
 		</member>
 		<member name="extend_to_title" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] contents is expanded to the full size of the window, window title bar is transparent.
+		</member>
+		<member name="initial_position" type="int" setter="set_initial_position" getter="get_initial_position" enum="Window.WindowInitialPosition" default="0">
 		</member>
 		<member name="max_size" type="Vector2i" setter="set_max_size" getter="get_max_size" default="Vector2i(0, 0)">
 			If non-zero, the [Window] can't be resized to be bigger than this size.
@@ -525,11 +525,45 @@
 			Set's the window's current mode.
 			[b]Note:[/b] Fullscreen mode is not exclusive full screen on Windows and Linux.
 		</member>
+		<member name="mouse_passthrough" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], all mouse events will be passed to the underlying window of the same application. See also [member mouse_passthrough_polygon].
+			[b]Note:[/b] This property is implemented on Linux (X11), macOS and Windows.
+		</member>
+		<member name="mouse_passthrough_polygon" type="PackedVector2Array" setter="set_mouse_passthrough_polygon" getter="get_mouse_passthrough_polygon" default="PackedVector2Array()">
+			Sets a polygonal region of the window which accepts mouse events. Mouse events outside the region will be passed through.
+			Passing an empty array will disable passthrough support (all mouse events will be intercepted by the window, which is the default behavior).
+			[codeblocks]
+			[gdscript]
+			# Set region, using Path2D node.
+			$Window.mouse_passthrough_polygon = $Path2D.curve.get_baked_points()
+
+			# Set region, using Polygon2D node.
+			$Window.mouse_passthrough_polygon = $Polygon2D.polygon
+
+			# Reset region to default.
+			$Window.mouse_passthrough_polygon = []
+			[/gdscript]
+			[csharp]
+			// Set region, using Path2D node.
+			GetNode&lt;Window&gt;("Window").MousePassthrough = GetNode&lt;Path2D&gt;("Path2D").Curve.GetBakedPoints();
+
+			// Set region, using Polygon2D node.
+			GetNode&lt;Window&gt;("Window").MousePassthrough = GetNode&lt;Polygon2D&gt;("Polygon2D").Polygon;
+
+			// Reset region to default.
+			GetNode&lt;Window&gt;("Window").MousePassthrough = new Vector2[] {};
+			[/csharp]
+			[/codeblocks]
+			[b]Note:[/b] This property is ignored if [member mouse_passthrough] is set to [code]true[/code].
+			[b]Note:[/b] On Windows, the portion of a window that lies outside the region is not drawn, while on Linux (X11) and macOS it is.
+			[b]Note:[/b] This property is implemented on Linux (X11), macOS and Windows.
+		</member>
 		<member name="popup_window" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] will be considered a popup. Popups are sub-windows that don't show as separate windows in system's window manager's window list and will send close request when anything is clicked outside of them (unless [member exclusive] is enabled).
 		</member>
 		<member name="position" type="Vector2i" setter="set_position" getter="get_position" default="Vector2i(0, 0)">
 			The window's position in pixels.
+			If [member ProjectSettings.display/window/subwindows/embed_subwindows] is [code]false[/code], the position is in absolute screen coordinates. This typically applies to editor plugins. If the setting is [code]false[/code], the window's position is in the coordinates of its parent [Viewport].
 		</member>
 		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(100, 100)">
 			The window's size in pixels.
@@ -545,7 +579,7 @@
 			The window's title. If the [Window] is non-embedded, title styles set in [Theme] will have no effect.
 		</member>
 		<member name="transient" type="bool" setter="set_transient" getter="is_transient" default="false">
-			If [code]true[/code], the [Window] is transient, i.e. it's considered a child of another [Window]. Transient window is will be destroyed with its transient parent and will return focus to their parent when closed. The transient window is displayed on top of a non-exclusive full-screen parent window. Transient windows can't enter full-screen mode.
+			If [code]true[/code], the [Window] is transient, i.e. it's considered a child of another [Window]. The transient window will be destroyed with its transient parent and will return focus to their parent when closed. The transient window is displayed on top of a non-exclusive full-screen parent window. Transient windows can't enter full-screen mode.
 			Note that behavior might be different depending on the platform.
 		</member>
 		<member name="transparent" type="bool" setter="set_flag" getter="get_flag" default="false">
@@ -577,6 +611,12 @@
 			<description>
 				Emitted when the [Window]'s close button is pressed or when [member popup_window] is enabled and user clicks outside the window.
 				This signal can be used to handle window closing, e.g. by connecting it to [method hide].
+			</description>
+		</signal>
+		<signal name="dpi_changed">
+			<description>
+				Emitted when the [Window]'s DPI changes as a result of OS-level changes (e.g. moving the window from a Retina display to a lower resolution one).
+				[b]Note:[/b] Only implemented on macOS.
 			</description>
 		</signal>
 		<signal name="files_dropped">
@@ -671,7 +711,7 @@
 			Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="FLAG_RESIZE_DISABLED" value="0" enum="Flags">
-			The window can't be resizing by dragging its resize grip. It's still possible to resize the window using [member size]. This flag is ignored for full screen windows. Set with [member unresizable].
+			The window can't be resized by dragging its resize grip. It's still possible to resize the window using [member size]. This flag is ignored for full screen windows. Set with [member unresizable].
 		</constant>
 		<constant name="FLAG_BORDERLESS" value="1" enum="Flags">
 			The window do not have native title bar and other decorations. This flag is ignored for full-screen windows. Set with [member borderless].
@@ -687,13 +727,16 @@
 			The window can't be focused. No-focus window will ignore all input, except mouse clicks. Set with [member unfocusable].
 		</constant>
 		<constant name="FLAG_POPUP" value="5" enum="Flags">
-			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when the window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have [code]transient parent[/code] set (see [member transient]).
+			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when the window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have transient parent set (see [member transient]).
 		</constant>
 		<constant name="FLAG_EXTEND_TO_TITLE" value="6" enum="Flags">
 			Window content is expanded to the full size of the window. Unlike borderless window, the frame is left intact and can be used to resize the window, title bar is transparent, but have minimize/maximize/close buttons. Set with [member extend_to_title].
 			[b]Note:[/b] This flag is implemented on macOS.
 		</constant>
-		<constant name="FLAG_MAX" value="7" enum="Flags">
+		<constant name="FLAG_MOUSE_PASSTHROUGH" value="7" enum="Flags">
+			All mouse events are passed to the underlying window of the same application.
+		</constant>
+		<constant name="FLAG_MAX" value="8" enum="Flags">
 			Max value of the [enum Flags].
 		</constant>
 		<constant name="CONTENT_SCALE_MODE_DISABLED" value="0" enum="ContentScaleMode">
@@ -718,7 +761,7 @@
 			The content can be expanded horizontally. Scaling vertically will result in keeping the height ratio and then black bars on top and bottom sides.
 		</constant>
 		<constant name="CONTENT_SCALE_ASPECT_EXPAND" value="4" enum="ContentScaleAspect">
-			The content's aspect will be preserved. If the target size has different aspect from the base one, the content will stay in the to-left corner and add an extra visible area in the stretched space.
+			The content's aspect will be preserved. If the target size has different aspect from the base one, the content will stay in the top-left corner and add an extra visible area in the stretched space.
 		</constant>
 		<constant name="LAYOUT_DIRECTION_INHERITED" value="0" enum="LayoutDirection">
 			Automatic layout direction, determined from the parent window layout direction.
@@ -731,6 +774,24 @@
 		</constant>
 		<constant name="LAYOUT_DIRECTION_RTL" value="3" enum="LayoutDirection">
 			Right-to-left layout direction.
+		</constant>
+		<constant name="WINDOW_INITIAL_POSITION_ABSOLUTE" value="0" enum="WindowInitialPosition">
+			Initial window position is determined by [member position].
+		</constant>
+		<constant name="WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN" value="1" enum="WindowInitialPosition">
+			Initial window position is the center of the primary screen.
+		</constant>
+		<constant name="WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN" value="2" enum="WindowInitialPosition">
+			Initial window position is the center of the main window screen.
+		</constant>
+		<constant name="WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN" value="3" enum="WindowInitialPosition">
+			Initial window position is the center of [member current_screen] screen.
+		</constant>
+		<constant name="WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS" value="4" enum="WindowInitialPosition">
+			Initial window position is the center of the screen containing the mouse pointer.
+		</constant>
+		<constant name="WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS" value="5" enum="WindowInitialPosition">
+			Initial window position is the center of the screen containing the window with the keyboard focus.
 		</constant>
 	</constants>
 	<theme_items>

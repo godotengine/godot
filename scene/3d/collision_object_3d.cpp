@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  collision_object_3d.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  collision_object_3d.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "collision_object_3d.h"
 
@@ -43,6 +43,11 @@ void CollisionObject3D::_notification(int p_what) {
 				}
 				_update_debug_shapes();
 			}
+#ifdef TOOLS_ENABLED
+			if (Engine::get_singleton()->is_editor_hint()) {
+				set_notify_local_transform(true); // Used for warnings and only in editor.
+			}
+#endif
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -78,6 +83,10 @@ void CollisionObject3D::_notification(int p_what) {
 			_update_pickable();
 		} break;
 
+		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+			update_configuration_warnings();
+		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (only_update_transform_changes) {
 				return;
@@ -100,10 +109,14 @@ void CollisionObject3D::_notification(int p_what) {
 			bool disabled = !is_enabled();
 
 			if (!disabled || (disable_mode != DISABLE_MODE_REMOVE)) {
-				if (area) {
-					PhysicsServer3D::get_singleton()->area_set_space(rid, RID());
+				if (callback_lock > 0) {
+					ERR_PRINT("Removing a CollisionObject node during a physics callback is not allowed and will cause undesired behavior. Remove with call_deferred() instead.");
 				} else {
-					PhysicsServer3D::get_singleton()->body_set_space(rid, RID());
+					if (area) {
+						PhysicsServer3D::get_singleton()->area_set_space(rid, RID());
+					} else {
+						PhysicsServer3D::get_singleton()->body_set_space(rid, RID());
+					}
 				}
 			}
 
@@ -223,10 +236,14 @@ void CollisionObject3D::_apply_disabled() {
 	switch (disable_mode) {
 		case DISABLE_MODE_REMOVE: {
 			if (is_inside_tree()) {
-				if (area) {
-					PhysicsServer3D::get_singleton()->area_set_space(rid, RID());
+				if (callback_lock > 0) {
+					ERR_PRINT("Disabling a CollisionObject node during a physics callback is not allowed and will cause undesired behavior. Disable with call_deferred() instead.");
 				} else {
-					PhysicsServer3D::get_singleton()->body_set_space(rid, RID());
+					if (area) {
+						PhysicsServer3D::get_singleton()->area_set_space(rid, RID());
+					} else {
+						PhysicsServer3D::get_singleton()->body_set_space(rid, RID());
+					}
 				}
 			}
 		} break;
@@ -714,6 +731,11 @@ PackedStringArray CollisionObject3D::get_configuration_warnings() const {
 
 	if (shapes.is_empty()) {
 		warnings.push_back(RTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape3D or CollisionPolygon3D as a child to define its shape."));
+	}
+
+	Vector3 scale = get_transform().get_basis().get_scale();
+	if (!(Math::is_zero_approx(scale.x - scale.y) && Math::is_zero_approx(scale.y - scale.z))) {
+		warnings.push_back(RTR("With a non-uniform scale this node will probably not function as expected.\nPlease make its scale uniform (i.e. the same on all axes), and change the size in children collision shapes instead."));
 	}
 
 	return warnings;

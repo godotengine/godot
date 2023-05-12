@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  GodotIO.java                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  GodotIO.java                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 package org.godotengine.godot;
 
@@ -49,6 +49,9 @@ import android.view.Display;
 import android.view.DisplayCutout;
 import android.view.WindowInsets;
 
+import androidx.core.content.FileProvider;
+
+import java.io.File;
 import java.util.List;
 import java.util.Locale;
 
@@ -84,29 +87,42 @@ public class GodotIO {
 	// MISCELLANEOUS OS IO
 	/////////////////////////
 
-	public int openURI(String p_uri) {
+	public int openURI(String uriString) {
 		try {
-			String path = p_uri;
-			String type = "";
-			if (path.startsWith("/")) {
-				//absolute path to filesystem, prepend file://
-				path = "file://" + path;
-				if (p_uri.endsWith(".png") || p_uri.endsWith(".jpg") || p_uri.endsWith(".gif") || p_uri.endsWith(".webp")) {
-					type = "image/*";
+			Uri dataUri;
+			String dataType = "";
+			boolean grantReadUriPermission = false;
+
+			if (uriString.startsWith("/") || uriString.startsWith("file://")) {
+				String filePath = uriString;
+				// File uris needs to be provided via the FileProvider
+				grantReadUriPermission = true;
+				if (filePath.startsWith("file://")) {
+					filePath = filePath.replace("file://", "");
 				}
+
+				File targetFile = new File(filePath);
+				dataUri = FileProvider.getUriForFile(activity, activity.getPackageName() + ".fileprovider", targetFile);
+				dataType = activity.getContentResolver().getType(dataUri);
+			} else {
+				dataUri = Uri.parse(uriString);
 			}
 
 			Intent intent = new Intent();
 			intent.setAction(Intent.ACTION_VIEW);
-			if (!type.equals("")) {
-				intent.setDataAndType(Uri.parse(path), type);
+			if (TextUtils.isEmpty(dataType)) {
+				intent.setData(dataUri);
 			} else {
-				intent.setData(Uri.parse(path));
+				intent.setDataAndType(dataUri, dataType);
+			}
+			if (grantReadUriPermission) {
+				intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 			}
 
 			activity.startActivity(intent);
 			return 0;
 		} catch (ActivityNotFoundException e) {
+			Log.e(TAG, "Unable to open uri " + uriString, e);
 			return 1;
 		}
 	}
@@ -150,7 +166,6 @@ public class GodotIO {
 		} else {
 			selectedScaledDensity = 0.75f;
 		}
-		Log.d(TAG, "Selected scaled density: " + selectedScaledDensity);
 		return selectedScaledDensity;
 	}
 

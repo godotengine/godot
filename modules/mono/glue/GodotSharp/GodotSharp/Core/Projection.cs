@@ -49,22 +49,22 @@ namespace Godot
         /// <summary>
         /// The projection's X column. Also accessible by using the index position <c>[0]</c>.
         /// </summary>
-        public Vector4 x;
+        public Vector4 X;
 
         /// <summary>
         /// The projection's Y column. Also accessible by using the index position <c>[1]</c>.
         /// </summary>
-        public Vector4 y;
+        public Vector4 Y;
 
         /// <summary>
         /// The projection's Z column. Also accessible by using the index position <c>[2]</c>.
         /// </summary>
-        public Vector4 z;
+        public Vector4 Z;
 
         /// <summary>
         /// The projection's W column. Also accessible by using the index position <c>[3]</c>.
         /// </summary>
-        public Vector4 w;
+        public Vector4 W;
 
         /// <summary>
         /// Access whole columns in the form of <see cref="Vector4"/>.
@@ -80,13 +80,13 @@ namespace Godot
                 switch (column)
                 {
                     case 0:
-                        return x;
+                        return X;
                     case 1:
-                        return y;
+                        return Y;
                     case 2:
-                        return z;
+                        return Z;
                     case 3:
-                        return w;
+                        return W;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(column));
                 }
@@ -96,16 +96,16 @@ namespace Godot
                 switch (column)
                 {
                     case 0:
-                        x = value;
+                        X = value;
                         return;
                     case 1:
-                        y = value;
+                        Y = value;
                         return;
                     case 2:
-                        z = value;
+                        Z = value;
                         return;
                     case 3:
-                        w = value;
+                        W = value;
                         return;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(column));
@@ -128,13 +128,13 @@ namespace Godot
                 switch (column)
                 {
                     case 0:
-                        return x[row];
+                        return X[row];
                     case 1:
-                        return y[row];
+                        return Y[row];
                     case 2:
-                        return z[row];
+                        return Z[row];
                     case 3:
-                        return w[row];
+                        return W[row];
                     default:
                         throw new ArgumentOutOfRangeException(nameof(column));
                 }
@@ -144,16 +144,16 @@ namespace Godot
                 switch (column)
                 {
                     case 0:
-                        x[row] = value;
+                        X[row] = value;
                         return;
                     case 1:
-                        y[row] = value;
+                        Y[row] = value;
                         return;
                     case 2:
-                        z[row] = value;
+                        Z[row] = value;
                         return;
                     case 3:
-                        w[row] = value;
+                        W[row] = value;
                         return;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(column));
@@ -180,20 +180,20 @@ namespace Godot
 
         /// <summary>
         /// Creates a new <see cref="Projection"/> that scales a given projection to fit around
-        /// a given <see cref="AABB"/> in projection space.
+        /// a given <see cref="Aabb"/> in projection space.
         /// </summary>
-        /// <param name="aabb">The AABB to fit the projection around.</param>
+        /// <param name="aabb">The Aabb to fit the projection around.</param>
         /// <returns>The created projection.</returns>
-        public static Projection CreateFitAabb(AABB aabb)
+        public static Projection CreateFitAabb(Aabb aabb)
         {
             Vector3 min = aabb.Position;
             Vector3 max = aabb.Position + aabb.Size;
 
             return new Projection(
-                new Vector4(2 / (max.x - min.x), 0, 0, 0),
-                new Vector4(0, 2 / (max.y - min.y), 0, 0),
-                new Vector4(0, 0, 2 / (max.z - min.z), 0),
-                new Vector4(-(max.x + min.x) / (max.x - min.x), -(max.y + min.y) / (max.y - min.y), -(max.z + min.z) / (max.z - min.z), 1)
+                new Vector4(2 / (max.X - min.X), 0, 0, 0),
+                new Vector4(0, 2 / (max.Y - min.Y), 0, 0),
+                new Vector4(0, 0, 2 / (max.Z - min.Z), 0),
+                new Vector4(-(max.X + min.X) / (max.X - min.X), -(max.Y + min.Y) / (max.Y - min.Y), -(max.Z + min.Z) / (max.Z - min.Z), 1)
             );
         }
 
@@ -300,7 +300,7 @@ namespace Godot
             {
                 size *= aspect;
             }
-            return CreateFrustum(-size / 2 + offset.x, +size / 2 + offset.x, -size / aspect / 2 + offset.y, +size / aspect / 2 + offset.y, near, far);
+            return CreateFrustum(-size / 2 + offset.X, +size / 2 + offset.X, -size / aspect / 2 + offset.Y, +size / aspect / 2 + offset.Y, near, far);
         }
 
         /// <summary>
@@ -311,10 +311,10 @@ namespace Godot
         public static Projection CreateLightAtlasRect(Rect2 rect)
         {
             return new Projection(
-                new Vector4(rect.Size.x, 0, 0, 0),
-                new Vector4(0, rect.Size.y, 0, 0),
+                new Vector4(rect.Size.X, 0, 0, 0),
+                new Vector4(0, rect.Size.Y, 0, 0),
                 new Vector4(0, 0, 1, 0),
-                new Vector4(rect.Position.x, rect.Position.y, 0, 1)
+                new Vector4(rect.Position.X, rect.Position.Y, 0, 1)
             );
         }
 
@@ -332,13 +332,13 @@ namespace Godot
         public static Projection CreateOrthogonal(real_t left, real_t right, real_t bottom, real_t top, real_t zNear, real_t zFar)
         {
             Projection proj = Projection.Identity;
-            proj.x.x = (real_t)2.0 / (right - left);
-            proj.w.x = -((right + left) / (right - left));
-            proj.y.y = (real_t)2.0 / (top - bottom);
-            proj.w.y = -((top + bottom) / (top - bottom));
-            proj.z.z = (real_t)(-2.0) / (zFar - zNear);
-            proj.w.z = -((zFar + zNear) / (zFar - zNear));
-            proj.w.w = (real_t)1.0;
+            proj.X.X = (real_t)2.0 / (right - left);
+            proj.W.X = -((right + left) / (right - left));
+            proj.Y.Y = (real_t)2.0 / (top - bottom);
+            proj.W.Y = -((top + bottom) / (top - bottom));
+            proj.Z.Z = (real_t)(-2.0) / (zFar - zNear);
+            proj.W.Z = -((zFar + zNear) / (zFar - zNear));
+            proj.W.W = (real_t)1.0;
             return proj;
         }
 
@@ -381,23 +381,23 @@ namespace Godot
             }
             real_t radians = Mathf.DegToRad(fovyDegrees / (real_t)2.0);
             real_t deltaZ = zFar - zNear;
-            real_t sine = Mathf.Sin(radians);
+            (real_t sin, real_t cos) = Mathf.SinCos(radians);
 
-            if ((deltaZ == 0) || (sine == 0) || (aspect == 0))
+            if ((deltaZ == 0) || (sin == 0) || (aspect == 0))
             {
                 return Zero;
             }
 
-            real_t cotangent = Mathf.Cos(radians) / sine;
+            real_t cotangent = cos / sin;
 
             Projection proj = Projection.Identity;
 
-            proj.x.x = cotangent / aspect;
-            proj.y.y = cotangent;
-            proj.z.z = -(zFar + zNear) / deltaZ;
-            proj.z.w = -1;
-            proj.w.z = -2 * zNear * zFar / deltaZ;
-            proj.w.w = 0;
+            proj.X.X = cotangent / aspect;
+            proj.Y.Y = cotangent;
+            proj.Z.Z = -(zFar + zNear) / deltaZ;
+            proj.Z.W = -1;
+            proj.W.Z = -2 * zNear * zFar / deltaZ;
+            proj.W.W = 0;
 
             return proj;
         }
@@ -456,7 +456,7 @@ namespace Godot
             }
             Projection proj = CreateFrustum(left, right, -ymax, ymax, zNear, zFar);
             Projection cm = Projection.Identity;
-            cm.w.x = modeltranslation;
+            cm.W.X = modeltranslation;
             return proj * cm;
         }
 
@@ -469,18 +469,18 @@ namespace Godot
         /// <returns>The determinant calculated from this projection.</returns>
         public readonly real_t Determinant()
         {
-            return x.w * y.z * z.y * w.x - x.z * y.w * z.y * w.x -
-                   x.w * y.y * z.z * w.x + x.y * y.w * z.z * w.x +
-                   x.z * y.y * z.w * w.x - x.y * y.z * z.w * w.x -
-                   x.w * y.z * z.x * w.y + x.z * y.w * z.x * w.y +
-                   x.w * y.x * z.z * w.y - x.x * y.w * z.z * w.y -
-                   x.z * y.x * z.w * w.y + x.x * y.z * z.w * w.y +
-                   x.w * y.y * z.x * w.z - x.y * y.w * z.x * w.z -
-                   x.w * y.x * z.y * w.z + x.x * y.w * z.y * w.z +
-                   x.y * y.x * z.w * w.z - x.x * y.y * z.w * w.z -
-                   x.z * y.y * z.x * w.w + x.y * y.z * z.x * w.w +
-                   x.z * y.x * z.y * w.w - x.x * y.z * z.y * w.w -
-                   x.y * y.x * z.z * w.w + x.x * y.y * z.z * w.w;
+            return X.W * Y.Z * Z.Y * W.X - X.Z * Y.W * Z.Y * W.X -
+                   X.W * Y.Y * Z.Z * W.X + X.Y * Y.W * Z.Z * W.X +
+                   X.Z * Y.Y * Z.W * W.X - X.Y * Y.Z * Z.W * W.X -
+                   X.W * Y.Z * Z.X * W.Y + X.Z * Y.W * Z.X * W.Y +
+                   X.W * Y.X * Z.Z * W.Y - X.X * Y.W * Z.Z * W.Y -
+                   X.Z * Y.X * Z.W * W.Y + X.X * Y.Z * Z.W * W.Y +
+                   X.W * Y.Y * Z.X * W.Z - X.Y * Y.W * Z.X * W.Z -
+                   X.W * Y.X * Z.Y * W.Z + X.X * Y.W * Z.Y * W.Z +
+                   X.Y * Y.X * Z.W * W.Z - X.X * Y.Y * Z.W * W.Z -
+                   X.Z * Y.Y * Z.X * W.W + X.Y * Y.Z * Z.X * W.W +
+                   X.Z * Y.X * Z.Y * W.W - X.X * Y.Z * Z.Y * W.W -
+                   X.Y * Y.X * Z.Z * W.W + X.X * Y.Y * Z.Z * W.W;
         }
 
         /// <summary>
@@ -490,7 +490,7 @@ namespace Godot
         public readonly real_t GetAspect()
         {
             Vector2 vpHe = GetViewportHalfExtents();
-            return vpHe.x / vpHe.y;
+            return vpHe.X / vpHe.Y;
         }
 
         /// <summary>
@@ -499,15 +499,15 @@ namespace Godot
         /// <returns>The horizontal field of view of this projection.</returns>
         public readonly real_t GetFov()
         {
-            Plane rightPlane = new Plane(x.w - x.x, y.w - y.x, z.w - z.x, -w.w + w.x).Normalized();
-            if (z.x == 0 && z.y == 0)
+            Plane rightPlane = new Plane(X.W - X.X, Y.W - Y.X, Z.W - Z.X, -W.W + W.X).Normalized();
+            if (Z.X == 0 && Z.Y == 0)
             {
-                return Mathf.RadToDeg(Mathf.Acos(Mathf.Abs(rightPlane.Normal.x))) * (real_t)2.0;
+                return Mathf.RadToDeg(Mathf.Acos(Mathf.Abs(rightPlane.Normal.X))) * (real_t)2.0;
             }
             else
             {
-                Plane leftPlane = new Plane(x.w + x.x, y.w + y.x, z.w + z.x, w.w + w.x).Normalized();
-                return Mathf.RadToDeg(Mathf.Acos(Mathf.Abs(leftPlane.Normal.x))) + Mathf.RadToDeg(Mathf.Acos(Mathf.Abs(rightPlane.Normal.x)));
+                Plane leftPlane = new Plane(X.W + X.X, Y.W + Y.X, Z.W + Z.X, W.W + W.X).Normalized();
+                return Mathf.RadToDeg(Mathf.Acos(Mathf.Abs(leftPlane.Normal.X))) + Mathf.RadToDeg(Mathf.Acos(Mathf.Abs(rightPlane.Normal.X)));
             }
         }
 
@@ -531,12 +531,12 @@ namespace Godot
         {
             if (IsOrthogonal())
             {
-                return GetViewportHalfExtents().x;
+                return GetViewportHalfExtents().X;
             }
             else
             {
                 real_t zn = GetZNear();
-                real_t width = GetViewportHalfExtents().x * (real_t)2.0;
+                real_t width = GetViewportHalfExtents().X * (real_t)2.0;
                 return (real_t)1.0 / (zn / width);
             }
         }
@@ -551,7 +551,7 @@ namespace Godot
         {
             Vector3 result = this * new Vector3(1, 0, -1);
 
-            return (int)((result.x * (real_t)0.5 + (real_t)0.5) * forPixelWidth);
+            return (int)((result.X * (real_t)0.5 + (real_t)0.5) * forPixelWidth);
         }
 
         /// <summary>
@@ -567,12 +567,12 @@ namespace Godot
         {
             Plane newPlane = plane switch
             {
-                Planes.Near => new Plane(x.w + x.z, y.w + y.z, z.w + z.z, w.w + w.z),
-                Planes.Far => new Plane(x.w - x.z, y.w - y.z, z.w - z.z, w.w - w.z),
-                Planes.Left => new Plane(x.w + x.x, y.w + y.x, z.w + z.x, w.w + w.x),
-                Planes.Top => new Plane(x.w - x.y, y.w - y.y, z.w - z.y, w.w - w.y),
-                Planes.Right => new Plane(x.w - x.x, y.w - y.x, z.w - z.x, w.w - w.x),
-                Planes.Bottom => new Plane(x.w + x.y, y.w + y.y, z.w + z.y, w.w + w.y),
+                Planes.Near => new Plane(X.W + X.Z, Y.W + Y.Z, Z.W + Z.Z, W.W + W.Z),
+                Planes.Far => new Plane(X.W - X.Z, Y.W - Y.Z, Z.W - Z.Z, W.W - W.Z),
+                Planes.Left => new Plane(X.W + X.X, Y.W + Y.X, Z.W + Z.X, W.W + W.X),
+                Planes.Top => new Plane(X.W - X.Y, Y.W - Y.Y, Z.W - Z.Y, W.W - W.Y),
+                Planes.Right => new Plane(X.W - X.X, Y.W - Y.X, Z.W - Z.X, W.W - W.X),
+                Planes.Bottom => new Plane(X.W + X.Y, Y.W + Y.Y, Z.W + Z.Y, W.W + W.Y),
                 _ => new Plane(),
             };
             newPlane.Normal = -newPlane.Normal;
@@ -586,7 +586,7 @@ namespace Godot
         public readonly Vector2 GetFarPlaneHalfExtents()
         {
             var res = GetProjectionPlane(Planes.Far).Intersect3(GetProjectionPlane(Planes.Right), GetProjectionPlane(Planes.Top));
-            return new Vector2(res.Value.x, res.Value.y);
+            return new Vector2(res.Value.X, res.Value.Y);
         }
 
         /// <summary>
@@ -597,7 +597,7 @@ namespace Godot
         public readonly Vector2 GetViewportHalfExtents()
         {
             var res = GetProjectionPlane(Planes.Near).Intersect3(GetProjectionPlane(Planes.Right), GetProjectionPlane(Planes.Top));
-            return new Vector2(res.Value.x, res.Value.y);
+            return new Vector2(res.Value.X, res.Value.Y);
         }
 
         /// <summary>
@@ -625,7 +625,7 @@ namespace Godot
         public readonly Projection FlippedY()
         {
             Projection proj = this;
-            proj.y = -proj.y;
+            proj.Y = -proj.Y;
             return proj;
         }
 
@@ -642,8 +642,8 @@ namespace Godot
             real_t zFar = GetZFar();
             real_t zNear = newZNear;
             real_t deltaZ = zFar - zNear;
-            proj.z.z = -(zFar + zNear) / deltaZ;
-            proj.w.z = -2 * zNear * zFar / deltaZ;
+            proj.Z.Z = -(zFar + zNear) / deltaZ;
+            proj.W.Z = -2 * zNear * zFar / deltaZ;
             return proj;
         }
 
@@ -656,8 +656,8 @@ namespace Godot
         public readonly Projection JitterOffseted(Vector2 offset)
         {
             Projection proj = this;
-            proj.w.x += offset.x;
-            proj.w.y += offset.y;
+            proj.W.X += offset.X;
+            proj.W.Y += offset.Y;
             return proj;
         }
 
@@ -795,7 +795,7 @@ namespace Godot
         /// <returns>If the projection performs an orthogonal projection.</returns>
         public readonly bool IsOrthogonal()
         {
-            return w.w == (real_t)1.0;
+            return W.W == (real_t)1.0;
         }
 
         // Constants
@@ -835,10 +835,10 @@ namespace Godot
         /// <param name="w">The W column, or column index 3.</param>
         public Projection(Vector4 x, Vector4 y, Vector4 z, Vector4 w)
         {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
+            X = x;
+            Y = y;
+            Z = z;
+            W = w;
         }
 
         /// <summary>
@@ -847,10 +847,10 @@ namespace Godot
         /// <param name="transform">The <see cref="Transform3D"/>.</param>
         public Projection(Transform3D transform)
         {
-            x = new Vector4(transform.basis.Row0.x, transform.basis.Row1.x, transform.basis.Row2.x, 0);
-            y = new Vector4(transform.basis.Row0.y, transform.basis.Row1.y, transform.basis.Row2.y, 0);
-            z = new Vector4(transform.basis.Row0.z, transform.basis.Row1.z, transform.basis.Row2.z, 0);
-            w = new Vector4(transform.origin.x, transform.origin.y, transform.origin.z, 1);
+            X = new Vector4(transform.Basis.Row0.X, transform.Basis.Row1.X, transform.Basis.Row2.X, 0);
+            Y = new Vector4(transform.Basis.Row0.Y, transform.Basis.Row1.Y, transform.Basis.Row2.Y, 0);
+            Z = new Vector4(transform.Basis.Row0.Z, transform.Basis.Row1.Z, transform.Basis.Row2.Z, 0);
+            W = new Vector4(transform.Origin.X, transform.Origin.Y, transform.Origin.Z, 1);
         }
 
         /// <summary>
@@ -865,25 +865,25 @@ namespace Godot
         {
             return new Projection(
                 new Vector4(
-                    left.x.x * right.x.x + left.y.x * right.x.y + left.z.x * right.x.z + left.w.x * right.x.w,
-                    left.x.y * right.x.x + left.y.y * right.x.y + left.z.y * right.x.z + left.w.y * right.x.w,
-                    left.x.z * right.x.x + left.y.z * right.x.y + left.z.z * right.x.z + left.w.z * right.x.w,
-                    left.x.w * right.x.x + left.y.w * right.x.y + left.z.w * right.x.z + left.w.w * right.x.w
+                    left.X.X * right.X.X + left.Y.X * right.X.Y + left.Z.X * right.X.Z + left.W.X * right.X.W,
+                    left.X.Y * right.X.X + left.Y.Y * right.X.Y + left.Z.Y * right.X.Z + left.W.Y * right.X.W,
+                    left.X.Z * right.X.X + left.Y.Z * right.X.Y + left.Z.Z * right.X.Z + left.W.Z * right.X.W,
+                    left.X.W * right.X.X + left.Y.W * right.X.Y + left.Z.W * right.X.Z + left.W.W * right.X.W
                 ), new Vector4(
-                    left.x.x * right.y.x + left.y.x * right.y.y + left.z.x * right.y.z + left.w.x * right.y.w,
-                    left.x.y * right.y.x + left.y.y * right.y.y + left.z.y * right.y.z + left.w.y * right.y.w,
-                    left.x.z * right.y.x + left.y.z * right.y.y + left.z.z * right.y.z + left.w.z * right.y.w,
-                    left.x.w * right.y.x + left.y.w * right.y.y + left.z.w * right.y.z + left.w.w * right.y.w
+                    left.X.X * right.Y.X + left.Y.X * right.Y.Y + left.Z.X * right.Y.Z + left.W.X * right.Y.W,
+                    left.X.Y * right.Y.X + left.Y.Y * right.Y.Y + left.Z.Y * right.Y.Z + left.W.Y * right.Y.W,
+                    left.X.Z * right.Y.X + left.Y.Z * right.Y.Y + left.Z.Z * right.Y.Z + left.W.Z * right.Y.W,
+                    left.X.W * right.Y.X + left.Y.W * right.Y.Y + left.Z.W * right.Y.Z + left.W.W * right.Y.W
                 ), new Vector4(
-                    left.x.x * right.z.x + left.y.x * right.z.y + left.z.x * right.z.z + left.w.x * right.z.w,
-                    left.x.y * right.z.x + left.y.y * right.z.y + left.z.y * right.z.z + left.w.y * right.z.w,
-                    left.x.z * right.z.x + left.y.z * right.z.y + left.z.z * right.z.z + left.w.z * right.z.w,
-                    left.x.w * right.z.x + left.y.w * right.z.y + left.z.w * right.z.z + left.w.w * right.z.w
+                    left.X.X * right.Z.X + left.Y.X * right.Z.Y + left.Z.X * right.Z.Z + left.W.X * right.Z.W,
+                    left.X.Y * right.Z.X + left.Y.Y * right.Z.Y + left.Z.Y * right.Z.Z + left.W.Y * right.Z.W,
+                    left.X.Z * right.Z.X + left.Y.Z * right.Z.Y + left.Z.Z * right.Z.Z + left.W.Z * right.Z.W,
+                    left.X.W * right.Z.X + left.Y.W * right.Z.Y + left.Z.W * right.Z.Z + left.W.W * right.Z.W
                 ), new Vector4(
-                    left.x.x * right.w.x + left.y.x * right.w.y + left.z.x * right.w.z + left.w.x * right.w.w,
-                    left.x.y * right.w.x + left.y.y * right.w.y + left.z.y * right.w.z + left.w.y * right.w.w,
-                    left.x.z * right.w.x + left.y.z * right.w.y + left.z.z * right.w.z + left.w.z * right.w.w,
-                    left.x.w * right.w.x + left.y.w * right.w.y + left.z.w * right.w.z + left.w.w * right.w.w
+                    left.X.X * right.W.X + left.Y.X * right.W.Y + left.Z.X * right.W.Z + left.W.X * right.W.W,
+                    left.X.Y * right.W.X + left.Y.Y * right.W.Y + left.Z.Y * right.W.Z + left.W.Y * right.W.W,
+                    left.X.Z * right.W.X + left.Y.Z * right.W.Y + left.Z.Z * right.W.Z + left.W.Z * right.W.W,
+                    left.X.W * right.W.X + left.Y.W * right.W.Y + left.Z.W * right.W.Z + left.W.W * right.W.W
                 )
             );
         }
@@ -897,10 +897,10 @@ namespace Godot
         public static Vector4 operator *(Projection proj, Vector4 vector)
         {
             return new Vector4(
-                proj.x.x * vector.x + proj.y.x * vector.y + proj.z.x * vector.z + proj.w.x * vector.w,
-                proj.x.y * vector.x + proj.y.y * vector.y + proj.z.y * vector.z + proj.w.y * vector.w,
-                proj.x.z * vector.x + proj.y.z * vector.y + proj.z.z * vector.z + proj.w.z * vector.w,
-                proj.x.w * vector.x + proj.y.w * vector.y + proj.z.w * vector.z + proj.w.w * vector.w
+                proj.X.X * vector.X + proj.Y.X * vector.Y + proj.Z.X * vector.Z + proj.W.X * vector.W,
+                proj.X.Y * vector.X + proj.Y.Y * vector.Y + proj.Z.Y * vector.Z + proj.W.Y * vector.W,
+                proj.X.Z * vector.X + proj.Y.Z * vector.Y + proj.Z.Z * vector.Z + proj.W.Z * vector.W,
+                proj.X.W * vector.X + proj.Y.W * vector.Y + proj.Z.W * vector.Z + proj.W.W * vector.W
             );
         }
 
@@ -913,10 +913,10 @@ namespace Godot
         public static Vector4 operator *(Vector4 vector, Projection proj)
         {
             return new Vector4(
-                proj.x.x * vector.x + proj.x.y * vector.y + proj.x.z * vector.z + proj.x.w * vector.w,
-                proj.y.x * vector.x + proj.y.y * vector.y + proj.y.z * vector.z + proj.y.w * vector.w,
-                proj.z.x * vector.x + proj.z.y * vector.y + proj.z.z * vector.z + proj.z.w * vector.w,
-                proj.w.x * vector.x + proj.w.y * vector.y + proj.w.z * vector.z + proj.w.w * vector.w
+                proj.X.X * vector.X + proj.X.Y * vector.Y + proj.X.Z * vector.Z + proj.X.W * vector.W,
+                proj.Y.X * vector.X + proj.Y.Y * vector.Y + proj.Y.Z * vector.Z + proj.Y.W * vector.W,
+                proj.Z.X * vector.X + proj.Z.Y * vector.Y + proj.Z.Z * vector.Z + proj.Z.W * vector.W,
+                proj.W.X * vector.X + proj.W.Y * vector.Y + proj.W.Z * vector.Z + proj.W.W * vector.W
             );
         }
 
@@ -929,11 +929,11 @@ namespace Godot
         public static Vector3 operator *(Projection proj, Vector3 vector)
         {
             Vector3 ret = new Vector3(
-                proj.x.x * vector.x + proj.y.x * vector.y + proj.z.x * vector.z + proj.w.x,
-                proj.x.y * vector.x + proj.y.y * vector.y + proj.z.y * vector.z + proj.w.y,
-                proj.x.z * vector.x + proj.y.z * vector.y + proj.z.z * vector.z + proj.w.z
+                proj.X.X * vector.X + proj.Y.X * vector.Y + proj.Z.X * vector.Z + proj.W.X,
+                proj.X.Y * vector.X + proj.Y.Y * vector.Y + proj.Z.Y * vector.Z + proj.W.Y,
+                proj.X.Z * vector.X + proj.Y.Z * vector.Y + proj.Z.Z * vector.Z + proj.W.Z
             );
-            return ret / (proj.x.w * vector.x + proj.y.w * vector.y + proj.z.w * vector.z + proj.w.w);
+            return ret / (proj.X.W * vector.X + proj.Y.W * vector.Y + proj.Z.W * vector.Z + proj.W.W);
         }
 
         /// <summary>
@@ -966,11 +966,11 @@ namespace Godot
         {
             return new Transform3D(
                 new Basis(
-                    new Vector3(proj.x.x, proj.x.y, proj.x.z),
-                    new Vector3(proj.y.x, proj.y.y, proj.y.z),
-                    new Vector3(proj.z.x, proj.z.y, proj.z.z)
+                    new Vector3(proj.X.X, proj.X.Y, proj.X.Z),
+                    new Vector3(proj.Y.X, proj.Y.Y, proj.Y.Z),
+                    new Vector3(proj.Z.X, proj.Z.Y, proj.Z.Z)
                 ),
-                new Vector3(proj.w.x, proj.w.y, proj.w.z)
+                new Vector3(proj.W.X, proj.W.Y, proj.W.Z)
             );
         }
 
@@ -992,7 +992,7 @@ namespace Godot
         /// <returns>Whether or not the projections are exactly equal.</returns>
         public readonly bool Equals(Projection other)
         {
-            return x == other.x && y == other.y && z == other.z && w == other.w;
+            return X == other.X && Y == other.Y && Z == other.Z && W == other.W;
         }
 
         /// <summary>
@@ -1001,7 +1001,7 @@ namespace Godot
         /// <returns>A hash code for this projection.</returns>
         public override readonly int GetHashCode()
         {
-            return y.GetHashCode() ^ x.GetHashCode() ^ z.GetHashCode() ^ w.GetHashCode();
+            return Y.GetHashCode() ^ X.GetHashCode() ^ Z.GetHashCode() ^ W.GetHashCode();
         }
 
         /// <summary>
@@ -1010,7 +1010,7 @@ namespace Godot
         /// <returns>A string representation of this projection.</returns>
         public override readonly string ToString()
         {
-            return $"{x.x}, {x.y}, {x.z}, {x.w}\n{y.x}, {y.y}, {y.z}, {y.w}\n{z.x}, {z.y}, {z.z}, {z.w}\n{w.x}, {w.y}, {w.z}, {w.w}\n";
+            return $"{X.X}, {X.Y}, {X.Z}, {X.W}\n{Y.X}, {Y.Y}, {Y.Z}, {Y.W}\n{Z.X}, {Z.Y}, {Z.Z}, {Z.W}\n{W.X}, {W.Y}, {W.Z}, {W.W}\n";
         }
 
         /// <summary>
@@ -1019,10 +1019,10 @@ namespace Godot
         /// <returns>A string representation of this projection.</returns>
         public readonly string ToString(string format)
         {
-            return $"{x.x.ToString(format)}, {x.y.ToString(format)}, {x.z.ToString(format)}, {x.w.ToString(format)}\n" +
-                $"{y.x.ToString(format)}, {y.y.ToString(format)}, {y.z.ToString(format)}, {y.w.ToString(format)}\n" +
-                $"{z.x.ToString(format)}, {z.y.ToString(format)}, {z.z.ToString(format)}, {z.w.ToString(format)}\n" +
-                $"{w.x.ToString(format)}, {w.y.ToString(format)}, {w.z.ToString(format)}, {w.w.ToString(format)}\n";
+            return $"{X.X.ToString(format)}, {X.Y.ToString(format)}, {X.Z.ToString(format)}, {X.W.ToString(format)}\n" +
+                $"{Y.X.ToString(format)}, {Y.Y.ToString(format)}, {Y.Z.ToString(format)}, {Y.W.ToString(format)}\n" +
+                $"{Z.X.ToString(format)}, {Z.Y.ToString(format)}, {Z.Z.ToString(format)}, {Z.W.ToString(format)}\n" +
+                $"{W.X.ToString(format)}, {W.Y.ToString(format)}, {W.Z.ToString(format)}, {W.W.ToString(format)}\n";
         }
     }
 }

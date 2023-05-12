@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  godot_shape_3d.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  godot_shape_3d.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "godot_shape_3d.h"
 
@@ -52,11 +52,11 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-constexpr double edge_support_threshold = 0.0002;
-constexpr double face_support_threshold = 0.9998;
+const double support_threshold = 0.9998;
+const double support_threshold_lower = Math::sqrt(1.0 - support_threshold * support_threshold);
 
-constexpr double cylinder_edge_support_threshold = 0.002;
-constexpr double cylinder_face_support_threshold = 0.999;
+const double cylinder_support_threshold = 0.999;
+const double cylinder_support_threshold_lower = Math::sqrt(1.0 - cylinder_support_threshold * cylinder_support_threshold);
 
 void GodotShape3D::configure(const AABB &p_aabb) {
 	aabb = p_aabb;
@@ -184,7 +184,7 @@ Vector3 GodotSeparationRayShape3D::get_support(const Vector3 &p_normal) const {
 }
 
 void GodotSeparationRayShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
-	if (Math::abs(p_normal.z) < edge_support_threshold) {
+	if (Math::abs(p_normal.z) < support_threshold_lower) {
 		r_amount = 2;
 		r_type = FEATURE_EDGE;
 		r_supports[0] = Vector3(0, 0, 0);
@@ -335,7 +335,7 @@ void GodotBoxShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 *
 		Vector3 axis;
 		axis[i] = 1.0;
 		real_t dot = p_normal.dot(axis);
-		if (Math::abs(dot) > face_support_threshold) {
+		if (Math::abs(dot) > support_threshold) {
 			//Vector3 axis_b;
 
 			bool neg = dot < 0;
@@ -376,7 +376,7 @@ void GodotBoxShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 *
 		Vector3 axis;
 		axis[i] = 1.0;
 
-		if (Math::abs(p_normal.dot(axis)) < edge_support_threshold) {
+		if (Math::abs(p_normal.dot(axis)) < support_threshold_lower) {
 			r_amount = 2;
 			r_type = FEATURE_EDGE;
 
@@ -523,7 +523,7 @@ void GodotCapsuleShape3D::get_supports(const Vector3 &p_normal, int p_max, Vecto
 	real_t d = n.y;
 	real_t h = height * 0.5 - radius; // half-height of the cylinder part
 
-	if (h > 0 && Math::abs(d) < edge_support_threshold) {
+	if (h > 0 && Math::abs(d) < support_threshold_lower) {
 		// make it flat
 		n.y = 0.0;
 		n.normalize();
@@ -701,7 +701,7 @@ Vector3 GodotCylinderShape3D::get_support(const Vector3 &p_normal) const {
 
 void GodotCylinderShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
 	real_t d = p_normal.y;
-	if (Math::abs(d) > cylinder_face_support_threshold) {
+	if (Math::abs(d) > cylinder_support_threshold) {
 		real_t h = (d > 0) ? height : -height;
 
 		Vector3 n = p_normal;
@@ -716,7 +716,7 @@ void GodotCylinderShape3D::get_supports(const Vector3 &p_normal, int p_max, Vect
 		r_supports[1].x += radius;
 		r_supports[2] = n;
 		r_supports[2].z += radius;
-	} else if (Math::abs(d) < cylinder_edge_support_threshold) {
+	} else if (Math::abs(d) < cylinder_support_threshold_lower) {
 		// make it flat
 		Vector3 n = p_normal;
 		n.y = 0.0;
@@ -844,36 +844,41 @@ void GodotConvexPolygonShape3D::project_range(const Vector3 &p_normal, const Tra
 }
 
 Vector3 GodotConvexPolygonShape3D::get_support(const Vector3 &p_normal) const {
+	// Skip if there are no vertices in the mesh
 	if (mesh.vertices.size() == 0) {
 		return Vector3();
 	}
 
-	// Find an initial guess for the support vertex by checking the ones we
-	// found in _setup().
+	// Get the array of vertices
+	const Vector3 *const vertices_array = mesh.vertices.ptr();
 
-	int best_vertex = -1;
-	real_t max_support = 0.0;
-	for (uint32_t i = 0; i < extreme_vertices.size(); i++) {
-		real_t s = p_normal.dot(mesh.vertices[extreme_vertices[i]]);
-		if (best_vertex == -1 || s > max_support) {
-			best_vertex = extreme_vertices[i];
+	// Start with an initial assumption of the first extreme vertex.
+	int best_vertex = extreme_vertices[0];
+	real_t max_support = p_normal.dot(vertices_array[best_vertex]);
+
+	// Check the remaining extreme vertices for a better vertex.
+	for (const int &vert : extreme_vertices) {
+		real_t s = p_normal.dot(vertices_array[vert]);
+		if (s > max_support) {
+			best_vertex = vert;
 			max_support = s;
 		}
 	}
+
+	// If we checked all vertices in the mesh then we're done.
 	if (extreme_vertices.size() == mesh.vertices.size()) {
-		// We've already checked every vertex, so we can return now.
-		return mesh.vertices[best_vertex];
+		return vertices_array[best_vertex];
 	}
 
 	// Move along the surface until we reach the true support vertex.
-
 	int last_vertex = -1;
 	while (true) {
 		int next_vertex = -1;
-		for (uint32_t i = 0; i < vertex_neighbors[best_vertex].size(); i++) {
-			int vert = vertex_neighbors[best_vertex][i];
+
+		// Iterate over all the neighbors checking for a better vertex.
+		for (const int &vert : vertex_neighbors[best_vertex]) {
 			if (vert != last_vertex) {
-				real_t s = p_normal.dot(mesh.vertices[vert]);
+				real_t s = p_normal.dot(vertices_array[vert]);
 				if (s > max_support) {
 					next_vertex = vert;
 					max_support = s;
@@ -881,9 +886,13 @@ Vector3 GodotConvexPolygonShape3D::get_support(const Vector3 &p_normal) const {
 				}
 			}
 		}
+
+		// No better vertex found, we have the best
 		if (next_vertex == -1) {
-			return mesh.vertices[best_vertex];
+			return vertices_array[best_vertex];
 		}
+
+		// Move to the better vertex and try again
 		last_vertex = best_vertex;
 		best_vertex = next_vertex;
 	}
@@ -916,7 +925,7 @@ void GodotConvexPolygonShape3D::get_supports(const Vector3 &p_normal, int p_max,
 	}
 
 	for (int i = 0; i < fc; i++) {
-		if (faces[i].plane.normal.dot(p_normal) > face_support_threshold) {
+		if (faces[i].plane.normal.dot(p_normal) > support_threshold) {
 			int ic = faces[i].indices.size();
 			const int *ind = faces[i].indices.ptr();
 
@@ -945,7 +954,7 @@ void GodotConvexPolygonShape3D::get_supports(const Vector3 &p_normal, int p_max,
 	for (int i = 0; i < ec; i++) {
 		real_t dot = (vertices[edges[i].vertex_a] - vertices[edges[i].vertex_b]).normalized().dot(p_normal);
 		dot = ABS(dot);
-		if (dot < edge_support_threshold && (edges[i].vertex_a == vtx || edges[i].vertex_b == vtx)) {
+		if (dot < support_threshold_lower && (edges[i].vertex_a == vtx || edges[i].vertex_b == vtx)) {
 			r_amount = 2;
 			r_type = FEATURE_EDGE;
 			r_supports[0] = vertices[edges[i].vertex_a];
@@ -1083,6 +1092,8 @@ void GodotConvexPolygonShape3D::_setup(const Vector<Vector3> &p_vertices) {
 	if (err != OK) {
 		ERR_PRINT("Failed to build convex hull");
 	}
+	extreme_vertices.resize(0);
+	vertex_neighbors.resize(0);
 
 	AABB _aabb;
 
@@ -1126,8 +1137,7 @@ void GodotConvexPolygonShape3D::_setup(const Vector<Vector3> &p_vertices) {
 
 	if (extreme_vertices.size() < mesh.vertices.size()) {
 		vertex_neighbors.resize(mesh.vertices.size());
-		for (uint32_t i = 0; i < mesh.edges.size(); i++) {
-			Geometry3D::MeshData::Edge &edge = mesh.edges[i];
+		for (Geometry3D::MeshData::Edge &edge : mesh.edges) {
 			vertex_neighbors[edge.vertex_a].push_back(edge.vertex_b);
 			vertex_neighbors[edge.vertex_b].push_back(edge.vertex_a);
 		}
@@ -1187,7 +1197,7 @@ void GodotFaceShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 
 	Vector3 n = p_normal;
 
 	/** TEST FACE AS SUPPORT **/
-	if (Math::abs(normal.dot(n)) > face_support_threshold) {
+	if (Math::abs(normal.dot(n)) > support_threshold) {
 		r_amount = 3;
 		r_type = FEATURE_FACE;
 		for (int i = 0; i < 3; i++) {
@@ -1221,7 +1231,7 @@ void GodotFaceShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 
 		// check if edge is valid as a support
 		real_t dot = (vertex[i] - vertex[nx]).normalized().dot(n);
 		dot = ABS(dot);
-		if (dot < edge_support_threshold) {
+		if (dot < support_threshold_lower) {
 			r_amount = 2;
 			r_type = FEATURE_EDGE;
 			r_supports[0] = vertex[i];

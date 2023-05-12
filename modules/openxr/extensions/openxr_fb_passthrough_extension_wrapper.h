@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  openxr_fb_passthrough_extension_wrapper.h                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  openxr_fb_passthrough_extension_wrapper.h                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef OPENXR_FB_PASSTHROUGH_EXTENSION_WRAPPER_H
 #define OPENXR_FB_PASSTHROUGH_EXTENSION_WRAPPER_H
@@ -43,9 +43,12 @@ class Viewport;
 
 // Wrapper for the set of Facebook XR passthrough extensions.
 class OpenXRFbPassthroughExtensionWrapper : public OpenXRExtensionWrapper, public OpenXRCompositionLayerProvider {
-	friend class OpenXRAPI;
-
 public:
+	OpenXRFbPassthroughExtensionWrapper();
+	~OpenXRFbPassthroughExtensionWrapper();
+
+	virtual HashMap<String, bool *> get_requested_extensions() override;
+
 	void on_instance_created(const XrInstance instance) override;
 
 	void on_session_created(const XrSession session) override;
@@ -67,10 +70,6 @@ public:
 	void stop_passthrough();
 
 	static OpenXRFbPassthroughExtensionWrapper *get_singleton();
-
-protected:
-	OpenXRFbPassthroughExtensionWrapper(OpenXRAPI *p_openxr_api);
-	~OpenXRFbPassthroughExtensionWrapper();
 
 private:
 	// Create a passthrough feature
@@ -208,7 +207,7 @@ private:
 	//  returned even when the operation is valid on Meta Quest devices.
 	//  The issue should be addressed on that platform in OS release v37.
 	inline bool is_valid_passthrough_result(XrResult result, const char *format) {
-		return openxr_api->xr_result(result, format) || result == XR_ERROR_UNEXPECTED_STATE_PASSTHROUGH_FB;
+		return OpenXRAPI::get_singleton()->xr_result(result, format) || result == XR_ERROR_UNEXPECTED_STATE_PASSTHROUGH_FB;
 	}
 
 	Viewport *get_main_viewport();
@@ -233,12 +232,6 @@ private:
 		passthrough_handle,
 		XR_PASSTHROUGH_IS_RUNNING_AT_CREATION_BIT_FB,
 		XR_PASSTHROUGH_LAYER_PURPOSE_RECONSTRUCTION_FB,
-	};
-	XrPassthroughStyleFB passthrough_layer_style = {
-		XR_TYPE_PASSTHROUGH_STYLE_FB,
-		nullptr,
-		1,
-		{ 0, 0, 0, 0 },
 	};
 	XrPassthroughLayerFB passthrough_layer = XR_NULL_HANDLE;
 

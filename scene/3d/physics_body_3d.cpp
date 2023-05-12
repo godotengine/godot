@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  physics_body_3d.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  physics_body_3d.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "physics_body_3d.h"
 
@@ -333,6 +333,11 @@ void AnimatableBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 }
 
 void AnimatableBody3D::_notification(int p_what) {
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+#endif
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			last_valid_transform = get_global_transform();
@@ -484,6 +489,8 @@ struct _RigidBodyInOut {
 };
 
 void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
+	lock_callback();
+
 	set_ignore_transform_notification(true);
 	set_global_transform(p_state->get_transform());
 
@@ -578,6 +585,8 @@ void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 
 		contact_monitor->locked = false;
 	}
+
+	unlock_callback();
 }
 
 void RigidBody3D::_notification(int p_what) {
@@ -590,9 +599,7 @@ void RigidBody3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
-			if (Engine::get_singleton()->is_editor_hint()) {
-				update_configuration_warnings();
-			}
+			update_configuration_warnings();
 		} break;
 	}
 #endif
@@ -973,12 +980,11 @@ TypedArray<Node3D> RigidBody3D::get_colliding_bodies() const {
 }
 
 PackedStringArray RigidBody3D::get_configuration_warnings() const {
-	Transform3D t = get_transform();
+	PackedStringArray warnings = CollisionObject3D::get_configuration_warnings();
 
-	PackedStringArray warnings = Node::get_configuration_warnings();
-
-	if (ABS(t.basis.get_column(0).length() - 1.0) > 0.05 || ABS(t.basis.get_column(1).length() - 1.0) > 0.05 || ABS(t.basis.get_column(2).length() - 1.0) > 0.05) {
-		warnings.push_back(RTR("Size changes to RigidBody will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
+	Vector3 scale = get_transform().get_basis().get_scale();
+	if (ABS(scale.x - 1.0) > 0.05 || ABS(scale.y - 1.0) > 0.05 || ABS(scale.z - 1.0) > 0.05) {
+		warnings.push_back(RTR("Scale changes to RigidBody3D will be overridden by the physics engine when running.\nPlease change the size in children collision shapes instead."));
 	}
 
 	return warnings;
@@ -1100,8 +1106,8 @@ void RigidBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "angular_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_angular_damp_mode", "get_angular_damp_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
 	ADD_GROUP("Constant Forces", "constant_");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "constant_force"), "set_constant_force", "get_constant_force");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "constant_torque"), "set_constant_torque", "get_constant_torque");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "constant_force", PROPERTY_HINT_NONE, U"suffix:kg\u22C5m/s\u00B2 (N)"), "set_constant_force", "get_constant_force");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "constant_torque", PROPERTY_HINT_NONE, U"suffix:kg\u22C5m\u00B2/s\u00B2/rad"), "set_constant_torque", "get_constant_torque");
 
 	ADD_SIGNAL(MethodInfo("body_shape_entered", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape_index"), PropertyInfo(Variant::INT, "local_shape_index")));
 	ADD_SIGNAL(MethodInfo("body_shape_exited", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape_index"), PropertyInfo(Variant::INT, "local_shape_index")));
@@ -1343,7 +1349,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 								motion = motion.slide(up_direction);
 								result.travel = Vector3();
 							} else {
-								// Travel is too high to be safely cancelled, we take it into account.
+								// Travel is too high to be safely canceled, we take it into account.
 								result.travel = result.travel.slide(up_direction);
 								motion = motion.normalized() * result.travel.length();
 							}
@@ -1351,7 +1357,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 							// Determines if you are on the ground, and limits the possibility of climbing on the walls because of the approximations.
 							_snap_on_floor(true, false);
 						} else {
-							// If the movement is not cancelled we only keep the remaining.
+							// If the movement is not canceled we only keep the remaining.
 							motion = result.remainder;
 						}
 
@@ -1557,8 +1563,8 @@ void CharacterBody3D::_move_and_slide_floating(double p_delta) {
 	}
 }
 
-void CharacterBody3D::_snap_on_floor(bool p_was_on_floor, bool p_vel_dir_facing_up) {
-	if (collision_state.floor || !p_was_on_floor || p_vel_dir_facing_up) {
+void CharacterBody3D::apply_floor_snap() {
+	if (collision_state.floor) {
 		return;
 	}
 
@@ -1591,6 +1597,14 @@ void CharacterBody3D::_snap_on_floor(bool p_was_on_floor, bool p_vel_dir_facing_
 			set_global_transform(parameters.from);
 		}
 	}
+}
+
+void CharacterBody3D::_snap_on_floor(bool p_was_on_floor, bool p_vel_dir_facing_up) {
+	if (collision_state.floor || !p_was_on_floor || p_vel_dir_facing_up) {
+		return;
+	}
+
+	apply_floor_snap();
 }
 
 bool CharacterBody3D::_on_floor_if_snapped(bool p_was_on_floor, bool p_vel_dir_facing_up) {
@@ -1946,6 +1960,7 @@ void CharacterBody3D::_notification(int p_what) {
 
 void CharacterBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_slide"), &CharacterBody3D::move_and_slide);
+	ClassDB::bind_method(D_METHOD("apply_floor_snap"), &CharacterBody3D::apply_floor_snap);
 
 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &CharacterBody3D::set_velocity);
 	ClassDB::bind_method(D_METHOD("get_velocity"), &CharacterBody3D::get_velocity);
@@ -2015,8 +2030,8 @@ void CharacterBody3D::_bind_methods() {
 
 	ADD_GROUP("Moving Platform", "platform_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "platform_on_leave", PROPERTY_HINT_ENUM, "Add Velocity,Add Upward Velocity,Do Nothing", PROPERTY_USAGE_DEFAULT), "set_platform_on_leave", "get_platform_on_leave");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "platform_floor_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_platform_floor_layers", "get_platform_floor_layers");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "platform_wall_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_platform_wall_layers", "get_platform_wall_layers");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "platform_floor_layers", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_platform_floor_layers", "get_platform_floor_layers");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "platform_wall_layers", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_platform_wall_layers", "get_platform_wall_layers");
 
 	ADD_GROUP("Collision", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001,suffix:m"), "set_safe_margin", "get_safe_margin");
@@ -2226,21 +2241,22 @@ bool PhysicalBone3D::PinJointData::_set(const StringName &p_name, const Variant 
 		return true;
 	}
 
+	bool is_valid_pin = j.is_valid() && PhysicsServer3D::get_singleton()->joint_get_type(j) == PhysicsServer3D::JOINT_TYPE_PIN;
 	if ("joint_constraints/bias" == p_name) {
 		bias = p_value;
-		if (j.is_valid()) {
+		if (is_valid_pin) {
 			PhysicsServer3D::get_singleton()->pin_joint_set_param(j, PhysicsServer3D::PIN_JOINT_BIAS, bias);
 		}
 
 	} else if ("joint_constraints/damping" == p_name) {
 		damping = p_value;
-		if (j.is_valid()) {
+		if (is_valid_pin) {
 			PhysicsServer3D::get_singleton()->pin_joint_set_param(j, PhysicsServer3D::PIN_JOINT_DAMPING, damping);
 		}
 
 	} else if ("joint_constraints/impulse_clamp" == p_name) {
 		impulse_clamp = p_value;
-		if (j.is_valid()) {
+		if (is_valid_pin) {
 			PhysicsServer3D::get_singleton()->pin_joint_set_param(j, PhysicsServer3D::PIN_JOINT_IMPULSE_CLAMP, impulse_clamp);
 		}
 
@@ -2282,33 +2298,34 @@ bool PhysicalBone3D::ConeJointData::_set(const StringName &p_name, const Variant
 		return true;
 	}
 
+	bool is_valid_cone = j.is_valid() && PhysicsServer3D::get_singleton()->joint_get_type(j) == PhysicsServer3D::JOINT_TYPE_CONE_TWIST;
 	if ("joint_constraints/swing_span" == p_name) {
 		swing_span = Math::deg_to_rad(real_t(p_value));
-		if (j.is_valid()) {
+		if (is_valid_cone) {
 			PhysicsServer3D::get_singleton()->cone_twist_joint_set_param(j, PhysicsServer3D::CONE_TWIST_JOINT_SWING_SPAN, swing_span);
 		}
 
 	} else if ("joint_constraints/twist_span" == p_name) {
 		twist_span = Math::deg_to_rad(real_t(p_value));
-		if (j.is_valid()) {
+		if (is_valid_cone) {
 			PhysicsServer3D::get_singleton()->cone_twist_joint_set_param(j, PhysicsServer3D::CONE_TWIST_JOINT_TWIST_SPAN, twist_span);
 		}
 
 	} else if ("joint_constraints/bias" == p_name) {
 		bias = p_value;
-		if (j.is_valid()) {
+		if (is_valid_cone) {
 			PhysicsServer3D::get_singleton()->cone_twist_joint_set_param(j, PhysicsServer3D::CONE_TWIST_JOINT_BIAS, bias);
 		}
 
 	} else if ("joint_constraints/softness" == p_name) {
 		softness = p_value;
-		if (j.is_valid()) {
+		if (is_valid_cone) {
 			PhysicsServer3D::get_singleton()->cone_twist_joint_set_param(j, PhysicsServer3D::CONE_TWIST_JOINT_SOFTNESS, softness);
 		}
 
 	} else if ("joint_constraints/relaxation" == p_name) {
 		relaxation = p_value;
-		if (j.is_valid()) {
+		if (is_valid_cone) {
 			PhysicsServer3D::get_singleton()->cone_twist_joint_set_param(j, PhysicsServer3D::CONE_TWIST_JOINT_RELAXATION, relaxation);
 		}
 
@@ -2356,39 +2373,40 @@ bool PhysicalBone3D::HingeJointData::_set(const StringName &p_name, const Varian
 		return true;
 	}
 
+	bool is_valid_hinge = j.is_valid() && PhysicsServer3D::get_singleton()->joint_get_type(j) == PhysicsServer3D::JOINT_TYPE_HINGE;
 	if ("joint_constraints/angular_limit_enabled" == p_name) {
 		angular_limit_enabled = p_value;
-		if (j.is_valid()) {
+		if (is_valid_hinge) {
 			PhysicsServer3D::get_singleton()->hinge_joint_set_flag(j, PhysicsServer3D::HINGE_JOINT_FLAG_USE_LIMIT, angular_limit_enabled);
 		}
 
 	} else if ("joint_constraints/angular_limit_upper" == p_name) {
 		angular_limit_upper = Math::deg_to_rad(real_t(p_value));
-		if (j.is_valid()) {
+		if (is_valid_hinge) {
 			PhysicsServer3D::get_singleton()->hinge_joint_set_param(j, PhysicsServer3D::HINGE_JOINT_LIMIT_UPPER, angular_limit_upper);
 		}
 
 	} else if ("joint_constraints/angular_limit_lower" == p_name) {
 		angular_limit_lower = Math::deg_to_rad(real_t(p_value));
-		if (j.is_valid()) {
+		if (is_valid_hinge) {
 			PhysicsServer3D::get_singleton()->hinge_joint_set_param(j, PhysicsServer3D::HINGE_JOINT_LIMIT_LOWER, angular_limit_lower);
 		}
 
 	} else if ("joint_constraints/angular_limit_bias" == p_name) {
 		angular_limit_bias = p_value;
-		if (j.is_valid()) {
+		if (is_valid_hinge) {
 			PhysicsServer3D::get_singleton()->hinge_joint_set_param(j, PhysicsServer3D::HINGE_JOINT_LIMIT_BIAS, angular_limit_bias);
 		}
 
 	} else if ("joint_constraints/angular_limit_softness" == p_name) {
 		angular_limit_softness = p_value;
-		if (j.is_valid()) {
+		if (is_valid_hinge) {
 			PhysicsServer3D::get_singleton()->hinge_joint_set_param(j, PhysicsServer3D::HINGE_JOINT_LIMIT_SOFTNESS, angular_limit_softness);
 		}
 
 	} else if ("joint_constraints/angular_limit_relaxation" == p_name) {
 		angular_limit_relaxation = p_value;
-		if (j.is_valid()) {
+		if (is_valid_hinge) {
 			PhysicsServer3D::get_singleton()->hinge_joint_set_param(j, PhysicsServer3D::HINGE_JOINT_LIMIT_RELAXATION, angular_limit_relaxation);
 		}
 
@@ -2439,63 +2457,64 @@ bool PhysicalBone3D::SliderJointData::_set(const StringName &p_name, const Varia
 		return true;
 	}
 
+	bool is_valid_slider = j.is_valid() && PhysicsServer3D::get_singleton()->joint_get_type(j) == PhysicsServer3D::JOINT_TYPE_SLIDER;
 	if ("joint_constraints/linear_limit_upper" == p_name) {
 		linear_limit_upper = p_value;
-		if (j.is_valid()) {
+		if (is_valid_slider) {
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(j, PhysicsServer3D::SLIDER_JOINT_LINEAR_LIMIT_UPPER, linear_limit_upper);
 		}
 
 	} else if ("joint_constraints/linear_limit_lower" == p_name) {
 		linear_limit_lower = p_value;
-		if (j.is_valid()) {
+		if (is_valid_slider) {
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(j, PhysicsServer3D::SLIDER_JOINT_LINEAR_LIMIT_LOWER, linear_limit_lower);
 		}
 
 	} else if ("joint_constraints/linear_limit_softness" == p_name) {
 		linear_limit_softness = p_value;
-		if (j.is_valid()) {
+		if (is_valid_slider) {
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(j, PhysicsServer3D::SLIDER_JOINT_LINEAR_LIMIT_SOFTNESS, linear_limit_softness);
 		}
 
 	} else if ("joint_constraints/linear_limit_restitution" == p_name) {
 		linear_limit_restitution = p_value;
-		if (j.is_valid()) {
+		if (is_valid_slider) {
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(j, PhysicsServer3D::SLIDER_JOINT_LINEAR_LIMIT_RESTITUTION, linear_limit_restitution);
 		}
 
 	} else if ("joint_constraints/linear_limit_damping" == p_name) {
 		linear_limit_damping = p_value;
-		if (j.is_valid()) {
+		if (is_valid_slider) {
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(j, PhysicsServer3D::SLIDER_JOINT_LINEAR_LIMIT_DAMPING, linear_limit_restitution);
 		}
 
 	} else if ("joint_constraints/angular_limit_upper" == p_name) {
 		angular_limit_upper = Math::deg_to_rad(real_t(p_value));
-		if (j.is_valid()) {
+		if (is_valid_slider) {
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(j, PhysicsServer3D::SLIDER_JOINT_ANGULAR_LIMIT_UPPER, angular_limit_upper);
 		}
 
 	} else if ("joint_constraints/angular_limit_lower" == p_name) {
 		angular_limit_lower = Math::deg_to_rad(real_t(p_value));
-		if (j.is_valid()) {
+		if (is_valid_slider) {
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(j, PhysicsServer3D::SLIDER_JOINT_ANGULAR_LIMIT_LOWER, angular_limit_lower);
 		}
 
 	} else if ("joint_constraints/angular_limit_softness" == p_name) {
 		angular_limit_softness = p_value;
-		if (j.is_valid()) {
+		if (is_valid_slider) {
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(j, PhysicsServer3D::SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS, angular_limit_softness);
 		}
 
 	} else if ("joint_constraints/angular_limit_restitution" == p_name) {
 		angular_limit_restitution = p_value;
-		if (j.is_valid()) {
+		if (is_valid_slider) {
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(j, PhysicsServer3D::SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS, angular_limit_softness);
 		}
 
 	} else if ("joint_constraints/angular_limit_damping" == p_name) {
 		angular_limit_damping = p_value;
-		if (j.is_valid()) {
+		if (is_valid_slider) {
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(j, PhysicsServer3D::SLIDER_JOINT_ANGULAR_LIMIT_DAMPING, angular_limit_damping);
 		}
 
@@ -2580,130 +2599,130 @@ bool PhysicalBone3D::SixDOFJointData::_set(const StringName &p_name, const Varia
 	}
 
 	String var_name = path.get_slicec('/', 2);
-
+	bool is_valid_6dof = j.is_valid() && PhysicsServer3D::get_singleton()->joint_get_type(j) == PhysicsServer3D::JOINT_TYPE_6DOF;
 	if ("linear_limit_enabled" == var_name) {
 		axis_data[axis].linear_limit_enabled = p_value;
-		if (j.is_valid()) {
+		if (is_valid_6dof) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_flag(j, axis, PhysicsServer3D::G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT, axis_data[axis].linear_limit_enabled);
 		}
 
 	} else if ("linear_limit_upper" == var_name) {
 		axis_data[axis].linear_limit_upper = p_value;
-		if (j.is_valid()) {
+		if (is_valid_6dof) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer3D::G6DOF_JOINT_LINEAR_UPPER_LIMIT, axis_data[axis].linear_limit_upper);
 		}
 
 	} else if ("linear_limit_lower" == var_name) {
 		axis_data[axis].linear_limit_lower = p_value;
-		if (j.is_valid()) {
+		if (is_valid_6dof) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer3D::G6DOF_JOINT_LINEAR_LOWER_LIMIT, axis_data[axis].linear_limit_lower);
 		}
 
 	} else if ("linear_limit_softness" == var_name) {
 		axis_data[axis].linear_limit_softness = p_value;
-		if (j.is_valid()) {
+		if (is_valid_6dof) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer3D::G6DOF_JOINT_LINEAR_LIMIT_SOFTNESS, axis_data[axis].linear_limit_softness);
 		}
 
 	} else if ("linear_spring_enabled" == var_name) {
 		axis_data[axis].linear_spring_enabled = p_value;
-		if (j.is_valid()) {
+		if (is_valid_6dof) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_flag(j, axis, PhysicsServer3D::G6DOF_JOINT_FLAG_ENABLE_LINEAR_SPRING, axis_data[axis].linear_spring_enabled);
 		}
 
 	} else if ("linear_spring_stiffness" == var_name) {
 		axis_data[axis].linear_spring_stiffness = p_value;
-		if (j.is_valid()) {
+		if (is_valid_6dof) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer3D::G6DOF_JOINT_LINEAR_SPRING_STIFFNESS, axis_data[axis].linear_spring_stiffness);
 		}
 
 	} else if ("linear_spring_damping" == var_name) {
 		axis_data[axis].linear_spring_damping = p_value;
-		if (j.is_valid()) {
+		if (is_valid_6dof) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer3D::G6DOF_JOINT_LINEAR_SPRING_DAMPING, axis_data[axis].linear_spring_damping);
 		}
 
 	} else if ("linear_equilibrium_point" == var_name) {
 		axis_data[axis].linear_equilibrium_point = p_value;
-		if (j.is_valid()) {
+		if (is_valid_6dof) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer3D::G6DOF_JOINT_LINEAR_SPRING_EQUILIBRIUM_POINT, axis_data[axis].linear_equilibrium_point);
 		}
 
 	} else if ("linear_restitution" == var_name) {
 		axis_data[axis].linear_restitution = p_value;
-		if (j.is_valid()) {
+		if (is_valid_6dof) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer3D::G6DOF_JOINT_LINEAR_RESTITUTION, axis_data[axis].linear_restitution);
 		}
 
 	} else if ("linear_damping" == var_name) {
 		axis_data[axis].linear_damping = p_value;
-		if (j.is_valid()) {
+		if (is_valid_6dof) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer3D::G6DOF_JOINT_LINEAR_DAMPING, axis_data[axis].linear_damping);
 		}
 
 	} else if ("angular_limit_enabled" == var_name) {
 		axis_data[axis].angular_limit_enabled = p_value;
-		if (j.is_valid()) {
+		if (is_valid_6dof) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_flag(j, axis, PhysicsServer3D::G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT, axis_data[axis].angular_limit_enabled);
 		}
 
 	} else if ("angular_limit_upper" == var_name) {
 		axis_data[axis].angular_limit_upper = Math::deg_to_rad(real_t(p_value));
-		if (j.is_valid()) {
+		if (is_valid_6dof) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer3D::G6DOF_JOINT_ANGULAR_UPPER_LIMIT, axis_data[axis].angular_limit_upper);
 		}
 
 	} else if ("angular_limit_lower" == var_name) {
 		axis_data[axis].angular_limit_lower = Math::deg_to_rad(real_t(p_value));
-		if (j.is_valid()) {
+		if (is_valid_6dof) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer3D::G6DOF_JOINT_ANGULAR_LOWER_LIMIT, axis_data[axis].angular_limit_lower);
 		}
 
 	} else if ("angular_limit_softness" == var_name) {
 		axis_data[axis].angular_limit_softness = p_value;
-		if (j.is_valid()) {
+		if (is_valid_6dof) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer3D::G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS, axis_data[axis].angular_limit_softness);
 		}
 
 	} else if ("angular_restitution" == var_name) {
 		axis_data[axis].angular_restitution = p_value;
-		if (j.is_valid()) {
+		if (is_valid_6dof) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer3D::G6DOF_JOINT_ANGULAR_RESTITUTION, axis_data[axis].angular_restitution);
 		}
 
 	} else if ("angular_damping" == var_name) {
 		axis_data[axis].angular_damping = p_value;
-		if (j.is_valid()) {
+		if (is_valid_6dof) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer3D::G6DOF_JOINT_ANGULAR_DAMPING, axis_data[axis].angular_damping);
 		}
 
 	} else if ("erp" == var_name) {
 		axis_data[axis].erp = p_value;
-		if (j.is_valid()) {
+		if (is_valid_6dof) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer3D::G6DOF_JOINT_ANGULAR_ERP, axis_data[axis].erp);
 		}
 
 	} else if ("angular_spring_enabled" == var_name) {
 		axis_data[axis].angular_spring_enabled = p_value;
-		if (j.is_valid()) {
+		if (is_valid_6dof) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_flag(j, axis, PhysicsServer3D::G6DOF_JOINT_FLAG_ENABLE_ANGULAR_SPRING, axis_data[axis].angular_spring_enabled);
 		}
 
 	} else if ("angular_spring_stiffness" == var_name) {
 		axis_data[axis].angular_spring_stiffness = p_value;
-		if (j.is_valid()) {
+		if (is_valid_6dof) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_STIFFNESS, axis_data[axis].angular_spring_stiffness);
 		}
 
 	} else if ("angular_spring_damping" == var_name) {
 		axis_data[axis].angular_spring_damping = p_value;
-		if (j.is_valid()) {
+		if (is_valid_6dof) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_DAMPING, axis_data[axis].angular_spring_damping);
 		}
 
 	} else if ("angular_equilibrium_point" == var_name) {
 		axis_data[axis].angular_equilibrium_point = p_value;
-		if (j.is_valid()) {
+		if (is_valid_6dof) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT, axis_data[axis].angular_equilibrium_point);
 		}
 

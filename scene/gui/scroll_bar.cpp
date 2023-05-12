@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  scroll_bar.cpp                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  scroll_bar.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "scroll_bar.h"
 
@@ -55,12 +55,14 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 		accept_event();
 
 		if (b->get_button_index() == MouseButton::WHEEL_DOWN && b->is_pressed()) {
-			set_value(get_value() + get_page() / 4.0);
+			double change = get_page() != 0.0 ? get_page() / 4.0 : (get_max() - get_min()) / 16.0;
+			set_value(get_value() + MAX(change, get_step()));
 			accept_event();
 		}
 
 		if (b->get_button_index() == MouseButton::WHEEL_UP && b->is_pressed()) {
-			set_value(get_value() - get_page() / 4.0);
+			double change = get_page() != 0.0 ? get_page() / 4.0 : (get_max() - get_min()) / 16.0;
+			set_value(get_value() - MAX(change, get_step()));
 			accept_event();
 		}
 
@@ -99,7 +101,8 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 				if (scrolling) {
 					target_scroll = CLAMP(target_scroll - get_page(), get_min(), get_max() - get_page());
 				} else {
-					target_scroll = CLAMP(get_value() - get_page(), get_min(), get_max() - get_page());
+					double change = get_page() != 0.0 ? get_page() : (get_max() - get_min()) / 16.0;
+					target_scroll = CLAMP(get_value() - change, get_min(), get_max() - get_page());
 				}
 
 				if (smooth_scroll_enabled) {
@@ -122,7 +125,8 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 				if (scrolling) {
 					target_scroll = CLAMP(target_scroll + get_page(), get_min(), get_max() - get_page());
 				} else {
-					target_scroll = CLAMP(get_value() + get_page(), get_min(), get_max() - get_page());
+					double change = get_page() != 0.0 ? get_page() : (get_max() - get_min()) / 16.0;
+					target_scroll = CLAMP(get_value() + change, get_min(), get_max() - get_page());
 				}
 
 				if (smooth_scroll_enabled) {
@@ -433,7 +437,7 @@ void ScrollBar::_notification(int p_what) {
 
 double ScrollBar::get_grabber_min_size() const {
 	Ref<StyleBox> grabber = theme_cache.grabber_style;
-	Size2 gminsize = grabber->get_minimum_size() + grabber->get_center_size();
+	Size2 gminsize = grabber->get_minimum_size();
 	return (orientation == VERTICAL) ? gminsize.height : gminsize.width;
 }
 
@@ -500,7 +504,7 @@ Size2 ScrollBar::get_minimum_size() const {
 	Size2 minsize;
 
 	if (orientation == VERTICAL) {
-		minsize.width = MAX(incr->get_size().width, (bg->get_minimum_size() + bg->get_center_size()).width);
+		minsize.width = MAX(incr->get_size().width, bg->get_minimum_size().width);
 		minsize.height += incr->get_size().height;
 		minsize.height += decr->get_size().height;
 		minsize.height += bg->get_minimum_size().height;
@@ -508,7 +512,7 @@ Size2 ScrollBar::get_minimum_size() const {
 	}
 
 	if (orientation == HORIZONTAL) {
-		minsize.height = MAX(incr->get_size().height, (bg->get_center_size() + bg->get_minimum_size()).height);
+		minsize.height = MAX(incr->get_size().height, bg->get_minimum_size().height);
 		minsize.width += incr->get_size().width;
 		minsize.width += decr->get_size().width;
 		minsize.width += bg->get_minimum_size().width;

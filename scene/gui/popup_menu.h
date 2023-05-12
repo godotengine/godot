@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  popup_menu.h                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  popup_menu.h                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef POPUP_MENU_H
 #define POPUP_MENU_H
@@ -42,6 +42,8 @@ class PopupMenu : public Popup {
 
 	struct Item {
 		Ref<Texture2D> icon;
+		int icon_max_width = 0;
+		Color icon_modulate = Color(1, 1, 1, 1);
 		String text;
 		String xl_text;
 		Ref<TextLine> text_buf;
@@ -92,7 +94,7 @@ class PopupMenu : public Popup {
 	Timer *submenu_timer = nullptr;
 	List<Rect2> autohide_areas;
 	Vector<Item> items;
-	MouseButton initial_button_mask = MouseButton::NONE;
+	BitField<MouseButtonMask> initial_button_mask;
 	bool during_grabbed_click = false;
 	int mouse_over = -1;
 	int submenu_over = -1;
@@ -103,6 +105,7 @@ class PopupMenu : public Popup {
 
 	int _get_item_height(int p_item) const;
 	int _get_items_total_height() const;
+	Size2 _get_item_icon_size(int p_item) const;
 
 	void _shape_item(int p_item);
 
@@ -144,6 +147,7 @@ class PopupMenu : public Popup {
 		int indent = 0;
 		int item_start_padding = 0;
 		int item_end_padding = 0;
+		int icon_max_width = 0;
 
 		Ref<Texture2D> checked;
 		Ref<Texture2D> checked_disabled;
@@ -222,6 +226,8 @@ public:
 	void set_item_text_direction(int p_idx, Control::TextDirection p_text_direction);
 	void set_item_language(int p_idx, const String &p_language);
 	void set_item_icon(int p_idx, const Ref<Texture2D> &p_icon);
+	void set_item_icon_max_width(int p_idx, int p_width);
+	void set_item_icon_modulate(int p_idx, const Color &p_modulate);
 	void set_item_checked(int p_idx, bool p_checked);
 	void set_item_id(int p_idx, int p_id);
 	void set_item_accelerator(int p_idx, Key p_accel);
@@ -245,6 +251,8 @@ public:
 	String get_item_language(int p_idx) const;
 	int get_item_idx_from_text(const String &text) const;
 	Ref<Texture2D> get_item_icon(int p_idx) const;
+	int get_item_icon_max_width(int p_idx) const;
+	Color get_item_icon_modulate(int p_idx) const;
 	bool is_item_checked(int p_idx) const;
 	int get_item_id(int p_idx) const;
 	int get_item_index(int p_id) const;
@@ -283,8 +291,6 @@ public:
 	void set_parent_rect(const Rect2 &p_rect);
 
 	virtual String get_tooltip(const Point2 &p_pos) const;
-
-	virtual void get_translatable_strings(List<String> *p_strings) const override;
 
 	void add_autohide_area(const Rect2 &p_area);
 	void clear_autohide_areas();

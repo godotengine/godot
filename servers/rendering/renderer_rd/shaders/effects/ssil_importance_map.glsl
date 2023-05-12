@@ -82,7 +82,7 @@ void main() {
 #ifdef PROCESS_MAPA
 	vec2 uv = (vec2(ssC) + 0.5) * params.half_screen_pixel_size * 2.0;
 
-	float centre = textureLod(source_importance, uv, 0.0).x;
+	float center = textureLod(source_importance, uv, 0.0).x;
 
 	vec2 half_pixel = params.half_screen_pixel_size;
 
@@ -100,7 +100,7 @@ void main() {
 #ifdef PROCESS_MAPB
 	vec2 uv = (vec2(ssC) + 0.5f) * params.half_screen_pixel_size * 2.0;
 
-	float centre = textureLod(source_importance, uv, 0.0).x;
+	float center = textureLod(source_importance, uv, 0.0).x;
 
 	vec2 half_pixel = params.half_screen_pixel_size;
 

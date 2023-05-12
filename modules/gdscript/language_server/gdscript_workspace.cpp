@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  gdscript_workspace.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gdscript_workspace.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "gdscript_workspace.h"
 
@@ -185,15 +185,27 @@ const lsp::DocumentSymbol *GDScriptWorkspace::get_local_symbol(const ExtendGDScr
 	const lsp::DocumentSymbol *class_symbol = &p_parser->get_symbols();
 
 	for (int i = 0; i < class_symbol->children.size(); ++i) {
-		if (class_symbol->children[i].kind == lsp::SymbolKind::Function || class_symbol->children[i].kind == lsp::SymbolKind::Class) {
-			const lsp::DocumentSymbol *function_symbol = &class_symbol->children[i];
+		int kind = class_symbol->children[i].kind;
+		switch (kind) {
+			case lsp::SymbolKind::Function:
+			case lsp::SymbolKind::Method:
+			case lsp::SymbolKind::Class: {
+				const lsp::DocumentSymbol *function_symbol = &class_symbol->children[i];
 
-			for (int l = 0; l < function_symbol->children.size(); ++l) {
-				const lsp::DocumentSymbol *local = &function_symbol->children[l];
-				if (!local->detail.is_empty() && local->name == p_symbol_identifier) {
-					return local;
+				for (int l = 0; l < function_symbol->children.size(); ++l) {
+					const lsp::DocumentSymbol *local = &function_symbol->children[l];
+					if (!local->detail.is_empty() && local->name == p_symbol_identifier) {
+						return local;
+					}
 				}
-			}
+			} break;
+
+			case lsp::SymbolKind::Variable: {
+				const lsp::DocumentSymbol *variable_symbol = &class_symbol->children[i];
+				if (variable_symbol->name == p_symbol_identifier) {
+					return variable_symbol;
+				}
+			} break;
 		}
 	}
 
@@ -650,8 +662,18 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocu
 						if (const ExtendGDScriptParser *target_parser = get_parse_result(target_script_path)) {
 							symbol = target_parser->get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(ret.location));
 
-							if (symbol && symbol->kind == lsp::SymbolKind::Function && symbol->name != symbol_identifier) {
-								symbol = get_parameter_symbol(symbol, symbol_identifier);
+							if (symbol) {
+								switch (symbol->kind) {
+									case lsp::SymbolKind::Function: {
+										if (symbol->name != symbol_identifier) {
+											symbol = get_parameter_symbol(symbol, symbol_identifier);
+										}
+									} break;
+
+									case lsp::SymbolKind::Variable: {
+										symbol = get_local_symbol(parser, symbol_identifier);
+									} break;
+								}
 							}
 						}
 

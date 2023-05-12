@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  dynamic_bvh.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  dynamic_bvh.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef DYNAMIC_BVH_H
 #define DYNAMIC_BVH_H
@@ -182,21 +182,21 @@ private:
 		Volume volume;
 		Node *parent = nullptr;
 		union {
-			Node *childs[2];
+			Node *children[2];
 			void *data;
 		};
 
-		_FORCE_INLINE_ bool is_leaf() const { return childs[1] == nullptr; }
+		_FORCE_INLINE_ bool is_leaf() const { return children[1] == nullptr; }
 		_FORCE_INLINE_ bool is_internal() const { return (!is_leaf()); }
 
 		_FORCE_INLINE_ int get_index_in_parent() const {
 			ERR_FAIL_COND_V(!parent, 0);
-			return (parent->childs[1] == this) ? 1 : 0;
+			return (parent->children[1] == this) ? 1 : 0;
 		}
 		void get_max_depth(int depth, int &maxdepth) {
 			if (is_internal()) {
-				childs[0]->get_max_depth(depth + 1, maxdepth);
-				childs[1]->get_max_depth(depth + 1, maxdepth);
+				children[0]->get_max_depth(depth + 1, maxdepth);
+				children[1]->get_max_depth(depth + 1, maxdepth);
 			} else {
 				maxdepth = MAX(maxdepth, depth);
 			}
@@ -205,7 +205,7 @@ private:
 		//
 		int count_leaves() const {
 			if (is_internal()) {
-				return childs[0]->count_leaves() + childs[1]->count_leaves();
+				return children[0]->count_leaves() + children[1]->count_leaves();
 			} else {
 				return (1);
 			}
@@ -216,8 +216,8 @@ private:
 		}
 
 		Node() {
-			childs[0] = nullptr;
-			childs[1] = nullptr;
+			children[0] = nullptr;
+			children[1] = nullptr;
 		}
 	};
 
@@ -350,8 +350,8 @@ void DynamicBVH::aabb_query(const AABB &p_box, QueryResult &r_result) {
 					stack = aux_stack.ptr();
 					threshold = aux_stack.size() - 2;
 				}
-				stack[depth++] = n->childs[0];
-				stack[depth++] = n->childs[1];
+				stack[depth++] = n->children[0];
+				stack[depth++] = n->children[1];
 			} else {
 				if (r_result(n->data)) {
 					return;
@@ -406,8 +406,8 @@ void DynamicBVH::convex_query(const Plane *p_planes, int p_plane_count, const Ve
 					stack = aux_stack.ptr();
 					threshold = aux_stack.size() - 2;
 				}
-				stack[depth++] = n->childs[0];
-				stack[depth++] = n->childs[1];
+				stack[depth++] = n->children[0];
+				stack[depth++] = n->children[1];
 			} else {
 				if (r_result(n->data)) {
 					return;
@@ -463,8 +463,8 @@ void DynamicBVH::ray_query(const Vector3 &p_from, const Vector3 &p_to, QueryResu
 					stack = aux_stack.ptr();
 					threshold = aux_stack.size() - 2;
 				}
-				stack[depth++] = node->childs[0];
-				stack[depth++] = node->childs[1];
+				stack[depth++] = node->children[0];
+				stack[depth++] = node->children[1];
 			} else {
 				if (r_result(node->data)) {
 					return;

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  animation_state_machine_editor.h                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  animation_state_machine_editor.h                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef ANIMATION_STATE_MACHINE_EDITOR_H
 #define ANIMATION_STATE_MACHINE_EDITOR_H
@@ -56,8 +56,6 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	LineEdit *name_edit = nullptr;
 
 	HBoxContainer *selection_tools_hb = nullptr;
-	Button *tool_group = nullptr;
-	Button *tool_ungroup = nullptr;
 	Button *tool_erase = nullptr;
 
 	HBoxContainer *transition_tools_hb = nullptr;
@@ -85,9 +83,12 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	static AnimationNodeStateMachineEditor *singleton;
 
 	void _state_machine_gui_input(const Ref<InputEvent> &p_event);
-	void _connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, bool p_enabled, bool p_selected, bool p_travel, bool p_auto_advance, bool p_multi_transitions);
+	void _connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, bool p_enabled, bool p_selected, bool p_travel, float p_fade_ratio, bool p_auto_advance, bool p_is_across_group);
+
 	void _state_machine_draw();
-	void _state_machine_pos_draw();
+
+	void _state_machine_pos_draw_individual(String p_name, float p_ratio);
+	void _state_machine_pos_draw_all();
 
 	void _update_graph();
 
@@ -127,14 +128,13 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	void _add_animation_type(int p_index);
 	void _connect_to(int p_index);
 
-	void _removed_from_graph();
-
 	struct NodeRect {
 		StringName node_name;
 		Rect2 node;
 		Rect2 play;
 		Rect2 name;
 		Rect2 edit;
+		bool can_edit;
 	};
 
 	Vector<NodeRect> node_rects;
@@ -152,9 +152,10 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 		float width = 0;
 		bool selected;
 		bool travel;
+		float fade_ratio;
 		bool hidden;
 		int transition_index;
-		Vector<TransitionLine> multi_transitions;
+		bool is_across_group = false;
 	};
 
 	Vector<TransitionLine> transition_lines;
@@ -176,7 +177,6 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	StringName selected_transition_from;
 	StringName selected_transition_to;
 	int selected_transition_index;
-	TransitionLine selected_multi_transition;
 	void _add_transition(const bool p_nested_action = false);
 
 	StringName over_node;
@@ -188,30 +188,38 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	void _open_editor(const String &p_name);
 	void _scroll_changed(double);
 
+	String _get_root_playback_path(String &r_node_directory);
+
 	void _clip_src_line_to_rect(Vector2 &r_from, const Vector2 &p_to, const Rect2 &p_rect);
 	void _clip_dst_line_to_rect(const Vector2 &p_from, Vector2 &r_to, const Rect2 &p_rect);
 
 	void _erase_selected(const bool p_nested_action = false);
 	void _update_mode();
 	void _open_menu(const Vector2 &p_position);
-	void _open_connect_menu(const Vector2 &p_position);
-	bool _create_submenu(PopupMenu *p_menu, Ref<AnimationNodeStateMachine> p_nodesm, const StringName &p_name, const StringName &p_path, bool from_root = false, Vector<Ref<AnimationNodeStateMachine>> p_parents = Vector<Ref<AnimationNodeStateMachine>>());
+	bool _create_submenu(PopupMenu *p_menu, Ref<AnimationNodeStateMachine> p_nodesm, const StringName &p_name, const StringName &p_path);
 	void _stop_connecting();
-
-	void _group_selected_nodes();
-	void _ungroup_selected_nodes();
 
 	void _delete_selected();
 	void _delete_all();
 	void _delete_tree_draw();
 
 	bool last_active = false;
-	StringName last_blend_from_node;
+	StringName last_fading_from_node;
 	StringName last_current_node;
 	Vector<StringName> last_travel_path;
+
+	float fade_from_last_play_pos = 0.0f;
+	float fade_from_current_play_pos = 0.0f;
+	float fade_from_length = 0.0f;
+
 	float last_play_pos = 0.0f;
-	float play_pos = 0.0f;
+	float current_play_pos = 0.0f;
 	float current_length = 0.0f;
+
+	float last_fading_time = 0.0f;
+	float last_fading_pos = 0.0f;
+	float fading_time = 0.0f;
+	float fading_pos = 0.0f;
 
 	float error_time = 0.0f;
 	String error_text;

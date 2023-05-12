@@ -50,6 +50,12 @@
 #define SIMD_TARGET
 #endif
 
+// When targeting AArch64/x64, optimize for latency to allow decoding of individual 16-byte groups to overlap
+// We don't do this for 32-bit systems because we need 64-bit math for this and this will hurt in-order CPUs
+#if defined(__x86_64__) || defined(_M_X64) || defined(__aarch64__) || defined(_M_ARM64)
+#define SIMD_LATENCYOPT
+#endif
+
 #endif // !MESHOPTIMIZER_NO_SIMD
 
 #ifdef SIMD_SSE
@@ -472,6 +478,18 @@ static const unsigned char* decodeBytesGroupSimd(const unsigned char* data, unsi
 		typedef int unaligned_int;
 #endif
 
+#ifdef SIMD_LATENCYOPT
+		unsigned int data32;
+		memcpy(&data32, data, 4);
+		data32 &= data32 >> 1;
+
+		// arrange bits such that low bits of nibbles of data64 contain all 2-bit elements of data32
+		unsigned long long data64 = ((unsigned long long)data32 << 30) | (data32 & 0x3fffffff);
+
+		// adds all 1-bit nibbles together; the sum fits in 4 bits because datacnt=16 would have used mode 3
+		int datacnt = int(((data64 & 0x1111111111111111ull) * 0x1111111111111111ull) >> 60);
+#endif
+
 		__m128i sel2 = _mm_cvtsi32_si128(*reinterpret_cast<const unaligned_int*>(data));
 		__m128i rest = _mm_loadu_si128(reinterpret_cast<const __m128i*>(data + 4));
 
@@ -490,11 +508,25 @@ static const unsigned char* decodeBytesGroupSimd(const unsigned char* data, unsi
 
 		_mm_storeu_si128(reinterpret_cast<__m128i*>(buffer), result);
 
+#ifdef SIMD_LATENCYOPT
+		return data + 4 + datacnt;
+#else
 		return data + 4 + kDecodeBytesGroupCount[mask0] + kDecodeBytesGroupCount[mask1];
+#endif
 	}
 
 	case 2:
 	{
+#ifdef SIMD_LATENCYOPT
+		unsigned long long data64;
+		memcpy(&data64, data, 8);
+		data64 &= data64 >> 1;
+		data64 &= data64 >> 2;
+
+		// adds all 1-bit nibbles together; the sum fits in 4 bits because datacnt=16 would have used mode 3
+		int datacnt = int(((data64 & 0x1111111111111111ull) * 0x1111111111111111ull) >> 60);
+#endif
+
 		__m128i sel4 = _mm_loadl_epi64(reinterpret_cast<const __m128i*>(data));
 		__m128i rest = _mm_loadu_si128(reinterpret_cast<const __m128i*>(data + 8));
 
@@ -512,7 +544,11 @@ static const unsigned char* decodeBytesGroupSimd(const unsigned char* data, unsi
 
 		_mm_storeu_si128(reinterpret_cast<__m128i*>(buffer), result);
 
+#ifdef SIMD_LATENCYOPT
+		return data + 8 + datacnt;
+#else
 		return data + 8 + kDecodeBytesGroupCount[mask0] + kDecodeBytesGroupCount[mask1];
+#endif
 	}
 
 	case 3:
@@ -604,24 +640,13 @@ static uint8x16_t shuffleBytes(unsigned char mask0, unsigned char mask1, uint8x8
 
 static void neonMoveMask(uint8x16_t mask, unsigned char& mask0, unsigned char& mask1)
 {
-	static const unsigned char byte_mask_data[16] = {1, 2, 4, 8, 16, 32, 64, 128, 1, 2, 4, 8, 16, 32, 64, 128};
+	// magic constant found using z3 SMT assuming mask has 8 groups of 0xff or 0x00
+	const uint64_t magic = 0x000103070f1f3f80ull;
 
-	uint8x16_t byte_mask = vld1q_u8(byte_mask_data);
-	uint8x16_t masked = vandq_u8(mask, byte_mask);
+	uint64x2_t mask2 = vreinterpretq_u64_u8(mask);
 
-#ifdef __aarch64__
-	// aarch64 has horizontal sums; MSVC doesn't expose this via arm64_neon.h so this path is exclusive to clang/gcc
-	mask0 = vaddv_u8(vget_low_u8(masked));
-	mask1 = vaddv_u8(vget_high_u8(masked));
-#else
-	// we need horizontal sums of each half of masked, which can be done in 3 steps (yielding sums of sizes 2, 4, 8)
-	uint8x8_t sum1 = vpadd_u8(vget_low_u8(masked), vget_high_u8(masked));
-	uint8x8_t sum2 = vpadd_u8(sum1, sum1);
-	uint8x8_t sum3 = vpadd_u8(sum2, sum2);
-
-	mask0 = vget_lane_u8(sum3, 0);
-	mask1 = vget_lane_u8(sum3, 1);
-#endif
+	mask0 = uint8_t((vgetq_lane_u64(mask2, 0) * magic) >> 56);
+	mask1 = uint8_t((vgetq_lane_u64(mask2, 1) * magic) >> 56);
 }
 
 static const unsigned char* decodeBytesGroupSimd(const unsigned char* data, unsigned char* buffer, int bitslog2)
@@ -639,6 +664,18 @@ static const unsigned char* decodeBytesGroupSimd(const unsigned char* data, unsi
 
 	case 1:
 	{
+#ifdef SIMD_LATENCYOPT
+		unsigned int data32;
+		memcpy(&data32, data, 4);
+		data32 &= data32 >> 1;
+
+		// arrange bits such that low bits of nibbles of data64 contain all 2-bit elements of data32
+		unsigned long long data64 = ((unsigned long long)data32 << 30) | (data32 & 0x3fffffff);
+
+		// adds all 1-bit nibbles together; the sum fits in 4 bits because datacnt=16 would have used mode 3
+		int datacnt = int(((data64 & 0x1111111111111111ull) * 0x1111111111111111ull) >> 60);
+#endif
+
 		uint8x8_t sel2 = vld1_u8(data);
 		uint8x8_t sel22 = vzip_u8(vshr_n_u8(sel2, 4), sel2).val[0];
 		uint8x8x2_t sel2222 = vzip_u8(vshr_n_u8(sel22, 2), sel22);
@@ -655,11 +692,25 @@ static const unsigned char* decodeBytesGroupSimd(const unsigned char* data, unsi
 
 		vst1q_u8(buffer, result);
 
+#ifdef SIMD_LATENCYOPT
+		return data + 4 + datacnt;
+#else
 		return data + 4 + kDecodeBytesGroupCount[mask0] + kDecodeBytesGroupCount[mask1];
+#endif
 	}
 
 	case 2:
 	{
+#ifdef SIMD_LATENCYOPT
+		unsigned long long data64;
+		memcpy(&data64, data, 8);
+		data64 &= data64 >> 1;
+		data64 &= data64 >> 2;
+
+		// adds all 1-bit nibbles together; the sum fits in 4 bits because datacnt=16 would have used mode 3
+		int datacnt = int(((data64 & 0x1111111111111111ull) * 0x1111111111111111ull) >> 60);
+#endif
+
 		uint8x8_t sel4 = vld1_u8(data);
 		uint8x8x2_t sel44 = vzip_u8(vshr_n_u8(sel4, 4), vand_u8(sel4, vdup_n_u8(15)));
 		uint8x16_t sel = vcombine_u8(sel44.val[0], sel44.val[1]);
@@ -675,7 +726,11 @@ static const unsigned char* decodeBytesGroupSimd(const unsigned char* data, unsi
 
 		vst1q_u8(buffer, result);
 
+#ifdef SIMD_LATENCYOPT
+		return data + 8 + datacnt;
+#else
 		return data + 8 + kDecodeBytesGroupCount[mask0] + kDecodeBytesGroupCount[mask1];
+#endif
 	}
 
 	case 3:
@@ -715,7 +770,6 @@ static void wasmMoveMask(v128_t mask, unsigned char& mask0, unsigned char& mask1
 	// magic constant found using z3 SMT assuming mask has 8 groups of 0xff or 0x00
 	const uint64_t magic = 0x000103070f1f3f80ull;
 
-	// TODO: This can use v8x16_bitmask in the future
 	mask0 = uint8_t((wasm_i64x2_extract_lane(mask, 0) * magic) >> 56);
 	mask1 = uint8_t((wasm_i64x2_extract_lane(mask, 1) * magic) >> 56);
 }

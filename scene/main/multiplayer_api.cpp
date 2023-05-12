@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  multiplayer_api.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  multiplayer_api.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "multiplayer_api.h"
 
@@ -43,7 +43,7 @@ StringName MultiplayerAPI::default_interface;
 
 void MultiplayerAPI::set_default_interface(const StringName &p_interface) {
 	ERR_FAIL_COND_MSG(!ClassDB::is_parent_class(p_interface, MultiplayerAPI::get_class_static()), vformat("Can't make %s the default multiplayer interface since it does not extend MultiplayerAPI.", p_interface));
-	default_interface = p_interface;
+	default_interface = StringName(p_interface, true);
 }
 
 StringName MultiplayerAPI::get_default_interface() {
@@ -135,7 +135,7 @@ Error MultiplayerAPI::encode_and_compress_variant(const Variant &p_variant, uint
 				return err;
 			}
 			if (r_buffer) {
-				// The first byte is not used by the marshalling, so store the type
+				// The first byte is not used by the marshaling, so store the type
 				// so we know how to decompress and decode this variant.
 				r_buffer[0] = p_variant.get_type();
 			}
@@ -329,9 +329,9 @@ void MultiplayerAPI::_bind_methods() {
 /// MultiplayerAPIExtension
 
 Error MultiplayerAPIExtension::poll() {
-	int err = OK;
+	Error err = OK;
 	GDVIRTUAL_CALL(_poll, err);
-	return (Error)err;
+	return err;
 }
 
 void MultiplayerAPIExtension::set_multiplayer_peer(const Ref<MultiplayerPeer> &p_peer) {
@@ -364,9 +364,9 @@ Error MultiplayerAPIExtension::rpcp(Object *p_obj, int p_peer_id, const StringNa
 	for (int i = 0; i < p_argcount; i++) {
 		args.push_back(*p_arg[i]);
 	}
-	int ret = FAILED;
+	Error ret = FAILED;
 	GDVIRTUAL_CALL(_rpc, p_peer_id, p_obj, p_method, args, ret);
-	return (Error)ret;
+	return ret;
 }
 
 int MultiplayerAPIExtension::get_remote_sender_id() {
@@ -376,15 +376,15 @@ int MultiplayerAPIExtension::get_remote_sender_id() {
 }
 
 Error MultiplayerAPIExtension::object_configuration_add(Object *p_object, Variant p_config) {
-	int err = ERR_UNAVAILABLE;
+	Error err = ERR_UNAVAILABLE;
 	GDVIRTUAL_CALL(_object_configuration_add, p_object, p_config, err);
-	return (Error)err;
+	return err;
 }
 
 Error MultiplayerAPIExtension::object_configuration_remove(Object *p_object, Variant p_config) {
-	int err = ERR_UNAVAILABLE;
+	Error err = ERR_UNAVAILABLE;
 	GDVIRTUAL_CALL(_object_configuration_remove, p_object, p_config, err);
-	return (Error)err;
+	return err;
 }
 
 void MultiplayerAPIExtension::_bind_methods() {

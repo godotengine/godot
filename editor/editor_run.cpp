@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  editor_run.cpp                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_run.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_run.h"
 
@@ -70,6 +70,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 	bool debug_collisions = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisions", false);
 	bool debug_paths = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_paths", false);
 	bool debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
+	bool debug_avoidance = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_avoidance", false);
 	if (debug_collisions) {
 		args.push_back("--debug-collisions");
 	}
@@ -80,6 +81,10 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 
 	if (debug_navigation) {
 		args.push_back("--debug-navigation");
+	}
+
+	if (debug_avoidance) {
+		args.push_back("--debug-avoidance");
 	}
 
 	if (p_write_movie != "") {
@@ -93,30 +98,24 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 	}
 
 	int screen = EDITOR_GET("run/window_placement/screen");
-	if (screen == 0) {
+	if (screen == -5) {
 		// Same as editor
 		screen = DisplayServer::get_singleton()->window_get_current_screen();
-	} else if (screen == 1) {
+	} else if (screen == -4) {
 		// Previous monitor (wrap to the other end if needed)
 		screen = Math::wrapi(
 				DisplayServer::get_singleton()->window_get_current_screen() - 1,
 				0,
 				DisplayServer::get_singleton()->get_screen_count());
-	} else if (screen == 2) {
+	} else if (screen == -3) {
 		// Next monitor (wrap to the other end if needed)
 		screen = Math::wrapi(
 				DisplayServer::get_singleton()->window_get_current_screen() + 1,
 				0,
 				DisplayServer::get_singleton()->get_screen_count());
-	} else {
-		// Fixed monitor ID
-		// There are 3 special options, so decrement the option ID by 3 to get the monitor ID
-		screen -= 3;
 	}
 
-	Rect2 screen_rect;
-	screen_rect.position = DisplayServer::get_singleton()->screen_get_position(screen);
-	screen_rect.size = DisplayServer::get_singleton()->screen_get_size(screen);
+	Rect2 screen_rect = DisplayServer::get_singleton()->screen_get_usable_rect(screen);
 
 	int window_placement = EDITOR_GET("run/window_placement/rect");
 	if (screen_rect != Rect2()) {
@@ -169,13 +168,13 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 				args.push_back(itos(pos.x) + "," + itos(pos.y));
 			} break;
 			case 3: { // force maximized
-				Vector2 pos = screen_rect.position;
+				Vector2 pos = screen_rect.position + screen_rect.size / 2;
 				args.push_back("--position");
 				args.push_back(itos(pos.x) + "," + itos(pos.y));
 				args.push_back("--maximized");
 			} break;
 			case 4: { // force fullscreen
-				Vector2 pos = screen_rect.position;
+				Vector2 pos = screen_rect.position + screen_rect.size / 2;
 				args.push_back("--position");
 				args.push_back(itos(pos.x) + "," + itos(pos.y));
 				args.push_back("--fullscreen");
@@ -267,18 +266,21 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 	VariantWriter::write_to_string(ED_GET_SHORTCUT("editor/stop_running_project"), shortcut);
 	OS::get_singleton()->set_environment("__GODOT_EDITOR_STOP_SHORTCUT__", shortcut);
 
-	printf("Running: %s", exec.utf8().get_data());
-	for (const String &E : args) {
-		printf(" %s", E.utf8().get_data());
-	};
-	printf("\n");
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		print_line(vformat("Running: %s", exec));
+		for (const String &E : args) {
+			print_line(vformat(" %s", E));
+		}
+	}
 
 	int instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
 	for (int i = 0; i < instances; i++) {
 		OS::ProcessID pid = 0;
 		Error err = OS::get_singleton()->create_instance(args, &pid);
 		ERR_FAIL_COND_V(err, err);
-		pids.push_back(pid);
+		if (pid != 0) {
+			pids.push_back(pid);
+		}
 	}
 
 	status = STATUS_PLAY;

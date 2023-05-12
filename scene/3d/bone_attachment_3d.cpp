@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  bone_attachment_3d.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  bone_attachment_3d.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "bone_attachment_3d.h"
 
@@ -61,11 +61,7 @@ void BoneAttachment3D::_validate_property(PropertyInfo &p_property) const {
 }
 
 bool BoneAttachment3D::_set(const StringName &p_path, const Variant &p_value) {
-	if (p_path == SNAME("override_pose")) {
-		set_override_pose(p_value);
-	} else if (p_path == SNAME("override_mode")) {
-		set_override_mode(p_value);
-	} else if (p_path == SNAME("use_external_skeleton")) {
+	if (p_path == SNAME("use_external_skeleton")) {
 		set_use_external_skeleton(p_value);
 	} else if (p_path == SNAME("external_skeleton")) {
 		set_external_skeleton(p_value);
@@ -75,11 +71,7 @@ bool BoneAttachment3D::_set(const StringName &p_path, const Variant &p_value) {
 }
 
 bool BoneAttachment3D::_get(const StringName &p_path, Variant &r_ret) const {
-	if (p_path == SNAME("override_pose")) {
-		r_ret = get_override_pose();
-	} else if (p_path == SNAME("override_mode")) {
-		r_ret = get_override_mode();
-	} else if (p_path == SNAME("use_external_skeleton")) {
+	if (p_path == SNAME("use_external_skeleton")) {
 		r_ret = get_use_external_skeleton();
 	} else if (p_path == SNAME("external_skeleton")) {
 		r_ret = get_external_skeleton();
@@ -89,11 +81,6 @@ bool BoneAttachment3D::_get(const StringName &p_path, Variant &r_ret) const {
 }
 
 void BoneAttachment3D::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::BOOL, "override_pose", PROPERTY_HINT_NONE, ""));
-	if (override_pose) {
-		p_list->push_back(PropertyInfo(Variant::INT, "override_mode", PROPERTY_HINT_ENUM, "Global Pose Override,Local Pose Override,Custom Pose"));
-	}
-
 	p_list->push_back(PropertyInfo(Variant::BOOL, "use_external_skeleton", PROPERTY_HINT_NONE, ""));
 	if (use_external_skeleton) {
 		p_list->push_back(PropertyInfo(Variant::NODE_PATH, "external_skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton3D"));
@@ -208,14 +195,10 @@ void BoneAttachment3D::_transform_changed() {
 
 		Transform3D our_trans = get_transform();
 		if (use_external_skeleton) {
-			our_trans = sk->world_transform_to_global_pose(get_global_transform());
+			our_trans = sk->get_global_transform().affine_inverse() * get_global_transform();
 		}
 
-		if (override_mode == OVERRIDE_MODES::MODE_GLOBAL_POSE) {
-			sk->set_bone_global_pose_override(bone_idx, our_trans, 1.0, true);
-		} else if (override_mode == OVERRIDE_MODES::MODE_LOCAL_POSE) {
-			sk->set_bone_local_pose_override(bone_idx, sk->global_pose_to_local_pose(bone_idx, our_trans), 1.0, true);
-		}
+		sk->set_bone_global_pose_override(bone_idx, our_trans, 1.0, true);
 	}
 }
 
@@ -267,11 +250,7 @@ void BoneAttachment3D::set_override_pose(bool p_override) {
 	if (!override_pose) {
 		Skeleton3D *sk = _get_skeleton3d();
 		if (sk) {
-			if (override_mode == OVERRIDE_MODES::MODE_GLOBAL_POSE) {
-				sk->set_bone_global_pose_override(bone_idx, Transform3D(), 0.0, false);
-			} else if (override_mode == OVERRIDE_MODES::MODE_LOCAL_POSE) {
-				sk->set_bone_local_pose_override(bone_idx, Transform3D(), 0.0, false);
-			}
+			sk->set_bone_global_pose_override(bone_idx, Transform3D(), 0.0, false);
 		}
 		_transform_changed();
 	}
@@ -280,27 +259,6 @@ void BoneAttachment3D::set_override_pose(bool p_override) {
 
 bool BoneAttachment3D::get_override_pose() const {
 	return override_pose;
-}
-
-void BoneAttachment3D::set_override_mode(int p_mode) {
-	if (override_pose) {
-		Skeleton3D *sk = _get_skeleton3d();
-		if (sk) {
-			if (override_mode == OVERRIDE_MODES::MODE_GLOBAL_POSE) {
-				sk->set_bone_global_pose_override(bone_idx, Transform3D(), 0.0, false);
-			} else if (override_mode == OVERRIDE_MODES::MODE_LOCAL_POSE) {
-				sk->set_bone_local_pose_override(bone_idx, Transform3D(), 0.0, false);
-			}
-		}
-		override_mode = p_mode;
-		_transform_changed();
-		return;
-	}
-	override_mode = p_mode;
-}
-
-int BoneAttachment3D::get_override_mode() const {
-	return override_mode;
 }
 
 void BoneAttachment3D::set_use_external_skeleton(bool p_use_external) {
@@ -361,7 +319,7 @@ void BoneAttachment3D::on_bone_pose_update(int p_bone_index) {
 		if (sk) {
 			if (!override_pose) {
 				if (use_external_skeleton) {
-					set_global_transform(sk->global_pose_to_world_transform(sk->get_bone_global_pose(bone_idx)));
+					set_global_transform(sk->get_global_transform() * sk->get_bone_global_pose(bone_idx));
 				} else {
 					set_transform(sk->get_bone_global_pose(bone_idx));
 				}
@@ -407,8 +365,6 @@ void BoneAttachment3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_override_pose", "override_pose"), &BoneAttachment3D::set_override_pose);
 	ClassDB::bind_method(D_METHOD("get_override_pose"), &BoneAttachment3D::get_override_pose);
-	ClassDB::bind_method(D_METHOD("set_override_mode", "override_mode"), &BoneAttachment3D::set_override_mode);
-	ClassDB::bind_method(D_METHOD("get_override_mode"), &BoneAttachment3D::get_override_mode);
 
 	ClassDB::bind_method(D_METHOD("set_use_external_skeleton", "use_external_skeleton"), &BoneAttachment3D::set_use_external_skeleton);
 	ClassDB::bind_method(D_METHOD("get_use_external_skeleton"), &BoneAttachment3D::get_use_external_skeleton);
@@ -420,4 +376,5 @@ void BoneAttachment3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bone_name"), "set_bone_name", "get_bone_name");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone_idx"), "set_bone_idx", "get_bone_idx");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_pose"), "set_override_pose", "get_override_pose");
 }

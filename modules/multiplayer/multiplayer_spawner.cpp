@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  multiplayer_spawner.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  multiplayer_spawner.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "multiplayer_spawner.h"
 
@@ -93,13 +93,6 @@ PackedStringArray MultiplayerSpawner::get_configuration_warnings() const {
 	if (spawn_path.is_empty() || !has_node(spawn_path)) {
 		warnings.push_back(RTR("A valid NodePath must be set in the \"Spawn Path\" property in order for MultiplayerSpawner to be able to spawn Nodes."));
 	}
-	bool has_scenes = get_spawnable_scene_count() > 0;
-	// Can't check if method is overridden in placeholder scripts.
-	bool has_placeholder_script = get_script_instance() && get_script_instance()->is_placeholder();
-	if (!has_scenes && !GDVIRTUAL_IS_OVERRIDDEN(_spawn_custom) && !has_placeholder_script) {
-		warnings.push_back(RTR("A list of PackedScenes must be set in the \"Auto Spawn List\" property in order for MultiplayerSpawner to automatically spawn them remotely when added as child of \"spawn_path\"."));
-		warnings.push_back(RTR("Alternatively, a Script implementing the function \"_spawn_custom\" must be set for this MultiplayerSpawner, and \"spawn\" must be called explicitly in code."));
-	}
 	return warnings;
 }
 
@@ -110,6 +103,15 @@ void MultiplayerSpawner::add_spawnable_scene(const String &p_path) {
 		ERR_FAIL_COND(!FileAccess::exists(p_path));
 	}
 	spawnable_scenes.push_back(sc);
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+#endif
+	Node *node = get_spawn_node();
+	if (spawnable_scenes.size() == 1 && node && !node->is_connected("child_entered_tree", callable_mp(this, &MultiplayerSpawner::_node_added))) {
+		node->connect("child_entered_tree", callable_mp(this, &MultiplayerSpawner::_node_added));
+	}
 }
 
 int MultiplayerSpawner::get_spawnable_scene_count() const {
@@ -123,6 +125,15 @@ String MultiplayerSpawner::get_spawnable_scene(int p_idx) const {
 
 void MultiplayerSpawner::clear_spawnable_scenes() {
 	spawnable_scenes.clear();
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+#endif
+	Node *node = get_spawn_node();
+	if (node && node->is_connected("child_entered_tree", callable_mp(this, &MultiplayerSpawner::_node_added))) {
+		node->disconnect("child_entered_tree", callable_mp(this, &MultiplayerSpawner::_node_added));
+	}
 }
 
 Vector<String> MultiplayerSpawner::_get_spawnable_scenes() const {
@@ -162,7 +173,9 @@ void MultiplayerSpawner::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_spawn_limit", "limit"), &MultiplayerSpawner::set_spawn_limit);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "spawn_limit", PROPERTY_HINT_RANGE, "0,1024,1,or_greater"), "set_spawn_limit", "get_spawn_limit");
 
-	GDVIRTUAL_BIND(_spawn_custom, "data");
+	ClassDB::bind_method(D_METHOD("get_spawn_function"), &MultiplayerSpawner::get_spawn_function);
+	ClassDB::bind_method(D_METHOD("set_spawn_function", "spawn_function"), &MultiplayerSpawner::set_spawn_function);
+	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "spawn_function", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_spawn_function", "get_spawn_function");
 
 	ADD_SIGNAL(MethodInfo("despawned", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("spawned", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
@@ -183,7 +196,7 @@ void MultiplayerSpawner::_update_spawn_node() {
 	Node *node = spawn_path.is_empty() && is_inside_tree() ? nullptr : get_node_or_null(spawn_path);
 	if (node) {
 		spawn_node = node->get_instance_id();
-		if (get_spawnable_scene_count() && !GDVIRTUAL_IS_OVERRIDDEN(_spawn_custom)) {
+		if (get_spawnable_scene_count()) {
 			node->connect("child_entered_tree", callable_mp(this, &MultiplayerSpawner::_node_added));
 		}
 	} else {
@@ -204,10 +217,6 @@ void MultiplayerSpawner::_notification(int p_what) {
 				Node *node = Object::cast_to<Node>(ObjectDB::get_instance(E.key));
 				ERR_CONTINUE(!node);
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &MultiplayerSpawner::_node_exit));
-				// This is unlikely, but might still crash the engine.
-				if (node->is_connected(SceneStringNames::get_singleton()->ready, callable_mp(this, &MultiplayerSpawner::_node_ready))) {
-					node->disconnect(SceneStringNames::get_singleton()->ready, callable_mp(this, &MultiplayerSpawner::_node_ready));
-				}
 				get_multiplayer()->object_configuration_remove(node, this);
 			}
 			tracked_nodes.clear();
@@ -249,11 +258,11 @@ void MultiplayerSpawner::_track(Node *p_node, const Variant &p_argument, int p_s
 	if (!tracked_nodes.has(oid)) {
 		tracked_nodes[oid] = SpawnInfo(p_argument.duplicate(true), p_scene_id);
 		p_node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &MultiplayerSpawner::_node_exit).bind(p_node->get_instance_id()), CONNECT_ONE_SHOT);
-		p_node->connect(SceneStringNames::get_singleton()->ready, callable_mp(this, &MultiplayerSpawner::_node_ready).bind(p_node->get_instance_id()), CONNECT_ONE_SHOT);
+		_spawn_notify(p_node->get_instance_id());
 	}
 }
 
-void MultiplayerSpawner::_node_ready(ObjectID p_id) {
+void MultiplayerSpawner::_spawn_notify(ObjectID p_id) {
 	get_multiplayer()->object_configuration_add(ObjectDB::get_instance(p_id), this);
 }
 
@@ -298,23 +307,26 @@ Node *MultiplayerSpawner::instantiate_scene(int p_id) {
 
 Node *MultiplayerSpawner::instantiate_custom(const Variant &p_data) {
 	ERR_FAIL_COND_V_MSG(spawn_limit && spawn_limit <= tracked_nodes.size(), nullptr, "Spawn limit reached!");
-	Node *node = nullptr;
-	if (GDVIRTUAL_CALL(_spawn_custom, p_data, node)) {
-		return node;
-	}
-	ERR_FAIL_V_MSG(nullptr, "Method '_spawn_custom' is not implemented on this peer.");
+	ERR_FAIL_COND_V_MSG(!spawn_function.is_valid(), nullptr, "Custom spawn requires a valid 'spawn_function'.");
+	const Variant *argv[1] = { &p_data };
+	Variant ret;
+	Callable::CallError ce;
+	spawn_function.callp(argv, 1, ret, ce);
+	ERR_FAIL_COND_V_MSG(ce.error != Callable::CallError::CALL_OK, nullptr, "Failed to call spawn function.");
+	ERR_FAIL_COND_V_MSG(ret.get_type() != Variant::OBJECT, nullptr, "The spawn function must return a Node.");
+	return Object::cast_to<Node>(ret.operator Object *());
 }
 
 Node *MultiplayerSpawner::spawn(const Variant &p_data) {
 	ERR_FAIL_COND_V(!is_inside_tree() || !get_multiplayer()->has_multiplayer_peer() || !is_multiplayer_authority(), nullptr);
 	ERR_FAIL_COND_V_MSG(spawn_limit && spawn_limit <= tracked_nodes.size(), nullptr, "Spawn limit reached!");
-	ERR_FAIL_COND_V_MSG(!GDVIRTUAL_IS_OVERRIDDEN(_spawn_custom), nullptr, "Custom spawn requires the '_spawn_custom' virtual method to be implemented via script.");
+	ERR_FAIL_COND_V_MSG(!spawn_function.is_valid(), nullptr, "Custom spawn requires the 'spawn_function' property to be a valid callable.");
 
 	Node *parent = get_spawn_node();
 	ERR_FAIL_COND_V_MSG(!parent, nullptr, "Cannot find spawn node.");
 
 	Node *node = instantiate_custom(p_data);
-	ERR_FAIL_COND_V_MSG(!node, nullptr, "The '_spawn_custom' implementation must return a valid Node.");
+	ERR_FAIL_COND_V_MSG(!node, nullptr, "The 'spawn_function' callable must return a valid node.");
 
 	_track(node, p_data);
 	parent->add_child(node, true);

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="FontFile" inherits="Font" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="FontFile" inherits="Font" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Font source data and prerendered glyph cache, imported from dynamic or bitmap font.
 	</brief_description>
@@ -12,18 +12,18 @@
 		- Bitmap font importer: AngelCode BMFont (.fnt, .font), text and binary (version 3) format variants.
 		- Monospace image font importer: All supported image formats.
 		[b]Note:[/b] A character is a symbol that represents an item (letter, digit etc.) in an abstract way.
-		[b]Note:[/b] A glyph is a bitmap or shape used to draw a one or more characters in a context-dependent manner. Glyph indices are bound to the specific font data source.
+		[b]Note:[/b] A glyph is a bitmap or shape used to draw one or more characters in a context-dependent manner. Glyph indices are bound to the specific font data source.
 		[b]Note:[/b] If a none of the font data sources contain glyphs for a character used in a string, the character in question will be replaced with a box displaying its hexadecimal code.
 		[codeblocks]
 		[gdscript]
 		var f = load("res://BarlowCondensed-Bold.ttf")
-		$"Label".set("custom_fonts/font", f)
-		$"Label".set("custom_fonts/font_size", 64)
+		$Label.add_theme_font_override("font", f)
+		$Label.add_theme_font_size_override("font_size", 64)
 		[/gdscript]
 		[csharp]
 		var f = ResourceLoader.Load&lt;FontFile&gt;("res://BarlowCondensed-Bold.ttf");
-		GetNode("Label").Set("custom_fonts/font", f);
-		GetNode("Label").Set("custom_font_sizes/font_size", 64);
+		GetNode("Label").AddThemeFontOverride("font", f);
+		GetNode("Label").AddThemeFontSizeOverride("font_size", 64);
 		[/csharp]
 		[/codeblocks]
 	</description>
@@ -88,6 +88,7 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="int" />
 			<description>
+				Returns the font descent (number of pixels below the baseline).
 			</description>
 		</method>
 		<method name="get_cache_scale" qualifiers="const">
@@ -95,6 +96,7 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="int" />
 			<description>
+				Returns scaling factor of the color bitmap font.
 			</description>
 		</method>
 		<method name="get_cache_underline_position" qualifiers="const">
@@ -102,6 +104,7 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="int" />
 			<description>
+				Returns pixel offset of the underline below the baseline.
 			</description>
 		</method>
 		<method name="get_cache_underline_thickness" qualifiers="const">
@@ -109,6 +112,15 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="int" />
 			<description>
+				Returns thickness of the underline in pixels.
+			</description>
+		</method>
+		<method name="get_char_from_glyph_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="size" type="int" />
+			<param index="1" name="glyph_index" type="int" />
+			<description>
+				Returns character code associated with [param glyph_index], or [code]0[/code] if [param glyph_index] is invalid. See [method get_glyph_index].
 			</description>
 		</method>
 		<method name="get_embolden" qualifiers="const">
@@ -377,6 +389,7 @@
 			<param index="1" name="size" type="int" />
 			<param index="2" name="ascent" type="float" />
 			<description>
+				Sets the font ascent (number of pixels above the baseline).
 			</description>
 		</method>
 		<method name="set_cache_descent">
@@ -385,6 +398,7 @@
 			<param index="1" name="size" type="int" />
 			<param index="2" name="descent" type="float" />
 			<description>
+				Sets the font descent (number of pixels below the baseline).
 			</description>
 		</method>
 		<method name="set_cache_scale">
@@ -393,6 +407,7 @@
 			<param index="1" name="size" type="int" />
 			<param index="2" name="scale" type="float" />
 			<description>
+				Sets scaling factor of the color bitmap font.
 			</description>
 		</method>
 		<method name="set_cache_underline_position">
@@ -401,6 +416,7 @@
 			<param index="1" name="size" type="int" />
 			<param index="2" name="underline_position" type="float" />
 			<description>
+				Sets pixel offset of the underline below the baseline.
 			</description>
 		</method>
 		<method name="set_cache_underline_thickness">
@@ -409,6 +425,7 @@
 			<param index="1" name="size" type="int" />
 			<param index="2" name="underline_thickness" type="float" />
 			<description>
+				Sets thickness of the underline in pixels.
 			</description>
 		</method>
 		<method name="set_embolden">

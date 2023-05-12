@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  resource_saver.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  resource_saver.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "resource_saver.h"
 #include "core/config/project_settings.h"
@@ -42,9 +42,15 @@ ResourceSavedCallback ResourceSaver::save_callback = nullptr;
 ResourceSaverGetResourceIDForPath ResourceSaver::save_get_id_for_path = nullptr;
 
 Error ResourceFormatSaver::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
-	int64_t res = ERR_METHOD_NOT_FOUND;
-	GDVIRTUAL_CALL(_save, p_resource, p_path, p_flags, res);
-	return (Error)res;
+	Error err = ERR_METHOD_NOT_FOUND;
+	GDVIRTUAL_CALL(_save, p_resource, p_path, p_flags, err);
+	return err;
+}
+
+Error ResourceFormatSaver::set_uid(const String &p_path, ResourceUID::ID p_uid) {
+	Error err = ERR_FILE_UNRECOGNIZED;
+	GDVIRTUAL_CALL(_set_uid, p_path, p_uid, err);
+	return err;
 }
 
 bool ResourceFormatSaver::recognize(const Ref<Resource> &p_resource) const {
@@ -85,6 +91,7 @@ bool ResourceFormatSaver::recognize_path(const Ref<Resource> &p_resource, const 
 
 void ResourceFormatSaver::_bind_methods() {
 	GDVIRTUAL_BIND(_save, "resource", "path", "flags");
+	GDVIRTUAL_BIND(_set_uid, "path", "uid");
 	GDVIRTUAL_BIND(_recognize, "resource");
 	GDVIRTUAL_BIND(_get_recognized_extensions, "resource");
 	GDVIRTUAL_BIND(_recognize_path, "resource", "path");
@@ -140,6 +147,23 @@ Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path,
 			}
 
 			return OK;
+		}
+	}
+
+	return err;
+}
+
+Error ResourceSaver::set_uid(const String &p_path, ResourceUID::ID p_uid) {
+	String path = p_path;
+
+	ERR_FAIL_COND_V_MSG(path.is_empty(), ERR_INVALID_PARAMETER, "Can't update UID to empty path. Provide non-empty path.");
+
+	Error err = ERR_FILE_UNRECOGNIZED;
+
+	for (int i = 0; i < saver_count; i++) {
+		err = saver[i]->set_uid(path, p_uid);
+		if (err == OK) {
+			break;
 		}
 	}
 
@@ -224,13 +248,6 @@ bool ResourceSaver::add_custom_resource_format_saver(String script_path) {
 	ResourceSaver::add_resource_format_saver(crl);
 
 	return true;
-}
-
-void ResourceSaver::remove_custom_resource_format_saver(String script_path) {
-	Ref<ResourceFormatSaver> custom_saver = _find_custom_resource_format_saver(script_path);
-	if (custom_saver.is_valid()) {
-		remove_resource_format_saver(custom_saver);
-	}
 }
 
 void ResourceSaver::add_custom_savers() {

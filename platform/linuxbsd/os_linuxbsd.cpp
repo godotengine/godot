@@ -1,35 +1,36 @@
-/*************************************************************************/
-/*  os_linuxbsd.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  os_linuxbsd.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "os_linuxbsd.h"
 
+#include "core/io/certs_compressed.gen.h"
 #include "core/io/dir_access.h"
 #include "main/main.h"
 #include "servers/display_server.h"
@@ -81,7 +82,7 @@ void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 	List<String> args;
 
 	if (program.ends_with("zenity")) {
-		args.push_back("--error");
+		args.push_back("--warning");
 		args.push_back("--width");
 		args.push_back("500");
 		args.push_back("--title");
@@ -91,7 +92,9 @@ void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 	}
 
 	if (program.ends_with("kdialog")) {
-		args.push_back("--error");
+		// `--sorry` uses the same icon as `--warning` in Zenity.
+		// As of KDialog 22.12.1, its `--warning` options are only available for yes/no questions.
+		args.push_back("--sorry");
 		args.push_back(p_alert);
 		args.push_back("--title");
 		args.push_back(p_title);
@@ -191,6 +194,10 @@ void OS_LinuxBSD::delete_main_loop() {
 
 void OS_LinuxBSD::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
+}
+
+String OS_LinuxBSD::get_identifier() const {
+	return "linuxbsd";
 }
 
 String OS_LinuxBSD::get_name() const {
@@ -488,6 +495,11 @@ bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
 		return true;
 	}
 
+	// Match against the specific OS (linux, freebsd, etc).
+	if (p_feature == get_name().to_lower()) {
+		return true;
+	}
+
 	return false;
 }
 
@@ -675,40 +687,45 @@ Vector<String> OS_LinuxBSD::get_system_font_path_for_text(const String &p_font_n
 	}
 
 	Vector<String> ret;
-	FcPattern *pattern = FcPatternCreate();
-	if (pattern) {
-		FcPatternAddString(pattern, FC_FAMILY, reinterpret_cast<const FcChar8 *>(p_font_name.utf8().get_data()));
-		FcPatternAddInteger(pattern, FC_WEIGHT, _weight_to_fc(p_weight));
-		FcPatternAddInteger(pattern, FC_WIDTH, _stretch_to_fc(p_stretch));
-		FcPatternAddInteger(pattern, FC_SLANT, p_italic ? FC_SLANT_ITALIC : FC_SLANT_ROMAN);
+	static const char *allowed_formats[] = { "TrueType", "CFF" };
+	for (size_t i = 0; i < sizeof(allowed_formats) / sizeof(const char *); i++) {
+		FcPattern *pattern = FcPatternCreate();
+		if (pattern) {
+			FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
+			FcPatternAddString(pattern, FC_FONTFORMAT, reinterpret_cast<const FcChar8 *>(allowed_formats[i]));
+			FcPatternAddString(pattern, FC_FAMILY, reinterpret_cast<const FcChar8 *>(p_font_name.utf8().get_data()));
+			FcPatternAddInteger(pattern, FC_WEIGHT, _weight_to_fc(p_weight));
+			FcPatternAddInteger(pattern, FC_WIDTH, _stretch_to_fc(p_stretch));
+			FcPatternAddInteger(pattern, FC_SLANT, p_italic ? FC_SLANT_ITALIC : FC_SLANT_ROMAN);
 
-		FcCharSet *char_set = FcCharSetCreate();
-		for (int i = 0; i < p_text.size(); i++) {
-			FcCharSetAddChar(char_set, p_text[i]);
-		}
-		FcPatternAddCharSet(pattern, FC_CHARSET, char_set);
-
-		FcLangSet *lang_set = FcLangSetCreate();
-		FcLangSetAdd(lang_set, reinterpret_cast<const FcChar8 *>(p_locale.utf8().get_data()));
-		FcPatternAddLangSet(pattern, FC_LANG, lang_set);
-
-		FcConfigSubstitute(0, pattern, FcMatchPattern);
-		FcDefaultSubstitute(pattern);
-
-		FcResult result;
-		FcPattern *match = FcFontMatch(0, pattern, &result);
-		if (match) {
-			char *file_name = nullptr;
-			if (FcPatternGetString(match, FC_FILE, 0, reinterpret_cast<FcChar8 **>(&file_name)) == FcResultMatch) {
-				if (file_name) {
-					ret.push_back(String::utf8(file_name));
-				}
+			FcCharSet *char_set = FcCharSetCreate();
+			for (int j = 0; j < p_text.size(); j++) {
+				FcCharSetAddChar(char_set, p_text[j]);
 			}
-			FcPatternDestroy(match);
+			FcPatternAddCharSet(pattern, FC_CHARSET, char_set);
+
+			FcLangSet *lang_set = FcLangSetCreate();
+			FcLangSetAdd(lang_set, reinterpret_cast<const FcChar8 *>(p_locale.utf8().get_data()));
+			FcPatternAddLangSet(pattern, FC_LANG, lang_set);
+
+			FcConfigSubstitute(0, pattern, FcMatchPattern);
+			FcDefaultSubstitute(pattern);
+
+			FcResult result;
+			FcPattern *match = FcFontMatch(0, pattern, &result);
+			if (match) {
+				char *file_name = nullptr;
+				if (FcPatternGetString(match, FC_FILE, 0, reinterpret_cast<FcChar8 **>(&file_name)) == FcResultMatch) {
+					if (file_name) {
+						ret.push_back(String::utf8(file_name));
+					}
+				}
+				FcPatternDestroy(match);
+			}
+			FcPatternDestroy(pattern);
+			FcCharSetDestroy(char_set);
+			FcLangSetDestroy(lang_set);
 		}
-		FcPatternDestroy(pattern);
-		FcCharSetDestroy(char_set);
-		FcLangSetDestroy(lang_set);
 	}
 
 	return ret;
@@ -723,47 +740,51 @@ String OS_LinuxBSD::get_system_font_path(const String &p_font_name, int p_weight
 		ERR_FAIL_V_MSG(String(), "Unable to load fontconfig, system font support is disabled.");
 	}
 
-	String ret;
-	FcPattern *pattern = FcPatternCreate();
-	if (pattern) {
-		bool allow_substitutes = (p_font_name.to_lower() == "sans-serif") || (p_font_name.to_lower() == "serif") || (p_font_name.to_lower() == "monospace") || (p_font_name.to_lower() == "cursive") || (p_font_name.to_lower() == "fantasy");
+	static const char *allowed_formats[] = { "TrueType", "CFF" };
+	for (size_t i = 0; i < sizeof(allowed_formats) / sizeof(const char *); i++) {
+		FcPattern *pattern = FcPatternCreate();
+		if (pattern) {
+			bool allow_substitutes = (p_font_name.to_lower() == "sans-serif") || (p_font_name.to_lower() == "serif") || (p_font_name.to_lower() == "monospace") || (p_font_name.to_lower() == "cursive") || (p_font_name.to_lower() == "fantasy");
 
-		FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
-		FcPatternAddString(pattern, FC_FAMILY, reinterpret_cast<const FcChar8 *>(p_font_name.utf8().get_data()));
-		FcPatternAddInteger(pattern, FC_WEIGHT, _weight_to_fc(p_weight));
-		FcPatternAddInteger(pattern, FC_WIDTH, _stretch_to_fc(p_stretch));
-		FcPatternAddInteger(pattern, FC_SLANT, p_italic ? FC_SLANT_ITALIC : FC_SLANT_ROMAN);
+			FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
+			FcPatternAddString(pattern, FC_FONTFORMAT, reinterpret_cast<const FcChar8 *>(allowed_formats[i]));
+			FcPatternAddString(pattern, FC_FAMILY, reinterpret_cast<const FcChar8 *>(p_font_name.utf8().get_data()));
+			FcPatternAddInteger(pattern, FC_WEIGHT, _weight_to_fc(p_weight));
+			FcPatternAddInteger(pattern, FC_WIDTH, _stretch_to_fc(p_stretch));
+			FcPatternAddInteger(pattern, FC_SLANT, p_italic ? FC_SLANT_ITALIC : FC_SLANT_ROMAN);
 
-		FcConfigSubstitute(0, pattern, FcMatchPattern);
-		FcDefaultSubstitute(pattern);
+			FcConfigSubstitute(0, pattern, FcMatchPattern);
+			FcDefaultSubstitute(pattern);
 
-		FcResult result;
-		FcPattern *match = FcFontMatch(0, pattern, &result);
-		if (match) {
-			if (!allow_substitutes) {
-				char *family_name = nullptr;
-				if (FcPatternGetString(match, FC_FAMILY, 0, reinterpret_cast<FcChar8 **>(&family_name)) == FcResultMatch) {
-					if (family_name && String::utf8(family_name).to_lower() != p_font_name.to_lower()) {
-						FcPatternDestroy(match);
-						FcPatternDestroy(pattern);
-
-						return String();
+			FcResult result;
+			FcPattern *match = FcFontMatch(0, pattern, &result);
+			if (match) {
+				if (!allow_substitutes) {
+					char *family_name = nullptr;
+					if (FcPatternGetString(match, FC_FAMILY, 0, reinterpret_cast<FcChar8 **>(&family_name)) == FcResultMatch) {
+						if (family_name && String::utf8(family_name).to_lower() != p_font_name.to_lower()) {
+							FcPatternDestroy(match);
+							FcPatternDestroy(pattern);
+							continue;
+						}
 					}
 				}
-			}
-			char *file_name = nullptr;
-			if (FcPatternGetString(match, FC_FILE, 0, reinterpret_cast<FcChar8 **>(&file_name)) == FcResultMatch) {
-				if (file_name) {
-					ret = String::utf8(file_name);
+				char *file_name = nullptr;
+				if (FcPatternGetString(match, FC_FILE, 0, reinterpret_cast<FcChar8 **>(&file_name)) == FcResultMatch) {
+					if (file_name) {
+						String ret = String::utf8(file_name);
+						FcPatternDestroy(match);
+						FcPatternDestroy(pattern);
+						return ret;
+					}
 				}
+				FcPatternDestroy(match);
 			}
-
-			FcPatternDestroy(match);
+			FcPatternDestroy(pattern);
 		}
-		FcPatternDestroy(pattern);
 	}
 
-	return ret;
+	return String();
 #else
 	ERR_FAIL_V_MSG(String(), "Godot was compiled without fontconfig, system font support is disabled.");
 #endif
@@ -1065,6 +1086,40 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	return OK;
 }
 
+String OS_LinuxBSD::get_system_ca_certificates() {
+	String certfile;
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+
+	// Compile time preferred certificates path.
+	if (!String(_SYSTEM_CERTS_PATH).is_empty() && da->file_exists(_SYSTEM_CERTS_PATH)) {
+		certfile = _SYSTEM_CERTS_PATH;
+	} else if (da->file_exists("/etc/ssl/certs/ca-certificates.crt")) {
+		// Debian/Ubuntu
+		certfile = "/etc/ssl/certs/ca-certificates.crt";
+	} else if (da->file_exists("/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem")) {
+		// Fedora
+		certfile = "/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem";
+	} else if (da->file_exists("/etc/ca-certificates/extracted/tls-ca-bundle.pem")) {
+		// Arch Linux
+		certfile = "/etc/ca-certificates/extracted/tls-ca-bundle.pem";
+	} else if (da->file_exists("/var/lib/ca-certificates/ca-bundle.pem")) {
+		// openSUSE
+		certfile = "/var/lib/ca-certificates/ca-bundle.pem";
+	} else if (da->file_exists("/etc/ssl/cert.pem")) {
+		// FreeBSD/OpenBSD
+		certfile = "/etc/ssl/cert.pem";
+	}
+
+	if (certfile.is_empty()) {
+		return "";
+	}
+
+	Ref<FileAccess> f = FileAccess::open(certfile, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), "", vformat("Failed to open system CA certificates file: '%s'", certfile));
+
+	return f->get_as_text();
+}
+
 OS_LinuxBSD::OS_LinuxBSD() {
 	main_loop = nullptr;
 
@@ -1081,12 +1136,26 @@ OS_LinuxBSD::OS_LinuxBSD() {
 #endif
 
 #ifdef FONTCONFIG_ENABLED
+#ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
 	int dylibloader_verbose = 1;
 #else
 	int dylibloader_verbose = 0;
 #endif
 	font_config_initialized = (initialize_fontconfig(dylibloader_verbose) == 0);
+#else
+	font_config_initialized = true;
+#endif
+	if (font_config_initialized) {
+		bool ver_ok = false;
+		int version = FcGetVersion();
+		ver_ok = ((version / 100 / 100) == 2 && (version / 100 % 100) >= 11) || ((version / 100 / 100) > 2); // 2.11.0
+		print_verbose(vformat("FontConfig %d.%d.%d detected.", version / 100 / 100, version / 100 % 100, version % 100));
+		if (!ver_ok) {
+			font_config_initialized = false;
+		}
+	}
+
 	if (font_config_initialized) {
 		config = FcInitLoadConfigAndFonts();
 		if (!config) {

@@ -39,6 +39,16 @@ def get_opts():
     ]
 
 
+def get_doc_classes():
+    return [
+        "EditorExportPlatformMacOS",
+    ]
+
+
+def get_doc_path():
+    return "doc_classes"
+
+
 def get_flags():
     return [
         ("arch", detect_arch()),
@@ -108,10 +118,10 @@ def configure(env: "Environment"):
         env.Append(CCFLAGS=["-arch", "arm64", "-mmacosx-version-min=11.0"])
         env.Append(LINKFLAGS=["-arch", "arm64", "-mmacosx-version-min=11.0"])
     elif env["arch"] == "x86_64":
-        print("Building for macOS 10.12+.")
-        env.Append(ASFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
-        env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
-        env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
+        print("Building for macOS 10.13+.")
+        env.Append(ASFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
+        env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
+        env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
 
     env.Append(CCFLAGS=["-fobjc-arc"])
 
@@ -144,7 +154,7 @@ def configure(env: "Environment"):
             env["CC"] = basecmd + "cc"
             env["CXX"] = basecmd + "c++"
         else:
-            # there aren't any ccache wrappers available for OS X cross-compile,
+            # there aren't any ccache wrappers available for macOS cross-compile,
             # to enable caching we need to prepend the path to the ccache binary
             env["CC"] = ccache_path + " " + basecmd + "cc"
             env["CXX"] = ccache_path + " " + basecmd + "c++"
@@ -225,13 +235,14 @@ def configure(env: "Environment"):
             "CoreMedia",
             "-framework",
             "QuartzCore",
+            "-framework",
+            "Security",
         ]
     )
     env.Append(LIBS=["pthread", "z"])
 
     if env["opengl3"]:
-        env.Append(CPPDEFINES=["GLES_ENABLED", "GLES3_ENABLED"])
-        env.Append(CCFLAGS=["-Wno-deprecated-declarations"])  # Disable deprecation warnings
+        env.Append(CPPDEFINES=["GLES3_ENABLED"])
         env.Append(LINKFLAGS=["-framework", "OpenGL"])
 
     env.Append(LINKFLAGS=["-rpath", "@executable_path/../Frameworks", "-rpath", "@executable_path"])
@@ -243,17 +254,17 @@ def configure(env: "Environment"):
             env.Append(LINKFLAGS=["-lMoltenVK"])
             mvk_found = False
 
-            mkv_list = [get_mvk_sdk_path(), "/opt/homebrew/lib", "/usr/local/homebrew/lib", "/opt/local/lib"]
+            mvk_list = [get_mvk_sdk_path(), "/opt/homebrew/lib", "/usr/local/homebrew/lib", "/opt/local/lib"]
             if env["vulkan_sdk_path"] != "":
-                mkv_list.insert(0, os.path.expanduser(env["vulkan_sdk_path"]))
-                mkv_list.insert(
+                mvk_list.insert(0, os.path.expanduser(env["vulkan_sdk_path"]))
+                mvk_list.insert(
                     0,
                     os.path.join(
                         os.path.expanduser(env["vulkan_sdk_path"]), "MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/"
                     ),
                 )
 
-            for mvk_path in mkv_list:
+            for mvk_path in mvk_list:
                 if mvk_path and os.path.isfile(os.path.join(mvk_path, "libMoltenVK.a")):
                     mvk_found = True
                     print("MoltenVK found at: " + mvk_path)

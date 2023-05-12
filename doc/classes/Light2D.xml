@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Light2D" inherits="Node2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Light2D" inherits="Node2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Casts light in a 2D environment.
 	</brief_description>
@@ -41,7 +41,8 @@
 			The Light2D's energy value. The larger the value, the stronger the light.
 		</member>
 		<member name="range_item_cull_mask" type="int" setter="set_item_cull_mask" getter="get_item_cull_mask" default="1">
-			The layer mask. Only objects with a matching mask will be affected by the Light2D.
+			The layer mask. Only objects with a matching [member CanvasItem.light_mask] will be affected by the Light2D. See also [member shadow_item_cull_mask], which affects which objects can cast shadows.
+			[b]Note:[/b] [member range_item_cull_mask] is ignored by [DirectionalLight2D], which will always light a 2D node regardless of the 2D node's [member CanvasItem.light_mask].
 		</member>
 		<member name="range_layer_max" type="int" setter="set_layer_range_max" getter="get_layer_range_max" default="0">
 			Maximum layer value of objects that are affected by the Light2D.
@@ -68,7 +69,7 @@
 			Smoothing value for shadows. Higher values will result in softer shadows, at the cost of visible streaks that can appear in shadow rendering. [member shadow_filter_smooth] only has an effect if [member shadow_filter] is [constant SHADOW_FILTER_PCF5] or [constant SHADOW_FILTER_PCF13].
 		</member>
 		<member name="shadow_item_cull_mask" type="int" setter="set_item_shadow_cull_mask" getter="get_item_shadow_cull_mask" default="1">
-			The shadow mask. Used with [LightOccluder2D] to cast shadows. Only occluders with a matching light mask will cast shadows.
+			The shadow mask. Used with [LightOccluder2D] to cast shadows. Only occluders with a matching [member CanvasItem.light_mask] will cast shadows. See also [member range_item_cull_mask], which affects which objects can [i]receive[/i] the light.
 		</member>
 	</members>
 	<constants>
@@ -79,7 +80,7 @@
 			Percentage closer filtering (5 samples) applies to the shadow map. This is slower compared to hard shadow rendering. See [member shadow_filter].
 		</constant>
 		<constant name="SHADOW_FILTER_PCF13" value="2" enum="ShadowFilter">
-			Percentage closer filtering (13 samples) applies to the shadow map. This is the slowest shadow filtereing mode, and should be used sparingly. See [member shadow_filter].
+			Percentage closer filtering (13 samples) applies to the shadow map. This is the slowest shadow filtering mode, and should be used sparingly. See [member shadow_filter].
 		</constant>
 		<constant name="BLEND_MODE_ADD" value="0" enum="BlendMode">
 			Adds the value of pixels corresponding to the Light2D to the values of pixels under it. This is the common behavior of a light.

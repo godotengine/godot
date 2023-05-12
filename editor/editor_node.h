@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  editor_node.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_node.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef EDITOR_NODE_H
 #define EDITOR_NODE_H
@@ -34,80 +34,86 @@
 #include "core/templates/safe_refcount.h"
 #include "editor/editor_data.h"
 #include "editor/editor_folding.h"
-#include "editor/editor_native_shader_source_visualizer.h"
 #include "editor/editor_plugin.h"
-#include "editor/editor_run.h"
-#include "editor/editor_title_bar.h"
-#include "editor/export/editor_export.h"
 
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
 typedef bool (*EditorBuildCallback)();
 
 class AcceptDialog;
-class AudioStreamPreviewGenerator;
-class BackgroundProgress;
+class AcceptDialogAutoReparent;
 class CenterContainer;
 class CheckBox;
 class ColorPicker;
 class ConfirmationDialog;
 class Control;
-class DependencyEditor;
-class DependencyErrorDialog;
-class DynamicFontImportSettings;
-class EditorAbout;
-class EditorCommandPalette;
-class EditorExport;
-class EditorExtensionManager;
-class EditorFeatureProfileManager;
-class EditorFileDialog;
-class EditorFileServer;
-class EditorFolding;
-class EditorInspector;
-class EditorLayoutsDialog;
-class EditorLog;
-class EditorPluginList;
-class EditorQuickOpen;
-class EditorResourcePreview;
-class EditorResourceConversionPlugin;
-class EditorRun;
-class EditorRunNative;
-class EditorSelectionHistory;
-class EditorSettingsDialog;
-class EditorToaster;
-class EditorUndoRedoManager;
-class ExportTemplateManager;
-class FBXImporterManager;
 class FileDialog;
-class FileSystemDock;
-class HistoryDock;
+class HBoxContainer;
 class HSplitContainer;
-class ImportDock;
 class LinkButton;
 class MenuBar;
 class MenuButton;
-class NodeDock;
+class Node2D;
 class OptionButton;
-class OrphanResourcesDialog;
 class Panel;
 class PanelContainer;
-class PluginConfigDialog;
-class ProgressDialog;
-class ProjectExportDialog;
-class ProjectSettingsEditor;
-class RunSettingsDialog;
-class SceneImportSettings;
-class AudioStreamImportSettings;
-class ScriptCreateDialog;
+class PopupPanel;
+class RichTextLabel;
 class SubViewport;
 class TabBar;
 class TabContainer;
 class TextureRect;
 class TextureProgressBar;
 class Tree;
+class VBoxContainer;
 class VSplitContainer;
 class Window;
+
+class AudioStreamImportSettings;
+class AudioStreamPreviewGenerator;
+class BackgroundProgress;
+class DependencyEditor;
+class DependencyErrorDialog;
+class DynamicFontImportSettings;
+class EditorAbout;
 class EditorBuildProfileManager;
+class EditorCommandPalette;
+class EditorExport;
+class EditorExtensionManager;
+class EditorFeatureProfileManager;
+class EditorFileDialog;
+class EditorFolding;
+class EditorInspector;
+class EditorLayoutsDialog;
+class EditorLog;
+class EditorNativeShaderSourceVisualizer;
+class EditorPluginList;
+class EditorQuickOpen;
+class EditorPropertyResource;
+class EditorResourcePreview;
+class EditorResourceConversionPlugin;
+class EditorRunBar;
+class EditorRunNative;
+class EditorSelectionHistory;
+class EditorSettingsDialog;
+class EditorTitleBar;
+class EditorToaster;
+class EditorUndoRedoManager;
+class ExportTemplateManager;
+class FBXImporterManager;
+class FileSystemDock;
+class HistoryDock;
+class ImportDock;
+class NodeDock;
+class OrphanResourcesDialog;
+class PluginConfigDialog;
+class ProgressDialog;
+class ProjectExportDialog;
+class ProjectSettingsEditor;
+class RunSettingsDialog;
+class SceneImportSettings;
+class ScriptCreateDialog;
+class WindowWrapper;
 
 class EditorNode : public Node {
 	GDCLASS(EditorNode, Node);
@@ -158,6 +164,7 @@ private:
 		FILE_SAVE_ALL_SCENES,
 		FILE_SAVE_AND_RUN,
 		FILE_SAVE_AND_RUN_MAIN_SCENE,
+		FILE_RUN_SCENE,
 		FILE_SHOW_IN_FILESYSTEM,
 		FILE_EXPORT_PROJECT,
 		FILE_EXPORT_MESH_LIBRARY,
@@ -174,9 +181,6 @@ private:
 		FILE_CLOSE_OTHERS,
 		FILE_CLOSE_RIGHT,
 		FILE_CLOSE_ALL,
-		FILE_CLOSE_ALL_AND_QUIT,
-		FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER,
-		FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT,
 		FILE_QUIT,
 		FILE_EXTERNAL_OPEN_SCENE,
 		EDIT_UNDO,
@@ -187,11 +191,7 @@ private:
 		TOOLS_CUSTOM,
 		RESOURCE_SAVE,
 		RESOURCE_SAVE_AS,
-		RUN_PLAY,
 
-		RUN_STOP,
-		RUN_PLAY_SCENE,
-		RUN_PLAY_CUSTOM_SCENE,
 		RUN_SETTINGS,
 		RUN_USER_DATA_FOLDER,
 		RELOAD_CURRENT_PROJECT,
@@ -264,12 +264,10 @@ private:
 
 	EditorData editor_data;
 	EditorFolding editor_folding;
-	EditorRun editor_run;
 	EditorSelectionHistory editor_history;
 
 	EditorCommandPalette *command_palette = nullptr;
 	EditorExport *editor_export = nullptr;
-	EditorInterface *editor_interface = nullptr;
 	EditorLog *log = nullptr;
 	EditorNativeShaderSourceVisualizer *native_shader_source_visualizer = nullptr;
 	EditorPlugin *editor_plugin_screen = nullptr;
@@ -277,9 +275,7 @@ private:
 	EditorPluginList *editor_plugins_force_over = nullptr;
 	EditorPluginList *editor_plugins_over = nullptr;
 	EditorQuickOpen *quick_open = nullptr;
-	EditorQuickOpen *quick_run = nullptr;
 	EditorResourcePreview *resource_preview = nullptr;
-	EditorRunNative *run_native = nullptr;
 	EditorSelection *editor_selection = nullptr;
 	EditorSettingsDialog *editor_settings_dialog = nullptr;
 	HistoryDock *history_dock = nullptr;
@@ -292,6 +288,9 @@ private:
 	Vector<EditorPlugin *> editor_plugins;
 	bool _initializing_plugins = false;
 	HashMap<String, EditorPlugin *> addon_name_to_plugin;
+	LocalVector<String> pending_addons;
+	HashMap<ObjectID, HashSet<EditorPlugin *>> active_plugins;
+	bool is_main_screen_editing = false;
 
 	PanelContainer *scene_root_parent = nullptr;
 	Control *theme_base = nullptr;
@@ -323,7 +322,10 @@ private:
 	PopupMenu *scene_tabs_context_menu = nullptr;
 	Panel *tab_preview_panel = nullptr;
 	TextureRect *tab_preview = nullptr;
+
 	int tab_closing_idx = 0;
+	List<String> tabs_to_close;
+	int tab_closing_menu_option = -1;
 
 	bool exiting = false;
 	bool dimmed = false;
@@ -336,7 +338,8 @@ private:
 	Label *project_title = nullptr;
 	Control *left_menu_spacer = nullptr;
 	Control *right_menu_spacer = nullptr;
-	EditorTitleBar *menu_hb = nullptr;
+	EditorTitleBar *title_bar = nullptr;
+	EditorRunBar *project_run_bar = nullptr;
 	VBoxContainer *main_screen_vbox = nullptr;
 	MenuBar *main_menu = nullptr;
 	PopupMenu *file_menu = nullptr;
@@ -351,24 +354,15 @@ private:
 	Button *search_button = nullptr;
 	TextureProgressBar *audio_vu = nullptr;
 
-	PanelContainer *launch_pad = nullptr;
-	Button *play_button = nullptr;
-	Button *pause_button = nullptr;
-	Button *stop_button = nullptr;
-	Button *play_scene_button = nullptr;
-	Button *play_custom_scene_button = nullptr;
-	PanelContainer *write_movie_panel = nullptr;
-	Button *write_movie_button = nullptr;
-
 	Timer *screenshot_timer = nullptr;
 
 	PluginConfigDialog *plugin_config_dialog = nullptr;
 
 	RichTextLabel *load_errors = nullptr;
-	AcceptDialog *load_error_dialog = nullptr;
+	AcceptDialogAutoReparent *load_error_dialog = nullptr;
 
 	RichTextLabel *execute_outputs = nullptr;
-	AcceptDialog *execute_output_dialog = nullptr;
+	AcceptDialogAutoReparent *execute_output_dialog = nullptr;
 
 	Ref<Theme> theme;
 
@@ -383,17 +377,17 @@ private:
 	ConfirmationDialog *import_confirmation = nullptr;
 	ConfirmationDialog *pick_main_scene = nullptr;
 	Button *select_current_scene_button = nullptr;
-	AcceptDialog *accept = nullptr;
-	AcceptDialog *save_accept = nullptr;
+	AcceptDialogAutoReparent *accept = nullptr;
+	AcceptDialogAutoReparent *save_accept = nullptr;
 	EditorAbout *about = nullptr;
-	AcceptDialog *warning = nullptr;
+	AcceptDialogAutoReparent *warning = nullptr;
 
 	int overridden_default_layout = -1;
 	Ref<ConfigFile> default_layout;
 	PopupMenu *editor_layouts = nullptr;
 	EditorLayoutsDialog *layout_dialog = nullptr;
 
-	ConfirmationDialog *custom_build_manage_templates = nullptr;
+	ConfirmationDialog *gradle_build_manage_templates = nullptr;
 	ConfirmationDialog *install_android_build_template = nullptr;
 	ConfirmationDialog *remove_android_build_template = nullptr;
 
@@ -427,7 +421,7 @@ private:
 	Button *new_inherited_button = nullptr;
 	String open_import_request;
 
-	Vector<Control *> floating_docks;
+	Vector<WindowWrapper *> floating_docks;
 
 	Button *dock_float = nullptr;
 	Button *dock_tab_move_left = nullptr;
@@ -436,7 +430,7 @@ private:
 	PopupPanel *dock_select_popup = nullptr;
 	Rect2 dock_select_rect[DOCK_SLOT_MAX];
 	TabContainer *dock_slot[DOCK_SLOT_MAX];
-	Timer *dock_drag_timer = nullptr;
+	Timer *editor_layout_save_delay_timer = nullptr;
 	bool docks_visible = true;
 	int dock_popup_selected_idx = -1;
 	int dock_select_rect_over_idx = -1;
@@ -455,6 +449,7 @@ private:
 	EditorToaster *editor_toaster = nullptr;
 	LinkButton *version_btn = nullptr;
 	Button *bottom_panel_raise = nullptr;
+	bool bottom_panel_updating = false;
 
 	Tree *disk_changed_list = nullptr;
 	ConfirmationDialog *disk_changed = nullptr;
@@ -462,7 +457,6 @@ private:
 	bool scene_distraction_free = false;
 	bool script_distraction_free = false;
 
-	bool _playing_edited = false;
 	bool changing_scene = false;
 	bool cmdline_export_mode = false;
 	bool convert_old = false;
@@ -479,6 +473,7 @@ private:
 	Object *current = nullptr;
 
 	Ref<Resource> saving_resource;
+	HashSet<Ref<Resource>> saving_resources_in_path;
 
 	uint64_t update_spinner_step_msec = 0;
 	uint64_t update_spinner_step_frame = 0;
@@ -487,9 +482,6 @@ private:
 	String _tmp_import_path;
 	String external_file;
 	String open_navigate;
-
-	String run_custom_filename;
-	String run_current_filename;
 
 	DynamicFontImportSettings *fontdata_import_settings = nullptr;
 	SceneImportSettings *scene_import_settings = nullptr;
@@ -505,7 +497,6 @@ private:
 	PrintHandlerList print_handler;
 
 	HashMap<String, Ref<Texture2D>> icon_type_cache;
-	HashMap<Ref<Script>, Ref<Texture>> script_icon_cache;
 
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
@@ -535,6 +526,7 @@ private:
 	static void _resource_loaded(Ref<Resource> p_resource, const String &p_path);
 
 	void _build_icon_type_cache();
+	void _enable_pending_addons();
 
 	void _dialog_action(String p_file);
 
@@ -558,6 +550,7 @@ private:
 	void _update_file_menu_closed();
 
 	void _remove_plugin_from_enabled(const String &p_name);
+	void _plugin_over_edit(EditorPlugin *p_plugin, Object *p_object);
 
 	void _fs_changed();
 	void _resources_reimported(const Vector<String> &p_resources);
@@ -566,8 +559,8 @@ private:
 	void _node_renamed();
 	void _editor_select_next();
 	void _editor_select_prev();
-	void _set_scene_metadata(const String &p_file, int p_idx = -1);
-	void _get_scene_metadata(const String &p_file);
+	void _save_editor_states(const String &p_file, int p_idx = -1);
+	void _load_editor_plugin_states_from_config(const Ref<ConfigFile> &p_config_file);
 	void _update_title();
 	void _update_scene_tabs();
 	void _version_control_menu_option(int p_idx);
@@ -576,6 +569,8 @@ private:
 	void _vp_resized();
 	void _titlebar_resized();
 	void _version_button_pressed();
+
+	void _update_undo_redo_allowed();
 
 	int _save_external_resources();
 
@@ -588,19 +583,11 @@ private:
 	void _inherit_request(String p_file);
 	void _instantiate_request(const Vector<String> &p_files);
 
-	void _display_top_editors(bool p_display);
-	void _set_top_editors(Vector<EditorPlugin *> p_editor_plugins_over);
-	void _set_editing_top_editors(Object *p_current_object);
-
 	void _quick_opened();
-	void _quick_run();
 	void _open_command_palette();
 
-	void _write_movie_toggled(bool p_enabled);
-
-	void _run(bool p_current = false, const String &p_custom = "");
-	void _run_native(const Ref<EditorExportPreset> &p_preset);
-	void _reset_play_buttons();
+	void _project_run_started();
+	void _project_run_stopped();
 
 	void _add_to_recent_scenes(const String &p_scene);
 	void _update_recent_scenes();
@@ -642,10 +629,13 @@ private:
 	void _dock_pre_popup(int p_which);
 	void _dock_split_dragged(int ofs);
 	void _dock_popup_exit();
-	void _dock_floating_close_request(Control *p_control);
-	void _dock_make_float();
+	void _dock_floating_close_request(WindowWrapper *p_wrapper);
+	void _dock_make_selected_float();
+	void _dock_make_float(Control *p_control, int p_slot_index, bool p_show_window = true);
 	void _scene_tab_changed(int p_tab);
-	void _scene_tab_closed(int p_tab, int option = SCENE_TAB_CLOSE);
+	void _proceed_closing_scene_tabs();
+	bool _is_closing_editor() const;
+	void _scene_tab_closed(int p_tab, int p_option = SCENE_TAB_CLOSE);
 	void _scene_tab_hovered(int p_tab);
 	void _scene_tab_exit();
 	void _scene_tab_input(const Ref<InputEvent> &p_input);
@@ -658,15 +648,19 @@ private:
 
 	int _get_current_main_editor();
 
-	void _save_docks();
-	void _load_docks();
+	void _save_editor_layout();
+	void _load_editor_layout();
 	void _save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section);
+	void _restore_floating_dock(const Dictionary &p_dock_dump, Control *p_wrapper, int p_slot_index);
 	void _load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section);
 	void _update_dock_slots_visibility(bool p_keep_selected_tabs = false);
 	void _dock_tab_changed(int p_tab);
 
-	void _save_open_scenes_to_config(Ref<ConfigFile> p_layout, const String &p_section);
-	void _load_open_scenes_from_config(Ref<ConfigFile> p_layout, const String &p_section);
+	void _save_central_editor_layout_to_config(Ref<ConfigFile> p_config_file);
+	void _load_central_editor_layout_from_config(Ref<ConfigFile> p_config_file);
+
+	void _save_open_scenes_to_config(Ref<ConfigFile> p_layout);
+	void _load_open_scenes_from_config(Ref<ConfigFile> p_layout);
 
 	void _update_layouts_menu();
 	void _layout_menu_option(int p_id);
@@ -678,7 +672,6 @@ private:
 	void _inherit_imported(const String &p_action);
 	void _open_imported();
 
-	void _save_default_environment();
 	void _update_update_spinner();
 
 	void _resources_changed(const Vector<String> &p_resources);
@@ -689,7 +682,8 @@ private:
 
 	void _feature_profile_changed();
 	bool _is_class_editor_disabled_by_feature_profile(const StringName &p_class);
-	Ref<ImageTexture> _load_custom_class_icon(const String &p_path) const;
+
+	Ref<Texture2D> _get_class_or_script_icon(const String &p_class, const Ref<Script> &p_script, const String &p_fallback = "Object");
 
 	void _pick_main_scene_custom_action(const String &p_custom_action_name);
 
@@ -707,7 +701,6 @@ protected:
 	friend class FileSystemDock;
 
 	static void _bind_methods();
-
 	void _notification(int p_what);
 
 	int get_current_tab();
@@ -727,9 +720,8 @@ public:
 	static EditorLog *get_log() { return singleton->log; }
 	static EditorData &get_editor_data() { return singleton->editor_data; }
 	static EditorFolding &get_editor_folding() { return singleton->editor_folding; }
-	static Ref<EditorUndoRedoManager> &get_undo_redo();
 
-	static HBoxContainer *get_menu_hb() { return singleton->menu_hb; }
+	static EditorTitleBar *get_title_bar() { return singleton->title_bar; }
 	static VSplitContainer *get_top_split() { return singleton->top_split; }
 
 	static String adjust_scene_name_casing(const String &root_name);
@@ -780,9 +772,6 @@ public:
 	void set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed = false);
 	bool is_addon_plugin_enabled(const String &p_addon) const;
 
-	void set_movie_maker_enabled(bool p_enabled);
-	bool is_movie_maker_enabled() const;
-
 	void edit_node(Node *p_node);
 	void edit_resource(const Ref<Resource> &p_resource);
 
@@ -793,10 +782,9 @@ public:
 	void show_about() { _menu_option_confirm(HELP_ABOUT, false); }
 
 	void push_item(Object *p_object, const String &p_property = "", bool p_inspector_only = false);
-	void edit_item(Object *p_object);
-	void edit_item_resource(Ref<Resource> p_resource);
-	bool item_has_editor(Object *p_object);
-	void hide_top_editors();
+	void edit_item(Object *p_object, Object *p_editing_owner);
+	void push_node_item(Node *p_node);
+	void hide_unused_editors(const Object *p_editing_owner = nullptr);
 
 	void select_editor_by_name(const String &p_name);
 
@@ -818,11 +806,46 @@ public:
 	Error load_scene(const String &p_scene, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_clear_errors = true, bool p_force_open_imported = false, bool p_silent_change_tab = false);
 	Error load_resource(const String &p_resource, bool p_ignore_broken_deps = false);
 
+	HashMap<StringName, Variant> get_modified_properties_for_node(Node *p_node);
+
+	struct AdditiveNodeEntry {
+		Node *node = nullptr;
+		NodePath parent = NodePath();
+		Node *owner = nullptr;
+		int index = 0;
+		// Used if the original parent node is lost
+		Transform2D transform_2d;
+		Transform3D transform_3d;
+		// Used to keep track of the ownership of all ancestor nodes so they can be restored later.
+		HashMap<Node *, Node *> ownership_table;
+	};
+
+	struct ConnectionWithNodePath {
+		Connection connection;
+		NodePath node_path;
+	};
+
+	struct ModificationNodeEntry {
+		HashMap<StringName, Variant> property_table;
+		List<ConnectionWithNodePath> connections_to;
+		List<Connection> connections_from;
+		List<Node::GroupInfo> groups;
+	};
+
+	void update_ownership_table_for_addition_node_ancestors(Node *p_current_node, HashMap<Node *, Node *> &p_ownership_table);
+
+	void update_diff_data_for_node(
+			Node *p_edited_scene,
+			Node *p_root,
+			Node *p_node,
+			HashMap<NodePath, ModificationNodeEntry> &p_modification_table,
+			List<AdditiveNodeEntry> &p_addition_list);
+
 	bool is_scene_open(const String &p_path);
 
 	void set_current_scene(int p_idx);
 
-	void setup_color_picker(ColorPicker *picker);
+	void setup_color_picker(ColorPicker *p_picker);
 
 	void request_instantiate_scene(const String &p_path);
 	void request_instantiate_scenes(const Vector<String> &p_files);
@@ -831,14 +854,14 @@ public:
 
 	void notify_all_debug_sessions_exited();
 
-	OS::ProcessID has_child_process(OS::ProcessID p_pid) const { return editor_run.has_child_process(p_pid); }
+	OS::ProcessID has_child_process(OS::ProcessID p_pid) const;
 	void stop_child_process(OS::ProcessID p_pid);
 
 	Ref<Theme> get_editor_theme() const { return theme; }
 	Ref<Script> get_object_custom_type_base(const Object *p_object) const;
 	StringName get_object_custom_type_name(const Object *p_object) const;
 	Ref<Texture2D> get_object_icon(const Object *p_object, const String &p_fallback = "Object");
-	Ref<Texture2D> get_class_icon(const String &p_class, const String &p_fallback = "Object") const;
+	Ref<Texture2D> get_class_icon(const String &p_class, const String &p_fallback = "Object");
 
 	bool is_object_of_custom_type(const Object *p_object, const StringName &p_class);
 
@@ -864,15 +887,17 @@ public:
 
 	bool is_scene_in_use(const String &p_path);
 
-	void save_layout();
+	void save_editor_layout_delayed();
+	void save_default_environment();
 
 	void open_export_template_manager();
 
 	void reload_scene(const String &p_path);
 
-	bool is_exiting() const { return exiting; }
+	void find_all_instances_inheriting_path_in_node(Node *p_root, Node *p_node, const String &p_instance_path, List<Node *> &p_instance_list);
+	void reload_instances_with_path_in_edited_scenes(const String &p_path);
 
-	Button *get_pause_button() { return pause_button; }
+	bool is_exiting() const { return exiting; }
 
 	Button *add_bottom_panel_item(String p_text, Control *p_item);
 	void make_bottom_panel_item_visible(Control *p_item);
@@ -891,6 +916,8 @@ public:
 
 	void save_all_scenes();
 	void save_scene_list(Vector<String> p_scene_filenames);
+	void save_before_run();
+	void try_autosave();
 	void restart_editor();
 
 	void notify_settings_changed();
@@ -912,14 +939,6 @@ public:
 	Vector<Ref<EditorResourceConversionPlugin>> find_resource_conversion_plugin(const Ref<Resource> &p_for_resource);
 
 	bool ensure_main_scene(bool p_from_native);
-
-	Error run_play_native(int p_idx, int p_platform);
-	void run_play();
-	void run_play_current();
-	void run_play_custom(const String &p_custom);
-	void run_stop();
-	bool is_run_playing() const;
-	String get_run_playing_scene() const;
 };
 
 struct EditorProgress {

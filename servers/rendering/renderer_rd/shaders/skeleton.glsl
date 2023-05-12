@@ -51,6 +51,15 @@ layout(push_constant, std430) uniform Params {
 	bool normalized_blend_shapes;
 	uint pad0;
 	uint pad1;
+
+	vec2 skeleton_transform_x;
+	vec2 skeleton_transform_y;
+
+	vec2 skeleton_transform_offset;
+	vec2 inverse_transform_x;
+
+	vec2 inverse_transform_y;
+	vec2 inverse_transform_offset;
 }
 params;
 
@@ -158,8 +167,12 @@ void main() {
 		m += mat4(bone_transforms.data[bones_23.x], bone_transforms.data[bones_23.x + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.x;
 		m += mat4(bone_transforms.data[bones_23.y], bone_transforms.data[bones_23.y + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.y;
 
-		//reverse order because its transposed
-		vertex = (vec4(vertex, 0.0, 1.0) * m).xy;
+		mat4 skeleton_matrix = mat4(vec4(params.skeleton_transform_x, 0.0, 0.0), vec4(params.skeleton_transform_y, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(params.skeleton_transform_offset, 0.0, 1.0));
+		mat4 inverse_matrix = mat4(vec4(params.inverse_transform_x, 0.0, 0.0), vec4(params.inverse_transform_y, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(params.inverse_transform_offset, 0.0, 1.0));
+
+		m = skeleton_matrix * transpose(m) * inverse_matrix;
+
+		vertex = (m * vec4(vertex, 0.0, 1.0)).xy;
 	}
 
 	uint dst_offset = index * params.vertex_stride;

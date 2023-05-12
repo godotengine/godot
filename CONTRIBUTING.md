@@ -8,87 +8,10 @@
 - [Contributing to Godot's translation](#contributing-to-godots-translation)
 - [Communicating with developers](#communicating-with-developers)
 
-**Please read the first section before reporting a bug!**
-
 ## Reporting bugs
 
-The golden rule is to **always open *one* issue for *one* bug**. If you notice
-several bugs and want to report them, make sure to create one new issue for
-each of them.
-
-If you're reporting a new bug, you'll make our life simpler (and the
-fix will come sooner) by following these guidelines:
-
-### Search first in the existing database
-
-Issues are often reported several times by various users. It's good practice to
-**search first in the [issue tracker](https://github.com/godotengine/godot/issues)
-before reporting your issue**. If you don't find a relevant match or if you're
-unsure, don't hesitate to **open a new issue**. The bugsquad will handle it
-from there if it's a duplicate.
-
-### Specify the platform
-
-Godot runs on a large variety of platforms and operating systems and devices.
-**In your bug reports, please always specify:**
-
-- Operating system and version (e.g. Windows 10, macOS 10.15, Ubuntu 19.10)
-- Godot version (e.g. 3.2, 3.1.2, or the Git commit hash if you're using a development branch)
-
-For bugs that are likely OS-specific and/or graphics-related, please also specify:
-
-- Device (CPU model including architecture, e.g. x86_64, arm64, etc.)
-- GPU model (and the driver version in use if you know it)
-
-**Bug reports not including the required information may be closed at the
-maintainers' discretion.** If in doubt, always include all the requested
-information; it's better to include too much information than not enough
-information.
-
-### Specify steps to reproduce
-
-Many bugs can't be reproduced unless specific steps are taken. Please **specify
-the exact steps** that must be taken to reproduce the condition, and try to
-keep them as minimal as possible. If you're describing a procedure to follow
-in the editor, don't hesitate to include screenshots.
-
-Making your bug report easy to reproduce will make it easier for contributors
-to fix the bug.
-
-### Provide a simple, example project
-
-Sometimes, unexpected behavior can happen in your project. In such case,
-understand that:
-
-- What happens to you may not happen to other users.
-- We can't take the time to look at your project, understand how it is set up
-  and then figure out why it's failing.
-- On the contributors' end, recreating a test project from scratch takes valuable
-  time that can be saved by uploading a *minimal* project.
-
-To speed up our work, **please upload a minimal project** that isolates
-and reproduces the issue. This is always the **best way for us to fix it**.
-We recommend attaching a ZIP file with the minimal project directly to the bug report,
-by drag and dropping the file in the GitHub edition field. This ensures the file
-can remain available for a long period of time. Only use third-party file hosts
-if your ZIP file isn't accepted by GitHub because it's too large.
-
-We recommend always attaching a minimal reproduction project, even if the issue
-may seem simple to reproduce manually.
-
-**Note for C# users:** If your issue is *not* .NET-specific, please upload a
-minimal reproduction project written in GDScript.
-This will make it easier for contributors to reproduce the issue
-locally as not everyone has a .NET setup available.
-
-**If you've been asked by a maintainer to upload a minimal reproduction project,
-you *must* do so within 7 days.** Otherwise, your bug report will be closed as
-it'll be considered too difficult to diagnose.
-
-Now that you've read the guidelines, click the link below to create a
-bug report:
-
-- **[Report a bug](https://github.com/godotengine/godot/issues/new?assignees=&labels=&template=bug_report.yml)**
+Report bugs [here](https://github.com/godotengine/godot/issues/new?assignees=&labels=&template=bug_report.yml).
+Please follow the instructions in the template when you do.
 
 ## Proposing features or improvements
 
@@ -122,11 +45,12 @@ recommend that you have a look at it to know what's important to take into
 account for a PR to be considered for merging.
 
 In addition to the following tips, also take a look at the
-[Engine development guide](https://docs.godotengine.org/en/latest/development/cpp/)
+[Engine development guide](https://docs.godotengine.org/en/latest/contributing/development/index.html)
 for an introduction to developing on Godot.
 
-The [Contributing docs](https://docs.godotengine.org/en/latest/community/contributing/index.html)
-also have important information on the PR workflow and the code style we use.
+The [Contributing docs](https://docs.godotengine.org/en/latest/contributing/ways_to_contribute.html)
+also have important information on the [PR workflow](https://docs.godotengine.org/en/latest/contributing/workflow/pr_workflow.html)
+and the [code style](https://docs.godotengine.org/en/latest/contributing/development/code_style_guidelines.html) we use.
 
 ### Document your changes
 
@@ -135,10 +59,10 @@ scripting APIs, you **must** update the class reference to document those.
 This is to ensure the documentation coverage doesn't decrease as contributions
 are merged.
 
-[Update the documentation template](https://docs.godotengine.org/en/latest/community/contributing/updating_the_class_reference.html#updating-the-documentation-template)
+[Update documentation XML files](https://docs.godotengine.org/en/latest/contributing/documentation/updating_the_class_reference.html#updating-class-reference-when-working-on-the-engine)
 using your compiled binary, then fill in the descriptions.
 Follow the style guide described in the
-[Docs writing guidelines](https://docs.godotengine.org/en/latest/community/contributing/docs_writing_guidelines.html).
+[Writing guidelines](https://docs.godotengine.org/en/latest/contributing/documentation/docs_writing_guidelines.html).
 
 If your pull request modifies parts of the code in a non-obvious way, make sure
 to add comments in the code as well. This helps other people understand the
@@ -164,7 +88,7 @@ applicable.
 Feel free to contribute standalone pull requests to add new tests or improve
 existing tests as well.
 
-See [Unit testing](https://docs.godotengine.org/en/latest/development/cpp/unit_testing.html)
+See [Unit testing](https://docs.godotengine.org/en/latest/contributing/development/core_and_modules/unit_testing.html)
 for information on writing tests in Godot's C++ codebase.
 
 ### Be nice to the Git history
@@ -186,7 +110,7 @@ Internet).
 This [Git style guide](https://github.com/agis-/git-style-guide) has some
 good practices to have in mind.
 
-See our [PR workflow](https://docs.godotengine.org/en/latest/community/contributing/pr_workflow.html)
+See our [PR workflow](https://docs.godotengine.org/en/latest/contributing/workflow/pr_workflow.html)
 documentation for tips on using Git, amending commits and rebasing branches.
 
 ### Format your commit messages with readability in mind

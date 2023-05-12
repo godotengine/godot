@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  animation.h                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  animation.h                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef ANIMATION_H
 #define ANIMATION_H
@@ -213,6 +213,7 @@ private:
 
 	struct AudioTrack : public Track {
 		Vector<TKey<AudioKey>> values;
+		bool use_blend = true;
 
 		AudioTrack() {
 			type = TYPE_AUDIO;
@@ -409,19 +410,23 @@ public:
 
 	int position_track_insert_key(int p_track, double p_time, const Vector3 &p_position);
 	Error position_track_get_key(int p_track, int p_key, Vector3 *r_position) const;
-	Error position_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation) const;
+	Error try_position_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation) const;
+	Vector3 position_track_interpolate(int p_track, double p_time) const;
 
 	int rotation_track_insert_key(int p_track, double p_time, const Quaternion &p_rotation);
 	Error rotation_track_get_key(int p_track, int p_key, Quaternion *r_rotation) const;
-	Error rotation_track_interpolate(int p_track, double p_time, Quaternion *r_interpolation) const;
+	Error try_rotation_track_interpolate(int p_track, double p_time, Quaternion *r_interpolation) const;
+	Quaternion rotation_track_interpolate(int p_track, double p_time) const;
 
 	int scale_track_insert_key(int p_track, double p_time, const Vector3 &p_scale);
 	Error scale_track_get_key(int p_track, int p_key, Vector3 *r_scale) const;
-	Error scale_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation) const;
+	Error try_scale_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation) const;
+	Vector3 scale_track_interpolate(int p_track, double p_time) const;
 
 	int blend_shape_track_insert_key(int p_track, double p_time, float p_blend);
 	Error blend_shape_track_get_key(int p_track, int p_key, float *r_blend) const;
-	Error blend_shape_track_interpolate(int p_track, double p_time, float *r_blend) const;
+	Error try_blend_shape_track_interpolate(int p_track, double p_time, float *r_blend) const;
+	float blend_shape_track_interpolate(int p_track, double p_time) const;
 
 	void track_set_interpolation_type(int p_track, InterpolationType p_interp);
 	InterpolationType track_get_interpolation_type(int p_track) const;
@@ -447,6 +452,8 @@ public:
 	Ref<Resource> audio_track_get_key_stream(int p_track, int p_key) const;
 	real_t audio_track_get_key_start_offset(int p_track, int p_key) const;
 	real_t audio_track_get_key_end_offset(int p_track, int p_key) const;
+	void audio_track_set_use_blend(int p_track, bool p_enable);
+	bool audio_track_is_use_blend(int p_track) const;
 
 	int animation_track_insert_key(int p_track, double p_time, const StringName &p_animation);
 	void animation_track_set_key_animation(int p_track, int p_key, const StringName &p_animation);

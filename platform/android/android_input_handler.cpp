@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  android_input_handler.cpp                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  android_input_handler.cpp                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "android_input_handler.h"
 
@@ -49,14 +49,22 @@ void AndroidInputHandler::process_joy_event(AndroidInputHandler::JoypadEvent p_e
 	}
 }
 
-void AndroidInputHandler::_set_key_modifier_state(Ref<InputEventWithModifiers> ev) {
-	ev->set_shift_pressed(shift_mem);
-	ev->set_alt_pressed(alt_mem);
-	ev->set_meta_pressed(meta_mem);
-	ev->set_ctrl_pressed(control_mem);
+void AndroidInputHandler::_set_key_modifier_state(Ref<InputEventWithModifiers> ev, Key p_keycode) {
+	if (p_keycode != Key::SHIFT) {
+		ev->set_shift_pressed(shift_mem);
+	}
+	if (p_keycode != Key::ALT) {
+		ev->set_alt_pressed(alt_mem);
+	}
+	if (p_keycode != Key::META) {
+		ev->set_meta_pressed(meta_mem);
+	}
+	if (p_keycode != Key::CTRL) {
+		ev->set_ctrl_pressed(control_mem);
+	}
 }
 
-void AndroidInputHandler::process_key_event(int p_keycode, int p_physical_keycode, int p_unicode, bool p_pressed) {
+void AndroidInputHandler::process_key_event(int p_physical_keycode, int p_unicode, int p_key_label, bool p_pressed) {
 	static char32_t prev_wc = 0;
 	char32_t unicode = p_unicode;
 	if ((p_unicode & 0xfffffc00) == 0xd800) {
@@ -81,8 +89,18 @@ void AndroidInputHandler::process_key_event(int p_keycode, int p_physical_keycod
 
 	Key physical_keycode = godot_code_from_android_code(p_physical_keycode);
 	Key keycode = physical_keycode;
-	if (p_keycode != 0) {
-		keycode = godot_code_from_unicode(p_keycode);
+	if (unicode == '\b') { // 0x08
+		keycode = Key::BACKSPACE;
+	} else if (unicode == '\t') { // 0x09
+		keycode = Key::TAB;
+	} else if (unicode == '\n') { // 0x0A
+		keycode = Key::ENTER;
+	} else if (unicode == 0x1B) {
+		keycode = Key::ESCAPE;
+	} else if (unicode == 0x1F) {
+		keycode = Key::KEY_DELETE;
+	} else {
+		keycode = fix_keycode(unicode, physical_keycode);
 	}
 
 	switch (physical_keycode) {
@@ -104,10 +122,11 @@ void AndroidInputHandler::process_key_event(int p_keycode, int p_physical_keycod
 
 	ev->set_keycode(keycode);
 	ev->set_physical_keycode(physical_keycode);
-	ev->set_unicode(unicode);
+	ev->set_key_label(fix_key_label(p_key_label, keycode));
+	ev->set_unicode(fix_unicode(unicode));
 	ev->set_pressed(p_pressed);
 
-	_set_key_modifier_state(ev);
+	_set_key_modifier_state(ev, keycode);
 
 	if (p_physical_keycode == AKEYCODE_BACK) {
 		if (DisplayServerAndroid *dsa = Object::cast_to<DisplayServerAndroid>(DisplayServer::get_singleton())) {
@@ -118,13 +137,22 @@ void AndroidInputHandler::process_key_event(int p_keycode, int p_physical_keycod
 	Input::get_singleton()->parse_input_event(ev);
 }
 
-void AndroidInputHandler::_parse_all_touch(bool p_pressed, bool p_double_tap) {
+void AndroidInputHandler::_cancel_all_touch() {
+	_parse_all_touch(false, false, true);
+	touch.clear();
+}
+
+void AndroidInputHandler::_parse_all_touch(bool p_pressed, bool p_double_tap, bool reset_index) {
 	if (touch.size()) {
 		//end all if exist
 		for (int i = 0; i < touch.size(); i++) {
 			Ref<InputEventScreenTouch> ev;
 			ev.instantiate();
-			ev->set_index(touch[i].id);
+			if (reset_index) {
+				ev->set_index(-1);
+			} else {
+				ev->set_index(touch[i].id);
+			}
 			ev->set_pressed(p_pressed);
 			ev->set_position(touch[i].pos);
 			ev->set_double_tap(p_double_tap);
@@ -185,7 +213,9 @@ void AndroidInputHandler::process_touch_event(int p_event, int p_pointer, const 
 			}
 
 		} break;
-		case AMOTION_EVENT_ACTION_CANCEL:
+		case AMOTION_EVENT_ACTION_CANCEL: {
+			_cancel_all_touch();
+		} break;
 		case AMOTION_EVENT_ACTION_UP: { //release
 			_release_all_touch();
 		} break;
@@ -225,14 +255,20 @@ void AndroidInputHandler::process_touch_event(int p_event, int p_pointer, const 
 	}
 }
 
-void AndroidInputHandler::_parse_mouse_event_info(MouseButton event_buttons_mask, bool p_pressed, bool p_double_click, bool p_source_mouse_relative) {
+void AndroidInputHandler::_cancel_mouse_event_info(bool p_source_mouse_relative) {
+	buttons_state = BitField<MouseButtonMask>();
+	_parse_mouse_event_info(BitField<MouseButtonMask>(), false, false, p_source_mouse_relative);
+	mouse_event_info.valid = false;
+}
+
+void AndroidInputHandler::_parse_mouse_event_info(BitField<MouseButtonMask> event_buttons_mask, bool p_pressed, bool p_double_click, bool p_source_mouse_relative) {
 	if (!mouse_event_info.valid) {
 		return;
 	}
 
 	Ref<InputEventMouseButton> ev;
 	ev.instantiate();
-	_set_key_modifier_state(ev);
+	_set_key_modifier_state(ev, Key::NONE);
 	if (p_source_mouse_relative) {
 		ev->set_position(hover_prev_pos);
 		ev->set_global_position(hover_prev_pos);
@@ -242,7 +278,7 @@ void AndroidInputHandler::_parse_mouse_event_info(MouseButton event_buttons_mask
 		hover_prev_pos = mouse_event_info.pos;
 	}
 	ev->set_pressed(p_pressed);
-	MouseButton changed_button_mask = MouseButton(buttons_state ^ event_buttons_mask);
+	BitField<MouseButtonMask> changed_button_mask = BitField<MouseButtonMask>(buttons_state.operator int64_t() ^ event_buttons_mask.operator int64_t());
 
 	buttons_state = event_buttons_mask;
 
@@ -253,12 +289,12 @@ void AndroidInputHandler::_parse_mouse_event_info(MouseButton event_buttons_mask
 }
 
 void AndroidInputHandler::_release_mouse_event_info(bool p_source_mouse_relative) {
-	_parse_mouse_event_info(MouseButton::NONE, false, false, p_source_mouse_relative);
+	_parse_mouse_event_info(BitField<MouseButtonMask>(), false, false, p_source_mouse_relative);
 	mouse_event_info.valid = false;
 }
 
 void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_android_buttons_mask, Point2 p_event_pos, Vector2 p_delta, bool p_double_click, bool p_source_mouse_relative) {
-	MouseButton event_buttons_mask = _android_button_mask_to_godot_button_mask(p_event_android_buttons_mask);
+	BitField<MouseButtonMask> event_buttons_mask = _android_button_mask_to_godot_button_mask(p_event_android_buttons_mask);
 	switch (p_event_action) {
 		case AMOTION_EVENT_ACTION_HOVER_MOVE: // hover move
 		case AMOTION_EVENT_ACTION_HOVER_ENTER: // hover enter
@@ -266,7 +302,7 @@ void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_an
 			// https://developer.android.com/reference/android/view/MotionEvent.html#ACTION_HOVER_ENTER
 			Ref<InputEventMouseMotion> ev;
 			ev.instantiate();
-			_set_key_modifier_state(ev);
+			_set_key_modifier_state(ev, Key::NONE);
 			ev->set_position(p_event_pos);
 			ev->set_global_position(p_event_pos);
 			ev->set_relative(p_event_pos - hover_prev_pos);
@@ -285,8 +321,11 @@ void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_an
 			_parse_mouse_event_info(event_buttons_mask, true, p_double_click, p_source_mouse_relative);
 		} break;
 
+		case AMOTION_EVENT_ACTION_CANCEL: {
+			_cancel_mouse_event_info(p_source_mouse_relative);
+		} break;
+
 		case AMOTION_EVENT_ACTION_UP:
-		case AMOTION_EVENT_ACTION_CANCEL:
 		case AMOTION_EVENT_ACTION_BUTTON_RELEASE: {
 			_release_mouse_event_info(p_source_mouse_relative);
 		} break;
@@ -298,7 +337,7 @@ void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_an
 
 			Ref<InputEventMouseMotion> ev;
 			ev.instantiate();
-			_set_key_modifier_state(ev);
+			_set_key_modifier_state(ev, Key::NONE);
 			if (p_source_mouse_relative) {
 				ev->set_position(hover_prev_pos);
 				ev->set_global_position(hover_prev_pos);
@@ -317,7 +356,7 @@ void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_an
 		case AMOTION_EVENT_ACTION_SCROLL: {
 			Ref<InputEventMouseButton> ev;
 			ev.instantiate();
-			_set_key_modifier_state(ev);
+			_set_key_modifier_state(ev, Key::NONE);
 			if (p_source_mouse_relative) {
 				ev->set_position(hover_prev_pos);
 				ev->set_global_position(hover_prev_pos);
@@ -342,11 +381,11 @@ void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_an
 	}
 }
 
-void AndroidInputHandler::_wheel_button_click(MouseButton event_buttons_mask, const Ref<InputEventMouseButton> &ev, MouseButton wheel_button, float factor) {
+void AndroidInputHandler::_wheel_button_click(BitField<MouseButtonMask> event_buttons_mask, const Ref<InputEventMouseButton> &ev, MouseButton wheel_button, float factor) {
 	Ref<InputEventMouseButton> evd = ev->duplicate();
-	_set_key_modifier_state(evd);
+	_set_key_modifier_state(evd, Key::NONE);
 	evd->set_button_index(wheel_button);
-	evd->set_button_mask(MouseButton(event_buttons_mask ^ mouse_button_to_mask(wheel_button)));
+	evd->set_button_mask(BitField<MouseButtonMask>(event_buttons_mask.operator int64_t() ^ int64_t(mouse_button_to_mask(wheel_button))));
 	evd->set_factor(factor);
 	Input::get_singleton()->parse_input_event(evd);
 	Ref<InputEventMouseButton> evdd = evd->duplicate();
@@ -358,7 +397,7 @@ void AndroidInputHandler::_wheel_button_click(MouseButton event_buttons_mask, co
 void AndroidInputHandler::process_magnify(Point2 p_pos, float p_factor) {
 	Ref<InputEventMagnifyGesture> magnify_event;
 	magnify_event.instantiate();
-	_set_key_modifier_state(magnify_event);
+	_set_key_modifier_state(magnify_event, Key::NONE);
 	magnify_event->set_position(p_pos);
 	magnify_event->set_factor(p_factor);
 	Input::get_singleton()->parse_input_event(magnify_event);
@@ -367,45 +406,45 @@ void AndroidInputHandler::process_magnify(Point2 p_pos, float p_factor) {
 void AndroidInputHandler::process_pan(Point2 p_pos, Vector2 p_delta) {
 	Ref<InputEventPanGesture> pan_event;
 	pan_event.instantiate();
-	_set_key_modifier_state(pan_event);
+	_set_key_modifier_state(pan_event, Key::NONE);
 	pan_event->set_position(p_pos);
 	pan_event->set_delta(p_delta);
 	Input::get_singleton()->parse_input_event(pan_event);
 }
 
-MouseButton AndroidInputHandler::_button_index_from_mask(MouseButton button_mask) {
-	switch (button_mask) {
-		case MouseButton::MASK_LEFT:
+MouseButton AndroidInputHandler::_button_index_from_mask(BitField<MouseButtonMask> button_mask) {
+	switch (MouseButtonMask(button_mask.operator int64_t())) {
+		case MouseButtonMask::LEFT:
 			return MouseButton::LEFT;
-		case MouseButton::MASK_RIGHT:
+		case MouseButtonMask::RIGHT:
 			return MouseButton::RIGHT;
-		case MouseButton::MASK_MIDDLE:
+		case MouseButtonMask::MIDDLE:
 			return MouseButton::MIDDLE;
-		case MouseButton::MASK_XBUTTON1:
+		case MouseButtonMask::MB_XBUTTON1:
 			return MouseButton::MB_XBUTTON1;
-		case MouseButton::MASK_XBUTTON2:
+		case MouseButtonMask::MB_XBUTTON2:
 			return MouseButton::MB_XBUTTON2;
 		default:
 			return MouseButton::NONE;
 	}
 }
 
-MouseButton AndroidInputHandler::_android_button_mask_to_godot_button_mask(int android_button_mask) {
-	MouseButton godot_button_mask = MouseButton::NONE;
+BitField<MouseButtonMask> AndroidInputHandler::_android_button_mask_to_godot_button_mask(int android_button_mask) {
+	BitField<MouseButtonMask> godot_button_mask;
 	if (android_button_mask & AMOTION_EVENT_BUTTON_PRIMARY) {
-		godot_button_mask |= MouseButton::MASK_LEFT;
+		godot_button_mask.set_flag(MouseButtonMask::LEFT);
 	}
 	if (android_button_mask & AMOTION_EVENT_BUTTON_SECONDARY) {
-		godot_button_mask |= MouseButton::MASK_RIGHT;
+		godot_button_mask.set_flag(MouseButtonMask::RIGHT);
 	}
 	if (android_button_mask & AMOTION_EVENT_BUTTON_TERTIARY) {
-		godot_button_mask |= MouseButton::MASK_MIDDLE;
+		godot_button_mask.set_flag(MouseButtonMask::MIDDLE);
 	}
 	if (android_button_mask & AMOTION_EVENT_BUTTON_BACK) {
-		godot_button_mask |= MouseButton::MASK_XBUTTON1;
+		godot_button_mask.set_flag(MouseButtonMask::MB_XBUTTON1);
 	}
 	if (android_button_mask & AMOTION_EVENT_BUTTON_FORWARD) {
-		godot_button_mask |= MouseButton::MASK_XBUTTON2;
+		godot_button_mask.set_flag(MouseButtonMask::MB_XBUTTON2);
 	}
 
 	return godot_button_mask;

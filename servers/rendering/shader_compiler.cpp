@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  shader_compiler.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  shader_compiler.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "shader_compiler.h"
 
@@ -38,12 +38,7 @@
 #define SL ShaderLanguage
 
 static String _mktab(int p_level) {
-	String tb;
-	for (int i = 0; i < p_level; i++) {
-		tb += "\t";
-	}
-
-	return tb;
+	return String("\t").repeat(p_level);
 }
 
 static String _typestr(SL::DataType p_type) {
@@ -441,7 +436,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 	String code;
 
 	switch (p_node->type) {
-		case SL::Node::TYPE_SHADER: {
+		case SL::Node::NODE_TYPE_SHADER: {
 			SL::ShaderNode *pnode = (SL::ShaderNode *)p_node;
 
 			for (int i = 0; i < pnode->render_modes.size(); i++) {
@@ -786,11 +781,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 			//code+=dump_node_code(pnode->body,p_level);
 		} break;
-		case SL::Node::TYPE_STRUCT: {
+		case SL::Node::NODE_TYPE_STRUCT: {
 		} break;
-		case SL::Node::TYPE_FUNCTION: {
+		case SL::Node::NODE_TYPE_FUNCTION: {
 		} break;
-		case SL::Node::TYPE_BLOCK: {
+		case SL::Node::NODE_TYPE_BLOCK: {
 			SL::BlockNode *bnode = (SL::BlockNode *)p_node;
 
 			//variables
@@ -801,7 +796,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			for (int i = 0; i < bnode->statements.size(); i++) {
 				String scode = _dump_node_code(bnode->statements[i], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 
-				if (bnode->statements[i]->type == SL::Node::TYPE_CONTROL_FLOW || bnode->single_statement) {
+				if (bnode->statements[i]->type == SL::Node::NODE_TYPE_CONTROL_FLOW || bnode->single_statement) {
 					code += scode; //use directly
 					if (bnode->use_comma_between_statements && i + 1 < bnode->statements.size()) {
 						code += ",";
@@ -815,7 +810,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			}
 
 		} break;
-		case SL::Node::TYPE_VARIABLE_DECLARATION: {
+		case SL::Node::NODE_TYPE_VARIABLE_DECLARATION: {
 			SL::VariableDeclarationNode *vdnode = (SL::VariableDeclarationNode *)p_node;
 
 			String declaration;
@@ -873,7 +868,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 			code += declaration;
 		} break;
-		case SL::Node::TYPE_VARIABLE: {
+		case SL::Node::NODE_TYPE_VARIABLE: {
 			SL::VariableNode *vnode = (SL::VariableNode *)p_node;
 			bool use_fragment_varying = false;
 
@@ -909,9 +904,6 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 			if (p_default_actions.renames.has(vnode->name)) {
 				code = p_default_actions.renames[vnode->name];
-				if (vnode->name == "SCREEN_TEXTURE") {
-					r_gen_code.uses_screen_texture_mipmaps = true;
-				}
 			} else {
 				if (shader->uniforms.has(vnode->name)) {
 					//its a uniform!
@@ -919,29 +911,22 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					if (u.texture_order >= 0) {
 						StringName name = vnode->name;
 						if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE) {
-							name = "SCREEN_TEXTURE";
+							name = "color_buffer";
 							if (u.filter >= ShaderLanguage::FILTER_NEAREST_MIPMAP) {
 								r_gen_code.uses_screen_texture_mipmaps = true;
 							}
+							r_gen_code.uses_screen_texture = true;
 						} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE) {
-							name = "NORMAL_ROUGHNESS_TEXTURE";
+							name = "normal_roughness_buffer";
+							r_gen_code.uses_normal_roughness_texture = true;
 						} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
-							name = "DEPTH_TEXTURE";
+							name = "depth_buffer";
+							r_gen_code.uses_depth_texture = true;
 						} else {
 							name = _mkid(vnode->name); //texture, use as is
 						}
 
-						if (p_default_actions.renames.has(name)) {
-							code = p_default_actions.renames[name];
-						} else {
-							code = name;
-						}
-
-						if (p_actions.usage_flag_pointers.has(name) && !used_flag_pointers.has(name)) {
-							*p_actions.usage_flag_pointers[name] = true;
-							used_flag_pointers.insert(name);
-						}
-
+						code = name;
 					} else {
 						//a scalar or vector
 						if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL) {
@@ -976,7 +961,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			}
 
 		} break;
-		case SL::Node::TYPE_ARRAY_CONSTRUCT: {
+		case SL::Node::NODE_TYPE_ARRAY_CONSTRUCT: {
 			SL::ArrayConstructNode *acnode = (SL::ArrayConstructNode *)p_node;
 			int sz = acnode->initializer.size();
 			if (acnode->datatype == SL::TYPE_STRUCT) {
@@ -996,7 +981,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			}
 			code += ")";
 		} break;
-		case SL::Node::TYPE_ARRAY: {
+		case SL::Node::NODE_TYPE_ARRAY: {
 			SL::ArrayNode *anode = (SL::ArrayNode *)p_node;
 			bool use_fragment_varying = false;
 
@@ -1087,7 +1072,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			}
 
 		} break;
-		case SL::Node::TYPE_CONSTANT: {
+		case SL::Node::NODE_TYPE_CONSTANT: {
 			SL::ConstantNode *cnode = (SL::ConstantNode *)p_node;
 
 			if (cnode->array_size == 0) {
@@ -1114,7 +1099,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			}
 
 		} break;
-		case SL::Node::TYPE_OPERATOR: {
+		case SL::Node::NODE_TYPE_OPERATOR: {
 			SL::OperatorNode *onode = (SL::OperatorNode *)p_node;
 
 			switch (onode->op) {
@@ -1145,7 +1130,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				case SL::OP_CALL:
 				case SL::OP_STRUCT:
 				case SL::OP_CONSTRUCT: {
-					ERR_FAIL_COND_V(onode->arguments[0]->type != SL::Node::TYPE_VARIABLE, String());
+					ERR_FAIL_COND_V(onode->arguments[0]->type != SL::Node::NODE_TYPE_VARIABLE, String());
 					const SL::VariableNode *vnode = static_cast<const SL::VariableNode *>(onode->arguments[0]);
 					const SL::FunctionNode *func = nullptr;
 					const bool is_internal_func = internal_functions.has(vnode->name);
@@ -1161,6 +1146,9 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 					bool is_texture_func = false;
 					bool is_screen_texture = false;
+					bool texture_func_no_uv = false;
+					bool texture_func_returns_data = false;
+
 					if (onode->op == SL::OP_STRUCT) {
 						code += _mkid(vnode->name);
 					} else if (onode->op == SL::OP_CONSTRUCT) {
@@ -1174,6 +1162,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						if (is_internal_func) {
 							code += vnode->name;
 							is_texture_func = texture_functions.has(vnode->name);
+							texture_func_no_uv = (vnode->name == "textureSize" || vnode->name == "textureQueryLevels");
+							texture_func_returns_data = texture_func_no_uv || vnode->name == "textureQueryLod";
 						} else if (p_default_actions.renames.has(vnode->name)) {
 							code += p_default_actions.renames[vnode->name];
 						} else {
@@ -1182,6 +1172,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					}
 
 					code += "(";
+
+					// if color backbuffer, depth backbuffer or normal roughness texture is used,
+					// we will add logic to automatically switch between
+					// sampler2D and sampler2D array and vec2 UV and vec3 UV.
+					bool multiview_uv_needed = false;
 
 					for (int i = 1; i < onode->arguments.size(); i++) {
 						if (i > 1) {
@@ -1205,12 +1200,12 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 								bool done = false;
 								do {
 									switch (node->type) {
-										case SL::Node::TYPE_VARIABLE: {
+										case SL::Node::NODE_TYPE_VARIABLE: {
 											name = static_cast<const SL::VariableNode *>(node)->name;
 											done = true;
 											found = true;
 										} break;
-										case SL::Node::TYPE_MEMBER: {
+										case SL::Node::NODE_TYPE_MEMBER: {
 											node = static_cast<const SL::MemberNode *>(node)->owner;
 										} break;
 										default: {
@@ -1226,18 +1221,18 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						}
 
 						String node_code = _dump_node_code(onode->arguments[i], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
-						if (!RS::get_singleton()->is_low_end() && is_texture_func && i == 1) {
-							//need to map from texture to sampler in order to sample when using Vulkan GLSL
+						if (is_texture_func && i == 1) {
+							// If we're doing a texture lookup we need to check our texture argument
 							StringName texture_uniform;
 							bool correct_texture_uniform = false;
 
 							switch (onode->arguments[i]->type) {
-								case SL::Node::TYPE_VARIABLE: {
+								case SL::Node::NODE_TYPE_VARIABLE: {
 									const SL::VariableNode *varnode = static_cast<const SL::VariableNode *>(onode->arguments[i]);
 									texture_uniform = varnode->name;
 									correct_texture_uniform = true;
 								} break;
-								case SL::Node::TYPE_ARRAY: {
+								case SL::Node::NODE_TYPE_ARRAY: {
 									const SL::ArrayNode *anode = static_cast<const SL::ArrayNode *>(onode->arguments[i]);
 									texture_uniform = anode->name;
 									correct_texture_uniform = true;
@@ -1246,17 +1241,25 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 									break;
 							}
 
-							if (correct_texture_uniform) {
-								//TODO Needs to detect screen_texture hint as well
-								is_screen_texture = (texture_uniform == "SCREEN_TEXTURE");
-
+							if (correct_texture_uniform && !RS::get_singleton()->is_low_end()) {
+								// Need to map from texture to sampler in order to sample when using Vulkan GLSL.
 								String sampler_name;
+								bool is_depth_texture = false;
+								bool is_normal_roughness_texture = false;
 
 								if (actions.custom_samplers.has(texture_uniform)) {
 									sampler_name = actions.custom_samplers[texture_uniform];
 								} else {
 									if (shader->uniforms.has(texture_uniform)) {
-										sampler_name = _get_sampler_name(shader->uniforms[texture_uniform].filter, shader->uniforms[texture_uniform].repeat);
+										const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[texture_uniform];
+										if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE) {
+											is_screen_texture = true;
+										} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+											is_depth_texture = true;
+										} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE) {
+											is_normal_roughness_texture = true;
+										}
+										sampler_name = _get_sampler_name(u.filter, u.repeat);
 									} else {
 										bool found = false;
 
@@ -1282,16 +1285,45 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 									}
 								}
 
-								code += ShaderLanguage::get_datatype_name(onode->arguments[i]->get_datatype()) + "(" + node_code + ", " + sampler_name + ")";
+								String data_type_name = "";
+								if (actions.check_multiview_samplers && (is_screen_texture || is_depth_texture || is_normal_roughness_texture)) {
+									data_type_name = "multiviewSampler";
+									multiview_uv_needed = true;
+								} else {
+									data_type_name = ShaderLanguage::get_datatype_name(onode->arguments[i]->get_datatype());
+								}
+
+								code += data_type_name + "(" + node_code + ", " + sampler_name + ")";
+							} else if (actions.check_multiview_samplers && correct_texture_uniform && RS::get_singleton()->is_low_end()) {
+								// Texture function on low end hardware (i.e. OpenGL).
+								// We just need to know if the texture supports multiview.
+
+								if (shader->uniforms.has(texture_uniform)) {
+									const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[texture_uniform];
+									if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE) {
+										multiview_uv_needed = true;
+									} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+										multiview_uv_needed = true;
+									} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE) {
+										multiview_uv_needed = true;
+									}
+								}
+
+								code += node_code;
 							} else {
 								code += node_code;
 							}
+						} else if (multiview_uv_needed && !texture_func_no_uv && i == 2) {
+							// UV coordinate after using color, depth or normal roughness texture.
+							node_code = "multiview_uv(" + node_code + ".xy)";
+
+							code += node_code;
 						} else {
 							code += node_code;
 						}
 					}
 					code += ")";
-					if (is_screen_texture && actions.apply_luminance_multiplier) {
+					if (is_screen_texture && !texture_func_returns_data && actions.apply_luminance_multiplier) {
 						code = "(" + code + " * vec4(vec3(sc_luminance_multiplier), 1.0))";
 					}
 				} break;
@@ -1320,7 +1352,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					if (p_use_scope) {
 						code += "(";
 					}
-					code += _dump_node_code(onode->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning) + _opstr(onode->op) + _dump_node_code(onode->arguments[1], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+					code += _dump_node_code(onode->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning) + " " + _opstr(onode->op) + " " + _dump_node_code(onode->arguments[1], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 					if (p_use_scope) {
 						code += ")";
 					}
@@ -1329,7 +1361,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			}
 
 		} break;
-		case SL::Node::TYPE_CONTROL_FLOW: {
+		case SL::Node::NODE_TYPE_CONTROL_FLOW: {
 			SL::ControlFlowNode *cfnode = (SL::ControlFlowNode *)p_node;
 			if (cfnode->flow_op == SL::FLOW_OP_IF) {
 				code += _mktab(p_level) + "if (" + _dump_node_code(cfnode->expressions[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning) + ")\n";
@@ -1381,7 +1413,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			}
 
 		} break;
-		case SL::Node::TYPE_MEMBER: {
+		case SL::Node::NODE_TYPE_MEMBER: {
 			SL::MemberNode *mnode = (SL::MemberNode *)p_node;
 			code = _dump_node_code(mnode->owner, p_level, r_gen_code, p_actions, p_default_actions, p_assigning) + "." + mnode->name;
 			if (mnode->index_expression != nullptr) {
@@ -1498,6 +1530,9 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 	r_gen_code.uses_vertex_time = false;
 	r_gen_code.uses_global_textures = false;
 	r_gen_code.uses_screen_texture_mipmaps = false;
+	r_gen_code.uses_screen_texture = false;
+	r_gen_code.uses_depth_texture = false;
+	r_gen_code.uses_normal_roughness_texture = false;
 
 	used_name_defines.clear();
 	used_rmode_defines.clear();

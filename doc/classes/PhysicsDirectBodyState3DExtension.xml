@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsDirectBodyState3DExtension" inherits="PhysicsDirectBodyState3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PhysicsDirectBodyState3DExtension" inherits="PhysicsDirectBodyState3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -131,7 +131,7 @@
 			</description>
 		</method>
 		<method name="_get_contact_impulse" qualifiers="virtual const">
-			<return type="float" />
+			<return type="Vector3" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>
@@ -150,6 +150,12 @@
 		</method>
 		<method name="_get_contact_local_shape" qualifiers="virtual const">
 			<return type="int" />
+			<param index="0" name="contact_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_contact_local_velocity_at_position" qualifiers="virtual const">
+			<return type="Vector3" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>

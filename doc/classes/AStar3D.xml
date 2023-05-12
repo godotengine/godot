@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AStar3D" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AStar3D" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		An implementation of A* to find the shortest paths among connected points in space.
 	</brief_description>
@@ -19,15 +19,16 @@
 		        return min(0, abs(u - v) - 1)
 		[/gdscript]
 		[csharp]
-		public class MyAStar : AStar3D
+		public partial class MyAStar : AStar3D
 		{
-		    public override float _ComputeCost(int u, int v)
+		    public override float _ComputeCost(long fromId, long toId)
 		    {
-		        return Mathf.Abs(u - v);
+		        return Mathf.Abs((int)(fromId - toId));
 		    }
-		    public override float _EstimateCost(int u, int v)
+
+		    public override float _EstimateCost(long fromId, long toId)
 		    {
-		        return Mathf.Min(0, Mathf.Abs(u - v) - 1);
+		        return Mathf.Min(0, Mathf.Abs((int)(fromId - toId)) - 1);
 		    }
 		}
 		[/csharp]

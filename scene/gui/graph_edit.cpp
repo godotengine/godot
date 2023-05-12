@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  graph_edit.cpp                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  graph_edit.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "graph_edit.h"
 
@@ -60,6 +60,15 @@ GraphEditMinimap::GraphEditMinimap(GraphEdit *p_edit) {
 
 	is_pressing = false;
 	is_resizing = false;
+}
+
+Control::CursorShape GraphEditMinimap::get_cursor_shape(const Point2 &p_pos) const {
+	Ref<Texture2D> resizer = get_theme_icon(SNAME("resizer"));
+	if (is_resizing || (p_pos.x < resizer->get_width() && p_pos.y < resizer->get_height())) {
+		return CURSOR_FDIAGSIZE;
+	}
+
+	return Control::get_cursor_shape(p_pos);
 }
 
 void GraphEditMinimap::update_minimap() {
@@ -190,10 +199,18 @@ void GraphEditMinimap::_adjust_graph_scroll(const Vector2 &p_offset) {
 	ge->set_scroll_ofs(p_offset + graph_offset - camera_size / 2);
 }
 
+Control::CursorShape GraphEdit::get_cursor_shape(const Point2 &p_pos) const {
+	if (moving_selection) {
+		return CURSOR_MOVE;
+	}
+
+	return Control::get_cursor_shape(p_pos);
+}
+
 PackedStringArray GraphEdit::get_configuration_warnings() const {
 	PackedStringArray warnings = Control::get_configuration_warnings();
 
-	warnings.push_back(RTR("Please be aware that GraphEdit and GraphNode will undergo extensive refactoring in a future beta version involving compatibility-breaking API changes."));
+	warnings.push_back(RTR("Please be aware that GraphEdit and GraphNode will undergo extensive refactoring in a future 4.x version involving compatibility-breaking API changes."));
 
 	return warnings;
 }
@@ -264,10 +281,6 @@ void GraphEdit::_scroll_moved(double) {
 	top_layer->queue_redraw();
 	minimap->queue_redraw();
 	queue_redraw();
-
-	if (!setting_scroll_ofs) { //in godot, signals on change value are avoided as a convention
-		emit_signal(SNAME("scroll_offset_changed"), get_scroll_ofs());
-	}
 }
 
 void GraphEdit::_update_scroll_offset() {
@@ -290,6 +303,10 @@ void GraphEdit::_update_scroll_offset() {
 	connections_layer->set_position(-Point2(h_scroll->get_value(), v_scroll->get_value()));
 	set_block_minimum_size_adjust(false);
 	awaiting_scroll_offset_update = false;
+
+	if (!setting_scroll_ofs) { //in godot, signals on change value are avoided as a convention
+		emit_signal(SNAME("scroll_offset_changed"), get_scroll_ofs());
+	}
 }
 
 void GraphEdit::_update_scroll() {
@@ -404,8 +421,8 @@ void GraphEdit::add_child_notify(Node *p_child) {
 	if (gn) {
 		gn->set_scale(Vector2(zoom, zoom));
 		gn->connect("position_offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved).bind(gn));
-		gn->connect("selected", callable_mp(this, &GraphEdit::_graph_node_selected).bind(gn));
-		gn->connect("deselected", callable_mp(this, &GraphEdit::_graph_node_deselected).bind(gn));
+		gn->connect("node_selected", callable_mp(this, &GraphEdit::_graph_node_selected).bind(gn));
+		gn->connect("node_deselected", callable_mp(this, &GraphEdit::_graph_node_deselected).bind(gn));
 		gn->connect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated).bind(gn));
 		gn->connect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised).bind(gn));
 		gn->connect("item_rect_changed", callable_mp((CanvasItem *)connections_layer, &CanvasItem::queue_redraw));
@@ -432,8 +449,8 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_child);
 	if (gn) {
 		gn->disconnect("position_offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved));
-		gn->disconnect("selected", callable_mp(this, &GraphEdit::_graph_node_selected));
-		gn->disconnect("deselected", callable_mp(this, &GraphEdit::_graph_node_deselected));
+		gn->disconnect("node_selected", callable_mp(this, &GraphEdit::_graph_node_selected));
+		gn->disconnect("node_deselected", callable_mp(this, &GraphEdit::_graph_node_deselected));
 		gn->disconnect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated));
 		gn->disconnect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised));
 
@@ -533,7 +550,6 @@ void GraphEdit::_notification(int p_what) {
 
 void GraphEdit::_update_comment_enclosed_nodes_list(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes) {
 	Rect2 comment_node_rect = p_node->get_rect();
-	comment_node_rect.size *= zoom;
 
 	Vector<GraphNode *> enclosed_nodes;
 	for (int i = 0; i < get_child_count(); i++) {
@@ -543,7 +559,6 @@ void GraphEdit::_update_comment_enclosed_nodes_list(GraphNode *p_node, HashMap<S
 		}
 
 		Rect2 node_rect = gn->get_rect();
-		node_rect.size *= zoom;
 
 		bool included = comment_node_rect.encloses(node_rect);
 		if (included) {
@@ -806,7 +821,6 @@ bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &mpos
 	}
 
 	Rect2 control_rect = p_control->get_rect();
-	control_rect.size *= zoom;
 	control_rect.position *= zoom;
 	control_rect.position += p_offset;
 
@@ -839,6 +853,14 @@ bool GraphEdit::is_in_input_hotzone(GraphNode *p_node, int p_port, const Vector2
 }
 
 bool GraphEdit::is_in_output_hotzone(GraphNode *p_node, int p_port, const Vector2 &p_mouse_pos, const Vector2i &p_port_size) {
+	if (p_node->is_resizable()) {
+		Ref<Texture2D> resizer = p_node->get_theme_icon(SNAME("resizer"));
+		Rect2 resizer_rect = Rect2(p_node->get_position() / zoom + p_node->get_size() - resizer->get_size(), resizer->get_size());
+		if (resizer_rect.has_point(p_mouse_pos)) {
+			return false;
+		}
+	}
+
 	bool success;
 	if (GDVIRTUAL_CALL(_is_in_output_hotzone, p_node, p_port, p_mouse_pos, success)) {
 		return success;
@@ -848,10 +870,10 @@ bool GraphEdit::is_in_output_hotzone(GraphNode *p_node, int p_port, const Vector
 	}
 }
 
-bool GraphEdit::is_in_port_hotzone(const Vector2 &pos, const Vector2 &p_mouse_pos, const Vector2i &p_port_size, bool p_left) {
+bool GraphEdit::is_in_port_hotzone(const Vector2 &p_pos, const Vector2 &p_mouse_pos, const Vector2i &p_port_size, bool p_left) {
 	Rect2 hotzone = Rect2(
-			pos.x - (p_left ? port_hotzone_outer_extent : port_hotzone_inner_extent),
-			pos.y - p_port_size.height / 2.0,
+			p_pos.x - (p_left ? port_hotzone_outer_extent : port_hotzone_inner_extent),
+			p_pos.y - p_port_size.height / 2.0,
 			port_hotzone_inner_extent + port_hotzone_outer_extent,
 			p_port_size.height);
 
@@ -860,12 +882,11 @@ bool GraphEdit::is_in_port_hotzone(const Vector2 &pos, const Vector2 &p_mouse_po
 	}
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *child = Object::cast_to<Control>(get_child(i));
+		GraphNode *child = Object::cast_to<GraphNode>(get_child(i));
 		if (!child) {
 			continue;
 		}
 		Rect2 child_rect = child->get_rect();
-		child_rect.size *= zoom;
 
 		if (child_rect.has_point(p_mouse_pos * zoom)) {
 			for (int j = 0; j < child->get_child_count(); j++) {
@@ -920,7 +941,8 @@ void GraphEdit::_draw_connection_line(CanvasItem *p_where, const Vector2 &p_from
 		scaled_points.push_back(points[i] * p_zoom);
 	}
 
-	p_where->draw_polyline_colors(scaled_points, colors, Math::floor(p_width * get_theme_default_base_scale()), lines_antialiased);
+	// Thickness below 0.5 doesn't look good on the graph or its minimap.
+	p_where->draw_polyline_colors(scaled_points, colors, MAX(0.5, Math::floor(p_width * get_theme_default_base_scale())), lines_antialiased);
 }
 
 void GraphEdit::_connections_layer_draw() {
@@ -1088,7 +1110,7 @@ void GraphEdit::_minimap_draw() {
 			from_color = from_color.lerp(activity_color, E.activity);
 			to_color = to_color.lerp(activity_color, E.activity);
 		}
-		_draw_connection_line(minimap, from_position, to_position, from_color, to_color, 0.1, minimap->_convert_from_graph_position(Vector2(zoom, zoom)).length());
+		_draw_connection_line(minimap, from_position, to_position, from_color, to_color, 0.5, minimap->_convert_from_graph_position(Vector2(zoom, zoom)).length());
 	}
 
 	// Draw the "camera" viewport.
@@ -1160,7 +1182,6 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 			}
 
 			Rect2 r = gn->get_rect();
-			r.size *= zoom;
 			bool in_box = r.intersects(box_selecting_rect);
 
 			if (in_box) {
@@ -1174,9 +1195,9 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 		minimap->queue_redraw();
 	}
 
-	Ref<InputEventMouseButton> b = p_ev;
-	if (b.is_valid()) {
-		if (b->get_button_index() == MouseButton::RIGHT && b->is_pressed()) {
+	Ref<InputEventMouseButton> mb = p_ev;
+	if (mb.is_valid()) {
+		if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 			if (box_selecting) {
 				box_selecting = false;
 				for (int i = get_child_count() - 1; i >= 0; i--) {
@@ -1193,12 +1214,12 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				if (connecting) {
 					force_connection_drag_end();
 				} else {
-					emit_signal(SNAME("popup_request"), b->get_position());
+					emit_signal(SNAME("popup_request"), mb->get_position());
 				}
 			}
 		}
 
-		if (b->get_button_index() == MouseButton::LEFT && !b->is_pressed() && dragging) {
+		if (mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed() && dragging) {
 			if (!just_selected && drag_accum == Vector2() && Input::get_singleton()->is_key_pressed(Key::CTRL)) {
 				//deselect current node
 				for (int i = get_child_count() - 1; i >= 0; i--) {
@@ -1206,8 +1227,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 
 					if (gn) {
 						Rect2 r = gn->get_rect();
-						r.size *= zoom;
-						if (r.has_point(b->get_position())) {
+						if (r.has_point(mb->get_position())) {
 							gn->set_selected(false);
 						}
 					}
@@ -1239,7 +1259,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 			connections_layer->queue_redraw();
 		}
 
-		if (b->get_button_index() == MouseButton::LEFT && b->is_pressed()) {
+		if (mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 			GraphNode *gn = nullptr;
 
 			// Find node which was clicked on.
@@ -1254,14 +1274,14 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 					continue;
 				}
 
-				if (gn_selected->has_point((b->get_position() - gn_selected->get_position()) / zoom)) {
+				if (gn_selected->has_point((mb->get_position() - gn_selected->get_position()) / zoom)) {
 					gn = gn_selected;
 					break;
 				}
 			}
 
 			if (gn) {
-				if (_filter_input(b->get_position())) {
+				if (_filter_input(mb->get_position())) {
 					return;
 				}
 
@@ -1296,7 +1316,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				}
 
 			} else {
-				if (_filter_input(b->get_position())) {
+				if (_filter_input(mb->get_position())) {
 					return;
 				}
 				if (panner->is_panning()) {
@@ -1305,8 +1325,8 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 
 				// Left-clicked on empty space, start box select.
 				box_selecting = true;
-				box_selecting_from = b->get_position();
-				if (b->is_ctrl_pressed()) {
+				box_selecting_from = mb->get_position();
+				if (mb->is_ctrl_pressed()) {
 					box_selection_mode_additive = true;
 					previous_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
@@ -1317,7 +1337,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 
 						previous_selected.push_back(gn2);
 					}
-				} else if (b->is_shift_pressed()) {
+				} else if (mb->is_shift_pressed()) {
 					box_selection_mode_additive = false;
 					previous_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
@@ -1343,7 +1363,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 			}
 		}
 
-		if (b->get_button_index() == MouseButton::LEFT && !b->is_pressed() && box_selecting) {
+		if (mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed() && box_selecting) {
 			// Box selection ended. Nodes were selected during mouse movement.
 			box_selecting = false;
 			box_selecting_rect = Rect2();
@@ -1380,34 +1400,15 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 			accept_event();
 		}
 	}
-
-	Ref<InputEventMagnifyGesture> magnify_gesture = p_ev;
-	if (magnify_gesture.is_valid()) {
-		set_zoom_custom(zoom * magnify_gesture->get_factor(), magnify_gesture->get_position());
-	}
-
-	Ref<InputEventPanGesture> pan_gesture = p_ev;
-	if (pan_gesture.is_valid()) {
-		h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * pan_gesture->get_delta().x / 8);
-		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * pan_gesture->get_delta().y / 8);
-	}
 }
 
-void GraphEdit::_scroll_callback(Vector2 p_scroll_vec, bool p_alt) {
-	if (p_scroll_vec.x != 0) {
-		h_scroll->set_value(h_scroll->get_value() + (h_scroll->get_page() * Math::abs(p_scroll_vec.x) / 8) * SIGN(p_scroll_vec.x));
-	} else {
-		v_scroll->set_value(v_scroll->get_value() + (v_scroll->get_page() * Math::abs(p_scroll_vec.y) / 8) * SIGN(p_scroll_vec.y));
-	}
-}
-
-void GraphEdit::_pan_callback(Vector2 p_scroll_vec) {
+void GraphEdit::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
 	h_scroll->set_value(h_scroll->get_value() - p_scroll_vec.x);
 	v_scroll->set_value(v_scroll->get_value() - p_scroll_vec.y);
 }
 
-void GraphEdit::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
-	set_zoom_custom(p_scroll_vec.y < 0 ? zoom * zoom_step : zoom / zoom_step, p_origin);
+void GraphEdit::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
+	set_zoom_custom(zoom * p_zoom_factor, p_origin);
 }
 
 void GraphEdit::set_connection_activity(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, float p_activity) {
@@ -1496,11 +1497,13 @@ float GraphEdit::get_zoom() const {
 
 void GraphEdit::set_zoom_step(float p_zoom_step) {
 	p_zoom_step = abs(p_zoom_step);
+	ERR_FAIL_COND(!isfinite(p_zoom_step));
 	if (zoom_step == p_zoom_step) {
 		return;
 	}
 
 	zoom_step = p_zoom_step;
+	panner->set_scroll_zoom_factor(zoom_step);
 }
 
 float GraphEdit::get_zoom_step() const {
@@ -2134,6 +2137,7 @@ void GraphEdit::arrange_nodes() {
 	Dictionary node_names;
 	HashSet<StringName> selected_nodes;
 
+	bool arrange_entire_graph = true;
 	for (int i = get_child_count() - 1; i >= 0; i--) {
 		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
 		if (!gn) {
@@ -2141,6 +2145,10 @@ void GraphEdit::arrange_nodes() {
 		}
 
 		node_names[gn->get_name()] = gn;
+
+		if (gn->is_selected()) {
+			arrange_entire_graph = false;
+		}
 	}
 
 	HashMap<StringName, HashSet<StringName>> upper_neighbours;
@@ -2156,12 +2164,12 @@ void GraphEdit::arrange_nodes() {
 			continue;
 		}
 
-		if (gn->is_selected()) {
+		if (gn->is_selected() || arrange_entire_graph) {
 			selected_nodes.insert(gn->get_name());
 			HashSet<StringName> s;
 			for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
 				GraphNode *p_from = Object::cast_to<GraphNode>(node_names[E->get().from]);
-				if (E->get().to == gn->get_name() && p_from->is_selected() && E->get().to != E->get().from) {
+				if (E->get().to == gn->get_name() && (p_from->is_selected() || arrange_entire_graph) && E->get().to != E->get().from) {
 					if (!s.has(p_from->get_name())) {
 						s.insert(p_from->get_name());
 					}
@@ -2415,7 +2423,7 @@ GraphEdit::GraphEdit() {
 	zoom_max = (1 * Math::pow(zoom_step, 4));
 
 	panner.instantiate();
-	panner->set_callbacks(callable_mp(this, &GraphEdit::_scroll_callback), callable_mp(this, &GraphEdit::_pan_callback), callable_mp(this, &GraphEdit::_zoom_callback));
+	panner->set_callbacks(callable_mp(this, &GraphEdit::_pan_callback), callable_mp(this, &GraphEdit::_zoom_callback));
 
 	top_layer = memnew(GraphEditFilter(this));
 	add_child(top_layer, false, INTERNAL_MODE_BACK);

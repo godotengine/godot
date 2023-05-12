@@ -10,7 +10,7 @@ namespace Godot
     /// collection of types that implement scripts; otherwise, retrieving the types requires lookup.
     /// </summary>
     [AttributeUsage(AttributeTargets.Assembly)]
-    public class AssemblyHasScriptsAttribute : Attribute
+    public sealed class AssemblyHasScriptsAttribute : Attribute
     {
         /// <summary>
         /// If the Godot scripts contained in the assembly require lookup

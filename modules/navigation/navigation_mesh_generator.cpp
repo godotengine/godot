@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  navigation_mesh_generator.cpp                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  navigation_mesh_generator.cpp                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef _3D_DISABLED
 
@@ -207,11 +207,11 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 			List<uint32_t> shape_owners;
 			static_body->get_shape_owners(&shape_owners);
 			for (uint32_t shape_owner : shape_owners) {
+				if (static_body->is_shape_owner_disabled(shape_owner)) {
+					continue;
+				}
 				const int shape_count = static_body->shape_owner_get_shape_count(shape_owner);
 				for (int i = 0; i < shape_count; i++) {
-					if (static_body->is_shape_owner_disabled(i)) {
-						continue;
-					}
 					Ref<Shape3D> s = static_body->shape_owner_get_shape(shape_owner, i);
 					if (s.is_null()) {
 						continue;
@@ -266,9 +266,7 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 						if (err == OK) {
 							PackedVector3Array faces;
 
-							for (uint32_t j = 0; j < md.faces.size(); ++j) {
-								const Geometry3D::MeshData::Face &face = md.faces[j];
-
+							for (const Geometry3D::MeshData::Face &face : md.faces) {
 								for (uint32_t k = 2; k < face.indices.size(); ++k) {
 									faces.push_back(md.vertices[face.indices[0]]);
 									faces.push_back(md.vertices[face.indices[k - 1]]);
@@ -295,8 +293,8 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 							vertex_array.resize((heightmap_depth - 1) * (heightmap_width - 1) * 6);
 							int map_data_current_index = 0;
 
-							for (int d = 0; d < heightmap_depth - 1; d++) {
-								for (int w = 0; w < heightmap_width - 1; w++) {
+							for (int d = 0; d < heightmap_depth; d++) {
+								for (int w = 0; w < heightmap_width; w++) {
 									if (map_data_current_index + 1 + heightmap_depth < map_data.size()) {
 										float top_left_height = map_data[map_data_current_index];
 										float top_right_height = map_data[map_data_current_index + 1];
@@ -392,9 +390,7 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 						if (err == OK) {
 							PackedVector3Array faces;
 
-							for (uint32_t j = 0; j < md.faces.size(); ++j) {
-								const Geometry3D::MeshData::Face &face = md.faces[j];
-
+							for (const Geometry3D::MeshData::Face &face : md.faces) {
 								for (uint32_t k = 2; k < face.indices.size(); ++k) {
 									faces.push_back(md.vertices[face.indices[0]]);
 									faces.push_back(md.vertices[face.indices[k - 1]]);
@@ -426,8 +422,8 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 							vertex_array.resize((heightmap_depth - 1) * (heightmap_width - 1) * 6);
 							int map_data_current_index = 0;
 
-							for (int d = 0; d < heightmap_depth - 1; d++) {
-								for (int w = 0; w < heightmap_width - 1; w++) {
+							for (int d = 0; d < heightmap_depth; d++) {
+								for (int w = 0; w < heightmap_width; w++) {
 									if (map_data_current_index + 1 + heightmap_depth < map_data.size()) {
 										float top_left_height = map_data[map_data_current_index];
 										float top_right_height = map_data[map_data_current_index + 1];

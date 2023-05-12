@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  tile_atlas_view.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  tile_atlas_view.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "tile_atlas_view.h"
 
@@ -47,20 +47,16 @@ void TileAtlasView::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void TileAtlasView::_scroll_callback(Vector2 p_scroll_vec, bool p_alt) {
-	_pan_callback(-p_scroll_vec * 32);
-}
-
-void TileAtlasView::_pan_callback(Vector2 p_scroll_vec) {
+void TileAtlasView::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
 	panning += p_scroll_vec;
-	emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
 	_update_zoom_and_panning(true);
+	emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
 }
 
-void TileAtlasView::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
-	zoom_widget->set_zoom_by_increments(-p_scroll_vec.y * 2);
-	emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
+void TileAtlasView::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
+	zoom_widget->set_zoom(zoom_widget->get_zoom() * p_zoom_factor);
 	_update_zoom_and_panning(true);
+	emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
 }
 
 Size2i TileAtlasView::_compute_base_tiles_control_size() {
@@ -251,7 +247,7 @@ void TileAtlasView::_draw_base_tiles() {
 			for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(atlas_coords); frame++) {
 				// Update the y to max value.
 				Rect2i base_frame_rect = tile_set_atlas_source->get_tile_texture_region(atlas_coords, frame);
-				Vector2i offset_pos = base_frame_rect.get_center() + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, 0);
+				Vector2 offset_pos = Rect2(base_frame_rect).get_center() + Vector2(tile_set_atlas_source->get_tile_data(atlas_coords, 0)->get_texture_origin());
 
 				// Draw the tile.
 				TileMap::draw_tile(base_tiles_draw->get_canvas_item(), offset_pos, tile_set, source_id, atlas_coords, 0, frame);
@@ -326,18 +322,19 @@ void TileAtlasView::_draw_base_tiles_shape_grid() {
 	Vector2i tile_shape_size = tile_set->get_tile_size();
 	for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
 		Vector2i tile_id = tile_set_atlas_source->get_tile_id(i);
-		Vector2 in_tile_base_offset = tile_set_atlas_source->get_tile_effective_texture_offset(tile_id, 0);
-
-		for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(tile_id); frame++) {
-			Color color = grid_color;
-			if (frame > 0) {
-				color.a *= 0.3;
+		Vector2 in_tile_base_offset = tile_set_atlas_source->get_tile_data(tile_id, 0)->get_texture_origin();
+		if (tile_set_atlas_source->is_position_in_tile_texture_region(tile_id, 0, -tile_shape_size / 2) && tile_set_atlas_source->is_position_in_tile_texture_region(tile_id, 0, tile_shape_size / 2 - Vector2(1, 1))) {
+			for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(tile_id); frame++) {
+				Color color = grid_color;
+				if (frame > 0) {
+					color.a *= 0.3;
+				}
+				Rect2i texture_region = tile_set_atlas_source->get_tile_texture_region(tile_id, frame);
+				Transform2D tile_xform;
+				tile_xform.set_origin(Rect2(texture_region).get_center() + in_tile_base_offset);
+				tile_xform.set_scale(tile_shape_size);
+				tile_set->draw_tile_shape(base_tiles_shape_grid, tile_xform, color);
 			}
-			Rect2i texture_region = tile_set_atlas_source->get_tile_texture_region(tile_id);
-			Transform2D tile_xform;
-			tile_xform.set_origin(texture_region.get_center() + in_tile_base_offset);
-			tile_xform.set_scale(tile_shape_size);
-			tile_set->draw_tile_shape(base_tiles_shape_grid, tile_xform, color);
 		}
 	}
 }
@@ -376,10 +373,10 @@ void TileAtlasView::_draw_alternatives() {
 				// Update the y to max value.
 				Vector2i offset_pos;
 				if (transposed) {
-					offset_pos = (current_pos + Vector2(texture_region_size.y, texture_region_size.x) / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, alternative_id));
+					offset_pos = (current_pos + Vector2(texture_region_size.y, texture_region_size.x) / 2 + tile_data->get_texture_origin());
 					y_increment = MAX(y_increment, texture_region_size.x);
 				} else {
-					offset_pos = (current_pos + texture_region_size / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, alternative_id));
+					offset_pos = (current_pos + texture_region_size / 2 + tile_data->get_texture_origin());
 					y_increment = MAX(y_increment, texture_region_size.y);
 				}
 
@@ -397,23 +394,24 @@ void TileAtlasView::_draw_alternatives() {
 }
 
 void TileAtlasView::_draw_background_left() {
-	Ref<Texture2D> texture = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
-	background_left->draw_texture_rect(texture, Rect2(Vector2(), background_left->get_size()), true);
+	background_left->draw_texture_rect(theme_cache.checkerboard, Rect2(Vector2(), background_left->get_size()), true);
 }
 
 void TileAtlasView::_draw_background_right() {
-	Ref<Texture2D> texture = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
-	background_right->draw_texture_rect(texture, Rect2(Vector2(), background_right->get_size()), true);
+	background_right->draw_texture_rect(theme_cache.checkerboard, Rect2(Vector2(), background_right->get_size()), true);
 }
 
 void TileAtlasView::set_atlas_source(TileSet *p_tile_set, TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id) {
-	ERR_FAIL_COND(!p_tile_set);
-	ERR_FAIL_COND(!p_tile_set_atlas_source);
+	tile_set = p_tile_set;
+	tile_set_atlas_source = p_tile_set_atlas_source;
+
+	if (!tile_set) {
+		return;
+	}
+
 	ERR_FAIL_COND(p_source_id < 0);
 	ERR_FAIL_COND(p_tile_set->get_source(p_source_id) != p_tile_set_atlas_source);
 
-	tile_set = p_tile_set;
-	tile_set_atlas_source = p_tile_set_atlas_source;
 	source_id = p_source_id;
 
 	// Show or hide the view.
@@ -454,21 +452,31 @@ void TileAtlasView::set_padding(Side p_side, int p_padding) {
 	margin_container_paddings[p_side] = p_padding;
 }
 
-Vector2i TileAtlasView::get_atlas_tile_coords_at_pos(const Vector2 p_pos) const {
+Vector2i TileAtlasView::get_atlas_tile_coords_at_pos(const Vector2 p_pos, bool p_clamp) const {
 	Ref<Texture2D> texture = tile_set_atlas_source->get_texture();
-	if (texture.is_valid()) {
-		Vector2i margins = tile_set_atlas_source->get_margins();
-		Vector2i separation = tile_set_atlas_source->get_separation();
-		Vector2i texture_region_size = tile_set_atlas_source->get_texture_region_size();
-
-		// Compute index in atlas
-		Vector2 pos = p_pos - margins;
-		Vector2i ret = (pos / (texture_region_size + separation)).floor();
-
-		return ret;
+	if (!texture.is_valid()) {
+		return TileSetSource::INVALID_ATLAS_COORDS;
 	}
 
-	return TileSetSource::INVALID_ATLAS_COORDS;
+	Vector2i margins = tile_set_atlas_source->get_margins();
+	Vector2i separation = tile_set_atlas_source->get_separation();
+	Vector2i texture_region_size = tile_set_atlas_source->get_texture_region_size();
+
+	// Compute index in atlas
+	Vector2 pos = p_pos - margins;
+	Vector2i ret = (pos / (texture_region_size + separation)).floor();
+
+	// Return invalid value (without clamp).
+	Rect2i rect = Rect2(Vector2i(), tile_set_atlas_source->get_atlas_grid_size());
+	if (!p_clamp && !rect.has_point(ret)) {
+		return TileSetSource::INVALID_ATLAS_COORDS;
+	}
+
+	// Clamp.
+	ret.x = CLAMP(ret.x, 0, rect.size.x - 1);
+	ret.y = CLAMP(ret.y, 0, rect.size.y - 1);
+
+	return ret;
 }
 
 void TileAtlasView::_update_alternative_tiles_rect_cache() {
@@ -529,6 +537,13 @@ void TileAtlasView::queue_redraw() {
 	background_right->queue_redraw();
 }
 
+void TileAtlasView::_update_theme_item_cache() {
+	Control::_update_theme_item_cache();
+
+	theme_cache.center_view_icon = get_theme_icon(SNAME("CenterView"), SNAME("EditorIcons"));
+	theme_cache.checkerboard = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
+}
+
 void TileAtlasView::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
@@ -536,8 +551,8 @@ void TileAtlasView::_notification(int p_what) {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 		} break;
 
-		case NOTIFICATION_READY: {
-			button_center_view->set_icon(get_theme_icon(SNAME("CenterView"), SNAME("EditorIcons")));
+		case NOTIFICATION_THEME_CHANGED: {
+			button_center_view->set_icon(theme_cache.center_view_icon);
 		} break;
 	}
 }
@@ -564,7 +579,6 @@ TileAtlasView::TileAtlasView() {
 	zoom_widget->set_shortcut_context(this);
 
 	button_center_view = memnew(Button);
-	button_center_view->set_icon(get_theme_icon(SNAME("CenterView"), SNAME("EditorIcons")));
 	button_center_view->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT, Control::PRESET_MODE_MINSIZE, 5);
 	button_center_view->connect("pressed", callable_mp(this, &TileAtlasView::_center_view));
 	button_center_view->set_flat(true);
@@ -573,7 +587,7 @@ TileAtlasView::TileAtlasView() {
 	add_child(button_center_view);
 
 	panner.instantiate();
-	panner->set_callbacks(callable_mp(this, &TileAtlasView::_scroll_callback), callable_mp(this, &TileAtlasView::_pan_callback), callable_mp(this, &TileAtlasView::_zoom_callback));
+	panner->set_callbacks(callable_mp(this, &TileAtlasView::_pan_callback), callable_mp(this, &TileAtlasView::_zoom_callback));
 	panner->set_enable_rmb(true);
 
 	center_container = memnew(CenterContainer);

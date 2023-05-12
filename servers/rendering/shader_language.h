@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  shader_language.h                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  shader_language.h                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef SHADER_LANGUAGE_H
 #define SHADER_LANGUAGE_H
@@ -357,18 +357,18 @@ public:
 		Node *next = nullptr;
 
 		enum Type {
-			TYPE_SHADER,
-			TYPE_FUNCTION,
-			TYPE_BLOCK,
-			TYPE_VARIABLE,
-			TYPE_VARIABLE_DECLARATION,
-			TYPE_CONSTANT,
-			TYPE_OPERATOR,
-			TYPE_CONTROL_FLOW,
-			TYPE_MEMBER,
-			TYPE_ARRAY,
-			TYPE_ARRAY_CONSTRUCT,
-			TYPE_STRUCT,
+			NODE_TYPE_SHADER,
+			NODE_TYPE_FUNCTION,
+			NODE_TYPE_BLOCK,
+			NODE_TYPE_VARIABLE,
+			NODE_TYPE_VARIABLE_DECLARATION,
+			NODE_TYPE_CONSTANT,
+			NODE_TYPE_OPERATOR,
+			NODE_TYPE_CONTROL_FLOW,
+			NODE_TYPE_MEMBER,
+			NODE_TYPE_ARRAY,
+			NODE_TYPE_ARRAY_CONSTRUCT,
+			NODE_TYPE_STRUCT,
 		};
 
 		Type type;
@@ -407,7 +407,7 @@ public:
 		virtual bool is_indexed() const override { return op == OP_INDEX; }
 
 		OperatorNode() :
-				Node(TYPE_OPERATOR) {}
+				Node(NODE_TYPE_OPERATOR) {}
 	};
 
 	struct VariableNode : public Node {
@@ -421,7 +421,7 @@ public:
 		virtual String get_datatype_name() const override { return String(struct_name); }
 
 		VariableNode() :
-				Node(TYPE_VARIABLE) {}
+				Node(NODE_TYPE_VARIABLE) {}
 	};
 
 	struct VariableDeclarationNode : public Node {
@@ -442,7 +442,7 @@ public:
 		virtual DataType get_datatype() const override { return datatype; }
 
 		VariableDeclarationNode() :
-				Node(TYPE_VARIABLE_DECLARATION) {}
+				Node(NODE_TYPE_VARIABLE_DECLARATION) {}
 	};
 
 	struct ArrayNode : public Node {
@@ -462,7 +462,7 @@ public:
 		virtual bool is_indexed() const override { return index_expression != nullptr; }
 
 		ArrayNode() :
-				Node(TYPE_ARRAY) {}
+				Node(NODE_TYPE_ARRAY) {}
 	};
 
 	struct ArrayConstructNode : public Node {
@@ -475,7 +475,7 @@ public:
 		virtual int get_array_size() const override { return initializer.size(); }
 
 		ArrayConstructNode() :
-				Node(TYPE_ARRAY_CONSTRUCT) {}
+				Node(NODE_TYPE_ARRAY_CONSTRUCT) {}
 	};
 
 	struct ConstantNode : public Node {
@@ -498,7 +498,7 @@ public:
 		virtual int get_array_size() const override { return array_size; }
 
 		ConstantNode() :
-				Node(TYPE_CONSTANT) {}
+				Node(NODE_TYPE_CONSTANT) {}
 	};
 
 	struct FunctionNode;
@@ -536,7 +536,7 @@ public:
 		bool use_comma_between_statements = false;
 
 		BlockNode() :
-				Node(TYPE_BLOCK) {}
+				Node(NODE_TYPE_BLOCK) {}
 	};
 
 	struct ControlFlowNode : public Node {
@@ -545,7 +545,7 @@ public:
 		Vector<BlockNode *> blocks;
 
 		ControlFlowNode() :
-				Node(TYPE_CONTROL_FLOW) {}
+				Node(NODE_TYPE_CONTROL_FLOW) {}
 	};
 
 	struct MemberNode : public Node {
@@ -569,13 +569,13 @@ public:
 		virtual bool is_indexed() const override { return index_expression != nullptr || call_expression != nullptr; }
 
 		MemberNode() :
-				Node(TYPE_MEMBER) {}
+				Node(NODE_TYPE_MEMBER) {}
 	};
 
 	struct StructNode : public Node {
 		List<MemberNode *> members;
 		StructNode() :
-				Node(TYPE_STRUCT) {}
+				Node(NODE_TYPE_STRUCT) {}
 	};
 
 	struct FunctionNode : public Node {
@@ -611,7 +611,7 @@ public:
 		virtual int get_array_size() const override { return return_array_size; }
 
 		FunctionNode() :
-				Node(TYPE_FUNCTION) {}
+				Node(NODE_TYPE_FUNCTION) {}
 	};
 
 	struct ShaderNode : public Node {
@@ -718,7 +718,7 @@ public:
 		Vector<Struct> vstructs;
 
 		ShaderNode() :
-				Node(TYPE_SHADER) {}
+				Node(NODE_TYPE_SHADER) {}
 	};
 
 	struct UniformOrderComparator {
@@ -953,7 +953,7 @@ private:
 
 	StringName shader_type_identifier;
 	StringName current_function;
-	bool last_const = false;
+	bool is_const_decl = false;
 	StringName last_name;
 	bool is_shader_inc = false;
 
@@ -1088,7 +1088,7 @@ private:
 	bool _compare_datatypes(DataType p_datatype_a, String p_datatype_name_a, int p_array_size_a, DataType p_datatype_b, String p_datatype_name_b, int p_array_size_b);
 	bool _compare_datatypes_in_nodes(Node *a, Node *b);
 
-	bool _validate_function_call(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, DataType *r_ret_type, StringName *r_ret_type_str);
+	bool _validate_function_call(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, DataType *r_ret_type, StringName *r_ret_type_str, bool *r_is_custom_function = nullptr);
 	bool _parse_function_arguments(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, int *r_complete_arg = nullptr);
 	bool _propagate_function_call_sampler_uniform_settings(StringName p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat);
 	bool _propagate_function_call_sampler_builtin_reference(StringName p_name, int p_argument, const StringName &p_builtin);

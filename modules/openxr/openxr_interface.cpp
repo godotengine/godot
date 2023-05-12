@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  openxr_interface.cpp                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  openxr_interface.cpp                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "openxr_interface.h"
 
@@ -46,6 +46,15 @@ void OpenXRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_display_refresh_rate"), &OpenXRInterface::get_display_refresh_rate);
 	ClassDB::bind_method(D_METHOD("set_display_refresh_rate", "refresh_rate"), &OpenXRInterface::set_display_refresh_rate);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "display_refresh_rate"), "set_display_refresh_rate", "get_display_refresh_rate");
+
+	// Render Target size multiplier
+	ClassDB::bind_method(D_METHOD("get_render_target_size_multiplier"), &OpenXRInterface::get_render_target_size_multiplier);
+	ClassDB::bind_method(D_METHOD("set_render_target_size_multiplier", "multiplier"), &OpenXRInterface::set_render_target_size_multiplier);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "render_target_size_multiplier"), "set_render_target_size_multiplier", "get_render_target_size_multiplier");
+
+	ClassDB::bind_method(D_METHOD("is_action_set_active", "name"), &OpenXRInterface::is_action_set_active);
+	ClassDB::bind_method(D_METHOD("set_action_set_active", "name", "active"), &OpenXRInterface::set_action_set_active);
+	ClassDB::bind_method(D_METHOD("get_action_sets"), &OpenXRInterface::get_action_sets);
 
 	ClassDB::bind_method(D_METHOD("get_available_display_refresh_rates"), &OpenXRInterface::get_available_display_refresh_rates);
 }
@@ -579,6 +588,17 @@ void OpenXRInterface::uninitialize() {
 	initialized = false;
 }
 
+Dictionary OpenXRInterface::get_system_info() {
+	Dictionary dict;
+
+	if (openxr_api) {
+		dict[SNAME("XRRuntimeName")] = openxr_api->get_runtime_name();
+		dict[SNAME("XRRuntimeVersion")] = openxr_api->get_runtime_version();
+	}
+
+	return dict;
+}
+
 bool OpenXRInterface::supports_play_area_mode(XRInterface::PlayAreaMode p_mode) {
 	return false;
 }
@@ -618,6 +638,54 @@ Array OpenXRInterface::get_available_display_refresh_rates() const {
 		return Array();
 	} else {
 		return openxr_api->get_available_display_refresh_rates();
+	}
+}
+
+bool OpenXRInterface::is_action_set_active(const String &p_action_set) const {
+	for (ActionSet *action_set : action_sets) {
+		if (action_set->action_set_name == p_action_set) {
+			return action_set->is_active;
+		}
+	}
+
+	WARN_PRINT("OpenXR: Unknown action set " + p_action_set);
+	return false;
+}
+
+void OpenXRInterface::set_action_set_active(const String &p_action_set, bool p_active) {
+	for (ActionSet *action_set : action_sets) {
+		if (action_set->action_set_name == p_action_set) {
+			action_set->is_active = p_active;
+			return;
+		}
+	}
+
+	WARN_PRINT("OpenXR: Unknown action set " + p_action_set);
+}
+
+Array OpenXRInterface::get_action_sets() const {
+	Array arr;
+
+	for (ActionSet *action_set : action_sets) {
+		arr.push_back(action_set->action_set_name);
+	}
+
+	return arr;
+}
+
+double OpenXRInterface::get_render_target_size_multiplier() const {
+	if (openxr_api == nullptr) {
+		return 1.0;
+	} else {
+		return openxr_api->get_render_target_size_multiplier();
+	}
+}
+
+void OpenXRInterface::set_render_target_size_multiplier(double multiplier) {
+	if (openxr_api == nullptr) {
+		return;
+	} else {
+		openxr_api->set_render_target_size_multiplier(multiplier);
 	}
 }
 
@@ -832,6 +900,60 @@ void OpenXRInterface::stop_passthrough() {
 	if (passthrough_wrapper) {
 		passthrough_wrapper->stop_passthrough();
 	}
+}
+
+Array OpenXRInterface::get_supported_environment_blend_modes() {
+	Array modes;
+
+	if (!openxr_api) {
+		return modes;
+	}
+
+	uint32_t count = 0;
+	const XrEnvironmentBlendMode *env_blend_modes = openxr_api->get_supported_environment_blend_modes(count);
+
+	if (!env_blend_modes) {
+		return modes;
+	}
+
+	for (uint32_t i = 0; i < count; i++) {
+		switch (env_blend_modes[i]) {
+			case XR_ENVIRONMENT_BLEND_MODE_OPAQUE:
+				modes.push_back(XR_ENV_BLEND_MODE_OPAQUE);
+				break;
+			case XR_ENVIRONMENT_BLEND_MODE_ADDITIVE:
+				modes.push_back(XR_ENV_BLEND_MODE_ADDITIVE);
+				break;
+			case XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND:
+				modes.push_back(XR_ENV_BLEND_MODE_ALPHA_BLEND);
+				break;
+			default:
+				WARN_PRINT("Unsupported blend mode found: " + String::num_int64(int64_t(env_blend_modes[i])));
+		}
+	}
+	return modes;
+}
+
+bool OpenXRInterface::set_environment_blend_mode(XRInterface::EnvironmentBlendMode mode) {
+	if (openxr_api) {
+		XrEnvironmentBlendMode oxr_blend_mode;
+		switch (mode) {
+			case XR_ENV_BLEND_MODE_OPAQUE:
+				oxr_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+				break;
+			case XR_ENV_BLEND_MODE_ADDITIVE:
+				oxr_blend_mode = XR_ENVIRONMENT_BLEND_MODE_ADDITIVE;
+				break;
+			case XR_ENV_BLEND_MODE_ALPHA_BLEND:
+				oxr_blend_mode = XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND;
+				break;
+			default:
+				WARN_PRINT("Unknown blend mode requested: " + String::num_int64(int64_t(mode)));
+				oxr_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+		}
+		return openxr_api->set_environment_blend_mode(oxr_blend_mode);
+	}
+	return false;
 }
 
 void OpenXRInterface::on_state_ready() {

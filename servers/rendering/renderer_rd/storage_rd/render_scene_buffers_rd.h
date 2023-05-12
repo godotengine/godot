@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  render_scene_buffers_rd.h                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  render_scene_buffers_rd.h                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef RENDER_SCENE_BUFFERS_RD_H
 #define RENDER_SCENE_BUFFERS_RD_H
@@ -73,6 +73,7 @@ private:
 
 	// The internal size of the textures we render 3D to in case we render at a lower resolution and upscale
 	Size2i internal_size = Size2i(0, 0);
+	RS::ViewportScaling3DMode scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
 	float fsr_sharpness = 0.2f;
 
 	// Aliassing settings
@@ -92,7 +93,6 @@ private:
 		}
 
 		static uint32_t hash(const NTKey &p_val) {
-			// FIXME, properly hash two stringnames together
 			uint32_t h = p_val.context.hash();
 			h = hash_murmur3_one_32(p_val.buffer_name.hash(), h);
 			return hash_fmix32(h);
@@ -105,6 +105,33 @@ private:
 		}
 	};
 
+	struct NTSliceKey {
+		uint32_t layer;
+		uint32_t layers;
+		uint32_t mipmap;
+		uint32_t mipmaps;
+
+		bool operator==(const NTSliceKey &p_val) const {
+			return (layer == p_val.layer) && (layers == p_val.layers) && (mipmap == p_val.mipmap) && (mipmaps == p_val.mipmaps);
+		}
+
+		static uint32_t hash(const NTSliceKey &p_val) {
+			uint32_t h = hash_murmur3_one_32(p_val.layer);
+			h = hash_murmur3_one_32(p_val.layers, h);
+			h = hash_murmur3_one_32(p_val.mipmap, h);
+			h = hash_murmur3_one_32(p_val.mipmaps, h);
+			return hash_fmix32(h);
+		}
+
+		NTSliceKey() {}
+		NTSliceKey(uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) {
+			layer = p_layer;
+			layers = p_layers;
+			mipmap = p_mipmap;
+			mipmaps = p_mipmaps;
+		}
+	};
+
 	struct NamedTexture {
 		// Cache the data used to create our texture
 		RD::TextureFormat format;
@@ -112,7 +139,7 @@ private:
 
 		// Our texture objects, slices are lazy (i.e. only created when requested).
 		RID texture;
-		Vector<RID> slices;
+		mutable HashMap<NTSliceKey, RID, NTSliceKey> slices;
 		Vector<Size2i> sizes;
 	};
 
@@ -139,7 +166,7 @@ public:
 	void set_vrs(RendererRD::VRS *p_vrs) { vrs = p_vrs; }
 
 	void cleanup();
-	virtual void configure(RID p_render_target, const Size2i p_internal_size, const Size2i p_target_size, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa_3d, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count) override;
+	virtual void configure(RID p_render_target, const Size2i p_internal_size, const Size2i p_target_size, RS::ViewportScaling3DMode p_scaling_3d_mode, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa_3d, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count) override;
 	void configure_for_reflections(const Size2i p_reflection_size);
 	virtual void set_fsr_sharpness(float p_fsr_sharpness) override;
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override;
@@ -153,8 +180,8 @@ public:
 	RID create_texture_view(const StringName &p_context, const StringName &p_texture_name, const StringName p_view_name, RD::TextureView p_view = RD::TextureView());
 	RID get_texture(const StringName &p_context, const StringName &p_texture_name) const;
 	const RD::TextureFormat get_texture_format(const StringName &p_context, const StringName &p_texture_name) const;
-	RID get_texture_slice(const StringName &p_context, const StringName &p_texture_name, const uint32_t p_layer, const uint32_t p_mipmap);
-	Size2i get_texture_slice_size(const StringName &p_context, const StringName &p_texture_name, const uint32_t p_layer, const uint32_t p_mipmap);
+	RID get_texture_slice(const StringName &p_context, const StringName &p_texture_name, const uint32_t p_layer, const uint32_t p_mipmap, const uint32_t p_layers = 1, const uint32_t p_mipmaps = 1);
+	Size2i get_texture_slice_size(const StringName &p_context, const StringName &p_texture_name, const uint32_t p_mipmap);
 
 	void clear_context(const StringName &p_context);
 
@@ -172,6 +199,7 @@ public:
 	_FORCE_INLINE_ uint32_t get_view_count() const { return view_count; }
 	_FORCE_INLINE_ Size2i get_internal_size() const { return internal_size; }
 	_FORCE_INLINE_ Size2i get_target_size() const { return target_size; }
+	_FORCE_INLINE_ RS::ViewportScaling3DMode get_scaling_3d_mode() const { return scaling_3d_mode; }
 	_FORCE_INLINE_ float get_fsr_sharpness() const { return fsr_sharpness; }
 	_FORCE_INLINE_ RS::ViewportMSAA get_msaa_3d() const { return msaa_3d; }
 	_FORCE_INLINE_ RS::ViewportScreenSpaceAA get_screen_space_aa() const { return screen_space_aa; }
@@ -183,6 +211,9 @@ public:
 
 	// For our internal textures we provide some easy access methods.
 
+	_FORCE_INLINE_ bool has_internal_texture() const {
+		return has_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR);
+	}
 	_FORCE_INLINE_ RID get_internal_texture() const {
 		return get_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR);
 	}
@@ -190,6 +221,7 @@ public:
 		return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR, p_layer, 0);
 	}
 
+	bool has_depth_texture();
 	RID get_depth_texture();
 	RID get_depth_texture(const uint32_t p_layer);
 
@@ -213,15 +245,6 @@ public:
 
 	// 2 full size, 2 half size
 	WeightBuffers weight_buffers[4]; // Only used in raster
-
-	struct Luminance {
-		Vector<RID> reduce;
-		RID current;
-
-		// used only on mobile renderer
-		Vector<RID> fb;
-		RID current_fb;
-	} luminance;
 };
 
 #endif // RENDER_SCENE_BUFFERS_RD_H

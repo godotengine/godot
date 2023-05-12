@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  action_map_editor.cpp                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  action_map_editor.cpp                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor/action_map_editor.h"
 
@@ -198,6 +198,14 @@ void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_i
 
 			emit_signal(SNAME("action_edited"), action_name, action);
 		} break;
+		case ActionMapEditor::BUTTON_REVERT_ACTION: {
+			ERR_FAIL_COND_MSG(!item->has_meta("__action_initial"), "Tree Item for action which can be reverted is expected to have meta value with initial value of action.");
+
+			Dictionary action = item->get_meta("__action_initial").duplicate();
+			String action_name = item->get_meta("__name");
+
+			emit_signal(SNAME("action_edited"), action_name, action);
+		} break;
 		default:
 			break;
 	}
@@ -354,10 +362,6 @@ void ActionMapEditor::_notification(int p_what) {
 }
 
 void ActionMapEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_get_drag_data_fw"), &ActionMapEditor::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &ActionMapEditor::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &ActionMapEditor::drop_data_fw);
-
 	ADD_SIGNAL(MethodInfo("action_added", PropertyInfo(Variant::STRING, "name")));
 	ADD_SIGNAL(MethodInfo("action_edited", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::DICTIONARY, "new_action")));
 	ADD_SIGNAL(MethodInfo("action_removed", PropertyInfo(Variant::STRING, "name")));
@@ -431,6 +435,13 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 		action_item->set_range(1, deadzone);
 
 		// Third column - buttons
+		if (action_info.has_initial) {
+			bool deadzone_eq = action_info.action_initial["deadzone"] == action_info.action["deadzone"];
+			bool events_eq = Shortcut::is_event_array_equal(action_info.action_initial["events"], action_info.action["events"]);
+			bool action_eq = deadzone_eq && events_eq;
+			action_item->set_meta("__action_initial", action_info.action_initial);
+			action_item->add_button(2, action_tree->get_theme_icon(SNAME("ReloadSmall"), SNAME("EditorIcons")), BUTTON_REVERT_ACTION, action_eq, action_eq ? TTR("Cannot Revert - Action is same as initial") : TTR("Revert Action"));
+		}
 		action_item->add_button(2, action_tree->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")), BUTTON_ADD_EVENT, false, TTR("Add Event"));
 		action_item->add_button(2, action_tree->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_ACTION, !action_info.editable, action_info.editable ? TTR("Remove Action") : TTR("Cannot Remove Action"));
 
@@ -453,10 +464,14 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 			// First Column - Icon
 			Ref<InputEventKey> k = event;
 			if (k.is_valid()) {
-				if (k->get_physical_keycode() == Key::NONE) {
+				if (k->get_physical_keycode() == Key::NONE && k->get_keycode() == Key::NONE && k->get_key_label() != Key::NONE) {
+					event_item->set_icon(0, action_tree->get_theme_icon(SNAME("KeyboardLabel"), SNAME("EditorIcons")));
+				} else if (k->get_keycode() != Key::NONE) {
 					event_item->set_icon(0, action_tree->get_theme_icon(SNAME("Keyboard"), SNAME("EditorIcons")));
-				} else {
+				} else if (k->get_physical_keycode() != Key::NONE) {
 					event_item->set_icon(0, action_tree->get_theme_icon(SNAME("KeyboardPhysical"), SNAME("EditorIcons")));
+				} else {
+					event_item->set_icon(0, action_tree->get_theme_icon(SNAME("KeyboardError"), SNAME("EditorIcons")));
 				}
 			}
 
@@ -578,7 +593,7 @@ ActionMapEditor::ActionMapEditor() {
 	action_tree->connect("button_clicked", callable_mp(this, &ActionMapEditor::_tree_button_pressed));
 	main_vbox->add_child(action_tree);
 
-	action_tree->set_drag_forwarding(this);
+	SET_DRAG_FORWARDING_GCD(action_tree, ActionMapEditor);
 
 	// Adding event dialog
 	event_config_dialog = memnew(InputEventConfigurationDialog);

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  input.cpp                                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  input.cpp                                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "input.h"
 
@@ -34,6 +34,10 @@
 #include "core/input/default_controller_mappings.h"
 #include "core/input/input_map.h"
 #include "core/os/os.h"
+
+#ifdef DEV_ENABLED
+#include "core/os/thread.h"
+#endif
 
 static const char *_joy_buttons[(size_t)JoyButton::SDL_MAX] = {
 	"a",
@@ -93,6 +97,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_anything_pressed"), &Input::is_anything_pressed);
 	ClassDB::bind_method(D_METHOD("is_key_pressed", "keycode"), &Input::is_key_pressed);
 	ClassDB::bind_method(D_METHOD("is_physical_key_pressed", "keycode"), &Input::is_physical_key_pressed);
+	ClassDB::bind_method(D_METHOD("is_key_label_pressed", "keycode"), &Input::is_key_label_pressed);
 	ClassDB::bind_method(D_METHOD("is_mouse_button_pressed", "button"), &Input::is_mouse_button_pressed);
 	ClassDB::bind_method(D_METHOD("is_joy_button_pressed", "device", "button"), &Input::is_joy_button_pressed);
 	ClassDB::bind_method(D_METHOD("is_action_pressed", "action", "exact_match"), &Input::is_action_pressed, DEFVAL(false));
@@ -230,14 +235,17 @@ Input::VelocityTrack::VelocityTrack() {
 bool Input::is_anything_pressed() const {
 	_THREAD_SAFE_METHOD_
 
+	if (!keys_pressed.is_empty() || !joy_buttons_pressed.is_empty() || !mouse_button_mask.is_empty()) {
+		return true;
+	}
+
 	for (const KeyValue<StringName, Input::Action> &E : action_state) {
 		if (E.value.pressed) {
 			return true;
 		}
 	}
-	return !keys_pressed.is_empty() ||
-			!joy_buttons_pressed.is_empty() ||
-			mouse_button_mask > MouseButton::NONE;
+
+	return false;
 }
 
 bool Input::is_key_pressed(Key p_keycode) const {
@@ -250,9 +258,14 @@ bool Input::is_physical_key_pressed(Key p_keycode) const {
 	return physical_keys_pressed.has(p_keycode);
 }
 
+bool Input::is_key_label_pressed(Key p_keycode) const {
+	_THREAD_SAFE_METHOD_
+	return key_label_pressed.has(p_keycode);
+}
+
 bool Input::is_mouse_button_pressed(MouseButton p_button) const {
 	_THREAD_SAFE_METHOD_
-	return (mouse_button_mask & mouse_button_to_mask(p_button)) != MouseButton::NONE;
+	return mouse_button_mask.has_flag(mouse_button_to_mask(p_button));
 }
 
 static JoyAxis _combine_device(JoyAxis p_value, int p_device) {
@@ -477,6 +490,10 @@ Vector3 Input::get_gyroscope() const {
 }
 
 void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated) {
+	// This function does the final delivery of the input event to user land.
+	// Regardless where the event came from originally, this has to happen on the main thread.
+	DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
+
 	// Notes on mouse-touch emulation:
 	// - Emulated mouse events are parsed, that is, re-routed to this method, so they make the same effects
 	//   as true mouse events. The only difference is the situation is flagged as emulated so they are not
@@ -499,14 +516,21 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			physical_keys_pressed.erase(k->get_physical_keycode());
 		}
 	}
+	if (k.is_valid() && !k->is_echo() && k->get_key_label() != Key::NONE) {
+		if (k->is_pressed()) {
+			key_label_pressed.insert(k->get_key_label());
+		} else {
+			key_label_pressed.erase(k->get_key_label());
+		}
+	}
 
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
 		if (mb->is_pressed()) {
-			mouse_button_mask |= mouse_button_to_mask(mb->get_button_index());
+			mouse_button_mask.set_flag(mouse_button_to_mask(mb->get_button_index()));
 		} else {
-			mouse_button_mask &= ~mouse_button_to_mask(mb->get_button_index());
+			mouse_button_mask.clear_flag(mouse_button_to_mask(mb->get_button_index()));
 		}
 
 		Point2 pos = mb->get_global_position();
@@ -520,7 +544,10 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			touch_event->set_pressed(mb->is_pressed());
 			touch_event->set_position(mb->get_position());
 			touch_event->set_double_tap(mb->is_double_click());
+			touch_event->set_device(InputEvent::DEVICE_ID_EMULATION);
+			_THREAD_SAFE_UNLOCK_
 			event_dispatch_function(touch_event);
+			_THREAD_SAFE_LOCK_
 		}
 	}
 
@@ -534,7 +561,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		Vector2 relative = mm->get_relative();
 		mouse_velocity_track.update(relative);
 
-		if (event_dispatch_function && emulate_touch_from_mouse && !p_is_emulated && (mm->get_button_mask() & MouseButton::LEFT) != MouseButton::NONE) {
+		if (event_dispatch_function && emulate_touch_from_mouse && !p_is_emulated && mm->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
 			Ref<InputEventScreenDrag> drag_event;
 			drag_event.instantiate();
 
@@ -544,8 +571,11 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			drag_event->set_pen_inverted(mm->get_pen_inverted());
 			drag_event->set_pressure(mm->get_pressure());
 			drag_event->set_velocity(get_last_mouse_velocity());
+			drag_event->set_device(InputEvent::DEVICE_ID_EMULATION);
 
+			_THREAD_SAFE_UNLOCK_
 			event_dispatch_function(drag_event);
+			_THREAD_SAFE_LOCK_
 		}
 	}
 
@@ -579,17 +609,20 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 				Ref<InputEventMouseButton> button_event;
 				button_event.instantiate();
 
-				button_event->set_device(InputEvent::DEVICE_ID_TOUCH_MOUSE);
+				button_event->set_device(InputEvent::DEVICE_ID_EMULATION);
 				button_event->set_position(st->get_position());
 				button_event->set_global_position(st->get_position());
 				button_event->set_pressed(st->is_pressed());
 				button_event->set_button_index(MouseButton::LEFT);
 				button_event->set_double_click(st->is_double_tap());
+
+				BitField<MouseButtonMask> ev_bm = mouse_button_mask;
 				if (st->is_pressed()) {
-					button_event->set_button_mask(MouseButton(mouse_button_mask | MouseButton::MASK_LEFT));
+					ev_bm.set_flag(MouseButtonMask::LEFT);
 				} else {
-					button_event->set_button_mask(MouseButton(mouse_button_mask & ~MouseButton::MASK_LEFT));
+					ev_bm.clear_flag(MouseButtonMask::LEFT);
 				}
+				button_event->set_button_mask(ev_bm);
 
 				_parse_input_event_impl(button_event, true);
 			}
@@ -607,7 +640,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			Ref<InputEventMouseMotion> motion_event;
 			motion_event.instantiate();
 
-			motion_event->set_device(InputEvent::DEVICE_ID_TOUCH_MOUSE);
+			motion_event->set_device(InputEvent::DEVICE_ID_EMULATION);
 			motion_event->set_tilt(sd->get_tilt());
 			motion_event->set_pen_inverted(sd->get_pen_inverted());
 			motion_event->set_pressure(sd->get_pressure());
@@ -643,7 +676,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 	if (ge.is_valid()) {
 		if (event_dispatch_function) {
+			_THREAD_SAFE_UNLOCK_
 			event_dispatch_function(ge);
+			_THREAD_SAFE_LOCK_
 		}
 	}
 
@@ -666,7 +701,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	}
 
 	if (event_dispatch_function) {
+		_THREAD_SAFE_UNLOCK_
 		event_dispatch_function(p_event);
+		_THREAD_SAFE_LOCK_
 	}
 }
 
@@ -740,7 +777,7 @@ Point2 Input::get_last_mouse_velocity() {
 	return mouse_velocity_track.velocity;
 }
 
-MouseButton Input::get_mouse_button_mask() const {
+BitField<MouseButtonMask> Input::get_mouse_button_mask() const {
 	return mouse_button_mask; // do not trust OS implementation, should remove it - OS::get_singleton()->get_mouse_button_state();
 }
 
@@ -810,18 +847,21 @@ bool Input::is_emulating_touch_from_mouse() const {
 // Calling this whenever the game window is focused helps unsticking the "touch mouse"
 // if the OS or its abstraction class hasn't properly reported that touch pointers raised
 void Input::ensure_touch_mouse_raised() {
+	_THREAD_SAFE_METHOD_
 	if (mouse_from_touch_index != -1) {
 		mouse_from_touch_index = -1;
 
 		Ref<InputEventMouseButton> button_event;
 		button_event.instantiate();
 
-		button_event->set_device(InputEvent::DEVICE_ID_TOUCH_MOUSE);
+		button_event->set_device(InputEvent::DEVICE_ID_EMULATION);
 		button_event->set_position(mouse_pos);
 		button_event->set_global_position(mouse_pos);
 		button_event->set_pressed(false);
 		button_event->set_button_index(MouseButton::LEFT);
-		button_event->set_button_mask(MouseButton(mouse_button_mask & ~MouseButton::MASK_LEFT));
+		BitField<MouseButtonMask> ev_bm = mouse_button_mask;
+		ev_bm.clear_flag(MouseButtonMask::LEFT);
+		button_event->set_button_mask(ev_bm);
 
 		_parse_input_event_impl(button_event, true);
 	}
@@ -851,6 +891,7 @@ void Input::set_default_cursor_shape(CursorShape p_shape) {
 	mm.instantiate();
 	mm->set_position(mouse_pos);
 	mm->set_global_position(mouse_pos);
+	mm->set_device(InputEvent::DEVICE_ID_INTERNAL);
 	parse_input_event(mm);
 }
 
@@ -873,6 +914,31 @@ void Input::parse_input_event(const Ref<InputEvent> &p_event) {
 
 	ERR_FAIL_COND(p_event.is_null());
 
+#ifdef DEBUG_ENABLED
+	uint64_t curr_frame = Engine::get_singleton()->get_process_frames();
+	if (curr_frame != last_parsed_frame) {
+		frame_parsed_events.clear();
+		last_parsed_frame = curr_frame;
+		frame_parsed_events.insert(p_event);
+	} else if (frame_parsed_events.has(p_event)) {
+		// It would be technically safe to send the same event in cases such as:
+		// - After an explicit flush.
+		// - In platforms using buffering when agile flushing is enabled, after one of the mid-frame flushes.
+		// - If platform doesn't use buffering and event accumulation is disabled.
+		// - If platform doesn't use buffering and the event type is not accumulable.
+		// However, it wouldn't be reasonable to ask users to remember the full ruleset and be aware at all times
+		// of the possibilities of the target platform, project settings and engine internals, which may change
+		// without prior notice.
+		// Therefore, the guideline is, "don't send the same event object more than once per frame".
+		WARN_PRINT_ONCE(
+				"An input event object is being parsed more than once in the same frame, which is unsafe.\n"
+				"If you are generating events in a script, you have to instantiate a new event instead of sending the same one more than once, unless the original one was sent on an earlier frame.\n"
+				"You can call duplicate() on the event to get a new instance with identical values.");
+	} else {
+		frame_parsed_events.insert(p_event);
+	}
+#endif
+
 	if (use_accumulated_input) {
 		if (buffered_events.is_empty() || !buffered_events.back()->get()->accumulate(p_event)) {
 			buffered_events.push_back(p_event);
@@ -888,8 +954,15 @@ void Input::flush_buffered_events() {
 	_THREAD_SAFE_METHOD_
 
 	while (buffered_events.front()) {
-		_parse_input_event_impl(buffered_events.front()->get(), false);
+		// The final delivery of the input event involves releasing the lock.
+		// While the lock is released, another thread may lock it and add new events to the back.
+		// Therefore, we get each event and pop it while we still have the lock,
+		// to ensure the list is in a consistent state.
+		List<Ref<InputEvent>>::Element *E = buffered_events.front();
+		Ref<InputEvent> e = E->get();
 		buffered_events.pop_front();
+
+		_parse_input_event_impl(e, false);
 	}
 }
 
@@ -914,6 +987,7 @@ void Input::release_pressed_events() {
 
 	keys_pressed.clear();
 	physical_keys_pressed.clear();
+	key_label_pressed.clear();
 	joy_buttons_pressed.clear();
 	_joy_axis.clear();
 
@@ -1022,7 +1096,7 @@ void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 	}
 }
 
-void Input::joy_hat(int p_device, HatMask p_val) {
+void Input::joy_hat(int p_device, BitField<HatMask> p_val) {
 	_THREAD_SAFE_METHOD_;
 	const Joypad &joy = joy_names[p_device];
 
@@ -1315,8 +1389,9 @@ void Input::parse_mapping(String p_mapping) {
 
 		JoyButton output_button = _get_output_button(output);
 		JoyAxis output_axis = _get_output_axis(output);
-		ERR_CONTINUE_MSG(output_button == JoyButton::INVALID && output_axis == JoyAxis::INVALID,
-				vformat("Unrecognized output string \"%s\" in mapping:\n%s", output, p_mapping));
+		if (output_button == JoyButton::INVALID && output_axis == JoyAxis::INVALID) {
+			print_verbose(vformat("Unrecognized output string \"%s\" in mapping:\n%s", output, p_mapping));
+		}
 		ERR_CONTINUE_MSG(output_button != JoyButton::INVALID && output_axis != JoyAxis::INVALID,
 				vformat("Output string \"%s\" matched both button and axis in mapping:\n%s", output, p_mapping));
 

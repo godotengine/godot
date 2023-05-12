@@ -142,7 +142,7 @@ static int BuildHuffmanTable(HuffmanCode* const root_table, int root_bits,
 
   {
     int step;              // step size to replicate values in current table
-    uint32_t low = -1;     // low bits for current root entry
+    uint32_t low = 0xffffffffu;        // low bits for current root entry
     uint32_t mask = total_size - 1;    // mask for low bits
     uint32_t key = 0;      // reversed prefix code
     int num_nodes = 1;     // number of Huffman tree nodes

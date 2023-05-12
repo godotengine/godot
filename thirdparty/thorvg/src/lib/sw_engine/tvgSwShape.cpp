@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #include "tvgSwCommon.h"
 #include "tvgBezier.h"
 #include <float.h>
@@ -266,13 +267,13 @@ static void _dashCubicTo(SwDashStroke& dash, const Point* ctrl1, const Point* ct
 }
 
 
-static SwOutline* _genDashOutline(const Shape* sdata, const Matrix* transform)
+static SwOutline* _genDashOutline(const RenderShape* rshape, const Matrix* transform)
 {
-    const PathCommand* cmds = nullptr;
-    auto cmdCnt = sdata->pathCommands(&cmds);
+    const PathCommand* cmds = rshape->path.cmds;
+    auto cmdCnt = rshape->path.cmdCnt;
 
-    const Point* pts = nullptr;
-    auto ptsCnt = sdata->pathCoords(&pts);
+    const Point* pts = rshape->path.pts;
+    auto ptsCnt = rshape->path.ptsCnt;
 
     //No actual shape data
     if (cmdCnt == 0 || ptsCnt == 0) return nullptr;
@@ -285,7 +286,7 @@ static SwOutline* _genDashOutline(const Shape* sdata, const Matrix* transform)
     dash.curOpGap = false;
 
     const float* pattern;
-    dash.cnt = sdata->strokeDash(&pattern);
+    dash.cnt = rshape->strokeDash(&pattern);
     if (dash.cnt == 0) return nullptr;
 
     //OPTMIZE ME: Use mempool???
@@ -380,13 +381,13 @@ static bool _axisAlignedRect(const SwOutline* outline)
 
 
 
-static bool _genOutline(SwShape* shape, const Shape* sdata, const Matrix* transform, SwMpool* mpool, unsigned tid, bool hasComposite)
+static bool _genOutline(SwShape* shape, const RenderShape* rshape, const Matrix* transform, SwMpool* mpool, unsigned tid, bool hasComposite)
 {
-    const PathCommand* cmds = nullptr;
-    auto cmdCnt = sdata->pathCommands(&cmds);
+    const PathCommand* cmds = rshape->path.cmds;
+    auto cmdCnt = rshape->path.cmdCnt;
 
-    const Point* pts = nullptr;
-    auto ptsCnt = sdata->pathCoords(&pts);
+    const Point* pts = rshape->path.pts;
+    auto ptsCnt = rshape->path.ptsCnt;
 
     //No actual shape data
     if (cmdCnt == 0 || ptsCnt == 0) return false;
@@ -466,7 +467,7 @@ static bool _genOutline(SwShape* shape, const Shape* sdata, const Matrix* transf
 
     _outlineEnd(*outline);
 
-    outline->fillRule = sdata->fillRule();
+    outline->fillRule = rshape->rule;
     shape->outline = outline;
 
     shape->fastTrack = (!hasComposite && _axisAlignedRect(shape->outline));
@@ -478,9 +479,9 @@ static bool _genOutline(SwShape* shape, const Shape* sdata, const Matrix* transf
 /* External Class Implementation                                        */
 /************************************************************************/
 
-bool shapePrepare(SwShape* shape, const Shape* sdata, const Matrix* transform,  const SwBBox& clipRegion, SwBBox& renderRegion, SwMpool* mpool, unsigned tid, bool hasComposite)
+bool shapePrepare(SwShape* shape, const RenderShape* rshape, const Matrix* transform,  const SwBBox& clipRegion, SwBBox& renderRegion, SwMpool* mpool, unsigned tid, bool hasComposite)
 {
-    if (!_genOutline(shape, sdata, transform, mpool, tid, hasComposite)) return false;
+    if (!_genOutline(shape, rshape, transform, mpool, tid, hasComposite)) return false;
     if (!mathUpdateOutlineBBox(shape->outline, clipRegion, renderRegion, shape->fastTrack)) return false;
 
     //Keep it for Rasterization Region
@@ -503,7 +504,7 @@ bool shapePrepared(const SwShape* shape)
 }
 
 
-bool shapeGenRle(SwShape* shape, TVG_UNUSED const Shape* sdata, bool antiAlias)
+bool shapeGenRle(SwShape* shape, TVG_UNUSED const RenderShape* rshape, bool antiAlias)
 {
     //FIXME: Should we draw it?
     //Case: Stroke Line
@@ -557,18 +558,18 @@ void shapeDelStroke(SwShape* shape)
 }
 
 
-void shapeResetStroke(SwShape* shape, const Shape* sdata, const Matrix* transform)
+void shapeResetStroke(SwShape* shape, const RenderShape* rshape, const Matrix* transform)
 {
     if (!shape->stroke) shape->stroke = static_cast<SwStroke*>(calloc(1, sizeof(SwStroke)));
     auto stroke = shape->stroke;
     if (!stroke) return;
 
-    strokeReset(stroke, sdata, transform);
+    strokeReset(stroke, rshape, transform);
     rleReset(shape->strokeRle);
 }
 
 
-bool shapeGenStrokeRle(SwShape* shape, const Shape* sdata, const Matrix* transform, const SwBBox& clipRegion, SwBBox& renderRegion, SwMpool* mpool, unsigned tid)
+bool shapeGenStrokeRle(SwShape* shape, const RenderShape* rshape, const Matrix* transform, const SwBBox& clipRegion, SwBBox& renderRegion, SwMpool* mpool, unsigned tid)
 {
     SwOutline* shapeOutline = nullptr;
     SwOutline* strokeOutline = nullptr;
@@ -576,14 +577,14 @@ bool shapeGenStrokeRle(SwShape* shape, const Shape* sdata, const Matrix* transfo
     bool ret = true;
 
     //Dash Style Stroke
-    if (sdata->strokeDash(nullptr) > 0) {
-        shapeOutline = _genDashOutline(sdata, transform);
+    if (rshape->strokeDash(nullptr) > 0) {
+        shapeOutline = _genDashOutline(rshape, transform);
         if (!shapeOutline) return false;
         freeOutline = true;
     //Normal Style stroke
     } else {
         if (!shape->outline) {
-            if (!_genOutline(shape, sdata, transform, mpool, tid, false)) return false;
+            if (!_genOutline(shape, rshape, transform, mpool, tid, false)) return false;
         }
         shapeOutline = shape->outline;
     }

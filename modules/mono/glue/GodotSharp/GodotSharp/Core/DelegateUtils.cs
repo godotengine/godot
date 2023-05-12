@@ -126,7 +126,7 @@ namespace Godot
                     }
                 }
                 // ReSharper disable once RedundantNameQualifier
-                case Godot.Object godotObject:
+                case GodotObject godotObject:
                 {
                     using (var stream = new MemoryStream())
                     using (var writer = new BinaryWriter(stream))
@@ -399,7 +399,7 @@ namespace Godot
                     {
                         ulong objectId = reader.ReadUInt64();
                         // ReSharper disable once RedundantNameQualifier
-                        Godot.Object godotObject = GD.InstanceFromId(objectId);
+                        GodotObject godotObject = GodotObject.InstanceFromId(objectId);
                         if (godotObject == null)
                             return false;
 
@@ -581,31 +581,31 @@ namespace Godot
                         return VariantUtils.CreateFrom(@double);
                     case Vector2 vector2:
                         return VariantUtils.CreateFrom(vector2);
-                    case Vector2i vector2I:
+                    case Vector2I vector2I:
                         return VariantUtils.CreateFrom(vector2I);
                     case Rect2 rect2:
                         return VariantUtils.CreateFrom(rect2);
-                    case Rect2i rect2I:
+                    case Rect2I rect2I:
                         return VariantUtils.CreateFrom(rect2I);
                     case Transform2D transform2D:
                         return VariantUtils.CreateFrom(transform2D);
                     case Vector3 vector3:
                         return VariantUtils.CreateFrom(vector3);
-                    case Vector3i vector3I:
+                    case Vector3I vector3I:
                         return VariantUtils.CreateFrom(vector3I);
                     case Vector4 vector4:
                         return VariantUtils.CreateFrom(vector4);
-                    case Vector4i vector4I:
+                    case Vector4I vector4I:
                         return VariantUtils.CreateFrom(vector4I);
                     case Basis basis:
                         return VariantUtils.CreateFrom(basis);
                     case Quaternion quaternion:
                         return VariantUtils.CreateFrom(quaternion);
-                    case Transform3D transform3d:
-                        return VariantUtils.CreateFrom(transform3d);
+                    case Transform3D transform3D:
+                        return VariantUtils.CreateFrom(transform3D);
                     case Projection projection:
                         return VariantUtils.CreateFrom(projection);
-                    case AABB aabb:
+                    case Aabb aabb:
                         return VariantUtils.CreateFrom(aabb);
                     case Color color:
                         return VariantUtils.CreateFrom(color);
@@ -639,15 +639,15 @@ namespace Godot
                         return VariantUtils.CreateFrom(stringNameArray);
                     case NodePath[] nodePathArray:
                         return VariantUtils.CreateFrom(nodePathArray);
-                    case RID[] ridArray:
+                    case Rid[] ridArray:
                         return VariantUtils.CreateFrom(ridArray);
-                    case Godot.Object[] godotObjectArray:
+                    case GodotObject[] godotObjectArray:
                         return VariantUtils.CreateFrom(godotObjectArray);
                     case StringName stringName:
                         return VariantUtils.CreateFrom(stringName);
                     case NodePath nodePath:
                         return VariantUtils.CreateFrom(nodePath);
-                    case RID rid:
+                    case Rid rid:
                         return VariantUtils.CreateFrom(rid);
                     case Collections.Dictionary godotDictionary:
                         return VariantUtils.CreateFrom(godotDictionary);
@@ -655,7 +655,7 @@ namespace Godot
                         return VariantUtils.CreateFrom(godotArray);
                     case Variant variant:
                         return VariantUtils.CreateFrom(variant);
-                    case Godot.Object godotObject:
+                    case GodotObject godotObject:
                         return VariantUtils.CreateFrom(godotObject);
                     case Enum @enum:
                         return VariantUtils.CreateFrom(Convert.ToInt64(@enum));
@@ -690,18 +690,18 @@ namespace Godot
                     [typeof(float)] = (in godot_variant variant) => VariantUtils.ConvertTo<float>(variant),
                     [typeof(double)] = (in godot_variant variant) => VariantUtils.ConvertTo<double>(variant),
                     [typeof(Vector2)] = (in godot_variant variant) => VariantUtils.ConvertTo<Vector2>(variant),
-                    [typeof(Vector2i)] = (in godot_variant variant) => VariantUtils.ConvertTo<Vector2i>(variant),
+                    [typeof(Vector2I)] = (in godot_variant variant) => VariantUtils.ConvertTo<Vector2I>(variant),
                     [typeof(Rect2)] = (in godot_variant variant) => VariantUtils.ConvertTo<Rect2>(variant),
-                    [typeof(Rect2i)] = (in godot_variant variant) => VariantUtils.ConvertTo<Rect2i>(variant),
+                    [typeof(Rect2I)] = (in godot_variant variant) => VariantUtils.ConvertTo<Rect2I>(variant),
                     [typeof(Transform2D)] = (in godot_variant variant) => VariantUtils.ConvertTo<Transform2D>(variant),
                     [typeof(Vector3)] = (in godot_variant variant) => VariantUtils.ConvertTo<Vector3>(variant),
-                    [typeof(Vector3i)] = (in godot_variant variant) => VariantUtils.ConvertTo<Vector3i>(variant),
+                    [typeof(Vector3I)] = (in godot_variant variant) => VariantUtils.ConvertTo<Vector3I>(variant),
                     [typeof(Basis)] = (in godot_variant variant) => VariantUtils.ConvertTo<Basis>(variant),
                     [typeof(Quaternion)] = (in godot_variant variant) => VariantUtils.ConvertTo<Quaternion>(variant),
                     [typeof(Transform3D)] = (in godot_variant variant) => VariantUtils.ConvertTo<Transform3D>(variant),
                     [typeof(Vector4)] = (in godot_variant variant) => VariantUtils.ConvertTo<Vector4>(variant),
-                    [typeof(Vector4i)] = (in godot_variant variant) => VariantUtils.ConvertTo<Vector4i>(variant),
-                    [typeof(AABB)] = (in godot_variant variant) => VariantUtils.ConvertTo<AABB>(variant),
+                    [typeof(Vector4I)] = (in godot_variant variant) => VariantUtils.ConvertTo<Vector4I>(variant),
+                    [typeof(Aabb)] = (in godot_variant variant) => VariantUtils.ConvertTo<Aabb>(variant),
                     [typeof(Color)] = (in godot_variant variant) => VariantUtils.ConvertTo<Color>(variant),
                     [typeof(Plane)] = (in godot_variant variant) => VariantUtils.ConvertTo<Plane>(variant),
                     [typeof(Callable)] = (in godot_variant variant) => VariantUtils.ConvertTo<Callable>(variant),
@@ -719,10 +719,10 @@ namespace Godot
                     [typeof(StringName[])] =
                         (in godot_variant variant) => VariantUtils.ConvertTo<StringName[]>(variant),
                     [typeof(NodePath[])] = (in godot_variant variant) => VariantUtils.ConvertTo<NodePath[]>(variant),
-                    [typeof(RID[])] = (in godot_variant variant) => VariantUtils.ConvertTo<RID[]>(variant),
+                    [typeof(Rid[])] = (in godot_variant variant) => VariantUtils.ConvertTo<Rid[]>(variant),
                     [typeof(StringName)] = (in godot_variant variant) => VariantUtils.ConvertTo<StringName>(variant),
                     [typeof(NodePath)] = (in godot_variant variant) => VariantUtils.ConvertTo<NodePath>(variant),
-                    [typeof(RID)] = (in godot_variant variant) => VariantUtils.ConvertTo<RID>(variant),
+                    [typeof(Rid)] = (in godot_variant variant) => VariantUtils.ConvertTo<Rid>(variant),
                     [typeof(Godot.Collections.Dictionary)] = (in godot_variant variant) =>
                         VariantUtils.ConvertTo<Godot.Collections.Dictionary>(variant),
                     [typeof(Godot.Collections.Array)] =
@@ -736,18 +736,18 @@ namespace Godot
                 if (ToSystemObjectFuncByType.TryGetValue(type, out var func))
                     return func(variant);
 
-                if (typeof(Godot.Object).IsAssignableFrom(type))
-                    return Convert.ChangeType(VariantUtils.ConvertTo<Godot.Object>(variant), type);
+                if (typeof(GodotObject).IsAssignableFrom(type))
+                    return Convert.ChangeType(VariantUtils.ConvertTo<GodotObject>(variant), type);
 
-                if (typeof(Godot.Object[]).IsAssignableFrom(type))
+                if (typeof(GodotObject[]).IsAssignableFrom(type))
                 {
-                    static Godot.Object[] ConvertToSystemArrayOfGodotObject(in godot_array nativeArray, Type type)
+                    static GodotObject[] ConvertToSystemArrayOfGodotObject(in godot_array nativeArray, Type type)
                     {
                         var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
                             NativeFuncs.godotsharp_array_new_copy(nativeArray));
 
                         int length = array.Count;
-                        var ret = (Godot.Object[])Activator.CreateInstance(type, length)!;
+                        var ret = (GodotObject[])Activator.CreateInstance(type, length)!;
 
                         for (int i = 0; i < length; i++)
                             ret[i] = array[i].AsGodotObject();

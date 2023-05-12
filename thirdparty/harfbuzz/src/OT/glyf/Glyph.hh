@@ -18,11 +18,6 @@ struct glyf_accelerator_t;
 namespace glyf_impl {
 
 
-#ifndef HB_GLYF_MAX_POINTS
-#define HB_GLYF_MAX_POINTS 10000
-#endif
-
-
 enum phantom_point_index_t
 {
   PHANTOM_LEFT   = 0,
@@ -85,12 +80,19 @@ struct Glyph
   }
 
   void update_mtx (const hb_subset_plan_t *plan,
-                   int xMin, int yMax,
+                   int xMin, int xMax,
+                   int yMin, int yMax,
                    const contour_point_vector_t &all_points) const
   {
     hb_codepoint_t new_gid = 0;
     if (!plan->new_gid_for_old_gid (gid, &new_gid))
       return;
+
+    if (type != EMPTY)
+    {
+      plan->bounds_width_map.set (new_gid, xMax - xMin);
+      plan->bounds_height_map.set (new_gid, yMax - yMin);
+    }
 
     unsigned len = all_points.length;
     float leftSideX = all_points[len - 4].x;
@@ -98,15 +100,18 @@ struct Glyph
     float topSideY = all_points[len - 2].y;
     float bottomSideY = all_points[len - 1].y;
 
-    int hori_aw = roundf (rightSideX - leftSideX);
+    signed hori_aw = roundf (rightSideX - leftSideX);
     if (hori_aw < 0) hori_aw = 0;
     int lsb = roundf (xMin - leftSideX);
-    plan->hmtx_map->set (new_gid, hb_pair (hori_aw, lsb));
+    plan->hmtx_map.set (new_gid, hb_pair ((unsigned) hori_aw, lsb));
+    //flag value should be computed using non-empty glyphs
+    if (type != EMPTY && lsb != xMin)
+      plan->head_maxp_info.allXMinIsLsb = false;
 
-    int vert_aw = roundf (topSideY - bottomSideY);
+    signed vert_aw = roundf (topSideY - bottomSideY);
     if (vert_aw < 0) vert_aw = 0;
     int tsb = roundf (topSideY - yMax);
-    plan->vmtx_map->set (new_gid, hb_pair (vert_aw, tsb));
+    plan->vmtx_map.set (new_gid, hb_pair ((unsigned) vert_aw, tsb));
   }
 
   bool compile_header_bytes (const hb_subset_plan_t *plan,
@@ -114,7 +119,7 @@ struct Glyph
                              hb_bytes_t &dest_bytes /* OUT */) const
   {
     GlyphHeader *glyph_header = nullptr;
-    if (type != EMPTY && all_points.length > 4)
+    if (!plan->pinned_at_default && type != EMPTY && all_points.length >= 4)
     {
       glyph_header = (GlyphHeader *) hb_calloc (1, GlyphHeader::static_size);
       if (unlikely (!glyph_header)) return false;
@@ -138,18 +143,33 @@ struct Glyph
       yMax = hb_max (yMax, y);
     }
 
-    update_mtx (plan, roundf (xMin), roundf (yMax), all_points);
+    update_mtx (plan, roundf (xMin), roundf (xMax), roundf (yMin), roundf (yMax), all_points);
+ 
+    int rounded_xMin = roundf (xMin);
+    int rounded_xMax = roundf (xMax);
+    int rounded_yMin = roundf (yMin);
+    int rounded_yMax = roundf (yMax);
 
-    /*for empty glyphs: all_points only include phantom points.
-     *just update metrics and then return */
+    if (type != EMPTY)
+    {
+      plan->head_maxp_info.xMin = hb_min (plan->head_maxp_info.xMin, rounded_xMin);
+      plan->head_maxp_info.yMin = hb_min (plan->head_maxp_info.yMin, rounded_yMin);
+      plan->head_maxp_info.xMax = hb_max (plan->head_maxp_info.xMax, rounded_xMax);
+      plan->head_maxp_info.yMax = hb_max (plan->head_maxp_info.yMax, rounded_yMax);
+    }
+
+    /* when pinned at default, no need to compile glyph header
+     * and for empty glyphs: all_points only include phantom points.
+     * just update metrics and then return */
     if (!glyph_header)
       return true;
 
     glyph_header->numberOfContours = header->numberOfContours;
-    glyph_header->xMin = roundf (xMin);
-    glyph_header->yMin = roundf (yMin);
-    glyph_header->xMax = roundf (xMax);
-    glyph_header->yMax = roundf (yMax);
+
+    glyph_header->xMin = rounded_xMin;
+    glyph_header->yMin = rounded_yMin;
+    glyph_header->xMax = rounded_xMax;
+    glyph_header->yMax = rounded_yMax;
 
     dest_bytes = hb_bytes_t ((const char *)glyph_header, GlyphHeader::static_size);
     return true;
@@ -162,34 +182,54 @@ struct Glyph
                                   hb_bytes_t &dest_end /* OUT */)
   {
     contour_point_vector_t all_points, deltas;
-    if (!get_points (font, glyf, all_points, &deltas, false, false))
+    unsigned composite_contours = 0;
+    head_maxp_info_t *head_maxp_info_p = &plan->head_maxp_info;
+    unsigned *composite_contours_p = &composite_contours;
+
+    // don't compute head/maxp values when glyph has no contours(type is EMPTY)
+    // also ignore .notdef glyph when --notdef-outline is not enabled
+    if (type == EMPTY ||
+        (gid == 0 && !(plan->flags & HB_SUBSET_FLAGS_NOTDEF_OUTLINE)))
+    {
+      head_maxp_info_p = nullptr;
+      composite_contours_p = nullptr;
+    }
+
+    if (!get_points (font, glyf, all_points, &deltas, head_maxp_info_p, composite_contours_p, false, false))
       return false;
 
     // .notdef, set type to empty so we only update metrics and don't compile bytes for
     // it
     if (gid == 0 &&
         !(plan->flags & HB_SUBSET_FLAGS_NOTDEF_OUTLINE))
+    {
       type = EMPTY;
-
-    switch (type) {
-    case COMPOSITE:
-      if (!CompositeGlyph (*header, bytes).compile_bytes_with_deltas (dest_start,
-                                                                      deltas,
-                                                                      dest_end))
-        return false;
-      break;
-    case SIMPLE:
-      if (!SimpleGlyph (*header, bytes).compile_bytes_with_deltas (all_points,
-                                                                   plan->flags & HB_SUBSET_FLAGS_NO_HINTING,
-                                                                   dest_end))
-        return false;
-      break;
-    default:
-      /* set empty bytes for empty glyph
-       * do not use source glyph's pointers */
       dest_start = hb_bytes_t ();
       dest_end = hb_bytes_t ();
-      break;
+    }
+
+    //dont compile bytes when pinned at default, just recalculate bounds
+    if (!plan->pinned_at_default) {
+      switch (type) {
+      case COMPOSITE:
+        if (!CompositeGlyph (*header, bytes).compile_bytes_with_deltas (dest_start,
+                                                                        deltas,
+                                                                        dest_end))
+          return false;
+        break;
+      case SIMPLE:
+        if (!SimpleGlyph (*header, bytes).compile_bytes_with_deltas (all_points,
+                                                                     plan->flags & HB_SUBSET_FLAGS_NO_HINTING,
+                                                                     dest_end))
+          return false;
+        break;
+      default:
+        /* set empty bytes for empty glyph
+         * do not use source glyph's pointers */
+        dest_start = hb_bytes_t ();
+        dest_end = hb_bytes_t ();
+        break;
+      }
     }
 
     if (!compile_header_bytes (plan, all_points, dest_start))
@@ -208,13 +248,25 @@ struct Glyph
   bool get_points (hb_font_t *font, const accelerator_t &glyf_accelerator,
 		   contour_point_vector_t &all_points /* OUT */,
 		   contour_point_vector_t *deltas = nullptr, /* OUT */
+		   head_maxp_info_t * head_maxp_info = nullptr, /* OUT */
+		   unsigned *composite_contours = nullptr, /* OUT */
 		   bool shift_points_hori = true,
 		   bool use_my_metrics = true,
 		   bool phantom_only = false,
 		   hb_array_t<int> coords = hb_array_t<int> (),
-		   unsigned int depth = 0) const
+		   unsigned int depth = 0,
+		   unsigned *edge_count = nullptr) const
   {
     if (unlikely (depth > HB_MAX_NESTING_LEVEL)) return false;
+    unsigned stack_edge_count = 0;
+    if (!edge_count) edge_count = &stack_edge_count;
+    if (unlikely (*edge_count > HB_GLYF_MAX_EDGE_COUNT)) return false;
+    (*edge_count)++;
+    
+    if (head_maxp_info)
+    {
+      head_maxp_info->maxComponentDepth = hb_max (head_maxp_info->maxComponentDepth, depth);
+    }
 
     if (!coords)
       coords = hb_array (font->coords, font->num_coords);
@@ -226,6 +278,10 @@ struct Glyph
 
     switch (type) {
     case SIMPLE:
+      if (depth == 0 && head_maxp_info)
+        head_maxp_info->maxContours = hb_max (head_maxp_info->maxContours, (unsigned) header->numberOfContours);
+      if (depth > 0 && composite_contours)
+        *composite_contours += (unsigned) header->numberOfContours;
       if (unlikely (!SimpleGlyph (*header, bytes).get_contour_points (points, phantom_only)))
 	return false;
       break;
@@ -301,6 +357,8 @@ struct Glyph
 
     switch (type) {
     case SIMPLE:
+      if (depth == 0 && head_maxp_info)
+        head_maxp_info->maxPoints = hb_max (head_maxp_info->maxPoints, points.length - 4);
       if (!inplace)
 	all_points.extend (points.as_array ());
       break;
@@ -311,17 +369,19 @@ struct Glyph
       for (auto &item : get_composite_iterator ())
       {
         comp_points.reset ();
-
 	if (unlikely (!glyf_accelerator.glyph_for_gid (item.get_gid ())
 				       .get_points (font,
 						    glyf_accelerator,
 						    comp_points,
 						    deltas,
+						    head_maxp_info,
+						    composite_contours,
 						    shift_points_hori,
 						    use_my_metrics,
 						    phantom_only,
 						    coords,
-						    depth + 1)))
+						    depth + 1,
+						    edge_count)))
 	  return false;
 
 	/* Copy phantom points from component if USE_MY_METRICS flag set */
@@ -357,6 +417,13 @@ struct Glyph
 	comp_index++;
       }
 
+      if (head_maxp_info && depth == 0)
+      {
+        if (composite_contours)
+          head_maxp_info->maxCompositeContours = hb_max (head_maxp_info->maxCompositeContours, *composite_contours);
+        head_maxp_info->maxCompositePoints = hb_max (head_maxp_info->maxCompositePoints, all_points.length);
+        head_maxp_info->maxComponentElements = hb_max (head_maxp_info->maxComponentElements, comp_index);
+      }
       all_points.extend (phantoms);
     } break;
 #ifndef HB_NO_VAR_COMPOSITES
@@ -370,7 +437,11 @@ struct Glyph
 
         comp_points.reset ();
 
-	coord_setter_t coord_setter (coords);
+	auto component_coords = coords;
+	if (item.is_reset_unspecified_axes ())
+	  component_coords = hb_array<int> ();
+
+	coord_setter_t coord_setter (component_coords);
 	item.set_variations (coord_setter, record_points);
 
 	if (unlikely (!glyf_accelerator.glyph_for_gid (item.get_gid ())
@@ -378,11 +449,14 @@ struct Glyph
 						    glyf_accelerator,
 						    comp_points,
 						    deltas,
+						    head_maxp_info,
+						    nullptr,
 						    shift_points_hori,
 						    use_my_metrics,
 						    phantom_only,
 						    coord_setter.get_coords (),
-						    depth + 1)))
+						    depth + 1,
+						    edge_count)))
 	  return false;
 
 	/* Apply component transformation */

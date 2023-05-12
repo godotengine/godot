@@ -7,7 +7,7 @@ using System;
 [Tool]
 public partial class _CLASS_ : _BASE_
 {
-    public override Godot.Object _PostImport(Node scene)
+    public override GodotObject _PostImport(Node scene)
     {
         // Modify the contents of the scene upon import.
         return scene; // Return the modified root node when you're done.

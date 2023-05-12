@@ -57,7 +57,6 @@ struct call_context_t
 
 /* call stack */
 const unsigned int kMaxCallLimit = 10;
-const unsigned int kMaxOps = 10000;
 struct call_stack_t : cff_stack_t<call_context_t, kMaxCallLimit> {};
 
 template <typename SUBRS>
@@ -882,7 +881,7 @@ struct cs_interpreter_t : interpreter_t<ENV>
   {
     SUPER::env.set_endchar (false);
 
-    unsigned max_ops = kMaxOps;
+    unsigned max_ops = HB_CFF_MAX_OPS;
     for (;;) {
       if (unlikely (!--max_ops))
       {

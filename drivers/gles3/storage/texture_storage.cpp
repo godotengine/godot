@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  texture_storage.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  texture_storage.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifdef GLES3_ENABLED
 
@@ -300,6 +300,7 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 	r_real_format = p_format;
 
 	bool need_decompress = false;
+	bool decompress_ra_to_rg = false;
 
 	switch (p_format) {
 		case Image::FORMAT_L8: {
@@ -565,6 +566,78 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				need_decompress = true;
 			}
 		} break;
+		case Image::FORMAT_ETC2_RA_AS_RG: {
+#ifndef WEB_ENABLED
+			if (config->etc2_supported) {
+				r_gl_internal_format = _EXT_COMPRESSED_RGBA8_ETC2_EAC;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+			} else
+#endif
+			{
+				need_decompress = true;
+			}
+			decompress_ra_to_rg = true;
+		} break;
+		case Image::FORMAT_DXT5_RA_AS_RG: {
+#ifndef WEB_ENABLED
+			if (config->s3tc_supported) {
+				r_gl_internal_format = _EXT_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+			} else
+#endif
+			{
+				need_decompress = true;
+			}
+			decompress_ra_to_rg = true;
+		} break;
+		case Image::FORMAT_ASTC_4x4: {
+			if (config->astc_supported) {
+				r_gl_internal_format = _EXT_COMPRESSED_RGBA_ASTC_4x4_KHR;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+
+			} else {
+				need_decompress = true;
+			}
+		} break;
+		case Image::FORMAT_ASTC_4x4_HDR: {
+			if (config->astc_hdr_supported) {
+				r_gl_internal_format = _EXT_COMPRESSED_RGBA_ASTC_4x4_KHR;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+
+			} else {
+				need_decompress = true;
+			}
+		} break;
+		case Image::FORMAT_ASTC_8x8: {
+			if (config->astc_supported) {
+				r_gl_internal_format = _EXT_COMPRESSED_RGBA_ASTC_8x8_KHR;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+
+			} else {
+				need_decompress = true;
+			}
+		} break;
+		case Image::FORMAT_ASTC_8x8_HDR: {
+			if (config->astc_hdr_supported) {
+				r_gl_internal_format = _EXT_COMPRESSED_RGBA_ASTC_8x8_KHR;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+
+			} else {
+				need_decompress = true;
+			}
+		} break;
 		default: {
 			ERR_FAIL_V_MSG(Ref<Image>(), "Image Format: " + itos(p_format) + " is not supported by the OpenGL3 Renderer");
 		}
@@ -575,7 +648,18 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 			image = image->duplicate();
 			image->decompress();
 			ERR_FAIL_COND_V(image->is_compressed(), image);
+			if (decompress_ra_to_rg) {
+				image->convert_ra_rgba8_to_rg();
+				image->convert(Image::FORMAT_RG8);
+			}
 			switch (image->get_format()) {
+				case Image::FORMAT_RG8: {
+					r_gl_format = GL_RG;
+					r_gl_internal_format = GL_RG8;
+					r_gl_type = GL_UNSIGNED_BYTE;
+					r_real_format = Image::FORMAT_RG8;
+					r_compressed = false;
+				} break;
 				case Image::FORMAT_RGB8: {
 					r_gl_format = GL_RGB;
 					r_gl_internal_format = GL_RGB;
@@ -597,7 +681,6 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 					r_gl_type = GL_UNSIGNED_BYTE;
 					r_real_format = Image::FORMAT_RGBA8;
 					r_compressed = false;
-
 				} break;
 			}
 		}
@@ -723,6 +806,7 @@ void TextureStorage::texture_2d_update(RID p_texture, const Ref<Image> &p_image,
 	texture_set_data(p_texture, p_image, p_layer);
 #ifdef TOOLS_ENABLED
 	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_COND(!tex);
 
 	tex->image_cache_2d.unref();
 #endif
@@ -748,6 +832,8 @@ void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {
 	tex->is_render_target = false;
 	tex->is_proxy = true;
 	tex->proxies.clear();
+	tex->canvas_texture = nullptr;
+	tex->tex_id = 0;
 	proxy_to->proxies.push_back(p_texture);
 }
 
@@ -1050,8 +1136,15 @@ Size2 TextureStorage::texture_size_with_proxy(RID p_texture) {
 	}
 }
 
-RID TextureStorage::texture_get_rd_texture_rid(RID p_texture, bool p_srgb) const {
+RID TextureStorage::texture_get_rd_texture(RID p_texture, bool p_srgb) const {
 	return RID();
+}
+
+uint64_t TextureStorage::texture_get_native_handle(RID p_texture, bool p_srgb) const {
+	const Texture *texture = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_COND_V(!texture, 0);
+
+	return texture->tex_id;
 }
 
 void TextureStorage::texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer) {
@@ -1104,15 +1197,14 @@ void TextureStorage::texture_set_data(RID p_texture, const Ref<Image> &p_image, 
 	texture->gl_set_filter(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
 	texture->gl_set_repeat(RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
 
-	//set swizle for older format compatibility
-#ifdef GLES_OVER_GL
+#ifndef WEB_ENABLED
 	switch (texture->format) {
+#ifdef GLES_OVER_GL
 		case Image::FORMAT_L8: {
 			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
 			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_RED);
 			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_RED);
 			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_ONE);
-
 		} break;
 		case Image::FORMAT_LA8: {
 			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
@@ -1120,15 +1212,29 @@ void TextureStorage::texture_set_data(RID p_texture, const Ref<Image> &p_image, 
 			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_RED);
 			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_GREEN);
 		} break;
+#endif // GLES3_OVER_GL
+
+		case Image::FORMAT_ETC2_RA_AS_RG:
+		case Image::FORMAT_DXT5_RA_AS_RG: {
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
+			if (texture->format == real_format) {
+				// Swizzle RA from compressed texture into RG
+				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_ALPHA);
+			} else {
+				// Converted textures are already in RG, leave as-is
+				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
+			}
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_ZERO);
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_ONE);
+		} break;
 		default: {
 			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
 			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
 			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_BLUE);
 			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_ALPHA);
-
 		} break;
 	}
-#endif
+#endif // WEB_ENABLED
 
 	int mipmaps = img->has_mipmaps() ? img->get_mipmap_count() + 1 : 1;
 
@@ -1451,7 +1557,7 @@ RID TextureStorage::decal_allocate() {
 void TextureStorage::decal_initialize(RID p_rid) {
 }
 
-void TextureStorage::decal_set_extents(RID p_decal, const Vector3 &p_extents) {
+void TextureStorage::decal_set_size(RID p_decal, const Vector3 &p_size) {
 }
 
 void TextureStorage::decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) {
@@ -1480,18 +1586,6 @@ void TextureStorage::decal_set_normal_fade(RID p_decal, float p_fade) {
 
 AABB TextureStorage::decal_get_aabb(RID p_decal) const {
 	return AABB();
-}
-
-/* DECAL INSTANCE API */
-
-RID TextureStorage::decal_instance_create(RID p_decal) {
-	return RID();
-}
-
-void TextureStorage::decal_instance_free(RID p_decal_instance) {
-}
-
-void TextureStorage::decal_instance_set_transform(RID p_decal, const Transform3D &p_transform) {
 }
 
 /* RENDER TARGET API */
@@ -1556,9 +1650,13 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 			glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		}
+#ifndef IOS_ENABLED
 		if (use_multiview) {
 			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rt->color, 0, 0, rt->view_count);
 		} else {
+#else
+		{
+#endif
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->color, 0);
 		}
 
@@ -1583,9 +1681,13 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 			glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		}
+#ifndef IOS_ENABLED
 		if (use_multiview) {
 			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, rt->depth, 0, 0, rt->view_count);
 		} else {
+#else
+		{
+#endif
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->depth, 0);
 		}
 
@@ -1687,7 +1789,64 @@ void TextureStorage::_create_render_target_backbuffer(RenderTarget *rt) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
 }
+void GLES3::TextureStorage::copy_scene_to_backbuffer(RenderTarget *rt, const bool uses_screen_texture, const bool uses_depth_texture) {
+	if (rt->backbuffer != 0 && rt->backbuffer_depth != 0) {
+		return;
+	}
 
+	Config *config = Config::get_singleton();
+	bool use_multiview = rt->view_count > 1 && config->multiview_supported;
+	GLenum texture_target = use_multiview ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D;
+	if (rt->backbuffer_fbo == 0) {
+		glGenFramebuffers(1, &rt->backbuffer_fbo);
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, rt->backbuffer_fbo);
+	if (rt->backbuffer == 0 && uses_screen_texture) {
+		glGenTextures(1, &rt->backbuffer);
+		glBindTexture(texture_target, rt->backbuffer);
+		if (use_multiview) {
+			glTexImage3D(texture_target, 0, rt->color_internal_format, rt->size.x, rt->size.y, rt->view_count, 0, rt->color_format, rt->color_type, nullptr);
+		} else {
+			glTexImage2D(texture_target, 0, rt->color_internal_format, rt->size.x, rt->size.y, 0, rt->color_format, rt->color_type, nullptr);
+		}
+
+		glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+#ifndef IOS_ENABLED
+		if (use_multiview) {
+			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rt->backbuffer, 0, 0, rt->view_count);
+		} else {
+#else
+		{
+#endif
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->backbuffer, 0);
+		}
+	}
+	if (rt->backbuffer_depth == 0 && uses_depth_texture) {
+		glGenTextures(1, &rt->backbuffer_depth);
+		glBindTexture(texture_target, rt->backbuffer_depth);
+		if (use_multiview) {
+			glTexImage3D(texture_target, 0, GL_DEPTH_COMPONENT24, rt->size.x, rt->size.y, rt->view_count, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+		} else {
+			glTexImage2D(texture_target, 0, GL_DEPTH_COMPONENT24, rt->size.x, rt->size.y, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+		}
+		glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+#ifndef IOS_ENABLED
+		if (use_multiview) {
+			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, rt->backbuffer_depth, 0, 0, rt->view_count);
+		} else {
+#else
+		{
+#endif
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->backbuffer_depth, 0);
+		}
+	}
+}
 void TextureStorage::_clear_render_target(RenderTarget *rt) {
 	// there is nothing to clear when DIRECT_TO_SCREEN is used
 	if (rt->direct_to_screen) {
@@ -1730,6 +1889,10 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 		rt->overridden.color = RID();
 	} else if (rt->color) {
 		glDeleteTextures(1, &rt->color);
+		if (rt->texture.is_valid()) {
+			Texture *tex = get_texture(rt->texture);
+			tex->tex_id = 0;
+		}
 	}
 	rt->color = 0;
 
@@ -1748,6 +1911,10 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 		glDeleteTextures(1, &rt->backbuffer);
 		rt->backbuffer = 0;
 		rt->backbuffer_fbo = 0;
+	}
+	if (rt->backbuffer_depth != 0) {
+		glDeleteTextures(1, &rt->backbuffer_depth);
+		rt->backbuffer_depth = 0;
 	}
 	_render_target_clear_sdf(rt);
 }

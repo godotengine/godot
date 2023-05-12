@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PackedScene" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PackedScene" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		An abstraction of a serialized scene.
 	</brief_description>
@@ -104,7 +104,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="_bundled" type="Dictionary" setter="_set_bundled_scene" getter="_get_bundled_scene" default="{ &quot;conn_count&quot;: 0, &quot;conns&quot;: PackedInt32Array(), &quot;editable_instances&quot;: [], &quot;names&quot;: PackedStringArray(), &quot;node_count&quot;: 0, &quot;node_paths&quot;: [], &quot;nodes&quot;: PackedInt32Array(), &quot;variants&quot;: [], &quot;version&quot;: 2 }">
+		<member name="_bundled" type="Dictionary" setter="_set_bundled_scene" getter="_get_bundled_scene" default="{ &quot;conn_count&quot;: 0, &quot;conns&quot;: PackedInt32Array(), &quot;editable_instances&quot;: [], &quot;names&quot;: PackedStringArray(), &quot;node_count&quot;: 0, &quot;node_paths&quot;: [], &quot;nodes&quot;: PackedInt32Array(), &quot;variants&quot;: [], &quot;version&quot;: 3 }">
 			A dictionary representation of the scene contents.
 			Available keys include "rnames" and "variants" for resources, "node_count", "nodes", "node_paths" for nodes, "editable_instances" for base scene children overrides, "conn_count" and "conns" for signal connections, and "version" for the format style of the PackedScene.
 		</member>

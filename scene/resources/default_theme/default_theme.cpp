@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  default_theme.cpp                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  default_theme.cpp                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "default_theme.h"
 
@@ -53,7 +53,7 @@ static const int default_corner_radius = 3;
 static Ref<StyleBoxFlat> make_flat_stylebox(Color p_color, float p_margin_left = default_margin, float p_margin_top = default_margin, float p_margin_right = default_margin, float p_margin_bottom = default_margin, int p_corner_radius = default_corner_radius, bool p_draw_center = true, int p_border_width = 0) {
 	Ref<StyleBoxFlat> style(memnew(StyleBoxFlat));
 	style->set_bg_color(p_color);
-	style->set_default_margin_individual(p_margin_left * scale, p_margin_top * scale, p_margin_right * scale, p_margin_bottom * scale);
+	style->set_content_margin_individual(p_margin_left * scale, p_margin_top * scale, p_margin_right * scale, p_margin_bottom * scale);
 
 	style->set_corner_radius_all(p_corner_radius);
 	style->set_anti_aliased(true);
@@ -67,10 +67,10 @@ static Ref<StyleBoxFlat> make_flat_stylebox(Color p_color, float p_margin_left =
 }
 
 static Ref<StyleBoxFlat> sb_expand(Ref<StyleBoxFlat> p_sbox, float p_left, float p_top, float p_right, float p_bottom) {
-	p_sbox->set_expand_margin_size(SIDE_LEFT, p_left * scale);
-	p_sbox->set_expand_margin_size(SIDE_TOP, p_top * scale);
-	p_sbox->set_expand_margin_size(SIDE_RIGHT, p_right * scale);
-	p_sbox->set_expand_margin_size(SIDE_BOTTOM, p_bottom * scale);
+	p_sbox->set_expand_margin(SIDE_LEFT, p_left * scale);
+	p_sbox->set_expand_margin(SIDE_TOP, p_top * scale);
+	p_sbox->set_expand_margin(SIDE_RIGHT, p_right * scale);
+	p_sbox->set_expand_margin(SIDE_BOTTOM, p_bottom * scale);
 	return p_sbox;
 }
 
@@ -86,6 +86,10 @@ static Ref<ImageTexture> generate_icon(int p_index) {
 	ImageLoaderSVG img_loader;
 	Error err = img_loader.create_image_from_string(img, default_theme_icons_sources[p_index], scale, upsample, HashMap<Color, Color>());
 	ERR_FAIL_COND_V_MSG(err != OK, Ref<ImageTexture>(), "Failed generating icon, unsupported or invalid SVG data in default theme.");
+#else
+	// If the SVG module is disabled, we can't really display the UI well, but at least we won't crash.
+	// 16 pixels is used as it's the most common base size for Godot icons.
+	img = Image::create_empty(16 * scale, 16 * scale, false, Image::FORMAT_RGBA8);
 #endif
 
 	return ImageTexture::create_from_image(img);
@@ -93,7 +97,7 @@ static Ref<ImageTexture> generate_icon(int p_index) {
 
 static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {
 	Ref<StyleBox> style(memnew(StyleBoxEmpty));
-	style->set_default_margin_individual(p_margin_left * scale, p_margin_top * scale, p_margin_right * scale, p_margin_bottom * scale);
+	style->set_content_margin_individual(p_margin_left * scale, p_margin_top * scale, p_margin_right * scale, p_margin_bottom * scale);
 	return style;
 }
 
@@ -148,7 +152,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	const Ref<StyleBoxFlat> button_disabled = make_flat_stylebox(style_disabled_color);
 	Ref<StyleBoxFlat> focus = make_flat_stylebox(style_focus_color, default_margin, default_margin, default_margin, default_margin, default_corner_radius, false, 2);
 	// Make the focus outline appear to be flush with the buttons it's focusing.
-	focus->set_expand_margin_size_all(2 * scale);
+	focus->set_expand_margin_all(2 * scale);
 
 	theme->set_stylebox("normal", "Button", button_normal);
 	theme->set_stylebox("hover", "Button", button_hover);
@@ -158,7 +162,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_font("font", "Button", Ref<Font>());
 	theme->set_font_size("font_size", "Button", -1);
-	theme->set_constant("outline_size", "Button", 0 * scale);
+	theme->set_constant("outline_size", "Button", 0);
 
 	theme->set_color("font_color", "Button", control_font_color);
 	theme->set_color("font_pressed_color", "Button", control_font_pressed_color);
@@ -176,6 +180,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("icon_disabled_color", "Button", Color(1, 1, 1, 0.4));
 
 	theme->set_constant("h_separation", "Button", 2 * scale);
+	theme->set_constant("icon_max_width", "Button", 0);
 
 	// MenuBar
 	theme->set_stylebox("normal", "MenuBar", button_normal);
@@ -186,7 +191,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_font("font", "MenuBar", Ref<Font>());
 	theme->set_font_size("font_size", "MenuBar", -1);
-	theme->set_constant("outline_size", "MenuBar", 0 * scale);
+	theme->set_constant("outline_size", "MenuBar", 0);
 
 	theme->set_color("font_color", "MenuBar", control_font_color);
 	theme->set_color("font_pressed_color", "MenuBar", control_font_pressed_color);
@@ -279,9 +284,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// CheckBox
 
 	Ref<StyleBox> cbx_empty = memnew(StyleBoxEmpty);
-	cbx_empty->set_default_margin_all(4 * scale);
+	cbx_empty->set_content_margin_all(4 * scale);
 	Ref<StyleBox> cbx_focus = focus;
-	cbx_focus->set_default_margin_all(4 * scale);
+	cbx_focus->set_content_margin_all(4 * scale);
 
 	theme->set_stylebox("normal", "CheckBox", cbx_empty);
 	theme->set_stylebox("pressed", "CheckBox", cbx_empty);
@@ -311,13 +316,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_outline_color", "CheckBox", Color(1, 1, 1));
 
 	theme->set_constant("h_separation", "CheckBox", 4 * scale);
-	theme->set_constant("check_v_offset", "CheckBox", 0 * scale);
+	theme->set_constant("check_v_offset", "CheckBox", 0);
 	theme->set_constant("outline_size", "CheckBox", 0);
 
 	// CheckButton
 
 	Ref<StyleBox> cb_empty = memnew(StyleBoxEmpty);
-	cb_empty->set_default_margin_individual(6 * scale, 4 * scale, 6 * scale, 4 * scale);
+	cb_empty->set_content_margin_individual(6 * scale, 4 * scale, 6 * scale, 4 * scale);
 
 	theme->set_stylebox("normal", "CheckButton", cb_empty);
 	theme->set_stylebox("pressed", "CheckButton", cb_empty);
@@ -348,7 +353,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_outline_color", "CheckButton", Color(1, 1, 1));
 
 	theme->set_constant("h_separation", "CheckButton", 4 * scale);
-	theme->set_constant("check_v_offset", "CheckButton", 0 * scale);
+	theme->set_constant("check_v_offset", "CheckButton", 0);
 	theme->set_constant("outline_size", "CheckButton", 0);
 
 	// Label
@@ -560,6 +565,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("grabber_disabled", "HSlider", icons["slider_grabber_disabled"]);
 	theme->set_icon("tick", "HSlider", icons["hslider_tick"]);
 
+	theme->set_constant("center_grabber", "HSlider", 0);
 	theme->set_constant("grabber_offset", "HSlider", 0);
 
 	// VSlider
@@ -573,6 +579,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("grabber_disabled", "VSlider", icons["slider_grabber_disabled"]);
 	theme->set_icon("tick", "VSlider", icons["vslider_tick"]);
 
+	theme->set_constant("center_grabber", "VSlider", 0);
 	theme->set_constant("grabber_offset", "VSlider", 0);
 
 	// SpinBox
@@ -634,10 +641,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBoxLine> separator_horizontal = memnew(StyleBoxLine);
 	separator_horizontal->set_thickness(Math::round(scale));
 	separator_horizontal->set_color(style_separator_color);
-	separator_horizontal->set_default_margin_individual(default_margin, 0, default_margin, 0);
+	separator_horizontal->set_content_margin_individual(default_margin, 0, default_margin, 0);
 	Ref<StyleBoxLine> separator_vertical = separator_horizontal->duplicate();
 	separator_vertical->set_vertical(true);
-	separator_vertical->set_default_margin_individual(0, default_margin, 0, default_margin);
+	separator_vertical->set_content_margin_individual(0, default_margin, 0, default_margin);
 
 	// Always display a border for PopupMenus so they can be distinguished from their background.
 	Ref<StyleBoxFlat> style_popup_panel = make_flat_stylebox(style_popup_color);
@@ -684,6 +691,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("separator_outline_size", "PopupMenu", 0);
 	theme->set_constant("item_start_padding", "PopupMenu", 2 * scale);
 	theme->set_constant("item_end_padding", "PopupMenu", 2 * scale);
+	theme->set_constant("icon_max_width", "PopupMenu", 0);
 
 	// GraphNode
 	Ref<StyleBoxFlat> graphnode_normal = make_flat_stylebox(style_normal_color, 18, 42, 18, 12);
@@ -720,7 +728,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("title_offset", "GraphNode", 26 * scale);
 	theme->set_constant("title_h_offset", "GraphNode", 0);
 	theme->set_constant("close_offset", "GraphNode", 22 * scale);
-	theme->set_constant("close_h_offset", "GraphNode", 22 * scale);
+	theme->set_constant("close_h_offset", "GraphNode", 12 * scale);
 	theme->set_constant("port_offset", "GraphNode", 0);
 
 	// Tree
@@ -776,6 +784,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("scroll_border", "Tree", 4);
 	theme->set_constant("scroll_speed", "Tree", 12);
 	theme->set_constant("outline_size", "Tree", 0);
+	theme->set_constant("icon_max_width", "Tree", 0);
+	theme->set_constant("scrollbar_margin_left", "Tree", -1);
+	theme->set_constant("scrollbar_margin_top", "Tree", -1);
+	theme->set_constant("scrollbar_margin_right", "Tree", -1);
+	theme->set_constant("scrollbar_margin_bottom", "Tree", -1);
+	theme->set_constant("scrollbar_h_separation", "Tree", 4 * scale);
+	theme->set_constant("scrollbar_v_separation", "Tree", 4 * scale);
 
 	// ItemList
 
@@ -790,9 +805,11 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("font_size", "ItemList", -1);
 
 	theme->set_color("font_color", "ItemList", control_font_lower_color);
+	theme->set_color("font_hovered_color", "ItemList", control_font_hover_color);
 	theme->set_color("font_selected_color", "ItemList", control_font_pressed_color);
 	theme->set_color("font_outline_color", "ItemList", Color(1, 1, 1));
 	theme->set_color("guide_color", "ItemList", Color(0.7, 0.7, 0.7, 0.25));
+	theme->set_stylebox("hovered", "ItemList", make_flat_stylebox(Color(1, 1, 1, 0.07)));
 	theme->set_stylebox("selected", "ItemList", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("selected_focus", "ItemList", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("cursor", "ItemList", focus);
@@ -812,8 +829,11 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	style_tab_unselected->set_border_color(style_popup_border_color);
 	Ref<StyleBoxFlat> style_tab_disabled = style_tab_unselected->duplicate();
 	style_tab_disabled->set_bg_color(style_disabled_color);
+	Ref<StyleBoxFlat> style_tab_hovered = style_tab_unselected->duplicate();
+	style_tab_hovered->set_bg_color(Color(0.1, 0.1, 0.1, 0.3));
 
 	theme->set_stylebox("tab_selected", "TabContainer", style_tab_selected);
+	theme->set_stylebox("tab_hovered", "TabContainer", style_tab_hovered);
 	theme->set_stylebox("tab_unselected", "TabContainer", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "TabContainer", style_tab_disabled);
 	theme->set_stylebox("panel", "TabContainer", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
@@ -831,6 +851,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("font_size", "TabContainer", -1);
 
 	theme->set_color("font_selected_color", "TabContainer", control_font_hover_color);
+	theme->set_color("font_hovered_color", "TabContainer", control_font_hover_color);
 	theme->set_color("font_unselected_color", "TabContainer", control_font_low_color);
 	theme->set_color("font_disabled_color", "TabContainer", control_font_disabled_color);
 	theme->set_color("font_outline_color", "TabContainer", Color(1, 1, 1));
@@ -838,11 +859,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("side_margin", "TabContainer", 8 * scale);
 	theme->set_constant("icon_separation", "TabContainer", 4 * scale);
+	theme->set_constant("icon_max_width", "TabContainer", 0);
 	theme->set_constant("outline_size", "TabContainer", 0);
 
 	// TabBar
 
 	theme->set_stylebox("tab_selected", "TabBar", style_tab_selected);
+	theme->set_stylebox("tab_hovered", "TabBar", style_tab_hovered);
 	theme->set_stylebox("tab_unselected", "TabBar", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "TabBar", style_tab_disabled);
 	theme->set_stylebox("button_pressed", "TabBar", button_pressed);
@@ -859,12 +882,14 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("font_size", "TabBar", -1);
 
 	theme->set_color("font_selected_color", "TabBar", control_font_hover_color);
+	theme->set_color("font_hovered_color", "TabBar", control_font_hover_color);
 	theme->set_color("font_unselected_color", "TabBar", control_font_low_color);
 	theme->set_color("font_disabled_color", "TabBar", control_font_disabled_color);
 	theme->set_color("font_outline_color", "TabBar", Color(1, 1, 1));
 	theme->set_color("drop_mark_color", "TabBar", Color(1, 1, 1));
 
 	theme->set_constant("h_separation", "TabBar", 4 * scale);
+	theme->set_constant("icon_max_width", "TabBar", 0);
 	theme->set_constant("outline_size", "TabBar", 0);
 
 	// Separators
@@ -886,6 +911,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("sv_height", "ColorPicker", 256 * scale);
 	theme->set_constant("h_width", "ColorPicker", 30 * scale);
 	theme->set_constant("label_width", "ColorPicker", 10 * scale);
+	theme->set_constant("center_slider_grabbers", "ColorPicker", 1);
 
 	theme->set_icon("folded_arrow", "ColorPicker", icons["arrow_right"]);
 	theme->set_icon("expanded_arrow", "ColorPicker", icons["arrow_down"]);
@@ -1030,7 +1056,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("shadow_offset_y", "RichTextLabel", 1 * scale);
 	theme->set_constant("shadow_outline_size", "RichTextLabel", 1 * scale);
 
-	theme->set_constant("line_separation", "RichTextLabel", 0 * scale);
+	theme->set_constant("line_separation", "RichTextLabel", 0);
 	theme->set_constant("table_h_separation", "RichTextLabel", 3 * scale);
 	theme->set_constant("table_v_separation", "RichTextLabel", 3 * scale);
 
@@ -1053,10 +1079,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("separation", "BoxContainer", 4 * scale);
 	theme->set_constant("separation", "HBoxContainer", 4 * scale);
 	theme->set_constant("separation", "VBoxContainer", 4 * scale);
-	theme->set_constant("margin_left", "MarginContainer", 0 * scale);
-	theme->set_constant("margin_top", "MarginContainer", 0 * scale);
-	theme->set_constant("margin_right", "MarginContainer", 0 * scale);
-	theme->set_constant("margin_bottom", "MarginContainer", 0 * scale);
+	theme->set_constant("margin_left", "MarginContainer", 0);
+	theme->set_constant("margin_top", "MarginContainer", 0);
+	theme->set_constant("margin_right", "MarginContainer", 0);
+	theme->set_constant("margin_bottom", "MarginContainer", 0);
 	theme->set_constant("h_separation", "GridContainer", 4 * scale);
 	theme->set_constant("v_separation", "GridContainer", 4 * scale);
 	theme->set_constant("separation", "SplitContainer", 12 * scale);
@@ -1065,9 +1091,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("minimum_grab_thickness", "SplitContainer", 6 * scale);
 	theme->set_constant("minimum_grab_thickness", "HSplitContainer", 6 * scale);
 	theme->set_constant("minimum_grab_thickness", "VSplitContainer", 6 * scale);
-	theme->set_constant("autohide", "SplitContainer", 1 * scale);
-	theme->set_constant("autohide", "HSplitContainer", 1 * scale);
-	theme->set_constant("autohide", "VSplitContainer", 1 * scale);
+	theme->set_constant("autohide", "SplitContainer", 1);
+	theme->set_constant("autohide", "HSplitContainer", 1);
+	theme->set_constant("autohide", "VSplitContainer", 1);
 	theme->set_constant("h_separation", "FlowContainer", 4 * scale);
 	theme->set_constant("v_separation", "FlowContainer", 4 * scale);
 	theme->set_constant("h_separation", "HFlowContainer", 4 * scale);

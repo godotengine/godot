@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  xr_nodes.cpp                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  xr_nodes.cpp                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "xr_nodes.h"
 
@@ -432,15 +432,16 @@ PackedStringArray XRNode3D::get_configuration_warnings() const {
 void XRController3D::_bind_methods() {
 	// passthroughs to information about our related joystick
 	ClassDB::bind_method(D_METHOD("is_button_pressed", "name"), &XRController3D::is_button_pressed);
-	ClassDB::bind_method(D_METHOD("get_value", "name"), &XRController3D::get_value);
-	ClassDB::bind_method(D_METHOD("get_axis", "name"), &XRController3D::get_axis);
+	ClassDB::bind_method(D_METHOD("get_input", "name"), &XRController3D::get_input);
+	ClassDB::bind_method(D_METHOD("get_float", "name"), &XRController3D::get_float);
+	ClassDB::bind_method(D_METHOD("get_vector2", "name"), &XRController3D::get_vector2);
 
 	ClassDB::bind_method(D_METHOD("get_tracker_hand"), &XRController3D::get_tracker_hand);
 
 	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(Variant::STRING, "name")));
 	ADD_SIGNAL(MethodInfo("button_released", PropertyInfo(Variant::STRING, "name")));
-	ADD_SIGNAL(MethodInfo("input_value_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::FLOAT, "value")));
-	ADD_SIGNAL(MethodInfo("input_axis_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::VECTOR2, "value")));
+	ADD_SIGNAL(MethodInfo("input_float_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::FLOAT, "value")));
+	ADD_SIGNAL(MethodInfo("input_vector2_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::VECTOR2, "value")));
 };
 
 void XRController3D::_bind_tracker() {
@@ -449,8 +450,8 @@ void XRController3D::_bind_tracker() {
 		// bind to input signals
 		tracker->connect("button_pressed", callable_mp(this, &XRController3D::_button_pressed));
 		tracker->connect("button_released", callable_mp(this, &XRController3D::_button_released));
-		tracker->connect("input_value_changed", callable_mp(this, &XRController3D::_input_value_changed));
-		tracker->connect("input_axis_changed", callable_mp(this, &XRController3D::_input_axis_changed));
+		tracker->connect("input_float_changed", callable_mp(this, &XRController3D::_input_float_changed));
+		tracker->connect("input_vector2_changed", callable_mp(this, &XRController3D::_input_vector2_changed));
 	}
 }
 
@@ -459,8 +460,8 @@ void XRController3D::_unbind_tracker() {
 		// unbind input signals
 		tracker->disconnect("button_pressed", callable_mp(this, &XRController3D::_button_pressed));
 		tracker->disconnect("button_released", callable_mp(this, &XRController3D::_button_released));
-		tracker->disconnect("input_value_changed", callable_mp(this, &XRController3D::_input_value_changed));
-		tracker->disconnect("input_axis_changed", callable_mp(this, &XRController3D::_input_axis_changed));
+		tracker->disconnect("input_float_changed", callable_mp(this, &XRController3D::_input_float_changed));
+		tracker->disconnect("input_vector2_changed", callable_mp(this, &XRController3D::_input_vector2_changed));
 	}
 
 	XRNode3D::_unbind_tracker();
@@ -476,14 +477,14 @@ void XRController3D::_button_released(const String &p_name) {
 	emit_signal(SNAME("button_released"), p_name);
 }
 
-void XRController3D::_input_value_changed(const String &p_name, float p_value) {
+void XRController3D::_input_float_changed(const String &p_name, float p_value) {
 	// just pass it on...
-	emit_signal(SNAME("input_value_changed"), p_name, p_value);
+	emit_signal(SNAME("input_float_changed"), p_name, p_value);
 }
 
-void XRController3D::_input_axis_changed(const String &p_name, Vector2 p_value) {
+void XRController3D::_input_vector2_changed(const String &p_name, Vector2 p_value) {
 	// just pass it on...
-	emit_signal(SNAME("input_axis_changed"), p_name, p_value);
+	emit_signal(SNAME("input_vector2_changed"), p_name, p_value);
 }
 
 bool XRController3D::is_button_pressed(const StringName &p_name) const {
@@ -496,7 +497,15 @@ bool XRController3D::is_button_pressed(const StringName &p_name) const {
 	}
 }
 
-float XRController3D::get_value(const StringName &p_name) const {
+Variant XRController3D::get_input(const StringName &p_name) const {
+	if (tracker.is_valid()) {
+		return tracker->get_input(p_name);
+	} else {
+		return Variant();
+	}
+}
+
+float XRController3D::get_float(const StringName &p_name) const {
 	if (tracker.is_valid()) {
 		// Inputs should already be of the correct type, our XR runtime handles conversions between raw input and the desired type, but just in case we convert
 		Variant input = tracker->get_input(p_name);
@@ -517,7 +526,7 @@ float XRController3D::get_value(const StringName &p_name) const {
 	}
 }
 
-Vector2 XRController3D::get_axis(const StringName &p_name) const {
+Vector2 XRController3D::get_vector2(const StringName &p_name) const {
 	if (tracker.is_valid()) {
 		// Inputs should already be of the correct type, our XR runtime handles conversions between raw input and the desired type, but just in case we convert
 		Variant input = tracker->get_input(p_name);

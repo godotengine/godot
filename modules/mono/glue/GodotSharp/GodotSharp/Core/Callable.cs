@@ -28,7 +28,7 @@ namespace Godot
     /// </example>
     public readonly partial struct Callable
     {
-        private readonly Object _target;
+        private readonly GodotObject _target;
         private readonly StringName _method;
         private readonly Delegate _delegate;
         private readonly unsafe delegate* managed<object, NativeVariantPtrArgs, out godot_variant, void> _trampoline;
@@ -36,7 +36,7 @@ namespace Godot
         /// <summary>
         /// Object that contains the method.
         /// </summary>
-        public Object Target => _target;
+        public GodotObject Target => _target;
 
         /// <summary>
         /// Name of the method that will be called.
@@ -60,7 +60,7 @@ namespace Godot
         /// </summary>
         /// <param name="target">Object that contains the method.</param>
         /// <param name="method">Name of the method that will be called.</param>
-        public unsafe Callable(Object target, StringName method)
+        public unsafe Callable(GodotObject target, StringName method)
         {
             _target = target;
             _method = method;
@@ -71,7 +71,7 @@ namespace Godot
         private unsafe Callable(Delegate @delegate,
             delegate* managed<object, NativeVariantPtrArgs, out godot_variant, void> trampoline)
         {
-            _target = @delegate?.Target as Object;
+            _target = @delegate?.Target as GodotObject;
             _method = null;
             _delegate = @delegate;
             _trampoline = trampoline;

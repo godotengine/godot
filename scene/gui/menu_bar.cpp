@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  menu_bar.cpp                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  menu_bar.cpp                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "menu_bar.h"
 
@@ -214,10 +214,10 @@ void MenuBar::_update_submenu(const String &p_menu_name, PopupMenu *p_child) {
 			PopupMenu *pm = Object::cast_to<PopupMenu>(n);
 			ERR_FAIL_COND_MSG(!pm, "Item subnode is not a PopupMenu: " + p_child->get_item_submenu(i) + ".");
 
-			DisplayServer::get_singleton()->global_menu_add_submenu_item(p_menu_name, p_child->get_item_text(i), p_menu_name + "/" + itos(i));
+			DisplayServer::get_singleton()->global_menu_add_submenu_item(p_menu_name, atr(p_child->get_item_text(i)), p_menu_name + "/" + itos(i));
 			_update_submenu(p_menu_name + "/" + itos(i), pm);
 		} else {
-			int index = DisplayServer::get_singleton()->global_menu_add_item(p_menu_name, p_child->get_item_text(i), callable_mp(p_child, &PopupMenu::activate_item), Callable(), i);
+			int index = DisplayServer::get_singleton()->global_menu_add_item(p_menu_name, atr(p_child->get_item_text(i)), callable_mp(p_child, &PopupMenu::activate_item), Callable(), i);
 
 			if (p_child->is_item_checkable(i)) {
 				DisplayServer::get_singleton()->global_menu_set_item_checkable(p_menu_name, index, true);
@@ -249,9 +249,11 @@ void MenuBar::_update_submenu(const String &p_menu_name, PopupMenu *p_child) {
 }
 
 bool MenuBar::is_native_menu() const {
-	if (Engine::get_singleton()->is_editor_hint() && is_inside_tree() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this)) {
+#ifdef TOOLS_ENABLED
+	if (is_part_of_edited_scene()) {
 		return false;
 	}
+#endif
 
 	return (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU) && is_native);
 }
@@ -290,7 +292,7 @@ void MenuBar::_update_menu() {
 			if (menu_cache[i].hidden) {
 				continue;
 			}
-			String menu_name = String(popups[i]->get_meta("_menu_name", popups[i]->get_name()));
+			String menu_name = atr(String(popups[i]->get_meta("_menu_name", popups[i]->get_name())));
 
 			index = DisplayServer::get_singleton()->global_menu_add_submenu_item("_main", menu_name, root_name + "/" + itos(i), index);
 			if (menu_cache[i].disabled) {
@@ -525,7 +527,7 @@ void MenuBar::shape(Menu &p_menu) {
 	} else {
 		p_menu.text_buf->set_direction((TextServer::Direction)text_direction);
 	}
-	p_menu.text_buf->add_string(p_menu.name, theme_cache.font, theme_cache.font_size, language);
+	p_menu.text_buf->add_string(atr(p_menu.name), theme_cache.font, theme_cache.font_size, language);
 }
 
 void MenuBar::_refresh_menu_names() {
@@ -666,7 +668,7 @@ void MenuBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_menu_popup", "menu"), &MenuBar::get_menu_popup);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "start_index"), "set_start_index", "get_start_index");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "start_index"), "set_start_index", "get_start_index");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "switch_on_hover"), "set_switch_on_hover", "is_switch_on_hover");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "prefer_global_menu"), "set_prefer_global_menu", "is_prefer_global_menu");
 
@@ -839,27 +841,6 @@ String MenuBar::get_tooltip(const Point2 &p_pos) const {
 		return menu_cache[index].tooltip;
 	} else {
 		return String();
-	}
-}
-
-void MenuBar::get_translatable_strings(List<String> *p_strings) const {
-	Vector<PopupMenu *> popups = _get_popups();
-	for (int i = 0; i < popups.size(); i++) {
-		PopupMenu *pm = popups[i];
-
-		if (!pm->has_meta("_menu_name") && !pm->has_meta("_menu_tooltip")) {
-			continue;
-		}
-
-		String name = pm->get_meta("_menu_name");
-		if (!name.is_empty()) {
-			p_strings->push_back(name);
-		}
-
-		String tooltip = pm->get_meta("_menu_tooltip");
-		if (!tooltip.is_empty()) {
-			p_strings->push_back(tooltip);
-		}
 	}
 }
 

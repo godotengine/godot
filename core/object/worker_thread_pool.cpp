@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  worker_thread_pool.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  worker_thread_pool.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "worker_thread_pool.h"
 
@@ -140,9 +140,9 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 			task_queue.add_last(&low_prio_task->task_elem);
 			post = true;
 		} else {
-			low_priority_threads_used.decrement();
+			low_priority_threads_used--;
 		}
-		task_mutex.lock();
+		task_mutex.unlock();
 		if (post) {
 			task_available_semaphore.post();
 		}
@@ -152,7 +152,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 void WorkerThreadPool::_thread_function(void *p_user) {
 	while (true) {
 		singleton->task_available_semaphore.wait();
-		if (singleton->exit_threads.is_set()) {
+		if (singleton->exit_threads) {
 			break;
 		}
 		singleton->_process_task_queue();
@@ -168,14 +168,13 @@ void WorkerThreadPool::_post_task(Task *p_task, bool p_high_priority) {
 	task_mutex.lock();
 	p_task->low_priority = !p_high_priority;
 	if (!p_high_priority && use_native_low_priority_threads) {
-		task_mutex.unlock();
 		p_task->low_priority_thread = native_thread_allocator.alloc();
+		task_mutex.unlock();
 		p_task->low_priority_thread->start(_native_low_priority_thread_function, p_task); // Pask task directly to thread.
-
-	} else if (p_high_priority || low_priority_threads_used.get() < max_low_priority_threads) {
+	} else if (p_high_priority || low_priority_threads_used < max_low_priority_threads) {
 		task_queue.add_last(&p_task->task_elem);
 		if (!p_high_priority) {
-			low_priority_threads_used.increment();
+			low_priority_threads_used++;
 		}
 		task_mutex.unlock();
 		task_available_semaphore.post();
@@ -251,6 +250,8 @@ void WorkerThreadPool::wait_for_task_completion(TaskID p_task_id) {
 
 	if (use_native_low_priority_threads && task->low_priority) {
 		task->low_priority_thread->wait_to_finish();
+
+		task_mutex.lock();
 		native_thread_allocator.free(task->low_priority_thread);
 	} else {
 		int *index = thread_ids.getptr(Thread::get_caller_id());
@@ -272,9 +273,10 @@ void WorkerThreadPool::wait_for_task_completion(TaskID p_task_id) {
 		} else {
 			task->done_semaphore.wait();
 		}
+
+		task_mutex.lock();
 	}
 
-	task_mutex.lock();
 	tasks.erase(p_task_id);
 	task_allocator.free(task);
 	task_mutex.unlock();
@@ -377,11 +379,11 @@ void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
 	Group *group = *groupp;
 
 	if (group->low_priority_native_tasks.size() > 0) {
-		for (uint32_t i = 0; i < group->low_priority_native_tasks.size(); i++) {
-			group->low_priority_native_tasks[i]->low_priority_thread->wait_to_finish();
-			native_thread_allocator.free(group->low_priority_native_tasks[i]->low_priority_thread);
+		for (Task *task : group->low_priority_native_tasks) {
+			task->low_priority_thread->wait_to_finish();
 			task_mutex.lock();
-			task_allocator.free(group->low_priority_native_tasks[i]);
+			native_thread_allocator.free(task->low_priority_thread);
+			task_allocator.free(task);
 			task_mutex.unlock();
 		}
 
@@ -443,14 +445,14 @@ void WorkerThreadPool::finish() {
 	}
 	task_mutex.unlock();
 
-	exit_threads.set_to(true);
+	exit_threads = true;
 
 	for (uint32_t i = 0; i < threads.size(); i++) {
 		task_available_semaphore.post();
 	}
 
-	for (uint32_t i = 0; i < threads.size(); i++) {
-		threads[i].thread.wait_to_finish();
+	for (ThreadData &data : threads) {
+		data.thread.wait_to_finish();
 	}
 
 	threads.clear();

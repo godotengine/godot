@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  fog.cpp                                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  fog.cpp                                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "fog.h"
 
@@ -82,11 +82,11 @@ void Fog::fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) {
 	fog_volume->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 }
 
-void Fog::fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) {
+void Fog::fog_volume_set_size(RID p_fog_volume, const Vector3 &p_size) {
 	FogVolume *fog_volume = fog_volume_owner.get_or_null(p_fog_volume);
 	ERR_FAIL_COND(!fog_volume);
 
-	fog_volume->extents = p_extents;
+	fog_volume->size = p_size;
 	fog_volume->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 }
 
@@ -120,8 +120,8 @@ AABB Fog::fog_volume_get_aabb(RID p_fog_volume) const {
 		case RS::FOG_VOLUME_SHAPE_CYLINDER:
 		case RS::FOG_VOLUME_SHAPE_BOX: {
 			AABB aabb;
-			aabb.position = -fog_volume->extents;
-			aabb.size = fog_volume->extents * 2;
+			aabb.position = -fog_volume->size / 2;
+			aabb.size = fog_volume->size;
 			return aabb;
 		}
 		default: {
@@ -131,10 +131,10 @@ AABB Fog::fog_volume_get_aabb(RID p_fog_volume) const {
 	}
 }
 
-Vector3 Fog::fog_volume_get_extents(RID p_fog_volume) const {
+Vector3 Fog::fog_volume_get_size(RID p_fog_volume) const {
 	const FogVolume *fog_volume = fog_volume_owner.get_or_null(p_fog_volume);
 	ERR_FAIL_COND_V(!fog_volume, Vector3());
-	return fog_volume->extents;
+	return fog_volume->size;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -210,7 +210,7 @@ void Fog::init_fog_shader(uint32_t p_max_directional_lights, int p_roughness_lay
 		actions.renames["WORLD_POSITION"] = "world.xyz";
 		actions.renames["OBJECT_POSITION"] = "params.position";
 		actions.renames["UVW"] = "uvw";
-		actions.renames["EXTENTS"] = "params.extents";
+		actions.renames["SIZE"] = "params.size";
 		actions.renames["ALBEDO"] = "albedo";
 		actions.renames["DENSITY"] = "density";
 		actions.renames["EMISSION"] = "emission";
@@ -388,6 +388,37 @@ Fog::FogShaderData::~FogShaderData() {
 ////////////////////////////////////////////////////////////////////////////////
 // Volumetric Fog
 
+bool Fog::VolumetricFog::sync_gi_dependent_sets_validity(bool p_ensure_freed) {
+	bool null = gi_dependent_sets.copy_uniform_set.is_null();
+	bool valid = !null && RD::get_singleton()->uniform_set_is_valid(gi_dependent_sets.copy_uniform_set);
+
+#ifdef DEV_ENABLED
+	// It's all-or-nothing, or something else has changed that requires dev attention.
+	DEV_ASSERT(null == gi_dependent_sets.process_uniform_set_density.is_null());
+	DEV_ASSERT(null == gi_dependent_sets.process_uniform_set.is_null());
+	DEV_ASSERT(null == gi_dependent_sets.process_uniform_set2.is_null());
+	DEV_ASSERT(valid == RD::get_singleton()->uniform_set_is_valid(gi_dependent_sets.process_uniform_set_density));
+	DEV_ASSERT(valid == RD::get_singleton()->uniform_set_is_valid(gi_dependent_sets.process_uniform_set));
+	DEV_ASSERT(valid == RD::get_singleton()->uniform_set_is_valid(gi_dependent_sets.process_uniform_set2));
+#endif
+
+	if (valid) {
+		if (p_ensure_freed) {
+			RD::get_singleton()->free(gi_dependent_sets.copy_uniform_set);
+			RD::get_singleton()->free(gi_dependent_sets.process_uniform_set_density);
+			RD::get_singleton()->free(gi_dependent_sets.process_uniform_set);
+			RD::get_singleton()->free(gi_dependent_sets.process_uniform_set2);
+			valid = false;
+		}
+	}
+
+	if (!valid && !null) {
+		gi_dependent_sets = {};
+	}
+
+	return valid;
+}
+
 void Fog::VolumetricFog::init(const Vector3i &fog_size, RID p_sky_shader) {
 	width = fog_size.x;
 	height = fog_size.y;
@@ -463,15 +494,9 @@ Fog::VolumetricFog::~VolumetricFog() {
 	if (fog_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(fog_uniform_set)) {
 		RD::get_singleton()->free(fog_uniform_set);
 	}
-	if (process_uniform_set_density.is_valid() && RD::get_singleton()->uniform_set_is_valid(process_uniform_set_density)) {
-		RD::get_singleton()->free(process_uniform_set_density);
-	}
-	if (process_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(process_uniform_set)) {
-		RD::get_singleton()->free(process_uniform_set);
-	}
-	if (process_uniform_set2.is_valid() && RD::get_singleton()->uniform_set_is_valid(process_uniform_set2)) {
-		RD::get_singleton()->free(process_uniform_set2);
-	}
+
+	sync_gi_dependent_sets_validity(true);
+
 	if (sdfgi_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sdfgi_uniform_set)) {
 		RD::get_singleton()->free(sdfgi_uniform_set);
 	}
@@ -643,7 +668,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 			Vector3 position = fog_volume_instance->transform.get_origin();
 			RS::FogVolumeShape volume_type = RendererRD::Fog::get_singleton()->fog_volume_get_shape(fog_volume);
-			Vector3 extents = RendererRD::Fog::get_singleton()->fog_volume_get_extents(fog_volume);
+			Vector3 extents = RendererRD::Fog::get_singleton()->fog_volume_get_size(fog_volume) / 2;
 
 			if (volume_type != RS::FOG_VOLUME_SHAPE_WORLD) {
 				// Local fog volume.
@@ -683,9 +708,9 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 			push_constant.position[0] = position.x;
 			push_constant.position[1] = position.y;
 			push_constant.position[2] = position.z;
-			push_constant.extents[0] = extents.x;
-			push_constant.extents[1] = extents.y;
-			push_constant.extents[2] = extents.z;
+			push_constant.size[0] = extents.x * 2;
+			push_constant.size[1] = extents.y * 2;
+			push_constant.size[2] = extents.z * 2;
 			push_constant.corner[0] = min.x;
 			push_constant.corner[1] = min.y;
 			push_constant.corner[2] = min.z;
@@ -713,7 +738,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		RD::get_singleton()->compute_list_end();
 	}
 
-	if (fog->process_uniform_set_density.is_null() || !RD::get_singleton()->uniform_set_is_valid(fog->process_uniform_set_density)) {
+	if (!fog->sync_gi_dependent_sets_validity()) {
 		//re create uniform set if needed
 		Vector<RD::Uniform> uniforms;
 		Vector<RD::Uniform> copy_uniforms;
@@ -910,9 +935,9 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 			uniforms.push_back(u);
 		}
 
-		fog->copy_uniform_set = RD::get_singleton()->uniform_set_create(copy_uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_COPY), 0);
+		fog->gi_dependent_sets.copy_uniform_set = RD::get_singleton()->uniform_set_create(copy_uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_COPY), 0);
 
-		fog->process_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_FOG), 0);
+		fog->gi_dependent_sets.process_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_FOG), 0);
 
 		RID aux7 = uniforms.write[7].get_id(0);
 		RID aux8 = uniforms.write[8].get_id(0);
@@ -920,11 +945,11 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		uniforms.write[7].set_id(0, aux8);
 		uniforms.write[8].set_id(0, aux7);
 
-		fog->process_uniform_set2 = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_FOG), 0);
+		fog->gi_dependent_sets.process_uniform_set2 = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_FOG), 0);
 
 		uniforms.remove_at(8);
 		uniforms.write[7].set_id(0, aux7);
-		fog->process_uniform_set_density = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_DENSITY), 0);
+		fog->gi_dependent_sets.process_uniform_set_density = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_DENSITY), 0);
 	}
 
 	bool using_sdfgi = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_gi_inject(p_settings.env) > 0.0001 && RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_enabled(p_settings.env) && (p_settings.sdfgi.is_valid());
@@ -1067,7 +1092,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, volumetric_fog.process_pipelines[using_sdfgi ? VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_DENSITY_WITH_SDFGI : VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_DENSITY]);
 
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->process_uniform_set_density, 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->gi_dependent_sets.process_uniform_set_density, 0);
 
 	if (using_sdfgi) {
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->sdfgi_uniform_set, 1);
@@ -1078,7 +1103,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 	// Copy fog to history buffer
 	if (RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_temporal_reprojection(p_settings.env)) {
 		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, volumetric_fog.process_pipelines[VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_COPY]);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->copy_uniform_set, 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->gi_dependent_sets.copy_uniform_set, 0);
 		RD::get_singleton()->compute_list_dispatch_threads(compute_list, fog->width, fog->height, fog->depth);
 		RD::get_singleton()->compute_list_add_barrier(compute_list);
 	}
@@ -1090,7 +1115,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		RENDER_TIMESTAMP("Filter Fog");
 
 		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, volumetric_fog.process_pipelines[VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_FILTER]);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->process_uniform_set, 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->gi_dependent_sets.process_uniform_set, 0);
 		RD::get_singleton()->compute_list_dispatch_threads(compute_list, fog->width, fog->height, fog->depth);
 
 		RD::get_singleton()->compute_list_end();
@@ -1101,7 +1126,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 		compute_list = RD::get_singleton()->compute_list_begin();
 		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, volumetric_fog.process_pipelines[VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_FILTER]);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->process_uniform_set2, 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->gi_dependent_sets.process_uniform_set2, 0);
 		RD::get_singleton()->compute_list_dispatch_threads(compute_list, fog->width, fog->height, fog->depth);
 
 		RD::get_singleton()->compute_list_add_barrier(compute_list);
@@ -1112,7 +1137,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 	RD::get_singleton()->draw_command_begin_label("Integrate Fog");
 
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, volumetric_fog.process_pipelines[VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_FOG]);
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->process_uniform_set, 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->gi_dependent_sets.process_uniform_set, 0);
 	RD::get_singleton()->compute_list_dispatch_threads(compute_list, fog->width, fog->height, 1);
 
 	RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_RASTER);

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  test_class_db.h                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  test_class_db.h                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef TEST_CLASS_DB_H
 #define TEST_CLASS_DB_H
@@ -487,13 +487,13 @@ void add_exposed_classes(Context &r_context) {
 		}
 
 		if (!ClassDB::is_class_exposed(class_name)) {
-			MESSAGE(vformat("Ignoring class '%s' because it's not exposed.", class_name));
+			INFO(vformat("Ignoring class '%s' because it's not exposed.", class_name));
 			class_list.pop_front();
 			continue;
 		}
 
 		if (!ClassDB::is_class_enabled(class_name)) {
-			MESSAGE(vformat("Ignoring class '%s' because it's not enabled.", class_name));
+			INFO(vformat("Ignoring class '%s' because it's not enabled.", class_name));
 			class_list.pop_front();
 			continue;
 		}
@@ -559,6 +559,8 @@ void add_exposed_classes(Context &r_context) {
 
 			MethodData method;
 			method.name = method_info.name;
+			TEST_FAIL_COND(!String(method.name).is_valid_identifier(),
+					"Method name is not a valid identifier: '", exposed_class.name, ".", method.name, "'.");
 
 			if (method_info.flags & METHOD_FLAG_VIRTUAL) {
 				method.is_virtual = true;
@@ -682,6 +684,8 @@ void add_exposed_classes(Context &r_context) {
 			const MethodInfo &method_info = signal_map.get(K.key);
 
 			signal.name = method_info.name;
+			TEST_FAIL_COND(!String(signal.name).is_valid_identifier(),
+					"Signal name is not a valid identifier: '", exposed_class.name, ".", signal.name, "'.");
 
 			int argc = method_info.arguments.size();
 
@@ -713,15 +717,10 @@ void add_exposed_classes(Context &r_context) {
 
 			bool method_conflict = exposed_class.find_property_by_name(signal.name);
 
-			// TODO:
-			// ClassDB allows signal names that conflict with method or property names.
-			// However registering a signal with a conflicting name is still considered wrong.
-			// Unfortunately there are some existing cases that are yet to be fixed.
-			// Until those are fixed we will print a warning instead of failing the test.
 			String warn_msg = vformat(
 					"Signal name conflicts with %s: '%s.%s.",
 					method_conflict ? "method" : "property", class_name, signal.name);
-			TEST_FAIL_COND_WARN((method_conflict || exposed_class.find_method_by_name(signal.name)),
+			TEST_FAIL_COND((method_conflict || exposed_class.find_method_by_name(signal.name)),
 					warn_msg.utf8().get_data());
 
 			exposed_class.signals_.push_back(signal);

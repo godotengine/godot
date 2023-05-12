@@ -502,7 +502,13 @@ void main() {
 
 	if (normal_used || (using_light && bool(draw_data.flags & FLAGS_DEFAULT_NORMAL_MAP_USED))) {
 		normal.xy = texture(sampler2D(normal_texture, texture_sampler), uv).xy * vec2(2.0, -2.0) - vec2(1.0, -1.0);
-		normal.z = sqrt(1.0 - dot(normal.xy, normal.xy));
+		if (bool(draw_data.flags & FLAGS_FLIP_H)) {
+			normal.x = -normal.x;
+		}
+		if (bool(draw_data.flags & FLAGS_FLIP_V)) {
+			normal.y = -normal.y;
+		}
+		normal.z = sqrt(max(0.0, 1.0 - dot(normal.xy, normal.xy)));
 		normal_used = true;
 	} else {
 		normal = vec3(0.0, 0.0, 1.0);

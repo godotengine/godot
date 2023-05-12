@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  script_language.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  script_language.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "script_language.h"
 
@@ -165,27 +165,36 @@ ScriptLanguage *ScriptServer::get_language(int p_idx) {
 	return _languages[p_idx];
 }
 
-void ScriptServer::register_language(ScriptLanguage *p_language) {
-	ERR_FAIL_NULL(p_language);
-	ERR_FAIL_COND(_language_count >= MAX_LANGUAGES);
+Error ScriptServer::register_language(ScriptLanguage *p_language) {
+	ERR_FAIL_NULL_V(p_language, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V_MSG(_language_count >= MAX_LANGUAGES, ERR_UNAVAILABLE, "Script languages limit has been reach, cannot register more.");
+	for (int i = 0; i < _language_count; i++) {
+		const ScriptLanguage *other_language = _languages[i];
+		ERR_FAIL_COND_V_MSG(other_language->get_extension() == p_language->get_extension(), ERR_ALREADY_EXISTS, "A script language with extension '" + p_language->get_extension() + "' is already registered.");
+		ERR_FAIL_COND_V_MSG(other_language->get_name() == p_language->get_name(), ERR_ALREADY_EXISTS, "A script language with name '" + p_language->get_name() + "' is already registered.");
+		ERR_FAIL_COND_V_MSG(other_language->get_type() == p_language->get_type(), ERR_ALREADY_EXISTS, "A script language with type '" + p_language->get_type() + "' is already registered.");
+	}
 	_languages[_language_count++] = p_language;
+	return OK;
 }
 
-void ScriptServer::unregister_language(const ScriptLanguage *p_language) {
+Error ScriptServer::unregister_language(const ScriptLanguage *p_language) {
 	for (int i = 0; i < _language_count; i++) {
 		if (_languages[i] == p_language) {
 			_language_count--;
 			if (i < _language_count) {
 				SWAP(_languages[i], _languages[_language_count]);
 			}
-			return;
+			return OK;
 		}
 	}
+	return ERR_DOES_NOT_EXIST;
 }
 
 void ScriptServer::init_languages() {
 	{ // Load global classes.
 		global_classes_clear();
+#ifndef DISABLE_DEPRECATED
 		if (ProjectSettings::get_singleton()->has_setting("_global_script_classes")) {
 			Array script_classes = GLOBAL_GET("_global_script_classes");
 
@@ -196,6 +205,17 @@ void ScriptServer::init_languages() {
 				}
 				add_global_class(c["class"], c["base"], c["language"], c["path"]);
 			}
+			ProjectSettings::get_singleton()->clear("_global_script_classes");
+		}
+#endif
+
+		Array script_classes = ProjectSettings::get_singleton()->get_global_class_list();
+		for (int i = 0; i < script_classes.size(); i++) {
+			Dictionary c = script_classes[i];
+			if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base")) {
+				continue;
+			}
+			add_global_class(c["class"], c["base"], c["language"], c["path"]);
 		}
 	}
 
@@ -233,9 +253,12 @@ void ScriptServer::thread_exit() {
 }
 
 HashMap<StringName, ScriptServer::GlobalScriptClass> ScriptServer::global_classes;
+HashMap<StringName, Vector<StringName>> ScriptServer::inheriters_cache;
+bool ScriptServer::inheriters_cache_dirty = true;
 
 void ScriptServer::global_classes_clear() {
 	global_classes.clear();
+	inheriters_cache.clear();
 }
 
 void ScriptServer::add_global_class(const StringName &p_class, const StringName &p_base, const StringName &p_language, const String &p_path) {
@@ -245,10 +268,47 @@ void ScriptServer::add_global_class(const StringName &p_class, const StringName 
 	g.path = p_path;
 	g.base = p_base;
 	global_classes[p_class] = g;
+	inheriters_cache_dirty = true;
 }
 
 void ScriptServer::remove_global_class(const StringName &p_class) {
 	global_classes.erase(p_class);
+	inheriters_cache_dirty = true;
+}
+
+void ScriptServer::get_inheriters_list(const StringName &p_base_type, List<StringName> *r_classes) {
+	if (inheriters_cache_dirty) {
+		inheriters_cache.clear();
+		for (const KeyValue<StringName, GlobalScriptClass> &K : global_classes) {
+			if (!inheriters_cache.has(K.value.base)) {
+				inheriters_cache[K.value.base] = Vector<StringName>();
+			}
+			inheriters_cache[K.value.base].push_back(K.key);
+		}
+		for (KeyValue<StringName, Vector<StringName>> &K : inheriters_cache) {
+			K.value.sort_custom<StringName::AlphCompare>();
+		}
+		inheriters_cache_dirty = false;
+	}
+
+	if (!inheriters_cache.has(p_base_type)) {
+		return;
+	}
+
+	const Vector<StringName> &v = inheriters_cache[p_base_type];
+	for (int i = 0; i < v.size(); i++) {
+		r_classes->push_back(v[i]);
+	}
+}
+
+void ScriptServer::remove_global_class_by_path(const String &p_path) {
+	for (const KeyValue<StringName, GlobalScriptClass> &kv : global_classes) {
+		if (kv.value.path == p_path) {
+			global_classes.erase(kv.key);
+			inheriters_cache_dirty = true;
+			return;
+		}
+	}
 }
 
 bool ScriptServer::is_global_class(const StringName &p_class) {
@@ -291,6 +351,17 @@ void ScriptServer::get_global_class_list(List<StringName> *r_global_classes) {
 }
 
 void ScriptServer::save_global_classes() {
+	Dictionary class_icons;
+
+	Array script_classes = ProjectSettings::get_singleton()->get_global_class_list();
+	for (int i = 0; i < script_classes.size(); i++) {
+		Dictionary d = script_classes[i];
+		if (!d.has("name") || !d.has("icon")) {
+			continue;
+		}
+		class_icons[d["name"]] = d["icon"];
+	}
+
 	List<StringName> gc;
 	get_global_class_list(&gc);
 	Array gcarr;
@@ -300,25 +371,14 @@ void ScriptServer::save_global_classes() {
 		d["language"] = global_classes[E].language;
 		d["path"] = global_classes[E].path;
 		d["base"] = global_classes[E].base;
+		d["icon"] = class_icons.get(E, "");
 		gcarr.push_back(d);
 	}
+	ProjectSettings::get_singleton()->store_global_class_list(gcarr);
+}
 
-	Array old;
-	if (ProjectSettings::get_singleton()->has_setting("_global_script_classes")) {
-		old = GLOBAL_GET("_global_script_classes");
-	}
-	if ((!old.is_empty() || gcarr.is_empty()) && gcarr.hash() == old.hash()) {
-		return;
-	}
-
-	if (gcarr.is_empty()) {
-		if (ProjectSettings::get_singleton()->has_setting("_global_script_classes")) {
-			ProjectSettings::get_singleton()->clear("_global_script_classes");
-		}
-	} else {
-		ProjectSettings::get_singleton()->set("_global_script_classes", gcarr);
-	}
-	ProjectSettings::get_singleton()->save();
+String ScriptServer::get_global_class_cache_file_path() {
+	return ProjectSettings::get_singleton()->get_global_class_list_path();
 }
 
 ////////////////////

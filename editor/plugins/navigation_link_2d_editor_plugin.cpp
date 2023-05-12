@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  navigation_link_2d_editor_plugin.cpp                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  navigation_link_2d_editor_plugin.cpp                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "navigation_link_2d_editor_plugin.h"
 
@@ -65,32 +65,32 @@ bool NavigationLink2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
 		if (mb->is_pressed()) {
-			// Start location
-			if (xform.xform(node->get_start_location()).distance_to(mb->get_position()) < grab_threshold) {
+			// Start position
+			if (xform.xform(node->get_start_position()).distance_to(mb->get_position()) < grab_threshold) {
 				start_grabbed = true;
-				original_start_location = node->get_start_location();
+				original_start_position = node->get_start_position();
 
 				return true;
 			} else {
 				start_grabbed = false;
 			}
 
-			// End location
-			if (xform.xform(node->get_end_location()).distance_to(mb->get_position()) < grab_threshold) {
+			// End position
+			if (xform.xform(node->get_end_position()).distance_to(mb->get_position()) < grab_threshold) {
 				end_grabbed = true;
-				original_end_location = node->get_end_location();
+				original_end_position = node->get_end_position();
 
 				return true;
 			} else {
 				end_grabbed = false;
 			}
 		} else {
-			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			if (start_grabbed) {
-				undo_redo->create_action(TTR("Set start_location"));
-				undo_redo->add_do_method(node, "set_start_location", node->get_start_location());
+				undo_redo->create_action(TTR("Set start_position"));
+				undo_redo->add_do_method(node, "set_start_position", node->get_start_position());
 				undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-				undo_redo->add_undo_method(node, "set_start_location", original_start_location);
+				undo_redo->add_undo_method(node, "set_start_position", original_start_position);
 				undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 				undo_redo->commit_action();
 
@@ -100,10 +100,10 @@ bool NavigationLink2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 			}
 
 			if (end_grabbed) {
-				undo_redo->create_action(TTR("Set end_location"));
-				undo_redo->add_do_method(node, "set_end_location", node->get_end_location());
+				undo_redo->create_action(TTR("Set end_position"));
+				undo_redo->add_do_method(node, "set_end_position", node->get_end_position());
 				undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-				undo_redo->add_undo_method(node, "set_end_location", original_end_location);
+				undo_redo->add_undo_method(node, "set_end_position", original_end_position);
 				undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 				undo_redo->commit_action();
 
@@ -120,14 +120,14 @@ bool NavigationLink2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 		point = node->get_global_transform().affine_inverse().xform(point);
 
 		if (start_grabbed) {
-			node->set_start_location(point);
+			node->set_start_position(point);
 			canvas_item_editor->update_viewport();
 
 			return true;
 		}
 
 		if (end_grabbed) {
-			node->set_end_location(point);
+			node->set_end_position(point);
 			canvas_item_editor->update_viewport();
 
 			return true;
@@ -143,13 +143,13 @@ void NavigationLink2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 	}
 
 	Transform2D gt = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
-	Vector2 global_start_location = gt.xform(node->get_start_location());
-	Vector2 global_end_location = gt.xform(node->get_end_location());
+	Vector2 global_start_position = gt.xform(node->get_start_position());
+	Vector2 global_end_position = gt.xform(node->get_end_position());
 
 	// Only drawing the handles here, since the debug rendering will fill in the rest.
 	const Ref<Texture2D> handle = get_theme_icon(SNAME("EditorHandle"), SNAME("EditorIcons"));
-	p_overlay->draw_texture(handle, global_start_location - handle->get_size() / 2);
-	p_overlay->draw_texture(handle, global_end_location - handle->get_size() / 2);
+	p_overlay->draw_texture(handle, global_start_position - handle->get_size() / 2);
+	p_overlay->draw_texture(handle, global_end_position - handle->get_size() / 2);
 }
 
 void NavigationLink2DEditor::edit(NavigationLink2D *p_node) {

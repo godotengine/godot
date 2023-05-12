@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XRInterface" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="XRInterface" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for an XR interface implementation.
 	</brief_description>
@@ -51,6 +51,19 @@
 				Returns the resolution at which we should render our intermediate results before things like lens distortion are applied by the VR platform.
 			</description>
 		</method>
+		<method name="get_supported_environment_blend_modes">
+			<return type="Array" />
+			<description>
+				Returns the an array of supported environment blend modes, see [enum XRInterface.EnvironmentBlendMode].
+			</description>
+		</method>
+		<method name="get_system_info">
+			<return type="Dictionary" />
+			<description>
+				Returns a [Dictionary] with extra system info. Interfaces are expected to return [code]XRRuntimeName[/code] and [code]XRRuntimeVersion[/code] providing info about the used XR runtime. Additional entries may be provided specific to an interface.
+				[b]Note:[/b]This information may only be available after [method initialize] was successfully called.
+			</description>
+		</method>
 		<method name="get_tracking_status" qualifiers="const">
 			<return type="int" enum="XRInterface.TrackingStatus" />
 			<description>
@@ -64,7 +77,7 @@
 			<description>
 				Returns the transform for a view/eye.
 				[param view] is the view/eye index.
-				[param cam_transform] is the transform that maps device coordinates to scene coordinates, typically the global_transform of the current XROrigin3D.
+				[param cam_transform] is the transform that maps device coordinates to scene coordinates, typically the [member Node3D.global_transform] of the current XROrigin3D.
 			</description>
 		</method>
 		<method name="get_view_count">
@@ -99,6 +112,28 @@
 			<return type="bool" />
 			<description>
 				Is [code]true[/code] if this interface supports passthrough.
+			</description>
+		</method>
+		<method name="set_environment_blend_mode">
+			<return type="bool" />
+			<param index="0" name="mode" type="int" enum="XRInterface.EnvironmentBlendMode" />
+			<description>
+				Sets the active environment blend mode.
+				[param mode] is the [enum XRInterface.EnvironmentBlendMode] starting with the next frame.
+				[b]Note:[/b] Not all runtimes support all environment blend modes, so it is important to check this at startup. For example:
+				[codeblock]
+				                func _ready():
+				                    var xr_interface: XRInterface = XRServer.find_interface("OpenXR")
+				                    if xr_interface and xr_interface.is_initialized():
+				                        var vp: Viewport = get_viewport()
+				                        vp.use_xr = true
+				                        var acceptable_modes = [ XRInterface.XR_ENV_BLEND_MODE_OPAQUE, XRInterface.XR_ENV_BLEND_MODE_ADDITIVE ]
+				                        var modes = xr_interface.get_supported_environment_blend_modes()
+				                        for mode in acceptable_modes:
+				                            if mode in modes:
+				                                xr_interface.set_environment_blend_mode(mode)
+				                                break
+				[/codeblock]
 			</description>
 		</method>
 		<method name="set_play_area_mode">
@@ -182,7 +217,7 @@
 			This interface supports quad rendering (not yet supported by Godot).
 		</constant>
 		<constant name="XR_VR" value="8" enum="Capabilities">
-			this interface supports VR.
+			This interface supports VR.
 		</constant>
 		<constant name="XR_AR" value="16" enum="Capabilities">
 			This interface supports AR (video background and real world tracking).
@@ -218,7 +253,16 @@
 			Player is free to move around, full positional tracking.
 		</constant>
 		<constant name="XR_PLAY_AREA_STAGE" value="4" enum="PlayAreaMode">
-			Same as roomscale but origin point is fixed to the center of the physical space, XRServer.center_on_hmd disabled.
+			Same as [constant XR_PLAY_AREA_ROOMSCALE] but origin point is fixed to the center of the physical space, [method XRServer.center_on_hmd] disabled.
+		</constant>
+		<constant name="XR_ENV_BLEND_MODE_OPAQUE" value="0" enum="EnvironmentBlendMode">
+			Opaque blend mode. This is typically used for VR devices.
+		</constant>
+		<constant name="XR_ENV_BLEND_MODE_ADDITIVE" value="1" enum="EnvironmentBlendMode">
+			Additive blend mode. This is typically used for AR devices or VR devices with passthrough.
+		</constant>
+		<constant name="XR_ENV_BLEND_MODE_ALPHA_BLEND" value="2" enum="EnvironmentBlendMode">
+			Alpha blend mode. This is typically used for AR or VR devices with passthrough capabilities. The alpha channel controls how much of the passthrough is visible. Alpha of 0.0 means the passthrough is visible and this pixel works in ADDITIVE mode. Alpha of 1.0 means that the passthrough is not visible and this pixel works in OPAQUE mode.
 		</constant>
 	</constants>
 </class>

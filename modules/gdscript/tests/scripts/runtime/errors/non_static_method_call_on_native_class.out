@@ -1,0 +1,6 @@
+GDTEST_RUNTIME_ERROR
+>> SCRIPT ERROR
+>> on function: example()
+>> runtime/errors/non_static_method_call_on_native_class.gd
+>> 6
+>> Invalid call. Nonexistent function 'has_method' in base 'Node2D'.

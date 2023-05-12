@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  variant.cpp                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  variant.cpp                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "variant.h"
 
@@ -2941,7 +2941,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			return hash_one_uint64((uint64_t)_data._int);
 		} break;
 		case FLOAT: {
-			return hash_murmur3_one_float(_data._float);
+			return hash_murmur3_one_double(_data._float);
 		} break;
 		case STRING: {
 			return reinterpret_cast<const String *>(_data._mem)->hash();
@@ -3158,7 +3158,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 				}
 				return hash_fmix32(h);
 			} else {
-				return hash_murmur3_one_float(0.0);
+				return hash_murmur3_one_double(0.0);
 			}
 
 		} break;
@@ -3240,33 +3240,34 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 }
 
 #define hash_compare_scalar(p_lhs, p_rhs) \
-	((p_lhs) == (p_rhs)) || (Math::is_nan(p_lhs) && Math::is_nan(p_rhs))
+	(((p_lhs) == (p_rhs)) || (Math::is_nan(p_lhs) && Math::is_nan(p_rhs)))
 
-#define hash_compare_vector2(p_lhs, p_rhs)         \
-	(hash_compare_scalar((p_lhs).x, (p_rhs).x)) && \
-			(hash_compare_scalar((p_lhs).y, (p_rhs).y))
+#define hash_compare_vector2(p_lhs, p_rhs)        \
+	(hash_compare_scalar((p_lhs).x, (p_rhs).x) && \
+			hash_compare_scalar((p_lhs).y, (p_rhs).y))
 
-#define hash_compare_vector3(p_lhs, p_rhs)                 \
-	(hash_compare_scalar((p_lhs).x, (p_rhs).x)) &&         \
-			(hash_compare_scalar((p_lhs).y, (p_rhs).y)) && \
-			(hash_compare_scalar((p_lhs).z, (p_rhs).z))
-#define hash_compare_vector4(p_lhs, p_rhs)                 \
-	(hash_compare_scalar((p_lhs).x, (p_rhs).x)) &&         \
-			(hash_compare_scalar((p_lhs).y, (p_rhs).y)) && \
-			(hash_compare_scalar((p_lhs).z, (p_rhs).z)) && \
-			(hash_compare_scalar((p_lhs).w, (p_rhs).w))
+#define hash_compare_vector3(p_lhs, p_rhs)               \
+	(hash_compare_scalar((p_lhs).x, (p_rhs).x) &&        \
+			hash_compare_scalar((p_lhs).y, (p_rhs).y) && \
+			hash_compare_scalar((p_lhs).z, (p_rhs).z))
 
-#define hash_compare_quaternion(p_lhs, p_rhs)              \
-	(hash_compare_scalar((p_lhs).x, (p_rhs).x)) &&         \
-			(hash_compare_scalar((p_lhs).y, (p_rhs).y)) && \
-			(hash_compare_scalar((p_lhs).z, (p_rhs).z)) && \
-			(hash_compare_scalar((p_lhs).w, (p_rhs).w))
+#define hash_compare_vector4(p_lhs, p_rhs)               \
+	(hash_compare_scalar((p_lhs).x, (p_rhs).x) &&        \
+			hash_compare_scalar((p_lhs).y, (p_rhs).y) && \
+			hash_compare_scalar((p_lhs).z, (p_rhs).z) && \
+			hash_compare_scalar((p_lhs).w, (p_rhs).w))
 
-#define hash_compare_color(p_lhs, p_rhs)                   \
-	(hash_compare_scalar((p_lhs).r, (p_rhs).r)) &&         \
-			(hash_compare_scalar((p_lhs).g, (p_rhs).g)) && \
-			(hash_compare_scalar((p_lhs).b, (p_rhs).b)) && \
-			(hash_compare_scalar((p_lhs).a, (p_rhs).a))
+#define hash_compare_quaternion(p_lhs, p_rhs)            \
+	(hash_compare_scalar((p_lhs).x, (p_rhs).x) &&        \
+			hash_compare_scalar((p_lhs).y, (p_rhs).y) && \
+			hash_compare_scalar((p_lhs).z, (p_rhs).z) && \
+			hash_compare_scalar((p_lhs).w, (p_rhs).w))
+
+#define hash_compare_color(p_lhs, p_rhs)                 \
+	(hash_compare_scalar((p_lhs).r, (p_rhs).r) &&        \
+			hash_compare_scalar((p_lhs).g, (p_rhs).g) && \
+			hash_compare_scalar((p_lhs).b, (p_rhs).b) && \
+			hash_compare_scalar((p_lhs).a, (p_rhs).a))
 
 #define hash_compare_packed_array(p_lhs, p_rhs, p_type, p_compare_func) \
 	const Vector<p_type> &l = PackedArrayRef<p_type>::get_array(p_lhs); \
@@ -3323,8 +3324,8 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 			const Rect2 *l = reinterpret_cast<const Rect2 *>(_data._mem);
 			const Rect2 *r = reinterpret_cast<const Rect2 *>(p_variant._data._mem);
 
-			return (hash_compare_vector2(l->position, r->position)) &&
-					(hash_compare_vector2(l->size, r->size));
+			return hash_compare_vector2(l->position, r->position) &&
+					hash_compare_vector2(l->size, r->size);
 		} break;
 		case RECT2I: {
 			const Rect2i *l = reinterpret_cast<const Rect2i *>(_data._mem);
@@ -3338,7 +3339,7 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 			Transform2D *r = p_variant._data._transform2d;
 
 			for (int i = 0; i < 3; i++) {
-				if (!(hash_compare_vector2(l->columns[i], r->columns[i]))) {
+				if (!hash_compare_vector2(l->columns[i], r->columns[i])) {
 					return false;
 				}
 			}
@@ -3375,16 +3376,16 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 			const Plane *l = reinterpret_cast<const Plane *>(_data._mem);
 			const Plane *r = reinterpret_cast<const Plane *>(p_variant._data._mem);
 
-			return (hash_compare_vector3(l->normal, r->normal)) &&
-					(hash_compare_scalar(l->d, r->d));
+			return hash_compare_vector3(l->normal, r->normal) &&
+					hash_compare_scalar(l->d, r->d);
 		} break;
 
 		case AABB: {
 			const ::AABB *l = _data._aabb;
 			const ::AABB *r = p_variant._data._aabb;
 
-			return (hash_compare_vector3(l->position, r->position) &&
-					(hash_compare_vector3(l->size, r->size)));
+			return hash_compare_vector3(l->position, r->position) &&
+					hash_compare_vector3(l->size, r->size);
 
 		} break;
 
@@ -3400,7 +3401,7 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 			const Basis *r = p_variant._data._basis;
 
 			for (int i = 0; i < 3; i++) {
-				if (!(hash_compare_vector3(l->rows[i], r->rows[i]))) {
+				if (!hash_compare_vector3(l->rows[i], r->rows[i])) {
 					return false;
 				}
 			}
@@ -3413,7 +3414,7 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 			const Transform3D *r = p_variant._data._transform3d;
 
 			for (int i = 0; i < 3; i++) {
-				if (!(hash_compare_vector3(l->basis.rows[i], r->basis.rows[i]))) {
+				if (!hash_compare_vector3(l->basis.rows[i], r->basis.rows[i])) {
 					return false;
 				}
 			}
@@ -3425,7 +3426,7 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 			const Projection *r = p_variant._data._projection;
 
 			for (int i = 0; i < 4; i++) {
-				if (!(hash_compare_vector4(l->columns[i], r->columns[i]))) {
+				if (!hash_compare_vector4(l->columns[i], r->columns[i])) {
 					return false;
 				}
 			}
@@ -3488,6 +3489,46 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 			Variant r;
 			evaluate(OP_EQUAL, *this, p_variant, r, v);
 			return r;
+	}
+}
+
+bool Variant::identity_compare(const Variant &p_variant) const {
+	if (type != p_variant.type) {
+		return false;
+	}
+
+	switch (type) {
+		case OBJECT: {
+			return _get_obj().id == p_variant._get_obj().id;
+		} break;
+
+		case DICTIONARY: {
+			const Dictionary &l = *(reinterpret_cast<const Dictionary *>(_data._mem));
+			const Dictionary &r = *(reinterpret_cast<const Dictionary *>(p_variant._data._mem));
+			return l.id() == r.id();
+		} break;
+
+		case ARRAY: {
+			const Array &l = *(reinterpret_cast<const Array *>(_data._mem));
+			const Array &r = *(reinterpret_cast<const Array *>(p_variant._data._mem));
+			return l.id() == r.id();
+		} break;
+
+		case PACKED_BYTE_ARRAY:
+		case PACKED_INT32_ARRAY:
+		case PACKED_INT64_ARRAY:
+		case PACKED_FLOAT32_ARRAY:
+		case PACKED_FLOAT64_ARRAY:
+		case PACKED_STRING_ARRAY:
+		case PACKED_VECTOR2_ARRAY:
+		case PACKED_VECTOR3_ARRAY:
+		case PACKED_COLOR_ARRAY: {
+			return _data.packed_array == p_variant._data.packed_array;
+		} break;
+
+		default: {
+			return hash_compare(p_variant);
+		}
 	}
 }
 
@@ -3560,15 +3601,6 @@ bool Variant::is_type_shared(Variant::Type p_type) {
 		case OBJECT:
 		case ARRAY:
 		case DICTIONARY:
-		case PACKED_BYTE_ARRAY:
-		case PACKED_INT32_ARRAY:
-		case PACKED_INT64_ARRAY:
-		case PACKED_FLOAT32_ARRAY:
-		case PACKED_FLOAT64_ARRAY:
-		case PACKED_STRING_ARRAY:
-		case PACKED_VECTOR2_ARRAY:
-		case PACKED_VECTOR3_ARRAY:
-		case PACKED_COLOR_ARRAY:
 			return true;
 		default: {
 		}
@@ -3627,9 +3659,9 @@ String Variant::get_call_error_text(Object *p_base, const StringName &p_method, 
 			err_text = "Cannot convert argument " + itos(errorarg + 1) + " from [missing argptr, type unknown] to " + Variant::get_type_name(Variant::Type(ce.expected));
 		}
 	} else if (ce.error == Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS) {
-		err_text = "Method expected " + itos(ce.argument) + " arguments, but called with " + itos(p_argcount);
+		err_text = "Method expected " + itos(ce.expected) + " arguments, but called with " + itos(p_argcount);
 	} else if (ce.error == Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {
-		err_text = "Method expected " + itos(ce.argument) + " arguments, but called with " + itos(p_argcount);
+		err_text = "Method expected " + itos(ce.expected) + " arguments, but called with " + itos(p_argcount);
 	} else if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD) {
 		err_text = "Method not found";
 	} else if (ce.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
@@ -3653,7 +3685,22 @@ String Variant::get_call_error_text(Object *p_base, const StringName &p_method, 
 }
 
 String Variant::get_callable_error_text(const Callable &p_callable, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce) {
-	return get_call_error_text(p_callable.get_object(), p_callable.get_method(), p_argptrs, p_argcount, ce);
+	Vector<Variant> binds;
+	int args_bound;
+	p_callable.get_bound_arguments_ref(binds, args_bound);
+	if (args_bound <= 0) {
+		return get_call_error_text(p_callable.get_object(), p_callable.get_method(), p_argptrs, MAX(0, p_argcount + args_bound), ce);
+	} else {
+		Vector<const Variant *> argptrs;
+		argptrs.resize(p_argcount + binds.size());
+		for (int i = 0; i < p_argcount; i++) {
+			argptrs.write[i] = p_argptrs[i];
+		}
+		for (int i = 0; i < binds.size(); i++) {
+			argptrs.write[i + p_argcount] = &binds[i];
+		}
+		return get_call_error_text(p_callable.get_object(), p_callable.get_method(), (const Variant **)argptrs.ptr(), argptrs.size(), ce);
+	}
 }
 
 void Variant::register_types() {

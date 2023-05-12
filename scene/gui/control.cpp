@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  control.cpp                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  control.cpp                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "control.h"
 
@@ -105,7 +105,7 @@ void Control::_edit_set_state(const Dictionary &p_state) {
 	}
 
 	_set_layout_mode(_layout);
-	if (_layout == LayoutMode::LAYOUT_MODE_ANCHORS) {
+	if (_layout == LayoutMode::LAYOUT_MODE_ANCHORS || _layout == LayoutMode::LAYOUT_MODE_UNCONTROLLED) {
 		_set_anchors_layout_preset((int)state["anchors_layout_preset"]);
 	}
 
@@ -125,7 +125,7 @@ void Control::_edit_set_state(const Dictionary &p_state) {
 
 void Control::_edit_set_position(const Point2 &p_position) {
 	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be used from editor plugins.");
-	set_position(p_position, ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled() && Object::cast_to<Control>(data.parent));
+	set_position(p_position, ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled() && get_parent_control());
 };
 
 Point2 Control::_edit_get_position() const {
@@ -185,6 +185,14 @@ Size2 Control::_edit_get_minimum_size() const {
 	return get_combined_minimum_size();
 }
 #endif
+
+void Control::reparent(Node *p_parent, bool p_keep_global_transform) {
+	Transform2D temp = get_global_transform();
+	Node::reparent(p_parent);
+	if (p_keep_global_transform) {
+		set_global_position(temp.get_origin());
+	}
+}
 
 // Editor integration.
 
@@ -352,7 +360,7 @@ bool Control::_get(const StringName &p_name, Variant &r_ret) const {
 void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 	Ref<Theme> default_theme = ThemeDB::get_singleton()->get_default_theme();
 
-	p_list->push_back(PropertyInfo(Variant::NIL, TTRC("Theme Overrides"), PROPERTY_HINT_NONE, "theme_override_", PROPERTY_USAGE_GROUP));
+	p_list->push_back(PropertyInfo(Variant::NIL, GNAME("Theme Overrides", "theme_override_"), PROPERTY_HINT_NONE, "theme_override_", PROPERTY_USAGE_GROUP));
 
 	{
 		List<StringName> names;
@@ -363,7 +371,7 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::COLOR, "theme_override_colors/" + E, PROPERTY_HINT_NONE, "", usage));
+			p_list->push_back(PropertyInfo(Variant::COLOR, PNAME("theme_override_colors") + String("/") + E, PROPERTY_HINT_NONE, "", usage));
 		}
 	}
 	{
@@ -375,7 +383,7 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::INT, "theme_override_constants/" + E, PROPERTY_HINT_RANGE, "-16384,16384", usage));
+			p_list->push_back(PropertyInfo(Variant::INT, PNAME("theme_override_constants") + String("/") + E, PROPERTY_HINT_RANGE, "-16384,16384", usage));
 		}
 	}
 	{
@@ -387,7 +395,7 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "theme_override_fonts/" + E, PROPERTY_HINT_RESOURCE_TYPE, "Font", usage));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_fonts") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, "Font", usage));
 		}
 	}
 	{
@@ -399,7 +407,7 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::INT, "theme_override_font_sizes/" + E, PROPERTY_HINT_RANGE, "1,256,1,or_greater,suffix:px", usage));
+			p_list->push_back(PropertyInfo(Variant::INT, PNAME("theme_override_font_sizes") + String("/") + E, PROPERTY_HINT_RANGE, "1,256,1,or_greater,suffix:px", usage));
 		}
 	}
 	{
@@ -411,7 +419,7 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "theme_override_icons/" + E, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", usage));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_icons") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", usage));
 		}
 	}
 	{
@@ -423,7 +431,7 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "theme_override_styles/" + E, PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", usage));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_styles") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", usage));
 		}
 	}
 }
@@ -545,7 +553,8 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 		}
 
 		// Use the layout mode to display or hide advanced anchoring properties.
-		bool use_anchors = _get_layout_mode() == LayoutMode::LAYOUT_MODE_ANCHORS;
+		LayoutMode _layout = _get_layout_mode();
+		bool use_anchors = (_layout == LayoutMode::LAYOUT_MODE_ANCHORS || _layout == LayoutMode::LAYOUT_MODE_UNCONTROLLED);
 		if (!use_anchors && p_property.name == "anchors_preset") {
 			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 		}
@@ -598,7 +607,7 @@ bool Control::is_top_level_control() const {
 }
 
 Control *Control::get_parent_control() const {
-	return data.parent;
+	return data.parent_control;
 }
 
 Window *Control::get_parent_window() const {
@@ -635,8 +644,10 @@ Rect2 Control::get_parent_anchorable_rect() const {
 		parent_rect = data.parent_canvas_item->get_anchorable_rect();
 	} else {
 #ifdef TOOLS_ENABLED
-		Node *edited_root = get_tree()->get_edited_scene_root();
-		if (edited_root && (this == edited_root || edited_root->is_ancestor_of(this))) {
+		Node *edited_scene_root = get_tree()->get_edited_scene_root();
+		Node *scene_root_parent = edited_scene_root ? edited_scene_root->get_parent() : nullptr;
+
+		if (scene_root_parent && get_viewport() == scene_root_parent->get_viewport()) {
 			parent_rect.size = Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
 		} else {
 			parent_rect = get_viewport()->get_visible_rect();
@@ -681,6 +692,12 @@ Transform2D Control::get_transform() const {
 	Transform2D xform = _get_internal_transform();
 	xform[2] += get_position();
 	return xform;
+}
+
+void Control::_top_level_changed_on_parent() {
+	// Update root control status.
+	_notification(NOTIFICATION_EXIT_CANVAS);
+	_notification(NOTIFICATION_ENTER_CANVAS);
 }
 
 /// Anchors and offsets.
@@ -748,7 +765,8 @@ void Control::set_anchor_and_offset(Side p_side, real_t p_anchor, real_t p_pos, 
 	set_offset(p_side, p_pos);
 }
 
-void Control::set_begin(const Size2 &p_point) {
+void Control::set_begin(const Point2 &p_point) {
+	ERR_FAIL_COND(!isfinite(p_point.x) || !isfinite(p_point.y));
 	if (data.offset[0] == p_point.x && data.offset[1] == p_point.y) {
 		return;
 	}
@@ -758,11 +776,11 @@ void Control::set_begin(const Size2 &p_point) {
 	_size_changed();
 }
 
-Size2 Control::get_begin() const {
-	return Size2(data.offset[0], data.offset[1]);
+Point2 Control::get_begin() const {
+	return Point2(data.offset[0], data.offset[1]);
 }
 
-void Control::set_end(const Size2 &p_point) {
+void Control::set_end(const Point2 &p_point) {
 	if (data.offset[2] == p_point.x && data.offset[3] == p_point.y) {
 		return;
 	}
@@ -772,8 +790,8 @@ void Control::set_end(const Size2 &p_point) {
 	_size_changed();
 }
 
-Size2 Control::get_end() const {
-	return Size2(data.offset[2], data.offset[3]);
+Point2 Control::get_end() const {
+	return Point2(data.offset[2], data.offset[3]);
 }
 
 void Control::set_h_grow_direction(GrowDirection p_direction) {
@@ -855,6 +873,14 @@ void Control::_set_layout_mode(LayoutMode p_mode) {
 	}
 }
 
+void Control::_update_layout_mode() {
+	LayoutMode computed_layout = _get_layout_mode();
+	if (data.stored_layout_mode != computed_layout) {
+		data.stored_layout_mode = computed_layout;
+		notify_property_list_changed();
+	}
+}
+
 Control::LayoutMode Control::_get_layout_mode() const {
 	Node *parent_node = get_parent_control();
 	// In these modes the property is read-only.
@@ -887,11 +913,9 @@ Control::LayoutMode Control::_get_default_layout_mode() const {
 }
 
 void Control::_set_anchors_layout_preset(int p_preset) {
-	bool list_changed = false;
-
-	if (data.stored_layout_mode != LayoutMode::LAYOUT_MODE_ANCHORS) {
-		list_changed = true;
-		data.stored_layout_mode = LayoutMode::LAYOUT_MODE_ANCHORS;
+	if (data.stored_layout_mode != LayoutMode::LAYOUT_MODE_UNCONTROLLED && data.stored_layout_mode != LayoutMode::LAYOUT_MODE_ANCHORS) {
+		// In other modes the anchor preset is non-operational and shouldn't be set to anything.
+		return;
 	}
 
 	if (p_preset == -1) {
@@ -901,6 +925,8 @@ void Control::_set_anchors_layout_preset(int p_preset) {
 		}
 		return; // Keep settings as is.
 	}
+
+	bool list_changed = false;
 
 	if (data.stored_use_custom_anchors) {
 		list_changed = true;
@@ -944,6 +970,11 @@ void Control::_set_anchors_layout_preset(int p_preset) {
 }
 
 int Control::_get_anchors_layout_preset() const {
+	// If this is a layout mode that doesn't rely on anchors, avoid excessive checks.
+	if (data.stored_layout_mode != LayoutMode::LAYOUT_MODE_UNCONTROLLED && data.stored_layout_mode != LayoutMode::LAYOUT_MODE_ANCHORS) {
+		return LayoutPreset::PRESET_TOP_LEFT;
+	}
+
 	// If the custom preset was selected by user, use it.
 	if (data.stored_use_custom_anchors) {
 		return -1;
@@ -1327,11 +1358,11 @@ void Control::set_grow_direction_preset(LayoutPreset p_preset) {
 
 /// Manual positioning.
 
-void Control::_set_position(const Size2 &p_point) {
+void Control::_set_position(const Point2 &p_point) {
 	set_position(p_point);
 }
 
-void Control::set_position(const Size2 &p_point, bool p_keep_offsets) {
+void Control::set_position(const Point2 &p_point, bool p_keep_offsets) {
 	if (p_keep_offsets) {
 		_compute_anchors(Rect2(p_point, data.size_cache), data.offset, data.anchor);
 	} else {
@@ -1364,13 +1395,7 @@ Point2 Control::get_global_position() const {
 
 Point2 Control::get_screen_position() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), Point2());
-	Point2 global_pos = get_global_transform_with_canvas().get_origin();
-	Window *w = Object::cast_to<Window>(get_viewport());
-	if (w && !w->is_embedding_subwindows()) {
-		global_pos += w->get_position();
-	}
-
-	return global_pos;
+	return get_screen_transform().get_origin();
 }
 
 void Control::_set_size(const Size2 &p_size) {
@@ -1383,6 +1408,7 @@ void Control::_set_size(const Size2 &p_size) {
 }
 
 void Control::set_size(const Size2 &p_size, bool p_keep_offsets) {
+	ERR_FAIL_COND(!isfinite(p_size.x) || !isfinite(p_size.y));
 	Size2 new_size = p_size;
 	Size2 min = get_combined_minimum_size();
 	if (new_size.x < min.x) {
@@ -1420,24 +1446,20 @@ void Control::set_rect(const Rect2 &p_rect) {
 }
 
 Rect2 Control::get_rect() const {
-	return Rect2(get_position(), get_size());
+	Transform2D xform = get_transform();
+	return Rect2(xform.get_origin(), xform.get_scale() * get_size());
 }
 
 Rect2 Control::get_global_rect() const {
-	return Rect2(get_global_position(), get_size());
+	Transform2D xform = get_global_transform();
+	return Rect2(xform.get_origin(), xform.get_scale() * get_size());
 }
 
 Rect2 Control::get_screen_rect() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), Rect2());
 
-	Rect2 r(get_global_position(), get_size());
-
-	Window *w = Object::cast_to<Window>(get_viewport());
-	if (w && !w->is_embedding_subwindows()) {
-		r.position += w->get_position();
-	}
-
-	return r;
+	Transform2D xform = get_screen_transform();
+	return Rect2(xform.get_origin(), xform.get_scale() * get_size());
 }
 
 Rect2 Control::get_anchorable_rect() const {
@@ -1525,19 +1547,20 @@ void Control::update_minimum_size() {
 
 	Control *invalidate = this;
 
-	//invalidate cache upwards
+	// Invalidate cache upwards.
 	while (invalidate && invalidate->data.minimum_size_valid) {
 		invalidate->data.minimum_size_valid = false;
 		if (invalidate->is_set_as_top_level()) {
-			break; // do not go further up
+			break; // Do not go further up.
 		}
-		if (!invalidate->data.parent && get_parent()) {
-			Window *parent_window = Object::cast_to<Window>(get_parent());
-			if (parent_window && parent_window->is_wrapping_controls()) {
-				parent_window->child_controls_changed();
-			}
+
+		Window *parent_window = invalidate->get_parent_window();
+		if (parent_window && parent_window->is_wrapping_controls()) {
+			parent_window->child_controls_changed();
+			break; // Stop on a window as well.
 		}
-		invalidate = invalidate->data.parent;
+
+		invalidate = invalidate->get_parent_control();
 	}
 
 	if (!is_visible_in_tree()) {
@@ -1557,10 +1580,6 @@ void Control::set_block_minimum_size_adjust(bool p_block) {
 	data.block_minimum_size_adjust = p_block;
 }
 
-bool Control::is_minimum_size_adjust_blocked() const {
-	return data.block_minimum_size_adjust;
-}
-
 Size2 Control::get_minimum_size() const {
 	Vector2 ms;
 	GDVIRTUAL_CALL(_get_minimum_size, ms);
@@ -1572,7 +1591,7 @@ void Control::set_custom_minimum_size(const Size2 &p_custom) {
 		return;
 	}
 
-	if (isnan(p_custom.x) || isnan(p_custom.y)) {
+	if (!isfinite(p_custom.x) || !isfinite(p_custom.y)) {
 		// Prevent infinite loop.
 		return;
 	}
@@ -1676,27 +1695,27 @@ void Control::_clear_size_warning() {
 
 // Container sizing.
 
-void Control::set_h_size_flags(int p_flags) {
-	if (data.h_size_flags == p_flags) {
+void Control::set_h_size_flags(BitField<SizeFlags> p_flags) {
+	if ((int)data.h_size_flags == (int)p_flags) {
 		return;
 	}
 	data.h_size_flags = p_flags;
 	emit_signal(SceneStringNames::get_singleton()->size_flags_changed);
 }
 
-int Control::get_h_size_flags() const {
+BitField<Control::SizeFlags> Control::get_h_size_flags() const {
 	return data.h_size_flags;
 }
 
-void Control::set_v_size_flags(int p_flags) {
-	if (data.v_size_flags == p_flags) {
+void Control::set_v_size_flags(BitField<SizeFlags> p_flags) {
+	if ((int)data.v_size_flags == (int)p_flags) {
 		return;
 	}
 	data.v_size_flags = p_flags;
 	emit_signal(SceneStringNames::get_singleton()->size_flags_changed);
 }
 
-int Control::get_v_size_flags() const {
+BitField<Control::SizeFlags> Control::get_v_size_flags() const {
 	return data.v_size_flags;
 }
 
@@ -1716,13 +1735,18 @@ real_t Control::get_stretch_ratio() const {
 // Input events.
 
 void Control::_call_gui_input(const Ref<InputEvent> &p_event) {
-	emit_signal(SceneStringNames::get_singleton()->gui_input, p_event); //signal should be first, so it's possible to override an event (and then accept it)
-	if (!is_inside_tree() || get_viewport()->is_input_handled()) {
-		return; //input was handled, abort
+	if (p_event->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
+		emit_signal(SceneStringNames::get_singleton()->gui_input, p_event); // Signal should be first, so it's possible to override an event (and then accept it).
 	}
-	GDVIRTUAL_CALL(_gui_input, p_event);
 	if (!is_inside_tree() || get_viewport()->is_input_handled()) {
-		return; //input was handled, abort
+		return; // Input was handled, abort.
+	}
+
+	if (p_event->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
+		GDVIRTUAL_CALL(_gui_input, p_event);
+	}
+	if (!is_inside_tree() || get_viewport()->is_input_handled()) {
+		return; // Input was handled, abort.
 	}
 	gui_input(p_event);
 }
@@ -1798,33 +1822,40 @@ bool Control::is_focus_owner_in_shortcut_context() const {
 
 // Drag and drop handling.
 
-void Control::set_drag_forwarding(Object *p_target) {
-	if (p_target) {
-		data.drag_owner = p_target->get_instance_id();
-	} else {
-		data.drag_owner = ObjectID();
-	}
+void Control::set_drag_forwarding(const Callable &p_drag, const Callable &p_can_drop, const Callable &p_drop) {
+	data.forward_drag = p_drag;
+	data.forward_can_drop = p_can_drop;
+	data.forward_drop = p_drop;
 }
 
 Variant Control::get_drag_data(const Point2 &p_point) {
-	if (data.drag_owner.is_valid()) {
-		Object *obj = ObjectDB::get_instance(data.drag_owner);
-		if (obj) {
-			return obj->call("_get_drag_data_fw", p_point, this);
+	Variant ret;
+	if (data.forward_drag.is_valid()) {
+		Variant p = p_point;
+		const Variant *vp[1] = { &p };
+		Callable::CallError ce;
+		data.forward_drag.callp((const Variant **)vp, 1, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(Variant(), "Error calling forwarded method from 'get_drag_data': " + Variant::get_callable_error_text(data.forward_drag, (const Variant **)vp, 1, ce) + ".");
 		}
+		return ret;
 	}
 
-	Variant dd;
-	GDVIRTUAL_CALL(_get_drag_data, p_point, dd);
-	return dd;
+	GDVIRTUAL_CALL(_get_drag_data, p_point, ret);
+	return ret;
 }
 
 bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
-	if (data.drag_owner.is_valid()) {
-		Object *obj = ObjectDB::get_instance(data.drag_owner);
-		if (obj) {
-			return obj->call("_can_drop_data_fw", p_point, p_data, this);
+	if (data.forward_can_drop.is_valid()) {
+		Variant ret;
+		Variant p = p_point;
+		const Variant *vp[2] = { &p, &p_data };
+		Callable::CallError ce;
+		data.forward_can_drop.callp((const Variant **)vp, 2, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(Variant(), "Error calling forwarded method from 'can_drop_data': " + Variant::get_callable_error_text(data.forward_can_drop, (const Variant **)vp, 2, ce) + ".");
 		}
+		return ret;
 	}
 
 	bool ret = false;
@@ -1833,12 +1864,16 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 }
 
 void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
-	if (data.drag_owner.is_valid()) {
-		Object *obj = ObjectDB::get_instance(data.drag_owner);
-		if (obj) {
-			obj->call("_drop_data_fw", p_point, p_data, this);
-			return;
+	if (data.forward_drop.is_valid()) {
+		Variant ret;
+		Variant p = p_point;
+		const Variant *vp[2] = { &p, &p_data };
+		Callable::CallError ce;
+		data.forward_drop.callp((const Variant **)vp, 2, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_MSG("Error calling forwarded method from 'drop_data': " + Variant::get_callable_error_text(data.forward_drop, (const Variant **)vp, 2, ce) + ".");
 		}
+		return;
 	}
 
 	GDVIRTUAL_CALL(_drop_data, p_point, p_data);
@@ -2394,6 +2429,10 @@ StringName Control::get_theme_type_variation() const {
 /// Theme property lookup.
 
 Ref<Texture2D> Control::get_theme_icon(const StringName &p_name, const StringName &p_theme_type) const {
+	if (!data.initialized) {
+		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+	}
+
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		const Ref<Texture2D> *tex = data.theme_icon_override.getptr(p_name);
 		if (tex) {
@@ -2413,6 +2452,10 @@ Ref<Texture2D> Control::get_theme_icon(const StringName &p_name, const StringNam
 }
 
 Ref<StyleBox> Control::get_theme_stylebox(const StringName &p_name, const StringName &p_theme_type) const {
+	if (!data.initialized) {
+		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+	}
+
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		const Ref<StyleBox> *style = data.theme_style_override.getptr(p_name);
 		if (style) {
@@ -2432,6 +2475,10 @@ Ref<StyleBox> Control::get_theme_stylebox(const StringName &p_name, const String
 }
 
 Ref<Font> Control::get_theme_font(const StringName &p_name, const StringName &p_theme_type) const {
+	if (!data.initialized) {
+		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+	}
+
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		const Ref<Font> *font = data.theme_font_override.getptr(p_name);
 		if (font) {
@@ -2451,6 +2498,10 @@ Ref<Font> Control::get_theme_font(const StringName &p_name, const StringName &p_
 }
 
 int Control::get_theme_font_size(const StringName &p_name, const StringName &p_theme_type) const {
+	if (!data.initialized) {
+		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+	}
+
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		const int *font_size = data.theme_font_size_override.getptr(p_name);
 		if (font_size && (*font_size) > 0) {
@@ -2470,6 +2521,10 @@ int Control::get_theme_font_size(const StringName &p_name, const StringName &p_t
 }
 
 Color Control::get_theme_color(const StringName &p_name, const StringName &p_theme_type) const {
+	if (!data.initialized) {
+		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+	}
+
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		const Color *color = data.theme_color_override.getptr(p_name);
 		if (color) {
@@ -2489,6 +2544,10 @@ Color Control::get_theme_color(const StringName &p_name, const StringName &p_the
 }
 
 int Control::get_theme_constant(const StringName &p_name, const StringName &p_theme_type) const {
+	if (!data.initialized) {
+		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+	}
+
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		const int *constant = data.theme_constant_override.getptr(p_name);
 		if (constant) {
@@ -2508,6 +2567,10 @@ int Control::get_theme_constant(const StringName &p_name, const StringName &p_th
 }
 
 bool Control::has_theme_icon(const StringName &p_name, const StringName &p_theme_type) const {
+	if (!data.initialized) {
+		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+	}
+
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		if (has_theme_icon_override(p_name)) {
 			return true;
@@ -2520,6 +2583,10 @@ bool Control::has_theme_icon(const StringName &p_name, const StringName &p_theme
 }
 
 bool Control::has_theme_stylebox(const StringName &p_name, const StringName &p_theme_type) const {
+	if (!data.initialized) {
+		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+	}
+
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		if (has_theme_stylebox_override(p_name)) {
 			return true;
@@ -2532,6 +2599,10 @@ bool Control::has_theme_stylebox(const StringName &p_name, const StringName &p_t
 }
 
 bool Control::has_theme_font(const StringName &p_name, const StringName &p_theme_type) const {
+	if (!data.initialized) {
+		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+	}
+
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		if (has_theme_font_override(p_name)) {
 			return true;
@@ -2544,6 +2615,10 @@ bool Control::has_theme_font(const StringName &p_name, const StringName &p_theme
 }
 
 bool Control::has_theme_font_size(const StringName &p_name, const StringName &p_theme_type) const {
+	if (!data.initialized) {
+		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+	}
+
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		if (has_theme_font_size_override(p_name)) {
 			return true;
@@ -2556,6 +2631,10 @@ bool Control::has_theme_font_size(const StringName &p_name, const StringName &p_
 }
 
 bool Control::has_theme_color(const StringName &p_name, const StringName &p_theme_type) const {
+	if (!data.initialized) {
+		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+	}
+
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		if (has_theme_color_override(p_name)) {
 			return true;
@@ -2568,6 +2647,10 @@ bool Control::has_theme_color(const StringName &p_name, const StringName &p_them
 }
 
 bool Control::has_theme_constant(const StringName &p_name, const StringName &p_theme_type) const {
+	if (!data.initialized) {
+		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+	}
+
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		if (has_theme_constant_override(p_name)) {
 			return true;
@@ -2733,9 +2816,9 @@ void Control::end_bulk_theme_override() {
 
 // Internationalization.
 
-TypedArray<Vector2i> Control::structured_text_parser(TextServer::StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
+TypedArray<Vector3i> Control::structured_text_parser(TextServer::StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
 	if (p_parser_type == TextServer::STRUCTURED_TEXT_CUSTOM) {
-		TypedArray<Vector2i> ret;
+		TypedArray<Vector3i> ret;
 		GDVIRTUAL_CALL(_structured_text_parser, p_args, p_text, ret);
 		return ret;
 	} else {
@@ -2763,19 +2846,34 @@ bool Control::is_layout_rtl() const {
 	if (data.is_rtl_dirty) {
 		const_cast<Control *>(this)->data.is_rtl_dirty = false;
 		if (data.layout_dir == LAYOUT_DIRECTION_INHERITED) {
-			Window *parent_window = get_parent_window();
-			Control *parent_control = get_parent_control();
-			if (parent_control) {
-				const_cast<Control *>(this)->data.is_rtl = parent_control->is_layout_rtl();
-			} else if (parent_window) {
-				const_cast<Control *>(this)->data.is_rtl = parent_window->is_layout_rtl();
-			} else {
-				if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
-					const_cast<Control *>(this)->data.is_rtl = true;
-				} else {
-					String locale = TranslationServer::get_singleton()->get_tool_locale();
-					const_cast<Control *>(this)->data.is_rtl = TS->is_locale_right_to_left(locale);
+			if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
+				const_cast<Control *>(this)->data.is_rtl = true;
+				return data.is_rtl;
+			}
+			Node *parent_node = get_parent();
+			while (parent_node) {
+				Control *parent_control = Object::cast_to<Control>(parent_node);
+				if (parent_control) {
+					const_cast<Control *>(this)->data.is_rtl = parent_control->is_layout_rtl();
+					return data.is_rtl;
 				}
+
+				Window *parent_window = Object::cast_to<Window>(parent_node);
+				if (parent_window) {
+					const_cast<Control *>(this)->data.is_rtl = parent_window->is_layout_rtl();
+					return data.is_rtl;
+				}
+				parent_node = parent_node->get_parent();
+			}
+
+			int root_dir = GLOBAL_GET(SNAME("internationalization/rendering/root_node_layout_direction"));
+			if (root_dir == 1) {
+				const_cast<Control *>(this)->data.is_rtl = false;
+			} else if (root_dir == 2) {
+				const_cast<Control *>(this)->data.is_rtl = true;
+			} else {
+				String locale = TranslationServer::get_singleton()->get_tool_locale();
+				const_cast<Control *>(this)->data.is_rtl = TS->is_locale_right_to_left(locale);
 			}
 		} else if (data.layout_dir == LAYOUT_DIRECTION_LOCALE) {
 			if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
@@ -2831,6 +2929,10 @@ String Control::get_tooltip_text() const {
 }
 
 String Control::get_tooltip(const Point2 &p_pos) const {
+	String ret;
+	if (GDVIRTUAL_CALL(_get_tooltip, p_pos, ret)) {
+		return ret;
+	}
 	return data.tooltip;
 }
 
@@ -2845,19 +2947,37 @@ Control *Control::make_custom_tooltip(const String &p_text) const {
 void Control::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_POSTINITIALIZE: {
+			data.initialized = true;
+
 			_invalidate_theme_cache();
 			_update_theme_item_cache();
 		} break;
 
 		case NOTIFICATION_PARENTED: {
+			Node *parent_node = get_parent();
+			data.parent_control = Object::cast_to<Control>(parent_node);
+			data.parent_window = Object::cast_to<Window>(parent_node);
+
 			data.theme_owner->assign_theme_on_parented(this);
+
+			_update_layout_mode();
 		} break;
 
 		case NOTIFICATION_UNPARENTED: {
+			data.parent_control = nullptr;
+			data.parent_window = nullptr;
+
 			data.theme_owner->clear_theme_on_unparented(this);
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
+#ifdef TOOLS_ENABLED
+			if (is_part_of_edited_scene()) {
+				// Don't translate Controls on scene when inside editor.
+				set_message_translation(false);
+				notification(NOTIFICATION_TRANSLATION_CHANGED);
+			}
+#endif
 			notification(NOTIFICATION_THEME_CHANGED);
 		} break;
 
@@ -2879,8 +2999,6 @@ void Control::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_ENTER_CANVAS: {
-			data.parent = Object::cast_to<Control>(get_parent());
-			data.parent_window = Object::cast_to<Window>(get_parent());
 			data.is_rtl_dirty = true;
 
 			CanvasItem *node = this;
@@ -2908,6 +3026,8 @@ void Control::_notification(int p_notification) {
 				Viewport *viewport = get_viewport();
 				ERR_FAIL_COND(!viewport);
 				data.RI = viewport->_gui_add_root_control(this);
+
+				get_parent()->connect(SNAME("child_order_changed"), callable_mp(get_viewport(), &Viewport::gui_set_root_order_dirty), CONNECT_REFERENCE_COUNTED);
 			}
 
 			data.parent_canvas_item = get_parent_item();
@@ -2936,25 +3056,17 @@ void Control::_notification(int p_notification) {
 			if (data.RI) {
 				get_viewport()->_gui_remove_root_control(data.RI);
 				data.RI = nullptr;
+				get_parent()->disconnect(SNAME("child_order_changed"), callable_mp(get_viewport(), &Viewport::gui_set_root_order_dirty));
 			}
 
-			data.parent = nullptr;
 			data.parent_canvas_item = nullptr;
-			data.parent_window = nullptr;
 			data.is_rtl_dirty = true;
 		} break;
 
-		case NOTIFICATION_MOVED_IN_PARENT: {
-			// some parents need to know the order of the children to draw (like TabContainer)
-			// update if necessary
-			if (data.parent) {
-				data.parent->queue_redraw();
-			}
+		case NOTIFICATION_CHILD_ORDER_CHANGED: {
+			// Some parents need to know the order of the children to draw (like TabContainer),
+			// so we update them just in case.
 			queue_redraw();
-
-			if (data.RI) {
-				get_viewport()->gui_set_root_order_dirty();
-			}
 		} break;
 
 		case NOTIFICATION_RESIZED: {
@@ -3170,7 +3282,7 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("grab_click_focus"), &Control::grab_click_focus);
 
-	ClassDB::bind_method(D_METHOD("set_drag_forwarding", "target"), &Control::set_drag_forwarding);
+	ClassDB::bind_method(D_METHOD("set_drag_forwarding", "drag_func", "can_drop_func", "drop_func"), &Control::set_drag_forwarding);
 	ClassDB::bind_method(D_METHOD("set_drag_preview", "control"), &Control::set_drag_preview);
 	ClassDB::bind_method(D_METHOD("is_drag_successful"), &Control::is_drag_successful);
 
@@ -3194,7 +3306,7 @@ void Control::_bind_methods() {
 	ADD_GROUP("Layout", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_contents"), "set_clip_contents", "is_clipping_contents");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "custom_minimum_size", PROPERTY_HINT_NONE, "suffix:px"), "set_custom_minimum_size", "get_custom_minimum_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_direction", PROPERTY_HINT_ENUM, "Inherited,Locale,Left-to-Right,Right-to-Left"), "set_layout_direction", "get_layout_direction");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_direction", PROPERTY_HINT_ENUM, "Inherited,Based on Locale,Left-to-Right,Right-to-Left"), "set_layout_direction", "get_layout_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_mode", PROPERTY_HINT_ENUM, "Position,Anchors,Container,Uncontrolled", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "_set_layout_mode", "_get_layout_mode");
 	ADD_PROPERTY_DEFAULT("layout_mode", LayoutMode::LAYOUT_MODE_POSITION);
 
@@ -3318,12 +3430,12 @@ void Control::_bind_methods() {
 	BIND_ENUM_CONSTANT(PRESET_MODE_KEEP_HEIGHT);
 	BIND_ENUM_CONSTANT(PRESET_MODE_KEEP_SIZE);
 
-	BIND_ENUM_CONSTANT(SIZE_SHRINK_BEGIN);
-	BIND_ENUM_CONSTANT(SIZE_FILL);
-	BIND_ENUM_CONSTANT(SIZE_EXPAND);
-	BIND_ENUM_CONSTANT(SIZE_EXPAND_FILL);
-	BIND_ENUM_CONSTANT(SIZE_SHRINK_CENTER);
-	BIND_ENUM_CONSTANT(SIZE_SHRINK_END);
+	BIND_BITFIELD_FLAG(SIZE_SHRINK_BEGIN);
+	BIND_BITFIELD_FLAG(SIZE_FILL);
+	BIND_BITFIELD_FLAG(SIZE_EXPAND);
+	BIND_BITFIELD_FLAG(SIZE_EXPAND_FILL);
+	BIND_BITFIELD_FLAG(SIZE_SHRINK_CENTER);
+	BIND_BITFIELD_FLAG(SIZE_SHRINK_END);
 
 	BIND_ENUM_CONSTANT(MOUSE_FILTER_STOP);
 	BIND_ENUM_CONSTANT(MOUSE_FILTER_PASS);
@@ -3356,9 +3468,10 @@ void Control::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("minimum_size_changed"));
 	ADD_SIGNAL(MethodInfo("theme_changed"));
 
-	GDVIRTUAL_BIND(_has_point, "position");
+	GDVIRTUAL_BIND(_has_point, "point");
 	GDVIRTUAL_BIND(_structured_text_parser, "args", "text");
 	GDVIRTUAL_BIND(_get_minimum_size);
+	GDVIRTUAL_BIND(_get_tooltip, "at_position");
 
 	GDVIRTUAL_BIND(_get_drag_data, "at_position");
 	GDVIRTUAL_BIND(_can_drop_data, "at_position", "data");

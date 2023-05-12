@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="@GDScript" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="@GDScript" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Built-in GDScript functions.
 	</brief_description>
 	<description>
-		A list of GDScript-specific utility functions accessed in any script.
+		A list of GDScript-specific utility functions and annotations accessible from any script.
 		For the list of the global functions and constants see [@GlobalScope].
 	</description>
 	<tutorials>
@@ -18,12 +18,13 @@
 			<param index="2" name="b8" type="int" />
 			<param index="3" name="a8" type="int" default="255" />
 			<description>
-				Returns a [Color] constructed from red ([param r8]), green ([param g8]), blue ([param b8]), and optionally alpha ([param a8]) integer channels, each divided by [code]255.0[/code] for their final value.
+				Returns a [Color] constructed from red ([param r8]), green ([param g8]), blue ([param b8]), and optionally alpha ([param a8]) integer channels, each divided by [code]255.0[/code] for their final value. Using [method Color8] instead of the standard [Color] constructor is useful when you need to match exact color values in an [Image].
 				[codeblock]
-				var red = Color8(255, 0, 0)             # Same as Color(1, 0, 0)
+				var red = Color8(255, 0, 0)             # Same as Color(1, 0, 0).
 				var dark_blue = Color8(0, 0, 51)        # Same as Color(0, 0, 0.2).
 				var my_color = Color8(306, 255, 0, 102) # Same as Color(1.2, 1, 0, 0.4).
 				[/codeblock]
+				[b]Note:[/b] Due to the lower precision of [method Color8] compared to the standard [Color] constructor, a color created with [method Color8] will generally not be equal to the same color created with the standard [Color] constructor. Use [method Color.is_equal_approx] for comparisons to avoid issues with floating-point precision error.
 			</description>
 		</method>
 		<method name="assert">
@@ -37,10 +38,10 @@
 				[codeblock]
 				# Imagine we always want speed to be between 0 and 20.
 				var speed = -10
-				assert(speed &lt; 20) # True, the program will continue
-				assert(speed &gt;= 0) # False, the program will stop
-				assert(speed &gt;= 0 and speed &lt; 20) # You can also combine the two conditional statements in one check
-				assert(speed &lt; 20, "the speed limit is 20") # Show a message
+				assert(speed &lt; 20) # True, the program will continue.
+				assert(speed &gt;= 0) # False, the program will stop.
+				assert(speed &gt;= 0 and speed &lt; 20) # You can also combine the two conditional statements in one check.
+				assert(speed &lt; 20, "the speed limit is 20") # Show a message.
 				[/codeblock]
 			</description>
 		</method>
@@ -121,6 +122,27 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="is_instance_of">
+			<return type="bool" />
+			<param index="0" name="value" type="Variant" />
+			<param index="1" name="type" type="Variant" />
+			<description>
+				Returns [code]true[/code] if [param value] is an instance of [param type]. The [param type] value must be one of the following:
+				- A constant from the [enum Variant.Type] enumeration, for example [constant TYPE_INT].
+				- An [Object]-derived class which exists in [ClassDB], for example [Node].
+				- A [Script] (you can use any class, including inner one).
+				Unlike the right operand of the [code]is[/code] operator, [param type] can be a non-constant value. The [code]is[/code] operator supports more features (such as typed arrays) and is more performant. Use the operator instead of this method if you do not need dynamic type checking.
+				Examples:
+				[codeblock]
+				print(is_instance_of(a, TYPE_INT))
+				print(is_instance_of(a, Node))
+				print(is_instance_of(a, MyClass))
+				print(is_instance_of(a, MyClass.InnerClass))
+				[/codeblock]
+				[b]Note:[/b] If [param value] and/or [param type] are freed objects (see [method @GlobalScope.is_instance_valid]), or [param type] is not one of the above options, this method will raise a runtime error.
+				See also [method @GlobalScope.typeof], [method type_exists], [method Array.is_same_typed] (and other [Array] methods).
+			</description>
+		</method>
 		<method name="len">
 			<return type="int" />
 			<param index="0" name="var" type="Variant" />
@@ -140,7 +162,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Returns a [Resource] from the filesystem located at the absolute [param path]. Unless it's already referenced elsewhere (such as in another script or in the scene), the resource is loaded from disk on function call, which might cause a slight delay, especially when loading large scenes. To avoid unnecessary delays when loading something multiple times, either store the resource in a variable or use [method preload].
-				[b]Note:[/b] Resource paths can be obtained by right-clicking on a resource in the FileSystem dock and choosing "Copy Path" or by dragging the file from the FileSystem dock into the script.
+				[b]Note:[/b] Resource paths can be obtained by right-clicking on a resource in the FileSystem dock and choosing "Copy Path", or by dragging the file from the FileSystem dock into the current script.
 				[codeblock]
 				# Load a scene called "main" located in the root of the project directory and cache it in a variable.
 				var main = load("res://main.tscn") # main will contain a PackedScene resource.
@@ -148,6 +170,7 @@
 				[b]Important:[/b] The path must be absolute. A relative path will always return [code]null[/code].
 				This function is a simplified version of [method ResourceLoader.load], which can be used for more advanced scenarios.
 				[b]Note:[/b] Files have to be imported into the engine first to load them using this function. If you want to load [Image]s at run-time, you may use [method Image.load]. If you want to import audio files, you can use the snippet described in [member AudioStreamMP3.data].
+				[b]Note:[/b] If [member ProjectSettings.editor/export/convert_text_resources_to_binary] is [code]true[/code], [method @GDScript.load] will not be able to read converted files in an exported project. If you rely on run-time loading of files present within the PCK, set [member ProjectSettings.editor/export/convert_text_resources_to_binary] to [code]false[/code].
 			</description>
 		</method>
 		<method name="preload">
@@ -155,7 +178,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Returns a [Resource] from the filesystem located at [param path]. During run-time, the resource is loaded when the script is being parsed. This function effectively acts as a reference to that resource. Note that this function requires [param path] to be a constant [String]. If you want to load a resource from a dynamic/variable path, use [method load].
-				[b]Note:[/b] Resource paths can be obtained by right clicking on a resource in the Assets Panel and choosing "Copy Path" or by dragging the file from the FileSystem dock into the script.
+				[b]Note:[/b] Resource paths can be obtained by right-clicking on a resource in the Assets Panel and choosing "Copy Path", or by dragging the file from the FileSystem dock into the current script.
 				[codeblock]
 				# Create instance of a scene.
 				var diamond = preload("res://diamond.tscn").instantiate()
@@ -205,8 +228,8 @@
 				To iterate over an [Array] backwards, use:
 				[codeblock]
 				var array = [3, 6, 9]
-				for i in range(array.size(), 0, -1):
-				    print(array[i - 1])
+				for i in range(array.size() - 1, -1, -1):
+				    print(array[i])
 				[/codeblock]
 				Output:
 				[codeblock]
@@ -224,18 +247,6 @@
 				0.3
 				0.2
 				0.1
-				[/codeblock]
-			</description>
-		</method>
-		<method name="str" qualifiers="vararg">
-			<return type="String" />
-			<description>
-				Converts one or more arguments to a [String] in the best way possible.
-				[codeblock]
-				var a = [10, 20, 30]
-				var b = str(a);
-				len(a) # Returns 3
-				len(b) # Returns 12
 				[/codeblock]
 			</description>
 		</method>
@@ -271,10 +282,12 @@
 		<annotation name="@export">
 			<return type="void" />
 			<description>
-				Mark the following property as exported (editable in the Inspector dock and saved to disk). To control the type of the exported property use the type hint notation.
+				Mark the following property as exported (editable in the Inspector dock and saved to disk). To control the type of the exported property, use the type hint notation.
 				[codeblock]
+				@export var string = ""
 				@export var int_number = 5
 				@export var float_number: float = 5
+				@export var image: Image
 				[/codeblock]
 			</description>
 		</annotation>
@@ -285,20 +298,20 @@
 				Define a new category for the following exported properties. This helps to organize properties in the Inspector dock.
 				See also [constant PROPERTY_USAGE_CATEGORY].
 				[codeblock]
-				@export_category("My Properties")
-				@export var number = 3
-				@export var string = ""
+				@export_category("Statistics")
+				@export var hp = 30
+				@export var speed = 1.25
 				[/codeblock]
-				[b]Note:[/b] Categories in the property list are supposed to indicate different base types, so the use of this annotation is not encouraged. See [annotation @export_group] and [annotation @export_subgroup] instead.
+				[b]Note:[/b] Categories in the Inspector dock's list usually divide properties coming from different classes (Node, Node2D, Sprite, etc.). For better clarity, it's recommended to use [annotation @export_group] and [annotation @export_subgroup], instead.
 			</description>
 		</annotation>
 		<annotation name="@export_color_no_alpha">
 			<return type="void" />
 			<description>
-				Export a [Color] property without transparency (its alpha fixed as [code]1.0[/code]).
+				Export a [Color] property without allowing its transparency ([member Color.a]) to be edited.
 				See also [constant PROPERTY_HINT_COLOR_NO_ALPHA].
 				[codeblock]
-				@export_color_no_alpha var modulate_color: Color
+				@export_color_no_alpha var dye_color: Color
 				[/codeblock]
 			</description>
 		</annotation>
@@ -308,7 +321,7 @@
 				Export a [String] property as a path to a directory. The path will be limited to the project folder and its subfolders. See [annotation @export_global_dir] to allow picking from the entire filesystem.
 				See also [constant PROPERTY_HINT_DIR].
 				[codeblock]
-				@export_dir var sprite_folder: String
+				@export_dir var sprite_folder_path: String
 				[/codeblock]
 			</description>
 		</annotation>
@@ -316,12 +329,21 @@
 			<return type="void" />
 			<param index="0" name="names" type="String" />
 			<description>
-				Export a [String] or integer property as an enumerated list of options. If the property is an integer field, then the index of the value is stored, in the same order the values are provided. You can add specific identifiers for allowed values using a colon.
+				Export an [int] or [String] property as an enumerated list of options. If the property is an [int], then the index of the value is stored, in the same order the values are provided. You can add explicit values using a colon. If the property is a [String], then the value is stored.
 				See also [constant PROPERTY_HINT_ENUM].
 				[codeblock]
-				@export_enum("Rebecca", "Mary", "Leah") var character_name: String
 				@export_enum("Warrior", "Magician", "Thief") var character_class: int
 				@export_enum("Slow:30", "Average:60", "Very Fast:200") var character_speed: int
+				@export_enum("Rebecca", "Mary", "Leah") var character_name: String
+				[/codeblock]
+				If you want to set an initial value, you must specify it explicitly:
+				[codeblock]
+				@export_enum("Rebecca", "Mary", "Leah") var character_name: String = "Rebecca"
+				[/codeblock]
+				If you want to use named GDScript enums, then use [annotation @export] instead:
+				[codeblock]
+				enum CharacterName {REBECCA, MARY, LEAH}
+				@export var character_name: CharacterName
 				[/codeblock]
 			</description>
 		</annotation>
@@ -346,8 +368,8 @@
 				If [param filter] is provided, only matching files will be available for picking.
 				See also [constant PROPERTY_HINT_FILE].
 				[codeblock]
-				@export_file var sound_effect_file: String
-				@export_file("*.txt") var notes_file: String
+				@export_file var sound_effect_path: String
+				@export_file("*.txt") var notes_path: String
 				[/codeblock]
 			</description>
 		</annotation>
@@ -359,6 +381,20 @@
 				See also [constant PROPERTY_HINT_FLAGS].
 				[codeblock]
 				@export_flags("Fire", "Water", "Earth", "Wind") var spell_elements = 0
+				[/codeblock]
+				You can add explicit values using a colon:
+				[codeblock]
+				@export_flags("Self:4", "Allies:8", "Foes:16") var spell_targets = 0
+				[/codeblock]
+				You can also combine several flags:
+				[codeblock]
+				@export_flags("Self:4", "Allies:8", "Self and Allies:12", "Foes:16")
+				var spell_targets = 0
+				[/codeblock]
+				[b]Note:[/b] A flag value must be at least [code]1[/code] and at most [code]2 ** 32 - 1[/code].
+				[b]Note:[/b] Unlike [annotation @export_enum], the previous explicit value is not taken into account. In the following example, A is 16, B is 2, C is 4.
+				[codeblock]
+				@export_flags("A:16", "B", "C") var x
 				[/codeblock]
 			</description>
 		</annotation>
@@ -422,13 +458,23 @@
 				[/codeblock]
 			</description>
 		</annotation>
+		<annotation name="@export_flags_avoidance">
+			<return type="void" />
+			<description>
+				Export an integer property as a bit flag field for navigation avoidance layers. The widget in the Inspector dock will use the layer names defined in [member ProjectSettings.layer_names/avoidance/layer_1].
+				See also [constant PROPERTY_HINT_LAYERS_AVOIDANCE].
+				[codeblock]
+				@export_flags_avoidance var avoidance_layers: int
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@export_global_dir">
 			<return type="void" />
 			<description>
-				Export a [String] property as a path to a directory. The path can be picked from the entire filesystem. See [annotation @export_dir] to limit it to the project folder and its subfolders.
+				Export a [String] property as an absolute path to a directory. The path can be picked from the entire filesystem. See [annotation @export_dir] to limit it to the project folder and its subfolders.
 				See also [constant PROPERTY_HINT_GLOBAL_DIR].
 				[codeblock]
-				@export_global_dir var sprite_folder: String
+				@export_global_dir var sprite_folder_path: String
 				[/codeblock]
 			</description>
 		</annotation>
@@ -436,12 +482,12 @@
 			<return type="void" />
 			<param index="0" name="filter" type="String" default="&quot;&quot;" />
 			<description>
-				Export a [String] property as a path to a file. The path can be picked from the entire filesystem. See [annotation @export_file] to limit it to the project folder and its subfolders.
+				Export a [String] property as an absolute path to a file. The path can be picked from the entire filesystem. See [annotation @export_file] to limit it to the project folder and its subfolders.
 				If [param filter] is provided, only matching files will be available for picking.
 				See also [constant PROPERTY_HINT_GLOBAL_FILE].
 				[codeblock]
-				@export_global_file var sound_effect_file: String
-				@export_global_file("*.txt") var notes_file: String
+				@export_global_file var sound_effect_path: String
+				@export_global_file("*.txt") var notes_path: String
 				[/codeblock]
 			</description>
 		</annotation>
@@ -451,17 +497,17 @@
 			<param index="1" name="prefix" type="String" default="&quot;&quot;" />
 			<description>
 				Define a new group for the following exported properties. This helps to organize properties in the Inspector dock. Groups can be added with an optional [param prefix], which would make group to only consider properties that have this prefix. The grouping will break on the first property that doesn't have a prefix. The prefix is also removed from the property's name in the Inspector dock.
-				If no [param prefix] is provided, the every following property is added to the group. The group ends when then next group or category is defined. You can also force end a group by using this annotation with empty strings for parameters, [code]@export_group("", "")[/code].
+				If no [param prefix] is provided, then every following property will be added to the group. The group ends when then next group or category is defined. You can also force end a group by using this annotation with empty strings for parameters, [code]@export_group("", "")[/code].
 				Groups cannot be nested, use [annotation @export_subgroup] to add subgroups within groups.
 				See also [constant PROPERTY_USAGE_GROUP].
 				[codeblock]
-				@export_group("My Properties")
-				@export var number = 3
-				@export var string = ""
+				@export_group("Racer Properties")
+				@export var nickname = "Nick"
+				@export var age = 26
 
-				@export_group("Prefixed Properties", "prefix_")
-				@export var prefix_number = 3
-				@export var prefix_string = ""
+				@export_group("Car Properties", "car_")
+				@export var car_label = "Speedy"
+				@export var car_number = 3
 
 				@export_group("", "")
 				@export var ungrouped_number = 3
@@ -485,7 +531,7 @@
 				Export a [NodePath] property with a filter for allowed node types.
 				See also [constant PROPERTY_HINT_NODE_PATH_VALID_TYPES].
 				[codeblock]
-				@export_node_path(Button, TouchScreenButton) var some_button
+				@export_node_path("Button", "TouchScreenButton") var some_button
 				[/codeblock]
 			</description>
 		</annotation>
@@ -507,7 +553,7 @@
 			<param index="2" name="step" type="float" default="1.0" />
 			<param index="3" name="extra_hints" type="String" default="&quot;&quot;" />
 			<description>
-				Export a numeric property as a range value. The range must be defined by [param min] and [param max], as well as an optional [param step] and a variety of extra hints. The [param step] defaults to [code]1[/code] for integer properties. For floating-point numbers this value depends on your [code]EditorSettings.interface/inspector/default_float_step[/code] setting.
+				Export an [int] or [float] property as a range value. The range must be defined by [param min] and [param max], as well as an optional [param step] and a variety of extra hints. The [param step] defaults to [code]1[/code] for integer properties. For floating-point numbers this value depends on your [code]EditorSettings.interface/inspector/default_float_step[/code] setting.
 				If hints [code]"or_greater"[/code] and [code]"or_less"[/code] are provided, the editor widget will not cap the value at range boundaries. The [code]"exp"[/code] hint will make the edited values on range to change exponentially. The [code]"hide_slider"[/code] hint will hide the slider element of the editor widget.
 				Hints also allow to indicate the units for the edited value. Using [code]"radians"[/code] you can specify that the actual value is in radians, but should be displayed in degrees in the Inspector dock. [code]"degrees"[/code] allows to add a degree sign as a unit suffix. Finally, a custom suffix can be provided using [code]"suffix:unit"[/code], where "unit" can be any string.
 				See also [constant PROPERTY_HINT_RANGE].
@@ -533,13 +579,13 @@
 				Define a new subgroup for the following exported properties. This helps to organize properties in the Inspector dock. Subgroups work exactly like groups, except they need a parent group to exist. See [annotation @export_group].
 				See also [constant PROPERTY_USAGE_SUBGROUP].
 				[codeblock]
-				@export_group("My Properties")
-				@export var number = 3
-				@export var string = ""
+				@export_group("Racer Properties")
+				@export var nickname = "Nick"
+				@export var age = 26
 
-				@export_subgroup("My Prefixed Properties", "prefix_")
-				@export var prefix_number = 3
-				@export var prefix_string = ""
+				@export_subgroup("Car Properties", "car_")
+				@export var car_label = "Speedy"
+				@export var car_number = 3
 				[/codeblock]
 				[b]Note:[/b] Subgroups cannot be nested, they only provide one extra level of depth. Just like the next group ends the previous group, so do the subsequent subgroups.
 			</description>
@@ -553,12 +599,14 @@
 				@icon("res://path/to/class/icon.svg")
 				[/codeblock]
 				[b]Note:[/b] Only the script can have a custom icon. Inner classes are not supported.
+				[b]Note:[/b] As annotations describe their subject, the [code]@icon[/code] annotation must be placed before the class definition and inheritance.
+				[b]Note:[/b] Unlike other annotations, the argument of the [code]@icon[/code] annotation must be a string literal (constant expressions are not supported).
 			</description>
 		</annotation>
 		<annotation name="@onready">
 			<return type="void" />
 			<description>
-				Mark the following property as assigned on [Node]'s ready state change. Values for these properties are not assigned immediately upon the node's creation, and instead are computed and stored right before [method Node._ready].
+				Mark the following property as assigned when the [Node] is ready. Values for these properties are not assigned immediately when the node is initialized ([method Object._init]), and instead are computed and stored right before [method Node._ready].
 				[codeblock]
 				@onready var character_name: Label = $Label
 				[/codeblock]
@@ -566,15 +614,29 @@
 		</annotation>
 		<annotation name="@rpc" qualifiers="vararg">
 			<return type="void" />
-			<param index="0" name="mode" type="String" default="&quot;&quot;" />
-			<param index="1" name="sync" type="String" default="&quot;&quot;" />
-			<param index="2" name="transfer_mode" type="String" default="&quot;&quot;" />
+			<param index="0" name="mode" type="String" default="&quot;authority&quot;" />
+			<param index="1" name="sync" type="String" default="&quot;call_remote&quot;" />
+			<param index="2" name="transfer_mode" type="String" default="&quot;unreliable&quot;" />
 			<param index="3" name="transfer_channel" type="int" default="0" />
 			<description>
 				Mark the following method for remote procedure calls. See [url=$DOCS_URL/tutorials/networking/high_level_multiplayer.html]High-level multiplayer[/url].
+				The order of [param mode], [param sync] and [param transfer_mode] does not matter and all arguments can be omitted, but [param transfer_channel] always has to be the last argument. The accepted values for [param mode] are [code]"any_peer"[/code] or [code]"authority"[/code], for [param sync] are [code]"call_remote"[/code] or [code]"call_local"[/code] and for [param transfer_mode] are [code]"unreliable"[/code], [code]"unreliable_ordered"[/code] or [code]"reliable"[/code].
 				[codeblock]
-				@rpc()
+				@rpc
+				func fn(): pass
+
+				@rpc("any_peer", "unreliable_ordered")
+				func fn_update_pos(): pass
+
+				@rpc("authority", "call_remote", "unreliable", 0) # Equivalent to @rpc
+				func fn_default(): pass
 				[/codeblock]
+			</description>
+		</annotation>
+		<annotation name="@static_unload">
+			<return type="void" />
+			<description>
+				Make a script with static variables to not persist after all references are lost. If the script is loaded again the static variables will revert to their default values.
 			</description>
 		</annotation>
 		<annotation name="@tool">
@@ -585,6 +647,7 @@
 				@tool
 				extends Node
 				[/codeblock]
+				[b]Note:[/b] As annotations describe their subject, the [code]@tool[/code] annotation must be placed before the class definition and inheritance.
 			</description>
 		</annotation>
 		<annotation name="@warning_ignore" qualifiers="vararg">

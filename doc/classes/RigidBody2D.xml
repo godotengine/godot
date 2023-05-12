@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RigidBody2D" inherits="PhysicsBody2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="RigidBody2D" inherits="PhysicsBody2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Physics Body which is moved by 2D physics simulation. Useful for objects that have gravity and can be pushed by other objects.
 	</brief_description>
@@ -176,6 +176,28 @@
 		<member name="inertia" type="float" setter="set_inertia" getter="get_inertia" default="0.0">
 			The body's moment of inertia. This is like mass, but for rotation: it determines how much torque it takes to rotate the body. The moment of inertia is usually computed automatically from the mass and the shapes, but this property allows you to set a custom value.
 			If set to [code]0[/code], inertia is automatically computed (default value).
+			[b]Note:[/b] This value does not change when inertia is automatically computed. Use [PhysicsServer2D] to get the computed inertia.
+			[codeblocks]
+			[gdscript]
+			@onready var ball = $Ball
+
+			func get_ball_inertia():
+			    return 1.0 / PhysicsServer2D.body_get_direct_state(ball.get_rid()).inverse_inertia
+			[/gdscript]
+			[csharp]
+			private RigidBody2D _ball;
+
+			public override void _Ready()
+			{
+			    _ball = GetNode&lt;RigidBody2D&gt;("Ball");
+			}
+
+			private float GetBallInertia()
+			{
+			    return 1.0f / PhysicsServer2D.BodyGetDirectState(_ball.GetRid()).InverseInertia;
+			}
+			[/csharp]
+			[/codeblocks]
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="0.0">
 			Damps the body's movement. By default, the body will use the [b]Default Linear Damp[/b] in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b] or any value override set by an [Area2D] the body is in. Depending on [member linear_damp_mode], you can set [member linear_damp] to be added to or to replace the body's damping value.
@@ -261,7 +283,7 @@
 			Kinematic body freeze mode. Similar to [constant FREEZE_MODE_STATIC], but collides with other bodies along its path when moved. Useful for a frozen body that needs to be animated.
 		</constant>
 		<constant name="CENTER_OF_MASS_MODE_AUTO" value="0" enum="CenterOfMassMode">
-			In this mode, the body's center of mass is calculated automatically based on its shapes.
+			In this mode, the body's center of mass is calculated automatically based on its shapes. This assumes that the shapes' origins are also their center of mass.
 		</constant>
 		<constant name="CENTER_OF_MASS_MODE_CUSTOM" value="1" enum="CenterOfMassMode">
 			In this mode, the body's center of mass is set through [member center_of_mass]. Defaults to the body's origin position.

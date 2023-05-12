@@ -1,36 +1,37 @@
-/*************************************************************************/
-/*  path_2d.cpp                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  path_2d.cpp                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "path_2d.h"
 
 #include "core/math/geometry_2d.h"
+#include "scene/main/timer.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_scale.h"
@@ -171,6 +172,12 @@ void Path2D::_curve_changed() {
 	}
 
 	queue_redraw();
+	for (int i = 0; i < get_child_count(); i++) {
+		PathFollow2D *follow = Object::cast_to<PathFollow2D>(get_child(i));
+		if (follow) {
+			follow->path_changed();
+		}
+	}
 }
 
 void Path2D::set_curve(const Ref<Curve2D> &p_curve) {
@@ -199,6 +206,14 @@ void Path2D::_bind_methods() {
 }
 
 /////////////////////////////////////////////////////////////////////////////////
+
+void PathFollow2D::path_changed() {
+	if (update_timer && !update_timer->is_stopped()) {
+		update_timer->start();
+	} else {
+		_update_transform();
+	}
+}
 
 void PathFollow2D::_update_transform() {
 	if (!path) {
@@ -230,6 +245,16 @@ void PathFollow2D::_update_transform() {
 
 void PathFollow2D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				update_timer = memnew(Timer);
+				update_timer->set_wait_time(0.2);
+				update_timer->set_one_shot(true);
+				update_timer->connect("timeout", callable_mp(this, &PathFollow2D::_update_transform));
+				add_child(update_timer, false, Node::INTERNAL_MODE_BACK);
+			}
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			path = Object::cast_to<Path2D>(get_parent());
 			if (path) {

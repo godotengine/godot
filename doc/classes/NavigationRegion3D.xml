@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationRegion3D" inherits="Node3D" is_experimental="true" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationRegion3D" inherits="Node3D" is_experimental="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A region of the navigation map.
 	</brief_description>
@@ -13,6 +13,7 @@
 		[b]Note:[/b] This node caches changes to its properties, so if you make changes to the underlying region [RID] in [NavigationServer3D], they will not be reflected in this node's properties.
 	</description>
 	<tutorials>
+		<link title="Using NavigationRegions">$DOCS_URL/tutorials/navigation/navigation_using_navigationregions.html</link>
 	</tutorials>
 	<methods>
 		<method name="bake_navigation_mesh">
@@ -59,6 +60,9 @@
 		</member>
 		<member name="travel_cost" type="float" setter="set_travel_cost" getter="get_travel_cost" default="1.0">
 			When pathfinding moves inside this region's navigation mesh the traveled distances are multiplied with [code]travel_cost[/code] for determining the shortest path.
+		</member>
+		<member name="use_edge_connections" type="bool" setter="set_use_edge_connections" getter="get_use_edge_connections" default="true">
+			If enabled the navigation region will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin.
 		</member>
 	</members>
 	<signals>

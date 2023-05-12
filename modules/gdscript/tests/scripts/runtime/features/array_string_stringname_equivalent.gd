@@ -9,7 +9,7 @@ func test():
 	array_sname.push_back(&"godot")
 	print("String in Array: ", "godot" in array_sname)
 
-  # Not equal because the values are different types.
+	# Not equal because the values are different types.
 	print("Arrays not equal: ", array_str != array_sname)
 
 	var string_array: Array[String] = []

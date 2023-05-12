@@ -300,28 +300,23 @@ void main() {
 			vec3 rel_vec = xform[3].xyz - attractors[i].transform[3].xyz;
 			vec3 local_pos = rel_vec * mat3(attractors[i].transform);
 
-			switch (attractors[i].type) {
-				case ATTRACTOR_TYPE_SPHERE: {
-					dir = safe_normalize(rel_vec);
-					float d = length(local_pos) / attractors[i].extents.x;
-					if (d > 1.0) {
-						continue;
-					}
-					amount = max(0.0, 1.0 - d);
-				} break;
-				case ATTRACTOR_TYPE_BOX: {
-					dir = safe_normalize(rel_vec);
+			if (attractors[i].type == ATTRACTOR_TYPE_SPHERE) {
+				dir = safe_normalize(rel_vec);
+				float d = length(local_pos) / attractors[i].extents.x;
+				if (d > 1.0) {
+					continue;
+				}
+				amount = max(0.0, 1.0 - d);
+			} else if (attractors[i].type == ATTRACTOR_TYPE_BOX) {
+				dir = safe_normalize(rel_vec);
 
-					vec3 abs_pos = abs(local_pos / attractors[i].extents.xyz);
-					float d = max(abs_pos.x, max(abs_pos.y, abs_pos.z));
-					if (d > 1.0) {
-						continue;
-					}
-					amount = max(0.0, 1.0 - d);
-
-				} break;
-				case ATTRACTOR_TYPE_VECTOR_FIELD: {
-				} break;
+				vec3 abs_pos = abs(local_pos / attractors[i].extents.xyz);
+				float d = max(abs_pos.x, max(abs_pos.y, abs_pos.z));
+				if (d > 1.0) {
+					continue;
+				}
+				amount = max(0.0, 1.0 - d);
+			} else if (attractors[i].type == ATTRACTOR_TYPE_VECTOR_FIELD) {
 			}
 			amount = pow(amount, attractors[i].attenuation);
 			dir = safe_normalize(mix(dir, attractors[i].transform[2].xyz, attractors[i].directionality));
@@ -383,80 +378,72 @@ void main() {
 				vec3 rel_vec = xform[3].xyz - colliders[i].transform[3].xyz;
 				vec3 local_pos = rel_vec * mat3(colliders[i].transform);
 
-				switch (colliders[i].type) {
-					case COLLIDER_TYPE_SPHERE: {
-						float d = length(rel_vec) - (particle_size + colliders[i].extents.x);
+				if (colliders[i].type == COLLIDER_TYPE_SPHERE) {
+					float d = length(rel_vec) - (particle_size + colliders[i].extents.x);
 
-						if (d < 0.0) {
+					if (d < 0.0) {
+						col = true;
+						depth = -d;
+						normal = normalize(rel_vec);
+					}
+				} else if (colliders[i].type == COLLIDER_TYPE_BOX) {
+					vec3 abs_pos = abs(local_pos);
+					vec3 sgn_pos = sign(local_pos);
+
+					if (any(greaterThan(abs_pos, colliders[i].extents.xyz))) {
+						//point outside box
+
+						vec3 closest = min(abs_pos, colliders[i].extents.xyz);
+						vec3 rel = abs_pos - closest;
+						depth = length(rel) - particle_size;
+						if (depth < 0.0) {
 							col = true;
-							depth = -d;
-							normal = normalize(rel_vec);
+							normal = mat3(colliders[i].transform) * (normalize(rel) * sgn_pos);
+							depth = -depth;
 						}
-
-					} break;
-					case COLLIDER_TYPE_BOX: {
-						vec3 abs_pos = abs(local_pos);
-						vec3 sgn_pos = sign(local_pos);
-
-						if (any(greaterThan(abs_pos, colliders[i].extents.xyz))) {
-							//point outside box
-
-							vec3 closest = min(abs_pos, colliders[i].extents.xyz);
-							vec3 rel = abs_pos - closest;
-							depth = length(rel) - particle_size;
-							if (depth < 0.0) {
-								col = true;
-								normal = mat3(colliders[i].transform) * (normalize(rel) * sgn_pos);
-								depth = -depth;
-							}
+					} else {
+						//point inside box
+						vec3 axis_len = colliders[i].extents.xyz - abs_pos;
+						// there has to be a faster way to do this?
+						if (all(lessThan(axis_len.xx, axis_len.yz))) {
+							normal = vec3(1, 0, 0);
+						} else if (all(lessThan(axis_len.yy, axis_len.xz))) {
+							normal = vec3(0, 1, 0);
 						} else {
-							//point inside box
-							vec3 axis_len = colliders[i].extents.xyz - abs_pos;
-							// there has to be a faster way to do this?
-							if (all(lessThan(axis_len.xx, axis_len.yz))) {
-								normal = vec3(1, 0, 0);
-							} else if (all(lessThan(axis_len.yy, axis_len.xz))) {
-								normal = vec3(0, 1, 0);
-							} else {
-								normal = vec3(0, 0, 1);
-							}
-
-							col = true;
-							depth = dot(normal * axis_len, vec3(1)) + particle_size;
-							normal = mat3(colliders[i].transform) * (normal * sgn_pos);
+							normal = vec3(0, 0, 1);
 						}
 
-					} break;
-					case COLLIDER_TYPE_SDF: {
-					} break;
-					case COLLIDER_TYPE_HEIGHT_FIELD: {
-						vec3 local_pos_bottom = local_pos;
-						local_pos_bottom.y -= particle_size;
+						col = true;
+						depth = dot(normal * axis_len, vec3(1)) + particle_size;
+						normal = mat3(colliders[i].transform) * (normal * sgn_pos);
+					}
+				} else if (colliders[i].type == COLLIDER_TYPE_SDF) {
+				} else if (colliders[i].type == COLLIDER_TYPE_HEIGHT_FIELD) {
+					vec3 local_pos_bottom = local_pos;
+					local_pos_bottom.y -= particle_size;
 
-						if (any(greaterThan(abs(local_pos_bottom), colliders[i].extents.xyz))) {
-							continue;
-						}
-						const float DELTA = 1.0 / 8192.0;
+					if (any(greaterThan(abs(local_pos_bottom), colliders[i].extents.xyz))) {
+						continue;
+					}
+					const float DELTA = 1.0 / 8192.0;
 
-						vec3 uvw_pos = vec3(local_pos_bottom / colliders[i].extents.xyz) * 0.5 + 0.5;
+					vec3 uvw_pos = vec3(local_pos_bottom / colliders[i].extents.xyz) * 0.5 + 0.5;
 
-						float y = 1.0 - texture(height_field_texture, uvw_pos.xz).r;
+					float y = 1.0 - texture(height_field_texture, uvw_pos.xz).r;
 
-						if (y > uvw_pos.y) {
-							//inside heightfield
+					if (y > uvw_pos.y) {
+						//inside heightfield
 
-							vec3 pos1 = (vec3(uvw_pos.x, y, uvw_pos.z) * 2.0 - 1.0) * colliders[i].extents.xyz;
-							vec3 pos2 = (vec3(uvw_pos.x + DELTA, 1.0 - texture(height_field_texture, uvw_pos.xz + vec2(DELTA, 0)).r, uvw_pos.z) * 2.0 - 1.0) * colliders[i].extents.xyz;
-							vec3 pos3 = (vec3(uvw_pos.x, 1.0 - texture(height_field_texture, uvw_pos.xz + vec2(0, DELTA)).r, uvw_pos.z + DELTA) * 2.0 - 1.0) * colliders[i].extents.xyz;
+						vec3 pos1 = (vec3(uvw_pos.x, y, uvw_pos.z) * 2.0 - 1.0) * colliders[i].extents.xyz;
+						vec3 pos2 = (vec3(uvw_pos.x + DELTA, 1.0 - texture(height_field_texture, uvw_pos.xz + vec2(DELTA, 0)).r, uvw_pos.z) * 2.0 - 1.0) * colliders[i].extents.xyz;
+						vec3 pos3 = (vec3(uvw_pos.x, 1.0 - texture(height_field_texture, uvw_pos.xz + vec2(0, DELTA)).r, uvw_pos.z + DELTA) * 2.0 - 1.0) * colliders[i].extents.xyz;
 
-							normal = normalize(cross(pos1 - pos2, pos1 - pos3));
-							float local_y = (vec3(local_pos / colliders[i].extents.xyz) * 0.5 + 0.5).y;
+						normal = normalize(cross(pos1 - pos2, pos1 - pos3));
+						float local_y = (vec3(local_pos / colliders[i].extents.xyz) * 0.5 + 0.5).y;
 
-							col = true;
-							depth = dot(normal, pos1) - dot(normal, local_pos_bottom);
-						}
-
-					} break;
+						col = true;
+						depth = dot(normal, pos1) - dot(normal, local_pos_bottom);
+					}
 				}
 
 				if (col) {

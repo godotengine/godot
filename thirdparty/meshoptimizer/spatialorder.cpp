@@ -113,7 +113,7 @@ void meshopt_spatialSortRemap(unsigned int* destination, const float* vertex_pos
 {
 	using namespace meshopt;
 
-	assert(vertex_positions_stride > 0 && vertex_positions_stride <= 256);
+	assert(vertex_positions_stride >= 12 && vertex_positions_stride <= 256);
 	assert(vertex_positions_stride % sizeof(float) == 0);
 
 	meshopt_Allocator allocator;
@@ -144,7 +144,7 @@ void meshopt_spatialSortTriangles(unsigned int* destination, const unsigned int*
 	using namespace meshopt;
 
 	assert(index_count % 3 == 0);
-	assert(vertex_positions_stride > 0 && vertex_positions_stride <= 256);
+	assert(vertex_positions_stride >= 12 && vertex_positions_stride <= 256);
 	assert(vertex_positions_stride % sizeof(float) == 0);
 
 	(void)vertex_count;

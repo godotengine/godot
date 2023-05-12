@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  video_stream_theora.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  video_stream_theora.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "video_stream_theora.h"
 
@@ -251,8 +251,12 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 
 	/* we're expecting more header packets. */
 	while ((theora_p && theora_p < 3) || (vorbis_p && vorbis_p < 3)) {
+		int ret = 0;
+
 		/* look for further theora headers */
-		int ret = ogg_stream_packetout(&to, &op);
+		if (theora_p && theora_p < 3) {
+			ret = ogg_stream_packetout(&to, &op);
+		}
 		while (theora_p && theora_p < 3 && ret) {
 			if (ret < 0) {
 				fprintf(stderr, "Error parsing Theora stream headers; corrupt stream?\n");
@@ -269,7 +273,9 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		}
 
 		/* look for more vorbis header packets */
-		ret = ogg_stream_packetout(&vo, &op);
+		if (vorbis_p && vorbis_p < 3) {
+			ret = ogg_stream_packetout(&vo, &op);
+		}
 		while (vorbis_p && vorbis_p < 3 && ret) {
 			if (ret < 0) {
 				fprintf(stderr, "Error parsing Vorbis stream headers; corrupt stream?\n");
@@ -574,22 +580,7 @@ bool VideoStreamPlaybackTheora::is_paused() const {
 	return paused;
 }
 
-void VideoStreamPlaybackTheora::set_loop(bool p_enable) {
-}
-
-bool VideoStreamPlaybackTheora::has_loop() const {
-	return false;
-}
-
 double VideoStreamPlaybackTheora::get_length() const {
-	return 0;
-}
-
-String VideoStreamPlaybackTheora::get_stream_name() const {
-	return "";
-}
-
-int VideoStreamPlaybackTheora::get_loop_count() const {
 	return 0;
 }
 
@@ -599,11 +590,6 @@ double VideoStreamPlaybackTheora::get_playback_position() const {
 
 void VideoStreamPlaybackTheora::seek(double p_time) {
 	WARN_PRINT_ONCE("Seeking in Theora videos is not implemented yet (it's only supported for GDExtension-provided video streams).");
-}
-
-void VideoStreamPlaybackTheora::set_mix_callback(AudioMixCallback p_callback, void *p_userdata) {
-	mix_callback = p_callback;
-	mix_udata = p_userdata;
 }
 
 int VideoStreamPlaybackTheora::get_channels() const {
@@ -657,16 +643,9 @@ VideoStreamPlaybackTheora::~VideoStreamPlaybackTheora() {
 	memdelete(thread_sem);
 #endif
 	clear();
-}
+};
 
-void VideoStreamTheora::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_file", "file"), &VideoStreamTheora::set_file);
-	ClassDB::bind_method(D_METHOD("get_file"), &VideoStreamTheora::get_file);
-
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "file", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_file", "get_file");
-}
-
-////////////
+void VideoStreamTheora::_bind_methods() {}
 
 Ref<Resource> ResourceFormatLoaderTheora::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);

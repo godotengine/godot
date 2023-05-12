@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  vulkan_context.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  vulkan_context.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "vulkan_context.h"
 
@@ -101,6 +101,7 @@ VkResult VulkanContext::vkCreateRenderPass2KHR(VkDevice p_device, const VkRender
 			attachments.push_back(att);
 		}
 
+		Vector<Vector<VkAttachmentReference>> attachment_references;
 		Vector<VkSubpassDescription> subpasses;
 		for (uint32_t i = 0; i < p_create_info->subpassCount; i++) {
 			// Here we need to do more, again it's just stripping out type and next
@@ -124,6 +125,10 @@ VkResult VulkanContext::vkCreateRenderPass2KHR(VkDevice p_device, const VkRender
 				p_create_info->pSubpasses[i].preserveAttachmentCount, /* preserveAttachmentCount */
 				p_create_info->pSubpasses[i].pPreserveAttachments /* pPreserveAttachments */
 			};
+			attachment_references.push_back(input_attachments);
+			attachment_references.push_back(color_attachments);
+			attachment_references.push_back(resolve_attachments);
+			attachment_references.push_back(depth_attachments);
 
 			subpasses.push_back(subpass);
 		}
@@ -353,11 +358,11 @@ Error VulkanContext::_get_preferred_validation_layers(uint32_t *count, const cha
 		ERR_FAIL_V(ERR_CANT_CREATE);
 	}
 
-	for (uint32_t i = 0; i < instance_validation_layers_alt.size(); i++) {
-		if (_check_layers(instance_validation_layers_alt[i].size(), instance_validation_layers_alt[i].ptr(), instance_layer_count, instance_layers)) {
-			*count = instance_validation_layers_alt[i].size();
+	for (const LocalVector<const char *> &layer : instance_validation_layers_alt) {
+		if (_check_layers(layer.size(), layer.ptr(), instance_layer_count, instance_layers)) {
+			*count = layer.size();
 			if (names != nullptr) {
-				*names = instance_validation_layers_alt[i].ptr();
+				*names = layer.ptr();
 			}
 			break;
 		}
@@ -413,6 +418,7 @@ Error VulkanContext::_initialize_instance_extensions() {
 		register_requested_instance_extension(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, false);
 	}
 
+	// This extension allows us to use the properties2 features to query additional device capabilities
 	register_requested_instance_extension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, false);
 
 	// Only enable debug utils in verbose mode or DEV_ENABLED.
@@ -493,7 +499,10 @@ Error VulkanContext::_initialize_device_extensions() {
 	register_requested_device_extension(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, false);
 	register_requested_device_extension(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME, false);
 	register_requested_device_extension(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME, false);
+	register_requested_device_extension(VK_KHR_STORAGE_BUFFER_STORAGE_CLASS_EXTENSION_NAME, false);
 	register_requested_device_extension(VK_KHR_16BIT_STORAGE_EXTENSION_NAME, false);
+	register_requested_device_extension(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME, false);
+	register_requested_device_extension(VK_KHR_MAINTENANCE_2_EXTENSION_NAME, false);
 
 	// TODO consider the following extensions:
 	// - VK_KHR_spirv_1_4
@@ -744,48 +753,90 @@ Error VulkanContext::_check_capabilities() {
 		}
 		if (vkGetPhysicalDeviceFeatures2_func != nullptr) {
 			// Check our extended features.
-			VkPhysicalDeviceFragmentShadingRateFeaturesKHR vrs_features = {
-				/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
-				/*pNext*/ nullptr,
-				/*pipelineFragmentShadingRate*/ false,
-				/*primitiveFragmentShadingRate*/ false,
-				/*attachmentFragmentShadingRate*/ false,
-			};
+			void *next = nullptr;
 
-			VkPhysicalDeviceShaderFloat16Int8FeaturesKHR shader_features = {
-				/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR,
-				/*pNext*/ &vrs_features,
-				/*shaderFloat16*/ false,
-				/*shaderInt8*/ false,
-			};
+			// We must check that the relative extension is present before assuming a
+			// feature as enabled.
+			// See also: https://github.com/godotengine/godot/issues/65409
 
-			VkPhysicalDevice16BitStorageFeaturesKHR storage_feature = {
-				/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR,
-				/*pNext*/ &shader_features,
-				/*storageBuffer16BitAccess*/ false,
-				/*uniformAndStorageBuffer16BitAccess*/ false,
-				/*storagePushConstant16*/ false,
-				/*storageInputOutput16*/ false,
-			};
+			VkPhysicalDeviceVulkan12Features device_features_vk12 = {};
+			VkPhysicalDeviceShaderFloat16Int8FeaturesKHR shader_features = {};
+			VkPhysicalDeviceFragmentShadingRateFeaturesKHR vrs_features = {};
+			VkPhysicalDevice16BitStorageFeaturesKHR storage_feature = {};
+			VkPhysicalDeviceMultiviewFeatures multiview_features = {};
 
-			VkPhysicalDeviceMultiviewFeatures multiview_features = {
-				/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES,
-				/*pNext*/ &storage_feature,
-				/*multiview*/ false,
-				/*multiviewGeometryShader*/ false,
-				/*multiviewTessellationShader*/ false,
-			};
+			if (device_api_version >= VK_API_VERSION_1_2) {
+				device_features_vk12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+				device_features_vk12.pNext = next;
+				next = &device_features_vk12;
+			} else {
+				if (is_device_extension_enabled(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME)) {
+					shader_features = {
+						/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR,
+						/*pNext*/ next,
+						/*shaderFloat16*/ false,
+						/*shaderInt8*/ false,
+					};
+					next = &shader_features;
+				}
+			}
+
+			if (is_device_extension_enabled(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)) {
+				vrs_features = {
+					/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
+					/*pNext*/ next,
+					/*pipelineFragmentShadingRate*/ false,
+					/*primitiveFragmentShadingRate*/ false,
+					/*attachmentFragmentShadingRate*/ false,
+				};
+				next = &vrs_features;
+			}
+
+			if (is_device_extension_enabled(VK_KHR_16BIT_STORAGE_EXTENSION_NAME)) {
+				storage_feature = {
+					/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR,
+					/*pNext*/ next,
+					/*storageBuffer16BitAccess*/ false,
+					/*uniformAndStorageBuffer16BitAccess*/ false,
+					/*storagePushConstant16*/ false,
+					/*storageInputOutput16*/ false,
+				};
+				next = &storage_feature;
+			}
+
+			if (is_device_extension_enabled(VK_KHR_MULTIVIEW_EXTENSION_NAME)) {
+				multiview_features = {
+					/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES,
+					/*pNext*/ next,
+					/*multiview*/ false,
+					/*multiviewGeometryShader*/ false,
+					/*multiviewTessellationShader*/ false,
+				};
+				next = &multiview_features;
+			}
 
 			VkPhysicalDeviceFeatures2 device_features;
 			device_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-			device_features.pNext = &multiview_features;
+			device_features.pNext = next;
 
 			vkGetPhysicalDeviceFeatures2_func(gpu, &device_features);
 
-			// We must check that the relative extension is present before assuming a
-			// feature as enabled. Actually, according to the spec we shouldn't add the
-			// structs in pNext at all, but this works fine.
-			// See also: https://github.com/godotengine/godot/issues/65409
+			if (device_api_version >= VK_API_VERSION_1_2) {
+#ifdef MACOS_ENABLED
+				ERR_FAIL_COND_V_MSG(!device_features_vk12.shaderSampledImageArrayNonUniformIndexing, ERR_CANT_CREATE, "Your GPU doesn't support shaderSampledImageArrayNonUniformIndexing which is required to use the Vulkan-based renderers in Godot.");
+#endif
+
+				if (is_device_extension_enabled(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME)) {
+					shader_capabilities.shader_float16_is_supported = device_features_vk12.shaderFloat16;
+					shader_capabilities.shader_int8_is_supported = device_features_vk12.shaderInt8;
+				}
+			} else {
+				if (is_device_extension_enabled(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME)) {
+					shader_capabilities.shader_float16_is_supported = shader_features.shaderFloat16;
+					shader_capabilities.shader_int8_is_supported = shader_features.shaderInt8;
+				}
+			}
+
 			if (is_device_extension_enabled(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)) {
 				vrs_capabilities.pipeline_vrs_supported = vrs_features.pipelineFragmentShadingRate;
 				vrs_capabilities.primitive_vrs_supported = vrs_features.primitiveFragmentShadingRate;
@@ -796,11 +847,6 @@ Error VulkanContext::_check_capabilities() {
 				multiview_capabilities.is_supported = multiview_features.multiview;
 				multiview_capabilities.geometry_shader_is_supported = multiview_features.multiviewGeometryShader;
 				multiview_capabilities.tessellation_shader_is_supported = multiview_features.multiviewTessellationShader;
-			}
-
-			if (is_device_extension_enabled(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME)) {
-				shader_capabilities.shader_float16_is_supported = shader_features.shaderFloat16;
-				shader_capabilities.shader_int8_is_supported = shader_features.shaderInt8;
 			}
 
 			if (is_device_extension_enabled(VK_KHR_16BIT_STORAGE_EXTENSION_NAME)) {
@@ -1258,8 +1304,15 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 	// Get device version
 	device_api_version = gpu_props.apiVersion;
 
+	String rendering_method;
+	if (OS::get_singleton()->get_current_rendering_method() == "mobile") {
+		rendering_method = "Forward Mobile";
+	} else {
+		rendering_method = "Forward+";
+	}
+
 	// Output our device version
-	print_line("Vulkan API " + get_device_api_version() + " - " + "Using Vulkan Device #" + itos(device_index) + ": " + device_vendor + " - " + device_name);
+	print_line(vformat("Vulkan API %s - %s - Using Vulkan Device #%d: %s - %s", get_device_api_version(), rendering_method, device_index, device_vendor, device_name));
 
 	{
 		Error _err = _initialize_device_extensions();
@@ -1278,6 +1331,10 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 	//  If app has specific feature requirements it should check supported
 	//  features based on this query
 	vkGetPhysicalDeviceFeatures(gpu, &physical_device_features);
+
+	// Check required features
+	ERR_FAIL_COND_V_MSG(!physical_device_features.imageCubeArray, ERR_CANT_CREATE, "Your GPU doesn't support image cube arrays which are required to use the Vulkan-based renderers in Godot.");
+	ERR_FAIL_COND_V_MSG(!physical_device_features.independentBlend, ERR_CANT_CREATE, "Your GPU doesn't support independentBlend which is required to use the Vulkan-based renderers in Godot.");
 
 	physical_device_features.robustBufferAccess = false; // Turn off robust buffer access, which can hamper performance on some hardware.
 
@@ -1819,7 +1876,10 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 
 	// Set the windows present mode if it is available, otherwise FIFO is used (guaranteed supported).
 	if (present_mode_available) {
-		window->presentMode = requested_present_mode;
+		if (window->presentMode != requested_present_mode) {
+			window->presentMode = requested_present_mode;
+			print_verbose("Using present mode: " + String(string_VkPresentModeKHR(window->presentMode)));
+		}
 	} else {
 		String present_mode_string;
 		switch (window->vsync_mode) {
@@ -1839,8 +1899,6 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 		WARN_PRINT(vformat("The requested V-Sync mode %s is not available. Falling back to V-Sync mode Enabled.", present_mode_string));
 		window->vsync_mode = DisplayServer::VSYNC_ENABLED; // Set to default.
 	}
-
-	print_verbose("Using present mode: " + String(string_VkPresentModeKHR(window->presentMode)));
 
 	free(presentModes);
 
@@ -2216,10 +2274,10 @@ Error VulkanContext::prepare_buffers() {
 			} else if (err == VK_SUBOPTIMAL_KHR) {
 				// Swapchain is not as optimal as it could be, but the platform's
 				// presentation engine will still present the image correctly.
-				print_verbose("Vulkan: Early suboptimal swapchain.");
-				break;
+				print_verbose("Vulkan: Early suboptimal swapchain, recreating.");
+				_update_swap_chain(w);
 			} else if (err != VK_SUCCESS) {
-				ERR_BREAK_MSG(err != VK_SUCCESS, "Vulkan: Did not create swapchain successfully.");
+				ERR_BREAK_MSG(err != VK_SUCCESS, "Vulkan: Did not create swapchain successfully. Error code: " + String(string_VkResult(err)));
 			} else {
 				w->semaphore_acquired = true;
 			}
@@ -2252,7 +2310,7 @@ Error VulkanContext::swap_buffers() {
 		// simple that it doesn't do either of those.
 	}
 #endif
-	// Wait for the image acquired semaphore to be signalled to ensure
+	// Wait for the image acquired semaphore to be signaled to ensure
 	// that the image won't be rendered to until the presentation
 	// engine has fully released ownership to the application, and it is
 	// okay to render to the image.
@@ -2296,7 +2354,7 @@ Error VulkanContext::swap_buffers() {
 	submit_info.signalSemaphoreCount = 1;
 	submit_info.pSignalSemaphores = &draw_complete_semaphores[frame_index];
 	err = vkQueueSubmit(graphics_queue, 1, &submit_info, fences[frame_index]);
-	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "Vulkan: Cannot submit graphics queue. Error code: " + String(string_VkResult(err)));
 
 	command_buffer_queue.write[0] = nullptr;
 	command_buffer_count = 1;
@@ -2304,7 +2362,7 @@ Error VulkanContext::swap_buffers() {
 	if (separate_present_queue) {
 		// If we are using separate queues, change image ownership to the
 		// present queue before presenting, waiting for the draw complete
-		// semaphore and signalling the ownership released semaphore when finished.
+		// semaphore and signaling the ownership released semaphore when finished.
 		VkFence nullFence = VK_NULL_HANDLE;
 		pipe_stage_flags[0] = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		submit_info.waitSemaphoreCount = 1;
@@ -2327,7 +2385,7 @@ Error VulkanContext::swap_buffers() {
 		submit_info.signalSemaphoreCount = 1;
 		submit_info.pSignalSemaphores = &image_ownership_semaphores[frame_index];
 		err = vkQueueSubmit(present_queue, 1, &submit_info, nullFence);
-		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+		ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "Vulkan: Cannot submit present queue. Error code: " + String(string_VkResult(err)));
 	}
 
 	// If we are using separate queues, we have to wait for image ownership,
@@ -2436,14 +2494,14 @@ Error VulkanContext::swap_buffers() {
 	if (err == VK_ERROR_OUT_OF_DATE_KHR) {
 		// Swapchain is out of date (e.g. the window was resized) and
 		// must be recreated.
-		print_verbose("Vulkan: Swapchain is out of date, recreating.");
+		print_verbose("Vulkan queue submit: Swapchain is out of date, recreating.");
 		resize_notify();
 	} else if (err == VK_SUBOPTIMAL_KHR) {
 		// Swapchain is not as optimal as it could be, but the platform's
 		// presentation engine will still present the image correctly.
-		print_verbose("Vulkan: Swapchain is suboptimal.");
+		print_verbose("Vulkan queue submit: Swapchain is suboptimal.");
 	} else {
-		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+		ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "Error code: " + String(string_VkResult(err)));
 	}
 
 	buffers_prepared = false;

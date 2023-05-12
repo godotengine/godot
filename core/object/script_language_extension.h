@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  script_language_extension.h                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  script_language_extension.h                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef SCRIPT_LANGUAGE_EXTENSION_H
 #define SCRIPT_LANGUAGE_EXTENSION_H
@@ -53,6 +53,7 @@ protected:
 public:
 	EXBIND0RC(bool, can_instantiate)
 	EXBIND0RC(Ref<Script>, get_base_script)
+	EXBIND0RC(StringName, get_global_name)
 	EXBIND1RC(bool, inherits_script, const Ref<Script> &)
 	EXBIND0RC(StringName, get_instance_base_type)
 
@@ -125,7 +126,8 @@ public:
 		}
 		Variant ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_property_default_value, p_property, ret);
-		return ret;
+		r_value = ret;
+		return true;
 	}
 
 	EXBIND0(update_exports)
@@ -200,7 +202,6 @@ public:
 	EXBIND0(init)
 	EXBIND0RC(String, get_type)
 	EXBIND0RC(String, get_extension)
-	EXBIND1R(Error, execute_file, const String &)
 	EXBIND0(finish)
 
 	/* EDITOR FUNCTIONS */
@@ -593,23 +594,6 @@ public:
 		GDVIRTUAL_REQUIRED_CALL(_profiling_get_accumulated_data, p_info_arr, p_info_max, ret);
 		return ret;
 	}
-
-	GDVIRTUAL1R(GDExtensionPtr<void>, _alloc_instance_binding_data, Object *)
-
-	virtual void *alloc_instance_binding_data(Object *p_object) override {
-		GDExtensionPtr<void> ret = nullptr;
-		GDVIRTUAL_REQUIRED_CALL(_alloc_instance_binding_data, p_object, ret);
-		return ret.operator void *();
-	}
-
-	GDVIRTUAL1(_free_instance_binding_data, GDExtensionPtr<void>)
-
-	virtual void free_instance_binding_data(void *p_data) override {
-		GDVIRTUAL_REQUIRED_CALL(_free_instance_binding_data, p_data);
-	}
-
-	EXBIND1(refcount_incremented_instance_binding, Object *)
-	EXBIND1R(bool, refcount_decremented_instance_binding, Object *)
 
 	EXBIND0(frame)
 

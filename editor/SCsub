@@ -26,7 +26,7 @@ def _make_doc_data_class_path(to_path):
 
 if env.editor_build:
     # Register exporters
-    reg_exporters_inc = '#include "register_exporters.h"\n'
+    reg_exporters_inc = '#include "register_exporters.h"\n\n'
     reg_exporters = "void register_exporters() {\n"
     for e in env.platform_exporters:
         # Glob all .cpp files in export folder
@@ -35,6 +35,10 @@ if env.editor_build:
 
         reg_exporters += "\tregister_" + e + "_exporter();\n"
         reg_exporters_inc += '#include "platform/' + e + '/export/export.h"\n'
+    reg_exporters += "}\n\n"
+    reg_exporters += "void register_exporter_types() {\n"
+    for e in env.platform_exporters:
+        reg_exporters += "\tregister_" + e + "_exporter_types();\n"
     reg_exporters += "}\n"
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
@@ -75,10 +79,7 @@ if env.editor_build:
     # Generated with `make include-list` for each resource.
 
     # Editor translations
-    to_include = (
-        "ar,bg,ca,cs,de,el,eo,es_AR,es,fi,fr,gl,he,hu,id,it,ja,ko,lv,ms,nb,nl,pl,pt_BR,pt,ro,ru,sk,sv,th,tr,uk,vi,zh_CN,zh_TW"
-    ).split(",")
-    tlist = [env.Dir("#editor/translations").abspath + "/" + f + ".po" for f in to_include]
+    tlist = glob.glob(env.Dir("#editor/translations/editor").abspath + "/*.po")
     env.Depends("#editor/editor_translations.gen.h", tlist)
     env.CommandNoCache(
         "#editor/editor_translations.gen.h",
@@ -86,9 +87,17 @@ if env.editor_build:
         env.Run(editor_builders.make_editor_translations_header, "Generating editor translations header."),
     )
 
+    # Property translations
+    tlist = glob.glob(env.Dir("#editor/translations/properties").abspath + "/*.po")
+    env.Depends("#editor/property_translations.gen.h", tlist)
+    env.CommandNoCache(
+        "#editor/property_translations.gen.h",
+        tlist,
+        env.Run(editor_builders.make_property_translations_header, "Generating property translations header."),
+    )
+
     # Documentation translations
-    to_include = "de,es,fr,ja,zh_CN".split(",")
-    tlist = [env.Dir("#doc/translations").abspath + "/" + f + ".po" for f in to_include]
+    tlist = glob.glob(env.Dir("#doc/translations").abspath + "/*.po")
     env.Depends("#editor/doc_translations.gen.h", tlist)
     env.CommandNoCache(
         "#editor/doc_translations.gen.h",
@@ -114,7 +123,7 @@ if env.editor_build:
 
     SConscript("debugger/SCsub")
     SConscript("export/SCsub")
-    SConscript("fileserver/SCsub")
+    SConscript("gui/SCsub")
     SConscript("icons/SCsub")
     SConscript("import/SCsub")
     SConscript("plugins/SCsub")

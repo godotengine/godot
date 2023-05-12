@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  texture_storage.h                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  texture_storage.h                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef TEXTURE_STORAGE_GLES3_H
 #define TEXTURE_STORAGE_GLES3_H
@@ -39,7 +39,7 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/storage/texture_storage.h"
 
-#include "../shaders/canvas_sdf.glsl.gen.h"
+#include "drivers/gles3/shaders/canvas_sdf.glsl.gen.h"
 
 // This must come first to avoid windows.h mess
 #include "platform_config.h"
@@ -83,6 +83,36 @@ namespace GLES3 {
 #define _EXT_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2 0x9277
 #define _EXT_COMPRESSED_RGBA8_ETC2_EAC 0x9278
 #define _EXT_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC 0x9279
+
+#define _EXT_COMPRESSED_RGBA_ASTC_4x4_KHR 0x93B0
+#define _EXT_COMPRESSED_RGBA_ASTC_5x4_KHR 0x93B1
+#define _EXT_COMPRESSED_RGBA_ASTC_5x5_KHR 0x93B2
+#define _EXT_COMPRESSED_RGBA_ASTC_6x5_KHR 0x93B3
+#define _EXT_COMPRESSED_RGBA_ASTC_6x6_KHR 0x93B4
+#define _EXT_COMPRESSED_RGBA_ASTC_8x5_KHR 0x93B5
+#define _EXT_COMPRESSED_RGBA_ASTC_8x6_KHR 0x93B6
+#define _EXT_COMPRESSED_RGBA_ASTC_8x8_KHR 0x93B7
+#define _EXT_COMPRESSED_RGBA_ASTC_10x5_KHR 0x93B8
+#define _EXT_COMPRESSED_RGBA_ASTC_10x6_KHR 0x93B9
+#define _EXT_COMPRESSED_RGBA_ASTC_10x8_KHR 0x93BA
+#define _EXT_COMPRESSED_RGBA_ASTC_10x10_KHR 0x93BB
+#define _EXT_COMPRESSED_RGBA_ASTC_12x10_KHR 0x93BC
+#define _EXT_COMPRESSED_RGBA_ASTC_12x12_KHR 0x93BD
+
+#define _EXT_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR 0x93D0
+#define _EXT_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR 0x93D1
+#define _EXT_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR 0x93D2
+#define _EXT_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR 0x93D3
+#define _EXT_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR 0x93D4
+#define _EXT_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR 0x93D5
+#define _EXT_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR 0x93D6
+#define _EXT_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR 0x93D7
+#define _EXT_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR 0x93D8
+#define _EXT_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR 0x93D9
+#define _EXT_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR 0x93DA
+#define _EXT_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR 0x93DB
+#define _EXT_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR 0x93DC
+#define _EXT_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR 0x93DD
 
 #define _GL_TEXTURE_EXTERNAL_OES 0x8D65
 
@@ -315,6 +345,7 @@ struct RenderTarget {
 	GLuint depth = 0;
 	GLuint backbuffer_fbo = 0;
 	GLuint backbuffer = 0;
+	GLuint backbuffer_depth = 0;
 
 	GLuint color_internal_format = GL_RGBA8;
 	GLuint color_format = GL_RGBA;
@@ -505,7 +536,8 @@ public:
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) override;
 
-	virtual RID texture_get_rd_texture_rid(RID p_texture, bool p_srgb = false) const override;
+	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const override;
+	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const override;
 
 	void texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer = 0);
 	void texture_set_data_partial(RID p_texture, const Ref<Image> &p_image, int src_x, int src_y, int src_w, int src_h, int dst_x, int dst_y, int p_dst_mip, int p_layer = 0);
@@ -544,7 +576,7 @@ public:
 	virtual void decal_initialize(RID p_rid) override;
 	virtual void decal_free(RID p_rid) override{};
 
-	virtual void decal_set_extents(RID p_decal, const Vector3 &p_extents) override;
+	virtual void decal_set_size(RID p_decal, const Vector3 &p_size) override;
 	virtual void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) override;
 	virtual void decal_set_emission_energy(RID p_decal, float p_energy) override;
 	virtual void decal_set_albedo_mix(RID p_decal, float p_mix) override;
@@ -555,15 +587,17 @@ public:
 	virtual void decal_set_normal_fade(RID p_decal, float p_fade) override;
 
 	virtual AABB decal_get_aabb(RID p_decal) const override;
+	virtual uint32_t decal_get_cull_mask(RID p_decal) const override { return 0; }
 
 	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
 	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
 
 	/* DECAL INSTANCE */
 
-	virtual RID decal_instance_create(RID p_decal) override;
-	virtual void decal_instance_free(RID p_decal_instance) override;
-	virtual void decal_instance_set_transform(RID p_decal, const Transform3D &p_transform) override;
+	virtual RID decal_instance_create(RID p_decal) override { return RID(); }
+	virtual void decal_instance_free(RID p_decal_instance) override {}
+	virtual void decal_instance_set_transform(RID p_decal, const Transform3D &p_transform) override {}
+	virtual void decal_instance_set_sorting_offset(RID p_decal_instance, float p_sorting_offset) override {}
 
 	/* RENDER TARGET API */
 
@@ -571,6 +605,8 @@ public:
 
 	RenderTarget *get_render_target(RID p_rid) { return render_target_owner.get_or_null(p_rid); };
 	bool owns_render_target(RID p_rid) { return render_target_owner.owns(p_rid); };
+
+	void copy_scene_to_backbuffer(RenderTarget *rt, const bool uses_screen_texture, const bool uses_depth_texture);
 
 	virtual RID render_target_create() override;
 	virtual void render_target_free(RID p_rid) override;

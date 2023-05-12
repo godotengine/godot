@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  spin_box.cpp                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  spin_box.cpp                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "spin_box.h"
 
@@ -39,7 +39,7 @@ Size2 SpinBox::get_minimum_size() const {
 	return ms;
 }
 
-void SpinBox::_value_changed(double p_value) {
+void SpinBox::_update_text() {
 	String value = String::num(get_value(), Math::range_step_decimals(get_step()));
 	if (is_localizing_numeral_system()) {
 		value = TS->format_number(value);
@@ -55,7 +55,6 @@ void SpinBox::_value_changed(double p_value) {
 	}
 
 	line_edit->set_text(value);
-	Range::_value_changed(p_value);
 }
 
 void SpinBox::_text_submitted(const String &p_string) {
@@ -63,7 +62,7 @@ void SpinBox::_text_submitted(const String &p_string) {
 	expr.instantiate();
 
 	String num = TS->parse_number(p_string);
-	// Ignore the prefix and suffix in the expression
+	// Ignore the prefix and suffix in the expression.
 	Error err = expr->parse(num.trim_prefix(prefix + " ").trim_suffix(" " + suffix));
 	if (err != OK) {
 		return;
@@ -73,7 +72,7 @@ void SpinBox::_text_submitted(const String &p_string) {
 	if (value.get_type() != Variant::NIL) {
 		set_value(value);
 	}
-	_value_changed(0);
+	_update_text();
 }
 
 void SpinBox::_text_changed(const String &p_string) {
@@ -176,7 +175,7 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> mm = p_event;
 
-	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
+	if (mm.is_valid() && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
 		if (drag.enabled) {
 			drag.diff_y += mm->get_relative().y;
 			double diff_y = -0.01 * Math::pow(ABS(drag.diff_y), 1.8) * SIGN(drag.diff_y);
@@ -192,7 +191,7 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 
 void SpinBox::_line_edit_focus_enter() {
 	int col = line_edit->get_caret_column();
-	_value_changed(0); // Update the LineEdit's text.
+	_update_text();
 	line_edit->set_caret_column(col);
 
 	// LineEdit text might change and it clears any selection. Have to re-select here.
@@ -202,6 +201,10 @@ void SpinBox::_line_edit_focus_enter() {
 }
 
 void SpinBox::_line_edit_focus_exit() {
+	// Discontinue because the focus_exit was caused by left-clicking the arrows.
+	if (get_viewport()->gui_get_focus_owner() == get_line_edit()) {
+		return;
+	}
 	// Discontinue because the focus_exit was caused by right-click context menu.
 	if (line_edit->is_menu_visible()) {
 		return;
@@ -228,6 +231,7 @@ void SpinBox::_update_theme_item_cache() {
 void SpinBox::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
+			_update_text();
 			_adjust_width_for_icon(theme_cache.updown_icon);
 
 			RID ci = get_canvas_item();
@@ -242,7 +246,7 @@ void SpinBox::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			_adjust_width_for_icon(theme_cache.updown_icon);
-			_value_changed(0);
+			_update_text();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -250,7 +254,6 @@ void SpinBox::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			_value_changed(0);
 			queue_redraw();
 		} break;
 
@@ -279,7 +282,7 @@ void SpinBox::set_suffix(const String &p_suffix) {
 	}
 
 	suffix = p_suffix;
-	_value_changed(0);
+	_update_text();
 }
 
 String SpinBox::get_suffix() const {
@@ -292,7 +295,7 @@ void SpinBox::set_prefix(const String &p_prefix) {
 	}
 
 	prefix = p_prefix;
-	_value_changed(0);
+	_update_text();
 }
 
 String SpinBox::get_prefix() const {
@@ -368,7 +371,7 @@ void SpinBox::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_on_text_changed"), "set_update_on_text_changed", "get_update_on_text_changed");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "prefix"), "set_prefix", "get_prefix");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_arrow_step"), "set_custom_arrow_step", "get_custom_arrow_step");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_arrow_step", PROPERTY_HINT_RANGE, "0,10000,0.0001,or_greater"), "set_custom_arrow_step", "get_custom_arrow_step");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_all_on_focus"), "set_select_all_on_focus", "is_select_all_on_focus");
 }
 

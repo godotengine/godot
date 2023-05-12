@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Tree" inherits="Control" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Tree" inherits="Control" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Control to show a tree of items.
 	</brief_description>
@@ -45,17 +45,26 @@
 		<method name="create_item">
 			<return type="TreeItem" />
 			<param index="0" name="parent" type="TreeItem" default="null" />
-			<param index="1" name="idx" type="int" default="-1" />
+			<param index="1" name="index" type="int" default="-1" />
 			<description>
 				Creates an item in the tree and adds it as a child of [param parent], which can be either a valid [TreeItem] or [code]null[/code].
 				If [param parent] is [code]null[/code], the root item will be the parent, or the new item will be the root itself if the tree is empty.
-				The new item will be the [param idx]th child of parent, or it will be the last child if there are not enough siblings.
+				The new item will be the [param index]-th child of parent, or it will be the last child if there are not enough siblings.
+			</description>
+		</method>
+		<method name="deselect_all">
+			<return type="void" />
+			<description>
+				Deselects all tree items (rows and columns). In [constant SELECT_MULTI] mode also removes selection cursor.
 			</description>
 		</method>
 		<method name="edit_selected">
 			<return type="bool" />
+			<param index="0" name="force_edit" type="bool" default="false" />
 			<description>
-				Edits the selected tree item as if it was clicked. The item must be set editable with [method TreeItem.set_editable]. Returns [code]true[/code] if the item could be edited. Fails if no item is selected.
+				Edits the selected tree item as if it was clicked.
+				Either the item must be set editable with [method TreeItem.set_editable] or [param force_edit] must be [code]true[/code].
+				Returns [code]true[/code] if the item could be edited. Fails if no item is selected.
 			</description>
 		</method>
 		<method name="ensure_cursor_is_visible">
@@ -92,6 +101,13 @@
 			<param index="0" name="column" type="int" />
 			<description>
 				Returns the column's title.
+			</description>
+		</method>
+		<method name="get_column_title_alignment" qualifiers="const">
+			<return type="int" enum="HorizontalAlignment" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the column title alignment.
 			</description>
 		</method>
 		<method name="get_column_title_direction" qualifiers="const">
@@ -282,6 +298,14 @@
 				Sets the title of a column.
 			</description>
 		</method>
+		<method name="set_column_title_alignment">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="title_alignment" type="int" enum="HorizontalAlignment" />
+			<description>
+				Sets the column title alignment. Note that [constant @GlobalScope.HORIZONTAL_ALIGNMENT_FILL] is not supported for column titles.
+			</description>
+		</method>
 		<method name="set_column_title_direction">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
@@ -313,6 +337,9 @@
 		</member>
 		<member name="allow_rmb_select" type="bool" setter="set_allow_rmb_select" getter="get_allow_rmb_select" default="false">
 			If [code]true[/code], a right mouse button click can select items.
+		</member>
+		<member name="allow_search" type="bool" setter="set_allow_search" getter="get_allow_search" default="true">
+			If [code]true[/code], allows navigating the [Tree] with letter keys through incremental search.
 		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="column_titles_visible" type="bool" setter="set_column_titles_visible" getter="are_column_titles_visible" default="false">
@@ -395,7 +422,7 @@
 		</signal>
 		<signal name="item_activated">
 			<description>
-				Emitted when an item's label is double-clicked.
+				Emitted when an item is double-clicked, or selected with a [code]ui_accept[/code] input event (e.g. using [kbd]Enter[/kbd] or [kbd]Space[/kbd] on the keyboard).
 			</description>
 		</signal>
 		<signal name="item_collapsed">
@@ -404,19 +431,14 @@
 				Emitted when an item is collapsed by a click on the folding arrow.
 			</description>
 		</signal>
-		<signal name="item_custom_button_pressed">
-			<description>
-				Emitted when a custom button is pressed (i.e. in a [constant TreeItem.CELL_MODE_CUSTOM] mode cell).
-			</description>
-		</signal>
-		<signal name="item_double_clicked">
-			<description>
-				Emitted when an item's icon is double-clicked.
-			</description>
-		</signal>
 		<signal name="item_edited">
 			<description>
 				Emitted when an item is edited.
+			</description>
+		</signal>
+		<signal name="item_icon_double_clicked">
+			<description>
+				Emitted when an item's icon is double-clicked. For a signal that emits when any part of the item is double-clicked, see [signal item_activated].
 			</description>
 		</signal>
 		<signal name="item_mouse_selected">
@@ -517,6 +539,9 @@
 		<theme_item name="h_separation" data_type="constant" type="int" default="4">
 			The horizontal space between item cells. This is also used as the margin at the start of an item when folding is disabled.
 		</theme_item>
+		<theme_item name="icon_max_width" data_type="constant" type="int" default="0">
+			The maximum allowed width of the icon in item's cells. This limit is applied on top of the default size of the icon, but before the value set with [method TreeItem.set_icon_max_width]. The height is adjusted according to the icon's ratio.
+		</theme_item>
 		<theme_item name="item_margin" data_type="constant" type="int" default="16">
 			The horizontal margin at the start of an item. This is used when folding is enabled for the item.
 		</theme_item>
@@ -538,6 +563,24 @@
 		</theme_item>
 		<theme_item name="scroll_speed" data_type="constant" type="int" default="12">
 			The speed of border scrolling.
+		</theme_item>
+		<theme_item name="scrollbar_h_separation" data_type="constant" type="int" default="4">
+			The horizontal separation of tree content and scrollbar.
+		</theme_item>
+		<theme_item name="scrollbar_margin_bottom" data_type="constant" type="int" default="-1">
+			The bottom margin of the scrollbars. When negative, uses [theme_item panel] bottom margin.
+		</theme_item>
+		<theme_item name="scrollbar_margin_left" data_type="constant" type="int" default="-1">
+			The left margin of the horizontal scrollbar. When negative, uses [theme_item panel] left margin.
+		</theme_item>
+		<theme_item name="scrollbar_margin_right" data_type="constant" type="int" default="-1">
+			The right margin of the scrollbars. When negative, uses [theme_item panel] right margin.
+		</theme_item>
+		<theme_item name="scrollbar_margin_top" data_type="constant" type="int" default="-1">
+			The right margin of the vertical scrollbar. When negative, uses [theme_item panel] top margin.
+		</theme_item>
+		<theme_item name="scrollbar_v_separation" data_type="constant" type="int" default="4">
+			The vertical separation of tree content and scrollbar.
 		</theme_item>
 		<theme_item name="v_separation" data_type="constant" type="int" default="4">
 			The vertical padding inside each item, i.e. the distance between the item's content and top/bottom border.

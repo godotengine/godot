@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  rendering_device_vulkan.cpp                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  rendering_device_vulkan.cpp                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "rendering_device_vulkan.h"
 
@@ -36,7 +36,6 @@
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 #include "core/templates/hashfuncs.h"
-#include "core/version.h"
 #include "drivers/vulkan/vulkan_context.h"
 
 #include "thirdparty/misc/smolv.h"
@@ -1667,34 +1666,27 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 	image_create_info.pNext = nullptr;
 	image_create_info.flags = 0;
 
-	// TODO: Check for support via RenderingDevice to enable on mobile when possible.
-
-#ifndef ANDROID_ENABLED
-
-	// vkCreateImage fails with format list on Android (VK_ERROR_OUT_OF_HOST_MEMORY)
 	VkImageFormatListCreateInfoKHR format_list_create_info; // Keep out of the if, needed for creation.
 	Vector<VkFormat> allowed_formats; // Keep out of the if, needed for creation.
-#endif
 	if (p_format.shareable_formats.size()) {
 		image_create_info.flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
 
-#ifndef ANDROID_ENABLED
+		if (context->is_device_extension_enabled(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME)) {
+			for (int i = 0; i < p_format.shareable_formats.size(); i++) {
+				allowed_formats.push_back(vulkan_formats[p_format.shareable_formats[i]]);
+			}
 
-		for (int i = 0; i < p_format.shareable_formats.size(); i++) {
-			allowed_formats.push_back(vulkan_formats[p_format.shareable_formats[i]]);
+			format_list_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO_KHR;
+			format_list_create_info.pNext = nullptr;
+			format_list_create_info.viewFormatCount = allowed_formats.size();
+			format_list_create_info.pViewFormats = allowed_formats.ptr();
+			image_create_info.pNext = &format_list_create_info;
+
+			ERR_FAIL_COND_V_MSG(p_format.shareable_formats.find(p_format.format) == -1, RID(),
+					"If supplied a list of shareable formats, the current format must be present in the list");
+			ERR_FAIL_COND_V_MSG(p_view.format_override != DATA_FORMAT_MAX && p_format.shareable_formats.find(p_view.format_override) == -1, RID(),
+					"If supplied a list of shareable formats, the current view format override must be present in the list");
 		}
-
-		format_list_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO_KHR;
-		format_list_create_info.pNext = nullptr;
-		format_list_create_info.viewFormatCount = allowed_formats.size();
-		format_list_create_info.pViewFormats = allowed_formats.ptr();
-		image_create_info.pNext = &format_list_create_info;
-
-		ERR_FAIL_COND_V_MSG(p_format.shareable_formats.find(p_format.format) == -1, RID(),
-				"If supplied a list of shareable formats, the current format must be present in the list");
-		ERR_FAIL_COND_V_MSG(p_view.format_override != DATA_FORMAT_MAX && p_format.shareable_formats.find(p_view.format_override) == -1, RID(),
-				"If supplied a list of shareable formats, the current view format override must be present in the list");
-#endif
 	}
 
 	if (p_format.texture_type == TEXTURE_TYPE_CUBE || p_format.texture_type == TEXTURE_TYPE_CUBE_ARRAY) {
@@ -1833,7 +1825,6 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 		}
 
 		if (p_format.usage_bits & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT && !(flags & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
-			printf("vkformat: %x\n", image_create_info.format);
 			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as depth-stencil attachment.");
 		}
 
@@ -2097,49 +2088,54 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 	}
 
 	VkImageViewUsageCreateInfo usage_info;
-	usage_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO;
-	usage_info.pNext = nullptr;
-	if (p_view.format_override != DATA_FORMAT_MAX) {
-		// Need to validate usage with vulkan.
+	if (context->is_device_extension_enabled(VK_KHR_MAINTENANCE_2_EXTENSION_NAME)) {
+		// May need to make VK_KHR_maintenance2 manditory and thus has Vulkan 1.1 be our minimum supported version
+		// if we require setting this information. Vulkan 1.0 may simply not care..
 
-		usage_info.usage = 0;
+		usage_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO;
+		usage_info.pNext = nullptr;
+		if (p_view.format_override != DATA_FORMAT_MAX) {
+			// Need to validate usage with vulkan.
 
-		if (texture.usage_flags & TEXTURE_USAGE_SAMPLING_BIT) {
-			usage_info.usage |= VK_IMAGE_USAGE_SAMPLED_BIT;
-		}
+			usage_info.usage = 0;
 
-		if (texture.usage_flags & TEXTURE_USAGE_STORAGE_BIT) {
-			if (texture_is_format_supported_for_usage(p_view.format_override, TEXTURE_USAGE_STORAGE_BIT)) {
-				usage_info.usage |= VK_IMAGE_USAGE_STORAGE_BIT;
+			if (texture.usage_flags & TEXTURE_USAGE_SAMPLING_BIT) {
+				usage_info.usage |= VK_IMAGE_USAGE_SAMPLED_BIT;
 			}
-		}
 
-		if (texture.usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
-			if (texture_is_format_supported_for_usage(p_view.format_override, TEXTURE_USAGE_COLOR_ATTACHMENT_BIT)) {
-				usage_info.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+			if (texture.usage_flags & TEXTURE_USAGE_STORAGE_BIT) {
+				if (texture_is_format_supported_for_usage(p_view.format_override, TEXTURE_USAGE_STORAGE_BIT)) {
+					usage_info.usage |= VK_IMAGE_USAGE_STORAGE_BIT;
+				}
 			}
-		}
 
-		if (texture.usage_flags & TEXTURE_USAGE_INPUT_ATTACHMENT_BIT) {
-			usage_info.usage |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
-		}
+			if (texture.usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+				if (texture_is_format_supported_for_usage(p_view.format_override, TEXTURE_USAGE_COLOR_ATTACHMENT_BIT)) {
+					usage_info.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+				}
+			}
 
-		if (texture.usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
-			usage_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-		}
+			if (texture.usage_flags & TEXTURE_USAGE_INPUT_ATTACHMENT_BIT) {
+				usage_info.usage |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+			}
 
-		if (texture.usage_flags & TEXTURE_USAGE_CAN_UPDATE_BIT) {
-			usage_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-		}
-		if (texture.usage_flags & TEXTURE_USAGE_CAN_COPY_FROM_BIT) {
-			usage_info.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-		}
+			if (texture.usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+				usage_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+			}
 
-		if (texture.usage_flags & TEXTURE_USAGE_CAN_COPY_TO_BIT) {
-			usage_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-		}
+			if (texture.usage_flags & TEXTURE_USAGE_CAN_UPDATE_BIT) {
+				usage_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+			}
+			if (texture.usage_flags & TEXTURE_USAGE_CAN_COPY_FROM_BIT) {
+				usage_info.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+			}
 
-		image_view_create_info.pNext = &usage_info;
+			if (texture.usage_flags & TEXTURE_USAGE_CAN_COPY_TO_BIT) {
+				usage_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+			}
+
+			image_view_create_info.pNext = &usage_info;
+		}
 	}
 
 	VkResult err = vkCreateImageView(device, &image_view_create_info, nullptr, &texture.view);
@@ -2297,7 +2293,7 @@ RID RenderingDeviceVulkan::texture_create_from_extension(TextureType p_type, Dat
 	return id;
 }
 
-RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps, TextureSliceType p_slice_type) {
+RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps, TextureSliceType p_slice_type, uint32_t p_layers) {
 	_THREAD_SAFE_METHOD_
 
 	Texture *src_texture = texture_owner.get_or_null(p_with_texture);
@@ -2325,7 +2321,11 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 	ERR_FAIL_UNSIGNED_INDEX_V(p_layer, src_texture->layers, RID());
 
 	int slice_layers = 1;
-	if (p_slice_type == TEXTURE_SLICE_2D_ARRAY) {
+	if (p_layers != 0) {
+		ERR_FAIL_COND_V_MSG(p_layers > 1 && p_slice_type != TEXTURE_SLICE_2D_ARRAY, RID(), "layer slicing only supported for 2D arrays");
+		ERR_FAIL_COND_V_MSG(p_layer + p_layers > src_texture->layers, RID(), "layer slice is out of bounds");
+		slice_layers = p_layers;
+	} else if (p_slice_type == TEXTURE_SLICE_2D_ARRAY) {
 		ERR_FAIL_COND_V_MSG(p_layer != 0, RID(), "layer must be 0 when obtaining a 2D array mipmap slice");
 		slice_layers = src_texture->layers;
 	} else if (p_slice_type == TEXTURE_SLICE_CUBEMAP) {
@@ -2462,10 +2462,10 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 	}
 
 	ERR_FAIL_COND_V_MSG(texture->bound, ERR_CANT_ACQUIRE_RESOURCE,
-			"Texture can't be updated while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
+			"Texture can't be updated while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to `RenderingDevice.FINAL_ACTION_CONTINUE`) to update this texture.");
 
 	ERR_FAIL_COND_V_MSG(!(texture->usage_flags & TEXTURE_USAGE_CAN_UPDATE_BIT), ERR_INVALID_PARAMETER,
-			"Texture requires the TEXTURE_USAGE_CAN_UPDATE_BIT in order to be updatable.");
+			"Texture requires the `RenderingDevice.TEXTURE_USAGE_CAN_UPDATE_BIT` to be set to be updatable.");
 
 	uint32_t layer_count = texture->layers;
 	if (texture->type == TEXTURE_TYPE_CUBE || texture->type == TEXTURE_TYPE_CUBE_ARRAY) {
@@ -2529,7 +2529,7 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 
 		for (uint32_t z = 0; z < depth; z++) { // For 3D textures, depth may be > 0.
 
-			const uint8_t *read_ptr = read_ptr_mipmap + image_size * z / depth;
+			const uint8_t *read_ptr = read_ptr_mipmap + (image_size / depth) * z;
 
 			for (uint32_t y = 0; y < height; y += region_size) {
 				for (uint32_t x = 0; x < width; x += region_size) {
@@ -2738,9 +2738,9 @@ Vector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint32_t 
 	ERR_FAIL_COND_V(!tex, Vector<uint8_t>());
 
 	ERR_FAIL_COND_V_MSG(tex->bound, Vector<uint8_t>(),
-			"Texture can't be retrieved while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
+			"Texture can't be retrieved while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to `RenderingDevice.FINAL_ACTION_CONTINUE`) to retrieve this texture.");
 	ERR_FAIL_COND_V_MSG(!(tex->usage_flags & TEXTURE_USAGE_CAN_COPY_FROM_BIT), Vector<uint8_t>(),
-			"Texture requires the TEXTURE_USAGE_CAN_COPY_FROM_BIT in order to be retrieved.");
+			"Texture requires the `RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT` to be set to be retrieved.");
 
 	uint32_t layer_count = tex->layers;
 	if (tex->type == TEXTURE_TYPE_CUBE || tex->type == TEXTURE_TYPE_CUBE_ARRAY) {
@@ -2881,6 +2881,15 @@ Size2i RenderingDeviceVulkan::texture_size(RID p_texture) {
 	return Size2i(tex->width, tex->height);
 }
 
+uint64_t RenderingDeviceVulkan::texture_native_handle(RID p_texture) {
+	_THREAD_SAFE_METHOD_
+
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_COND_V(!tex, 0);
+
+	return (uint64_t)tex->image;
+}
+
 Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, BitField<BarrierMask> p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
@@ -2888,9 +2897,9 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 	ERR_FAIL_COND_V(!src_tex, ERR_INVALID_PARAMETER);
 
 	ERR_FAIL_COND_V_MSG(src_tex->bound, ERR_INVALID_PARAMETER,
-			"Source texture can't be copied while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
+			"Source texture can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to `RenderingDevice.FINAL_ACTION_CONTINUE`) to copy this texture.");
 	ERR_FAIL_COND_V_MSG(!(src_tex->usage_flags & TEXTURE_USAGE_CAN_COPY_FROM_BIT), ERR_INVALID_PARAMETER,
-			"Source texture requires the TEXTURE_USAGE_CAN_COPY_FROM_BIT in order to be retrieved.");
+			"Source texture requires the `RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT` to be set to be retrieved.");
 
 	uint32_t src_layer_count = src_tex->layers;
 	uint32_t src_width, src_height, src_depth;
@@ -2909,9 +2918,9 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 	ERR_FAIL_COND_V(!dst_tex, ERR_INVALID_PARAMETER);
 
 	ERR_FAIL_COND_V_MSG(dst_tex->bound, ERR_INVALID_PARAMETER,
-			"Destination texture can't be copied while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
+			"Destination texture can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to `RenderingDevice.FINAL_ACTION_CONTINUE`) to copy this texture.");
 	ERR_FAIL_COND_V_MSG(!(dst_tex->usage_flags & TEXTURE_USAGE_CAN_COPY_TO_BIT), ERR_INVALID_PARAMETER,
-			"Destination texture requires the TEXTURE_USAGE_CAN_COPY_TO_BIT in order to be retrieved.");
+			"Destination texture requires the `RenderingDevice.TEXTURE_USAGE_CAN_COPY_TO_BIT` to be set to be retrieved.");
 
 	uint32_t dst_layer_count = dst_tex->layers;
 	uint32_t dst_width, dst_height, dst_depth;
@@ -3083,9 +3092,9 @@ Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID
 	ERR_FAIL_COND_V(!src_tex, ERR_INVALID_PARAMETER);
 
 	ERR_FAIL_COND_V_MSG(src_tex->bound, ERR_INVALID_PARAMETER,
-			"Source texture can't be copied while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
+			"Source texture can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to `RenderingDevice.FINAL_ACTION_CONTINUE`) to copy this texture.");
 	ERR_FAIL_COND_V_MSG(!(src_tex->usage_flags & TEXTURE_USAGE_CAN_COPY_FROM_BIT), ERR_INVALID_PARAMETER,
-			"Source texture requires the TEXTURE_USAGE_CAN_COPY_FROM_BIT in order to be retrieved.");
+			"Source texture requires the `RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT` to be set to be retrieved.");
 
 	ERR_FAIL_COND_V_MSG(src_tex->type != TEXTURE_TYPE_2D, ERR_INVALID_PARAMETER, "Source texture must be 2D (or a slice of a 3D/Cube texture)");
 	ERR_FAIL_COND_V_MSG(src_tex->samples == TEXTURE_SAMPLES_1, ERR_INVALID_PARAMETER, "Source texture must be multisampled.");
@@ -3094,9 +3103,9 @@ Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID
 	ERR_FAIL_COND_V(!dst_tex, ERR_INVALID_PARAMETER);
 
 	ERR_FAIL_COND_V_MSG(dst_tex->bound, ERR_INVALID_PARAMETER,
-			"Destination texture can't be copied while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
+			"Destination texture can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to `RenderingDevice.FINAL_ACTION_CONTINUE`) to copy this texture.");
 	ERR_FAIL_COND_V_MSG(!(dst_tex->usage_flags & TEXTURE_USAGE_CAN_COPY_TO_BIT), ERR_INVALID_PARAMETER,
-			"Destination texture requires the TEXTURE_USAGE_CAN_COPY_TO_BIT in order to be retrieved.");
+			"Destination texture requires the `RenderingDevice.TEXTURE_USAGE_CAN_COPY_TO_BIT` to be set to be retrieved.");
 
 	ERR_FAIL_COND_V_MSG(dst_tex->type != TEXTURE_TYPE_2D, ERR_INVALID_PARAMETER, "Destination texture must be 2D (or a slice of a 3D/Cube texture).");
 	ERR_FAIL_COND_V_MSG(dst_tex->samples != TEXTURE_SAMPLES_1, ERR_INVALID_PARAMETER, "Destination texture must not be multisampled.");
@@ -3254,13 +3263,13 @@ Error RenderingDeviceVulkan::texture_clear(RID p_texture, const Color &p_color, 
 	ERR_FAIL_COND_V(!src_tex, ERR_INVALID_PARAMETER);
 
 	ERR_FAIL_COND_V_MSG(src_tex->bound, ERR_INVALID_PARAMETER,
-			"Source texture can't be cleared while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
+			"Source texture can't be cleared while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to `RenderingDevice.FINAL_ACTION_CONTINUE`) to clear this texture.");
 
 	ERR_FAIL_COND_V(p_layers == 0, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_mipmaps == 0, ERR_INVALID_PARAMETER);
 
 	ERR_FAIL_COND_V_MSG(!(src_tex->usage_flags & TEXTURE_USAGE_CAN_COPY_TO_BIT), ERR_INVALID_PARAMETER,
-			"Source texture requires the TEXTURE_USAGE_CAN_COPY_TO_BIT in order to be cleared.");
+			"Source texture requires the `RenderingDevice.TEXTURE_USAGE_CAN_COPY_TO_BIT` to be set to be cleared.");
 
 	uint32_t src_layer_count = src_tex->layers;
 	if (src_tex->type == TEXTURE_TYPE_CUBE || src_tex->type == TEXTURE_TYPE_CUBE_ARRAY) {
@@ -4279,7 +4288,7 @@ RID RenderingDeviceVulkan::sampler_create(const SamplerState &p_state) {
 	sampler_create_info.addressModeW = address_modes[p_state.repeat_w];
 
 	sampler_create_info.mipLodBias = p_state.lod_bias;
-	sampler_create_info.anisotropyEnable = p_state.use_anisotropy;
+	sampler_create_info.anisotropyEnable = p_state.use_anisotropy && context->get_physical_device_features().samplerAnisotropy;
 	sampler_create_info.maxAnisotropy = p_state.anisotropy_max;
 	sampler_create_info.compareEnable = p_state.enable_compare;
 
@@ -4305,6 +4314,18 @@ RID RenderingDeviceVulkan::sampler_create(const SamplerState &p_state) {
 	return id;
 }
 
+bool RenderingDeviceVulkan::sampler_is_format_supported_for_filter(DataFormat p_format, SamplerFilter p_sampler_filter) const {
+	ERR_FAIL_INDEX_V(p_format, DATA_FORMAT_MAX, false);
+
+	_THREAD_SAFE_METHOD_
+
+	// Validate that this image is supported for the intended filtering.
+	VkFormatProperties properties;
+	vkGetPhysicalDeviceFormatProperties(context->get_physical_device(), vulkan_formats[p_format], &properties);
+
+	return p_sampler_filter == RD::SAMPLER_FILTER_NEAREST || (p_sampler_filter == RD::SAMPLER_FILTER_LINEAR && (properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT));
+}
+
 /**********************/
 /**** VERTEX ARRAY ****/
 /**********************/
@@ -4313,10 +4334,6 @@ RID RenderingDeviceVulkan::vertex_buffer_create(uint32_t p_size_bytes, const Vec
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
-	ERR_FAIL_COND_V_MSG(draw_list != nullptr && p_data.size(), RID(),
-			"Creating buffers with data is forbidden during creation of a draw list");
-	ERR_FAIL_COND_V_MSG(compute_list != nullptr && p_data.size(), RID(),
-			"Creating buffers with data is forbidden during creation of a draw list");
 
 	uint32_t usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 	if (p_use_as_storage) {
@@ -4454,10 +4471,6 @@ RID RenderingDeviceVulkan::vertex_array_create(uint32_t p_vertex_count, VertexFo
 
 RID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_count, IndexBufferFormat p_format, const Vector<uint8_t> &p_data, bool p_use_restart_indices) {
 	_THREAD_SAFE_METHOD_
-	ERR_FAIL_COND_V_MSG(draw_list != nullptr && p_data.size(), RID(),
-			"Creating buffers with data is forbidden during creation of a draw list");
-	ERR_FAIL_COND_V_MSG(compute_list != nullptr && p_data.size(), RID(),
-			"Creating buffers with data is forbidden during creation of a draw list");
 
 	ERR_FAIL_COND_V(p_index_count == 0, RID());
 
@@ -4574,7 +4587,7 @@ String RenderingDeviceVulkan::_shader_uniform_debug(RID p_shader, int p_set) {
 #define SHADER_BINARY_VERSION 3
 
 String RenderingDeviceVulkan::shader_get_binary_cache_key() const {
-	return "Vulkan-SV" + itos(SHADER_BINARY_VERSION) + "-" + String(VERSION_NUMBER) + "-" + String(VERSION_HASH);
+	return "Vulkan-SV" + itos(SHADER_BINARY_VERSION);
 }
 
 struct RenderingDeviceVulkanShaderBinaryDataBinding {
@@ -5140,10 +5153,6 @@ RID RenderingDeviceVulkan::uniform_buffer_create(uint32_t p_size_bytes, const Ve
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
-	ERR_FAIL_COND_V_MSG(draw_list != nullptr && p_data.size(), RID(),
-			"Creating buffers with data is forbidden during creation of a draw list");
-	ERR_FAIL_COND_V_MSG(compute_list != nullptr && p_data.size(), RID(),
-			"Creating buffers with data is forbidden during creation of a draw list");
 
 	Buffer buffer;
 	Error err = _buffer_allocate(&buffer, p_size_bytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, 0);
@@ -5163,10 +5172,6 @@ RID RenderingDeviceVulkan::uniform_buffer_create(uint32_t p_size_bytes, const Ve
 
 RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<StorageBufferUsage> p_usage) {
 	_THREAD_SAFE_METHOD_
-	ERR_FAIL_COND_V_MSG(draw_list != nullptr && p_data.size(), RID(),
-			"Creating buffers with data is forbidden during creation of a draw list");
-	ERR_FAIL_COND_V_MSG(compute_list != nullptr && p_data.size(), RID(),
-			"Creating buffers with data is forbidden during creation of a draw list");
 
 	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
 
@@ -5189,10 +5194,6 @@ RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const Ve
 
 RID RenderingDeviceVulkan::texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data) {
 	_THREAD_SAFE_METHOD_
-	ERR_FAIL_COND_V_MSG(draw_list != nullptr && p_data.size(), RID(),
-			"Creating buffers with data is forbidden during creation of a draw list");
-	ERR_FAIL_COND_V_MSG(compute_list != nullptr && p_data.size(), RID(),
-			"Creating buffers with data is forbidden during creation of a draw list");
 
 	uint32_t element_size = get_format_vertex_size(p_format);
 	ERR_FAIL_COND_V_MSG(element_size == 0, RID(), "Format requested is not supported for texture buffers");
@@ -5926,7 +5927,7 @@ Error RenderingDeviceVulkan::buffer_clear(RID p_buffer, uint32_t p_offset, uint3
 	return OK;
 }
 
-Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
+Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer, uint32_t p_offset, uint32_t p_size) {
 	_THREAD_SAFE_METHOD_
 
 	// It could be this buffer was just created.
@@ -5943,12 +5944,20 @@ Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 
 	VkCommandBuffer command_buffer = frames[frame].setup_command_buffer;
 
+	// Size of buffer to retrieve.
+	if (!p_size) {
+		p_size = buffer->size;
+	} else {
+		ERR_FAIL_COND_V_MSG(p_size + p_offset > buffer->size, Vector<uint8_t>(),
+				"Size is larger than the buffer.");
+	}
+
 	Buffer tmp_buffer;
-	_buffer_allocate(&tmp_buffer, buffer->size, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT);
+	_buffer_allocate(&tmp_buffer, p_size, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT);
 	VkBufferCopy region;
-	region.srcOffset = 0;
+	region.srcOffset = p_offset;
 	region.dstOffset = 0;
-	region.size = buffer->size;
+	region.size = p_size;
 	vkCmdCopyBuffer(command_buffer, buffer->buffer, tmp_buffer.buffer, 1, &region); // Dst buffer is in CPU, but I wonder if src buffer needs a barrier for this.
 	// Flush everything so memory can be safely mapped.
 	_flush(true);
@@ -5959,9 +5968,9 @@ Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 
 	Vector<uint8_t> buffer_data;
 	{
-		buffer_data.resize(buffer->size);
+		buffer_data.resize(p_size);
 		uint8_t *w = buffer_data.ptrw();
-		memcpy(w, buffer_mem, buffer->size);
+		memcpy(w, buffer_mem, p_size);
 	}
 
 	vmaUnmapMemory(allocator, tmp_buffer.allocation);
@@ -8106,10 +8115,67 @@ void RenderingDeviceVulkan::compute_list_dispatch_indirect(ComputeListID p_list,
 }
 
 void RenderingDeviceVulkan::compute_list_add_barrier(ComputeListID p_list) {
+	uint32_t barrier_flags = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+	uint32_t access_flags = VK_ACCESS_SHADER_READ_BIT;
+	_compute_list_add_barrier(BARRIER_MASK_COMPUTE, barrier_flags, access_flags);
+}
+
+void RenderingDeviceVulkan::_compute_list_add_barrier(BitField<BarrierMask> p_post_barrier, uint32_t p_barrier_flags, uint32_t p_access_flags) {
+	ERR_FAIL_COND(!compute_list);
+
+	VkImageMemoryBarrier *image_barriers = nullptr;
+
+	uint32_t image_barrier_count = compute_list->state.textures_to_sampled_layout.size();
+
+	if (image_barrier_count) {
+		image_barriers = (VkImageMemoryBarrier *)alloca(sizeof(VkImageMemoryBarrier) * image_barrier_count);
+	}
+
+	image_barrier_count = 0; // We'll count how many we end up issuing.
+
+	for (Texture *E : compute_list->state.textures_to_sampled_layout) {
+		if (E->layout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+			VkImageMemoryBarrier &image_memory_barrier = image_barriers[image_barrier_count++];
+			image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			image_memory_barrier.pNext = nullptr;
+			image_memory_barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+			image_memory_barrier.dstAccessMask = p_access_flags;
+			image_memory_barrier.oldLayout = E->layout;
+			image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.image = E->image;
+			image_memory_barrier.subresourceRange.aspectMask = E->read_aspect_mask;
+			image_memory_barrier.subresourceRange.baseMipLevel = E->base_mipmap;
+			image_memory_barrier.subresourceRange.levelCount = E->mipmaps;
+			image_memory_barrier.subresourceRange.baseArrayLayer = E->base_layer;
+			image_memory_barrier.subresourceRange.layerCount = E->layers;
+
+			E->layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		}
+
+		if (E->used_in_frame != frames_drawn) {
+			E->used_in_transfer = false;
+			E->used_in_raster = false;
+			E->used_in_compute = false;
+			E->used_in_frame = frames_drawn;
+		}
+	}
+
+	if (p_barrier_flags) {
+		VkMemoryBarrier mem_barrier;
+		mem_barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+		mem_barrier.pNext = nullptr;
+		mem_barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+		mem_barrier.dstAccessMask = p_access_flags;
+		vkCmdPipelineBarrier(compute_list->command_buffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, p_barrier_flags, 0, 1, &mem_barrier, 0, nullptr, image_barrier_count, image_barriers);
+	} else if (image_barrier_count) {
+		vkCmdPipelineBarrier(compute_list->command_buffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, image_barrier_count, image_barriers);
+	}
+
 #ifdef FORCE_FULL_BARRIER
 	_full_barrier(true);
-#else
-	_memory_barrier(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, true);
 #endif
 }
 
@@ -8130,62 +8196,7 @@ void RenderingDeviceVulkan::compute_list_end(BitField<BarrierMask> p_post_barrie
 		barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
 		access_flags |= VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT;
 	}
-
-	if (barrier_flags == 0) {
-		barrier_flags = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-	}
-
-	VkImageMemoryBarrier *image_barriers = nullptr;
-
-	uint32_t image_barrier_count = compute_list->state.textures_to_sampled_layout.size();
-
-	if (image_barrier_count) {
-		image_barriers = (VkImageMemoryBarrier *)alloca(sizeof(VkImageMemoryBarrier) * image_barrier_count);
-	}
-
-	uint32_t barrier_idx = 0;
-
-	for (Texture *E : compute_list->state.textures_to_sampled_layout) {
-		VkImageMemoryBarrier &image_memory_barrier = image_barriers[barrier_idx++];
-		image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		image_memory_barrier.pNext = nullptr;
-		image_memory_barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-		image_memory_barrier.dstAccessMask = access_flags;
-		image_memory_barrier.oldLayout = E->layout;
-		image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-		image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		image_memory_barrier.image = E->image;
-		image_memory_barrier.subresourceRange.aspectMask = E->read_aspect_mask;
-		image_memory_barrier.subresourceRange.baseMipLevel = E->base_mipmap;
-		image_memory_barrier.subresourceRange.levelCount = E->mipmaps;
-		image_memory_barrier.subresourceRange.baseArrayLayer = E->base_layer;
-		image_memory_barrier.subresourceRange.layerCount = E->layers;
-
-		E->layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-		if (E->used_in_frame != frames_drawn) {
-			E->used_in_transfer = false;
-			E->used_in_raster = false;
-			E->used_in_compute = false;
-			E->used_in_frame = frames_drawn;
-		}
-	}
-
-	VkMemoryBarrier mem_barrier;
-	mem_barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-	mem_barrier.pNext = nullptr;
-	mem_barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-	mem_barrier.dstAccessMask = access_flags;
-
-	if (image_barrier_count > 0 || p_post_barrier != BARRIER_MASK_NO_BARRIER) {
-		vkCmdPipelineBarrier(compute_list->command_buffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, barrier_flags, 0, 1, &mem_barrier, 0, nullptr, image_barrier_count, image_barriers);
-	}
-
-#ifdef FORCE_FULL_BARRIER
-	_full_barrier(true);
-#endif
+	_compute_list_add_barrier(p_post_barrier, barrier_flags, access_flags);
 
 	memdelete(compute_list);
 	compute_list = nullptr;
@@ -8453,14 +8464,17 @@ void RenderingDeviceVulkan::set_resource_name(RID p_id, const String p_name) {
 }
 
 void RenderingDeviceVulkan::draw_command_begin_label(String p_label_name, const Color p_color) {
+	_THREAD_SAFE_METHOD_
 	context->command_begin_label(frames[frame].draw_command_buffer, p_label_name, p_color);
 }
 
 void RenderingDeviceVulkan::draw_command_insert_label(String p_label_name, const Color p_color) {
+	_THREAD_SAFE_METHOD_
 	context->command_insert_label(frames[frame].draw_command_buffer, p_label_name, p_color);
 }
 
 void RenderingDeviceVulkan::draw_command_end_label() {
+	_THREAD_SAFE_METHOD_
 	context->command_end_label(frames[frame].draw_command_buffer);
 }
 
@@ -8908,6 +8922,11 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 			context->set_setup_buffer(frames[0].setup_command_buffer); // Append now so it's added before everything else.
 			context->append_command_buffer(frames[0].draw_command_buffer);
 		}
+	}
+
+	for (int i = 0; i < frame_count; i++) {
+		//Reset all queries in a query pool before doing any operations with them.
+		vkCmdResetQueryPool(frames[0].setup_command_buffer, frames[i].timestamp_pool, 0, max_timestamp_query_elements);
 	}
 
 	staging_buffer_block_size = GLOBAL_GET("rendering/rendering_device/staging_buffer/block_size_kb");
@@ -9369,11 +9388,14 @@ bool RenderingDeviceVulkan::has_feature(const Features p_feature) const {
 			return multiview_capabilies.is_supported && multiview_capabilies.max_view_count > 1;
 		} break;
 		case SUPPORTS_FSR_HALF_FLOAT: {
-			return context->get_shader_capabilities().shader_float16_is_supported && context->get_storage_buffer_capabilities().storage_buffer_16_bit_access_is_supported;
+			return context->get_shader_capabilities().shader_float16_is_supported && context->get_physical_device_features().shaderInt16 && context->get_storage_buffer_capabilities().storage_buffer_16_bit_access_is_supported;
 		} break;
 		case SUPPORTS_ATTACHMENT_VRS: {
 			VulkanContext::VRSCapabilities vrs_capabilities = context->get_vrs_capabilities();
-			return vrs_capabilities.attachment_vrs_supported;
+			return vrs_capabilities.attachment_vrs_supported && context->get_physical_device_features().shaderStorageImageExtendedFormats;
+		} break;
+		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS: {
+			return true;
 		} break;
 		default: {
 			return false;

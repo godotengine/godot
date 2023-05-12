@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  os_android.cpp                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  os_android.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "os_android.h"
 
@@ -311,7 +311,11 @@ String OS_Android::get_resource_dir() const {
 #ifdef TOOLS_ENABLED
 	return OS_Unix::get_resource_dir();
 #else
-	return "/"; //android has its own filesystem for resources inside the APK
+	if (remote_fs_dir.is_empty()) {
+		return "/"; // Android has its own filesystem for resources inside the APK
+	} else {
+		return remote_fs_dir;
+	}
 #endif
 }
 
@@ -355,20 +359,20 @@ void OS_Android::_load_system_font_config() {
 			if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
 				in_font_node = false;
 				if (parser->get_node_name() == "familyset") {
-					int ver = parser->has_attribute("version") ? parser->get_attribute_value("version").to_int() : 0;
+					int ver = parser->has_attribute("version") ? parser->get_named_attribute_value("version").to_int() : 0;
 					if (ver < 21) {
 						ERR_PRINT(vformat("Unsupported font config version %s", ver));
 						break;
 					}
 				} else if (parser->get_node_name() == "alias") {
-					String name = parser->has_attribute("name") ? parser->get_attribute_value("name").strip_edges() : String();
-					String to = parser->has_attribute("to") ? parser->get_attribute_value("to").strip_edges() : String();
+					String name = parser->has_attribute("name") ? parser->get_named_attribute_value("name").strip_edges() : String();
+					String to = parser->has_attribute("to") ? parser->get_named_attribute_value("to").strip_edges() : String();
 					if (!name.is_empty() && !to.is_empty()) {
 						font_aliases[name] = to;
 					}
 				} else if (parser->get_node_name() == "family") {
-					fn = parser->has_attribute("name") ? parser->get_attribute_value("name").strip_edges() : String();
-					String lang_code = parser->has_attribute("lang") ? parser->get_attribute_value("lang").strip_edges() : String();
+					fn = parser->has_attribute("name") ? parser->get_named_attribute_value("name").strip_edges() : String();
+					String lang_code = parser->has_attribute("lang") ? parser->get_named_attribute_value("lang").strip_edges() : String();
 					Vector<String> lang_codes = lang_code.split(",");
 					for (int i = 0; i < lang_codes.size(); i++) {
 						Vector<String> lang_code_elements = lang_codes[i].split("-");
@@ -412,9 +416,9 @@ void OS_Android::_load_system_font_config() {
 					}
 				} else if (parser->get_node_name() == "font") {
 					in_font_node = true;
-					fb = parser->has_attribute("fallbackFor") ? parser->get_attribute_value("fallbackFor").strip_edges() : String();
-					fi.weight = parser->has_attribute("weight") ? parser->get_attribute_value("weight").to_int() : 400;
-					fi.italic = parser->has_attribute("style") && parser->get_attribute_value("style").strip_edges() == "italic";
+					fb = parser->has_attribute("fallbackFor") ? parser->get_named_attribute_value("fallbackFor").strip_edges() : String();
+					fi.weight = parser->has_attribute("weight") ? parser->get_named_attribute_value("weight").to_int() : 400;
+					fi.italic = parser->has_attribute("style") && parser->get_named_attribute_value("style").strip_edges() == "italic";
 				}
 			}
 			if (parser->get_node_type() == XMLParser::NODE_TEXT) {
@@ -695,8 +699,8 @@ bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 }
 
 OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion) {
-	display_size.width = 800;
-	display_size.height = 600;
+	display_size.width = DEFAULT_WINDOW_WIDTH;
+	display_size.height = DEFAULT_WINDOW_HEIGHT;
 
 	use_apk_expansion = p_use_apk_expansion;
 
@@ -739,8 +743,32 @@ Error OS_Android::create_process(const String &p_path, const List<String> &p_arg
 }
 
 Error OS_Android::create_instance(const List<String> &p_arguments, ProcessID *r_child_id) {
-	godot_java->create_new_godot_instance(p_arguments);
+	int instance_id = godot_java->create_new_godot_instance(p_arguments);
+	if (r_child_id) {
+		*r_child_id = instance_id;
+	}
 	return OK;
+}
+
+Error OS_Android::kill(const ProcessID &p_pid) {
+	if (godot_java->force_quit(nullptr, p_pid)) {
+		return OK;
+	}
+	return OS_Unix::kill(p_pid);
+}
+
+String OS_Android::get_system_ca_certificates() {
+	return godot_java->get_ca_certificates();
+}
+
+Error OS_Android::setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) {
+	r_project_path = get_user_data_dir();
+	Error err = OS_Unix::setup_remote_filesystem(p_server_host, p_port, p_password, r_project_path);
+	if (err == OK) {
+		remote_fs_dir = r_project_path;
+		FileAccess::make_default<FileAccessFilesystemJAndroid>(FileAccess::ACCESS_RESOURCES);
+	}
+	return err;
 }
 
 OS_Android::~OS_Android() {

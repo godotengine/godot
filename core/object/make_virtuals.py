@@ -72,6 +72,7 @@ def generate_version(argcount, const=False, returns=False):
         s = s.replace("$RVOID", "(void)r_ret;")  # If required, may lead to uninitialized errors
         s = s.replace("$CALLPTRRETDEF", "PtrToArg<m_ret>::EncodeT ret;")
         method_info += "\tmethod_info.return_val = GetTypeInfo<m_ret>::get_class_info();\\\n"
+        method_info += "\tmethod_info.return_val_metadata = GetTypeInfo<m_ret>::METADATA;\\\n"
     else:
         s = s.replace("$RET", "")
         s = s.replace("$RVOID", "")
@@ -113,6 +114,9 @@ def generate_version(argcount, const=False, returns=False):
         )
         callptrargsptr += "&argval" + str(i + 1)
         method_info += "\tmethod_info.arguments.push_back(GetTypeInfo<m_type" + str(i + 1) + ">::get_class_info());\\\n"
+        method_info += (
+            "\tmethod_info.arguments_metadata.push_back(GetTypeInfo<m_type" + str(i + 1) + ">::METADATA);\\\n"
+        )
 
     if argcount:
         callsiargs += "};\\\n"

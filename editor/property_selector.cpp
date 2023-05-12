@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  property_selector.cpp                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  property_selector.cpp                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "property_selector.h"
 
@@ -124,7 +124,7 @@ void PropertySelector::_update_search() {
 
 		bool found = false;
 
-		Ref<Texture2D> type_icons[Variant::VARIANT_MAX] = {
+		Ref<Texture2D> type_icons[] = {
 			search_options->get_theme_icon(SNAME("Variant"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("bool"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("int"), SNAME("EditorIcons")),
@@ -137,11 +137,14 @@ void PropertySelector::_update_search() {
 			search_options->get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Vector3i"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Transform2D"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("Vector4"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("Vector4"), SNAME("EditorIcons")), // Vector4i, needs icon.
 			search_options->get_theme_icon(SNAME("Plane"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Quaternion"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("AABB"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Basis"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")),
+			search_options->get_theme_icon(SNAME("Variant"), SNAME("EditorIcons")), // Projection, needs icon.
 			search_options->get_theme_icon(SNAME("Color"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("StringName"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("NodePath"), SNAME("EditorIcons")),
@@ -161,6 +164,7 @@ void PropertySelector::_update_search() {
 			search_options->get_theme_icon(SNAME("PackedVector3Array"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("PackedColorArray"), SNAME("EditorIcons"))
 		};
+		static_assert((sizeof(type_icons) / sizeof(type_icons[0])) == Variant::VARIANT_MAX, "Number of type icons doesn't match the number of Variant types.");
 
 		for (const PropertyInfo &E : props) {
 			if (E.usage == PROPERTY_USAGE_CATEGORY) {

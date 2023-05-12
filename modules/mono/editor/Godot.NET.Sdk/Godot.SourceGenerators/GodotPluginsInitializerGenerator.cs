@@ -13,7 +13,7 @@ namespace Godot.SourceGenerators
 
         public void Execute(GeneratorExecutionContext context)
         {
-            if (context.IsGodotToolsProject())
+            if (context.IsGodotToolsProject() || context.IsGodotSourceGeneratorDisabled("GodotPluginsInitializer"))
                 return;
 
             string source =
@@ -34,7 +34,7 @@ namespace GodotPlugins.Game
             {
                 DllImportResolver dllImportResolver = new GodotDllImportResolver(godotDllHandle).OnResolveDllImport;
 
-                var coreApiAssembly = typeof(Godot.Object).Assembly;
+                var coreApiAssembly = typeof(global::Godot.GodotObject).Assembly;
 
                 NativeLibrary.SetDllImportResolver(coreApiAssembly, dllImportResolver);
 
@@ -42,13 +42,13 @@ namespace GodotPlugins.Game
 
                 ManagedCallbacks.Create(outManagedCallbacks);
 
-                ScriptManagerBridge.LookupScriptsInAssembly(typeof(GodotPlugins.Game.Main).Assembly);
+                ScriptManagerBridge.LookupScriptsInAssembly(typeof(global::GodotPlugins.Game.Main).Assembly);
 
                 return godot_bool.True;
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine(e);
+                global::System.Console.Error.WriteLine(e);
                 return false.ToGodotBool();
             }
         }

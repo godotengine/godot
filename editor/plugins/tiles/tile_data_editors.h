@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  tile_data_editors.h                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  tile_data_editors.h                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef TILE_DATA_EDITORS_H
 #define TILE_DATA_EDITORS_H
@@ -36,10 +36,10 @@
 #include "editor/editor_properties.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/control.h"
-#include "scene/gui/label.h"
 
 class MenuButton;
+class SpinBox;
+class Label;
 class EditorUndoRedoManager;
 
 class TileDataEditor : public VBoxContainer {
@@ -120,8 +120,16 @@ private:
 	Button *button_create = nullptr;
 	Button *button_edit = nullptr;
 	Button *button_delete = nullptr;
-	Button *button_pixel_snap = nullptr;
 	MenuButton *button_advanced_menu = nullptr;
+
+	enum Snap {
+		SNAP_NONE,
+		SNAP_HALF_PIXEL,
+		SNAP_GRID,
+	};
+	int current_snap_option = SNAP_HALF_PIXEL;
+	MenuButton *button_pixel_snap = nullptr;
+	SpinBox *snap_subdivision = nullptr;
 
 	Vector<Point2> in_creation_polygon;
 
@@ -155,9 +163,11 @@ private:
 	void _advanced_menu_item_pressed(int p_item_pressed);
 	void _center_view();
 	void _base_control_gui_input(Ref<InputEvent> p_event);
+	void _set_snap_option(int p_index);
+	void _store_snap_options();
 
 	void _snap_to_tile_shape(Point2 &r_point, float &r_current_snapped_dist, float p_snap_dist);
-	void _snap_to_half_pixel(Point2 &r_point);
+	void _snap_point(Point2 &r_point);
 	void _grab_polygon_point(Vector2 p_pos, const Transform2D &p_polygon_xform, int &r_polygon_index, int &r_point_index);
 	void _grab_polygon_segment_point(Vector2 p_pos, const Transform2D &p_polygon_xform, int &r_polygon_index, int &r_segment_index, Vector2 &r_point);
 
@@ -242,8 +252,8 @@ public:
 	~TileDataDefaultEditor();
 };
 
-class TileDataTextureOffsetEditor : public TileDataDefaultEditor {
-	GDCLASS(TileDataTextureOffsetEditor, TileDataDefaultEditor);
+class TileDataTextureOriginEditor : public TileDataDefaultEditor {
+	GDCLASS(TileDataTextureOriginEditor, TileDataDefaultEditor);
 
 public:
 	virtual void draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileMapCell p_cell, bool p_selected = false) override;

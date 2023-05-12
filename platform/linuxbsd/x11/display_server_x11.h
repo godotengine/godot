@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  display_server_x11.h                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  display_server_x11.h                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef DISPLAY_SERVER_X11_H
 #define DISPLAY_SERVER_X11_H
@@ -36,6 +36,8 @@
 #include "servers/display_server.h"
 
 #include "core/input/input.h"
+#include "core/os/mutex.h"
+#include "core/os/thread.h"
 #include "core/templates/local_vector.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
@@ -69,6 +71,7 @@
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 
+#ifdef SOWRAP_ENABLED
 #include "dynwrappers/xlib-so_wrap.h"
 
 #include "dynwrappers/xcursor-so_wrap.h"
@@ -77,6 +80,27 @@
 #include "dynwrappers/xinput2-so_wrap.h"
 #include "dynwrappers/xrandr-so_wrap.h"
 #include "dynwrappers/xrender-so_wrap.h"
+
+#include "../xkbcommon-so_wrap.h"
+#else
+#include <X11/XKBlib.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+
+#include <X11/Xcursor/Xcursor.h>
+#include <X11/extensions/XInput2.h>
+#include <X11/extensions/Xext.h>
+#include <X11/extensions/Xinerama.h>
+#include <X11/extensions/Xrandr.h>
+#include <X11/extensions/Xrender.h>
+#include <X11/extensions/shape.h>
+
+#ifdef XKB_ENABLED
+#include <xkbcommon/xkbcommon-compose.h>
+#include <xkbcommon/xkbcommon-keysyms.h>
+#include <xkbcommon/xkbcommon.h>
+#endif
+#endif
 
 typedef struct _xrr_monitor_info {
 	Atom name;
@@ -95,8 +119,7 @@ typedef struct _xrr_monitor_info {
 #undef CursorShape
 
 class DisplayServerX11 : public DisplayServer {
-	//No need to register, it's platform-specific and nothing is added
-	//GDCLASS(DisplayServerX11, DisplayServer)
+	// No need to register with GDCLASS, it's platform-specific and nothing is added.
 
 	_THREAD_SAFE_CLASS_
 
@@ -135,19 +158,27 @@ class DisplayServerX11 : public DisplayServer {
 
 	struct WindowData {
 		Window x11_window;
+		Window x11_xim_window;
+		Window parent;
 		::XIC xic;
+		bool ime_active = false;
+		bool ime_in_progress = false;
+		bool ime_suppress_next_keyup = false;
+#ifdef XKB_ENABLED
+		xkb_compose_state *xkb_state = nullptr;
+#endif
 
 		Size2i min_size;
 		Size2i max_size;
 		Point2i position;
 		Size2i size;
-		Point2i im_position;
-		bool im_active = false;
 		Callable rect_changed_callback;
 		Callable event_callback;
 		Callable input_event_callback;
 		Callable input_text_callback;
 		Callable drop_files_callback;
+
+		Vector<Vector2> mpath;
 
 		WindowID transient_parent = INVALID_WINDOW_ID;
 		HashSet<WindowID> transient_children;
@@ -169,11 +200,22 @@ class DisplayServerX11 : public DisplayServer {
 		bool maximized = false;
 		bool is_popup = false;
 		bool layered_window = false;
+		bool mpass = false;
 
 		Rect2i parent_safe_rect;
 
 		unsigned int focus_order = 0;
 	};
+
+	Point2i im_selection;
+	String im_text;
+
+#ifdef XKB_ENABLED
+	bool xkb_loaded_v05p = false;
+	bool xkb_loaded_v08p = false;
+	xkb_context *xkb_ctx = nullptr;
+	xkb_compose_table *dead_tbl = nullptr;
+#endif
 
 	HashMap<WindowID, WindowData> windows;
 
@@ -185,7 +227,7 @@ class DisplayServerX11 : public DisplayServer {
 	WindowID last_focused_window = INVALID_WINDOW_ID;
 
 	WindowID window_id_counter = MAIN_WINDOW_ID;
-	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, int p_screen);
+	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
 
 	String internal_clipboard;
 	String internal_clipboard_primary;
@@ -197,6 +239,15 @@ class DisplayServerX11 : public DisplayServer {
 	::Time last_keyrelease_time = 0;
 	::XIM xim;
 	::XIMStyle xim_style;
+
+	static int _xim_preedit_start_callback(::XIM xim, ::XPointer client_data,
+			::XPointer call_data);
+	static void _xim_preedit_done_callback(::XIM xim, ::XPointer client_data,
+			::XPointer call_data);
+	static void _xim_preedit_draw_callback(::XIM xim, ::XPointer client_data,
+			::XIMPreeditDrawCallbackStruct *call_data);
+	static void _xim_preedit_caret_callback(::XIM xim, ::XPointer client_data,
+			::XIMPreeditCaretCallbackStruct *call_data);
 	static void _xim_destroy_callback(::XIM im, ::XPointer client_data,
 			::XPointer call_data);
 
@@ -205,7 +256,7 @@ class DisplayServerX11 : public DisplayServer {
 	Point2i last_click_pos = Point2i(-100, -100);
 	uint64_t last_click_ms = 0;
 	MouseButton last_click_button_index = MouseButton::NONE;
-	MouseButton last_button_state = MouseButton::NONE;
+	BitField<MouseButtonMask> last_button_state;
 	bool app_focused = false;
 	uint64_t time_since_no_focus = 0;
 
@@ -234,7 +285,7 @@ class DisplayServerX11 : public DisplayServer {
 
 	Rect2i _screen_get_rect(int p_screen) const;
 
-	MouseButton _get_mouse_button_state(MouseButton p_x11_button, int p_x11_type);
+	BitField<MouseButtonMask> _get_mouse_button_state(MouseButton p_x11_button, int p_x11_type);
 	void _get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state);
 	void _flush_mouse_motion();
 
@@ -245,6 +296,7 @@ class DisplayServerX11 : public DisplayServer {
 
 	Atom _process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property, Atom p_selection) const;
 	void _handle_selection_request_event(XSelectionRequestEvent *p_event) const;
+	void _update_window_mouse_passthrough(WindowID p_window);
 
 	String _clipboard_get_impl(Atom p_source, Window x11_window, Atom target) const;
 	String _clipboard_get(Atom p_source, Window x11_window) const;
@@ -254,7 +306,7 @@ class DisplayServerX11 : public DisplayServer {
 
 	const char *cursor_theme = nullptr;
 	int cursor_size = 0;
-	XcursorImage *img[CURSOR_MAX];
+	XcursorImage *cursor_img[CURSOR_MAX];
 	Cursor cursors[CURSOR_MAX];
 	Cursor null_cursor;
 	CursorShape current_cursor = CURSOR_ARROW;
@@ -344,7 +396,7 @@ public:
 
 	virtual void warp_mouse(const Point2i &p_position) override;
 	virtual Point2i mouse_get_position() const override;
-	virtual MouseButton mouse_get_button_state() const override;
+	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
 
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
@@ -352,11 +404,14 @@ public:
 	virtual String clipboard_get_primary() const override;
 
 	virtual int get_screen_count() const override;
+	virtual int get_primary_screen() const override;
+	virtual int get_keyboard_focus_screen() const override;
 	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual Color screen_get_pixel(const Point2i &p_position) const override;
 
 #if defined(DBUS_ENABLED)
 	virtual void screen_set_keep_on(bool p_enable) override;
@@ -365,7 +420,7 @@ public:
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const override;
 
-	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), int p_screen = 0) override;
+	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i()) override;
 	virtual void show_window(WindowID p_id) override;
 	virtual void delete_sub_window(WindowID p_id) override;
 
@@ -428,6 +483,9 @@ public:
 	virtual void window_set_ime_active(const bool p_active, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_set_ime_position(const Point2i &p_pos, WindowID p_window = MAIN_WINDOW_ID) override;
 
+	virtual Point2i ime_get_selection() const override;
+	virtual String ime_get_text() const override;
+
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
 
@@ -453,12 +511,12 @@ public:
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
 
-	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error);
+	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
 
 	static void register_x11_driver();
 
-	DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error);
+	DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error);
 	~DisplayServerX11();
 };
 

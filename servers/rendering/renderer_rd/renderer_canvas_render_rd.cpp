@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  renderer_canvas_render_rd.cpp                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  renderer_canvas_render_rd.cpp                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "renderer_canvas_render_rd.h"
 
@@ -455,7 +455,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 				light_count++;
 
-				if (light_count == MAX_LIGHTS_PER_ITEM) {
+				if (light_count == MAX_LIGHTS_PER_ITEM - 1) {
 					break;
 				}
 			}
@@ -525,10 +525,12 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 					if (rect->flags & CANVAS_RECT_FLIP_H) {
 						src_rect.size.x *= -1;
+						push_constant.flags |= FLAGS_FLIP_H;
 					}
 
 					if (rect->flags & CANVAS_RECT_FLIP_V) {
 						src_rect.size.y *= -1;
+						push_constant.flags |= FLAGS_FLIP_V;
 					}
 
 					if (rect->flags & CANVAS_RECT_TRANSPOSE) {
@@ -917,7 +919,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 			} break;
 			case Item::Command::TYPE_ANIMATION_SLICE: {
 				const Item::CommandAnimationSlice *as = static_cast<const Item::CommandAnimationSlice *>(c);
-				double current_time = RendererCompositorRD::singleton->get_total_time();
+				double current_time = RendererCompositorRD::get_singleton()->get_total_time();
 				double local_time = Math::fposmod(current_time - as->offset, as->animation_length);
 				skipping = !(local_time >= as->slice_begin && local_time < as->slice_end);
 
@@ -1108,11 +1110,9 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 
 		RID material = ci->material_owner == nullptr ? ci->material : ci->material_owner->material;
 
-		if (ci->canvas_group != nullptr) {
+		if (ci->use_canvas_group) {
 			if (ci->canvas_group->mode == RS::CANVAS_GROUP_MODE_CLIP_AND_DRAW) {
-				if (!p_to_backbuffer) {
-					material = default_clip_children_material;
-				}
+				material = default_clip_children_material;
 			} else {
 				if (material.is_null()) {
 					if (ci->canvas_group->mode == RS::CANVAS_GROUP_MODE_CLIP_ONLY) {
@@ -1250,13 +1250,12 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				l = l->next_ptr;
 				ERR_CONTINUE(!clight);
 			}
-			Transform2D to_light_xform = (p_canvas_transform * l->light_shader_xform).affine_inverse();
 
 			Vector2 canvas_light_pos = p_canvas_transform.xform(l->xform.get_origin()); //convert light position to canvas coordinates, as all computation is done in canvas coords to avoid precision loss
 			state.light_uniforms[index].position[0] = canvas_light_pos.x;
 			state.light_uniforms[index].position[1] = canvas_light_pos.y;
 
-			_update_transform_2d_to_mat2x4(to_light_xform, state.light_uniforms[index].matrix);
+			_update_transform_2d_to_mat2x4(l->light_shader_xform.affine_inverse(), state.light_uniforms[index].matrix);
 			_update_transform_2d_to_mat2x4(l->xform_cache.affine_inverse(), state.light_uniforms[index].shadow_matrix);
 
 			state.light_uniforms[index].height = l->height * (p_canvas_transform.columns[0].length() + p_canvas_transform.columns[1].length()) * 0.5; //approximate height conversion to the canvas size, since all calculations are done in canvas coords to avoid precision loss
@@ -1380,6 +1379,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 	bool backbuffer_gen_mipmaps = false;
 
 	Item *canvas_group_owner = nullptr;
+	bool skip_item = false;
 
 	bool update_skeletons = false;
 	bool time_used = false;
@@ -1429,6 +1429,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 					const Item::CommandMesh *cm = static_cast<const Item::CommandMesh *>(c);
 					if (cm->mesh_instance.is_valid()) {
 						mesh_storage->mesh_instance_check_for_update(cm->mesh_instance);
+						mesh_storage->mesh_instance_set_canvas_item_transform(cm->mesh_instance, canvas_transform_inverse * ci->final_transform);
 						update_skeletons = true;
 					}
 				}
@@ -1451,6 +1452,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 					Rect2i group_rect = ci->canvas_group_owner->global_rect_cache;
 					texture_storage->render_target_copy_to_back_buffer(p_to_render_target, group_rect, false);
 					if (ci->canvas_group_owner->canvas_group->mode == RS::CANVAS_GROUP_MODE_CLIP_AND_DRAW) {
+						ci->canvas_group_owner->use_canvas_group = false;
 						items[item_count++] = ci->canvas_group_owner;
 					}
 				} else if (!backbuffer_cleared) {
@@ -1465,9 +1467,8 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			ci->canvas_group_owner = nullptr; //must be cleared
 		}
 
-		if (!backbuffer_cleared && canvas_group_owner == nullptr && ci->canvas_group != nullptr && !backbuffer_copy) {
-			texture_storage->render_target_clear_back_buffer(p_to_render_target, Rect2i(), Color(0, 0, 0, 0));
-			backbuffer_cleared = true;
+		if (canvas_group_owner == nullptr && ci->canvas_group != nullptr && ci->canvas_group->mode != RS::CANVAS_GROUP_MODE_CLIP_AND_DRAW) {
+			skip_item = true;
 		}
 
 		if (ci == canvas_group_owner) {
@@ -1486,6 +1487,11 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			canvas_group_owner = nullptr;
 			// Backbuffer is dirty now and needs to be re-cleared if another CanvasGroup needs it.
 			backbuffer_cleared = false;
+
+			// Tell the renderer to paint this as a canvas group
+			ci->use_canvas_group = true;
+		} else {
+			ci->use_canvas_group = false;
 		}
 
 		if (backbuffer_copy) {
@@ -1501,9 +1507,9 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			texture_storage->render_target_copy_to_back_buffer(p_to_render_target, back_buffer_rect, backbuffer_gen_mipmaps);
 
 			backbuffer_copy = false;
-			backbuffer_gen_mipmaps = false;
 			material_screen_texture_cached = true; // After a backbuffer copy, screen texture makes no further copies.
 			material_screen_texture_mipmaps_cached = backbuffer_gen_mipmaps;
+			backbuffer_gen_mipmaps = false;
 		}
 
 		if (backbuffer_gen_mipmaps) {
@@ -1513,7 +1519,11 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			material_screen_texture_mipmaps_cached = true;
 		}
 
-		items[item_count++] = ci;
+		if (skip_item) {
+			skip_item = false;
+		} else {
+			items[item_count++] = ci;
+		}
 
 		if (!ci->next || item_count == MAX_RENDER_ITEMS - 1) {
 			if (update_skeletons) {
@@ -1521,7 +1531,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				update_skeletons = false;
 			}
 
-			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, false);
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, canvas_group_owner != nullptr);
 			//then reset
 			item_count = 0;
 		}
@@ -1547,6 +1557,9 @@ void RendererCanvasRenderRD::light_set_texture(RID p_rid, RID p_texture) {
 	if (cl->texture == p_texture) {
 		return;
 	}
+
+	ERR_FAIL_COND(p_texture.is_valid() && !texture_storage->owns_texture(p_texture));
+
 	if (cl->texture.is_valid()) {
 		texture_storage->texture_remove_from_decal_atlas(cl->texture);
 	}
@@ -1853,7 +1866,7 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 		}
 	}
 
-	if (oc->line_point_count != lines.size() && oc->vertex_array.is_valid()) {
+	if ((oc->line_point_count != lines.size() || lines.size() == 0) && oc->vertex_array.is_valid()) {
 		RD::get_singleton()->free(oc->vertex_array);
 		RD::get_singleton()->free(oc->vertex_buffer);
 		RD::get_singleton()->free(oc->index_array);
@@ -1868,6 +1881,7 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 	}
 
 	if (lines.size()) {
+		oc->line_point_count = lines.size();
 		Vector<uint8_t> geometry;
 		Vector<uint8_t> indices;
 		int lc = lines.size();
@@ -1958,7 +1972,7 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 		}
 	}
 
-	if (oc->sdf_index_count != sdf_indices.size() && oc->sdf_point_count != p_points.size() && oc->sdf_vertex_array.is_valid()) {
+	if (((oc->sdf_index_count != sdf_indices.size() && oc->sdf_point_count != p_points.size()) || p_points.size() == 0) && oc->sdf_vertex_array.is_valid()) {
 		RD::get_singleton()->free(oc->sdf_vertex_array);
 		RD::get_singleton()->free(oc->sdf_vertex_buffer);
 		RD::get_singleton()->free(oc->sdf_index_array);
@@ -2034,7 +2048,6 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["blend_premul_alpha"] = Pair<int *, int>(&blend_mode, BLEND_MODE_PMALPHA);
 	actions.render_mode_values["blend_disabled"] = Pair<int *, int>(&blend_mode, BLEND_MODE_DISABLED);
 
-	actions.usage_flag_pointers["SCREEN_TEXTURE"] = &uses_screen_texture;
 	actions.usage_flag_pointers["texture_sdf"] = &uses_sdf;
 	actions.usage_flag_pointers["TIME"] = &uses_time;
 
@@ -2046,6 +2059,7 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
 
 	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;
+	uses_screen_texture = gen_code.uses_screen_texture;
 
 	if (version.is_null()) {
 		version = canvas_singleton->shader.canvas_shader.version_create();
@@ -2423,7 +2437,6 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.renames["SPECULAR_SHININESS_TEXTURE"] = "specular_texture";
 		actions.renames["SPECULAR_SHININESS"] = "specular_shininess";
 		actions.renames["SCREEN_UV"] = "screen_uv";
-		actions.renames["SCREEN_TEXTURE"] = "screen_texture";
 		actions.renames["SCREEN_PIXEL_SIZE"] = "canvas_data.screen_pixel_size";
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
 		actions.renames["POINT_COORD"] = "gl_PointCoord";
@@ -2444,7 +2457,6 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.renames["screen_uv_to_sdf"] = "screen_uv_to_sdf";
 
 		actions.usage_defines["COLOR"] = "#define COLOR_USED\n";
-		actions.usage_defines["SCREEN_TEXTURE"] = "#define SCREEN_TEXTURE_USED\n";
 		actions.usage_defines["SCREEN_UV"] = "#define SCREEN_UV_USED\n";
 		actions.usage_defines["SCREEN_PIXEL_SIZE"] = "@SCREEN_UV";
 		actions.usage_defines["NORMAL"] = "#define NORMAL_USED\n";
@@ -2459,7 +2471,6 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.custom_samplers["TEXTURE"] = "texture_sampler";
 		actions.custom_samplers["NORMAL_TEXTURE"] = "texture_sampler";
 		actions.custom_samplers["SPECULAR_SHININESS_TEXTURE"] = "texture_sampler";
-		actions.custom_samplers["SCREEN_TEXTURE"] = "material_samplers[3]"; //mipmap and filter for screen texture
 		actions.sampler_array_name = "material_samplers";
 		actions.base_texture_binding_index = 1;
 		actions.texture_layout_set = MATERIAL_UNIFORM_SET;
@@ -2631,9 +2642,12 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 // Default CanvasGroup shader.
 
 shader_type canvas_item;
+render_mode unshaded;
+
+uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_nearest;
 
 void fragment() {
-	vec4 c = textureLod(SCREEN_TEXTURE, SCREEN_UV, 0.0);
+	vec4 c = textureLod(screen_texture, SCREEN_UV, 0.0);
 
 	if (c.a > 0.0001) {
 		c.rgb /= c.a;
@@ -2656,9 +2670,12 @@ void fragment() {
 // Default clip children shader.
 
 shader_type canvas_item;
+render_mode unshaded;
+
+uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_nearest;
 
 void fragment() {
-	vec4 c = textureLod(SCREEN_TEXTURE, SCREEN_UV, 0.0);
+	vec4 c = textureLod(screen_texture, SCREEN_UV, 0.0);
 	COLOR.rgb = c.rgb;
 }
 )");

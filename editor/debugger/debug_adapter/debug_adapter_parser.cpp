@@ -1,40 +1,39 @@
-/*************************************************************************/
-/*  debug_adapter_parser.cpp                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  debug_adapter_parser.cpp                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "debug_adapter_parser.h"
 
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
-#include "editor/editor_node.h"
-#include "editor/editor_run_native.h"
 #include "editor/export/editor_export_platform.h"
+#include "editor/gui/editor_run_bar.h"
 #include "editor/plugins/script_editor_plugin.h"
 
 void DebugAdapterParser::_bind_methods() {
@@ -162,7 +161,7 @@ Dictionary DebugAdapterParser::req_initialize(const Dictionary &p_params) const 
 
 Dictionary DebugAdapterParser::req_disconnect(const Dictionary &p_params) const {
 	if (!DebugAdapterProtocol::get_singleton()->get_current_peer()->attached) {
-		EditorNode::get_singleton()->run_stop();
+		EditorRunBar::get_singleton()->stop_playing();
 	}
 
 	return prepare_success_response(p_params);
@@ -188,7 +187,7 @@ Dictionary DebugAdapterParser::req_launch(const Dictionary &p_params) const {
 
 	String platform_string = args.get("platform", "host");
 	if (platform_string == "host") {
-		EditorNode::get_singleton()->run_play();
+		EditorRunBar::get_singleton()->play_main_scene();
 	} else {
 		int device = args.get("device", -1);
 		int idx = -1;
@@ -212,8 +211,8 @@ Dictionary DebugAdapterParser::req_launch(const Dictionary &p_params) const {
 			return prepare_error_response(p_params, DAP::ErrorType::UNKNOWN_PLATFORM);
 		}
 
-		EditorNode *editor = EditorNode::get_singleton();
-		Error err = platform_string == "android" ? editor->run_play_native(device, idx) : editor->run_play_native(-1, idx);
+		EditorRunBar *run_bar = EditorRunBar::get_singleton();
+		Error err = platform_string == "android" ? run_bar->start_native_device(device * 10000 + idx) : run_bar->start_native_device(idx);
 		if (err) {
 			if (err == ERR_INVALID_PARAMETER && platform_string == "android") {
 				return prepare_error_response(p_params, DAP::ErrorType::MISSING_DEVICE);
@@ -257,13 +256,13 @@ Dictionary DebugAdapterParser::req_restart(const Dictionary &p_params) const {
 }
 
 Dictionary DebugAdapterParser::req_terminate(const Dictionary &p_params) const {
-	EditorNode::get_singleton()->run_stop();
+	EditorRunBar::get_singleton()->stop_playing();
 
 	return prepare_success_response(p_params);
 }
 
 Dictionary DebugAdapterParser::req_pause(const Dictionary &p_params) const {
-	EditorNode::get_singleton()->get_pause_button()->set_pressed(true);
+	EditorRunBar::get_singleton()->get_pause_button()->set_pressed(true);
 	EditorDebuggerNode::get_singleton()->_paused();
 
 	DebugAdapterProtocol::get_singleton()->notify_stopped_paused();
@@ -272,7 +271,7 @@ Dictionary DebugAdapterParser::req_pause(const Dictionary &p_params) const {
 }
 
 Dictionary DebugAdapterParser::req_continue(const Dictionary &p_params) const {
-	EditorNode::get_singleton()->get_pause_button()->set_pressed(false);
+	EditorRunBar::get_singleton()->get_pause_button()->set_pressed(false);
 	EditorDebuggerNode::get_singleton()->_paused();
 
 	DebugAdapterProtocol::get_singleton()->notify_continued();

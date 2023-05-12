@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  gdscript_highlighter.cpp                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gdscript_highlighter.cpp                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "gdscript_highlighter.h"
 #include "../gdscript.h"
@@ -294,20 +294,30 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 					!(str[j] == '_' && (prev_is_digit || str[j - 1] == 'b' || str[j - 1] == 'x' || str[j - 1] == '.')) &&
 					!(str[j] == 'e' && (prev_is_digit || str[j - 1] == '_')) &&
 					!(str[j] == '.' && (prev_is_digit || (!prev_is_binary_op && (j > 0 && (str[j - 1] == '-' || str[j - 1] == '+' || str[j - 1] == '~'))))) &&
-					!((str[j] == '-' || str[j] == '+' || str[j] == '~') && !prev_is_binary_op && str[j - 1] != 'e')) {
-				/* This condition continues Number highlighting in special cases.
-				1st row: '+' or '-' after scientific notation;
+					!((str[j] == '-' || str[j] == '+' || str[j] == '~') && !is_binary_op && !prev_is_binary_op && str[j - 1] != 'e')) {
+				/* This condition continues number highlighting in special cases.
+				1st row: '+' or '-' after scientific notation (like 3e-4);
 				2nd row: '_' as a numeric separator;
 				3rd row: Scientific notation 'e' and floating points;
 				4th row: Floating points inside the number, or leading if after a unary mathematical operator;
-				5th row: Multiple unary mathematical operators */
+				5th row: Multiple unary mathematical operators (like ~-7)*/
 				in_number = false;
 			}
-		} else if (!is_binary_op && (str[j] == '-' || str[j] == '+' || str[j] == '~' || (str[j] == '.' && str[j + 1] != '.' && (j == 0 || (j > 0 && str[j - 1] != '.'))))) {
+		} else if (str[j] == '.' && !is_binary_op && is_digit(str[j + 1]) && (j == 0 || (j > 0 && str[j - 1] != '.'))) {
+			// Start number highlighting from leading decimal points (like .42)
 			in_number = true;
+		} else if ((str[j] == '-' || str[j] == '+' || str[j] == '~') && !is_binary_op) {
+			// Only start number highlighting on unary operators if a digit follows them.
+			int non_op = j + 1;
+			while (str[non_op] == '-' || str[non_op] == '+' || str[non_op] == '~') {
+				non_op++;
+			}
+			if (is_digit(str[non_op]) || (str[non_op] == '.' && non_op < line_length && is_digit(str[non_op + 1]))) {
+				in_number = true;
+			}
 		}
 
-		if (!in_word && (is_ascii_char(str[j]) || is_underscore(str[j])) && !in_number) {
+		if (!in_word && is_unicode_identifier_start(str[j]) && !in_number) {
 			in_word = true;
 		}
 

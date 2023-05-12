@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NodePath" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NodePath" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Pre-parsed scene tree path.
 	</brief_description>
@@ -141,7 +141,7 @@
 			<return type="StringName" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Gets the resource or property name indicated by [param idx] (0 to [method get_subname_count]).
+				Gets the resource or property name indicated by [param idx] (0 to [method get_subname_count] - 1).
 				[codeblocks]
 				[gdscript]
 				var node_path = NodePath("Path2D/PathFollow2D/Sprite2D:texture:load_path")

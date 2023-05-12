@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  lightmap_gi.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  lightmap_gi.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "lightmap_gi.h"
 
@@ -163,7 +163,8 @@ Array LightmapGIData::_get_light_textures_data() const {
 		config->set_value("remap", "importer", "2d_array_texture");
 		config->set_value("remap", "type", "CompressedTexture2DArray");
 		if (!config->has_section_key("params", "compress/mode")) {
-			config->set_value("params", "compress/mode", 2); //user may want another compression, so leave it be
+			// User may want another compression, so leave it be, but default to VRAM uncompressed.
+			config->set_value("params", "compress/mode", 3);
 		}
 		config->set_value("params", "compress/channel_pack", 1);
 		config->set_value("params", "mipmaps/generate", false);
@@ -455,8 +456,8 @@ int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const Loc
 	Plane best_plane;
 	float best_plane_score = -1.0;
 
-	for (uint32_t i = 0; i < p_simplex_indices.size(); i++) {
-		const BSPSimplex &s = p_simplices[p_simplex_indices[i]];
+	for (const int idx : p_simplex_indices) {
+		const BSPSimplex &s = p_simplices[idx];
 		for (int j = 0; j < 4; j++) {
 			uint32_t plane_index = s.planes[j];
 			if (planes_tested[plane_index] == node_index) {
@@ -484,8 +485,8 @@ int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const Loc
 			int over_count = 0;
 			int under_count = 0;
 
-			for (uint32_t k = 0; k < p_simplex_indices.size(); k++) {
-				int side = _bsp_get_simplex_side(p_points, p_simplices, plane, p_simplex_indices[k]);
+			for (const int &index : p_simplex_indices) {
+				int side = _bsp_get_simplex_side(p_points, p_simplices, plane, index);
 				if (side == -2) {
 					continue; //this simplex is invalid, skip for now
 				} else if (side < 0) {
@@ -523,8 +524,7 @@ int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const Loc
 	LocalVector<int32_t> indices_under;
 
 	//split again, but add to list
-	for (uint32_t i = 0; i < p_simplex_indices.size(); i++) {
-		uint32_t index = p_simplex_indices[i];
+	for (const uint32_t index : p_simplex_indices) {
 		int side = _bsp_get_simplex_side(p_points, p_simplices, best_plane, index);
 
 		if (side == -2) {
@@ -763,7 +763,15 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 			MeshesFound &mf = meshes_found.write[m_i];
 
-			Size2i lightmap_size = mf.mesh->get_lightmap_size_hint() * mf.lightmap_scale;
+			Size2i lightmap_size = mf.mesh->get_lightmap_size_hint();
+
+			if (lightmap_size == Size2i(0, 0)) {
+				// TODO we should compute a size if no lightmap hint is set, as we did in 3.x.
+				// For now set to basic size to avoid crash.
+				lightmap_size = Size2i(64, 64);
+			}
+
+			lightmap_size *= mf.lightmap_scale;
 			TypedArray<RID> overrides;
 			overrides.resize(mf.overrides.size());
 			for (int i = 0; i < mf.overrides.size(); i++) {
@@ -969,8 +977,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			}
 		}
 
-		for (uint32_t i = 0; i < new_probe_positions.size(); i++) {
-			probes_found.push_back(new_probe_positions[i]);
+		for (const Vector3 &position : new_probe_positions) {
+			probes_found.push_back(position);
 		}
 	}
 
@@ -1211,8 +1219,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		LocalVector<BSPNode> bsp_nodes;
 		LocalVector<int32_t> planes_tested;
 		planes_tested.resize(bsp_planes.size());
-		for (uint32_t i = 0; i < planes_tested.size(); i++) {
-			planes_tested[i] = 0x7FFFFFFF;
+		for (int &index : planes_tested) {
+			index = 0x7FFFFFFF;
 		}
 
 		if (p_bake_step) {
@@ -1450,6 +1458,17 @@ Ref<CameraAttributes> LightmapGI::get_camera_attributes() const {
 	return camera_attributes;
 }
 
+PackedStringArray LightmapGI::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
+
+	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		warnings.push_back(RTR("LightmapGI nodes are not supported when using the GL Compatibility backend yet. Support will be added in a future release."));
+		return warnings;
+	}
+
+	return warnings;
+}
+
 void LightmapGI::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "environment_custom_sky" && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
 		p_property.usage = PROPERTY_USAGE_NONE;
@@ -1538,6 +1557,8 @@ void LightmapGI::_bind_methods() {
 	BIND_ENUM_CONSTANT(GENERATE_PROBES_SUBDIV_32);
 
 	BIND_ENUM_CONSTANT(BAKE_ERROR_OK);
+	BIND_ENUM_CONSTANT(BAKE_ERROR_NO_SCENE_ROOT);
+	BIND_ENUM_CONSTANT(BAKE_ERROR_FOREIGN_DATA);
 	BIND_ENUM_CONSTANT(BAKE_ERROR_NO_LIGHTMAPPER);
 	BIND_ENUM_CONSTANT(BAKE_ERROR_NO_SAVE_PATH);
 	BIND_ENUM_CONSTANT(BAKE_ERROR_NO_MESHES);

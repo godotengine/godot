@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  file_access.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  file_access.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "file_access.h"
 
@@ -133,8 +133,8 @@ Ref<FileAccess> FileAccess::open_encrypted(const String &p_path, ModeFlags p_mod
 	Ref<FileAccessEncrypted> fae;
 	fae.instantiate();
 	Error err = fae->open_and_parse(fa, p_key, (p_mode_flags == WRITE) ? FileAccessEncrypted::MODE_WRITE_AES256 : FileAccessEncrypted::MODE_READ);
+	last_file_open_error = err;
 	if (err) {
-		last_file_open_error = err;
 		return Ref<FileAccess>();
 	}
 	return fae;
@@ -149,8 +149,8 @@ Ref<FileAccess> FileAccess::open_encrypted_pass(const String &p_path, ModeFlags 
 	Ref<FileAccessEncrypted> fae;
 	fae.instantiate();
 	Error err = fae->open_and_parse_password(fa, p_pass, (p_mode_flags == WRITE) ? FileAccessEncrypted::MODE_WRITE_AES256 : FileAccessEncrypted::MODE_READ);
+	last_file_open_error = err;
 	if (err) {
-		last_file_open_error = err;
 		return Ref<FileAccess>();
 	}
 	return fae;
@@ -161,9 +161,8 @@ Ref<FileAccess> FileAccess::open_compressed(const String &p_path, ModeFlags p_mo
 	fac.instantiate();
 	fac->configure("GCPF", (Compression::Mode)p_compress_mode);
 	Error err = fac->open_internal(p_path, p_mode_flags);
-
+	last_file_open_error = err;
 	if (err) {
-		last_file_open_error = err;
 		return Ref<FileAccess>();
 	}
 
@@ -292,7 +291,7 @@ real_t FileAccess::get_real() const {
 
 Variant FileAccess::get_var(bool p_allow_objects) const {
 	uint32_t len = get_32();
-	Vector<uint8_t> buff = _get_buffer(len);
+	Vector<uint8_t> buff = get_buffer(len);
 	ERR_FAIL_COND_V((uint32_t)buff.size() != len, Variant());
 
 	const uint8_t *r = buff.ptr();
@@ -469,7 +468,7 @@ uint64_t FileAccess::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	return i;
 }
 
-Vector<uint8_t> FileAccess::_get_buffer(int64_t p_length) const {
+Vector<uint8_t> FileAccess::get_buffer(int64_t p_length) const {
 	Vector<uint8_t> data;
 
 	ERR_FAIL_COND_V_MSG(p_length < 0, data, "Length of buffer cannot be smaller than 0.");
@@ -663,7 +662,7 @@ void FileAccess::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 	}
 }
 
-void FileAccess::_store_buffer(const Vector<uint8_t> &p_buffer) {
+void FileAccess::store_buffer(const Vector<uint8_t> &p_buffer) {
 	uint64_t len = p_buffer.size();
 	if (len == 0) {
 		return;
@@ -687,7 +686,7 @@ void FileAccess::store_var(const Variant &p_var, bool p_full_objects) {
 	ERR_FAIL_COND_MSG(err != OK, "Error when trying to encode Variant.");
 
 	store_32(len);
-	_store_buffer(buff);
+	store_buffer(buff);
 }
 
 Vector<uint8_t> FileAccess::get_file_as_bytes(const String &p_path, Error *r_error) {
@@ -829,7 +828,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_float"), &FileAccess::get_float);
 	ClassDB::bind_method(D_METHOD("get_double"), &FileAccess::get_double);
 	ClassDB::bind_method(D_METHOD("get_real"), &FileAccess::get_real);
-	ClassDB::bind_method(D_METHOD("get_buffer", "length"), &FileAccess::_get_buffer);
+	ClassDB::bind_method(D_METHOD("get_buffer", "length"), (Vector<uint8_t>(FileAccess::*)(int64_t) const) & FileAccess::get_buffer);
 	ClassDB::bind_method(D_METHOD("get_line"), &FileAccess::get_line);
 	ClassDB::bind_method(D_METHOD("get_csv_line", "delim"), &FileAccess::get_csv_line, DEFVAL(","));
 	ClassDB::bind_method(D_METHOD("get_as_text", "skip_cr"), &FileAccess::get_as_text, DEFVAL(false));
@@ -847,7 +846,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("store_float", "value"), &FileAccess::store_float);
 	ClassDB::bind_method(D_METHOD("store_double", "value"), &FileAccess::store_double);
 	ClassDB::bind_method(D_METHOD("store_real", "value"), &FileAccess::store_real);
-	ClassDB::bind_method(D_METHOD("store_buffer", "buffer"), &FileAccess::_store_buffer);
+	ClassDB::bind_method(D_METHOD("store_buffer", "buffer"), (void(FileAccess::*)(const Vector<uint8_t> &)) & FileAccess::store_buffer);
 	ClassDB::bind_method(D_METHOD("store_line", "line"), &FileAccess::store_line);
 	ClassDB::bind_method(D_METHOD("store_csv_line", "values", "delim"), &FileAccess::store_csv_line, DEFVAL(","));
 	ClassDB::bind_method(D_METHOD("store_string", "string"), &FileAccess::store_string);
@@ -855,6 +854,8 @@ void FileAccess::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("store_pascal_string", "string"), &FileAccess::store_pascal_string);
 	ClassDB::bind_method(D_METHOD("get_pascal_string"), &FileAccess::get_pascal_string);
+
+	ClassDB::bind_method(D_METHOD("close"), &FileAccess::close);
 
 	ClassDB::bind_static_method("FileAccess", D_METHOD("file_exists", "path"), &FileAccess::exists);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_modified_time", "file"), &FileAccess::get_modified_time);
@@ -870,4 +871,5 @@ void FileAccess::_bind_methods() {
 	BIND_ENUM_CONSTANT(COMPRESSION_DEFLATE);
 	BIND_ENUM_CONSTANT(COMPRESSION_ZSTD);
 	BIND_ENUM_CONSTANT(COMPRESSION_GZIP);
+	BIND_ENUM_CONSTANT(COMPRESSION_BROTLI);
 }

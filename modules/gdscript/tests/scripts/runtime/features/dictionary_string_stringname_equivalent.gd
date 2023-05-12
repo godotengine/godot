@@ -13,5 +13,5 @@ func test():
 	print("String gets StringName: ", stringname_dict.get("abc"))
 
 	stringname_dict[&"abc"] = 42
-  # They compare equal because StringName keys are converted to String.
+	# They compare equal because StringName keys are converted to String.
 	print("String Dictionary == StringName Dictionary: ", string_dict == stringname_dict)

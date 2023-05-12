@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  joypad_linux.cpp                                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  joypad_linux.cpp                                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifdef JOYDEV_ENABLED
 
@@ -39,7 +39,11 @@
 #include <unistd.h>
 
 #ifdef UDEV_ENABLED
+#ifdef SOWRAP_ENABLED
 #include "libudev-so_wrap.h"
+#else
+#include <libudev.h>
+#endif
 #endif
 
 #define LONG_BITS (sizeof(long) * 8)
@@ -59,7 +63,7 @@ JoypadLinux::Joypad::~Joypad() {
 }
 
 void JoypadLinux::Joypad::reset() {
-	dpad = HatMask::CENTER;
+	dpad = 0;
 	fd = -1;
 	for (int i = 0; i < MAX_ABS; i++) {
 		abs_map[i] = -1;
@@ -70,6 +74,7 @@ void JoypadLinux::Joypad::reset() {
 
 JoypadLinux::JoypadLinux(Input *in) {
 #ifdef UDEV_ENABLED
+#ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
 	int dylibloader_verbose = 1;
 #else
@@ -77,10 +82,17 @@ JoypadLinux::JoypadLinux(Input *in) {
 #endif
 	use_udev = initialize_libudev(dylibloader_verbose) == 0;
 	if (use_udev) {
-		print_verbose("JoypadLinux: udev enabled and loaded successfully.");
+		if (!udev_new || !udev_unref || !udev_enumerate_new || !udev_enumerate_add_match_subsystem || !udev_enumerate_scan_devices || !udev_enumerate_get_list_entry || !udev_list_entry_get_next || !udev_list_entry_get_name || !udev_device_new_from_syspath || !udev_device_get_devnode || !udev_device_get_action || !udev_device_unref || !udev_enumerate_unref || !udev_monitor_new_from_netlink || !udev_monitor_filter_add_match_subsystem_devtype || !udev_monitor_enable_receiving || !udev_monitor_get_fd || !udev_monitor_receive_device || !udev_monitor_unref) {
+			// There's no API to check version, check if functions are available instead.
+			use_udev = false;
+			print_verbose("JoypadLinux: Unsupported udev library version!");
+		} else {
+			print_verbose("JoypadLinux: udev enabled and loaded successfully.");
+		}
 	} else {
 		print_verbose("JoypadLinux: udev enabled, but couldn't be loaded. Falling back to /dev/input to detect joypads.");
 	}
+#endif
 #else
 	print_verbose("JoypadLinux: udev disabled, parsing /dev/input to detect joypads.");
 #endif
@@ -485,27 +497,33 @@ void JoypadLinux::process_joypads() {
 						case ABS_HAT0X:
 							if (joypad_event.value != 0) {
 								if (joypad_event.value < 0) {
-									joypad.dpad = (HatMask)((joypad.dpad | HatMask::LEFT) & ~HatMask::RIGHT);
+									joypad.dpad.set_flag(HatMask::LEFT);
+									joypad.dpad.clear_flag(HatMask::RIGHT);
 								} else {
-									joypad.dpad = (HatMask)((joypad.dpad | HatMask::RIGHT) & ~HatMask::LEFT);
+									joypad.dpad.set_flag(HatMask::RIGHT);
+									joypad.dpad.clear_flag(HatMask::LEFT);
 								}
 							} else {
-								joypad.dpad &= ~(HatMask::LEFT | HatMask::RIGHT);
+								joypad.dpad.clear_flag(HatMask::LEFT);
+								joypad.dpad.clear_flag(HatMask::RIGHT);
 							}
-							input->joy_hat(i, (HatMask)joypad.dpad);
+							input->joy_hat(i, joypad.dpad);
 							break;
 
 						case ABS_HAT0Y:
 							if (joypad_event.value != 0) {
 								if (joypad_event.value < 0) {
-									joypad.dpad = (HatMask)((joypad.dpad | HatMask::UP) & ~HatMask::DOWN);
+									joypad.dpad.set_flag(HatMask::UP);
+									joypad.dpad.clear_flag(HatMask::DOWN);
 								} else {
-									joypad.dpad = (HatMask)((joypad.dpad | HatMask::DOWN) & ~HatMask::UP);
+									joypad.dpad.set_flag(HatMask::DOWN);
+									joypad.dpad.clear_flag(HatMask::UP);
 								}
 							} else {
-								joypad.dpad &= ~(HatMask::UP | HatMask::DOWN);
+								joypad.dpad.clear_flag(HatMask::UP);
+								joypad.dpad.clear_flag(HatMask::DOWN);
 							}
-							input->joy_hat(i, (HatMask)joypad.dpad);
+							input->joy_hat(i, joypad.dpad);
 							break;
 
 						default:

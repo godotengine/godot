@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  rasterizer_scene_gles3.cpp                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  rasterizer_scene_gles3.cpp                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "rasterizer_scene_gles3.h"
 #include "core/config/project_settings.h"
@@ -145,6 +145,7 @@ void RasterizerSceneGLES3::_geometry_instance_dependency_changed(Dependency::Dep
 		case Dependency::DEPENDENCY_CHANGED_MULTIMESH:
 		case Dependency::DEPENDENCY_CHANGED_SKELETON_DATA: {
 			static_cast<RenderGeometryInstance *>(p_tracker->userdata)->_mark_dirty();
+			static_cast<GeometryInstanceGLES3 *>(p_tracker->userdata)->data->dirty_dependencies = true;
 		} break;
 		case Dependency::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES: {
 			GeometryInstanceGLES3 *ginstance = static_cast<GeometryInstanceGLES3 *>(p_tracker->userdata);
@@ -160,6 +161,7 @@ void RasterizerSceneGLES3::_geometry_instance_dependency_changed(Dependency::Dep
 
 void RasterizerSceneGLES3::_geometry_instance_dependency_deleted(const RID &p_dependency, DependencyTracker *p_tracker) {
 	static_cast<RenderGeometryInstance *>(p_tracker->userdata)->_mark_dirty();
+	static_cast<GeometryInstanceGLES3 *>(p_tracker->userdata)->data->dirty_dependencies = true;
 }
 
 void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material(GeometryInstanceGLES3 *ginstance, uint32_t p_surface, GLES3::SceneMaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh) {
@@ -729,6 +731,11 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 			}
 		}
 
+		if (p_render_data->view_count > 1) {
+			glBindBufferBase(GL_UNIFORM_BUFFER, SKY_MULTIVIEW_UNIFORM_LOCATION, scene_state.multiview_buffer);
+			glBindBuffer(GL_UNIFORM_BUFFER, 0);
+		}
+
 		if (!sky->radiance) {
 			_invalidate_sky(sky);
 			_update_dirty_skys();
@@ -736,7 +743,7 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 	}
 }
 
-void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_luminance_multiplier) {
+void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_luminance_multiplier, bool p_use_multiview, bool p_flip_y) {
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	ERR_FAIL_COND(p_env.is_null());
 
@@ -745,6 +752,11 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 
 	GLES3::SkyMaterialData *material_data = nullptr;
 	RID sky_material;
+
+	uint64_t spec_constants = p_use_multiview ? SkyShaderGLES3::USE_MULTIVIEW : 0;
+	if (p_flip_y) {
+		spec_constants |= SkyShaderGLES3::USE_INVERTED_Y;
+	}
 
 	RS::EnvironmentBG background = environment_get_background(p_env);
 
@@ -790,16 +802,21 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 	sky_transform.invert();
 	sky_transform = sky_transform * p_transform.basis;
 
-	bool success = material_storage->shaders.sky_shader.version_bind_shader(shader_data->version, SkyShaderGLES3::MODE_BACKGROUND);
+	bool success = material_storage->shaders.sky_shader.version_bind_shader(shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
 	if (!success) {
 		return;
 	}
 
-	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::ORIENTATION, sky_transform, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND);
-	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::PROJECTION, camera.columns[2][0], camera.columns[0][0], camera.columns[2][1], camera.columns[1][1], shader_data->version, SkyShaderGLES3::MODE_BACKGROUND);
-	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::POSITION, p_transform.origin, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND);
-	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::TIME, time, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND);
-	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::LUMINANCE_MULTIPLIER, p_luminance_multiplier, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND);
+	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::ORIENTATION, sky_transform, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
+	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::PROJECTION, camera.columns[2][0], camera.columns[0][0], camera.columns[2][1], camera.columns[1][1], shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
+	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::POSITION, p_transform.origin, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
+	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::TIME, time, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
+	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::LUMINANCE_MULTIPLIER, p_luminance_multiplier, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
+
+	if (p_use_multiview) {
+		glBindBufferBase(GL_UNIFORM_BUFFER, SKY_MULTIVIEW_UNIFORM_LOCATION, scene_state.multiview_buffer);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	}
 
 	glBindVertexArray(sky_globals.screen_triangle_array);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -1535,8 +1552,6 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 					}
 				}
 
-				li->gl_id = r_omni_light_count;
-
 				scene_state.omni_light_sort[r_omni_light_count].instance = li;
 				scene_state.omni_light_sort[r_omni_light_count].depth = distance;
 				r_omni_light_count++;
@@ -1560,8 +1575,6 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 					}
 				}
 
-				li->gl_id = r_spot_light_count;
-
 				scene_state.spot_light_sort[r_spot_light_count].instance = li;
 				scene_state.spot_light_sort[r_spot_light_count].depth = distance;
 				r_spot_light_count++;
@@ -1584,7 +1597,10 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 		LightData &light_data = (i < r_omni_light_count) ? scene_state.omni_lights[index] : scene_state.spot_lights[index];
 		RS::LightType type = (i < r_omni_light_count) ? RS::LIGHT_OMNI : RS::LIGHT_SPOT;
 		GLES3::LightInstance *li = (i < r_omni_light_count) ? scene_state.omni_light_sort[index].instance : scene_state.spot_light_sort[index].instance;
+		real_t distance = (i < r_omni_light_count) ? scene_state.omni_light_sort[index].depth : scene_state.spot_light_sort[index].depth;
 		RID base = li->light;
+
+		li->gl_id = index;
 
 		Transform3D light_transform = li->transform;
 		Vector3 pos = inverse_transform.xform(light_transform.origin);
@@ -1612,13 +1628,11 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 		// Reuse fade begin, fade length and distance for shadow LOD determination later.
 		float fade_begin = 0.0;
 		float fade_length = 0.0;
-		real_t distance = 0.0;
 
 		float fade = 1.0;
 		if (light_storage->light_is_distance_fade_enabled(li->light)) {
 			fade_begin = light_storage->light_get_distance_fade_begin(li->light);
 			fade_length = light_storage->light_get_distance_fade_length(li->light);
-			distance = p_render_data->cam_transform.origin.distance_to(li->transform.origin);
 
 			if (distance > fade_begin) {
 				// Use `smoothstep()` to make opacity changes more gradual and less noticeable to the player.
@@ -1881,6 +1895,10 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
 	glViewport(0, 0, rb->width, rb->height);
 
+	glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
+	scene_state.cull_mode = GLES3::SceneShaderData::CULL_BACK;
+
 	// Do depth prepass if it's explicitly enabled
 	bool use_depth_prepass = config->use_depth_prepass;
 
@@ -1896,9 +1914,6 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
 		glDisable(GL_SCISSOR_TEST);
-		glCullFace(GL_BACK);
-		glEnable(GL_CULL_FACE);
-		scene_state.cull_mode = GLES3::SceneShaderData::CULL_BACK;
 
 		glColorMask(0, 0, 0, 0);
 		glClearDepth(1.0f);
@@ -1933,7 +1948,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	glDepthFunc(GL_LEQUAL);
 	glDepthMask(GL_TRUE);
 	scene_state.current_depth_test = GLES3::SceneShaderData::DEPTH_TEST_ENABLED;
-	scene_state.current_depth_draw = GLES3::SceneShaderData::DEPTH_DRAW_OPAQUE;
+	scene_state.current_depth_draw = GLES3::SceneShaderData::DEPTH_DRAW_ALWAYS;
 
 	if (!fb_cleared) {
 		glClearDepth(1.0f);
@@ -1961,22 +1976,42 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 	_render_list_template<PASS_MODE_COLOR>(&render_list_params, &render_data, 0, render_list[RENDER_LIST_OPAQUE].elements.size());
 
+	glDepthMask(GL_FALSE);
+	scene_state.current_depth_draw = GLES3::SceneShaderData::DEPTH_DRAW_DISABLED;
+
 	if (draw_sky) {
 		RENDER_TIMESTAMP("Render Sky");
-		if (scene_state.current_depth_test != GLES3::SceneShaderData::DEPTH_TEST_ENABLED) {
-			glEnable(GL_DEPTH_TEST);
-			scene_state.current_depth_test = GLES3::SceneShaderData::DEPTH_TEST_ENABLED;
-		}
+
 		glEnable(GL_DEPTH_TEST);
-		glDepthMask(GL_FALSE);
 		glDisable(GL_BLEND);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		scene_state.current_depth_test = GLES3::SceneShaderData::DEPTH_TEST_ENABLED;
-		scene_state.current_depth_draw = GLES3::SceneShaderData::DEPTH_DRAW_DISABLED;
 		scene_state.cull_mode = GLES3::SceneShaderData::CULL_BACK;
 
-		_draw_sky(render_data.environment, render_data.cam_projection, render_data.cam_transform, sky_energy_multiplier);
+		_draw_sky(render_data.environment, render_data.cam_projection, render_data.cam_transform, sky_energy_multiplier, p_camera_data->view_count > 1, flip_y);
+	}
+
+	if (scene_state.used_screen_texture || scene_state.used_depth_texture) {
+		texture_storage->copy_scene_to_backbuffer(rt, scene_state.used_screen_texture, scene_state.used_depth_texture);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, rt->backbuffer_fbo);
+		if (scene_state.used_screen_texture) {
+			glBlitFramebuffer(0, 0, rt->size.x, rt->size.y,
+					0, 0, rt->size.x, rt->size.y,
+					GL_COLOR_BUFFER_BIT, GL_NEAREST);
+			glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 5);
+			glBindTexture(GL_TEXTURE_2D, rt->backbuffer);
+		}
+		if (scene_state.used_depth_texture) {
+			glBlitFramebuffer(0, 0, rt->size.x, rt->size.y,
+					0, 0, rt->size.x, rt->size.y,
+					GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+			glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 6);
+			glBindTexture(GL_TEXTURE_2D, rt->backbuffer_depth);
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
 	}
 
 	RENDER_TIMESTAMP("Render 3D Transparent Pass");
@@ -2191,6 +2226,9 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 		}
 
 		RS::PrimitiveType primitive = surf->primitive;
+		if (shader->uses_point_size) {
+			primitive = RS::PRIMITIVE_POINTS;
+		}
 		static const GLenum prim[5] = { GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP };
 		GLenum primitive_gl = prim[int(primitive)];
 

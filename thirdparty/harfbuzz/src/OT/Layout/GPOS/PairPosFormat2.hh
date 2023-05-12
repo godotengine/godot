@@ -49,7 +49,7 @@ struct PairPosFormat2_4
 
     unsigned int len1 = valueFormat1.get_len ();
     unsigned int len2 = valueFormat2.get_len ();
-    unsigned int stride = len1 + len2;
+    unsigned int stride = HBUINT16::static_size * (len1 + len2);
     unsigned int record_size = valueFormat1.get_size () + valueFormat2.get_size ();
     unsigned int count = (unsigned int) class1Count * (unsigned int) class2Count;
     return_trace (c->check_range ((const void *) values,
@@ -220,7 +220,7 @@ struct PairPosFormat2_4
     if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
     {
       c->buffer->message (c->font,
-			  "try kerning glyphs at %d,%d",
+			  "try kerning glyphs at %u,%u",
 			  c->buffer->idx, skippy_iter.idx);
     }
 
@@ -231,14 +231,14 @@ struct PairPosFormat2_4
       if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
       {
 	c->buffer->message (c->font,
-			    "kerned glyphs at %d,%d",
+			    "kerned glyphs at %u,%u",
 			    c->buffer->idx, skippy_iter.idx);
       }
 
     if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
     {
       c->buffer->message (c->font,
-			  "tried kerning glyphs at %d,%d",
+			  "tried kerning glyphs at %u,%u",
 			  c->buffer->idx, skippy_iter.idx);
     }
 
@@ -298,8 +298,8 @@ struct PairPosFormat2_4
       for (unsigned class2_idx : + hb_range ((unsigned) class2Count) | hb_filter (klass2_map))
       {
         unsigned idx = (class1_idx * (unsigned) class2Count + class2_idx) * (len1 + len2);
-        valueFormat1.copy_values (c->serializer, out->valueFormat1, this, &values[idx], c->plan->layout_variation_idx_delta_map);
-        valueFormat2.copy_values (c->serializer, out->valueFormat2, this, &values[idx + len1], c->plan->layout_variation_idx_delta_map);
+        valueFormat1.copy_values (c->serializer, out->valueFormat1, this, &values[idx], &c->plan->layout_variation_idx_delta_map);
+        valueFormat2.copy_values (c->serializer, out->valueFormat2, this, &values[idx + len1], &c->plan->layout_variation_idx_delta_map);
       }
     }
 

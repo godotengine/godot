@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Font" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Font" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for fonts and font variations.
 	</brief_description>
@@ -238,7 +238,7 @@
 			<param index="5" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="6" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
-				Returns the size of a bounding box of a single-line string, taking kerning and advance into account. See also [method get_multiline_string_size] and [method draw_string].
+				Returns the size of a bounding box of a single-line string, taking kerning, advance and subpixel positioning into account. See also [method get_multiline_string_size] and [method draw_string].
 				For example, to get the string size as displayed by a single-line Label, use:
 				[codeblocks]
 				[gdscript]
@@ -249,6 +249,7 @@
 				Vector2 stringSize = label.GetThemeFont("font").GetStringSize(label.Text, HorizontalAlignment.Left, -1, label.GetThemeFontSize("font_size"));
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] Since kerning, advance and subpixel positioning are taken into account by [method get_string_size], using separate [method get_string_size] calls on substrings of a string then adding the results together will return a different result compared to using a single [method get_string_size] call on the full string.
 				[b]Note:[/b] Real height of the string is context-dependent and can be significantly different from the value returned by [method get_height].
 			</description>
 		</method>
@@ -270,6 +271,17 @@
 			<description>
 				Returns list of supported [url=https://docs.microsoft.com/en-us/typography/opentype/spec/dvaraxisreg]variation coordinates[/url], each coordinate is returned as [code]tag: Vector3i(min_value,max_value,default_value)[/code].
 				Font variations allow for continuous change of glyph characteristics along some given design axis, such as weight, width or slant.
+				To print available variation axes of a variable font:
+				[codeblock]
+				var fv = FontVariation.new()
+				fv.set_base_font = load("res://RobotoFlex.ttf")
+				var variation_list = fv.get_supported_variation_list()
+				for tag in variation_list:
+				    var name = TextServerManager.get_primary_interface().tag_to_name(tag)
+				    var values = variation_list[tag]
+				    print("variation axis: %s (%d)\n\tmin, max, default: %s" % [name, tag, values])
+				[/codeblock]
+				[b]Note:[/b] To set and get variation coordinates of a [FontVariation], use [member FontVariation.variation_opentype].
 			</description>
 		</method>
 		<method name="get_underline_position" qualifiers="const">

@@ -47,6 +47,9 @@ XMSG=`which xmessage 2>/dev/null`
 # Path to powershell (Windows only)
 PWSH=`which powershell 2>/dev/null`
 
+# Path to osascript (macOS only)
+OSA=`which osascript 2>/dev/null`
+
 ##################################################################
 # There should be no need to change anything below this line.
 
@@ -88,6 +91,10 @@ if [ ! -x "$CLANG_FORMAT" ] ; then
             exit 1
         elif [ -x "$XMSG" ] ; then
             $XMSG -center -title "Error" "$message"
+            exit 1
+        elif [ -x "$OSA" ] ; then
+            asmessage="$(canonicalize_filename "$(dirname -- "$0")/asmessage.applescript")"
+            $OSA "$asmessage" -center -title "Error" --text "$message"
             exit 1
         elif [ \( \( "$OSTYPE" = "msys" \) -o \( "$OSTYPE" = "win32" \) \) -a \( -x "$PWSH" \) ]; then
             winmessage="$(canonicalize_filename "$(dirname -- "$0")/winmessage.ps1")"
@@ -199,6 +206,16 @@ while true; do
             else
                 yn="N"
             fi
+        elif [ -x "$OSA" ] ; then
+            asmessage="$(canonicalize_filename "$(dirname -- "$0")/asmessage.applescript")"
+            choice=`$OSA "$asmessage" -file "$patch" -buttons "Apply":100,"Apply and stage":200,"Do not apply":0 -center -default "Do not apply" -geometry 800x600 -title "Do you want to apply that patch?"`
+            if [ "$choice" = "100" ] ; then
+                yn="Y"
+            elif [ "$choice" = "200" ] ; then
+                yn="S"
+            else
+                yn="N"
+            fi
         elif [ \( \( "$OSTYPE" = "msys" \) -o \( "$OSTYPE" = "win32" \) \) -a \( -x "$PWSH" \) ]; then
             winmessage="$(canonicalize_filename "$(dirname -- "$0")/winmessage.ps1")"
             $PWSH -noprofile -executionpolicy bypass -file "$winmessage" -file "$patch" -buttons "Apply":100,"Apply and stage":200,"Do not apply":0 -center -default "Do not apply" -geometry 800x600 -title "Do you want to apply that patch?"
@@ -211,7 +228,7 @@ while true; do
                 yn="N"
             fi
         else
-            printf "Error: zenity, xmessage, or powershell executable not found.\n"
+            printf "Error: zenity, xmessage, osascript, or powershell executable not found.\n"
             exit 1
         fi
     else

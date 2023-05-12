@@ -1,36 +1,35 @@
-/*************************************************************************/
-/*  polygon_3d_editor_plugin.cpp                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  polygon_3d_editor_plugin.cpp                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "polygon_3d_editor_plugin.h"
 
-#include "canvas_item_editor_plugin.h"
 #include "core/core_string_names.h"
 #include "core/input/input.h"
 #include "core/io/file_access.h"
@@ -39,7 +38,8 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "node_3d_editor_plugin.h"
+#include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/separator.h"
 
@@ -96,7 +96,7 @@ void Polygon3DEditor::_menu_option(int p_option) {
 void Polygon3DEditor::_wip_close() {
 	Object *obj = node_resource.is_valid() ? (Object *)node_resource.ptr() : node;
 	ERR_FAIL_COND_MSG(!obj, "Edited object is not valid.");
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Create Polygon3D"));
 	undo_redo->add_undo_method(obj, "set_polygon", obj->call("get_polygon"));
 	undo_redo->add_do_method(obj, "set_polygon", wip);
@@ -186,7 +186,7 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 					if (mb->is_pressed()) {
 						if (mb->is_ctrl_pressed()) {
 							if (poly.size() < 3) {
-								Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+								EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 								undo_redo->create_action(TTR("Edit Poly"));
 								undo_redo->add_undo_method(obj, "set_polygon", poly);
 								poly.push_back(cpoint);
@@ -265,7 +265,7 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 
 							ERR_FAIL_INDEX_V(edited_point, poly.size(), EditorPlugin::AFTER_GUI_INPUT_PASS);
 							poly.write[edited_point] = edited_point_pos;
-							Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+							EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 							undo_redo->create_action(TTR("Edit Poly"));
 							undo_redo->add_do_method(obj, "set_polygon", poly);
 							undo_redo->add_undo_method(obj, "set_polygon", pre_move_edit);
@@ -294,7 +294,7 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 					}
 
 					if (closest_idx >= 0) {
-						Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+						EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 						undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
 						undo_redo->add_undo_method(obj, "set_polygon", poly);
 						poly.remove_at(closest_idx);
@@ -313,7 +313,7 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
-		if (edited_point != -1 && (wip_active || (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE)) {
+		if (edited_point != -1 && (wip_active || mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
 			Vector2 gpoint = mm->get_position();
 
 			Vector3 ray_from = p_camera->project_ray_origin(gpoint);
@@ -506,7 +506,11 @@ void Polygon3DEditor::edit(Node *p_node) {
 		wip.clear();
 		wip_active = false;
 		edited_point = -1;
-		p_node->add_child(imgeom);
+		if (imgeom->get_parent()) {
+			imgeom->reparent(p_node, false);
+		} else {
+			p_node->add_child(imgeom);
+		}
 		_polygon_draw();
 		set_process(true);
 		prev_depth = -1;

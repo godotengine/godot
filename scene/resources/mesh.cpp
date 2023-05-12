@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  mesh.cpp                                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  mesh.cpp                                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "mesh.h"
 
@@ -36,6 +36,168 @@
 
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
+
+void MeshConvexDecompositionSettings::set_max_concavity(real_t p_max_concavity) {
+	max_concavity = CLAMP(p_max_concavity, 0.001, 1.0);
+}
+
+real_t MeshConvexDecompositionSettings::get_max_concavity() const {
+	return max_concavity;
+};
+
+void MeshConvexDecompositionSettings::set_symmetry_planes_clipping_bias(real_t p_symmetry_planes_clipping_bias) {
+	symmetry_planes_clipping_bias = CLAMP(p_symmetry_planes_clipping_bias, 0.0, 1.0);
+};
+
+real_t MeshConvexDecompositionSettings::get_symmetry_planes_clipping_bias() const {
+	return symmetry_planes_clipping_bias;
+};
+
+void MeshConvexDecompositionSettings::set_revolution_axes_clipping_bias(real_t p_revolution_axes_clipping_bias) {
+	revolution_axes_clipping_bias = CLAMP(p_revolution_axes_clipping_bias, 0.0, 1.0);
+};
+
+real_t MeshConvexDecompositionSettings::get_revolution_axes_clipping_bias() const {
+	return revolution_axes_clipping_bias;
+};
+
+void MeshConvexDecompositionSettings::set_min_volume_per_convex_hull(real_t p_min_volume_per_convex_hull) {
+	min_volume_per_convex_hull = CLAMP(p_min_volume_per_convex_hull, 0.0001, 0.01);
+}
+
+real_t MeshConvexDecompositionSettings::get_min_volume_per_convex_hull() const {
+	return min_volume_per_convex_hull;
+}
+
+void MeshConvexDecompositionSettings::set_resolution(uint32_t p_resolution) {
+	resolution = p_resolution < 10'000 ? 10'000 : (p_resolution > 100'000 ? 100'000 : p_resolution);
+}
+
+uint32_t MeshConvexDecompositionSettings::get_resolution() const {
+	return resolution;
+}
+
+void MeshConvexDecompositionSettings::set_max_num_vertices_per_convex_hull(uint32_t p_max_num_vertices_per_convex_hull) {
+	max_num_vertices_per_convex_hull = p_max_num_vertices_per_convex_hull < 4 ? 4 : (p_max_num_vertices_per_convex_hull > 1024 ? 1024 : p_max_num_vertices_per_convex_hull);
+}
+
+uint32_t MeshConvexDecompositionSettings::get_max_num_vertices_per_convex_hull() const {
+	return max_num_vertices_per_convex_hull;
+}
+
+void MeshConvexDecompositionSettings::set_plane_downsampling(uint32_t p_plane_downsampling) {
+	plane_downsampling = p_plane_downsampling < 1 ? 1 : (p_plane_downsampling > 16 ? 16 : p_plane_downsampling);
+}
+
+uint32_t MeshConvexDecompositionSettings::get_plane_downsampling() const {
+	return plane_downsampling;
+}
+
+void MeshConvexDecompositionSettings::set_convex_hull_downsampling(uint32_t p_convex_hull_downsampling) {
+	convex_hull_downsampling = p_convex_hull_downsampling < 1 ? 1 : (p_convex_hull_downsampling > 16 ? 16 : p_convex_hull_downsampling);
+}
+
+uint32_t MeshConvexDecompositionSettings::get_convex_hull_downsampling() const {
+	return convex_hull_downsampling;
+}
+
+void MeshConvexDecompositionSettings::set_normalize_mesh(bool p_normalize_mesh) {
+	normalize_mesh = p_normalize_mesh;
+}
+
+bool MeshConvexDecompositionSettings::get_normalize_mesh() const {
+	return normalize_mesh;
+}
+
+void MeshConvexDecompositionSettings::set_mode(Mode p_mode) {
+	mode = p_mode;
+}
+
+MeshConvexDecompositionSettings::Mode MeshConvexDecompositionSettings::get_mode() const {
+	return mode;
+}
+
+void MeshConvexDecompositionSettings::set_convex_hull_approximation(bool p_convex_hull_approximation) {
+	convex_hull_approximation = p_convex_hull_approximation;
+}
+
+bool MeshConvexDecompositionSettings::get_convex_hull_approximation() const {
+	return convex_hull_approximation;
+}
+
+void MeshConvexDecompositionSettings::set_max_convex_hulls(uint32_t p_max_convex_hulls) {
+	max_convex_hulls = p_max_convex_hulls < 1 ? 1 : (p_max_convex_hulls > 32 ? 32 : p_max_convex_hulls);
+}
+
+uint32_t MeshConvexDecompositionSettings::get_max_convex_hulls() const {
+	return max_convex_hulls;
+}
+
+void MeshConvexDecompositionSettings::set_project_hull_vertices(bool p_project_hull_vertices) {
+	project_hull_vertices = p_project_hull_vertices;
+}
+
+bool MeshConvexDecompositionSettings::get_project_hull_vertices() const {
+	return project_hull_vertices;
+}
+
+void MeshConvexDecompositionSettings::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_max_concavity", "max_concavity"), &MeshConvexDecompositionSettings::set_max_concavity);
+	ClassDB::bind_method(D_METHOD("get_max_concavity"), &MeshConvexDecompositionSettings::get_max_concavity);
+
+	ClassDB::bind_method(D_METHOD("set_symmetry_planes_clipping_bias", "symmetry_planes_clipping_bias"), &MeshConvexDecompositionSettings::set_symmetry_planes_clipping_bias);
+	ClassDB::bind_method(D_METHOD("get_symmetry_planes_clipping_bias"), &MeshConvexDecompositionSettings::get_symmetry_planes_clipping_bias);
+
+	ClassDB::bind_method(D_METHOD("set_revolution_axes_clipping_bias", "revolution_axes_clipping_bias"), &MeshConvexDecompositionSettings::set_revolution_axes_clipping_bias);
+	ClassDB::bind_method(D_METHOD("get_revolution_axes_clipping_bias"), &MeshConvexDecompositionSettings::get_revolution_axes_clipping_bias);
+
+	ClassDB::bind_method(D_METHOD("set_min_volume_per_convex_hull", "min_volume_per_convex_hull"), &MeshConvexDecompositionSettings::set_min_volume_per_convex_hull);
+	ClassDB::bind_method(D_METHOD("get_min_volume_per_convex_hull"), &MeshConvexDecompositionSettings::get_min_volume_per_convex_hull);
+
+	ClassDB::bind_method(D_METHOD("set_resolution", "min_volume_per_convex_hull"), &MeshConvexDecompositionSettings::set_resolution);
+	ClassDB::bind_method(D_METHOD("get_resolution"), &MeshConvexDecompositionSettings::get_resolution);
+
+	ClassDB::bind_method(D_METHOD("set_max_num_vertices_per_convex_hull", "max_num_vertices_per_convex_hull"), &MeshConvexDecompositionSettings::set_max_num_vertices_per_convex_hull);
+	ClassDB::bind_method(D_METHOD("get_max_num_vertices_per_convex_hull"), &MeshConvexDecompositionSettings::get_max_num_vertices_per_convex_hull);
+
+	ClassDB::bind_method(D_METHOD("set_plane_downsampling", "plane_downsampling"), &MeshConvexDecompositionSettings::set_plane_downsampling);
+	ClassDB::bind_method(D_METHOD("get_plane_downsampling"), &MeshConvexDecompositionSettings::get_plane_downsampling);
+
+	ClassDB::bind_method(D_METHOD("set_convex_hull_downsampling", "convex_hull_downsampling"), &MeshConvexDecompositionSettings::set_convex_hull_downsampling);
+	ClassDB::bind_method(D_METHOD("get_convex_hull_downsampling"), &MeshConvexDecompositionSettings::get_convex_hull_downsampling);
+
+	ClassDB::bind_method(D_METHOD("set_normalize_mesh", "normalize_mesh"), &MeshConvexDecompositionSettings::set_normalize_mesh);
+	ClassDB::bind_method(D_METHOD("get_normalize_mesh"), &MeshConvexDecompositionSettings::get_normalize_mesh);
+
+	ClassDB::bind_method(D_METHOD("set_mode", "mode"), &MeshConvexDecompositionSettings::set_mode);
+	ClassDB::bind_method(D_METHOD("get_mode"), &MeshConvexDecompositionSettings::get_mode);
+
+	ClassDB::bind_method(D_METHOD("set_convex_hull_approximation", "convex_hull_approximation"), &MeshConvexDecompositionSettings::set_convex_hull_approximation);
+	ClassDB::bind_method(D_METHOD("get_convex_hull_approximation"), &MeshConvexDecompositionSettings::get_convex_hull_approximation);
+
+	ClassDB::bind_method(D_METHOD("set_max_convex_hulls", "max_convex_hulls"), &MeshConvexDecompositionSettings::set_max_convex_hulls);
+	ClassDB::bind_method(D_METHOD("get_max_convex_hulls"), &MeshConvexDecompositionSettings::get_max_convex_hulls);
+
+	ClassDB::bind_method(D_METHOD("set_project_hull_vertices", "project_hull_vertices"), &MeshConvexDecompositionSettings::set_project_hull_vertices);
+	ClassDB::bind_method(D_METHOD("get_project_hull_vertices"), &MeshConvexDecompositionSettings::get_project_hull_vertices);
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_concavity", PROPERTY_HINT_RANGE, "0.001,1.0,0.001"), "set_max_concavity", "get_max_concavity");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "symmetry_planes_clipping_bias", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_symmetry_planes_clipping_bias", "get_symmetry_planes_clipping_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "revolution_axes_clipping_bias", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_revolution_axes_clipping_bias", "get_revolution_axes_clipping_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_volume_per_convex_hull", PROPERTY_HINT_RANGE, "0.0001,0.01,0.0001"), "set_min_volume_per_convex_hull", "get_min_volume_per_convex_hull");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "resolution"), "set_resolution", "get_resolution");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_num_vertices_per_convex_hull"), "set_max_num_vertices_per_convex_hull", "get_max_num_vertices_per_convex_hull");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "plane_downsampling", PROPERTY_HINT_RANGE, "1,16,1"), "set_plane_downsampling", "get_plane_downsampling");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "convex_hull_downsampling", PROPERTY_HINT_RANGE, "1,16,1"), "set_convex_hull_downsampling", "get_convex_hull_downsampling");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "normalize_mesh"), "set_normalize_mesh", "get_normalize_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Voxel,Tetrahedron"), "set_mode", "get_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "convex_hull_approximation"), "set_convex_hull_approximation", "get_convex_hull_approximation");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_convex_hulls"), "set_max_convex_hulls", "get_max_convex_hulls");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "project_hull_vertices"), "set_project_hull_vertices", "get_project_hull_vertices");
+
+	BIND_ENUM_CONSTANT(CONVEX_DECOMPOSITION_MODE_VOXEL);
+	BIND_ENUM_CONSTANT(CONVEX_DECOMPOSITION_MODE_TETRAHEDRON);
+}
 
 Mesh::ConvexDecompositionFunc Mesh::convex_decomposition_function = nullptr;
 
@@ -75,7 +237,7 @@ Dictionary Mesh::surface_get_lods(int p_surface) const {
 	return ret;
 }
 
-uint32_t Mesh::surface_get_format(int p_idx) const {
+BitField<Mesh::ArrayFormat> Mesh::surface_get_format(int p_idx) const {
 	uint32_t ret = 0;
 	GDVIRTUAL_REQUIRED_CALL(_surface_get_format, p_idx, ret);
 	return ret;
@@ -189,6 +351,7 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 			if (primitive == PRIMITIVE_TRIANGLES) {
 				for (int j = 0; j < ic; j++) {
 					int index = ir[j];
+					ERR_FAIL_COND_V(index >= vc, Ref<TriangleMesh>());
 					facesw[widx++] = vr[index];
 				}
 			} else { // PRIMITIVE_TRIANGLE_STRIP
@@ -336,6 +499,10 @@ void Mesh::generate_debug_mesh_indices(Vector<Vector3> &r_points) {
 	}
 }
 
+Vector<Vector3> Mesh::_get_faces() const {
+	return Variant(get_faces());
+}
+
 Vector<Face3> Mesh::get_faces() const {
 	Ref<TriangleMesh> tm = generate_triangle_mesh();
 	if (tm.is_valid()) {
@@ -354,8 +521,10 @@ Vector<Face3> Mesh::get_surface_faces(int p_surface) const {
 
 Ref<ConvexPolygonShape3D> Mesh::create_convex_shape(bool p_clean, bool p_simplify) const {
 	if (p_simplify) {
-		ConvexDecompositionSettings settings;
-		settings.max_convex_hulls = 1;
+		Ref<MeshConvexDecompositionSettings> settings = Ref<MeshConvexDecompositionSettings>();
+		settings.instantiate();
+		settings->set_max_convex_hulls(1);
+		settings->set_max_concavity(1.0);
 		Vector<Ref<Shape3D>> decomposed = convex_decompose(settings);
 		if (decomposed.size() == 1) {
 			return decomposed[0];
@@ -525,6 +694,9 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 			vc = indices.size();
 			ir = indices.ptrw();
 			has_indices = true;
+		} else {
+			// Ensure there are enough vertices to construct at least one triangle.
+			ERR_FAIL_COND_V(vertices.size() % 3 != 0, Ref<ArrayMesh>());
 		}
 
 		HashMap<Vector3, Vector3> normal_accum;
@@ -614,10 +786,18 @@ Size2i Mesh::get_lightmap_size_hint() const {
 	return lightmap_size_hint;
 }
 
+Ref<Resource> Mesh::create_placeholder() const {
+	Ref<PlaceholderMesh> placeholder;
+	placeholder.instantiate();
+	placeholder->set_aabb(get_aabb());
+	return placeholder;
+}
+
 void Mesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_lightmap_size_hint", "size"), &Mesh::set_lightmap_size_hint);
 	ClassDB::bind_method(D_METHOD("get_lightmap_size_hint"), &Mesh::get_lightmap_size_hint);
 	ClassDB::bind_method(D_METHOD("get_aabb"), &Mesh::get_aabb);
+	ClassDB::bind_method(D_METHOD("get_faces"), &Mesh::_get_faces);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "lightmap_size_hint"), "set_lightmap_size_hint", "get_lightmap_size_hint");
 
@@ -626,6 +806,7 @@ void Mesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("surface_get_blend_shape_arrays", "surf_idx"), &Mesh::surface_get_blend_shape_arrays);
 	ClassDB::bind_method(D_METHOD("surface_set_material", "surf_idx", "material"), &Mesh::surface_set_material);
 	ClassDB::bind_method(D_METHOD("surface_get_material", "surf_idx"), &Mesh::surface_get_material);
+	ClassDB::bind_method(D_METHOD("create_placeholder"), &Mesh::create_placeholder);
 
 	BIND_ENUM_CONSTANT(PRIMITIVE_POINTS);
 	BIND_ENUM_CONSTANT(PRIMITIVE_LINES);
@@ -658,35 +839,36 @@ void Mesh::_bind_methods() {
 	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RGBA_FLOAT);
 	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_MAX);
 
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_VERTEX);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_NORMAL);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_TANGENT);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_COLOR);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_TEX_UV);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_TEX_UV2);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM0);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM1);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM2);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM3);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_BONES);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_WEIGHTS);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_INDEX);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_VERTEX);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_NORMAL);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_TANGENT);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_COLOR);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_TEX_UV);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_TEX_UV2);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM0);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM1);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM2);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM3);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_BONES);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_WEIGHTS);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_INDEX);
 
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_BLEND_SHAPE_MASK);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_BLEND_SHAPE_MASK);
 
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM_BASE);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM_BITS);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM0_SHIFT);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM1_SHIFT);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM2_SHIFT);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM3_SHIFT);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM_BASE);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM_BITS);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM0_SHIFT);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM1_SHIFT);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM2_SHIFT);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM3_SHIFT);
 
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM_MASK);
-	BIND_ENUM_CONSTANT(ARRAY_COMPRESS_FLAGS_BASE);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM_MASK);
+	BIND_BITFIELD_FLAG(ARRAY_COMPRESS_FLAGS_BASE);
 
-	BIND_ENUM_CONSTANT(ARRAY_FLAG_USE_2D_VERTICES);
-	BIND_ENUM_CONSTANT(ARRAY_FLAG_USE_DYNAMIC_UPDATE);
-	BIND_ENUM_CONSTANT(ARRAY_FLAG_USE_8_BONE_WEIGHTS);
+	BIND_BITFIELD_FLAG(ARRAY_FLAG_USE_2D_VERTICES);
+	BIND_BITFIELD_FLAG(ARRAY_FLAG_USE_DYNAMIC_UPDATE);
+	BIND_BITFIELD_FLAG(ARRAY_FLAG_USE_8_BONE_WEIGHTS);
+	BIND_BITFIELD_FLAG(ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY);
 
 	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_NORMALIZED);
 	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_RELATIVE);
@@ -712,7 +894,7 @@ void Mesh::clear_cache() const {
 	debug_lines.clear();
 }
 
-Vector<Ref<Shape3D>> Mesh::convex_decompose(const ConvexDecompositionSettings &p_settings) const {
+Vector<Ref<Shape3D>> Mesh::convex_decompose(const Ref<MeshConvexDecompositionSettings> &p_settings) const {
 	ERR_FAIL_COND_V(!convex_decomposition_function, Vector<Ref<Shape3D>>());
 
 	Ref<TriangleMesh> tm = generate_triangle_mesh();
@@ -1119,17 +1301,6 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 			return false;
 		}
 		int idx = sname.substr(8, sl - 8).to_int();
-
-		// This is a bit of a hack to ensure compatibility with older material
-		// overrides that start indexing at 1.
-		// We assume that idx 0 is always read first, if its not, this won't work.
-		if (idx == 0) {
-			surface_index_0 = true;
-		}
-		if (!surface_index_0) {
-			// This means the file was created when the indexing started at 1, so decrease by one.
-			idx--;
-		}
 
 		String what = sname.get_slicec('/', 1);
 		if (what == "material") {
@@ -1554,7 +1725,8 @@ void ArrayMesh::_recompute_aabb() {
 }
 
 // TODO: Need to add binding to add_surface using future MeshSurfaceData object.
-void ArrayMesh::add_surface(uint32_t p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, const Vector<uint8_t> &p_attribute_array, const Vector<uint8_t> &p_skin_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<uint8_t> &p_blend_shape_data, const Vector<AABB> &p_bone_aabbs, const Vector<RS::SurfaceData::LOD> &p_lods) {
+void ArrayMesh::add_surface(BitField<ArrayFormat> p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, const Vector<uint8_t> &p_attribute_array, const Vector<uint8_t> &p_skin_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<uint8_t> &p_blend_shape_data, const Vector<AABB> &p_bone_aabbs, const Vector<RS::SurfaceData::LOD> &p_lods) {
+	ERR_FAIL_COND(surfaces.size() == RS::MAX_MESH_SURFACES);
 	_create_if_empty();
 
 	Surface s;
@@ -1589,7 +1761,8 @@ void ArrayMesh::add_surface(uint32_t p_format, PrimitiveType p_primitive, const 
 	emit_changed();
 }
 
-void ArrayMesh::add_surface_from_arrays(PrimitiveType p_primitive, const Array &p_arrays, const TypedArray<Array> &p_blend_shapes, const Dictionary &p_lods, uint32_t p_flags) {
+void ArrayMesh::add_surface_from_arrays(PrimitiveType p_primitive, const Array &p_arrays, const TypedArray<Array> &p_blend_shapes, const Dictionary &p_lods, BitField<ArrayFormat> p_flags) {
+	ERR_FAIL_COND(p_blend_shapes.size() != blend_shapes.size());
 	ERR_FAIL_COND(p_arrays.size() != ARRAY_MAX);
 
 	RS::SurfaceData surface;
@@ -1705,7 +1878,7 @@ int ArrayMesh::surface_get_array_index_len(int p_idx) const {
 	return surfaces[p_idx].index_array_length;
 }
 
-uint32_t ArrayMesh::surface_get_format(int p_idx) const {
+BitField<Mesh::ArrayFormat> ArrayMesh::surface_get_format(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, surfaces.size(), 0);
 	return surfaces[p_idx].format;
 }
@@ -2058,7 +2231,7 @@ void ArrayMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_blend_shape_mode", "mode"), &ArrayMesh::set_blend_shape_mode);
 	ClassDB::bind_method(D_METHOD("get_blend_shape_mode"), &ArrayMesh::get_blend_shape_mode);
 
-	ClassDB::bind_method(D_METHOD("add_surface_from_arrays", "primitive", "arrays", "blend_shapes", "lods", "compress_flags"), &ArrayMesh::add_surface_from_arrays, DEFVAL(Array()), DEFVAL(Dictionary()), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("add_surface_from_arrays", "primitive", "arrays", "blend_shapes", "lods", "flags"), &ArrayMesh::add_surface_from_arrays, DEFVAL(Array()), DEFVAL(Dictionary()), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("clear_surfaces"), &ArrayMesh::clear_surfaces);
 	ClassDB::bind_method(D_METHOD("surface_update_vertex_region", "surf_idx", "offset", "data"), &ArrayMesh::surface_update_vertex_region);
 	ClassDB::bind_method(D_METHOD("surface_update_attribute_region", "surf_idx", "offset", "data"), &ArrayMesh::surface_update_attribute_region);
@@ -2077,7 +2250,6 @@ void ArrayMesh::_bind_methods() {
 	ClassDB::set_method_flags(get_class_static(), _scs_create("regen_normal_maps"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 	ClassDB::bind_method(D_METHOD("lightmap_unwrap", "transform", "texel_size"), &ArrayMesh::lightmap_unwrap);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("lightmap_unwrap"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
-	ClassDB::bind_method(D_METHOD("get_faces"), &ArrayMesh::get_faces);
 	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &ArrayMesh::generate_triangle_mesh);
 
 	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &ArrayMesh::set_custom_aabb);

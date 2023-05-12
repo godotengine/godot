@@ -1,40 +1,44 @@
-/*************************************************************************/
-/*  editor_property_name_processor.cpp                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_property_name_processor.cpp                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_property_name_processor.h"
 
+#include "core/string/translation.h"
 #include "editor_settings.h"
 
 EditorPropertyNameProcessor *EditorPropertyNameProcessor::singleton = nullptr;
 
 EditorPropertyNameProcessor::Style EditorPropertyNameProcessor::get_default_inspector_style() {
+	if (!EditorSettings::get_singleton()) {
+		return STYLE_CAPITALIZED;
+	}
 	const Style style = (Style)EDITOR_GET("interface/inspector/default_property_name_style").operator int();
 	if (style == STYLE_LOCALIZED && !is_localization_available()) {
 		return STYLE_CAPITALIZED;
@@ -43,6 +47,9 @@ EditorPropertyNameProcessor::Style EditorPropertyNameProcessor::get_default_insp
 }
 
 EditorPropertyNameProcessor::Style EditorPropertyNameProcessor::get_settings_style() {
+	if (!EditorSettings::get_singleton()) {
+		return STYLE_LOCALIZED;
+	}
 	const bool translate = EDITOR_GET("interface/editor/localize_settings");
 	return translate ? STYLE_LOCALIZED : STYLE_CAPITALIZED;
 }
@@ -52,6 +59,9 @@ EditorPropertyNameProcessor::Style EditorPropertyNameProcessor::get_tooltip_styl
 }
 
 bool EditorPropertyNameProcessor::is_localization_available() {
+	if (!EditorSettings::get_singleton()) {
+		return false;
+	}
 	const Vector<String> forbidden = String("en").split(",");
 	return forbidden.find(EDITOR_GET("interface/editor/editor_language")) == -1;
 }
@@ -92,18 +102,30 @@ String EditorPropertyNameProcessor::process_name(const String &p_name, Style p_s
 		} break;
 
 		case STYLE_LOCALIZED: {
-			return TTRGET(_capitalize_name(p_name));
+			const String capitalized = _capitalize_name(p_name);
+			if (TranslationServer::get_singleton()) {
+				return TranslationServer::get_singleton()->property_translate(capitalized);
+			}
+			return capitalized;
 		} break;
 	}
 	ERR_FAIL_V_MSG(p_name, "Unexpected property name style.");
+}
+
+String EditorPropertyNameProcessor::translate_group_name(const String &p_name) const {
+	if (TranslationServer::get_singleton()) {
+		return TranslationServer::get_singleton()->property_translate(p_name);
+	}
+	return p_name;
 }
 
 EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 
-	// The following initialization is parsed in `editor/translations/extract.py` with a regex.
+	// The following initialization is parsed by the l10n extraction script with a regex.
 	// The map name and value definition format should be kept synced with the regex.
+	// https://github.com/godotengine/godot-editor-l10n/blob/main/scripts/common.py
 	capitalize_string_remaps["2d"] = "2D";
 	capitalize_string_remaps["3d"] = "3D";
 	capitalize_string_remaps["aa"] = "AA";
@@ -112,9 +134,13 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["ao"] = "AO";
 	capitalize_string_remaps["api"] = "API";
 	capitalize_string_remaps["apk"] = "APK";
+	capitalize_string_remaps["arm32"] = "arm32";
+	capitalize_string_remaps["arm64"] = "arm64";
 	capitalize_string_remaps["arm64-v8a"] = "arm64-v8a";
 	capitalize_string_remaps["armeabi-v7a"] = "armeabi-v7a";
 	capitalize_string_remaps["arvr"] = "ARVR";
+	capitalize_string_remaps["astc"] = "ASTC";
+	capitalize_string_remaps["bbcode"] = "BBCode";
 	capitalize_string_remaps["bg"] = "BG";
 	capitalize_string_remaps["bidi"] = "BiDi";
 	capitalize_string_remaps["bp"] = "BP";
@@ -123,6 +149,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["bptc"] = "BPTC";
 	capitalize_string_remaps["bvh"] = "BVH";
 	capitalize_string_remaps["ca"] = "CA";
+	capitalize_string_remaps["ccdik"] = "CCDIK";
 	capitalize_string_remaps["cd"] = "CD";
 	capitalize_string_remaps["cpu"] = "CPU";
 	capitalize_string_remaps["csg"] = "CSG";
@@ -134,6 +161,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["erp"] = "ERP";
 	capitalize_string_remaps["etc"] = "ETC";
 	capitalize_string_remaps["etc2"] = "ETC2";
+	capitalize_string_remaps["fabrik"] = "FABRIK";
 	capitalize_string_remaps["fbx"] = "FBX";
 	capitalize_string_remaps["fbx2gltf"] = "FBX2glTF";
 	capitalize_string_remaps["fft"] = "FFT";
@@ -151,6 +179,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["glb"] = "GLB";
 	capitalize_string_remaps["gles2"] = "GLES2";
 	capitalize_string_remaps["gles3"] = "GLES3";
+	capitalize_string_remaps["gltf"] = "glTF";
 	capitalize_string_remaps["gpu"] = "GPU";
 	capitalize_string_remaps["gui"] = "GUI";
 	capitalize_string_remaps["guid"] = "GUID";
@@ -182,6 +211,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["lcd"] = "LCD";
 	capitalize_string_remaps["ldr"] = "LDR";
 	capitalize_string_remaps["lod"] = "LOD";
+	capitalize_string_remaps["lods"] = "LODs";
 	capitalize_string_remaps["lowpass"] = "Low-pass";
 	capitalize_string_remaps["macos"] = "macOS";
 	capitalize_string_remaps["mb"] = "(MB)"; // Unit.
@@ -202,6 +232,8 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["pck"] = "PCK";
 	capitalize_string_remaps["png"] = "PNG";
 	capitalize_string_remaps["po2"] = "(Power of 2)"; // Unit.
+	capitalize_string_remaps["ppc32"] = "ppc32";
+	capitalize_string_remaps["ppc64"] = "ppc64";
 	capitalize_string_remaps["pvrtc"] = "PVRTC";
 	capitalize_string_remaps["pvs"] = "PVS";
 	capitalize_string_remaps["rcedit"] = "rcedit";
@@ -210,7 +242,9 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["rid"] = "RID";
 	capitalize_string_remaps["rmb"] = "RMB";
 	capitalize_string_remaps["rpc"] = "RPC";
+	capitalize_string_remaps["rv64"] = "rv64";
 	capitalize_string_remaps["s3tc"] = "S3TC";
+	capitalize_string_remaps["scp"] = "SCP";
 	capitalize_string_remaps["sdf"] = "SDF";
 	capitalize_string_remaps["sdfgi"] = "SDFGI";
 	capitalize_string_remaps["sdk"] = "SDK";
@@ -254,6 +288,8 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["wine"] = "wine";
 	capitalize_string_remaps["wifi"] = "Wi-Fi";
 	capitalize_string_remaps["x86"] = "x86";
+	capitalize_string_remaps["x86_32"] = "x86_32";
+	capitalize_string_remaps["x86_64"] = "x86_64";
 	capitalize_string_remaps["xr"] = "XR";
 	capitalize_string_remaps["xray"] = "X-Ray";
 	capitalize_string_remaps["xy"] = "XY";
@@ -261,7 +297,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["yz"] = "YZ";
 
 	// Articles, conjunctions, prepositions.
-	// The following initialization is parsed in `editor/translations/extract.py` with a regex.
+	// The following initialization is parsed in `editor/translations/scripts/common.py` with a regex.
 	// The word definition format should be kept synced with the regex.
 	stop_words = LocalVector<String>({
 			"a",

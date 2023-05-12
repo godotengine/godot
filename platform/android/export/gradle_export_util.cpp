@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  gradle_export_util.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gradle_export_util.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "gradle_export_util.h"
 
@@ -166,7 +166,7 @@ Error store_string_at_path(const String &p_path, const String &p_data) {
 // This method will only be called as an input to export_project_files.
 // It is used by the export_project_files method to save all the asset files into the gradle project.
 // It's functionality mirrors that of the method save_apk_file.
-// This method will be called ONLY when custom build is enabled.
+// This method will be called ONLY when gradle build is enabled.
 Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
 	CustomExportData *export_data = static_cast<CustomExportData *>(p_userdata);
 	String dst_path = p_path.replace_first("res://", export_data->assets_directory + "/");
@@ -254,13 +254,11 @@ String _get_screen_sizes_tag(const Ref<EditorExportPreset> &p_preset) {
 	return manifest_screen_sizes;
 }
 
-String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset) {
+String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset, bool p_uses_vulkan) {
 	String manifest_xr_features;
 	int xr_mode_index = (int)(p_preset->get("xr_features/xr_mode"));
 	bool uses_xr = xr_mode_index == XR_MODE_OPENXR;
 	if (uses_xr) {
-		manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"android.hardware.vr.headtracking\" android:required=\"true\" android:version=\"1\" />\n";
-
 		int hand_tracking_index = p_preset->get("xr_features/hand_tracking"); // 0: none, 1: optional, 2: required
 		if (hand_tracking_index == XR_HAND_TRACKING_OPTIONAL) {
 			manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"oculus.software.handtracking\" android:required=\"false\" />\n";
@@ -275,27 +273,50 @@ String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset) {
 			manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"com.oculus.feature.PASSTHROUGH\" android:required=\"true\" />\n";
 		}
 	}
+
+	if (p_uses_vulkan) {
+		manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"android.hardware.vulkan.level\" android:required=\"false\" android:version=\"1\" />\n";
+		manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"android.hardware.vulkan.version\" android:required=\"true\" android:version=\"0x400003\" />\n";
+	}
 	return manifest_xr_features;
 }
 
-String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
-	int xr_mode_index = (int)(p_preset->get("xr_features/xr_mode"));
-	bool uses_xr = xr_mode_index == XR_MODE_OPENXR;
+String _get_activity_tag(const Ref<EditorExportPreset> &p_preset, bool p_uses_xr) {
 	String orientation = _get_android_orientation_label(DisplayServer::ScreenOrientation(int(GLOBAL_GET("display/window/handheld/orientation"))));
 	String manifest_activity_text = vformat(
 			"        <activity android:name=\"com.godot.game.GodotApp\" "
 			"tools:replace=\"android:screenOrientation,android:excludeFromRecents,android:resizeableActivity\" "
+			"tools:node=\"mergeOnlyAttributes\" "
 			"android:excludeFromRecents=\"%s\" "
 			"android:screenOrientation=\"%s\" "
 			"android:resizeableActivity=\"%s\">\n",
 			bool_to_string(p_preset->get("package/exclude_from_recents")),
 			orientation,
 			bool_to_string(bool(GLOBAL_GET("display/window/size/resizable"))));
-	if (uses_xr) {
-		manifest_activity_text += "            <meta-data tools:node=\"replace\" android:name=\"com.oculus.vr.focusaware\" android:value=\"true\" />\n";
+
+	if (p_uses_xr) {
+		manifest_activity_text += "            <intent-filter>\n"
+								  "                <action android:name=\"android.intent.action.MAIN\" />\n"
+								  "                <category android:name=\"android.intent.category.LAUNCHER\" />\n"
+								  "\n"
+								  "                <!-- Enable access to OpenXR on Oculus mobile devices, no-op on other Android\n"
+								  "                platforms. -->\n"
+								  "                <category android:name=\"com.oculus.intent.category.VR\" />\n"
+								  "\n"
+								  "                <!-- OpenXR category tag to indicate the activity starts in an immersive OpenXR mode. \n"
+								  "                See https://registry.khronos.org/OpenXR/specs/1.0/html/xrspec.html#android-runtime-category. -->\n"
+								  "                <category android:name=\"org.khronos.openxr.intent.category.IMMERSIVE_HMD\" />\n"
+								  "\n"
+								  "                <!-- Enable VR access on HTC Vive Focus devices. -->\n"
+								  "                <category android:name=\"com.htc.intent.category.VRAPP\" />\n"
+								  "            </intent-filter>\n";
 	} else {
-		manifest_activity_text += "            <meta-data tools:node=\"remove\" android:name=\"com.oculus.vr.focusaware\" />\n";
+		manifest_activity_text += "            <intent-filter>\n"
+								  "                <action android:name=\"android.intent.action.MAIN\" />\n"
+								  "                <category android:name=\"android.intent.category.LAUNCHER\" />\n"
+								  "            </intent-filter>\n";
 	}
+
 	manifest_activity_text += "        </activity>\n";
 	return manifest_activity_text;
 }
@@ -316,9 +337,7 @@ String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_
 			"        android:hasFragileUserData=\"%s\"\n"
 			"        android:requestLegacyExternalStorage=\"%s\"\n"
 			"        tools:replace=\"android:allowBackup,android:appCategory,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage\"\n"
-			"        tools:ignore=\"GoogleAppIndexingWarning\">\n\n"
-			"        <meta-data tools:node=\"remove\" android:name=\"xr_hand_tracking_version_name\" />\n"
-			"        <meta-data tools:node=\"remove\" android:name=\"xr_hand_tracking_metadata_name\" />\n",
+			"        tools:ignore=\"GoogleAppIndexingWarning\">\n\n",
 			bool_to_string(p_preset->get("user_data_backup/allow")),
 			_get_app_category_label(app_category_index),
 			bool_to_string(is_game),
@@ -335,10 +354,8 @@ String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_
 					hand_tracking_frequency);
 			manifest_application_text += "        <meta-data tools:node=\"replace\" android:name=\"com.oculus.handtracking.version\" android:value=\"V2.0\" />\n";
 		}
-	} else {
-		manifest_application_text += "        <meta-data tools:node=\"remove\" android:name=\"com.oculus.supportedDevices\" />\n";
 	}
-	manifest_application_text += _get_activity_tag(p_preset);
+	manifest_application_text += _get_activity_tag(p_preset, uses_xr);
 	manifest_application_text += "    </application>\n";
 	return manifest_application_text;
 }

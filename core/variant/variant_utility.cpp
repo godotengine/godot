@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  variant_utility.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  variant_utility.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "variant.h"
 
@@ -374,6 +374,7 @@ struct VariantUtilityFunctions {
 		r_error.error = Callable::CallError::CALL_OK;
 		if (from.get_type() != to.get_type()) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.expected = from.get_type();
 			r_error.argument = 1;
 			return Variant();
 		}
@@ -542,7 +543,18 @@ struct VariantUtilityFunctions {
 		}
 		Variant base = *p_args[0];
 		Variant ret;
-		for (int i = 1; i < p_argcount; i++) {
+
+		for (int i = 0; i < p_argcount; i++) {
+			Variant::Type arg_type = p_args[i]->get_type();
+			if (arg_type != Variant::INT && arg_type != Variant::FLOAT) {
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.expected = Variant::FLOAT;
+				r_error.argument = i;
+				return Variant();
+			}
+			if (i == 0) {
+				continue;
+			}
 			bool valid;
 			Variant::evaluate(Variant::OP_LESS, base, *p_args[i], ret, valid);
 			if (!valid) {
@@ -575,7 +587,18 @@ struct VariantUtilityFunctions {
 		}
 		Variant base = *p_args[0];
 		Variant ret;
-		for (int i = 1; i < p_argcount; i++) {
+
+		for (int i = 0; i < p_argcount; i++) {
+			Variant::Type arg_type = p_args[i]->get_type();
+			if (arg_type != Variant::INT && arg_type != Variant::FLOAT) {
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.expected = Variant::FLOAT;
+				r_error.argument = i;
+				return Variant();
+			}
+			if (i == 0) {
+				continue;
+			}
 			bool valid;
 			Variant::evaluate(Variant::OP_GREATER, base, *p_args[i], ret, valid);
 			if (!valid) {
@@ -780,6 +803,8 @@ struct VariantUtilityFunctions {
 		print_line_rich(s);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
+
+#undef print_verbose
 
 	static inline void print_verbose(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
@@ -1007,8 +1032,13 @@ struct VariantUtilityFunctions {
 	static inline uint64_t rid_allocate_id() {
 		return RID_AllocBase::_gen_id();
 	}
+
 	static inline RID rid_from_int64(uint64_t p_base) {
 		return RID::from_uint64(p_base);
+	}
+
+	static inline bool is_same(const Variant &p_a, const Variant &p_b) {
+		return p_a.identity_compare(p_b);
 	}
 };
 
@@ -1601,6 +1631,8 @@ void Variant::_register_variant_utility_functions() {
 
 	FUNCBINDR(rid_allocate_id, Vector<String>(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(rid_from_int64, sarray("base"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+
+	FUNCBINDR(is_same, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 }
 
 void Variant::_unregister_variant_utility_functions() {

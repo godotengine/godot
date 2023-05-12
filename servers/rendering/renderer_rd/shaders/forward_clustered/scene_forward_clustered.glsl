@@ -118,9 +118,15 @@ layout(location = 10) out flat uint instance_index_interp;
 // !BAS! This needs to become an input once we implement our fallback!
 #define ViewIndex 0
 #endif // has_VK_KHR_multiview
+vec3 multiview_uv(vec2 uv) {
+	return vec3(uv, ViewIndex);
+}
 #else // USE_MULTIVIEW
 // Set to zero, not supported in non stereo
 #define ViewIndex 0
+vec2 multiview_uv(vec2 uv) {
+	return uv;
+}
 #endif //USE_MULTIVIEW
 
 invariant gl_Position;
@@ -309,9 +315,11 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multime
 #ifdef USE_MULTIVIEW
 	mat4 projection_matrix = scene_data.projection_matrix_view[ViewIndex];
 	mat4 inv_projection_matrix = scene_data.inv_projection_matrix_view[ViewIndex];
+	vec3 eye_offset = scene_data.eye_offset[ViewIndex].xyz;
 #else
 	mat4 projection_matrix = scene_data.projection_matrix;
 	mat4 inv_projection_matrix = scene_data.inv_projection_matrix;
+	vec3 eye_offset = vec3(0.0, 0.0, 0.0);
 #endif //USE_MULTIVIEW
 
 //using world coordinates
@@ -352,7 +360,7 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multime
 		vertex = mat3(matrix) * vertex;
 		model_origin = double_add_vec3(model_origin, model_precision, matrix[3].xyz, vec3(0.0), model_precision);
 	}
-	vertex = mat3(model_matrix) * vertex;
+	vertex = mat3(inv_view_matrix * modelview) * vertex;
 	vec3 temp_precision; // Will be ignored.
 	vertex += double_add_vec3(model_origin, model_precision, scene_data.inv_view_matrix[3].xyz, view_precision, temp_precision);
 	vertex = mat3(scene_data.view_matrix) * vertex;
@@ -544,9 +552,15 @@ layout(location = 10) in flat uint instance_index_interp;
 // !BAS! This needs to become an input once we implement our fallback!
 #define ViewIndex 0
 #endif // has_VK_KHR_multiview
+vec3 multiview_uv(vec2 uv) {
+	return vec3(uv, ViewIndex);
+}
 #else // USE_MULTIVIEW
 // Set to zero, not supported in non stereo
 #define ViewIndex 0
+vec2 multiview_uv(vec2 uv) {
+	return uv;
+}
 #endif //USE_MULTIVIEW
 
 //defines to keep compatibility with vertex
@@ -710,8 +724,10 @@ void fragment_shader(in SceneData scene_data) {
 	//lay out everything, whatever is unused is optimized away anyway
 	vec3 vertex = vertex_interp;
 #ifdef USE_MULTIVIEW
-	vec3 view = -normalize(vertex_interp - scene_data.eye_offset[ViewIndex].xyz);
+	vec3 eye_offset = scene_data.eye_offset[ViewIndex].xyz;
+	vec3 view = -normalize(vertex_interp - eye_offset);
 #else
+	vec3 eye_offset = vec3(0.0, 0.0, 0.0);
 	vec3 view = -normalize(vertex_interp);
 #endif
 	vec3 albedo = vec3(1.0);
@@ -1293,24 +1309,26 @@ void fragment_shader(in SceneData scene_data) {
 	}
 
 	if (sc_use_forward_gi && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_VOXEL_GI)) { // process voxel_gi_instances
-
 		uint index1 = instances.data[instance_index].gi_offset & 0xFFFF;
-		vec3 ref_vec = normalize(reflect(-view, normal));
-		ref_vec = mix(ref_vec, normal, roughness * roughness);
+		// Make vertex orientation the world one, but still align to camera.
+		vec3 cam_pos = mat3(scene_data.inv_view_matrix) * vertex;
+		vec3 cam_normal = mat3(scene_data.inv_view_matrix) * normal;
+		vec3 ref_vec = mat3(scene_data.inv_view_matrix) * normalize(reflect(-view, normal));
+
 		//find arbitrary tangent and bitangent, then build a matrix
-		vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
-		vec3 tangent = normalize(cross(v0, normal));
-		vec3 bitangent = normalize(cross(tangent, normal));
-		mat3 normal_mat = mat3(tangent, bitangent, normal);
+		vec3 v0 = abs(cam_normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
+		vec3 tangent = normalize(cross(v0, cam_normal));
+		vec3 bitangent = normalize(cross(tangent, cam_normal));
+		mat3 normal_mat = mat3(tangent, bitangent, cam_normal);
 
 		vec4 amb_accum = vec4(0.0);
 		vec4 spec_accum = vec4(0.0);
-		voxel_gi_compute(index1, vertex, normal, ref_vec, normal_mat, roughness * roughness, ambient_light, specular_light, spec_accum, amb_accum);
+		voxel_gi_compute(index1, cam_pos, cam_normal, ref_vec, normal_mat, roughness * roughness, ambient_light, specular_light, spec_accum, amb_accum);
 
 		uint index2 = instances.data[instance_index].gi_offset >> 16;
 
 		if (index2 != 0xFFFF) {
-			voxel_gi_compute(index2, vertex, normal, ref_vec, normal_mat, roughness * roughness, ambient_light, specular_light, spec_accum, amb_accum);
+			voxel_gi_compute(index2, cam_pos, cam_normal, ref_vec, normal_mat, roughness * roughness, ambient_light, specular_light, spec_accum, amb_accum);
 		}
 
 		if (amb_accum.a > 0.0) {
@@ -1339,8 +1357,8 @@ void fragment_shader(in SceneData scene_data) {
 #endif // USE_MULTIVIEW
 
 			for (int i = 0; i < 4; i++) {
-				const vec2 neighbours[4] = vec2[](vec2(-1, 0), vec2(1, 0), vec2(0, -1), vec2(0, 1));
-				vec2 neighbour_coord = base_coord + neighbours[i] * scene_data.screen_pixel_size;
+				const vec2 neighbors[4] = vec2[](vec2(-1, 0), vec2(1, 0), vec2(0, -1), vec2(0, 1));
+				vec2 neighbour_coord = base_coord + neighbors[i] * scene_data.screen_pixel_size;
 #ifdef USE_MULTIVIEW
 				float neighbour_ang = dot(normal, textureLod(sampler2DArray(normal_roughness_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), vec3(neighbour_coord, ViewIndex), 0.0).xyz * 2.0 - 1.0);
 #else // USE_MULTIVIEW
@@ -1372,7 +1390,11 @@ void fragment_shader(in SceneData scene_data) {
 #endif // !USE_LIGHTMAP
 
 	if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSAO)) {
+#ifdef USE_MULTIVIEW
+		float ssao = texture(sampler2DArray(ao_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), vec3(screen_uv, ViewIndex)).r;
+#else
 		float ssao = texture(sampler2D(ao_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), screen_uv).r;
+#endif
 		ao = min(ao, ssao);
 		ao_light_affect = mix(ao_light_affect, max(ao_light_affect, implementation_data.ssao_light_affect), implementation_data.ssao_ao_affect);
 	}
@@ -1455,7 +1477,11 @@ void fragment_shader(in SceneData scene_data) {
 		ambient_light *= ao;
 
 		if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL)) {
+#ifdef USE_MULTIVIEW
+			vec4 ssil = textureLod(sampler2DArray(ssil_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), vec3(screen_uv, ViewIndex), 0.0);
+#else
 			vec4 ssil = textureLod(sampler2D(ssil_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), screen_uv, 0.0);
+#endif // USE_MULTIVIEW
 			ambient_light *= 1.0 - ssil.a;
 			ambient_light += ssil.rgb * albedo.rgb;
 		}
@@ -1786,14 +1812,14 @@ void fragment_shader(in SceneData scene_data) {
 				shadow = float(shadow1 >> ((i - 4u) * 8u) & 0xFFu) / 255.0;
 			}
 
-			shadow = shadow * directional_lights.data[i].shadow_opacity + 1.0 - directional_lights.data[i].shadow_opacity;
+			shadow = mix(1.0, shadow, directional_lights.data[i].shadow_opacity);
 #endif
 
 			blur_shadow(shadow);
 
 			float size_A = sc_use_light_soft_shadows ? directional_lights.data[i].size : 0.0;
 
-			light_compute(normal, directional_lights.data[i].direction, normalize(view), size_A, directional_lights.data[i].color * directional_lights.data[i].energy, shadow, f0, orms, 1.0, albedo, alpha,
+			light_compute(normal, directional_lights.data[i].direction, normalize(view), size_A, directional_lights.data[i].color * directional_lights.data[i].energy, true, shadow, f0, orms, 1.0, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif
@@ -2070,7 +2096,7 @@ void fragment_shader(in SceneData scene_data) {
 			float sRed = floor((cRed / pow(2.0f, exps - B - N)) + 0.5f);
 			float sGreen = floor((cGreen / pow(2.0f, exps - B - N)) + 0.5f);
 			float sBlue = floor((cBlue / pow(2.0f, exps - B - N)) + 0.5f);
-			//store as 8985 to have 2 extra neighbour bits
+			//store as 8985 to have 2 extra neighbor bits
 			uint light_rgbe = ((uint(sRed) & 0x1FFu) >> 1) | ((uint(sGreen) & 0x1FFu) << 8) | (((uint(sBlue) & 0x1FFu) >> 1) << 17) | ((uint(exps) & 0x1Fu) << 25);
 
 			imageStore(emission_grid, grid_pos, uvec4(light_rgbe));

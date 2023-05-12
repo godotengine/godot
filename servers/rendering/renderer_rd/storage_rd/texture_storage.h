@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  texture_storage.h                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  texture_storage.h                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef TEXTURE_STORAGE_RD_H
 #define TEXTURE_STORAGE_RD_H
@@ -62,6 +62,9 @@ public:
 		DEFAULT_RD_TEXTURE_3D_WHITE,
 		DEFAULT_RD_TEXTURE_3D_BLACK,
 		DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE,
+		DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK,
+		DEFAULT_RD_TEXTURE_2D_ARRAY_NORMAL,
+		DEFAULT_RD_TEXTURE_2D_ARRAY_DEPTH,
 		DEFAULT_RD_TEXTURE_2D_UINT,
 		DEFAULT_RD_TEXTURE_VRS,
 		DEFAULT_RD_TEXTURE_MAX
@@ -235,7 +238,7 @@ private:
 	} decal_atlas;
 
 	struct Decal {
-		Vector3 extents = Vector3(1, 1, 1);
+		Vector3 size = Vector3(2, 2, 2);
 		RID textures[RS::DECAL_TEXTURE_MAX];
 		float emission_energy = 1.0;
 		float albedo_mix = 1.0;
@@ -258,6 +261,7 @@ private:
 	struct DecalInstance {
 		RID decal;
 		Transform3D transform;
+		float sorting_offset = 0.0;
 		uint32_t cull_mask = 0;
 		RendererRD::ForwardID forward_id = -1;
 	};
@@ -494,7 +498,8 @@ public:
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) override;
 
-	virtual RID texture_get_rd_texture_rid(RID p_texture, bool p_srgb = false) const override;
+	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const override;
+	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const override;
 
 	//internal usage
 	_FORCE_INLINE_ TextureType texture_get_type(RID p_texture) {
@@ -513,18 +518,6 @@ public:
 		}
 
 		return tex->layers;
-	}
-
-	_FORCE_INLINE_ RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) {
-		if (p_texture.is_null()) {
-			return RID();
-		}
-		RendererRD::TextureStorage::Texture *tex = texture_owner.get_or_null(p_texture);
-
-		if (!tex) {
-			return RID();
-		}
-		return (p_srgb && tex->rd_texture_srgb.is_valid()) ? tex->rd_texture_srgb : tex->rd_texture;
 	}
 
 	_FORCE_INLINE_ Size2i texture_2d_get_size(RID p_texture) {
@@ -560,7 +553,7 @@ public:
 	virtual void decal_initialize(RID p_decal) override;
 	virtual void decal_free(RID p_rid) override;
 
-	virtual void decal_set_extents(RID p_decal, const Vector3 &p_extents) override;
+	virtual void decal_set_size(RID p_decal, const Vector3 &p_size) override;
 	virtual void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) override;
 	virtual void decal_set_emission_energy(RID p_decal, float p_energy) override;
 	virtual void decal_set_albedo_mix(RID p_decal, float p_mix) override;
@@ -576,9 +569,9 @@ public:
 	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override;
 	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override;
 
-	_FORCE_INLINE_ Vector3 decal_get_extents(RID p_decal) {
+	_FORCE_INLINE_ Vector3 decal_get_size(RID p_decal) {
 		const Decal *decal = decal_owner.get_or_null(p_decal);
-		return decal->extents;
+		return decal->size;
 	}
 
 	_FORCE_INLINE_ RID decal_get_texture(RID p_decal, RS::DecalTexture p_texture) {
@@ -637,6 +630,7 @@ public:
 	}
 
 	virtual AABB decal_get_aabb(RID p_decal) const override;
+	virtual uint32_t decal_get_cull_mask(RID p_decal) const override;
 	Dependency *decal_get_dependency(RID p_decal);
 
 	/* DECAL INSTANCE API */
@@ -646,6 +640,7 @@ public:
 	virtual RID decal_instance_create(RID p_decal) override;
 	virtual void decal_instance_free(RID p_decal_instance) override;
 	virtual void decal_instance_set_transform(RID p_decal_instance, const Transform3D &p_transform) override;
+	virtual void decal_instance_set_sorting_offset(RID p_decal_instance, float p_sorting_offset) override;
 
 	_FORCE_INLINE_ RID decal_instance_get_base(RID p_decal_instance) const {
 		DecalInstance *di = decal_instance_owner.get_or_null(p_decal_instance);
@@ -677,7 +672,7 @@ public:
 	void free_decal_data();
 	void set_max_decals(const uint32_t p_max_decals);
 	RID get_decal_buffer() { return decal_buffer; }
-	void update_decal_buffer(const PagedArray<RID> &p_decals, const Transform3D &p_camera_inverse_xform);
+	void update_decal_buffer(const PagedArray<RID> &p_decals, const Transform3D &p_camera_xform);
 
 	/* RENDER TARGET API */
 
@@ -735,6 +730,7 @@ public:
 	RID render_target_get_rd_framebuffer(RID p_render_target);
 	RID render_target_get_rd_texture(RID p_render_target);
 	RID render_target_get_rd_texture_slice(RID p_render_target, uint32_t p_layer);
+	RID render_target_get_rd_texture_msaa(RID p_render_target);
 	RID render_target_get_rd_backbuffer(RID p_render_target);
 	RID render_target_get_rd_backbuffer_framebuffer(RID p_render_target);
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Curve2D" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Curve2D" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Describes a Bézier curve in 2D space.
 	</brief_description>
@@ -80,7 +80,7 @@
 			<return type="void" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Deletes the point [code]idx[/code] from the curve. Sends an error to the console if [code]idx[/code] is out of bounds.
+				Deletes the point [param idx] from the curve. Sends an error to the console if [param idx] is out of bounds.
 			</description>
 		</method>
 		<method name="sample" qualifiers="const">
@@ -162,6 +162,8 @@
 			<param index="0" name="max_stages" type="int" default="5" />
 			<param index="1" name="tolerance_length" type="float" default="20.0" />
 			<description>
+				Returns a list of points along the curve, with almost uniform density. [param max_stages] controls how many subdivisions a curve segment may face before it is considered approximate enough. Each subdivision splits the segment in half, so the default 5 stages may mean up to 32 subdivisions per curve segment. Increase with care!
+				[param tolerance_length] controls the maximal distance between two neighboring points, before the segment has to be subdivided.
 			</description>
 		</method>
 	</methods>

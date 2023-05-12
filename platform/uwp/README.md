@@ -14,7 +14,7 @@ project template used for packaging the UWP export templates.
 
 ## Documentation
 
-- [Compiling for Universal Windows Platform](https://docs.godotengine.org/en/latest/development/compiling/compiling_for_uwp.html)
+- [Compiling for Universal Windows Platform](https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_uwp.html)
   - Instructions on building this platform port from source.
 - [Exporting for Universal Windows Platform](https://docs.godotengine.org/en/latest/tutorials/export/exporting_for_uwp.html)
   - Instructions on using the compiled export templates to export a project.

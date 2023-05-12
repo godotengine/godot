@@ -29,32 +29,6 @@
 #include "hb.hh"
 #include "hb-machinery.hh"
 
-#if !defined(HB_NO_SETLOCALE) && (!defined(HAVE_NEWLOCALE) || !defined(HAVE_USELOCALE))
-#define HB_NO_SETLOCALE 1
-#endif
-
-#ifndef HB_NO_SETLOCALE
-
-#include <locale.h>
-#ifdef HAVE_XLOCALE_H
-#include <xlocale.h> // Needed on BSD/OS X for uselocale
-#endif
-
-#ifdef WIN32
-#define hb_locale_t _locale_t
-#else
-#define hb_locale_t locale_t
-#endif
-#define hb_setlocale setlocale
-#define hb_uselocale uselocale
-
-#else
-
-#define hb_locale_t void *
-#define hb_setlocale(Category, Locale) "C"
-#define hb_uselocale(Locale) ((hb_locale_t) 0)
-
-#endif
 
 /**
  * SECTION:hb-common

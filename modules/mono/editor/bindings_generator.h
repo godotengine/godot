@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  bindings_generator.h                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  bindings_generator.h                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef BINDINGS_GENERATOR_H
 #define BINDINGS_GENERATOR_H
@@ -408,6 +408,7 @@ class BindingsGenerator {
 		List<PropertyInterface> properties;
 		List<MethodInterface> methods;
 		List<SignalInterface> signals_;
+		HashSet<String> ignored_members;
 
 		bool has_virtual_methods = false;
 
@@ -471,44 +472,93 @@ class BindingsGenerator {
 			return nullptr;
 		}
 
-	private:
-		static void _init_value_type(TypeInterface &itype) {
-			itype.proxy_name = itype.name;
+		bool is_intentionally_ignored(const String &p_name) const {
+			return ignored_members.has(p_name);
+		}
 
-			itype.c_type = itype.name;
+	private:
+		static DocData::ClassDoc *_get_type_doc(TypeInterface &itype) {
+			String doc_name = itype.name.begins_with("_") ? itype.name.substr(1) : itype.name;
+			return &EditorHelp::get_doc_data()->class_list[doc_name];
+		}
+
+		static void _init_value_type(TypeInterface &itype) {
+			if (itype.proxy_name.is_empty()) {
+				itype.proxy_name = itype.name;
+			}
+
 			itype.cs_type = itype.proxy_name;
-			itype.c_type_in = itype.proxy_name + "*";
-			itype.c_type_out = itype.proxy_name;
-			itype.class_doc = &EditorHelp::get_doc_data()->class_list[itype.proxy_name];
+			itype.c_type = itype.cs_type;
+			itype.c_type_in = itype.cs_type + "*";
+			itype.c_type_out = itype.cs_type;
+
+			itype.class_doc = _get_type_doc(itype);
+		}
+
+		static void _init_object_type(TypeInterface &itype, ClassDB::APIType p_api_type) {
+			if (itype.proxy_name.is_empty()) {
+				itype.proxy_name = itype.name;
+			}
+
+			if (itype.proxy_name.begins_with("_")) {
+				itype.proxy_name = itype.proxy_name.substr(1);
+			}
+
+			itype.api_type = p_api_type;
+			itype.is_object_type = true;
+
+			itype.class_doc = _get_type_doc(itype);
 		}
 
 	public:
-		static TypeInterface create_value_type(const String &p_name) {
+		static TypeInterface create_value_type(const String &p_name, const String &p_proxy_name) {
 			TypeInterface itype;
 			itype.name = p_name;
-			itype.cname = StringName(p_name);
+			itype.cname = p_name;
+			itype.proxy_name = p_proxy_name;
 			_init_value_type(itype);
 			return itype;
 		}
 
-		static TypeInterface create_value_type(const StringName &p_name) {
+		static TypeInterface create_value_type(const StringName &p_cname, const String &p_proxy_name) {
 			TypeInterface itype;
-			itype.name = p_name.operator String();
+			itype.name = p_cname;
+			itype.cname = p_cname;
+			itype.proxy_name = p_proxy_name;
+			_init_value_type(itype);
+			return itype;
+		}
+
+		static TypeInterface create_value_type(const String &p_name) {
+			TypeInterface itype;
+			itype.name = p_name;
 			itype.cname = p_name;
 			_init_value_type(itype);
 			return itype;
 		}
 
-		static TypeInterface create_object_type(const StringName &p_cname, ClassDB::APIType p_api_type) {
+		static TypeInterface create_value_type(const StringName &p_cname) {
 			TypeInterface itype;
-
 			itype.name = p_cname;
 			itype.cname = p_cname;
-			itype.proxy_name = itype.name.begins_with("_") ? itype.name.substr(1, itype.name.length()) : itype.name;
-			itype.api_type = p_api_type;
-			itype.is_object_type = true;
-			itype.class_doc = &EditorHelp::get_doc_data()->class_list[itype.proxy_name];
+			_init_value_type(itype);
+			return itype;
+		}
 
+		static TypeInterface create_object_type(const StringName &p_cname, const String &p_proxy_name, ClassDB::APIType p_api_type) {
+			TypeInterface itype;
+			itype.name = p_cname;
+			itype.cname = p_cname;
+			itype.proxy_name = p_proxy_name;
+			_init_object_type(itype, p_api_type);
+			return itype;
+		}
+
+		static TypeInterface create_object_type(const StringName &p_cname, ClassDB::APIType p_api_type) {
+			TypeInterface itype;
+			itype.name = p_cname;
+			itype.cname = p_cname;
+			_init_object_type(itype, p_api_type);
 			return itype;
 		}
 

@@ -17,7 +17,7 @@ namespace Godot.SourceGenerators
 
         public void Execute(GeneratorExecutionContext context)
         {
-            if (context.AreGodotSourceGeneratorsDisabled())
+            if (context.IsGodotSourceGeneratorDisabled("ScriptPropertyDefVal"))
                 return;
 
             INamedTypeSymbol[] godotClasses = context
@@ -148,6 +148,12 @@ namespace Godot.SourceGenerators
                 if (property.IsReadOnly || property.SetMethod!.IsInitOnly)
                 {
                     Common.ReportExportedMemberIsReadOnly(context, property);
+                    continue;
+                }
+
+                if (property.ExplicitInterfaceImplementations.Length > 0)
+                {
+                    Common.ReportExportedMemberIsExplicitInterfaceImplementation(context, property);
                     continue;
                 }
 

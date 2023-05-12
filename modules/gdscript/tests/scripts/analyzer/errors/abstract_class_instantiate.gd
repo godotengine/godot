@@ -1,0 +1,2 @@
+func test():
+	CanvasItem.new()

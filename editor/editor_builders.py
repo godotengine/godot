@@ -161,6 +161,10 @@ def make_editor_translations_header(target, source, env):
     make_translations_header(target, source, env, "editor")
 
 
+def make_property_translations_header(target, source, env):
+    make_translations_header(target, source, env, "property")
+
+
 def make_doc_translations_header(target, source, env):
     make_translations_header(target, source, env, "doc")
 

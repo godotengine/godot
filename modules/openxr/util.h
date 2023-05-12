@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  util.h                                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  util.h                                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef UTIL_H
 #define UTIL_H
@@ -40,7 +40,7 @@
 		ERR_FAIL_COND_V(XR_FAILED(get_instance_proc_addr_result), false);                                             \
 	} while (0)
 
-#define EXT_INIT_XR_FUNC_V(name) INIT_XR_FUNC_V(openxr_api, name)
+#define EXT_INIT_XR_FUNC_V(name) INIT_XR_FUNC_V(OpenXRAPI::get_singleton(), name)
 #define OPENXR_API_INIT_XR_FUNC_V(name) INIT_XR_FUNC_V(this, name)
 
 #define INIT_XR_FUNC(openxr_api, name)                                                                                \
@@ -50,8 +50,14 @@
 		ERR_FAIL_COND(XR_FAILED(get_instance_proc_addr_result));                                                      \
 	} while (0)
 
-#define EXT_INIT_XR_FUNC(name) INIT_XR_FUNC(openxr_api, name)
+#define EXT_INIT_XR_FUNC(name) INIT_XR_FUNC(OpenXRAPI::get_singleton(), name)
 #define OPENXR_API_INIT_XR_FUNC(name) INIT_XR_FUNC(this, name)
+
+#define TRY_INIT_XR_FUNC(openxr_api, name) \
+	openxr_api->try_get_instance_proc_addr(#name, (PFN_xrVoidFunction *)&name##_ptr)
+
+#define EXT_TRY_INIT_XR_FUNC(name) TRY_INIT_XR_FUNC(OpenXRAPI::get_singleton(), name)
+#define OPENXR_TRY_API_INIT_XR_FUNC(name) TRY_INIT_XR_FUNC(this, name)
 
 #define EXT_PROTO_XRRESULT_FUNC1(func_name, arg1_type, arg1)                    \
 	PFN_##func_name func_name##_ptr = nullptr;                                  \

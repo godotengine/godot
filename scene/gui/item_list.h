@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  item_list.h                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  item_list.h                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef ITEM_LIST_H
 #define ITEM_LIST_H
@@ -70,6 +70,7 @@ private:
 		Color custom_fg;
 		Color custom_bg = Color(0.0, 0.0, 0.0, 0.0);
 
+		int column = 0;
 		Rect2 rect_cache;
 		Rect2 min_rect_cache;
 
@@ -83,11 +84,13 @@ private:
 	};
 
 	int current = -1;
+	int hovered = -1;
 
 	bool shape_changed = true;
 
 	bool ensure_selected_visible = false;
 	bool same_column_width = false;
+	bool allow_search = true;
 
 	bool auto_height = false;
 	float auto_height_value = 0.0;
@@ -129,12 +132,14 @@ private:
 		Ref<Font> font;
 		int font_size = 0;
 		Color font_color;
+		Color font_hovered_color;
 		Color font_selected_color;
 		int font_outline_size = 0;
 		Color font_outline_color;
 
 		int line_separation = 0;
 		int icon_margin = 0;
+		Ref<StyleBox> hovered_style;
 		Ref<StyleBox> selected_style;
 		Ref<StyleBox> selected_focus_style;
 		Ref<StyleBox> cursor_style;
@@ -143,7 +148,9 @@ private:
 	} theme_cache;
 
 	void _scroll_changed(double);
-	void _shape(int p_idx);
+	void _check_shape_changed();
+	void _shape_text(int p_idx);
+	void _mouse_exited();
 
 protected:
 	virtual void _update_theme_item_cache() override;
@@ -191,7 +198,6 @@ public:
 	Variant get_item_metadata(int p_idx) const;
 
 	void set_item_tag_icon(int p_idx, const Ref<Texture2D> &p_tag_icon);
-	Ref<Texture2D> get_item_tag_icon(int p_idx) const;
 
 	void set_item_tooltip_enabled(int p_idx, const bool p_enabled);
 	bool is_item_tooltip_enabled(int p_idx) const;
@@ -204,6 +210,8 @@ public:
 
 	void set_item_custom_fg_color(int p_idx, const Color &p_custom_fg_color);
 	Color get_item_custom_fg_color(int p_idx) const;
+
+	Rect2 get_item_rect(int p_idx, bool p_expand = true) const;
 
 	void set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior);
 	TextServer::OverrunBehavior get_text_overrun_behavior() const;
@@ -252,6 +260,9 @@ public:
 
 	void set_allow_reselect(bool p_allow);
 	bool get_allow_reselect() const;
+
+	void set_allow_search(bool p_allow);
+	bool get_allow_search() const;
 
 	void ensure_current_is_visible();
 

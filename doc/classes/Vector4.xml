@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Vector4" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Vector4" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Vector used for 4D math using floating point coordinates.
 	</brief_description>
@@ -131,9 +131,9 @@
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool" />
-			<param index="0" name="with" type="Vector4" />
+			<param index="0" name="to" type="Vector4" />
 			<description>
-				Returns [code]true[/code] if this vector and [param with] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
+				Returns [code]true[/code] if this vector and [param to] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
 			</description>
 		</method>
 		<method name="is_finite" qualifiers="const">
@@ -145,7 +145,7 @@
 		<method name="is_normalized" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the vector is normalized, i.e. its length is equal to 1.
+				Returns [code]true[/code] if the vector is normalized, i.e. its length is approximately equal to 1.
 			</description>
 		</method>
 		<method name="is_zero_approx" qualifiers="const">
@@ -164,7 +164,8 @@
 		<method name="length_squared" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the squared length (squared magnitude) of this vector. This method runs faster than [method length].
+				Returns the squared length (squared magnitude) of this vector.
+				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
 		<method name="lerp" qualifiers="const">
@@ -190,21 +191,22 @@
 		<method name="normalized" qualifiers="const">
 			<return type="Vector4" />
 			<description>
-				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code].
+				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code]. See also [method is_normalized].
+				[b]Note:[/b] This function may return incorrect values if the input vector length is near zero.
 			</description>
 		</method>
 		<method name="posmod" qualifiers="const">
 			<return type="Vector4" />
 			<param index="0" name="mod" type="float" />
 			<description>
-				Returns a new vector composed of the [method @GlobalScope.fposmod] of this vector's components and [param mod].
+				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [param mod].
 			</description>
 		</method>
 		<method name="posmodv" qualifiers="const">
 			<return type="Vector4" />
 			<param index="0" name="modv" type="Vector4" />
 			<description>
-				Returns a new vector composed of the [method @GlobalScope.fposmod] of this vector's components and [param modv]'s components.
+				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [param modv]'s components.
 			</description>
 		</method>
 		<method name="round" qualifiers="const">

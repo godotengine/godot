@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for all other classes in the engine.
 	</brief_description>
@@ -24,6 +24,7 @@
 		[b]Note:[/b] The [code]script[/code] is not exposed like most properties. To set or get an object's [Script] in code, use [method set_script] and [method get_script], respectively.
 	</description>
 	<tutorials>
+		<link title="Object class introduction">$DOCS_URL/contributing/development/core_and_modules/object_class.html</link>
 		<link title="When and how to avoid using nodes for everything">$DOCS_URL/tutorials/best_practices/node_alternatives.html</link>
 		<link title="Object notifications">$DOCS_URL/tutorials/best_practices/godot_notifications.html</link>
 	</tutorials>
@@ -109,7 +110,7 @@
 				[/gdscript]
 				[csharp]
 				[Tool]
-				public class MyNode2D : Node2D
+				public partial class MyNode2D : Node2D
 				{
 				    private bool _holdingHammer;
 
@@ -304,7 +305,7 @@
 				[/gdscript]
 				[csharp]
 				var node = new Node3D();
-				node.Call("rotate", new Vector3(1f, 0f, 0f), 1.571f);
+				node.Call(Node3D.MethodName.Rotate, new Vector3(1f, 0f, 0f), 1.571f);
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
@@ -322,7 +323,7 @@
 				[/gdscript]
 				[csharp]
 				var node = new Node3D();
-				node.CallDeferred("rotate", new Vector3(1f, 0f, 0f), 1.571f);
+				node.CallDeferred(Node3D.MethodName.Rotate, new Vector3(1f, 0f, 0f), 1.571f);
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
@@ -341,16 +342,22 @@
 				[/gdscript]
 				[csharp]
 				var node = new Node3D();
-				node.Callv("rotate", new Godot.Collections.Array { new Vector3(1f, 0f, 0f), 1.571f });
+				node.Callv(Node3D.MethodName.Rotate, new Godot.Collections.Array { new Vector3(1f, 0f, 0f), 1.571f });
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call
+				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
 		<method name="can_translate_messages" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the object is allowed to translate messages with [method tr] and [method tr_n]. See also [method set_message_translation].
+			</description>
+		</method>
+		<method name="cancel_free">
+			<return type="void" />
+			<description>
+				If this method is called during [constant NOTIFICATION_PREDELETE], this object will reject being freed and will remain allocated. This is mostly an internal function used for error handling to avoid the user from freeing objects when they are not intended to.
 			</description>
 		</method>
 		<method name="connect">
@@ -393,8 +400,8 @@
 
 				    // This assumes that a `Player` class exists, which defines a `Hit` signal.
 				    var player = new Player();
-				    // Signals as events (`player.Hit += OnPlayerHit;`) do not support argument binding. You have to use:
-				    player.Hit.Connect(OnPlayerHit, new Godot.Collections.Array {"sword", 100 });
+				    // We can use lambdas when we need to bind additional parameters.
+				    player.Hit += () =&gt; OnPlayerHit("sword", 100);
 				}
 
 				private void OnButtonDown()
@@ -404,7 +411,7 @@
 
 				private void OnPlayerHit(string weaponType, int damage)
 				{
-				    GD.Print(String.Format("Hit with weapon {0} for {1} damage.", weaponType, damage));
+				    GD.Print($"Hit with weapon {weaponType} for {damage} damage.");
 				}
 				[/csharp]
 				[/codeblocks]
@@ -430,16 +437,12 @@
 				public override void _Ready()
 				{
 				    var button = new Button();
-				    // Option 1: Object.Connect() with an implicit Callable for the defined function.
-				    button.Connect("button_down", OnButtonDown);
-				    // Option 2: Object.connect() with a constructed Callable using a target object and method name.
-				    button.Connect("button_down", new Callable(self, nameof(OnButtonDown)));
-				    // Option 3: Signal.connect() with an implicit Callable for the defined function.
-				    button.ButtonDown.Connect(OnButtonDown);
-				    // Option 3b: In C#, we can use signals as events and connect with this more idiomatic syntax:
+				    // Option 1: In C#, we can use signals as events and connect with this idiomatic syntax:
 				    button.ButtonDown += OnButtonDown;
-				    // Option 4: Signal.connect() with a constructed Callable using a target object and method name.
-				    button.ButtonDown.Connect(new Callable(self, nameof(OnButtonDown)));
+				    // Option 2: GodotObject.Connect() with a constructed Callable from a method group.
+				    button.Connect(Button.SignalName.ButtonDown, Callable.From(OnButtonDown));
+				    // Option 3: GodotObject.Connect() with a constructed Callable using a target object and method name.
+				    button.Connect(Button.SignalName.ButtonDown, new Callable(this, MethodName.OnButtonDown));
 				}
 
 				private void OnButtonDown()
@@ -457,6 +460,7 @@
 				func _ready():
 				    # This assumes that a `Player` class exists, which defines a `hit` signal.
 				    var player = Player.new()
+				    # Using Callable.bind().
 				    player.hit.connect(_on_player_hit.bind("sword", 100))
 
 				    # Parameters added when emitting the signal are passed first.
@@ -472,20 +476,19 @@
 				{
 				    // This assumes that a `Player` class exists, which defines a `Hit` signal.
 				    var player = new Player();
-				    // Option 1: Using Callable.Bind(). This way we can still use signals as events.
-				    player.Hit += OnPlayerHit.Bind("sword", 100);
-				    // Option 2: Using a `binds` Array in Signal.Connect().
-				    player.Hit.Connect(OnPlayerHit, new Godot.Collections.Array{ "sword", 100 });
+				    // Using lambda expressions that create a closure that captures the additional parameters.
+				    // The lambda only receives the parameters defined by the signal's delegate.
+				    player.Hit += (hitBy, level) =&gt; OnPlayerHit(hitBy, level, "sword", 100);
 
 				    // Parameters added when emitting the signal are passed first.
-				    player.EmitSignal("hit", "Dark lord", 5);
+				    player.EmitSignal(SignalName.Hit, "Dark lord", 5);
 				}
 
 				// We pass two arguments when emitting (`hit_by`, `level`),
 				// and bind two more arguments when connecting (`weapon_type`, `damage`).
 				private void OnPlayerHit(string hitBy, int level, string weaponType, int damage)
 				{
-				    GD.Print(String.Format("Hit by {0} (level {1}) with weapon {2} for {3} damage.", hitBy, level, weaponType, damage));
+				    GD.Print($"Hit by {hitBy} (level {level}) with weapon {weaponType} for {damage} damage.");
 				}
 				[/csharp]
 				[/codeblocks]
@@ -511,8 +514,8 @@
 				emit_signal("game_over")
 				[/gdscript]
 				[csharp]
-				EmitSignal("Hit", "sword", 100);
-				EmitSignal("GameOver");
+				EmitSignal(SignalName.Hit, "sword", 100);
+				EmitSignal(SignalName.GameOver);
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot signals. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
@@ -580,7 +583,7 @@
 				var b = node.GetIndexed("position:y"); // b is -10
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] In C#, [param property_path] must be in snake_case when referring to built-in Godot properties.
+				[b]Note:[/b] In C#, [param property_path] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
 				[b]Note:[/b] This method does not support actual paths to nodes in the [SceneTree], only sub-property paths. In the context of nodes, use [method Node.get_node_and_resource] instead.
 			</description>
 		</method>
@@ -600,7 +603,7 @@
 			</description>
 		</method>
 		<method name="get_meta_list" qualifiers="const">
-			<return type="PackedStringArray" />
+			<return type="StringName[]" />
 			<description>
 				Returns the object's metadata entry names as a [PackedStringArray].
 			</description>
@@ -642,7 +645,7 @@
 			<description>
 				Returns an [Array] of connections for the given [param signal] name. Each connection is represented as a [Dictionary] that contains three entries:
 				- [code]signal[/code] is a reference to the [Signal];
-				- [code]callable[/code] is a reference to the [Callable];
+				- [code]callable[/code] is a reference to the connected [Callable];
 				- [code]flags[/code] is a combination of [enum ConnectFlags].
 			</description>
 		</method>
@@ -665,7 +668,7 @@
 			<return type="bool" />
 			<param index="0" name="method" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the the given [param method] name exists in the object.
+				Returns [code]true[/code] if the given [param method] name exists in the object.
 				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
@@ -703,10 +706,10 @@
 				sprite2d.is_class("Node3D")   # Returns false
 				[/gdscript]
 				[csharp]
-				var sprite2d = new Sprite2D();
-				sprite2d.IsClass("Sprite2D"); // Returns true
-				sprite2d.IsClass("Node");     // Returns true
-				sprite2d.IsClass("Node3D");   // Returns false
+				var sprite2D = new Sprite2D();
+				sprite2D.IsClass("Sprite2D"); // Returns true
+				sprite2D.IsClass("Node");     // Returns true
+				sprite2D.IsClass("Node3D");   // Returns false
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] This method ignores [code]class_name[/code] declarations in the object's script.
@@ -750,10 +753,10 @@
 				player.SetScript(GD.Load("res://player.gd"));
 
 				player.Notification(NotificationEnterTree);
-				// The call order is Object -&gt; Node -&gt; Node2D -&gt; player.gd.
+				// The call order is GodotObject -&gt; Node -&gt; Node2D -&gt; player.gd.
 
-				player.notification(NotificationEnterTree, true);
-				// The call order is player.gd -&gt; Node2D -&gt; Node -&gt; Object.
+				player.Notification(NotificationEnterTree, true);
+				// The call order is player.gd -&gt; Node2D -&gt; Node -&gt; GodotObject.
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -867,7 +870,7 @@
 				GD.Print(node.Position); // Prints (42, -10)
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] In C#, [param property_path] must be in snake_case when referring to built-in Godot properties.
+				[b]Note:[/b] In C#, [param property_path] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
 		<method name="set_message_translation">
@@ -882,7 +885,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Adds or changes the entry [param name] inside the object's metadata. The metadata [param value] can be any [Variant], although some types cannot be serialised correctly.
+				Adds or changes the entry [param name] inside the object's metadata. The metadata [param value] can be any [Variant], although some types cannot be serialized correctly.
 				If [param value] is [code]null[/code], the entry is removed. This is the equivalent of using [method remove_meta]. See also [method has_meta] and [method get_meta].
 				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector dock and should not be edited.
 			</description>

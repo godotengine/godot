@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  servers_debugger.cpp                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  servers_debugger.cpp                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "servers_debugger.h"
 
@@ -56,15 +56,17 @@ Array ServersDebugger::ResourceUsage::serialize() {
 bool ServersDebugger::ResourceUsage::deserialize(const Array &p_arr) {
 	CHECK_SIZE(p_arr, 1, "ResourceUsage");
 	uint32_t size = p_arr[0];
-	CHECK_SIZE(p_arr, size, "ResourceUsage");
-	int idx = 1;
-	for (uint32_t i = 0; i < size / 4; i++) {
+	ERR_FAIL_COND_V(size % 4, false);
+	CHECK_SIZE(p_arr, 1 + size, "ResourceUsage");
+	uint32_t idx = 1;
+	while (idx < 1 + size) {
 		ResourceInfo info;
 		info.path = p_arr[idx];
 		info.format = p_arr[idx + 1];
 		info.type = p_arr[idx + 2];
 		info.vram = p_arr[idx + 3];
 		infos.push_back(info);
+		idx += 4;
 	}
 	CHECK_END(p_arr, idx, "ResourceUsage");
 	return true;
@@ -409,6 +411,7 @@ Error ServersDebugger::_capture(void *p_user, const String &p_cmd, const Array &
 		if (RenderingServer::get_singleton()->has_changed()) {
 			RenderingServer::get_singleton()->draw(true, delta);
 		}
+		EngineDebugger::get_singleton()->send_message("servers:drawn", Array());
 	} else if (p_cmd == "foreground") {
 		singleton->last_draw_time = 0.0;
 		DisplayServer::get_singleton()->window_move_to_foreground();

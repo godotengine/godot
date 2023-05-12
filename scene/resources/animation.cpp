@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  animation.cpp                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  animation.cpp                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "animation.h"
 
@@ -127,6 +127,10 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				}
 			}
 			return true;
+		} else if (what == "use_blend") {
+			if (track_get_type(track) == TYPE_AUDIO) {
+				audio_track_set_use_blend(track, p_value);
+			}
 		} else if (what == "interp") {
 			track_set_interpolation_type(track, InterpolationType(p_value.operator int()));
 		} else if (what == "loop_wrap") {
@@ -528,7 +532,10 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 			}
 
 			return true;
-
+		} else if (what == "use_blend") {
+			if (track_get_type(track) == TYPE_AUDIO) {
+				r_ret = audio_track_is_use_blend(track);
+			}
 		} else if (what == "interp") {
 			r_ret = track_get_interpolation_type(track);
 		} else if (what == "loop_wrap") {
@@ -834,6 +841,9 @@ void Animation::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/loop_wrap", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 			p_list->push_back(PropertyInfo(Variant::ARRAY, "tracks/" + itos(i) + "/keys", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		}
+		if (track_get_type(i) == TYPE_AUDIO) {
+			p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/use_blend", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+		}
 	}
 }
 
@@ -1078,7 +1088,7 @@ Error Animation::position_track_get_key(int p_track, int p_key, Vector3 *r_posit
 	return OK;
 }
 
-Error Animation::position_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation) const {
+Error Animation::try_position_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), ERR_INVALID_PARAMETER);
 	Track *t = tracks[p_track];
 	ERR_FAIL_COND_V(t->type != TYPE_POSITION_3D, ERR_INVALID_PARAMETER);
@@ -1102,6 +1112,14 @@ Error Animation::position_track_interpolate(int p_track, double p_time, Vector3 
 	}
 	*r_interpolation = tk;
 	return OK;
+}
+
+Vector3 Animation::position_track_interpolate(int p_track, double p_time) const {
+	Vector3 ret = Vector3(0, 0, 0);
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), ret);
+	bool err = try_position_track_interpolate(p_track, p_time, &ret);
+	ERR_FAIL_COND_V_MSG(err, ret, "3D Position Track: '" + tracks[p_track]->path + "' is unavailable.");
+	return ret;
 }
 
 ////
@@ -1150,7 +1168,7 @@ Error Animation::rotation_track_get_key(int p_track, int p_key, Quaternion *r_ro
 	return OK;
 }
 
-Error Animation::rotation_track_interpolate(int p_track, double p_time, Quaternion *r_interpolation) const {
+Error Animation::try_rotation_track_interpolate(int p_track, double p_time, Quaternion *r_interpolation) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), ERR_INVALID_PARAMETER);
 	Track *t = tracks[p_track];
 	ERR_FAIL_COND_V(t->type != TYPE_ROTATION_3D, ERR_INVALID_PARAMETER);
@@ -1174,6 +1192,14 @@ Error Animation::rotation_track_interpolate(int p_track, double p_time, Quaterni
 	}
 	*r_interpolation = tk;
 	return OK;
+}
+
+Quaternion Animation::rotation_track_interpolate(int p_track, double p_time) const {
+	Quaternion ret = Quaternion(0, 0, 0, 1);
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), ret);
+	bool err = try_rotation_track_interpolate(p_track, p_time, &ret);
+	ERR_FAIL_COND_V_MSG(err, ret, "3D Rotation Track: '" + tracks[p_track]->path + "' is unavailable.");
+	return ret;
 }
 
 ////
@@ -1222,7 +1248,7 @@ Error Animation::scale_track_get_key(int p_track, int p_key, Vector3 *r_scale) c
 	return OK;
 }
 
-Error Animation::scale_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation) const {
+Error Animation::try_scale_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), ERR_INVALID_PARAMETER);
 	Track *t = tracks[p_track];
 	ERR_FAIL_COND_V(t->type != TYPE_SCALE_3D, ERR_INVALID_PARAMETER);
@@ -1247,6 +1273,16 @@ Error Animation::scale_track_interpolate(int p_track, double p_time, Vector3 *r_
 	*r_interpolation = tk;
 	return OK;
 }
+
+Vector3 Animation::scale_track_interpolate(int p_track, double p_time) const {
+	Vector3 ret = Vector3(1, 1, 1);
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), ret);
+	bool err = try_scale_track_interpolate(p_track, p_time, &ret);
+	ERR_FAIL_COND_V_MSG(err, ret, "3D Scale Track: '" + tracks[p_track]->path + "' is unavailable.");
+	return ret;
+}
+
+////
 
 int Animation::blend_shape_track_insert_key(int p_track, double p_time, float p_blend_shape) {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
@@ -1292,7 +1328,7 @@ Error Animation::blend_shape_track_get_key(int p_track, int p_key, float *r_blen
 	return OK;
 }
 
-Error Animation::blend_shape_track_interpolate(int p_track, double p_time, float *r_interpolation) const {
+Error Animation::try_blend_shape_track_interpolate(int p_track, double p_time, float *r_interpolation) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), ERR_INVALID_PARAMETER);
 	Track *t = tracks[p_track];
 	ERR_FAIL_COND_V(t->type != TYPE_BLEND_SHAPE, ERR_INVALID_PARAMETER);
@@ -1317,6 +1353,16 @@ Error Animation::blend_shape_track_interpolate(int p_track, double p_time, float
 	*r_interpolation = tk;
 	return OK;
 }
+
+float Animation::blend_shape_track_interpolate(int p_track, double p_time) const {
+	float ret = 0;
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), ret);
+	bool err = try_blend_shape_track_interpolate(p_track, p_time, &ret);
+	ERR_FAIL_COND_V_MSG(err, ret, "Blend Shape Track: '" + tracks[p_track]->path + "' is unavailable.");
+	return ret;
+}
+
+////
 
 void Animation::track_remove_key_at_time(int p_track, double p_time) {
 	int idx = track_find_key(p_track, p_time, FIND_MODE_APPROX);
@@ -2463,135 +2509,118 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 	int idx = _find(p_keys, p_time, p_backward);
 
 	ERR_FAIL_COND_V(idx == -2, T());
+	int maxi = len - 1;
+	bool is_start_edge = idx == -1;
+	bool is_end_edge = p_backward ? idx == 0 : idx >= maxi;
 
-	int next = 0;
 	real_t c = 0.0;
-	// prepare for all cases of interpolation
+	// Prepare for all cases of interpolation.
+	real_t delta = 0.0;
+	real_t from = 0.0;
 
-	if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
-		// loop
-		if (!p_backward) {
-			// no backward
-			if (idx >= 0) {
-				if (idx < len - 1) {
-					next = idx + 1;
-					real_t delta = p_keys[next].time - p_keys[idx].time;
-					real_t from = p_time - p_keys[idx].time;
+	int pre = -1;
+	int next = -1;
+	int post = -1;
+	real_t pre_t = 0.0;
+	real_t to_t = 0.0;
+	real_t post_t = 0.0;
 
-					if (Math::is_zero_approx(delta)) {
-						c = 0;
-					} else {
-						c = from / delta;
-					}
-				} else {
-					next = 0;
-					real_t delta = (length - p_keys[idx].time) + p_keys[next].time;
-					real_t from = p_time - p_keys[idx].time;
+	bool use_cubic = p_interp == INTERPOLATION_CUBIC || p_interp == INTERPOLATION_CUBIC_ANGLE;
 
-					if (Math::is_zero_approx(delta)) {
-						c = 0;
-					} else {
-						c = from / delta;
-					}
-				}
-			} else {
-				// on loop, behind first key
-				idx = len - 1;
-				next = 0;
+	if (!p_loop_wrap || loop_mode == LOOP_NONE) {
+		if (is_start_edge) {
+			idx = p_backward ? maxi : 0;
+		}
+		next = CLAMP(idx + (p_backward ? -1 : 1), 0, maxi);
+		if (use_cubic) {
+			pre = CLAMP(idx + (p_backward ? 1 : -1), 0, maxi);
+			post = CLAMP(idx + (p_backward ? -2 : 2), 0, maxi);
+		}
+	} else if (loop_mode == LOOP_LINEAR) {
+		if (is_start_edge) {
+			idx = p_backward ? 0 : maxi;
+		}
+		next = Math::posmod(idx + (p_backward ? -1 : 1), len);
+		if (use_cubic) {
+			pre = Math::posmod(idx + (p_backward ? 1 : -1), len);
+			post = Math::posmod(idx + (p_backward ? -2 : 2), len);
+		}
+		if (is_start_edge) {
+			if (!p_backward) {
 				real_t endtime = (length - p_keys[idx].time);
 				if (endtime < 0) { // may be keys past the end
 					endtime = 0;
 				}
-				real_t delta = endtime + p_keys[next].time;
-				real_t from = endtime + p_time;
-
-				if (Math::is_zero_approx(delta)) {
-					c = 0;
-				} else {
-					c = from / delta;
-				}
-			}
-		} else {
-			// backward
-			if (idx <= len - 1) {
-				if (idx > 0) {
-					next = idx - 1;
-					real_t delta = (length - p_keys[next].time) - (length - p_keys[idx].time);
-					real_t from = (length - p_time) - (length - p_keys[idx].time);
-
-					if (Math::is_zero_approx(delta)) {
-						c = 0;
-					} else {
-						c = from / delta;
-					}
-				} else {
-					next = len - 1;
-					real_t delta = p_keys[idx].time + (length - p_keys[next].time);
-					real_t from = (length - p_time) - (length - p_keys[idx].time);
-
-					if (Math::is_zero_approx(delta)) {
-						c = 0;
-					} else {
-						c = from / delta;
-					}
-				}
+				delta = endtime + p_keys[next].time;
+				from = endtime + p_time;
 			} else {
-				// on loop, in front of last key
-				idx = 0;
-				next = len - 1;
 				real_t endtime = p_keys[idx].time;
 				if (endtime > length) { // may be keys past the end
 					endtime = length;
 				}
-				real_t delta = p_keys[next].time - endtime;
-				real_t from = p_time - endtime;
-
-				if (Math::is_zero_approx(delta)) {
-					c = 0;
-				} else {
-					c = from / delta;
-				}
+				delta = endtime + length - p_keys[next].time;
+				from = endtime + length - p_time;
+			}
+		} else if (is_end_edge) {
+			if (!p_backward) {
+				delta = (length - p_keys[idx].time) + p_keys[next].time;
+				from = p_time - p_keys[idx].time;
+			} else {
+				delta = p_keys[idx].time + (length - p_keys[next].time);
+				from = (length - p_time) - (length - p_keys[idx].time);
 			}
 		}
-	} else { // no loop
+	} else {
+		if (is_start_edge) {
+			idx = p_backward ? len : -1;
+		}
+		next = (int)Math::round(Math::pingpong((float)(idx + (p_backward ? -1 : 1)) + 0.5f, (float)len) - 0.5f);
+		if (use_cubic) {
+			pre = (int)Math::round(Math::pingpong((float)(idx + (p_backward ? 1 : -1)) + 0.5f, (float)len) - 0.5f);
+			post = (int)Math::round(Math::pingpong((float)(idx + (p_backward ? -2 : 2)) + 0.5f, (float)len) - 0.5f);
+		}
+		idx = (int)Math::round(Math::pingpong((float)idx + 0.5f, (float)len) - 0.5f);
+		if (is_start_edge) {
+			if (!p_backward) {
+				real_t endtime = p_keys[idx].time;
+				if (endtime < 0) { // may be keys past the end
+					endtime = 0;
+				}
+				delta = endtime + p_keys[next].time;
+				from = endtime + p_time;
+			} else {
+				real_t endtime = length - p_keys[idx].time;
+				if (endtime > length) { // may be keys past the end
+					endtime = length;
+				}
+				delta = endtime + length - p_keys[next].time;
+				from = endtime + length - p_time;
+			}
+		} else if (is_end_edge) {
+			if (!p_backward) {
+				delta = length * 2.0 - p_keys[idx].time - p_keys[next].time;
+				from = p_time - p_keys[idx].time;
+			} else {
+				delta = p_keys[idx].time + p_keys[next].time;
+				from = (length - p_time) - (length - p_keys[idx].time);
+			}
+		}
+	}
+
+	if (!is_start_edge && !is_end_edge) {
 		if (!p_backward) {
-			if (idx >= 0) {
-				if (idx < len - 1) {
-					next = idx + 1;
-					real_t delta = p_keys[next].time - p_keys[idx].time;
-					real_t from = p_time - p_keys[idx].time;
-
-					if (Math::is_zero_approx(delta)) {
-						c = 0;
-					} else {
-						c = from / delta;
-					}
-				} else {
-					next = idx;
-				}
-			} else {
-				idx = next = 0;
-			}
+			delta = p_keys[next].time - p_keys[idx].time;
+			from = p_time - p_keys[idx].time;
 		} else {
-			if (idx <= len - 1) {
-				if (idx > 0) {
-					next = idx - 1;
-					real_t delta = (length - p_keys[next].time) - (length - p_keys[idx].time);
-					real_t from = (length - p_time) - (length - p_keys[idx].time);
-
-					if (Math::is_zero_approx(delta)) {
-						c = 0;
-					} else {
-						c = from / delta;
-					}
-
-				} else {
-					next = idx;
-				}
-			} else {
-				idx = next = len - 1;
-			}
+			delta = (length - p_keys[next].time) - (length - p_keys[idx].time);
+			from = (length - p_time) - (length - p_keys[idx].time);
 		}
+	}
+
+	if (Math::is_zero_approx(delta)) {
+		c = 0;
+	} else {
+		c = from / delta;
 	}
 
 	if (p_ok) {
@@ -2599,9 +2628,8 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 	}
 
 	real_t tr = p_keys[idx].transition;
-
-	if (tr == 0 || idx == next) {
-		// don't interpolate if not needed
+	if (tr == 0) {
+		// Don't interpolate if not needed.
 		return p_keys[idx].value;
 	}
 
@@ -2621,48 +2649,11 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 		} break;
 		case INTERPOLATION_CUBIC:
 		case INTERPOLATION_CUBIC_ANGLE: {
-			int pre = 0;
-			int post = 0;
-			if (!p_backward) {
-				pre = idx - 1;
-				if (pre < 0) {
-					if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
-						pre = len - 1;
-					} else {
-						pre = 0;
-					}
-				}
-				post = next + 1;
-				if (post >= len) {
-					if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
-						post = 0;
-					} else {
-						post = next;
-					}
-				}
-			} else {
-				pre = idx + 1;
-				if (pre >= len) {
-					if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
-						pre = 0;
-					} else {
-						pre = idx;
-					}
-				}
-				post = next - 1;
-				if (post < 0) {
-					if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
-						post = len - 1;
-					} else {
-						post = 0;
-					}
-				}
-			}
-
-			real_t pre_t = 0.0;
-			real_t to_t = 0.0;
-			real_t post_t = 0.0;
-			if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
+			if (!p_loop_wrap || loop_mode == LOOP_NONE) {
+				pre_t = p_keys[pre].time - p_keys[idx].time;
+				to_t = p_keys[next].time - p_keys[idx].time;
+				post_t = p_keys[post].time - p_keys[idx].time;
+			} else if (loop_mode == LOOP_LINEAR) {
 				pre_t = pre > idx ? -length + p_keys[pre].time - p_keys[idx].time : p_keys[pre].time - p_keys[idx].time;
 				to_t = next < idx ? length + p_keys[next].time - p_keys[idx].time : p_keys[next].time - p_keys[idx].time;
 				post_t = next < idx || post <= idx ? length + p_keys[post].time - p_keys[idx].time : p_keys[post].time - p_keys[idx].time;
@@ -2670,6 +2661,19 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 				pre_t = p_keys[pre].time - p_keys[idx].time;
 				to_t = p_keys[next].time - p_keys[idx].time;
 				post_t = p_keys[post].time - p_keys[idx].time;
+
+				if ((pre > idx && idx == next && post < next) || (pre < idx && idx == next && post > next)) {
+					pre_t = p_keys[idx].time - p_keys[pre].time;
+				} else if (pre == idx) {
+					pre_t = idx < next ? -p_keys[idx].time * 2.0 : (length - p_keys[idx].time) * 2.0;
+				}
+
+				if (idx == next) {
+					to_t = pre < idx ? (length - p_keys[idx].time) * 2.0 : -p_keys[idx].time * 2.0;
+					post_t = p_keys[next].time - p_keys[post].time + to_t;
+				} else if (next == post) {
+					post_t = idx < next ? (length - p_keys[next].time) * 2.0 + to_t : -p_keys[next].time * 2.0 + to_t;
+				}
 			}
 
 			if (p_interp == INTERPOLATION_CUBIC_ANGLE) {
@@ -3623,6 +3627,27 @@ real_t Animation::audio_track_get_key_end_offset(int p_track, int p_key) const {
 	return at->values[p_key].value.end_offset;
 }
 
+void Animation::audio_track_set_use_blend(int p_track, bool p_enable) {
+	ERR_FAIL_INDEX(p_track, tracks.size());
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND(t->type != TYPE_AUDIO);
+
+	AudioTrack *at = static_cast<AudioTrack *>(t);
+
+	at->use_blend = p_enable;
+	emit_changed();
+}
+
+bool Animation::audio_track_is_use_blend(int p_track) const {
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), false);
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND_V(t->type != TYPE_AUDIO, false);
+
+	AudioTrack *at = static_cast<AudioTrack *>(t);
+
+	return at->use_blend;
+}
+
 //
 
 int Animation::animation_track_insert_key(int p_track, double p_time, const StringName &p_animation) {
@@ -3807,6 +3832,11 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("scale_track_insert_key", "track_idx", "time", "scale"), &Animation::scale_track_insert_key);
 	ClassDB::bind_method(D_METHOD("blend_shape_track_insert_key", "track_idx", "time", "amount"), &Animation::blend_shape_track_insert_key);
 
+	ClassDB::bind_method(D_METHOD("position_track_interpolate", "track_idx", "time_sec"), &Animation::position_track_interpolate);
+	ClassDB::bind_method(D_METHOD("rotation_track_interpolate", "track_idx", "time_sec"), &Animation::rotation_track_interpolate);
+	ClassDB::bind_method(D_METHOD("scale_track_interpolate", "track_idx", "time_sec"), &Animation::scale_track_interpolate);
+	ClassDB::bind_method(D_METHOD("blend_shape_track_interpolate", "track_idx", "time_sec"), &Animation::blend_shape_track_interpolate);
+
 	ClassDB::bind_method(D_METHOD("track_insert_key", "track_idx", "time", "key", "transition"), &Animation::track_insert_key, DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("track_remove_key", "track_idx", "key_idx"), &Animation::track_remove_key);
 	ClassDB::bind_method(D_METHOD("track_remove_key_at_time", "track_idx", "time"), &Animation::track_remove_key_at_time);
@@ -3855,6 +3885,8 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("audio_track_get_key_stream", "track_idx", "key_idx"), &Animation::audio_track_get_key_stream);
 	ClassDB::bind_method(D_METHOD("audio_track_get_key_start_offset", "track_idx", "key_idx"), &Animation::audio_track_get_key_start_offset);
 	ClassDB::bind_method(D_METHOD("audio_track_get_key_end_offset", "track_idx", "key_idx"), &Animation::audio_track_get_key_end_offset);
+	ClassDB::bind_method(D_METHOD("audio_track_set_use_blend", "track_idx", "enable"), &Animation::audio_track_set_use_blend);
+	ClassDB::bind_method(D_METHOD("audio_track_is_use_blend", "track_idx"), &Animation::audio_track_is_use_blend);
 
 	ClassDB::bind_method(D_METHOD("animation_track_insert_key", "track_idx", "time", "animation"), &Animation::animation_track_insert_key);
 	ClassDB::bind_method(D_METHOD("animation_track_set_key_animation", "track_idx", "key_idx", "animation"), &Animation::animation_track_set_key_animation);
@@ -4560,7 +4592,7 @@ Vector3i Animation::_compress_key(uint32_t p_track, const AABB &p_bounds, int32_
 			if (p_key >= 0) {
 				position_track_get_key(p_track, p_key, &pos);
 			} else {
-				position_track_interpolate(p_track, p_time, &pos);
+				try_position_track_interpolate(p_track, p_time, &pos);
 			}
 			pos = (pos - p_bounds.position) / p_bounds.size;
 			for (int j = 0; j < 3; j++) {
@@ -4572,7 +4604,7 @@ Vector3i Animation::_compress_key(uint32_t p_track, const AABB &p_bounds, int32_
 			if (p_key >= 0) {
 				rotation_track_get_key(p_track, p_key, &rot);
 			} else {
-				rotation_track_interpolate(p_track, p_time, &rot);
+				try_rotation_track_interpolate(p_track, p_time, &rot);
 			}
 			Vector3 axis = rot.get_axis();
 			float angle = rot.get_angle();
@@ -4589,7 +4621,7 @@ Vector3i Animation::_compress_key(uint32_t p_track, const AABB &p_bounds, int32_
 			if (p_key >= 0) {
 				scale_track_get_key(p_track, p_key, &scale);
 			} else {
-				scale_track_interpolate(p_track, p_time, &scale);
+				try_scale_track_interpolate(p_track, p_time, &scale);
 			}
 			scale = (scale - p_bounds.position) / p_bounds.size;
 			for (int j = 0; j < 3; j++) {
@@ -4601,7 +4633,7 @@ Vector3i Animation::_compress_key(uint32_t p_track, const AABB &p_bounds, int32_
 			if (p_key >= 0) {
 				blend_shape_track_get_key(p_track, p_key, &blend);
 			} else {
-				blend_shape_track_interpolate(p_track, p_time, &blend);
+				try_blend_shape_track_interpolate(p_track, p_time, &blend);
 			}
 
 			blend = (blend / float(Compression::BLEND_SHAPE_RANGE)) * 0.5 + 0.5;
@@ -4733,6 +4765,7 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 	data_tracks.resize(tracks_to_compress.size());
 	time_tracks.resize(tracks_to_compress.size());
 
+	uint32_t needed_min_page_size = base_page_size;
 	for (uint32_t i = 0; i < data_tracks.size(); i++) {
 		data_tracks[i].split_tolerance = p_split_tolerance;
 		if (track_get_type(tracks_to_compress[i]) == TYPE_BLEND_SHAPE) {
@@ -4740,7 +4773,12 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 		} else {
 			data_tracks[i].components = 3;
 		}
+		needed_min_page_size += data_tracks[i].data.size() + data_tracks[i].get_temp_packet_size();
 	}
+	for (uint32_t i = 0; i < time_tracks.size(); i++) {
+		needed_min_page_size += time_tracks[i].packets.size() * 4; // time packet is 32 bits
+	}
+	ERR_FAIL_COND_MSG(p_page_size < needed_min_page_size, "Cannot compress with the given page size");
 
 	while (true) {
 		// Begin by finding the keyframe in all tracks with the time closest to the current time
@@ -4796,17 +4834,17 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 
 			// The frame has advanced, time to validate the previous frame
 			uint32_t current_page_size = base_page_size;
-			for (uint32_t i = 0; i < data_tracks.size(); i++) {
-				uint32_t track_size = data_tracks[i].data.size(); // track size
-				track_size += data_tracks[i].get_temp_packet_size(); // Add the temporary data
+			for (const AnimationCompressionDataState &state : data_tracks) {
+				uint32_t track_size = state.data.size(); // track size
+				track_size += state.get_temp_packet_size(); // Add the temporary data
 				if (track_size > Compression::MAX_DATA_TRACK_SIZE) {
 					rollback = true; //track to large, time track can't point to keys any longer, because key offset is 12 bits
 					break;
 				}
 				current_page_size += track_size;
 			}
-			for (uint32_t i = 0; i < time_tracks.size(); i++) {
-				current_page_size += time_tracks[i].packets.size() * 4; // time packet is 32 bits
+			for (const AnimationCompressionTimeState &state : time_tracks) {
+				current_page_size += state.packets.size() * 4; // time packet is 32 bits
 			}
 
 			if (!rollback && current_page_size > p_page_size) {
@@ -4818,22 +4856,22 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 			if (rollback) {
 				// Not valid any longer, so rollback and commit page
 
-				for (uint32_t i = 0; i < data_tracks.size(); i++) {
-					data_tracks[i].temp_packets.resize(data_tracks[i].validated_packet_count);
+				for (AnimationCompressionDataState &state : data_tracks) {
+					state.temp_packets.resize(state.validated_packet_count);
 				}
-				for (uint32_t i = 0; i < time_tracks.size(); i++) {
-					time_tracks[i].key_index = time_tracks[i].validated_key_index; //rollback key
-					time_tracks[i].packets.resize(time_tracks[i].validated_packet_count);
+				for (AnimationCompressionTimeState &state : time_tracks) {
+					state.key_index = state.validated_key_index; //rollback key
+					state.packets.resize(state.validated_packet_count);
 				}
 
 			} else {
 				// All valid, so save rollback information
-				for (uint32_t i = 0; i < data_tracks.size(); i++) {
-					data_tracks[i].validated_packet_count = data_tracks[i].temp_packets.size();
+				for (AnimationCompressionDataState &state : data_tracks) {
+					state.validated_packet_count = state.temp_packets.size();
 				}
-				for (uint32_t i = 0; i < time_tracks.size(); i++) {
-					time_tracks[i].validated_key_index = time_tracks[i].key_index;
-					time_tracks[i].validated_packet_count = time_tracks[i].packets.size();
+				for (AnimationCompressionTimeState &state : time_tracks) {
+					state.validated_key_index = state.key_index;
+					state.validated_packet_count = state.packets.size();
 				}
 
 				// Accept this frame as the frame being processed (as long as it exists)
@@ -5018,8 +5056,8 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 	}
 
 	uint32_t new_size = 0;
-	for (uint32_t i = 0; i < compression.pages.size(); i++) {
-		new_size += compression.pages[i].data.size();
+	for (const Compression::Page &page : compression.pages) {
+		new_size += page.data.size();
 	}
 
 	print_line("Original size: " + itos(orig_size) + " - Compressed size: " + itos(new_size) + " " + String::num(float(new_size) / float(orig_size) * 100, 2) + "% pages: " + itos(compression.pages.size()));
@@ -5331,8 +5369,8 @@ int Animation::_get_compressed_key_count(uint32_t p_compressed_track) const {
 
 	int key_count = 0;
 
-	for (uint32_t i = 0; i < compression.pages.size(); i++) {
-		const uint8_t *page_data = compression.pages[i].data.ptr();
+	for (const Compression::Page &page : compression.pages) {
+		const uint8_t *page_data = page.data.ptr();
 		// Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported.
 		const uint32_t *indices = (const uint32_t *)page_data;
 		const uint16_t *time_keys = (const uint16_t *)&page_data[indices[p_compressed_track * 3 + 0]];
@@ -5365,8 +5403,8 @@ bool Animation::_fetch_compressed_by_index(uint32_t p_compressed_track, int p_in
 	ERR_FAIL_COND_V(!compression.enabled, false);
 	ERR_FAIL_UNSIGNED_INDEX_V(p_compressed_track, compression.bounds.size(), false);
 
-	for (uint32_t i = 0; i < compression.pages.size(); i++) {
-		const uint8_t *page_data = compression.pages[i].data.ptr();
+	for (const Compression::Page &page : compression.pages) {
+		const uint8_t *page_data = page.data.ptr();
 		// Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported.
 		const uint32_t *indices = (const uint32_t *)page_data;
 		const uint16_t *time_keys = (const uint16_t *)&page_data[indices[p_compressed_track * 3 + 0]];
@@ -5416,7 +5454,7 @@ bool Animation::_fetch_compressed_by_index(uint32_t p_compressed_track, int p_in
 					}
 				}
 
-				r_time = compression.pages[i].time_offset + double(frame) / double(compression.fps);
+				r_time = page.time_offset + double(frame) / double(compression.fps);
 				for (uint32_t l = 0; l < COMPONENTS; l++) {
 					r_value[l] = decode[l];
 				}

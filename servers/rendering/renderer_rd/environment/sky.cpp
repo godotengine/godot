@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  sky.cpp                                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  sky.cpp                                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "sky.h"
 #include "core/config/project_settings.h"
@@ -276,9 +276,7 @@ void SkyRD::ReflectionData::update_reflection_data(int p_size, int p_mipmaps, bo
 	int mipmaps = p_mipmaps;
 	uint32_t w = p_size, h = p_size;
 
-	EffectsRD *effects = RendererCompositorRD::singleton->get_effects();
-	ERR_FAIL_NULL_MSG(effects, "Effects haven't been initialized");
-	bool prefer_raster_effects = effects->get_prefer_raster_effects();
+	bool render_buffers_can_be_storage = RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage();
 
 	if (p_use_array) {
 		int num_layers = p_low_quality ? 8 : p_roughness_layers;
@@ -347,7 +345,10 @@ void SkyRD::ReflectionData::update_reflection_data(int p_size, int p_mipmaps, bo
 	tf.texture_type = RD::TEXTURE_TYPE_CUBE;
 	tf.array_layers = 6;
 	tf.mipmaps = p_low_quality ? 7 : mipmaps - 1;
-	tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+	tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+	if (render_buffers_can_be_storage) {
+		tf.usage_bits |= RD::TEXTURE_USAGE_STORAGE_BIT;
+	}
 
 	downsampled_radiance_cubemap = RD::get_singleton()->texture_create(tf, RD::TextureView());
 	RD::get_singleton()->set_resource_name(downsampled_radiance_cubemap, "downsampled radiance cubemap");
@@ -361,7 +362,7 @@ void SkyRD::ReflectionData::update_reflection_data(int p_size, int p_mipmaps, bo
 			mm.size.height = mmh;
 			mm.view = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), downsampled_radiance_cubemap, 0, j, 1, RD::TEXTURE_SLICE_CUBEMAP);
 			RD::get_singleton()->set_resource_name(mm.view, "Downsampled Radiance Cubemap Mip " + itos(j) + " ");
-			if (prefer_raster_effects) {
+			if (!render_buffers_can_be_storage) {
 				// we need a framebuffer for each side of our cubemap
 
 				for (int k = 0; k < 6; k++) {
@@ -571,7 +572,7 @@ RID SkyRD::Sky::get_textures(SkyTextureSetVersion p_version, RID p_default_shade
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 1; // half res
 		if (p_version >= SKY_TEXTURE_SET_CUBEMAP) {
-			if (reflection.layers[0].views[1].is_valid() && p_version != SKY_TEXTURE_SET_CUBEMAP_HALF_RES) {
+			if (reflection.layers.size() && reflection.layers[0].views.size() >= 2 && reflection.layers[0].views[1].is_valid() && p_version != SKY_TEXTURE_SET_CUBEMAP_HALF_RES) {
 				u.append_id(reflection.layers[0].views[1]);
 			} else {
 				u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
@@ -591,7 +592,7 @@ RID SkyRD::Sky::get_textures(SkyTextureSetVersion p_version, RID p_default_shade
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 2; // quarter res
 		if (p_version >= SKY_TEXTURE_SET_CUBEMAP) {
-			if (reflection.layers[0].views[2].is_valid() && p_version != SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES) {
+			if (reflection.layers.size() && reflection.layers[0].views.size() >= 3 && reflection.layers[0].views[2].is_valid() && p_version != SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES) {
 				u.append_id(reflection.layers[0].views[2]);
 			} else {
 				u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
@@ -753,7 +754,7 @@ void SkyRD::init() {
 
 		sky_shader.shader.initialize(sky_modes, defines);
 
-		if (!RendererCompositorRD::singleton->is_xr_enabled()) {
+		if (!RendererCompositorRD::get_singleton()->is_xr_enabled()) {
 			sky_shader.shader.set_variant_enabled(SKY_VERSION_BACKGROUND_MULTIVIEW, false);
 			sky_shader.shader.set_variant_enabled(SKY_VERSION_HALF_RES_MULTIVIEW, false);
 			sky_shader.shader.set_variant_enabled(SKY_VERSION_QUARTER_RES_MULTIVIEW, false);
@@ -1085,8 +1086,8 @@ void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, con
 			sky->reflection.dirty = true;
 		}
 
+		sky_scene_state.ubo.directional_light_count = 0;
 		if (shader_data->uses_light) {
-			sky_scene_state.ubo.directional_light_count = 0;
 			// Run through the list of lights in the scene and pick out the Directional Lights.
 			// This can't be done in RenderSceneRenderRD::_setup lights because that needs to be called
 			// after the depth prepass, but this runs before the depth prepass
@@ -1320,7 +1321,7 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 
 		// Note, we ignore environment_get_sky_orientation here as this is applied when we do our lookup in our scene shader.
 
-		if (shader_data->uses_quarter_res) {
+		if (shader_data->uses_quarter_res && roughness_layers >= 3) {
 			RD::get_singleton()->draw_command_begin_label("Render Sky to Quarter Res Cubemap");
 			PipelineCacheRD *pipeline = &shader_data->pipelines[SKY_VERSION_CUBEMAP_QUARTER_RES];
 
@@ -1337,9 +1338,11 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 				RD::get_singleton()->draw_list_end();
 			}
 			RD::get_singleton()->draw_command_end_label();
+		} else if (shader_data->uses_quarter_res && roughness_layers < 3) {
+			ERR_PRINT_ED("Cannot use quarter res buffer in sky shader when roughness layers is less than 3. Please increase rendering/reflections/sky_reflections/roughness_layers.");
 		}
 
-		if (shader_data->uses_half_res) {
+		if (shader_data->uses_half_res && roughness_layers >= 2) {
 			RD::get_singleton()->draw_command_begin_label("Render Sky to Half Res Cubemap");
 			PipelineCacheRD *pipeline = &shader_data->pipelines[SKY_VERSION_CUBEMAP_HALF_RES];
 
@@ -1356,6 +1359,8 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 				RD::get_singleton()->draw_list_end();
 			}
 			RD::get_singleton()->draw_command_end_label();
+		} else if (shader_data->uses_half_res && roughness_layers < 2) {
+			ERR_PRINT_ED("Cannot use half res buffer in sky shader when roughness layers is less than 2. Please increase rendering/reflections/sky_reflections/roughness_layers.");
 		}
 
 		RD::DrawListID cubemap_draw_list;
@@ -1614,7 +1619,7 @@ void SkyRD::update_dirty_skys() {
 			if (sky->mode == RS::SKY_MODE_REALTIME) {
 				layers = 8;
 				if (roughness_layers != 8) {
-					WARN_PRINT("When using REALTIME skies, roughness_layers should be set to 8 in the project settings for best quality reflections");
+					WARN_PRINT("When using the Real-Time sky update mode (or Automatic with a sky shader using \"TIME\"), \"rendering/reflections/sky_reflections/roughness_layers\" should be set to 8 in the project settings for best quality reflections.");
 				}
 			}
 
@@ -1627,7 +1632,10 @@ void SkyRD::update_dirty_skys() {
 				tf.mipmaps = mipmaps;
 				tf.width = w;
 				tf.height = h;
-				tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+				tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
+				if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
+					tf.usage_bits |= RD::TEXTURE_USAGE_STORAGE_BIT;
+				}
 
 				sky->radiance = RD::get_singleton()->texture_create(tf, RD::TextureView());
 
@@ -1642,7 +1650,10 @@ void SkyRD::update_dirty_skys() {
 				tf.mipmaps = MIN(mipmaps, layers);
 				tf.width = w;
 				tf.height = h;
-				tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+				tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
+				if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
+					tf.usage_bits |= RD::TEXTURE_USAGE_STORAGE_BIT;
+				}
 
 				sky->radiance = RD::get_singleton()->texture_create(tf, RD::TextureView());
 

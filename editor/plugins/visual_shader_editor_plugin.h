@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  visual_shader_editor_plugin.h                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  visual_shader_editor_plugin.h                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef VISUAL_SHADER_EDITOR_PLUGIN_H
 #define VISUAL_SHADER_EDITOR_PLUGIN_H
@@ -95,7 +95,6 @@ private:
 	Ref<VisualShader> visual_shader;
 	HashMap<int, Link> links;
 	List<VisualShader::Connection> connections;
-	bool dirty = false;
 
 	Color vector_expanded_color[4];
 
@@ -115,15 +114,13 @@ public:
 	void clear_links();
 	void set_shader_type(VisualShader::Type p_type);
 	bool is_preview_visible(int p_id) const;
-	bool is_dirty() const;
-	void make_dirty(bool p_enabled);
 	void update_node(VisualShader::Type p_type, int p_id);
 	void update_node_deferred(VisualShader::Type p_type, int p_node_id);
-	void add_node(VisualShader::Type p_type, int p_id);
-	void remove_node(VisualShader::Type p_type, int p_id);
+	void add_node(VisualShader::Type p_type, int p_id, bool p_just_update);
+	void remove_node(VisualShader::Type p_type, int p_id, bool p_just_update);
 	void connect_nodes(VisualShader::Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port);
 	void disconnect_nodes(VisualShader::Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port);
-	void show_port_preview(VisualShader::Type p_type, int p_node_id, int p_port_id);
+	void show_port_preview(VisualShader::Type p_type, int p_node_id, int p_port_id, bool p_is_valid);
 	void set_node_position(VisualShader::Type p_type, int p_id, const Vector2 &p_position);
 	void refresh_node_ports(VisualShader::Type p_type, int p_node);
 	void set_input_port_default_value(VisualShader::Type p_type, int p_node_id, int p_port_id, Variant p_value);
@@ -136,6 +133,7 @@ public:
 	Ref<Script> get_node_script(int p_node_id) const;
 	void update_node_size(int p_node_id);
 	void update_theme();
+	bool is_node_has_parameter_instances_relatively(VisualShader::Type p_type, int p_node) const;
 	VisualShader::Type get_shader_type() const;
 
 	VisualShaderGraphPlugin();
@@ -190,6 +188,9 @@ class VisualShaderEditor : public VBoxContainer {
 	Ref<CodeHighlighter> syntax_highlighter = nullptr;
 	PanelContainer *error_panel = nullptr;
 	Label *error_label = nullptr;
+
+	bool pending_custom_scripts_to_delete = false;
+	List<Ref<Script>> custom_scripts_to_delete;
 
 	bool _block_update_options_menu = false;
 	bool _block_rebuild_shader = false;
@@ -309,6 +310,7 @@ class VisualShaderEditor : public VBoxContainer {
 		int func = 0;
 		bool highend = false;
 		bool is_custom = false;
+		bool is_native = false;
 		int temp_idx = 0;
 
 		AddOption(const String &p_name = String(), const String &p_category = String(), const String &p_type = String(), const String &p_description = String(), const Vector<Variant> &p_ops = Vector<Variant>(), int p_return_type = -1, int p_mode = -1, int p_func = -1, bool p_highend = false) {
@@ -354,6 +356,8 @@ class VisualShaderEditor : public VBoxContainer {
 	void _preview_close_requested();
 	void _preview_size_changed();
 	void _update_preview();
+	void _update_next_previews(int p_node_id);
+	void _get_next_nodes_recursively(VisualShader::Type p_type, int p_node_id, LocalVector<int> &r_nodes) const;
 	String _get_description(int p_idx);
 
 	struct DragOp {
@@ -506,6 +510,13 @@ class VisualShaderEditor : public VBoxContainer {
 
 	void _visibility_changed();
 
+	void _get_current_mode_limits(int &r_begin_type, int &r_end_type) const;
+	void _update_custom_script(const Ref<Script> &p_script);
+	void _script_created(const Ref<Script> &p_script);
+	void _resource_saved(const Ref<Resource> &p_resource);
+	void _resource_removed(const Ref<Resource> &p_resource);
+	void _resources_removed();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -517,7 +528,7 @@ public:
 	VisualShaderGraphPlugin *get_graph_plugin() { return graph_plugin.ptr(); }
 
 	void clear_custom_types();
-	void add_custom_type(const String &p_name, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, bool p_highend);
+	void add_custom_type(const String &p_name, const String &p_type, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, bool p_highend);
 
 	Dictionary get_custom_node_data(Ref<VisualShaderNodeCustom> &p_custom_node);
 	void update_custom_type(const Ref<Resource> &p_resource);
@@ -555,7 +566,7 @@ class EditorInspectorVisualShaderModePlugin : public EditorInspectorPlugin {
 
 public:
 	virtual bool can_handle(Object *p_object) override;
-	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false) override;
+	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false) override;
 };
 
 class VisualShaderNodePortPreview : public Control {
@@ -564,6 +575,7 @@ class VisualShaderNodePortPreview : public Control {
 	VisualShader::Type type = VisualShader::Type::TYPE_MAX;
 	int node = 0;
 	int port = 0;
+	bool is_valid = false;
 	void _shader_changed(); //must regen
 protected:
 	void _notification(int p_what);
@@ -571,7 +583,7 @@ protected:
 
 public:
 	virtual Size2 get_minimum_size() const override;
-	void setup(const Ref<VisualShader> &p_shader, VisualShader::Type p_type, int p_node, int p_port);
+	void setup(const Ref<VisualShader> &p_shader, VisualShader::Type p_type, int p_node, int p_port, bool p_is_valid);
 };
 
 class VisualShaderConversionPlugin : public EditorResourceConversionPlugin {

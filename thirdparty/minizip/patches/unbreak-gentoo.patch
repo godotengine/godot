@@ -1,8 +1,8 @@
 diff --git a/thirdparty/minizip/ioapi.h b/thirdparty/minizip/ioapi.h
-index f25ab6464..6043d34ce 100644
+index 6c73fc4ec3..083062ffe6 100644
 --- a/thirdparty/minizip/ioapi.h
 +++ b/thirdparty/minizip/ioapi.h
-@@ -44,6 +44,22 @@
+@@ -45,6 +45,22 @@
  #include <stdlib.h>
  #include "zlib.h"
  

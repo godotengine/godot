@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ProjectSettings" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ProjectSettings" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Contains global variables accessible from everywhere.
 	</brief_description>
@@ -20,9 +20,9 @@
 			<param index="0" name="hint" type="Dictionary" />
 			<description>
 				Adds a custom property info to a property. The dictionary must contain:
-				- [code]name[/code]: [String] (the property's name)
-				- [code]type[/code]: [int] (see [enum Variant.Type])
-				- optionally [code]hint[/code]: [int] (see [enum PropertyHint]) and [code]hint_string[/code]: [String]
+				- [code]"name"[/code]: [String] (the property's name)
+				- [code]"type"[/code]: [int] (see [enum Variant.Type])
+				- optionally [code]"hint"[/code]: [int] (see [enum PropertyHint]) and [code]"hint_string"[/code]: [String]
 				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
@@ -60,6 +60,18 @@
 				Clears the whole configuration (not recommended, may break things).
 			</description>
 		</method>
+		<method name="get_global_class_list">
+			<return type="Dictionary[]" />
+			<description>
+				Returns an [Array] of registered global classes. Each global class is represented as a [Dictionary] that contains the following entries:
+				- [code]base[/code] is a name of the base class;
+				- [code]class[/code] is a name of the registered global class;
+				- [code]icon[/code] is a path to a custom icon of the global class, if it has any;
+				- [code]language[/code] is a name of a programming language in which the global class is written;
+				- [code]path[/code] is a path to a file containing the global class.
+				[b]Note:[/b] Both the script and the icon paths are local to the project filesystem, i.e. they start with [code]res://[/code].
+			</description>
+		</method>
 		<method name="get_order" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="name" type="String" />
@@ -84,6 +96,25 @@
 				GD.Print(ProjectSettings.GetSetting("application/config/custom_description", "No description specified."));
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] This method doesn't take potential feature overrides into account automatically. Use [method get_setting_with_override] to handle seamlessly.
+			</description>
+		</method>
+		<method name="get_setting_with_override" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Similar to [method get_setting], but applies feature tag overrides if any exists and is valid.
+				[b]Example:[/b]
+				If the following setting override exists "application/config/name.windows", and the following code is executed:
+				[codeblocks]
+				[gdscript]
+				print(ProjectSettings.get_setting_with_override("application/config/name"))
+				[/gdscript]
+				[csharp]
+				GD.Print(ProjectSettings.GetSettingWithOverride("application/config/name"));
+				[/csharp]
+				[/codeblocks]
+				Then the overridden setting will be returned instead if the project is running on the [i]Windows[/i] operating system.
 			</description>
 		</method>
 		<method name="globalize_path" qualifiers="const">
@@ -210,15 +241,15 @@
 		<member name="application/boot_splash/use_filter" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], applies linear filtering when scaling the image (recommended for high-resolution artwork). If [code]false[/code], uses nearest-neighbor interpolation (recommended for pixel art).
 		</member>
+		<member name="application/config/auto_accept_quit" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the application automatically accepts quitting requests.
+		</member>
 		<member name="application/config/custom_user_dir_name" type="String" setter="" getter="" default="&quot;&quot;">
 			This user directory is used for storing persistent data ([code]user://[/code] filesystem). If a custom directory name is defined, this name will be appended to the system-specific user data directory (same parent folder as the Godot configuration folder documented in [method OS.get_user_data_dir]).
 			The [member application/config/use_custom_user_dir] setting must be enabled for this to take effect.
 		</member>
 		<member name="application/config/description" type="String" setter="" getter="" default="&quot;&quot;">
 			The project's description, displayed as a tooltip in the Project Manager when hovering the project.
-		</member>
-		<member name="application/config/features" type="PackedStringArray" setter="" getter="">
-			List of internal features associated with the project, like [code]Double Precision[/code] or [code]C#[/code]. Not to be confused with feature tags.
 		</member>
 		<member name="application/config/icon" type="String" setter="" getter="" default="&quot;&quot;">
 			Icon used for the project, set when project loads. Exporters will also use this icon when possible.
@@ -236,6 +267,9 @@
 		<member name="application/config/project_settings_override" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies a file to override project settings. For example: [code]user://custom_settings.cfg[/code]. See "Overriding" in the [ProjectSettings] class description at the top for more information.
 			[b]Note:[/b] Regardless of this setting's value, [code]res://override.cfg[/code] will still be read to override the project settings.
+		</member>
+		<member name="application/config/quit_on_go_back" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the application quits automatically when navigating back (e.g. using the system "Back" button on Android).
 		</member>
 		<member name="application/config/use_custom_user_dir" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the project will save user data to its own user directory. If [member application/config/custom_user_dir_name] is empty, [code]&lt;OS user data directory&gt;/&lt;project name&gt;[/code] directory will be used. If [code]false[/code], the project will save user data to [code]&lt;OS user data directory&gt;/Godot/app_userdata/&lt;project name&gt;[/code].
@@ -276,6 +310,9 @@
 		</member>
 		<member name="application/run/low_processor_mode_sleep_usec" type="int" setter="" getter="" default="6900">
 			Amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage.
+		</member>
+		<member name="application/run/main_loop_type" type="String" setter="" getter="" default="&quot;SceneTree&quot;">
+			The name of the type implementing the engine's main loop.
 		</member>
 		<member name="application/run/main_scene" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to the main scene file that will be loaded when the project runs.
@@ -365,6 +402,9 @@
 		<member name="debug/gdscript/warnings/assert_always_true" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an [code]assert[/code] call always evaluates to true.
 		</member>
+		<member name="debug/gdscript/warnings/confusable_identifier" type="int" setter="" getter="" default="1">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an identifier contains characters that can be confused with something else, like when mixing different alphabets.
+		</member>
 		<member name="debug/gdscript/warnings/constant_used_as_function" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a constant is used as a function.
 		</member>
@@ -383,11 +423,20 @@
 		<member name="debug/gdscript/warnings/function_used_as_property" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a function as if it is a property.
 		</member>
+		<member name="debug/gdscript/warnings/get_node_default_without_onready" type="int" setter="" getter="" default="2">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when [method Node.get_node] (or the shorthand [code]$[/code]) is used as default value of a class variable without the [code]@onready[/code] annotation.
+		</member>
 		<member name="debug/gdscript/warnings/incompatible_ternary" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a ternary operator may emit values with incompatible types.
 		</member>
-		<member name="debug/gdscript/warnings/int_assigned_to_enum" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when trying to assign an integer to a variable that expects an enum value.
+		<member name="debug/gdscript/warnings/inference_on_variant" type="int" setter="" getter="" default="2">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a static inferred type uses a [Variant] as initial value, which makes the static type to also be Variant.
+		</member>
+		<member name="debug/gdscript/warnings/int_as_enum_without_cast" type="int" setter="" getter="" default="1">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when trying to use an integer as an enum without an explicit cast.
+		</member>
+		<member name="debug/gdscript/warnings/int_as_enum_without_match" type="int" setter="" getter="" default="1">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when trying to use an integer as an enum when there is no matching enum member for that numeric value.
 		</member>
 		<member name="debug/gdscript/warnings/integer_division" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when dividing an integer by another integer (the decimal part will be discarded).
@@ -395,11 +444,23 @@
 		<member name="debug/gdscript/warnings/narrowing_conversion" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when passing a floating-point value to a function that expects an integer (it will be converted and lose precision).
 		</member>
+		<member name="debug/gdscript/warnings/native_method_override" type="int" setter="" getter="" default="2">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a method in the script overrides a native method, because it may not behave as expected.
+		</member>
+		<member name="debug/gdscript/warnings/onready_with_export" type="int" setter="" getter="" default="2">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when the [code]@onready[/code] annotation is used together with the [code]@export[/code] annotation, since it may not behave as expected.
+		</member>
 		<member name="debug/gdscript/warnings/property_used_as_function" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a property as if it is a function.
 		</member>
 		<member name="debug/gdscript/warnings/redundant_await" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a function that is not a coroutine is called with await.
+		</member>
+		<member name="debug/gdscript/warnings/redundant_static_unload" type="int" setter="" getter="" default="1">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when the [code]@static_unload[/code] annotation is used in a script without any static variables.
+		</member>
+		<member name="debug/gdscript/warnings/renamed_in_godot_4_hint" type="bool" setter="" getter="" default="1">
+			When enabled, using a property, enum, or function that was renamed since Godot 3 will produce a hint if an error occurs.
 		</member>
 		<member name="debug/gdscript/warnings/return_value_discarded" type="int" setter="" getter="" default="0">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a function without using its return value (by assigning it to a variable or using it as a function argument). Such return values are sometimes used to denote possible errors using the [enum Error] enum.
@@ -421,9 +482,6 @@
 		</member>
 		<member name="debug/gdscript/warnings/static_called_on_instance" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a static method from an instance of a class instead of from the class directly.
-		</member>
-		<member name="debug/gdscript/warnings/treat_warnings_as_errors" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], all warnings will be reported as if they are errors.
 		</member>
 		<member name="debug/gdscript/warnings/unassigned_variable" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a variable that wasn't previously assigned.
@@ -448,6 +506,9 @@
 		</member>
 		<member name="debug/gdscript/warnings/unsafe_property_access" type="int" setter="" getter="" default="0">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when accessing a property whose presence is not guaranteed at compile-time in the class.
+		</member>
+		<member name="debug/gdscript/warnings/unsafe_void_return" type="int" setter="" getter="" default="1">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when returning a call from a [code]void[/code] function when such call cannot be guaranteed to be also [code]void[/code].
 		</member>
 		<member name="debug/gdscript/warnings/unused_local_constant" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local constant is never used.
@@ -485,6 +546,66 @@
 		<member name="debug/settings/stdout/verbose_stdout" type="bool" setter="" getter="" default="false">
 			Print more information to standard output when running. It displays information such as memory leaks, which scenes and resources are being loaded, etc. This can also be enabled using the [code]--verbose[/code] or [code]-v[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url], even on an exported project. See also [method OS.is_stdout_verbose] and [method @GlobalScope.print_verbose].
 		</member>
+		<member name="debug/shader_language/warnings/device_limit_exceeded" type="bool" setter="" getter="" default="true">
+			When set to [code]true[/code], produces a warning when the shader exceeds certain device limits. Currently, the only device limit checked is the limit on uniform buffer size. More device limits will be added in the future.
+		</member>
+		<member name="debug/shader_language/warnings/enable" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], enables specific shader warnings (see [code]debug/shader_language/warnings/*[/code] settings). If [code]false[/code], disables all shader warnings.
+		</member>
+		<member name="debug/shader_language/warnings/float_comparison" type="bool" setter="" getter="" default="true">
+			When set to [code]true[/code], produces a warning when two floating point numbers are compared directly with the [code]==[/code] operator or the [code]!=[/code] operator.
+		</member>
+		<member name="debug/shader_language/warnings/formatting_error" type="bool" setter="" getter="" default="true">
+			When set to [code]true[/code], produces a warning upon encountering certain formatting errors. Currently this only checks for empty statements. More formatting errors may be added over time.
+		</member>
+		<member name="debug/shader_language/warnings/treat_warnings_as_errors" type="bool" setter="" getter="" default="false">
+			When set to [code]true[/code], warnings are treated as errors.
+		</member>
+		<member name="debug/shader_language/warnings/unused_constant" type="bool" setter="" getter="" default="true">
+			When set to [code]true[/code], produces a warning when a constant is never used.
+		</member>
+		<member name="debug/shader_language/warnings/unused_function" type="bool" setter="" getter="" default="true">
+			When set to [code]true[/code], produces a warning when a function is never used.
+		</member>
+		<member name="debug/shader_language/warnings/unused_local_variable" type="bool" setter="" getter="" default="true">
+			When set to [code]true[/code], produces a warning when a local variable is never used.
+		</member>
+		<member name="debug/shader_language/warnings/unused_struct" type="bool" setter="" getter="" default="true">
+			When set to [code]true[/code], produces a warning when a struct is never used.
+		</member>
+		<member name="debug/shader_language/warnings/unused_uniform" type="bool" setter="" getter="" default="true">
+			When set to [code]true[/code], produces a warning when a uniform is never used.
+		</member>
+		<member name="debug/shader_language/warnings/unused_varying" type="bool" setter="" getter="" default="true">
+			When set to [code]true[/code], produces a warning when a varying is never used.
+		</member>
+		<member name="debug/shapes/avoidance/agents_radius_color" type="Color" setter="" getter="" default="Color(1, 1, 0, 0.25)">
+			Color of the avoidance agents radius, visible when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/enable_agents_radius" type="bool" setter="" getter="" default="true">
+			If enabled, displays avoidance agents radius when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/enable_obstacles_radius" type="bool" setter="" getter="" default="true">
+			If enabled, displays avoidance obstacles radius when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/enable_obstacles_static" type="bool" setter="" getter="" default="true">
+			If enabled, displays static avoidance obstacles when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/obstacles_radius_color" type="Color" setter="" getter="" default="Color(1, 0.5, 0, 0.25)">
+			Color of the avoidance obstacles radius, visible when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/obstacles_static_edge_pushin_color" type="Color" setter="" getter="" default="Color(1, 0, 0, 1)">
+			Color of the static avoidance obstacles edges when their vertices are winded in order to push agents in, visible when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/obstacles_static_edge_pushout_color" type="Color" setter="" getter="" default="Color(1, 1, 0, 1)">
+			Color of the static avoidance obstacles edges when their vertices are winded in order to push agents out, visible when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/obstacles_static_face_pushin_color" type="Color" setter="" getter="" default="Color(1, 0, 0, 0)">
+			Color of the static avoidance obstacles faces when their vertices are winded in order to push agents in, visible when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/avoidance/obstacles_static_face_pushout_color" type="Color" setter="" getter="" default="Color(1, 1, 0, 0.5)">
+			Color of the static avoidance obstacles faces when their vertices are winded in order to push agents out, visible when "Visible Avoidance" is enabled in the Debug menu.
+		</member>
 		<member name="debug/shapes/collision/contact_color" type="Color" setter="" getter="" default="Color(1, 0.2, 0.1, 0.8)">
 			Color of the contact points between collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
@@ -497,8 +618,20 @@
 		<member name="debug/shapes/collision/shape_color" type="Color" setter="" getter="" default="Color(0, 0.6, 0.7, 0.42)">
 			Color of the collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
+		<member name="debug/shapes/navigation/agent_path_color" type="Color" setter="" getter="" default="Color(1, 0, 0, 1)">
+			Color to display enabled navigation agent paths when an agent has debug enabled.
+		</member>
+		<member name="debug/shapes/navigation/agent_path_point_size" type="float" setter="" getter="" default="4.0">
+			Rasterized size (pixel) used to render navigation agent path points when an agent has debug enabled.
+		</member>
 		<member name="debug/shapes/navigation/edge_connection_color" type="Color" setter="" getter="" default="Color(1, 0, 1, 1)">
 			Color to display edge connections between navigation regions, visible when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/enable_agent_paths" type="bool" setter="" getter="" default="true">
+			If enabled, displays navigation agent paths when an agent has debug enabled.
+		</member>
+		<member name="debug/shapes/navigation/enable_agent_paths_xray" type="bool" setter="" getter="" default="true">
+			If enabled, displays navigation agent paths through geometry when an agent has debug enabled.
 		</member>
 		<member name="debug/shapes/navigation/enable_edge_connections" type="bool" setter="" getter="" default="true">
 			If enabled, displays edge connections between navigation regions when "Visible Navigation" is enabled in the Debug menu.
@@ -596,6 +729,18 @@
 			Main window content is expanded to the full size of the window. Unlike a borderless window, the frame is left intact and can be used to resize the window, and the title bar is transparent, but has minimize/maximize/close buttons.
 			[b]Note:[/b] This setting is implemented only on macOS.
 		</member>
+		<member name="display/window/size/initial_position" type="Vector2i" setter="" getter="" default="Vector2i(0, 0)">
+			Main window initial position (in virtual desktop coordinates), this settings is used only if [member display/window/size/initial_position_type] is set to "Absolute" ([code]0[/code]).
+		</member>
+		<member name="display/window/size/initial_position_type" type="int" setter="" getter="" default="1">
+			Main window initial position.
+			[code]0[/code] - "Absolute", [member display/window/size/initial_position] is used to set window position.
+			[code]1[/code] - "Primary Screen Center".
+			[code]2[/code] - "Other Screen Center", [member display/window/size/initial_screen] is used to set the screen.
+		</member>
+		<member name="display/window/size/initial_screen" type="int" setter="" getter="" default="0">
+			Main window initial screen, this settings is used only if [member display/window/size/initial_position_type] is set to "Other Screen Center" ([code]2[/code]).
+		</member>
 		<member name="display/window/size/mode" type="int" setter="" getter="" default="0">
 			Main window mode. See [enum DisplayServer.WindowMode] for possible values and how each mode behaves.
 		</member>
@@ -625,10 +770,37 @@
 			On desktop platforms, overrides the game's initial window width. See also [member display/window/size/window_height_override], [member display/window/size/viewport_width] and [member display/window/size/viewport_height].
 			[b]Note:[/b] By default, or when set to [code]0[/code], the initial window width is the viewport [member display/window/size/viewport_width]. This setting is ignored on iOS, Android, and Web.
 		</member>
+		<member name="display/window/stretch/aspect" type="String" setter="" getter="" default="&quot;keep&quot;">
+		</member>
+		<member name="display/window/stretch/mode" type="String" setter="" getter="" default="&quot;disabled&quot;">
+		</member>
+		<member name="display/window/stretch/scale" type="float" setter="" getter="" default="1.0">
+		</member>
+		<member name="display/window/subwindows/embed_subwindows" type="bool" setter="" getter="" default="true">
+			If [code]true[/code] subwindows are embedded in the main window.
+		</member>
 		<member name="display/window/vsync/vsync_mode" type="int" setter="" getter="" default="1">
 			Sets the V-Sync mode for the main game window.
 			See [enum DisplayServer.VSyncMode] for possible values and how they affect the behavior of your application.
-			Depending on the platform and used renderer, the engine will fall back to [code]Enabled[/code], if the desired mode is not supported.
+			Depending on the platform and used renderer, the engine will fall back to [b]Enabled[/b] if the desired mode is not supported.
+			[b]Note:[/b] V-Sync modes other than [b]Enabled[/b] are only supported in the Forward+ and Mobile rendering methods, not Compatibility.
+			[b]Note:[/b] This property is only read when the project starts. To change the V-Sync mode at runtime, call [method DisplayServer.window_set_vsync_mode] instead.
+		</member>
+		<member name="dotnet/project/assembly_name" type="String" setter="" getter="" default="&quot;&quot;">
+			Name of the .NET assembly. This name is used as the name of the [code].csproj[/code] and [code].sln[/code] files. By default, it's set to the name of the project ([member application/config/name]) allowing to change it in the future without affecting the .NET assembly.
+		</member>
+		<member name="dotnet/project/solution_directory" type="String" setter="" getter="" default="&quot;&quot;">
+			Directory that contains the [code].sln[/code] file. By default, the [code].sln[/code] files is in the root of the project directory, next to the [code]project.godot[/code] and [code].csproj[/code] files.
+			Changing this value allows setting up a multi-project scenario where there are multiple [code].csproj[/code]. Keep in mind that the Godot project is considered one of the C# projects in the workspace and it's root directory should contain the [code]project.godot[/code] and [code].csproj[/code] next to each other.
+		</member>
+		<member name="editor/export/convert_text_resources_to_binary" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], text resources are converted to a binary format on export. This decreases file sizes and speeds up loading slightly.
+			[b]Note:[/b] If [member editor/export/convert_text_resources_to_binary] is [code]true[/code], [method @GDScript.load] will not be able to return the converted files in an exported project. Some file paths within the exported PCK will also change, such as [code]project.godot[/code] becoming [code]project.binary[/code]. If you rely on run-time loading of files present within the PCK, set [member editor/export/convert_text_resources_to_binary] to [code]false[/code].
+		</member>
+		<member name="editor/import/reimport_missing_imported_files" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="editor/import/use_multiple_threads" type="bool" setter="" getter="" default="true">
+			If [code]true[/code] importing of resources is run on multiple threads.
 		</member>
 		<member name="editor/movie_writer/disable_vsync" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], requests V-Sync to be disabled when writing a movie (similar to setting [member display/window/vsync/vsync_mode] to [b]Disabled[/b]). This can speed up video writing if the hardware is fast enough to render, encode and save the video at a framerate higher than the monitor's refresh rate.
@@ -656,11 +828,20 @@
 		<member name="editor/movie_writer/speaker_mode" type="int" setter="" getter="" default="0">
 			The speaker mode to use in the recorded audio when writing a movie. See [enum AudioServer.SpeakerMode] for possible values.
 		</member>
-		<member name="editor/node_naming/name_casing" type="int" setter="" getter="" default="0">
+		<member name="editor/naming/default_signal_callback_name" type="String" setter="" getter="" default="&quot;_on_{node_name}_{signal_name}&quot;">
+			The format of the default signal callback name (in the Signal Connection Dialog). The following substitutions are available: [code]{NodeName}[/code], [code]{nodeName}[/code], [code]{node_name}[/code], [code]{SignalName}[/code], [code]{signalName}[/code], and [code]{signal_name}[/code].
+		</member>
+		<member name="editor/naming/default_signal_callback_to_self_name" type="String" setter="" getter="" default="&quot;_on_{signal_name}&quot;">
+			The format of the default signal callback name when a signal connects to the same node that emits it (in the Signal Connection Dialog). The following substitutions are available: [code]{NodeName}[/code], [code]{nodeName}[/code], [code]{node_name}[/code], [code]{SignalName}[/code], [code]{signalName}[/code], and [code]{signal_name}[/code].
+		</member>
+		<member name="editor/naming/node_name_casing" type="int" setter="" getter="" default="0">
 			When creating node names automatically, set the type of casing in this project. This is mostly an editor setting.
 		</member>
-		<member name="editor/node_naming/name_num_separator" type="int" setter="" getter="" default="0">
+		<member name="editor/naming/node_name_num_separator" type="int" setter="" getter="" default="0">
 			What to use to separate node name from number. This is mostly an editor setting.
+		</member>
+		<member name="editor/naming/scene_name_casing" type="int" setter="" getter="" default="2">
+			When generating file names from scene root node, set the type of casing in this project. This is mostly an editor setting.
 		</member>
 		<member name="editor/run/main_run_args" type="String" setter="" getter="" default="&quot;&quot;">
 			The command-line arguments to append to Godot's own command line when running the project. This doesn't affect the editor itself.
@@ -675,6 +856,10 @@
 		</member>
 		<member name="editor/script/templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
 			Search path for project-specific script templates. Godot will search for script templates both in the editor-specific path and in this project-specific path.
+		</member>
+		<member name="editor/version_control/autoload_on_startup" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="editor/version_control/plugin_name" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
 		<member name="filesystem/import/blender/enabled" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], Blender 3D scene files with the [code].blend[/code] extension will be imported by converting them to glTF 2.0.
@@ -699,12 +884,17 @@
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
 		</member>
+		<member name="gui/common/snap_controls_to_pixels" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], snaps [Control] node vertices to the nearest pixel to ensure they remain crisp even when the camera moves or zooms.
+		</member>
 		<member name="gui/common/swap_cancel_ok" type="bool" setter="" getter="">
 			If [code]true[/code], swaps [b]Cancel[/b] and [b]OK[/b] buttons in dialogs on Windows and UWP to follow interface conventions. [method DisplayServer.get_swap_cancel_ok] can be used to query whether buttons are swapped at run-time.
 			[b]Note:[/b] This doesn't affect native dialogs such as the ones spawned by [method DisplayServer.dialog_show].
 		</member>
 		<member name="gui/common/text_edit_undo_stack_max_size" type="int" setter="" getter="" default="1024">
 			Maximum undo/redo history size for [TextEdit] fields.
+		</member>
+		<member name="gui/fonts/dynamic_fonts/use_oversampling" type="bool" setter="" getter="" default="true">
 		</member>
 		<member name="gui/theme/custom" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to a custom [Theme] resource file to use for the project ([code].theme[/code] or generic [code].tres[/code]/[code].res[/code] extension).
@@ -713,7 +903,7 @@
 			Path to a custom [Font] resource to use as default for all GUI elements of the project.
 		</member>
 		<member name="gui/theme/default_font_antialiasing" type="int" setter="" getter="" default="1">
-			Font anti-aliasing mode. See [member FontFile.antialiasing],
+			Font anti-aliasing mode. See [member FontFile.antialiasing].
 		</member>
 		<member name="gui/theme/default_font_generate_mipmaps" type="bool" setter="" getter="" default="false">
 			If set to [code]true[/code], the default font will have mipmaps generated. This prevents text from looking grainy when a [Control] is scaled down, or when a [Label3D] is viewed from a long distance (if [member Label3D.texture_filter] is set to a mode that displays mipmaps).
@@ -737,6 +927,9 @@
 		</member>
 		<member name="gui/theme/lcd_subpixel_layout" type="int" setter="" getter="" default="1">
 			LCD subpixel layout used for font anti-aliasing. See [enum TextServer.FontLCDSubpixelLayout].
+		</member>
+		<member name="gui/timers/button_shortcut_feedback_highlight_time" type="float" setter="" getter="" default="0.2">
+			When [member BaseButton.shortcut_feedback] is enabled, this is the time the [BaseButton] will remain highlighted after a shortcut.
 		</member>
 		<member name="gui/timers/incremental_search_max_interval_msec" type="int" setter="" getter="" default="2000">
 			Timer setting for incremental search in [Tree], [ItemList], etc. controls (in milliseconds).
@@ -864,19 +1057,19 @@
 			macOS specific override for the shortcut to delete a word.
 		</member>
 		<member name="input/ui_text_caret_add_above" type="Dictionary" setter="" getter="">
-			Default [InputEventAction] to add an additional caret above every caret of a text
+			Default [InputEventAction] to add an additional caret above every caret of a text.
 		</member>
 		<member name="input/ui_text_caret_add_above.macos" type="Dictionary" setter="" getter="">
-			macOS specific override for the shortcut to add a caret above every caret
+			macOS specific override for the shortcut to add a caret above every caret.
 		</member>
 		<member name="input/ui_text_caret_add_below" type="Dictionary" setter="" getter="">
-			Default [InputEventAction] to add an additional caret below every caret of a text
+			Default [InputEventAction] to add an additional caret below every caret of a text.
 		</member>
 		<member name="input/ui_text_caret_add_below.macos" type="Dictionary" setter="" getter="">
-			macOS specific override for the shortcut to add a caret below every caret
+			macOS specific override for the shortcut to add a caret below every caret.
 		</member>
 		<member name="input/ui_text_caret_document_end" type="Dictionary" setter="" getter="">
-			Default [InputEventAction] to move the text cursor the the end of the text.
+			Default [InputEventAction] to move the text cursor to the end of the text.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_document_end.macos" type="Dictionary" setter="" getter="">
@@ -1018,6 +1211,9 @@
 			If no selection is currently active, selects the word currently under the caret in text fields. If a selection is currently active, deselects the current selection.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
+		<member name="input/ui_text_select_word_under_caret.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to select the word currently under the caret.
+		</member>
 		<member name="input/ui_text_submit" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to submit a text field.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
@@ -1053,9 +1249,6 @@
 		<member name="input_devices/pointing/emulate_touch_from_mouse" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], sends touch input events when clicking or dragging the mouse.
 		</member>
-		<member name="input_devices/pointing/ios/touch_delay" type="float" setter="" getter="" default="0.15">
-			Default delay for touch events. This only affects iOS devices.
-		</member>
 		<member name="internationalization/locale/fallback" type="String" setter="" getter="" default="&quot;en&quot;">
 			The locale to fall back to if a translation isn't available in a given language. If left empty, [code]en[/code] (English) will be used.
 		</member>
@@ -1066,12 +1259,6 @@
 		</member>
 		<member name="internationalization/locale/test" type="String" setter="" getter="" default="&quot;&quot;">
 			If non-empty, this locale will be used when running the project from the editor.
-		</member>
-		<member name="internationalization/locale/translation_remaps" type="PackedStringArray" setter="" getter="">
-			Locale-dependent resource remaps. Edit them in the "Localization" tab of Project Settings editor.
-		</member>
-		<member name="internationalization/locale/translations" type="PackedStringArray" setter="" getter="">
-			List of translation files available in the project. Edit them in the "Localization" tab of Project Settings editor.
 		</member>
 		<member name="internationalization/pseudolocalization/double_vowels" type="bool" setter="" getter="" default="false">
 			Double vowels in strings during pseudolocalization to simulate the lengthening of text due to localization.
@@ -1102,7 +1289,10 @@
 			[b]Note:[/b] This property is only read when the project starts. To toggle pseudolocalization at run-time, use [member TranslationServer.pseudolocalization_enabled] instead.
 		</member>
 		<member name="internationalization/rendering/force_right_to_left_layout_direction" type="bool" setter="" getter="" default="false">
-			Force layout direction and text writing direction to RTL for all locales.
+			Force layout direction and text writing direction to RTL for all controls.
+		</member>
+		<member name="internationalization/rendering/root_node_layout_direction" type="int" setter="" getter="" default="0">
+			Root node default layout direction.
 		</member>
 		<member name="internationalization/rendering/text_driver" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies the [TextServer] to use. If left empty, the default will be used.
@@ -1112,6 +1302,30 @@
 		</member>
 		<member name="layer_names/2d_navigation/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 1. If left empty, the layer will display as "Layer 1".
+		</member>
+		<member name="layer_names/2d_navigation/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 2. If left empty, the layer will display as "Layer 2".
+		</member>
+		<member name="layer_names/2d_navigation/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 3. If left empty, the layer will display as "Layer 3".
+		</member>
+		<member name="layer_names/2d_navigation/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 4. If left empty, the layer will display as "Layer 4".
+		</member>
+		<member name="layer_names/2d_navigation/layer_5" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 5. If left empty, the layer will display as "Layer 5".
+		</member>
+		<member name="layer_names/2d_navigation/layer_6" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 6. If left empty, the layer will display as "Layer 6".
+		</member>
+		<member name="layer_names/2d_navigation/layer_7" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 7. If left empty, the layer will display as "Layer 7".
+		</member>
+		<member name="layer_names/2d_navigation/layer_8" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 8. If left empty, the layer will display as "Layer 8".
+		</member>
+		<member name="layer_names/2d_navigation/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 9. If left empty, the layer will display as "Layer 9".
 		</member>
 		<member name="layer_names/2d_navigation/layer_10" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 10. If left empty, the layer will display as "Layer 10".
@@ -1143,9 +1357,6 @@
 		<member name="layer_names/2d_navigation/layer_19" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 19. If left empty, the layer will display as "Layer 19".
 		</member>
-		<member name="layer_names/2d_navigation/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D navigation layer 2. If left empty, the layer will display as "Layer 2".
-		</member>
 		<member name="layer_names/2d_navigation/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 20. If left empty, the layer will display as "Layer 20".
 		</member>
@@ -1176,9 +1387,6 @@
 		<member name="layer_names/2d_navigation/layer_29" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 29. If left empty, the layer will display as "Layer 29".
 		</member>
-		<member name="layer_names/2d_navigation/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D navigation layer 3. If left empty, the layer will display as "Layer 3".
-		</member>
 		<member name="layer_names/2d_navigation/layer_30" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 30. If left empty, the layer will display as "Layer 30".
 		</member>
@@ -1188,26 +1396,32 @@
 		<member name="layer_names/2d_navigation/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 32. If left empty, the layer will display as "Layer 32".
 		</member>
-		<member name="layer_names/2d_navigation/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D navigation layer 4. If left empty, the layer will display as "Layer 4".
-		</member>
-		<member name="layer_names/2d_navigation/layer_5" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D navigation layer 5. If left empty, the layer will display as "Layer 5".
-		</member>
-		<member name="layer_names/2d_navigation/layer_6" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D navigation layer 6. If left empty, the layer will display as "Layer 6".
-		</member>
-		<member name="layer_names/2d_navigation/layer_7" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D navigation layer 7. If left empty, the layer will display as "Layer 7".
-		</member>
-		<member name="layer_names/2d_navigation/layer_8" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D navigation layer 8. If left empty, the layer will display as "Layer 8".
-		</member>
-		<member name="layer_names/2d_navigation/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D navigation layer 9. If left empty, the layer will display as "Layer 9".
-		</member>
 		<member name="layer_names/2d_physics/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 1. If left empty, the layer will display as "Layer 1".
+		</member>
+		<member name="layer_names/2d_physics/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 2. If left empty, the layer will display as "Layer 2".
+		</member>
+		<member name="layer_names/2d_physics/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 3. If left empty, the layer will display as "Layer 3".
+		</member>
+		<member name="layer_names/2d_physics/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 4. If left empty, the layer will display as "Layer 4".
+		</member>
+		<member name="layer_names/2d_physics/layer_5" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 5. If left empty, the layer will display as "Layer 5".
+		</member>
+		<member name="layer_names/2d_physics/layer_6" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 6. If left empty, the layer will display as "Layer 6".
+		</member>
+		<member name="layer_names/2d_physics/layer_7" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 7. If left empty, the layer will display as "Layer 7".
+		</member>
+		<member name="layer_names/2d_physics/layer_8" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 8. If left empty, the layer will display as "Layer 8".
+		</member>
+		<member name="layer_names/2d_physics/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 9. If left empty, the layer will display as "Layer 9".
 		</member>
 		<member name="layer_names/2d_physics/layer_10" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 10. If left empty, the layer will display as "Layer 10".
@@ -1239,9 +1453,6 @@
 		<member name="layer_names/2d_physics/layer_19" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 19. If left empty, the layer will display as "Layer 19".
 		</member>
-		<member name="layer_names/2d_physics/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D physics layer 2. If left empty, the layer will display as "Layer 2".
-		</member>
 		<member name="layer_names/2d_physics/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 20. If left empty, the layer will display as "Layer 20".
 		</member>
@@ -1272,9 +1483,6 @@
 		<member name="layer_names/2d_physics/layer_29" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 29. If left empty, the layer will display as "Layer 29".
 		</member>
-		<member name="layer_names/2d_physics/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D physics layer 3. If left empty, the layer will display as "Layer 3".
-		</member>
 		<member name="layer_names/2d_physics/layer_30" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 30. If left empty, the layer will display as "Layer 30".
 		</member>
@@ -1284,26 +1492,32 @@
 		<member name="layer_names/2d_physics/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 32. If left empty, the layer will display as "Layer 32".
 		</member>
-		<member name="layer_names/2d_physics/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D physics layer 4. If left empty, the layer will display as "Layer 4".
-		</member>
-		<member name="layer_names/2d_physics/layer_5" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D physics layer 5. If left empty, the layer will display as "Layer 5".
-		</member>
-		<member name="layer_names/2d_physics/layer_6" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D physics layer 6. If left empty, the layer will display as "Layer 6".
-		</member>
-		<member name="layer_names/2d_physics/layer_7" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D physics layer 7. If left empty, the layer will display as "Layer 7".
-		</member>
-		<member name="layer_names/2d_physics/layer_8" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D physics layer 8. If left empty, the layer will display as "Layer 8".
-		</member>
-		<member name="layer_names/2d_physics/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D physics layer 9. If left empty, the layer will display as "Layer 9".
-		</member>
 		<member name="layer_names/2d_render/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D render layer 1. If left empty, the layer will display as "Layer 1".
+		</member>
+		<member name="layer_names/2d_render/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D render layer 2. If left empty, the layer will display as "Layer 2".
+		</member>
+		<member name="layer_names/2d_render/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D render layer 3. If left empty, the layer will display as "Layer 3".
+		</member>
+		<member name="layer_names/2d_render/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D render layer 4. If left empty, the layer will display as "Layer 4".
+		</member>
+		<member name="layer_names/2d_render/layer_5" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D render layer 5. If left empty, the layer will display as "Layer 5".
+		</member>
+		<member name="layer_names/2d_render/layer_6" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D render layer 6. If left empty, the layer will display as "Layer 6".
+		</member>
+		<member name="layer_names/2d_render/layer_7" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D render layer 7. If left empty, the layer will display as "Layer 7".
+		</member>
+		<member name="layer_names/2d_render/layer_8" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D render layer 8. If left empty, the layer will display as "Layer 8".
+		</member>
+		<member name="layer_names/2d_render/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D render layer 9. If left empty, the layer will display as "Layer 9".
 		</member>
 		<member name="layer_names/2d_render/layer_10" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D render layer 10. If left empty, the layer will display as "Layer 10".
@@ -1335,35 +1549,35 @@
 		<member name="layer_names/2d_render/layer_19" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D render layer 19. If left empty, the layer will display as "Layer 19".
 		</member>
-		<member name="layer_names/2d_render/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D render layer 2. If left empty, the layer will display as "Layer 2".
-		</member>
 		<member name="layer_names/2d_render/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D render layer 20. If left empty, the layer will display as "Layer 20".
 		</member>
-		<member name="layer_names/2d_render/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D render layer 3. If left empty, the layer will display as "Layer 3".
-		</member>
-		<member name="layer_names/2d_render/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D render layer 4. If left empty, the layer will display as "Layer 4".
-		</member>
-		<member name="layer_names/2d_render/layer_5" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D render layer 5. If left empty, the layer will display as "Layer 5".
-		</member>
-		<member name="layer_names/2d_render/layer_6" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D render layer 6. If left empty, the layer will display as "Layer 6".
-		</member>
-		<member name="layer_names/2d_render/layer_7" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D render layer 7. If left empty, the layer will display as "Layer 7".
-		</member>
-		<member name="layer_names/2d_render/layer_8" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D render layer 8. If left empty, the layer will display as "Layer 8".
-		</member>
-		<member name="layer_names/2d_render/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D render layer 9. If left empty, the layer will display as "Layer 9".
-		</member>
 		<member name="layer_names/3d_navigation/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 1. If left empty, the layer will display as "Layer 1".
+		</member>
+		<member name="layer_names/3d_navigation/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 2. If left empty, the layer will display as "Layer 2".
+		</member>
+		<member name="layer_names/3d_navigation/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 3. If left empty, the layer will display as "Layer 3".
+		</member>
+		<member name="layer_names/3d_navigation/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 4. If left empty, the layer will display as "Layer 4".
+		</member>
+		<member name="layer_names/3d_navigation/layer_5" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 5. If left empty, the layer will display as "Layer 5".
+		</member>
+		<member name="layer_names/3d_navigation/layer_6" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 6. If left empty, the layer will display as "Layer 6".
+		</member>
+		<member name="layer_names/3d_navigation/layer_7" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 7. If left empty, the layer will display as "Layer 7".
+		</member>
+		<member name="layer_names/3d_navigation/layer_8" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 8. If left empty, the layer will display as "Layer 8".
+		</member>
+		<member name="layer_names/3d_navigation/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 9. If left empty, the layer will display as "Layer 9".
 		</member>
 		<member name="layer_names/3d_navigation/layer_10" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 10. If left empty, the layer will display as "Layer 10".
@@ -1395,9 +1609,6 @@
 		<member name="layer_names/3d_navigation/layer_19" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 19. If left empty, the layer will display as "Layer 19".
 		</member>
-		<member name="layer_names/3d_navigation/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D navigation layer 2. If left empty, the layer will display as "Layer 2".
-		</member>
 		<member name="layer_names/3d_navigation/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 20. If left empty, the layer will display as "Layer 20".
 		</member>
@@ -1428,9 +1639,6 @@
 		<member name="layer_names/3d_navigation/layer_29" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 29. If left empty, the layer will display as "Layer 29".
 		</member>
-		<member name="layer_names/3d_navigation/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D navigation layer 3. If left empty, the layer will display as "Layer 3".
-		</member>
 		<member name="layer_names/3d_navigation/layer_30" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 30. If left empty, the layer will display as "Layer 30".
 		</member>
@@ -1440,26 +1648,32 @@
 		<member name="layer_names/3d_navigation/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 32. If left empty, the layer will display as "Layer 32".
 		</member>
-		<member name="layer_names/3d_navigation/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D navigation layer 4. If left empty, the layer will display as "Layer 4".
-		</member>
-		<member name="layer_names/3d_navigation/layer_5" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D navigation layer 5. If left empty, the layer will display as "Layer 5".
-		</member>
-		<member name="layer_names/3d_navigation/layer_6" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D navigation layer 6. If left empty, the layer will display as "Layer 6".
-		</member>
-		<member name="layer_names/3d_navigation/layer_7" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D navigation layer 7. If left empty, the layer will display as "Layer 7".
-		</member>
-		<member name="layer_names/3d_navigation/layer_8" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D navigation layer 8. If left empty, the layer will display as "Layer 8".
-		</member>
-		<member name="layer_names/3d_navigation/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D navigation layer 9. If left empty, the layer will display as "Layer 9".
-		</member>
 		<member name="layer_names/3d_physics/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 1. If left empty, the layer will display as "Layer 1".
+		</member>
+		<member name="layer_names/3d_physics/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 2. If left empty, the layer will display as "Layer 2".
+		</member>
+		<member name="layer_names/3d_physics/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 3. If left empty, the layer will display as "Layer 3".
+		</member>
+		<member name="layer_names/3d_physics/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 4. If left empty, the layer will display as "Layer 4".
+		</member>
+		<member name="layer_names/3d_physics/layer_5" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 5. If left empty, the layer will display as "Layer 5".
+		</member>
+		<member name="layer_names/3d_physics/layer_6" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 6. If left empty, the layer will display as "Layer 6".
+		</member>
+		<member name="layer_names/3d_physics/layer_7" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 7. If left empty, the layer will display as "Layer 7".
+		</member>
+		<member name="layer_names/3d_physics/layer_8" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 8. If left empty, the layer will display as "Layer 8".
+		</member>
+		<member name="layer_names/3d_physics/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 9. If left empty, the layer will display as "Layer 9".
 		</member>
 		<member name="layer_names/3d_physics/layer_10" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 10. If left empty, the layer will display as "Layer 10".
@@ -1491,9 +1705,6 @@
 		<member name="layer_names/3d_physics/layer_19" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 19. If left empty, the layer will display as "Layer 19".
 		</member>
-		<member name="layer_names/3d_physics/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D physics layer 2. If left empty, the layer will display as "Layer 2".
-		</member>
 		<member name="layer_names/3d_physics/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 20. If left empty, the layer will display as "Layer 20".
 		</member>
@@ -1524,9 +1735,6 @@
 		<member name="layer_names/3d_physics/layer_29" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 29. If left empty, the layer will display as "Layer 29".
 		</member>
-		<member name="layer_names/3d_physics/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D physics layer 3. If left empty, the layer will display as "Layer 3".
-		</member>
 		<member name="layer_names/3d_physics/layer_30" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 30. If left empty, the layer will display as "Layer 30".
 		</member>
@@ -1536,62 +1744,11 @@
 		<member name="layer_names/3d_physics/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 32. If left empty, the layer will display as "Layer 32".
 		</member>
-		<member name="layer_names/3d_physics/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D physics layer 4. If left empty, the layer will display as "Layer 4".
-		</member>
-		<member name="layer_names/3d_physics/layer_5" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D physics layer 5. If left empty, the layer will display as "Layer 5".
-		</member>
-		<member name="layer_names/3d_physics/layer_6" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D physics layer 6. If left empty, the layer will display as "Layer 6".
-		</member>
-		<member name="layer_names/3d_physics/layer_7" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D physics layer 7. If left empty, the layer will display as "Layer 7".
-		</member>
-		<member name="layer_names/3d_physics/layer_8" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D physics layer 8. If left empty, the layer will display as "Layer 8".
-		</member>
-		<member name="layer_names/3d_physics/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D physics layer 9. If left empty, the layer will display as "Layer 9".
-		</member>
 		<member name="layer_names/3d_render/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D render layer 1. If left empty, the layer will display as "Layer 1".
 		</member>
-		<member name="layer_names/3d_render/layer_10" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D render layer 10. If left empty, the layer will display as "Layer 10".
-		</member>
-		<member name="layer_names/3d_render/layer_11" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D render layer 11. If left empty, the layer will display as "Layer 11".
-		</member>
-		<member name="layer_names/3d_render/layer_12" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D render layer 12. If left empty, the layer will display as "Layer 12".
-		</member>
-		<member name="layer_names/3d_render/layer_13" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D render layer 13. If left empty, the layer will display as "Layer 13".
-		</member>
-		<member name="layer_names/3d_render/layer_14" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D render layer 14. If left empty, the layer will display as "Layer 14"
-		</member>
-		<member name="layer_names/3d_render/layer_15" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D render layer 15. If left empty, the layer will display as "Layer 15".
-		</member>
-		<member name="layer_names/3d_render/layer_16" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D render layer 16. If left empty, the layer will display as "Layer 16".
-		</member>
-		<member name="layer_names/3d_render/layer_17" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D render layer 17. If left empty, the layer will display as "Layer 17".
-		</member>
-		<member name="layer_names/3d_render/layer_18" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D render layer 18. If left empty, the layer will display as "Layer 18".
-		</member>
-		<member name="layer_names/3d_render/layer_19" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D render layer 19. If left empty, the layer will display as "Layer 19".
-		</member>
 		<member name="layer_names/3d_render/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D render layer 2. If left empty, the layer will display as "Layer 2".
-		</member>
-		<member name="layer_names/3d_render/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D render layer 20. If left empty, the layer will display as "Layer 20".
 		</member>
 		<member name="layer_names/3d_render/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D render layer 3. If left empty, the layer will display as "Layer 3".
@@ -1614,7 +1771,136 @@
 		<member name="layer_names/3d_render/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D render layer 9. If left empty, the layer will display as "Layer 9".
 		</member>
-		<member name="memory/limits/message_queue/max_size_kb" type="int" setter="" getter="" default="4096">
+		<member name="layer_names/3d_render/layer_10" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D render layer 10. If left empty, the layer will display as "Layer 10".
+		</member>
+		<member name="layer_names/3d_render/layer_11" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D render layer 11. If left empty, the layer will display as "Layer 11".
+		</member>
+		<member name="layer_names/3d_render/layer_12" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D render layer 12. If left empty, the layer will display as "Layer 12".
+		</member>
+		<member name="layer_names/3d_render/layer_13" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D render layer 13. If left empty, the layer will display as "Layer 13".
+		</member>
+		<member name="layer_names/3d_render/layer_14" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D render layer 14. If left empty, the layer will display as "Layer 14".
+		</member>
+		<member name="layer_names/3d_render/layer_15" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D render layer 15. If left empty, the layer will display as "Layer 15".
+		</member>
+		<member name="layer_names/3d_render/layer_16" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D render layer 16. If left empty, the layer will display as "Layer 16".
+		</member>
+		<member name="layer_names/3d_render/layer_17" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D render layer 17. If left empty, the layer will display as "Layer 17".
+		</member>
+		<member name="layer_names/3d_render/layer_18" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D render layer 18. If left empty, the layer will display as "Layer 18".
+		</member>
+		<member name="layer_names/3d_render/layer_19" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D render layer 19. If left empty, the layer will display as "Layer 19".
+		</member>
+		<member name="layer_names/3d_render/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D render layer 20. If left empty, the layer will display as "Layer 20".
+		</member>
+		<member name="layer_names/avoidance/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 1. If left empty, the layer will display as "Layer 1".
+		</member>
+		<member name="layer_names/avoidance/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 2. If left empty, the layer will display as "Layer 2".
+		</member>
+		<member name="layer_names/avoidance/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 3. If left empty, the layer will display as "Layer 3".
+		</member>
+		<member name="layer_names/avoidance/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 4. If left empty, the layer will display as "Layer 4".
+		</member>
+		<member name="layer_names/avoidance/layer_5" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 5. If left empty, the layer will display as "Layer 5".
+		</member>
+		<member name="layer_names/avoidance/layer_6" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 6. If left empty, the layer will display as "Layer 6".
+		</member>
+		<member name="layer_names/avoidance/layer_7" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 7. If left empty, the layer will display as "Layer 7".
+		</member>
+		<member name="layer_names/avoidance/layer_8" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 8. If left empty, the layer will display as "Layer 8".
+		</member>
+		<member name="layer_names/avoidance/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 9. If left empty, the layer will display as "Layer 9".
+		</member>
+		<member name="layer_names/avoidance/layer_10" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 10. If left empty, the layer will display as "Layer 10".
+		</member>
+		<member name="layer_names/avoidance/layer_11" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 11. If left empty, the layer will display as "Layer 11".
+		</member>
+		<member name="layer_names/avoidance/layer_12" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 12. If left empty, the layer will display as "Layer 12".
+		</member>
+		<member name="layer_names/avoidance/layer_13" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 13. If left empty, the layer will display as "Layer 13".
+		</member>
+		<member name="layer_names/avoidance/layer_14" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 14. If left empty, the layer will display as "Layer 14".
+		</member>
+		<member name="layer_names/avoidance/layer_15" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 15. If left empty, the layer will display as "Layer 15".
+		</member>
+		<member name="layer_names/avoidance/layer_16" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 16. If left empty, the layer will display as "Layer 16".
+		</member>
+		<member name="layer_names/avoidance/layer_17" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 17. If left empty, the layer will display as "Layer 17".
+		</member>
+		<member name="layer_names/avoidance/layer_18" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 18. If left empty, the layer will display as "Layer 18".
+		</member>
+		<member name="layer_names/avoidance/layer_19" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 19. If left empty, the layer will display as "Layer 19".
+		</member>
+		<member name="layer_names/avoidance/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 20. If left empty, the layer will display as "Layer 20".
+		</member>
+		<member name="layer_names/avoidance/layer_21" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 21. If left empty, the layer will display as "Layer 21".
+		</member>
+		<member name="layer_names/avoidance/layer_22" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 22. If left empty, the layer will display as "Layer 22".
+		</member>
+		<member name="layer_names/avoidance/layer_23" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 23. If left empty, the layer will display as "Layer 23".
+		</member>
+		<member name="layer_names/avoidance/layer_24" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 24. If left empty, the layer will display as "Layer 24".
+		</member>
+		<member name="layer_names/avoidance/layer_25" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 25. If left empty, the layer will display as "Layer 25".
+		</member>
+		<member name="layer_names/avoidance/layer_26" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 26. If left empty, the layer will display as "Layer 26".
+		</member>
+		<member name="layer_names/avoidance/layer_27" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 27. If left empty, the layer will display as "Layer 27".
+		</member>
+		<member name="layer_names/avoidance/layer_28" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 28. If left empty, the layer will display as "Layer 28".
+		</member>
+		<member name="layer_names/avoidance/layer_29" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 29. If left empty, the layer will display as "Layer 29".
+		</member>
+		<member name="layer_names/avoidance/layer_30" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 30. If left empty, the layer will display as "Layer 30".
+		</member>
+		<member name="layer_names/avoidance/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 31. If left empty, the layer will display as "Layer 31".
+		</member>
+		<member name="layer_names/avoidance/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the navigation avoidance layer 32. If left empty, the layer will display as "Layer 32".
+		</member>
+		<member name="memory/limits/message_queue/max_size_mb" type="int" setter="" getter="" default="32">
 			Godot uses a message queue to defer some function calls. If you run out of space on it (you will see an error), you can increase the size here.
 		</member>
 		<member name="memory/limits/multithreaded_server/rid_pool_prealloc" type="int" setter="" getter="" default="60">
@@ -1629,6 +1915,9 @@
 		<member name="navigation/2d/default_link_connection_radius" type="int" setter="" getter="" default="4">
 			Default link connection radius for 2D navigation maps. See [method NavigationServer2D.map_set_link_connection_radius].
 		</member>
+		<member name="navigation/2d/use_edge_connections" type="bool" setter="" getter="" default="true">
+			If enabled 2D navigation regions will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin. This setting only affects World2D default navigation maps.
+		</member>
 		<member name="navigation/3d/default_cell_size" type="float" setter="" getter="" default="0.25">
 			Default cell size for 3D navigation maps. See [method NavigationServer3D.map_set_cell_size].
 		</member>
@@ -1637,6 +1926,15 @@
 		</member>
 		<member name="navigation/3d/default_link_connection_radius" type="float" setter="" getter="" default="1.0">
 			Default link connection radius for 3D navigation maps. See [method NavigationServer3D.map_set_link_connection_radius].
+		</member>
+		<member name="navigation/3d/use_edge_connections" type="bool" setter="" getter="" default="true">
+			If enabled 3D navigation regions will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin. This setting only affects World3D default navigation maps.
+		</member>
+		<member name="navigation/avoidance/thread_model/avoidance_use_high_priority_threads" type="bool" setter="" getter="" default="true">
+			If enabled and avoidance calculations use multiple threads the threads run with high priority.
+		</member>
+		<member name="navigation/avoidance/thread_model/avoidance_use_multiple_threads" type="bool" setter="" getter="" default="true">
+			If enabled the avoidance calculations use multiple threads.
 		</member>
 		<member name="network/limits/debugger/max_chars_per_second" type="int" setter="" getter="" default="32768">
 			Maximum number of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
@@ -1659,12 +1957,6 @@
 		<member name="network/limits/webrtc/max_channel_in_buffer_kb" type="int" setter="" getter="" default="64">
 			Maximum size (in kiB) for the [WebRTCDataChannel] input buffer.
 		</member>
-		<member name="network/remote_fs/page_read_ahead" type="int" setter="" getter="" default="4">
-			Amount of read ahead used by remote filesystem. Higher values decrease the effects of latency at the cost of higher bandwidth usage.
-		</member>
-		<member name="network/remote_fs/page_size" type="int" setter="" getter="" default="65536">
-			Page size used by remote filesystem (in bytes).
-		</member>
 		<member name="network/tls/certificate_bundle_override" type="String" setter="" getter="" default="&quot;&quot;">
 			The CA certificates bundle to use for TLS connections. If this is set to a non-empty value, this will [i]override[/i] Godot's default [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]Mozilla certificate bundle[/url]. If left empty, the default certificate bundle will be used.
 			If in doubt, leave this setting empty.
@@ -1683,7 +1975,7 @@
 			[/gdscript]
 			[csharp]
 			// Set the default gravity strength to 980.
-			PhysicsServer2D.AreaSetParam(GetViewport().FindWorld2d().Space, PhysicsServer2D.AreaParameter.Gravity, 980);
+			PhysicsServer2D.AreaSetParam(GetViewport().FindWorld2D().Space, PhysicsServer2D.AreaParameter.Gravity, 980);
 			[/csharp]
 			[/codeblocks]
 		</member>
@@ -1697,7 +1989,7 @@
 			[/gdscript]
 			[csharp]
 			// Set the default gravity direction to `Vector2(0, 1)`.
-			PhysicsServer2D.AreaSetParam(GetViewport().FindWorld2d().Space, PhysicsServer2D.AreaParameter.GravityVector, Vector2.Down)
+			PhysicsServer2D.AreaSetParam(GetViewport().FindWorld2D().Space, PhysicsServer2D.AreaParameter.GravityVector, Vector2.Down)
 			[/csharp]
 			[/codeblocks]
 		</member>
@@ -1827,24 +2119,40 @@
 			[b]Note:[/b] Only [member physics/common/max_physics_steps_per_frame] physics ticks may be simulated per rendered frame at most. If more physics ticks have to be simulated per rendered frame to keep up with rendering, the project will appear to slow down (even if [code]delta[/code] is used consistently in physics calculations). Therefore, it is recommended to also increase [member physics/common/max_physics_steps_per_frame] if increasing [member physics/common/physics_ticks_per_second] significantly above its default value.
 		</member>
 		<member name="rendering/2d/sdf/oversize" type="int" setter="" getter="" default="1">
+			Controls how much of the original viewport size should be covered by the 2D signed distance field. This SDF can be sampled in [CanvasItem] shaders and is used for [GPUParticles2D] collision. Higher values allow portions of occluders located outside the viewport to still be taken into account in the generated signed distance field, at the cost of performance. If you notice particles falling through [LightOccluder2D]s as the occluders leave the viewport, increase this setting.
+			The percentage specified is added on each axis and on both sides. For example, with the default setting of 120%, the signed distance field will cover 20% of the viewport's size outside the viewport on each side (top, right, bottom, left).
+			[b]Note:[/b] This property is only read when the project starts. To change the 2D SDF oversizing percentage at runtime, use [method RenderingServer.viewport_set_sdf_oversize_and_scale] instead.
 		</member>
 		<member name="rendering/2d/sdf/scale" type="int" setter="" getter="" default="1">
+			The resolution scale to use for the 2D signed distance field. Higher values lead to a more precise and more stable signed distance field as the camera moves, at the cost of performance. The default value (50%) renders at half the resolution of the viewport size on each axis, which means the SDF is generated with 25% of the viewport's pixel count.
+			[b]Note:[/b] This property is only read when the project starts. To change the 2D SDF resolution scale at runtime, use [method RenderingServer.viewport_set_sdf_oversize_and_scale] instead.
 		</member>
 		<member name="rendering/2d/shadow_atlas/size" type="int" setter="" getter="" default="2048">
+			The size of the 2D shadow atlas in pixels. Higher values result in more precise [Light2D] shadows, at the cost of performance and video memory usage. The specified value is rounded up to the nearest power of 2.
+			[b]Note:[/b] This property is only read when the project starts. To change the 2D shadow atlas size at runtime, use [method RenderingServer.canvas_set_shadow_texture_size] instead.
 		</member>
 		<member name="rendering/2d/snap/snap_2d_transforms_to_pixel" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], [CanvasItem] nodes will internally snap to full pixels. Their position can still be sub-pixel, but the decimals will not have effect. This can lead to a crisper appearance at the cost of less smooth movement, especially when [Camera2D] smoothing is enabled.
+			[b]Note:[/b] This property is only read when the project starts. To toggle 2D transform snapping at runtime, use [method RenderingServer.viewport_set_snap_2d_transforms_to_pixel] on the root [Viewport] instead.
+			[b]Note:[/b] [Control] nodes are snapped to the nearest pixel by default. This is controlled by [member gui/common/snap_controls_to_pixels].
 		</member>
 		<member name="rendering/2d/snap/snap_2d_vertices_to_pixel" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], vertices of [CanvasItem] nodes will snap to full pixels. Only affects the final vertex positions, not the transforms. This can lead to a crisper appearance at the cost of less smooth movement, especially when [Camera2D] smoothing is enabled.
+			[b]Note:[/b] This property is only read when the project starts. To toggle 2D vertex snapping at runtime, use [method RenderingServer.viewport_set_snap_2d_vertices_to_pixel] on the root [Viewport] instead.
+			[b]Note:[/b] [Control] nodes are snapped to the nearest pixel by default. This is controlled by [member gui/common/snap_controls_to_pixels].
 		</member>
 		<member name="rendering/anti_aliasing/quality/msaa_2d" type="int" setter="" getter="" default="0">
-			Sets the number of MSAA samples to use for 2D/Canvas rendering (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware. This has no effect on shader-induced aliasing or texture aliasing.
+			Sets the number of MSAA samples to use for 2D/Canvas rendering (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware, especially integrated graphics due to their limited memory bandwidth. This has no effect on shader-induced aliasing or texture aliasing.
+			[b]Note:[/b] MSAA is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 		</member>
 		<member name="rendering/anti_aliasing/quality/msaa_3d" type="int" setter="" getter="" default="0">
-			Sets the number of MSAA samples to use for 3D rendering (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware. See also bilinear scaling 3d [member rendering/scaling_3d/mode] for supersampling, which provides higher quality but is much more expensive. This has no effect on shader-induced aliasing or texture aliasing.
+			Sets the number of MSAA samples to use for 3D rendering (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware, especially integrated graphics due to their limited memory bandwidth. See also [member rendering/scaling_3d/mode] for supersampling, which provides higher quality but is much more expensive. This has no effect on shader-induced aliasing or texture aliasing.
+			[b]Note:[/b] MSAA is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 		</member>
 		<member name="rendering/anti_aliasing/quality/screen_space_aa" type="int" setter="" getter="" default="0">
 			Sets the screen-space antialiasing mode for the default screen [Viewport]. Screen-space antialiasing works by selectively blurring edges in a post-process shader. It differs from MSAA which takes multiple coverage samples while rendering objects. Screen-space AA methods are typically faster than MSAA and will smooth out specular aliasing, but tend to make scenes appear blurry. The blurriness is partially counteracted by automatically using a negative mipmap LOD bias (see [member rendering/textures/default_filters/texture_mipmap_bias]).
 			Another way to combat specular aliasing is to enable [member rendering/anti_aliasing/screen_space_roughness_limiter/enabled].
+			[b]Note:[/b] Screen-space antialiasing is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 		</member>
 		<member name="rendering/anti_aliasing/quality/use_debanding" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible in 3D. 2D rendering is [i]not[/i] affected by debanding unless the [member Environment.background_mode] is [constant Environment.BG_CANVAS].
@@ -1853,13 +2161,19 @@
 		</member>
 		<member name="rendering/anti_aliasing/quality/use_taa" type="bool" setter="" getter="" default="false">
 			Enables Temporal Anti-Aliasing for the default screen [Viewport]. TAA works by jittering the camera and accumulating the images of the last rendered frames, motion vector rendering is used to account for camera and object motion. Enabling TAA can make the image blurrier, which is partially counteracted by automatically using a negative mipmap LOD bias (see [member rendering/textures/default_filters/texture_mipmap_bias]).
-			[b]Note:[/b] The implementation is not complete yet, some visual instances such as particles and skinned meshes may show artifacts.
+			[b]Note:[/b] The implementation is not complete yet. Some visual instances such as particles and skinned meshes may show ghosting artifacts in motion.
+			[b]Note:[/b] TAA is only supported in the Forward+ rendering method, not Mobile or Compatibility.
 		</member>
 		<member name="rendering/anti_aliasing/screen_space_roughness_limiter/amount" type="float" setter="" getter="" default="0.25">
+			[b]Note:[/b] This property is only read when the project starts. To control the screen-space roughness limiter at runtime, call [method RenderingServer.screen_space_roughness_limiter_set_active] instead.
 		</member>
 		<member name="rendering/anti_aliasing/screen_space_roughness_limiter/enabled" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], enables a spatial filter to limit roughness in areas with high-frequency detail. This can help reduce specular aliasing to an extent, though not as much as enabling [member rendering/anti_aliasing/quality/use_taa]. This filter has a small performance cost, so consider disabling it if it doesn't benefit your scene noticeably.
+			[b]Note:[/b] The screen-space roughness limiter is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
+			[b]Note:[/b] This property is only read when the project starts. To control the screen-space roughness limiter at runtime, call [method RenderingServer.screen_space_roughness_limiter_set_active] instead.
 		</member>
 		<member name="rendering/anti_aliasing/screen_space_roughness_limiter/limit" type="float" setter="" getter="" default="0.18">
+			[b]Note:[/b] This property is only read when the project starts. To control the screen-space roughness limiter at runtime, call [method RenderingServer.screen_space_roughness_limiter_set_active] instead.
 		</member>
 		<member name="rendering/camera/depth_of_field/depth_of_field_bokeh_quality" type="int" setter="" getter="" default="1">
 			Sets the quality of the depth of field effect. Higher quality takes more samples, which is slower but looks smoother.
@@ -1875,7 +2189,7 @@
 		</member>
 		<member name="rendering/driver/depth_prepass/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], performs a previous depth pass before rendering 3D materials. This increases performance significantly in scenes with high overdraw, when complex materials and lighting are used. However, in scenes with few occluded surfaces, the depth prepass may reduce performance. If your game is viewed from a fixed angle that makes it easy to avoid overdraw (such as top-down or side-scrolling perspective), consider disabling the depth prepass to improve performance. This setting can be changed at run-time to optimize performance depending on the scene currently being viewed.
-			[b]Note:[/b] Only supported when using the Vulkan Clustered backend or the OpenGL backend. When using Vulkan Mobile there is no depth prepass performed.
+			[b]Note:[/b] Depth prepass is only supported when using the Forward+ or Compatibility rendering method. When using the Mobile rendering method, there is no depth prepass performed.
 		</member>
 		<member name="rendering/driver/threads/thread_model" type="int" setter="" getter="" default="1">
 			Thread model for rendering. Rendering on a thread can vastly improve performance, but synchronizing to the main thread can cause a bit more jitter.
@@ -1932,13 +2246,16 @@
 			Sets the quality of the screen-space indirect lighting effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]Ultra[/code] will use the [member rendering/environment/ssil/adaptive_target] setting.
 		</member>
 		<member name="rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale" type="float" setter="" getter="" default="0.01">
-			Scales the depth over which the subsurface scattering effect is applied. A high value may allow light to scatter into a part of the mesh or another mesh that is close in screen space but far in depth.
+			Scales the depth over which the subsurface scattering effect is applied. A high value may allow light to scatter into a part of the mesh or another mesh that is close in screen space but far in depth. See also [member rendering/environment/subsurface_scattering/subsurface_scattering_scale].
+			[b]Note:[/b] This property is only read when the project starts. To set the subsurface scattering depth scale at runtime, call [method RenderingServer.sub_surface_scattering_set_scale] instead.
 		</member>
 		<member name="rendering/environment/subsurface_scattering/subsurface_scattering_quality" type="int" setter="" getter="" default="1">
-			Sets the quality of the subsurface scattering effect. Higher values are slower but look nicer.
+			Sets the quality of the subsurface scattering effect. Higher values are slower but look nicer. This affects the rendering of materials that have [member BaseMaterial3D.subsurf_scatter_enabled] set to [code]true[/code], along with [ShaderMaterial]s that set [code]SSS_STRENGTH[/code].
+			[b]Note:[/b] This property is only read when the project starts. To set the subsurface scattering quality at runtime, call [method RenderingServer.sub_surface_scattering_set_quality] instead.
 		</member>
 		<member name="rendering/environment/subsurface_scattering/subsurface_scattering_scale" type="float" setter="" getter="" default="0.05">
-			Scales the distance over which samples are taken for subsurface scattering effect. Changing this does not impact performance, but higher values will result in significant artifacts as the samples will become obviously spread out. A lower value results in a smaller spread of scattered light.
+			Scales the distance over which samples are taken for subsurface scattering effect. Changing this does not impact performance, but higher values will result in significant artifacts as the samples will become obviously spread out. A lower value results in a smaller spread of scattered light. See also [member rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale].
+			[b]Note:[/b] This property is only read when the project starts. To set the subsurface scattering scale at runtime, call [method RenderingServer.sub_surface_scattering_set_scale] instead.
 		</member>
 		<member name="rendering/environment/volumetric_fog/use_filter" type="int" setter="" getter="" default="1">
 			Enables filtering of the volumetric fog effect prior to integration. This substantially blurs the fog which reduces fine details but also smooths out harsh edges and aliasing artifacts. Disable when more detail is required.
@@ -1978,12 +2295,21 @@
 			[b]Note:[/b] This property is only read when the project starts. To set half-resolution GI at run-time, call [method RenderingServer.gi_set_use_half_resolution] instead.
 		</member>
 		<member name="rendering/global_illumination/sdfgi/frames_to_converge" type="int" setter="" getter="" default="5">
+			The number of frames to use for converging signed distance field global illumination. Higher values lead to a less noisy result, at the cost of taking a longer time to fully converge. This means the scene's global illumination will be too dark for a longer period of time, especially when the camera moves fast. The actual convergence speed depends on rendered framerate. For example, with the default setting of 30 frames, rendering at 60 FPS will make SDFGI fully converge after 0.5 seconds. See also [member rendering/global_illumination/sdfgi/frames_to_update_lights] and [member rendering/global_illumination/sdfgi/probe_ray_count].
+			[b]Note:[/b] This property is only read when the project starts. To control SDFGI convergence speed at runtime, call [method RenderingServer.environment_set_sdfgi_frames_to_converge] instead.
 		</member>
 		<member name="rendering/global_illumination/sdfgi/frames_to_update_lights" type="int" setter="" getter="" default="2">
+			The number of frames over which dynamic lights should be updated in signed distance field global illumination. Higher values take more time to update indirect lighting coming from dynamic lights, but result in better performance when many dynamic lights are present. See also [member rendering/global_illumination/sdfgi/frames_to_converge] and [member rendering/global_illumination/sdfgi/probe_ray_count].
+			[b]Note:[/b] This only affects [Light3D] nodes whose [member Light3D.light_bake_mode] is [constant Light3D.BAKE_DYNAMIC] (which is the default). Consider making non-moving lights use the [constant Light3D.BAKE_STATIC] bake mode to improve performance.
+			[b]Note:[/b] This property is only read when the project starts. To control SDFGI light update speed at runtime, call [method RenderingServer.environment_set_sdfgi_frames_to_update_light] instead.
 		</member>
 		<member name="rendering/global_illumination/sdfgi/probe_ray_count" type="int" setter="" getter="" default="1">
+			The number of rays to throw per frame when computing signed distance field global illumination. Higher values lead to a less noisy result, at the cost of performance. See also [member rendering/global_illumination/sdfgi/frames_to_converge] and [member rendering/global_illumination/sdfgi/frames_to_update_lights].
+			[b]Note:[/b] This property is only read when the project starts. To control SDFGI quality at runtime, call [method RenderingServer.environment_set_sdfgi_ray_count] instead.
 		</member>
 		<member name="rendering/global_illumination/voxel_gi/quality" type="int" setter="" getter="" default="0">
+			The VoxelGI quality to use. High quality leads to more precise lighting and better reflections, but is slower to render. This setting does not affect the baked data and doesn't require baking the [VoxelGI] again to apply.
+			[b]Note:[/b] This property is only read when the project starts. To control VoxelGI quality at runtime, call [method RenderingServer.voxel_gi_set_quality] instead.
 		</member>
 		<member name="rendering/lightmapping/bake_performance/max_rays_per_pass" type="int" setter="" getter="" default="32">
 			The maximum number of rays that can be thrown per pass when baking lightmaps with [LightmapGI]. Depending on the scene, adjusting this value may result in higher GPU utilization when baking lightmaps, leading to faster bake times.
@@ -2025,10 +2351,10 @@
 			The framerate-independent update speed when representing dynamic object lighting from [LightmapProbe]s. Higher values make dynamic object lighting update faster. Higher values can prevent fast-moving objects from having "outdated" indirect lighting displayed on them, at the cost of possible flickering when an object moves from a bright area to a shaded area.
 		</member>
 		<member name="rendering/lights_and_shadows/directional_shadow/16_bits" type="bool" setter="" getter="" default="true">
-			Use 16 bits for shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.
+			Use 16 bits for the directional shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.
 		</member>
 		<member name="rendering/lights_and_shadows/directional_shadow/size" type="int" setter="" getter="" default="4096">
-			The directional shadow's size in pixels. Higher values will result in sharper shadows, at the cost of performance. The value will be rounded up to the nearest power of 2.
+			The directional shadow's size in pixels. Higher values will result in sharper shadows, at the cost of performance. The value is rounded up to the nearest power of 2.
 		</member>
 		<member name="rendering/lights_and_shadows/directional_shadow/size.mobile" type="int" setter="" getter="" default="2048">
 			Lower-end override for [member rendering/lights_and_shadows/directional_shadow/size] on mobile devices, due to performance concerns or driver support.
@@ -2042,7 +2368,7 @@
 			Lower-end override for [member rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality] on mobile devices, due to performance concerns or driver support.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_16_bits" type="bool" setter="" getter="" default="true">
-			Use 16 bits for shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.
+			Use 16 bits for the omni/spot shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_0_subdiv" type="int" setter="" getter="" default="2">
 			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
@@ -2074,6 +2400,9 @@
 			Enables the use of physically based units for light sources. Physically based units tend to be much larger than the arbitrary units used by Godot, but they can be used to match lighting within Godot to real-world lighting. Due to the large dynamic range of lighting conditions present in nature, Godot bakes exposure into the various lighting quantities before rendering. Most light sources bake exposure automatically at run time based on the active [CameraAttributes] resource, but [LightmapGI] and [VoxelGI] require a [CameraAttributes] resource to be set at bake time to reduce the dynamic range. At run time, Godot will automatically reconcile the baked exposure with the active exposure to ensure lighting remains consistent.
 		</member>
 		<member name="rendering/limits/cluster_builder/max_clustered_elements" type="float" setter="" getter="" default="512">
+			The maximum number of clustered elements ([OmniLight3D] + [SpotLight3D] + [Decal] + [ReflectionProbe]) that can be rendered at once in the camera view. If there are more clustered elements present in the camera view, some of them will not be rendered (leading to pop-in during camera movement). Enabling distance fade on lights and decals ([member Light3D.distance_fade_enabled], [member Decal.distance_fade_enabled]) can help avoid reaching this limit.
+			Decreasing this value may improve GPU performance on certain setups, even if the maximum number of clustered elements is never reached in the project.
+			[b]Note:[/b] This setting is only effective when using the Forward+ rendering method, not Mobile and Compatibility.
 		</member>
 		<member name="rendering/limits/forward_renderer/threaded_render_minimum_instances" type="int" setter="" getter="" default="500">
 		</member>
@@ -2081,12 +2410,15 @@
 		</member>
 		<member name="rendering/limits/opengl/max_lights_per_object" type="int" setter="" getter="" default="8">
 			Max number of omnilights and spotlights renderable per object. At the default value of 8, this means that each surface can be affected by up to 8 omnilights and 8 spotlights. This is further limited by hardware support and [member rendering/limits/opengl/max_renderable_lights]. Setting this low will slightly reduce memory usage, may decrease shader compile times, and may result in faster rendering on low-end, mobile, or web devices.
+			[b]Note:[/b] This setting is only effective when using the Compatibility rendering method, not Forward+ and Mobile.
 		</member>
 		<member name="rendering/limits/opengl/max_renderable_elements" type="int" setter="" getter="" default="65536">
 			Max number of elements renderable in a frame. If more elements than this are visible per frame, they will not be drawn. Keep in mind elements refer to mesh surfaces and not meshes themselves. Setting this low will slightly reduce memory usage and may decrease shader compile times, particularly on web. For most uses, the default value is suitable, but consider lowering as much as possible on web export.
+			[b]Note:[/b] This setting is only effective when using the Compatibility rendering method, not Forward+ and Mobile.
 		</member>
 		<member name="rendering/limits/opengl/max_renderable_lights" type="int" setter="" getter="" default="32">
 			Max number of positional lights renderable in a frame. If more lights than this number are used, they will be ignored. Setting this low will slightly reduce memory usage and may decrease shader compile times, particularly on web. For most uses, the default value is suitable, but consider lowering as much as possible on web export.
+			[b]Note:[/b] This setting is only effective when using the Compatibility rendering method, not Forward+ and Mobile.
 		</member>
 		<member name="rendering/limits/spatial_indexer/threaded_cull_minimum_instances" type="int" setter="" getter="" default="1000">
 		</member>
@@ -2100,10 +2432,12 @@
 			[b]Note:[/b] This property is only read when the project starts. To adjust the automatic LOD threshold at runtime, set [member Viewport.mesh_lod_threshold] on the root [Viewport].
 		</member>
 		<member name="rendering/occlusion_culling/bvh_build_quality" type="int" setter="" getter="" default="2">
-			The [url=https://en.wikipedia.org/wiki/Bounding_volume_hierarchy]BVH[/url] quality to use when rendering the occlusion culling buffer. Higher values will result in more accurate occlusion culling, at the cost of higher CPU usage.
+			The [url=https://en.wikipedia.org/wiki/Bounding_volume_hierarchy]Bounding Volume Hierarchy[/url] quality to use when rendering the occlusion culling buffer. Higher values will result in more accurate occlusion culling, at the cost of higher CPU usage. See also [member rendering/occlusion_culling/occlusion_rays_per_thread].
+			[b]Note:[/b] This property is only read when the project starts. To adjust the BVH build quality at runtime, use [method RenderingServer.viewport_set_occlusion_culling_build_quality].
 		</member>
 		<member name="rendering/occlusion_culling/occlusion_rays_per_thread" type="int" setter="" getter="" default="512">
-			Higher values will result in more accurate occlusion culling, at the cost of higher CPU usage. The occlusion culling buffer's pixel count is roughly equal to [code]occlusion_rays_per_thread * number_of_logical_cpu_cores[/code], so it will depend on the system's CPU. Therefore, CPUs with fewer cores will use a lower resolution to attempt keeping performance costs even across devices.
+			The number of occlusion rays traced per CPU thread. Higher values will result in more accurate occlusion culling, at the cost of higher CPU usage. The occlusion culling buffer's pixel count is roughly equal to [code]occlusion_rays_per_thread * number_of_logical_cpu_cores[/code], so it will depend on the system's CPU. Therefore, CPUs with fewer cores will use a lower resolution to attempt keeping performance costs even across devices. See also [member rendering/occlusion_culling/bvh_build_quality].
+			[b]Note:[/b] This property is only read when the project starts. To adjust the number of occlusion rays traced per thread at runtime, use [method RenderingServer.viewport_set_occlusion_rays_per_thread].
 		</member>
 		<member name="rendering/occlusion_culling/use_occlusion_culling" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], [OccluderInstance3D] nodes will be usable for occlusion culling in 3D in the root viewport. In custom viewports, [member Viewport.use_occlusion_culling] must be set to [code]true[/code] instead.
@@ -2178,7 +2512,8 @@
 			Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from 0.0 (sharpest) to 2.0. Values above 2.0 won't make a visible difference.
 		</member>
 		<member name="rendering/scaling_3d/mode" type="int" setter="" getter="" default="0">
-			Sets the scaling 3D mode. Bilinear scaling renders at different resolution to either undersample or supersample the viewport. FidelityFX Super Resolution 1.0, abbreviated to FSR, is an upscaling technology that produces high quality images at fast framerates by using a spatially aware upscaling algorithm. FSR is slightly more expensive than bilinear, but it produces significantly higher image quality. FSR should be used where possible.
+			Sets the scaling 3D mode. Bilinear scaling renders at different resolution to either undersample or supersample the viewport. FidelityFX Super Resolution 1.0, abbreviated to FSR, is an upscaling technology that produces high quality images at fast framerates by using a spatially-aware upscaling algorithm. FSR is slightly more expensive than bilinear, but it produces significantly higher image quality. On particularly low-end GPUs, the added cost of FSR may not be worth it (compared to using bilinear scaling with a slightly higher resolution scale to match performance).
+			[b]Note:[/b] FSR is only effective when using the Forward+ rendering method, not Mobile or Compatibility. If using an incompatible rendering method, FSR will fall back to bilinear scaling.
 		</member>
 		<member name="rendering/scaling_3d/scale" type="float" setter="" getter="" default="1.0">
 			Scales the 3D render buffer based on the viewport size uses an image filter specified in [member rendering/scaling_3d/mode] to scale the output image to the full viewport size. Values lower than [code]1.0[/code] can be used to speed up 3D rendering at the cost of quality (undersampling). Values greater than [code]1.0[/code] are only valid for bilinear mode and can be used to improve 3D rendering quality at a high performance cost (supersampling). See also [member rendering/anti_aliasing/quality/msaa_3d] for multi-sample antialiasing, which is significantly cheaper but only smooths the edges of polygons.
@@ -2202,9 +2537,17 @@
 		</member>
 		<member name="rendering/shading/overrides/force_vertex_shading" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], forces vertex shading for all rendering. This can increase performance a lot, but also reduces quality immensely. Can be used to optimize performance on low-end mobile devices.
+			[b]Note:[/b] This setting currently has no effect, as vertex shading is not implemented yet.
 		</member>
 		<member name="rendering/shading/overrides/force_vertex_shading.mobile" type="bool" setter="" getter="" default="true">
 			Lower-end override for [member rendering/shading/overrides/force_vertex_shading] on mobile devices, due to performance concerns or driver support.
+			[b]Note:[/b] This setting currently has no effect, as vertex shading is not implemented yet.
+		</member>
+		<member name="rendering/textures/canvas_textures/default_texture_filter" type="int" setter="" getter="" default="1">
+			The default texture filtering mode to use on [CanvasItem]s.
+		</member>
+		<member name="rendering/textures/canvas_textures/default_texture_repeat" type="int" setter="" getter="" default="0">
+			The default texture repeating mode to use on [CanvasItem]s.
 		</member>
 		<member name="rendering/textures/decals/filter" type="int" setter="" getter="" default="3">
 			The filtering quality to use for [Decal] nodes. When using one of the anisotropic filtering modes, the anisotropic filtering level is controlled by [member rendering/textures/default_filters/anisotropic_filtering_level].
@@ -2231,20 +2574,12 @@
 		<member name="rendering/textures/lossless_compression/force_png" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import lossless textures using the PNG format. Otherwise, it will default to using WebP.
 		</member>
-		<member name="rendering/textures/vram_compression/import_bptc" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], the texture importer will import VRAM-compressed textures using the BPTC algorithm. This texture compression algorithm is only supported on desktop platforms, and only when using the Vulkan renderer.
+		<member name="rendering/textures/vram_compression/import_etc2_astc" type="bool" setter="" getter="">
+			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression 2 algorithm for lower quality textures and normalmaps and Adaptable Scalable Texture Compression algorithm for high quality textures (in 4x4 block size).
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
 		</member>
-		<member name="rendering/textures/vram_compression/import_etc" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression algorithm. This algorithm doesn't support alpha channels in textures.
-			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
-		</member>
-		<member name="rendering/textures/vram_compression/import_etc2" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression 2 algorithm. This texture compression algorithm is only supported when using the Vulkan renderer.
-			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
-		</member>
-		<member name="rendering/textures/vram_compression/import_s3tc" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm. This algorithm is only supported on desktop platforms and consoles.
+		<member name="rendering/textures/vram_compression/import_s3tc_bptc" type="bool" setter="" getter="">
+			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm (DXT1-5) for lower quality textures and the BPTC algorithm (BC6H and BC7) for high quality textures. This algorithm is only supported on PC desktop platforms and consoles.
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
 		</member>
 		<member name="rendering/textures/webp_compression/compression_method" type="int" setter="" getter="" default="2">
@@ -2278,6 +2613,7 @@
 		<member name="threading/worker_pool/low_priority_thread_ratio" type="float" setter="" getter="" default="0.3">
 		</member>
 		<member name="threading/worker_pool/max_threads" type="int" setter="" getter="" default="-1">
+			Maximum number of threads to be used by [WorkerThreadPool]. Value of [code]-1[/code] means no limit.
 		</member>
 		<member name="threading/worker_pool/use_system_threads_for_low_priority_tasks" type="bool" setter="" getter="" default="true">
 		</member>
@@ -2292,6 +2628,9 @@
 		</member>
 		<member name="xr/openxr/reference_space" type="int" setter="" getter="" default="&quot;1&quot;">
 			Specify the default reference space.
+		</member>
+		<member name="xr/openxr/startup_alert" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], Godot will display an alert modal when OpenXR initialization fails on startup.
 		</member>
 		<member name="xr/openxr/submit_depth_buffer" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], OpenXR will manage the depth buffer and use the depth buffer for advanced reprojection provided this is supported by the XR runtime. Note that some rendering features in Godot can't be used with this feature.

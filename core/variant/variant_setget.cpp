@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  variant_setget.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  variant_setget.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "variant_setget.h"
 
@@ -151,8 +151,8 @@ void unregister_named_setters_getters() {
 bool Variant::has_member(Variant::Type p_type, const StringName &p_member) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
 
-	for (uint32_t i = 0; i < variant_setters_getters_names[p_type].size(); i++) {
-		if (variant_setters_getters_names[p_type][i] == p_member) {
+	for (const StringName &member : variant_setters_getters_names[p_type]) {
+		if (member == p_member) {
 			return true;
 		}
 	}
@@ -172,8 +172,8 @@ Variant::Type Variant::get_member_type(Variant::Type p_type, const StringName &p
 }
 
 void Variant::get_member_list(Variant::Type p_type, List<StringName> *r_members) {
-	for (uint32_t i = 0; i < variant_setters_getters_names[p_type].size(); i++) {
-		r_members->push_back(variant_setters_getters_names[p_type][i]);
+	for (const StringName &member : variant_setters_getters_names[p_type]) {
+		r_members->push_back(member);
 	}
 }
 
@@ -389,6 +389,7 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			v.write[index] = PtrToArg<m_elem_type>::convert(member);                                                                 \
 		}                                                                                                                            \
 		static Variant::Type get_index_type() { return GetTypeInfo<m_elem_type>::VARIANT_TYPE; }                                     \
+		static uint32_t get_index_usage() { return GetTypeInfo<m_elem_type>::get_class_info().usage; }                               \
 		static uint64_t get_indexed_size(const Variant *base) { return VariantGetInternalPtr<m_base_type>::get_ptr(base)->size(); }  \
 	};
 
@@ -460,6 +461,7 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			v.write[index] = PtrToArg<m_elem_type>::convert(member);                                                                 \
 		}                                                                                                                            \
 		static Variant::Type get_index_type() { return GetTypeInfo<m_elem_type>::VARIANT_TYPE; }                                     \
+		static uint32_t get_index_usage() { return GetTypeInfo<m_elem_type>::get_class_info().usage; }                               \
 		static uint64_t get_indexed_size(const Variant *base) { return VariantGetInternalPtr<m_base_type>::get_ptr(base)->size(); }  \
 	};
 
@@ -515,6 +517,7 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			v[index] = PtrToArg<m_elem_type>::convert(member);                                                                 \
 		}                                                                                                                      \
 		static Variant::Type get_index_type() { return GetTypeInfo<m_elem_type>::VARIANT_TYPE; }                               \
+		static uint32_t get_index_usage() { return GetTypeInfo<m_elem_type>::get_class_info().usage; }                         \
 		static uint64_t get_indexed_size(const Variant *base) { return m_max; }                                                \
 	};
 
@@ -564,6 +567,7 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			v m_accessor[index] = PtrToArg<m_elem_type>::convert(member);                                                                 \
 		}                                                                                                                                 \
 		static Variant::Type get_index_type() { return GetTypeInfo<m_elem_type>::VARIANT_TYPE; }                                          \
+		static uint32_t get_index_usage() { return GetTypeInfo<m_elem_type>::get_class_info().usage; }                                    \
 		static uint64_t get_indexed_size(const Variant *base) { return m_max; }                                                           \
 	};
 
@@ -613,6 +617,7 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			v.m_set(index, PtrToArg<m_elem_type>::convert(member));                                                                \
 		}                                                                                                                          \
 		static Variant::Type get_index_type() { return GetTypeInfo<m_elem_type>::VARIANT_TYPE; }                                   \
+		static uint32_t get_index_usage() { return GetTypeInfo<m_elem_type>::get_class_info().usage; }                             \
 		static uint64_t get_indexed_size(const Variant *base) { return m_max; }                                                    \
 	};
 
@@ -683,6 +688,7 @@ struct VariantIndexedSetGet_Array {
 		v.set(index, PtrToArg<Variant>::convert(member));
 	}
 	static Variant::Type get_index_type() { return Variant::NIL; }
+	static uint32_t get_index_usage() { return PROPERTY_USAGE_NIL_IS_VARIANT; }
 	static uint64_t get_indexed_size(const Variant *base) { return 0; }
 };
 
@@ -768,6 +774,7 @@ struct VariantIndexedSetGet_String {
 		}
 	}
 	static Variant::Type get_index_type() { return Variant::STRING; }
+	static uint32_t get_index_usage() { return PROPERTY_USAGE_DEFAULT; }
 	static uint64_t get_indexed_size(const Variant *base) { return VariantInternal::get_string(base)->length(); }
 };
 
@@ -812,6 +819,7 @@ struct VariantIndexedSetGet_String {
 			v[index] = PtrToArg<Variant>::convert(member);                                                                          \
 		}                                                                                                                           \
 		static Variant::Type get_index_type() { return Variant::NIL; }                                                              \
+		static uint32_t get_index_usage() { return PROPERTY_USAGE_DEFAULT; }                                                        \
 		static uint64_t get_indexed_size(const Variant *base) { return VariantGetInternalPtr<m_base_type>::get_ptr(base)->size(); } \
 	};
 
@@ -852,7 +860,8 @@ struct VariantIndexedSetterGetterInfo {
 
 	uint64_t (*get_indexed_size)(const Variant *base) = nullptr;
 
-	Variant::Type index_type;
+	Variant::Type index_type = Variant::NIL;
+	uint32_t index_usage = PROPERTY_USAGE_DEFAULT;
 
 	bool valid = false;
 };
@@ -872,6 +881,7 @@ static void register_indexed_member(Variant::Type p_type) {
 	sgi.ptr_getter = T::ptr_get;
 
 	sgi.index_type = T::get_index_type();
+	sgi.index_usage = T::get_index_usage();
 	sgi.get_indexed_size = T::get_indexed_size;
 
 	sgi.valid = true;
@@ -918,6 +928,11 @@ bool Variant::has_indexing(Variant::Type p_type) {
 Variant::Type Variant::get_indexed_element_type(Variant::Type p_type) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Variant::VARIANT_MAX);
 	return variant_indexed_setters_getters[p_type].index_type;
+}
+
+uint32_t Variant::get_indexed_element_usage(Variant::Type p_type) {
+	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, PROPERTY_USAGE_DEFAULT);
+	return variant_indexed_setters_getters[p_type].index_usage;
 }
 
 Variant::ValidatedIndexedSetter Variant::get_member_validated_indexed_setter(Variant::Type p_type) {
@@ -1253,7 +1268,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			return _data._int > 0;
 		} break;
 		case FLOAT: {
-			r_iter = 0;
+			r_iter = 0.0;
 			return _data._float > 0.0;
 		} break;
 		case VECTOR2: {
@@ -1457,7 +1472,7 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			return true;
 		} break;
 		case FLOAT: {
-			int64_t idx = r_iter;
+			double idx = r_iter;
 			idx++;
 			if (idx >= _data._float) {
 				return false;

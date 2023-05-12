@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  texture_rect.cpp                                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  texture_rect.cpp                                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "texture_rect.h"
 
@@ -110,22 +110,45 @@ void TextureRect::_notification(int p_what) {
 				draw_texture_rect(texture, Rect2(offset, size), tile);
 			}
 		} break;
+		case NOTIFICATION_RESIZED: {
+			update_minimum_size();
+		} break;
 	}
 }
 
 Size2 TextureRect::get_minimum_size() const {
-	if (!ignore_texture_size && !texture.is_null()) {
-		return texture->get_size();
-	} else {
-		return Size2();
+	if (!texture.is_null()) {
+		switch (expand_mode) {
+			case EXPAND_KEEP_SIZE: {
+				return texture->get_size();
+			} break;
+			case EXPAND_IGNORE_SIZE: {
+				return Size2();
+			} break;
+			case EXPAND_FIT_WIDTH: {
+				return Size2(get_size().y, 0);
+			} break;
+			case EXPAND_FIT_WIDTH_PROPORTIONAL: {
+				real_t ratio = real_t(texture->get_width()) / texture->get_height();
+				return Size2(get_size().y * ratio, 0);
+			} break;
+			case EXPAND_FIT_HEIGHT: {
+				return Size2(0, get_size().x);
+			} break;
+			case EXPAND_FIT_HEIGHT_PROPORTIONAL: {
+				real_t ratio = real_t(texture->get_height()) / texture->get_width();
+				return Size2(0, get_size().x * ratio);
+			} break;
+		}
 	}
+	return Size2();
 }
 
 void TextureRect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &TextureRect::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &TextureRect::get_texture);
-	ClassDB::bind_method(D_METHOD("set_ignore_texture_size", "ignore"), &TextureRect::set_ignore_texture_size);
-	ClassDB::bind_method(D_METHOD("get_ignore_texture_size"), &TextureRect::get_ignore_texture_size);
+	ClassDB::bind_method(D_METHOD("set_expand_mode", "expand_mode"), &TextureRect::set_expand_mode);
+	ClassDB::bind_method(D_METHOD("get_expand_mode"), &TextureRect::get_expand_mode);
 	ClassDB::bind_method(D_METHOD("set_flip_h", "enable"), &TextureRect::set_flip_h);
 	ClassDB::bind_method(D_METHOD("is_flipped_h"), &TextureRect::is_flipped_h);
 	ClassDB::bind_method(D_METHOD("set_flip_v", "enable"), &TextureRect::set_flip_v);
@@ -134,10 +157,17 @@ void TextureRect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_stretch_mode"), &TextureRect::get_stretch_mode);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_texture_size"), "set_ignore_texture_size", "get_ignore_texture_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "expand_mode", PROPERTY_HINT_ENUM, "Keep Size,Ignore Size,Fit Width,Fit Width Proportional,Fit Height,Fit Height Proportional"), "set_expand_mode", "get_expand_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_mode", PROPERTY_HINT_ENUM, "Scale,Tile,Keep,Keep Centered,Keep Aspect,Keep Aspect Centered,Keep Aspect Covered"), "set_stretch_mode", "get_stretch_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
+
+	BIND_ENUM_CONSTANT(EXPAND_KEEP_SIZE);
+	BIND_ENUM_CONSTANT(EXPAND_IGNORE_SIZE);
+	BIND_ENUM_CONSTANT(EXPAND_FIT_WIDTH);
+	BIND_ENUM_CONSTANT(EXPAND_FIT_WIDTH_PROPORTIONAL);
+	BIND_ENUM_CONSTANT(EXPAND_FIT_HEIGHT);
+	BIND_ENUM_CONSTANT(EXPAND_FIT_HEIGHT_PROPORTIONAL);
 
 	BIND_ENUM_CONSTANT(STRETCH_SCALE);
 	BIND_ENUM_CONSTANT(STRETCH_TILE);
@@ -147,6 +177,16 @@ void TextureRect::_bind_methods() {
 	BIND_ENUM_CONSTANT(STRETCH_KEEP_ASPECT_CENTERED);
 	BIND_ENUM_CONSTANT(STRETCH_KEEP_ASPECT_COVERED);
 }
+
+#ifndef DISABLE_DEPRECATED
+bool TextureRect::_set(const StringName &p_name, const Variant &p_value) {
+	if ((p_name == SNAME("expand") || p_name == SNAME("ignore_texture_size")) && p_value.operator bool()) {
+		expand_mode = EXPAND_IGNORE_SIZE;
+		return true;
+	}
+	return false;
+}
+#endif
 
 void TextureRect::_texture_changed() {
 	if (texture.is_valid()) {
@@ -178,18 +218,18 @@ Ref<Texture2D> TextureRect::get_texture() const {
 	return texture;
 }
 
-void TextureRect::set_ignore_texture_size(bool p_ignore) {
-	if (ignore_texture_size == p_ignore) {
+void TextureRect::set_expand_mode(ExpandMode p_mode) {
+	if (expand_mode == p_mode) {
 		return;
 	}
 
-	ignore_texture_size = p_ignore;
+	expand_mode = p_mode;
 	queue_redraw();
 	update_minimum_size();
 }
 
-bool TextureRect::get_ignore_texture_size() const {
-	return ignore_texture_size;
+TextureRect::ExpandMode TextureRect::get_expand_mode() const {
+	return expand_mode;
 }
 
 void TextureRect::set_stretch_mode(StretchMode p_mode) {

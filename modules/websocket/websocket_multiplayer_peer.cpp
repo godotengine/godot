@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  websocket_multiplayer_peer.cpp                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  websocket_multiplayer_peer.cpp                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "websocket_multiplayer_peer.h"
 
@@ -54,11 +54,9 @@ void WebSocketMultiplayerPeer::_clear() {
 	connection_status = CONNECTION_DISCONNECTED;
 	unique_id = 0;
 	peers_map.clear();
-	use_tls = false;
 	tcp_server.unref();
 	pending_peers.clear();
-	tls_certificate.unref();
-	tls_key.unref();
+	tls_server_options.unref();
 	if (current_packet.data != nullptr) {
 		memfree(current_packet.data);
 		current_packet.data = nullptr;
@@ -73,8 +71,8 @@ void WebSocketMultiplayerPeer::_clear() {
 }
 
 void WebSocketMultiplayerPeer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("create_client", "url", "verify_tls", "tls_certificate"), &WebSocketMultiplayerPeer::create_client, DEFVAL(true), DEFVAL(Ref<X509Certificate>()));
-	ClassDB::bind_method(D_METHOD("create_server", "port", "bind_address", "tls_key", "tls_certificate"), &WebSocketMultiplayerPeer::create_server, DEFVAL("*"), DEFVAL(Ref<CryptoKey>()), DEFVAL(Ref<X509Certificate>()));
+	ClassDB::bind_method(D_METHOD("create_client", "url", "tls_client_options"), &WebSocketMultiplayerPeer::create_client, DEFVAL(Ref<TLSOptions>()));
+	ClassDB::bind_method(D_METHOD("create_server", "port", "bind_address", "tls_server_options"), &WebSocketMultiplayerPeer::create_server, DEFVAL("*"), DEFVAL(Ref<TLSOptions>()));
 
 	ClassDB::bind_method(D_METHOD("get_peer", "peer_id"), &WebSocketMultiplayerPeer::get_peer);
 	ClassDB::bind_method(D_METHOD("get_peer_address", "id"), &WebSocketMultiplayerPeer::get_peer_address);
@@ -179,8 +177,9 @@ int WebSocketMultiplayerPeer::get_max_packet_size() const {
 	return get_outbound_buffer_size() - PROTO_SIZE;
 }
 
-Error WebSocketMultiplayerPeer::create_server(int p_port, IPAddress p_bind_ip, Ref<CryptoKey> p_tls_key, Ref<X509Certificate> p_tls_certificate) {
+Error WebSocketMultiplayerPeer::create_server(int p_port, IPAddress p_bind_ip, Ref<TLSOptions> p_options) {
 	ERR_FAIL_COND_V(get_connection_status() != CONNECTION_DISCONNECTED, ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V(p_options.is_valid() && !p_options->is_server(), ERR_INVALID_PARAMETER);
 	_clear();
 	tcp_server.instantiate();
 	Error err = tcp_server->listen(p_port, p_bind_ip);
@@ -190,20 +189,16 @@ Error WebSocketMultiplayerPeer::create_server(int p_port, IPAddress p_bind_ip, R
 	}
 	unique_id = 1;
 	connection_status = CONNECTION_CONNECTED;
-	// TLS config
-	tls_key = p_tls_key;
-	tls_certificate = p_tls_certificate;
-	if (tls_key.is_valid() && tls_certificate.is_valid()) {
-		use_tls = true;
-	}
+	tls_server_options = p_options;
 	return OK;
 }
 
-Error WebSocketMultiplayerPeer::create_client(const String &p_url, bool p_verify_tls, Ref<X509Certificate> p_tls_certificate) {
+Error WebSocketMultiplayerPeer::create_client(const String &p_url, Ref<TLSOptions> p_options) {
 	ERR_FAIL_COND_V(get_connection_status() != CONNECTION_DISCONNECTED, ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V(p_options.is_valid() && p_options->is_server(), ERR_INVALID_PARAMETER);
 	_clear();
 	Ref<WebSocketPeer> peer = _create_peer();
-	Error err = peer->connect_to_url(p_url, p_verify_tls, p_tls_certificate);
+	Error err = peer->connect_to_url(p_url, p_options);
 	if (err != OK) {
 		return err;
 	}
@@ -242,7 +237,6 @@ void WebSocketMultiplayerPeer::_poll_client() {
 				}
 				connection_status = CONNECTION_CONNECTED;
 				emit_signal("peer_connected", 1);
-				emit_signal("connection_succeeded");
 			} else {
 				return; // Still waiting for an ID.
 			}
@@ -334,18 +328,19 @@ void WebSocketMultiplayerPeer::_poll_server() {
 			to_remove.insert(id); // Error.
 			continue;
 		}
-		if (!use_tls) {
+		if (tls_server_options.is_null()) {
 			peer.ws = _create_peer();
 			peer.ws->accept_stream(peer.tcp);
 			continue;
 		} else {
 			if (peer.connection == peer.tcp) {
 				Ref<StreamPeerTLS> tls = Ref<StreamPeerTLS>(StreamPeerTLS::create());
-				Error err = tls->accept_stream(peer.tcp, tls_key, tls_certificate);
+				Error err = tls->accept_stream(peer.tcp, tls_server_options);
 				if (err != OK) {
 					to_remove.insert(id);
 					continue;
 				}
+				peer.connection = tls;
 			}
 			Ref<StreamPeerTLS> tls = static_cast<Ref<StreamPeerTLS>>(peer.connection);
 			tls->poll();

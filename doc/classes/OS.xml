@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OS" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="OS" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Operating System functions.
 	</brief_description>
 	<description>
-		Operating System functions. [OS] wraps the most common functionality to communicate with the host operating system, such as the clipboard, video driver, delays, environment variables, execution of binaries, command line, etc.
+		Operating System functions. [OS] wraps the most common functionality to communicate with the host operating system, such as the video driver, delays, environment variables, execution of binaries, command line, etc.
 		[b]Note:[/b] In Godot 4, [OS] functions related to window management were moved to the [DisplayServer] singleton.
 	</description>
 	<tutorials>
@@ -91,7 +91,7 @@
 			<param index="3" name="read_stderr" type="bool" default="false" />
 			<param index="4" name="open_console" type="bool" default="false" />
 			<description>
-				Executes a command. The file specified in [param path] must exist and be executable. Platform path resolution will be used. The [param arguments] are used in the given order and separated by a space. If an [param output] [Array] is provided, the complete shell output of the process will be appended as a single [String] element in [param output]. If [param read_stderr] is [code]true[/code], the output to the standard error stream will be included too.
+				Executes a command. The file specified in [param path] must exist and be executable. Platform path resolution will be used. The [param arguments] are used in the given order, separated by spaces, and wrapped in quotes. If an [param output] [Array] is provided, the complete shell output of the process will be appended as a single [String] element in [param output]. If [param read_stderr] is [code]true[/code], the output to the standard error stream will be included too.
 				On Windows, if [param open_console] is [code]true[/code] and the process is a console app, a new terminal window will be opened. This is ignored on other platforms.
 				If the command is successfully executed, the method will return the exit code of the command, or [code]-1[/code] if it fails.
 				[b]Note:[/b] The Godot thread will pause its execution until the executed command terminates. Use [Thread] to create a separate thread that will not pause the Godot thread, or use [method create_process] to create a completely independent process.
@@ -277,6 +277,16 @@
 				[b]Note:[/b] Thread IDs are not deterministic and may be reused across application restarts.
 			</description>
 		</method>
+		<method name="get_memory_info" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns the [Dictionary] with the following keys:
+				[code]"physical"[/code] - total amount of usable physical memory, in bytes or [code]-1[/code] if unknown. This value can be slightly less than the actual physical memory amount, since it does not include memory reserved by kernel and devices.
+				[code]"free"[/code] - amount of physical memory, that can be immediately allocated without disk access or other costly operation, in bytes or [code]-1[/code] if unknown. The process might be able to allocate more physical memory, but such allocation will require moving inactive pages to disk and can take some time.
+				[code]"available"[/code] - amount of memory, that can be allocated without extending the swap file(s), in bytes or [code]-1[/code] if unknown. This value include both physical memory and swap.
+				[code]"stack"[/code] - size of the current thread stack, in bytes or [code]-1[/code] if unknown.
+			</description>
+		</method>
 		<method name="get_model_name" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -416,7 +426,7 @@
 			<description>
 				Returns an array of the system substitute font file paths, which are similar to the font with [param font_name] and style for the specified text, locale and script. Returns empty array if no matching fonts found.
 				The following aliases can be used to request default fonts: "sans-serif", "serif", "monospace", "cursive", and "fantasy".
-				[b]Note:[/b] Depending on OS, it's not guaranteed that any of the returned fonts is suitable for rendering specified text. Fonts should be loaded and checked in the order they are returned, and the first suitable one used.
+				[b]Note:[/b] Depending on OS, it's not guaranteed that any of the returned fonts will be suitable for rendering specified text. Fonts should be loaded and checked in the order they are returned, and the first suitable one used.
 				[b]Note:[/b] Returned fonts might have different style if the requested style is not available or belong to a different font family.
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
@@ -471,7 +481,7 @@
 		<method name="get_video_adapter_driver_info" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
-				Returns the video adapter driver name and version for the user's currently active graphics card.
+				Returns the video adapter driver name and version for the user's currently active graphics card. See also [method RenderingServer.get_video_adapter_api_version].
 				The first element holds the driver name, such as [code]nvidia[/code], [code]amdgpu[/code], etc.
 				The second element holds the driver version. For e.g. the [code]nvidia[/code] driver on a Linux/BSD platform, the version is in the format [code]510.85.02[/code]. For Windows, the driver's format is [code]31.0.15.1659[/code].
 				[b]Note:[/b] This method is only supported on the platforms Linux/BSD and Windows when not running in headless mode. It returns an empty array on other platforms.
@@ -491,6 +501,7 @@
 			<description>
 				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on the platform, build, etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=$DOCS_URL/tutorials/export/feature_tags.html]Feature Tags[/url] documentation for more details.
 				[b]Note:[/b] Tag names are case-sensitive.
+				[b]Note:[/b] On the web platform, one of the following additional tags is defined to indicate host platform: [code]web_android[/code], [code]web_ios[/code], [code]web_linuxbsd[/code], [code]web_macos[/code], or [code]web_windows[/code].
 			</description>
 		</method>
 		<method name="is_debug_build" qualifiers="const">
@@ -498,7 +509,7 @@
 			<description>
 				Returns [code]true[/code] if the Godot binary used to run the project is a [i]debug[/i] export template, or when running in the editor.
 				Returns [code]false[/code] if the Godot binary used to run the project is a [i]release[/i] export template.
-				To check whether the Godot binary used to run the project is an export template (debug or release), use [code]OS.has_feature("standalone")[/code] instead.
+				To check whether the Godot binary used to run the project is an export template (debug or release), use [code]OS.has_feature("template")[/code] instead.
 			</description>
 		</method>
 		<method name="is_keycode_unicode" qualifiers="const">
@@ -553,11 +564,11 @@
 				[b]Note:[/b] If the user has disabled the recycle bin on their system, the file will be permanently deleted instead.
 				[codeblocks]
 				[gdscript]
-				var file_to_remove = "user://slot1.sav"
+				var file_to_remove = "user://slot1.save"
 				OS.move_to_trash(ProjectSettings.globalize_path(file_to_remove))
 				[/gdscript]
 				[csharp]
-				var fileToRemove = "user://slot1.sav";
+				var fileToRemove = "user://slot1.save";
 				OS.MoveToTrash(ProjectSettings.GlobalizePath(fileToRemove));
 				[/csharp]
 				[/codeblocks]
@@ -566,16 +577,15 @@
 		<method name="open_midi_inputs">
 			<return type="void" />
 			<description>
-				Initialises the singleton for the system MIDI driver.
+				Initializes the singleton for the system MIDI driver.
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="read_string_from_stdin">
 			<return type="String" />
-			<param index="0" name="block" type="bool" default="true" />
 			<description>
-				Reads a user input string from the standard input (usually the terminal).
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows. Non-blocking reads are not currently supported on any platform.
+				Reads a user input string from the standard input (usually the terminal). This operation is [i]blocking[/i], which causes the window to freeze if [method read_string_from_stdin] is called on the main thread. The thread calling [method read_string_from_stdin] will block until the program receives a line break in standard input (usually by the user pressing [kbd]Enter[/kbd]).
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="request_permission">
@@ -593,12 +603,12 @@
 			</description>
 		</method>
 		<method name="set_environment" qualifiers="const">
-			<return type="bool" />
+			<return type="void" />
 			<param index="0" name="variable" type="String" />
 			<param index="1" name="value" type="String" />
 			<description>
 				Sets the value of the environment variable [param variable] to [param value]. The environment variable will be set for the Godot process and any process executed with [method execute] after running [method set_environment]. The environment variable will [i]not[/i] persist to processes run after the Godot process was terminated.
-				[b]Note:[/b] Double-check the casing of [param variable]. Environment variable names are case-sensitive on all platforms except Windows.
+				[b]Note:[/b] Environment variable names are case-sensitive on all platforms except Windows. The [param variable] name cannot be empty or include the [code]=[/code] character. On Windows, there is a 32767 characters limit for the combined length of [param variable], [param value], and the [code]=[/code] and null terminator characters that will be registered in the environment block.
 			</description>
 		</method>
 		<method name="set_restart_on_exit">
@@ -635,7 +645,27 @@
 				- [code]OS.shell_open("https://godotengine.org")[/code] opens the default web browser on the official Godot website.
 				- [code]OS.shell_open("mailto:example@example.com")[/code] opens the default email client with the "To" field set to [code]example@example.com[/code]. See [url=https://datatracker.ietf.org/doc/html/rfc2368]RFC 2368 - The [code]mailto[/code] URL scheme[/url] for a list of fields that can be added.
 				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] path into a system path for use with this method.
+				[b]Note:[/b] Use [method String.uri_encode] to encode characters within URLs in a URL-safe, portable way. This is especially required for line breaks. Otherwise, [method shell_open] may not work correctly in a project exported to the Web platform.
 				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="shell_show_in_file_manager">
+			<return type="int" enum="Error" />
+			<param index="0" name="file_or_dir_path" type="String" />
+			<param index="1" name="open_folder" type="bool" default="true" />
+			<description>
+				Requests the OS to open the file manager, then navigate to the given [param file_or_dir_path] and select the target file or folder.
+				If [param file_or_dir_path] is a valid directory path, and [param open_folder] is [code]true[/code], the method will open the file manager and enter the target folder without selecting anything.
+				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] path into a system path for use with this method.
+				[b]Note:[/b] Currently this method is only implemented on Windows. On other platforms, it will fallback to [method shell_open] with a directory path for [param file_or_dir_path].
+			</description>
+		</method>
+		<method name="unset_environment" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="variable" type="String" />
+			<description>
+				Removes the environment [param variable] from the current environment, if it exists. The environment variable will be removed for the Godot process and any process executed with [method execute] after running [method unset_environment]. The removal of the environment variable will [i]not[/i] persist to processes run after the Godot process was terminated.
+				[b]Note:[/b] Environment variable names are case-sensitive on all platforms except Windows. The [param variable] name cannot be empty or include the [code]=[/code] character.
 			</description>
 		</method>
 	</methods>

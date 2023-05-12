@@ -1,35 +1,36 @@
-/*************************************************************************/
-/*  shader_editor_plugin.cpp                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  shader_editor_plugin.cpp                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "shader_editor_plugin.h"
 
+#include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -38,15 +39,16 @@
 #include "editor/plugins/text_shader_editor.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
 #include "editor/shader_create_dialog.h"
+#include "editor/window_wrapper.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/texture_rect.h"
 
 void ShaderEditorPlugin::_update_shader_list() {
 	shader_list->clear();
-	for (uint32_t i = 0; i < edited_shaders.size(); i++) {
-		Ref<Resource> shader = edited_shaders[i].shader;
+	for (EditedShader &edited_shader : edited_shaders) {
+		Ref<Resource> shader = edited_shader.shader;
 		if (shader.is_null()) {
-			shader = edited_shaders[i].shader_inc;
+			shader = edited_shader.shader_inc;
 		}
 
 		String path = shader->get_path();
@@ -62,8 +64,8 @@ void ShaderEditorPlugin::_update_shader_list() {
 		}
 
 		bool unsaved = false;
-		if (edited_shaders[i].shader_editor) {
-			unsaved = edited_shaders[i].shader_editor->is_unsaved();
+		if (edited_shader.shader_editor) {
+			unsaved = edited_shader.shader_editor->is_unsaved();
 		}
 		// TODO: Handle visual shaders too.
 
@@ -86,7 +88,7 @@ void ShaderEditorPlugin::_update_shader_list() {
 	}
 
 	for (int i = FILE_SAVE; i < FILE_MAX; i++) {
-		file_menu->get_popup()->set_item_disabled(file_menu->get_popup()->get_item_index(i), edited_shaders.size() == 0);
+		file_menu->get_popup()->set_item_disabled(file_menu->get_popup()->get_item_index(i), edited_shaders.is_empty());
 	}
 
 	_update_shader_list_status();
@@ -117,6 +119,10 @@ void ShaderEditorPlugin::_move_shader_tab(int p_from, int p_to) {
 }
 
 void ShaderEditorPlugin::edit(Object *p_object) {
+	if (!p_object) {
+		return;
+	}
+
 	EditedShader es;
 
 	ShaderInclude *si = Object::cast_to<ShaderInclude>(p_object);
@@ -167,7 +173,7 @@ bool ShaderEditorPlugin::handles(Object *p_object) const {
 
 void ShaderEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(main_split);
+		EditorNode::get_singleton()->make_bottom_panel_item_visible(window_wrapper);
 	}
 }
 
@@ -175,41 +181,127 @@ void ShaderEditorPlugin::selected_notify() {
 }
 
 TextShaderEditor *ShaderEditorPlugin::get_shader_editor(const Ref<Shader> &p_for_shader) {
-	for (uint32_t i = 0; i < edited_shaders.size(); i++) {
-		if (edited_shaders[i].shader == p_for_shader) {
-			return edited_shaders[i].shader_editor;
+	for (EditedShader &edited_shader : edited_shaders) {
+		if (edited_shader.shader == p_for_shader) {
+			return edited_shader.shader_editor;
 		}
 	}
 	return nullptr;
 }
 
 VisualShaderEditor *ShaderEditorPlugin::get_visual_shader_editor(const Ref<Shader> &p_for_shader) {
-	for (uint32_t i = 0; i < edited_shaders.size(); i++) {
-		if (edited_shaders[i].shader == p_for_shader) {
-			return edited_shaders[i].visual_shader_editor;
+	for (EditedShader &edited_shader : edited_shaders) {
+		if (edited_shader.shader == p_for_shader) {
+			return edited_shader.visual_shader_editor;
 		}
 	}
 	return nullptr;
 }
 
+void ShaderEditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
+	if (EDITOR_GET("interface/multi_window/restore_windows_on_load") && window_wrapper->is_window_available() && p_layout->has_section_key("ShaderEditor", "window_rect")) {
+		window_wrapper->restore_window_from_saved_position(
+				p_layout->get_value("ShaderEditor", "window_rect", Rect2i()),
+				p_layout->get_value("ShaderEditor", "window_screen", -1),
+				p_layout->get_value("ShaderEditor", "window_screen_rect", Rect2i()));
+	} else {
+		window_wrapper->set_window_enabled(false);
+	}
+
+	if (!bool(EDITOR_GET("editors/shader_editor/behavior/files/restore_shaders_on_load"))) {
+		return;
+	}
+	if (!p_layout->has_section("ShaderEditor")) {
+		return;
+	}
+	if (!p_layout->has_section_key("ShaderEditor", "open_shaders") ||
+			!p_layout->has_section_key("ShaderEditor", "selected_shader")) {
+		return;
+	}
+
+	Array shaders = p_layout->get_value("ShaderEditor", "open_shaders");
+	int selected_shader_idx = 0;
+	String selected_shader = p_layout->get_value("ShaderEditor", "selected_shader");
+	for (int i = 0; i < shaders.size(); i++) {
+		String path = shaders[i];
+		Ref<Resource> res = ResourceLoader::load(path);
+		if (res.is_valid()) {
+			edit(res.ptr());
+		}
+		if (selected_shader == path) {
+			selected_shader_idx = i;
+		}
+	}
+
+	if (p_layout->has_section_key("ShaderEditor", "split_offset")) {
+		main_split->set_split_offset(p_layout->get_value("ShaderEditor", "split_offset"));
+	}
+
+	_update_shader_list();
+	_shader_selected(selected_shader_idx);
+}
+
+void ShaderEditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
+	if (window_wrapper->get_window_enabled()) {
+		p_layout->set_value("ShaderEditor", "window_rect", window_wrapper->get_window_rect());
+		int screen = window_wrapper->get_window_screen();
+		p_layout->set_value("ShaderEditor", "window_screen", screen);
+		p_layout->set_value("ShaderEditor", "window_screen_rect", DisplayServer::get_singleton()->screen_get_usable_rect(screen));
+
+	} else {
+		if (p_layout->has_section_key("ShaderEditor", "window_rect")) {
+			p_layout->erase_section_key("ShaderEditor", "window_rect");
+		}
+		if (p_layout->has_section_key("ShaderEditor", "window_screen")) {
+			p_layout->erase_section_key("ShaderEditor", "window_screen");
+		}
+		if (p_layout->has_section_key("ShaderEditor", "window_screen_rect")) {
+			p_layout->erase_section_key("ShaderEditor", "window_screen_rect");
+		}
+	}
+
+	Array shaders;
+	String selected_shader;
+	for (int i = 0; i < shader_tabs->get_tab_count(); i++) {
+		EditedShader edited_shader = edited_shaders[i];
+		if (edited_shader.shader_editor || edited_shader.visual_shader_editor) {
+			shaders.push_back(edited_shader.shader->get_path());
+
+			TextShaderEditor *shader_editor = Object::cast_to<TextShaderEditor>(shader_tabs->get_current_tab_control());
+			VisualShaderEditor *visual_shader_editor = Object::cast_to<VisualShaderEditor>(shader_tabs->get_current_tab_control());
+
+			if ((shader_editor && edited_shader.shader_editor == shader_editor) || (visual_shader_editor && edited_shader.visual_shader_editor == visual_shader_editor)) {
+				selected_shader = edited_shader.shader->get_path();
+			}
+		}
+	}
+	p_layout->set_value("ShaderEditor", "open_shaders", shaders);
+	p_layout->set_value("ShaderEditor", "split_offset", main_split->get_split_offset());
+	p_layout->set_value("ShaderEditor", "selected_shader", selected_shader);
+}
+
 void ShaderEditorPlugin::save_external_data() {
-	for (uint32_t i = 0; i < edited_shaders.size(); i++) {
-		if (edited_shaders[i].shader_editor) {
-			edited_shaders[i].shader_editor->save_external_data();
+	for (EditedShader &edited_shader : edited_shaders) {
+		if (edited_shader.shader_editor) {
+			edited_shader.shader_editor->save_external_data();
 		}
 	}
 	_update_shader_list();
 }
 
 void ShaderEditorPlugin::apply_changes() {
-	for (uint32_t i = 0; i < edited_shaders.size(); i++) {
-		if (edited_shaders[i].shader_editor) {
-			edited_shaders[i].shader_editor->apply_shaders();
+	for (EditedShader &edited_shader : edited_shaders) {
+		if (edited_shader.shader_editor) {
+			edited_shader.shader_editor->apply_shaders();
 		}
 	}
 }
 
 void ShaderEditorPlugin::_shader_selected(int p_index) {
+	if (p_index >= (int)edited_shaders.size()) {
+		return;
+	}
+
 	if (edited_shaders[p_index].shader_editor) {
 		edited_shaders[p_index].shader_editor->validate_script();
 	}
@@ -229,13 +321,33 @@ void ShaderEditorPlugin::_close_shader(int p_index) {
 	memdelete(c);
 	edited_shaders.remove_at(p_index);
 	_update_shader_list();
-	EditorNode::get_undo_redo()->clear_history(); // To prevent undo on deleted graphs.
+	EditorUndoRedoManager::get_singleton()->clear_history(); // To prevent undo on deleted graphs.
+}
+
+void ShaderEditorPlugin::_close_builtin_shaders_from_scene(const String &p_scene) {
+	for (uint32_t i = 0; i < edited_shaders.size();) {
+		Ref<Shader> &shader = edited_shaders[i].shader;
+		if (shader.is_valid()) {
+			if (shader->is_built_in() && shader->get_path().begins_with(p_scene)) {
+				_close_shader(i);
+				continue;
+			}
+		}
+		Ref<ShaderInclude> &include = edited_shaders[i].shader_inc;
+		if (include.is_valid()) {
+			if (include->is_built_in() && include->get_path().begins_with(p_scene)) {
+				_close_shader(i);
+				continue;
+			}
+		}
+		i++;
+	}
 }
 
 void ShaderEditorPlugin::_resource_saved(Object *obj) {
 	// May have been renamed on save.
-	for (uint32_t i = 0; i < edited_shaders.size(); i++) {
-		if (edited_shaders[i].shader.ptr() == obj) {
+	for (EditedShader &edited_shader : edited_shaders) {
+		if (edited_shader.shader.ptr() == obj) {
 			_update_shader_list();
 			return;
 		}
@@ -263,18 +375,26 @@ void ShaderEditorPlugin::_menu_item_pressed(int p_index) {
 		case FILE_SAVE: {
 			int index = shader_tabs->get_current_tab();
 			ERR_FAIL_INDEX(index, shader_tabs->get_tab_count());
+			TextShaderEditor *editor = edited_shaders[index].shader_editor;
+			if (editor && editor->get_trim_trailing_whitespace_on_save()) {
+				editor->trim_trailing_whitespace();
+			}
 			if (edited_shaders[index].shader.is_valid()) {
 				EditorNode::get_singleton()->save_resource(edited_shaders[index].shader);
 			} else {
 				EditorNode::get_singleton()->save_resource(edited_shaders[index].shader_inc);
 			}
-			if (edited_shaders[index].shader_editor) {
-				edited_shaders[index].shader_editor->tag_saved_version();
+			if (editor) {
+				editor->tag_saved_version();
 			}
 		} break;
 		case FILE_SAVE_AS: {
 			int index = shader_tabs->get_current_tab();
 			ERR_FAIL_INDEX(index, shader_tabs->get_tab_count());
+			TextShaderEditor *editor = edited_shaders[index].shader_editor;
+			if (editor && editor->get_trim_trailing_whitespace_on_save()) {
+				editor->trim_trailing_whitespace();
+			}
 			String path;
 			if (edited_shaders[index].shader.is_valid()) {
 				path = edited_shaders[index].shader->get_path();
@@ -289,8 +409,8 @@ void ShaderEditorPlugin::_menu_item_pressed(int p_index) {
 				}
 				EditorNode::get_singleton()->save_resource_as(edited_shaders[index].shader_inc, path);
 			}
-			if (edited_shaders[index].shader_editor) {
-				edited_shaders[index].shader_editor->tag_saved_version();
+			if (editor) {
+				editor->tag_saved_version();
 			}
 		} break;
 		case FILE_INSPECT: {
@@ -372,6 +492,12 @@ bool ShaderEditorPlugin::can_drop_data_fw(const Point2 &p_point, const Variant &
 					return true;
 				}
 			}
+			if (ResourceLoader::exists(file, "ShaderInclude")) {
+				Ref<ShaderInclude> sinclude = ResourceLoader::load(file);
+				if (sinclude.is_valid()) {
+					return true;
+				}
+			}
 		}
 		return false;
 	}
@@ -401,11 +527,10 @@ void ShaderEditorPlugin::drop_data_fw(const Point2 &p_point, const Variant &p_da
 
 		for (int i = 0; i < files.size(); i++) {
 			String file = files[i];
-			if (!ResourceLoader::exists(file, "Shader")) {
-				continue;
+			Ref<Resource> res;
+			if (ResourceLoader::exists(file, "Shader") || ResourceLoader::exists(file, "ShaderInclude")) {
+				res = ResourceLoader::load(file);
 			}
-
-			Ref<Resource> res = ResourceLoader::load(file);
 			if (res.is_valid()) {
 				edit(res.ptr());
 			}
@@ -413,19 +538,31 @@ void ShaderEditorPlugin::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 }
 
-void ShaderEditorPlugin::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_get_drag_data_fw", "point", "from"), &ShaderEditorPlugin::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw", "point", "data", "from"), &ShaderEditorPlugin::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw", "point", "data", "from"), &ShaderEditorPlugin::drop_data_fw);
+void ShaderEditorPlugin::_window_changed(bool p_visible) {
+	make_floating->set_visible(!p_visible);
+}
+
+void ShaderEditorPlugin::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			EditorNode::get_singleton()->connect("scene_closed", callable_mp(this, &ShaderEditorPlugin::_close_builtin_shaders_from_scene));
+		} break;
+	}
 }
 
 ShaderEditorPlugin::ShaderEditorPlugin() {
+	window_wrapper = memnew(WindowWrapper);
+	window_wrapper->set_window_title(TTR("Shader Editor - Godot Engine"));
+	window_wrapper->set_margins_enabled(true);
+
 	main_split = memnew(HSplitContainer);
+	Ref<Shortcut> make_floating_shortcut = ED_SHORTCUT_AND_COMMAND("shader_editor/make_floating", TTR("Make Floating"));
+	window_wrapper->set_wrapped_control(main_split, make_floating_shortcut);
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 
-	HBoxContainer *file_hb = memnew(HBoxContainer);
-	vb->add_child(file_hb);
+	HBoxContainer *menu_hb = memnew(HBoxContainer);
+	vb->add_child(menu_hb);
 	file_menu = memnew(MenuButton);
 	file_menu->set_text(TTR("File"));
 	file_menu->get_popup()->add_item(TTR("New Shader"), FILE_NEW);
@@ -440,10 +577,24 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_item(TTR("Close File"), FILE_CLOSE);
 	file_menu->get_popup()->connect("id_pressed", callable_mp(this, &ShaderEditorPlugin::_menu_item_pressed));
-	file_hb->add_child(file_menu);
+	menu_hb->add_child(file_menu);
 
 	for (int i = FILE_SAVE; i < FILE_MAX; i++) {
 		file_menu->get_popup()->set_item_disabled(file_menu->get_popup()->get_item_index(i), true);
+	}
+
+	if (window_wrapper->is_window_available()) {
+		Control *padding = memnew(Control);
+		padding->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		menu_hb->add_child(padding);
+
+		make_floating = memnew(ScreenSelect);
+		make_floating->set_flat(true);
+		make_floating->set_tooltip_text(TTR("Make the shader editor floating."));
+		make_floating->connect("request_open_in_screen", callable_mp(window_wrapper, &WindowWrapper::enable_window_on_screen).bind(true));
+
+		menu_hb->add_child(make_floating);
+		window_wrapper->connect("window_visibility_changed", callable_mp(this, &ShaderEditorPlugin::_window_changed));
 	}
 
 	shader_list = memnew(ItemList);
@@ -451,7 +602,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	vb->add_child(shader_list);
 	shader_list->connect("item_selected", callable_mp(this, &ShaderEditorPlugin::_shader_selected));
 	shader_list->connect("item_clicked", callable_mp(this, &ShaderEditorPlugin::_shader_list_clicked));
-	shader_list->set_drag_forwarding(this);
+	SET_DRAG_FORWARDING_GCD(shader_list, ShaderEditorPlugin);
 
 	main_split->add_child(vb);
 	vb->set_custom_minimum_size(Size2(200, 300) * EDSCALE);
@@ -464,7 +615,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	empty.instantiate();
 	shader_tabs->add_theme_style_override("panel", empty);
 
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Shader Editor"), main_split);
+	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Shader Editor"), window_wrapper);
 
 	// Defer connect because Editor class is not in the binding system yet.
 	EditorNode::get_singleton()->call_deferred("connect", "resource_saved", callable_mp(this, &ShaderEditorPlugin::_resource_saved), CONNECT_DEFERRED);

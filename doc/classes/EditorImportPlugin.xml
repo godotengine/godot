@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorImportPlugin" inherits="ResourceImporter" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorImportPlugin" inherits="ResourceImporter" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Registers a custom resource importer in the editor. Use the class to parse any file and import it as a new resource type.
 	</brief_description>
@@ -37,8 +37,8 @@
 		    return [{"name": "my_option", "default_value": false}]
 
 		func _import(source_file, save_path, options, platform_variants, gen_files):
-		    var file = File.new()
-		    if file.open(source_file, File.READ) != OK:
+		    var file = FileAccess.open(source_file, FileAccess.READ)
+		    if file == null:
 		        return FAILED
 		    var mesh = ArrayMesh.new()
 		    # Fill the Mesh with data read in "file", left as an exercise to the reader.
@@ -48,61 +48,67 @@
 		[/gdscript]
 		[csharp]
 		using Godot;
-		using System;
 
-		public class MySpecialPlugin : EditorImportPlugin
+		public partial class MySpecialPlugin : EditorImportPlugin
 		{
-		    public override String GetImporterName()
+		    public override string _GetImporterName()
 		    {
 		        return "my.special.plugin";
 		    }
 
-		    public override String GetVisibleName()
+		    public override string _GetVisibleName()
 		    {
 		        return "Special Mesh";
 		    }
 
-		    public override Godot.Collections.Array GetRecognizedExtensions()
+		    public override string[] _GetRecognizedExtensions()
 		    {
-		        return new Godot.Collections.Array{"special", "spec"};
+		        return new string[] { "special", "spec" };
 		    }
 
-		    public override String GetSaveExtension()
+		    public override string _GetSaveExtension()
 		    {
 		        return "mesh";
 		    }
 
-		    public override String GetResourceType()
+		    public override string _GetResourceType()
 		    {
 		        return "Mesh";
 		    }
 
-		    public override int GetPresetCount()
+		    public override int _GetPresetCount()
 		    {
 		        return 1;
 		    }
 
-		    public override String GetPresetName(int i)
+		    public override string _GetPresetName(int presetIndex)
 		    {
 		        return "Default";
 		    }
 
-		    public override Godot.Collections.Array GetImportOptions(int i)
+		    public override Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; _GetImportOptions(string path, int presetIndex)
 		    {
-		        return new Godot.Collections.Array{new Godot.Collections.Dictionary{{"name", "myOption"}, {"defaultValue", false}}};
+		        return new Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt;
+		        {
+		            new Godot.Collections.Dictionary
+		            {
+		                { "name", "myOption" },
+		                { "defaultValue", false },
+		            }
+		        };
 		    }
 
-		    public override int Import(String sourceFile, String savePath, Godot.Collections.Dictionary options, Godot.Collections.Array platformVariants, Godot.Collections.Array genFiles)
+		    public override int _Import(string sourceFile, string savePath, Godot.Collections.Dictionary options, Godot.Collections.Array&lt;string&gt; platformVariants, Godot.Collections.Array&lt;string&gt; genFiles)
 		    {
-		        var file = new File();
-		        if (file.Open(sourceFile, File.ModeFlags.Read) != Error.Ok)
+		        using var file = FileAccess.Open(sourceFile, FileAccess.ModeFlags.Read);
+		        if (file.GetError() != Error.Ok)
 		        {
 		            return (int)Error.Failed;
 		        }
 
 		        var mesh = new ArrayMesh();
 		        // Fill the Mesh with data read in "file", left as an exercise to the reader.
-		        String filename = savePath + "." + GetSaveExtension();
+		        string filename = $"{savePath}.{_GetSaveExtension()}";
 		        return (int)ResourceSaver.Save(mesh, filename);
 		    }
 		}
@@ -210,7 +216,7 @@
 			</description>
 		</method>
 		<method name="_import" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<param index="0" name="source_file" type="String" />
 			<param index="1" name="save_path" type="String" />
 			<param index="2" name="options" type="Dictionary" />
@@ -219,6 +225,16 @@
 			<description>
 				Imports [param source_file] into [param save_path] with the import [param options] specified. The [param platform_variants] and [param gen_files] arrays will be modified by this function.
 				This method must be overridden to do the actual importing work. See this class' description for an example of overriding this method.
+			</description>
+		</method>
+		<method name="append_import_external_resource">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="custom_options" type="Dictionary" default="{}" />
+			<param index="2" name="custom_importer" type="String" default="&quot;&quot;" />
+			<param index="3" name="generator_parameters" type="Variant" default="null" />
+			<description>
+				This function can only be called during the [method _import] callback and it allows manually importing resources from it. This is useful when the imported file generates external resources that require importing (as example, images). Custom parameters for the ".import" file can be passed via the [param custom_options]. Additionally, in cases where multiple importers can handle a file, the [param custom_importer] ca be specified to force a specific one. This function performs a resource import and returns immediately with a success or error code. [param generator_parameters] defines optional extra metadata which will be stored as [code]generator_parameters[/code] in the [code]remap[/code] section of the [code].import[/code] file, for example to store a md5 hash of the source data.
 			</description>
 		</method>
 	</methods>

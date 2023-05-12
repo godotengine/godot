@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  text_server.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  text_server.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "servers/text_server.h"
 #include "core/variant/typed_array.h"
@@ -332,6 +332,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_get_kerning", "font_rid", "size", "glyph_pair"), &TextServer::font_get_kerning);
 
 	ClassDB::bind_method(D_METHOD("font_get_glyph_index", "font_rid", "size", "char", "variation_selector"), &TextServer::font_get_glyph_index);
+	ClassDB::bind_method(D_METHOD("font_get_char_from_glyph_index", "font_rid", "size", "glyph_index"), &TextServer::font_get_char_from_glyph_index);
 
 	ClassDB::bind_method(D_METHOD("font_has_char", "font_rid", "char"), &TextServer::font_has_char);
 	ClassDB::bind_method(D_METHOD("font_get_supported_chars", "font_rid"), &TextServer::font_get_supported_chars);
@@ -483,6 +484,7 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DIRECTION_AUTO);
 	BIND_ENUM_CONSTANT(DIRECTION_LTR);
 	BIND_ENUM_CONSTANT(DIRECTION_RTL);
+	BIND_ENUM_CONSTANT(DIRECTION_INHERITED);
 
 	/* Orientation */
 	BIND_ENUM_CONSTANT(ORIENTATION_HORIZONTAL);
@@ -545,6 +547,7 @@ void TextServer::_bind_methods() {
 	BIND_BITFIELD_FLAG(GRAPHEME_IS_UNDERSCORE);
 	BIND_BITFIELD_FLAG(GRAPHEME_IS_CONNECTED);
 	BIND_BITFIELD_FLAG(GRAPHEME_IS_SAFE_TO_INSERT_TATWEEL);
+	BIND_BITFIELD_FLAG(GRAPHEME_IS_EMBEDDED_OBJECT);
 
 	/* Hinting */
 	BIND_ENUM_CONSTANT(HINTING_NONE);
@@ -599,7 +602,7 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_FILE);
 	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_EMAIL);
 	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_LIST);
-	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_NONE);
+	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_GDSCRIPT);
 	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_CUSTOM);
 }
 
@@ -1447,7 +1450,7 @@ void TextServer::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, cons
 
 			if (glyphs[i].font_rid != RID()) {
 				font_draw_glyph(glyphs[i].font_rid, p_canvas, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color);
-			} else if (hex_codes && ((glyphs[i].flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL)) {
+			} else if (hex_codes && ((glyphs[i].flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL) && ((glyphs[i].flags & GRAPHEME_IS_EMBEDDED_OBJECT) != GRAPHEME_IS_EMBEDDED_OBJECT)) {
 				TextServer::draw_hex_code_box(p_canvas, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color);
 			}
 			if (orientation == ORIENTATION_HORIZONTAL) {
@@ -1692,22 +1695,22 @@ String TextServer::strip_diacritics(const String &p_string) const {
 	return result;
 }
 
-TypedArray<Vector2i> TextServer::parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
-	TypedArray<Vector2i> ret;
+TypedArray<Vector3i> TextServer::parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
+	TypedArray<Vector3i> ret;
 	switch (p_parser_type) {
 		case STRUCTURED_TEXT_URI: {
 			int prev = 0;
 			for (int i = 0; i < p_text.length(); i++) {
 				if ((p_text[i] == '\\') || (p_text[i] == '/') || (p_text[i] == '.') || (p_text[i] == ':') || (p_text[i] == '&') || (p_text[i] == '=') || (p_text[i] == '@') || (p_text[i] == '?') || (p_text[i] == '#')) {
 					if (prev != i) {
-						ret.push_back(Vector2i(prev, i));
+						ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
 					}
-					ret.push_back(Vector2i(i, i + 1));
+					ret.push_back(Vector3i(i, i + 1, TextServer::DIRECTION_LTR));
 					prev = i + 1;
 				}
 			}
 			if (prev != p_text.length()) {
-				ret.push_back(Vector2i(prev, p_text.length()));
+				ret.push_back(Vector3i(prev, p_text.length(), TextServer::DIRECTION_AUTO));
 			}
 		} break;
 		case STRUCTURED_TEXT_FILE: {
@@ -1715,14 +1718,14 @@ TypedArray<Vector2i> TextServer::parse_structured_text(StructuredTextParser p_pa
 			for (int i = 0; i < p_text.length(); i++) {
 				if ((p_text[i] == '\\') || (p_text[i] == '/') || (p_text[i] == ':')) {
 					if (prev != i) {
-						ret.push_back(Vector2i(prev, i));
+						ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
 					}
-					ret.push_back(Vector2i(i, i + 1));
+					ret.push_back(Vector3i(i, i + 1, TextServer::DIRECTION_LTR));
 					prev = i + 1;
 				}
 			}
 			if (prev != p_text.length()) {
-				ret.push_back(Vector2i(prev, p_text.length()));
+				ret.push_back(Vector3i(prev, p_text.length(), TextServer::DIRECTION_AUTO));
 			}
 		} break;
 		case STRUCTURED_TEXT_EMAIL: {
@@ -1731,19 +1734,19 @@ TypedArray<Vector2i> TextServer::parse_structured_text(StructuredTextParser p_pa
 			for (int i = 0; i < p_text.length(); i++) {
 				if ((p_text[i] == '@') && local) { // Add full "local" as single context.
 					local = false;
-					ret.push_back(Vector2i(prev, i));
-					ret.push_back(Vector2i(i, i + 1));
+					ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
+					ret.push_back(Vector3i(i, i + 1, TextServer::DIRECTION_LTR));
 					prev = i + 1;
 				} else if (!local && (p_text[i] == '.')) { // Add each dot separated "domain" part as context.
 					if (prev != i) {
-						ret.push_back(Vector2i(prev, i));
+						ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
 					}
-					ret.push_back(Vector2i(i, i + 1));
+					ret.push_back(Vector3i(i, i + 1, TextServer::DIRECTION_LTR));
 					prev = i + 1;
 				}
 			}
 			if (prev != p_text.length()) {
-				ret.push_back(Vector2i(prev, p_text.length()));
+				ret.push_back(Vector3i(prev, p_text.length(), TextServer::DIRECTION_AUTO));
 			}
 		} break;
 		case STRUCTURED_TEXT_LIST: {
@@ -1752,18 +1755,97 @@ TypedArray<Vector2i> TextServer::parse_structured_text(StructuredTextParser p_pa
 				int prev = 0;
 				for (int i = 0; i < tags.size(); i++) {
 					if (prev != i) {
-						ret.push_back(Vector2i(prev, prev + tags[i].length()));
+						ret.push_back(Vector3i(prev, prev + tags[i].length(), TextServer::DIRECTION_INHERITED));
 					}
-					ret.push_back(Vector2i(prev + tags[i].length(), prev + tags[i].length() + 1));
+					ret.push_back(Vector3i(prev + tags[i].length(), prev + tags[i].length() + 1, TextServer::DIRECTION_INHERITED));
 					prev = prev + tags[i].length() + 1;
 				}
 			}
 		} break;
+		case STRUCTURED_TEXT_GDSCRIPT: {
+			bool in_string_literal = false;
+			bool in_string_literal_single = false;
+			bool in_id = false;
+
+			int prev = 0;
+			for (int i = 0; i < p_text.length(); i++) {
+				char32_t c = p_text[i];
+				if (in_string_literal) {
+					if (c == '\\') {
+						i++;
+						continue; // Skip escaped chars.
+					} else if (c == '\"') {
+						// String literal end, push string and ".
+						if (prev != i) {
+							ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
+						}
+						prev = i + 1;
+						ret.push_back(Vector3i(i, i + 1, TextServer::DIRECTION_LTR));
+						in_string_literal = false;
+					}
+				} else if (in_string_literal_single) {
+					if (c == '\\') {
+						i++;
+						continue; // Skip escaped chars.
+					} else if (c == '\'') {
+						// String literal end, push string and '.
+						if (prev != i) {
+							ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
+						}
+						prev = i + 1;
+						ret.push_back(Vector3i(i, i + 1, TextServer::DIRECTION_LTR));
+						in_string_literal_single = false;
+					}
+				} else if (in_id) {
+					if (!is_unicode_identifier_continue(c)) {
+						// End of id, push id.
+						if (prev != i) {
+							ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
+						}
+						prev = i;
+						in_id = false;
+					}
+				} else if (is_unicode_identifier_start(c)) {
+					// Start of new id, push prev element.
+					if (prev != i) {
+						ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
+					}
+					prev = i;
+					in_id = true;
+				} else if (c == '\"') {
+					// String literal start, push prev element and ".
+					if (prev != i) {
+						ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
+					}
+					prev = i + 1;
+					ret.push_back(Vector3i(i, i + 1, TextServer::DIRECTION_LTR));
+					in_string_literal = true;
+				} else if (c == '\'') {
+					// String literal start, push prev element and '.
+					if (prev != i) {
+						ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
+					}
+					prev = i + 1;
+					ret.push_back(Vector3i(i, i + 1, TextServer::DIRECTION_LTR));
+					in_string_literal_single = true;
+				} else if (c == '#') {
+					// Start of comment, push prev element and #, skip the rest of the text.
+					if (prev != i) {
+						ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
+					}
+					prev = i + 1;
+					ret.push_back(Vector3i(i, i + 1, TextServer::DIRECTION_LTR));
+					break;
+				}
+			}
+			if (prev < p_text.length()) {
+				ret.push_back(Vector3i(prev, p_text.length(), TextServer::DIRECTION_AUTO));
+			}
+		} break;
 		case STRUCTURED_TEXT_CUSTOM:
-		case STRUCTURED_TEXT_NONE:
 		case STRUCTURED_TEXT_DEFAULT:
 		default: {
-			ret.push_back(Vector2i(0, p_text.length()));
+			ret.push_back(Vector3i(0, p_text.length(), TextServer::DIRECTION_INHERITED));
 		}
 	}
 	return ret;

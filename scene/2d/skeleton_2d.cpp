@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  skeleton_2d.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  skeleton_2d.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "skeleton_2d.h"
 
@@ -115,6 +115,7 @@ void Bone2D::_notification(int p_what) {
 				bone.bone = this;
 				skeleton->bones.push_back(bone);
 				skeleton->_make_bone_setup_dirty();
+				get_parent()->connect(SNAME("child_order_changed"), callable_mp(skeleton, &Skeleton2D::_make_bone_setup_dirty), CONNECT_REFERENCE_COUNTED);
 			}
 
 			cache_transform = get_transform();
@@ -154,15 +155,6 @@ void Bone2D::_notification(int p_what) {
 #endif // TOOLS_ENABLED
 		} break;
 
-		case NOTIFICATION_MOVED_IN_PARENT: {
-			if (skeleton) {
-				skeleton->_make_bone_setup_dirty();
-			}
-			if (copy_transform_to_cache) {
-				cache_transform = get_transform();
-			}
-		} break;
-
 		case NOTIFICATION_EXIT_TREE: {
 			if (skeleton) {
 				for (int i = 0; i < skeleton->bones.size(); i++) {
@@ -172,7 +164,7 @@ void Bone2D::_notification(int p_what) {
 					}
 				}
 				skeleton->_make_bone_setup_dirty();
-				skeleton = nullptr;
+				get_parent()->disconnect(SNAME("child_order_changed"), callable_mp(skeleton, &Skeleton2D::_make_bone_setup_dirty));
 			}
 			parent_bone = nullptr;
 			set_transform(cache_transform);
@@ -378,9 +370,6 @@ void Bone2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_skeleton_rest"), &Bone2D::get_skeleton_rest);
 	ClassDB::bind_method(D_METHOD("get_index_in_skeleton"), &Bone2D::get_index_in_skeleton);
 
-	ClassDB::bind_method(D_METHOD("set_default_length", "default_length"), &Bone2D::set_default_length);
-	ClassDB::bind_method(D_METHOD("get_default_length"), &Bone2D::get_default_length);
-
 	ClassDB::bind_method(D_METHOD("set_autocalculate_length_and_angle", "auto_calculate"), &Bone2D::set_autocalculate_length_and_angle);
 	ClassDB::bind_method(D_METHOD("get_autocalculate_length_and_angle"), &Bone2D::get_autocalculate_length_and_angle);
 	ClassDB::bind_method(D_METHOD("set_length", "length"), &Bone2D::set_length);
@@ -414,16 +403,6 @@ Transform2D Bone2D::get_skeleton_rest() const {
 
 void Bone2D::apply_rest() {
 	set_transform(rest);
-}
-
-void Bone2D::set_default_length(real_t p_length) {
-	WARN_DEPRECATED_MSG("set_default_length is deprecated. Please use set_length instead!");
-	set_length(p_length);
-}
-
-real_t Bone2D::get_default_length() const {
-	WARN_DEPRECATED_MSG("get_default_length is deprecated. Please use get_length instead!");
-	return get_length();
 }
 
 int Bone2D::get_index_in_skeleton() const {
@@ -519,6 +498,7 @@ Bone2D::Bone2D() {
 	bone_angle = 0;
 	autocalculate_length_and_angle = true;
 	set_notify_local_transform(true);
+	set_hide_clip_children(true);
 	//this is a clever hack so the bone knows no rest has been set yet, allowing to show an error.
 	for (int i = 0; i < 3; i++) {
 		rest[i] = Vector2(0, 0);
@@ -562,7 +542,7 @@ void Skeleton2D::_get_property_list(List<PropertyInfo> *p_list) const {
 			PropertyInfo(Variant::OBJECT, PNAME("modification_stack"),
 					PROPERTY_HINT_RESOURCE_TYPE,
 					"SkeletonModificationStack2D",
-					PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
+					PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE | PROPERTY_USAGE_ALWAYS_DUPLICATE));
 }
 
 void Skeleton2D::_make_bone_setup_dirty() {
@@ -801,6 +781,7 @@ void Skeleton2D::_bind_methods() {
 Skeleton2D::Skeleton2D() {
 	skeleton = RS::get_singleton()->skeleton_create();
 	set_notify_transform(true);
+	set_hide_clip_children(true);
 }
 
 Skeleton2D::~Skeleton2D() {

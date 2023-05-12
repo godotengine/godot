@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  test_array.h                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  test_array.h                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef TEST_ARRAY_H
 #define TEST_ARRAY_H
@@ -253,6 +253,7 @@ TEST_CASE("[Array] slice()") {
 	array.push_back(2);
 	array.push_back(3);
 	array.push_back(4);
+	array.push_back(5);
 
 	Array slice0 = array.slice(0, 0);
 	CHECK(slice0.size() == 0);
@@ -263,42 +264,52 @@ TEST_CASE("[Array] slice()") {
 	CHECK(slice1[1] == Variant(2));
 
 	Array slice2 = array.slice(1, -1);
-	CHECK(slice2.size() == 3);
+	CHECK(slice2.size() == 4);
 	CHECK(slice2[0] == Variant(1));
 	CHECK(slice2[1] == Variant(2));
 	CHECK(slice2[2] == Variant(3));
+	CHECK(slice2[3] == Variant(4));
 
 	Array slice3 = array.slice(3);
-	CHECK(slice3.size() == 2);
+	CHECK(slice3.size() == 3);
 	CHECK(slice3[0] == Variant(3));
 	CHECK(slice3[1] == Variant(4));
+	CHECK(slice3[2] == Variant(5));
 
 	Array slice4 = array.slice(2, -2);
-	CHECK(slice4.size() == 1);
+	CHECK(slice4.size() == 2);
 	CHECK(slice4[0] == Variant(2));
+	CHECK(slice4[1] == Variant(3));
 
 	Array slice5 = array.slice(-2);
 	CHECK(slice5.size() == 2);
-	CHECK(slice5[0] == Variant(3));
-	CHECK(slice5[1] == Variant(4));
+	CHECK(slice5[0] == Variant(4));
+	CHECK(slice5[1] == Variant(5));
 
 	Array slice6 = array.slice(2, 42);
-	CHECK(slice6.size() == 3);
+	CHECK(slice6.size() == 4);
 	CHECK(slice6[0] == Variant(2));
 	CHECK(slice6[1] == Variant(3));
 	CHECK(slice6[2] == Variant(4));
+	CHECK(slice6[3] == Variant(5));
 
 	Array slice7 = array.slice(4, 0, -2);
 	CHECK(slice7.size() == 2);
 	CHECK(slice7[0] == Variant(4));
 	CHECK(slice7[1] == Variant(2));
 
-	ERR_PRINT_OFF;
-	Array slice8 = array.slice(4, 1);
-	CHECK(slice8.size() == 0);
+	Array slice8 = array.slice(5, 0, -2);
+	CHECK(slice8.size() == 3);
+	CHECK(slice8[0] == Variant(5));
+	CHECK(slice8[1] == Variant(3));
+	CHECK(slice8[2] == Variant(1));
 
-	Array slice9 = array.slice(3, -4);
+	ERR_PRINT_OFF;
+	Array slice9 = array.slice(4, 1);
 	CHECK(slice9.size() == 0);
+
+	Array slice10 = array.slice(3, -4);
+	CHECK(slice10.size() == 0);
 	ERR_PRINT_ON;
 }
 

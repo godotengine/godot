@@ -11,7 +11,7 @@ namespace Godot.SourceGenerators.Sample
     [SuppressMessage("ReSharper", "RedundantNameQualifier")]
     [SuppressMessage("ReSharper", "ArrangeObjectCreationWhenTypeEvident")]
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public partial class ExportedFields : Godot.Object
+    public partial class ExportedFields : GodotObject
     {
         [Export] private Boolean field_Boolean = true;
         [Export] private Char field_Char = 'f';
@@ -29,19 +29,19 @@ namespace Godot.SourceGenerators.Sample
 
         // Godot structs
         [Export] private Vector2 field_Vector2 = new(10f, 10f);
-        [Export] private Vector2i field_Vector2i = Vector2i.Up;
+        [Export] private Vector2I field_Vector2I = Vector2I.Up;
         [Export] private Rect2 field_Rect2 = new(new Vector2(10f, 10f), new Vector2(10f, 10f));
-        [Export] private Rect2i field_Rect2i = new(new Vector2i(10, 10), new Vector2i(10, 10));
+        [Export] private Rect2I field_Rect2I = new(new Vector2I(10, 10), new Vector2I(10, 10));
         [Export] private Transform2D field_Transform2D = Transform2D.Identity;
         [Export] private Vector3 field_Vector3 = new(10f, 10f, 10f);
-        [Export] private Vector3i field_Vector3i = Vector3i.Back;
+        [Export] private Vector3I field_Vector3I = Vector3I.Back;
         [Export] private Basis field_Basis = new Basis(Quaternion.Identity);
         [Export] private Quaternion field_Quaternion = new Quaternion(Basis.Identity);
         [Export] private Transform3D field_Transform3D = Transform3D.Identity;
         [Export] private Vector4 field_Vector4 = new(10f, 10f, 10f, 10f);
-        [Export] private Vector4i field_Vector4i = Vector4i.One;
+        [Export] private Vector4I field_Vector4I = Vector4I.One;
         [Export] private Projection field_Projection = Projection.Identity;
-        [Export] private AABB field_AABB = new AABB(10f, 10f, 10f, new Vector3(1f, 1f, 1f));
+        [Export] private Aabb field_Aabb = new Aabb(10f, 10f, 10f, new Vector3(1f, 1f, 1f));
         [Export] private Color field_Color = Colors.Aquamarine;
         [Export] private Plane field_Plane = Plane.PlaneXZ;
         [Export] private Callable field_Callable = new Callable(Engine.GetMainLoop(), "_process");
@@ -80,10 +80,10 @@ namespace Godot.SourceGenerators.Sample
         [Export] private Vector2[] field_Vector2Array = { Vector2.Up, Vector2.Down, Vector2.Left, Vector2.Right };
         [Export] private Vector3[] field_Vector3Array = { Vector3.Up, Vector3.Down, Vector3.Left, Vector3.Right };
         [Export] private Color[] field_ColorArray = { Colors.Aqua, Colors.Aquamarine, Colors.Azure, Colors.Beige };
-        [Export] private Godot.Object[] field_GodotObjectOrDerivedArray = { null };
+        [Export] private GodotObject[] field_GodotObjectOrDerivedArray = { null };
         [Export] private StringName[] field_StringNameArray = { "foo", "bar" };
         [Export] private NodePath[] field_NodePathArray = { "foo", "bar" };
-        [Export] private RID[] field_RIDArray = { default, default, default };
+        [Export] private Rid[] field_RidArray = { default, default, default };
         // Note we use Array and not System.Array. This tests the generated namespace qualification.
         [Export] private Int32[] field_empty_Int32Array = Array.Empty<Int32>();
         // Note we use List and not System.Collections.Generic.
@@ -93,11 +93,11 @@ namespace Godot.SourceGenerators.Sample
         [Export] private Variant field_Variant = "foo";
 
         // Classes
-        [Export] private Godot.Object field_GodotObjectOrDerived;
+        [Export] private GodotObject field_GodotObjectOrDerived;
         [Export] private Godot.Texture field_GodotResourceTexture;
         [Export] private StringName field_StringName = new StringName("foo");
         [Export] private NodePath field_NodePath = new NodePath("foo");
-        [Export] private RID field_RID;
+        [Export] private Rid field_Rid;
 
         [Export]
         private Godot.Collections.Dictionary field_GodotDictionary =

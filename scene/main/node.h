@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  node.h                                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  node.h                                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef NODE_H
 #define NODE_H
@@ -37,6 +37,7 @@
 #include "scene/main/scene_tree.h"
 
 class Viewport;
+class Window;
 class SceneState;
 class Tween;
 class PropertyTweener;
@@ -51,6 +52,18 @@ public:
 		PROCESS_MODE_WHEN_PAUSED, // process only if paused
 		PROCESS_MODE_ALWAYS, // process always
 		PROCESS_MODE_DISABLED, // never process
+	};
+
+	enum ProcessThreadGroup {
+		PROCESS_THREAD_GROUP_INHERIT,
+		PROCESS_THREAD_GROUP_MAIN_THREAD,
+		PROCESS_THREAD_GROUP_SUB_THREAD,
+	};
+
+	enum ProcessThreadMessages {
+		FLAG_PROCESS_THREAD_MESSAGES = 1,
+		FLAG_PROCESS_THREAD_MESSAGES_PHYSICS = 2,
+		FLAG_PROCESS_THREAD_MESSAGES_ALL = 3,
 	};
 
 	enum DuplicateFlags {
@@ -79,16 +92,34 @@ public:
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->is_greater_than(p_a); }
 	};
 
-	struct ComparatorWithPriority {
-		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->data.process_priority == p_a->data.process_priority ? p_b->is_greater_than(p_a) : p_b->data.process_priority > p_a->data.process_priority; }
-	};
-
 	static int orphan_node_count;
+
+	void _update_process(bool p_enable, bool p_for_children);
 
 private:
 	struct GroupData {
 		bool persistent = false;
 		SceneTree::Group *group = nullptr;
+	};
+
+	struct ComparatorByIndex {
+		bool operator()(const Node *p_left, const Node *p_right) const {
+			static const uint32_t order[3] = { 1, 0, 2 };
+			uint32_t order_left = order[p_left->data.internal_mode];
+			uint32_t order_right = order[p_right->data.internal_mode];
+			if (order_left == order_right) {
+				return p_left->data.index < p_right->data.index;
+			}
+			return order_left < order_right;
+		}
+	};
+
+	struct ComparatorWithPriority {
+		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->data.process_priority == p_a->data.process_priority ? p_b->is_greater_than(p_a) : p_b->data.process_priority > p_a->data.process_priority; }
+	};
+
+	struct ComparatorWithPhysicsPriority {
+		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->data.physics_process_priority == p_a->data.physics_process_priority ? p_b->is_greater_than(p_a) : p_b->data.physics_process_priority > p_a->data.physics_process_priority; }
 	};
 
 	// This Data struct is to avoid namespace pollution in derived classes.
@@ -99,13 +130,16 @@ private:
 
 		Node *parent = nullptr;
 		Node *owner = nullptr;
-		Vector<Node *> children;
+		HashMap<StringName, Node *> children;
+		mutable bool children_cache_dirty = true;
+		mutable LocalVector<Node *> children_cache;
 		HashMap<StringName, Node *> owned_unique_nodes;
 		bool unique_name_in_owner = false;
-
-		int internal_children_front = 0;
-		int internal_children_back = 0;
-		int index = -1;
+		InternalMode internal_mode = INTERNAL_MODE_DISABLED;
+		mutable int internal_children_front_count_cache = 0;
+		mutable int internal_children_back_count_cache = 0;
+		mutable int external_children_count_cache = 0;
+		mutable int index = -1; // relative to front, normal or back.
 		int depth = -1;
 		int blocked = 0; // Safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
 		StringName name;
@@ -126,6 +160,11 @@ private:
 
 		ProcessMode process_mode = PROCESS_MODE_INHERIT;
 		Node *process_owner = nullptr;
+		ProcessThreadGroup process_thread_group = PROCESS_THREAD_GROUP_INHERIT;
+		Node *process_thread_group_owner = nullptr;
+		int process_thread_group_order = 0;
+		BitField<ProcessThreadMessages> process_thread_messages;
+		void *process_group = nullptr; // to avoid cyclic dependency
 
 		int multiplayer_authority = 1; // Server by default.
 		Variant rpc_config;
@@ -135,6 +174,7 @@ private:
 		bool physics_process = false;
 		bool process = false;
 		int process_priority = 0;
+		int physics_process_priority = 0;
 
 		bool physics_process_internal = false;
 		bool process_internal = false;
@@ -180,14 +220,10 @@ private:
 	void _duplicate_signals(const Node *p_original, Node *p_copy) const;
 	Node *_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap = nullptr) const;
 
-	TypedArray<Node> _get_children(bool p_include_internal = true) const;
 	TypedArray<StringName> _get_groups() const;
 
 	Error _rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Error _rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-
-	_FORCE_INLINE_ bool _is_internal_front() const { return data.parent && data.index < data.parent->data.internal_children_front; }
-	_FORCE_INLINE_ bool _is_internal_back() const { return data.parent && data.index >= data.parent->data.children.size() - data.parent->data.internal_children_back; }
 
 	friend class SceneTree;
 
@@ -199,6 +235,29 @@ private:
 
 	void _release_unique_name_in_owner();
 	void _acquire_unique_name_in_owner();
+
+	void _clean_up_owner();
+
+	_FORCE_INLINE_ void _update_children_cache() const {
+		if (unlikely(data.children_cache_dirty)) {
+			_update_children_cache_impl();
+		}
+	}
+
+	void _update_children_cache_impl() const;
+
+	// Process group management
+	void _add_process_group();
+	void _remove_process_group();
+	void _add_to_process_thread_group();
+	void _remove_from_process_thread_group();
+	void _remove_tree_from_process_thread_group();
+	void _add_tree_to_process_thread_group(Node *p_owner);
+
+	static thread_local Node *current_process_thread_group;
+
+	Variant _call_deferred_thread_group_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	Variant _call_thread_safe_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 protected:
 	void _block() { data.blocked++; }
@@ -218,7 +277,7 @@ protected:
 
 	friend class SceneState;
 
-	void _add_child_nocheck(Node *p_child, const StringName &p_name);
+	void _add_child_nocheck(Node *p_child, const StringName &p_name, InternalMode p_internal_mode = INTERNAL_MODE_DISABLED);
 	void _set_owner_nocheck(Node *p_owner);
 	void _set_name_nocheck(const StringName &p_name);
 
@@ -227,6 +286,8 @@ protected:
 	void _call_shortcut_input(const Ref<InputEvent> &p_event);
 	void _call_unhandled_input(const Ref<InputEvent> &p_event);
 	void _call_unhandled_key_input(const Ref<InputEvent> &p_event);
+
+	void _validate_property(PropertyInfo &p_property) const;
 
 protected:
 	virtual void input(const Ref<InputEvent> &p_event);
@@ -263,12 +324,13 @@ public:
 		NOTIFICATION_DRAG_BEGIN = 21,
 		NOTIFICATION_DRAG_END = 22,
 		NOTIFICATION_PATH_RENAMED = 23,
-		//NOTIFICATION_TRANSLATION_CHANGED = 24, moved below
+		NOTIFICATION_CHILD_ORDER_CHANGED = 24,
 		NOTIFICATION_INTERNAL_PROCESS = 25,
 		NOTIFICATION_INTERNAL_PHYSICS_PROCESS = 26,
 		NOTIFICATION_POST_ENTER_TREE = 27,
 		NOTIFICATION_DISABLED = 28,
 		NOTIFICATION_ENABLED = 29,
+		NOTIFICATION_NODE_RECACHE_REQUESTED = 30,
 		//keep these linked to node
 
 		NOTIFICATION_WM_MOUSE_ENTER = 1002,
@@ -309,6 +371,7 @@ public:
 
 	int get_child_count(bool p_include_internal = true) const;
 	Node *get_child(int p_index, bool p_include_internal = true) const;
+	TypedArray<Node> get_children(bool p_include_internal = true) const;
 	bool has_node(const NodePath &p_path) const;
 	Node *get_node(const NodePath &p_path) const;
 	Node *get_node_or_null(const NodePath &p_path) const;
@@ -317,8 +380,11 @@ public:
 	bool has_node_and_resource(const NodePath &p_path) const;
 	Node *get_node_and_resource(const NodePath &p_path, Ref<Resource> &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property = true) const;
 
+	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true);
 	Node *get_parent() const;
 	Node *find_parent(const String &p_pattern) const;
+
+	Window *get_window() const;
 
 	_FORCE_INLINE_ SceneTree *get_tree() const {
 		ERR_FAIL_COND_V(!data.tree, nullptr);
@@ -356,7 +422,31 @@ public:
 	void set_unique_name_in_owner(bool p_enabled);
 	bool is_unique_name_in_owner() const;
 
-	int get_index(bool p_include_internal = true) const;
+	_FORCE_INLINE_ int get_index(bool p_include_internal = true) const {
+		// p_include_internal = false doesn't make sense if the node is internal.
+		ERR_FAIL_COND_V_MSG(!p_include_internal && data.internal_mode != INTERNAL_MODE_DISABLED, -1, "Node is internal. Can't get index with 'include_internal' being false.");
+		if (!data.parent) {
+			return data.index;
+		}
+		data.parent->_update_children_cache();
+
+		if (!p_include_internal) {
+			return data.index;
+		} else {
+			switch (data.internal_mode) {
+				case INTERNAL_MODE_DISABLED: {
+					return data.parent->data.internal_children_front_count_cache + data.index;
+				} break;
+				case INTERNAL_MODE_FRONT: {
+					return data.index;
+				} break;
+				case INTERNAL_MODE_BACK: {
+					return data.parent->data.internal_children_front_count_cache + data.parent->data.external_children_count_cache + data.index;
+				} break;
+			}
+			return -1;
+		}
+	}
 
 	Ref<Tween> create_tween();
 
@@ -377,6 +467,7 @@ public:
 	void set_property_pinned(const String &p_property, bool p_pinned);
 	bool is_property_pinned(const StringName &p_property) const;
 	virtual StringName get_property_store_alias(const StringName &p_property) const;
+	bool is_part_of_edited_scene() const;
 #endif
 	void get_storable_properties(HashSet<StringName> &r_storable_properties) const;
 
@@ -406,6 +497,12 @@ public:
 	void set_process_priority(int p_priority);
 	int get_process_priority() const;
 
+	void set_process_thread_group_order(int p_order);
+	int get_process_thread_group_order() const;
+
+	void set_physics_process_priority(int p_priority);
+	int get_physics_process_priority() const;
+
 	void set_process_input(bool p_enable);
 	bool is_processing_input() const;
 
@@ -417,6 +514,23 @@ public:
 
 	void set_process_unhandled_key_input(bool p_enable);
 	bool is_processing_unhandled_key_input() const;
+
+	_FORCE_INLINE_ bool _is_any_processing() const {
+		return data.process || data.process_internal || data.physics_process || data.physics_process_internal;
+	}
+	_FORCE_INLINE_ bool is_accessible_from_caller_thread() const {
+		if (current_process_thread_group == nullptr) {
+			// Not thread processing. Only accessible if node is outside the scene tree,
+			// or if accessing from the main thread.
+			return !data.inside_tree || Thread::is_main_thread();
+		} else {
+			// Thread processing
+			return current_process_thread_group == data.process_thread_group_owner;
+		}
+	}
+
+	void set_process_thread_messages(BitField<ProcessThreadMessages> p_flags);
+	BitField<ProcessThreadMessages> get_process_thread_messages() const;
 
 	Node *duplicate(int p_flags = DUPLICATE_GROUPS | DUPLICATE_SIGNALS | DUPLICATE_SCRIPTS) const;
 #ifdef TOOLS_ENABLED
@@ -449,8 +563,12 @@ public:
 	bool can_process() const;
 	bool can_process_notification(int p_what) const;
 	bool is_enabled() const;
+	bool is_ready() const;
 
 	void request_ready();
+
+	void set_process_thread_group(ProcessThreadGroup p_mode);
+	ProcessThreadGroup get_process_thread_group() const;
 
 	static void print_orphan_nodes();
 
@@ -503,6 +621,32 @@ public:
 
 	Ref<MultiplayerAPI> get_multiplayer() const;
 
+	void call_deferred_thread_groupp(const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error = false);
+	template <typename... VarArgs>
+	void call_deferred_thread_group(const StringName &p_method, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		call_deferred_thread_groupp(p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	}
+	void set_deferred_thread_group(const StringName &p_property, const Variant &p_value);
+	void notify_deferred_thread_group(int p_notification);
+
+	void call_thread_safep(const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error = false);
+	template <typename... VarArgs>
+	void call_thread_safe(const StringName &p_method, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		call_deferred_thread_groupp(p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	}
+	void set_thread_safe(const StringName &p_property, const Variant &p_value);
+	void notify_thread_safe(int p_notification);
+
 	Node();
 	~Node();
 };
@@ -528,6 +672,18 @@ Error Node::rpc_id(int p_peer_id, const StringName &p_method, VarArgs... p_args)
 	}
 	return rpcp(p_peer_id, p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 }
+
+#ifdef DEBUG_ENABLED
+#define ERR_THREAD_GUARD ERR_FAIL_COND_MSG(!is_accessible_from_caller_thread(), "Caller thread can't call this function in this node. Use call_deferred() or call_thread_group() instead.");
+#define ERR_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(!is_accessible_from_caller_thread(), (m_ret), "Caller thread can't call this function in this node. Use call_deferred() or call_thread_group() instead.")
+#define ERR_MAIN_THREAD_GUARD ERR_FAIL_COND_MSG(is_inside_tree() && !Thread::is_main_thread(), "This function in this node can only be accessed from the main thread. Use call_deferred() instead.");
+#define ERR_MAIN_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(is_inside_tree() && !Thread::is_main_thread(), (m_ret), "This function in this node can only be accessed from the main thread. Use call_deferred() instead.")
+#else
+#define ERR_THREAD_GUARD
+#define ERR_THREAD_GUARD_V(m_ret)
+#define ERR_MAIN_THREAD_GUARD
+#define ERR_MAIN_THREAD_GUARD_V(m_ret)
+#endif
 
 // Add these macro to your class's 'get_configuration_warnings' function to have warnings show up in the scene tree inspector.
 #define DEPRECATED_NODE_WARNING warnings.push_back(RTR("This node is marked as deprecated and will be removed in future versions.\nPlease check the Godot documentation for information about migration."));

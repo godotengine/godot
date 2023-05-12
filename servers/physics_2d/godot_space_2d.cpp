@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  godot_space_2d.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  godot_space_2d.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "godot_space_2d.h"
 
@@ -83,7 +83,7 @@ int GodotPhysicsDirectSpaceState2D::intersect_point(const PointParameters &p_par
 			continue;
 		}
 
-		if (p_parameters.canvas_instance_id.is_valid() && col_obj->get_canvas_instance_id() != p_parameters.canvas_instance_id) {
+		if (col_obj->get_canvas_instance_id() != p_parameters.canvas_instance_id) {
 			continue;
 		}
 
@@ -1216,28 +1216,15 @@ GodotPhysicsDirectSpaceState2D *GodotSpace2D::get_direct_state() {
 }
 
 GodotSpace2D::GodotSpace2D() {
-	body_linear_velocity_sleep_threshold = GLOBAL_DEF("physics/2d/sleep_threshold_linear", 2.0);
-	body_angular_velocity_sleep_threshold = GLOBAL_DEF("physics/2d/sleep_threshold_angular", Math::deg_to_rad(8.0));
-	body_time_to_sleep = GLOBAL_DEF("physics/2d/time_before_sleep", 0.5);
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/time_before_sleep", PropertyInfo(Variant::FLOAT, "physics/2d/time_before_sleep", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"));
-
-	solver_iterations = GLOBAL_DEF("physics/2d/solver/solver_iterations", 16);
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/solver/solver_iterations", PropertyInfo(Variant::INT, "physics/2d/solver/solver_iterations", PROPERTY_HINT_RANGE, "1,32,1,or_greater"));
-
-	contact_recycle_radius = GLOBAL_DEF("physics/2d/solver/contact_recycle_radius", 1.0);
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/solver/contact_recycle_radius", PropertyInfo(Variant::FLOAT, "physics/2d/solver/contact_recycle_radius", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater"));
-
-	contact_max_separation = GLOBAL_DEF("physics/2d/solver/contact_max_separation", 1.5);
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/solver/contact_max_separation", PropertyInfo(Variant::FLOAT, "physics/2d/solver/contact_max_separation", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater"));
-
-	contact_max_allowed_penetration = GLOBAL_DEF("physics/2d/solver/contact_max_allowed_penetration", 0.3);
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/solver/contact_max_allowed_penetration", PropertyInfo(Variant::FLOAT, "physics/2d/solver/contact_max_allowed_penetration", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater"));
-
-	contact_bias = GLOBAL_DEF("physics/2d/solver/default_contact_bias", 0.8);
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/solver/default_contact_bias", PropertyInfo(Variant::FLOAT, "physics/2d/solver/default_contact_bias", PROPERTY_HINT_RANGE, "0,1,0.01"));
-
-	constraint_bias = GLOBAL_DEF("physics/2d/solver/default_constraint_bias", 0.2);
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/solver/default_constraint_bias", PropertyInfo(Variant::FLOAT, "physics/2d/solver/default_constraint_bias", PROPERTY_HINT_RANGE, "0,1,0.01"));
+	body_linear_velocity_sleep_threshold = GLOBAL_GET("physics/2d/sleep_threshold_linear");
+	body_angular_velocity_sleep_threshold = GLOBAL_GET("physics/2d/sleep_threshold_angular");
+	body_time_to_sleep = GLOBAL_GET("physics/2d/time_before_sleep");
+	solver_iterations = GLOBAL_GET("physics/2d/solver/solver_iterations");
+	contact_recycle_radius = GLOBAL_GET("physics/2d/solver/contact_recycle_radius");
+	contact_max_separation = GLOBAL_GET("physics/2d/solver/contact_max_separation");
+	contact_max_allowed_penetration = GLOBAL_GET("physics/2d/solver/contact_max_allowed_penetration");
+	contact_bias = GLOBAL_GET("physics/2d/solver/default_contact_bias");
+	constraint_bias = GLOBAL_GET("physics/2d/solver/default_constraint_bias");
 
 	broadphase = GodotBroadPhase2D::create_func();
 	broadphase->set_pair_callback(_broadphase_pair, this);

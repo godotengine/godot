@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  collision_object_2d.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  collision_object_2d.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "collision_object_2d.h"
 
@@ -94,10 +94,14 @@ void CollisionObject2D::_notification(int p_what) {
 			bool disabled = !is_enabled();
 
 			if (!disabled || (disable_mode != DISABLE_MODE_REMOVE)) {
-				if (area) {
-					PhysicsServer2D::get_singleton()->area_set_space(rid, RID());
+				if (callback_lock > 0) {
+					ERR_PRINT("Removing a CollisionObject node during a physics callback is not allowed and will cause undesired behavior. Remove with call_deferred() instead.");
 				} else {
-					PhysicsServer2D::get_singleton()->body_set_space(rid, RID());
+					if (area) {
+						PhysicsServer2D::get_singleton()->area_set_space(rid, RID());
+					} else {
+						PhysicsServer2D::get_singleton()->body_set_space(rid, RID());
+					}
 				}
 			}
 
@@ -111,6 +115,15 @@ void CollisionObject2D::_notification(int p_what) {
 				PhysicsServer2D::get_singleton()->area_attach_canvas_instance_id(rid, ObjectID());
 			} else {
 				PhysicsServer2D::get_singleton()->body_attach_canvas_instance_id(rid, ObjectID());
+			}
+		} break;
+
+		case NOTIFICATION_WORLD_2D_CHANGED: {
+			RID space = get_world_2d()->get_space();
+			if (area) {
+				PhysicsServer2D::get_singleton()->area_set_space(rid, space);
+			} else {
+				PhysicsServer2D::get_singleton()->body_set_space(rid, space);
 			}
 		} break;
 
@@ -225,10 +238,14 @@ void CollisionObject2D::_apply_disabled() {
 	switch (disable_mode) {
 		case DISABLE_MODE_REMOVE: {
 			if (is_inside_tree()) {
-				if (area) {
-					PhysicsServer2D::get_singleton()->area_set_space(rid, RID());
+				if (callback_lock > 0) {
+					ERR_PRINT("Disabling a CollisionObject node during a physics callback is not allowed and will cause undesired behavior. Disable with call_deferred() instead.");
 				} else {
-					PhysicsServer2D::get_singleton()->body_set_space(rid, RID());
+					if (area) {
+						PhysicsServer2D::get_singleton()->area_set_space(rid, RID());
+					} else {
+						PhysicsServer2D::get_singleton()->body_set_space(rid, RID());
+					}
 				}
 			}
 		} break;
@@ -643,6 +660,7 @@ CollisionObject2D::CollisionObject2D(RID p_rid, bool p_area) {
 	area = p_area;
 	pickable = true;
 	set_notify_transform(true);
+	set_hide_clip_children(true);
 	total_subshapes = 0;
 	only_update_transform_changes = false;
 

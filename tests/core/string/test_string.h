@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  test_string.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  test_string.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef TEST_STRING_H
 #define TEST_STRING_H
@@ -395,6 +395,12 @@ TEST_CASE("[String] Insertion") {
 	CHECK(s == "Who is Frederic Chopin?");
 }
 
+TEST_CASE("[String] Erasing") {
+	String s = "Josephine is such a cute girl!";
+	s = s.erase(s.find("cute "), String("cute ").length());
+	CHECK(s == "Josephine is such a girl!");
+}
+
 TEST_CASE("[String] Number to string") {
 	CHECK(String::num(0) == "0");
 	CHECK(String::num(0.0) == "0"); // No trailing zeros.
@@ -511,6 +517,14 @@ TEST_CASE("[String] Splitting") {
 	for (int i = 0; i < l.size(); i++) {
 		CHECK(l[i] == slices_3[i]);
 	}
+
+	s = "";
+	l = s.split();
+	CHECK(l.size() == 1);
+	CHECK(l[0] == "");
+
+	l = s.split("", false);
+	CHECK(l.size() == 0);
 
 	s = "Mars Jupiter Saturn Uranus";
 	const char *slices_s[4] = { "Mars", "Jupiter", "Saturn", "Uranus" };
@@ -1670,8 +1684,8 @@ TEST_CASE("[String] validate_node_name") {
 	String name_with_kana = U"Name with kana ゴドツ";
 	CHECK(name_with_kana.validate_node_name() == U"Name with kana ゴドツ");
 
-	String name_with_invalid_chars = "Name with invalid characters :.@removed!";
-	CHECK(name_with_invalid_chars.validate_node_name() == "Name with invalid characters removed!");
+	String name_with_invalid_chars = "Name with invalid characters :.@%removed!";
+	CHECK(name_with_invalid_chars.validate_node_name() == "Name with invalid characters ____removed!");
 }
 
 TEST_CASE("[String] validate_identifier") {

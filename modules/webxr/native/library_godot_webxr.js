@@ -1,32 +1,33 @@
-/*************************************************************************/
-/*  library_godot_webxr.js                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  library_godot_webxr.js                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
 const GodotWebXR = {
 	$GodotWebXR__deps: ['$Browser', '$GL', '$GodotRuntime', '$runtimeKeepalivePush', '$runtimeKeepalivePop'],
 	$GodotWebXR: {
@@ -41,6 +42,7 @@ const GodotWebXR = {
 		view_count: 1,
 		input_sources: new Array(16),
 		touches: new Array(5),
+		onsimpleevent: null,
 
 		// Monkey-patch the requestAnimationFrame() used by Emscripten for the main
 		// loop, so that we can swap it out for XRSession.requestAnimationFrame()
@@ -282,6 +284,9 @@ const GodotWebXR = {
 				GodotRuntime.free(c_str);
 			});
 
+			// Store onsimpleevent so we can use it later.
+			GodotWebXR.onsimpleevent = onsimpleevent;
+
 			const gl_context_handle = _emscripten_webgl_get_current_context(); // eslint-disable-line no-undef
 			const gl = GL.getContext(gl_context_handle).GLctx;
 			GodotWebXR.gl = gl;
@@ -367,6 +372,7 @@ const GodotWebXR = {
 		GodotWebXR.view_count = 1;
 		GodotWebXR.input_sources = new Array(16);
 		GodotWebXR.touches = new Array(5);
+		GodotWebXR.onsimpleevent = null;
 
 		// Disable the monkey-patched window.requestAnimationFrame() and
 		// pause/restart the main loop to activate it on all platforms.
@@ -583,17 +589,61 @@ const GodotWebXR = {
 		}
 
 		const buf = GodotRuntime.malloc(point_count * 3 * 4);
-		GodotRuntime.setHeapValue(buf, point_count, 'i32');
 		for (let i = 0; i < point_count; i++) {
 			const point = GodotWebXR.space.boundsGeometry[i];
-			GodotRuntime.setHeapValue(buf + ((i * 3) + 1) * 4, point.x, 'float');
-			GodotRuntime.setHeapValue(buf + ((i * 3) + 2) * 4, point.y, 'float');
-			GodotRuntime.setHeapValue(buf + ((i * 3) + 3) * 4, point.z, 'float');
+			GodotRuntime.setHeapValue(buf + ((i * 3) + 0) * 4, point.x, 'float');
+			GodotRuntime.setHeapValue(buf + ((i * 3) + 1) * 4, point.y, 'float');
+			GodotRuntime.setHeapValue(buf + ((i * 3) + 2) * 4, point.z, 'float');
 		}
 		GodotRuntime.setHeapValue(r_points, buf, 'i32');
 
 		return point_count;
 	},
+
+	godot_webxr_get_frame_rate__proxy: 'sync',
+	godot_webxr_get_frame_rate__sig: 'i',
+	godot_webxr_get_frame_rate: function () {
+		if (!GodotWebXR.session || GodotWebXR.session.frameRate === undefined) {
+			return 0;
+		}
+		return GodotWebXR.session.frameRate;
+	},
+
+	godot_webxr_update_target_frame_rate__proxy: 'sync',
+	godot_webxr_update_target_frame_rate__sig: 'vi',
+	godot_webxr_update_target_frame_rate: function (p_frame_rate) {
+		if (!GodotWebXR.session || GodotWebXR.session.updateTargetFrameRate === undefined) {
+			return;
+		}
+
+		GodotWebXR.session.updateTargetFrameRate(p_frame_rate).then(() => {
+			const c_str = GodotRuntime.allocString('display_refresh_rate_changed');
+			GodotWebXR.onsimpleevent(c_str);
+			GodotRuntime.free(c_str);
+		});
+	},
+
+	godot_webxr_get_supported_frame_rates__proxy: 'sync',
+	godot_webxr_get_supported_frame_rates__sig: 'ii',
+	godot_webxr_get_supported_frame_rates: function (r_frame_rates) {
+		if (!GodotWebXR.session || GodotWebXR.session.supportedFrameRates === undefined) {
+			return 0;
+		}
+
+		const frame_rate_count = GodotWebXR.session.supportedFrameRates.length;
+		if (frame_rate_count === 0) {
+			return 0;
+		}
+
+		const buf = GodotRuntime.malloc(frame_rate_count * 4);
+		for (let i = 0; i < frame_rate_count; i++) {
+			GodotRuntime.setHeapValue(buf + (i * 4), GodotWebXR.session.supportedFrameRates[i], 'float');
+		}
+		GodotRuntime.setHeapValue(r_frame_rates, buf, 'i32');
+
+		return frame_rate_count;
+	},
+
 };
 
 autoAddDeps(GodotWebXR, '$GodotWebXR');

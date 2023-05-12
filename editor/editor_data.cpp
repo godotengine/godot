@@ -1,41 +1,45 @@
-/*************************************************************************/
-/*  editor_data.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_data.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_data.h"
 
 #include "core/config/project_settings.h"
+#include "core/extension/gdextension_manager.h"
 #include "core/io/file_access.h"
+#include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/multi_node_edit.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "scene/resources/packed_scene.h"
 
@@ -45,25 +49,48 @@ void EditorSelectionHistory::cleanup_history() {
 
 		for (int j = 0; j < history[i].path.size(); j++) {
 			if (!history[i].path[j].ref.is_null()) {
-				// Reference is not null - object still alive.
-				continue;
+				// If the node is a MultiNodeEdit node, examine it and see if anything is missing from it.
+				Ref<MultiNodeEdit> multi_node_edit = history[i].path[j].ref;
+				if (multi_node_edit.is_valid()) {
+					Node *root = EditorNode::get_singleton()->get_edited_scene();
+					if (root) {
+						for (int k = 0; k < multi_node_edit->get_node_count(); k++) {
+							NodePath np = multi_node_edit->get_node(k);
+							Node *multi_node_selected_node = root->get_node_or_null(np);
+							if (!multi_node_selected_node) {
+								fail = true;
+								break;
+							}
+						}
+					} else {
+						fail = true;
+					}
+				} else {
+					// Reference is not null - object still alive.
+					continue;
+				}
 			}
 
-			Object *obj = ObjectDB::get_instance(history[i].path[j].object);
-			if (obj) {
-				Node *n = Object::cast_to<Node>(obj);
-				if (n && n->is_inside_tree()) {
-					// Node valid and inside tree - object still alive.
-					continue;
-				}
-				if (!n) {
-					// Node possibly still alive.
-					continue;
-				}
-			} // Else: object not valid - not alive.
+			if (!fail) {
+				Object *obj = ObjectDB::get_instance(history[i].path[j].object);
+				if (obj) {
+					Node *n = Object::cast_to<Node>(obj);
+					if (n && n->is_inside_tree()) {
+						// Node valid and inside tree - object still alive.
+						continue;
+					}
+					if (!n) {
+						// Node possibly still alive.
+						continue;
+					}
+				} // Else: object not valid - not alive.
 
-			fail = true;
-			break;
+				fail = true;
+			}
+
+			if (fail) {
+				break;
+			}
 		}
 
 		if (fail) {
@@ -120,12 +147,6 @@ int EditorSelectionHistory::get_history_len() {
 
 int EditorSelectionHistory::get_history_pos() {
 	return current_elem_idx;
-}
-
-bool EditorSelectionHistory::is_history_obj_inspector_only(int p_obj) const {
-	ERR_FAIL_INDEX_V(p_obj, history.size(), false);
-	ERR_FAIL_INDEX_V(history[p_obj].level, history[p_obj].path.size(), false);
-	return history[p_obj].path[history[p_obj].level].inspector_only;
 }
 
 ObjectID EditorSelectionHistory::get_history_obj(int p_obj) const {
@@ -279,7 +300,7 @@ void EditorData::get_editor_breakpoints(List<String> *p_breakpoints) {
 	}
 }
 
-Dictionary EditorData::get_editor_states() const {
+Dictionary EditorData::get_editor_plugin_states() const {
 	Dictionary metadata;
 	for (int i = 0; i < editor_plugins.size(); i++) {
 		Dictionary state = editor_plugins[i]->get_state();
@@ -298,7 +319,14 @@ Dictionary EditorData::get_scene_editor_states(int p_idx) const {
 	return es.editor_states;
 }
 
-void EditorData::set_editor_states(const Dictionary &p_states) {
+void EditorData::set_editor_plugin_states(const Dictionary &p_states) {
+	if (p_states.is_empty()) {
+		for (EditorPlugin *ep : editor_plugins) {
+			ep->clear();
+		}
+		return;
+	}
+
 	List<Variant> keys;
 	p_states.get_key_list(&keys);
 
@@ -351,18 +379,6 @@ void EditorData::apply_changes_in_editors() {
 	}
 }
 
-void EditorData::save_editor_global_states() {
-	for (int i = 0; i < editor_plugins.size(); i++) {
-		editor_plugins[i]->save_global_state();
-	}
-}
-
-void EditorData::restore_editor_global_states() {
-	for (int i = 0; i < editor_plugins.size(); i++) {
-		editor_plugins[i]->restore_global_state();
-	}
-}
-
 void EditorData::paste_object_params(Object *p_object) {
 	ERR_FAIL_NULL(p_object);
 	undo_redo_manager->create_action(TTR("Paste Params"));
@@ -390,7 +406,7 @@ void EditorData::set_scene_as_saved(int p_idx) {
 	}
 	ERR_FAIL_INDEX(p_idx, edited_scene.size());
 
-	get_undo_redo()->set_history_as_saved(edited_scene[p_idx].history_id);
+	undo_redo_manager->set_history_as_saved(edited_scene[p_idx].history_id);
 }
 
 bool EditorData::is_scene_changed(int p_idx) {
@@ -399,7 +415,7 @@ bool EditorData::is_scene_changed(int p_idx) {
 	}
 	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), false);
 
-	uint64_t current_scene_version = get_undo_redo()->get_or_create_history(edited_scene[p_idx].history_id).undo_redo->get_version();
+	uint64_t current_scene_version = undo_redo_manager->get_or_create_history(edited_scene[p_idx].history_id).undo_redo->get_version();
 	bool is_changed = edited_scene[p_idx].last_checked_version != current_scene_version;
 	edited_scene.write[p_idx].last_checked_version = current_scene_version;
 	return is_changed;
@@ -423,10 +439,6 @@ int EditorData::get_current_edited_scene_history_id() const {
 
 int EditorData::get_scene_history_id(int p_idx) const {
 	return edited_scene[p_idx].history_id;
-}
-
-Ref<EditorUndoRedoManager> &EditorData::get_undo_redo() {
-	return undo_redo_manager;
 }
 
 void EditorData::add_undo_redo_inspector_hook_callback(Callable p_callable) {
@@ -479,10 +491,10 @@ void EditorData::add_custom_type(const String &p_type, const String &p_inherits,
 	ct.name = p_type;
 	ct.icon = p_icon;
 	ct.script = p_script;
+
 	if (!custom_types.has(p_inherits)) {
 		custom_types[p_inherits] = Vector<CustomType>();
 	}
-
 	custom_types[p_inherits].push_back(ct);
 }
 
@@ -610,7 +622,7 @@ void EditorData::remove_scene(int p_idx) {
 	}
 
 	if (!edited_scene[p_idx].path.is_empty()) {
-		ScriptEditor::get_singleton()->close_builtin_scripts_from_scene(edited_scene[p_idx].path);
+		EditorNode::get_singleton()->emit_signal("scene_closed", edited_scene[p_idx].path);
 	}
 
 	undo_redo_manager->discard_history(edited_scene[p_idx].history_id);
@@ -699,6 +711,16 @@ bool EditorData::check_and_update_scene(int p_idx) {
 
 int EditorData::get_edited_scene() const {
 	return current_edited_scene;
+}
+
+int EditorData::get_edited_scene_from_path(const String &p_path) const {
+	for (int i = 0; i < edited_scene.size(); i++) {
+		if (edited_scene[i].path == p_path) {
+			return i;
+		}
+	}
+
+	return -1;
 }
 
 void EditorData::set_edited_scene(int p_idx) {
@@ -869,7 +891,7 @@ void EditorData::save_edited_scene_state(EditorSelection *p_selection, EditorSel
 	es.selection = p_selection->get_full_selected_node_list();
 	es.history_current = p_history->current_elem_idx;
 	es.history_stored = p_history->history;
-	es.editor_states = get_editor_states();
+	es.editor_states = get_editor_plugin_states();
 	es.custom_state = p_custom;
 }
 
@@ -885,7 +907,7 @@ Dictionary EditorData::restore_edited_scene_state(EditorSelection *p_selection, 
 	for (Node *E : es.selection) {
 		p_selection->add_node(E);
 	}
-	set_editor_states(es.editor_states);
+	set_editor_plugin_states(es.editor_states);
 
 	return es.custom_state;
 }
@@ -998,6 +1020,8 @@ void EditorData::script_class_set_name(const String &p_path, const StringName &p
 }
 
 void EditorData::script_class_save_icon_paths() {
+	Array script_classes = ProjectSettings::get_singleton()->get_global_class_list();
+
 	Dictionary d;
 	for (const KeyValue<StringName, String> &E : _script_class_icon_paths) {
 		if (ScriptServer::is_global_class(E.key)) {
@@ -1005,27 +1029,20 @@ void EditorData::script_class_save_icon_paths() {
 		}
 	}
 
-	Dictionary old;
-	if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
-		old = GLOBAL_GET("_global_script_class_icons");
-	}
-	if ((!old.is_empty() || d.is_empty()) && d.hash() == old.hash()) {
-		return;
-	}
-
-	if (d.is_empty()) {
-		if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
-			ProjectSettings::get_singleton()->clear("_global_script_class_icons");
+	for (int i = 0; i < script_classes.size(); i++) {
+		Dictionary d2 = script_classes[i];
+		if (!d2.has("class")) {
+			continue;
 		}
-	} else {
-		ProjectSettings::get_singleton()->set("_global_script_class_icons", d);
+		d2["icon"] = d.get(d2["class"], "");
 	}
-	ProjectSettings::get_singleton()->save();
+	ProjectSettings::get_singleton()->store_global_class_list(script_classes);
 }
 
 void EditorData::script_class_load_icon_paths() {
 	script_class_clear_icon_paths();
 
+#ifndef DISABLE_DEPRECATED
 	if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
 		Dictionary d = GLOBAL_GET("_global_script_class_icons");
 		List<Variant> keys;
@@ -1038,13 +1055,89 @@ void EditorData::script_class_load_icon_paths() {
 			String path = ScriptServer::get_global_class_path(name);
 			script_class_set_name(path, name);
 		}
+		ProjectSettings::get_singleton()->clear("_global_script_class_icons");
+	}
+#endif
+
+	Array script_classes = ProjectSettings::get_singleton()->get_global_class_list();
+	for (int i = 0; i < script_classes.size(); i++) {
+		Dictionary d = script_classes[i];
+		if (!d.has("class") || !d.has("path") || !d.has("icon")) {
+			continue;
+		}
+
+		String name = d["class"];
+		_script_class_icon_paths[name] = d["icon"];
+		script_class_set_name(d["path"], name);
 	}
 }
 
+Ref<Texture2D> EditorData::extension_class_get_icon(const String &p_class) const {
+	if (GDExtensionManager::get_singleton()->class_has_icon_path(p_class)) {
+		String icon_path = GDExtensionManager::get_singleton()->class_get_icon_path(p_class);
+		Ref<Texture2D> icon = _load_script_icon(icon_path);
+		if (icon.is_valid()) {
+			return icon;
+		}
+	}
+	return nullptr;
+}
+
+Ref<Texture2D> EditorData::_load_script_icon(const String &p_path) const {
+	if (!p_path.is_empty() && ResourceLoader::exists(p_path)) {
+		Ref<Texture2D> icon = ResourceLoader::load(p_path);
+		if (icon.is_valid()) {
+			return icon;
+		}
+	}
+	return nullptr;
+}
+
+Ref<Texture2D> EditorData::get_script_icon(const Ref<Script> &p_script) {
+	// Take from the local cache, if available.
+	if (_script_icon_cache.has(p_script) && _script_icon_cache[p_script].is_valid()) {
+		return _script_icon_cache[p_script];
+	}
+
+	Ref<Script> base_scr = p_script;
+	while (base_scr.is_valid()) {
+		// Check for scripted classes.
+		StringName class_name = script_class_get_name(base_scr->get_path());
+		String icon_path = script_class_get_icon_path(class_name);
+		Ref<Texture2D> icon = _load_script_icon(icon_path);
+		if (icon.is_valid()) {
+			_script_icon_cache[p_script] = icon;
+			return icon;
+		}
+
+		// Check for legacy custom classes defined by plugins.
+		// TODO: Should probably be deprecated in 4.x
+		const EditorData::CustomType *ctype = get_custom_type_by_path(base_scr->get_path());
+		if (ctype && ctype->icon.is_valid()) {
+			_script_icon_cache[p_script] = ctype->icon;
+			return ctype->icon;
+		}
+
+		// Move to the base class.
+		base_scr = base_scr->get_base_script();
+	}
+
+	// If no icon found, cache it as null.
+	_script_icon_cache[p_script] = Ref<Texture>();
+	return nullptr;
+}
+
+void EditorData::clear_script_icon_cache() {
+	_script_icon_cache.clear();
+}
+
 EditorData::EditorData() {
-	current_edited_scene = -1;
-	undo_redo_manager.instantiate();
+	undo_redo_manager = memnew(EditorUndoRedoManager);
 	script_class_load_icon_paths();
+}
+
+EditorData::~EditorData() {
+	memdelete(undo_redo_manager);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

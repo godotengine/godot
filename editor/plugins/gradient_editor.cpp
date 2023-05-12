@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  gradient_editor.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gradient_editor.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "gradient_editor.h"
 
@@ -52,12 +52,12 @@ void GradientEditor::reverse_gradient() {
 
 int GradientEditor::_get_point_from_pos(int x) {
 	int result = -1;
-	int total_w = get_size().width - get_size().height - draw_spacing;
+	int total_w = get_size().width - get_size().height - draw_spacing - handle_width;
 	float min_distance = 1e20;
 	for (int i = 0; i < points.size(); i++) {
 		// Check if we clicked at point.
 		float distance = ABS(x - points[i].offset * total_w);
-		float min = (handle_width / 2 * 1.7); // Make it easier to grab.
+		float min = handle_width * 0.85; // Allow the mouse to be more than half a handle width away for ease of grabbing.
 		if (distance <= min && distance < min_distance) {
 			result = i;
 			min_distance = distance;
@@ -99,7 +99,7 @@ void GradientEditor::_gradient_changed() {
 
 void GradientEditor::_ramp_changed() {
 	editing = true;
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Gradient Edited"), UndoRedo::MERGE_ENDS);
 	undo_redo->add_do_method(gradient.ptr(), "set_offsets", get_offsets());
 	undo_redo->add_do_method(gradient.ptr(), "set_colors", get_colors());
@@ -198,40 +198,79 @@ void GradientEditor::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
-	// Show color picker on double click.
-	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_double_click() && mb->is_pressed()) {
-		grabbed = _get_point_from_pos(mb->get_position().x);
-		_show_color_picker();
-		accept_event();
-		return;
-	}
 
-	// Delete point on right click.
-	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
-		grabbed = _get_point_from_pos(mb->get_position().x);
-		if (grabbed != -1) {
-			points.remove_at(grabbed);
-			grabbed = -1;
-			grabbing = false;
-			queue_redraw();
-			emit_signal(SNAME("ramp_changed"));
-			accept_event();
+	if (mb.is_valid() && mb->is_pressed()) {
+		float adjusted_mb_x = mb->get_position().x - handle_width / 2;
+
+		// Delete point on right click.
+		if (mb->get_button_index() == MouseButton::RIGHT) {
+			grabbed = _get_point_from_pos(adjusted_mb_x);
+			if (grabbed != -1) {
+				points.remove_at(grabbed);
+				grabbed = -1;
+				grabbing = false;
+				queue_redraw();
+				emit_signal(SNAME("ramp_changed"));
+				accept_event();
+			}
 		}
-	}
 
-	// Hold alt key to duplicate selected color.
-	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed() && mb->is_alt_pressed()) {
-		int x = mb->get_position().x;
-		grabbed = _get_point_from_pos(x);
+		// Hold Alt key to duplicate selected color.
+		if (mb->get_button_index() == MouseButton::LEFT && mb->is_alt_pressed()) {
+			grabbed = _get_point_from_pos(adjusted_mb_x);
 
-		if (grabbed != -1) {
-			int total_w = get_size().width - get_size().height - draw_spacing;
-			Gradient::Point new_point = points[grabbed];
-			new_point.offset = CLAMP(x / float(total_w), 0, 1);
+			if (grabbed != -1) {
+				int total_w = get_size().width - get_size().height - draw_spacing - handle_width;
+				Gradient::Point new_point = points[grabbed];
+				new_point.offset = CLAMP(adjusted_mb_x / float(total_w), 0, 1);
+				points.push_back(new_point);
+				points.sort();
+				for (int i = 0; i < points.size(); ++i) {
+					if (points[i].offset == new_point.offset) {
+						grabbed = i;
+						break;
+					}
+				}
+
+				emit_signal(SNAME("ramp_changed"));
+				queue_redraw();
+			}
+		}
+
+		// Select.
+		if (mb->get_button_index() == MouseButton::LEFT) {
+			queue_redraw();
+			int total_w = get_size().width - get_size().height - draw_spacing - handle_width;
+
+			// Check if color selector was clicked or ramp was double-clicked.
+			if (adjusted_mb_x > total_w + draw_spacing) {
+				if (!mb->is_double_click()) {
+					_show_color_picker();
+				}
+				return;
+			} else if (mb->is_double_click()) {
+				grabbed = _get_point_from_pos(adjusted_mb_x);
+				_show_color_picker();
+				accept_event();
+				return;
+			}
+
+			grabbing = true;
+			grabbed = _get_point_from_pos(adjusted_mb_x);
+
+			// Grab or select.
+			if (grabbed != -1) {
+				return;
+			}
+
+			// Insert point.
+			Gradient::Point new_point;
+			new_point.offset = CLAMP(adjusted_mb_x / float(total_w), 0, 1);
+			new_point.color = gradient->get_color_at_offset(new_point.offset);
 
 			points.push_back(new_point);
 			points.sort();
-			for (int i = 0; i < points.size(); ++i) {
+			for (int i = 0; i < points.size(); i++) {
 				if (points[i].offset == new_point.offset) {
 					grabbed = i;
 					break;
@@ -239,75 +278,7 @@ void GradientEditor::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			emit_signal(SNAME("ramp_changed"));
-			queue_redraw();
 		}
-	}
-
-	// Select.
-	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
-		queue_redraw();
-		int x = mb->get_position().x;
-		int total_w = get_size().width - get_size().height - draw_spacing;
-
-		//Check if color selector was clicked.
-		if (x > total_w + draw_spacing) {
-			_show_color_picker();
-			return;
-		}
-
-		grabbing = true;
-
-		grabbed = _get_point_from_pos(x);
-		//grab or select
-		if (grabbed != -1) {
-			return;
-		}
-
-		// Insert point.
-		Gradient::Point new_point;
-		new_point.offset = CLAMP(x / float(total_w), 0, 1);
-
-		Gradient::Point prev;
-		Gradient::Point next;
-
-		int pos = -1;
-		for (int i = 0; i < points.size(); i++) {
-			if (points[i].offset < new_point.offset) {
-				pos = i;
-			}
-		}
-
-		if (pos == -1) {
-			prev.color = Color(0, 0, 0);
-			prev.offset = 0;
-			if (points.size()) {
-				next = points[0];
-			} else {
-				next.color = Color(1, 1, 1);
-				next.offset = 1.0;
-			}
-		} else {
-			if (pos == points.size() - 1) {
-				next.color = Color(1, 1, 1);
-				next.offset = 1.0;
-			} else {
-				next = points[pos + 1];
-			}
-			prev = points[pos];
-		}
-
-		new_point.color = prev.color.lerp(next.color, (new_point.offset - prev.offset) / (next.offset - prev.offset));
-
-		points.push_back(new_point);
-		points.sort();
-		for (int i = 0; i < points.size(); i++) {
-			if (points[i].offset == new_point.offset) {
-				grabbed = i;
-				break;
-			}
-		}
-
-		emit_signal(SNAME("ramp_changed"));
 	}
 
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
@@ -321,18 +292,16 @@ void GradientEditor::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid() && grabbing) {
-		int total_w = get_size().width - get_size().height - draw_spacing;
-
-		int x = mm->get_position().x;
-
-		float newofs = CLAMP(x / float(total_w), 0, 1);
+		float adjusted_mm_x = mm->get_position().x - handle_width / 2;
+		int total_w = get_size().width - get_size().height - draw_spacing - handle_width;
+		float newofs = CLAMP(adjusted_mm_x / float(total_w), 0, 1);
 
 		// Snap to "round" coordinates if holding Ctrl.
 		// Be more precise if holding Shift as well.
 		if (mm->is_ctrl_pressed()) {
 			newofs = Math::snapped(newofs, mm->is_shift_pressed() ? 0.025 : 0.1);
 		} else if (mm->is_shift_pressed()) {
-			// Snap to nearest point if holding just Shift
+			// Snap to nearest point if holding just Shift.
 			const float snap_threshold = 0.03;
 			float smallest_ofs = snap_threshold;
 			bool found = false;
@@ -421,7 +390,7 @@ void GradientEditor::_notification(int p_what) {
 
 			// Draw borders around color ramp if in focus.
 			if (has_focus()) {
-				draw_rect(Rect2(handle_width / 2, 0, total_w, h), Color(1, 1, 1, 0.9), false);
+				draw_rect(Rect2(handle_width / 2, 0, total_w, h), Color(1, 1, 1, 0.9), false, 1);
 			}
 
 			// Draw point markers.
@@ -432,18 +401,18 @@ void GradientEditor::_notification(int p_what) {
 				draw_line(Vector2(points[i].offset * total_w + handle_width / 2, 0), Vector2(points[i].offset * total_w + handle_width / 2, h / 2), col);
 				Rect2 rect = Rect2(points[i].offset * total_w, h / 2, handle_width, h / 2);
 				draw_rect(rect, points[i].color, true);
-				draw_rect(rect, col, false);
+				draw_rect(rect, col, false, 1);
 				if (grabbed == i) {
 					const Color focus_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 					rect = rect.grow(-1);
 					if (has_focus()) {
-						draw_rect(rect, focus_color, false);
+						draw_rect(rect, focus_color, false, 1);
 					} else {
-						draw_rect(rect, focus_color.darkened(0.4), false);
+						draw_rect(rect, focus_color.darkened(0.4), false, 1);
 					}
 
 					rect = rect.grow(-1);
-					draw_rect(rect, col, false);
+					draw_rect(rect, col, false, 1);
 				}
 			}
 
@@ -454,7 +423,7 @@ void GradientEditor::_notification(int p_what) {
 				// Draw with selection color.
 				draw_rect(Rect2(button_offset, 0, h, h), points[grabbed].color);
 			} else {
-				// If no color selected draw grey color with 'X' on top.
+				// If no color selected draw gray color with 'X' on top.
 				draw_rect(Rect2(button_offset, 0, h, h), Color(0.5, 0.5, 0.5, 1));
 				draw_line(Vector2(button_offset, 0), Vector2(button_offset + h, h), Color(1, 1, 1, 0.6));
 				draw_line(Vector2(button_offset, h), Vector2(button_offset + h, 0), Color(1, 1, 1, 0.6));

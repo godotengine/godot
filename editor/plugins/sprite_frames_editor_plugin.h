@@ -1,38 +1,39 @@
-/*************************************************************************/
-/*  sprite_frames_editor_plugin.h                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  sprite_frames_editor_plugin.h                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef SPRITE_FRAMES_EDITOR_PLUGIN_H
 #define SPRITE_FRAMES_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
 #include "scene/2d/animated_sprite_2d.h"
+#include "scene/3d/sprite_3d.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
@@ -44,10 +45,22 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
+class OptionButton;
 class EditorFileDialog;
+
+class EditorSpriteFramesFrame : public Resource {
+	GDCLASS(EditorSpriteFramesFrame, Resource);
+
+public:
+	Ref<Texture2D> texture;
+	float duration;
+};
 
 class SpriteFramesEditor : public HSplitContainer {
 	GDCLASS(SpriteFramesEditor, HSplitContainer);
+
+	Ref<SpriteFrames> frames;
+	Node *animated_sprite = nullptr;
 
 	enum {
 		PARAM_USE_CURRENT, // Used in callbacks to indicate `dominant_param` should be not updated.
@@ -56,7 +69,35 @@ class SpriteFramesEditor : public HSplitContainer {
 	};
 	int dominant_param = PARAM_FRAME_COUNT;
 
+	enum {
+		FRAME_ORDER_SELECTION, // Order frames were selected in.
+
+		// By Row.
+		FRAME_ORDER_LEFT_RIGHT_TOP_BOTTOM,
+		FRAME_ORDER_LEFT_RIGHT_BOTTOM_TOP,
+		FRAME_ORDER_RIGHT_LEFT_TOP_BOTTOM,
+		FRAME_ORDER_RIGHT_LEFT_BOTTOM_TOP,
+
+		// By Column.
+		FRAME_ORDER_TOP_BOTTOM_LEFT_RIGHT,
+		FRAME_ORDER_TOP_BOTTOM_RIGHT_LEFT,
+		FRAME_ORDER_BOTTOM_TOP_LEFT_RIGHT,
+		FRAME_ORDER_BOTTOM_TOP_RIGHT_LEFT,
+	};
+
 	bool read_only = false;
+
+	Ref<Texture2D> autoplay_icon;
+	Ref<Texture2D> stop_icon;
+	Ref<Texture2D> pause_icon;
+	Ref<Texture2D> empty_icon = memnew(ImageTexture);
+
+	HBoxContainer *playback_container = nullptr;
+	Button *stop = nullptr;
+	Button *play = nullptr;
+	Button *play_from = nullptr;
+	Button *play_bw = nullptr;
+	Button *play_bw_from = nullptr;
 
 	Button *load = nullptr;
 	Button *load_sheet = nullptr;
@@ -70,23 +111,25 @@ class SpriteFramesEditor : public HSplitContainer {
 	Button *zoom_out = nullptr;
 	Button *zoom_reset = nullptr;
 	Button *zoom_in = nullptr;
-	ItemList *tree = nullptr;
+	SpinBox *frame_duration = nullptr;
+	ItemList *frame_list = nullptr;
 	bool loading_scene;
 	int sel;
 
 	Button *add_anim = nullptr;
 	Button *delete_anim = nullptr;
-	LineEdit *anim_search_box = nullptr;
-
-	Tree *animations = nullptr;
 	SpinBox *anim_speed = nullptr;
-	CheckButton *anim_loop = nullptr;
+	Button *anim_loop = nullptr;
+
+	HBoxContainer *autoplay_container = nullptr;
+	Button *autoplay = nullptr;
+
+	LineEdit *anim_search_box = nullptr;
+	Tree *animations = nullptr;
 
 	EditorFileDialog *file = nullptr;
 
 	AcceptDialog *dialog = nullptr;
-
-	SpriteFrames *frames = nullptr;
 
 	StringName edited_anim;
 
@@ -95,6 +138,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	ConfirmationDialog *split_sheet_dialog = nullptr;
 	ScrollContainer *split_sheet_scroll = nullptr;
 	TextureRect *split_sheet_preview = nullptr;
+	VBoxContainer *split_sheet_settings_vb = nullptr;
 	SpinBox *split_sheet_h = nullptr;
 	SpinBox *split_sheet_v = nullptr;
 	SpinBox *split_sheet_size_x = nullptr;
@@ -106,9 +150,14 @@ class SpriteFramesEditor : public HSplitContainer {
 	Button *split_sheet_zoom_out = nullptr;
 	Button *split_sheet_zoom_reset = nullptr;
 	Button *split_sheet_zoom_in = nullptr;
+	Button *toggle_settings_button = nullptr;
+	OptionButton *split_sheet_order = nullptr;
 	EditorFileDialog *file_split_sheet = nullptr;
-	HashSet<int> frames_selected;
+	HashMap<int, int> frames_selected; // Key is frame index. Value is selection order.
 	HashSet<int> frames_toggled_by_mouse_hover;
+	Vector<Pair<int, int>> frames_ordered; // First is the index to be ordered by. Second is the actual frame index.
+	int selected_count = 0;
+	bool frames_need_sort = false;
 	int last_frame_selected = 0;
 
 	float scale_ratio;
@@ -134,18 +183,29 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _delete_pressed();
 	void _up_pressed();
 	void _down_pressed();
+	void _frame_duration_changed(double p_value);
 	void _update_library(bool p_skip_selector = false);
 
-	void _animation_select();
+	void _update_stop_icon();
+	void _play_pressed();
+	void _play_from_pressed();
+	void _play_bw_pressed();
+	void _play_bw_from_pressed();
+	void _autoplay_pressed();
+	void _stop_pressed();
+
+	void _animation_selected();
 	void _animation_name_edited();
 	void _animation_add();
 	void _animation_remove();
 	void _animation_remove_confirmed();
 	void _animation_search_text_changed(const String &p_text);
 	void _animation_loop_changed();
-	void _animation_fps_changed(double p_value);
+	void _animation_speed_changed(double p_value);
 
-	void _tree_input(const Ref<InputEvent> &p_event);
+	void _frame_list_gui_input(const Ref<InputEvent> &p_event);
+	void _frame_list_item_selected(int p_index);
+
 	void _zoom_in();
 	void _zoom_out();
 	void _zoom_reset();
@@ -169,14 +229,31 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _sheet_zoom_in();
 	void _sheet_zoom_out();
 	void _sheet_zoom_reset();
-	void _sheet_select_clear_all_frames();
+	void _sheet_order_selected(int p_option);
+	void _sheet_select_all_frames();
+	void _sheet_clear_all_frames();
+	void _sheet_sort_frames();
+	void _toggle_show_settings();
+	void _update_show_settings();
+
+	void _edit();
+	void _regist_scene_undo(EditorUndoRedoManager *undo_redo);
+	void _fetch_sprite_node();
+	void _remove_sprite_node();
+
+	bool sprite_node_updating = false;
+	void _sync_animation();
+
+	void _select_animation(const String &p_name, bool p_update_node = true);
+	void _rename_node_animation(EditorUndoRedoManager *undo_redo, bool is_undo, const String &p_filter, const String &p_new_animation, const String &p_new_autoplay);
 
 protected:
 	void _notification(int p_what);
+	void _node_removed(Node *p_node);
 	static void _bind_methods();
 
 public:
-	void edit(SpriteFrames *p_frames);
+	void edit(Ref<SpriteFrames> p_frames);
 	SpriteFramesEditor();
 };
 

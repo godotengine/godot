@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  display_server_macos.mm                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  display_server_macos.mm                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "display_server_macos.h"
 
@@ -109,7 +109,7 @@ NSMenu *DisplayServerMacOS::_get_menu_root(const String &p_menu_root) {
 	return menu;
 }
 
-DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect, int p_screen) {
+DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect) {
 	WindowID id;
 	const float scale = screen_get_max_scale();
 	{
@@ -119,36 +119,30 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 		ERR_FAIL_COND_V_MSG(wd.window_delegate == nil, INVALID_WINDOW_ID, "Can't create a window delegate");
 		[wd.window_delegate setWindowID:window_id_counter];
 
-		int nearest_area = 0;
-		int pos_screen = -1;
-		for (int i = 0; i < get_screen_count(); i++) {
-			Rect2i r = screen_get_usable_rect(i);
-			Rect2 inters = r.intersection(p_rect);
-			int area = inters.size.width * inters.size.height;
-			if (area > nearest_area && area > 0) {
-				pos_screen = i;
-				nearest_area = area;
-			}
+		int rq_screen = get_screen_from_rect(p_rect);
+		if (rq_screen < 0) {
+			rq_screen = get_primary_screen(); // Requested window rect is outside any screen bounds.
 		}
 
-		Rect2i srect = screen_get_usable_rect(p_screen);
-		Point2i wpos = p_rect.position - ((pos_screen >= 0) ? screen_get_position(pos_screen) : Vector2i());
-		wpos += srect.position;
-		wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - p_rect.size.width / 3);
-		wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - p_rect.size.height / 3);
-		// OS X native y-coordinate relative to _get_screens_origin() is negative,
+		Rect2i srect = screen_get_usable_rect(rq_screen);
+		Point2i wpos = p_rect.position;
+		if (srect != Rect2i()) {
+			wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - p_rect.size.width / 3);
+			wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - p_rect.size.height / 3);
+		}
+		// macOS native y-coordinate relative to _get_screens_origin() is negative,
 		// Godot passes a positive value.
 		wpos.y *= -1;
 		wpos += _get_screens_origin();
+		wpos /= scale;
 
 		// initWithContentRect uses bottom-left corner of the window’s frame as origin.
 		wd.window_object = [[GodotWindow alloc]
-				initWithContentRect:NSMakeRect(0, 0, p_rect.size.width / scale, p_rect.size.height / scale)
+				initWithContentRect:NSMakeRect(100, 100, p_rect.size.width / scale, p_rect.size.height / scale)
 						  styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable
 							backing:NSBackingStoreBuffered
 							  defer:NO];
 		ERR_FAIL_COND_V_MSG(wd.window_object == nil, INVALID_WINDOW_ID, "Can't create a window");
-		[wd.window_object setFrameTopLeftPoint:NSMakePoint(wpos.x / scale, wpos.y / scale)];
 		[wd.window_object setWindowID:window_id_counter];
 
 		wd.window_view = [[GodotContentView alloc] init];
@@ -172,6 +166,17 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 			layer.contentsScale = scale;
 		}
 
+		NSColor *bg_color = [NSColor windowBackgroundColor];
+		Color _bg_color;
+		if (_get_window_early_clear_override(_bg_color)) {
+			bg_color = [NSColor colorWithCalibratedRed:_bg_color.r green:_bg_color.g blue:_bg_color.b alpha:1.f];
+		}
+
+		[wd.window_object setBackgroundColor:bg_color];
+		if (layer) {
+			[layer setBackgroundColor:bg_color.CGColor];
+		}
+
 #if defined(VULKAN_ENABLED)
 		if (context_vulkan) {
 			Error err = context_vulkan->window_create(window_id_counter, p_vsync_mode, wd.window_view, p_rect.size.width, p_rect.size.height);
@@ -186,6 +191,16 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 		window_set_vsync_mode(p_vsync_mode, window_id_counter);
 #endif
 		[wd.window_view updateLayerDelegate];
+
+		const NSRect contentRect = [wd.window_view frame];
+		const NSRect windowRect = [wd.window_object frame];
+		const NSRect nsrect = [wd.window_object convertRectToScreen:contentRect];
+		Point2i offset;
+		offset.x = (nsrect.origin.x - windowRect.origin.x);
+		offset.y = (nsrect.origin.y + nsrect.size.height);
+		offset.y -= (windowRect.origin.y + windowRect.size.height);
+		[wd.window_object setFrameTopLeftPoint:NSMakePoint(wpos.x - offset.x, wpos.y - offset.y)];
+
 		id = window_id_counter++;
 		windows[id] = wd;
 	}
@@ -269,12 +284,17 @@ void DisplayServerMacOS::_set_window_per_pixel_transparency_enabled(bool p_enabl
 #endif
 			wd.layered_window = true;
 		} else {
-			[wd.window_object setBackgroundColor:[NSColor colorWithCalibratedWhite:1 alpha:1]];
+			NSColor *bg_color = [NSColor windowBackgroundColor];
+			Color _bg_color;
+			if (_get_window_early_clear_override(_bg_color)) {
+				bg_color = [NSColor colorWithCalibratedRed:_bg_color.r green:_bg_color.g blue:_bg_color.b alpha:1.f];
+			}
+			[wd.window_object setBackgroundColor:bg_color];
 			[wd.window_object setOpaque:YES];
 			[wd.window_object setHasShadow:YES];
 			CALayer *layer = [(NSView *)wd.window_view layer];
 			if (layer) {
-				[layer setBackgroundColor:[NSColor colorWithCalibratedWhite:1 alpha:1].CGColor];
+				[layer setBackgroundColor:bg_color.CGColor];
 				[layer setOpaque:YES];
 			}
 #if defined(GLES3_ENABLED)
@@ -309,7 +329,7 @@ Point2i DisplayServerMacOS::_get_screens_origin() const {
 	// Returns the native top-left screen coordinate of the smallest rectangle
 	// that encompasses all screens. Needed in get_screen_position(),
 	// window_get_position, and window_set_position()
-	// to convert between OS X native screen coordinates and the ones expected by Godot.
+	// to convert between macOS native screen coordinates and the ones expected by Godot.
 
 	if (displays_arrangement_dirty) {
 		const_cast<DisplayServerMacOS *>(this)->_update_displays_arrangement();
@@ -322,7 +342,7 @@ Point2i DisplayServerMacOS::_get_native_screen_position(int p_screen) const {
 	NSArray *screenArray = [NSScreen screens];
 	if ((NSUInteger)p_screen < [screenArray count]) {
 		NSRect nsrect = [[screenArray objectAtIndex:p_screen] frame];
-		// Return the top-left corner of the screen, for OS X the y starts at the bottom.
+		// Return the top-left corner of the screen, for macOS the y starts at the bottom.
 		return Point2i(nsrect.origin.x, nsrect.origin.y + nsrect.size.height) * screen_get_max_scale();
 	}
 
@@ -414,7 +434,8 @@ void DisplayServerMacOS::_process_key_events() {
 			k->set_pressed(ke.pressed);
 			k->set_echo(ke.echo);
 			k->set_keycode(ke.keycode);
-			k->set_physical_keycode((Key)ke.physical_keycode);
+			k->set_physical_keycode(ke.physical_keycode);
+			k->set_key_label(ke.key_label);
 			k->set_unicode(ke.unicode);
 
 			_push_input(k);
@@ -429,6 +450,7 @@ void DisplayServerMacOS::_process_key_events() {
 				k->set_echo(ke.echo);
 				k->set_keycode(Key::NONE);
 				k->set_physical_keycode(Key::NONE);
+				k->set_key_label(Key::NONE);
 				k->set_unicode(ke.unicode);
 
 				_push_input(k);
@@ -441,7 +463,8 @@ void DisplayServerMacOS::_process_key_events() {
 				k->set_pressed(ke.pressed);
 				k->set_echo(ke.echo);
 				k->set_keycode(ke.keycode);
-				k->set_physical_keycode((Key)ke.physical_keycode);
+				k->set_physical_keycode(ke.physical_keycode);
+				k->set_key_label(ke.key_label);
 
 				if (i + 1 < key_event_pos && key_event_buffer[i + 1].keycode == Key::NONE) {
 					k->set_unicode(key_event_buffer[i + 1].unicode);
@@ -613,6 +636,7 @@ void DisplayServerMacOS::send_event(NSEvent *p_event) {
 			k->set_pressed(true);
 			k->set_keycode(Key::PERIOD);
 			k->set_physical_keycode(Key::PERIOD);
+			k->set_key_label(Key::PERIOD);
 			k->set_echo([p_event isARepeat]);
 
 			Input::get_singleton()->parse_input_event(k);
@@ -652,6 +676,12 @@ void DisplayServerMacOS::update_mouse_pos(DisplayServerMacOS::WindowData &p_wd, 
 	p_wd.mouse_pos.x = p_location_in_window.x * scale;
 	p_wd.mouse_pos.y = (content_rect.size.height - p_location_in_window.y) * scale;
 	Input::get_singleton()->set_mouse_position(p_wd.mouse_pos);
+}
+
+void DisplayServerMacOS::pop_last_key_event() {
+	if (key_event_pos > 0) {
+		key_event_pos--;
+	}
 }
 
 void DisplayServerMacOS::push_to_key_event_buffer(const DisplayServerMacOS::KeyEvent &p_event) {
@@ -735,6 +765,7 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_TEXT_TO_SPEECH:
 		case FEATURE_EXTEND_TO_TITLE:
+		case FEATURE_SCREEN_CAPTURE:
 			return true;
 		default: {
 		}
@@ -1809,9 +1840,9 @@ Error DisplayServerMacOS::dialog_show(String p_title, String p_description, Vect
 	if (!p_callback.is_null()) {
 		Variant button = button_pressed;
 		Variant *buttonp = &button;
-		Variant ret;
+		Variant fun_ret;
 		Callable::CallError ce;
-		p_callback.callp((const Variant **)&buttonp, 1, ret, ce);
+		p_callback.callp((const Variant **)&buttonp, 1, fun_ret, ce);
 	}
 
 	return OK;
@@ -1841,9 +1872,9 @@ Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description
 	if (!p_callback.is_null()) {
 		Variant text = ret;
 		Variant *textp = &text;
-		Variant ret;
+		Variant fun_ret;
 		Callable::CallError ce;
-		p_callback.callp((const Variant **)&textp, 1, ret, ce);
+		p_callback.callp((const Variant **)&textp, 1, fun_ret, ce);
 	}
 
 	return OK;
@@ -1866,7 +1897,7 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 	bool previously_shown = (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED);
 
 	if (show_cursor && !previously_shown) {
-		WindowID window_id = get_window_at_screen_position(mouse_get_position());
+		window_id = get_window_at_screen_position(mouse_get_position());
 		if (window_id != INVALID_WINDOW_ID) {
 			send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
 		}
@@ -1994,7 +2025,7 @@ void DisplayServerMacOS::warp_mouse(const Point2i &p_position) {
 		// Local point in window coords.
 		const NSRect contentRect = [wd.window_view frame];
 		const float scale = screen_get_max_scale();
-		NSRect pointInWindowRect = NSMakeRect(p_position.x / scale, contentRect.size.height - (p_position.y / scale - 1), 0, 0);
+		NSRect pointInWindowRect = NSMakeRect(p_position.x / scale, contentRect.size.height - (p_position.y / scale), scale, scale);
 		NSPoint pointOnScreen = [[wd.window_view window] convertRectToScreen:pointInWindowRect].origin;
 
 		// Point in scren coords.
@@ -2030,11 +2061,11 @@ Point2i DisplayServerMacOS::mouse_get_position() const {
 	return Vector2i();
 }
 
-void DisplayServerMacOS::mouse_set_button_state(MouseButton p_state) {
+void DisplayServerMacOS::mouse_set_button_state(BitField<MouseButtonMask> p_state) {
 	last_button_state = p_state;
 }
 
-MouseButton DisplayServerMacOS::mouse_get_button_state() const {
+BitField<MouseButtonMask> DisplayServerMacOS::mouse_get_button_state() const {
 	return last_button_state;
 }
 
@@ -2077,15 +2108,21 @@ int DisplayServerMacOS::get_screen_count() const {
 	return [screenArray count];
 }
 
+int DisplayServerMacOS::get_primary_screen() const {
+	return 0;
+}
+
+int DisplayServerMacOS::get_keyboard_focus_screen() const {
+	const NSUInteger index = [[NSScreen screens] indexOfObject:[NSScreen mainScreen]];
+	return (index == NSNotFound) ? 0 : index;
+}
+
 Point2i DisplayServerMacOS::screen_get_position(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
-	}
-
+	p_screen = _get_screen_index(p_screen);
 	Point2i position = _get_native_screen_position(p_screen) - _get_screens_origin();
-	// OS X native y-coordinate relative to _get_screens_origin() is negative,
+	// macOS native y-coordinate relative to _get_screens_origin() is negative,
 	// Godot expects a positive value.
 	position.y *= -1;
 	return position;
@@ -2094,10 +2131,7 @@ Point2i DisplayServerMacOS::screen_get_position(int p_screen) const {
 Size2i DisplayServerMacOS::screen_get_size(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
-	}
-
+	p_screen = _get_screen_index(p_screen);
 	NSArray *screenArray = [NSScreen screens];
 	if ((NSUInteger)p_screen < [screenArray count]) {
 		// Note: Use frame to get the whole screen size.
@@ -2111,10 +2145,7 @@ Size2i DisplayServerMacOS::screen_get_size(int p_screen) const {
 int DisplayServerMacOS::screen_get_dpi(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
-	}
-
+	p_screen = _get_screen_index(p_screen);
 	NSArray *screenArray = [NSScreen screens];
 	if ((NSUInteger)p_screen < [screenArray count]) {
 		NSDictionary *description = [[screenArray objectAtIndex:p_screen] deviceDescription];
@@ -2135,9 +2166,7 @@ int DisplayServerMacOS::screen_get_dpi(int p_screen) const {
 float DisplayServerMacOS::screen_get_scale(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
-	}
+	p_screen = _get_screen_index(p_screen);
 	if (OS::get_singleton()->is_hidpi_allowed()) {
 		NSArray *screenArray = [NSScreen screens];
 		if ((NSUInteger)p_screen < [screenArray count]) {
@@ -2160,10 +2189,7 @@ float DisplayServerMacOS::screen_get_max_scale() const {
 Rect2i DisplayServerMacOS::screen_get_usable_rect(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
-	}
-
+	p_screen = _get_screen_index(p_screen);
 	NSArray *screenArray = [NSScreen screens];
 	if ((NSUInteger)p_screen < [screenArray count]) {
 		const float scale = screen_get_max_scale();
@@ -2179,13 +2205,39 @@ Rect2i DisplayServerMacOS::screen_get_usable_rect(int p_screen) const {
 	return Rect2i();
 }
 
+Color DisplayServerMacOS::screen_get_pixel(const Point2i &p_position) const {
+	Point2i position = p_position;
+	// macOS native y-coordinate relative to _get_screens_origin() is negative,
+	// Godot passes a positive value.
+	position.y *= -1;
+	position += _get_screens_origin();
+	position /= screen_get_max_scale();
+
+	for (NSScreen *screen in [NSScreen screens]) {
+		NSRect frame = [screen frame];
+		if (NSMouseInRect(NSMakePoint(position.x, position.y), frame, NO)) {
+			NSDictionary *screenDescription = [screen deviceDescription];
+			CGDirectDisplayID display_id = [[screenDescription objectForKey:@"NSScreenNumber"] unsignedIntValue];
+			CGImageRef image = CGDisplayCreateImageForRect(display_id, CGRectMake(position.x - frame.origin.x, frame.size.height - (position.y - frame.origin.y), 1, 1));
+			if (image) {
+				NSBitmapImageRep *bitmap = [[NSBitmapImageRep alloc] initWithCGImage:image];
+				CGImageRelease(image);
+				NSColor *color = [bitmap colorAtX:0 y:0];
+				if (color) {
+					CGFloat components[4];
+					[color getRed:&components[0] green:&components[1] blue:&components[2] alpha:&components[3]];
+					return Color(components[0], components[1], components[2], components[3]);
+				}
+			}
+		}
+	}
+	return Color();
+}
+
 float DisplayServerMacOS::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
-	}
-
+	p_screen = _get_screen_index(p_screen);
 	NSArray *screenArray = [NSScreen screens];
 	if ((NSUInteger)p_screen < [screenArray count]) {
 		NSDictionary *description = [[screenArray objectAtIndex:p_screen] deviceDescription];
@@ -2225,10 +2277,10 @@ Vector<DisplayServer::WindowID> DisplayServerMacOS::get_window_list() const {
 	return ret;
 }
 
-DisplayServer::WindowID DisplayServerMacOS::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, int p_screen) {
+DisplayServer::WindowID DisplayServerMacOS::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
 	_THREAD_SAFE_METHOD_
 
-	WindowID id = _create_window(p_mode, p_vsync_mode, p_rect, p_screen);
+	WindowID id = _create_window(p_mode, p_vsync_mode, p_rect);
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, id);
@@ -2425,13 +2477,13 @@ Point2i DisplayServerMacOS::window_get_position(WindowID p_window) const {
 	const NSRect nsrect = [wd.window_object convertRectToScreen:contentRect];
 	Point2i pos;
 
-	// Return the position of the top-left corner, for OS X the y starts at the bottom.
+	// Return the position of the top-left corner, for macOS the y starts at the bottom.
 	const float scale = screen_get_max_scale();
 	pos.x = nsrect.origin.x;
 	pos.y = (nsrect.origin.y + nsrect.size.height);
 	pos *= scale;
 	pos -= _get_screens_origin();
-	// OS X native y-coordinate relative to _get_screens_origin() is negative,
+	// macOS native y-coordinate relative to _get_screens_origin() is negative,
 	// Godot expects a positive value.
 	pos.y *= -1;
 	return pos;
@@ -2446,13 +2498,13 @@ Point2i DisplayServerMacOS::window_get_position_with_decorations(WindowID p_wind
 	const NSRect nsrect = [wd.window_object frame];
 	Point2i pos;
 
-	// Return the position of the top-left corner, for OS X the y starts at the bottom.
+	// Return the position of the top-left corner, for macOS the y starts at the bottom.
 	const float scale = screen_get_max_scale();
 	pos.x = nsrect.origin.x;
 	pos.y = (nsrect.origin.y + nsrect.size.height);
 	pos *= scale;
 	pos -= _get_screens_origin();
-	// OS X native y-coordinate relative to _get_screens_origin() is negative,
+	// macOS native y-coordinate relative to _get_screens_origin() is negative,
 	// Godot expects a positive value.
 	pos.y *= -1;
 	return pos;
@@ -2469,7 +2521,7 @@ void DisplayServerMacOS::window_set_position(const Point2i &p_position, WindowID
 	}
 
 	Point2i position = p_position;
-	// OS X native y-coordinate relative to _get_screens_origin() is negative,
+	// macOS native y-coordinate relative to _get_screens_origin() is negative,
 	// Godot passes a positive value.
 	position.y *= -1;
 	position += _get_screens_origin();
@@ -2907,6 +2959,9 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 		case WINDOW_FLAG_NO_FOCUS: {
 			wd.no_focus = p_enabled;
 		} break;
+		case WINDOW_FLAG_MOUSE_PASSTHROUGH: {
+			wd.mpass = p_enabled;
+		} break;
 		case WINDOW_FLAG_POPUP: {
 			ERR_FAIL_COND_MSG(p_window == MAIN_WINDOW_ID, "Main window can't be popup.");
 			ERR_FAIL_COND_MSG([wd.window_object isVisible] && (wd.is_popup != p_enabled), "Popup flag can't changed while window is opened.");
@@ -2945,6 +3000,9 @@ bool DisplayServerMacOS::window_get_flag(WindowFlags p_flag, WindowID p_window) 
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			return wd.no_focus;
+		} break;
+		case WINDOW_FLAG_MOUSE_PASSTHROUGH: {
+			return wd.mpass;
 		} break;
 		case WINDOW_FLAG_POPUP: {
 			return wd.is_popup;
@@ -3069,7 +3127,9 @@ ObjectID DisplayServerMacOS::window_get_attached_instance_id(WindowID p_window) 
 
 void DisplayServerMacOS::gl_window_make_current(DisplayServer::WindowID p_window_id) {
 #if defined(GLES3_ENABLED)
-	gl_manager->window_make_current(p_window_id);
+	if (gl_manager) {
+		gl_manager->window_make_current(p_window_id);
+	}
 #endif
 }
 
@@ -3199,6 +3259,8 @@ DisplayServerMacOS::CursorShape DisplayServerMacOS::cursor_get_shape() const {
 void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	_THREAD_SAFE_METHOD_
 
+	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
+
 	if (p_cursor.is_valid()) {
 		HashMap<CursorShape, Vector<Variant>>::Iterator cursor_c = cursors_cache.find(p_shape);
 
@@ -3211,16 +3273,12 @@ void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, 
 		}
 
 		Ref<Texture2D> texture = p_cursor;
+		ERR_FAIL_COND(!texture.is_valid());
 		Ref<AtlasTexture> atlas_texture = p_cursor;
-		Ref<Image> image;
 		Size2 texture_size;
 		Rect2 atlas_rect;
 
-		if (texture.is_valid()) {
-			image = texture->get_image();
-		}
-
-		if (!image.is_valid() && atlas_texture.is_valid()) {
+		if (atlas_texture.is_valid()) {
 			texture = atlas_texture->get_atlas();
 
 			atlas_rect.size.width = texture->get_width();
@@ -3230,19 +3288,23 @@ void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, 
 
 			texture_size.width = atlas_texture->get_region().size.x;
 			texture_size.height = atlas_texture->get_region().size.y;
-		} else if (image.is_valid()) {
+		} else {
 			texture_size.width = texture->get_width();
 			texture_size.height = texture->get_height();
 		}
 
-		ERR_FAIL_COND(!texture.is_valid());
 		ERR_FAIL_COND(p_hotspot.x < 0 || p_hotspot.y < 0);
 		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
 		ERR_FAIL_COND(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height);
 
-		image = texture->get_image();
+		Ref<Image> image = texture->get_image();
 
 		ERR_FAIL_COND(!image.is_valid());
+		if (image->is_compressed()) {
+			image = image->duplicate(true);
+			Error err = image->decompress();
+			ERR_FAIL_COND_MSG(err != OK, "Couldn't decompress VRAM-compressed custom mouse cursor image. Switch to a lossless compression mode in the Import dock.");
+		}
 
 		NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc]
 				initWithBitmapDataPlanes:nullptr
@@ -3376,14 +3438,14 @@ String DisplayServerMacOS::keyboard_get_layout_name(int p_index) const {
 }
 
 Key DisplayServerMacOS::keyboard_get_keycode_from_physical(Key p_keycode) const {
-	if (p_keycode == Key::PAUSE) {
+	if (p_keycode == Key::PAUSE || p_keycode == Key::NONE) {
 		return p_keycode;
 	}
 
 	Key modifiers = p_keycode & KeyModifierMask::MODIFIER_MASK;
 	Key keycode_no_mod = p_keycode & KeyModifierMask::CODE_MASK;
-	unsigned int macos_keycode = KeyMappingMacOS::unmap_key((Key)keycode_no_mod);
-	return (Key)(KeyMappingMacOS::remap_key(macos_keycode, 0) | modifiers);
+	unsigned int macos_keycode = KeyMappingMacOS::unmap_key(keycode_no_mod);
+	return (Key)(KeyMappingMacOS::remap_key(macos_keycode, 0, false) | modifiers);
 }
 
 void DisplayServerMacOS::process_events() {
@@ -3404,14 +3466,16 @@ void DisplayServerMacOS::process_events() {
 	}
 
 	// Process "menu_callback"s.
-	for (MenuCall &E : deferred_menu_calls) {
-		Variant tag = E.tag;
+	while (List<MenuCall>::Element *call_p = deferred_menu_calls.front()) {
+		MenuCall call = call_p->get();
+		deferred_menu_calls.pop_front(); // Remove before call to avoid infinite loop in case callback is using `process_events` (e.g. EditorProgress).
+
+		Variant tag = call.tag;
 		Variant *tagp = &tag;
 		Variant ret;
 		Callable::CallError ce;
-		E.callback.callp((const Variant **)&tagp, 1, ret, ce);
+		call.callback.callp((const Variant **)&tagp, 1, ret, ce);
 	}
-	deferred_menu_calls.clear();
 
 	if (!drop_events) {
 		_process_key_events();
@@ -3420,7 +3484,11 @@ void DisplayServerMacOS::process_events() {
 
 	for (KeyValue<WindowID, WindowData> &E : windows) {
 		WindowData &wd = E.value;
-		if (wd.mpath.size() > 0) {
+		if (wd.mpass) {
+			if (![wd.window_object ignoresMouseEvents]) {
+				[wd.window_object setIgnoresMouseEvents:YES];
+			}
+		} else if (wd.mpath.size() > 0) {
 			update_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
 			if (Geometry2D::is_point_in_polygon(wd.mouse_pos, wd.mpath)) {
 				if ([wd.window_object ignoresMouseEvents]) {
@@ -3520,28 +3588,28 @@ void DisplayServerMacOS::set_icon(const Ref<Image> &p_icon) {
 	[NSApp setApplicationIconImage:nsimg];
 }
 
-DisplayServer *DisplayServerMacOS::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerMacOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, r_error));
+DisplayServer *DisplayServerMacOS::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerMacOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, r_error));
 	if (r_error != OK) {
 		if (p_rendering_driver == "vulkan") {
 			String executable_command;
 			if (OS::get_singleton()->get_bundle_resource_dir() == OS::get_singleton()->get_executable_path().get_base_dir()) {
-				executable_command = vformat("%s --rendering-driver opengl3", OS::get_singleton()->get_executable_path());
+				executable_command = vformat("\"%s\" --rendering-driver opengl3", OS::get_singleton()->get_executable_path());
 			} else {
-				executable_command = vformat("open %s --args --rendering-driver opengl3", OS::get_singleton()->get_bundle_resource_dir().path_join("../..").simplify_path());
+				executable_command = vformat("open \"%s\" --args --rendering-driver opengl3", OS::get_singleton()->get_bundle_resource_dir().path_join("../..").simplify_path());
 			}
-			OS::get_singleton()->alert("Your video card driver does not support the selected Vulkan version.\n"
-									   "Please try updating your GPU driver or try using the OpenGL 3 driver.\n"
-									   "You can enable the OpenGL 3 driver by starting the engine from the\n"
-									   "command line with the command: '" +
-							executable_command + "'.\n"
-												 "If you have updated your graphics drivers recently, try rebooting.",
-					"Unable to initialize Video driver");
+			OS::get_singleton()->alert(
+					vformat("Your video card drivers seem not to support the required Vulkan version.\n\n"
+							"If possible, consider updating your macOS version or using the OpenGL 3 driver.\n\n"
+							"You can enable the OpenGL 3 driver by starting the engine from the\n"
+							"command line with the command:\n\n    %s",
+							executable_command),
+					"Unable to initialize Vulkan video driver");
 		} else {
-			OS::get_singleton()->alert("Your video card driver does not support the selected OpenGL version.\n"
-									   "Please try updating your GPU driver.\n"
-									   "If you have updated your graphics drivers recently, try rebooting.",
-					"Unable to initialize Video driver");
+			OS::get_singleton()->alert(
+					"Your video card drivers seem not to support the required OpenGL 3.3 version.\n\n"
+					"If possible, consider updating your macOS version.",
+					"Unable to initialize OpenGL video driver");
 		}
 	}
 	return ds;
@@ -3592,8 +3660,23 @@ Rect2i DisplayServerMacOS::window_get_popup_safe_rect(WindowID p_window) const {
 void DisplayServerMacOS::popup_open(WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
+	bool has_popup_ancestor = false;
+	WindowID transient_root = p_window;
+	while (true) {
+		WindowID parent = windows[transient_root].transient_parent;
+		if (parent == INVALID_WINDOW_ID) {
+			break;
+		} else {
+			transient_root = parent;
+			if (windows[parent].is_popup) {
+				has_popup_ancestor = true;
+				break;
+			}
+		}
+	}
+
 	WindowData &wd = windows[p_window];
-	if (wd.is_popup) {
+	if (wd.is_popup || has_popup_ancestor) {
 		bool was_empty = popup_list.is_empty();
 		// Find current popup parent, or root popup if new window is not transient.
 		List<WindowID>::Element *C = nullptr;
@@ -3690,7 +3773,9 @@ bool DisplayServerMacOS::mouse_process_popups(bool p_close) {
 	return closed;
 }
 
-DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error) {
+DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
+	KeyMappingMacOS::initialize();
+
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 
 	r_error = OK;
@@ -3780,7 +3865,6 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 			gl_manager = nullptr;
 			r_error = ERR_UNAVAILABLE;
 			ERR_FAIL_MSG("Could not initialize OpenGL");
-			return;
 		}
 	}
 #endif
@@ -3796,15 +3880,17 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	}
 #endif
 
-	Point2i window_position(
-			screen_get_position(0).x + (screen_get_size(0).width - p_resolution.width) / 2,
-			screen_get_position(0).y + (screen_get_size(0).height - p_resolution.height) / 2);
-
+	Point2i window_position;
 	if (p_position != nullptr) {
 		window_position = *p_position;
+	} else {
+		if (p_screen == SCREEN_OF_MAIN_WINDOW) {
+			p_screen = SCREEN_PRIMARY;
+		}
+		window_position = screen_get_position(p_screen) + (screen_get_size(p_screen) - p_resolution) / 2;
 	}
 
-	WindowID main_window = _create_window(p_mode, p_vsync_mode, Rect2i(window_position, p_resolution), 0);
+	WindowID main_window = _create_window(p_mode, p_vsync_mode, Rect2i(window_position, p_resolution));
 	ERR_FAIL_COND(main_window == INVALID_WINDOW_ID);
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
@@ -3812,6 +3898,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 		}
 	}
 	show_window(MAIN_WINDOW_ID);
+	force_process_and_drop_events();
 
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3") {

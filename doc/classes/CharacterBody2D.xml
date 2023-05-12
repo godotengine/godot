@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CharacterBody2D" inherits="PhysicsBody2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="CharacterBody2D" inherits="PhysicsBody2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Specialized 2D physics body node for characters moved by script.
 	</brief_description>
@@ -15,6 +15,12 @@
 		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/120</link>
 	</tutorials>
 	<methods>
+		<method name="apply_floor_snap">
+			<return type="void" />
+			<description>
+				Allows to manually apply a snap to the floor regardless of the body's velocity. This function does nothing when [method is_on_floor] returns [code]true[/code].
+			</description>
+		</method>
 		<method name="get_floor_angle" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="up_direction" type="Vector2" default="Vector2(0, -1)" />
@@ -67,14 +73,14 @@
 				[codeblocks]
 				[gdscript]
 				for i in get_slide_collision_count():
-				var collision = get_slide_collision(i)
-				print("Collided with: ", collision.collider.name)
+				    var collision = get_slide_collision(i)
+				    print("Collided with: ", collision.get_collider().name)
 				[/gdscript]
 				[csharp]
-				for (int i = 0; i &lt; GetSlideCount(); i++)
+				for (int i = 0; i &lt; GetSlideCollisionCount(); i++)
 				{
 				    KinematicCollision2D collision = GetSlideCollision(i);
-				    GD.Print("Collided with: ", (collision.Collider as Node).Name);
+				    GD.Print("Collided with: ", (collision.GetCollider() as Node).Name);
 				}
 				[/csharp]
 				[/codeblocks]
@@ -152,7 +158,7 @@
 		</member>
 		<member name="floor_snap_length" type="float" setter="set_floor_snap_length" getter="get_floor_snap_length" default="1.0">
 			Sets a snapping distance. When set to a value different from [code]0.0[/code], the body is kept attached to slopes when calling [method move_and_slide]. The snapping vector is determined by the given distance along the opposite direction of the [member up_direction].
-			As long as the snapping vector is in contact with the ground and the body moves against [member up_direction], the body will remain attached to the surface. Snapping is not applied if the body moves along [member up_direction], so it will be able to detach from the ground when jumping.
+			As long as the snapping vector is in contact with the ground and the body moves against [member up_direction], the body will remain attached to the surface. Snapping is not applied if the body moves along [member up_direction], meaning it contains vertical rising velocity, so it will be able to detach from the ground when jumping or when the body is pushed up by something. If you want to apply a snap without taking into account the velocity, use [method apply_floor_snap].
 		</member>
 		<member name="floor_stop_on_slope" type="bool" setter="set_floor_stop_on_slope_enabled" getter="is_floor_stop_on_slope_enabled" default="true">
 			If [code]true[/code], the body will not slide on slopes when calling [method move_and_slide] when the body is standing still.

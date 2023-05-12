@@ -1,43 +1,53 @@
-/*************************************************************************/
-/*  connections_dialog.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  connections_dialog.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "connections_dialog.h"
 
+#include "core/config/project_settings.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_help.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/scene_tree_editor.h"
 #include "editor/scene_tree_dock.h"
 #include "plugins/script_editor_plugin.h"
+#include "scene/gui/button.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/gui/spin_box.h"
 #include "scene/resources/packed_scene.h"
 
 static Node *_find_first_script(Node *p_root, Node *p_node) {
@@ -118,7 +128,7 @@ void ConnectDialog::ok_pressed() {
 		return;
 	}
 
-	if (!method_name.strip_edges().is_valid_identifier()) {
+	if (!TS->is_valid_identifier(method_name.strip_edges())) {
 		error->set_text(TTR("Method name must be a valid identifier."));
 		error->popup_centered();
 		return;
@@ -165,7 +175,12 @@ void ConnectDialog::_tree_node_selected() {
 	if (!edit_mode) {
 		set_dst_method(generate_method_callback_name(source, signal, current));
 	}
+	_update_method_tree();
 	_update_ok_enabled();
+}
+
+void ConnectDialog::_focus_currently_connected() {
+	tree->set_selected(source);
 }
 
 void ConnectDialog::_unbind_count_changed(double p_count) {
@@ -180,6 +195,11 @@ void ConnectDialog::_unbind_count_changed(double p_count) {
 			e->set_read_only(p_count > 0);
 		}
 	}
+}
+
+void ConnectDialog::_method_selected() {
+	TreeItem *selected_item = method_tree->get_selected();
+	dst_method->set_text(selected_item->get_metadata(0));
 }
 
 /*
@@ -217,7 +237,7 @@ StringName ConnectDialog::generate_method_callback_name(Node *p_source, String p
 	String node_name = p_source->get_name();
 	for (int i = 0; i < node_name.length(); i++) { // TODO: Regex filter may be cleaner.
 		char32_t c = node_name[i];
-		if (!is_ascii_identifier_char(c)) {
+		if ((i == 0 && !is_unicode_identifier_start(c)) || (i > 0 && !is_unicode_identifier_continue(c))) {
 			if (c == ' ') {
 				// Replace spaces with underlines.
 				c = '_';
@@ -242,12 +262,153 @@ StringName ConnectDialog::generate_method_callback_name(Node *p_source, String p
 
 	String dst_method;
 	if (p_source == p_target) {
-		dst_method = String(EDITOR_GET("interface/editors/default_signal_callback_to_self_name")).format(subst);
+		dst_method = String(GLOBAL_GET("editor/naming/default_signal_callback_to_self_name")).format(subst);
 	} else {
-		dst_method = String(EDITOR_GET("interface/editors/default_signal_callback_name")).format(subst);
+		dst_method = String(GLOBAL_GET("editor/naming/default_signal_callback_name")).format(subst);
 	}
 
 	return dst_method;
+}
+
+void ConnectDialog::_create_method_tree_items(const List<MethodInfo> &p_methods, TreeItem *p_parent_item) {
+	for (const MethodInfo &mi : p_methods) {
+		TreeItem *method_item = method_tree->create_item(p_parent_item);
+		method_item->set_text(0, get_signature(mi));
+		method_item->set_metadata(0, mi.name);
+	}
+}
+
+List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_methods, const MethodInfo &p_signal, const String &p_search_string) const {
+	bool check_signal = compatible_methods_only->is_pressed();
+	List<MethodInfo> ret;
+
+	for (const MethodInfo &mi : p_methods) {
+		if (!p_search_string.is_empty() && !mi.name.contains(p_search_string)) {
+			continue;
+		}
+
+		if (check_signal) {
+			if (mi.arguments.size() != p_signal.arguments.size()) {
+				continue;
+			}
+
+			bool type_mismatch = false;
+			const List<PropertyInfo>::Element *E = p_signal.arguments.front();
+			for (const List<PropertyInfo>::Element *F = mi.arguments.front(); F; F = F->next(), E = E->next()) {
+				Variant::Type stype = E->get().type;
+				Variant::Type mtype = F->get().type;
+
+				if (stype != Variant::NIL && mtype != Variant::NIL && stype != mtype) {
+					type_mismatch = true;
+					break;
+				}
+
+				if (stype == Variant::OBJECT && mtype == Variant::OBJECT && E->get().class_name != F->get().class_name) {
+					type_mismatch = true;
+					break;
+				}
+			}
+
+			if (type_mismatch) {
+				continue;
+			}
+		}
+		ret.push_back(mi);
+	}
+	return ret;
+}
+
+void ConnectDialog::_update_method_tree() {
+	method_tree->clear();
+
+	Color disabled_color = get_theme_color(SNAME("accent_color"), SNAME("Editor")) * 0.7;
+	String search_string = method_search->get_text();
+	Node *target = tree->get_selected();
+	if (!target) {
+		return;
+	}
+
+	MethodInfo signal_info;
+	if (compatible_methods_only->is_pressed()) {
+		List<MethodInfo> signals;
+		source->get_signal_list(&signals);
+		for (const MethodInfo &mi : signals) {
+			if (mi.name == signal) {
+				signal_info = mi;
+				break;
+			}
+		}
+	}
+
+	TreeItem *root_item = method_tree->create_item();
+	root_item->set_text(0, TTR("Methods"));
+	root_item->set_selectable(0, false);
+
+	// If a script is attached, get methods from it.
+	ScriptInstance *si = target->get_script_instance();
+	if (si) {
+		if (si->get_script()->is_built_in()) {
+			si->get_script()->reload();
+		}
+		List<MethodInfo> methods;
+		si->get_method_list(&methods);
+		methods = _filter_method_list(methods, signal_info, search_string);
+
+		if (!methods.is_empty()) {
+			TreeItem *si_item = method_tree->create_item(root_item);
+			si_item->set_text(0, TTR("Attached Script"));
+			si_item->set_icon(0, get_theme_icon(SNAME("Script"), SNAME("EditorIcons")));
+			si_item->set_selectable(0, false);
+
+			_create_method_tree_items(methods, si_item);
+		}
+	}
+
+	if (script_methods_only->is_pressed()) {
+		empty_tree_label->set_visible(root_item->get_first_child() == nullptr);
+		return;
+	}
+
+	// Get methods from each class in the hierarchy.
+	StringName current_class = target->get_class_name();
+	do {
+		TreeItem *class_item = method_tree->create_item(root_item);
+		class_item->set_text(0, current_class);
+		Ref<Texture2D> icon = get_theme_icon(SNAME("Node"), SNAME("EditorIcons"));
+		if (has_theme_icon(current_class, SNAME("EditorIcons"))) {
+			icon = get_theme_icon(current_class, SNAME("EditorIcons"));
+		}
+		class_item->set_icon(0, icon);
+		class_item->set_selectable(0, false);
+
+		List<MethodInfo> methods;
+		ClassDB::get_method_list(current_class, &methods, true);
+		methods = _filter_method_list(methods, signal_info, search_string);
+
+		if (methods.is_empty()) {
+			class_item->set_custom_color(0, disabled_color);
+		} else {
+			_create_method_tree_items(methods, class_item);
+		}
+		current_class = ClassDB::get_parent_class_nocheck(current_class);
+	} while (current_class != StringName());
+
+	empty_tree_label->set_visible(root_item->get_first_child() == nullptr);
+}
+
+void ConnectDialog::_method_check_button_pressed(const CheckButton *p_button) {
+	if (p_button == script_methods_only) {
+		EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "show_script_methods_only", p_button->is_pressed());
+	} else if (p_button == compatible_methods_only) {
+		EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "show_compatible_methods_only", p_button->is_pressed());
+	}
+	_update_method_tree();
+}
+
+void ConnectDialog::_open_method_popup() {
+	method_popup->popup_centered();
+	method_search->clear();
+	method_search->grab_focus();
 }
 
 /*
@@ -262,7 +423,7 @@ void ConnectDialog::_update_ok_enabled() {
 		return;
 	}
 
-	if (!advanced->is_pressed() && target->get_script().is_null()) {
+	if (dst_method->get_text().is_empty()) {
 		get_ok_button()->set_disabled(true);
 		return;
 	}
@@ -285,17 +446,16 @@ void ConnectDialog::_notification(int p_what) {
 
 			Ref<StyleBox> style = get_theme_stylebox("normal", "LineEdit")->duplicate();
 			if (style.is_valid()) {
-				style->set_default_margin(SIDE_TOP, style->get_default_margin(SIDE_TOP) + 1.0);
+				style->set_content_margin(SIDE_TOP, style->get_content_margin(SIDE_TOP) + 1.0);
 				from_signal->add_theme_style_override("normal", style);
 			}
+			method_search->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+			open_method_tree->set_icon(get_theme_icon("Edit", "EditorIcons"));
 		} break;
 	}
 }
 
 void ConnectDialog::_bind_methods() {
-	ClassDB::bind_method("_cancel", &ConnectDialog::_cancel_pressed);
-	ClassDB::bind_method("_update_ok_enabled", &ConnectDialog::_update_ok_enabled);
-
 	ADD_SIGNAL(MethodInfo("connected"));
 }
 
@@ -303,8 +463,16 @@ Node *ConnectDialog::get_source() const {
 	return source;
 }
 
+ConnectDialog::ConnectionData ConnectDialog::get_source_connection_data() const {
+	return source_connection_data;
+}
+
 StringName ConnectDialog::get_signal_name() const {
 	return signal;
+}
+
+PackedStringArray ConnectDialog::get_signal_args() const {
+	return signal_args;
 }
 
 NodePath ConnectDialog::get_dst_path() const {
@@ -335,6 +503,34 @@ Vector<Variant> ConnectDialog::get_binds() const {
 	return cdbinds->params;
 }
 
+String ConnectDialog::get_signature(const MethodInfo &p_method, PackedStringArray *r_arg_names) {
+	PackedStringArray signature;
+	signature.append(p_method.name);
+	signature.append("(");
+
+	for (int i = 0; i < p_method.arguments.size(); i++) {
+		if (i > 0) {
+			signature.append(", ");
+		}
+
+		const PropertyInfo &pi = p_method.arguments[i];
+		String tname = "var";
+		if (pi.type == Variant::OBJECT && pi.class_name != StringName()) {
+			tname = pi.class_name.operator String();
+		} else if (pi.type != Variant::NIL) {
+			tname = Variant::get_type_name(pi.type);
+		}
+
+		signature.append((pi.name.is_empty() ? String("arg " + itos(i)) : pi.name) + ": " + tname);
+		if (r_arg_names) {
+			r_arg_names->push_back(pi.name + ":" + tname);
+		}
+	}
+
+	signature.append(")");
+	return String().join(signature);
+}
+
 bool ConnectDialog::get_deferred() const {
 	return deferred->is_pressed();
 }
@@ -355,11 +551,12 @@ bool ConnectDialog::is_editing() const {
  * If creating a connection from scratch, sensible defaults are used.
  * If editing an existing connection, previous data is retained.
  */
-void ConnectDialog::init(ConnectionData p_cd, bool p_edit) {
+void ConnectDialog::init(const ConnectionData &p_cd, const PackedStringArray &p_signal_args, bool p_edit) {
 	set_hide_on_ok(false);
 
 	source = static_cast<Node *>(p_cd.source);
 	signal = p_cd.signal;
+	signal_args = p_signal_args;
 
 	tree->set_selected(nullptr);
 	tree->set_marked(source, true);
@@ -377,22 +574,7 @@ void ConnectDialog::init(ConnectionData p_cd, bool p_edit) {
 	deferred->set_pressed(b_deferred);
 	one_shot->set_pressed(b_oneshot);
 
-	MethodInfo r_signal;
-	Ref<Script> source_script = source->get_script();
-	if (source_script.is_valid() && source_script->has_script_signal(signal)) {
-		List<MethodInfo> signals;
-		source_script->get_script_signal_list(&signals);
-		for (MethodInfo &mi : signals) {
-			if (mi.name == signal) {
-				r_signal = mi;
-				break;
-			}
-		}
-	} else {
-		ClassDB::get_signal(source->get_class(), signal, &r_signal);
-	}
-
-	unbind_count->set_max(r_signal.arguments.size());
+	unbind_count->set_max(p_signal_args.size());
 
 	unbind_count->set_value(p_cd.unbinds);
 	_unbind_count_changed(p_cd.unbinds);
@@ -402,11 +584,15 @@ void ConnectDialog::init(ConnectionData p_cd, bool p_edit) {
 	cdbinds->notify_changed();
 
 	edit_mode = p_edit;
+
+	source_connection_data = p_cd;
 }
 
-void ConnectDialog::popup_dialog(const String &p_for_signal) {
+void ConnectDialog::popup_dialog(const String p_for_signal) {
 	from_signal->set_text(p_for_signal);
 	error_label->add_theme_color_override("font_color", error_label->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+	filter_nodes->clear();
+
 	if (!advanced->is_pressed()) {
 		error_label->set_visible(!_find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root()));
 	}
@@ -421,14 +607,12 @@ void ConnectDialog::popup_dialog(const String &p_for_signal) {
 
 void ConnectDialog::_advanced_pressed() {
 	if (advanced->is_pressed()) {
-		set_min_size(Size2(900, 500) * EDSCALE);
 		connect_to_label->set_text(TTR("Connect to Node:"));
 		tree->set_connect_to_script_mode(false);
 
 		vbc_right->show();
 		error_label->hide();
 	} else {
-		set_min_size(Size2(600, 500) * EDSCALE);
 		reset_size();
 		connect_to_label->set_text(TTR("Connect to Script:"));
 		tree->set_connect_to_script_mode(true);
@@ -437,48 +621,100 @@ void ConnectDialog::_advanced_pressed() {
 		error_label->set_visible(!_find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root()));
 	}
 
-	_update_ok_enabled();
 	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "use_advanced_connections", advanced->is_pressed());
 
 	popup_centered();
 }
 
 ConnectDialog::ConnectDialog() {
-	set_min_size(Size2(600, 500) * EDSCALE);
-
-	VBoxContainer *vbc = memnew(VBoxContainer);
-	add_child(vbc);
+	set_min_size(Size2(0, 500) * EDSCALE);
 
 	HBoxContainer *main_hb = memnew(HBoxContainer);
-	vbc->add_child(main_hb);
-	main_hb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	add_child(main_hb);
 
 	VBoxContainer *vbc_left = memnew(VBoxContainer);
 	main_hb->add_child(vbc_left);
 	vbc_left->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vbc_left->set_custom_minimum_size(Vector2(400 * EDSCALE, 0));
 
 	from_signal = memnew(LineEdit);
-	from_signal->set_editable(false);
 	vbc_left->add_margin_child(TTR("From Signal:"), from_signal);
+	from_signal->set_editable(false);
 
 	tree = memnew(SceneTreeEditor(false));
 	tree->set_connecting_signal(true);
 	tree->set_show_enabled_subscene(true);
+	tree->set_v_size_flags(Control::SIZE_FILL | Control::SIZE_EXPAND);
 	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &ConnectDialog::_item_activated));
 	tree->connect("node_selected", callable_mp(this, &ConnectDialog::_tree_node_selected));
 	tree->set_connect_to_script_mode(true);
 
-	Node *mc = vbc_left->add_margin_child(TTR("Connect to Script:"), tree, true);
+	HBoxContainer *hbc_filter = memnew(HBoxContainer);
+
+	filter_nodes = memnew(LineEdit);
+	hbc_filter->add_child(filter_nodes);
+	filter_nodes->set_h_size_flags(Control::SIZE_FILL | Control::SIZE_EXPAND);
+	filter_nodes->set_placeholder(TTR("Filter Nodes"));
+	filter_nodes->set_clear_button_enabled(true);
+	filter_nodes->connect("text_changed", callable_mp(tree, &SceneTreeEditor::set_filter));
+
+	Button *focus_current = memnew(Button);
+	hbc_filter->add_child(focus_current);
+	focus_current->set_text(TTR("Go to Source"));
+	focus_current->connect("pressed", callable_mp(this, &ConnectDialog::_focus_currently_connected));
+
+	Node *mc = vbc_left->add_margin_child(TTR("Connect to Script:"), hbc_filter, false);
 	connect_to_label = Object::cast_to<Label>(vbc_left->get_child(mc->get_index() - 1));
+	vbc_left->add_child(tree);
 
 	error_label = memnew(Label);
 	error_label->set_text(TTR("Scene does not contain any script."));
 	vbc_left->add_child(error_label);
 	error_label->hide();
 
+	method_popup = memnew(AcceptDialog);
+	method_popup->set_title(TTR("Select Method"));
+	method_popup->set_min_size(Vector2(400, 600) * EDSCALE);
+	add_child(method_popup);
+
+	VBoxContainer *method_vbc = memnew(VBoxContainer);
+	method_popup->add_child(method_vbc);
+
+	method_search = memnew(LineEdit);
+	method_vbc->add_child(method_search);
+	method_search->set_placeholder(TTR("Filter Methods"));
+	method_search->set_clear_button_enabled(true);
+	method_search->connect("text_changed", callable_mp(this, &ConnectDialog::_update_method_tree).unbind(1));
+
+	method_tree = memnew(Tree);
+	method_vbc->add_child(method_tree);
+	method_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	method_tree->set_hide_root(true);
+	method_tree->connect("item_selected", callable_mp(this, &ConnectDialog::_method_selected));
+	method_tree->connect("item_activated", callable_mp((Window *)method_popup, &Window::hide));
+
+	empty_tree_label = memnew(Label(TTR("No method found matching given filters.")));
+	method_popup->add_child(empty_tree_label);
+	empty_tree_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	empty_tree_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	empty_tree_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
+
+	script_methods_only = memnew(CheckButton(TTR("Script Methods Only")));
+	method_vbc->add_child(script_methods_only);
+	script_methods_only->set_h_size_flags(Control::SIZE_SHRINK_END);
+	script_methods_only->set_pressed(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "show_script_methods_only", true));
+	script_methods_only->connect("pressed", callable_mp(this, &ConnectDialog::_method_check_button_pressed).bind(script_methods_only));
+
+	compatible_methods_only = memnew(CheckButton(TTR("Compatible Methods Only")));
+	method_vbc->add_child(compatible_methods_only);
+	compatible_methods_only->set_h_size_flags(Control::SIZE_SHRINK_END);
+	compatible_methods_only->set_pressed(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "show_compatible_methods_only", true));
+	compatible_methods_only->connect("pressed", callable_mp(this, &ConnectDialog::_method_check_button_pressed).bind(compatible_methods_only));
+
 	vbc_right = memnew(VBoxContainer);
 	main_hb->add_child(vbc_right);
 	vbc_right->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vbc_right->set_custom_minimum_size(Vector2(150 * EDSCALE, 0));
 	vbc_right->hide();
 
 	HBoxContainer *add_bind_hb = memnew(HBoxContainer);
@@ -521,14 +757,22 @@ ConnectDialog::ConnectDialog() {
 
 	vbc_right->add_margin_child(TTR("Unbind Signal Arguments:"), unbind_count);
 
+	HBoxContainer *hbc_method = memnew(HBoxContainer);
+	vbc_left->add_margin_child(TTR("Receiver Method:"), hbc_method);
+
 	dst_method = memnew(LineEdit);
 	dst_method->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	dst_method->connect("text_changed", callable_mp(method_tree, &Tree::deselect_all).unbind(1));
 	dst_method->connect("text_submitted", callable_mp(this, &ConnectDialog::_text_submitted));
-	vbc_left->add_margin_child(TTR("Receiver Method:"), dst_method);
+	hbc_method->add_child(dst_method);
 
-	advanced = memnew(CheckButton);
+	open_method_tree = memnew(Button);
+	hbc_method->add_child(open_method_tree);
+	open_method_tree->set_text("Pick");
+	open_method_tree->connect("pressed", callable_mp(this, &ConnectDialog::_open_method_popup));
+
+	advanced = memnew(CheckButton(TTR("Advanced")));
 	vbc_left->add_child(advanced);
-	advanced->set_text(TTR("Advanced"));
 	advanced->set_h_size_flags(Control::SIZE_SHRINK_BEGIN | Control::SIZE_EXPAND);
 	advanced->set_pressed(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "use_advanced_connections", false));
 	advanced->connect("pressed", callable_mp(this, &ConnectDialog::_advanced_pressed));
@@ -566,7 +810,7 @@ ConnectDialog::~ConnectDialog() {
 // Originally copied and adapted from EditorProperty, try to keep style in sync.
 Control *ConnectionsDockTree::make_custom_tooltip(const String &p_text) const {
 	EditorHelpBit *help_bit = memnew(EditorHelpBit);
-	help_bit->get_rich_text()->set_fixed_size_to_width(360 * EDSCALE);
+	help_bit->get_rich_text()->set_custom_minimum_size(Size2(360 * EDSCALE, 1));
 
 	// p_text is expected to be something like this:
 	// "gui_input::(event: InputEvent)::<Signal description>"
@@ -605,9 +849,6 @@ void ConnectionsDock::_filter_changed(const String &p_text) {
  * Creates or edits connections based on state of the ConnectDialog when "Connect" is pressed.
  */
 void ConnectionsDock::_make_or_edit_connection() {
-	TreeItem *it = tree->get_selected();
-	ERR_FAIL_COND(!it);
-
 	NodePath dst_path = connect_dialog->get_dst_path();
 	Node *target = selected_node->get_node(dst_path);
 	ERR_FAIL_COND(!target);
@@ -645,27 +886,21 @@ void ConnectionsDock::_make_or_edit_connection() {
 
 		add_script_function = !found_inherited_function;
 	}
-	PackedStringArray script_function_args;
-	if (add_script_function) {
-		// Pick up args here before "it" is deleted by update_tree.
-		script_function_args = it->get_metadata(0).operator Dictionary()["args"];
-		script_function_args.resize(script_function_args.size() - cd.unbinds);
-		for (int i = 0; i < cd.binds.size(); i++) {
-			script_function_args.push_back("extra_arg_" + itos(i) + ":" + Variant::get_type_name(cd.binds[i].get_type()));
-		}
-	}
 
 	if (connect_dialog->is_editing()) {
-		_disconnect(*it);
+		_disconnect(connect_dialog->get_source_connection_data());
 		_connect(cd);
 	} else {
 		_connect(cd);
 	}
 
-	// IMPORTANT NOTE: _disconnect and _connect cause an update_tree, which will delete the object "it" is pointing to.
-	it = nullptr;
-
 	if (add_script_function) {
+		PackedStringArray script_function_args = connect_dialog->get_signal_args();
+		script_function_args.resize(script_function_args.size() - cd.unbinds);
+		for (int i = 0; i < cd.binds.size(); i++) {
+			script_function_args.push_back("extra_arg_" + itos(i) + ":" + Variant::get_type_name(cd.binds[i].get_type()));
+		}
+
 		EditorNode::get_singleton()->emit_signal(SNAME("script_add_function_request"), target, cd.method, script_function_args);
 		hide();
 	}
@@ -676,7 +911,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 /*
  * Creates single connection w/ undo-redo functionality.
  */
-void ConnectionsDock::_connect(ConnectDialog::ConnectionData p_cd) {
+void ConnectionsDock::_connect(const ConnectDialog::ConnectionData &p_cd) {
 	Node *source = Object::cast_to<Node>(p_cd.source);
 	Node *target = Object::cast_to<Node>(p_cd.target);
 
@@ -685,7 +920,7 @@ void ConnectionsDock::_connect(ConnectDialog::ConnectionData p_cd) {
 	}
 
 	Callable callable = p_cd.get_callable();
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(vformat(TTR("Connect '%s' to '%s'"), String(p_cd.signal), String(p_cd.method)));
 	undo_redo->add_do_method(source, "connect", p_cd.signal, callable, p_cd.flags);
 	undo_redo->add_undo_method(source, "disconnect", p_cd.signal, callable);
@@ -700,18 +935,15 @@ void ConnectionsDock::_connect(ConnectDialog::ConnectionData p_cd) {
 /*
  * Break single connection w/ undo-redo functionality.
  */
-void ConnectionsDock::_disconnect(TreeItem &p_item) {
-	Connection connection = p_item.get_metadata(0);
-	ConnectDialog::ConnectionData cd = connection;
+void ConnectionsDock::_disconnect(const ConnectDialog::ConnectionData &p_cd) {
+	ERR_FAIL_COND(p_cd.source != selected_node); // Shouldn't happen but... Bugcheck.
 
-	ERR_FAIL_COND(cd.source != selected_node); // Shouldn't happen but... Bugcheck.
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(vformat(TTR("Disconnect '%s' from '%s'"), p_cd.signal, p_cd.method));
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
-	undo_redo->create_action(vformat(TTR("Disconnect '%s' from '%s'"), cd.signal, cd.method));
-
-	Callable callable = cd.get_callable();
-	undo_redo->add_do_method(selected_node, "disconnect", cd.signal, callable);
-	undo_redo->add_undo_method(selected_node, "connect", cd.signal, callable, cd.binds, cd.flags);
+	Callable callable = p_cd.get_callable();
+	undo_redo->add_do_method(selected_node, "disconnect", p_cd.signal, callable);
+	undo_redo->add_undo_method(selected_node, "connect", p_cd.signal, callable, p_cd.flags);
 	undo_redo->add_do_method(this, "update_tree");
 	undo_redo->add_undo_method(this, "update_tree");
 	undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree"); // To force redraw of scene tree.
@@ -733,7 +965,7 @@ void ConnectionsDock::_disconnect_all() {
 
 	TreeItem *child = item->get_first_child();
 	String signal_name = item->get_metadata(0).operator Dictionary()["name"];
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(vformat(TTR("Disconnect all from signal: '%s'"), signal_name));
 
 	while (child) {
@@ -741,7 +973,7 @@ void ConnectionsDock::_disconnect_all() {
 		if (!_is_connection_inherited(connection)) {
 			ConnectDialog::ConnectionData cd = connection;
 			undo_redo->add_do_method(selected_node, "disconnect", cd.signal, cd.get_callable());
-			undo_redo->add_undo_method(selected_node, "connect", cd.signal, cd.get_callable(), cd.binds, cd.flags);
+			undo_redo->add_undo_method(selected_node, "connect", cd.signal, cd.get_callable(), cd.flags);
 		}
 		child = child->get_next();
 	}
@@ -795,8 +1027,9 @@ bool ConnectionsDock::_is_connection_inherited(Connection &p_connection) {
  * Open connection dialog with TreeItem data to CREATE a brand-new connection.
  */
 void ConnectionsDock::_open_connection_dialog(TreeItem &p_item) {
-	String signal_name = p_item.get_metadata(0).operator Dictionary()["name"];
-	const String &signal_name_ref = signal_name;
+	Dictionary sinfo = p_item.get_metadata(0);
+	String signal_name = sinfo["name"];
+	PackedStringArray signal_args = sinfo["args"];
 
 	Node *dst_node = selected_node->get_owner() ? selected_node->get_owner() : selected_node;
 	if (!dst_node || dst_node->get_script().is_null()) {
@@ -805,26 +1038,34 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &p_item) {
 
 	ConnectDialog::ConnectionData cd;
 	cd.source = selected_node;
-	cd.signal = StringName(signal_name_ref);
+	cd.signal = StringName(signal_name);
 	cd.target = dst_node;
 	cd.method = ConnectDialog::generate_method_callback_name(cd.source, signal_name, cd.target);
-	connect_dialog->popup_dialog(signal_name_ref);
-	connect_dialog->init(cd);
+	connect_dialog->popup_dialog(signal_name + "(" + String(", ").join(signal_args) + ")");
+	connect_dialog->init(cd, signal_args);
 	connect_dialog->set_title(TTR("Connect a Signal to a Method"));
 }
 
 /*
  * Open connection dialog with Connection data to EDIT an existing connection.
  */
-void ConnectionsDock::_open_connection_dialog(ConnectDialog::ConnectionData p_cd) {
-	Node *src = Object::cast_to<Node>(p_cd.source);
-	Node *dst = Object::cast_to<Node>(p_cd.target);
+void ConnectionsDock::_open_edit_connection_dialog(TreeItem &p_item) {
+	TreeItem *signal_item = p_item.get_parent();
+	ERR_FAIL_COND(!signal_item);
+
+	Connection connection = p_item.get_metadata(0);
+	ConnectDialog::ConnectionData cd = connection;
+
+	Node *src = Object::cast_to<Node>(cd.source);
+	Node *dst = Object::cast_to<Node>(cd.target);
 
 	if (src && dst) {
-		const String &signal_name_ref = p_cd.signal;
-		connect_dialog->set_title(TTR("Edit Connection:") + p_cd.signal);
+		const String &signal_name_ref = cd.signal;
+		PackedStringArray signal_args = signal_item->get_metadata(0).operator Dictionary()["args"];
+
+		connect_dialog->set_title(vformat(TTR("Edit Connection: '%s'"), cd.signal));
 		connect_dialog->popup_dialog(signal_name_ref);
-		connect_dialog->init(p_cd, true);
+		connect_dialog->init(cd, signal_args, true);
 	}
 }
 
@@ -899,14 +1140,14 @@ void ConnectionsDock::_handle_slot_menu_option(int p_option) {
 
 	switch (p_option) {
 		case EDIT: {
-			Connection connection = item->get_metadata(0);
-			_open_connection_dialog(connection);
+			_open_edit_connection_dialog(*item);
 		} break;
 		case GO_TO_SCRIPT: {
 			_go_to_script(*item);
 		} break;
 		case DISCONNECT: {
-			_disconnect(*item);
+			Connection connection = item->get_metadata(0);
+			_disconnect(connection);
 			update_tree();
 		} break;
 	}
@@ -957,7 +1198,8 @@ void ConnectionsDock::_connect_pressed() {
 	if (_is_item_signal(*item)) {
 		_open_connection_dialog(*item);
 	} else {
-		_disconnect(*item);
+		Connection connection = item->get_metadata(0);
+		_disconnect(connection);
 		update_tree();
 	}
 }
@@ -985,6 +1227,10 @@ void ConnectionsDock::set_node(Node *p_node) {
 }
 
 void ConnectionsDock::update_tree() {
+	String prev_selected;
+	if (tree->is_anything_selected()) {
+		prev_selected = tree->get_selected()->get_text(0);
+	}
 	tree->clear();
 
 	if (!selected_node) {
@@ -1046,37 +1292,22 @@ void ConnectionsDock::update_tree() {
 		}
 
 		for (MethodInfo &mi : node_signals2) {
-			StringName signal_name = mi.name;
-			String signaldesc = "(";
-			PackedStringArray argnames;
-
-			String filter_text = search_box->get_text();
-			if (!filter_text.is_subsequence_ofn(signal_name)) {
+			const StringName signal_name = mi.name;
+			if (!search_box->get_text().is_subsequence_ofn(signal_name)) {
 				continue;
 			}
-
-			if (mi.arguments.size()) {
-				for (int i = 0; i < mi.arguments.size(); i++) {
-					PropertyInfo &pi = mi.arguments[i];
-
-					if (i > 0) {
-						signaldesc += ", ";
-					}
-					String tname = "var";
-					if (pi.type == Variant::OBJECT && pi.class_name != StringName()) {
-						tname = pi.class_name.operator String();
-					} else if (pi.type != Variant::NIL) {
-						tname = Variant::get_type_name(pi.type);
-					}
-					signaldesc += (pi.name.is_empty() ? String("arg " + itos(i)) : pi.name) + ": " + tname;
-					argnames.push_back(pi.name + ":" + tname);
-				}
-			}
-			signaldesc += ")";
+			PackedStringArray argnames;
 
 			// Create the children of the subsection - the actual list of signals.
 			TreeItem *signal_item = tree->create_item(section_item);
-			signal_item->set_text(0, String(signal_name) + signaldesc);
+			String signame = connect_dialog->get_signature(mi, &argnames);
+			signal_item->set_text(0, signame);
+
+			if (signame == prev_selected) {
+				signal_item->select(0);
+				prev_selected = "";
+			}
+
 			Dictionary sinfo;
 			sinfo["name"] = signal_name;
 			sinfo["args"] = argnames;
@@ -1117,7 +1348,7 @@ void ConnectionsDock::update_tree() {
 				}
 
 				// "::" separators used in make_custom_tooltip for formatting.
-				signal_item->set_tooltip_text(0, String(signal_name) + "::" + signaldesc + "::" + descr);
+				signal_item->set_tooltip_text(0, String(signal_name) + "::" + signame.trim_prefix(mi.name) + "::" + descr);
 			}
 
 			// List existing connections.
@@ -1196,6 +1427,7 @@ ConnectionsDock::ConnectionsDock() {
 	tree->set_columns(1);
 	tree->set_select_mode(Tree::SELECT_ROW);
 	tree->set_hide_root(true);
+	tree->set_column_clip_content(0, true);
 	vbc->add_child(tree);
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tree->set_allow_rmb_select(true);
@@ -1237,9 +1469,6 @@ ConnectionsDock::ConnectionsDock() {
 	tree->connect("item_mouse_selected", callable_mp(this, &ConnectionsDock::_rmb_pressed));
 
 	add_theme_constant_override("separation", 3 * EDSCALE);
-
-	EDITOR_DEF("interface/editors/default_signal_callback_name", "_on_{node_name}_{signal_name}");
-	EDITOR_DEF("interface/editors/default_signal_callback_to_self_name", "_on_{signal_name}");
 }
 
 ConnectionsDock::~ConnectionsDock() {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RichTextLabel" inherits="Control" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="RichTextLabel" inherits="Control" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Label that displays rich text.
 	</brief_description>
@@ -8,7 +8,7 @@
 		[b]Note:[/b] Assignments to [member text] clear the tag stack and reconstruct it from the property's contents. Any edits made to [member text] will erase previous edits made from other manual sources such as [method append_text] and the [code]push_*[/code] / [method pop] methods.
 		[b]Note:[/b] RichTextLabel doesn't support entangled BBCode tags. For example, instead of using [code][b]bold[i]bold italic[/b]italic[/i][/code], use [code][b]bold[i]bold italic[/i][/b][i]italic[/i][/code].
 		[b]Note:[/b] [code]push_*/pop[/code] functions won't affect BBCode.
-		[b]Note:[/b] Unlike [Label], RichTextLabel doesn't have a [i]property[/i] to horizontally align text to the center. Instead, enable [member bbcode_enabled] and surround the text in a [code][center][/code] tag as follows: [code][center]Example[/center][/code]. There is currently no built-in way to vertically align text either, but this can be emulated by relying on anchors/containers and the [member fit_content_height] property.
+		[b]Note:[/b] Unlike [Label], RichTextLabel doesn't have a [i]property[/i] to horizontally align text to the center. Instead, enable [member bbcode_enabled] and surround the text in a [code][center][/code] tag as follows: [code][center]Example[/center][/code]. There is currently no built-in way to vertically align text either, but this can be emulated by relying on anchors/containers and the [member fit_content] property.
 	</description>
 	<tutorials>
 		<link title="BBCode in RichTextLabel">$DOCS_URL/tutorials/ui/bbcode_in_richtextlabel.html</link>
@@ -106,6 +106,45 @@
 			<return type="PopupMenu" />
 			<description>
 				Returns the [PopupMenu] of this [RichTextLabel]. By default, this menu is displayed when right-clicking on the [RichTextLabel].
+				You can add custom menu items or remove standard ones. Make sure your IDs don't conflict with the standard ones (see [enum MenuItems]). For example:
+				[codeblocks]
+				[gdscript]
+				func _ready():
+				    var menu = get_menu()
+				    # Remove "Select All" item.
+				    menu.remove_item(MENU_SELECT_ALL)
+				    # Add custom items.
+				    menu.add_separator()
+				    menu.add_item("Duplicate Text", MENU_MAX + 1)
+				    # Connect callback.
+				    menu.id_pressed.connect(_on_item_pressed)
+
+				func _on_item_pressed(id):
+				    if id == MENU_MAX + 1:
+				        add_text("\n" + get_parsed_text())
+				[/gdscript]
+				[csharp]
+				public override void _Ready()
+				{
+				    var menu = GetMenu();
+				    // Remove "Select All" item.
+				    menu.RemoveItem(RichTextLabel.MenuItems.SelectAll);
+				    // Add custom items.
+				    menu.AddSeparator();
+				    menu.AddItem("Duplicate Text", RichTextLabel.MenuItems.Max + 1);
+				    // Add event handler.
+				    menu.IdPressed += OnItemPressed;
+				}
+
+				public void OnItemPressed(int id)
+				{
+				    if (id == TextEdit.MenuItems.Max + 1)
+				    {
+				        AddText("\n" + GetParsedText());
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
 				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member Window.visible] property.
 			</description>
 		</method>
@@ -193,6 +232,13 @@
 				If [member threaded] is enabled, returns [code]true[/code] if the background thread has finished text processing, otherwise always return [code]true[/code].
 			</description>
 		</method>
+		<method name="menu_option">
+			<return type="void" />
+			<param index="0" name="option" type="int" />
+			<description>
+				Executes a given action as defined in the [enum MenuItems] enum.
+			</description>
+		</method>
 		<method name="newline">
 			<return type="void" />
 			<description>
@@ -251,6 +297,14 @@
 				Adds a [code][color][/code] tag to the tag stack.
 			</description>
 		</method>
+		<method name="push_customfx">
+			<return type="void" />
+			<param index="0" name="effect" type="RichTextEffect" />
+			<param index="1" name="env" type="Dictionary" />
+			<description>
+				Adds a custom effect tag to the tag stack. The effect does not need to be in [member custom_effects]. The environment is directly passed to the effect.
+			</description>
+		</method>
 		<method name="push_dropcap">
 			<return type="void" />
 			<param index="0" name="string" type="String" />
@@ -283,6 +337,7 @@
 			<return type="void" />
 			<param index="0" name="font_size" type="int" />
 			<description>
+				Adds a [code][font_size][/code] tag to the tag stack. Overrides default font size for its duration.
 			</description>
 		</method>
 		<method name="push_hint">
@@ -302,7 +357,7 @@
 		<method name="push_italics">
 			<return type="void" />
 			<description>
-				Adds a [code][font][/code] tag with a italics font to the tag stack. This is the same as adding a [code][i][/code] tag if not currently in a [code][b][/code] tag.
+				Adds a [code][font][/code] tag with an italics font to the tag stack. This is the same as adding an [code][i][/code] tag if not currently in a [code][b][/code] tag.
 			</description>
 		</method>
 		<method name="push_list">
@@ -310,6 +365,7 @@
 			<param index="0" name="level" type="int" />
 			<param index="1" name="type" type="int" enum="RichTextLabel.ListType" />
 			<param index="2" name="capitalize" type="bool" />
+			<param index="3" name="bullet" type="String" default="&quot;•&quot;" />
 			<description>
 				Adds [code][ol][/code] or [code][ul][/code] tag to the tag stack. Multiplies [param level] by current [member tab_size] to determine new margin length.
 			</description>
@@ -318,7 +374,7 @@
 			<return type="void" />
 			<param index="0" name="data" type="Variant" />
 			<description>
-				Adds a [code][meta][/code] tag to the tag stack. Similar to the BBCode [code][url=something]{text}[/url][/code], but supports non-[String] metadata types.
+				Adds a meta tag to the tag stack. Similar to the BBCode [code][url=something]{text}[/url][/code], but supports non-[String] metadata types.
 			</description>
 		</method>
 		<method name="push_mono">
@@ -473,9 +529,8 @@
 		<member name="deselect_on_focus_loss_enabled" type="bool" setter="set_deselect_on_focus_loss_enabled" getter="is_deselect_on_focus_loss_enabled" default="true">
 			If [code]true[/code], the selected text will be deselected when focus is lost.
 		</member>
-		<member name="fit_content_height" type="bool" setter="set_fit_content_height" getter="is_fit_content_height_enabled" default="false">
-			If [code]true[/code], the label's height will be automatically updated to fit its content.
-			[b]Note:[/b] This property is used as a workaround to fix issues with [RichTextLabel] in [Container]s, but it's unreliable in some cases and will be removed in future versions.
+		<member name="fit_content" type="bool" setter="set_fit_content" getter="is_fit_content_enabled" default="false">
+			If [code]true[/code], the label's minimum size will be automatically updated to fit its content, matching the behavior of [Label].
 		</member>
 		<member name="hint_underlined" type="bool" setter="set_hint_underline" getter="is_hint_underlined" default="true">
 			If [code]true[/code], the label underlines hint tags such as [code][hint=description]{text}[/hint][/code].
@@ -571,59 +626,14 @@
 		<constant name="LIST_DOTS" value="3" enum="ListType">
 			Each list item has a filled circle marker.
 		</constant>
-		<constant name="ITEM_FRAME" value="0" enum="ItemType">
+		<constant name="MENU_COPY" value="0" enum="MenuItems">
+			Copies the selected text.
 		</constant>
-		<constant name="ITEM_TEXT" value="1" enum="ItemType">
+		<constant name="MENU_SELECT_ALL" value="1" enum="MenuItems">
+			Selects the whole [RichTextLabel] text.
 		</constant>
-		<constant name="ITEM_IMAGE" value="2" enum="ItemType">
-		</constant>
-		<constant name="ITEM_NEWLINE" value="3" enum="ItemType">
-		</constant>
-		<constant name="ITEM_FONT" value="4" enum="ItemType">
-		</constant>
-		<constant name="ITEM_FONT_SIZE" value="5" enum="ItemType">
-		</constant>
-		<constant name="ITEM_FONT_FEATURES" value="6" enum="ItemType">
-		</constant>
-		<constant name="ITEM_COLOR" value="7" enum="ItemType">
-		</constant>
-		<constant name="ITEM_OUTLINE_SIZE" value="8" enum="ItemType">
-		</constant>
-		<constant name="ITEM_OUTLINE_COLOR" value="9" enum="ItemType">
-		</constant>
-		<constant name="ITEM_UNDERLINE" value="10" enum="ItemType">
-		</constant>
-		<constant name="ITEM_STRIKETHROUGH" value="11" enum="ItemType">
-		</constant>
-		<constant name="ITEM_PARAGRAPH" value="12" enum="ItemType">
-		</constant>
-		<constant name="ITEM_INDENT" value="13" enum="ItemType">
-		</constant>
-		<constant name="ITEM_LIST" value="14" enum="ItemType">
-		</constant>
-		<constant name="ITEM_TABLE" value="15" enum="ItemType">
-		</constant>
-		<constant name="ITEM_FADE" value="16" enum="ItemType">
-		</constant>
-		<constant name="ITEM_SHAKE" value="17" enum="ItemType">
-		</constant>
-		<constant name="ITEM_WAVE" value="18" enum="ItemType">
-		</constant>
-		<constant name="ITEM_TORNADO" value="19" enum="ItemType">
-		</constant>
-		<constant name="ITEM_RAINBOW" value="20" enum="ItemType">
-		</constant>
-		<constant name="ITEM_BGCOLOR" value="21" enum="ItemType">
-		</constant>
-		<constant name="ITEM_FGCOLOR" value="22" enum="ItemType">
-		</constant>
-		<constant name="ITEM_META" value="23" enum="ItemType">
-		</constant>
-		<constant name="ITEM_HINT" value="24" enum="ItemType">
-		</constant>
-		<constant name="ITEM_DROPCAP" value="25" enum="ItemType">
-		</constant>
-		<constant name="ITEM_CUSTOMFX" value="26" enum="ItemType">
+		<constant name="MENU_MAX" value="2" enum="MenuItems">
+			Represents the size of the [enum MenuItems] enum.
 		</constant>
 	</constants>
 	<theme_items>

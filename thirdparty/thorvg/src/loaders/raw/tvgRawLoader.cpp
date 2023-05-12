@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #include <fstream>
 #include <string.h>
 #include "tvgLoader.h"
@@ -27,6 +28,7 @@
 /************************************************************************/
 /* Internal Class Implementation                                        */
 /************************************************************************/
+
 
 /************************************************************************/
 /* External Class Implementation                                        */
@@ -54,7 +56,9 @@ bool RawLoader::open(const uint32_t* data, uint32_t w, uint32_t h, bool copy)
         if (!content) return false;
         memcpy((void*)content, data, sizeof(uint32_t) * w * h);
     }
-    else content = data;
+    else content = const_cast<uint32_t*>(data);
+
+    cs = ColorSpace::ARGB8888;
 
     return true;
 }
@@ -76,12 +80,16 @@ unique_ptr<Surface> RawLoader::bitmap()
 {
     if (!content) return nullptr;
 
-    auto surface = static_cast<Surface*>(malloc(sizeof(Surface)));
-    surface->buffer = (uint32_t*)(content);
-    surface->stride = (uint32_t)w;
-    surface->w = (uint32_t)w;
-    surface->h = (uint32_t)h;
-    surface->cs = SwCanvas::ARGB8888;
+    //TODO: It's better to keep this surface instance in the loader side
+    auto surface = new Surface;
+    surface->buf32 = content;
+    surface->stride = static_cast<uint32_t>(w);
+    surface->w = static_cast<uint32_t>(w);
+    surface->h = static_cast<uint32_t>(h);
+    surface->cs = cs;
+    surface->channelSize = sizeof(uint32_t);
+    surface->premultiplied = true;
+    surface->owner = true;
 
     return unique_ptr<Surface>(surface);
 }

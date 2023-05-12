@@ -1,5 +1,6 @@
 name: 🏁 Windows Builds
-on: [push, pull_request]
+on:
+  workflow_call:
 
 # Global Settings
 # SCONS_CACHE for windows must be set in the build environment
@@ -30,7 +31,7 @@ jobs:
             sconsflags: debug_symbols=no vsproj=yes
             bin: "./bin/godot.windows.editor.x86_64.exe"
 
-          - name: Template (target=template_release, tools=no)
+          - name: Template (target=template_release)
             cache-name: windows-template
             target: template_release
             tests: false

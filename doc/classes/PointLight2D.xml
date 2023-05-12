@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PointLight2D" inherits="Light2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PointLight2D" inherits="Light2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Positional 2D light source.
 	</brief_description>
 	<description>
-		Casts light in a 2D environment. This light's shape is defined by a (usually grayscale) texture
+		Casts light in a 2D environment. This light's shape is defined by a (usually grayscale) texture.
 	</description>
 	<tutorials>
 		<link title="2D lights and shadows">$DOCS_URL/tutorials/2d/2d_lights_and_shadows.html</link>

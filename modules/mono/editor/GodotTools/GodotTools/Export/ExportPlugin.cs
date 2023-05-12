@@ -17,24 +17,26 @@ namespace GodotTools.Export
 {
     public partial class ExportPlugin : EditorExportPlugin
     {
+        public override string _GetName() => "C#";
+
         private List<string> _tempFolders = new List<string>();
 
-        public void RegisterExportSettings()
+        public override Godot.Collections.Array<Godot.Collections.Dictionary> _GetExportOptions(EditorExportPlatform platform)
         {
-            // TODO: These would be better as export preset options, but that doesn't seem to be supported yet
-
-            GlobalDef("mono/export/include_scripts_content", false);
-
-            GlobalDef("mono/export/aot/enabled", false);
-            GlobalDef("mono/export/aot/full_aot", false);
-            GlobalDef("mono/export/aot/use_interpreter", true);
-
-            // --aot or --aot=opt1,opt2 (use 'mono --aot=help AuxAssembly.dll' to list AOT options)
-            GlobalDef("mono/export/aot/extra_aot_options", Array.Empty<string>());
-            // --optimize/-O=opt1,opt2 (use 'mono --list-opt'' to list optimize options)
-            GlobalDef("mono/export/aot/extra_optimizer_options", Array.Empty<string>());
-
-            GlobalDef("mono/export/aot/android_toolchain_path", "");
+            return new Godot.Collections.Array<Godot.Collections.Dictionary>()
+            {
+                new Godot.Collections.Dictionary()
+                {
+                    {
+                        "option", new Godot.Collections.Dictionary()
+                        {
+                            { "name", "dotnet/include_scripts_content" },
+                            { "type", (int)Variant.Type.Bool }
+                        }
+                    },
+                    { "default_value", false }
+                }
+            };
         }
 
         private string _maybeLastExportError;
@@ -54,7 +56,7 @@ namespace GodotTools.Export
 
             // TODO What if the source file is not part of the game's C# project
 
-            bool includeScriptsContent = (bool)ProjectSettings.GetSetting("mono/export/include_scripts_content");
+            bool includeScriptsContent = (bool)GetOption("dotnet/include_scripts_content");
 
             if (!includeScriptsContent)
             {
@@ -69,7 +71,7 @@ namespace GodotTools.Export
             }
         }
 
-        public override void _ExportBegin(string[] features, bool isDebug, string path, long flags)
+        public override void _ExportBegin(string[] features, bool isDebug, string path, uint flags)
         {
             base._ExportBegin(features, isDebug, path, flags);
 
@@ -183,7 +185,9 @@ namespace GodotTools.Export
 
                 foreach (string file in Directory.GetFiles(publishOutputTempDir, "*", SearchOption.AllDirectories))
                 {
-                    AddSharedObject(file, tags: null, projectDataDirName);
+                    AddSharedObject(file, tags: null,
+                        Path.Join(projectDataDirName,
+                            Path.GetRelativePath(publishOutputTempDir, Path.GetDirectoryName(file))));
                 }
             }
         }

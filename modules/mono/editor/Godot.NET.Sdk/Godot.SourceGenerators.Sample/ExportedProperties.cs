@@ -10,7 +10,7 @@ namespace Godot.SourceGenerators.Sample
     [SuppressMessage("ReSharper", "RedundantNameQualifier")]
     [SuppressMessage("ReSharper", "ArrangeObjectCreationWhenTypeEvident")]
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public partial class ExportedProperties : Godot.Object
+    public partial class ExportedProperties : GodotObject
     {
         // Do not generate default value
         private String _notGenerate_Property_String = new string("not generate");
@@ -117,19 +117,19 @@ namespace Godot.SourceGenerators.Sample
 
         // Godot structs
         [Export] private Vector2 property_Vector2 { get; set; } = new(10f, 10f);
-        [Export] private Vector2i property_Vector2i { get; set; } = Vector2i.Up;
+        [Export] private Vector2I property_Vector2I { get; set; } = Vector2I.Up;
         [Export] private Rect2 property_Rect2 { get; set; } = new(new Vector2(10f, 10f), new Vector2(10f, 10f));
-        [Export] private Rect2i property_Rect2i { get; set; } = new(new Vector2i(10, 10), new Vector2i(10, 10));
+        [Export] private Rect2I property_Rect2I { get; set; } = new(new Vector2I(10, 10), new Vector2I(10, 10));
         [Export] private Transform2D property_Transform2D { get; set; } = Transform2D.Identity;
         [Export] private Vector3 property_Vector3 { get; set; } = new(10f, 10f, 10f);
-        [Export] private Vector3i property_Vector3i { get; set; } = Vector3i.Back;
+        [Export] private Vector3I property_Vector3I { get; set; } = Vector3I.Back;
         [Export] private Basis property_Basis { get; set; } = new Basis(Quaternion.Identity);
         [Export] private Quaternion property_Quaternion { get; set; } = new Quaternion(Basis.Identity);
         [Export] private Transform3D property_Transform3D { get; set; } = Transform3D.Identity;
         [Export] private Vector4 property_Vector4 { get; set; } = new(10f, 10f, 10f, 10f);
-        [Export] private Vector4i property_Vector4i { get; set; } = Vector4i.One;
+        [Export] private Vector4I property_Vector4I { get; set; } = Vector4I.One;
         [Export] private Projection property_Projection { get; set; } = Projection.Identity;
-        [Export] private AABB property_AABB { get; set; } = new AABB(10f, 10f, 10f, new Vector3(1f, 1f, 1f));
+        [Export] private Aabb property_Aabb { get; set; } = new Aabb(10f, 10f, 10f, new Vector3(1f, 1f, 1f));
         [Export] private Color property_Color { get; set; } = Colors.Aquamarine;
         [Export] private Plane property_Plane { get; set; } = Plane.PlaneXZ;
         [Export] private Callable property_Callable { get; set; } = new Callable(Engine.GetMainLoop(), "_process");
@@ -168,20 +168,20 @@ namespace Godot.SourceGenerators.Sample
         [Export] private Vector2[] property_Vector2Array { get; set; } = { Vector2.Up, Vector2.Down, Vector2.Left, Vector2.Right };
         [Export] private Vector3[] property_Vector3Array { get; set; } = { Vector3.Up, Vector3.Down, Vector3.Left, Vector3.Right };
         [Export] private Color[] property_ColorArray { get; set; } = { Colors.Aqua, Colors.Aquamarine, Colors.Azure, Colors.Beige };
-        [Export] private Godot.Object[] property_GodotObjectOrDerivedArray { get; set; } = { null };
+        [Export] private GodotObject[] property_GodotObjectOrDerivedArray { get; set; } = { null };
         [Export] private StringName[] field_StringNameArray { get; set; } = { "foo", "bar" };
         [Export] private NodePath[] field_NodePathArray { get; set; } = { "foo", "bar" };
-        [Export] private RID[] field_RIDArray { get; set; } = { default, default, default };
+        [Export] private Rid[] field_RidArray { get; set; } = { default, default, default };
 
         // Variant
         [Export] private Variant property_Variant { get; set; } = "foo";
 
         // Classes
-        [Export] private Godot.Object property_GodotObjectOrDerived { get; set; }
+        [Export] private GodotObject property_GodotObjectOrDerived { get; set; }
         [Export] private Godot.Texture property_GodotResourceTexture { get; set; }
         [Export] private StringName property_StringName { get; set; } = new StringName("foo");
         [Export] private NodePath property_NodePath { get; set; } = new NodePath("foo");
-        [Export] private RID property_RID { get; set; }
+        [Export] private Rid property_Rid { get; set; }
 
         [Export]
         private Godot.Collections.Dictionary property_GodotDictionary { get; set; } =

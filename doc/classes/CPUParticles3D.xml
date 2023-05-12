@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CPUParticles3D" inherits="GeometryInstance3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="CPUParticles3D" inherits="GeometryInstance3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		CPU-based 3D particle emitter.
 	</brief_description>
@@ -143,7 +143,7 @@
 			Maximum damping.
 		</member>
 		<member name="damping_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
-			Minimum damping
+			Minimum damping.
 		</member>
 		<member name="direction" type="Vector3" setter="set_direction" getter="get_direction" default="Vector3(1, 0, 0)">
 			Unit vector specifying the particles' emission direction.
@@ -294,7 +294,7 @@
 			Particle system's running speed scaling ratio. A value of [code]0[/code] can be used to pause the particles.
 		</member>
 		<member name="split_scale" type="bool" setter="set_split_scale" getter="get_split_scale" default="false">
-			If set to true, three different scale curves can be specified, one per scale axis.
+			If set to [code]true[/code], three different scale curves can be specified, one per scale axis.
 		</member>
 		<member name="spread" type="float" setter="set_spread" getter="get_spread" default="45.0">
 			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] degrees. Applied to X/Z plane and Y/Z planes.

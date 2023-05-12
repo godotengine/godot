@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SyntaxHighlighter" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="SyntaxHighlighter" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base Syntax highlighter resource for [TextEdit].
 	</brief_description>
 	<description>
 		Base syntax highlighter resource all syntax highlighters extend from, provides syntax highlighting data to [TextEdit].
-		The associated [TextEdit] node will call into the [SyntaxHighlighter] on a as needed basis.
+		The associated [TextEdit] node will call into the [SyntaxHighlighter] on an as-needed basis.
 		[b]Note:[/b] Each Syntax highlighter instance should not be shared across multiple [TextEdit] nodes.
 	</description>
 	<tutorials>
@@ -58,7 +58,7 @@
 				This will color columns 0-4 red, and columns 5-eol in green.
 			</description>
 		</method>
-		<method name="get_text_edit">
+		<method name="get_text_edit" qualifiers="const">
 			<return type="TextEdit" />
 			<description>
 				Returns the associated [TextEdit] node.

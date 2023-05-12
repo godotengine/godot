@@ -1,57 +1,56 @@
-/*************************************************************************/
-/*  animation_track_editor.h                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  animation_track_editor.h                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef ANIMATION_TRACK_EDITOR_H
 #define ANIMATION_TRACK_EDITOR_H
 
 #include "editor/editor_data.h"
 #include "editor/editor_properties.h"
-#include "editor/editor_spin_slider.h"
 #include "editor/property_selector.h"
-
 #include "scene/3d/node_3d.h"
-#include "scene/gui/check_box.h"
 #include "scene/gui/control.h"
 #include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_bar.h"
-#include "scene/gui/slider.h"
-#include "scene/gui/spin_box.h"
-#include "scene/gui/tab_container.h"
-#include "scene/gui/texture_rect.h"
+#include "scene/gui/tree.h"
 #include "scene/resources/animation.h"
-#include "scene_tree_editor.h"
 
 class AnimationTrackEditor;
 class AnimationTrackEdit;
+class CheckBox;
+class EditorSpinSlider;
+class HSlider;
+class OptionButton;
+class PanelContainer;
+class SceneTreeDialog;
+class SpinBox;
+class TextureRect;
 class ViewPanner;
 
 class AnimationTrackKeyEdit : public Object {
@@ -159,9 +158,8 @@ class AnimationTimelineEdit : public Range {
 	bool use_fps = false;
 
 	Ref<ViewPanner> panner;
-	void _scroll_callback(Vector2 p_scroll_vec, bool p_alt);
-	void _pan_callback(Vector2 p_scroll_vec);
-	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
+	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
+	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
 
 	bool dragging_timeline = false;
 	bool dragging_hsize = false;
@@ -221,7 +219,9 @@ class AnimationTrackEdit : public Control {
 		MENU_KEY_INSERT,
 		MENU_KEY_DUPLICATE,
 		MENU_KEY_ADD_RESET,
-		MENU_KEY_DELETE
+		MENU_KEY_DELETE,
+		MENU_USE_BLEND_ENABLED,
+		MENU_USE_BLEND_DISABLED,
 	};
 
 	AnimationTimelineEdit *timeline = nullptr;
@@ -398,6 +398,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _update_tracks();
 	void _redraw_tracks();
 	void _redraw_groups();
+	void _check_bezier_exist();
 
 	void _name_limit_changed();
 	void _timeline_changed(float p_new_pos, bool p_drag, bool p_timeline_only);
@@ -460,9 +461,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	PropertyInfo _find_hint_for_track(int p_idx, NodePath &r_base_path, Variant *r_current_val = nullptr);
 
 	Ref<ViewPanner> panner;
-	void _scroll_callback(Vector2 p_scroll_vec, bool p_alt);
-	void _pan_callback(Vector2 p_scroll_vec);
-	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
+	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
+	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
 
 	void _timeline_value_changed(double);
 
@@ -568,6 +568,7 @@ class AnimationTrackEditor : public VBoxContainer {
 		Animation::LoopMode loop_mode = Animation::LOOP_PINGPONG;
 		bool loop_wrap = false;
 		bool enabled = false;
+		bool use_blend = false;
 
 		struct Key {
 			float time = 0;

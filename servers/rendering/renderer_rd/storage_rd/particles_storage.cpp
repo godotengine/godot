@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  particles_storage.cpp                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  particles_storage.cpp                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "particles_storage.h"
 
@@ -46,6 +46,10 @@ ParticlesStorage::ParticlesStorage() {
 	singleton = this;
 
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+
+	/* Effects */
+
+	sort_effects = memnew(SortEffects);
 
 	/* Particles */
 
@@ -205,6 +209,11 @@ ParticlesStorage::~ParticlesStorage() {
 
 	material_storage->material_free(particles_shader.default_material);
 	material_storage->shader_free(particles_shader.default_shader);
+
+	if (sort_effects) {
+		memdelete(sort_effects);
+		sort_effects = nullptr;
+	}
 
 	singleton = nullptr;
 }
@@ -774,7 +783,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 
 	p_particles->phase = new_phase;
 
-	frame_params.time = RendererCompositorRD::singleton->get_total_time();
+	frame_params.time = RendererCompositorRD::get_singleton()->get_total_time();
 	frame_params.delta = p_delta * p_particles->speed_scale;
 	frame_params.random_seed = p_particles->random_seed;
 	frame_params.explosiveness = p_particles->explosiveness;
@@ -851,9 +860,9 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 			collision_heightmap_texture = p_particles->sdf_collision_texture;
 
 			//replace in all other history frames where used because parameters are no longer valid if screen moves
-			for (uint32_t i = 1; i < p_particles->frame_history.size(); i++) {
-				if (p_particles->frame_history[i].collider_count > 0 && p_particles->frame_history[i].colliders[0].type == ParticlesFrameParams::COLLISION_TYPE_2D_SDF) {
-					p_particles->frame_history[i].colliders[0] = frame_params.colliders[0];
+			for (ParticlesFrameParams &params : p_particles->frame_history) {
+				if (params.collider_count > 0 && params.colliders[0].type == ParticlesFrameParams::COLLISION_TYPE_2D_SDF) {
+					params.colliders[0] = frame_params.colliders[0];
 				}
 			}
 		}
@@ -1145,7 +1154,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 		return;
 	}
 
-	if (particles->particle_buffer.is_null()) {
+	if (particles->particle_buffer.is_null() || particles->trail_bind_pose_uniform_set.is_null()) {
 		return; //particles have not processed yet
 	}
 
@@ -1193,7 +1202,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 	}
 
 	copy_push_constant.order_by_lifetime = (particles->draw_order == RS::PARTICLES_DRAW_ORDER_LIFETIME || particles->draw_order == RS::PARTICLES_DRAW_ORDER_REVERSE_LIFETIME);
-	copy_push_constant.lifetime_split = MIN(particles->amount * particles->phase, particles->amount - 1);
+	copy_push_constant.lifetime_split = (MIN(int(particles->amount * particles->phase), particles->amount - 1) + 1) % particles->amount;
 	copy_push_constant.lifetime_reverse = particles->draw_order == RS::PARTICLES_DRAW_ORDER_REVERSE_LIFETIME;
 
 	copy_push_constant.frame_remainder = particles->interpolate ? particles->frame_remainder : 0.0;
@@ -1228,7 +1237,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 		RD::get_singleton()->compute_list_dispatch_threads(compute_list, particles->amount, 1, 1);
 
 		RD::get_singleton()->compute_list_end();
-		RendererCompositorRD::singleton->get_effects()->sort_buffer(particles->particles_sort_uniform_set, particles->amount);
+		sort_effects->sort_buffer(particles->particles_sort_uniform_set, particles->amount);
 	}
 
 	if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
@@ -1341,7 +1350,7 @@ void ParticlesStorage::update_particles() {
 			particles->inactive = false;
 			particles->inactive_time = 0;
 		} else {
-			particles->inactive_time += particles->speed_scale * RendererCompositorRD::singleton->get_frame_delta_time();
+			particles->inactive_time += particles->speed_scale * RendererCompositorRD::get_singleton()->get_frame_delta_time();
 			if (particles->inactive_time > particles->lifetime * 1.2) {
 				particles->inactive = true;
 				continue;
@@ -1415,7 +1424,6 @@ void ParticlesStorage::update_particles() {
 		}
 
 		bool zero_time_scale = Engine::get_singleton()->get_time_scale() <= 0.0;
-		bool updated = false;
 
 		if (particles->clear && particles->pre_process_time > 0.0) {
 			double frame_time;
@@ -1430,7 +1438,6 @@ void ParticlesStorage::update_particles() {
 			while (todo >= 0) {
 				_particles_process(particles, frame_time);
 				todo -= frame_time;
-				updated = true;
 			}
 		}
 
@@ -1444,7 +1451,7 @@ void ParticlesStorage::update_particles() {
 				frame_time = 1.0 / fixed_fps;
 				decr = frame_time;
 			}
-			double delta = RendererCompositorRD::singleton->get_frame_delta_time();
+			double delta = RendererCompositorRD::get_singleton()->get_frame_delta_time();
 			if (delta > 0.1) { //avoid recursive stalls if fps goes below 10
 				delta = 0.1;
 			} else if (delta <= 0.0) { //unlikely but..
@@ -1452,10 +1459,9 @@ void ParticlesStorage::update_particles() {
 			}
 			double todo = particles->frame_remainder + delta;
 
-			while (todo >= frame_time || (particles->clear && !updated)) {
+			while (todo >= frame_time || particles->clear) {
 				_particles_process(particles, frame_time);
 				todo -= decr;
-				updated = true;
 			}
 
 			particles->frame_remainder = todo;
@@ -1463,16 +1469,16 @@ void ParticlesStorage::update_particles() {
 		} else {
 			if (zero_time_scale) {
 				_particles_process(particles, 0.0);
-				updated = true;
 			} else {
-				_particles_process(particles, RendererCompositorRD::singleton->get_frame_delta_time());
-				updated = true;
+				_particles_process(particles, RendererCompositorRD::get_singleton()->get_frame_delta_time());
 			}
 		}
 
-		//copy particles to instance buffer
+		// Ensure that memory is initialized (the code above should ensure that _particles_process is always called at least once upon clearing).
+		DEV_ASSERT(!particles->clear);
 
-		if (updated && particles->draw_order != RS::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY) {
+		// Copy particles to instance buffer.
+		if (particles->draw_order != RS::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY) {
 			//does not need view dependent operation, do copy here
 			ParticlesShader::CopyPushConstant copy_push_constant;
 
@@ -1514,7 +1520,7 @@ void ParticlesStorage::update_particles() {
 			}
 
 			copy_push_constant.order_by_lifetime = (particles->draw_order == RS::PARTICLES_DRAW_ORDER_LIFETIME || particles->draw_order == RS::PARTICLES_DRAW_ORDER_REVERSE_LIFETIME);
-			copy_push_constant.lifetime_split = MIN(particles->amount * particles->phase, particles->amount - 1);
+			copy_push_constant.lifetime_split = (MIN(int(particles->amount * particles->phase), particles->amount - 1) + 1) % particles->amount;
 			copy_push_constant.lifetime_reverse = particles->draw_order == RS::PARTICLES_DRAW_ORDER_REVERSE_LIFETIME;
 
 			RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();

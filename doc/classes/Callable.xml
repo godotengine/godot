@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Callable" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Callable" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Built-in type representing a method in an object instance or a standalone function.
 	</brief_description>
@@ -14,21 +14,23 @@
 		func test():
 		    var callable = Callable(self, "print_args")
 		    callable.call("hello", "world")  # Prints "hello world ".
-		    callable.call(Vector2.UP, 42, callable)  # Prints "(0, -1) 42 Node(Node.gd)::print_args".
+		    callable.call(Vector2.UP, 42, callable)  # Prints "(0, -1) 42 Node(node.gd)::print_args".
 		    callable.call("invalid")  # Invalid call, should have at least 2 arguments.
 		[/gdscript]
 		[csharp]
-		public void PrintArgs(object arg1, object arg2, object arg3 = null)
+		// Default parameter values are not supported.
+		public void PrintArgs(Variant arg1, Variant arg2, Variant arg3 = default)
 		{
 		    GD.PrintS(arg1, arg2, arg3);
 		}
 
 		public void Test()
 		{
-		    Callable callable = new Callable(this, nameof(PrintArgs));
-		    callable.Call("hello", "world"); // Prints "hello world null".
+		    // Invalid calls fail silently.
+		    Callable callable = new Callable(this, MethodName.PrintArgs);
+		    callable.Call("hello", "world"); // Default parameter values are not supported, should have 3 arguments.
 		    callable.Call(Vector2.Up, 42, callable); // Prints "(0, -1) 42 Node(Node.cs)::PrintArgs".
-		    callable.Call("invalid"); // Invalid call, should have at least 2 arguments.
+		    callable.Call("invalid"); // Invalid call, should have 3 arguments.
 		}
 		[/csharp]
 		[/codeblocks]
@@ -74,7 +76,16 @@
 		<method name="bind" qualifiers="vararg const">
 			<return type="Callable" />
 			<description>
-				Returns a copy of this [Callable] with one or more arguments bound. When called, the bound arguments are passed [i]after[/i] the arguments supplied by [method call].
+				Returns a copy of this [Callable] with one or more arguments bound. When called, the bound arguments are passed [i]after[/i] the arguments supplied by [method call]. See also [method unbind].
+				[b]Note:[/b] When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left.
+			</description>
+		</method>
+		<method name="bindv">
+			<return type="Callable" />
+			<param index="0" name="arguments" type="Array" />
+			<description>
+				Returns a copy of this [Callable] with one or more arguments bound, reading them from an array. When called, the bound arguments are passed [i]after[/i] the arguments supplied by [method call]. See also [method unbind].
+				[b]Note:[/b] When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left.
 			</description>
 		</method>
 		<method name="call" qualifiers="vararg const">
@@ -98,6 +109,18 @@
 			<param index="0" name="arguments" type="Array" />
 			<description>
 				Calls the method represented by this [Callable]. Unlike [method call], this method expects all arguments to be contained inside the [param arguments] [Array].
+			</description>
+		</method>
+		<method name="get_bound_arguments" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Return the bound arguments (as long as [method get_bound_arguments_count] is greater than zero), or empty (if [method get_bound_arguments_count] is less than or equal to zero).
+			</description>
+		</method>
+		<method name="get_bound_arguments_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the total amount of arguments bound (or unbound) via successive [method bind] or [method unbind] calls. If the amount of arguments unbound is greater than the ones bound, this function returns a value less than zero.
 			</description>
 		</method>
 		<method name="get_method" qualifiers="const">
@@ -152,21 +175,27 @@
 		<method name="rpc" qualifiers="vararg const">
 			<return type="void" />
 			<description>
-				Perform an RPC (Remote Procedure Call). This is used for multiplayer and is normally not available, unless the function being called has been marked as [i]RPC[/i]. Calling this method on unsupported functions will result in an error.
+				Perform an RPC (Remote Procedure Call). This is used for multiplayer and is normally not available, unless the function being called has been marked as [i]RPC[/i]. Calling this method on unsupported functions will result in an error. See [method Node.rpc].
 			</description>
 		</method>
 		<method name="rpc_id" qualifiers="vararg const">
 			<return type="void" />
 			<param index="0" name="peer_id" type="int" />
 			<description>
-				Perform an RPC (Remote Procedure Call) on a specific peer ID (see multiplayer documentation for reference). This is used for multiplayer and is normally not available unless the function being called has been marked as [i]RPC[/i]. Calling this method on unsupported functions will result in an error.
+				Perform an RPC (Remote Procedure Call) on a specific peer ID (see multiplayer documentation for reference). This is used for multiplayer and is normally not available unless the function being called has been marked as [i]RPC[/i]. Calling this method on unsupported functions will result in an error. See [method Node.rpc_id].
 			</description>
 		</method>
 		<method name="unbind" qualifiers="const">
 			<return type="Callable" />
 			<param index="0" name="argcount" type="int" />
 			<description>
-				Returns a copy of this [Callable] with the arguments unbound, as defined by [param argcount]. Calling the returned [Callable] will call the method without the extra arguments that are supplied in the [Callable] on which you are calling this method.
+				Returns a copy of this [Callable] with a number of arguments unbound. In other words, when the new callable is called the last few arguments supplied by the user are ignored, according to [param argcount]. The remaining arguments are passed to the callable. This allows to use the original callable in a context that attempts to pass more arguments than this callable can handle, e.g. a signal with a fixed number of arguments. See also [method bind].
+				[b]Note:[/b] When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left.
+				[codeblock]
+				func _ready():
+				    foo.unbind(1).call(1, 2) # Calls foo(1).
+				    foo.bind(3, 4).unbind(1).call(1, 2) # Calls foo(1, 3, 4), note that it does not change the arguments from bind.
+				[/codeblock]
 			</description>
 		</method>
 	</methods>

@@ -16,7 +16,7 @@ namespace Godot.SourceGenerators
 
         public void Execute(GeneratorExecutionContext context)
         {
-            if (context.AreGodotSourceGeneratorsDisabled())
+            if (context.IsGodotSourceGeneratorDisabled("ScriptSerialization"))
                 return;
 
             INamedTypeSymbol[] godotClasses = context
@@ -113,7 +113,7 @@ namespace Godot.SourceGenerators
             var propertySymbols = members
                 .Where(s => !s.IsStatic && s.Kind == SymbolKind.Property)
                 .Cast<IPropertySymbol>()
-                .Where(s => !s.IsIndexer);
+                .Where(s => !s.IsIndexer && s.ExplicitInterfaceImplementations.Length == 0);
 
             var fieldSymbols = members
                 .Where(s => !s.IsStatic && s.Kind == SymbolKind.Field && !s.IsImplicitlyDeclared)

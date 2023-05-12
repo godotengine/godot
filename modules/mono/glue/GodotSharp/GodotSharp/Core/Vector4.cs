@@ -37,22 +37,22 @@ namespace Godot
         /// <summary>
         /// The vector's X component. Also accessible by using the index position <c>[0]</c>.
         /// </summary>
-        public real_t x;
+        public real_t X;
 
         /// <summary>
         /// The vector's Y component. Also accessible by using the index position <c>[1]</c>.
         /// </summary>
-        public real_t y;
+        public real_t Y;
 
         /// <summary>
         /// The vector's Z component. Also accessible by using the index position <c>[2]</c>.
         /// </summary>
-        public real_t z;
+        public real_t Z;
 
         /// <summary>
         /// The vector's W component. Also accessible by using the index position <c>[3]</c>.
         /// </summary>
-        public real_t w;
+        public real_t W;
 
         /// <summary>
         /// Access vector components using their index.
@@ -61,10 +61,10 @@ namespace Godot
         /// <paramref name="index"/> is not 0, 1, 2 or 3.
         /// </exception>
         /// <value>
-        /// <c>[0]</c> is equivalent to <see cref="x"/>,
-        /// <c>[1]</c> is equivalent to <see cref="y"/>,
-        /// <c>[2]</c> is equivalent to <see cref="z"/>.
-        /// <c>[3]</c> is equivalent to <see cref="w"/>.
+        /// <c>[0]</c> is equivalent to <see cref="X"/>,
+        /// <c>[1]</c> is equivalent to <see cref="Y"/>,
+        /// <c>[2]</c> is equivalent to <see cref="Z"/>.
+        /// <c>[3]</c> is equivalent to <see cref="W"/>.
         /// </value>
         public real_t this[int index]
         {
@@ -73,13 +73,13 @@ namespace Godot
                 switch (index)
                 {
                     case 0:
-                        return x;
+                        return X;
                     case 1:
-                        return y;
+                        return Y;
                     case 2:
-                        return z;
+                        return Z;
                     case 3:
-                        return w;
+                        return W;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(index));
                 }
@@ -89,16 +89,16 @@ namespace Godot
                 switch (index)
                 {
                     case 0:
-                        x = value;
+                        X = value;
                         return;
                     case 1:
-                        y = value;
+                        Y = value;
                         return;
                     case 2:
-                        z = value;
+                        Z = value;
                         return;
                     case 3:
-                        w = value;
+                        W = value;
                         return;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(index));
@@ -111,10 +111,10 @@ namespace Godot
         /// </summary>
         public readonly void Deconstruct(out real_t x, out real_t y, out real_t z, out real_t w)
         {
-            x = this.x;
-            y = this.y;
-            z = this.z;
-            w = this.w;
+            x = X;
+            y = Y;
+            z = Z;
+            w = W;
         }
 
         internal void Normalize()
@@ -123,15 +123,15 @@ namespace Godot
 
             if (lengthsq == 0)
             {
-                x = y = z = w = 0f;
+                X = Y = Z = W = 0f;
             }
             else
             {
                 real_t length = Mathf.Sqrt(lengthsq);
-                x /= length;
-                y /= length;
-                z /= length;
-                w /= length;
+                X /= length;
+                Y /= length;
+                Z /= length;
+                W /= length;
             }
         }
 
@@ -141,7 +141,7 @@ namespace Godot
         /// <returns>A vector with <see cref="Mathf.Abs(real_t)"/> called on each component.</returns>
         public readonly Vector4 Abs()
         {
-            return new Vector4(Mathf.Abs(x), Mathf.Abs(y), Mathf.Abs(z), Mathf.Abs(w));
+            return new Vector4(Mathf.Abs(X), Mathf.Abs(Y), Mathf.Abs(Z), Mathf.Abs(W));
         }
 
         /// <summary>
@@ -150,7 +150,7 @@ namespace Godot
         /// <returns>A vector with <see cref="Mathf.Ceil"/> called on each component.</returns>
         public readonly Vector4 Ceil()
         {
-            return new Vector4(Mathf.Ceil(x), Mathf.Ceil(y), Mathf.Ceil(z), Mathf.Ceil(w));
+            return new Vector4(Mathf.Ceil(X), Mathf.Ceil(Y), Mathf.Ceil(Z), Mathf.Ceil(W));
         }
 
         /// <summary>
@@ -165,10 +165,10 @@ namespace Godot
         {
             return new Vector4
             (
-                Mathf.Clamp(x, min.x, max.x),
-                Mathf.Clamp(y, min.y, max.y),
-                Mathf.Clamp(z, min.z, max.z),
-                Mathf.Clamp(w, min.w, max.w)
+                Mathf.Clamp(X, min.X, max.X),
+                Mathf.Clamp(Y, min.Y, max.Y),
+                Mathf.Clamp(Z, min.Z, max.Z),
+                Mathf.Clamp(W, min.W, max.W)
             );
         }
 
@@ -185,10 +185,10 @@ namespace Godot
         {
             return new Vector4
             (
-                Mathf.CubicInterpolate(x, b.x, preA.x, postB.x, weight),
-                Mathf.CubicInterpolate(y, b.y, preA.y, postB.y, weight),
-                Mathf.CubicInterpolate(z, b.z, preA.z, postB.z, weight),
-                Mathf.CubicInterpolate(w, b.w, preA.w, postB.w, weight)
+                Mathf.CubicInterpolate(X, b.X, preA.X, postB.X, weight),
+                Mathf.CubicInterpolate(Y, b.Y, preA.Y, postB.Y, weight),
+                Mathf.CubicInterpolate(Z, b.Z, preA.Z, postB.Z, weight),
+                Mathf.CubicInterpolate(W, b.W, preA.W, postB.W, weight)
             );
         }
 
@@ -210,10 +210,10 @@ namespace Godot
         {
             return new Vector4
             (
-                Mathf.CubicInterpolateInTime(x, b.x, preA.x, postB.x, weight, t, preAT, postBT),
-                Mathf.CubicInterpolateInTime(y, b.y, preA.y, postB.y, weight, t, preAT, postBT),
-                Mathf.CubicInterpolateInTime(z, b.z, preA.z, postB.z, weight, t, preAT, postBT),
-                Mathf.CubicInterpolateInTime(w, b.w, preA.w, postB.w, weight, t, preAT, postBT)
+                Mathf.CubicInterpolateInTime(X, b.X, preA.X, postB.X, weight, t, preAT, postBT),
+                Mathf.CubicInterpolateInTime(Y, b.Y, preA.Y, postB.Y, weight, t, preAT, postBT),
+                Mathf.CubicInterpolateInTime(Z, b.Z, preA.Z, postB.Z, weight, t, preAT, postBT),
+                Mathf.CubicInterpolateInTime(W, b.W, preA.W, postB.W, weight, t, preAT, postBT)
             );
         }
 
@@ -224,7 +224,7 @@ namespace Godot
         /// <returns>The direction from this vector to <paramref name="to"/>.</returns>
         public readonly Vector4 DirectionTo(Vector4 to)
         {
-            Vector4 ret = new Vector4(to.x - x, to.y - y, to.z - z, to.w - w);
+            Vector4 ret = new Vector4(to.X - X, to.Y - Y, to.Z - Z, to.W - W);
             ret.Normalize();
             return ret;
         }
@@ -258,7 +258,7 @@ namespace Godot
         /// <returns>The dot product of the two vectors.</returns>
         public readonly real_t Dot(Vector4 with)
         {
-            return (x * with.x) + (y * with.y) + (z * with.z) + (w * with.w);
+            return (X * with.X) + (Y * with.Y) + (Z * with.Z) + (W * with.W);
         }
 
         /// <summary>
@@ -267,16 +267,26 @@ namespace Godot
         /// <returns>A vector with <see cref="Mathf.Floor"/> called on each component.</returns>
         public readonly Vector4 Floor()
         {
-            return new Vector4(Mathf.Floor(x), Mathf.Floor(y), Mathf.Floor(z), Mathf.Floor(w));
+            return new Vector4(Mathf.Floor(X), Mathf.Floor(Y), Mathf.Floor(Z), Mathf.Floor(W));
         }
 
         /// <summary>
-        /// Returns the inverse of this vector. This is the same as <c>new Vector4(1 / v.x, 1 / v.y, 1 / v.z, 1 / v.w)</c>.
+        /// Returns the inverse of this vector. This is the same as <c>new Vector4(1 / v.X, 1 / v.Y, 1 / v.Z, 1 / v.W)</c>.
         /// </summary>
         /// <returns>The inverse of this vector.</returns>
         public readonly Vector4 Inverse()
         {
-            return new Vector4(1 / x, 1 / y, 1 / z, 1 / w);
+            return new Vector4(1 / X, 1 / Y, 1 / Z, 1 / W);
+        }
+
+        /// <summary>
+        /// Returns <see langword="true"/> if this vector is finite, by calling
+        /// <see cref="Mathf.IsFinite"/> on each component.
+        /// </summary>
+        /// <returns>Whether this vector is finite or not.</returns>
+        public readonly bool IsFinite()
+        {
+            return Mathf.IsFinite(X) && Mathf.IsFinite(Y) && Mathf.IsFinite(Z) && Mathf.IsFinite(W);
         }
 
         /// <summary>
@@ -295,10 +305,10 @@ namespace Godot
         /// <returns>The length of this vector.</returns>
         public readonly real_t Length()
         {
-            real_t x2 = x * x;
-            real_t y2 = y * y;
-            real_t z2 = z * z;
-            real_t w2 = w * w;
+            real_t x2 = X * X;
+            real_t y2 = Y * Y;
+            real_t z2 = Z * Z;
+            real_t w2 = W * W;
 
             return Mathf.Sqrt(x2 + y2 + z2 + w2);
         }
@@ -311,10 +321,10 @@ namespace Godot
         /// <returns>The squared length of this vector.</returns>
         public readonly real_t LengthSquared()
         {
-            real_t x2 = x * x;
-            real_t y2 = y * y;
-            real_t z2 = z * z;
-            real_t w2 = w * w;
+            real_t x2 = X * X;
+            real_t y2 = Y * Y;
+            real_t z2 = Z * Z;
+            real_t w2 = W * W;
 
             return x2 + y2 + z2 + w2;
         }
@@ -330,10 +340,10 @@ namespace Godot
         {
             return new Vector4
             (
-                Mathf.Lerp(x, to.x, weight),
-                Mathf.Lerp(y, to.y, weight),
-                Mathf.Lerp(z, to.z, weight),
-                Mathf.Lerp(w, to.w, weight)
+                Mathf.Lerp(X, to.X, weight),
+                Mathf.Lerp(Y, to.Y, weight),
+                Mathf.Lerp(Z, to.Z, weight),
+                Mathf.Lerp(W, to.W, weight)
             );
         }
 
@@ -345,7 +355,7 @@ namespace Godot
         public readonly Axis MaxAxisIndex()
         {
             int max_index = 0;
-            real_t max_value = x;
+            real_t max_value = X;
             for (int i = 1; i < 4; i++)
             {
                 if (this[i] > max_value)
@@ -365,7 +375,7 @@ namespace Godot
         public readonly Axis MinAxisIndex()
         {
             int min_index = 0;
-            real_t min_value = x;
+            real_t min_value = X;
             for (int i = 1; i < 4; i++)
             {
                 if (this[i] <= min_value)
@@ -399,10 +409,10 @@ namespace Godot
         public readonly Vector4 PosMod(real_t mod)
         {
             return new Vector4(
-                Mathf.PosMod(x, mod),
-                Mathf.PosMod(y, mod),
-                Mathf.PosMod(z, mod),
-                Mathf.PosMod(w, mod)
+                Mathf.PosMod(X, mod),
+                Mathf.PosMod(Y, mod),
+                Mathf.PosMod(Z, mod),
+                Mathf.PosMod(W, mod)
             );
         }
 
@@ -417,10 +427,10 @@ namespace Godot
         public readonly Vector4 PosMod(Vector4 modv)
         {
             return new Vector4(
-                Mathf.PosMod(x, modv.x),
-                Mathf.PosMod(y, modv.y),
-                Mathf.PosMod(z, modv.z),
-                Mathf.PosMod(w, modv.w)
+                Mathf.PosMod(X, modv.X),
+                Mathf.PosMod(Y, modv.Y),
+                Mathf.PosMod(Z, modv.Z),
+                Mathf.PosMod(W, modv.W)
             );
         }
 
@@ -431,7 +441,7 @@ namespace Godot
         /// <returns>The rounded vector.</returns>
         public readonly Vector4 Round()
         {
-            return new Vector4(Mathf.Round(x), Mathf.Round(y), Mathf.Round(z), Mathf.Round(w));
+            return new Vector4(Mathf.Round(X), Mathf.Round(Y), Mathf.Round(Z), Mathf.Round(W));
         }
 
         /// <summary>
@@ -443,10 +453,10 @@ namespace Godot
         public readonly Vector4 Sign()
         {
             Vector4 v;
-            v.x = Mathf.Sign(x);
-            v.y = Mathf.Sign(y);
-            v.z = Mathf.Sign(z);
-            v.w = Mathf.Sign(w);
+            v.X = Mathf.Sign(X);
+            v.Y = Mathf.Sign(Y);
+            v.Z = Mathf.Sign(Z);
+            v.W = Mathf.Sign(W);
             return v;
         }
 
@@ -459,10 +469,10 @@ namespace Godot
         public readonly Vector4 Snapped(Vector4 step)
         {
             return new Vector4(
-                Mathf.Snapped(x, step.x),
-                Mathf.Snapped(y, step.y),
-                Mathf.Snapped(z, step.z),
-                Mathf.Snapped(w, step.w)
+                Mathf.Snapped(X, step.X),
+                Mathf.Snapped(Y, step.Y),
+                Mathf.Snapped(Z, step.Z),
+                Mathf.Snapped(W, step.W)
             );
         }
 
@@ -496,10 +506,10 @@ namespace Godot
         /// <param name="w">The vector's W component.</param>
         public Vector4(real_t x, real_t y, real_t z, real_t w)
         {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
+            X = x;
+            Y = y;
+            Z = z;
+            W = w;
         }
 
         /// <summary>
@@ -511,10 +521,10 @@ namespace Godot
         /// <returns>The added vector.</returns>
         public static Vector4 operator +(Vector4 left, Vector4 right)
         {
-            left.x += right.x;
-            left.y += right.y;
-            left.z += right.z;
-            left.w += right.w;
+            left.X += right.X;
+            left.Y += right.Y;
+            left.Z += right.Z;
+            left.W += right.W;
             return left;
         }
 
@@ -527,16 +537,16 @@ namespace Godot
         /// <returns>The subtracted vector.</returns>
         public static Vector4 operator -(Vector4 left, Vector4 right)
         {
-            left.x -= right.x;
-            left.y -= right.y;
-            left.z -= right.z;
-            left.w -= right.w;
+            left.X -= right.X;
+            left.Y -= right.Y;
+            left.Z -= right.Z;
+            left.W -= right.W;
             return left;
         }
 
         /// <summary>
         /// Returns the negative value of the <see cref="Vector4"/>.
-        /// This is the same as writing <c>new Vector4(-v.x, -v.y, -v.z, -v.w)</c>.
+        /// This is the same as writing <c>new Vector4(-v.X, -v.Y, -v.Z, -v.W)</c>.
         /// This operation flips the direction of the vector while
         /// keeping the same magnitude.
         /// With floats, the number zero can be either positive or negative.
@@ -545,10 +555,10 @@ namespace Godot
         /// <returns>The negated/flipped vector.</returns>
         public static Vector4 operator -(Vector4 vec)
         {
-            vec.x = -vec.x;
-            vec.y = -vec.y;
-            vec.z = -vec.z;
-            vec.w = -vec.w;
+            vec.X = -vec.X;
+            vec.Y = -vec.Y;
+            vec.Z = -vec.Z;
+            vec.W = -vec.W;
             return vec;
         }
 
@@ -561,10 +571,10 @@ namespace Godot
         /// <returns>The multiplied vector.</returns>
         public static Vector4 operator *(Vector4 vec, real_t scale)
         {
-            vec.x *= scale;
-            vec.y *= scale;
-            vec.z *= scale;
-            vec.w *= scale;
+            vec.X *= scale;
+            vec.Y *= scale;
+            vec.Z *= scale;
+            vec.W *= scale;
             return vec;
         }
 
@@ -577,10 +587,10 @@ namespace Godot
         /// <returns>The multiplied vector.</returns>
         public static Vector4 operator *(real_t scale, Vector4 vec)
         {
-            vec.x *= scale;
-            vec.y *= scale;
-            vec.z *= scale;
-            vec.w *= scale;
+            vec.X *= scale;
+            vec.Y *= scale;
+            vec.Z *= scale;
+            vec.W *= scale;
             return vec;
         }
 
@@ -593,10 +603,10 @@ namespace Godot
         /// <returns>The multiplied vector.</returns>
         public static Vector4 operator *(Vector4 left, Vector4 right)
         {
-            left.x *= right.x;
-            left.y *= right.y;
-            left.z *= right.z;
-            left.w *= right.w;
+            left.X *= right.X;
+            left.Y *= right.Y;
+            left.Z *= right.Z;
+            left.W *= right.W;
             return left;
         }
 
@@ -609,10 +619,10 @@ namespace Godot
         /// <returns>The divided vector.</returns>
         public static Vector4 operator /(Vector4 vec, real_t divisor)
         {
-            vec.x /= divisor;
-            vec.y /= divisor;
-            vec.z /= divisor;
-            vec.w /= divisor;
+            vec.X /= divisor;
+            vec.Y /= divisor;
+            vec.Z /= divisor;
+            vec.W /= divisor;
             return vec;
         }
 
@@ -625,10 +635,10 @@ namespace Godot
         /// <returns>The divided vector.</returns>
         public static Vector4 operator /(Vector4 vec, Vector4 divisorv)
         {
-            vec.x /= divisorv.x;
-            vec.y /= divisorv.y;
-            vec.z /= divisorv.z;
-            vec.w /= divisorv.w;
+            vec.X /= divisorv.X;
+            vec.Y /= divisorv.Y;
+            vec.Z /= divisorv.Z;
+            vec.W /= divisorv.W;
             return vec;
         }
 
@@ -650,10 +660,10 @@ namespace Godot
         /// <returns>The remainder vector.</returns>
         public static Vector4 operator %(Vector4 vec, real_t divisor)
         {
-            vec.x %= divisor;
-            vec.y %= divisor;
-            vec.z %= divisor;
-            vec.w %= divisor;
+            vec.X %= divisor;
+            vec.Y %= divisor;
+            vec.Z %= divisor;
+            vec.W %= divisor;
             return vec;
         }
 
@@ -675,10 +685,10 @@ namespace Godot
         /// <returns>The remainder vector.</returns>
         public static Vector4 operator %(Vector4 vec, Vector4 divisorv)
         {
-            vec.x %= divisorv.x;
-            vec.y %= divisorv.y;
-            vec.z %= divisorv.z;
-            vec.w %= divisorv.w;
+            vec.X %= divisorv.X;
+            vec.Y %= divisorv.Y;
+            vec.Z %= divisorv.Z;
+            vec.W %= divisorv.W;
             return vec;
         }
 
@@ -721,19 +731,19 @@ namespace Godot
         /// <returns>Whether or not the left is less than the right.</returns>
         public static bool operator <(Vector4 left, Vector4 right)
         {
-            if (left.x == right.x)
+            if (left.X == right.X)
             {
-                if (left.y == right.y)
+                if (left.Y == right.Y)
                 {
-                    if (left.z == right.z)
+                    if (left.Z == right.Z)
                     {
-                        return left.w < right.w;
+                        return left.W < right.W;
                     }
-                    return left.z < right.z;
+                    return left.Z < right.Z;
                 }
-                return left.y < right.y;
+                return left.Y < right.Y;
             }
-            return left.x < right.x;
+            return left.X < right.X;
         }
 
         /// <summary>
@@ -749,19 +759,19 @@ namespace Godot
         /// <returns>Whether or not the left is greater than the right.</returns>
         public static bool operator >(Vector4 left, Vector4 right)
         {
-            if (left.x == right.x)
+            if (left.X == right.X)
             {
-                if (left.y == right.y)
+                if (left.Y == right.Y)
                 {
-                    if (left.z == right.z)
+                    if (left.Z == right.Z)
                     {
-                        return left.w > right.w;
+                        return left.W > right.W;
                     }
-                    return left.z > right.z;
+                    return left.Z > right.Z;
                 }
-                return left.y > right.y;
+                return left.Y > right.Y;
             }
-            return left.x > right.x;
+            return left.X > right.X;
         }
 
         /// <summary>
@@ -777,19 +787,19 @@ namespace Godot
         /// <returns>Whether or not the left is less than or equal to the right.</returns>
         public static bool operator <=(Vector4 left, Vector4 right)
         {
-            if (left.x == right.x)
+            if (left.X == right.X)
             {
-                if (left.y == right.y)
+                if (left.Y == right.Y)
                 {
-                    if (left.z == right.z)
+                    if (left.Z == right.Z)
                     {
-                        return left.w <= right.w;
+                        return left.W <= right.W;
                     }
-                    return left.z < right.z;
+                    return left.Z < right.Z;
                 }
-                return left.y < right.y;
+                return left.Y < right.Y;
             }
-            return left.x < right.x;
+            return left.X < right.X;
         }
 
         /// <summary>
@@ -805,19 +815,19 @@ namespace Godot
         /// <returns>Whether or not the left is greater than or equal to the right.</returns>
         public static bool operator >=(Vector4 left, Vector4 right)
         {
-            if (left.x == right.x)
+            if (left.X == right.X)
             {
-                if (left.y == right.y)
+                if (left.Y == right.Y)
                 {
-                    if (left.z == right.z)
+                    if (left.Z == right.Z)
                     {
-                        return left.w >= right.w;
+                        return left.W >= right.W;
                     }
-                    return left.z > right.z;
+                    return left.Z > right.Z;
                 }
-                return left.y > right.y;
+                return left.Y > right.Y;
             }
-            return left.x > right.x;
+            return left.X > right.X;
         }
 
         /// <summary>
@@ -842,7 +852,7 @@ namespace Godot
         /// <returns>Whether or not the vectors are exactly equal.</returns>
         public readonly bool Equals(Vector4 other)
         {
-            return x == other.x && y == other.y && z == other.z && w == other.w;
+            return X == other.X && Y == other.Y && Z == other.Z && W == other.W;
         }
 
         /// <summary>
@@ -853,7 +863,19 @@ namespace Godot
         /// <returns>Whether or not the vectors are approximately equal.</returns>
         public readonly bool IsEqualApprox(Vector4 other)
         {
-            return Mathf.IsEqualApprox(x, other.x) && Mathf.IsEqualApprox(y, other.y) && Mathf.IsEqualApprox(z, other.z) && Mathf.IsEqualApprox(w, other.w);
+            return Mathf.IsEqualApprox(X, other.X) && Mathf.IsEqualApprox(Y, other.Y) && Mathf.IsEqualApprox(Z, other.Z) && Mathf.IsEqualApprox(W, other.W);
+        }
+
+        /// <summary>
+        /// Returns <see langword="true"/> if this vector's values are approximately zero,
+        /// by running <see cref="Mathf.IsZeroApprox(real_t)"/> on each component.
+        /// This method is faster than using <see cref="IsEqualApprox"/> with one value
+        /// as a zero vector.
+        /// </summary>
+        /// <returns>Whether or not the vector is approximately zero.</returns>
+        public readonly bool IsZeroApprox()
+        {
+            return Mathf.IsZeroApprox(X) && Mathf.IsZeroApprox(Y) && Mathf.IsZeroApprox(Z) && Mathf.IsZeroApprox(W);
         }
 
         /// <summary>
@@ -862,7 +884,7 @@ namespace Godot
         /// <returns>A hash code for this vector.</returns>
         public override readonly int GetHashCode()
         {
-            return y.GetHashCode() ^ x.GetHashCode() ^ z.GetHashCode() ^ w.GetHashCode();
+            return Y.GetHashCode() ^ X.GetHashCode() ^ Z.GetHashCode() ^ W.GetHashCode();
         }
 
         /// <summary>
@@ -871,7 +893,7 @@ namespace Godot
         /// <returns>A string representation of this vector.</returns>
         public override string ToString()
         {
-            return $"({x}, {y}, {z}, {w})";
+            return $"({X}, {Y}, {Z}, {W})";
         }
 
         /// <summary>
@@ -880,7 +902,7 @@ namespace Godot
         /// <returns>A string representation of this vector.</returns>
         public readonly string ToString(string format)
         {
-            return $"({x.ToString(format)}, {y.ToString(format)}, {z.ToString(format)}, {w.ToString(format)})";
+            return $"({X.ToString(format)}, {Y.ToString(format)}, {Z.ToString(format)}, {W.ToString(format)})";
         }
     }
 }

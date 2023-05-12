@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VideoStream" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="VideoStream" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base resource for video streams.
 	</brief_description>
@@ -8,4 +8,18 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="_instantiate_playback" qualifiers="virtual">
+			<return type="VideoStreamPlayback" />
+			<description>
+				Called when the video starts playing, to initialize and return a subclass of [VideoStreamPlayback].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="file" type="String" setter="set_file" getter="get_file" default="&quot;&quot;">
+			The video file path or URI that this [VideoStream] resource handles.
+			For [VideoStreamTheora], this filename should be an Ogg Theora video file with the [code].ogv[/code] extension.
+		</member>
+	</members>
 </class>

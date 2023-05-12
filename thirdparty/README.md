@@ -17,16 +17,31 @@ Files extracted from upstream source:
 - `license.txt`
 
 
+## astcenc
+
+- Upstream: https://github.com/ARM-software/astc-encoder
+- Version: 4.4.0 (5a5b5a1ef60dd47c27c28c66c118d22c40e3197e, 2023)
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- `astcenc_*` and `astcenc.h` files from `Source`
+- `LICENSE.txt`
+
+
 ## basis_universal
 
 - Upstream: https://github.com/BinomialLLC/basis_universal
-- Version: git (a91e94c8495d7f470d3df326a364d49324cfd4a3, 2022)
+- Version: 1.16.4 (900e40fb5d2502927360fe2f31762bdbb624455f, 2023)
 - License: Apache 2.0
 
 Files extracted from upstream source:
 
 - `encoder/` and `transcoder/` folders
 - `LICENSE`
+
+Applied upstream PR https://github.com/BinomialLLC/basis_universal/pull/344 to
+fix build with our own copy of zstd (patch in `patches`).
 
 
 ## brotli
@@ -44,7 +59,7 @@ Files extracted from upstream source:
 ## certs
 
 - Upstream: Mozilla, via https://github.com/bagder/ca-bundle
-- Version: git (b2f7415648411b6fd7c298c6c92d6552f0165f60, 2022)
+- Version: git (8bcd1092d29849d9fe0a3261ab3bb875eb410694, 2023)
 - License: MPL 2.0
 
 
@@ -58,11 +73,16 @@ Files extracted from upstream source:
 
 - all .cpp, .h, and .txt files except the folders MakeTables and etc2packer.
 
+Changes related to BC6H packing and unpacking made upstream in
+https://github.com/elasota/cvtt/commit/2e4b6b2747aec11f4cc6dd09ef43fa8ce769f6e2
+have been removed as they caused massive quality regressions. Apply the patches
+in the `patches/` folder when syncing on newer upstream commits.
+
 
 ## doctest
 
 - Upstream: https://github.com/onqtam/doctest
-- Version: 2.4.9 (b7c21ec5ceeadb4951b00396fc1e4642dd347e5f, 2022)
+- Version: 2.4.11 (ae7a13539fb71f270b87eb2e874fbac80bc8dda2, 2023)
 - License: MIT
 
 Files extracted from upstream source:
@@ -164,6 +184,7 @@ Files extracted from upstream source:
 
 - `src/` folder, minus the `dlg` and `tools` subfolders
   * These files can be removed: `.dat`, `.diff`, `.mk`, `.rc`, `README*`
+  * In `src/gzip/`, remove zlib files (everything but `ftgzip.c` and `ftzconf.h`)
 - `include/` folder, minus the `dlg` subfolder
 - `LICENSE.TXT` and `docs/FTL.TXT`
 
@@ -230,13 +251,15 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 6.0.0 (afcae83a064843d71d47624bc162e121cc56c08b, 2022)
+- Version: 7.1.0 (60841e26187576bff477c1a09ee2ffe544844abc, 2023)
 - License: MIT
 
 Files extracted from upstream source:
 
-- the `src` folder
 - `AUTHORS`, `COPYING`, `THANKS`
+- from the `src` folder, recursively
+  - all the `*.c`, `*.cc`, `*.h`, `*.hh` files
+  - _except_ `main.cc`, `harfbuzz*.cc`, `failing-alloc.c`, `test*.cc`
 
 
 ## icu4c
@@ -333,7 +356,7 @@ Files extracted from upstream source:
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 1.2.4 (0d1f12546bd803099a60c070517a552483f3790e, 2022)
+- Version: 1.3.0 (b557776962a3dcc985d83bd4ed94e1e2e50d0fa2, 2022)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -345,7 +368,7 @@ Files extracted from upstream source:
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 2.18.2 (89f040a5c938985c5f30728baed21e49d0846a53, 2022)
+- Version: 2.18.3 (981743de6fcdbe672e482b6fd724d31d0a0d2476, 2023)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -353,17 +376,18 @@ File extracted from upstream release tarball:
 - All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/` except `config_psa.h` and `psa_util.h`.
 - All `*.c` and `*.h` from `library/` to `thirdparty/mbedtls/library/` except those starting with `psa_*`.
 - The `LICENSE` file.
-- Applied the patch in `patches/1453.diff` (upstream PR:
+- Applied the patch in `patches/1453.diff` to fix UWP build (upstream PR:
   https://github.com/ARMmbed/mbedtls/pull/1453).
   Applied the patch in `patches/windows-arm64-hardclock.diff`
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core.
+- Added the file `godot_module_mbedtls_config.h` to customize the build configuration when bundling the full library.
 
 
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
-- Version: git (ea4558d1c0f217f1d67ed7fe0b07896ece88ae18, 2022)
+- Version: git (4a287848fd664ae1c3fc8e5e008560534ceeb526, 2022)
 - License: MIT
 
 Files extracted from upstream repository:
@@ -414,12 +438,14 @@ that file when upgrading.
 ## minizip
 
 - Upstream: https://www.zlib.net
-- Version: 1.2.12 (zlib contrib, 2022)
+- Version: 1.2.13 (zlib contrib, 2022)
 - License: zlib
 
 Files extracted from the upstream source:
 
-- contrib/minizip/{crypt.h,ioapi.{c,h},unzip.{c,h},zip.{c,h}}
+- From `contrib/minizip`:
+  `{crypt.h,ioapi.{c,h},unzip.{c,h},zip.{c,h}}`
+  `MiniZip64_info.txt`
 
 Important: Some files have Godot-made changes for use in core/io.
 They are marked with `/* GODOT start */` and `/* GODOT end */`
@@ -600,18 +626,27 @@ Files extracted from upstream source:
 
 ## rvo2
 
+For 2D in `rvo2_2d` folder
+
+- Upstream: https://github.com/snape/RVO2
+- Version: git (f7c5380235f6c9ac8d19cbf71fc94e2d4758b0a3, 2021)
+- License: Apache 2.0
+
+For 3D in `rvo2_3d` folder
+
 - Upstream: https://github.com/snape/RVO2-3D
 - Version: git (bfc048670a4e85066e86a1f923d8ea92e3add3b2, 2021)
 - License: Apache 2.0
 
 Files extracted from upstream source:
 
-- All .cpp and .h files in the `src/` folder except for Export.h, RVO.h, RVOSimulator.cpp and RVOSimulator.h
+- All .cpp and .h files in the `src/` folder except for Export.h and RVO.h
 - LICENSE
 
-Important: Some files have Godot-made changes; so to enrich the features
-originally proposed by this library and better integrate this library with
-Godot. See the patch in the `patches` folder for details.
+Important: Nearly all files have Godot-made changes and renames
+to make the 2D and 3D rvo libraries compatible with each other
+and solve conflicts and also enrich the feature set originally
+proposed by these libraries and better integrate them with Godot.
 
 
 ## spirv-reflect
@@ -665,8 +700,8 @@ instead of `miniz.h` as an external dependency.
 
 ## thorvg
 
-- Upstream: https://github.com/Samsung/thorvg
-- Version: 0.8.3 (a0fcf51f80a75f63a066df085f60cdaf715188b6, 2022)
+- Upstream: https://github.com/thorvg/thorvg
+- Version: 0.9.0 (a744006aa1edb918bacf0a415d0a57ca058e25f4, 2023)
 - License: MIT
 
 Files extracted from upstream source:
@@ -766,12 +801,13 @@ Files extracted from upstream source:
 ## zlib
 
 - Upstream: https://www.zlib.net
-- Version: 1.2.12 (2022)
+- Version: 1.2.13 (2022)
 - License: zlib
 
 Files extracted from upstream source:
 
-- all .c and .h files
+- All `*.c` and `*.h` files
+- `LICENSE`
 
 
 ## zstd

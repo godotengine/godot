@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  font.cpp                                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  font.cpp                                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "font.h"
 
@@ -980,6 +980,7 @@ void FontFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_opentype_feature_overrides"), &FontFile::get_opentype_feature_overrides);
 
 	ClassDB::bind_method(D_METHOD("get_glyph_index", "size", "char", "variation_selector"), &FontFile::get_glyph_index);
+	ClassDB::bind_method(D_METHOD("get_char_from_glyph_index", "size", "glyph_index"), &FontFile::get_char_from_glyph_index);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_mipmaps", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_generate_mipmaps", "get_generate_mipmaps");
@@ -1458,6 +1459,9 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 						}
 						if (ch[i] == 1 && first_ol_ch == -1) {
 							first_ol_ch = i;
+							if (outline == 0) {
+								outline = 1;
+							}
 						}
 						if (ch[i] == 2 && first_cm_ch == -1) {
 							first_cm_ch = i;
@@ -1747,6 +1751,9 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 					}
 					if (ch[i] == 1 && first_ol_ch == -1) {
 						first_ol_ch = i;
+						if (outline == 0) {
+							outline = 1;
+						}
 					}
 					if (ch[i] == 2 && first_cm_ch == -1) {
 						first_cm_ch = i;
@@ -2585,6 +2592,11 @@ int32_t FontFile::get_glyph_index(int p_size, char32_t p_char, char32_t p_variat
 	return TS->font_get_glyph_index(cache[0], p_size, p_char, p_variation_selector);
 }
 
+char32_t FontFile::get_char_from_glyph_index(int p_size, int32_t p_glyph_index) const {
+	_ensure_rid(0);
+	return TS->font_get_char_from_glyph_index(cache[0], p_size, p_glyph_index);
+}
+
 FontFile::FontFile() {
 }
 
@@ -2712,6 +2724,9 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 		for (const StringName &E : theme_types) {
 			if (ThemeDB::get_singleton()->get_project_theme()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
 				Ref<Font> f = ThemeDB::get_singleton()->get_project_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
+				if (f == this) {
+					continue;
+				}
 				if (f.is_valid()) {
 					theme_font = f;
 					theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
@@ -2729,6 +2744,9 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 		for (const StringName &E : theme_types) {
 			if (ThemeDB::get_singleton()->get_default_theme()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
 				Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
+				if (f == this) {
+					continue;
+				}
 				if (f.is_valid()) {
 					theme_font = f;
 					theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
@@ -2739,11 +2757,13 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 
 		// If they don't exist, use any type to return the default/empty value.
 		Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
-		if (f.is_valid()) {
-			theme_font = f;
-			theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
+		if (f != this) {
+			if (f.is_valid()) {
+				theme_font = f;
+				theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
+			}
+			return f;
 		}
-		return f;
 	}
 
 	return Ref<Font>();
@@ -2868,6 +2888,12 @@ void SystemFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_multichannel_signed_distance_field", "msdf"), &SystemFont::set_multichannel_signed_distance_field);
 	ClassDB::bind_method(D_METHOD("is_multichannel_signed_distance_field"), &SystemFont::is_multichannel_signed_distance_field);
 
+	ClassDB::bind_method(D_METHOD("set_msdf_pixel_range", "msdf_pixel_range"), &SystemFont::set_msdf_pixel_range);
+	ClassDB::bind_method(D_METHOD("get_msdf_pixel_range"), &SystemFont::get_msdf_pixel_range);
+
+	ClassDB::bind_method(D_METHOD("set_msdf_size", "msdf_size"), &SystemFont::set_msdf_size);
+	ClassDB::bind_method(D_METHOD("get_msdf_size"), &SystemFont::get_msdf_size);
+
 	ClassDB::bind_method(D_METHOD("set_oversampling", "oversampling"), &SystemFont::set_oversampling);
 	ClassDB::bind_method(D_METHOD("get_oversampling"), &SystemFont::get_oversampling);
 
@@ -2890,6 +2916,8 @@ void SystemFont::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), "set_hinting", "get_hinting");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel"), "set_subpixel_positioning", "get_subpixel_positioning");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field"), "set_multichannel_signed_distance_field", "is_multichannel_signed_distance_field");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_pixel_range"), "set_msdf_pixel_range", "get_msdf_pixel_range");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_size"), "set_msdf_size", "get_msdf_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), "set_oversampling", "get_oversampling");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")), "set_fallbacks", "get_fallbacks");
 }
@@ -2987,6 +3015,8 @@ void SystemFont::_update_base_font() {
 		file->set_hinting(hinting);
 		file->set_subpixel_positioning(subpixel_positioning);
 		file->set_multichannel_signed_distance_field(msdf);
+		file->set_msdf_pixel_range(msdf_pixel_range);
+		file->set_msdf_size(msdf_size);
 		file->set_oversampling(oversampling);
 
 		base_font = file;
@@ -3051,6 +3081,9 @@ Ref<Font> SystemFont::_get_base_font_or_default() const {
 		for (const StringName &E : theme_types) {
 			if (ThemeDB::get_singleton()->get_project_theme()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
 				Ref<Font> f = ThemeDB::get_singleton()->get_project_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
+				if (f == this) {
+					continue;
+				}
 				if (f.is_valid()) {
 					theme_font = f;
 					theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
@@ -3068,6 +3101,9 @@ Ref<Font> SystemFont::_get_base_font_or_default() const {
 		for (const StringName &E : theme_types) {
 			if (ThemeDB::get_singleton()->get_default_theme()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
 				Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
+				if (f == this) {
+					continue;
+				}
 				if (f.is_valid()) {
 					theme_font = f;
 					theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
@@ -3078,11 +3114,13 @@ Ref<Font> SystemFont::_get_base_font_or_default() const {
 
 		// If they don't exist, use any type to return the default/empty value.
 		Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
-		if (f.is_valid()) {
-			theme_font = f;
-			theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
+		if (f != this) {
+			if (f.is_valid()) {
+				theme_font = f;
+				theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
+			}
+			return f;
 		}
-		return f;
 	}
 
 	return Ref<Font>();
@@ -3184,6 +3222,34 @@ void SystemFont::set_multichannel_signed_distance_field(bool p_msdf) {
 
 bool SystemFont::is_multichannel_signed_distance_field() const {
 	return msdf;
+}
+
+void SystemFont::set_msdf_pixel_range(int p_msdf_pixel_range) {
+	if (msdf_pixel_range != p_msdf_pixel_range) {
+		msdf_pixel_range = p_msdf_pixel_range;
+		if (base_font.is_valid()) {
+			base_font->set_msdf_pixel_range(msdf_pixel_range);
+		}
+		emit_changed();
+	}
+}
+
+int SystemFont::get_msdf_pixel_range() const {
+	return msdf_pixel_range;
+}
+
+void SystemFont::set_msdf_size(int p_msdf_size) {
+	if (msdf_size != p_msdf_size) {
+		msdf_size = p_msdf_size;
+		if (base_font.is_valid()) {
+			base_font->set_msdf_size(msdf_size);
+		}
+		emit_changed();
+	}
+}
+
+int SystemFont::get_msdf_size() const {
+	return msdf_size;
 }
 
 void SystemFont::set_oversampling(real_t p_oversampling) {

@@ -30,7 +30,7 @@ misc/hooks/pre-commit-custom-*
 #############################
 
 # Buildsystem
-bin/
+bin
 *.gen.*
 compile_commands.json
 platform/windows/godot_res.res
@@ -62,6 +62,10 @@ tests/data/*.translation
 *.so
 # Binutils tmp linker output of the form "stXXXXXX" where "X" is alphanumeric
 st[A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9]
+
+# Python development
+.venv
+venv
 
 # Python generated
 __pycache__/
@@ -243,9 +247,6 @@ xcuserdata/
 x64/
 x86/
 
-# Do not ignore x86 folders anywhere under thirdparty libraries
-!thirdparty/**/x86/
-
 [Ww][Ii][Nn]32/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
@@ -254,6 +255,12 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+
+# Do not ignore arch-specific folders anywhere under thirdparty libraries
+!thirdparty/**/x64/
+!thirdparty/**/x86/
+!thirdparty/**/arm/
+!thirdparty/**/arm64/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/

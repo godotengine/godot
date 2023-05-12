@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  resource.cpp                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  resource.cpp                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "resource.h"
 
@@ -260,15 +260,35 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 		}
 		Variant p = get(E.name);
 
-		if ((p.get_type() == Variant::DICTIONARY || p.get_type() == Variant::ARRAY)) {
-			r->set(E.name, p.duplicate(p_subresources));
-		} else if (p.get_type() == Variant::OBJECT && (p_subresources || (E.usage & PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE))) {
-			Ref<Resource> sr = p;
-			if (sr.is_valid()) {
-				r->set(E.name, sr->duplicate(p_subresources));
+		switch (p.get_type()) {
+			case Variant::Type::DICTIONARY:
+			case Variant::Type::ARRAY:
+			case Variant::Type::PACKED_BYTE_ARRAY:
+			case Variant::Type::PACKED_COLOR_ARRAY:
+			case Variant::Type::PACKED_INT32_ARRAY:
+			case Variant::Type::PACKED_INT64_ARRAY:
+			case Variant::Type::PACKED_FLOAT32_ARRAY:
+			case Variant::Type::PACKED_FLOAT64_ARRAY:
+			case Variant::Type::PACKED_STRING_ARRAY:
+			case Variant::Type::PACKED_VECTOR2_ARRAY:
+			case Variant::Type::PACKED_VECTOR3_ARRAY: {
+				r->set(E.name, p.duplicate(p_subresources));
+			} break;
+
+			case Variant::Type::OBJECT: {
+				if (!(E.usage & PROPERTY_USAGE_NEVER_DUPLICATE) && (p_subresources || (E.usage & PROPERTY_USAGE_ALWAYS_DUPLICATE))) {
+					Ref<Resource> sr = p;
+					if (sr.is_valid()) {
+						r->set(E.name, sr->duplicate(p_subresources));
+					}
+				} else {
+					r->set(E.name, p);
+				}
+			} break;
+
+			default: {
+				r->set(E.name, p);
 			}
-		} else {
-			r->set(E.name, p);
 		}
 	}
 
@@ -385,10 +405,6 @@ void Resource::set_as_translation_remapped(bool p_remapped) {
 	ResourceCache::lock.unlock();
 }
 
-bool Resource::is_translation_remapped() const {
-	return remapped_list.in_list();
-}
-
 #ifdef TOOLS_ENABLED
 //helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
 void Resource::set_id_for_path(const String &p_path, const String &p_id) {
@@ -481,9 +497,6 @@ void ResourceCache::clear() {
 	resources.clear();
 }
 
-void ResourceCache::reload_externals() {
-}
-
 bool ResourceCache::has(const String &p_path) {
 	lock.lock();
 
@@ -529,9 +542,26 @@ Ref<Resource> ResourceCache::get_ref(const String &p_path) {
 
 void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
 	lock.lock();
+
+	LocalVector<String> to_remove;
+
 	for (KeyValue<String, Resource *> &E : resources) {
-		p_resources->push_back(Ref<Resource>(E.value));
+		Ref<Resource> ref = Ref<Resource>(E.value);
+
+		if (!ref.is_valid()) {
+			// This resource is in the process of being deleted, ignore its existence
+			E.value->path_cache = String();
+			to_remove.push_back(E.key);
+			continue;
+		}
+
+		p_resources->push_back(ref);
 	}
+
+	for (const String &E : to_remove) {
+		resources.erase(E);
+	}
+
 	lock.unlock();
 }
 

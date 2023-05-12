@@ -162,9 +162,13 @@ void main() {
 	vec2 uv = uv_attrib;
 
 #ifdef USE_INSTANCING
-	vec4 instance_color = vec4(unpackHalf2x16(instance_color_custom_data.x), unpackHalf2x16(instance_color_custom_data.y));
-	color *= instance_color;
-	instance_custom = vec4(unpackHalf2x16(instance_color_custom_data.z), unpackHalf2x16(instance_color_custom_data.w));
+	if (bool(read_draw_data_flags & FLAGS_INSTANCING_HAS_COLORS)) {
+		vec4 instance_color = vec4(unpackHalf2x16(instance_color_custom_data.x), unpackHalf2x16(instance_color_custom_data.y));
+		color *= instance_color;
+	}
+	if (bool(read_draw_data_flags & FLAGS_INSTANCING_HAS_CUSTOM_DATA)) {
+		instance_custom = vec4(unpackHalf2x16(instance_color_custom_data.z), unpackHalf2x16(instance_color_custom_data.w));
+	}
 #endif
 
 #else
@@ -277,7 +281,7 @@ flat in uvec4 varying_G;
 uniform sampler2D atlas_texture; //texunit:-2
 uniform sampler2D shadow_atlas_texture; //texunit:-3
 #endif // DISABLE_LIGHTING
-uniform sampler2D screen_texture; //texunit:-4
+uniform sampler2D color_buffer; //texunit:-4
 uniform sampler2D sdf_texture; //texunit:-5
 uniform sampler2D normal_texture; //texunit:-6
 uniform sampler2D specular_texture; //texunit:-7
@@ -579,7 +583,13 @@ void main() {
 
 	if (normal_used || (using_light && bool(read_draw_data_flags & FLAGS_DEFAULT_NORMAL_MAP_USED))) {
 		normal.xy = texture(normal_texture, uv).xy * vec2(2.0, -2.0) - vec2(1.0, -1.0);
-		normal.z = sqrt(1.0 - dot(normal.xy, normal.xy));
+		if (bool(read_draw_data_flags & FLAGS_FLIP_H)) {
+			normal.x = -normal.x;
+		}
+		if (bool(read_draw_data_flags & FLAGS_FLIP_V)) {
+			normal.y = -normal.y;
+		}
+		normal.z = sqrt(max(0.0, 1.0 - dot(normal.xy, normal.xy)));
 		normal_used = true;
 	} else {
 		normal = vec3(0.0, 0.0, 1.0);
@@ -639,7 +649,7 @@ void main() {
 
 #ifdef MODE_LIGHT_ONLY
 	color = vec4(0.0);
-#else
+#elif !defined(MODE_UNSHADED)
 	color *= canvas_modulation;
 #endif
 

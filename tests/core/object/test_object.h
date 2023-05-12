@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  test_object.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  test_object.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef TEST_OBJECT_H
 #define TEST_OBJECT_H
@@ -337,6 +337,48 @@ TEST_CASE("[Object] Signals") {
 		object.get_signal_list(&signals_after_empty_added);
 
 		CHECK_EQ(signals_after.size(), signals_after_empty_added.size());
+	}
+
+	SUBCASE("Deleting an object with connected signals should disconnect them") {
+		List<Object::Connection> signal_connections;
+
+		{
+			Object target;
+			target.add_user_signal(MethodInfo("my_custom_signal"));
+
+			ERR_PRINT_OFF;
+			target.connect("nonexistent_signal1", callable_mp(&object, &Object::notify_property_list_changed));
+			target.connect("my_custom_signal", callable_mp(&object, &Object::notify_property_list_changed));
+			target.connect("nonexistent_signal2", callable_mp(&object, &Object::notify_property_list_changed));
+			ERR_PRINT_ON;
+
+			signal_connections.clear();
+			object.get_all_signal_connections(&signal_connections);
+			CHECK(signal_connections.size() == 0);
+			signal_connections.clear();
+			object.get_signals_connected_to_this(&signal_connections);
+			CHECK(signal_connections.size() == 1);
+
+			ERR_PRINT_OFF;
+			object.connect("nonexistent_signal1", callable_mp(&target, &Object::notify_property_list_changed));
+			object.connect("my_custom_signal", callable_mp(&target, &Object::notify_property_list_changed));
+			object.connect("nonexistent_signal2", callable_mp(&target, &Object::notify_property_list_changed));
+			ERR_PRINT_ON;
+
+			signal_connections.clear();
+			object.get_all_signal_connections(&signal_connections);
+			CHECK(signal_connections.size() == 1);
+			signal_connections.clear();
+			object.get_signals_connected_to_this(&signal_connections);
+			CHECK(signal_connections.size() == 1);
+		}
+
+		signal_connections.clear();
+		object.get_all_signal_connections(&signal_connections);
+		CHECK(signal_connections.size() == 0);
+		signal_connections.clear();
+		object.get_signals_connected_to_this(&signal_connections);
+		CHECK(signal_connections.size() == 0);
 	}
 
 	SUBCASE("Emitting a non existing signal will return an error") {

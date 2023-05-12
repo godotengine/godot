@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2021 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,6 +61,7 @@ bool JpgLoader::open(const string& path)
 
     w = static_cast<float>(width);
     h = static_cast<float>(height);
+    cs = ColorSpace::ARGB8888;
 
     return true;
 }
@@ -86,6 +87,7 @@ bool JpgLoader::open(const char* data, uint32_t size, bool copy)
 
     w = static_cast<float>(width);
     h = static_cast<float>(height);
+    cs = ColorSpace::ARGB8888;
 
     return true;
 }
@@ -116,12 +118,16 @@ unique_ptr<Surface> JpgLoader::bitmap()
 
     if (!image) return nullptr;
 
-    auto surface = static_cast<Surface*>(malloc(sizeof(Surface)));
-    surface->buffer = (uint32_t*)(image);
+    //TODO: It's better to keep this surface instance in the loader side
+    auto surface = new Surface;
+    surface->buf8 = image;
     surface->stride = static_cast<uint32_t>(w);
     surface->w = static_cast<uint32_t>(w);
     surface->h = static_cast<uint32_t>(h);
-    surface->cs = SwCanvas::ARGB8888;
+    surface->cs = cs;
+    surface->channelSize = sizeof(uint32_t);
+    surface->premultiplied = true;
+    surface->owner = true;
 
     return unique_ptr<Surface>(surface);
 }

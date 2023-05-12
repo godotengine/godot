@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MeshDataTool" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="MeshDataTool" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Helper tool to access and edit [Mesh] data.
 	</brief_description>
@@ -19,7 +19,7 @@
 		    vertex += mdt.get_vertex_normal(i)
 		    # Save your change.
 		    mdt.set_vertex(i, vertex)
-		mesh.surface_remove(0)
+		mesh.clear_surfaces()
 		mdt.commit_to_surface(mesh)
 		var mi = MeshInstance.new()
 		mi.mesh = mesh
@@ -38,7 +38,7 @@
 		    // Save your change.
 		    mdt.SetVertex(i, vertex);
 		}
-		mesh.SurfaceRemove(0);
+		mesh.ClearSurfaces();
 		mdt.CommitToSurface(mesh);
 		var mi = new MeshInstance();
 		mi.Mesh = mesh;

@@ -336,7 +336,7 @@ namespace GodotTools.Build
             _ = index; // Unused
 
             _issuesListContextMenu.Clear();
-            _issuesListContextMenu.Size = new Vector2i(1, 1);
+            _issuesListContextMenu.Size = new Vector2I(1, 1);
 
             if (_issuesList.IsAnythingSelected())
             {
@@ -347,7 +347,7 @@ namespace GodotTools.Build
 
             if (_issuesListContextMenu.ItemCount > 0)
             {
-                _issuesListContextMenu.Position = (Vector2i)(_issuesList.GlobalPosition + atPosition);
+                _issuesListContextMenu.Position = (Vector2I)(_issuesList.GlobalPosition + atPosition);
                 _issuesListContextMenu.Popup();
             }
         }
@@ -356,19 +356,19 @@ namespace GodotTools.Build
         {
             base._Ready();
 
-            SizeFlagsVertical = (int)SizeFlags.ExpandFill;
+            SizeFlagsVertical = SizeFlags.ExpandFill;
 
             var hsc = new HSplitContainer
             {
-                SizeFlagsHorizontal = (int)SizeFlags.ExpandFill,
-                SizeFlagsVertical = (int)SizeFlags.ExpandFill
+                SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                SizeFlagsVertical = SizeFlags.ExpandFill
             };
             AddChild(hsc);
 
             _issuesList = new ItemList
             {
-                SizeFlagsVertical = (int)SizeFlags.ExpandFill,
-                SizeFlagsHorizontal = (int)SizeFlags.ExpandFill // Avoid being squashed by the build log
+                SizeFlagsVertical = SizeFlags.ExpandFill,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill // Avoid being squashed by the build log
             };
             _issuesList.ItemActivated += IssueActivated;
             _issuesList.AllowRmbSelect = true;
@@ -382,8 +382,8 @@ namespace GodotTools.Build
             _buildLog = new TextEdit
             {
                 Editable = false,
-                SizeFlagsVertical = (int)SizeFlags.ExpandFill,
-                SizeFlagsHorizontal = (int)SizeFlags.ExpandFill // Avoid being squashed by the issues list
+                SizeFlagsVertical = SizeFlags.ExpandFill,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill // Avoid being squashed by the issues list
             };
             hsc.AddChild(_buildLog);
 

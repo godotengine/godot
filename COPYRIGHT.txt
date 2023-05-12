@@ -43,8 +43,8 @@ Source: https://github.com/godotengine/godot
 
 Files: *
 Comment: Godot Engine
-Copyright: 2007-2022, Juan Linietsky, Ariel Manzur.
- 2014-2022, Godot Engine contributors.
+Copyright: 2014-present, Godot Engine contributors
+ 2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat
 
 Files: ./icon.png
@@ -59,8 +59,8 @@ Files: ./core/math/convex_hull.cpp
  ./core/math/convex_hull.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2011, Ole Kniemeyer, MAXON, www.maxon.net
- 2007-2022, Juan Linietsky, Ariel Manzur.
- 2014-2022, Godot Engine contributors.
+ 2014-present, Godot Engine contributors
+ 2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat and Zlib
 
 Files: ./platform/android/java/lib/aidl/com/android/*
@@ -81,8 +81,8 @@ License: Apache-2.0
 Files: ./scene/animation/easing_equations.h
 Comment: Robert Penner's Easing Functions
 Copyright: 2001, Robert Penner
- 2007-2022 Juan Linietsky, Ariel Manzur.
- 2014-2022 Godot Engine contributors.
+ 2014-present, Godot Engine contributors
+ 2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat
 
 Files: ./servers/physics_3d/collision_solver_3d_sat.cpp
@@ -106,16 +106,16 @@ Files: ./servers/physics_3d/gjk_epa.cpp
  ./servers/physics_3d/shape_3d_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2008, Erwin Coumans
- 2007-2022, Juan Linietsky, Ariel Manzur.
- 2014-2022, Godot Engine contributors.
+ 2014-present, Godot Engine contributors
+ 2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat and Zlib
 
 Files: ./servers/physics_3d/joints/cone_twist_joint_3d_sw.cpp
  ./servers/physics_3d/joints/cone_twist_joint_3d_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2007, Starbreeze Studios
- 2007-2022, Juan Linietsky, Ariel Manzur.
- 2014-2022, Godot Engine contributors.
+ 2014-present, Godot Engine contributors
+ 2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat and Zlib
 
 Files: ./servers/rendering/renderer_rd/shaders/ss_effects_downsample.glsl
@@ -141,6 +141,11 @@ Comment: AMD FidelityFX Super Resolution
 Copyright: 2021, Advanced Micro Devices, Inc.
 License: Expat
 
+Files: ./thirdparty/astcenc/
+Comment: Arm ASTC Encoder
+Copyright: 2011-2023, Arm Limited
+License: Apache-2.0
+
 Files: ./thirdparty/basis_universal/
 Comment: Basis Universal
 Copyright: 2022, Binomial LLC.
@@ -164,7 +169,7 @@ License: Expat
 
 Files: ./thirdparty/doctest/
 Comment: doctest
-Copyright: 2016-2021, Viktor Kirilov
+Copyright: 2016-2023, Viktor Kirilov
 License: Expat
 
 Files: ./thirdparty/embree/
@@ -222,19 +227,23 @@ License: Expat
 
 Files: ./thirdparty/harfbuzz/
 Comment: HarfBuzz text shaping library
-Copyright: 2010-2020, Google, Inc.
- 2018-2020, Ebrahim Byagowi
- 2019-2020, Facebook, Inc.
- 2012, Mozilla Foundation
+Copyright: 2010-2022, Google, Inc.
+ 2015-2020, Ebrahim Byagowi
+ 2019,2020, Facebook, Inc.
+ 2012, 2015, Mozilla Foundation
  2011, Codethink Limited
  2008, 2010, Nokia Corporation and/or its subsidiary(-ies)
  2009, Keith Stribley
- 2009, Martin Hosken and SIL International
+ 2011, Martin Hosken and SIL International
  2007, Chris Wilson
- 2005-2006, 2020-2021, Behdad Esfahbod
- 2005, David Turner
- 2004, 2007-2010, Red Hat, Inc.
- 1998-2004, David Turner and Werner Lemberg
+ 2005-2006, 2020-2023, Behdad Esfahbod
+ 2004, 2007-2010, 2013, 2021-2023, Red Hat, Inc.
+ 1998-2005, David Turner and Werner Lemberg
+ 2016, Igalia, S.L.
+ 2022, Matthias Clasen
+ 2018, 2021, Khaled Hosny
+ 2018-2020, Adobe, Inc.
+ 2013-2015, Alexei Podtelezhnikov
 License: HarfBuzz
 
 Files: ./thirdparty/icu4c/
@@ -283,7 +292,7 @@ License: Apache-2.0
 
 Files: ./thirdparty/meshoptimizer/
 Comment: meshoptimizer
-Copyright: 2016-2021, Arseny Kapoulkine
+Copyright: 2016-2022, Arseny Kapoulkine
 License: Expat
 
 Files: ./thirdparty/minimp3/
@@ -473,7 +482,7 @@ License: Expat
 
 Files: ./thirdparty/zlib/
 Comment: zlib
-Copyright: 1995-2017, Jean-loup Gailly and Mark Adler
+Copyright: 1995-2022, Jean-loup Gailly and Mark Adler
 License: Zlib
 
 Files: ./thirdparty/zstd/

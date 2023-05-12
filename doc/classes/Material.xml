@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Material" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Material" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Abstract base [Resource] for coloring and shading geometry.
 	</brief_description>
@@ -29,6 +29,12 @@
 		<method name="_get_shader_rid" qualifiers="virtual const">
 			<return type="RID" />
 			<description>
+			</description>
+		</method>
+		<method name="create_placeholder" qualifiers="const">
+			<return type="Resource" />
+			<description>
+				Creates a placeholder version of this resource ([PlaceholderMaterial]).
 			</description>
 		</method>
 		<method name="inspect_native_shader_code">

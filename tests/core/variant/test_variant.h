@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  test_variant.h                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  test_variant.h                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef TEST_VARIANT_H
 #define TEST_VARIANT_H
@@ -866,6 +866,204 @@ TEST_CASE("[Variant] Basic comparison") {
 	CHECK_NE(Variant(String()), Variant());
 	CHECK_NE(Variant(Array()), Variant());
 	CHECK_NE(Variant(Dictionary()), Variant());
+}
+
+TEST_CASE("[Variant] Identity comparison") {
+	// Value types are compared by value
+	Variant aabb = AABB();
+	CHECK(aabb.identity_compare(aabb));
+	CHECK(aabb.identity_compare(AABB()));
+	CHECK_FALSE(aabb.identity_compare(AABB(Vector3(1, 2, 3), Vector3(1, 2, 3))));
+
+	Variant basis = Basis();
+	CHECK(basis.identity_compare(basis));
+	CHECK(basis.identity_compare(Basis()));
+	CHECK_FALSE(basis.identity_compare(Basis(Quaternion(Vector3(1, 2, 3).normalized(), 45))));
+
+	Variant bool_var = true;
+	CHECK(bool_var.identity_compare(bool_var));
+	CHECK(bool_var.identity_compare(true));
+	CHECK_FALSE(bool_var.identity_compare(false));
+
+	Variant callable = Callable();
+	CHECK(callable.identity_compare(callable));
+	CHECK(callable.identity_compare(Callable()));
+	CHECK_FALSE(callable.identity_compare(Callable(ObjectID(), StringName("lambda"))));
+
+	Variant color = Color();
+	CHECK(color.identity_compare(color));
+	CHECK(color.identity_compare(Color()));
+	CHECK_FALSE(color.identity_compare(Color(255, 0, 255)));
+
+	Variant float_var = 1.0;
+	CHECK(float_var.identity_compare(float_var));
+	CHECK(float_var.identity_compare(1.0));
+	CHECK_FALSE(float_var.identity_compare(2.0));
+
+	Variant int_var = 1;
+	CHECK(int_var.identity_compare(int_var));
+	CHECK(int_var.identity_compare(1));
+	CHECK_FALSE(int_var.identity_compare(2));
+
+	Variant nil = Variant();
+	CHECK(nil.identity_compare(nil));
+	CHECK(nil.identity_compare(Variant()));
+	CHECK_FALSE(nil.identity_compare(true));
+
+	Variant node_path = NodePath("godot");
+	CHECK(node_path.identity_compare(node_path));
+	CHECK(node_path.identity_compare(NodePath("godot")));
+	CHECK_FALSE(node_path.identity_compare(NodePath("waiting")));
+
+	Variant plane = Plane();
+	CHECK(plane.identity_compare(plane));
+	CHECK(plane.identity_compare(Plane()));
+	CHECK_FALSE(plane.identity_compare(Plane(Vector3(1, 2, 3), 42)));
+
+	Variant projection = Projection();
+	CHECK(projection.identity_compare(projection));
+	CHECK(projection.identity_compare(Projection()));
+	CHECK_FALSE(projection.identity_compare(Projection(Transform3D(Basis(Vector3(1, 2, 3).normalized(), 45), Vector3(1, 2, 3)))));
+
+	Variant quaternion = Quaternion();
+	CHECK(quaternion.identity_compare(quaternion));
+	CHECK(quaternion.identity_compare(Quaternion()));
+	CHECK_FALSE(quaternion.identity_compare(Quaternion(Vector3(1, 2, 3).normalized(), 45)));
+
+	Variant rect2 = Rect2();
+	CHECK(rect2.identity_compare(rect2));
+	CHECK(rect2.identity_compare(Rect2()));
+	CHECK_FALSE(rect2.identity_compare(Rect2(Point2(Vector2(1, 2)), Size2(Vector2(1, 2)))));
+
+	Variant rect2i = Rect2i();
+	CHECK(rect2i.identity_compare(rect2i));
+	CHECK(rect2i.identity_compare(Rect2i()));
+	CHECK_FALSE(rect2i.identity_compare(Rect2i(Point2i(Vector2i(1, 2)), Size2i(Vector2i(1, 2)))));
+
+	Variant rid = RID();
+	CHECK(rid.identity_compare(rid));
+	CHECK(rid.identity_compare(RID()));
+	CHECK_FALSE(rid.identity_compare(RID::from_uint64(123)));
+
+	Variant signal = Signal();
+	CHECK(signal.identity_compare(signal));
+	CHECK(signal.identity_compare(Signal()));
+	CHECK_FALSE(signal.identity_compare(Signal(ObjectID(), StringName("lambda"))));
+
+	Variant str = "godot";
+	CHECK(str.identity_compare(str));
+	CHECK(str.identity_compare("godot"));
+	CHECK_FALSE(str.identity_compare("waiting"));
+
+	Variant str_name = StringName("godot");
+	CHECK(str_name.identity_compare(str_name));
+	CHECK(str_name.identity_compare(StringName("godot")));
+	CHECK_FALSE(str_name.identity_compare(StringName("waiting")));
+
+	Variant transform2d = Transform2D();
+	CHECK(transform2d.identity_compare(transform2d));
+	CHECK(transform2d.identity_compare(Transform2D()));
+	CHECK_FALSE(transform2d.identity_compare(Transform2D(45, Vector2(1, 2))));
+
+	Variant transform3d = Transform3D();
+	CHECK(transform3d.identity_compare(transform3d));
+	CHECK(transform3d.identity_compare(Transform3D()));
+	CHECK_FALSE(transform3d.identity_compare(Transform3D(Basis(Quaternion(Vector3(1, 2, 3).normalized(), 45)), Vector3(1, 2, 3))));
+
+	Variant vect2 = Vector2();
+	CHECK(vect2.identity_compare(vect2));
+	CHECK(vect2.identity_compare(Vector2()));
+	CHECK_FALSE(vect2.identity_compare(Vector2(1, 2)));
+
+	Variant vect2i = Vector2i();
+	CHECK(vect2i.identity_compare(vect2i));
+	CHECK(vect2i.identity_compare(Vector2i()));
+	CHECK_FALSE(vect2i.identity_compare(Vector2i(1, 2)));
+
+	Variant vect3 = Vector3();
+	CHECK(vect3.identity_compare(vect3));
+	CHECK(vect3.identity_compare(Vector3()));
+	CHECK_FALSE(vect3.identity_compare(Vector3(1, 2, 3)));
+
+	Variant vect3i = Vector3i();
+	CHECK(vect3i.identity_compare(vect3i));
+	CHECK(vect3i.identity_compare(Vector3i()));
+	CHECK_FALSE(vect3i.identity_compare(Vector3i(1, 2, 3)));
+
+	Variant vect4 = Vector4();
+	CHECK(vect4.identity_compare(vect4));
+	CHECK(vect4.identity_compare(Vector4()));
+	CHECK_FALSE(vect4.identity_compare(Vector4(1, 2, 3, 4)));
+
+	Variant vect4i = Vector4i();
+	CHECK(vect4i.identity_compare(vect4i));
+	CHECK(vect4i.identity_compare(Vector4i()));
+	CHECK_FALSE(vect4i.identity_compare(Vector4i(1, 2, 3, 4)));
+
+	// Reference types are compared by reference
+	Variant array = Array();
+	CHECK(array.identity_compare(array));
+	CHECK_FALSE(array.identity_compare(Array()));
+
+	Variant dictionary = Dictionary();
+	CHECK(dictionary.identity_compare(dictionary));
+	CHECK_FALSE(dictionary.identity_compare(Dictionary()));
+
+	Variant packed_byte_array = PackedByteArray();
+	CHECK(packed_byte_array.identity_compare(packed_byte_array));
+	CHECK_FALSE(packed_byte_array.identity_compare(PackedByteArray()));
+
+	Variant packed_color_array = PackedColorArray();
+	CHECK(packed_color_array.identity_compare(packed_color_array));
+	CHECK_FALSE(packed_color_array.identity_compare(PackedColorArray()));
+
+	Variant packed_float32_array = PackedFloat32Array();
+	CHECK(packed_float32_array.identity_compare(packed_float32_array));
+	CHECK_FALSE(packed_float32_array.identity_compare(PackedFloat32Array()));
+
+	Variant packed_float64_array = PackedFloat64Array();
+	CHECK(packed_float64_array.identity_compare(packed_float64_array));
+	CHECK_FALSE(packed_float64_array.identity_compare(PackedFloat64Array()));
+
+	Variant packed_int32_array = PackedInt32Array();
+	CHECK(packed_int32_array.identity_compare(packed_int32_array));
+	CHECK_FALSE(packed_int32_array.identity_compare(PackedInt32Array()));
+
+	Variant packed_int64_array = PackedInt64Array();
+	CHECK(packed_int64_array.identity_compare(packed_int64_array));
+	CHECK_FALSE(packed_int64_array.identity_compare(PackedInt64Array()));
+
+	Variant packed_string_array = PackedStringArray();
+	CHECK(packed_string_array.identity_compare(packed_string_array));
+	CHECK_FALSE(packed_string_array.identity_compare(PackedStringArray()));
+
+	Variant packed_vector2_array = PackedVector2Array();
+	CHECK(packed_vector2_array.identity_compare(packed_vector2_array));
+	CHECK_FALSE(packed_vector2_array.identity_compare(PackedVector2Array()));
+
+	Variant packed_vector3_array = PackedVector3Array();
+	CHECK(packed_vector3_array.identity_compare(packed_vector3_array));
+	CHECK_FALSE(packed_vector3_array.identity_compare(PackedVector3Array()));
+
+	Object obj_one = Object();
+	Variant obj_one_var = &obj_one;
+	Object obj_two = Object();
+	Variant obj_two_var = &obj_two;
+	CHECK(obj_one_var.identity_compare(obj_one_var));
+	CHECK_FALSE(obj_one_var.identity_compare(obj_two_var));
+
+	Variant obj_null_one_var = Variant((Object *)nullptr);
+	Variant obj_null_two_var = Variant((Object *)nullptr);
+	CHECK(obj_null_one_var.identity_compare(obj_null_one_var));
+	CHECK(obj_null_one_var.identity_compare(obj_null_two_var));
+
+	Object *freed_one = new Object();
+	Variant freed_one_var = freed_one;
+	delete freed_one;
+	Object *freed_two = new Object();
+	Variant freed_two_var = freed_two;
+	delete freed_two;
+	CHECK_FALSE(freed_one_var.identity_compare(freed_two_var));
 }
 
 TEST_CASE("[Variant] Nested array comparison") {

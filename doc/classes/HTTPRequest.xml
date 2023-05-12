@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HTTPRequest" inherits="Node" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="HTTPRequest" inherits="Node" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A node with the ability to send HTTP(S) requests.
 	</brief_description>
@@ -57,7 +57,7 @@
 		    // Perform a POST request. The URL below returns JSON as of writing.
 		    // Note: Don't make simultaneous requests using a single HTTPRequest node.
 		    // The snippet below is provided for reference only.
-		    string body = new JSON().Stringify(new Godot.Collections.Dictionary
+		    string body = new Json().Stringify(new Godot.Collections.Dictionary
 		    {
 		        { "name", "Godette" }
 		    });
@@ -69,14 +69,14 @@
 		}
 
 		// Called when the HTTP request is completed.
-		private void HttpRequestCompleted(int result, int response_code, string[] headers, byte[] body)
+		private void HttpRequestCompleted(long result, long responseCode, string[] headers, byte[] body)
 		{
-		    var json = new JSON();
-		    json.Parse(body.GetStringFromUTF8());
-		    var response = json.GetData() as Godot.Collections.Dictionary;
+		    var json = new Json();
+		    json.Parse(body.GetStringFromUtf8());
+		    var response = json.GetData().AsGodotDictionary();
 
 		    // Will print the user agent string used by the HTTPRequest node (as recognized by httpbin.org).
-		    GD.Print((response["headers"] as Godot.Collections.Dictionary)["User-Agent"]);
+		    GD.Print((response["headers"].AsGodotDictionary())["User-Agent"]);
 		}
 		[/csharp]
 		[/codeblocks]
@@ -128,9 +128,9 @@
 		}
 
 		// Called when the HTTP request is completed.
-		private void HttpRequestCompleted(int result, int response_code, string[] headers, byte[] body)
+		private void HttpRequestCompleted(long result, long responseCode, string[] headers, byte[] body)
 		{
-		    if (result != (int)HTTPRequest.Result.Success)
+		    if (result != (long)HTTPRequest.Result.Success)
 		    {
 		        GD.PushError("Image couldn't be downloaded. Try a different image.");
 		    }
@@ -141,8 +141,7 @@
 		        GD.PushError("Couldn't load the image.");
 		    }
 
-		    var texture = new ImageTexture();
-		    texture.CreateFromImage(image);
+		    var texture = ImageTexture.CreateFromImage(image);
 
 		    // Display the image in a TextureRect node.
 		    var textureRect = new TextureRect();
@@ -187,9 +186,8 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="url" type="String" />
 			<param index="1" name="custom_headers" type="PackedStringArray" default="PackedStringArray()" />
-			<param index="2" name="tls_validate_domain" type="bool" default="true" />
-			<param index="3" name="method" type="int" enum="HTTPClient.Method" default="0" />
-			<param index="4" name="request_data" type="String" default="&quot;&quot;" />
+			<param index="2" name="method" type="int" enum="HTTPClient.Method" default="0" />
+			<param index="3" name="request_data" type="String" default="&quot;&quot;" />
 			<description>
 				Creates request on the underlying [HTTPClient]. If there is no configuration errors, it tries to connect using [method HTTPClient.connect_to_host] and passes parameters onto [method HTTPClient.request].
 				Returns [constant OK] if request is successfully created. (Does not imply that the server has responded), [constant ERR_UNCONFIGURED] if not in the tree, [constant ERR_BUSY] if still processing previous request, [constant ERR_INVALID_PARAMETER] if given string is not a valid URL format, or [constant ERR_CANT_CONNECT] if not using thread and the [HTTPClient] cannot connect to host.
@@ -201,9 +199,8 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="url" type="String" />
 			<param index="1" name="custom_headers" type="PackedStringArray" default="PackedStringArray()" />
-			<param index="2" name="tls_validate_domain" type="bool" default="true" />
-			<param index="3" name="method" type="int" enum="HTTPClient.Method" default="0" />
-			<param index="4" name="request_data_raw" type="PackedByteArray" default="PackedByteArray()" />
+			<param index="2" name="method" type="int" enum="HTTPClient.Method" default="0" />
+			<param index="3" name="request_data_raw" type="PackedByteArray" default="PackedByteArray()" />
 			<description>
 				Creates request on the underlying [HTTPClient] using a raw array of bytes for the request body. If there is no configuration errors, it tries to connect using [method HTTPClient.connect_to_host] and passes parameters onto [method HTTPClient.request].
 				Returns [constant OK] if request is successfully created. (Does not imply that the server has responded), [constant ERR_UNCONFIGURED] if not in the tree, [constant ERR_BUSY] if still processing previous request, [constant ERR_INVALID_PARAMETER] if given string is not a valid URL format, or [constant ERR_CANT_CONNECT] if not using thread and the [HTTPClient] cannot connect to host.
@@ -225,6 +222,13 @@
 			<description>
 				Sets the proxy server for HTTPS requests.
 				The proxy server is unset if [param host] is empty or [param port] is -1.
+			</description>
+		</method>
+		<method name="set_tls_options">
+			<return type="void" />
+			<param index="0" name="client_options" type="TLSOptions" />
+			<description>
+				Sets the [TLSOptions] to be used when connecting to an HTTPS server. See [method TLSOptions.client].
 			</description>
 		</method>
 	</methods>

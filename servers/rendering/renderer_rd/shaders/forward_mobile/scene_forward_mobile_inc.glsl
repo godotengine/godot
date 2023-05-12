@@ -154,8 +154,15 @@ layout(set = 1, binding = 5) uniform highp texture2D directional_shadow_atlas;
 // this needs to change to providing just the lightmap we're using..
 layout(set = 1, binding = 6) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES];
 
+#ifdef USE_MULTIVIEW
+layout(set = 1, binding = 9) uniform highp texture2DArray depth_buffer;
+layout(set = 1, binding = 10) uniform mediump texture2DArray color_buffer;
+#define multiviewSampler sampler2DArray
+#else
 layout(set = 1, binding = 9) uniform highp texture2D depth_buffer;
 layout(set = 1, binding = 10) uniform mediump texture2D color_buffer;
+#define multiviewSampler sampler2D
+#endif // USE_MULTIVIEW
 
 /* Set 2 Skeleton & Instancing (can change per item) */
 

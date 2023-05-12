@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  fog.h                                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  fog.h                                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef FOG_RD_H
 #define FOG_RD_H
@@ -53,7 +53,7 @@ private:
 
 	struct FogVolume {
 		RID material;
-		Vector3 extents = Vector3(1, 1, 1);
+		Vector3 size = Vector3(2, 2, 2);
 
 		RS::FogVolumeShape shape = RS::FOG_VOLUME_SHAPE_BOX;
 
@@ -83,7 +83,7 @@ private:
 			float position[3];
 			float pad;
 
-			float extents[3];
+			float size[3];
 			float pad2;
 
 			int32_t corner[3];
@@ -239,12 +239,12 @@ public:
 	Dependency *fog_volume_get_dependency(RID p_fog_volume) const;
 
 	virtual void fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) override;
-	virtual void fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) override;
+	virtual void fog_volume_set_size(RID p_fog_volume, const Vector3 &p_size) override;
 	virtual void fog_volume_set_material(RID p_fog_volume, RID p_material) override;
 	virtual RS::FogVolumeShape fog_volume_get_shape(RID p_fog_volume) const override;
 	RID fog_volume_get_material(RID p_fog_volume) const;
 	virtual AABB fog_volume_get_aabb(RID p_fog_volume) const override;
-	Vector3 fog_volume_get_extents(RID p_fog_volume) const;
+	Vector3 fog_volume_get_size(RID p_fog_volume) const;
 
 	/* FOG VOLUMES INSTANCE */
 
@@ -301,10 +301,14 @@ public:
 		RID emissive_map;
 
 		RID fog_uniform_set;
-		RID copy_uniform_set;
-		RID process_uniform_set_density;
-		RID process_uniform_set;
-		RID process_uniform_set2;
+
+		struct {
+			RID copy_uniform_set;
+			RID process_uniform_set_density;
+			RID process_uniform_set;
+			RID process_uniform_set2;
+		} gi_dependent_sets;
+
 		RID sdfgi_uniform_set;
 		RID sky_uniform_set;
 
@@ -312,6 +316,8 @@ public:
 
 		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override{};
 		virtual void free_data() override{};
+
+		bool sync_gi_dependent_sets_validity(bool p_ensure_freed = false);
 
 		void init(const Vector3i &fog_size, RID p_sky_shader);
 		~VolumetricFog();

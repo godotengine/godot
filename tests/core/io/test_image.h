@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  test_image.h                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  test_image.h                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef TEST_IMAGE_H
 #define TEST_IMAGE_H
@@ -107,6 +107,7 @@ TEST_CASE("[Image] Saving and loading") {
 	// Load BMP
 	Ref<Image> image_bmp = memnew(Image());
 	Ref<FileAccess> f_bmp = FileAccess::open(TestUtils::get_data_path("images/icon.bmp"), FileAccess::READ, &err);
+	REQUIRE(!f_bmp.is_null());
 	PackedByteArray data_bmp;
 	data_bmp.resize(f_bmp->get_length() + 1);
 	f_bmp->get_buffer(data_bmp.ptrw(), f_bmp->get_length());
@@ -117,6 +118,7 @@ TEST_CASE("[Image] Saving and loading") {
 	// Load JPG
 	Ref<Image> image_jpg = memnew(Image());
 	Ref<FileAccess> f_jpg = FileAccess::open(TestUtils::get_data_path("images/icon.jpg"), FileAccess::READ, &err);
+	REQUIRE(!f_jpg.is_null());
 	PackedByteArray data_jpg;
 	data_jpg.resize(f_jpg->get_length() + 1);
 	f_jpg->get_buffer(data_jpg.ptrw(), f_jpg->get_length());
@@ -127,6 +129,7 @@ TEST_CASE("[Image] Saving and loading") {
 	// Load WebP
 	Ref<Image> image_webp = memnew(Image());
 	Ref<FileAccess> f_webp = FileAccess::open(TestUtils::get_data_path("images/icon.webp"), FileAccess::READ, &err);
+	REQUIRE(!f_webp.is_null());
 	PackedByteArray data_webp;
 	data_webp.resize(f_webp->get_length() + 1);
 	f_webp->get_buffer(data_webp.ptrw(), f_webp->get_length());
@@ -137,6 +140,7 @@ TEST_CASE("[Image] Saving and loading") {
 	// Load PNG
 	Ref<Image> image_png = memnew(Image());
 	Ref<FileAccess> f_png = FileAccess::open(TestUtils::get_data_path("images/icon.png"), FileAccess::READ, &err);
+	REQUIRE(!f_png.is_null());
 	PackedByteArray data_png;
 	data_png.resize(f_png->get_length() + 1);
 	f_png->get_buffer(data_png.ptrw(), f_png->get_length());
@@ -147,6 +151,7 @@ TEST_CASE("[Image] Saving and loading") {
 	// Load TGA
 	Ref<Image> image_tga = memnew(Image());
 	Ref<FileAccess> f_tga = FileAccess::open(TestUtils::get_data_path("images/icon.tga"), FileAccess::READ, &err);
+	REQUIRE(!f_tga.is_null());
 	PackedByteArray data_tga;
 	data_tga.resize(f_tga->get_length() + 1);
 	f_tga->get_buffer(data_tga.ptrw(), f_tga->get_length());

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  extension_api_dump.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  extension_api_dump.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "extension_api_dump.h"
 
@@ -80,6 +80,11 @@ static String get_property_info_type_name(const PropertyInfo &p_info) {
 		return "void";
 	}
 	return get_builtin_or_variant_type_name(p_info.type);
+}
+
+static String get_type_meta_name(const GodotTypeInfo::Metadata metadata) {
+	static const char *argmeta[11] = { "none", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float", "double" };
+	return argmeta[metadata];
 }
 
 Dictionary GDExtensionAPIDump::generate_extension_api() {
@@ -458,17 +463,21 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 		// Global enums and constants.
 		Array constants;
 		HashMap<String, List<Pair<String, int64_t>>> enum_list;
+		HashMap<String, bool> enum_is_bitfield;
 
 		for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
 			int64_t value = CoreConstants::get_global_constant_value(i);
 			String enum_name = CoreConstants::get_global_constant_enum(i);
 			String name = CoreConstants::get_global_constant_name(i);
+			bool bitfield = CoreConstants::is_global_constant_bitfield(i);
 			if (!enum_name.is_empty()) {
 				enum_list[enum_name].push_back(Pair<String, int64_t>(name, value));
+				enum_is_bitfield[enum_name] = bitfield;
 			} else {
 				Dictionary d;
 				d["name"] = name;
 				d["value"] = value;
+				d["is_bitfield"] = bitfield;
 				constants.push_back(d);
 			}
 		}
@@ -479,6 +488,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 		for (const KeyValue<String, List<Pair<String, int64_t>>> &E : enum_list) {
 			Dictionary d1;
 			d1["name"] = E.key;
+			d1["is_bitfield"] = enum_is_bitfield[E.key];
 			Array values;
 			for (const Pair<String, int64_t> &F : E.value) {
 				Dictionary d2;
@@ -835,6 +845,10 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 
 							d3["type"] = get_property_info_type_name(pinfo);
 
+							if (mi.get_argument_meta(i) > 0) {
+								d3["meta"] = get_type_meta_name((GodotTypeInfo::Metadata)mi.get_argument_meta(i));
+							}
+
 							if (i == -1) {
 								d2["return_value"] = d3;
 							} else {
@@ -879,8 +893,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 							d3["type"] = get_property_info_type_name(pinfo);
 
 							if (method->get_argument_meta(i) > 0) {
-								static const char *argmeta[11] = { "none", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float", "double" };
-								d3["meta"] = argmeta[method->get_argument_meta(i)];
+								d3["meta"] = get_type_meta_name(method->get_argument_meta(i));
 							}
 
 							if (i >= 0 && i >= (method->get_argument_count() - default_args.size())) {
@@ -924,6 +937,9 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 						Dictionary d3;
 						d3["name"] = F.arguments[i].name;
 						d3["type"] = get_property_info_type_name(F.arguments[i]);
+						if (F.get_argument_meta(i) > 0) {
+							d3["meta"] = get_type_meta_name((GodotTypeInfo::Metadata)F.get_argument_meta(i));
+						}
 						arguments.push_back(d3);
 					}
 					if (arguments.size()) {
@@ -1036,6 +1052,7 @@ void GDExtensionAPIDump::generate_extension_json_file(const String &p_path) {
 
 	String text = json->stringify(api, "\t", false) + "\n";
 	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_MSG(fa.is_null(), vformat("Cannot open file '%s' for writing.", p_path));
 	fa->store_string(text);
 }
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="@GlobalScope" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="@GlobalScope" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Global scope constants and functions.
 	</brief_description>
@@ -65,7 +65,7 @@
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns the arc cosine of [param x] in radians. Use to get the angle of cosine [param x]. [param x] must be between [code]-1.0[/code] and [code]1.0[/code] (inclusive), otherwise, [method acos] will return [constant @GDScript.NAN].
+				Returns the arc cosine of [param x] in radians. Use to get the angle of cosine [param x]. [param x] will be clamped between [code]-1.0[/code] and [code]1.0[/code] (inclusive), in order to prevent [method acos] from returning [constant @GDScript.NAN].
 				[codeblock]
 				# c is 0.523599 or 30 degrees if converted with rad_to_deg(c)
 				var c = acos(0.866025)
@@ -76,7 +76,7 @@
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns the arc sine of [param x] in radians. Use to get the angle of sine [param x]. [param x] must be between [code]-1.0[/code] and [code]1.0[/code] (inclusive), otherwise, [method asin] will return [constant @GDScript.NAN].
+				Returns the arc sine of [param x] in radians. Use to get the angle of sine [param x]. [param x] will be clamped between [code]-1.0[/code] and [code]1.0[/code] (inclusive), in order to prevent [method asin] from returning [constant @GDScript.NAN].
 				[codeblock]
 				# s is 0.523599 or 30 degrees if converted with rad_to_deg(s)
 				var s = asin(0.5)
@@ -442,9 +442,14 @@
 			<param index="0" name="variable" type="Variant" />
 			<description>
 				Returns the integer hash of the passed [param variable].
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				print(hash("a")) # Prints 177670
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.Print(GD.Hash("a")); // Prints 177670
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="instance_from_id">
@@ -452,13 +457,29 @@
 			<param index="0" name="instance_id" type="int" />
 			<description>
 				Returns the [Object] that corresponds to [param instance_id]. All Objects have a unique instance ID. See also [method Object.get_instance_id].
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var foo = "bar"
+
 				func _ready():
 				    var id = get_instance_id()
 				    var inst = instance_from_id(id)
 				    print(inst.foo) # Prints bar
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public partial class MyNode : Node
+				{
+				    public string Foo { get; set; } = "bar";
+
+				    public override void _Ready()
+				    {
+				        ulong id = GetInstanceId();
+				        var inst = (MyNode)InstanceFromId(Id);
+				        GD.Print(inst.Foo); // Prints bar
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="inverse_lerp">
@@ -494,7 +515,7 @@
 			<return type="bool" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns whether [code]x[/code] is a finite value, i.e. it is not [constant @GDScript.NAN], positive infinity, or negative infinity.
+				Returns whether [param x] is a finite value, i.e. it is not [constant @GDScript.NAN], positive infinity, or negative infinity.
 			</description>
 		</method>
 		<method name="is_inf">
@@ -525,11 +546,36 @@
 				Returns [code]true[/code] if [param x] is a NaN ("Not a Number" or invalid) value.
 			</description>
 		</method>
+		<method name="is_same">
+			<return type="bool" />
+			<param index="0" name="a" type="Variant" />
+			<param index="1" name="b" type="Variant" />
+			<description>
+				Returns [code]true[/code], for value types, if [param a] and [param b] share the same value. Returns [code]true[/code], for reference types, if the references of [param a] and [param b] are the same.
+				[codeblock]
+				# Vector2 is a value type
+				var vec2_a = Vector2(0, 0)
+				var vec2_b = Vector2(0, 0)
+				var vec2_c = Vector2(1, 1)
+				is_same(vec2_a, vec2_a)  # true
+				is_same(vec2_a, vec2_b)  # true
+				is_same(vec2_a, vec2_c)  # false
+
+				# Array is a reference type
+				var arr_a = []
+				var arr_b = []
+				is_same(arr_a, arr_a)  # true
+				is_same(arr_a, arr_b)  # false
+				[/codeblock]
+				These are [Variant] value types: [code]null[/code], [bool], [int], [float], [String], [StringName], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i], [Rect2], [Rect2i], [Transform2D], [Transform3D], [Plane], [Quaternion], [AABB], [Basis], [Projection], [Color], [NodePath], [RID], [Callable] and [Signal].
+				These are [Variant] reference types: [Object], [Dictionary], [Array], [PackedByteArray], [PackedInt32Array], [PackedInt64Array], [PackedFloat32Array], [PackedFloat64Array], [PackedStringArray], [PackedVector2Array], [PackedVector3Array] and [PackedColorArray].
+			</description>
+		</method>
 		<method name="is_zero_approx">
 			<return type="bool" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns [code]true[/code] if [param x] is zero or almost zero.
+				Returns [code]true[/code] if [param x] is zero or almost zero. The comparison is done using a tolerance calculation with a small internal epsilon.
 				This function is faster than using [method is_equal_approx] with one value as zero.
 			</description>
 		</method>
@@ -576,7 +622,7 @@
 			<description>
 				Linearly interpolates between two values by the factor defined in [param weight]. To perform interpolation, [param weight] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). However, values outside this range are allowed and can be used to perform [i]extrapolation[/i]. If this is not desired, use [method clampf] on the result of this function.
 				[codeblock]
-				lerp(0, 4, 0.75) # Returns 3.0
+				lerpf(0, 4, 0.75) # Returns 3.0
 				[/codeblock]
 				See also [method inverse_lerp] which performs the reverse of this operation. To perform eased interpolation with [method lerp], combine it with [method ease] or [method smoothstep].
 			</description>
@@ -599,8 +645,8 @@
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns the natural logarithm of [param x]. This is the amount of time needed to reach a certain level of continuous growth.
-				[b]Note:[/b] This is not the same as the "log" function on most calculators, which uses a base 10 logarithm.
+				Returns the [url=https://en.wikipedia.org/wiki/Natural_logarithm]natural logarithm[/url] of [param x] (base [url=https://en.wikipedia.org/wiki/E_(mathematical_constant)][i]e[/i][/url], with [i]e[/i] being approximately 2.71828). This is the amount of time needed to reach a certain level of continuous growth.
+				[b]Note:[/b] This is not the same as the "log" function on most calculators, which uses a base 10 logarithm. To use base 10 logarithm, use [code]log(x) / log(10)[/code].
 				[codeblock]
 				log(10) # Returns 2.302585
 				[/codeblock]
@@ -610,7 +656,7 @@
 		<method name="max" qualifiers="vararg">
 			<return type="Variant" />
 			<description>
-				Returns the maximum of the given values. This function can take any number of arguments.
+				Returns the maximum of the given numeric values. This function can take any number of arguments.
 				[codeblock]
 				max(1, 7, 3, -6, 5) # Returns 7
 				[/codeblock]
@@ -643,7 +689,7 @@
 		<method name="min" qualifiers="vararg">
 			<return type="Variant" />
 			<description>
-				Returns the minimum of the given values. This function can take any number of arguments.
+				Returns the minimum of the given numeric values. This function can take any number of arguments.
 				[codeblock]
 				min(1, 7, 3, -6, 5) # Returns -6
 				[/codeblock]
@@ -757,28 +803,44 @@
 				Returns the result of [param base] raised to the power of [param exp].
 				In GDScript, this is the equivalent of the [code]**[/code] operator.
 				[codeblock]
-				pow(2, 5) # Returns 32
+				pow(2, 5)   # Returns 32.0
+				pow(4, 1.5) # Returns 8.0
 				[/codeblock]
 			</description>
 		</method>
 		<method name="print" qualifiers="vararg">
 			<description>
 				Converts one or more arguments of any type to string in the best way possible and prints them to the console.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var a = [1, 2, 3]
 				print("a", "b", a) # Prints ab[1, 2, 3]
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var a = new Godot.Collections.Array { 1, 2, 3 };
+				GD.Print("a", "b", a); // Prints ab[1, 2, 3]
+				[/csharp]
+				[/codeblocks]
 				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
 			</description>
 		</method>
 		<method name="print_rich" qualifiers="vararg">
 			<description>
-				Converts one or more arguments of any type to string in the best way possible and prints them to the console. The following BBCode tags are supported: b, i, u, s, indent, code, url, center, right, color, bgcolor, fgcolor. Color tags only support named colors such as [code]red[/code], [i]not[/i] hexadecimal color codes. Unsupported tags will be left as-is in standard output.
-				When printing to standard output, the supported subset of BBCode is converted to ANSI escape codes for the terminal emulator to display. Displaying ANSI escape codes is currently only supported on Linux and macOS. Support for ANSI escape codes may vary across terminal emulators, especially for italic and strikethrough.
-				[codeblock]
-				print_rich("[code][b]Hello world![/b][/code]") # Prints out: [b]Hello world![/b]
-				[/codeblock]
+				Converts one or more arguments of any type to string in the best way possible and prints them to the console.
+				The following BBCode tags are supported: [code]b[/code], [code]i[/code], [code]u[/code], [code]s[/code], [code]indent[/code], [code]code[/code], [code]url[/code], [code]center[/code], [code]right[/code], [code]color[/code], [code]bgcolor[/code], [code]fgcolor[/code].
+				Color tags only support the following named colors: [code]black[/code], [code]red[/code], [code]green[/code], [code]yellow[/code], [code]blue[/code], [code]magenta[/code], [code]pink[/code], [code]purple[/code], [code]cyan[/code], [code]white[/code], [code]orange[/code], [code]gray[/code]. Hexadecimal color codes are not supported.
+				URL tags only support URLs wrapped by an URL tag, not URLs with a different title.
+				When printing to standard output, the supported subset of BBCode is converted to ANSI escape codes for the terminal emulator to display. Support for ANSI escape codes varies across terminal emulators, especially for italic and strikethrough. In standard output, [code]code[/code] is represented with faint text but without any font change. Unsupported tags are left as-is in standard output.
+				[codeblocks]
+				[gdscript]
+				print_rich("[color=green][b]Hello world![/b][/color]") # Prints out "Hello world!" in green with a bold font
+				[/gdscript]
+				[csharp]
+				GD.PrintRich("[color=green][b]Hello world![/b][/color]"); // Prints out "Hello world!" in green with a bold font
+				[/csharp]
+				[/codeblocks]
 				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
+				[b]Note:[/b] On Windows, only Windows 10 and later correctly displays ANSI escape codes in standard output.
 			</description>
 		</method>
 		<method name="print_verbose" qualifiers="vararg">
@@ -789,53 +851,86 @@
 		<method name="printerr" qualifiers="vararg">
 			<description>
 				Prints one or more arguments to strings in the best way possible to standard error line.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				printerr("prints to stderr")
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.PrintErr("prints to stderr");
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="printraw" qualifiers="vararg">
 			<description>
 				Prints one or more arguments to strings in the best way possible to the OS terminal. Unlike [method print], no newline is automatically added at the end.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				printraw("A")
 				printraw("B")
 				printraw("C")
 				# Prints ABC to terminal
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.PrintRaw("A");
+				GD.PrintRaw("B");
+				GD.PrintRaw("C");
+				// Prints ABC to terminal
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="prints" qualifiers="vararg">
 			<description>
 				Prints one or more arguments to the console with a space between each argument.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				prints("A", "B", "C") # Prints A B C
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.PrintS("A", "B", "C"); // Prints A B C
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="printt" qualifiers="vararg">
 			<description>
 				Prints one or more arguments to the console with a tab between each argument.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				printt("A", "B", "C") # Prints A       B       C
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.PrintT("A", "B", "C"); // Prints A       B       C
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="push_error" qualifiers="vararg">
 			<description>
 				Pushes an error message to Godot's built-in debugger and to the OS terminal.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				push_error("test error") # Prints "test error" to debugger and terminal as error call
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.PushError("test error"); // Prints "test error" to debugger and terminal as error call
+				[/csharp]
+				[/codeblocks]
 				[b]Note:[/b] This function does not pause project execution. To print an error message and pause project execution in debug builds, use [code]assert(false, "test error")[/code] instead.
 			</description>
 		</method>
 		<method name="push_warning" qualifiers="vararg">
 			<description>
 				Pushes a warning message to Godot's built-in debugger and to the OS terminal.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				push_warning("test warning") # Prints "test warning" to debugger and terminal as warning call
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.PushWarning("test warning"); // Prints "test warning" to debugger and terminal as warning call
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="rad_to_deg">
@@ -868,9 +963,14 @@
 			<return type="float" />
 			<description>
 				Returns a random floating point value between [code]0.0[/code] and [code]1.0[/code] (inclusive).
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				randf() # Returns e.g. 0.375671
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.Randf(); // Returns e.g. 0.375671
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="randf_range">
@@ -879,10 +979,16 @@
 			<param index="1" name="to" type="float" />
 			<description>
 				Returns a random floating point value between [param from] and [param to] (inclusive).
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				randf_range(0, 20.5) # Returns e.g. 7.45315
 				randf_range(-10, 10) # Returns e.g. -3.844535
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.RandRange(0.0, 20.5);   // Returns e.g. 7.45315
+				GD.RandRange(-10.0, 10.0); // Returns e.g. -3.844535
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="randfn">
@@ -897,12 +1003,20 @@
 			<return type="int" />
 			<description>
 				Returns a random unsigned 32-bit integer. Use remainder to obtain a random value in the interval [code][0, N - 1][/code] (where N is smaller than 2^32).
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				randi()           # Returns random integer between 0 and 2^32 - 1
 				randi() % 20      # Returns random integer between 0 and 19
 				randi() % 100     # Returns random integer between 0 and 99
 				randi() % 100 + 1 # Returns random integer between 1 and 100
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.Randi();           // Returns random integer between 0 and 2^32 - 1
+				GD.Randi() % 20;      // Returns random integer between 0 and 19
+				GD.Randi() % 100;     // Returns random integer between 0 and 99
+				GD.Randi() % 100 + 1; // Returns random integer between 1 and 100
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="randi_range">
@@ -911,10 +1025,16 @@
 			<param index="1" name="to" type="int" />
 			<description>
 				Returns a random signed 32-bit integer between [param from] and [param to] (inclusive). If [param to] is lesser than [param from], they are swapped.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				randi_range(0, 1)      # Returns either 0 or 1
 				randi_range(-10, 1000) # Returns random integer between -10 and 1000
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.RandRange(0, 1);      // Returns either 0 or 1
+				GD.RandRange(-10, 1000); // Returns random integer between -10 and 1000
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="randomize">
@@ -985,14 +1105,24 @@
 			<param index="0" name="base" type="int" />
 			<description>
 				Sets the seed for the random number generator to [param base]. Setting the seed manually can ensure consistent, repeatable results for most random functions.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var my_seed = "Godot Rocks".hash()
 				seed(my_seed)
 				var a = randf() + randi()
 				seed(my_seed)
 				var b = randf() + randi()
 				# a and b are now identical
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				ulong mySeed = (ulong)GD.Hash("Godot Rocks");
+				GD.Seed(mySeed);
+				var a = GD.Randf() + GD.Randi();
+				GD.Seed(mySeed);
+				var b = GD.Randf() + GD.Randi();
+				// a and b are now identical
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="sign">
@@ -1014,11 +1144,11 @@
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns [code]-1.0[/code] if [param x] is negative, [code]1.0[/code] if [param x] is positive, and [code]0.0[/code] if if [param x] is zero.
+				Returns [code]-1.0[/code] if [param x] is negative, [code]1.0[/code] if [param x] is positive, and [code]0.0[/code] if [param x] is zero.
 				[codeblock]
-				sign(-6.5) # Returns -1.0
-				sign(0.0)  # Returns 0.0
-				sign(6.5)  # Returns 1.0
+				signf(-6.5) # Returns -1.0
+				signf(0.0)  # Returns 0.0
+				signf(6.5)  # Returns 1.0
 				[/codeblock]
 			</description>
 		</method>
@@ -1028,9 +1158,9 @@
 			<description>
 				Returns [code]-1[/code] if [param x] is negative, [code]1[/code] if [param x] is positive, and [code]0[/code] if if [param x] is zero.
 				[codeblock]
-				sign(-6) # Returns -1
-				sign(0)  # Returns 0
-				sign(6)  # Returns 1
+				signi(-6) # Returns -1
+				signi(0)  # Returns 0
+				signi(6)  # Returns 1
 				[/codeblock]
 			</description>
 		</method>
@@ -1100,8 +1230,8 @@
 				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating point number to an arbitrary number of decimals.
 				A type-safe version of [method snapped], returning a [float].
 				[codeblock]
-				snapped(32.0, 2.5)  # Returns 32.5
-				snapped(3.14159, 0.01)  # Returns 3.14
+				snappedf(32.0, 2.5)  # Returns 32.5
+				snappedf(3.14159, 0.01)  # Returns 3.14
 				[/codeblock]
 			</description>
 		</method>
@@ -1113,8 +1243,8 @@
 				Returns the multiple of [param step] that is the closest to [param x].
 				A type-safe version of [method snapped], returning an [int].
 				[codeblock]
-				snapped(53, 16)  # Returns 48
-				snapped(4096, 100)  # Returns 4100
+				snappedi(53, 16)  # Returns 48
+				snappedi(4096, 100)  # Returns 4100
 				[/codeblock]
 			</description>
 		</method>
@@ -1146,7 +1276,13 @@
 		<method name="str" qualifiers="vararg">
 			<return type="String" />
 			<description>
-				Converts one or more arguments of any [Variant] type to [String] in the best way possible.
+				Converts one or more arguments of any [Variant] type to a [String] in the best way possible.
+				[codeblock]
+				var a = [10, 20, 30]
+				var b = str(a)
+				print(len(a)) # Prints 3 (the number of elements in the array).
+				print(len(b)) # Prints 12 (the length of the string "[10, 20, 30]").
+				[/codeblock]
 			</description>
 		</method>
 		<method name="str_to_var">
@@ -1154,11 +1290,18 @@
 			<param index="0" name="string" type="String" />
 			<description>
 				Converts a formatted [param string] that was returned by [method var_to_str] to the original [Variant].
-				[codeblock]
-				var a = '{ "a": 1, "b": 2 }' # a is a String
-				var b = str_to_var(a)        # b is a Dictionary
-				print(b["a"])                # Prints 1
-				[/codeblock]
+				[codeblocks]
+				[gdscript]
+				var data = '{ "a": 1, "b": 2 }' # data is a String
+				var dict = str_to_var(data)     # dict is a Dictionary
+				print(dict["a"])                # Prints 1
+				[/gdscript]
+				[csharp]
+				string data = "{ \"a\": 1, \"b\": 2 }";           // data is a string
+				var dict = GD.StrToVar(data).AsGodotDictionary(); // dict is a Dictionary
+				GD.Print(dict["a"]);                              // Prints 1
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="tan">
@@ -1218,15 +1361,21 @@
 			<param index="0" name="variable" type="Variant" />
 			<description>
 				Converts a [Variant] [param variable] to a formatted [String] that can then be parsed using [method str_to_var].
-				[codeblock]
-				a = { "a": 1, "b": 2 }
+				[codeblocks]
+				[gdscript]
+				var a = { "a": 1, "b": 2 }
 				print(var_to_str(a))
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var a = new Godot.Collections.Dictionary { ["a"] = 1, ["b"] = 2 };
+				GD.Print(GD.VarToStr(a));
+				[/csharp]
+				[/codeblocks]
 				Prints:
 				[codeblock]
 				{
-				"a": 1,
-				"b": 2
+				    "a": 1,
+				    "b": 2
 				}
 				[/codeblock]
 			</description>
@@ -1767,29 +1916,14 @@
 		<constant name="KEY_KP_9" value="4194447" enum="Key">
 			Number 9 on the numeric keypad.
 		</constant>
-		<constant name="KEY_SUPER_L" value="4194368" enum="Key">
-			Left Super key (Windows key).
-		</constant>
-		<constant name="KEY_SUPER_R" value="4194369" enum="Key">
-			Right Super key (Windows key).
-		</constant>
 		<constant name="KEY_MENU" value="4194370" enum="Key">
 			Context menu key.
 		</constant>
-		<constant name="KEY_HYPER_L" value="4194371" enum="Key">
-			Left Hyper key.
-		</constant>
-		<constant name="KEY_HYPER_R" value="4194372" enum="Key">
-			Right Hyper key.
+		<constant name="KEY_HYPER" value="4194371" enum="Key">
+			Hyper key. (On Linux/X11 only).
 		</constant>
 		<constant name="KEY_HELP" value="4194373" enum="Key">
 			Help key.
-		</constant>
-		<constant name="KEY_DIRECTION_L" value="4194374" enum="Key">
-			Left Direction key.
-		</constant>
-		<constant name="KEY_DIRECTION_R" value="4194375" enum="Key">
-			Right Direction key.
 		</constant>
 		<constant name="KEY_BACK" value="4194376" enum="Key">
 			Media back key. Not to be confused with the Back button on an Android device.
@@ -1811,21 +1945,6 @@
 		</constant>
 		<constant name="KEY_VOLUMEUP" value="4194382" enum="Key">
 			Volume up key.
-		</constant>
-		<constant name="KEY_BASSBOOST" value="4194383" enum="Key">
-			Bass Boost key.
-		</constant>
-		<constant name="KEY_BASSUP" value="4194384" enum="Key">
-			Bass up key.
-		</constant>
-		<constant name="KEY_BASSDOWN" value="4194385" enum="Key">
-			Bass down key.
-		</constant>
-		<constant name="KEY_TREBLEUP" value="4194386" enum="Key">
-			Treble up key.
-		</constant>
-		<constant name="KEY_TREBLEDOWN" value="4194387" enum="Key">
-			Treble down key.
 		</constant>
 		<constant name="KEY_MEDIAPLAY" value="4194388" enum="Key">
 			Media play key.
@@ -1911,7 +2030,7 @@
 		<constant name="KEY_LAUNCHF" value="4194415" enum="Key">
 			Launch Shortcut F key.
 		</constant>
-		<constant name="KEY_UNKNOWN" value="16777215" enum="Key">
+		<constant name="KEY_UNKNOWN" value="8388607" enum="Key">
 			Unknown key.
 		</constant>
 		<constant name="KEY_SPACE" value="32" enum="Key">
@@ -2121,229 +2240,49 @@
 		<constant name="KEY_ASCIITILDE" value="126" enum="Key">
 			~ key.
 		</constant>
-		<constant name="KEY_NOBREAKSPACE" value="160" enum="Key">
-			Non-breakable space key.
-		</constant>
-		<constant name="KEY_EXCLAMDOWN" value="161" enum="Key">
-			¡ key.
-		</constant>
-		<constant name="KEY_CENT" value="162" enum="Key">
-			¢ key.
-		</constant>
-		<constant name="KEY_STERLING" value="163" enum="Key">
-			£ key.
-		</constant>
-		<constant name="KEY_CURRENCY" value="164" enum="Key">
-			¤ key.
-		</constant>
 		<constant name="KEY_YEN" value="165" enum="Key">
 			¥ key.
-		</constant>
-		<constant name="KEY_BROKENBAR" value="166" enum="Key">
-			¦ key.
 		</constant>
 		<constant name="KEY_SECTION" value="167" enum="Key">
 			§ key.
 		</constant>
-		<constant name="KEY_DIAERESIS" value="168" enum="Key">
-			¨ key.
+		<constant name="KEY_GLOBE" value="4194416" enum="Key">
+			"Globe" key on Mac / iPad keyboard.
 		</constant>
-		<constant name="KEY_COPYRIGHT" value="169" enum="Key">
-			© key.
+		<constant name="KEY_KEYBOARD" value="4194417" enum="Key">
+			"On-screen keyboard" key iPad keyboard.
 		</constant>
-		<constant name="KEY_ORDFEMININE" value="170" enum="Key">
-			ª key.
+		<constant name="KEY_JIS_EISU" value="4194418" enum="Key">
+			英数 key on Mac keyboard.
 		</constant>
-		<constant name="KEY_GUILLEMOTLEFT" value="171" enum="Key">
-			« key.
+		<constant name="KEY_JIS_KANA" value="4194419" enum="Key">
+			かな key on Mac keyboard.
 		</constant>
-		<constant name="KEY_NOTSIGN" value="172" enum="Key">
-			¬ key.
-		</constant>
-		<constant name="KEY_HYPHEN" value="173" enum="Key">
-			Soft hyphen key.
-		</constant>
-		<constant name="KEY_REGISTERED" value="174" enum="Key">
-			® key.
-		</constant>
-		<constant name="KEY_MACRON" value="175" enum="Key">
-			¯ key.
-		</constant>
-		<constant name="KEY_DEGREE" value="176" enum="Key">
-			° key.
-		</constant>
-		<constant name="KEY_PLUSMINUS" value="177" enum="Key">
-			± key.
-		</constant>
-		<constant name="KEY_TWOSUPERIOR" value="178" enum="Key">
-			² key.
-		</constant>
-		<constant name="KEY_THREESUPERIOR" value="179" enum="Key">
-			³ key.
-		</constant>
-		<constant name="KEY_ACUTE" value="180" enum="Key">
-			´ key.
-		</constant>
-		<constant name="KEY_MU" value="181" enum="Key">
-			µ key.
-		</constant>
-		<constant name="KEY_PARAGRAPH" value="182" enum="Key">
-			¶ key.
-		</constant>
-		<constant name="KEY_PERIODCENTERED" value="183" enum="Key">
-			· key.
-		</constant>
-		<constant name="KEY_CEDILLA" value="184" enum="Key">
-			¸ key.
-		</constant>
-		<constant name="KEY_ONESUPERIOR" value="185" enum="Key">
-			¹ key.
-		</constant>
-		<constant name="KEY_MASCULINE" value="186" enum="Key">
-			º key.
-		</constant>
-		<constant name="KEY_GUILLEMOTRIGHT" value="187" enum="Key">
-			» key.
-		</constant>
-		<constant name="KEY_ONEQUARTER" value="188" enum="Key">
-			¼ key.
-		</constant>
-		<constant name="KEY_ONEHALF" value="189" enum="Key">
-			½ key.
-		</constant>
-		<constant name="KEY_THREEQUARTERS" value="190" enum="Key">
-			¾ key.
-		</constant>
-		<constant name="KEY_QUESTIONDOWN" value="191" enum="Key">
-			¿ key.
-		</constant>
-		<constant name="KEY_AGRAVE" value="192" enum="Key">
-			À key.
-		</constant>
-		<constant name="KEY_AACUTE" value="193" enum="Key">
-			Á key.
-		</constant>
-		<constant name="KEY_ACIRCUMFLEX" value="194" enum="Key">
-			Â key.
-		</constant>
-		<constant name="KEY_ATILDE" value="195" enum="Key">
-			Ã key.
-		</constant>
-		<constant name="KEY_ADIAERESIS" value="196" enum="Key">
-			Ä key.
-		</constant>
-		<constant name="KEY_ARING" value="197" enum="Key">
-			Å key.
-		</constant>
-		<constant name="KEY_AE" value="198" enum="Key">
-			Æ key.
-		</constant>
-		<constant name="KEY_CCEDILLA" value="199" enum="Key">
-			Ç key.
-		</constant>
-		<constant name="KEY_EGRAVE" value="200" enum="Key">
-			È key.
-		</constant>
-		<constant name="KEY_EACUTE" value="201" enum="Key">
-			É key.
-		</constant>
-		<constant name="KEY_ECIRCUMFLEX" value="202" enum="Key">
-			Ê key.
-		</constant>
-		<constant name="KEY_EDIAERESIS" value="203" enum="Key">
-			Ë key.
-		</constant>
-		<constant name="KEY_IGRAVE" value="204" enum="Key">
-			Ì key.
-		</constant>
-		<constant name="KEY_IACUTE" value="205" enum="Key">
-			Í key.
-		</constant>
-		<constant name="KEY_ICIRCUMFLEX" value="206" enum="Key">
-			Î key.
-		</constant>
-		<constant name="KEY_IDIAERESIS" value="207" enum="Key">
-			Ï key.
-		</constant>
-		<constant name="KEY_ETH" value="208" enum="Key">
-			Ð key.
-		</constant>
-		<constant name="KEY_NTILDE" value="209" enum="Key">
-			Ñ key.
-		</constant>
-		<constant name="KEY_OGRAVE" value="210" enum="Key">
-			Ò key.
-		</constant>
-		<constant name="KEY_OACUTE" value="211" enum="Key">
-			Ó key.
-		</constant>
-		<constant name="KEY_OCIRCUMFLEX" value="212" enum="Key">
-			Ô key.
-		</constant>
-		<constant name="KEY_OTILDE" value="213" enum="Key">
-			Õ key.
-		</constant>
-		<constant name="KEY_ODIAERESIS" value="214" enum="Key">
-			Ö key.
-		</constant>
-		<constant name="KEY_MULTIPLY" value="215" enum="Key">
-			× key.
-		</constant>
-		<constant name="KEY_OOBLIQUE" value="216" enum="Key">
-			Ø key.
-		</constant>
-		<constant name="KEY_UGRAVE" value="217" enum="Key">
-			Ù key.
-		</constant>
-		<constant name="KEY_UACUTE" value="218" enum="Key">
-			Ú key.
-		</constant>
-		<constant name="KEY_UCIRCUMFLEX" value="219" enum="Key">
-			Û key.
-		</constant>
-		<constant name="KEY_UDIAERESIS" value="220" enum="Key">
-			Ü key.
-		</constant>
-		<constant name="KEY_YACUTE" value="221" enum="Key">
-			Ý key.
-		</constant>
-		<constant name="KEY_THORN" value="222" enum="Key">
-			Þ key.
-		</constant>
-		<constant name="KEY_SSHARP" value="223" enum="Key">
-			ß key.
-		</constant>
-		<constant name="KEY_DIVISION" value="247" enum="Key">
-			÷ key.
-		</constant>
-		<constant name="KEY_YDIAERESIS" value="255" enum="Key">
-			ÿ key.
-		</constant>
-		<constant name="KEY_CODE_MASK" value="8388607" enum="KeyModifierMask">
+		<constant name="KEY_CODE_MASK" value="8388607" enum="KeyModifierMask" is_bitfield="true">
 			Key Code mask.
 		</constant>
-		<constant name="KEY_MODIFIER_MASK" value="532676608" enum="KeyModifierMask">
+		<constant name="KEY_MODIFIER_MASK" value="532676608" enum="KeyModifierMask" is_bitfield="true">
 			Modifier key mask.
 		</constant>
-		<constant name="KEY_MASK_CMD_OR_CTRL" value="16777216" enum="KeyModifierMask">
+		<constant name="KEY_MASK_CMD_OR_CTRL" value="16777216" enum="KeyModifierMask" is_bitfield="true">
 			Automatically remapped to [constant KEY_META] on macOS and [constant KEY_CTRL] on other platforms, this mask is never set in the actual events, and should be used for key mapping only.
 		</constant>
-		<constant name="KEY_MASK_SHIFT" value="33554432" enum="KeyModifierMask">
+		<constant name="KEY_MASK_SHIFT" value="33554432" enum="KeyModifierMask" is_bitfield="true">
 			Shift key mask.
 		</constant>
-		<constant name="KEY_MASK_ALT" value="67108864" enum="KeyModifierMask">
+		<constant name="KEY_MASK_ALT" value="67108864" enum="KeyModifierMask" is_bitfield="true">
 			Alt or Option (on macOS) key mask.
 		</constant>
-		<constant name="KEY_MASK_META" value="134217728" enum="KeyModifierMask">
+		<constant name="KEY_MASK_META" value="134217728" enum="KeyModifierMask" is_bitfield="true">
 			Command (on macOS) or Meta/Windows key mask.
 		</constant>
-		<constant name="KEY_MASK_CTRL" value="268435456" enum="KeyModifierMask">
-			Ctrl key mask.
+		<constant name="KEY_MASK_CTRL" value="268435456" enum="KeyModifierMask" is_bitfield="true">
+			Control key mask.
 		</constant>
-		<constant name="KEY_MASK_KPAD" value="536870912" enum="KeyModifierMask">
+		<constant name="KEY_MASK_KPAD" value="536870912" enum="KeyModifierMask" is_bitfield="true">
 			Keypad key mask.
 		</constant>
-		<constant name="KEY_MASK_GROUP_SWITCH" value="1073741824" enum="KeyModifierMask">
+		<constant name="KEY_MASK_GROUP_SWITCH" value="1073741824" enum="KeyModifierMask" is_bitfield="true">
 			Group Switch key mask.
 		</constant>
 		<constant name="MOUSE_BUTTON_NONE" value="0" enum="MouseButton">
@@ -2359,10 +2298,10 @@
 			Middle mouse button.
 		</constant>
 		<constant name="MOUSE_BUTTON_WHEEL_UP" value="4" enum="MouseButton">
-			Mouse wheel up.
+			Mouse wheel scrolling up.
 		</constant>
 		<constant name="MOUSE_BUTTON_WHEEL_DOWN" value="5" enum="MouseButton">
-			Mouse wheel down.
+			Mouse wheel scrolling down.
 		</constant>
 		<constant name="MOUSE_BUTTON_WHEEL_LEFT" value="6" enum="MouseButton">
 			Mouse wheel left button (only present on some mice).
@@ -2376,19 +2315,19 @@
 		<constant name="MOUSE_BUTTON_XBUTTON2" value="9" enum="MouseButton">
 			Extra mouse button 2. This is sometimes present, usually to the sides of the mouse.
 		</constant>
-		<constant name="MOUSE_BUTTON_MASK_LEFT" value="1" enum="MouseButton">
+		<constant name="MOUSE_BUTTON_MASK_LEFT" value="1" enum="MouseButtonMask" is_bitfield="true">
 			Primary mouse button mask, usually for the left button.
 		</constant>
-		<constant name="MOUSE_BUTTON_MASK_RIGHT" value="2" enum="MouseButton">
+		<constant name="MOUSE_BUTTON_MASK_RIGHT" value="2" enum="MouseButtonMask" is_bitfield="true">
 			Secondary mouse button mask, usually for the right button.
 		</constant>
-		<constant name="MOUSE_BUTTON_MASK_MIDDLE" value="4" enum="MouseButton">
+		<constant name="MOUSE_BUTTON_MASK_MIDDLE" value="4" enum="MouseButtonMask" is_bitfield="true">
 			Middle mouse button mask.
 		</constant>
-		<constant name="MOUSE_BUTTON_MASK_XBUTTON1" value="128" enum="MouseButton">
+		<constant name="MOUSE_BUTTON_MASK_MB_XBUTTON1" value="128" enum="MouseButtonMask" is_bitfield="true">
 			Extra mouse button 1 mask.
 		</constant>
-		<constant name="MOUSE_BUTTON_MASK_XBUTTON2" value="256" enum="MouseButton">
+		<constant name="MOUSE_BUTTON_MASK_MB_XBUTTON2" value="256" enum="MouseButtonMask" is_bitfield="true">
 			Extra mouse button 2 mask.
 		</constant>
 		<constant name="JOY_BUTTON_INVALID" value="-1" enum="JoyButton">
@@ -2719,8 +2658,8 @@
 			Additionally, other keywords can be included: [code]"exp"[/code] for exponential range editing, [code]"radians"[/code] for editing radian angles in degrees, [code]"degrees"[/code] to hint at an angle and [code]"hide_slider"[/code] to hide the slider.
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM" value="2" enum="PropertyHint">
-			Hints that an [int], [float], or [String] property is an enumerated value to pick in a list specified via a hint string.
-			The hint string is a comma separated list of names such as [code]"Hello,Something,Else"[/code]. Whitespaces are [b]not[/b] removed from either end of a name. For integer and float properties, the first name in the list has value 0, the next 1, and so on. Explicit values can also be specified by appending [code]:integer[/code] to the name, e.g. [code]"Zero,One,Three:3,Four,Six:6"[/code].
+			Hints that an [int] or [String] property is an enumerated value to pick in a list specified via a hint string.
+			The hint string is a comma separated list of names such as [code]"Hello,Something,Else"[/code]. Whitespaces are [b]not[/b] removed from either end of a name. For integer properties, the first name in the list has value 0, the next 1, and so on. Explicit values can also be specified by appending [code]:integer[/code] to the name, e.g. [code]"Zero,One,Three:3,Four,Six:6"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM_SUGGESTION" value="3" enum="PropertyHint">
 			Hints that a [String] property can be an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code].
@@ -2733,7 +2672,10 @@
 			Hints that a vector property should allow its components to be linked. For example, this allows [member Vector2.x] and [member Vector2.y] to be edited together.
 		</constant>
 		<constant name="PROPERTY_HINT_FLAGS" value="6" enum="PropertyHint">
-			Hints that an [int] property is a bitmask with named bit flags. For example, to allow toggling bits 0, 1, 2 and 4, the hint could be something like [code]"Bit0,Bit1,Bit2,,Bit4"[/code].
+			Hints that an [int] property is a bitmask with named bit flags.
+			The hint string is a comma separated list of names such as [code]"Bit0,Bit1,Bit2,Bit3"[/code]. Whitespaces are [b]not[/b] removed from either end of a name. The first name in the list has value 1, the next 2, then 4, 8, 16 and so on. Explicit values can also be specified by appending [code]:integer[/code] to the name, e.g. [code]"A:4,B:8,C:16"[/code]. You can also combine several flags ([code]"A:4,B:8,AB:12,C:16"[/code]).
+			[b]Note:[/b] A flag value must be at least [code]1[/code] and at most [code]2 ** 32 - 1[/code].
+			[b]Note:[/b] Unlike [constant PROPERTY_HINT_ENUM], the previous explicit value is not taken into account. For the hint [code]"A:16,B,C"[/code], A is 16, B is 2, C is 4.
 		</constant>
 		<constant name="PROPERTY_HINT_LAYERS_2D_RENDER" value="7" enum="PropertyHint">
 			Hints that an [int] property is a bitmask using the optionally named 2D render layers.
@@ -2752,6 +2694,9 @@
 		</constant>
 		<constant name="PROPERTY_HINT_LAYERS_3D_NAVIGATION" value="12" enum="PropertyHint">
 			Hints that an [int] property is a bitmask using the optionally named 3D navigation layers.
+		</constant>
+		<constant name="PROPERTY_HINT_LAYERS_AVOIDANCE" value="37" enum="PropertyHint">
+			Hints that an integer property is a bitmask using the optionally named avoidance layers.
 		</constant>
 		<constant name="PROPERTY_HINT_FILE" value="13" enum="PropertyHint">
 			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
@@ -2794,157 +2739,143 @@
 		</constant>
 		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="24" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_VARIANT_TYPE" value="25" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="25" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_BASE_TYPE" value="26" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="26" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_INSTANCE" value="27" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_SAVE_FILE" value="27" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_SCRIPT" value="28" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_SAVE_FILE" value="28" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE" value="29" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="29" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_BASE_TYPE" value="30" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="30" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_INSTANCE" value="31" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="31" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_SCRIPT" value="32" enum="PropertyHint">
-		</constant>
-		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="33" enum="PropertyHint">
-		</constant>
-		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="34" enum="PropertyHint">
-		</constant>
-		<constant name="PROPERTY_HINT_SAVE_FILE" value="35" enum="PropertyHint">
-		</constant>
-		<constant name="PROPERTY_HINT_GLOBAL_SAVE_FILE" value="36" enum="PropertyHint">
-		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="37" enum="PropertyHint">
-		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="38" enum="PropertyHint">
-		</constant>
-		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="39" enum="PropertyHint">
-		</constant>
-		<constant name="PROPERTY_HINT_LOCALE_ID" value="40" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LOCALE_ID" value="32" enum="PropertyHint">
 			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
 		</constant>
-		<constant name="PROPERTY_HINT_LOCALIZABLE_STRING" value="41" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LOCALIZABLE_STRING" value="33" enum="PropertyHint">
 			Hints that a dictionary property is string translation map. Dictionary keys are locale codes and, values are translated strings.
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_TYPE" value="42" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_TYPE" value="34" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_HIDE_QUATERNION_EDIT" value="43" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_HIDE_QUATERNION_EDIT" value="35" enum="PropertyHint">
 			Hints that a quaternion property should disable the temporary euler editor.
 		</constant>
-		<constant name="PROPERTY_HINT_PASSWORD" value="44" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PASSWORD" value="36" enum="PropertyHint">
 			Hints that a string property is a password, and every character is replaced with the secret character.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="45" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_MAX" value="38" enum="PropertyHint">
+			Represents the size of the [enum PropertyHint] enum.
 		</constant>
-		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is not stored, and does not display in the editor. This is the default for non-exported properties.
 		</constant>
-		<constant name="PROPERTY_USAGE_STORAGE" value="2" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_STORAGE" value="2" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is serialized and saved in the scene file (default).
 		</constant>
-		<constant name="PROPERTY_USAGE_EDITOR" value="4" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_EDITOR" value="4" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is shown in the [EditorInspector] (default).
 		</constant>
-		<constant name="PROPERTY_USAGE_CHECKABLE" value="8" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_INTERNAL" value="8" enum="PropertyUsageFlags" is_bitfield="true">
+			The property is excluded from the class reference.
+		</constant>
+		<constant name="PROPERTY_USAGE_CHECKABLE" value="16" enum="PropertyUsageFlags" is_bitfield="true">
 			The property can be checked in the [EditorInspector].
 		</constant>
-		<constant name="PROPERTY_USAGE_CHECKED" value="16" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_CHECKED" value="32" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is checked in the [EditorInspector].
 		</constant>
-		<constant name="PROPERTY_USAGE_INTERNATIONALIZED" value="32" enum="PropertyUsageFlags">
-			The property is a translatable string.
-		</constant>
-		<constant name="PROPERTY_USAGE_GROUP" value="64" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_GROUP" value="64" enum="PropertyUsageFlags" is_bitfield="true">
 			Used to group properties together in the editor. See [EditorInspector].
 		</constant>
-		<constant name="PROPERTY_USAGE_CATEGORY" value="128" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_CATEGORY" value="128" enum="PropertyUsageFlags" is_bitfield="true">
 			Used to categorize properties together in the editor.
 		</constant>
-		<constant name="PROPERTY_USAGE_SUBGROUP" value="256" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_SUBGROUP" value="256" enum="PropertyUsageFlags" is_bitfield="true">
 			Used to group properties together in the editor in a subgroup (under a group). See [EditorInspector].
 		</constant>
-		<constant name="PROPERTY_USAGE_CLASS_IS_BITFIELD" value="512" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_CLASS_IS_BITFIELD" value="512" enum="PropertyUsageFlags" is_bitfield="true">
 		</constant>
-		<constant name="PROPERTY_USAGE_NO_INSTANCE_STATE" value="1024" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NO_INSTANCE_STATE" value="1024" enum="PropertyUsageFlags" is_bitfield="true">
 			The property does not save its state in [PackedScene].
 		</constant>
-		<constant name="PROPERTY_USAGE_RESTART_IF_CHANGED" value="2048" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_RESTART_IF_CHANGED" value="2048" enum="PropertyUsageFlags" is_bitfield="true">
 			Editing the property prompts the user for restarting the editor.
 		</constant>
-		<constant name="PROPERTY_USAGE_SCRIPT_VARIABLE" value="4096" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_SCRIPT_VARIABLE" value="4096" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is a script variable which should be serialized and saved in the scene file.
 		</constant>
-		<constant name="PROPERTY_USAGE_STORE_IF_NULL" value="8192" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_STORE_IF_NULL" value="8192" enum="PropertyUsageFlags" is_bitfield="true">
 		</constant>
-		<constant name="PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED" value="16384" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED" value="16384" enum="PropertyUsageFlags" is_bitfield="true">
 		</constant>
-		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="32768" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="32768" enum="PropertyUsageFlags" is_bitfield="true">
 		</constant>
-		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="65536" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="65536" enum="PropertyUsageFlags" is_bitfield="true">
 		</constant>
-		<constant name="PROPERTY_USAGE_NIL_IS_VARIANT" value="131072" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NIL_IS_VARIANT" value="131072" enum="PropertyUsageFlags" is_bitfield="true">
 		</constant>
-		<constant name="PROPERTY_USAGE_INTERNAL" value="262144" enum="PropertyUsageFlags">
-		</constant>
-		<constant name="PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE" value="524288" enum="PropertyUsageFlags">
-			If the property is a [Resource], a new copy of it is always created when calling [method Node.duplicate] or [method Resource.duplicate].
-		</constant>
-		<constant name="PROPERTY_USAGE_HIGH_END_GFX" value="1048576" enum="PropertyUsageFlags">
-			The property is only shown in the editor if modern renderers are supported (GLES3 is excluded).
-		</constant>
-		<constant name="PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT" value="2097152" enum="PropertyUsageFlags">
-		</constant>
-		<constant name="PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT" value="4194304" enum="PropertyUsageFlags">
-		</constant>
-		<constant name="PROPERTY_USAGE_KEYING_INCREMENTS" value="8388608" enum="PropertyUsageFlags">
-		</constant>
-		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="16777216" enum="PropertyUsageFlags">
-		</constant>
-		<constant name="PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT" value="33554432" enum="PropertyUsageFlags">
-		</constant>
-		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="67108864" enum="PropertyUsageFlags">
-		</constant>
-		<constant name="PROPERTY_USAGE_READ_ONLY" value="134217728" enum="PropertyUsageFlags">
-			The property is read-only in the [EditorInspector].
-		</constant>
-		<constant name="PROPERTY_USAGE_ARRAY" value="268435456" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_ARRAY" value="262144" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is an array.
 		</constant>
-		<constant name="PROPERTY_USAGE_DEFAULT" value="6" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_ALWAYS_DUPLICATE" value="524288" enum="PropertyUsageFlags" is_bitfield="true">
+			When duplicating a resource with [method Resource.duplicate], and this flag is set on a property of that resource, the property should always be duplicated, regardless of the [code]subresources[/code] bool parameter.
+		</constant>
+		<constant name="PROPERTY_USAGE_NEVER_DUPLICATE" value="1048576" enum="PropertyUsageFlags" is_bitfield="true">
+			When duplicating a resource with [method Resource.duplicate], and this flag is set on a property of that resource, the property should never be duplicated, regardless of the [code]subresources[/code] bool parameter.
+		</constant>
+		<constant name="PROPERTY_USAGE_HIGH_END_GFX" value="2097152" enum="PropertyUsageFlags" is_bitfield="true">
+			The property is only shown in the editor if modern renderers are supported (the Compatibility rendering method is excluded).
+		</constant>
+		<constant name="PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT" value="4194304" enum="PropertyUsageFlags" is_bitfield="true">
+		</constant>
+		<constant name="PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT" value="8388608" enum="PropertyUsageFlags" is_bitfield="true">
+		</constant>
+		<constant name="PROPERTY_USAGE_KEYING_INCREMENTS" value="16777216" enum="PropertyUsageFlags" is_bitfield="true">
+		</constant>
+		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="33554432" enum="PropertyUsageFlags" is_bitfield="true">
+		</constant>
+		<constant name="PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT" value="67108864" enum="PropertyUsageFlags" is_bitfield="true">
+		</constant>
+		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="134217728" enum="PropertyUsageFlags" is_bitfield="true">
+		</constant>
+		<constant name="PROPERTY_USAGE_READ_ONLY" value="268435456" enum="PropertyUsageFlags" is_bitfield="true">
+			The property is read-only in the [EditorInspector].
+		</constant>
+		<constant name="PROPERTY_USAGE_SECRET" value="536870912" enum="PropertyUsageFlags" is_bitfield="true">
+			An export preset property with this flag contains confidential information and is stored separately from the rest of the export preset configuration.
+		</constant>
+		<constant name="PROPERTY_USAGE_DEFAULT" value="6" enum="PropertyUsageFlags" is_bitfield="true">
 			Default usage (storage, editor and network).
 		</constant>
-		<constant name="PROPERTY_USAGE_DEFAULT_INTL" value="38" enum="PropertyUsageFlags">
-			Default usage for translatable strings (storage, editor, network and internationalized).
-		</constant>
-		<constant name="PROPERTY_USAGE_NO_EDITOR" value="2" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NO_EDITOR" value="2" enum="PropertyUsageFlags" is_bitfield="true">
 			Default usage but without showing the property in the editor (storage, network).
 		</constant>
-		<constant name="METHOD_FLAG_NORMAL" value="1" enum="MethodFlags">
+		<constant name="METHOD_FLAG_NORMAL" value="1" enum="MethodFlags" is_bitfield="true">
 			Flag for a normal method.
 		</constant>
-		<constant name="METHOD_FLAG_EDITOR" value="2" enum="MethodFlags">
+		<constant name="METHOD_FLAG_EDITOR" value="2" enum="MethodFlags" is_bitfield="true">
 			Flag for an editor method.
 		</constant>
-		<constant name="METHOD_FLAG_CONST" value="4" enum="MethodFlags">
+		<constant name="METHOD_FLAG_CONST" value="4" enum="MethodFlags" is_bitfield="true">
 			Flag for a constant method.
 		</constant>
-		<constant name="METHOD_FLAG_VIRTUAL" value="8" enum="MethodFlags">
+		<constant name="METHOD_FLAG_VIRTUAL" value="8" enum="MethodFlags" is_bitfield="true">
 			Flag for a virtual method.
 		</constant>
-		<constant name="METHOD_FLAG_VARARG" value="16" enum="MethodFlags">
+		<constant name="METHOD_FLAG_VARARG" value="16" enum="MethodFlags" is_bitfield="true">
 			Flag for a method with a variable number of arguments.
 		</constant>
-		<constant name="METHOD_FLAG_STATIC" value="32" enum="MethodFlags">
+		<constant name="METHOD_FLAG_STATIC" value="32" enum="MethodFlags" is_bitfield="true">
 			Flag for a static method.
 		</constant>
-		<constant name="METHOD_FLAG_OBJECT_CORE" value="64" enum="MethodFlags">
+		<constant name="METHOD_FLAG_OBJECT_CORE" value="64" enum="MethodFlags" is_bitfield="true">
 			Used internally. Allows to not dump core virtual methods (such as [method Object._notification]) to the JSON API.
 		</constant>
-		<constant name="METHOD_FLAGS_DEFAULT" value="1" enum="MethodFlags">
+		<constant name="METHOD_FLAGS_DEFAULT" value="1" enum="MethodFlags" is_bitfield="true">
 			Default method flags (normal).
 		</constant>
 		<constant name="TYPE_NIL" value="0" enum="Variant.Type">

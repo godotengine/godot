@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  test_math_funcs.h                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  test_math_funcs.h                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef TEST_MATH_FUNCS_H
 #define TEST_MATH_FUNCS_H
@@ -157,15 +157,15 @@ TEST_CASE_TEMPLATE("[Math] asin/acos/atan", T, float, double) {
 	CHECK(Math::asin((T)0.1) == doctest::Approx((T)0.1001674212));
 	CHECK(Math::asin((T)0.5) == doctest::Approx((T)0.5235987756));
 	CHECK(Math::asin((T)1.0) == doctest::Approx((T)1.5707963268));
-	CHECK(Math::is_nan(Math::asin((T)1.5)));
-	CHECK(Math::is_nan(Math::asin((T)450.0)));
+	CHECK(Math::asin((T)2.0) == doctest::Approx((T)1.5707963268));
+	CHECK(Math::asin((T)-2.0) == doctest::Approx((T)-1.5707963268));
 
 	CHECK(Math::acos((T)-0.1) == doctest::Approx((T)1.670963748));
 	CHECK(Math::acos((T)0.1) == doctest::Approx((T)1.4706289056));
 	CHECK(Math::acos((T)0.5) == doctest::Approx((T)1.0471975512));
 	CHECK(Math::acos((T)1.0) == doctest::Approx((T)0.0));
-	CHECK(Math::is_nan(Math::acos((T)1.5)));
-	CHECK(Math::is_nan(Math::acos((T)450.0)));
+	CHECK(Math::acos((T)2.0) == doctest::Approx((T)0.0));
+	CHECK(Math::acos((T)-2.0) == doctest::Approx((T)Math_PI));
 
 	CHECK(Math::atan((T)-0.1) == doctest::Approx((T)-0.0996686525));
 	CHECK(Math::atan((T)0.1) == doctest::Approx((T)0.0996686525));
@@ -472,7 +472,7 @@ TEST_CASE_TEMPLATE("[Math] wrapf", T, float, double) {
 
 	CHECK(Math::wrapf(300'000'000'000.0, -20.0, 160.0) == doctest::Approx((T)120.0));
 	// float's precision is too low for 300'000'000'000.0, so we reduce it by a factor of 1000.
-	CHECK(Math::wrapf((float)300'000'000.0, (float)-20.0, (float)160.0) == doctest::Approx((T)128.0));
+	CHECK(Math::wrapf((float)15'000'000.0, (float)-20.0, (float)160.0) == doctest::Approx((T)60.0));
 }
 
 TEST_CASE_TEMPLATE("[Math] fract", T, float, double) {

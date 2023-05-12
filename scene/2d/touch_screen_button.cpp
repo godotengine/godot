@@ -1,39 +1,49 @@
-/*************************************************************************/
-/*  touch_screen_button.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  touch_screen_button.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "touch_screen_button.h"
 
 #include "scene/main/window.h"
+#include "scene/scene_string_names.h"
 
 void TouchScreenButton::set_texture_normal(const Ref<Texture2D> &p_texture) {
+	if (texture_normal == p_texture) {
+		return;
+	}
+	if (texture_normal.is_valid()) {
+		texture_normal->disconnect(SceneStringNames::get_singleton()->changed, callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+	}
 	texture_normal = p_texture;
+	if (texture_normal.is_valid()) {
+		texture_normal->connect(SceneStringNames::get_singleton()->changed, callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+	}
 	queue_redraw();
 }
 
@@ -42,7 +52,16 @@ Ref<Texture2D> TouchScreenButton::get_texture_normal() const {
 }
 
 void TouchScreenButton::set_texture_pressed(const Ref<Texture2D> &p_texture_pressed) {
+	if (texture_pressed == p_texture_pressed) {
+		return;
+	}
+	if (texture_pressed.is_valid()) {
+		texture_pressed->disconnect(SceneStringNames::get_singleton()->changed, callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+	}
 	texture_pressed = p_texture_pressed;
+	if (texture_pressed.is_valid()) {
+		texture_pressed->connect(SceneStringNames::get_singleton()->changed, callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+	}
 	queue_redraw();
 }
 
@@ -59,16 +78,16 @@ Ref<BitMap> TouchScreenButton::get_bitmask() const {
 }
 
 void TouchScreenButton::set_shape(const Ref<Shape2D> &p_shape) {
+	if (shape == p_shape) {
+		return;
+	}
 	if (shape.is_valid()) {
 		shape->disconnect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 	}
-
 	shape = p_shape;
-
 	if (shape.is_valid()) {
 		shape->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 	}
-
 	queue_redraw();
 }
 
@@ -191,10 +210,6 @@ void TouchScreenButton::input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (!is_visible_in_tree()) {
-		return;
-	}
-
-	if (p_event->get_device() != 0) {
 		return;
 	}
 

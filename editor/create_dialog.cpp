@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  create_dialog.cpp                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  create_dialog.cpp                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "create_dialog.h"
 
@@ -122,7 +122,7 @@ bool CreateDialog::_should_hide_type(const String &p_type) const {
 		return true;
 	}
 
-	if (base_type == "Node" && p_type.begins_with("Editor")) {
+	if (is_base_type_node && p_type.begins_with("Editor")) {
 		return true; // Do not show editor nodes.
 	}
 
@@ -145,6 +145,11 @@ bool CreateDialog::_should_hide_type(const String &p_type) const {
 			return true; // Wrong inheritance.
 		}
 		if (!ScriptServer::is_global_class(p_type)) {
+			return true;
+		}
+
+		StringName native_type = ScriptServer::get_global_class_native_base(p_type);
+		if (ClassDB::class_exists(native_type) && !ClassDB::can_instantiate(native_type)) {
 			return true;
 		}
 
@@ -452,11 +457,16 @@ void CreateDialog::_notification(int p_what) {
 				search_box->call_deferred(SNAME("grab_focus")); // still not visible
 				search_box->select_all();
 			} else {
-				EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "create_new_node", Rect2(get_position(), get_size()));
+				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "create_new_node", Rect2(get_position(), get_size()));
 			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			const int icon_width = get_theme_constant(SNAME("class_icon_size"), SNAME("Editor"));
+			search_options->add_theme_constant_override("icon_max_width", icon_width);
+			favorites->add_theme_constant_override("icon_max_width", icon_width);
+			recent->set_fixed_icon_size(Size2(icon_width, icon_width));
+
 			_update_theme();
 		} break;
 	}
@@ -501,6 +511,11 @@ String CreateDialog::get_selected_type() {
 	}
 
 	return selected->get_text(0);
+}
+
+void CreateDialog::set_base_type(const String &p_base) {
+	base_type = p_base;
+	is_base_type_node = ClassDB::is_parent_class(p_base, "Node");
 }
 
 Variant CreateDialog::instantiate_selected() {
@@ -719,12 +734,6 @@ void CreateDialog::_load_favorites_and_history() {
 }
 
 void CreateDialog::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_save_and_update_favorite_list"), &CreateDialog::_save_and_update_favorite_list);
-
-	ClassDB::bind_method("_get_drag_data_fw", &CreateDialog::get_drag_data_fw);
-	ClassDB::bind_method("_can_drop_data_fw", &CreateDialog::can_drop_data_fw);
-	ClassDB::bind_method("_drop_data_fw", &CreateDialog::drop_data_fw);
-
 	ADD_SIGNAL(MethodInfo("create"));
 	ADD_SIGNAL(MethodInfo("favorites_updated"));
 }
@@ -754,7 +763,7 @@ CreateDialog::CreateDialog() {
 	favorites->connect("cell_selected", callable_mp(this, &CreateDialog::_favorite_selected));
 	favorites->connect("item_activated", callable_mp(this, &CreateDialog::_favorite_activated));
 	favorites->add_theme_constant_override("draw_guides", 1);
-	favorites->set_drag_forwarding(this);
+	SET_DRAG_FORWARDING_GCD(favorites, CreateDialog);
 	fav_vb->add_margin_child(TTR("Favorites:"), favorites, true);
 
 	VBoxContainer *rec_vb = memnew(VBoxContainer);
@@ -801,4 +810,5 @@ CreateDialog::CreateDialog() {
 
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
+	set_clamp_to_embedder(true);
 }

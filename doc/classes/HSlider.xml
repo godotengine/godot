@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HSlider" inherits="Slider" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="HSlider" inherits="Slider" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Horizontal slider.
 	</brief_description>
@@ -10,6 +10,9 @@
 	<tutorials>
 	</tutorials>
 	<theme_items>
+		<theme_item name="center_grabber" data_type="constant" type="int" default="0">
+			Boolean constant. If [code]1[/code], the grabber texture size will be ignored and it will fit within slider's bounds based only on its center position.
+		</theme_item>
 		<theme_item name="grabber_offset" data_type="constant" type="int" default="0">
 			Vertical offset of the grabber.
 		</theme_item>

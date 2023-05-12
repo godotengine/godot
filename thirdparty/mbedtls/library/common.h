@@ -29,11 +29,12 @@
 #include "mbedtls/config.h"
 #endif
 
+#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 
 /* Define `inline` on some non-C99-compliant compilers. */
-#if ( defined(__ARMCC_VERSION) || defined(_MSC_VER) ) && \
+#if (defined(__ARMCC_VERSION) || defined(_MSC_VER)) && \
     !defined(inline) && !defined(__cplusplus)
 #define inline __inline
 #endif
@@ -75,9 +76,9 @@
  *              buffer is at least \p n + 1.
  */
 static inline unsigned char *mbedtls_buffer_offset(
-    unsigned char *p, size_t n )
+    unsigned char *p, size_t n)
 {
-    return( p == NULL ? NULL : p + n );
+    return p == NULL ? NULL : p + n;
 }
 
 /** Return an offset into a read-only buffer.
@@ -92,9 +93,9 @@ static inline unsigned char *mbedtls_buffer_offset(
  *              buffer is at least \p n + 1.
  */
 static inline const unsigned char *mbedtls_buffer_offset_const(
-    const unsigned char *p, size_t n )
+    const unsigned char *p, size_t n)
 {
-    return( p == NULL ? NULL : p + n );
+    return p == NULL ? NULL : p + n;
 }
 
 /** Byte Reading Macros
@@ -102,14 +103,14 @@ static inline const unsigned char *mbedtls_buffer_offset_const(
  * Given a multi-byte integer \p x, MBEDTLS_BYTE_n retrieves the n-th
  * byte from x, where byte 0 is the least significant byte.
  */
-#define MBEDTLS_BYTE_0( x ) ( (uint8_t) (   ( x )         & 0xff ) )
-#define MBEDTLS_BYTE_1( x ) ( (uint8_t) ( ( ( x ) >> 8  ) & 0xff ) )
-#define MBEDTLS_BYTE_2( x ) ( (uint8_t) ( ( ( x ) >> 16 ) & 0xff ) )
-#define MBEDTLS_BYTE_3( x ) ( (uint8_t) ( ( ( x ) >> 24 ) & 0xff ) )
-#define MBEDTLS_BYTE_4( x ) ( (uint8_t) ( ( ( x ) >> 32 ) & 0xff ) )
-#define MBEDTLS_BYTE_5( x ) ( (uint8_t) ( ( ( x ) >> 40 ) & 0xff ) )
-#define MBEDTLS_BYTE_6( x ) ( (uint8_t) ( ( ( x ) >> 48 ) & 0xff ) )
-#define MBEDTLS_BYTE_7( x ) ( (uint8_t) ( ( ( x ) >> 56 ) & 0xff ) )
+#define MBEDTLS_BYTE_0(x) ((uint8_t) ((x)         & 0xff))
+#define MBEDTLS_BYTE_1(x) ((uint8_t) (((x) >> 8) & 0xff))
+#define MBEDTLS_BYTE_2(x) ((uint8_t) (((x) >> 16) & 0xff))
+#define MBEDTLS_BYTE_3(x) ((uint8_t) (((x) >> 24) & 0xff))
+#define MBEDTLS_BYTE_4(x) ((uint8_t) (((x) >> 32) & 0xff))
+#define MBEDTLS_BYTE_5(x) ((uint8_t) (((x) >> 40) & 0xff))
+#define MBEDTLS_BYTE_6(x) ((uint8_t) (((x) >> 48) & 0xff))
+#define MBEDTLS_BYTE_7(x) ((uint8_t) (((x) >> 56) & 0xff))
 
 /**
  * Get the unsigned 32 bits integer corresponding to four bytes in
@@ -121,12 +122,12 @@ static inline const unsigned char *mbedtls_buffer_offset_const(
  *                  integer from.
  */
 #ifndef MBEDTLS_GET_UINT32_BE
-#define MBEDTLS_GET_UINT32_BE( data , offset )                  \
+#define MBEDTLS_GET_UINT32_BE(data, offset)                  \
     (                                                           \
-          ( (uint32_t) ( data )[( offset )    ] << 24 )         \
-        | ( (uint32_t) ( data )[( offset ) + 1] << 16 )         \
-        | ( (uint32_t) ( data )[( offset ) + 2] <<  8 )         \
-        | ( (uint32_t) ( data )[( offset ) + 3]       )         \
+        ((uint32_t) (data)[(offset)] << 24)         \
+        | ((uint32_t) (data)[(offset) + 1] << 16)         \
+        | ((uint32_t) (data)[(offset) + 2] <<  8)         \
+        | ((uint32_t) (data)[(offset) + 3])         \
     )
 #endif
 
@@ -140,13 +141,13 @@ static inline const unsigned char *mbedtls_buffer_offset_const(
  *                  byte of the 32 bits unsigned integer \p n.
  */
 #ifndef MBEDTLS_PUT_UINT32_BE
-#define MBEDTLS_PUT_UINT32_BE( n, data, offset )                \
-{                                                               \
-    ( data )[( offset )    ] = MBEDTLS_BYTE_3( n );             \
-    ( data )[( offset ) + 1] = MBEDTLS_BYTE_2( n );             \
-    ( data )[( offset ) + 2] = MBEDTLS_BYTE_1( n );             \
-    ( data )[( offset ) + 3] = MBEDTLS_BYTE_0( n );             \
-}
+#define MBEDTLS_PUT_UINT32_BE(n, data, offset)                \
+    {                                                               \
+        (data)[(offset)] = MBEDTLS_BYTE_3(n);             \
+        (data)[(offset) + 1] = MBEDTLS_BYTE_2(n);             \
+        (data)[(offset) + 2] = MBEDTLS_BYTE_1(n);             \
+        (data)[(offset) + 3] = MBEDTLS_BYTE_0(n);             \
+    }
 #endif
 
 /**
@@ -159,12 +160,12 @@ static inline const unsigned char *mbedtls_buffer_offset_const(
  *                  integer from.
  */
 #ifndef MBEDTLS_GET_UINT32_LE
-#define MBEDTLS_GET_UINT32_LE( data, offset )                   \
+#define MBEDTLS_GET_UINT32_LE(data, offset)                   \
     (                                                           \
-          ( (uint32_t) ( data )[( offset )    ]       )         \
-        | ( (uint32_t) ( data )[( offset ) + 1] <<  8 )         \
-        | ( (uint32_t) ( data )[( offset ) + 2] << 16 )         \
-        | ( (uint32_t) ( data )[( offset ) + 3] << 24 )         \
+        ((uint32_t) (data)[(offset)])         \
+        | ((uint32_t) (data)[(offset) + 1] <<  8)         \
+        | ((uint32_t) (data)[(offset) + 2] << 16)         \
+        | ((uint32_t) (data)[(offset) + 3] << 24)         \
     )
 #endif
 
@@ -178,13 +179,13 @@ static inline const unsigned char *mbedtls_buffer_offset_const(
  *                  byte of the 32 bits unsigned integer \p n.
  */
 #ifndef MBEDTLS_PUT_UINT32_LE
-#define MBEDTLS_PUT_UINT32_LE( n, data, offset )                \
-{                                                               \
-    ( data )[( offset )    ] = MBEDTLS_BYTE_0( n );             \
-    ( data )[( offset ) + 1] = MBEDTLS_BYTE_1( n );             \
-    ( data )[( offset ) + 2] = MBEDTLS_BYTE_2( n );             \
-    ( data )[( offset ) + 3] = MBEDTLS_BYTE_3( n );             \
-}
+#define MBEDTLS_PUT_UINT32_LE(n, data, offset)                \
+    {                                                               \
+        (data)[(offset)] = MBEDTLS_BYTE_0(n);             \
+        (data)[(offset) + 1] = MBEDTLS_BYTE_1(n);             \
+        (data)[(offset) + 2] = MBEDTLS_BYTE_2(n);             \
+        (data)[(offset) + 3] = MBEDTLS_BYTE_3(n);             \
+    }
 #endif
 
 /**
@@ -197,10 +198,10 @@ static inline const unsigned char *mbedtls_buffer_offset_const(
  *                  integer from.
  */
 #ifndef MBEDTLS_GET_UINT16_LE
-#define MBEDTLS_GET_UINT16_LE( data, offset )                   \
+#define MBEDTLS_GET_UINT16_LE(data, offset)                   \
     (                                                           \
-          ( (uint16_t) ( data )[( offset )    ]       )         \
-        | ( (uint16_t) ( data )[( offset ) + 1] <<  8 )         \
+        ((uint16_t) (data)[(offset)])         \
+        | ((uint16_t) (data)[(offset) + 1] <<  8)         \
     )
 #endif
 
@@ -214,11 +215,11 @@ static inline const unsigned char *mbedtls_buffer_offset_const(
  *                  byte of the 16 bits unsigned integer \p n.
  */
 #ifndef MBEDTLS_PUT_UINT16_LE
-#define MBEDTLS_PUT_UINT16_LE( n, data, offset )                \
-{                                                               \
-    ( data )[( offset )    ] = MBEDTLS_BYTE_0( n );             \
-    ( data )[( offset ) + 1] = MBEDTLS_BYTE_1( n );             \
-}
+#define MBEDTLS_PUT_UINT16_LE(n, data, offset)                \
+    {                                                               \
+        (data)[(offset)] = MBEDTLS_BYTE_0(n);             \
+        (data)[(offset) + 1] = MBEDTLS_BYTE_1(n);             \
+    }
 #endif
 
 /**
@@ -231,10 +232,10 @@ static inline const unsigned char *mbedtls_buffer_offset_const(
  *                  integer from.
  */
 #ifndef MBEDTLS_GET_UINT16_BE
-#define MBEDTLS_GET_UINT16_BE( data, offset )                   \
+#define MBEDTLS_GET_UINT16_BE(data, offset)                   \
     (                                                           \
-          ( (uint16_t) ( data )[( offset )    ] << 8 )          \
-        | ( (uint16_t) ( data )[( offset ) + 1]      )          \
+        ((uint16_t) (data)[(offset)] << 8)          \
+        | ((uint16_t) (data)[(offset) + 1])          \
     )
 #endif
 
@@ -248,11 +249,11 @@ static inline const unsigned char *mbedtls_buffer_offset_const(
  *                  byte of the 16 bits unsigned integer \p n.
  */
 #ifndef MBEDTLS_PUT_UINT16_BE
-#define MBEDTLS_PUT_UINT16_BE( n, data, offset )                \
-{                                                               \
-    ( data )[( offset )    ] = MBEDTLS_BYTE_1( n );             \
-    ( data )[( offset ) + 1] = MBEDTLS_BYTE_0( n );             \
-}
+#define MBEDTLS_PUT_UINT16_BE(n, data, offset)                \
+    {                                                               \
+        (data)[(offset)] = MBEDTLS_BYTE_1(n);             \
+        (data)[(offset) + 1] = MBEDTLS_BYTE_0(n);             \
+    }
 #endif
 
 /**
@@ -265,16 +266,16 @@ static inline const unsigned char *mbedtls_buffer_offset_const(
  *                  integer from.
  */
 #ifndef MBEDTLS_GET_UINT64_BE
-#define MBEDTLS_GET_UINT64_BE( data, offset )                   \
+#define MBEDTLS_GET_UINT64_BE(data, offset)                   \
     (                                                           \
-          ( (uint64_t) ( data )[( offset )    ] << 56 )         \
-        | ( (uint64_t) ( data )[( offset ) + 1] << 48 )         \
-        | ( (uint64_t) ( data )[( offset ) + 2] << 40 )         \
-        | ( (uint64_t) ( data )[( offset ) + 3] << 32 )         \
-        | ( (uint64_t) ( data )[( offset ) + 4] << 24 )         \
-        | ( (uint64_t) ( data )[( offset ) + 5] << 16 )         \
-        | ( (uint64_t) ( data )[( offset ) + 6] <<  8 )         \
-        | ( (uint64_t) ( data )[( offset ) + 7]       )         \
+        ((uint64_t) (data)[(offset)] << 56)         \
+        | ((uint64_t) (data)[(offset) + 1] << 48)         \
+        | ((uint64_t) (data)[(offset) + 2] << 40)         \
+        | ((uint64_t) (data)[(offset) + 3] << 32)         \
+        | ((uint64_t) (data)[(offset) + 4] << 24)         \
+        | ((uint64_t) (data)[(offset) + 5] << 16)         \
+        | ((uint64_t) (data)[(offset) + 6] <<  8)         \
+        | ((uint64_t) (data)[(offset) + 7])         \
     )
 #endif
 
@@ -288,17 +289,17 @@ static inline const unsigned char *mbedtls_buffer_offset_const(
  *                  byte of the 64 bits unsigned integer \p n.
  */
 #ifndef MBEDTLS_PUT_UINT64_BE
-#define MBEDTLS_PUT_UINT64_BE( n, data, offset )                \
-{                                                               \
-    ( data )[( offset )    ] = MBEDTLS_BYTE_7( n );             \
-    ( data )[( offset ) + 1] = MBEDTLS_BYTE_6( n );             \
-    ( data )[( offset ) + 2] = MBEDTLS_BYTE_5( n );             \
-    ( data )[( offset ) + 3] = MBEDTLS_BYTE_4( n );             \
-    ( data )[( offset ) + 4] = MBEDTLS_BYTE_3( n );             \
-    ( data )[( offset ) + 5] = MBEDTLS_BYTE_2( n );             \
-    ( data )[( offset ) + 6] = MBEDTLS_BYTE_1( n );             \
-    ( data )[( offset ) + 7] = MBEDTLS_BYTE_0( n );             \
-}
+#define MBEDTLS_PUT_UINT64_BE(n, data, offset)                \
+    {                                                               \
+        (data)[(offset)] = MBEDTLS_BYTE_7(n);             \
+        (data)[(offset) + 1] = MBEDTLS_BYTE_6(n);             \
+        (data)[(offset) + 2] = MBEDTLS_BYTE_5(n);             \
+        (data)[(offset) + 3] = MBEDTLS_BYTE_4(n);             \
+        (data)[(offset) + 4] = MBEDTLS_BYTE_3(n);             \
+        (data)[(offset) + 5] = MBEDTLS_BYTE_2(n);             \
+        (data)[(offset) + 6] = MBEDTLS_BYTE_1(n);             \
+        (data)[(offset) + 7] = MBEDTLS_BYTE_0(n);             \
+    }
 #endif
 
 /**
@@ -311,16 +312,16 @@ static inline const unsigned char *mbedtls_buffer_offset_const(
  *                  integer from.
  */
 #ifndef MBEDTLS_GET_UINT64_LE
-#define MBEDTLS_GET_UINT64_LE( data, offset )                   \
+#define MBEDTLS_GET_UINT64_LE(data, offset)                   \
     (                                                           \
-          ( (uint64_t) ( data )[( offset ) + 7] << 56 )         \
-        | ( (uint64_t) ( data )[( offset ) + 6] << 48 )         \
-        | ( (uint64_t) ( data )[( offset ) + 5] << 40 )         \
-        | ( (uint64_t) ( data )[( offset ) + 4] << 32 )         \
-        | ( (uint64_t) ( data )[( offset ) + 3] << 24 )         \
-        | ( (uint64_t) ( data )[( offset ) + 2] << 16 )         \
-        | ( (uint64_t) ( data )[( offset ) + 1] <<  8 )         \
-        | ( (uint64_t) ( data )[( offset )    ]       )         \
+        ((uint64_t) (data)[(offset) + 7] << 56)         \
+        | ((uint64_t) (data)[(offset) + 6] << 48)         \
+        | ((uint64_t) (data)[(offset) + 5] << 40)         \
+        | ((uint64_t) (data)[(offset) + 4] << 32)         \
+        | ((uint64_t) (data)[(offset) + 3] << 24)         \
+        | ((uint64_t) (data)[(offset) + 2] << 16)         \
+        | ((uint64_t) (data)[(offset) + 1] <<  8)         \
+        | ((uint64_t) (data)[(offset)])         \
     )
 #endif
 
@@ -334,17 +335,31 @@ static inline const unsigned char *mbedtls_buffer_offset_const(
  *                  byte of the 64 bits unsigned integer \p n.
  */
 #ifndef MBEDTLS_PUT_UINT64_LE
-#define MBEDTLS_PUT_UINT64_LE( n, data, offset )                \
-{                                                               \
-    ( data )[( offset )    ] = MBEDTLS_BYTE_0( n );             \
-    ( data )[( offset ) + 1] = MBEDTLS_BYTE_1( n );             \
-    ( data )[( offset ) + 2] = MBEDTLS_BYTE_2( n );             \
-    ( data )[( offset ) + 3] = MBEDTLS_BYTE_3( n );             \
-    ( data )[( offset ) + 4] = MBEDTLS_BYTE_4( n );             \
-    ( data )[( offset ) + 5] = MBEDTLS_BYTE_5( n );             \
-    ( data )[( offset ) + 6] = MBEDTLS_BYTE_6( n );             \
-    ( data )[( offset ) + 7] = MBEDTLS_BYTE_7( n );             \
-}
+#define MBEDTLS_PUT_UINT64_LE(n, data, offset)                \
+    {                                                               \
+        (data)[(offset)] = MBEDTLS_BYTE_0(n);             \
+        (data)[(offset) + 1] = MBEDTLS_BYTE_1(n);             \
+        (data)[(offset) + 2] = MBEDTLS_BYTE_2(n);             \
+        (data)[(offset) + 3] = MBEDTLS_BYTE_3(n);             \
+        (data)[(offset) + 4] = MBEDTLS_BYTE_4(n);             \
+        (data)[(offset) + 5] = MBEDTLS_BYTE_5(n);             \
+        (data)[(offset) + 6] = MBEDTLS_BYTE_6(n);             \
+        (data)[(offset) + 7] = MBEDTLS_BYTE_7(n);             \
+    }
+#endif
+
+/* Always provide a static assert macro, so it can be used unconditionally.
+ * It will expand to nothing on some systems.
+ * Can be used outside functions (but don't add a trailing ';' in that case:
+ * the semicolon is included here to avoid triggering -Wextra-semi when
+ * MBEDTLS_STATIC_ASSERT() expands to nothing).
+ * Can't use the C11-style `defined(static_assert)` on FreeBSD, since it
+ * defines static_assert even with -std=c99, but then complains about it.
+ */
+#if defined(static_assert) && !defined(__FreeBSD__)
+#define MBEDTLS_STATIC_ASSERT(expr, msg)    static_assert(expr, msg);
+#else
+#define MBEDTLS_STATIC_ASSERT(expr, msg)
 #endif
 
 #endif /* MBEDTLS_LIBRARY_COMMON_H */

@@ -153,8 +153,8 @@ void print_overflows (graph_t& graph,
     const auto& child = graph.vertices_[o.child];
     DEBUG_MSG (SUBSET_REPACK, nullptr,
                "  overflow from "
-               "%4d (%4d in, %4d out, space %2d) => "
-               "%4d (%4d in, %4d out, space %2d)",
+               "%4u (%4u in, %4u out, space %2u) => "
+               "%4u (%4u in, %4u out, space %2u)",
                o.parent,
                parent.incoming_edges (),
                parent.obj.real_links.length + parent.obj.virtual_links.length,
@@ -165,7 +165,7 @@ void print_overflows (graph_t& graph,
                graph.space_for (o.child));
   }
   if (overflows.length > 10) {
-    DEBUG_MSG (SUBSET_REPACK, nullptr, "  ... plus %d more overflows.", overflows.length - 10);
+    DEBUG_MSG (SUBSET_REPACK, nullptr, "  ... plus %u more overflows.", overflows.length - 10);
   }
 }
 

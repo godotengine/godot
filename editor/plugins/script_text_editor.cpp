@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  script_text_editor.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  script_text_editor.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "script_text_editor.h"
 
@@ -38,6 +38,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 
 void ConnectionInfoDialog::ok_pressed() {
@@ -252,12 +253,14 @@ void ScriptTextEditor::_warning_clicked(Variant p_line) {
 	} else if (p_line.get_type() == Variant::DICTIONARY) {
 		Dictionary meta = p_line.operator Dictionary();
 		const int line = meta["line"].operator int64_t() - 1;
+		const String code = meta["code"].operator String();
+		const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 
 		CodeEdit *text_editor = code_editor->get_text_editor();
 		String prev_line = line > 0 ? text_editor->get_line(line - 1) : "";
 		if (prev_line.contains("@warning_ignore")) {
 			const int closing_bracket_idx = prev_line.find(")");
-			const String text_to_insert = ", " + meta["code"].operator String();
+			const String text_to_insert = ", " + code.quote(quote_style);
 			prev_line = prev_line.insert(closing_bracket_idx, text_to_insert);
 			text_editor->set_line(line - 1, prev_line);
 		} else {
@@ -268,7 +271,7 @@ void ScriptTextEditor::_warning_clicked(Variant p_line) {
 			} else {
 				annotation_indent = String(" ").repeat(text_editor->get_indent_size() * indent);
 			}
-			text_editor->insert_line_at(line, annotation_indent + "@warning_ignore(" + meta["code"].operator String() + ")");
+			text_editor->insert_line_at(line, annotation_indent + "@warning_ignore(" + code.quote(quote_style) + ")");
 		}
 
 		_validate_script();
@@ -375,12 +378,8 @@ void ScriptTextEditor::insert_final_newline() {
 	code_editor->insert_final_newline();
 }
 
-void ScriptTextEditor::convert_indent_to_spaces() {
-	code_editor->convert_indent_to_spaces();
-}
-
-void ScriptTextEditor::convert_indent_to_tabs() {
-	code_editor->convert_indent_to_tabs();
+void ScriptTextEditor::convert_indent() {
+	code_editor->get_text_editor()->convert_indent();
 }
 
 void ScriptTextEditor::tag_saved_version() {
@@ -1223,8 +1222,13 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			code_editor->duplicate_selection();
 		} break;
 		case EDIT_TOGGLE_FOLD_LINE: {
-			for (int caret_idx = 0; caret_idx < tx->get_caret_count(); caret_idx++) {
-				tx->toggle_foldable_line(tx->get_caret_line(caret_idx));
+			int previous_line = -1;
+			for (int caret_idx : tx->get_caret_index_edit_order()) {
+				int line_idx = tx->get_caret_line(caret_idx);
+				if (line_idx != previous_line) {
+					tx->toggle_foldable_line(line_idx);
+					previous_line = line_idx;
+				}
 			}
 			tx->queue_redraw();
 		} break;
@@ -1274,10 +1278,12 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			trim_trailing_whitespace();
 		} break;
 		case EDIT_CONVERT_INDENT_TO_SPACES: {
-			convert_indent_to_spaces();
+			tx->set_indent_using_spaces(true);
+			convert_indent();
 		} break;
 		case EDIT_CONVERT_INDENT_TO_TABS: {
-			convert_indent_to_tabs();
+			tx->set_indent_using_spaces(false);
+			convert_indent();
 		} break;
 		case EDIT_PICK_COLOR: {
 			color_panel->popup();
@@ -1315,6 +1321,10 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				tx->insert_text_at_caret(String("\n").join(results), caret_idx);
 			}
 			tx->end_complex_operation();
+		} break;
+		case EDIT_TOGGLE_WORD_WRAP: {
+			TextEdit::LineWrappingMode wrap = code_editor->get_text_editor()->get_line_wrapping_mode();
+			code_editor->get_text_editor()->set_line_wrapping_mode(wrap == TextEdit::LINE_WRAPPING_BOUNDARY ? TextEdit::LINE_WRAPPING_NONE : TextEdit::LINE_WRAPPING_BOUNDARY);
 		} break;
 		case SEARCH_FIND: {
 			code_editor->get_find_replace_bar()->popup_search();
@@ -1360,11 +1370,36 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			code_editor->remove_all_bookmarks();
 		} break;
 		case DEBUG_TOGGLE_BREAKPOINT: {
-			for (int caret_idx = 0; caret_idx < tx->get_caret_count(); caret_idx++) {
-				int line = tx->get_caret_line(caret_idx);
-				bool dobreak = !tx->is_line_breakpointed(line);
-				tx->set_line_as_breakpoint(line, dobreak);
-				EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), line + 1, dobreak);
+			Vector<int> caret_edit_order = tx->get_caret_index_edit_order();
+			caret_edit_order.reverse();
+			int last_line = -1;
+			for (const int &c : caret_edit_order) {
+				int from = tx->has_selection(c) ? tx->get_selection_from_line(c) : tx->get_caret_line(c);
+				from += from == last_line ? 1 : 0;
+				int to = tx->has_selection(c) ? tx->get_selection_to_line(c) : tx->get_caret_line(c);
+				if (to < from) {
+					continue;
+				}
+				// Check first if there's any lines with breakpoints in the selection.
+				bool selection_has_breakpoints = false;
+				for (int line = from; line <= to; line++) {
+					if (tx->is_line_breakpointed(line)) {
+						selection_has_breakpoints = true;
+						break;
+					}
+				}
+
+				// Set breakpoint on caret or remove all bookmarks from the selection.
+				if (!selection_has_breakpoints) {
+					if (tx->get_caret_line(c) != last_line) {
+						tx->set_line_as_breakpoint(tx->get_caret_line(c), true);
+					}
+				} else {
+					for (int line = from; line <= to; line++) {
+						tx->set_line_as_breakpoint(line, false);
+					}
+				}
+				last_line = to;
 			}
 		} break;
 		case DEBUG_REMOVE_ALL_BREAKPOINTS: {
@@ -1488,14 +1523,6 @@ void ScriptTextEditor::_notification(int p_what) {
 			code_editor->get_text_editor()->set_gutter_width(connection_gutter, code_editor->get_text_editor()->get_line_height());
 		} break;
 	}
-}
-
-void ScriptTextEditor::_bind_methods() {
-	ClassDB::bind_method("_update_connected_methods", &ScriptTextEditor::_update_connected_methods);
-
-	ClassDB::bind_method("_get_drag_data_fw", &ScriptTextEditor::get_drag_data_fw);
-	ClassDB::bind_method("_can_drop_data_fw", &ScriptTextEditor::can_drop_data_fw);
-	ClassDB::bind_method("_drop_data_fw", &ScriptTextEditor::drop_data_fw);
 }
 
 Control *ScriptTextEditor::get_edit_menu() {
@@ -1776,20 +1803,26 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		int col = pos.x;
 
 		tx->set_move_caret_on_right_click_enabled(EDITOR_GET("text_editor/behavior/navigation/move_caret_on_right_click"));
+		int caret_clicked = -1;
 		if (tx->is_move_caret_on_right_click_enabled()) {
-			tx->remove_secondary_carets();
 			if (tx->has_selection()) {
-				int from_line = tx->get_selection_from_line();
-				int to_line = tx->get_selection_to_line();
-				int from_column = tx->get_selection_from_column();
-				int to_column = tx->get_selection_to_column();
+				for (int i = 0; i < tx->get_caret_count(); i++) {
+					int from_line = tx->get_selection_from_line(i);
+					int to_line = tx->get_selection_to_line(i);
+					int from_column = tx->get_selection_from_column(i);
+					int to_column = tx->get_selection_to_column(i);
 
-				if (row < from_line || row > to_line || (row == from_line && col < from_column) || (row == to_line && col > to_column)) {
-					// Right click is outside the selected text
-					tx->deselect();
+					if (row >= from_line && row <= to_line && (row != from_line || col >= from_column) && (row != to_line || col <= to_column)) {
+						// Right click in one of the selected text
+						caret_clicked = i;
+						break;
+					}
 				}
 			}
-			if (!tx->has_selection()) {
+			if (caret_clicked < 0) {
+				tx->deselect();
+				tx->remove_secondary_carets();
+				caret_clicked = 0;
 				tx->set_caret_line(row, false, false);
 				tx->set_caret_column(col);
 			}
@@ -1797,10 +1830,10 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
 		String word_at_pos = tx->get_word_at_pos(local_pos);
 		if (word_at_pos.is_empty()) {
-			word_at_pos = tx->get_word_under_caret(0);
+			word_at_pos = tx->get_word_under_caret(caret_clicked);
 		}
 		if (word_at_pos.is_empty()) {
-			word_at_pos = tx->get_selected_text(0);
+			word_at_pos = tx->get_selected_text(caret_clicked);
 		}
 
 		bool has_color = (word_at_pos == "Color");
@@ -1826,30 +1859,72 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 			color_position.x = row;
 			color_position.y = col;
 
-			int begin = 0;
-			int end = 0;
-			bool valid = false;
+			int begin = -1;
+			int end = -1;
+			enum EXPRESSION_PATTERNS {
+				NOT_PARSED,
+				RGBA_PARAMETER, // Color(float,float,float) or Color(float,float,float,float)
+				COLOR_NAME, // Color.COLOR_NAME
+			} expression_pattern = NOT_PARSED;
+
 			for (int i = col; i < line.length(); i++) {
 				if (line[i] == '(') {
-					begin = i;
-					continue;
-				} else if (line[i] == ')') {
+					if (expression_pattern == NOT_PARSED) {
+						begin = i;
+						expression_pattern = RGBA_PARAMETER;
+					} else {
+						// Method call or '(' appearing twice.
+						expression_pattern = NOT_PARSED;
+
+						break;
+					}
+				} else if (expression_pattern == RGBA_PARAMETER && line[i] == ')' && end < 0) {
 					end = i + 1;
-					valid = true;
+
+					break;
+				} else if (expression_pattern == NOT_PARSED && line[i] == '.') {
+					begin = i;
+					expression_pattern = COLOR_NAME;
+				} else if (expression_pattern == COLOR_NAME && end < 0 && (line[i] == ' ' || line[i] == '\t')) {
+					// Including '.' and spaces.
+					continue;
+				} else if (expression_pattern == COLOR_NAME && !(line[i] == '_' || ('A' <= line[i] && line[i] <= 'Z'))) {
+					end = i;
+
 					break;
 				}
 			}
-			if (valid) {
-				color_args = line.substr(begin, end - begin);
-				String stripped = color_args.replace(" ", "").replace("(", "").replace(")", "");
-				PackedFloat64Array color = stripped.split_floats(",");
-				if (color.size() > 2) {
-					float alpha = color.size() > 3 ? color[3] : 1.0f;
-					color_picker->set_pick_color(Color(color[0], color[1], color[2], alpha));
-				}
+
+			switch (expression_pattern) {
+				case RGBA_PARAMETER: {
+					color_args = line.substr(begin, end - begin);
+					String stripped = color_args.replace(" ", "").replace("\t", "").replace("(", "").replace(")", "");
+					PackedFloat64Array color = stripped.split_floats(",");
+					if (color.size() > 2) {
+						float alpha = color.size() > 3 ? color[3] : 1.0f;
+						color_picker->set_pick_color(Color(color[0], color[1], color[2], alpha));
+					}
+				} break;
+				case COLOR_NAME: {
+					if (end < 0) {
+						end = line.length();
+					}
+					color_args = line.substr(begin, end - begin);
+					const String color_name = color_args.replace(" ", "").replace("\t", "").replace(".", "");
+					const int color_index = Color::find_named_color(color_name);
+					if (0 <= color_index) {
+						const Color color_constant = Color::get_named_color(color_index);
+						color_picker->set_pick_color(color_constant);
+					} else {
+						has_color = false;
+					}
+				} break;
+				default:
+					has_color = false;
+					break;
+			}
+			if (has_color) {
 				color_panel->set_position(get_screen_position() + local_pos);
-			} else {
-				has_color = false;
 			}
 		}
 		_make_context_menu(tx->has_selection(), has_color, foldable, open_docs, goto_definition, local_pos);
@@ -1998,6 +2073,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_text_select_all"), EDIT_SELECT_ALL);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_selection"), EDIT_DUPLICATE_SELECTION);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/evaluate_selection"), EDIT_EVALUATE);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_word_wrap"), EDIT_TOGGLE_WORD_WRAP);
 	edit_menu->get_popup()->add_separator();
 	{
 		PopupMenu *sub_menu = memnew(PopupMenu);
@@ -2108,6 +2184,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	warnings_panel->set_h_size_flags(SIZE_EXPAND_FILL);
 	warnings_panel->set_meta_underline(true);
 	warnings_panel->set_selection_enabled(true);
+	warnings_panel->set_context_menu_enabled(true);
 	warnings_panel->set_focus_mode(FOCUS_CLICK);
 	warnings_panel->hide();
 
@@ -2116,6 +2193,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	errors_panel->set_h_size_flags(SIZE_EXPAND_FILL);
 	errors_panel->set_meta_underline(true);
 	errors_panel->set_selection_enabled(true);
+	errors_panel->set_context_menu_enabled(true);
 	errors_panel->set_focus_mode(FOCUS_CLICK);
 	errors_panel->hide();
 
@@ -2167,7 +2245,7 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	connection_info_dialog = memnew(ConnectionInfoDialog);
 
-	code_editor->get_text_editor()->set_drag_forwarding(this);
+	SET_DRAG_FORWARDING_GCD(code_editor->get_text_editor(), ScriptTextEditor);
 }
 
 ScriptTextEditor::~ScriptTextEditor() {
@@ -2209,11 +2287,13 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/unindent", TTR("Unindent"), KeyModifierMask::SHIFT | Key::TAB);
 	ED_SHORTCUT("script_text_editor/toggle_comment", TTR("Toggle Comment"), KeyModifierMask::CMD_OR_CTRL | Key::K);
 	ED_SHORTCUT("script_text_editor/toggle_fold_line", TTR("Fold/Unfold Line"), KeyModifierMask::ALT | Key::F);
+	ED_SHORTCUT_OVERRIDE("script_text_editor/toggle_fold_line", "macos", KeyModifierMask::CTRL | KeyModifierMask::META | Key::F);
 	ED_SHORTCUT("script_text_editor/fold_all_lines", TTR("Fold All Lines"), Key::NONE);
 	ED_SHORTCUT("script_text_editor/unfold_all_lines", TTR("Unfold All Lines"), Key::NONE);
 	ED_SHORTCUT("script_text_editor/duplicate_selection", TTR("Duplicate Selection"), KeyModifierMask::SHIFT | KeyModifierMask::CTRL | Key::D);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/duplicate_selection", "macos", KeyModifierMask::SHIFT | KeyModifierMask::META | Key::C);
 	ED_SHORTCUT("script_text_editor/evaluate_selection", TTR("Evaluate Selection"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::E);
+	ED_SHORTCUT("script_text_editor/toggle_word_wrap", TTR("Toggle Word Wrap"), KeyModifierMask::ALT | Key::Z);
 	ED_SHORTCUT("script_text_editor/trim_trailing_whitespace", TTR("Trim Trailing Whitespace"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::T);
 	ED_SHORTCUT("script_text_editor/convert_indent_to_spaces", TTR("Convert Indent to Spaces"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::Y);
 	ED_SHORTCUT("script_text_editor/convert_indent_to_tabs", TTR("Convert Indent to Tabs"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::I);

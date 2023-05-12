@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  tile_set_editor.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  tile_set_editor.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "tile_set_editor.h"
 
@@ -67,7 +67,7 @@ void TileSetEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 				// Actually create the new source.
 				Ref<TileSetAtlasSource> atlas_source = memnew(TileSetAtlasSource);
 				atlas_source->set_texture(resource);
-				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 				undo_redo->create_action(TTR("Add a new atlas source"));
 				undo_redo->add_do_method(*tile_set, "add_source", atlas_source, source_id);
 				undo_redo->add_do_method(*atlas_source, "set_texture_region_size", tile_set->get_tile_size());
@@ -88,6 +88,10 @@ void TileSetEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 
 bool TileSetEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
 	ERR_FAIL_COND_V(!tile_set.is_valid(), false);
+
+	if (read_only) {
+		return false;
+	}
 
 	if (p_from == sources_list) {
 		Dictionary d = p_data;
@@ -223,7 +227,7 @@ void TileSetEditor::_source_selected(int p_source_index) {
 	ERR_FAIL_COND(!tile_set.is_valid());
 
 	// Update the selected source.
-	sources_delete_button->set_disabled(p_source_index < 0);
+	sources_delete_button->set_disabled(p_source_index < 0 || read_only);
 
 	if (p_source_index >= 0) {
 		int source_id = sources_list->get_item_metadata(p_source_index);
@@ -260,7 +264,7 @@ void TileSetEditor::_source_delete_pressed() {
 	Ref<TileSetSource> source = tile_set->get_source(to_delete);
 
 	// Remove the source.
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Remove source"));
 	undo_redo->add_do_method(*tile_set, "remove_source", to_delete);
 	undo_redo->add_undo_method(*tile_set, "add_source", source, to_delete);
@@ -279,7 +283,7 @@ void TileSetEditor::_source_add_id_pressed(int p_id_pressed) {
 			Ref<TileSetAtlasSource> atlas_source = memnew(TileSetAtlasSource);
 
 			// Add a new source.
-			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Add atlas source"));
 			undo_redo->add_do_method(*tile_set, "add_source", atlas_source, source_id);
 			undo_redo->add_do_method(*atlas_source, "set_texture_region_size", tile_set->get_tile_size());
@@ -294,7 +298,7 @@ void TileSetEditor::_source_add_id_pressed(int p_id_pressed) {
 			Ref<TileSetScenesCollectionSource> scene_collection_source = memnew(TileSetScenesCollectionSource);
 
 			// Add a new source.
-			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Add atlas source"));
 			undo_redo->add_do_method(*tile_set, "add_source", scene_collection_source, source_id);
 			undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
@@ -356,8 +360,19 @@ void TileSetEditor::_notification(int p_what) {
 				if (tile_set.is_valid()) {
 					tile_set->set_edited(true);
 				}
+
+				read_only = false;
+				if (tile_set.is_valid()) {
+					read_only = EditorNode::get_singleton()->is_resource_read_only(tile_set);
+				}
+
 				_update_sources_list();
 				_update_patterns_list();
+
+				sources_add_button->set_disabled(read_only);
+				sources_advanced_menu_button->set_disabled(read_only);
+				source_sort_button->set_disabled(read_only);
+
 				tile_set_changed_needs_update = false;
 			}
 		} break;
@@ -367,9 +382,13 @@ void TileSetEditor::_notification(int p_what) {
 void TileSetEditor::_patterns_item_list_gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(!tile_set.is_valid());
 
+	if (EditorNode::get_singleton()->is_resource_read_only(tile_set)) {
+		return;
+	}
+
 	if (ED_IS_SHORTCUT("tiles_editor/delete", p_event) && p_event->is_pressed() && !p_event->is_echo()) {
 		Vector<int> selected = patterns_item_list->get_selected_items();
-		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Remove TileSet patterns"));
 		for (int i = 0; i < selected.size(); i++) {
 			int pattern_index = selected[i];
@@ -416,8 +435,8 @@ void TileSetEditor::_tab_changed(int p_tab_changed) {
 }
 
 void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_edited, String p_array_prefix, int p_from_index, int p_to_pos) {
-	Ref<EditorUndoRedoManager> undo_redo_man = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
-	ERR_FAIL_COND(undo_redo_man.is_null());
+	EditorUndoRedoManager *undo_redo_man = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
+	ERR_FAIL_NULL(undo_redo_man);
 
 	TileSet *ed_tile_set = Object::cast_to<TileSet>(p_edited);
 	if (!ed_tile_set) {
@@ -462,6 +481,35 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 	}
 
 #define ADD_UNDO(obj, property) undo_redo_man->add_undo_property(obj, property, obj->get(property));
+
+	// Add undo method to adding array element.
+	if (p_array_prefix == "occlusion_layer_") {
+		if (p_from_index < 0) {
+			undo_redo_man->add_undo_method(ed_tile_set, "remove_occlusion_layer", p_to_pos < 0 ? ed_tile_set->get_occlusion_layers_count() : p_to_pos);
+		}
+	} else if (p_array_prefix == "physics_layer_") {
+		if (p_from_index < 0) {
+			undo_redo_man->add_undo_method(ed_tile_set, "remove_physics_layer", p_to_pos < 0 ? ed_tile_set->get_physics_layers_count() : p_to_pos);
+		}
+	} else if (p_array_prefix == "terrain_set_") {
+		if (p_from_index < 0) {
+			undo_redo_man->add_undo_method(ed_tile_set, "remove_terrain_set", p_to_pos < 0 ? ed_tile_set->get_terrain_sets_count() : p_to_pos);
+		}
+	} else if (components.size() >= 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_int() && components[1] == "terrain_") {
+		int terrain_set = components[0].trim_prefix("terrain_set_").to_int();
+		if (p_from_index < 0) {
+			undo_redo_man->add_undo_method(ed_tile_set, "remove_terrain", terrain_set, p_to_pos < 0 ? ed_tile_set->get_terrains_count(terrain_set) : p_to_pos);
+		}
+	} else if (p_array_prefix == "navigation_layer_") {
+		if (p_from_index < 0) {
+			undo_redo_man->add_undo_method(ed_tile_set, "remove_navigation_layer", p_to_pos < 0 ? ed_tile_set->get_navigation_layers_count() : p_to_pos);
+		}
+	} else if (p_array_prefix == "custom_data_layer_") {
+		if (p_from_index < 0) {
+			undo_redo_man->add_undo_method(ed_tile_set, "remove_custom_data_layer", p_to_pos < 0 ? ed_tile_set->get_custom_data_layers_count() : p_to_pos);
+		}
+	}
+
 	// Save layers' properties.
 	List<PropertyInfo> properties;
 	ed_tile_set->get_property_list(&properties);
@@ -543,7 +591,7 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 	}
 #undef ADD_UNDO
 
-	// Add do method.
+	// Add do method to add/remove array element.
 	if (p_array_prefix == "occlusion_layer_") {
 		if (p_from_index < 0) {
 			undo_redo_man->add_do_method(ed_tile_set, "add_occlusion_layer", p_to_pos);
@@ -597,8 +645,8 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 }
 
 void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value) {
-	Ref<EditorUndoRedoManager> undo_redo_man = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
-	ERR_FAIL_COND(undo_redo_man.is_null());
+	EditorUndoRedoManager *undo_redo_man = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
+	ERR_FAIL_NULL(undo_redo_man);
 
 #define ADD_UNDO(obj, property) undo_redo_man->add_undo_property(obj, property, obj->get(property));
 	TileSet *ed_tile_set = Object::cast_to<TileSet>(p_edited);
@@ -637,13 +685,13 @@ void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p
 #undef ADD_UNDO
 }
 
-void TileSetEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &TileSetEditor::_can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &TileSetEditor::_drop_data_fw);
-}
-
 void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
-	if (p_tile_set == tile_set) {
+	bool new_read_only_state = false;
+	if (p_tile_set.is_valid()) {
+		new_read_only_state = EditorNode::get_singleton()->is_resource_read_only(p_tile_set);
+	}
+
+	if (p_tile_set == tile_set && new_read_only_state == read_only) {
 		return;
 	}
 
@@ -655,8 +703,15 @@ void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 	// Change the edited object.
 	tile_set = p_tile_set;
 
-	// Add the listener again.
+	// Read-only status is false by default
+	read_only = new_read_only_state;
+
+	// Add the listener again and check for read-only status.
 	if (tile_set.is_valid()) {
+		sources_add_button->set_disabled(read_only);
+		sources_advanced_menu_button->set_disabled(read_only);
+		source_sort_button->set_disabled(read_only);
+
 		tile_set->connect("changed", callable_mp(this, &TileSetEditor::_tile_set_changed));
 		if (first_edit) {
 			first_edit = false;
@@ -666,10 +721,6 @@ void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 		}
 		_update_patterns_list();
 	}
-
-	tile_set_atlas_source_editor->hide();
-	tile_set_scenes_collection_source_editor->hide();
-	no_source_selected_label->show();
 }
 
 TileSetEditor::TileSetEditor() {
@@ -728,7 +779,7 @@ TileSetEditor::TileSetEditor() {
 	sources_list->add_user_signal(MethodInfo("sort_request"));
 	sources_list->connect("sort_request", callable_mp(this, &TileSetEditor::_update_sources_list).bind(-1));
 	sources_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
-	sources_list->set_drag_forwarding(this);
+	SET_DRAG_FORWARDING_CDU(sources_list, TileSetEditor);
 	split_container_left_side->add_child(sources_list);
 
 	HBoxContainer *sources_bottom_actions = memnew(HBoxContainer);

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Environment" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Environment" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Resource for environment nodes (like [WorldEnvironment]) that define multiple rendering options.
 	</brief_description>
@@ -46,6 +46,7 @@
 		</member>
 		<member name="adjustment_enabled" type="bool" setter="set_adjustment_enabled" getter="is_adjustment_enabled" default="false">
 			If [code]true[/code], enables the [code]adjustment_*[/code] properties provided by this resource. If [code]false[/code], modifications to the [code]adjustment_*[/code] properties will have no effect on the rendered scene.
+			[b]Note:[/b] Adjustments are only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 		</member>
 		<member name="adjustment_saturation" type="float" setter="set_adjustment_saturation" getter="get_adjustment_saturation" default="1.0">
 			The global color saturation value of the rendered scene (default value is 1). Effective only if [code]adjustment_enabled[/code] is [code]true[/code].
@@ -118,6 +119,7 @@
 		</member>
 		<member name="glow_enabled" type="bool" setter="set_glow_enabled" getter="is_glow_enabled" default="false">
 			If [code]true[/code], the glow effect is enabled.
+			[b]Note:[/b] Glow is only supported in the Forward+ and Mobile rendering methods, not Compatibility. When using the Mobile rendering method, glow will look different due to the lower dynamic range available in the Mobile rendering method.
 		</member>
 		<member name="glow_hdr_luminance_cap" type="float" setter="set_glow_hdr_luminance_cap" getter="get_glow_hdr_luminance_cap" default="12.0">
 			The higher threshold of the HDR glow. Areas brighter than this threshold will be clamped for the purposes of the glow effect.
@@ -126,10 +128,10 @@
 			The bleed scale of the HDR glow.
 		</member>
 		<member name="glow_hdr_threshold" type="float" setter="set_glow_hdr_bleed_threshold" getter="get_glow_hdr_bleed_threshold" default="1.0">
-			The lower threshold of the HDR glow. When using the OpenGL renderer (which doesn't support HDR), this needs to be below [code]1.0[/code] for glow to be visible. A value of [code]0.9[/code] works well in this case.
+			The lower threshold of the HDR glow. When using the Mobile rendering method (which only supports a lower dynamic range up to [code]2.0[/code]), this may need to be below [code]1.0[/code] for glow to be visible. A value of [code]0.9[/code] works well in this case. This value also needs to be decreased below [code]1.0[/code] when using glow in 2D, as 2D rendering is performed in SDR.
 		</member>
 		<member name="glow_intensity" type="float" setter="set_glow_intensity" getter="get_glow_intensity" default="0.8">
-			The overall brightness multiplier of the glow effect. When using the OpenGL renderer, this should be increased to [code]1.5[/code] to compensate for the lack of HDR rendering.
+			The overall brightness multiplier of the glow effect. When using the Mobile rendering method (which only supports a lower dynamic range up to [code]2.0[/code]), this should be increased to [code]1.5[/code] to compensate.
 		</member>
 		<member name="glow_levels/1" type="float" setter="set_glow_level" getter="get_glow_level" default="0.0">
 			The intensity of the 1st level of glow. This is the most "local" level (least blurry).
@@ -166,7 +168,7 @@
 			If [code]true[/code], glow levels will be normalized so that summed together their intensities equal [code]1.0[/code].
 		</member>
 		<member name="glow_strength" type="float" setter="set_glow_strength" getter="get_glow_strength" default="1.0">
-			The strength of the glow effect. This applies as the glow is blurred across the screen and increases the distance and intensity of the blur. When using the OpenGL renderer, this should be increased to 1.3 to compensate for the lack of HDR rendering.
+			The strength of the glow effect. This applies as the glow is blurred across the screen and increases the distance and intensity of the blur. When using the Mobile rendering method, this should be increased to compensate for the lower dynamic range.
 		</member>
 		<member name="reflected_light_source" type="int" setter="set_reflection_source" getter="get_reflection_source" enum="Environment.ReflectionSource" default="0">
 			The reflected (specular) light source.
@@ -184,6 +186,7 @@
 		</member>
 		<member name="sdfgi_enabled" type="bool" setter="set_sdfgi_enabled" getter="is_sdfgi_enabled" default="false">
 			If [code]true[/code], enables signed distance field global illumination for meshes that have their [member GeometryInstance3D.gi_mode] set to [constant GeometryInstance3D.GI_MODE_STATIC]. SDFGI is a real-time global illumination technique that works well with procedurally generated and user-built levels, including in situations where geometry is created during gameplay. The signed distance field is automatically generated around the camera as it moves. Dynamic lights are supported, but dynamic occluders and emissive surfaces are not.
+			[b]Note:[/b] SDFGI is only supported in the Forward+ rendering method, not Mobile or Compatibility.
 			[b]Performance:[/b] SDFGI is relatively demanding on the GPU and is not suited to low-end hardware such as integrated graphics (consider [LightmapGI] instead). To improve SDFGI performance, enable [member ProjectSettings.rendering/global_illumination/gi/use_half_resolution] in the Project Settings.
 			[b]Note:[/b] Meshes should have sufficiently thick walls to avoid light leaks (avoid one-sided walls). For interior levels, enclose your level geometry in a sufficiently large box and bridge the loops to close the mesh.
 		</member>
@@ -230,6 +233,7 @@
 		</member>
 		<member name="ssao_enabled" type="bool" setter="set_ssao_enabled" getter="is_ssao_enabled" default="false">
 			If [code]true[/code], the screen-space ambient occlusion effect is enabled. This darkens objects' corners and cavities to simulate ambient light not reaching the entire object as in real life. This works well for small, dynamic objects, but baked lighting or ambient occlusion textures will do a better job at displaying ambient occlusion on large static objects. Godot uses a form of SSAO called Adaptive Screen Space Ambient Occlusion which is itself a form of Horizon Based Ambient Occlusion.
+			[b]Note:[/b] SSAO is only supported in the Forward+ rendering method, not Mobile or Compatibility.
 		</member>
 		<member name="ssao_horizon" type="float" setter="set_ssao_horizon" getter="get_ssao_horizon" default="0.06">
 			The threshold for considering whether a given point on a surface is occluded or not represented as an angle from the horizon mapped into the [code]0.0-1.0[/code] range. A value of [code]1.0[/code] results in no occlusion.
@@ -251,6 +255,7 @@
 		</member>
 		<member name="ssil_enabled" type="bool" setter="set_ssil_enabled" getter="is_ssil_enabled" default="false">
 			If [code]true[/code], the screen-space indirect lighting effect is enabled. Screen space indirect lighting is a form of indirect lighting that allows diffuse light to bounce between nearby objects. Screen-space indirect lighting works very similarly to screen-space ambient occlusion, in that it only affects a limited range. It is intended to be used along with a form of proper global illumination like SDFGI or [VoxelGI]. Screen-space indirect lighting is not affected by individual light's [member Light3D.light_indirect_energy].
+			[b]Note:[/b] SSIL is only supported in the Forward+ rendering method, not Mobile or Compatibility.
 		</member>
 		<member name="ssil_intensity" type="float" setter="set_ssil_intensity" getter="get_ssil_intensity" default="1.0">
 			The brightness multiplier for the screen-space indirect lighting effect. A higher value will result in brighter light.
@@ -269,9 +274,10 @@
 		</member>
 		<member name="ssr_enabled" type="bool" setter="set_ssr_enabled" getter="is_ssr_enabled" default="false">
 			If [code]true[/code], screen-space reflections are enabled. Screen-space reflections are more accurate than reflections from [VoxelGI]s or [ReflectionProbe]s, but are slower and can't reflect surfaces occluded by others.
+			[b]Note:[/b] SSR is only supported in the Forward+ rendering method, not Mobile or Compatibility.
 		</member>
 		<member name="ssr_fade_in" type="float" setter="set_ssr_fade_in" getter="get_ssr_fade_in" default="0.15">
-			The fade-in distance for screen-space reflections. Affects the area from the reflected material to the screen-space reflection). Only positive values are valid (negative values will be clamped to [code]0.0[/code]).
+			The fade-in distance for screen-space reflections. Affects the area from the reflected material to the screen-space reflection. Only positive values are valid (negative values will be clamped to [code]0.0[/code]).
 		</member>
 		<member name="ssr_fade_out" type="float" setter="set_ssr_fade_out" getter="get_ssr_fade_out" default="2.0">
 			The fade-out distance for screen-space reflections. Affects the area from the screen-space reflection to the "global" reflection. Only positive values are valid (negative values will be clamped to [code]0.0[/code]).
@@ -314,7 +320,7 @@
 		</member>
 		<member name="volumetric_fog_enabled" type="bool" setter="set_volumetric_fog_enabled" getter="is_volumetric_fog_enabled" default="false">
 			Enables the volumetric fog effect. Volumetric fog uses a screen-aligned froxel buffer to calculate accurate volumetric scattering in the short to medium range. Volumetric fog interacts with [FogVolume]s and lights to calculate localized and global fog. Volumetric fog uses a PBR single-scattering model based on extinction, scattering, and emission which it exposes to users as density, albedo, and emission.
-			[b]Note:[/b] Volumetric fog is only available in the forward plus renderer. It is not available in the mobile renderer or the compatibility renderer.
+			[b]Note:[/b] Volumetric fog is only supported in the Forward+ rendering method, not Mobile or Compatibility.
 		</member>
 		<member name="volumetric_fog_gi_inject" type="float" setter="set_volumetric_fog_gi_inject" getter="get_volumetric_fog_gi_inject" default="1.0">
 			Scales the strength of Global Illumination used in the volumetric fog's albedo color. A value of [code]0.0[/code] means that Global Illumination will not impact the volumetric fog. [member volumetric_fog_gi_inject] has a small performance cost when set above [code]0.0[/code].

@@ -1,41 +1,43 @@
-/*************************************************************************/
-/*  register_types.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  register_types.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "register_types.h"
 
 #include "extensions/gltf_document_extension_convert_importer_mesh.h"
 #include "extensions/gltf_spec_gloss.h"
+#include "extensions/physics/gltf_document_extension_physics.h"
 #include "gltf_document.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/config/project_settings.h"
+#include "editor/editor_import_blend_runner.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scene_exporter_gltf_plugin.h"
 #include "editor/editor_scene_importer_blend.h"
@@ -52,6 +54,14 @@ static void _editor_init() {
 
 	bool blend_enabled = GLOBAL_GET("filesystem/import/blender/enabled");
 	// Defined here because EditorSettings doesn't exist in `register_gltf_types` yet.
+	EDITOR_DEF_RST("filesystem/import/blender/rpc_port", 6011);
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT,
+			"filesystem/import/blender/rpc_port", PROPERTY_HINT_RANGE, "0,65535,1"));
+
+	EDITOR_DEF_RST("filesystem/import/blender/rpc_server_uptime", 5);
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::FLOAT,
+			"filesystem/import/blender/rpc_server_uptime", PROPERTY_HINT_RANGE, "0,300,1,or_greater,suffix:s"));
+
 	String blender3_path = EDITOR_DEF_RST("filesystem/import/blender/blender3_path", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,
 			"filesystem/import/blender/blender3_path", PROPERTY_HINT_GLOBAL_DIR));
@@ -71,6 +81,8 @@ static void _editor_init() {
 			EditorFileSystem::get_singleton()->add_import_format_support_query(blend_import_query);
 		}
 	}
+	memnew(EditorImportBlendRunner);
+	EditorNode::get_singleton()->add_child(EditorImportBlendRunner::get_singleton());
 
 	// FBX to glTF importer.
 
@@ -103,12 +115,14 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(GLTFAnimation);
 		GDREGISTER_CLASS(GLTFBufferView);
 		GDREGISTER_CLASS(GLTFCamera);
+		GDREGISTER_CLASS(GLTFCollider);
 		GDREGISTER_CLASS(GLTFDocument);
 		GDREGISTER_CLASS(GLTFDocumentExtension);
 		GDREGISTER_CLASS(GLTFDocumentExtensionConvertImporterMesh);
 		GDREGISTER_CLASS(GLTFLight);
 		GDREGISTER_CLASS(GLTFMesh);
 		GDREGISTER_CLASS(GLTFNode);
+		GDREGISTER_CLASS(GLTFPhysicsBody);
 		GDREGISTER_CLASS(GLTFSkeleton);
 		GDREGISTER_CLASS(GLTFSkin);
 		GDREGISTER_CLASS(GLTFSpecGloss);
@@ -116,6 +130,7 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(GLTFTexture);
 		GDREGISTER_CLASS(GLTFTextureSampler);
 		// Register GLTFDocumentExtension classes with GLTFDocument.
+		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionPhysics);
 		bool is_editor = ::Engine::get_singleton()->is_editor_hint();
 		if (!is_editor) {
 			GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionConvertImporterMesh);
@@ -132,8 +147,8 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		EditorPlugins::add_by_type<SceneExporterGLTFPlugin>();
 
 		// Project settings defined here so doctool finds them.
-		GLOBAL_DEF_RST("filesystem/import/blender/enabled", true);
-		GLOBAL_DEF_RST("filesystem/import/fbx/enabled", true);
+		GLOBAL_DEF_RST_BASIC("filesystem/import/blender/enabled", true);
+		GLOBAL_DEF_RST_BASIC("filesystem/import/fbx/enabled", true);
 		GDREGISTER_CLASS(EditorSceneFormatImporterBlend);
 		GDREGISTER_CLASS(EditorSceneFormatImporterFBX);
 		// Can't (a priori) run external app on these platforms.

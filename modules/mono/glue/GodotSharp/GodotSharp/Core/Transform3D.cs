@@ -6,7 +6,7 @@ namespace Godot
     /// <summary>
     /// 3×4 matrix (3 rows, 4 columns) used for 3D linear transformations.
     /// It can represent transformations such as translation, rotation, or scaling.
-    /// It consists of a <see cref="Basis"/> (first 3 columns) and a
+    /// It consists of a <see cref="Godot.Basis"/> (first 3 columns) and a
     /// <see cref="Vector3"/> for the origin (last column).
     ///
     /// For more information, read this documentation article:
@@ -17,19 +17,19 @@ namespace Godot
     public struct Transform3D : IEquatable<Transform3D>
     {
         /// <summary>
-        /// The <see cref="Basis"/> of this transform. Contains the X, Y, and Z basis
+        /// The <see cref="Godot.Basis"/> of this transform. Contains the X, Y, and Z basis
         /// vectors (columns 0 to 2) and is responsible for rotation and scale.
         /// </summary>
-        public Basis basis;
+        public Basis Basis;
 
         /// <summary>
         /// The origin vector (column 3, the fourth column). Equivalent to array index <c>[3]</c>.
         /// </summary>
-        public Vector3 origin;
+        public Vector3 Origin;
 
         /// <summary>
         /// Access whole columns in the form of <see cref="Vector3"/>.
-        /// The fourth column is the <see cref="origin"/> vector.
+        /// The fourth column is the <see cref="Origin"/> vector.
         /// </summary>
         /// <param name="column">Which column vector.</param>
         /// <exception cref="ArgumentOutOfRangeException">
@@ -42,13 +42,13 @@ namespace Godot
                 switch (column)
                 {
                     case 0:
-                        return basis.Column0;
+                        return Basis.Column0;
                     case 1:
-                        return basis.Column1;
+                        return Basis.Column1;
                     case 2:
-                        return basis.Column2;
+                        return Basis.Column2;
                     case 3:
-                        return origin;
+                        return Origin;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(column));
                 }
@@ -58,16 +58,16 @@ namespace Godot
                 switch (column)
                 {
                     case 0:
-                        basis.Column0 = value;
+                        Basis.Column0 = value;
                         return;
                     case 1:
-                        basis.Column1 = value;
+                        Basis.Column1 = value;
                         return;
                     case 2:
-                        basis.Column2 = value;
+                        Basis.Column2 = value;
                         return;
                     case 3:
-                        origin = value;
+                        Origin = value;
                         return;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(column));
@@ -77,7 +77,7 @@ namespace Godot
 
         /// <summary>
         /// Access matrix elements in column-major order.
-        /// The fourth column is the <see cref="origin"/> vector.
+        /// The fourth column is the <see cref="Origin"/> vector.
         /// </summary>
         /// <param name="column">Which column, the matrix horizontal position.</param>
         /// <param name="row">Which row, the matrix vertical position.</param>
@@ -87,18 +87,18 @@ namespace Godot
             {
                 if (column == 3)
                 {
-                    return origin[row];
+                    return Origin[row];
                 }
-                return basis[column, row];
+                return Basis[column, row];
             }
             set
             {
                 if (column == 3)
                 {
-                    origin[row] = value;
+                    Origin[row] = value;
                     return;
                 }
-                basis[column, row] = value;
+                Basis[column, row] = value;
             }
         }
 
@@ -110,21 +110,35 @@ namespace Godot
         /// <returns>The inverse transformation matrix.</returns>
         public readonly Transform3D AffineInverse()
         {
-            Basis basisInv = basis.Inverse();
-            return new Transform3D(basisInv, basisInv * -origin);
+            Basis basisInv = Basis.Inverse();
+            return new Transform3D(basisInv, basisInv * -Origin);
         }
 
         /// <summary>
-        /// Interpolates this transform to the other <paramref name="transform"/> by <paramref name="weight"/>.
+        /// Returns a transform interpolated between this transform and another
+        /// <paramref name="transform"/> by a given <paramref name="weight"/>
+        /// (on the range of 0.0 to 1.0).
         /// </summary>
         /// <param name="transform">The other transform.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The interpolated transform.</returns>
         public readonly Transform3D InterpolateWith(Transform3D transform, real_t weight)
         {
-            Basis retBasis = basis.Lerp(transform.basis, weight);
-            Vector3 retOrigin = origin.Lerp(transform.origin, weight);
-            return new Transform3D(retBasis, retOrigin);
+            Vector3 sourceScale = Basis.Scale;
+            Quaternion sourceRotation = Basis.GetRotationQuaternion();
+            Vector3 sourceLocation = Origin;
+
+            Vector3 destinationScale = transform.Basis.Scale;
+            Quaternion destinationRotation = transform.Basis.GetRotationQuaternion();
+            Vector3 destinationLocation = transform.Origin;
+
+            var interpolated = new Transform3D();
+            Quaternion quaternion = sourceRotation.Slerp(destinationRotation, weight).Normalized();
+            Vector3 scale = sourceScale.Lerp(destinationScale, weight);
+            interpolated.Basis.SetQuaternionScale(quaternion, scale);
+            interpolated.Origin = sourceLocation.Lerp(destinationLocation, weight);
+
+            return interpolated;
         }
 
         /// <summary>
@@ -135,8 +149,18 @@ namespace Godot
         /// <returns>The inverse matrix.</returns>
         public readonly Transform3D Inverse()
         {
-            Basis basisTr = basis.Transposed();
-            return new Transform3D(basisTr, basisTr * -origin);
+            Basis basisTr = Basis.Transposed();
+            return new Transform3D(basisTr, basisTr * -Origin);
+        }
+
+        /// <summary>
+        /// Returns <see langword="true"/> if this transform is finite, by calling
+        /// <see cref="Mathf.IsFinite"/> on each component.
+        /// </summary>
+        /// <returns>Whether this vector is finite or not.</returns>
+        public readonly bool IsFinite()
+        {
+            return Basis.IsFinite() && Origin.IsFinite();
         }
 
         /// <summary>
@@ -155,7 +179,7 @@ namespace Godot
         public readonly Transform3D LookingAt(Vector3 target, Vector3 up)
         {
             Transform3D t = this;
-            t.SetLookAt(origin, target, up);
+            t.SetLookAt(Origin, target, up);
             return t;
         }
 
@@ -166,7 +190,7 @@ namespace Godot
         /// <returns>The orthonormalized transform.</returns>
         public readonly Transform3D Orthonormalized()
         {
-            return new Transform3D(basis.Orthonormalized(), origin);
+            return new Transform3D(Basis.Orthonormalized(), Origin);
         }
 
         /// <summary>
@@ -195,7 +219,7 @@ namespace Godot
         public readonly Transform3D RotatedLocal(Vector3 axis, real_t angle)
         {
             Basis tmpBasis = new Basis(axis, angle);
-            return new Transform3D(basis * tmpBasis, origin);
+            return new Transform3D(Basis * tmpBasis, Origin);
         }
 
         /// <summary>
@@ -207,7 +231,7 @@ namespace Godot
         /// <returns>The scaled transformation matrix.</returns>
         public readonly Transform3D Scaled(Vector3 scale)
         {
-            return new Transform3D(basis.Scaled(scale), origin * scale);
+            return new Transform3D(Basis.Scaled(scale), Origin * scale);
         }
 
         /// <summary>
@@ -220,35 +244,7 @@ namespace Godot
         public readonly Transform3D ScaledLocal(Vector3 scale)
         {
             Basis tmpBasis = Basis.FromScale(scale);
-            return new Transform3D(basis * tmpBasis, origin);
-        }
-
-        /// <summary>
-        /// Returns a transform spherically interpolated between this transform and
-        /// another <paramref name="transform"/> by <paramref name="weight"/>.
-        /// </summary>
-        /// <param name="transform">The other transform.</param>
-        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
-        /// <returns>The interpolated transform.</returns>
-        public readonly Transform3D SphericalInterpolateWith(Transform3D transform, real_t weight)
-        {
-            /* not sure if very "efficient" but good enough? */
-
-            Vector3 sourceScale = basis.Scale;
-            Quaternion sourceRotation = basis.GetRotationQuaternion();
-            Vector3 sourceLocation = origin;
-
-            Vector3 destinationScale = transform.basis.Scale;
-            Quaternion destinationRotation = transform.basis.GetRotationQuaternion();
-            Vector3 destinationLocation = transform.origin;
-
-            var interpolated = new Transform3D();
-            Quaternion quaternion = sourceRotation.Slerp(destinationRotation, weight).Normalized();
-            Vector3 scale = sourceScale.Lerp(destinationScale, weight);
-            interpolated.basis.SetQuaternionScale(quaternion, scale);
-            interpolated.origin = sourceLocation.Lerp(destinationLocation, weight);
-
-            return interpolated;
+            return new Transform3D(Basis * tmpBasis, Origin);
         }
 
         private void SetLookAt(Vector3 eye, Vector3 target, Vector3 up)
@@ -269,9 +265,9 @@ namespace Godot
             column0.Normalize();
             column1.Normalize();
 
-            basis = new Basis(column0, column1, column2);
+            Basis = new Basis(column0, column1, column2);
 
-            origin = eye;
+            Origin = eye;
         }
 
         /// <summary>
@@ -283,7 +279,7 @@ namespace Godot
         /// <returns>The translated matrix.</returns>
         public readonly Transform3D Translated(Vector3 offset)
         {
-            return new Transform3D(basis, origin + offset);
+            return new Transform3D(Basis, Origin + offset);
         }
 
         /// <summary>
@@ -295,11 +291,11 @@ namespace Godot
         /// <returns>The translated matrix.</returns>
         public readonly Transform3D TranslatedLocal(Vector3 offset)
         {
-            return new Transform3D(basis, new Vector3
+            return new Transform3D(Basis, new Vector3
             (
-                origin[0] + basis.Row0.Dot(offset),
-                origin[1] + basis.Row1.Dot(offset),
-                origin[2] + basis.Row2.Dot(offset)
+                Origin[0] + Basis.Row0.Dot(offset),
+                Origin[1] + Basis.Row1.Dot(offset),
+                Origin[2] + Basis.Row2.Dot(offset)
             ));
         }
 
@@ -341,32 +337,65 @@ namespace Godot
         /// <param name="origin">The origin vector, or column index 3.</param>
         public Transform3D(Vector3 column0, Vector3 column1, Vector3 column2, Vector3 origin)
         {
-            basis = new Basis(column0, column1, column2);
-            this.origin = origin;
+            Basis = new Basis(column0, column1, column2);
+            Origin = origin;
         }
 
         /// <summary>
-        /// Constructs a transformation matrix from the given <paramref name="quaternion"/>
-        /// and <paramref name="origin"/> vector.
+        /// Constructs a transformation matrix from the given components.
+        /// Arguments are named such that xy is equal to calling <c>Basis.X.Y</c>.
         /// </summary>
-        /// <param name="quaternion">The <see cref="Quaternion"/> to create the basis from.</param>
-        /// <param name="origin">The origin vector, or column index 3.</param>
-        public Transform3D(Quaternion quaternion, Vector3 origin)
+        /// <param name="xx">The X component of the X column vector, accessed via <c>t.Basis.X.X</c> or <c>[0][0]</c>.</param>
+        /// <param name="yx">The X component of the Y column vector, accessed via <c>t.Basis.Y.X</c> or <c>[1][0]</c>.</param>
+        /// <param name="zx">The X component of the Z column vector, accessed via <c>t.Basis.Z.X</c> or <c>[2][0]</c>.</param>
+        /// <param name="xy">The Y component of the X column vector, accessed via <c>t.Basis.X.Y</c> or <c>[0][1]</c>.</param>
+        /// <param name="yy">The Y component of the Y column vector, accessed via <c>t.Basis.Y.Y</c> or <c>[1][1]</c>.</param>
+        /// <param name="zy">The Y component of the Z column vector, accessed via <c>t.Basis.Y.Y</c> or <c>[2][1]</c>.</param>
+        /// <param name="xz">The Z component of the X column vector, accessed via <c>t.Basis.X.Y</c> or <c>[0][2]</c>.</param>
+        /// <param name="yz">The Z component of the Y column vector, accessed via <c>t.Basis.Y.Y</c> or <c>[1][2]</c>.</param>
+        /// <param name="zz">The Z component of the Z column vector, accessed via <c>t.Basis.Y.Y</c> or <c>[2][2]</c>.</param>
+        /// <param name="ox">The X component of the origin vector, accessed via <c>t.Origin.X</c> or <c>[2][0]</c>.</param>
+        /// <param name="oy">The Y component of the origin vector, accessed via <c>t.Origin.Y</c> or <c>[2][1]</c>.</param>
+        /// <param name="oz">The Z component of the origin vector, accessed via <c>t.Origin.Z</c> or <c>[2][2]</c>.</param>
+        public Transform3D(real_t xx, real_t yx, real_t zx, real_t xy, real_t yy, real_t zy, real_t xz, real_t yz, real_t zz, real_t ox, real_t oy, real_t oz)
         {
-            basis = new Basis(quaternion);
-            this.origin = origin;
+            Basis = new Basis(xx, yx, zx, xy, yy, zy, xz, yz, zz);
+            Origin = new Vector3(ox, oy, oz);
         }
 
         /// <summary>
         /// Constructs a transformation matrix from the given <paramref name="basis"/> and
         /// <paramref name="origin"/> vector.
         /// </summary>
-        /// <param name="basis">The <see cref="Basis"/> to create the basis from.</param>
+        /// <param name="basis">The <see cref="Godot.Basis"/> to create the basis from.</param>
         /// <param name="origin">The origin vector, or column index 3.</param>
         public Transform3D(Basis basis, Vector3 origin)
         {
-            this.basis = basis;
-            this.origin = origin;
+            Basis = basis;
+            Origin = origin;
+        }
+
+        /// <summary>
+        /// Constructs a transformation matrix from the given <paramref name="projection"/>
+        /// by trimming the last row of the projection matrix (<c>projection.X.W</c>,
+        /// <c>projection.Y.W</c>, <c>projection.Z.W</c>, and <c>projection.W.W</c>
+        /// are not copied over).
+        /// </summary>
+        /// <param name="projection">The <see cref="Projection"/> to create the transform from.</param>
+        public Transform3D(Projection projection)
+        {
+            Basis = new Basis
+            (
+                projection.X.X, projection.Y.X, projection.Z.X,
+                projection.X.Y, projection.Y.Y, projection.Z.Y,
+                projection.X.Z, projection.Y.Z, projection.Z.Z
+            );
+            Origin = new Vector3
+            (
+                projection.W.X,
+                projection.W.Y,
+                projection.W.Z
+            );
         }
 
         /// <summary>
@@ -379,8 +408,8 @@ namespace Godot
         /// <returns>The composed transform.</returns>
         public static Transform3D operator *(Transform3D left, Transform3D right)
         {
-            left.origin = left * right.origin;
-            left.basis *= right.basis;
+            left.Origin = left * right.Origin;
+            left.Basis *= right.Basis;
             return left;
         }
 
@@ -394,9 +423,9 @@ namespace Godot
         {
             return new Vector3
             (
-                transform.basis.Row0.Dot(vector) + transform.origin.x,
-                transform.basis.Row1.Dot(vector) + transform.origin.y,
-                transform.basis.Row2.Dot(vector) + transform.origin.z
+                transform.Basis.Row0.Dot(vector) + transform.Origin.X,
+                transform.Basis.Row1.Dot(vector) + transform.Origin.Y,
+                transform.Basis.Row2.Dot(vector) + transform.Origin.Z
             );
         }
 
@@ -411,13 +440,13 @@ namespace Godot
         /// <returns>The inversely transformed Vector3.</returns>
         public static Vector3 operator *(Vector3 vector, Transform3D transform)
         {
-            Vector3 vInv = vector - transform.origin;
+            Vector3 vInv = vector - transform.Origin;
 
             return new Vector3
             (
-                (transform.basis.Row0[0] * vInv.x) + (transform.basis.Row1[0] * vInv.y) + (transform.basis.Row2[0] * vInv.z),
-                (transform.basis.Row0[1] * vInv.x) + (transform.basis.Row1[1] * vInv.y) + (transform.basis.Row2[1] * vInv.z),
-                (transform.basis.Row0[2] * vInv.x) + (transform.basis.Row1[2] * vInv.y) + (transform.basis.Row2[2] * vInv.z)
+                (transform.Basis.Row0[0] * vInv.X) + (transform.Basis.Row1[0] * vInv.Y) + (transform.Basis.Row2[0] * vInv.Z),
+                (transform.Basis.Row0[1] * vInv.X) + (transform.Basis.Row1[1] * vInv.Y) + (transform.Basis.Row2[1] * vInv.Z),
+                (transform.Basis.Row0[2] * vInv.X) + (transform.Basis.Row1[2] * vInv.Y) + (transform.Basis.Row2[2] * vInv.Z)
             );
         }
 
@@ -427,19 +456,19 @@ namespace Godot
         /// <param name="transform">The transformation to apply.</param>
         /// <param name="aabb">An AABB to transform.</param>
         /// <returns>The transformed AABB.</returns>
-        public static AABB operator *(Transform3D transform, AABB aabb)
+        public static Aabb operator *(Transform3D transform, Aabb aabb)
         {
             Vector3 min = aabb.Position;
             Vector3 max = aabb.Position + aabb.Size;
 
-            Vector3 tmin = transform.origin;
-            Vector3 tmax = transform.origin;
+            Vector3 tmin = transform.Origin;
+            Vector3 tmax = transform.Origin;
             for (int i = 0; i < 3; i++)
             {
                 for (int j = 0; j < 3; j++)
                 {
-                    real_t e = transform.basis[i][j] * min[j];
-                    real_t f = transform.basis[i][j] * max[j];
+                    real_t e = transform.Basis[i][j] * min[j];
+                    real_t f = transform.Basis[i][j] * max[j];
                     if (e < f)
                     {
                         tmin[i] += e;
@@ -453,7 +482,7 @@ namespace Godot
                 }
             }
 
-            return new AABB(tmin, tmax - tmin);
+            return new Aabb(tmin, tmax - tmin);
         }
 
         /// <summary>
@@ -462,18 +491,18 @@ namespace Godot
         /// <param name="aabb">An AABB to inversely transform.</param>
         /// <param name="transform">The transformation to apply.</param>
         /// <returns>The inversely transformed AABB.</returns>
-        public static AABB operator *(AABB aabb, Transform3D transform)
+        public static Aabb operator *(Aabb aabb, Transform3D transform)
         {
-            Vector3 pos = new Vector3(aabb.Position.x + aabb.Size.x, aabb.Position.y + aabb.Size.y, aabb.Position.z + aabb.Size.z) * transform;
-            Vector3 to1 = new Vector3(aabb.Position.x + aabb.Size.x, aabb.Position.y + aabb.Size.y, aabb.Position.z) * transform;
-            Vector3 to2 = new Vector3(aabb.Position.x + aabb.Size.x, aabb.Position.y, aabb.Position.z + aabb.Size.z) * transform;
-            Vector3 to3 = new Vector3(aabb.Position.x + aabb.Size.x, aabb.Position.y, aabb.Position.z) * transform;
-            Vector3 to4 = new Vector3(aabb.Position.x, aabb.Position.y + aabb.Size.y, aabb.Position.z + aabb.Size.z) * transform;
-            Vector3 to5 = new Vector3(aabb.Position.x, aabb.Position.y + aabb.Size.y, aabb.Position.z) * transform;
-            Vector3 to6 = new Vector3(aabb.Position.x, aabb.Position.y, aabb.Position.z + aabb.Size.z) * transform;
-            Vector3 to7 = new Vector3(aabb.Position.x, aabb.Position.y, aabb.Position.z) * transform;
+            Vector3 pos = new Vector3(aabb.Position.X + aabb.Size.X, aabb.Position.Y + aabb.Size.Y, aabb.Position.Z + aabb.Size.Z) * transform;
+            Vector3 to1 = new Vector3(aabb.Position.X + aabb.Size.X, aabb.Position.Y + aabb.Size.Y, aabb.Position.Z) * transform;
+            Vector3 to2 = new Vector3(aabb.Position.X + aabb.Size.X, aabb.Position.Y, aabb.Position.Z + aabb.Size.Z) * transform;
+            Vector3 to3 = new Vector3(aabb.Position.X + aabb.Size.X, aabb.Position.Y, aabb.Position.Z) * transform;
+            Vector3 to4 = new Vector3(aabb.Position.X, aabb.Position.Y + aabb.Size.Y, aabb.Position.Z + aabb.Size.Z) * transform;
+            Vector3 to5 = new Vector3(aabb.Position.X, aabb.Position.Y + aabb.Size.Y, aabb.Position.Z) * transform;
+            Vector3 to6 = new Vector3(aabb.Position.X, aabb.Position.Y, aabb.Position.Z + aabb.Size.Z) * transform;
+            Vector3 to7 = new Vector3(aabb.Position.X, aabb.Position.Y, aabb.Position.Z) * transform;
 
-            return new AABB(pos, new Vector3()).Expand(to1).Expand(to2).Expand(to3).Expand(to4).Expand(to5).Expand(to6).Expand(to7);
+            return new Aabb(pos, new Vector3()).Expand(to1).Expand(to2).Expand(to3).Expand(to4).Expand(to5).Expand(to6).Expand(to7);
         }
 
         /// <summary>
@@ -484,7 +513,7 @@ namespace Godot
         /// <returns>The transformed Plane.</returns>
         public static Plane operator *(Transform3D transform, Plane plane)
         {
-            Basis bInvTrans = transform.basis.Inverse().Transposed();
+            Basis bInvTrans = transform.Basis.Inverse().Transposed();
 
             // Transform a single point on the plane.
             Vector3 point = transform * (plane.Normal * plane.D);
@@ -505,7 +534,7 @@ namespace Godot
         public static Plane operator *(Plane plane, Transform3D transform)
         {
             Transform3D tInv = transform.AffineInverse();
-            Basis bTrans = transform.basis.Transposed();
+            Basis bTrans = transform.Basis.Transposed();
 
             // Transform a single point on the plane.
             Vector3 point = tInv * (plane.Normal * plane.D);
@@ -608,7 +637,7 @@ namespace Godot
         /// <returns>Whether or not the matrices are exactly equal.</returns>
         public readonly bool Equals(Transform3D other)
         {
-            return basis.Equals(other.basis) && origin.Equals(other.origin);
+            return Basis.Equals(other.Basis) && Origin.Equals(other.Origin);
         }
 
         /// <summary>
@@ -619,7 +648,7 @@ namespace Godot
         /// <returns>Whether or not the matrices are approximately equal.</returns>
         public readonly bool IsEqualApprox(Transform3D other)
         {
-            return basis.IsEqualApprox(other.basis) && origin.IsEqualApprox(other.origin);
+            return Basis.IsEqualApprox(other.Basis) && Origin.IsEqualApprox(other.Origin);
         }
 
         /// <summary>
@@ -628,7 +657,7 @@ namespace Godot
         /// <returns>A hash code for this transform.</returns>
         public override readonly int GetHashCode()
         {
-            return basis.GetHashCode() ^ origin.GetHashCode();
+            return Basis.GetHashCode() ^ Origin.GetHashCode();
         }
 
         /// <summary>
@@ -637,7 +666,7 @@ namespace Godot
         /// <returns>A string representation of this transform.</returns>
         public override readonly string ToString()
         {
-            return $"[X: {basis.x}, Y: {basis.y}, Z: {basis.z}, O: {origin}]";
+            return $"[X: {Basis.X}, Y: {Basis.Y}, Z: {Basis.Z}, O: {Origin}]";
         }
 
         /// <summary>
@@ -646,7 +675,7 @@ namespace Godot
         /// <returns>A string representation of this transform.</returns>
         public readonly string ToString(string format)
         {
-            return $"[X: {basis.x.ToString(format)}, Y: {basis.y.ToString(format)}, Z: {basis.z.ToString(format)}, O: {origin.ToString(format)}]";
+            return $"[X: {Basis.X.ToString(format)}, Y: {Basis.Y.ToString(format)}, Z: {Basis.Z.ToString(format)}, O: {Origin.ToString(format)}]";
         }
     }
 }
