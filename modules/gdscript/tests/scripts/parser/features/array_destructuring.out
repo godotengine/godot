@@ -1,0 +1,14 @@
+GDTEST_OK
+Simple usage:
+123
+["1234"]
+Complex usage:
+1 2 3 4 5 6
+Typed usage:
+123
+1234
+Empty slot usage:
+1234
+Multiple lines usage:
+123
+1234

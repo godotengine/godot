@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Mismatched type "int" at index 0 in the destructuring expression, expected "String".

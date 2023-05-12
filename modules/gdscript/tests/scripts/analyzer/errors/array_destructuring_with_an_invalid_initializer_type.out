@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Cannot apply destructuring to non-array expression of type "int"
