@@ -64,6 +64,7 @@
 			<description>
 				Returns the item index at the given [param position].
 				When there is no item at that point, -1 will be returned if [param exact] is [code]true[/code], and the closest item index will be returned otherwise.
+				[b]Note:[/b] The returned value is unreliable if called right after modifying the [ItemList], before it redraws in the next frame.
 			</description>
 		</method>
 		<method name="get_item_custom_bg_color" qualifiers="const">
@@ -113,6 +114,15 @@
 			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the metadata value of the specified index.
+			</description>
+		</method>
+		<method name="get_item_rect" qualifiers="const">
+			<return type="Rect2" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="expand" type="bool" default="true" />
+			<description>
+				Returns the position and size of the item with the specified index, in the coordinate system of the [ItemList] node. If [param expand] is [code]true[/code] the last column expands to fill the rest of the row.
+				[b]Note:[/b] The returned value is unreliable if called right after modifying the [ItemList], before it redraws in the next frame.
 			</description>
 		</method>
 		<method name="get_item_text" qualifiers="const">
