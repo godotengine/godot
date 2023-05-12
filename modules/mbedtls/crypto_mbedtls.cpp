@@ -36,6 +36,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/certs_compressed.gen.h"
 #include "core/io/compression.h"
+#include "core/os/os.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
@@ -337,20 +338,26 @@ void CryptoMbedTLS::load_default_certificates(String p_path) {
 	if (!p_path.is_empty()) {
 		// Use certs defined in project settings.
 		default_certs->load(p_path);
-	}
+	} else {
+		// Try to use system certs otherwise.
+		String system_certs = OS::get_singleton()->get_system_ca_certificates();
+		if (!system_certs.is_empty()) {
+			CharString cs = system_certs.utf8();
+			default_certs->load_from_memory((const uint8_t *)cs.get_data(), cs.size());
+			print_verbose("Loaded system CA certificates");
+		}
 #ifdef BUILTIN_CERTS_ENABLED
-	else {
-		// Use builtin certs only if user did not override it in project settings.
-		PackedByteArray out;
-		out.resize(_certs_uncompressed_size + 1);
-		Compression::decompress(out.ptrw(), _certs_uncompressed_size, _certs_compressed, _certs_compressed_size, Compression::MODE_DEFLATE);
-		out.write[_certs_uncompressed_size] = 0; // Make sure it ends with string terminator
-#ifdef DEBUG_ENABLED
-		print_verbose("Loaded builtin certs");
+		else {
+			// Use builtin certs if there are no system certs.
+			PackedByteArray certs;
+			certs.resize(_certs_uncompressed_size + 1);
+			Compression::decompress(certs.ptrw(), _certs_uncompressed_size, _certs_compressed, _certs_compressed_size, Compression::MODE_DEFLATE);
+			certs.write[_certs_uncompressed_size] = 0; // Make sure it ends with string terminator
+			default_certs->load_from_memory(certs.ptr(), certs.size());
+			print_verbose("Loaded builtin CA certificates");
+		}
 #endif
-		default_certs->load_from_memory(out.ptr(), out.size());
 	}
-#endif
 }
 
 Ref<CryptoKey> CryptoMbedTLS::generate_rsa(int p_bytes) {

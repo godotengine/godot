@@ -60,6 +60,7 @@ private:
 	jmethodID _request_permission = nullptr;
 	jmethodID _request_permissions = nullptr;
 	jmethodID _get_granted_permissions = nullptr;
+	jmethodID _get_ca_certificates = nullptr;
 	jmethodID _init_input_devices = nullptr;
 	jmethodID _get_surface = nullptr;
 	jmethodID _is_activity_resumed = nullptr;
@@ -98,6 +99,7 @@ public:
 	bool request_permission(const String &p_name);
 	bool request_permissions();
 	Vector<String> get_granted_permissions() const;
+	String get_ca_certificates() const;
 	void init_input_devices();
 	jobject get_surface();
 	bool is_activity_resumed();
