@@ -496,11 +496,19 @@ bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
 		return font_config_initialized;
 	}
 #endif
+
+#ifndef __linux__
+	// `bsd` includes **all** BSD, not only "other BSD" (see `get_name()`).
+	if (p_feature == "bsd") {
+		return true;
+	}
+#endif
+
 	if (p_feature == "pc") {
 		return true;
 	}
 
-	// Match against the specific OS (linux, freebsd, etc).
+	// Match against the specific OS (`linux`, `freebsd`, `netbsd`, `openbsd`).
 	if (p_feature == get_name().to_lower()) {
 		return true;
 	}
