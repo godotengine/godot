@@ -178,6 +178,8 @@ private:
 	void _theme_changed();
 	void _notify_theme_override_changed();
 	void _invalidate_theme_cache();
+	float mute_on_focus_loss_previous_db = 0.0;
+	bool mute_on_focus_loss_is_tweening = false;
 
 	Viewport *embedder = nullptr;
 
@@ -190,6 +192,8 @@ private:
 	void _window_drop_files(const Vector<String> &p_files);
 	void _rect_changed_callback(const Rect2i &p_callback);
 	void _event_callback(DisplayServer::WindowEvent p_event);
+	void _smooth_audio_mute_callback(float p_db);
+	void _smooth_audio_doone_callback(bool p_mute);
 	virtual bool _can_consume_input_events() const override;
 
 	Ref<Shortcut> debugger_stop_shortcut;

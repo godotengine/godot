@@ -35,10 +35,12 @@
 #include "core/input/shortcut.h"
 #include "core/string/translation.h"
 #include "core/variant/variant_parser.h"
+#include "scene/animation/tween.h"
 #include "scene/gui/control.h"
 #include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
+#include "servers/audio_server.h"
 
 // Dynamic properties.
 
@@ -649,12 +651,31 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 		case DisplayServer::WINDOW_EVENT_FOCUS_IN: {
 			focused = true;
 			_propagate_window_notification(this, NOTIFICATION_WM_WINDOW_FOCUS_IN);
+			if (bool(GLOBAL_GET("audio/general/mute_on_focus_loss"))) {
+				// Unmute the Master bus.
+				print_verbose("Window: Unmuting audio on focus restore.");
+				AudioServer::get_singleton()->set_bus_mute(0, false);
+				// mute_on_focus_loss_is_tweening = true;
+				// Ref<Tween> tween = get_tree()->create_tween();
+				// AudioServer::get_singleton()->AudioServer::set_bus_mute(0, false);
+				// tween->tween_method(callable_mp(this, &Window::_smooth_audio_mute_callback), -80, mute_on_focus_loss_previous_db, 0.5);
+			}
 			emit_signal(SNAME("focus_entered"));
 
 		} break;
 		case DisplayServer::WINDOW_EVENT_FOCUS_OUT: {
 			focused = false;
 			_propagate_window_notification(this, NOTIFICATION_WM_WINDOW_FOCUS_OUT);
+			if (bool(GLOBAL_GET("audio/general/mute_on_focus_loss"))) {
+				// Mute the Master bus.
+				print_verbose("Window: Muting audio on focus loss.");
+				AudioServer::get_singleton()->set_bus_mute(0, true);
+				// mute_on_focus_loss_previous_db = AudioServer::get_singleton()->get_bus_volume_db(0);
+				// mute_on_focus_loss_is_tweening = true;
+				// Ref<Tween> tween = get_tree()->create_tween();
+				// tween->tween_method(callable_mp(this, &Window::_smooth_audio_mute_callback), mute_on_focus_loss_previous_db, -80, 0.5);
+				// tween->tween_callback(callable_mp(AudioServer::get_singleton(), &AudioServer::set_bus_mute).bind(0, true));
+			}
 			emit_signal(SNAME("focus_exited"));
 		} break;
 		case DisplayServer::WINDOW_EVENT_CLOSE_REQUEST: {
@@ -678,6 +699,15 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 		} break;
 	}
 }
+
+// void Window::_smooth_audio_mute_callback(float p_db) {
+// 	AudioServer::get_singleton()->set_bus_volume_db(0, p_db);
+// }
+
+// void Window::_smooth_audio_done_callback(bool p_mute) {
+// 	mute_on_focus_loss_is_tweening = false;
+// 	AudioServer::get_singleton()->set_bus_mute(0, p_mute);
+// }
 
 void Window::update_mouse_cursor_shape() {
 	// The default shape is set in Viewport::_gui_input_event. To instantly
