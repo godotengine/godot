@@ -81,6 +81,20 @@ bool NavigationRegion3D::is_enabled() const {
 	return enabled;
 }
 
+void NavigationRegion3D::set_use_edge_connections(bool p_enabled) {
+	if (use_edge_connections == p_enabled) {
+		return;
+	}
+
+	use_edge_connections = p_enabled;
+
+	NavigationServer3D::get_singleton()->region_set_use_edge_connections(region, use_edge_connections);
+}
+
+bool NavigationRegion3D::get_use_edge_connections() const {
+	return use_edge_connections;
+}
+
 void NavigationRegion3D::set_navigation_layers(uint32_t p_navigation_layers) {
 	if (navigation_layers == p_navigation_layers) {
 		return;
@@ -307,6 +321,9 @@ void NavigationRegion3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NavigationRegion3D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &NavigationRegion3D::is_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_use_edge_connections", "enabled"), &NavigationRegion3D::set_use_edge_connections);
+	ClassDB::bind_method(D_METHOD("get_use_edge_connections"), &NavigationRegion3D::get_use_edge_connections);
+
 	ClassDB::bind_method(D_METHOD("set_navigation_layers", "navigation_layers"), &NavigationRegion3D::set_navigation_layers);
 	ClassDB::bind_method(D_METHOD("get_navigation_layers"), &NavigationRegion3D::get_navigation_layers);
 
@@ -326,6 +343,7 @@ void NavigationRegion3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_mesh", PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"), "set_navigation_mesh", "get_navigation_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_edge_connections"), "set_use_edge_connections", "get_use_edge_connections");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "enter_cost"), "set_enter_cost", "get_enter_cost");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "travel_cost"), "set_travel_cost", "get_travel_cost");
@@ -599,6 +617,13 @@ void NavigationRegion3D::_update_debug_edge_connections_mesh() {
 	}
 
 	if (!is_inside_tree()) {
+		return;
+	}
+
+	if (!use_edge_connections || !NavigationServer3D::get_singleton()->map_get_use_edge_connections(get_world_3d()->get_navigation_map())) {
+		if (debug_edge_connections_instance.is_valid()) {
+			RS::get_singleton()->instance_set_visible(debug_edge_connections_instance, false);
+		}
 		return;
 	}
 

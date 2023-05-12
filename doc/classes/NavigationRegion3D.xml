@@ -61,6 +61,9 @@
 		<member name="travel_cost" type="float" setter="set_travel_cost" getter="get_travel_cost" default="1.0">
 			When pathfinding moves inside this region's navigation mesh the traveled distances are multiplied with [code]travel_cost[/code] for determining the shortest path.
 		</member>
+		<member name="use_edge_connections" type="bool" setter="set_use_edge_connections" getter="get_use_edge_connections" default="true">
+			If enabled the navigation region will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin.
+		</member>
 	</members>
 	<signals>
 		<signal name="bake_finished">
