@@ -8924,6 +8924,11 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		}
 	}
 
+	for (int i = 0; i < frame_count; i++) {
+		//Reset all queries in a query pool before doing any operations with them.
+		vkCmdResetQueryPool(frames[0].setup_command_buffer, frames[i].timestamp_pool, 0, max_timestamp_query_elements);
+	}
+
 	staging_buffer_block_size = GLOBAL_GET("rendering/rendering_device/staging_buffer/block_size_kb");
 	staging_buffer_block_size = MAX(4u, staging_buffer_block_size);
 	staging_buffer_block_size *= 1024; // Kb -> bytes.
