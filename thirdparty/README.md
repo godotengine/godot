@@ -32,13 +32,16 @@ Files extracted from upstream source:
 ## basis_universal
 
 - Upstream: https://github.com/BinomialLLC/basis_universal
-- Version: git (a91e94c8495d7f470d3df326a364d49324cfd4a3, 2022)
+- Version: 1.16.4 (900e40fb5d2502927360fe2f31762bdbb624455f, 2023)
 - License: Apache 2.0
 
 Files extracted from upstream source:
 
 - `encoder/` and `transcoder/` folders
 - `LICENSE`
+
+Applied upstream PR https://github.com/BinomialLLC/basis_universal/pull/344 to
+fix build with our own copy of zstd (patch in `patches`).
 
 
 ## brotli
