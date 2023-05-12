@@ -821,11 +821,11 @@ Error VulkanContext::_check_capabilities() {
 				next = &multiview_features;
 			}
 
-			if(is_device_extension_enabled(VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME)){
+			if (is_device_extension_enabled(VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME)) {
 				graphicspipeline_library_features = {
 					/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_FEATURES_EXT,
 					/*pNext*/ next,
-					/*graphicsPipelineLibrary*/ false
+					/*graphicsPipelineLibrary*/ false,
 				};
 				next = &graphicspipeline_library_features;
 			}
@@ -915,7 +915,7 @@ Error VulkanContext::_check_capabilities() {
 				gplProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_PROPERTIES_EXT;
 				gplProperties.pNext = nextptr;
 
-				nextptr = & gplProperties;
+				nextptr = &gplProperties;
 			}
 
 			physicalDeviceProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
@@ -1441,7 +1441,7 @@ Error VulkanContext::_create_device() {
 		graphicspipeline_library_features.graphicsPipelineLibrary = VK_TRUE;
 		nextptr = &graphicspipeline_library_features;
 	}
-	
+
 	if (device_api_version >= VK_API_VERSION_1_2) {
 		// In Vulkan 1.2 and newer we use a newer struct to enable various features.
 
