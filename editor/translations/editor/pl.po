@@ -82,7 +82,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-19 00:15+0000\n"
+"PO-Revision-Date: 2023-05-04 22:04+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -3483,7 +3483,7 @@ msgid "Dock Position"
 msgstr "Pozycja doku"
 
 msgid "Make Floating"
-msgstr "Zrób ruchomy"
+msgstr "Zrób pływający"
 
 msgid "Add a new scene."
 msgstr "Dodaj nową scenę."
@@ -4482,6 +4482,9 @@ msgstr ""
 "Wszystkie ustawienia wstępne muszą mieć zdefiniowaną ścieżkę eksportu, aby "
 "fukcja Eksportuj wszystko działała."
 
+msgid "Resources to export:"
+msgstr "Zasoby do eksportu:"
+
 msgid "Delete preset '%s'?"
 msgstr "Usunąć profil \"%s\"?"
 
@@ -4537,9 +4540,6 @@ msgstr "Eksportuj jako serwer dedykowany"
 
 msgid "Export Mode:"
 msgstr "Tryb eksportu:"
-
-msgid "Resources to export:"
-msgstr "Zasoby do eksportu:"
 
 msgid ""
 "\"Strip Visuals\" will replace the following resources with placeholders:"

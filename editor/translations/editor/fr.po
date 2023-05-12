@@ -125,13 +125,14 @@
 # Hugo cartier <hugo.toticartier@gmail.com>, 2023.
 # Rémy Lapointe <remy-lapointe@hotmail.ca>, 2023.
 # "Dimitri A." <dimitripilot3@gmail.com>, 2023.
+# Donovan Cartier <donovan.cartier0@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-10 22:42+0000\n"
-"Last-Translator: \"Dimitri A.\" <dimitripilot3@gmail.com>\n"
+"PO-Revision-Date: 2023-04-28 14:50+0000\n"
+"Last-Translator: Donovan Cartier <donovan.cartier0@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -139,7 +140,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
 msgstr "Non défini"
@@ -4600,6 +4601,9 @@ msgstr ""
 "Tous les préréglages doivent avoir un chemin d'exportation défini pour "
 "pouvoir tous les exportés."
 
+msgid "Resources to export:"
+msgstr "Ressources à exporter :"
+
 msgid "Delete preset '%s'?"
 msgstr "Supprimer le préréglage « %s » ?"
 
@@ -4607,7 +4611,7 @@ msgid "%s Export"
 msgstr "Export %s"
 
 msgid "Release"
-msgstr "Publication (release)"
+msgstr "Publication"
 
 msgid "Exporting All"
 msgstr "Tout exporter"
@@ -4656,9 +4660,6 @@ msgstr "Exporter en tant que serveur dédié"
 
 msgid "Export Mode:"
 msgstr "Mode d'exportation :"
-
-msgid "Resources to export:"
-msgstr "Ressources à exporter :"
 
 msgid ""
 "\"Strip Visuals\" will replace the following resources with placeholders:"
@@ -9346,6 +9347,9 @@ msgstr "Créer des os physiques"
 msgid "Export Skeleton Profile As..."
 msgstr "Exporter le profil de squelette en tant que..."
 
+msgid "Skeleton3D"
+msgstr "Squelette 3D"
+
 msgid "Play IK"
 msgstr "Jouer IK"
 
@@ -9398,6 +9402,9 @@ msgstr "Géométrie invalide, impossible de créer l'occulteur de lumière."
 
 msgid "Create LightOccluder2D Sibling"
 msgstr "Créer un LightOccluder2D frère"
+
+msgid "Sprite2D"
+msgstr "Sprite2D"
 
 msgid "Simplification:"
 msgstr "Simplification :"
@@ -9994,11 +10001,21 @@ msgstr "Retourner verticalement"
 msgid "Shift+Ctrl: Draw rectangle."
 msgstr "Maj + Ctrl : Dessiner un rectangle."
 
+msgid "Bucket"
+msgstr "Seau de remplissage"
+
 msgid "Eraser"
 msgstr "Effaceur"
 
 msgid "Tiles"
 msgstr "Tuiles"
+
+msgid ""
+"This TileMap's TileSet has no source configured. Edit the TileSet resource "
+"to add one."
+msgstr ""
+"La TileSet de cette TileMap n'a pas de source configurée. Modifier la "
+"ressource TileSet pour en ajouter une."
 
 msgid "Drag and drop or paste a TileMap selection here to store a pattern."
 msgstr ""
@@ -10787,6 +10804,13 @@ msgstr "Veuillez choisir un fichier \"project.godot\" ou \".zip\"."
 msgid "This directory already contains a Godot project."
 msgstr "Ce répertoire contient déjà un projet Godot."
 
+msgid ""
+"The selected path is not empty. Choosing an empty folder is highly "
+"recommended."
+msgstr ""
+"Le chemin sélectionné n'est pas vide. Il est fortement recommandé de choisir "
+"un répertoire vide."
+
 msgid "New Game Project"
 msgstr "Nouveau projet de jeu"
 
@@ -10816,6 +10840,9 @@ msgstr ""
 
 msgid "Couldn't save project at '%s' (error %d)."
 msgstr "Impossible d'enregistrer le projet à \"%s\" (erreur %d)."
+
+msgid "Warning: This folder is not empty"
+msgstr "Avertissement : Ce répertoire n'est pas vide"
 
 msgid ""
 "You are about to create a Godot project in a non-empty folder.\n"
@@ -11149,6 +11176,10 @@ msgstr "Paramètres du projet (project.godot)"
 
 msgid "Select a Setting or Type its Name"
 msgstr "Sélectionnez un paramètre ou tapez son nom"
+
+msgid "Changed settings will be applied to the editor after restarting."
+msgstr ""
+"Les paramètres modifiés seront appliqués après le redémarrage de l'éditeur."
 
 msgid "Input Map"
 msgstr "Contrôles"
@@ -11734,6 +11765,9 @@ msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr ""
 "Instance invalide pour le format de dictionnaire (sous-classes invalides)"
 
+msgid "Export Scene to glTF 2.0 File"
+msgstr "Exporter la scène vers un fichier glTF 2.0"
+
 msgid "Path to Blender installation is valid."
 msgstr "Le chemin d'accès vers l'installation de Blender est valide."
 
@@ -11956,6 +11990,12 @@ msgstr "Ajouter un ensemble d'actions."
 
 msgid "Pose"
 msgstr "Pose"
+
+msgid "Haptic"
+msgstr "Haptique"
+
+msgid "Unknown"
+msgstr "Inconnu"
 
 msgid "Package name is missing."
 msgstr "Nom du paquet manquant."
@@ -12968,6 +13008,13 @@ msgid "The AnimationPlayer root node is not a valid node."
 msgstr "La racine AnimationPlayer n'est pas un nœud valide."
 
 msgid ""
+"ButtonGroup is intended to be used only with buttons that have toggle_mode "
+"set to true."
+msgstr ""
+"Le ButtonGroup est destiné à être utilisé seulement avec des boutons ayant "
+"la valeur de toggle_mode définie sur true."
+
+msgid ""
 "Color: #%s\n"
 "LMB: Apply color\n"
 "RMB: Remove preset"
@@ -13019,6 +13066,9 @@ msgstr "Alerte !"
 msgid "Please Confirm..."
 msgstr "Veuillez confirmer…"
 
+msgid "You don't have permission to access contents of this folder."
+msgstr "Vous n'avez pas l'autorisation d'accéder au contenu de ce dossier."
+
 msgid "Enable grid minimap."
 msgstr "Activer l'alignement."
 
@@ -13048,6 +13098,22 @@ msgstr ""
 "Impossible de déclarer le nom de nœud '%s' comme unique dans la scène pour "
 "'%s', car ce nom est déjà attribué à '%s'.\n"
 "'%s' n'est plus considéré comme ayant un nom unique."
+
+msgid ""
+"This node is marked as deprecated and will be removed in future versions.\n"
+"Please check the Godot documentation for information about migration."
+msgstr ""
+"Ce nœud est marqué comme déprécié et sera supprimé dans les versions "
+"futures.\n"
+"Veuillez consulter la documentation de Godot pour des informations sur la "
+"migration."
+
+msgid ""
+"This node is marked as experimental and may be subject to removal or major "
+"changes in future versions."
+msgstr ""
+"Ce nœud est marqué comme expérimental et pourrait faire l'objet d'une "
+"suppression ou de changements majeurs dans les versions futures."
 
 msgid ""
 "Default Environment as specified in Project Settings (Rendering -> "

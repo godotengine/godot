@@ -3128,6 +3128,9 @@ msgstr ""
 msgid "Runnable"
 msgstr "Executable"
 
+msgid "Resources to export:"
+msgstr "Recursos per exportar:"
+
 msgid "Delete preset '%s'?"
 msgstr "Esborrar la configuració '%s' ?"
 
@@ -3160,9 +3163,6 @@ msgstr "Exporta els Recursos seleccionats (dependències incloses)"
 
 msgid "Export Mode:"
 msgstr "Mode d'Exportació:"
-
-msgid "Resources to export:"
-msgstr "Recursos per exportar:"
 
 msgid ""
 "Filters to export non-resource files/folders\n"

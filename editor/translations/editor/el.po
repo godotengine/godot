@@ -2700,6 +2700,9 @@ msgstr "Προτύπων Εξαγωγής Godot"
 msgid "Runnable"
 msgstr "Εκτελέσιμο"
 
+msgid "Resources to export:"
+msgstr "Πόροι για εξαγωγή:"
+
 msgid "Delete preset '%s'?"
 msgstr "Διαγραφή διαμόρφωσης '%s';"
 
@@ -2746,9 +2749,6 @@ msgstr "Εξαγωγή επιλεγμένων πόρων (και εξαρτήσ�
 
 msgid "Export Mode:"
 msgstr "Λειτουργία εξαγωγής:"
-
-msgid "Resources to export:"
-msgstr "Πόροι για εξαγωγή:"
 
 msgid "Keep"
 msgstr "Διατήρηση"
