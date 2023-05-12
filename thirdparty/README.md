@@ -79,7 +79,7 @@ in the `patches/` folder when syncing on newer upstream commits.
 ## doctest
 
 - Upstream: https://github.com/onqtam/doctest
-- Version: 2.4.9 (b7c21ec5ceeadb4951b00396fc1e4642dd347e5f, 2022)
+- Version: 2.4.11 (ae7a13539fb71f270b87eb2e874fbac80bc8dda2, 2023)
 - License: MIT
 
 Files extracted from upstream source:
