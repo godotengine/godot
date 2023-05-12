@@ -40,6 +40,10 @@
 #include "scene/gui/check_button.h"
 #include "servers/movie_writer/movie_writer.h"
 
+#define FEATURE_BOX_CUSTOM_ITEM_IDX 0
+#define FEATURE_BOX_ALL_ITEM_IDX 1
+#define FEATURE_BOX_START_ITEM_IDX 2
+
 ProjectSettingsEditor *ProjectSettingsEditor::singleton = nullptr;
 
 void ProjectSettingsEditor::connect_filesystem_dock_signals(FileSystemDock *p_fs_dock) {
@@ -163,7 +167,7 @@ void ProjectSettingsEditor::_property_box_changed(const String &p_text) {
 
 void ProjectSettingsEditor::_feature_selected(int p_index) {
 	Vector<String> t = property_box->get_text().strip_edges().split(".", true, 1);
-	const String feature = p_index ? "." + feature_box->get_item_text(p_index) : "";
+	const String feature = (p_index >= FEATURE_BOX_START_ITEM_IDX) ? "." + feature_box->get_item_text(p_index) : "";
 	property_box->set_text(t[0] + feature);
 	_update_property_box();
 }
@@ -172,25 +176,26 @@ void ProjectSettingsEditor::_update_property_box() {
 	const String setting = _get_setting_name();
 	const Vector<String> t = setting.split(".", true, 1);
 	const String name = t[0];
-	const String feature = (t.size() == 2) ? t[1] : "";
-	bool feature_invalid = (t.size() == 2) && (t[1].is_empty());
+	const String feature = (t.size() == 2) ? t[1] : String();
 
 	add_button->set_disabled(true);
 	del_button->set_disabled(true);
 
+	bool feature_in_list = false;
 	if (!feature.is_empty()) {
-		feature_invalid = true;
-		for (int i = 1; i < feature_box->get_item_count(); i++) {
+		for (int i = FEATURE_BOX_START_ITEM_IDX; i < feature_box->get_item_count(); i++) {
 			if (feature == feature_box->get_item_text(i)) {
-				feature_invalid = false;
+				feature_in_list = true;
 				feature_box->select(i);
 				break;
 			}
 		}
 	}
 
-	if (feature.is_empty() || feature_invalid) {
-		feature_box->select(0);
+	if (feature.is_empty()) {
+		feature_box->select(FEATURE_BOX_ALL_ITEM_IDX);
+	} else if (!feature_in_list) {
+		feature_box->select(FEATURE_BOX_CUSTOM_ITEM_IDX);
 	}
 
 	if (property_box->get_text().is_empty()) {
@@ -207,7 +212,7 @@ void ProjectSettingsEditor::_update_property_box() {
 			type_box->select(0);
 		}
 
-		if (feature_invalid) {
+		if (!feature.is_valid_identifier() && feature != "32" && feature != "64") {
 			return;
 		}
 
@@ -298,6 +303,12 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 		ee->get_export_platform(i)->get_platform_features(&p);
 		for (const String &E : p) {
 			presets.insert(E);
+
+			// This **cannot** be added to `get_platform_features()` or `get_preset_features()`. See GH-76996.
+			if (E == "linuxbsd") {
+				presets.insert("linux");
+				presets.insert("bsd");
+			}
 		}
 	}
 
@@ -319,8 +330,10 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 	}
 
 	feature_box->clear();
-	feature_box->add_item(TTR("(All)"), 0); // So it is always on top.
-	int id = 1;
+	feature_box->add_item(TTR("(Custom)"), FEATURE_BOX_CUSTOM_ITEM_IDX);
+	feature_box->set_item_disabled(FEATURE_BOX_CUSTOM_ITEM_IDX, true);
+	feature_box->add_item(TTR("(All)"), FEATURE_BOX_ALL_ITEM_IDX);
+	int id = FEATURE_BOX_START_ITEM_IDX;
 	for (const String &E : presets) {
 		feature_box->add_item(E, id++);
 	}
