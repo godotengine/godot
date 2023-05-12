@@ -37,7 +37,6 @@
 #include "core/os/os.h"
 #include "scene/gui/color_mode.h"
 #include "servers/display_server.h"
-#include "thirdparty/misc/ok_color.h"
 #include "thirdparty/misc/ok_color_shader.h"
 
 List<Color> ColorPicker::preset_cache;

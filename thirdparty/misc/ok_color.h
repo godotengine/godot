@@ -22,9 +22,8 @@
 #include <cmath>
 #include <cfloat>
 
-class ok_color
+namespace ok_color
 {
-public:
 
 struct Lab { float L; float a; float b; };
 struct RGB { float r; float g; float b; };
@@ -33,11 +32,11 @@ struct HSL { float h; float s; float l; };
 struct LC { float L; float C; };
 
 // Alternative representation of (L_cusp, C_cusp)
-// Encoded so S = C_cusp/L_cusp and T = C_cusp/(1-L_cusp) 
+// Encoded so S = C_cusp/L_cusp and T = C_cusp/(1-L_cusp)
 // The maximum value for C in the triangle is then found as fmin(S*L, T*(1-L)), for a given L
 struct ST { float S; float T; };
 
-static constexpr float pi = 3.1415926535897932384626433832795028841971693993751058209749445923078164062f;
+constexpr float pi = 3.1415926535897932384626433832795028841971693993751058209749445923078164062f;
 
 float clamp(float x, float min, float max)
 {
@@ -132,7 +131,7 @@ float compute_max_saturation(float a, float b)
 
 	// Do one step Halley's method to get closer
 	// this gives an error less than 10e6, except for some blue hues where the dS/dh is close to infinite
-	// this should be sufficient for most applications, otherwise do two/three steps 
+	// this should be sufficient for most applications, otherwise do two/three steps
 
 	float k_l = +0.3963377774f * a + 0.2158037573f * b;
 	float k_m = -0.1055613458f * a - 0.0638541728f * b;
@@ -180,7 +179,7 @@ LC find_cusp(float a, float b)
 	return { L_cusp , C_cusp };
 }
 
-// Finds intersection of the line defined by 
+// Finds intersection of the line defined by
 // L = L0 * (1 - t) + t * L1;
 // C = t * C1;
 // a and b must be normalized so a^2 + b^2 == 1
@@ -454,7 +453,7 @@ Cs get_Cs(float L, float a_, float b_)
 
 	float C_max = find_gamut_intersection(a_, b_, L, 1, L, cusp);
 	ST ST_max = to_ST(cusp);
-	
+
 	// Scale factor to compensate for the curved part of gamut shape:
 	float k = C_max / fmin((L * ST_max.S), (1 - L) * ST_max.T);
 
@@ -596,7 +595,7 @@ RGB okhsv_to_srgb(HSV hsv)
 
 	float a_ = cosf(2.f * pi * h);
 	float b_ = sinf(2.f * pi * h);
-	
+
 	LC cusp = find_cusp(a_, b_);
 	ST ST_max = to_ST(cusp);
 	float S_max = ST_max.S;
