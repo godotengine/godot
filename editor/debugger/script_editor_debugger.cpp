@@ -101,6 +101,19 @@ void ScriptEditorDebugger::debug_skip_breakpoints() {
 	_put_msg("set_skip_breakpoints", msg);
 }
 
+void ScriptEditorDebugger::debug_ignore_error_breaks() {
+	ignore_error_breaks_value = !ignore_error_breaks_value;
+	if (ignore_error_breaks_value) {
+		ignore_error_breaks->set_icon(get_theme_icon(SNAME("NotificationDisabled"), SNAME("EditorIcons")));
+	} else {
+		ignore_error_breaks->set_icon(get_theme_icon(SNAME("Notification"), SNAME("EditorIcons")));
+	}
+
+	Array msg;
+	msg.push_back(ignore_error_breaks_value);
+	_put_msg("set_ignore_error_breaks", msg);
+}
+
 void ScriptEditorDebugger::debug_next() {
 	ERR_FAIL_COND(!breaked);
 
@@ -308,6 +321,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		bool can_continue = p_data[0];
 		String error = p_data[1];
 		bool has_stackdump = p_data[2];
+
 		breaked = true;
 		can_request_idle_draw = true;
 		can_debug = can_continue;
@@ -336,7 +350,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		profiler->disable_seeking();
 
 		visual_profiler->set_enabled(true);
-
+	} else if (p_msg == "error_message") {
+		ERR_FAIL_COND(p_data.size() != 1);
+		String error = p_data[0];
+		ERR_PRINT(error);
 	} else if (p_msg == "set_pid") {
 		ERR_FAIL_COND(p_data.size() < 1);
 		remote_pid = p_data[0];
@@ -813,6 +830,11 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			tabs->add_theme_style_override("panel", get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
 
 			skip_breakpoints->set_icon(get_theme_icon(skip_breakpoints_value ? SNAME("DebugSkipBreakpointsOn") : SNAME("DebugSkipBreakpointsOff"), SNAME("EditorIcons")));
+			ignore_error_breaks->set_icon(get_theme_icon(ignore_error_breaks_value ? SNAME("NotificationDisabled") : SNAME("Notification"), SNAME("EditorIcons")));
+			ignore_error_breaks->add_theme_color_override("icon_normal_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			ignore_error_breaks->add_theme_color_override("icon_hover_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			ignore_error_breaks->add_theme_color_override("icon_pressed_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			ignore_error_breaks->add_theme_color_override("icon_focus_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
 			copy->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
 			step->set_icon(get_theme_icon(SNAME("DebugStep"), SNAME("EditorIcons")));
 			next->set_icon(get_theme_icon(SNAME("DebugNext"), SNAME("EditorIcons")));
@@ -1453,8 +1475,12 @@ void ScriptEditorDebugger::reload_scripts() {
 	_put_msg("reload_scripts", Array());
 }
 
-bool ScriptEditorDebugger::is_skip_breakpoints() {
+bool ScriptEditorDebugger::is_skip_breakpoints() const {
 	return skip_breakpoints_value;
+}
+
+bool ScriptEditorDebugger::is_ignore_error_breaks() const {
+	return ignore_error_breaks_value;
 }
 
 void ScriptEditorDebugger::_error_activated() {
@@ -1753,6 +1779,12 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		hbc->add_child(skip_breakpoints);
 		skip_breakpoints->set_tooltip_text(TTR("Skip Breakpoints"));
 		skip_breakpoints->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_skip_breakpoints));
+
+		ignore_error_breaks = memnew(Button);
+		ignore_error_breaks->set_flat(true);
+		hbc->add_child(ignore_error_breaks);
+		ignore_error_breaks->set_tooltip_text(TTR("Ignore Error Breaks"));
+		ignore_error_breaks->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_ignore_error_breaks));
 
 		hbc->add_child(memnew(VSeparator));
 
