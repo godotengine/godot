@@ -67,6 +67,20 @@ bool NavigationRegion2D::is_enabled() const {
 	return enabled;
 }
 
+void NavigationRegion2D::set_use_edge_connections(bool p_enabled) {
+	if (use_edge_connections == p_enabled) {
+		return;
+	}
+
+	use_edge_connections = p_enabled;
+
+	NavigationServer2D::get_singleton()->region_set_use_edge_connections(region, use_edge_connections);
+}
+
+bool NavigationRegion2D::get_use_edge_connections() const {
+	return use_edge_connections;
+}
+
 void NavigationRegion2D::set_navigation_layers(uint32_t p_navigation_layers) {
 	if (navigation_layers == p_navigation_layers) {
 		return;
@@ -160,15 +174,12 @@ void NavigationRegion2D::_notification(int p_what) {
 					}
 				}
 			}
+			current_global_transform = get_global_transform();
+			NavigationServer2D::get_singleton()->region_set_transform(region, current_global_transform);
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			NavigationServer2D::get_singleton()->region_set_transform(region, get_global_transform());
-			for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
-				if (constrain_avoidance_obstacles[i].is_valid()) {
-					NavigationServer2D::get_singleton()->obstacle_set_position(constrain_avoidance_obstacles[i], get_global_position());
-				}
-			}
+			set_physics_process_internal(true);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -179,6 +190,24 @@ void NavigationRegion2D::_notification(int p_what) {
 			for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
 				if (constrain_avoidance_obstacles[i].is_valid()) {
 					NavigationServer2D::get_singleton()->obstacle_set_map(constrain_avoidance_obstacles[i], RID());
+				}
+			}
+		} break;
+
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			set_physics_process_internal(false);
+			if (is_inside_tree()) {
+				Transform2D new_global_transform = get_global_transform();
+				if (current_global_transform != new_global_transform) {
+					current_global_transform = new_global_transform;
+					NavigationServer2D::get_singleton()->region_set_transform(region, current_global_transform);
+					queue_redraw();
+
+					for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
+						if (constrain_avoidance_obstacles[i].is_valid()) {
+							NavigationServer2D::get_singleton()->obstacle_set_position(constrain_avoidance_obstacles[i], get_global_position());
+						}
+					}
 				}
 			}
 		} break;
@@ -195,7 +224,7 @@ void NavigationRegion2D::_notification(int p_what) {
 
 				bool enabled_geometry_face_random_color = ns2d->get_debug_navigation_enable_geometry_face_random_color();
 				bool enabled_edge_lines = ns2d->get_debug_navigation_enable_edge_lines();
-				bool enable_edge_connections = ns2d->get_debug_navigation_enable_edge_connections();
+				bool enable_edge_connections = use_edge_connections && ns2d->get_debug_navigation_enable_edge_connections() && ns2d->map_get_use_edge_connections(get_world_2d()->get_navigation_map());
 
 				Color debug_face_color = ns2d->get_debug_navigation_geometry_face_color();
 				Color debug_edge_color = ns2d->get_debug_navigation_geometry_edge_color();
@@ -325,6 +354,9 @@ void NavigationRegion2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NavigationRegion2D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &NavigationRegion2D::is_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_use_edge_connections", "enabled"), &NavigationRegion2D::set_use_edge_connections);
+	ClassDB::bind_method(D_METHOD("get_use_edge_connections"), &NavigationRegion2D::get_use_edge_connections);
+
 	ClassDB::bind_method(D_METHOD("set_navigation_layers", "navigation_layers"), &NavigationRegion2D::set_navigation_layers);
 	ClassDB::bind_method(D_METHOD("get_navigation_layers"), &NavigationRegion2D::get_navigation_layers);
 
@@ -350,6 +382,7 @@ void NavigationRegion2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_polygon", PROPERTY_HINT_RESOURCE_TYPE, "NavigationPolygon"), "set_navigation_polygon", "get_navigation_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_edge_connections"), "set_use_edge_connections", "get_use_edge_connections");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_2D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "enter_cost"), "set_enter_cost", "get_enter_cost");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "travel_cost"), "set_travel_cost", "get_travel_cost");

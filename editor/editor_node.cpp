@@ -3302,6 +3302,7 @@ void EditorNode::_update_addon_config() {
 	if (enabled_addons.size() == 0) {
 		ProjectSettings::get_singleton()->set("editor_plugins/enabled", Variant());
 	} else {
+		enabled_addons.sort();
 		ProjectSettings::get_singleton()->set("editor_plugins/enabled", enabled_addons);
 	}
 

@@ -302,15 +302,9 @@ void register_core_settings() {
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "network/limits/packet_peer_stream/max_buffer_po2", PROPERTY_HINT_RANGE, "0,64,1,or_greater"), (16));
 	GLOBAL_DEF(PropertyInfo(Variant::STRING, "network/tls/certificate_bundle_override", PROPERTY_HINT_FILE, "*.crt"), "");
 
-	int worker_threads = GLOBAL_DEF("threading/worker_pool/max_threads", -1);
-	bool low_priority_use_system_threads = GLOBAL_DEF("threading/worker_pool/use_system_threads_for_low_priority_tasks", true);
-	float low_property_ratio = GLOBAL_DEF("threading/worker_pool/low_priority_thread_ratio", 0.3);
-
-	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
-		worker_thread_pool->init();
-	} else {
-		worker_thread_pool->init(worker_threads, low_priority_use_system_threads, low_property_ratio);
-	}
+	GLOBAL_DEF("threading/worker_pool/max_threads", -1);
+	GLOBAL_DEF("threading/worker_pool/use_system_threads_for_low_priority_tasks", true);
+	GLOBAL_DEF("threading/worker_pool/low_priority_thread_ratio", 0.3);
 }
 
 void register_core_singletons() {

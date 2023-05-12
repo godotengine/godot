@@ -807,8 +807,8 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 	z = (rows[1][0] - rows[0][1]) / s;
 
 	r_axis = Vector3(x, y, z);
-	// CLAMP to avoid NaN if the value passed to acos is not in [0,1].
-	r_angle = Math::acos(CLAMP((rows[0][0] + rows[1][1] + rows[2][2] - 1) / 2, (real_t)0.0, (real_t)1.0));
+	// acos does clamping.
+	r_angle = Math::acos((rows[0][0] + rows[1][1] + rows[2][2] - 1) / 2);
 }
 
 void Basis::set_quaternion(const Quaternion &p_quaternion) {

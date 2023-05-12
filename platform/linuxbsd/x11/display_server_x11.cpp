@@ -2725,8 +2725,8 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 		XcursorImageDestroy(cursor_image);
 	} else {
 		// Reset to default system cursor
-		if (img[p_shape]) {
-			cursors[p_shape] = XcursorImageLoadCursor(x11_display, img[p_shape]);
+		if (cursor_img[p_shape]) {
+			cursors[p_shape] = XcursorImageLoadCursor(x11_display, cursor_img[p_shape]);
 		}
 
 		CursorShape c = current_cursor;
@@ -5360,7 +5360,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 	for (int i = 0; i < CURSOR_MAX; i++) {
 		cursors[i] = None;
-		img[i] = nullptr;
+		cursor_img[i] = nullptr;
 	}
 
 	XInitThreads(); //always use threads
@@ -5717,8 +5717,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			"question_arrow"
 		};
 
-		img[i] = XcursorLibraryLoadImage(cursor_file[i], cursor_theme, cursor_size);
-		if (!img[i]) {
+		cursor_img[i] = XcursorLibraryLoadImage(cursor_file[i], cursor_theme, cursor_size);
+		if (!cursor_img[i]) {
 			const char *fallback = nullptr;
 
 			switch (i) {
@@ -5756,7 +5756,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 					fallback = "bd_double_arrow";
 					break;
 				case CURSOR_MOVE:
-					img[i] = img[CURSOR_DRAG];
+					cursor_img[i] = cursor_img[CURSOR_DRAG];
 					break;
 				case CURSOR_VSPLIT:
 					fallback = "sb_v_double_arrow";
@@ -5769,11 +5769,11 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 					break;
 			}
 			if (fallback != nullptr) {
-				img[i] = XcursorLibraryLoadImage(fallback, cursor_theme, cursor_size);
+				cursor_img[i] = XcursorLibraryLoadImage(fallback, cursor_theme, cursor_size);
 			}
 		}
-		if (img[i]) {
-			cursors[i] = XcursorImageLoadCursor(x11_display, img[i]);
+		if (cursor_img[i]) {
+			cursors[i] = XcursorImageLoadCursor(x11_display, cursor_img[i]);
 		} else {
 			print_verbose("Failed loading custom cursor: " + String(cursor_file[i]));
 		}
@@ -5912,8 +5912,8 @@ DisplayServerX11::~DisplayServerX11() {
 		if (cursors[i] != None) {
 			XFreeCursor(x11_display, cursors[i]);
 		}
-		if (img[i] != nullptr) {
-			XcursorImageDestroy(img[i]);
+		if (cursor_img[i] != nullptr) {
+			XcursorImageDestroy(cursor_img[i]);
 		}
 	}
 

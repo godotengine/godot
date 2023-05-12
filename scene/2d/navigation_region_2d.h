@@ -37,6 +37,8 @@ class NavigationRegion2D : public Node2D {
 	GDCLASS(NavigationRegion2D, Node2D);
 
 	bool enabled = true;
+	bool use_edge_connections = true;
+
 	RID region;
 	uint32_t navigation_layers = 1;
 	real_t enter_cost = 0.0;
@@ -46,6 +48,8 @@ class NavigationRegion2D : public Node2D {
 	bool constrain_avoidance = false;
 	LocalVector<RID> constrain_avoidance_obstacles;
 	uint32_t avoidance_layers = 1;
+
+	Transform2D current_global_transform;
 
 	void _navigation_polygon_changed();
 	void _map_changed(RID p_RID);
@@ -68,6 +72,9 @@ public:
 
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
+
+	void set_use_edge_connections(bool p_enabled);
+	bool get_use_edge_connections() const;
 
 	void set_navigation_layers(uint32_t p_navigation_layers);
 	uint32_t get_navigation_layers() const;

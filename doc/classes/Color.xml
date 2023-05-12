@@ -141,24 +141,6 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="from_hsl" qualifiers="static">
-			<return type="Color" />
-			<param index="0" name="h" type="float" />
-			<param index="1" name="s" type="float" />
-			<param index="2" name="l" type="float" />
-			<param index="3" name="alpha" type="float" default="1.0" />
-			<description>
-				Constructs a color from an [url=https://en.wikipedia.org/wiki/HSL_and_HSV]HSL profile[/url]. The hue ([param h]), saturation ([param s]), and lightness ([param l]) are typically between 0.0 and 1.0.
-				[codeblocks]
-				[gdscript]
-				var color = Color.from_hsl(0.58, 0.5, 0.79, 0.8)
-				[/gdscript]
-				[csharp]
-				var color = Color.FromHsl(0.58f, 0.5f, 0.79f, 0.8f);
-				[/csharp]
-				[/codeblocks]
-			</description>
-		</method>
 		<method name="from_hsv" qualifiers="static">
 			<return type="Color" />
 			<param index="0" name="h" type="float" />
@@ -510,15 +492,6 @@
 		</member>
 		<member name="h" type="float" setter="" getter="" default="0.0">
 			The HSV hue of this color, on the range 0 to 1.
-		</member>
-		<member name="hsl_h" type="float" setter="" getter="" default="0.0">
-			The HSL hue of this color, on the range 0 to 1.
-		</member>
-		<member name="hsl_l" type="float" setter="" getter="" default="0.0">
-			The HSL lightness of this color, on the range 0 to 1.
-		</member>
-		<member name="hsl_s" type="float" setter="" getter="" default="0.0">
-			The HSL saturation of this color, on the range 0 to 1.
 		</member>
 		<member name="r" type="float" setter="" getter="" default="0.0">
 			The color's red component, typically on the range of 0 to 1.
