@@ -232,19 +232,20 @@ AnimationNodeSync::AnimationNodeSync() {
 }
 
 ////////////////////////////////////////////////////////
-
 void AnimationNodeOneShot::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::BOOL, active, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_READ_ONLY));
-	r_list->push_back(PropertyInfo(Variant::INT, request, PROPERTY_HINT_ENUM, ",Fire,Abort"));
+	r_list->push_back(PropertyInfo(Variant::BOOL, internal_active, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_READ_ONLY));
+	r_list->push_back(PropertyInfo(Variant::INT, request, PROPERTY_HINT_ENUM, ",Fire,Abort,Fade Out"));
 	r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 	r_list->push_back(PropertyInfo(Variant::FLOAT, remaining, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	r_list->push_back(PropertyInfo(Variant::FLOAT, fade_out_remaining, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 	r_list->push_back(PropertyInfo(Variant::FLOAT, time_to_restart, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 }
 
 Variant AnimationNodeOneShot::get_parameter_default_value(const StringName &p_parameter) const {
 	if (p_parameter == request) {
 		return ONE_SHOT_REQUEST_NONE;
-	} else if (p_parameter == active) {
+	} else if (p_parameter == active || p_parameter == internal_active) {
 		return false;
 	} else if (p_parameter == time_to_restart) {
 		return -1;
@@ -254,50 +255,66 @@ Variant AnimationNodeOneShot::get_parameter_default_value(const StringName &p_pa
 }
 
 bool AnimationNodeOneShot::is_parameter_read_only(const StringName &p_parameter) const {
-	if (p_parameter == active) {
+	if (p_parameter == active || p_parameter == internal_active) {
 		return true;
 	}
 	return false;
 }
 
-void AnimationNodeOneShot::set_fadein_time(double p_time) {
+void AnimationNodeOneShot::set_fade_in_time(double p_time) {
 	fade_in = p_time;
 }
 
-void AnimationNodeOneShot::set_fadeout_time(double p_time) {
-	fade_out = p_time;
-}
-
-double AnimationNodeOneShot::get_fadein_time() const {
+double AnimationNodeOneShot::get_fade_in_time() const {
 	return fade_in;
 }
 
-double AnimationNodeOneShot::get_fadeout_time() const {
+void AnimationNodeOneShot::set_fade_out_time(double p_time) {
+	fade_out = p_time;
+}
+
+double AnimationNodeOneShot::get_fade_out_time() const {
 	return fade_out;
 }
 
-void AnimationNodeOneShot::set_autorestart(bool p_active) {
-	autorestart = p_active;
+void AnimationNodeOneShot::set_fade_in_curve(const Ref<Curve> &p_curve) {
+	fade_in_curve = p_curve;
 }
 
-void AnimationNodeOneShot::set_autorestart_delay(double p_time) {
-	autorestart_delay = p_time;
+Ref<Curve> AnimationNodeOneShot::get_fade_in_curve() const {
+	return fade_in_curve;
 }
 
-void AnimationNodeOneShot::set_autorestart_random_delay(double p_time) {
-	autorestart_random_delay = p_time;
+void AnimationNodeOneShot::set_fade_out_curve(const Ref<Curve> &p_curve) {
+	fade_out_curve = p_curve;
 }
 
-bool AnimationNodeOneShot::has_autorestart() const {
-	return autorestart;
+Ref<Curve> AnimationNodeOneShot::get_fade_out_curve() const {
+	return fade_out_curve;
 }
 
-double AnimationNodeOneShot::get_autorestart_delay() const {
-	return autorestart_delay;
+void AnimationNodeOneShot::set_auto_restart_enabled(bool p_enabled) {
+	auto_restart = p_enabled;
 }
 
-double AnimationNodeOneShot::get_autorestart_random_delay() const {
-	return autorestart_random_delay;
+void AnimationNodeOneShot::set_auto_restart_delay(double p_time) {
+	auto_restart_delay = p_time;
+}
+
+void AnimationNodeOneShot::set_auto_restart_random_delay(double p_time) {
+	auto_restart_random_delay = p_time;
+}
+
+bool AnimationNodeOneShot::is_auto_restart_enabled() const {
+	return auto_restart;
+}
+
+double AnimationNodeOneShot::get_auto_restart_delay() const {
+	return auto_restart_delay;
+}
+
+double AnimationNodeOneShot::get_auto_restart_random_delay() const {
+	return auto_restart_random_delay;
 }
 
 void AnimationNodeOneShot::set_mix_mode(MixMode p_mix) {
@@ -319,17 +336,39 @@ bool AnimationNodeOneShot::has_filter() const {
 double AnimationNodeOneShot::_process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only) {
 	OneShotRequest cur_request = static_cast<OneShotRequest>((int)get_parameter(request));
 	bool cur_active = get_parameter(active);
+	bool cur_internal_active = get_parameter(internal_active);
 	double cur_time = get_parameter(time);
 	double cur_remaining = get_parameter(remaining);
+	double cur_fade_out_remaining = get_parameter(fade_out_remaining);
 	double cur_time_to_restart = get_parameter(time_to_restart);
 
 	set_parameter(request, ONE_SHOT_REQUEST_NONE);
 
+	bool is_shooting = true;
+	bool clear_remaining_fade = false;
+	bool is_fading_out = cur_active == true && cur_internal_active == false;
+
+	if (p_time == 0 && p_seek && !p_is_external_seeking) {
+		clear_remaining_fade = true; // Reset occurs.
+	}
+
 	bool do_start = cur_request == ONE_SHOT_REQUEST_FIRE;
 	if (cur_request == ONE_SHOT_REQUEST_ABORT) {
+		set_parameter(internal_active, false);
 		set_parameter(active, false);
 		set_parameter(time_to_restart, -1);
-		return blend_input(0, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, sync, p_test_only);
+		is_shooting = false;
+	} else if (cur_request == ONE_SHOT_REQUEST_FADE_OUT && !is_fading_out) { // If fading, keep current fade.
+		if (cur_active) {
+			// Request fading.
+			is_fading_out = true;
+			cur_fade_out_remaining = fade_out;
+		} else {
+			// Shot is ended, do nothing.
+			is_shooting = false;
+		}
+		set_parameter(internal_active, false);
+		set_parameter(time_to_restart, -1);
 	} else if (!do_start && !cur_active) {
 		if (cur_time_to_restart >= 0.0 && !p_seek) {
 			cur_time_to_restart -= p_time;
@@ -339,19 +378,32 @@ double AnimationNodeOneShot::_process(double p_time, bool p_seek, bool p_is_exte
 			set_parameter(time_to_restart, cur_time_to_restart);
 		}
 		if (!do_start) {
-			return blend_input(0, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, sync, p_test_only);
+			is_shooting = false;
 		}
 	}
 
 	bool os_seek = p_seek;
-	if (p_seek) {
-		cur_time = p_time;
+
+	if (clear_remaining_fade) {
+		os_seek = false;
+		cur_fade_out_remaining = 0;
+		set_parameter(fade_out_remaining, 0);
+		if (is_fading_out) {
+			is_fading_out = false;
+			set_parameter(internal_active, false);
+			set_parameter(active, false);
+		}
+	}
+
+	if (!is_shooting) {
+		return blend_input(0, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, sync, p_test_only);
 	}
 
 	if (do_start) {
 		cur_time = 0;
 		os_seek = true;
 		set_parameter(request, ONE_SHOT_REQUEST_NONE);
+		set_parameter(internal_active, true);
 		set_parameter(active, true);
 	}
 
@@ -361,13 +413,25 @@ double AnimationNodeOneShot::_process(double p_time, bool p_seek, bool p_is_exte
 		if (fade_in > 0) {
 			use_blend = true;
 			blend = cur_time / fade_in;
+			if (fade_in_curve.is_valid()) {
+				blend = fade_in_curve->sample(blend);
+			}
 		} else {
 			blend = 0; // Should not happen.
 		}
-	} else if (!do_start && cur_remaining <= fade_out) {
+	} else if (!do_start && !is_fading_out && cur_remaining <= fade_out) {
+		is_fading_out = true;
+		cur_fade_out_remaining = cur_remaining;
+		set_parameter(internal_active, false);
+	}
+
+	if (is_fading_out) {
 		use_blend = true;
 		if (fade_out > 0) {
-			blend = (cur_remaining / fade_out);
+			blend = cur_fade_out_remaining / fade_out;
+			if (fade_out_curve.is_valid()) {
+				blend = 1.0 - fade_out_curve->sample(1.0 - blend);
+			}
 		} else {
 			blend = 0;
 		}
@@ -385,13 +449,17 @@ double AnimationNodeOneShot::_process(double p_time, bool p_seek, bool p_is_exte
 		cur_remaining = os_rem;
 	}
 
-	if (!p_seek) {
+	if (p_seek) {
+		cur_time = p_time;
+	} else {
 		cur_time += p_time;
 		cur_remaining = os_rem;
-		if (cur_remaining <= 0) {
+		cur_fade_out_remaining -= p_time;
+		if (cur_remaining <= 0 || (is_fading_out && cur_fade_out_remaining <= 0)) {
+			set_parameter(internal_active, false);
 			set_parameter(active, false);
-			if (autorestart) {
-				double restart_sec = autorestart_delay + Math::randd() * autorestart_random_delay;
+			if (auto_restart) {
+				double restart_sec = auto_restart_delay + Math::randd() * auto_restart_random_delay;
 				set_parameter(time_to_restart, restart_sec);
 			}
 		}
@@ -399,25 +467,32 @@ double AnimationNodeOneShot::_process(double p_time, bool p_seek, bool p_is_exte
 
 	set_parameter(time, cur_time);
 	set_parameter(remaining, cur_remaining);
+	set_parameter(fade_out_remaining, cur_fade_out_remaining);
 
 	return MAX(main_rem, cur_remaining);
 }
 
 void AnimationNodeOneShot::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_fadein_time", "time"), &AnimationNodeOneShot::set_fadein_time);
-	ClassDB::bind_method(D_METHOD("get_fadein_time"), &AnimationNodeOneShot::get_fadein_time);
+	ClassDB::bind_method(D_METHOD("set_fadein_time", "time"), &AnimationNodeOneShot::set_fade_in_time);
+	ClassDB::bind_method(D_METHOD("get_fadein_time"), &AnimationNodeOneShot::get_fade_in_time);
 
-	ClassDB::bind_method(D_METHOD("set_fadeout_time", "time"), &AnimationNodeOneShot::set_fadeout_time);
-	ClassDB::bind_method(D_METHOD("get_fadeout_time"), &AnimationNodeOneShot::get_fadeout_time);
+	ClassDB::bind_method(D_METHOD("set_fadein_curve", "curve"), &AnimationNodeOneShot::set_fade_in_curve);
+	ClassDB::bind_method(D_METHOD("get_fadein_curve"), &AnimationNodeOneShot::get_fade_in_curve);
 
-	ClassDB::bind_method(D_METHOD("set_autorestart", "enable"), &AnimationNodeOneShot::set_autorestart);
-	ClassDB::bind_method(D_METHOD("has_autorestart"), &AnimationNodeOneShot::has_autorestart);
+	ClassDB::bind_method(D_METHOD("set_fadeout_time", "time"), &AnimationNodeOneShot::set_fade_out_time);
+	ClassDB::bind_method(D_METHOD("get_fadeout_time"), &AnimationNodeOneShot::get_fade_out_time);
 
-	ClassDB::bind_method(D_METHOD("set_autorestart_delay", "enable"), &AnimationNodeOneShot::set_autorestart_delay);
-	ClassDB::bind_method(D_METHOD("get_autorestart_delay"), &AnimationNodeOneShot::get_autorestart_delay);
+	ClassDB::bind_method(D_METHOD("set_fadeout_curve", "curve"), &AnimationNodeOneShot::set_fade_out_curve);
+	ClassDB::bind_method(D_METHOD("get_fadeout_curve"), &AnimationNodeOneShot::get_fade_out_curve);
 
-	ClassDB::bind_method(D_METHOD("set_autorestart_random_delay", "enable"), &AnimationNodeOneShot::set_autorestart_random_delay);
-	ClassDB::bind_method(D_METHOD("get_autorestart_random_delay"), &AnimationNodeOneShot::get_autorestart_random_delay);
+	ClassDB::bind_method(D_METHOD("set_autorestart", "active"), &AnimationNodeOneShot::set_auto_restart_enabled);
+	ClassDB::bind_method(D_METHOD("has_autorestart"), &AnimationNodeOneShot::is_auto_restart_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_autorestart_delay", "time"), &AnimationNodeOneShot::set_auto_restart_delay);
+	ClassDB::bind_method(D_METHOD("get_autorestart_delay"), &AnimationNodeOneShot::get_auto_restart_delay);
+
+	ClassDB::bind_method(D_METHOD("set_autorestart_random_delay", "time"), &AnimationNodeOneShot::set_auto_restart_random_delay);
+	ClassDB::bind_method(D_METHOD("get_autorestart_random_delay"), &AnimationNodeOneShot::get_auto_restart_random_delay);
 
 	ClassDB::bind_method(D_METHOD("set_mix_mode", "mode"), &AnimationNodeOneShot::set_mix_mode);
 	ClassDB::bind_method(D_METHOD("get_mix_mode"), &AnimationNodeOneShot::get_mix_mode);
@@ -425,7 +500,9 @@ void AnimationNodeOneShot::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_mode", PROPERTY_HINT_ENUM, "Blend,Add"), "set_mix_mode", "get_mix_mode");
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fadein_time", PROPERTY_HINT_RANGE, "0,60,0.01,or_greater,suffix:s"), "set_fadein_time", "get_fadein_time");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fadein_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_fadein_curve", "get_fadein_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fadeout_time", PROPERTY_HINT_RANGE, "0,60,0.01,or_greater,suffix:s"), "set_fadeout_time", "get_fadeout_time");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fadeout_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_fadeout_curve", "get_fadeout_curve");
 
 	ADD_GROUP("Auto Restart", "autorestart_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autorestart"), "set_autorestart", "has_autorestart");
@@ -436,6 +513,7 @@ void AnimationNodeOneShot::_bind_methods() {
 	BIND_ENUM_CONSTANT(ONE_SHOT_REQUEST_NONE);
 	BIND_ENUM_CONSTANT(ONE_SHOT_REQUEST_FIRE);
 	BIND_ENUM_CONSTANT(ONE_SHOT_REQUEST_ABORT);
+	BIND_ENUM_CONSTANT(ONE_SHOT_REQUEST_FADE_OUT);
 
 	BIND_ENUM_CONSTANT(MIX_MODE_BLEND);
 	BIND_ENUM_CONSTANT(MIX_MODE_ADD);
