@@ -30,11 +30,15 @@
 
 #include "editor_resource_tooltip_plugins.h"
 
+#include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
+#include "scene/audio/audio_stream_player.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/main/window.h"
 
 void EditorResourceTooltipPlugin::_thumbnail_ready(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
 	ObjectID trid = p_udata;
@@ -103,6 +107,7 @@ bool EditorTextureTooltipPlugin::handles(const String &p_resource_type) const {
 Control *EditorTextureTooltipPlugin::make_tooltip_for_path(const String &p_resource_path, const Dictionary &p_metadata, Control *p_base) const {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	VBoxContainer *vb = Object::cast_to<VBoxContainer>(p_base);
+	DEV_ASSERT(vb);
 	vb->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 
 	Vector2 dimensions = p_metadata.get("dimensions", Vector2());
@@ -116,4 +121,30 @@ Control *EditorTextureTooltipPlugin::make_tooltip_for_path(const String &p_resou
 
 	hb->add_child(vb);
 	return hb;
+}
+
+// EditorAudioStreamTooltipPlugin
+
+bool EditorAudioStreamTooltipPlugin::handles(const String &p_resource_type) const {
+	return ClassDB::is_parent_class(p_resource_type, "AudioStream");
+}
+
+Control *EditorAudioStreamTooltipPlugin::make_tooltip_for_path(const String &p_resource_path, const Dictionary &p_metadata, Control *p_base) const {
+	VBoxContainer *vb = Object::cast_to<VBoxContainer>(p_base);
+	DEV_ASSERT(vb);
+
+	double length = p_metadata.get("length", 0.0);
+	if (length >= 60.0) {
+		vb->add_child(memnew(Label(vformat(TTR("Length: %0dm %0ds"), int(length / 60.0), int(fmod(length, 60))))));
+	} else if (length >= 1.0) {
+		vb->add_child(memnew(Label(vformat(TTR("Length: %0.1fs"), length))));
+	} else {
+		vb->add_child(memnew(Label(vformat(TTR("Length: %0.3fs"), length))));
+	}
+
+	TextureRect *tr = memnew(TextureRect);
+	vb->add_child(tr);
+	request_thumbnail(p_resource_path, tr);
+
+	return vb;
 }
