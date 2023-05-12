@@ -44,6 +44,9 @@
 
 typedef GLXContext (*GLXCREATECONTEXTATTRIBSARBPROC)(Display *, GLXFBConfig, GLXContext, Bool, const int *);
 
+// To prevent shadowing warnings
+#undef glXCreateContextAttribsARB
+
 struct GLManager_X11_Private {
 	::GLXContext glx_context;
 };
