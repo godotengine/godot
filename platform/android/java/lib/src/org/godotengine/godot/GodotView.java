@@ -145,10 +145,17 @@ public class GodotView extends GLSurfaceView {
 		inputHandler.onPointerCaptureChange(hasCapture);
 	}
 
+	@Keep
+	private boolean canCapturePointer() {
+		return inputHandler.canCapturePointer();
+	}
+
 	@Override
 	public void requestPointerCapture() {
-		super.requestPointerCapture();
-		inputHandler.onPointerCaptureChange(true);
+		if (canCapturePointer()) {
+			super.requestPointerCapture();
+			inputHandler.onPointerCaptureChange(true);
+		}
 	}
 
 	@Override
