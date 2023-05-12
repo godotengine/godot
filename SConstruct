@@ -703,7 +703,7 @@ if selected_platform in platform_list:
                 env.Append(CCFLAGS=["/W4"])
             elif env["warnings"] == "all":
                 # C4458 is like -Wshadow. Part of /W4 but let's apply it for the default /W3 too.
-                env.Append(CCFLAGS=["/W3", "/w4458"])
+                env.Append(CCFLAGS=["/W3", "/w34458"])
             elif env["warnings"] == "moderate":
                 env.Append(CCFLAGS=["/W2"])
             # Disable warnings which we don't plan to fix.
