@@ -4253,23 +4253,6 @@ Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, cons
 		if (script_icon.is_valid()) {
 			return script_icon;
 		}
-
-		// No custom icon was found in the inheritance chain, so check the base
-		// class of the script instead.
-		String base_type;
-		p_script->get_language()->get_global_class_name(p_script->get_path(), &base_type);
-
-		// Check if the base type is an extension-defined type.
-		Ref<Texture2D> ext_icon = ed.extension_class_get_icon(base_type);
-		if (ext_icon.is_valid()) {
-			return ext_icon;
-		}
-
-		// Look for the base type in the editor theme.
-		// This is only relevant for built-in classes.
-		if (gui_base && gui_base->has_theme_icon(base_type, "EditorIcons")) {
-			return gui_base->get_theme_icon(base_type, "EditorIcons");
-		}
 	}
 
 	// Script was not valid or didn't yield any useful values, try the class name
@@ -4307,22 +4290,28 @@ Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String 
 	ERR_FAIL_NULL_V_MSG(p_object, nullptr, "Object cannot be null.");
 
 	Ref<Script> scr = p_object->get_script();
+	String base_type = p_object->get_class();
+	String fallback = p_fallback;
 	if (scr.is_null() && p_object->is_class("Script")) {
 		scr = p_object;
+		scr->get_language()->get_global_class_name(scr->get_path(), &base_type);
+		fallback = scr->get_class();
 	}
 
-	return _get_class_or_script_icon(p_object->get_class(), scr, p_fallback);
+	return _get_class_or_script_icon(base_type, scr, fallback);
 }
 
 Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p_fallback) {
 	ERR_FAIL_COND_V_MSG(p_class.is_empty(), nullptr, "Class name cannot be empty.");
 
 	Ref<Script> scr;
+	String base_type = p_class;
 	if (ScriptServer::is_global_class(p_class)) {
 		scr = EditorNode::get_editor_data().script_class_load_script(p_class);
+		base_type = scr->get_instance_base_type();
 	}
 
-	return _get_class_or_script_icon(p_class, scr, p_fallback);
+	return _get_class_or_script_icon(base_type, scr, p_fallback);
 }
 
 bool EditorNode::is_object_of_custom_type(const Object *p_object, const StringName &p_class) {
