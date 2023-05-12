@@ -35,10 +35,12 @@
 #include "core/input/shortcut.h"
 #include "core/string/translation.h"
 #include "core/variant/variant_parser.h"
+#include "scene/animation/tween.h"
 #include "scene/gui/control.h"
 #include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
+#include "servers/audio_server.h"
 
 // Dynamic properties.
 
@@ -649,12 +651,52 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 		case DisplayServer::WINDOW_EVENT_FOCUS_IN: {
 			focused = true;
 			_propagate_window_notification(this, NOTIFICATION_WM_WINDOW_FOCUS_IN);
+
+			if (!Engine::get_singleton()->is_editor_hint()) {
+				const int max_fps_when_unfocused = GLOBAL_GET("application/run/max_fps_when_unfocused");
+				const bool low_processor_mode_when_unfocused = GLOBAL_GET("application/run/low_processor_mode_when_unfocused");
+				if (max_fps_when_unfocused >= 1 || low_processor_mode_when_unfocused) {
+					if (OS::get_singleton()->is_stdout_verbose()) {
+						if (max_fps_when_unfocused >= 1 && low_processor_mode_when_unfocused) {
+							print_line(vformat("Window: Restoring previous maximum FPS (%d) and low-processor mode status (%s) on focus restore.", max_fps_on_focus_loss_previous, low_processor_mode_on_focus_loss_previous ? "enabled" : "disabled"));
+						} else if (max_fps_when_unfocused >= 1) {
+							print_line(vformat("Window: Restoring previous maximum FPS (%d) on focus restore.", max_fps_on_focus_loss_previous));
+						} else {
+							print_line(vformat("Window: Restoring previous low-processor mode status (%s) on focus restore.", low_processor_mode_on_focus_loss_previous ? "enabled" : "disabled"));
+						}
+					}
+					Engine::get_singleton()->set_max_fps(max_fps_on_focus_loss_previous);
+					OS::get_singleton()->set_low_processor_usage_mode(low_processor_mode_on_focus_loss_previous);
+				}
+			}
+
 			emit_signal(SNAME("focus_entered"));
 
 		} break;
 		case DisplayServer::WINDOW_EVENT_FOCUS_OUT: {
 			focused = false;
 			_propagate_window_notification(this, NOTIFICATION_WM_WINDOW_FOCUS_OUT);
+
+			if (!Engine::get_singleton()->is_editor_hint()) {
+				const int max_fps_when_unfocused = GLOBAL_GET("application/run/max_fps_when_unfocused");
+				const bool low_processor_mode_when_unfocused = GLOBAL_GET("application/run/low_processor_mode_when_unfocused");
+				if (max_fps_when_unfocused >= 1 || low_processor_mode_when_unfocused) {
+					if (OS::get_singleton()->is_stdout_verbose()) {
+						if (max_fps_when_unfocused >= 1 && low_processor_mode_when_unfocused) {
+							print_line(vformat("Window: Setting maximum FPS to %d and enabling low-processor mode on focus loss.", max_fps_when_unfocused));
+						} else if (max_fps_when_unfocused >= 1) {
+							print_line(vformat("Window: Setting maximum FPS to %d on focus loss.", max_fps_when_unfocused));
+						} else {
+							print_line("Window: Enabling low-processor mode on focus loss.");
+						}
+					}
+					max_fps_on_focus_loss_previous = Engine::get_singleton()->get_max_fps();
+					Engine::get_singleton()->set_max_fps(max_fps_when_unfocused);
+					low_processor_mode_on_focus_loss_previous = OS::get_singleton()->is_in_low_processor_usage_mode();
+					OS::get_singleton()->set_low_processor_usage_mode(low_processor_mode_when_unfocused);
+				}
+			}
+
 			emit_signal(SNAME("focus_exited"));
 		} break;
 		case DisplayServer::WINDOW_EVENT_CLOSE_REQUEST: {

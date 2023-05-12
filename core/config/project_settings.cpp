@@ -1261,6 +1261,8 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("application/run/main_loop_type", "SceneTree");
 	GLOBAL_DEF("application/config/auto_accept_quit", true);
 	GLOBAL_DEF("application/config/quit_on_go_back", true);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "application/run/max_fps_when_unfocused", PROPERTY_HINT_RANGE, "0,1000,1"), 10);
+	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "application/run/low_processor_mode_when_unfocused"), true);
 
 	// The default window size is tuned to:
 	// - Have a 16:9 aspect ratio,

@@ -311,6 +311,9 @@
 		<member name="application/run/low_processor_mode_sleep_usec" type="int" setter="" getter="" default="6900">
 			Amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage.
 		</member>
+		<member name="application/run/low_processor_mode_when_unfocused" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], enables low-processor usage mode when the window is unfocused. This can be used to reduce power consumption. See also [member application/run/low_processor_mode].
+		</member>
 		<member name="application/run/main_loop_type" type="String" setter="" getter="" default="&quot;SceneTree&quot;">
 			The name of the type implementing the engine's main loop.
 		</member>
@@ -325,6 +328,9 @@
 			If [member display/window/vsync/vsync_mode] is [code]Disabled[/code], limiting the FPS to a high value that can be consistently reached on the system can reduce input lag compared to an uncapped framerate. Since this works by ensuring the GPU load is lower than 100%, this latency reduction is only effective in GPU-bottlenecked scenarios, not CPU-bottlenecked scenarios.
 			See also [member physics/common/physics_ticks_per_second].
 			[b]Note:[/b] This property is only read when the project starts. To change the rendering FPS cap at runtime, set [member Engine.max_fps] instead.
+		</member>
+		<member name="application/run/max_fps_when_unfocused" type="int" setter="" getter="" default="10">
+			Maximum number of frames per second allowed when the window is unfocused. This can be used to reduce power consumption. This override is only applied if set to a value greater than [code]0[/code]. See also [member application/run/max_fps].
 		</member>
 		<member name="audio/buses/channel_disable_threshold_db" type="float" setter="" getter="" default="-60.0">
 			Audio buses will disable automatically when sound goes below a given dB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.

@@ -178,6 +178,8 @@ private:
 	void _theme_changed();
 	void _notify_theme_override_changed();
 	void _invalidate_theme_cache();
+	int max_fps_on_focus_loss_previous = 0;
+	bool low_processor_mode_on_focus_loss_previous = false;
 
 	Viewport *embedder = nullptr;
 
