@@ -54,6 +54,9 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+// To prevent shadowing warnings.
+#undef glGetString
+
 struct vendor {
 	const char *glxvendor = nullptr;
 	int priority = 0;
