@@ -97,6 +97,8 @@ class EditorResourcePreview : public Node {
 	void _preview_ready(const String &p_path, int p_hash, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_small_texture, ObjectID id, const StringName &p_func, const Variant &p_ud, const Dictionary &p_metadata);
 	void _generate_preview(Ref<ImageTexture> &r_texture, Ref<ImageTexture> &r_small_texture, const QueueItem &p_item, const String &cache_base, Dictionary &p_metadata);
 
+	int small_thumbnail_size = -1;
+
 	static void _thread_func(void *ud);
 	void _thread();
 	void _iterate();
@@ -105,6 +107,8 @@ class EditorResourcePreview : public Node {
 	void _read_preview_cache(Ref<FileAccess> p_file, int *r_thumbnail_size, bool *r_has_small_texture, uint64_t *r_modified_time, String *r_hash, Dictionary *r_metadata);
 
 	Vector<Ref<EditorResourcePreviewGenerator>> preview_generators;
+
+	void _update_thumbnail_sizes();
 
 protected:
 	static void _bind_methods();

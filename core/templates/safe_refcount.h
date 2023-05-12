@@ -102,6 +102,17 @@ public:
 		return value.fetch_sub(p_value, std::memory_order_acq_rel) - p_value;
 	}
 
+	_ALWAYS_INLINE_ T bit_or(T p_value) {
+		return value.fetch_or(p_value, std::memory_order_acq_rel);
+	}
+	_ALWAYS_INLINE_ T bit_and(T p_value) {
+		return value.fetch_and(p_value, std::memory_order_acq_rel);
+	}
+
+	_ALWAYS_INLINE_ T bit_xor(T p_value) {
+		return value.fetch_xor(p_value, std::memory_order_acq_rel);
+	}
+
 	// Returns the original value instead of the new one
 	_ALWAYS_INLINE_ T postsub(T p_value) {
 		return value.fetch_sub(p_value, std::memory_order_acq_rel);
