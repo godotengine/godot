@@ -103,13 +103,14 @@
 # Federico Sebastián Florentin <federicoflorentin6@gmail.com>, 2023.
 # Joinner Medina <devjoi2018@gmail.com>, 2023.
 # Pedro Torcatt <pedrotorcattsoto@gmail.com>, 2023.
+# Pedro Zebenzui Ortega Diaz <pipo.tf@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-17 17:39+0000\n"
-"Last-Translator: Luis Ortiz <luisortiz66@hotmail.com>\n"
+"PO-Revision-Date: 2023-05-11 05:49+0000\n"
+"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -117,7 +118,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
 msgstr "Desactivar"
@@ -4560,6 +4561,9 @@ msgstr ""
 "Todos los presets deben tener una ruta de exportación definida para que "
 "Exportar Todo funcione."
 
+msgid "Resources to export:"
+msgstr "Recursos a exportar:"
+
 msgid "Delete preset '%s'?"
 msgstr "¿Eliminar preajuste '%s'?"
 
@@ -4616,9 +4620,6 @@ msgstr "Exportar como servidor dedicado"
 
 msgid "Export Mode:"
 msgstr "Modo de Exportación:"
-
-msgid "Resources to export:"
-msgstr "Recursos a exportar:"
 
 msgid ""
 "\"Strip Visuals\" will replace the following resources with placeholders:"
@@ -7507,6 +7508,15 @@ msgstr "Tamaño de RAM de video: %s MB (%s)"
 msgid "Bake SDF"
 msgstr "Bakear SDF"
 
+msgid ""
+"No faces detected during GPUParticlesCollisionSDF3D bake.\n"
+"Check whether there are visible meshes matching the bake mask within its "
+"extents."
+msgstr ""
+"No se han detectado caras durante el bakeado de GPUParticlesCollisionSDF3D.\n"
+"Comprueba si hay mallas visibles que coincidan con la máscara de bakeado "
+"dentro de sus extensiones."
+
 msgid "Select path for SDF Texture"
 msgstr "Seleccione la ruta para la textura SDF"
 
@@ -8070,8 +8080,14 @@ msgstr "Alinear la Transformación con la Vista"
 msgid "Align Rotation with View"
 msgstr "Alinear la Rotación con la Vista"
 
+msgid "Set Surface %d Override Material"
+msgstr "Establecer Reemplazo de Material de Superficie %d"
+
 msgid "Set Material Override"
 msgstr "Establecer Anulación de Material"
+
+msgid "Cannot drag and drop into multiple selected nodes."
+msgstr "No se puede arrastrar y soltar en varios nodos seleccionados."
 
 msgid "None"
 msgstr "Ninguno"
@@ -8133,6 +8149,9 @@ msgstr "Albedo de VoxelGI"
 msgid "VoxelGI Emission"
 msgstr "Emisión de VoxelGI"
 
+msgid "SDFGI Cascades"
+msgstr "Cascadas SDFGI"
+
 msgid "SDFGI Probes"
 msgstr "Sondas SDFGI"
 
@@ -8142,11 +8161,26 @@ msgstr "Iluminación de Escena"
 msgid "SSAO"
 msgstr "SSAO"
 
+msgid "SSIL"
+msgstr "SSIL"
+
+msgid "VoxelGI/SDFGI Buffer"
+msgstr "Búfer de VoxelGI/SDFGI"
+
 msgid "Disable Mesh LOD"
 msgstr "Desactivar LOD de Mesh"
 
+msgid "OmniLight3D Cluster"
+msgstr "Grupo de OmniLight3D"
+
+msgid "SpotLight3D Cluster"
+msgstr "Grupo de SpotLight3D"
+
+msgid "Decal Cluster"
+msgstr "Grupo de Calcomanías"
+
 msgid "ReflectionProbe Cluster"
-msgstr "Clúster ReflectionProbe"
+msgstr "Grupo de ReflectionProbe"
 
 msgid "Occlusion Culling Buffer"
 msgstr "Búfer de Occlusion Culling"
@@ -8207,6 +8241,21 @@ msgstr "Modificador de Velocidad de Vista Libre"
 
 msgid "Freelook Slow Modifier"
 msgstr "Modificador de Velocidad de Vista Libre"
+
+msgid "Lock Transformation to X axis"
+msgstr "Bloquear Transformación al eje X"
+
+msgid "Lock Transformation to Y axis"
+msgstr "Bloquear Transformación al eje Y"
+
+msgid "Lock Transformation to Z axis"
+msgstr "Bloquear Transformación al eje Z"
+
+msgid "Lock Transformation to YZ plane"
+msgstr "Bloquear Transformación al plano YZ"
+
+msgid "Lock Transformation to XZ plane"
+msgstr "Bloquear Transformación al plano XZ"
 
 msgid "Lock Transformation to XY plane"
 msgstr "Bloquear Transformación al plano XY"
@@ -8287,11 +8336,23 @@ msgstr ""
 msgid "Preview disabled."
 msgstr "Vista previa desactivada."
 
+msgid ""
+"Scene contains\n"
+"WorldEnvironment.\n"
+"Preview disabled."
+msgstr ""
+"Contenidos de la Escena.\n"
+"Entorno Mundial.\n"
+"Vista Previa Desactivada."
+
 msgid "Use Local Space"
 msgstr "Usar Espacio Local"
 
 msgid "Use Snap"
 msgstr "Usar Snap"
+
+msgid "Edit Sun and Environment settings."
+msgstr "Editar Sol y Configuraciones del Entorno."
 
 msgid "Bottom View"
 msgstr "Vista Inferior"
@@ -9434,6 +9495,11 @@ msgstr[1] "{num} constantes"
 msgid "No constants found."
 msgstr "No se encontraron constants."
 
+msgid "1 font"
+msgid_plural "{num} fonts"
+msgstr[0] "1 Fuente"
+msgstr[1] "{num} Fuentes"
+
 msgid "No fonts found."
 msgstr "No se han encontrado fonts."
 
@@ -9444,6 +9510,11 @@ msgstr[1] "{num} tamaño de fuentes"
 
 msgid "No font sizes found."
 msgstr "No se han encontrado tamaños de fuente."
+
+msgid "1 icon"
+msgid_plural "{num} icons"
+msgstr[0] "1 icono"
+msgstr[1] "{num} iconos"
 
 msgid "No icons found."
 msgstr "No se han encontrado icons."
@@ -9798,8 +9869,14 @@ msgstr "Establecer Elemento de Color en el Theme"
 msgid "Set Constant Item in Theme"
 msgstr "Establecer Elemento Constante en el Theme"
 
+msgid "Set Font Size Item in Theme"
+msgstr "Establecer Tamaño de la Fuente en el Objeto del Tema"
+
 msgid "Set Font Item in Theme"
 msgstr "Establecer Elemento de Fuente en el Theme"
+
+msgid "Set Icon Item in Theme"
+msgstr "Establecer Icono en el Tema"
 
 msgid "Set Stylebox Item in Theme"
 msgstr "Establecer Elemento Stylebox en el Theme"
@@ -9951,6 +10028,12 @@ msgstr "Archivo inválido, no es un recurso PackedScene."
 
 msgid "Reload the scene to reflect its most actual state."
 msgstr "Recargar la escena para reflejar su estado actual."
+
+msgid "Merge TileSetAtlasSource"
+msgstr "Combinar TileSetAtlasSource"
+
+msgid "%s (ID: %d)"
+msgstr "%s (ID: %d)"
 
 msgid "Atlas Merging"
 msgstr "Combinar Atlas"
@@ -13174,16 +13257,42 @@ msgid "Not possible to add a new property to synchronize without a root."
 msgstr ""
 "No es posible añadir una nueva propiedad para sincronizar sin una raíz."
 
+msgid "Add from path"
+msgstr "Añadir desde ruta"
+
+msgid "Please select a MultiplayerSynchronizer first."
+msgstr "Por favor, selecciona primero un MultiplayerSynchronizer."
+
+msgid "Set spawn property"
+msgstr "Establecer propiedad de spawn"
+
+msgid "Set sync property"
+msgstr "Establecer propiedad de sincronización"
+
 msgid "Delete Property?"
 msgstr "¿Eliminar Propiedad?"
 
 msgid "Remove Property"
 msgstr "Eliminar Propiedad"
 
+msgid ""
+"A valid NodePath must be set in the \"Spawn Path\" property in order for "
+"MultiplayerSpawner to be able to spawn Nodes."
+msgstr ""
+"Se debe establecer una ruta de nodo válida en la propiedad \"Spawn Path\" "
+"para que MultiplayerSpawner pueda generar nodos."
+
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
 "Se debe crear o establecer un recurso NavigationMesh para que este nodo "
 "funcione."
+
+msgid ""
+"Cannot generate navigation mesh because it does not belong to the edited "
+"scene. Make it unique first."
+msgstr ""
+"No se puede generar una malla de navegación porque no pertenece a la escena "
+"editada. Hazla única primero."
 
 msgid "Bake NavMesh"
 msgstr "Bakear NavMesh"
@@ -13230,11 +13339,68 @@ msgstr "Analizando geometría..."
 msgid "Done!"
 msgstr "¡Hecho!"
 
+msgid "Rename Action"
+msgstr "Renombrar Acción"
+
+msgid "Rename Actions Localized name"
+msgstr "Renombrar nombre Localizado de las Acciones"
+
+msgid "Change Action Type"
+msgstr "Cambiar Tipo de Acción"
+
+msgid "Remove action"
+msgstr "Eliminar acción"
+
+msgid "Add action set"
+msgstr "Añadir conjunto de acciones"
+
+msgid "Remove action set"
+msgstr "Eliminar conjunto de acciones"
+
+msgid "Add interaction profile"
+msgstr "Añadir perfil de interacción"
+
+msgid "Error saving file %s: %s"
+msgstr "Error al guardar el archivo %s: %s"
+
 msgid "Error loading %s: %s."
 msgstr "Error al cargar %s: %s."
 
+msgid "OpenXR Action map:"
+msgstr "Mapa de acción de OpenXR:"
+
+msgid "Remove interaction profile"
+msgstr "Eliminar perfil de interacción"
+
+msgid "Action Map"
+msgstr "Mapa de Acción"
+
+msgid "Add Action Set"
+msgstr "Añadir Conjunto de Acciones"
+
 msgid "Add an action set."
 msgstr "Añadir un conjunto de acciones."
+
+msgid "Add profile"
+msgstr "Añadir perfil"
+
+msgid "Add an interaction profile."
+msgstr "Añadir un perfil de interacción."
+
+msgid "Action Sets"
+msgstr "Conjunto de Acciones"
+
+msgid "Rename Action Set"
+msgstr "Renombrar Conjunto de Acciones"
+
+msgid "Change Action Sets priority"
+msgstr "Cambiar prioridad de los Conjuntos de Acciones"
+
+msgid "Add action"
+msgstr "Añadir acción"
+
+msgid "Delete action"
+msgstr "Eliminar acción"
 
 msgid "Pose"
 msgstr "Pose"

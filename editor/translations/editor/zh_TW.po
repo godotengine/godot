@@ -3184,6 +3184,9 @@ msgstr "使用每個已定義的預設設定來匯出該專案。"
 msgid "All presets must have an export path defined for Export All to work."
 msgstr "所有預設設定都必須定義好匯出路徑，才可使用 [匯出全部] 功能。"
 
+msgid "Resources to export:"
+msgstr "匯出的資源："
+
 msgid "Delete preset '%s'?"
 msgstr "確定要刪除預設設定「%s」？"
 
@@ -3229,9 +3232,6 @@ msgstr "匯出所選資源（與其所有相依性）"
 
 msgid "Export Mode:"
 msgstr "匯出模式："
-
-msgid "Resources to export:"
-msgstr "匯出的資源："
 
 msgid "Keep"
 msgstr "保持"

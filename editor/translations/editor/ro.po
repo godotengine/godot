@@ -30,7 +30,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-19 00:15+0000\n"
+"PO-Revision-Date: 2023-04-23 20:05+0000\n"
 "Last-Translator: RaresX22 <raresadv22@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
@@ -166,8 +166,7 @@ msgid "Refresh"
 msgstr "Reîmprospătare"
 
 msgid "self can't be used because instance is null (not passed)"
-msgstr ""
-"self nu poate fi folosit deoarece instanța este nulă (nu a fost trecută)"
+msgstr "self nu poate fi folosit deoarece instanța este nulă (nefurnizat)"
 
 msgid "Invalid operands to operator %s, %s and %s."
 msgstr "Operanzi invalizi la operatorii %s, %s și %s."
@@ -3103,6 +3102,9 @@ msgstr "Culori de Emisie"
 msgid "Create Emission Points From Node"
 msgstr "Creare Puncte de Emisie din Nod"
 
+msgid "Flat 1"
+msgstr "Neted 1"
+
 msgid "Smoothstep"
 msgstr "PasOmogen"
 
@@ -3345,6 +3347,9 @@ msgstr "Populare"
 
 msgid "Create Navigation Polygon"
 msgstr "Creare Poligon de Navigare"
+
+msgid "Orthogonal"
+msgstr "Ortogonal"
 
 msgid "Use Snap"
 msgstr "Utilizează Snap"

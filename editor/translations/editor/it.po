@@ -82,13 +82,15 @@
 # gianmarco malandra <giamminho12@gmail.com>, 2023.
 # Francesco Franchina <cescus92@gmail.com>, 2023.
 # "Matteo A." <psyduck.boh@gmail.com>, 2023.
+# Davide Mora <mora.davide07@gmail.com>, 2023.
+# Francesco Falcone <francesco01.falcone@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-11 13:46+0000\n"
-"Last-Translator: Riteo Siuga <riteo@posteo.net>\n"
+"PO-Revision-Date: 2023-05-03 11:49+0000\n"
+"Last-Translator: Francesco Falcone <francesco01.falcone@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -96,7 +98,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
 msgstr "Non impostato"
@@ -265,6 +267,12 @@ msgstr "Gesto d'ingrandimento in (%s) con un fattore di %s"
 msgid "Pan Gesture at (%s) with delta (%s)"
 msgstr "Gesto panoramico in (%s) con un delta di (%s)"
 
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "Input MIDI sul Canale=%s Message=%s"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "Evento Input con Scorciatoia=%s"
+
 msgid "Accept"
 msgstr "Accetta"
 
@@ -417,6 +425,9 @@ msgstr "Reimposta i cursori e la selezione"
 
 msgid "Toggle Insert Mode"
 msgstr "Commuta la modalità d'inserimento"
+
+msgid "Submit Text"
+msgstr "Invia il Testo"
 
 msgid "Duplicate Nodes"
 msgstr "Duplica Nodi"
@@ -601,6 +612,9 @@ msgstr "Seleziona tutte le chiavi"
 msgid "Deselect All Keys"
 msgstr "Deseleziona tutte le chiavi"
 
+msgid "Animation Change Transition"
+msgstr "Transizione al cambio dell'Animazione"
+
 msgid "Animation Change Keyframe Value"
 msgstr "Cambia il valore del fotogramma chiave di un'animazione"
 
@@ -685,6 +699,9 @@ msgstr "Cambia Percorso Traccia"
 
 msgid "Toggle this track on/off."
 msgstr "Abilita/Disabilita questa traccia."
+
+msgid "Use Blend"
+msgstr "Usa Blend"
 
 msgid "Update Mode (How this property is set)"
 msgstr "Modalità di aggiornamento (come viene impostata questa proprietà)"
@@ -4349,6 +4366,9 @@ msgstr ""
 "Tutti i preset devono avere un percorso di esportazione definito affinché "
 "\"Esporta tutto\" funzioni."
 
+msgid "Resources to export:"
+msgstr "Risorse da esportare:"
+
 msgid "Delete preset '%s'?"
 msgstr "Eliminare preset \"%s\"?"
 
@@ -4405,9 +4425,6 @@ msgstr "Esporta come server dedicato"
 
 msgid "Export Mode:"
 msgstr "Modalità d'Esportazione:"
-
-msgid "Resources to export:"
-msgstr "Risorse da esportare:"
 
 msgid ""
 "\"Strip Visuals\" will replace the following resources with placeholders:"

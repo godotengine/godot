@@ -59,7 +59,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-19 17:09+0000\n"
+"PO-Revision-Date: 2023-04-30 10:49+0000\n"
 "Last-Translator: Usamiki <amarantus0499@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -4452,6 +4452,9 @@ msgstr ""
 "全てのプリセットはエクスポートが全て機能するために、エクスポートパスを定義す"
 "る必要があります。"
 
+msgid "Resources to export:"
+msgstr "エクスポートするリソース:"
+
 msgid "Delete preset '%s'?"
 msgstr "プリセット '%s' を削除しますか？"
 
@@ -4510,9 +4513,6 @@ msgstr "専用サーバーとしてエクスポート"
 
 msgid "Export Mode:"
 msgstr "エクスポートモード:"
-
-msgid "Resources to export:"
-msgstr "エクスポートするリソース:"
 
 msgid ""
 "\"Strip Visuals\" will replace the following resources with placeholders:"
@@ -9383,7 +9383,7 @@ msgid "Nothing was selected for the import."
 msgstr "インポートするものが選択されていません。"
 
 msgid "Importing Theme Items"
-msgstr "テーマのアイテムをインポート中"
+msgstr "テーマアイテムをインポート中"
 
 msgid "Importing items {n}/{n}"
 msgstr "アイテムをインポート中 {n}/{n}"
@@ -9395,7 +9395,7 @@ msgid "Finalizing"
 msgstr "終了処理中"
 
 msgid "Import Theme Items"
-msgstr "テーマのアイテムをインポート"
+msgstr "テーマアイテムをインポート"
 
 msgid "Filter Items"
 msgstr "アイテムをフィルタ"
@@ -9441,6 +9441,9 @@ msgstr "表示中のすべてのフォントサイズアイテムを選択する
 
 msgid "Select all visible font size items and their data."
 msgstr "表示中のすべてのフォントサイズアイテムとそのデータを選択する。"
+
+msgid "Deselect all visible font size items."
+msgstr "表示中のすべてのフォントサイズアイテムを選択解除する。"
 
 msgid "Select all visible icon items."
 msgstr "表示中のすべてのアイコンアイテムを選択する。"
@@ -9500,6 +9503,9 @@ msgstr ""
 "択は失われます。\n"
 "それでも閉じますか？"
 
+msgid "Remove Type"
+msgstr "タイプを削除"
+
 msgid ""
 "Select a theme type from the list to edit its items.\n"
 "You can add a custom type or import a type with its items from another theme."
@@ -9520,6 +9526,9 @@ msgstr "すべての定数アイテムを除去"
 msgid "Remove All Font Items"
 msgstr "すべてのフォントアイテムを除去"
 
+msgid "Remove All Font Size Items"
+msgstr "すべてのフォントサイズアイテムを除去"
+
 msgid "Remove All Icon Items"
 msgstr "すべてのアイコンアイテムを除去"
 
@@ -9533,8 +9542,29 @@ msgstr ""
 "このテーマタイプは空です。\n"
 "手動もしくは他のテーマからインポートして、アイテムを追加してください。"
 
+msgid "Remove Theme Item"
+msgstr "テーマアイテムを除去"
+
+msgid "Add Theme Type"
+msgstr "テーマタイプを追加"
+
+msgid "Create Theme Item"
+msgstr "テーマアイテムを作成"
+
+msgid "Remove Theme Type"
+msgstr "テーマタイプを削除"
+
 msgid "Remove Data Type Items From Theme"
 msgstr "テーマからデータ型アイテムを除去"
+
+msgid "Remove Class Items From Theme"
+msgstr "テーマからクラスアイテムを除去"
+
+msgid "Remove Custom Items From Theme"
+msgstr "テーマからカスタムアイテムを除去"
+
+msgid "Remove All Items From Theme"
+msgstr "テーマからすべてのアイテムを除去"
 
 msgid "Add Color Item"
 msgstr "カラーアイテムの追加"
@@ -9544,6 +9574,9 @@ msgstr "定数アイテムの追加"
 
 msgid "Add Font Item"
 msgstr "フォントアイテムの追加"
+
+msgid "Add Font Size Item"
+msgstr "フォントサイズアイテムを追加"
 
 msgid "Add Icon Item"
 msgstr "アイコンアイテムの追加"
@@ -9560,11 +9593,17 @@ msgstr "定数アイテム名の変更"
 msgid "Rename Font Item"
 msgstr "フォントアイテム名の変更"
 
+msgid "Rename Font Size Item"
+msgstr "フォントサイズアイテム名の変更"
+
 msgid "Rename Icon Item"
 msgstr "アイコンアイテム名の変更"
 
 msgid "Rename Stylebox Item"
 msgstr "StyleBox アイテム名の変更"
+
+msgid "Rename Theme Item"
+msgstr "テーマアイテム名の変更"
 
 msgid "Invalid file, not a Theme resource."
 msgstr "無効なファイルです。テーマリソースではありません。"
@@ -9666,6 +9705,39 @@ msgstr "タイプを追加"
 msgid "Override All Default Theme Items"
 msgstr "すべてのデフォルトのテーマアイテムを上書き"
 
+msgid "Override Theme Item"
+msgstr "テーマアイテムを上書き"
+
+msgid "Set Color Item in Theme"
+msgstr "テーマにカラーアイテムを設定"
+
+msgid "Set Constant Item in Theme"
+msgstr "テーマに定数アイテムを設定"
+
+msgid "Set Font Size Item in Theme"
+msgstr "テーマにフォントサイズアイテムを設定"
+
+msgid "Set Font Item in Theme"
+msgstr "テーマにフォントアイテムを設定"
+
+msgid "Set Icon Item in Theme"
+msgstr "テーマにアイコンアイテムを設定"
+
+msgid "Set Stylebox Item in Theme"
+msgstr "テーマに StyleBox アイテムを設定"
+
+msgid "Pin Stylebox"
+msgstr "スタイルボックスを固定"
+
+msgid "Unpin Stylebox"
+msgstr "スタイルボックスの固定を解除"
+
+msgid "Set Theme Type Variation"
+msgstr "テーマタイプのバリエーションを設定"
+
+msgid "Set Variation Base Type"
+msgstr "バリエーションのベースタイプを設定"
+
 msgid "Set Base Type"
 msgstr "基底型を設定"
 
@@ -9690,6 +9762,13 @@ msgstr "基底型"
 
 msgid "Select the variation base type from a list of available types."
 msgstr "使用可能なタイプのリストからバリエーションのベースタイプを選択。"
+
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
+msgstr ""
+"組み込みクラスに関連付けられた型は、別の型のバリエーションとしてマークするこ"
+"とはできません。"
 
 msgid "Theme:"
 msgstr "テーマ:"
@@ -9792,8 +9871,17 @@ msgstr "無効なファイルです。PackedScene のリソースではありま
 msgid "Reload the scene to reflect its most actual state."
 msgstr "最も実際の状態を反映させるためにシーンをリロードします。"
 
+msgid "Merge TileSetAtlasSource"
+msgstr "TileSetAtlasSource のマージ"
+
+msgid "%s (ID: %d)"
+msgstr "%s (ID: %d)"
+
 msgid "Atlas Merging"
 msgstr "アトラスのマージ"
+
+msgid "Merge (Keep original Atlases)"
+msgstr "マージ (元のアトラスを保持)"
 
 msgid "Merge"
 msgstr "マージ"
@@ -9801,8 +9889,29 @@ msgstr "マージ"
 msgid "Please select two atlases or more."
 msgstr "2 つ以上のアトラスを選択してください。"
 
+msgid ""
+"Source: %d\n"
+"Atlas coordinates: %s\n"
+"Alternative: 0"
+msgstr ""
+"ソース: %d\n"
+"アトラス座標: %s\n"
+"代替: 0"
+
+msgid ""
+"Source: %d\n"
+"Atlas coordinates: %s\n"
+"Alternative: %d"
+msgstr ""
+"ソース: %d\n"
+"アトラス座標: %s\n"
+"代替: %d"
+
 msgid "Center View"
 msgstr "中心ビュー"
+
+msgid "No atlas source with a valid texture selected."
+msgstr "有効なテクスチャが選択されたアトラス ソースがありません。"
 
 msgid "Base Tiles"
 msgstr "ベース タイル"
@@ -9858,6 +9967,21 @@ msgstr "ペイント設定:"
 msgid "Picker"
 msgstr "ピッカー"
 
+msgid "No terrains"
+msgstr "地形なし"
+
+msgid "No terrain"
+msgstr "地形なし"
+
+msgid "No Texture Atlas Source (ID: %d)"
+msgstr "テクスチャ アトラス ソースなし (ID: %d)"
+
+msgid "Scene Collection Source (ID: %d)"
+msgstr "シーン コレクション ソース (ID: %d)"
+
+msgid "Unknown Type Source (ID: %d)"
+msgstr "不明な型のソース (ID: %d)"
+
 msgid "Add TileSet pattern"
 msgstr "TileSet パターンを追加"
 
@@ -9888,6 +10012,9 @@ msgstr "選択範囲"
 msgid "Paint"
 msgstr "ペイント"
 
+msgid "Shift: Draw line."
+msgstr "Shift: 線を引く"
+
 msgid "Shift+Ctrl: Draw rectangle."
 msgstr "Shift+Ctrl: 四角形を描画"
 
@@ -9895,17 +10022,43 @@ msgctxt "Tool"
 msgid "Line"
 msgstr "ライン"
 
+msgid "Rect"
+msgstr "四角形"
+
+msgid "Bucket"
+msgstr "バケツ"
+
+msgid "Alternatively hold Ctrl with other tools to pick tile."
+msgstr "または、Ctrl キーを押しながら他のツールを使用してタイルを選びます。"
+
+msgid "Eraser"
+msgstr "消しゴム"
+
+msgid "Alternatively use RMB to erase tiles."
+msgstr "または、RMB を使用してタイルを消去します。"
+
 msgid "Contiguous"
 msgstr "隣接"
 
 msgid "Place Random Tile"
 msgstr "ランダムタイルを配置"
 
+msgid ""
+"Modifies the chance of painting nothing instead of a randomly selected tile."
+msgstr "ランダムに選ばれたタイルの代わりに何も描かない確率を変更します。"
+
 msgid "Scattering:"
 msgstr "拡散:"
 
 msgid "Tiles"
 msgstr "タイル"
+
+msgid ""
+"This TileMap's TileSet has no source configured. Edit the TileSet resource "
+"to add one."
+msgstr ""
+"このTileMapのTileSetにはソースが構成されていません。 TileSetリソースを編集し"
+"てソースを追加してください。"
 
 msgid "Sort sources"
 msgstr "ソースの並べ替え"
@@ -9919,14 +10072,62 @@ msgstr "ID (降順) で並び替え"
 msgid "Invalid source selected."
 msgstr "選択したソースが無効です。"
 
+msgid "Patterns"
+msgstr "パターン"
+
+msgid "Drag and drop or paste a TileMap selection here to store a pattern."
+msgstr ""
+"TileMap の選択範囲をここにドラッグ アンド ドロップするか貼り付けて、パターン"
+"を保存します。"
+
+msgid "Paint terrain"
+msgstr "地形を塗る"
+
+msgid "Matches Corners and Sides"
+msgstr "角と側面にマッチさせる"
+
+msgid "Matches Corners Only"
+msgstr "角にのみマッチさせる"
+
+msgid "Matches Sides Only"
+msgstr "側面にのみマッチさせる"
+
+msgid "Terrain Set %d (%s)"
+msgstr "地形セット %d (%s)"
+
+msgid ""
+"Connect mode: paints a terrain, then connects it with the surrounding tiles "
+"with the same terrain."
+msgstr ""
+"コネクトモード：地形をペイントし、同じ地形がある周囲のタイルと接続します。"
+
+msgid ""
+"Path mode: paints a terrain, thens connects it to the previous tile painted "
+"within the same stroke."
+msgstr ""
+"パス モード: 地形をペイントし、同じストローク内でペイントされた前のタイルに接"
+"続します。"
+
+msgid "Terrains"
+msgstr "地形"
+
+msgid "Replace Tiles with Proxies"
+msgstr "タイルをプロキシに置き換える"
+
 msgid "No Layers"
 msgstr "レイヤーなし"
 
 msgid "Select Next Tile Map Layer"
 msgstr "次のタイル マップ レイヤーを選択"
 
+msgid "Select Previous Tile Map Layer"
+msgstr "前のタイル マップ レイヤーを選択"
+
 msgid "TileMap Layers"
 msgstr "TileMap レイヤー"
+
+msgid "Highlight Selected TileMap Layer"
+msgstr "選択したタイルマップ レイヤーをハイライト表示"
 
 msgid "Toggle grid visibility."
 msgstr "グリッドの表示を切り替え"
@@ -9938,19 +10139,61 @@ msgid "The edited TileMap node has no TileSet resource."
 msgstr "編集された TileMap ノードには TileSet リソースがありません。"
 
 msgid "Remove Tile Proxies"
-msgstr "タイル プロキシを削除"
+msgstr "タイルプロキシを削除"
+
+msgid "Create Alternative-level Tile Proxy"
+msgstr "代替レベルのタイルプロキシを作成"
+
+msgid "Create Coords-level Tile Proxy"
+msgstr "座標レベルのタイルプロキシを作成"
+
+msgid "Create source-level Tile Proxy"
+msgstr "ソースレベルのタイルプロキシを作成"
+
+msgid "Delete All Invalid Tile Proxies"
+msgstr "すべての無効なタイルプロキシを削除"
 
 msgid "Delete All Tile Proxies"
 msgstr "すべてのタイルプロキシを削除"
 
+msgid "Tile Proxies Management"
+msgstr "タイルプロキシ管理"
+
+msgid "Source-level proxies"
+msgstr "ソースレベルのプロキシ"
+
+msgid "Coords-level proxies"
+msgstr "座標レベルのプロキシ"
+
+msgid "Alternative-level proxies"
+msgstr "代替レベルのプロキシ"
+
+msgid "Add a new tile proxy:"
+msgstr "新しいタイルプロキシを追加:"
+
 msgid "From Source"
 msgstr "ソースから"
+
+msgid "From Coords"
+msgstr "座標から"
+
+msgid "From Alternative"
+msgstr "代替から"
 
 msgid "To Source"
 msgstr "ソースへ"
 
+msgid "To Coords"
+msgstr "座標へ"
+
+msgid "To Alternative"
+msgstr "代替へ"
+
 msgid "Global actions:"
 msgstr "グローバルアクション:"
+
+msgid "Clear Invalid"
+msgstr "無効を除去"
 
 msgid "Atlas"
 msgstr "アトラス"
@@ -9961,8 +10204,22 @@ msgstr "ベース タイル"
 msgid "Alternative Tile"
 msgstr "代替タイル"
 
+msgid ""
+"Selected tile:\n"
+"Source: %d\n"
+"Atlas coordinates: %s\n"
+"Alternative: %d"
+msgstr ""
+"選択したタイル:\n"
+"ソース: %d\n"
+"アトラス座標: %s\n"
+"代替: %d"
+
 msgid "Rendering"
 msgstr "レンダリング"
+
+msgid "Texture Origin"
+msgstr "テクスチャの原点"
 
 msgid "Z Index"
 msgstr "Zインデックス"
@@ -9991,8 +10248,44 @@ msgstr "カスタムデータ %d"
 msgid "Select a property editor"
 msgstr "プロパティエディタを選択"
 
+msgid "Create tiles"
+msgstr "タイルを作成"
+
+msgid "Create a tile"
+msgstr "タイルを作成"
+
+msgid "Remove tiles"
+msgstr "タイルを除去"
+
+msgid "Move a tile"
+msgstr "タイルを移動"
+
+msgid "Select tiles"
+msgstr "タイルを選択"
+
+msgid "Resize a tile"
+msgstr "タイルのサイズ変更"
+
+msgid "Remove tile"
+msgstr "タイルを除去"
+
+msgid "Create tile alternatives"
+msgstr "代替タイルを作成"
+
+msgid "Create tiles in non-transparent texture regions"
+msgstr "不透明なテクスチャ領域にタイルを作成"
+
+msgid "Remove tiles in fully transparent texture regions"
+msgstr "完全に透明なテクスチャ領域のタイルを削除"
+
+msgid "Setup"
+msgstr "セットアップ"
+
 msgid "Select tiles."
 msgstr "タイルを選択します。"
+
+msgid "Paint properties."
+msgstr "ペイント設定。"
 
 msgid "No tiles selected."
 msgstr "タイルが選択されていません。"
@@ -10000,20 +10293,85 @@ msgstr "タイルが選択されていません。"
 msgid "Paint Properties:"
 msgstr "ペイント設定:"
 
+msgid "Create Tiles in Non-Transparent Texture Regions"
+msgstr "不透明なテクスチャ領域にタイルを作成"
+
+msgid "Remove Tiles in Fully Transparent Texture Regions"
+msgstr "完全に透明なテクスチャ領域のタイルを削除"
+
+msgid "Create an Alternative Tile"
+msgstr "代替タイルを作成"
+
+msgid "Create a Tile"
+msgstr "タイルを作成"
+
+msgid "Auto Create Tiles in Non-Transparent Texture Regions?"
+msgstr "不透明なテクスチャ領域にタイルを自動作成しますか？"
+
+msgid ""
+"The atlas's texture was modified.\n"
+"Would you like to automatically create tiles in the atlas?"
+msgstr ""
+"アトラスのテクスチャが変更されました。\n"
+"アトラスにタイルを自動的に作成しますか？"
+
 msgid "Yes"
 msgstr "はい"
+
+msgid "No"
+msgstr "いいえ"
 
 msgid "Add a new atlas source"
 msgstr "新しいアトラスソースを追加"
 
+msgid "Remove source"
+msgstr "ソースを削除"
+
+msgid "Add atlas source"
+msgstr "アトラスソースを追加"
+
+msgid "Sort Sources"
+msgstr "ソースの並べ替え"
+
+msgid "Scenes Collection"
+msgstr "シーンコレクション"
+
+msgid "Open Atlas Merging Tool"
+msgstr "アトラスのマージツールを開く"
+
+msgid "Manage Tile Proxies"
+msgstr "タイルプロキシの管理"
+
+msgid "No TileSet source selected. Select or create a TileSet source."
+msgstr "TileSetソース未選択。TileSetソースを選択または作成してください。"
+
+msgid "Add new patterns in the TileMap editing mode."
+msgstr "TileMap 編集モードで新しいパターンを追加します。"
+
 msgid "Add a Scene Tile"
 msgstr "シーンタイルの追加"
+
+msgid "Remove a Scene Tile"
+msgstr "シーン タイルを削除"
+
+msgid "Scenes collection properties:"
+msgstr "シーン コレクションのプロパティ:"
 
 msgid "Tile properties:"
 msgstr "タイル設定:"
 
 msgid "TileSet"
 msgstr "タイルセット"
+
+msgid "TileMap"
+msgstr "TileMap"
+
+msgid ""
+"No VCS plugins are available in the project. Install a VCS plugin to use VCS "
+"integration features."
+msgstr ""
+"プロジェクトで使用できる VCS プラグインがありません。VCS 統合機能を使用するに"
+"は、VCS プラグインをインストールします。"
 
 msgid "Error"
 msgstr "エラー"
@@ -10026,6 +10384,12 @@ msgstr ""
 
 msgid "Commit"
 msgstr "コミット"
+
+msgid "Open in editor"
+msgstr "エディタで開く"
+
+msgid "Discard changes"
+msgstr "変更を破棄"
 
 msgid "Staged Changes"
 msgstr "ステージ済の変更"
@@ -10051,8 +10415,20 @@ msgstr "リモート %s を削除しますか？"
 msgid "Create VCS metadata files for:"
 msgstr "VCSメタデータ ファイルを作成:"
 
+msgid "Existing VCS metadata files will be overwritten."
+msgstr "既存の VCS メタデータ ファイルは上書きされます。"
+
+msgid "Local Settings"
+msgstr "ローカル設定"
+
 msgid "Apply"
 msgstr "適用"
+
+msgid "VCS Provider"
+msgstr "VCS プロバイダー"
+
+msgid "Connect to VCS"
+msgstr "VCS に接続する"
 
 msgid "Remote Login"
 msgstr "リモートログイン"
@@ -10083,6 +10459,12 @@ msgstr "新しい変更点を検出"
 
 msgid "Discard all changes"
 msgstr "すべての変更を破棄"
+
+msgid "This operation is IRREVERSIBLE. Your changes will be deleted FOREVER."
+msgstr "この操作は元に戻せません。あなたの変更は永久に削除されます。"
+
+msgid "Permanentally delete my changes"
+msgstr "変更を完全に削除する"
 
 msgid "Stage all changes"
 msgstr "変更をステージに上げる"
@@ -10156,6 +10538,9 @@ msgstr "タイプ変更"
 msgid "Unmerged"
 msgstr "未マージ"
 
+msgid "View file diffs before committing them to the latest version"
+msgstr "最新のバージョンにコミットする前にファイルの差分を見る"
+
 msgid "View:"
 msgstr "ビュー:"
 
@@ -10195,11 +10580,39 @@ msgstr "入力を追加"
 msgid "Add Output"
 msgstr "出力を追加"
 
+msgid "Float"
+msgstr "Float"
+
+msgid "Int"
+msgstr "Int"
+
+msgid "UInt"
+msgstr "UInt"
+
+msgid "Vector2"
+msgstr "Vector2"
+
+msgid "Vector3"
+msgstr "Vector3"
+
+msgid "Vector4"
+msgstr "Vector4"
+
 msgid "Boolean"
 msgstr "Boolean"
 
 msgid "Sampler"
 msgstr "Sampler"
+
+msgid "[default]"
+msgstr "[デフォルト]"
+
+msgid ""
+"The 2D preview cannot correctly show the result retrieved from instance "
+"parameter."
+msgstr ""
+"2D プレビューでは、インスタンスパラメータから取得した結果を正しく表示できませ"
+"ん。"
 
 msgid "Add Input Port"
 msgstr "入力ポートを追加"
@@ -10207,11 +10620,41 @@ msgstr "入力ポートを追加"
 msgid "Add Output Port"
 msgstr "出力ポートを追加"
 
+msgid "Change Input Port Type"
+msgstr "入力ポートのタイプを変更"
+
+msgid "Change Output Port Type"
+msgstr "出力ポートのタイプを変更"
+
+msgid "Change Input Port Name"
+msgstr "入力ポート名の変更"
+
+msgid "Change Output Port Name"
+msgstr "出力ポート名の変更"
+
+msgid "Expand Output Port"
+msgstr "出力ポートを拡張"
+
+msgid "Shrink Output Port"
+msgstr "出力ポートを縮小"
+
 msgid "Remove Input Port"
 msgstr "入力ポートの除去"
 
 msgid "Remove Output Port"
 msgstr "出力ポートの除去"
+
+msgid "Set VisualShader Expression"
+msgstr "VisualShaderの式を設定"
+
+msgid "Resize VisualShader Node"
+msgstr "VisualShaderノードのサイズを変更"
+
+msgid "Hide Port Preview"
+msgstr "ポート プレビューを非表示"
+
+msgid "Show Port Preview"
+msgstr "ポート プレビューを表示"
 
 msgid "Set Input Default Port"
 msgstr "入力デフォルトポートの設定"
@@ -10222,14 +10665,50 @@ msgstr "ビジュアルシェーダーにノードを追加"
 msgid "Node(s) Moved"
 msgstr "ノードの移動"
 
+msgid "Delete VisualShader Node"
+msgstr "VisualShaderノードを削除"
+
+msgid "Delete VisualShader Node(s)"
+msgstr "VisualShaderノードを削除"
+
+msgid "Float Constants"
+msgstr "浮動小数点定数"
+
+msgid "Convert Constant(s) to Parameter(s)"
+msgstr "定数をパラメーターに変換"
+
+msgid "Convert Parameter(s) to Constant(s)"
+msgstr "パラメーターを定数に変換"
+
+msgid "Set Comment Title"
+msgstr "コメントのタイトルを設定"
+
+msgid "Set Comment Description"
+msgstr "コメントの説明を設定"
+
+msgid "Duplicate VisualShader Node(s)"
+msgstr "VisualShaderノードを複製"
+
+msgid "Paste VisualShader Node(s)"
+msgstr "VisualShaderノードを貼り付け"
+
+msgid "Cut VisualShader Node(s)"
+msgstr "VisualShaderノードを切り取り"
+
 msgid "Visual Shader Input Type Changed"
 msgstr "ビジュアルシェーダーの入力タイプが変更されました"
+
+msgid "ParameterRef Name Changed"
+msgstr "ParameterRefの名前が変更されました"
+
+msgid "Varying Name Changed"
+msgstr "Varyingの名前が変更されました"
 
 msgid "Set Constant: %s"
 msgstr "定数を設定: %s"
 
 msgid "Invalid name for varying."
-msgstr "varyingの名前が無効です。"
+msgstr "Varyingの名前が無効です。"
 
 msgid "Varying with that name is already exist."
 msgstr "その名前の Varying は既に存在します。"

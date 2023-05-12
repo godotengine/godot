@@ -3053,6 +3053,9 @@ msgstr ""
 "Všetky predvoľby musia mať definovanú exportnú cestu, aby fungovala funkcia "
 "\"Exportovať všetko\"."
 
+msgid "Resources to export:"
+msgstr "Zdroje k exportu:"
+
 msgid "Delete preset '%s'?"
 msgstr "Vymazať predvoľbu '%s'?"
 
@@ -3107,9 +3110,6 @@ msgstr "Exportovať ako dedikovaný server"
 
 msgid "Export Mode:"
 msgstr "Mód exportu:"
-
-msgid "Resources to export:"
-msgstr "Zdroje k exportu:"
 
 msgid "Keep"
 msgstr "Zachovať"
