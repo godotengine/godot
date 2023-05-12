@@ -32,6 +32,8 @@
 
 #include "joypad_linux.h"
 
+#include "core/os/os.h"
+
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -72,6 +74,26 @@ void JoypadLinux::Joypad::reset() {
 	events.clear();
 }
 
+// This function is derived from SDL:
+// https://github.com/libsdl-org/SDL/blob/main/src/core/linux/SDL_sandbox.c#L28-L45
+static bool detect_sandbox() {
+	if (access("/.flatpak-info", F_OK) == 0) {
+		return true;
+	}
+
+	// For Snap, we check multiple variables because they might be set for
+	// unrelated reasons. This is the same thing WebKitGTK does.
+	if (OS::get_singleton()->has_environment("SNAP") && OS::get_singleton()->has_environment("SNAP_NAME") && OS::get_singleton()->has_environment("SNAP_REVISION")) {
+		return true;
+	}
+
+	if (access("/run/host/container-manager", F_OK) == 0) {
+		return true;
+	}
+
+	return false;
+}
+
 JoypadLinux::JoypadLinux(Input *in) {
 #ifdef UDEV_ENABLED
 #ifdef SOWRAP_ENABLED
@@ -80,17 +102,25 @@ JoypadLinux::JoypadLinux(Input *in) {
 #else
 	int dylibloader_verbose = 0;
 #endif
-	use_udev = initialize_libudev(dylibloader_verbose) == 0;
-	if (use_udev) {
-		if (!udev_new || !udev_unref || !udev_enumerate_new || !udev_enumerate_add_match_subsystem || !udev_enumerate_scan_devices || !udev_enumerate_get_list_entry || !udev_list_entry_get_next || !udev_list_entry_get_name || !udev_device_new_from_syspath || !udev_device_get_devnode || !udev_device_get_action || !udev_device_unref || !udev_enumerate_unref || !udev_monitor_new_from_netlink || !udev_monitor_filter_add_match_subsystem_devtype || !udev_monitor_enable_receiving || !udev_monitor_get_fd || !udev_monitor_receive_device || !udev_monitor_unref) {
-			// There's no API to check version, check if functions are available instead.
-			use_udev = false;
-			print_verbose("JoypadLinux: Unsupported udev library version!");
-		} else {
-			print_verbose("JoypadLinux: udev enabled and loaded successfully.");
-		}
+	if (detect_sandbox()) {
+		// Linux binaries in sandboxes / containers need special handling because
+		// libudev doesn't work there. So we need to fallback to manual parsing
+		// of /dev/input in such case.
+		use_udev = false;
+		print_verbose("JoypadLinux: udev enabled, but detected incompatible sandboxed mode. Falling back to /dev/input to detect joypads.");
 	} else {
-		print_verbose("JoypadLinux: udev enabled, but couldn't be loaded. Falling back to /dev/input to detect joypads.");
+		use_udev = initialize_libudev(dylibloader_verbose) == 0;
+		if (use_udev) {
+			if (!udev_new || !udev_unref || !udev_enumerate_new || !udev_enumerate_add_match_subsystem || !udev_enumerate_scan_devices || !udev_enumerate_get_list_entry || !udev_list_entry_get_next || !udev_list_entry_get_name || !udev_device_new_from_syspath || !udev_device_get_devnode || !udev_device_get_action || !udev_device_unref || !udev_enumerate_unref || !udev_monitor_new_from_netlink || !udev_monitor_filter_add_match_subsystem_devtype || !udev_monitor_enable_receiving || !udev_monitor_get_fd || !udev_monitor_receive_device || !udev_monitor_unref) {
+				// There's no API to check version, check if functions are available instead.
+				use_udev = false;
+				print_verbose("JoypadLinux: Unsupported udev library version!");
+			} else {
+				print_verbose("JoypadLinux: udev enabled and loaded successfully.");
+			}
+		} else {
+			print_verbose("JoypadLinux: udev enabled, but couldn't be loaded. Falling back to /dev/input to detect joypads.");
+		}
 	}
 #endif
 #else
