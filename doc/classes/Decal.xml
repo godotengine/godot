@@ -107,7 +107,7 @@
 		<member name="texture_orm" type="Texture2D" setter="set_texture" getter="get_texture">
 			[Texture2D] storing ambient occlusion, roughness, and metallic for the decal. Use this to add extra detail to decals.
 			[b]Note:[/b] Unlike [BaseMaterial3D] whose filter mode can be adjusted on a per-material basis, the filter mode for [Decal] textures is set globally with [member ProjectSettings.rendering/textures/decals/filter].
-			[b]Note:[/b] Setting this texture alone will not result in a visible decal, as [member texture_albedo] must also be set. To create a ORM-only decal, load an albedo texture into [member texture_albedo] and set [member albedo_mix] to [code]0.0[/code]. The albedo texture's alpha channel will be used to determine where the underlying surface's ORM map should be overridden (and its intensity).
+			[b]Note:[/b] Setting this texture alone will not result in a visible decal, as [member texture_albedo] must also be set. To create an ORM-only decal, load an albedo texture into [member texture_albedo] and set [member albedo_mix] to [code]0.0[/code]. The albedo texture's alpha channel will be used to determine where the underlying surface's ORM map should be overridden (and its intensity).
 		</member>
 		<member name="upper_fade" type="float" setter="set_upper_fade" getter="get_upper_fade" default="0.3">
 			Sets the curve over which the decal will fade as the surface gets further from the center of the [AABB]. Only positive values are valid (negative values will be clamped to [code]0.0[/code]). See also [member lower_fade].

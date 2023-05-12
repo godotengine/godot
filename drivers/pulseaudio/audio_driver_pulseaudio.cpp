@@ -222,8 +222,8 @@ Error AudioDriverPulseAudio::init_output_device() {
 			break;
 	}
 
-	int latency = GLOBAL_GET("audio/driver/output_latency");
-	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
+	int tmp_latency = GLOBAL_GET("audio/driver/output_latency");
+	buffer_frames = closest_power_of_2(tmp_latency * mix_rate / 1000);
 	pa_buffer_size = buffer_frames * pa_map.channels;
 
 	print_verbose("PulseAudio: detected " + itos(pa_map.channels) + " output channels");

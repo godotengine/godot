@@ -201,6 +201,9 @@ void MultiplayerPeerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_packet_script)
 	GDVIRTUAL_BIND(_put_packet_script, "p_buffer");
 
+	GDVIRTUAL_BIND(_get_packet_channel);
+	GDVIRTUAL_BIND(_get_packet_mode);
+
 	GDVIRTUAL_BIND(_set_transfer_channel, "p_channel");
 	GDVIRTUAL_BIND(_get_transfer_channel);
 
@@ -217,6 +220,7 @@ void MultiplayerPeerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_unique_id);
 	GDVIRTUAL_BIND(_set_refuse_new_connections, "p_enable");
 	GDVIRTUAL_BIND(_is_refusing_new_connections);
+	GDVIRTUAL_BIND(_is_server_relay_supported);
 	GDVIRTUAL_BIND(_get_connection_status);
 
 	ADD_PROPERTY_DEFAULT("transfer_mode", TRANSFER_MODE_RELIABLE);

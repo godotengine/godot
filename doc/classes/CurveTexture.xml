@@ -15,7 +15,7 @@
 		</member>
 		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
 		<member name="texture_mode" type="int" setter="set_texture_mode" getter="get_texture_mode" enum="CurveTexture.TextureMode" default="0">
-			The format the texture should be generated with. When passing a CurveTexture as a input to a [Shader], this may need to be adjusted.
+			The format the texture should be generated with. When passing a CurveTexture as an input to a [Shader], this may need to be adjusted.
 		</member>
 		<member name="width" type="int" setter="set_width" getter="get_width" default="256">
 			The width of the texture (in pixels). Higher values make it possible to represent high-frequency data better (such as sudden direction changes), at the cost of increased generation time and memory usage.

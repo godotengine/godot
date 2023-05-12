@@ -72,8 +72,8 @@ CHHapticEngine *iOS::get_haptic_engine_instance() API_AVAILABLE(ios(13)) {
 void iOS::vibrate_haptic_engine(float p_duration_seconds) API_AVAILABLE(ios(13)) {
 	if (@available(iOS 13, *)) { // We need the @available check every time to make the compiler happy...
 		if (supports_haptic_engine()) {
-			CHHapticEngine *haptic_engine = get_haptic_engine_instance();
-			if (haptic_engine) {
+			CHHapticEngine *cur_haptic_engine = get_haptic_engine_instance();
+			if (cur_haptic_engine) {
 				NSDictionary *hapticDict = @{
 					CHHapticPatternKeyPattern : @[
 						@{CHHapticPatternKeyEvent : @{
@@ -88,7 +88,7 @@ void iOS::vibrate_haptic_engine(float p_duration_seconds) API_AVAILABLE(ios(13))
 				NSError *error;
 				CHHapticPattern *pattern = [[CHHapticPattern alloc] initWithDictionary:hapticDict error:&error];
 
-				[[haptic_engine createPlayerWithPattern:pattern error:&error] startAtTime:0 error:&error];
+				[[cur_haptic_engine createPlayerWithPattern:pattern error:&error] startAtTime:0 error:&error];
 
 				NSLog(@"Could not vibrate using haptic engine: %@", error);
 			}
@@ -103,9 +103,9 @@ void iOS::vibrate_haptic_engine(float p_duration_seconds) API_AVAILABLE(ios(13))
 void iOS::start_haptic_engine() {
 	if (@available(iOS 13, *)) {
 		if (supports_haptic_engine()) {
-			CHHapticEngine *haptic_engine = get_haptic_engine_instance();
-			if (haptic_engine) {
-				[haptic_engine startWithCompletionHandler:^(NSError *returnedError) {
+			CHHapticEngine *cur_haptic_engine = get_haptic_engine_instance();
+			if (cur_haptic_engine) {
+				[cur_haptic_engine startWithCompletionHandler:^(NSError *returnedError) {
 					if (returnedError) {
 						NSLog(@"Could not start haptic engine: %@", returnedError);
 					}
@@ -122,9 +122,9 @@ void iOS::start_haptic_engine() {
 void iOS::stop_haptic_engine() {
 	if (@available(iOS 13, *)) {
 		if (supports_haptic_engine()) {
-			CHHapticEngine *haptic_engine = get_haptic_engine_instance();
-			if (haptic_engine) {
-				[haptic_engine stopWithCompletionHandler:^(NSError *returnedError) {
+			CHHapticEngine *cur_haptic_engine = get_haptic_engine_instance();
+			if (cur_haptic_engine) {
+				[cur_haptic_engine stopWithCompletionHandler:^(NSError *returnedError) {
 					if (returnedError) {
 						NSLog(@"Could not stop haptic engine: %@", returnedError);
 					}

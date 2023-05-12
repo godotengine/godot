@@ -2768,6 +2768,9 @@ msgstr ""
 msgid "Runnable"
 msgstr "Ejecutable"
 
+msgid "Resources to export:"
+msgstr "Recursos a exportar:"
+
 msgid "Delete preset '%s'?"
 msgstr "Eliminar preset '%s'?"
 
@@ -2814,9 +2817,6 @@ msgstr "Exportar recursos seleccionados (y dependencias)"
 
 msgid "Export Mode:"
 msgstr "Modo de Exportación:"
-
-msgid "Resources to export:"
-msgstr "Recursos a exportar:"
 
 msgid "Keep"
 msgstr "Conservar"

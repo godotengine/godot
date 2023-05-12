@@ -15,13 +15,14 @@
 # Kanda Ninthfish <akkhaporn@gmail.com>, 2022.
 # Absurdnoobman <jakkalin91@gmail.com>, 2022.
 # Nuttapong Nut <nuttapong.510123@gmail.com>, 2023.
+# LadsForTea <jajasamag@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-06 00:25+0000\n"
-"Last-Translator: SysError_ <ictsanook@hotmail.com>\n"
+"PO-Revision-Date: 2023-04-28 14:50+0000\n"
+"Last-Translator: LadsForTea <jajasamag@gmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
 "Language: th\n"
@@ -29,7 +30,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.16.2-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
 msgstr "ยกเลิกการตั้งค่า"
@@ -476,7 +477,7 @@ msgid "Show Built-in Actions"
 msgstr "แสดง Action ที่ติดตัวมา"
 
 msgid "Action"
-msgstr "Action"
+msgstr "การกระทำ"
 
 msgid "Deadzone"
 msgstr "Deadzone"
@@ -803,6 +804,12 @@ msgstr "ที่อยู่แทร็กผิดพลาด ไม่ส�
 
 msgid "Add Method Track Key"
 msgstr "เพิ่มคีย์แทร็กเมธอด"
+
+msgid "Rotation"
+msgstr "ช่วงองศา"
+
+msgid "Scale"
+msgstr "ขนาด"
 
 msgid "Methods"
 msgstr "วิธีการ"
@@ -1567,6 +1574,9 @@ msgstr "ชื่อโนด:"
 msgid "Navigation"
 msgstr "ตัวนำทาง"
 
+msgid "Vulkan"
+msgstr "Vulkan"
+
 msgid "File '%s' format is invalid, import aborted."
 msgstr "นามสกุลของไฟล์ '%s' ผิดพลาด ยกเลิกการนำเข้า"
 
@@ -1874,11 +1884,20 @@ msgstr "คุณสมบัติ"
 msgid "default:"
 msgstr "ค่าเริ่มต้น:"
 
+msgid "Constructors"
+msgstr "ตัวสร้าง"
+
+msgid "Operators"
+msgstr "ตัวดำเนินการ"
+
 msgid "Theme Properties"
 msgstr "คุณสมบัติธีม"
 
 msgid "Constants"
 msgstr "ค่าคงที่"
+
+msgid "Fonts"
+msgstr "ฟอนต์"
 
 msgid "Enumerations"
 msgstr "ค่าคงที่แบบมีความหมาย"
@@ -1894,8 +1913,14 @@ msgid ""
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr "คุณสมบัตินี้ยังไม่มีคำอธิบาย โปรดช่วย[color=$color][url=$url]แก้ไข[/url][/color]!"
 
+msgid "Constructor Descriptions"
+msgstr "รายละเอียดของตัวสร้าง"
+
 msgid "Method Descriptions"
 msgstr "รายละเอียดเมท็อด"
+
+msgid "Operator Descriptions"
+msgstr "รายละเอียดของตัวนำเนินการ"
 
 msgid "%d match."
 msgstr "จับคู่ %d"
@@ -2605,6 +2630,9 @@ msgstr "เขียนโปรแกรมในเมท็อด _run()"
 msgid "There is an edited scene already."
 msgstr "มีฉากที่แก้ไขอยู่แล้ว"
 
+msgid "Common"
+msgstr "ทั่วไป"
+
 msgid "Editor Settings"
 msgstr "การตั้งค่าตัวแก้ไข"
 
@@ -2725,6 +2753,9 @@ msgstr "เทมเพลตการส่งออก Godot"
 msgid "Runnable"
 msgstr "สามารถรันได้"
 
+msgid "Resources to export:"
+msgstr "รีซอร์สที่จะส่งออก:"
+
 msgid "Delete preset '%s'?"
 msgstr "ลบพรีเซ็ต '%s'?"
 
@@ -2770,9 +2801,6 @@ msgstr "ส่งออกรีซอร์สที่เลือก (รว�
 
 msgid "Export Mode:"
 msgstr "วิธีการส่งออก:"
-
-msgid "Resources to export:"
-msgstr "รีซอร์สที่จะส่งออก:"
 
 msgid "Keep"
 msgstr "เก็บ"
@@ -3019,6 +3047,12 @@ msgstr "ผิดพลาดขณะรันสคริปต์หลัง
 
 msgid "Saving..."
 msgstr "กำลังบันทึก..."
+
+msgid "2D"
+msgstr "2 มิติ"
+
+msgid "3D"
+msgstr "3 มิติ"
 
 msgid "Select Importer"
 msgstr "เลือกตัวนำเข้า"
@@ -5462,6 +5496,12 @@ msgstr "พลิกแนวนอน"
 msgid "Flip Vertically"
 msgstr "พลิกแนวตั้ง"
 
+msgid "Rendering"
+msgstr "การเรนเดอร์"
+
+msgid "Physics"
+msgstr "ฟิสิกส์"
+
 msgid "Yes"
 msgstr "ใช่"
 
@@ -6745,6 +6785,12 @@ msgstr "RPC กำลังมา"
 
 msgid "Outgoing RPC"
 msgstr "RPC ขาออก"
+
+msgid "Config"
+msgstr "ตั้งค่า"
+
+msgid "Size"
+msgstr "ขนาด"
 
 msgid "Network Profiler"
 msgstr "โปรไฟล์เน็ตเวิร์ก"

@@ -90,13 +90,14 @@
 # 赵不一 <279631638@qq.com>, 2023.
 # WangYi13 <wyi13@outlook.com>, 2023.
 # matrixant <yuan545@hotmail.com>, 2023.
+# GarliCat <phoenixkaze@live.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2023-04-08 06:27+0000\n"
-"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
+"PO-Revision-Date: 2023-04-28 14:50+0000\n"
+"Last-Translator: GarliCat <phoenixkaze@live.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -104,7 +105,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
 msgstr "未设置"
@@ -2623,7 +2624,7 @@ msgid "property:"
 msgstr "属性："
 
 msgid "Constructors"
-msgstr "构造函数"
+msgstr "构造器"
 
 msgid "Operators"
 msgstr "运算符"
@@ -4379,6 +4380,9 @@ msgstr "为定义的每一个预设导出该项目。"
 msgid "All presets must have an export path defined for Export All to work."
 msgstr "所有预设必须都定义导出路径，才能进行“全部导出”。"
 
+msgid "Resources to export:"
+msgstr "导出的资源："
+
 msgid "Delete preset '%s'?"
 msgstr "是否删除预设 “%s”？"
 
@@ -4433,9 +4437,6 @@ msgstr "导出为专用服务器"
 
 msgid "Export Mode:"
 msgstr "导出模式："
-
-msgid "Resources to export:"
-msgstr "导出的资源："
 
 msgid ""
 "\"Strip Visuals\" will replace the following resources with placeholders:"

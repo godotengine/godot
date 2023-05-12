@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,42 +23,14 @@
 #include "tvgLoader.h"
 #include "tvgPngLoader.h"
 
-static inline uint32_t PREMULTIPLY(uint32_t c)
-{
-    auto a = (c >> 24);
-    return (c & 0xff000000) + ((((c >> 8) & 0xff) * a) & 0xff00) + ((((c & 0x00ff00ff) * a) >> 8) & 0x00ff00ff);
-}
+/************************************************************************/
+/* Internal Class Implementation                                        */
+/************************************************************************/
 
 
-static void _premultiply(uint32_t* data, uint32_t w, uint32_t h)
-{
-    auto buffer = data;
-    for (uint32_t y = 0; y < h; ++y, buffer += w) {
-        auto src = buffer;
-        for (uint32_t x = 0; x < w; ++x, ++src) {
-            *src = PREMULTIPLY(*src);
-        }
-    }
-}
-
-
-static inline uint32_t CHANGE_COLORSPACE(uint32_t c)
-{
-    return (c & 0xff000000) + ((c & 0x00ff0000)>>16) + (c & 0x0000ff00) + ((c & 0x000000ff)<<16);
-}
-
-
-static void _changeColorSpace(uint32_t* data, uint32_t w, uint32_t h)
-{
-    auto buffer = data;
-    for (uint32_t y = 0; y < h; ++y, buffer += w) {
-        auto src = buffer;
-        for (uint32_t x = 0; x < w; ++x, ++src) {
-            *src = CHANGE_COLORSPACE(*src);
-        }
-    }
-}
-
+/************************************************************************/
+/* External Class Implementation                                        */
+/************************************************************************/
 
 PngLoader::PngLoader()
 {
@@ -84,6 +56,7 @@ bool PngLoader::open(const string& path)
 
     w = (float)image->width;
     h = (float)image->height;
+    cs = ColorSpace::ARGB8888;
 
     return true;
 }
@@ -96,6 +69,7 @@ bool PngLoader::open(const char* data, uint32_t size, bool copy)
 
     w = (float)image->width;
     h = (float)image->height;
+    cs = ColorSpace::ARGB8888;
 
     return true;
 }
@@ -117,8 +91,6 @@ bool PngLoader::read()
     }
     content = reinterpret_cast<uint32_t*>(buffer);
 
-    _premultiply(reinterpret_cast<uint32_t*>(buffer), image->width, image->height);
-
     return true;
 }
 
@@ -128,20 +100,20 @@ bool PngLoader::close()
     return true;
 }
 
-unique_ptr<Surface> PngLoader::bitmap(uint32_t colorSpace)
+unique_ptr<Surface> PngLoader::bitmap()
 {
     if (!content) return nullptr;
-    if (this->colorSpace != colorSpace) {
-        this->colorSpace = colorSpace;
-        _changeColorSpace(content, w, h);
-    }
 
-    auto surface = static_cast<Surface*>(malloc(sizeof(Surface)));
-    surface->buffer = content;
+    //TODO: It's better to keep this surface instance in the loader side
+    auto surface = new Surface;
+    surface->buf32 = content;
     surface->stride = w;
     surface->w = w;
     surface->h = h;
-    surface->cs = colorSpace;
+    surface->cs = cs;
+    surface->channelSize = sizeof(uint32_t);
+    surface->owner = true;
+    surface->premultiplied = false;
 
     return unique_ptr<Surface>(surface);
 }

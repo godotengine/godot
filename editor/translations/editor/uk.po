@@ -4324,6 +4324,9 @@ msgstr ""
 "Щоб можна було скористатися пунктом «Експортувати усе», має бути визначено "
 "шлях для експортування для усіх наборів."
 
+msgid "Resources to export:"
+msgstr "Експортовані ресурси:"
+
 msgid "Delete preset '%s'?"
 msgstr "Вилучити набір «%s»?"
 
@@ -4378,9 +4381,6 @@ msgstr "Експортувати як виділений сервер"
 
 msgid "Export Mode:"
 msgstr "Режим експортування:"
-
-msgid "Resources to export:"
-msgstr "Експортовані ресурси:"
 
 msgid "Keep"
 msgstr "Не змінювати"

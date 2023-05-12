@@ -59,6 +59,9 @@ class ViewportTexture : public Texture2D {
 
 	friend class Viewport;
 	Viewport *vp = nullptr;
+	bool vp_pending = false;
+
+	void _setup_local_to_scene(const Node *p_loc_scene);
 
 	mutable RID proxy_ph;
 	mutable RID proxy;
@@ -313,6 +316,8 @@ private:
 
 	Ref<ViewportTexture> default_texture;
 	HashSet<ViewportTexture *> viewport_textures;
+
+	void _update_viewport_path();
 
 	SDFOversize sdf_oversize = SDF_OVERSIZE_120_PERCENT;
 	SDFScale sdf_scale = SDF_SCALE_50_PERCENT;

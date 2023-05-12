@@ -50,6 +50,8 @@ class MaterialEditor : public Control {
 
 	Vector2 rot;
 
+	SubViewportContainer *vc_2d = nullptr;
+	SubViewport *viewport_2d = nullptr;
 	HBoxContainer *layout_2d = nullptr;
 	ColorRect *rect_instance = nullptr;
 

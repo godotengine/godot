@@ -567,6 +567,7 @@
 		</member>
 		<member name="position" type="Vector2i" setter="set_position" getter="get_position" default="Vector2i(0, 0)">
 			The window's position in pixels.
+			If [member ProjectSettings.display/window/subwindows/embed_subwindows] is [code]false[/code], the position is in absolute screen coordinates. This typically applies to editor plugins. If the setting is [code]false[/code], the window's position is in the coordinates of its parent [Viewport].
 		</member>
 		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(100, 100)">
 			The window's size in pixels.
@@ -714,7 +715,7 @@
 			Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="FLAG_RESIZE_DISABLED" value="0" enum="Flags">
-			The window can't be resizing by dragging its resize grip. It's still possible to resize the window using [member size]. This flag is ignored for full screen windows. Set with [member unresizable].
+			The window can't be resized by dragging its resize grip. It's still possible to resize the window using [member size]. This flag is ignored for full screen windows. Set with [member unresizable].
 		</constant>
 		<constant name="FLAG_BORDERLESS" value="1" enum="Flags">
 			The window do not have native title bar and other decorations. This flag is ignored for full-screen windows. Set with [member borderless].

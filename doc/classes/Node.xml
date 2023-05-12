@@ -500,6 +500,13 @@
 				Returns [code]true[/code] if the local system is the multiplayer authority of this node.
 			</description>
 		</method>
+		<method name="is_node_ready" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the node is ready, i.e. it's inside scene tree and all its children are initialized.
+				[method request_ready] resets it back to [code]false[/code].
+			</description>
+		</method>
 		<method name="is_physics_processing" qualifiers="const">
 			<return type="bool" />
 			<description>

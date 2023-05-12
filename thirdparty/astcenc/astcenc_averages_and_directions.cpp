@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2022 Arm Limited
+// Copyright 2011-2023 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -725,8 +725,7 @@ void compute_error_squared_rgba(
 	const image_block& blk,
 	const processed_line4 uncor_plines[BLOCK_MAX_PARTITIONS],
 	const processed_line4 samec_plines[BLOCK_MAX_PARTITIONS],
-	float uncor_lengths[BLOCK_MAX_PARTITIONS],
-	float samec_lengths[BLOCK_MAX_PARTITIONS],
+	float line_lengths[BLOCK_MAX_PARTITIONS],
 	float& uncor_error,
 	float& samec_error
 ) {
@@ -739,12 +738,6 @@ void compute_error_squared_rgba(
 	for (unsigned int partition = 0; partition < partition_count; partition++)
 	{
 		const uint8_t *texel_indexes = pi.texels_of_partition[partition];
-
-		float uncor_loparam = 1e10f;
-		float uncor_hiparam = -1e10f;
-
-		float samec_loparam = 1e10f;
-		float samec_hiparam = -1e10f;
 
 		processed_line4 l_uncor = uncor_plines[partition];
 		processed_line4 l_samec = samec_plines[partition];
@@ -772,9 +765,6 @@ void compute_error_squared_rgba(
 
 		vfloat uncor_loparamv(1e10f);
 		vfloat uncor_hiparamv(-1e10f);
-
-		vfloat samec_loparamv(1e10f);
-		vfloat samec_hiparamv(-1e10f);
 
 		vfloat ew_r(blk.channel_weight.lane<0>());
 		vfloat ew_g(blk.channel_weight.lane<1>());
@@ -825,9 +815,6 @@ void compute_error_squared_rgba(
 			                   + (data_b * l_samec_bs2)
 			                   + (data_a * l_samec_bs3);
 
-			samec_loparamv = min(samec_param, samec_loparamv);
-			samec_hiparamv = max(samec_param, samec_hiparamv);
-
 			vfloat samec_dist0 = samec_param * l_samec_bs0 - data_r;
 			vfloat samec_dist1 = samec_param * l_samec_bs1 - data_g;
 			vfloat samec_dist2 = samec_param * l_samec_bs2 - data_b;
@@ -843,18 +830,9 @@ void compute_error_squared_rgba(
 			lane_ids += vint(ASTCENC_SIMD_WIDTH);
 		}
 
-		uncor_loparam = hmin_s(uncor_loparamv);
-		uncor_hiparam = hmax_s(uncor_hiparamv);
-
-		samec_loparam = hmin_s(samec_loparamv);
-		samec_hiparam = hmax_s(samec_hiparamv);
-
-		float uncor_linelen = uncor_hiparam - uncor_loparam;
-		float samec_linelen = samec_hiparam - samec_loparam;
-
 		// Turn very small numbers and NaNs into a small number
-		uncor_lengths[partition] = astc::max(uncor_linelen, 1e-7f);
-		samec_lengths[partition] = astc::max(samec_linelen, 1e-7f);
+		float uncor_linelen = hmax_s(uncor_hiparamv) - hmin_s(uncor_loparamv);
+		line_lengths[partition] = astc::max(uncor_linelen, 1e-7f);
 	}
 
 	uncor_error = hadd_s(uncor_errorsumv);
@@ -882,18 +860,8 @@ void compute_error_squared_rgb(
 		unsigned int texel_count = pi.partition_texel_count[partition];
 		promise(texel_count > 0);
 
-		float uncor_loparam = 1e10f;
-		float uncor_hiparam = -1e10f;
-
-		float samec_loparam = 1e10f;
-		float samec_hiparam = -1e10f;
-
 		processed_line3 l_uncor = pl.uncor_pline;
 		processed_line3 l_samec = pl.samec_pline;
-
-		// This implementation is an example vectorization of this function.
-		// It works for - the codec is a 2-4% faster than not vectorizing - but
-		// the benefit is limited by the use of gathers and register pressure
 
 		// Vectorize some useful scalar inputs
 		vfloat l_uncor_bs0(l_uncor.bs.lane<0>());
@@ -912,9 +880,6 @@ void compute_error_squared_rgb(
 
 		vfloat uncor_loparamv(1e10f);
 		vfloat uncor_hiparamv(-1e10f);
-
-		vfloat samec_loparamv(1e10f);
-		vfloat samec_hiparamv(-1e10f);
 
 		vfloat ew_r(blk.channel_weight.lane<0>());
 		vfloat ew_g(blk.channel_weight.lane<1>());
@@ -958,9 +923,6 @@ void compute_error_squared_rgb(
 			                   + (data_g * l_samec_bs1)
 			                   + (data_b * l_samec_bs2);
 
-			samec_loparamv = min(samec_param, samec_loparamv);
-			samec_hiparamv = max(samec_param, samec_hiparamv);
-
 			vfloat samec_dist0 = samec_param * l_samec_bs0 - data_r;
 			vfloat samec_dist1 = samec_param * l_samec_bs1 - data_g;
 			vfloat samec_dist2 = samec_param * l_samec_bs2 - data_b;
@@ -974,18 +936,9 @@ void compute_error_squared_rgb(
 			lane_ids += vint(ASTCENC_SIMD_WIDTH);
 		}
 
-		uncor_loparam = hmin_s(uncor_loparamv);
-		uncor_hiparam = hmax_s(uncor_hiparamv);
-
-		samec_loparam = hmin_s(samec_loparamv);
-		samec_hiparam = hmax_s(samec_hiparamv);
-
-		float uncor_linelen = uncor_hiparam - uncor_loparam;
-		float samec_linelen = samec_hiparam - samec_loparam;
-
 		// Turn very small numbers and NaNs into a small number
-		pl.uncor_line_len = astc::max(uncor_linelen, 1e-7f);
-		pl.samec_line_len = astc::max(samec_linelen, 1e-7f);
+		float uncor_linelen = hmax_s(uncor_hiparamv) - hmin_s(uncor_loparamv);
+		pl.line_length = astc::max(uncor_linelen, 1e-7f);
 	}
 
 	uncor_error = hadd_s(uncor_errorsumv);

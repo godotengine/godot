@@ -436,7 +436,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 
 	switch (shape_type) {
 		case CAPSULE_SHAPE: {
-			Ref<CapsuleShape2D> shape = node->get_shape();
+			Ref<CapsuleShape2D> shape = current_shape;
 
 			handles.resize(2);
 			float radius = shape->get_radius();
@@ -451,7 +451,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		} break;
 
 		case CIRCLE_SHAPE: {
-			Ref<CircleShape2D> shape = node->get_shape();
+			Ref<CircleShape2D> shape = current_shape;
 
 			handles.resize(1);
 			handles.write[0] = Point2(shape->get_radius(), 0);
@@ -467,7 +467,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		} break;
 
 		case WORLD_BOUNDARY_SHAPE: {
-			Ref<WorldBoundaryShape2D> shape = node->get_shape();
+			Ref<WorldBoundaryShape2D> shape = current_shape;
 
 			handles.resize(2);
 			handles.write[0] = shape->get_normal() * shape->get_distance();
@@ -479,7 +479,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		} break;
 
 		case SEPARATION_RAY_SHAPE: {
-			Ref<SeparationRayShape2D> shape = node->get_shape();
+			Ref<SeparationRayShape2D> shape = current_shape;
 
 			handles.resize(1);
 			handles.write[0] = Point2(0, shape->get_length());
@@ -489,7 +489,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		} break;
 
 		case RECTANGLE_SHAPE: {
-			Ref<RectangleShape2D> shape = node->get_shape();
+			Ref<RectangleShape2D> shape = current_shape;
 
 			handles.resize(8);
 			Vector2 ext = shape->get_size() / 2;
@@ -501,7 +501,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		} break;
 
 		case SEGMENT_SHAPE: {
-			Ref<SegmentShape2D> shape = node->get_shape();
+			Ref<SegmentShape2D> shape = current_shape;
 
 			handles.resize(2);
 			handles.write[0] = shape->get_a();

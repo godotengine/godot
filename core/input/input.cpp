@@ -35,6 +35,10 @@
 #include "core/input/input_map.h"
 #include "core/os/os.h"
 
+#ifdef DEV_ENABLED
+#include "core/os/thread.h"
+#endif
+
 static const char *_joy_buttons[(size_t)JoyButton::SDL_MAX] = {
 	"a",
 	"b",
@@ -486,6 +490,10 @@ Vector3 Input::get_gyroscope() const {
 }
 
 void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated) {
+	// This function does the final delivery of the input event to user land.
+	// Regardless where the event came from originally, this has to happen on the main thread.
+	DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
+
 	// Notes on mouse-touch emulation:
 	// - Emulated mouse events are parsed, that is, re-routed to this method, so they make the same effects
 	//   as true mouse events. The only difference is the situation is flagged as emulated so they are not
@@ -537,7 +545,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			touch_event->set_position(mb->get_position());
 			touch_event->set_double_tap(mb->is_double_click());
 			touch_event->set_device(InputEvent::DEVICE_ID_EMULATION);
+			_THREAD_SAFE_UNLOCK_
 			event_dispatch_function(touch_event);
+			_THREAD_SAFE_LOCK_
 		}
 	}
 
@@ -563,7 +573,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			drag_event->set_velocity(get_last_mouse_velocity());
 			drag_event->set_device(InputEvent::DEVICE_ID_EMULATION);
 
+			_THREAD_SAFE_UNLOCK_
 			event_dispatch_function(drag_event);
+			_THREAD_SAFE_LOCK_
 		}
 	}
 
@@ -664,7 +676,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 	if (ge.is_valid()) {
 		if (event_dispatch_function) {
+			_THREAD_SAFE_UNLOCK_
 			event_dispatch_function(ge);
+			_THREAD_SAFE_LOCK_
 		}
 	}
 
@@ -687,7 +701,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	}
 
 	if (event_dispatch_function) {
+		_THREAD_SAFE_UNLOCK_
 		event_dispatch_function(p_event);
+		_THREAD_SAFE_LOCK_
 	}
 }
 
@@ -831,6 +847,7 @@ bool Input::is_emulating_touch_from_mouse() const {
 // Calling this whenever the game window is focused helps unsticking the "touch mouse"
 // if the OS or its abstraction class hasn't properly reported that touch pointers raised
 void Input::ensure_touch_mouse_raised() {
+	_THREAD_SAFE_METHOD_
 	if (mouse_from_touch_index != -1) {
 		mouse_from_touch_index = -1;
 
@@ -937,8 +954,15 @@ void Input::flush_buffered_events() {
 	_THREAD_SAFE_METHOD_
 
 	while (buffered_events.front()) {
-		_parse_input_event_impl(buffered_events.front()->get(), false);
+		// The final delivery of the input event involves releasing the lock.
+		// While the lock is released, another thread may lock it and add new events to the back.
+		// Therefore, we get each event and pop it while we still have the lock,
+		// to ensure the list is in a consistent state.
+		List<Ref<InputEvent>>::Element *E = buffered_events.front();
+		Ref<InputEvent> e = E->get();
 		buffered_events.pop_front();
+
+		_parse_input_event_impl(e, false);
 	}
 }
 
