@@ -419,6 +419,12 @@
 				The click position is also provided to allow appropriate popup of context menus at the correct location.
 			</description>
 		</signal>
+		<signal name="item_hovered">
+			<param index="0" name="index" type="int" />
+			<description>
+				Triggered when the mouse has hovered over specified item.
+			</description>
+		</signal>
 		<signal name="item_selected">
 			<param index="0" name="index" type="int" />
 			<description>

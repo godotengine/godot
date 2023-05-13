@@ -663,6 +663,9 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 		int closest = get_item_at_position(mm->get_position(), true);
 		if (closest != hovered) {
 			hovered = closest;
+			if (hovered > -1) {
+				emit_signal(SNAME("item_hovered"), hovered);
+			}
 			queue_redraw();
 		}
 	}
@@ -1889,6 +1892,7 @@ void ItemList::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_clicked", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::VECTOR2, "at_position"), PropertyInfo(Variant::INT, "mouse_button_index")));
 	ADD_SIGNAL(MethodInfo("multi_selected", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "selected")));
 	ADD_SIGNAL(MethodInfo("item_activated", PropertyInfo(Variant::INT, "index")));
+	ADD_SIGNAL(MethodInfo("item_hovered", PropertyInfo(Variant::INT, "index")));
 }
 
 ItemList::ItemList() {
