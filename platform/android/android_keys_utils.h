@@ -60,6 +60,7 @@ static AndroidGodotCodePair android_godot_code_pairs[] = {
 	{ AKEYCODE_DPAD_DOWN, KEY_DOWN }, // (20) Directional Pad Down key.
 	{ AKEYCODE_DPAD_LEFT, KEY_LEFT }, // (21) Directional Pad Left key.
 	{ AKEYCODE_DPAD_RIGHT, KEY_RIGHT }, // (22) Directional Pad Right key.
+	{ AKEYCODE_DPAD_CENTER, KEY_ENTER }, // (23) Directional Pad Center key.
 	{ AKEYCODE_VOLUME_UP, KEY_VOLUMEUP }, // (24) Volume Up key.
 	{ AKEYCODE_VOLUME_DOWN, KEY_VOLUMEDOWN }, // (25) Volume Down key.
 	{ AKEYCODE_POWER, KEY_STANDBY }, // (26) Power key.
