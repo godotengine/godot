@@ -743,7 +743,8 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 			} break;
 			case Item::Command::TYPE_MESH:
 			case Item::Command::TYPE_MULTIMESH:
-			case Item::Command::TYPE_PARTICLES: {
+			case Item::Command::TYPE_PARTICLES:
+			case Item::Command::TYPE_FILLED_CURVE: {
 				RID mesh;
 				RID mesh_instance;
 				RID texture;
@@ -838,6 +839,11 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 					// Signal that SDF texture needs to be updated.
 					r_sdf_used |= particles_storage->particles_has_collision(pt->particles);
+				} else if (c->type == Item::Command::TYPE_FILLED_CURVE) {
+					const Item::CommandFilledCurve *fc = static_cast<const Item::CommandFilledCurve *>(c);
+					mesh = fc->mesh_cache;
+					texture = fc->texture;
+					modulate = fc->modulate;
 				}
 
 				if (mesh.is_null()) {

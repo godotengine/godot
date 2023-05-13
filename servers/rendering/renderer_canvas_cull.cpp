@@ -196,6 +196,15 @@ void RendererCanvasCull::_attach_canvas_item_for_draw(RendererCanvasCull::Item *
 			ci->global_rect_cache.position -= p_clip_rect.position;
 			ci->light_masked = false;
 
+			Item::Command *c = ci->commands;
+			while (c) {
+				if (c->type == Item::Command::TYPE_FILLED_CURVE) {
+					Item::CommandFilledCurve *cfc = static_cast<Item::CommandFilledCurve *>(c);
+					cfc->generate_mesh(xform, p_clip_rect);
+				}
+				c = c->next;
+			}
+
 			int zidx = p_z - RS::CANVAS_ITEM_Z_MIN;
 
 			if (r_z_last_list[zidx]) {
@@ -1576,6 +1585,71 @@ void RendererCanvasCull::canvas_item_add_animation_slice(RID p_item, double p_an
 	as->slice_begin = p_slice_begin;
 	as->slice_end = p_slice_end;
 	as->offset = p_offset;
+}
+
+void RendererCanvasCull::canvas_item_add_filled_curve(RID p_item, const TypedArray<PackedVector2Array> &p_points, const TypedArray<PackedByteArray> &p_types, bool p_winding_even_odd, const Color &p_modulate, RID p_texture, const Transform2D &p_transform_uv, bool p_use_order5) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_COND(p_points.size() != p_types.size());
+
+	Vector<Vector<Vector2>> points;
+	Vector<Vector<uint8_t>> types;
+	for (int i = 0; i < p_points.size(); i++) {
+		points.push_back(p_points[i]);
+		types.push_back(p_types[i]);
+	}
+
+	Item::CommandFilledCurve *fc = canvas_item->alloc_command<Item::CommandFilledCurve>();
+	ERR_FAIL_COND(!fc);
+	fc->points = points;
+	fc->types = types;
+
+	fc->winding_even_odd = p_winding_even_odd;
+	fc->use_order5 = p_use_order5;
+
+	fc->modulate = p_modulate;
+	fc->texture = p_texture;
+	fc->transform_uv = p_transform_uv;
+
+	Rect2 bounds;
+	for (int i = 0; i < points.size(); i++) {
+		if (points[i].size() > 0) {
+			bounds.position = points[i][0];
+			break;
+		}
+	}
+	for (int i = 0; i < points.size(); i++) {
+		for (int j = 0; j < points[i].size(); j++) {
+			bounds.expand_to(points[i][j]);
+		}
+	}
+	if (p_use_order5) {
+		// Arcs are not bounded purely by their control points.
+		int index = 0;
+		for (int i = 0; i < types.size(); i++) {
+			for (int j = 0; j < types[i].size(); j++) {
+				for (int b = 0; b < 8; b++) {
+					if (types[i][j] & (1 << b)) {
+						if (index + 4 >= points[i].size()) {
+							goto done;
+						}
+						bounds.expand_to(points[i][index + 1] + points[i][index + 3] - points[i][index + 2]);
+						bounds.expand_to(points[i][index + 1] - points[i][index + 3] + points[i][index + 2]);
+						bounds.expand_to(points[i][index + 3] - points[i][index + 1] + points[i][index + 2]);
+						bounds.expand_to(points[i][index + 2] * 3 - points[i][index + 1] - points[i][index + 3]);
+						index += 4;
+					} else {
+						index += p_use_order5 ? 5 : 3;
+						if (index >= points[i].size()) {
+							goto done;
+						}
+					}
+				}
+			}
+		done:;
+		}
+	}
+	fc->bounds = bounds;
 }
 
 void RendererCanvasCull::canvas_item_set_sort_children_by_y(RID p_item, bool p_enable) {

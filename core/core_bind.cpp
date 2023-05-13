@@ -733,6 +733,25 @@ Vector<int> Geometry2D::triangulate_delaunay(const Vector<Vector2> &p_points) {
 	return ::Geometry2D::triangulate_delaunay(p_points);
 }
 
+Dictionary Geometry2D::triangulate_polygons(const TypedArray<PackedVector2Array> &p_polygons, bool p_winding_even_odd) {
+	Dictionary ret;
+
+	Vector<Vector<Vector2>> polygons;
+	for (int i = 0; i < p_polygons.size(); i++) {
+		polygons.push_back(p_polygons[i]);
+	}
+
+	Vector<Vector2> vertices;
+	Vector<int> indices;
+
+	::Geometry2D::triangulate_polygons(polygons, p_winding_even_odd, vertices, indices);
+
+	ret["vertices"] = vertices;
+	ret["indices"] = indices;
+
+	return ret;
+}
+
 Vector<Point2> Geometry2D::convex_hull(const Vector<Point2> &p_points) {
 	return ::Geometry2D::convex_hull(p_points);
 }
@@ -860,6 +879,10 @@ Dictionary Geometry2D::make_atlas(const Vector<Size2> &p_rects) {
 	return ret;
 }
 
+Vector<Vector2> Geometry2D::tessellate_curve_in_rect(const Vector<Vector2> &p_points, const Vector<uint8_t> &p_types, const Transform2D &p_transform, const Rect2 &p_limit, bool use_order5) {
+	return ::Geometry2D::tessellate_curve_in_rect(p_points, p_types, p_transform, p_limit, use_order5);
+}
+
 void Geometry2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_point_in_circle", "point", "circle_position", "circle_radius"), &Geometry2D::is_point_in_circle);
 	ClassDB::bind_method(D_METHOD("segment_intersects_circle", "segment_from", "segment_to", "circle_position", "circle_radius"), &Geometry2D::segment_intersects_circle);
@@ -878,6 +901,7 @@ void Geometry2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_point_in_polygon", "point", "polygon"), &Geometry2D::is_point_in_polygon);
 	ClassDB::bind_method(D_METHOD("triangulate_polygon", "polygon"), &Geometry2D::triangulate_polygon);
 	ClassDB::bind_method(D_METHOD("triangulate_delaunay", "points"), &Geometry2D::triangulate_delaunay);
+	ClassDB::bind_method(D_METHOD("triangulate_polygons", "polygons", "winding_even_odd"), &Geometry2D::triangulate_polygons);
 	ClassDB::bind_method(D_METHOD("convex_hull", "points"), &Geometry2D::convex_hull);
 	ClassDB::bind_method(D_METHOD("decompose_polygon_in_convex", "polygon"), &Geometry2D::decompose_polygon_in_convex);
 
@@ -893,6 +917,8 @@ void Geometry2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("offset_polyline", "polyline", "delta", "join_type", "end_type"), &Geometry2D::offset_polyline, DEFVAL(JOIN_SQUARE), DEFVAL(END_SQUARE));
 
 	ClassDB::bind_method(D_METHOD("make_atlas", "sizes"), &Geometry2D::make_atlas);
+
+	ClassDB::bind_method(D_METHOD("tessellate_curve_in_rect", "points", "types", "transform", "limit", "use_order5"), &Geometry2D::tessellate_curve_in_rect, DEFVAL(false));
 
 	BIND_ENUM_CONSTANT(OPERATION_UNION);
 	BIND_ENUM_CONSTANT(OPERATION_DIFFERENCE);

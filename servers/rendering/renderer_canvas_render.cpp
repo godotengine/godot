@@ -31,6 +31,8 @@
 #include "renderer_canvas_render.h"
 #include "servers/rendering/rendering_server_globals.h"
 
+#include "core/math/geometry_2d.h"
+
 const Rect2 &RendererCanvasRender::Item::get_rect() const {
 	if (custom_rect || (!rect_dirty && !update_when_visible && skeleton == RID())) {
 		return rect;
@@ -100,6 +102,10 @@ const Rect2 &RendererCanvasRender::Item::get_rect() const {
 				}
 
 			} break;
+			case Item::Command::TYPE_FILLED_CURVE: {
+				const Item::CommandFilledCurve *filled_curve = static_cast<const Item::CommandFilledCurve *>(c);
+				r = filled_curve->bounds;
+			} break;
 			case Item::Command::TYPE_TRANSFORM: {
 				const Item::CommandTransform *transform = static_cast<const Item::CommandTransform *>(c);
 				xf = transform->xform;
@@ -133,4 +139,40 @@ RendererCanvasRender::Item::CommandMesh::~CommandMesh() {
 	if (mesh_instance.is_valid()) {
 		RSG::mesh_storage->mesh_instance_free(mesh_instance);
 	}
+}
+
+RendererCanvasRender::Item::CommandFilledCurve::~CommandFilledCurve() {
+	if (mesh_cache.is_valid()) {
+		RS::get_singleton()->free(mesh_cache);
+	}
+}
+
+void RendererCanvasRender::Item::CommandFilledCurve::generate_mesh(Transform2D transform, Rect2 rect) {
+	if (mesh_cache.is_valid() && transform_cache.is_equal_approx(transform) && rect_cache.is_equal_approx(rect)) {
+		return;
+	}
+	transform_cache = transform;
+	rect_cache = rect;
+	if (!mesh_cache.is_valid()) {
+		mesh_cache = RS::get_singleton()->mesh_create();
+	} else {
+		RS::get_singleton()->mesh_clear(mesh_cache);
+	}
+	DEV_ASSERT(points.size() == types.size());
+	Vector<Vector<Vector2>> tessellated;
+	for (int i = 0; i < points.size(); i++) {
+		tessellated.push_back(Geometry2D::tessellate_curve_in_rect(points[i], types[i], transform, rect, use_order5));
+	}
+	Vector<Vector2> mesh_points;
+	Vector<int32_t> mesh_triangles;
+	Geometry2D::triangulate_polygons(tessellated, winding_even_odd, mesh_points, mesh_triangles);
+	if (mesh_points.size() <= 0 || mesh_triangles.size() <= 0) {
+		return;
+	}
+	Array arrs;
+	arrs.resize(RS::ARRAY_MAX);
+	arrs[RS::ARRAY_VERTEX] = mesh_points;
+	arrs[RS::ARRAY_INDEX] = mesh_triangles;
+	arrs[RS::ARRAY_TEX_UV] = transform_uv.xform(mesh_points);
+	RS::get_singleton()->mesh_add_surface_from_arrays(mesh_cache, RS::PRIMITIVE_TRIANGLES, arrs);
 }

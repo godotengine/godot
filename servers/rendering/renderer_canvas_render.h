@@ -183,6 +183,7 @@ public:
 				TYPE_TRANSFORM,
 				TYPE_CLIP_IGNORE,
 				TYPE_ANIMATION_SLICE,
+				TYPE_FILLED_CURVE,
 			};
 
 			Command *next = nullptr;
@@ -298,6 +299,27 @@ public:
 			CommandAnimationSlice() {
 				type = TYPE_ANIMATION_SLICE;
 			}
+		};
+
+		struct CommandFilledCurve : public Command {
+			Vector<Vector<Vector2>> points;
+			Vector<Vector<uint8_t>> types;
+			bool winding_even_odd;
+			bool use_order5;
+
+			RID mesh_cache;
+			Transform2D transform_cache;
+			Rect2 rect_cache;
+			Rect2 bounds;
+
+			Color modulate;
+			RID texture;
+			Transform2D transform_uv;
+
+			CommandFilledCurve() { type = TYPE_FILLED_CURVE; }
+			~CommandFilledCurve();
+
+			void generate_mesh(Transform2D transform, Rect2 rect);
 		};
 
 		struct ViewportRender {

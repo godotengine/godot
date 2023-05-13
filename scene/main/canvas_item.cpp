@@ -868,6 +868,10 @@ void CanvasItem::draw_char_outline(const Ref<Font> &p_font, const Point2 &p_pos,
 	p_font->draw_char_outline(canvas_item, p_pos, p_char[0], p_font_size, p_size, p_modulate);
 }
 
+void CanvasItem::draw_filled_curve(const TypedArray<PackedVector2Array> &p_points, const TypedArray<PackedByteArray> &p_types, bool p_winding_even_odd, const Color &p_modulate, const Ref<Texture2D> &p_texture, const Transform2D &p_transform_uv, bool p_use_order5) {
+	RenderingServer::get_singleton()->canvas_item_add_filled_curve(canvas_item, p_points, p_types, p_winding_even_odd, p_modulate, p_texture.is_valid() ? p_texture->get_rid() : RID(), p_transform_uv, p_use_order5);
+}
+
 void CanvasItem::_notify_transform_deferred() {
 	if (is_inside_tree() && notify_transform && !xform_change.in_list()) {
 		get_tree()->xform_change_list.add(&xform_change);
@@ -1150,6 +1154,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_set_transform_matrix", "xform"), &CanvasItem::draw_set_transform_matrix);
 	ClassDB::bind_method(D_METHOD("draw_animation_slice", "animation_length", "slice_begin", "slice_end", "offset"), &CanvasItem::draw_animation_slice, DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("draw_end_animation"), &CanvasItem::draw_end_animation);
+	ClassDB::bind_method(D_METHOD("draw_filled_curve", "points", "types", "winding_even_odd", "modulate", "texture", "transform_uv", "use_order5"), &CanvasItem::draw_filled_curve, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(Ref<Texture2D>()), DEFVAL(Transform2D()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_transform"), &CanvasItem::get_transform);
 	ClassDB::bind_method(D_METHOD("get_global_transform"), &CanvasItem::get_global_transform);
 	ClassDB::bind_method(D_METHOD("get_global_transform_with_canvas"), &CanvasItem::get_global_transform_with_canvas);

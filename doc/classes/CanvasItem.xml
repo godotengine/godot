@@ -111,6 +111,23 @@
 				After submitting all animations slices via [method draw_animation_slice], this function can be used to revert drawing to its default state (all subsequent drawing commands will be visible). If you don't care about this particular use case, usage of this function after submitting the slices is not required.
 			</description>
 		</method>
+		<method name="draw_filled_curve">
+			<return type="void" />
+			<param index="0" name="points" type="PackedVector2Array[]" />
+			<param index="1" name="types" type="PackedByteArray[]" />
+			<param index="2" name="winding_even_odd" type="bool" />
+			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="4" name="texture" type="Texture2D" default="null" />
+			<param index="5" name="transform_uv" type="Transform2D" default="Transform2D(1, 0, 0, 1, 0, 0)" />
+			<param index="6" name="use_order5" type="bool" default="false" />
+			<description>
+				Draws a curve described by [param points] and [param types], filled according to [param winding_even_odd] with [param modulate] color and [param texture]. [param transform_uv] determines how points inside the curve are transformed to texture UV coordinates.
+				Each respective element of [param points] and [param types] represents a closed curve. [param points] and [param types] must contain the same number of elements. The first point in each element of [param points] is the starting point of the curve. The remaining points are interpreted according to the element of [param types] with the same index. Each element of [param types] is interpreted as a string of bits, with each byte being interpreted as eight bits from least significant to most significant. A value of [code]0[/code] indicates the next segment is a bezier segment. If [param use_order5] is [code]false[/code] then it is a cubic bezier. The next two points in the matching element of [param points] are interpreted as control points, and the third is interpreted the end point. If [param use_order5] is [code]false[/code] then it is an order 5 bezier. The next four points in the matching element of [param points] are interpreted as control points, and the fifth is interpreted the end point. Order 5 beziers can be more complex, but allow producing a continuous curvature.
+				If the next bit represented by the element of [param types] is [code]1[/code], the next four points in the matching element of [param points] are interpreted as an elliptic arc segment. The ellipse is centered along the second point, and intersects the first and third points. The angle range of the arc is determined by the fourth point and the previous point on the curve. If the points do not coincide with the ellipse, line segments connecting the points to the ellipse are added. The arc's drawing direction is determined by the first and third points. If they are clockwise relative to the second point, the arc is drawn clockwise, otherwise it is drawn counter-clockwise.
+				If an element [param types] does not contain enough bits to interpret all the points in the matching element of [param points], it is padded with [code]0[/code] bits as necessary. If it contains too many bits, it is truncated.
+				The way overlapping parts of the curve are handled is determined by [param winding_even_odd]. If [code]true[/code] every part of the countor separates a filled and unfilled area. If [code]false[/code] overlapping areas are kept if their surrounding curve sections are the same direction clockwise or counter clockwise, and subtracted if they are opposite directions.
+			</description>
+		</method>
 		<method name="draw_lcd_texture_rect_region">
 			<return type="void" />
 			<param index="0" name="texture" type="Texture2D" />

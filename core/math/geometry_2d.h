@@ -322,6 +322,8 @@ public:
 		return triangles;
 	}
 
+	static void triangulate_polygons(const Vector<Vector<Vector2>> &p_polygons, bool p_winding_even_odd, Vector<Vector2> &r_points, Vector<int32_t> &r_triangles);
+
 	static bool is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
 		int c = p_polygon.size();
 		if (c < 3) {
@@ -465,6 +467,8 @@ public:
 
 	static void make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size);
 	static Vector<Vector3i> partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size);
+
+	static Vector<Vector2> tessellate_curve_in_rect(const Vector<Vector2> &p_points, const Vector<uint8_t> &p_types, const Transform2D &p_transform, const Rect2 &p_limit, bool use_order5 = false);
 
 private:
 	static Vector<Vector<Point2>> _polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open = false);

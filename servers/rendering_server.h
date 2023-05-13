@@ -1363,6 +1363,7 @@ public:
 	virtual void canvas_item_add_set_transform(RID p_item, const Transform2D &p_transform) = 0;
 	virtual void canvas_item_add_clip_ignore(RID p_item, bool p_ignore) = 0;
 	virtual void canvas_item_add_animation_slice(RID p_item, double p_animation_length, double p_slice_begin, double p_slice_end, double p_offset) = 0;
+	virtual void canvas_item_add_filled_curve(RID p_item, const TypedArray<PackedVector2Array> &p_points, const TypedArray<PackedByteArray> &p_types, bool p_winding_even_odd = false, const Color &p_modulate = Color(1, 1, 1), RID p_texture = RID(), const Transform2D &p_transform_uv = Transform2D(), bool p_use_order5 = false) = 0;
 
 	virtual void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable) = 0;
 	virtual void canvas_item_set_z_index(RID p_item, int p_z) = 0;

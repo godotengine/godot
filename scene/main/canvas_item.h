@@ -300,6 +300,8 @@ public:
 	void draw_animation_slice(double p_animation_length, double p_slice_begin, double p_slice_end, double p_offset = 0);
 	void draw_end_animation();
 
+	void draw_filled_curve(const TypedArray<PackedVector2Array> &p_points, const TypedArray<PackedByteArray> &p_types, bool p_winding_even_odd, const Color &p_modulate = Color(1, 1, 1), const Ref<Texture2D> &p_texture = Ref<Texture2D>(), const Transform2D &p_transform_uv = Transform2D(), bool p_use_order5 = false);
+
 	static CanvasItem *get_current_item_drawn();
 
 	/* RECT / TRANSFORM */

@@ -268,6 +268,7 @@ public:
 	bool is_point_in_polygon(const Point2 &p_point, const Vector<Vector2> &p_polygon);
 	Vector<int> triangulate_polygon(const Vector<Vector2> &p_polygon);
 	Vector<int> triangulate_delaunay(const Vector<Vector2> &p_points);
+	Dictionary triangulate_polygons(const TypedArray<PackedVector2Array> &p_polygons, bool p_winding_even_odd);
 	Vector<Point2> convex_hull(const Vector<Point2> &p_points);
 	TypedArray<PackedVector2Array> decompose_polygon_in_convex(const Vector<Vector2> &p_polygon);
 
@@ -304,6 +305,8 @@ public:
 	TypedArray<PackedVector2Array> offset_polyline(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type = JOIN_SQUARE, PolyEndType p_end_type = END_SQUARE);
 
 	Dictionary make_atlas(const Vector<Size2> &p_rects);
+
+	Vector<Vector2> tessellate_curve_in_rect(const Vector<Vector2> &p_points, const Vector<uint8_t> &p_types, const Transform2D &p_transform, const Rect2 &p_limit, bool use_order5 = false);
 
 	Geometry2D() { singleton = this; }
 };
