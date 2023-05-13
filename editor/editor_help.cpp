@@ -320,7 +320,8 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 	if (can_ref) {
 		if (link_t.ends_with("[]")) {
 			add_array = true;
-			link_t = link_t.replace("[]", "");
+			link_t = link_t.trim_suffix("[]");
+			display_t = display_t.trim_suffix("[]");
 
 			class_desc->push_meta("#Array"); // class
 			class_desc->add_text("Array");
