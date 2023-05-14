@@ -96,14 +96,17 @@ private:
 	Vector3 gyroscope;
 	Vector2 mouse_pos;
 	int64_t mouse_window = 0;
+	bool legacy_just_pressed_behavior = false;
 
 	struct Action {
-		uint64_t physics_frame;
-		uint64_t process_frame;
-		bool pressed;
-		bool exact;
-		float strength;
-		float raw_strength;
+		uint64_t pressed_physics_frame = UINT64_MAX;
+		uint64_t pressed_process_frame = UINT64_MAX;
+		uint64_t released_physics_frame = UINT64_MAX;
+		uint64_t released_process_frame = UINT64_MAX;
+		bool pressed = false;
+		bool exact = true;
+		float strength = 0.0f;
+		float raw_strength = 0.0f;
 	};
 
 	HashMap<StringName, Action> action_state;
