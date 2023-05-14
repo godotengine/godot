@@ -87,9 +87,12 @@ public:
 	int bsearch_custom(const Variant &p_value, const Callable &p_callable, bool p_before = true) const;
 	void reverse();
 
-	int find(const Variant &p_value, int p_from = 0) const;
-	int rfind(const Variant &p_value, int p_from = -1) const;
-	int count(const Variant &p_value) const;
+	int find(const Variant& p_value, int p_from = 0) const;
+	int first_custom(const Callable& p_callable, int p_from = 0) const;
+	int rfind(const Variant& p_value, int p_from = -1) const;
+	int last_custom(const Callable& p_callable, int p_from = -1) const;
+	int count(const Variant& p_value) const;
+	int count_custom(const Callable& p_callable) const;
 	bool has(const Variant &p_value) const;
 
 	void erase(const Variant &p_value);

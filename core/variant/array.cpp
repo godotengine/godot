@@ -353,6 +353,36 @@ int Array::find(const Variant &p_value, int p_from) const {
 	return ret;
 }
 
+int Array::first_custom(const Callable& p_callable, int p_from = 0) const {
+	if (_p->array.size() == 0) {
+		return -1;
+	}
+
+	if (p_from < 0 || size() == 0) {
+		return -1;
+	}
+
+	const Variant* argptrs[1];
+
+	for (int i = p_from; i < size(); i++) {
+		argptrs[0] = &get(i);
+
+		Variant result;
+		Callable::CallError ce;
+
+		p_callable.callp(argptrs, 1, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(Array(), "Error calling method from 'first_custom': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+		}
+		// Return as soon as possible
+		if (result.operator bool()) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
 int Array::rfind(const Variant &p_value, int p_from) const {
 	if (_p->array.size() == 0) {
 		return -1;
@@ -378,6 +408,41 @@ int Array::rfind(const Variant &p_value, int p_from) const {
 	return -1;
 }
 
+int Array::last_custom(const Callable& p_callable, int p_from = -1) const {
+	if (_p->array.size() == 0) {
+		return -1;
+	}
+
+	if (p_from < 0) {
+		// Relative offset from the end
+		p_from = _p->array.size() + p_from;
+	}
+	if (p_from < 0 || p_from >= _p->array.size()) {
+		// Limit to array boundaries
+		p_from = _p->array.size() - 1;
+	}
+
+	const Variant* argptrs[1];
+
+	for (int i = p_from; i >= 0; i--) {
+		argptrs[0] = &get(i);
+
+		Variant result;
+		Callable::CallError ce;
+
+		p_callable.callp(argptrs, 1, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(Array(), "Error calling method from 'last_custom': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+		}
+		// Return as soon as possible
+		if (result.operator bool()) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
 int Array::count(const Variant &p_value) const {
 	Variant value = p_value;
 	ERR_FAIL_COND_V(!_p->typed.validate(value, "count"), 0);
@@ -393,6 +458,29 @@ int Array::count(const Variant &p_value) const {
 	}
 
 	return amount;
+}
+
+int Array::count_custom(const Callable& p_callable) const {
+	int count = 0;
+	const Variant* argptrs[1];
+
+	for (int i = 0; i < size(); i++) {
+		argptrs[0] = &get(i);
+
+		Variant result;
+		Callable::CallError ce;
+
+		p_callable.callp(argptrs, 1, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(Array(), "Error calling method from 'count_custom': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+		}
+		// Increase count if passes
+		if (result.operator bool()) {
+			count++;
+		}
+	}
+
+	return count;
 }
 
 bool Array::has(const Variant &p_value) const {
