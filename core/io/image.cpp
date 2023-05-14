@@ -33,6 +33,7 @@
 #include "core/error/error_list.h"
 #include "core/error/error_macros.h"
 #include "core/io/image_loader.h"
+#include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
 #include "core/string/print_string.h"
@@ -3934,16 +3935,33 @@ Image::Image(const uint8_t *p_mem_png_jpg, int p_len) {
 	mipmaps = false;
 	format = FORMAT_L8;
 
-	if (_png_mem_loader_func) {
+	if (p_len < 4) {
+		if (p_len > 0) {
+			ERR_FAIL_MSG("The image can not be loaded: data length is too small (less than 4 bytes).");
+		}
+		return;
+	}
+
+	const uint8_t png_marker[] = { 0x89, 0x50, 0x4E, 0x47 };
+	const uint8_t webp_marker[] = { 0x52, 0x49, 0x46, 0x46 };
+	const uint8_t jpg_marker[] = { 0xFF, 0xD8, 0xFF };
+
+	if (_png_mem_loader_func && memcmp(p_mem_png_jpg, png_marker, sizeof(png_marker)) == 0) {
 		copy_internals_from(_png_mem_loader_func(p_mem_png_jpg, p_len));
-	}
 
-	if (is_empty() && _jpg_mem_loader_func) {
-		copy_internals_from(_jpg_mem_loader_func(p_mem_png_jpg, p_len));
-	}
-
-	if (is_empty() && _webp_mem_loader_func) {
+	} else if (_webp_mem_loader_func && memcmp(p_mem_png_jpg, webp_marker, sizeof(webp_marker)) == 0) {
 		copy_internals_from(_webp_mem_loader_func(p_mem_png_jpg, p_len));
+
+	} else if (_jpg_mem_loader_func && memcmp(p_mem_png_jpg, jpg_marker, sizeof(jpg_marker)) == 0) {
+		copy_internals_from(_jpg_mem_loader_func(p_mem_png_jpg, p_len));
+
+	} else {
+		ERR_FAIL_MSG(vformat("Unexpected image format marker: %4X. Use 0x474E5089 for PNG, 0x46464952 for WEBP or 0x__FFD8FF for JPG.",
+				decode_uint32(p_mem_png_jpg)));
+	}
+
+	if (is_empty()) {
+		ERR_FAIL_MSG("The image can not be loaded");
 	}
 }
 

@@ -30,6 +30,7 @@
 
 #include "texture.h"
 
+#include "core/config/project_settings.h"
 #include "core/core_string_names.h"
 #include "core/io/image_loader.h"
 #include "core/io/marshalls.h"
@@ -370,6 +371,15 @@ void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
 				uint32_t mipsize = decode_uint32(data);
 				data += 4;
 				data_size -= 4;
+
+				// Skip possible Godot png tag "PNG " before pure PNG data
+				const uint8_t godot_png_prefix[] = { 0x50, 0x4E, 0x47, 0x20 };
+				const size_t godot_png_prefix_size = sizeof(godot_png_prefix);
+				if (memcmp(data, godot_png_prefix, godot_png_prefix_size) == 0) {
+					data += godot_png_prefix_size;
+					data_size -= godot_png_prefix_size;
+				}
+
 				ERR_FAIL_COND(mipsize < data_size);
 				Ref<Image> img = memnew(Image(data, data_size));
 				ERR_FAIL_COND(img->is_empty());
@@ -406,6 +416,7 @@ void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
 	}
 
 	image_stored = true;
+	size_override = size;
 	RenderingServer::get_singleton()->texture_set_size_override(texture, size_override.width, size_override.height);
 	alpha_cache.unref();
 
@@ -438,12 +449,17 @@ void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, C
 	switch (p_compression_mode) {
 		case COMPRESSION_MODE_LOSSLESS:
 		case COMPRESSION_MODE_LOSSY: {
+			bool lossless_force_png = GLOBAL_GET("rendering/textures/lossless_compression/force_png") ||
+					!Image::_webp_mem_loader_func; // WebP module disabled.
+			bool use_webp = !lossless_force_png && p_image->get_width() <= 16383 && p_image->get_height() <= 16383; // WebP has a size limit
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
 				Vector<uint8_t> data;
 				if (p_compression_mode == COMPRESSION_MODE_LOSSY) {
 					data = Image::webp_lossy_packer(p_image->get_image_from_mipmap(i), p_lossy_quality);
 				} else {
-					data = Image::webp_lossless_packer(p_image->get_image_from_mipmap(i));
+					data = use_webp
+							? Image::webp_lossless_packer(p_image->get_image_from_mipmap(i))
+							: Image::png_packer(p_image->get_image_from_mipmap(i));
 				}
 				int data_len = data.size();
 				buffer.resize(buffer.size() + 4);
