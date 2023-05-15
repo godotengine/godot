@@ -8027,6 +8027,9 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 	while (tk.type != TK_EOF) {
 		switch (tk.type) {
 			case TK_RENDER_MODE: {
+#ifdef DEBUG_ENABLED
+				keyword_completion_context = CF_UNSPECIFIED;
+#endif // DEBUG_ENABLED
 				while (true) {
 					StringName mode;
 					_get_completable_identifier(nullptr, COMPLETION_RENDER_MODE, mode);
@@ -8114,6 +8117,9 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 						return ERR_PARSE_ERROR;
 					}
 				}
+#ifdef DEBUG_ENABLED
+				keyword_completion_context = CF_GLOBAL_SPACE;
+#endif // DEBUG_ENABLED
 			} break;
 			case TK_STRUCT: {
 				ShaderNode::Struct st;
