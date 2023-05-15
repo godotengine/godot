@@ -197,8 +197,8 @@ void RendererSceneCull::_instance_pair(Instance *p_A, Instance *p_B) {
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(A->base_data);
 
 		if (A->dynamic_gi) {
-			geom->lightmap_captures.insert(A);
-			lightmap_data->geometries.insert(B);
+			geom->lightmap_captures.insert(B);
+			lightmap_data->geometries.insert(A);
 
 			if (A->scenario && A->array_index >= 0) {
 				InstanceData &idata = A->scenario->instance_data[A->array_index];
