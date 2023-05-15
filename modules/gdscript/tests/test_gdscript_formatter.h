@@ -67,8 +67,8 @@ namespace GDScriptTests {
 			)                                                                                   \
 		);                                                                                      \
 		CHECK_EQ(                                                                               \
-			vformat(CHECK_FORMAT_FORMAT, pre_formatted),                                        \
-			vformat(CHECK_FORMAT_FORMAT, output)                                                \
+			vformat(CHECK_FORMAT_FORMAT, output),                                               \
+			vformat(CHECK_FORMAT_FORMAT, pre_formatted)                                         \
 		);                                                                                      \
 	} while (false);
 #define CHECK_FORMAT_FORMAT "\n---\n%s\n---\n"
@@ -3091,6 +3091,38 @@ func _ready() -> void:
 		light.height = height_slider.value)
 )",
 				"\n", "\n");
+		CHECK_FORMAT(code, pre_formatted);
+	}
+
+	TEST_CASE("Function default values should have spaces") {
+		String code;
+		String pre_formatted;
+		
+		// Without typing
+		code = R"(func my_func(optional_param= null):
+	pass
+)";
+		pre_formatted = R"(func my_func(optional_param = null):
+	pass
+)";
+		CHECK_FORMAT(code, pre_formatted);
+
+		// With explicit typing
+		code = R"(func my_func(optional_param: Node =null):
+	pass
+)";
+		pre_formatted = R"(func my_func(optional_param: Node = null):
+	pass
+)";
+		CHECK_FORMAT(code, pre_formatted);
+
+		// With inferred typing
+		code = R"(func my_func(optional_param:=""):
+	pass
+)";
+		pre_formatted = R"(func my_func(optional_param := ""):
+	pass
+)";
 		CHECK_FORMAT(code, pre_formatted);
 	}
 } // TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Misc]")

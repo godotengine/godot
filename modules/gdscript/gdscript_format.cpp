@@ -947,7 +947,7 @@ String GDScriptFormat::parse_parameter(const GDP::ParameterNode *p_node, const i
 	}
 
 	if (p_node->initializer != nullptr) {
-		if (p_node->datatype_specifier != nullptr) {
+		if (p_node->datatype_specifier != nullptr || !p_node->infer_datatype) {
 			param_string += " ";
 		}
 		param_string += "= " + parse_expression(p_node->initializer, p_indent_level, p_break_type);
@@ -1554,7 +1554,7 @@ String GDScriptFormat::parse_get_node(const GDP::GetNodeNode *p_node, const int 
 	String append;
 	String full_path = p_node->full_path;
 	bool wrap = false;
-	
+
 	if (full_path.get(0) == '%') {
 		output += "%";
 		full_path = full_path.substr(1);
