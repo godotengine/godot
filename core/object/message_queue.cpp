@@ -236,7 +236,7 @@ Error CallQueue::flush() {
 				uint32_t dst_page = mq->pages_used - 1;
 				uint32_t dst_offset = mq->page_bytes[dst_page];
 				if (dst_offset + page_bytes[0] < uint32_t(PAGE_SIZE_BYTES)) {
-					memcpy(mq->pages[dst_page] + dst_offset, pages[0], page_bytes[0]);
+					memcpy(mq->pages[dst_page]->data + dst_offset, pages[0]->data, page_bytes[0]);
 					src_page++;
 				}
 			}
@@ -253,7 +253,7 @@ Error CallQueue::flush() {
 
 		for (; src_page < pages_used; src_page++) {
 			mq->_add_page();
-			memcpy(mq->pages[mq->pages_used - 1], pages[src_page], page_bytes[src_page]);
+			memcpy(mq->pages[mq->pages_used - 1]->data, pages[src_page]->data, page_bytes[src_page]);
 			mq->page_bytes[mq->pages_used - 1] = page_bytes[src_page];
 		}
 
