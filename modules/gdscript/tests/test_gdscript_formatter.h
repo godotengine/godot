@@ -1293,6 +1293,22 @@ func _process(delta):
 	}
 } // TEST_SUITE("[Modules][GDScript][GDScriptFormatter][ClassFunctions]")
 
+TEST_SUITE("[Modules][GDScript][GDScriptFormatter][InnerClasses]") {
+	TEST_CASE("Inner class should handle variables") {
+		const String code = R"(class MyInnerClass:
+	var hi
+
+	func my_inner_class_function() -> void:
+		pass
+
+	func another_one() -> void:
+		pass
+)";
+		const String pre_formatted = code;
+		CHECK_FORMAT(code, pre_formatted);
+	}
+} // TEST_SUITE("[Modules][GDScript][GDScriptFormatter][InnerClasses]")
+
 TEST_SUITE("[Modules][GDScript][GDScriptFormatter][NestedSuites]") {
 	TEST_CASE("Should output a simple if true/else statement") {
 		const String code = R"(func _ready():
@@ -3001,6 +3017,45 @@ func another():
 )";
 		CHECK_FORMAT(code, pre_formatted);
 	}
+
+	TEST_CASE("Comments on top of static functions should stay") {
+		const String code = R"(## This comment should stay after format
+static func test():
+	pass
+)";
+		const String pre_formatted = code;
+		CHECK_FORMAT(code, pre_formatted);
+	}
+
+	TEST_CASE("Comment at the end of a return value should stay") {
+		const String code = R"(func test_func() -> bool:
+	if true:
+		return true # In this case, stop.
+	return false
+)";
+		const String pre_formatted = code;
+		CHECK_FORMAT(code, pre_formatted);
+	}
+
+	TEST_CASE("Comments at the end of `get_node` should not multiply") {
+		const String code = R"(@onready var a_node = $ANode
+@onready var b_node = a_node.get_node(^"BNode") # Test
+)";
+		const String pre_formatted = code;
+		CHECK_FORMAT(code, pre_formatted);
+	}
+
+	TEST_CASE("Comments should not be considered as dictionary keys") {
+		const String code = R"(func _ready():
+	var dict = {
+		"key1": "value1", # Comment
+		# Comment
+		"key2": "value2",
+	}
+)";
+		const String pre_formatted = code;
+		CHECK_FORMAT(code, pre_formatted);
+	}
 } // TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Comments]")
 
 TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Syntax]") {
@@ -3043,6 +3098,27 @@ TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Syntax]") {
 			code = R"(@onready var unique_node = %"UniqueNodeIndeedWith$"
 )";
 			pre_formatted = code;
+			CHECK_FORMAT(code, pre_formatted);
+		}
+	}
+
+	TEST_CASE("Parentheses should be kept") {
+		SUBCASE("Using format%") {
+			const String code = R"(func _ready():
+	var number = 1234.567
+	var string = "%1.1f k" % (number * 0.001)
+)";
+			const String pre_formatted = code;
+			CHECK_FORMAT(code, pre_formatted);
+		}
+	}
+
+	TEST_CASE("Literals should be kept as-is") {
+		SUBCASE("Number below the float precision") {
+			const String code = R"(func _ready():
+	var number = 0.0000000000000000000000000000000000000000000000000000000000000001
+)";
+			const String pre_formatted = code;
 			CHECK_FORMAT(code, pre_formatted);
 		}
 	}
