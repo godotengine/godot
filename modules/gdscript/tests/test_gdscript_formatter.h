@@ -66,8 +66,12 @@ namespace GDScriptTests {
 				String("\n").join(error_messages)                                               \
 			)                                                                                   \
 		);                                                                                      \
-		CHECK_EQ(output, pre_formatted);                                                        \
+		CHECK_EQ(                                                                               \
+			vformat(CHECK_FORMAT_FORMAT, pre_formatted),                                        \
+			vformat(CHECK_FORMAT_FORMAT, output)                                                \
+		);                                                                                      \
 	} while (false);
+#define CHECK_FORMAT_FORMAT "\n---\n%s\n---\n"
 
 TEST_SUITE("[Modules][GDScript][GDScriptFormatter][ClassMembers]") {
 	TEST_CASE("Should output a variable with a property that has a setter and getter, inline") {
@@ -3001,9 +3005,44 @@ func another():
 
 TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Syntax]") {
 	TEST_CASE("Syntactic sugar should be preserved") {
-		SUBCASE("Unique nodes (%)") {
-			const String code = R"(@onready var unique_node = %UniqueNode)";
-			const String pre_formatted = code;
+		SUBCASE("get_node ($)") {
+			// Should let as-is
+			String code = R"(@onready var child_node = $ChildNode
+)";
+			String pre_formatted = code;
+			CHECK_FORMAT(code, pre_formatted);
+
+			// Should remove useless quotes
+			code = R"(@onready var child_node = $"ChildNode"
+)";
+			pre_formatted = R"(@onready var child_node = $ChildNode
+)";
+			CHECK_FORMAT(code, pre_formatted);
+
+			// Should keep quotes
+			code = R"(@onready var sub_child_node = $"ChildNode/Node$/Path"
+)";
+			pre_formatted = code;
+			CHECK_FORMAT(code, pre_formatted);
+		}
+
+		SUBCASE("Unique names (%)") {
+			// Should let as-is
+			String code = R"(@onready var unique_node = %UniqueNode
+)";
+			String pre_formatted = code;
+			CHECK_FORMAT(code, pre_formatted);
+
+			// Should remove useless quotes
+			code = R"(@onready var unique_node = %UniqueNodeIndeed
+)";
+			pre_formatted = code;
+			CHECK_FORMAT(code, pre_formatted);
+
+			// Should keep quotes
+			code = R"(@onready var unique_node = %"UniqueNodeIndeedWith$"
+)";
+			pre_formatted = code;
 			CHECK_FORMAT(code, pre_formatted);
 		}
 	}

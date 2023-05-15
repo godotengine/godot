@@ -1551,13 +1551,35 @@ String GDScriptFormat::parse_subscript(const GDP::SubscriptNode *p_node, const i
 
 String GDScriptFormat::parse_get_node(const GDP::GetNodeNode *p_node, const int p_indent_level) {
 	StringBuilder output;
-	output += "$";
 	String append;
-	if ((p_node->full_path[0] < 65 || p_node->full_path[0] > 90) && (p_node->full_path[0] < 97 || p_node->full_path[0] > 122) && !p_node->full_path.begins_with("_")) {
+	String full_path = p_node->full_path;
+	bool wrap = false;
+	
+	if (full_path.get(0) == '%') {
+		output += "%";
+		full_path = full_path.substr(1);
+	} else {
+		output += "$";
+	}
+	char32_t *full_path_chars = full_path.ptrw();
+
+	if (!is_unicode_identifier_start(full_path_chars[0]) && full_path_chars[0] != '%') {
+		wrap = true;
+	}
+	if (!wrap) {
+		for (int i = 1; i < full_path.length(); i++) {
+			if (!is_unicode_identifier_continue(full_path_chars[i]) && full_path_chars[i] != '/') {
+				wrap = true;
+				break;
+			}
+		}
+	}
+	if (wrap) {
 		output += "\"";
 		append = "\"";
 	}
-	output += p_node->full_path;
+	
+	output += full_path;
 	output += append;
 	return output;
 }
