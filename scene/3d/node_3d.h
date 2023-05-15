@@ -88,6 +88,7 @@ private:
 	mutable SelfList<Node> xform_change;
 
 	// This Data struct is to avoid namespace pollution in derived classes.
+
 	struct Data {
 		mutable Transform3D global_transform;
 		mutable Transform3D local_transform;
@@ -96,7 +97,7 @@ private:
 		mutable Vector3 scale = Vector3(1, 1, 1);
 		mutable RotationEditMode rotation_edit_mode = ROTATION_EDIT_MODE_EULER;
 
-		mutable int dirty = DIRTY_NONE;
+		mutable SafeNumeric<uint32_t> dirty;
 
 		Viewport *viewport = nullptr;
 
@@ -106,7 +107,6 @@ private:
 
 		RID visibility_parent;
 
-		int children_lock = 0;
 		Node3D *parent = nullptr;
 		List<Node3D *> children;
 		List<Node3D *>::Element *C = nullptr;
@@ -137,6 +137,7 @@ private:
 
 	void _propagate_visibility_parent();
 	void _update_visibility_parent(bool p_update_root);
+	void _propagate_transform_changed_deferred();
 
 protected:
 	_FORCE_INLINE_ void set_ignore_transform_notification(bool p_ignore) { data.ignore_notification = p_ignore; }

@@ -86,10 +86,8 @@ void Node3D::_notify_dirty() {
 
 void Node3D::_update_local_transform() const {
 	// This function is called when the local transform (data.local_transform) is dirty and the right value is contained in the Euler rotation and scale.
-
 	data.local_transform.basis.set_euler_scale(data.euler_rotation, data.scale, data.euler_rotation_order);
-
-	data.dirty &= ~DIRTY_LOCAL_TRANSFORM;
+	data.dirty.bit_and(~DIRTY_LOCAL_TRANSFORM);
 }
 
 void Node3D::_update_rotation_and_scale() const {
@@ -97,16 +95,19 @@ void Node3D::_update_rotation_and_scale() const {
 
 	data.scale = data.local_transform.basis.get_scale();
 	data.euler_rotation = data.local_transform.basis.get_euler_normalized(data.euler_rotation_order);
+	data.dirty.bit_and(~DIRTY_EULER_ROTATION_AND_SCALE);
+}
 
-	data.dirty &= ~DIRTY_EULER_ROTATION_AND_SCALE;
+void Node3D::_propagate_transform_changed_deferred() {
+	if (is_inside_tree() && !xform_change.in_list()) {
+		get_tree()->xform_change_list.add(&xform_change);
+	}
 }
 
 void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 	if (!is_inside_tree()) {
 		return;
 	}
-
-	data.children_lock++;
 
 	for (Node3D *&E : data.children) {
 		if (E->data.top_level_active) {
@@ -119,14 +120,19 @@ void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 #else
 	if (data.notify_transform && !data.ignore_notification && !xform_change.in_list()) {
 #endif
-		get_tree()->xform_change_list.add(&xform_change);
+		if (likely(is_accessible_from_caller_thread())) {
+			get_tree()->xform_change_list.add(&xform_change);
+		} else {
+			// This should very rarely happen, but if it does at least make sure the notification is received eventually.
+			MessageQueue::get_singleton()->push_callable(callable_mp(this, &Node3D::_propagate_transform_changed_deferred));
+		}
 	}
-	data.dirty |= DIRTY_GLOBAL_TRANSFORM;
-
-	data.children_lock--;
+	data.dirty.bit_or(DIRTY_GLOBAL_TRANSFORM);
 }
 
 void Node3D::_notification(int p_what) {
+	ERR_THREAD_GUARD;
+
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			ERR_FAIL_COND(!get_tree());
@@ -145,12 +151,12 @@ void Node3D::_notification(int p_what) {
 			if (data.top_level && !Engine::get_singleton()->is_editor_hint()) {
 				if (data.parent) {
 					data.local_transform = data.parent->get_global_transform() * get_transform();
-					data.dirty = DIRTY_EULER_ROTATION_AND_SCALE; // As local transform was updated, rot/scale should be dirty.
+					data.dirty.set(DIRTY_EULER_ROTATION_AND_SCALE); // As local transform was updated, rot/scale should be dirty.
 				}
 				data.top_level_active = true;
 			}
 
-			data.dirty |= DIRTY_GLOBAL_TRANSFORM; // Global is always dirty upon entering a scene.
+			data.dirty.bit_or(DIRTY_GLOBAL_TRANSFORM); // Global is always dirty upon entering a scene.
 			_notify_dirty();
 
 			notification(NOTIFICATION_ENTER_WORLD);
@@ -217,19 +223,23 @@ void Node3D::_notification(int p_what) {
 }
 
 void Node3D::set_basis(const Basis &p_basis) {
+	ERR_THREAD_GUARD;
+
 	set_transform(Transform3D(p_basis, data.local_transform.origin));
 }
 void Node3D::set_quaternion(const Quaternion &p_quaternion) {
-	if (data.dirty & DIRTY_EULER_ROTATION_AND_SCALE) {
+	ERR_THREAD_GUARD;
+
+	if (data.dirty.get() & DIRTY_EULER_ROTATION_AND_SCALE) {
 		// We need the scale part, so if these are dirty, update it
 		data.scale = data.local_transform.basis.get_scale();
-		data.dirty &= ~DIRTY_EULER_ROTATION_AND_SCALE;
+		data.dirty.bit_and(~DIRTY_EULER_ROTATION_AND_SCALE);
 	}
 	data.local_transform.basis = Basis(p_quaternion, data.scale);
 	// Rotscale should not be marked dirty because that would cause precision loss issues with the scale. Instead reconstruct rotation now.
 	data.euler_rotation = data.local_transform.basis.get_euler_normalized(data.euler_rotation_order);
 
-	data.dirty = DIRTY_NONE;
+	data.dirty.set(DIRTY_NONE);
 
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
@@ -238,38 +248,45 @@ void Node3D::set_quaternion(const Quaternion &p_quaternion) {
 }
 
 Vector3 Node3D::get_global_position() const {
+	ERR_READ_THREAD_GUARD_V(Vector3());
 	return get_global_transform().get_origin();
 }
 
 void Node3D::set_global_position(const Vector3 &p_position) {
+	ERR_THREAD_GUARD;
 	Transform3D transform = get_global_transform();
 	transform.set_origin(p_position);
 	set_global_transform(transform);
 }
 
 Vector3 Node3D::get_global_rotation() const {
+	ERR_READ_THREAD_GUARD_V(Vector3());
 	return get_global_transform().get_basis().get_euler();
 }
 
 Vector3 Node3D::get_global_rotation_degrees() const {
+	ERR_READ_THREAD_GUARD_V(Vector3());
 	Vector3 radians = get_global_rotation();
 	return Vector3(Math::rad_to_deg(radians.x), Math::rad_to_deg(radians.y), Math::rad_to_deg(radians.z));
 }
 
 void Node3D::set_global_rotation(const Vector3 &p_euler_rad) {
+	ERR_THREAD_GUARD;
 	Transform3D transform = get_global_transform();
 	transform.basis = Basis::from_euler(p_euler_rad);
 	set_global_transform(transform);
 }
 
 void Node3D::set_global_rotation_degrees(const Vector3 &p_euler_degrees) {
+	ERR_THREAD_GUARD;
 	Vector3 radians(Math::deg_to_rad(p_euler_degrees.x), Math::deg_to_rad(p_euler_degrees.y), Math::deg_to_rad(p_euler_degrees.z));
 	set_global_rotation(radians);
 }
 
 void Node3D::set_transform(const Transform3D &p_transform) {
+	ERR_THREAD_GUARD;
 	data.local_transform = p_transform;
-	data.dirty = DIRTY_EULER_ROTATION_AND_SCALE; // Make rot/scale dirty.
+	data.dirty.set(DIRTY_EULER_ROTATION_AND_SCALE); // Make rot/scale dirty.
 
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
@@ -278,18 +295,16 @@ void Node3D::set_transform(const Transform3D &p_transform) {
 }
 
 Basis Node3D::get_basis() const {
+	ERR_READ_THREAD_GUARD_V(Basis());
 	return get_transform().basis;
 }
 
 Quaternion Node3D::get_quaternion() const {
-	if (data.dirty & DIRTY_LOCAL_TRANSFORM) {
-		_update_local_transform();
-	}
-
-	return data.local_transform.basis.get_rotation_quaternion();
+	return get_transform().basis.get_rotation_quaternion();
 }
 
 void Node3D::set_global_transform(const Transform3D &p_transform) {
+	ERR_THREAD_GUARD;
 	Transform3D xform = (data.parent && !data.top_level_active)
 			? data.parent->get_global_transform().affine_inverse() * p_transform
 			: p_transform;
@@ -298,31 +313,42 @@ void Node3D::set_global_transform(const Transform3D &p_transform) {
 }
 
 Transform3D Node3D::get_transform() const {
-	if (data.dirty & DIRTY_LOCAL_TRANSFORM) {
+	ERR_READ_THREAD_GUARD_V(Transform3D());
+	if (data.dirty.get() & DIRTY_LOCAL_TRANSFORM) {
+		// This update can happen if needed over multiple threads.
 		_update_local_transform();
 	}
 
 	return data.local_transform;
 }
+
 Transform3D Node3D::get_global_transform() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), Transform3D());
 
-	if (data.dirty & DIRTY_GLOBAL_TRANSFORM) {
-		if (data.dirty & DIRTY_LOCAL_TRANSFORM) {
-			_update_local_transform();
+	/* Due to how threads work at scene level, while this global transform won't be able to be changed from outside a thread,
+	 * it is possible that multiple threads can access it while it's dirty from previous work. Due to this, we must ensure that
+	 * the dirty/update process is thread safe by utilizing atomic copies.
+	 */
+
+	uint32_t dirty = data.dirty.get();
+	if (dirty & DIRTY_GLOBAL_TRANSFORM) {
+		if (dirty & DIRTY_LOCAL_TRANSFORM) {
+			_update_local_transform(); // Update local transform atomically.
 		}
 
+		Transform3D new_global;
 		if (data.parent && !data.top_level_active) {
-			data.global_transform = data.parent->get_global_transform() * data.local_transform;
+			new_global = data.parent->get_global_transform() * data.local_transform;
 		} else {
-			data.global_transform = data.local_transform;
+			new_global = data.local_transform;
 		}
 
 		if (data.disable_scale) {
-			data.global_transform.basis.orthonormalize();
+			new_global.basis.orthonormalize();
 		}
 
-		data.dirty &= ~DIRTY_GLOBAL_TRANSFORM;
+		data.global_transform = new_global;
+		data.dirty.bit_and(~DIRTY_GLOBAL_TRANSFORM);
 	}
 
 	return data.global_transform;
@@ -339,6 +365,7 @@ Transform3D Node3D::get_local_gizmo_transform() const {
 #endif
 
 Node3D *Node3D::get_parent_node_3d() const {
+	ERR_READ_THREAD_GUARD_V(nullptr); // This can't be changed on threads anyway.
 	if (data.top_level) {
 		return nullptr;
 	}
@@ -347,6 +374,7 @@ Node3D *Node3D::get_parent_node_3d() const {
 }
 
 Transform3D Node3D::get_relative_transform(const Node *p_parent) const {
+	ERR_READ_THREAD_GUARD_V(Transform3D());
 	if (p_parent == this) {
 		return Transform3D();
 	}
@@ -361,6 +389,7 @@ Transform3D Node3D::get_relative_transform(const Node *p_parent) const {
 }
 
 void Node3D::set_position(const Vector3 &p_position) {
+	ERR_THREAD_GUARD;
 	data.local_transform.origin = p_position;
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
@@ -369,19 +398,20 @@ void Node3D::set_position(const Vector3 &p_position) {
 }
 
 void Node3D::set_rotation_edit_mode(RotationEditMode p_mode) {
+	ERR_THREAD_GUARD;
 	if (data.rotation_edit_mode == p_mode) {
 		return;
 	}
 
 	bool transform_changed = false;
-	if (data.rotation_edit_mode == ROTATION_EDIT_MODE_BASIS && !(data.dirty & DIRTY_LOCAL_TRANSFORM)) {
+	if (data.rotation_edit_mode == ROTATION_EDIT_MODE_BASIS && !(data.dirty.get() & DIRTY_LOCAL_TRANSFORM)) {
 		data.local_transform.orthogonalize();
 		transform_changed = true;
 	}
 
 	data.rotation_edit_mode = p_mode;
 
-	if (p_mode == ROTATION_EDIT_MODE_EULER && (data.dirty & DIRTY_EULER_ROTATION_AND_SCALE)) {
+	if (p_mode == ROTATION_EDIT_MODE_EULER && (data.dirty.get() & DIRTY_EULER_ROTATION_AND_SCALE)) {
 		// If going to Euler mode, ensure that vectors are _not_ dirty, else the retrieved value may be wrong.
 		// Otherwise keep what is there, so switching back and forth between modes does not break the vectors.
 
@@ -399,10 +429,12 @@ void Node3D::set_rotation_edit_mode(RotationEditMode p_mode) {
 }
 
 Node3D::RotationEditMode Node3D::get_rotation_edit_mode() const {
+	ERR_READ_THREAD_GUARD_V(ROTATION_EDIT_MODE_EULER);
 	return data.rotation_edit_mode;
 }
 
 void Node3D::set_rotation_order(EulerOrder p_order) {
+	ERR_THREAD_GUARD;
 	if (data.euler_rotation_order == p_order) {
 		return;
 	}
@@ -410,13 +442,13 @@ void Node3D::set_rotation_order(EulerOrder p_order) {
 	ERR_FAIL_INDEX(int32_t(p_order), 6);
 	bool transform_changed = false;
 
-	if (data.dirty & DIRTY_EULER_ROTATION_AND_SCALE) {
+	if (data.dirty.get() & DIRTY_EULER_ROTATION_AND_SCALE) {
 		_update_rotation_and_scale();
-	} else if (data.dirty & DIRTY_LOCAL_TRANSFORM) {
+	} else if (data.dirty.get() & DIRTY_LOCAL_TRANSFORM) {
 		data.euler_rotation = Basis::from_euler(data.euler_rotation, data.euler_rotation_order).get_euler_normalized(p_order);
 		transform_changed = true;
 	} else {
-		data.dirty |= DIRTY_LOCAL_TRANSFORM;
+		data.dirty.bit_or(DIRTY_LOCAL_TRANSFORM);
 		transform_changed = true;
 	}
 
@@ -432,18 +464,20 @@ void Node3D::set_rotation_order(EulerOrder p_order) {
 }
 
 EulerOrder Node3D::get_rotation_order() const {
+	ERR_READ_THREAD_GUARD_V(EulerOrder::XYZ);
 	return data.euler_rotation_order;
 }
 
 void Node3D::set_rotation(const Vector3 &p_euler_rad) {
-	if (data.dirty & DIRTY_EULER_ROTATION_AND_SCALE) {
+	ERR_THREAD_GUARD;
+	if (data.dirty.get() & DIRTY_EULER_ROTATION_AND_SCALE) {
 		// Update scale only if rotation and scale are dirty, as rotation will be overridden.
 		data.scale = data.local_transform.basis.get_scale();
-		data.dirty &= ~DIRTY_EULER_ROTATION_AND_SCALE;
+		data.dirty.bit_and(~DIRTY_EULER_ROTATION_AND_SCALE);
 	}
 
 	data.euler_rotation = p_euler_rad;
-	data.dirty = DIRTY_LOCAL_TRANSFORM;
+	data.dirty.set(DIRTY_LOCAL_TRANSFORM);
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
@@ -451,19 +485,21 @@ void Node3D::set_rotation(const Vector3 &p_euler_rad) {
 }
 
 void Node3D::set_rotation_degrees(const Vector3 &p_euler_degrees) {
+	ERR_THREAD_GUARD;
 	Vector3 radians(Math::deg_to_rad(p_euler_degrees.x), Math::deg_to_rad(p_euler_degrees.y), Math::deg_to_rad(p_euler_degrees.z));
 	set_rotation(radians);
 }
 
 void Node3D::set_scale(const Vector3 &p_scale) {
-	if (data.dirty & DIRTY_EULER_ROTATION_AND_SCALE) {
+	ERR_THREAD_GUARD;
+	if (data.dirty.get() & DIRTY_EULER_ROTATION_AND_SCALE) {
 		// Update rotation only if rotation and scale are dirty, as scale will be overridden.
 		data.euler_rotation = data.local_transform.basis.get_euler_normalized(data.euler_rotation_order);
-		data.dirty &= ~DIRTY_EULER_ROTATION_AND_SCALE;
+		data.dirty.bit_and(~DIRTY_EULER_ROTATION_AND_SCALE);
 	}
 
 	data.scale = p_scale;
-	data.dirty = DIRTY_LOCAL_TRANSFORM;
+	data.dirty.set(DIRTY_LOCAL_TRANSFORM);
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
@@ -471,11 +507,13 @@ void Node3D::set_scale(const Vector3 &p_scale) {
 }
 
 Vector3 Node3D::get_position() const {
+	ERR_READ_THREAD_GUARD_V(Vector3());
 	return data.local_transform.origin;
 }
 
 Vector3 Node3D::get_rotation() const {
-	if (data.dirty & DIRTY_EULER_ROTATION_AND_SCALE) {
+	ERR_READ_THREAD_GUARD_V(Vector3());
+	if (data.dirty.get() & DIRTY_EULER_ROTATION_AND_SCALE) {
 		_update_rotation_and_scale();
 	}
 
@@ -483,12 +521,14 @@ Vector3 Node3D::get_rotation() const {
 }
 
 Vector3 Node3D::get_rotation_degrees() const {
+	ERR_READ_THREAD_GUARD_V(Vector3());
 	Vector3 radians = get_rotation();
 	return Vector3(Math::rad_to_deg(radians.x), Math::rad_to_deg(radians.y), Math::rad_to_deg(radians.z));
 }
 
 Vector3 Node3D::get_scale() const {
-	if (data.dirty & DIRTY_EULER_ROTATION_AND_SCALE) {
+	ERR_READ_THREAD_GUARD_V(Vector3());
+	if (data.dirty.get() & DIRTY_EULER_ROTATION_AND_SCALE) {
 		_update_rotation_and_scale();
 	}
 
@@ -496,6 +536,7 @@ Vector3 Node3D::get_scale() const {
 }
 
 void Node3D::update_gizmos() {
+	ERR_THREAD_GUARD;
 #ifdef TOOLS_ENABLED
 	if (!is_inside_world()) {
 		return;
@@ -514,6 +555,7 @@ void Node3D::update_gizmos() {
 }
 
 void Node3D::set_subgizmo_selection(Ref<Node3DGizmo> p_gizmo, int p_id, Transform3D p_transform) {
+	ERR_THREAD_GUARD;
 #ifdef TOOLS_ENABLED
 	if (!is_inside_world()) {
 		return;
@@ -526,6 +568,7 @@ void Node3D::set_subgizmo_selection(Ref<Node3DGizmo> p_gizmo, int p_id, Transfor
 }
 
 void Node3D::clear_subgizmo_selection() {
+	ERR_THREAD_GUARD;
 #ifdef TOOLS_ENABLED
 	if (!is_inside_world()) {
 		return;
@@ -542,6 +585,7 @@ void Node3D::clear_subgizmo_selection() {
 }
 
 void Node3D::add_gizmo(Ref<Node3DGizmo> p_gizmo) {
+	ERR_THREAD_GUARD;
 #ifdef TOOLS_ENABLED
 	if (data.gizmos_disabled || p_gizmo.is_null()) {
 		return;
@@ -559,6 +603,7 @@ void Node3D::add_gizmo(Ref<Node3DGizmo> p_gizmo) {
 }
 
 void Node3D::remove_gizmo(Ref<Node3DGizmo> p_gizmo) {
+	ERR_THREAD_GUARD;
 #ifdef TOOLS_ENABLED
 	int idx = data.gizmos.find(p_gizmo);
 	if (idx != -1) {
@@ -569,6 +614,7 @@ void Node3D::remove_gizmo(Ref<Node3DGizmo> p_gizmo) {
 }
 
 void Node3D::clear_gizmos() {
+	ERR_THREAD_GUARD;
 #ifdef TOOLS_ENABLED
 	for (int i = 0; i < data.gizmos.size(); i++) {
 		data.gizmos.write[i]->free();
@@ -578,6 +624,7 @@ void Node3D::clear_gizmos() {
 }
 
 TypedArray<Node3DGizmo> Node3D::get_gizmos_bind() const {
+	ERR_THREAD_GUARD_V(TypedArray<Node3DGizmo>());
 	TypedArray<Node3DGizmo> ret;
 
 #ifdef TOOLS_ENABLED
@@ -590,6 +637,7 @@ TypedArray<Node3DGizmo> Node3D::get_gizmos_bind() const {
 }
 
 Vector<Ref<Node3DGizmo>> Node3D::get_gizmos() const {
+	ERR_THREAD_GUARD_V(Vector<Ref<Node3DGizmo>>());
 #ifdef TOOLS_ENABLED
 	return data.gizmos;
 #else
@@ -615,6 +663,7 @@ void Node3D::_update_gizmos() {
 }
 
 void Node3D::set_disable_gizmos(bool p_enabled) {
+	ERR_THREAD_GUARD;
 #ifdef TOOLS_ENABLED
 	data.gizmos_disabled = p_enabled;
 	if (!p_enabled) {
@@ -624,6 +673,7 @@ void Node3D::set_disable_gizmos(bool p_enabled) {
 }
 
 void Node3D::reparent(Node *p_parent, bool p_keep_global_transform) {
+	ERR_THREAD_GUARD;
 	Transform3D temp = get_global_transform();
 	Node::reparent(p_parent);
 	if (p_keep_global_transform) {
@@ -632,14 +682,17 @@ void Node3D::reparent(Node *p_parent, bool p_keep_global_transform) {
 }
 
 void Node3D::set_disable_scale(bool p_enabled) {
+	ERR_THREAD_GUARD;
 	data.disable_scale = p_enabled;
 }
 
 bool Node3D::is_scale_disabled() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return data.disable_scale;
 }
 
 void Node3D::set_as_top_level(bool p_enabled) {
+	ERR_THREAD_GUARD;
 	if (data.top_level == p_enabled) {
 		return;
 	}
@@ -658,10 +711,12 @@ void Node3D::set_as_top_level(bool p_enabled) {
 }
 
 bool Node3D::is_set_as_top_level() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return data.top_level;
 }
 
 Ref<World3D> Node3D::get_world_3d() const {
+	ERR_READ_THREAD_GUARD_V(Ref<World3D>()); // World3D can only be set from main thread, so it's safe to obtain on threads.
 	ERR_FAIL_COND_V(!is_inside_world(), Ref<World3D>());
 	ERR_FAIL_COND_V(!data.viewport, Ref<World3D>());
 
@@ -688,14 +743,17 @@ void Node3D::_propagate_visibility_changed() {
 }
 
 void Node3D::show() {
+	ERR_MAIN_THREAD_GUARD;
 	set_visible(true);
 }
 
 void Node3D::hide() {
+	ERR_MAIN_THREAD_GUARD;
 	set_visible(false);
 }
 
 void Node3D::set_visible(bool p_visible) {
+	ERR_MAIN_THREAD_GUARD;
 	if (data.visible == p_visible) {
 		return;
 	}
@@ -709,10 +767,12 @@ void Node3D::set_visible(bool p_visible) {
 }
 
 bool Node3D::is_visible() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return data.visible;
 }
 
 bool Node3D::is_visible_in_tree() const {
+	ERR_READ_THREAD_GUARD_V(false); // Since visibility can only be changed from main thread, this is safe to call.
 	const Node3D *s = this;
 
 	while (s) {
@@ -726,42 +786,49 @@ bool Node3D::is_visible_in_tree() const {
 }
 
 void Node3D::rotate_object_local(const Vector3 &p_axis, real_t p_angle) {
+	ERR_THREAD_GUARD;
 	Transform3D t = get_transform();
 	t.basis.rotate_local(p_axis, p_angle);
 	set_transform(t);
 }
 
 void Node3D::rotate(const Vector3 &p_axis, real_t p_angle) {
+	ERR_THREAD_GUARD;
 	Transform3D t = get_transform();
 	t.basis.rotate(p_axis, p_angle);
 	set_transform(t);
 }
 
 void Node3D::rotate_x(real_t p_angle) {
+	ERR_THREAD_GUARD;
 	Transform3D t = get_transform();
 	t.basis.rotate(Vector3(1, 0, 0), p_angle);
 	set_transform(t);
 }
 
 void Node3D::rotate_y(real_t p_angle) {
+	ERR_THREAD_GUARD;
 	Transform3D t = get_transform();
 	t.basis.rotate(Vector3(0, 1, 0), p_angle);
 	set_transform(t);
 }
 
 void Node3D::rotate_z(real_t p_angle) {
+	ERR_THREAD_GUARD;
 	Transform3D t = get_transform();
 	t.basis.rotate(Vector3(0, 0, 1), p_angle);
 	set_transform(t);
 }
 
 void Node3D::translate(const Vector3 &p_offset) {
+	ERR_THREAD_GUARD;
 	Transform3D t = get_transform();
 	t.translate_local(p_offset);
 	set_transform(t);
 }
 
 void Node3D::translate_object_local(const Vector3 &p_offset) {
+	ERR_THREAD_GUARD;
 	Transform3D t = get_transform();
 
 	Transform3D s;
@@ -770,52 +837,61 @@ void Node3D::translate_object_local(const Vector3 &p_offset) {
 }
 
 void Node3D::scale(const Vector3 &p_ratio) {
+	ERR_THREAD_GUARD;
 	Transform3D t = get_transform();
 	t.basis.scale(p_ratio);
 	set_transform(t);
 }
 
 void Node3D::scale_object_local(const Vector3 &p_scale) {
+	ERR_THREAD_GUARD;
 	Transform3D t = get_transform();
 	t.basis.scale_local(p_scale);
 	set_transform(t);
 }
 
 void Node3D::global_rotate(const Vector3 &p_axis, real_t p_angle) {
+	ERR_THREAD_GUARD;
 	Transform3D t = get_global_transform();
 	t.basis.rotate(p_axis, p_angle);
 	set_global_transform(t);
 }
 
 void Node3D::global_scale(const Vector3 &p_scale) {
+	ERR_THREAD_GUARD;
 	Transform3D t = get_global_transform();
 	t.basis.scale(p_scale);
 	set_global_transform(t);
 }
 
 void Node3D::global_translate(const Vector3 &p_offset) {
+	ERR_THREAD_GUARD;
 	Transform3D t = get_global_transform();
 	t.origin += p_offset;
 	set_global_transform(t);
 }
 
 void Node3D::orthonormalize() {
+	ERR_THREAD_GUARD;
 	Transform3D t = get_transform();
 	t.orthonormalize();
 	set_transform(t);
 }
 
 void Node3D::set_identity() {
+	ERR_THREAD_GUARD;
 	set_transform(Transform3D());
 }
 
 void Node3D::look_at(const Vector3 &p_target, const Vector3 &p_up) {
+	ERR_THREAD_GUARD;
 	ERR_FAIL_COND_MSG(!is_inside_tree(), "Node not inside tree. Use look_at_from_position() instead.");
 	Vector3 origin = get_global_transform().origin;
 	look_at_from_position(origin, p_target, p_up);
 }
 
 void Node3D::look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up) {
+	ERR_THREAD_GUARD;
 	ERR_FAIL_COND_MSG(p_pos.is_equal_approx(p_target), "Node origin and target are in the same position, look_at() failed.");
 	ERR_FAIL_COND_MSG(p_up.is_zero_approx(), "The up vector can't be zero, look_at() failed.");
 	ERR_FAIL_COND_MSG(p_up.cross(p_target - p_pos).is_zero_approx(), "Up vector and direction between node origin and target are aligned, look_at() failed.");
@@ -827,30 +903,37 @@ void Node3D::look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target
 }
 
 Vector3 Node3D::to_local(Vector3 p_global) const {
+	ERR_READ_THREAD_GUARD_V(Vector3());
 	return get_global_transform().affine_inverse().xform(p_global);
 }
 
 Vector3 Node3D::to_global(Vector3 p_local) const {
+	ERR_READ_THREAD_GUARD_V(Vector3());
 	return get_global_transform().xform(p_local);
 }
 
 void Node3D::set_notify_transform(bool p_enabled) {
+	ERR_THREAD_GUARD;
 	data.notify_transform = p_enabled;
 }
 
 bool Node3D::is_transform_notification_enabled() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return data.notify_transform;
 }
 
 void Node3D::set_notify_local_transform(bool p_enabled) {
+	ERR_THREAD_GUARD;
 	data.notify_local_transform = p_enabled;
 }
 
 bool Node3D::is_local_transform_notification_enabled() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return data.notify_local_transform;
 }
 
 void Node3D::force_update_transform() {
+	ERR_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
 	if (!xform_change.in_list()) {
 		return; //nothing to update
@@ -894,6 +977,7 @@ void Node3D::_update_visibility_parent(bool p_update_root) {
 }
 
 void Node3D::set_visibility_parent(const NodePath &p_path) {
+	ERR_MAIN_THREAD_GUARD;
 	visibility_parent_path = p_path;
 	if (is_inside_tree()) {
 		_update_visibility_parent(true);
@@ -901,6 +985,7 @@ void Node3D::set_visibility_parent(const NodePath &p_path) {
 }
 
 NodePath Node3D::get_visibility_parent() const {
+	ERR_READ_THREAD_GUARD_V(NodePath());
 	return visibility_parent_path;
 }
 

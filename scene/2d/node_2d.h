@@ -36,14 +36,13 @@
 class Node2D : public CanvasItem {
 	GDCLASS(Node2D, CanvasItem);
 
+	SafeFlag xform_dirty;
 	Point2 position;
 	real_t rotation = 0.0;
 	Size2 scale = Vector2(1, 1);
 	real_t skew = 0.0;
 
 	Transform2D transform;
-
-	bool _xform_dirty = false;
 
 	void _update_transform();
 

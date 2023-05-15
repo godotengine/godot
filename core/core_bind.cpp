@@ -1317,11 +1317,11 @@ Variant ClassDB::instantiate(const StringName &p_class) const {
 	}
 }
 
-bool ClassDB::has_signal(StringName p_class, StringName p_signal) const {
+bool ClassDB::class_has_signal(StringName p_class, StringName p_signal) const {
 	return ::ClassDB::has_signal(p_class, p_signal);
 }
 
-Dictionary ClassDB::get_signal(StringName p_class, StringName p_signal) const {
+Dictionary ClassDB::class_get_signal(StringName p_class, StringName p_signal) const {
 	MethodInfo signal;
 	if (::ClassDB::get_signal(p_class, p_signal, &signal)) {
 		return signal.operator Dictionary();
@@ -1330,7 +1330,7 @@ Dictionary ClassDB::get_signal(StringName p_class, StringName p_signal) const {
 	}
 }
 
-TypedArray<Dictionary> ClassDB::get_signal_list(StringName p_class, bool p_no_inheritance) const {
+TypedArray<Dictionary> ClassDB::class_get_signal_list(StringName p_class, bool p_no_inheritance) const {
 	List<MethodInfo> signals;
 	::ClassDB::get_signal_list(p_class, &signals, p_no_inheritance);
 	TypedArray<Dictionary> ret;
@@ -1342,7 +1342,7 @@ TypedArray<Dictionary> ClassDB::get_signal_list(StringName p_class, bool p_no_in
 	return ret;
 }
 
-TypedArray<Dictionary> ClassDB::get_property_list(StringName p_class, bool p_no_inheritance) const {
+TypedArray<Dictionary> ClassDB::class_get_property_list(StringName p_class, bool p_no_inheritance) const {
 	List<PropertyInfo> plist;
 	::ClassDB::get_property_list(p_class, &plist, p_no_inheritance);
 	TypedArray<Dictionary> ret;
@@ -1353,13 +1353,13 @@ TypedArray<Dictionary> ClassDB::get_property_list(StringName p_class, bool p_no_
 	return ret;
 }
 
-Variant ClassDB::get_property(Object *p_object, const StringName &p_property) const {
+Variant ClassDB::class_get_property(Object *p_object, const StringName &p_property) const {
 	Variant ret;
 	::ClassDB::get_property(p_object, p_property, ret);
 	return ret;
 }
 
-Error ClassDB::set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const {
+Error ClassDB::class_set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const {
 	Variant ret;
 	bool valid;
 	if (!::ClassDB::set_property(p_object, p_property, p_value, &valid)) {
@@ -1370,11 +1370,11 @@ Error ClassDB::set_property(Object *p_object, const StringName &p_property, cons
 	return OK;
 }
 
-bool ClassDB::has_method(StringName p_class, StringName p_method, bool p_no_inheritance) const {
+bool ClassDB::class_has_method(StringName p_class, StringName p_method, bool p_no_inheritance) const {
 	return ::ClassDB::has_method(p_class, p_method, p_no_inheritance);
 }
 
-TypedArray<Dictionary> ClassDB::get_method_list(StringName p_class, bool p_no_inheritance) const {
+TypedArray<Dictionary> ClassDB::class_get_method_list(StringName p_class, bool p_no_inheritance) const {
 	List<MethodInfo> methods;
 	::ClassDB::get_method_list(p_class, &methods, p_no_inheritance);
 	TypedArray<Dictionary> ret;
@@ -1392,7 +1392,7 @@ TypedArray<Dictionary> ClassDB::get_method_list(StringName p_class, bool p_no_in
 	return ret;
 }
 
-PackedStringArray ClassDB::get_integer_constant_list(const StringName &p_class, bool p_no_inheritance) const {
+PackedStringArray ClassDB::class_get_integer_constant_list(const StringName &p_class, bool p_no_inheritance) const {
 	List<String> constants;
 	::ClassDB::get_integer_constant_list(p_class, &constants, p_no_inheritance);
 
@@ -1406,24 +1406,24 @@ PackedStringArray ClassDB::get_integer_constant_list(const StringName &p_class, 
 	return ret;
 }
 
-bool ClassDB::has_integer_constant(const StringName &p_class, const StringName &p_name) const {
+bool ClassDB::class_has_integer_constant(const StringName &p_class, const StringName &p_name) const {
 	bool success;
 	::ClassDB::get_integer_constant(p_class, p_name, &success);
 	return success;
 }
 
-int64_t ClassDB::get_integer_constant(const StringName &p_class, const StringName &p_name) const {
+int64_t ClassDB::class_get_integer_constant(const StringName &p_class, const StringName &p_name) const {
 	bool found;
 	int64_t c = ::ClassDB::get_integer_constant(p_class, p_name, &found);
 	ERR_FAIL_COND_V(!found, 0);
 	return c;
 }
 
-bool ClassDB::has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) const {
+bool ClassDB::class_has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) const {
 	return ::ClassDB::has_enum(p_class, p_name, p_no_inheritance);
 }
 
-PackedStringArray ClassDB::get_enum_list(const StringName &p_class, bool p_no_inheritance) const {
+PackedStringArray ClassDB::class_get_enum_list(const StringName &p_class, bool p_no_inheritance) const {
 	List<StringName> enums;
 	::ClassDB::get_enum_list(p_class, &enums, p_no_inheritance);
 
@@ -1437,7 +1437,7 @@ PackedStringArray ClassDB::get_enum_list(const StringName &p_class, bool p_no_in
 	return ret;
 }
 
-PackedStringArray ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance) const {
+PackedStringArray ClassDB::class_get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance) const {
 	List<StringName> constants;
 	::ClassDB::get_enum_constants(p_class, p_enum, &constants, p_no_inheritance);
 
@@ -1451,7 +1451,7 @@ PackedStringArray ClassDB::get_enum_constants(const StringName &p_class, const S
 	return ret;
 }
 
-StringName ClassDB::get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) const {
+StringName ClassDB::class_get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) const {
 	return ::ClassDB::get_integer_constant_enum(p_class, p_name, p_no_inheritance);
 }
 
@@ -1468,27 +1468,27 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("can_instantiate", "class"), &ClassDB::can_instantiate);
 	::ClassDB::bind_method(D_METHOD("instantiate", "class"), &ClassDB::instantiate);
 
-	::ClassDB::bind_method(D_METHOD("class_has_signal", "class", "signal"), &ClassDB::has_signal);
-	::ClassDB::bind_method(D_METHOD("class_get_signal", "class", "signal"), &ClassDB::get_signal);
-	::ClassDB::bind_method(D_METHOD("class_get_signal_list", "class", "no_inheritance"), &ClassDB::get_signal_list, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_has_signal", "class", "signal"), &ClassDB::class_has_signal);
+	::ClassDB::bind_method(D_METHOD("class_get_signal", "class", "signal"), &ClassDB::class_get_signal);
+	::ClassDB::bind_method(D_METHOD("class_get_signal_list", "class", "no_inheritance"), &ClassDB::class_get_signal_list, DEFVAL(false));
 
-	::ClassDB::bind_method(D_METHOD("class_get_property_list", "class", "no_inheritance"), &ClassDB::get_property_list, DEFVAL(false));
-	::ClassDB::bind_method(D_METHOD("class_get_property", "object", "property"), &ClassDB::get_property);
-	::ClassDB::bind_method(D_METHOD("class_set_property", "object", "property", "value"), &ClassDB::set_property);
+	::ClassDB::bind_method(D_METHOD("class_get_property_list", "class", "no_inheritance"), &ClassDB::class_get_property_list, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_get_property", "object", "property"), &ClassDB::class_get_property);
+	::ClassDB::bind_method(D_METHOD("class_set_property", "object", "property", "value"), &ClassDB::class_set_property);
 
-	::ClassDB::bind_method(D_METHOD("class_has_method", "class", "method", "no_inheritance"), &ClassDB::has_method, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_has_method", "class", "method", "no_inheritance"), &ClassDB::class_has_method, DEFVAL(false));
 
-	::ClassDB::bind_method(D_METHOD("class_get_method_list", "class", "no_inheritance"), &ClassDB::get_method_list, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_get_method_list", "class", "no_inheritance"), &ClassDB::class_get_method_list, DEFVAL(false));
 
-	::ClassDB::bind_method(D_METHOD("class_get_integer_constant_list", "class", "no_inheritance"), &ClassDB::get_integer_constant_list, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_get_integer_constant_list", "class", "no_inheritance"), &ClassDB::class_get_integer_constant_list, DEFVAL(false));
 
-	::ClassDB::bind_method(D_METHOD("class_has_integer_constant", "class", "name"), &ClassDB::has_integer_constant);
-	::ClassDB::bind_method(D_METHOD("class_get_integer_constant", "class", "name"), &ClassDB::get_integer_constant);
+	::ClassDB::bind_method(D_METHOD("class_has_integer_constant", "class", "name"), &ClassDB::class_has_integer_constant);
+	::ClassDB::bind_method(D_METHOD("class_get_integer_constant", "class", "name"), &ClassDB::class_get_integer_constant);
 
-	::ClassDB::bind_method(D_METHOD("class_has_enum", "class", "name", "no_inheritance"), &ClassDB::has_enum, DEFVAL(false));
-	::ClassDB::bind_method(D_METHOD("class_get_enum_list", "class", "no_inheritance"), &ClassDB::get_enum_list, DEFVAL(false));
-	::ClassDB::bind_method(D_METHOD("class_get_enum_constants", "class", "enum", "no_inheritance"), &ClassDB::get_enum_constants, DEFVAL(false));
-	::ClassDB::bind_method(D_METHOD("class_get_integer_constant_enum", "class", "name", "no_inheritance"), &ClassDB::get_integer_constant_enum, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_has_enum", "class", "name", "no_inheritance"), &ClassDB::class_has_enum, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_get_enum_list", "class", "no_inheritance"), &ClassDB::class_get_enum_list, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_get_enum_constants", "class", "enum", "no_inheritance"), &ClassDB::class_get_enum_constants, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_get_integer_constant_enum", "class", "name", "no_inheritance"), &ClassDB::class_get_integer_constant_enum, DEFVAL(false));
 
 	::ClassDB::bind_method(D_METHOD("is_class_enabled", "class"), &ClassDB::is_class_enabled);
 }

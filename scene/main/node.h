@@ -529,6 +529,14 @@ public:
 		}
 	}
 
+	_FORCE_INLINE_ bool is_readable_from_caller_thread() const {
+		if (current_process_thread_group == nullptr) {
+			return Thread::is_main_thread();
+		} else {
+			return true;
+		}
+	}
+
 	void set_process_thread_messages(BitField<ProcessThreadMessages> p_flags);
 	BitField<ProcessThreadMessages> get_process_thread_messages() const;
 
@@ -647,6 +655,30 @@ public:
 	void set_thread_safe(const StringName &p_property, const Variant &p_value);
 	void notify_thread_safe(int p_notification);
 
+	// These inherited functions need proper multithread locking when overridden in Node.
+#ifdef DEBUG_ENABLED
+
+	virtual void set_script(const Variant &p_script) override;
+	virtual Variant get_script() const override;
+
+	virtual bool has_meta(const StringName &p_name) const override;
+	virtual void set_meta(const StringName &p_name, const Variant &p_value) override;
+	virtual void remove_meta(const StringName &p_name) override;
+	virtual Variant get_meta(const StringName &p_name, const Variant &p_default = Variant()) const override;
+	virtual void get_meta_list(List<StringName> *p_list) const override;
+
+	virtual Error emit_signalp(const StringName &p_name, const Variant **p_args, int p_argcount) override;
+	virtual bool has_signal(const StringName &p_name) const override;
+	virtual void get_signal_list(List<MethodInfo> *p_signals) const override;
+	virtual void get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const override;
+	virtual void get_all_signal_connections(List<Connection> *p_connections) const override;
+	virtual int get_persistent_signal_connection_count() const override;
+	virtual void get_signals_connected_to_this(List<Connection> *p_connections) const override;
+
+	virtual Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0) override;
+	virtual void disconnect(const StringName &p_signal, const Callable &p_callable) override;
+	virtual bool is_connected(const StringName &p_signal, const Callable &p_callable) const override;
+#endif
 	Node();
 	~Node();
 };
@@ -678,11 +710,15 @@ Error Node::rpc_id(int p_peer_id, const StringName &p_method, VarArgs... p_args)
 #define ERR_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(!is_accessible_from_caller_thread(), (m_ret), "Caller thread can't call this function in this node. Use call_deferred() or call_thread_group() instead.")
 #define ERR_MAIN_THREAD_GUARD ERR_FAIL_COND_MSG(is_inside_tree() && !Thread::is_main_thread(), "This function in this node can only be accessed from the main thread. Use call_deferred() instead.");
 #define ERR_MAIN_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(is_inside_tree() && !Thread::is_main_thread(), (m_ret), "This function in this node can only be accessed from the main thread. Use call_deferred() instead.")
+#define ERR_READ_THREAD_GUARD ERR_FAIL_COND_MSG(!is_readable_from_caller_thread(), "This function in this node can only be accessed from either the main thread or a thread group. Use call_deferred() instead.")
+#define ERR_READ_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(!is_readable_from_caller_thread(), (m_ret), "This function in this node can only be accessed from either the main thread or a thread group. Use call_deferred() instead.")
 #else
 #define ERR_THREAD_GUARD
 #define ERR_THREAD_GUARD_V(m_ret)
 #define ERR_MAIN_THREAD_GUARD
 #define ERR_MAIN_THREAD_GUARD_V(m_ret)
+#define ERR_READ_THREAD_GUARD
+#define ERR_READ_THREAD_GUARD_V(m_ret)
 #endif
 
 // Add these macro to your class's 'get_configuration_warnings' function to have warnings show up in the scene tree inspector.

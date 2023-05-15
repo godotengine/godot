@@ -3513,3 +3513,93 @@ Node::~Node() {
 }
 
 ////////////////////////////////
+// Multithreaded locked version of Object functions.
+
+#ifdef DEBUG_ENABLED
+
+void Node::set_script(const Variant &p_script) {
+	ERR_THREAD_GUARD;
+	Object::set_script(p_script);
+}
+
+Variant Node::get_script() const {
+	ERR_THREAD_GUARD_V(Variant());
+	return Object::get_script();
+}
+
+bool Node::has_meta(const StringName &p_name) const {
+	ERR_THREAD_GUARD_V(false);
+	return Object::has_meta(p_name);
+}
+
+void Node::set_meta(const StringName &p_name, const Variant &p_value) {
+	ERR_THREAD_GUARD;
+	Object::set_meta(p_name, p_value);
+}
+
+void Node::remove_meta(const StringName &p_name) {
+	ERR_THREAD_GUARD;
+	Object::remove_meta(p_name);
+}
+
+Variant Node::get_meta(const StringName &p_name, const Variant &p_default) const {
+	ERR_THREAD_GUARD_V(Variant());
+	return Object::get_meta(p_name, p_default);
+}
+
+void Node::get_meta_list(List<StringName> *p_list) const {
+	ERR_THREAD_GUARD;
+	Object::get_meta_list(p_list);
+}
+
+Error Node::emit_signalp(const StringName &p_name, const Variant **p_args, int p_argcount) {
+	ERR_THREAD_GUARD_V(ERR_INVALID_PARAMETER);
+	return Object::emit_signalp(p_name, p_args, p_argcount);
+}
+
+bool Node::has_signal(const StringName &p_name) const {
+	ERR_THREAD_GUARD_V(false);
+	return Object::has_signal(p_name);
+}
+
+void Node::get_signal_list(List<MethodInfo> *p_signals) const {
+	ERR_THREAD_GUARD;
+	Object::get_signal_list(p_signals);
+}
+
+void Node::get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const {
+	ERR_THREAD_GUARD;
+	Object::get_signal_connection_list(p_signal, p_connections);
+}
+
+void Node::get_all_signal_connections(List<Connection> *p_connections) const {
+	ERR_THREAD_GUARD;
+	Object::get_all_signal_connections(p_connections);
+}
+
+int Node::get_persistent_signal_connection_count() const {
+	ERR_THREAD_GUARD_V(0);
+	return Object::get_persistent_signal_connection_count();
+}
+
+void Node::get_signals_connected_to_this(List<Connection> *p_connections) const {
+	ERR_THREAD_GUARD;
+	Object::get_signals_connected_to_this(p_connections);
+}
+
+Error Node::connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags) {
+	ERR_THREAD_GUARD_V(ERR_INVALID_PARAMETER);
+	return Object::connect(p_signal, p_callable, p_flags);
+}
+
+void Node::disconnect(const StringName &p_signal, const Callable &p_callable) {
+	ERR_THREAD_GUARD;
+	Object::disconnect(p_signal, p_callable);
+}
+
+bool Node::is_connected(const StringName &p_signal, const Callable &p_callable) const {
+	ERR_THREAD_GUARD_V(false);
+	return Object::is_connected(p_signal, p_callable);
+}
+
+#endif
