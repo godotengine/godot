@@ -3168,8 +3168,12 @@ String GDScriptLanguage::_get_indentation() const {
 
 String GDScriptLanguage::format_code(const String &p_code) {
 	GDScriptFormat formatter;
-	String output = formatter.format(p_code);
-	return output;
+	String formatted_code;
+	Error err = formatter.format(p_code, formatted_code);
+	if (err != OK) {
+		return p_code;
+	}
+	return formatted_code;
 }
 
 void GDScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int p_to_line) const {

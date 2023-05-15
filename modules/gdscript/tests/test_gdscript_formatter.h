@@ -32,16 +32,41 @@
 #define TEST_GDSCRIPT_FORMATTER_H
 
 #include "core/string/ustring.h"
+#include "core/templates/list.h"
 #include "modules/gdscript/gdscript_format.h"
+#include "modules/gdscript/gdscript_parser.h"
 #include "tests/test_macros.h"
 
 namespace GDScriptTests {
 
-#define CHECK_FORMAT(code, pre_formatted)    \
-	GDScriptFormat formatter;                \
-	formatter.indent_in_multiline_block = 1; \
-	String output = formatter.format(code);  \
-	CHECK_EQ(output, pre_formatted)
+#define CHECK_FORMAT(code, pre_formatted)                                                    \
+	do {                                                                                     \
+		GDScriptFormat formatter;                                                            \
+		formatter.indent_in_multiline_block = 1;                                             \
+		String output;                                                                       \
+		Error err = formatter.format(code, output);                                          \
+		Vector<String> error_messages;                                                       \
+		if (err != OK) {                                                                     \
+			for (GDScriptParser::ParserError parser_error : formatter.get_parser_errors()) { \
+				error_messages.push_back(                                                    \
+					vformat(                                                                 \
+						"Parse Error: %s (%s:%s)",                                                        \
+						parser_error.message,                                                \
+						parser_error.line,                                                   \
+						parser_error.column                                                  \
+					)                                                                        \
+				);                                                                           \
+			}                                                                                \
+		}                                                                                    \
+		CHECK_MESSAGE(                                                                       \
+			err == OK,                                                                       \
+			vformat(                                                                         \
+				"The formatter returned these errors: %s",                                   \
+				String("\n").join(error_messages)                                            \
+			)                                                                                \
+		);                                                                                   \
+		CHECK_EQ(output, pre_formatted);                                                     \
+	} while (false);                                                                     
 
 TEST_SUITE("[Modules][GDScript][GDScriptFormatter][ClassMembers]") {
 	TEST_CASE("Should output a variable with a property that has a setter and getter, inline") {
@@ -1637,11 +1662,16 @@ TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Usability]") {
 )";
 
 		GDScriptFormat formatter;
+		String output80;
+		String output100;
+		Error err;
 		formatter.indent_in_multiline_block = 1;
 		formatter.line_length_maximum = 80;
-		const String output80 = formatter.format(code);
+		err = formatter.format(code, output80);
+		CHECK(err == OK);
 		formatter.line_length_maximum = 100;
-		const String output100 = formatter.format(code);
+		err = formatter.format(code, output100);
+		CHECK(err == OK);
 
 		CHECK_EQ(output80, pre_formatted80);
 		CHECK_EQ(output100, pre_formatted100);
@@ -2989,6 +3019,25 @@ func _ready() -> void:
 	"there is a bug with an extra newline at the end of arrays but only when the contents have long lines",
 	# Comment
 ]
+)";
+		CHECK_FORMAT(code, pre_formatted);
+	}
+
+	TEST_CASE("Should accept a comment in the last statement of a function when accessing an array") {
+		const String code = R"(func _ready():
+	var v := Vector2()
+	var a = v[0]  # A
+
+func another():
+	pass
+)";
+
+		const String pre_formatted = R"(func _ready():
+	var v := Vector2()
+	var a = v[0]  # A
+
+func another():
+	pass
 )";
 		CHECK_FORMAT(code, pre_formatted);
 	}

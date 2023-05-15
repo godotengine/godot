@@ -47,6 +47,7 @@ private:
 
 	typedef String (GDScriptFormat::*ParserFunc)(GDP::Node *, int, BreakType);
 	HashSet<int> new_lines;
+	List<GDScriptParser::ParserError> parser_errors;
 
 private:
 	static bool node_has_comments(const GDP::Node *p_node);
@@ -198,7 +199,8 @@ public:
 
 	GDScriptFormat();
 
-	String format(const String &p_code);
+	Error format(const String &p_code, String &r_formatted_code);
+	List<GDScriptParser::ParserError> get_parser_errors() { return parser_errors; };
 };
 
 #endif // GDSCRIPT_FORMAT_H

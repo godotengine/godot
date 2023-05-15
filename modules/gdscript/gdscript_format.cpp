@@ -52,12 +52,16 @@ GDScriptFormat::GDScriptFormat() :
 #endif // TOOLS_ENABLED
 }
 
-String GDScriptFormat::format(const String &p_code) {
+Error GDScriptFormat::format(const String &p_code, String &r_formatted_code) {
 	GDScriptParser parser;
-	parser.parse(p_code, "", false);
+	Error err = parser.parse(p_code, "", false);
 
-	if (!parser.get_errors().is_empty()) {
-		return p_code;
+	if (err != OK) {
+		parser_errors.clear();
+		for (GDScriptParser::ParserError err : parser.get_errors()) {
+			parser_errors.push_back({ vformat("%s", err.message), err.line, err.column });
+		}
+		return FAILED;
 	}
 
 	find_custom_newlines(p_code);
@@ -91,7 +95,10 @@ String GDScriptFormat::format(const String &p_code) {
 
 	output = make_disabled_lines_from_headers(output);
 
-	return output;
+	r_formatted_code.clear();
+	r_formatted_code += output;
+
+	return OK;
 }
 
 void GDScriptFormat::find_custom_newlines(const String &p_code) {
