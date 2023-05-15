@@ -39,34 +39,35 @@
 
 namespace GDScriptTests {
 
-#define CHECK_FORMAT(code, pre_formatted)                                                    \
-	do {                                                                                     \
-		GDScriptFormat formatter;                                                            \
-		formatter.indent_in_multiline_block = 1;                                             \
-		String output;                                                                       \
-		Error err = formatter.format(code, output);                                          \
-		Vector<String> error_messages;                                                       \
-		if (err != OK) {                                                                     \
-			for (GDScriptParser::ParserError parser_error : formatter.get_parser_errors()) { \
-				error_messages.push_back(                                                    \
-					vformat(                                                                 \
-						"Parse Error: %s (%s:%s)",                                                        \
-						parser_error.message,                                                \
-						parser_error.line,                                                   \
-						parser_error.column                                                  \
-					)                                                                        \
-				);                                                                           \
-			}                                                                                \
-		}                                                                                    \
-		CHECK_MESSAGE(                                                                       \
-			err == OK,                                                                       \
-			vformat(                                                                         \
-				"The formatter returned these errors: %s",                                   \
-				String("\n").join(error_messages)                                            \
-			)                                                                                \
-		);                                                                                   \
-		CHECK_EQ(output, pre_formatted);                                                     \
-	} while (false);                                                                     
+#define CHECK_FORMAT(code, pre_formatted)                                                       \
+	do {                                                                                        \
+		GDScriptFormat formatter;                                                               \
+		formatter.indent_in_multiline_block = 1;                                                \
+		String output;                                                                          \
+		Error err = formatter.format(code, output);                                             \
+		Vector<String> error_messages;                                                          \
+		if (err != OK) {                                                                        \
+			for (GDScriptParser::ParserError parser_error : formatter.get_parser_errors()) {    \
+				error_messages.push_back(                                                       \
+					vformat(                                                                    \
+						"Parse Error: %s (%s:%s)",                                              \
+						parser_error.message,                                                   \
+						parser_error.line,                                                      \
+						parser_error.column                                                     \
+					)                                                                           \
+				);                                                                              \
+			}                                                                                   \
+		}                                                                                       \
+		CHECK_MESSAGE(                                                                          \
+			err == OK,                                                                          \
+			vformat(                                                                            \
+				"The formatter returned errors (%s): \n%s",                                     \
+				error_messages.size(),                                                          \
+				String("\n").join(error_messages)                                               \
+			)                                                                                   \
+		);                                                                                      \
+		CHECK_EQ(output, pre_formatted);                                                        \
+	} while (false);
 
 TEST_SUITE("[Modules][GDScript][GDScriptFormatter][ClassMembers]") {
 	TEST_CASE("Should output a variable with a property that has a setter and getter, inline") {
@@ -816,7 +817,7 @@ var my_variable = 0
 
 		CHECK_FORMAT(code, pre_formatted);
 	}
-}
+} // TEST_SUITE("[Modules][GDScript][GDScriptFormatter][ClassMembers]")
 
 TEST_SUITE("[Modules][GDScript][GDScriptFormatter][ClassSignatures]") {
 	TEST_CASE("Should output a simple class") {
@@ -879,7 +880,7 @@ extends Node
 
 		CHECK_FORMAT(code, pre_formatted);
 	}
-}
+} // TEST_SUITE("[Modules][GDScript][GDScriptFormatter][ClassSignatures]")
 
 TEST_SUITE("[Modules][GDScript][GDScriptFormatter][ClassFunctions]") {
 	TEST_CASE("Should output a simple class method") {
@@ -1286,7 +1287,7 @@ func _process(delta):
 
 		CHECK_FORMAT(code, pre_formatted);
 	}
-}
+} // TEST_SUITE("[Modules][GDScript][GDScriptFormatter][ClassFunctions]")
 
 TEST_SUITE("[Modules][GDScript][GDScriptFormatter][NestedSuites]") {
 	TEST_CASE("Should output a simple if true/else statement") {
@@ -1639,7 +1640,7 @@ TEST_SUITE("[Modules][GDScript][GDScriptFormatter][NestedSuites]") {
 
 		CHECK_FORMAT(code, pre_formatted);
 	}
-}
+} // TEST_SUITE("[Modules][GDScript][GDScriptFormatter][NestedSuites]")
 
 TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Usability]") {
 	TEST_CASE("Should format differently based on desired wrapping length") {
@@ -1701,7 +1702,7 @@ TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Usability]") {
 
 		CHECK_FORMAT(code, pre_formatted);
 	}
-}
+} // TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Usability]")
 
 TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Comments]") {
 	TEST_CASE("Should output a class header with all related comments") {
@@ -2827,51 +2828,6 @@ func some_public_api_func() -> int:
 		CHECK_FORMAT(code, pre_formatted);
 	}
 
-	TEST_CASE("The custom newlines should be remembered") {
-		// `vformat` because "misc/scripts/header_guards.sh"
-		// don't like two consecutive new lines.
-		const String code = vformat(R"(extends Node2D
-%s
-class Light:
-	var energy
-
-var energy_slider := Range.new()
-var height_slider := Range.new()
-var light := Light.new()
-
-func _ready() -> void:
-	energy_slider.value_changed.connect(func(value):
-		light.energy = energy_slider.value)
-
-	height_slider.value_changed.connect(func(value):
-		light.height = height_slider.value)
-
-	height_slider.value_changed.connect(func(value):
-		light.height = height_slider.value))",
-				"\n");
-		const String pre_formatted = vformat(R"(extends Node2D
-%s
-class Light:
-	var energy
-
-var energy_slider := Range.new()
-var height_slider := Range.new()
-var light := Light.new()
-%s
-func _ready() -> void:
-	energy_slider.value_changed.connect(func(value):
-		light.energy = energy_slider.value)
-
-	height_slider.value_changed.connect(func(value):
-		light.height = height_slider.value)
-
-	height_slider.value_changed.connect(func(value):
-		light.height = height_slider.value)
-)",
-				"\n", "\n");
-		CHECK_FORMAT(code, pre_formatted);
-	}
-
 	TEST_CASE("A full commented function should output correctly") {
 		// Code by clayjohn at https://github.com/godotengine/godot-docs/issues/4834
 		const String code = R"(func _ready():
@@ -3028,7 +2984,7 @@ func _ready() -> void:
 	var v := Vector2()
 	var a = v[0]  # A
 
-func another():
+	func another():
 	pass
 )";
 
@@ -3041,7 +2997,64 @@ func another():
 )";
 		CHECK_FORMAT(code, pre_formatted);
 	}
-}
+} // TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Comments]")
+
+TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Syntax]") {
+	TEST_CASE("Syntactic sugar should be preserved") {
+		SUBCASE("Unique nodes (%)") {
+			const String code = R"(@onready var unique_node = %UniqueNode)";
+			const String pre_formatted = code;
+			CHECK_FORMAT(code, pre_formatted);
+		}
+	}
+} // TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Syntax]")
+
+TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Misc]") {
+	TEST_CASE("The custom newlines should be remembered") {
+		// `vformat` because "misc/scripts/header_guards.sh"
+		// don't like two consecutive new lines.
+		const String code = vformat(R"(extends Node2D
+%s
+class Light:
+	var energy
+
+var energy_slider := Range.new()
+var height_slider := Range.new()
+var light := Light.new()
+
+func _ready() -> void:
+	energy_slider.value_changed.connect(func(value):
+		light.energy = energy_slider.value)
+
+	height_slider.value_changed.connect(func(value):
+		light.height = height_slider.value)
+
+	height_slider.value_changed.connect(func(value):
+		light.height = height_slider.value))",
+				"\n");
+		const String pre_formatted = vformat(R"(extends Node2D
+%s
+class Light:
+	var energy
+
+var energy_slider := Range.new()
+var height_slider := Range.new()
+var light := Light.new()
+%s
+func _ready() -> void:
+	energy_slider.value_changed.connect(func(value):
+		light.energy = energy_slider.value)
+
+	height_slider.value_changed.connect(func(value):
+		light.height = height_slider.value)
+
+	height_slider.value_changed.connect(func(value):
+		light.height = height_slider.value)
+)",
+				"\n", "\n");
+		CHECK_FORMAT(code, pre_formatted);
+	}
+} // TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Misc]")
 
 } //namespace GDScriptTests
 
