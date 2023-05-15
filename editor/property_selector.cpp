@@ -138,7 +138,7 @@ void PropertySelector::_update_search() {
 			search_options->get_theme_icon(SNAME("Vector3i"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Transform2D"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Vector4"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("Vector4"), SNAME("EditorIcons")), // Vector4i, needs icon.
+			search_options->get_theme_icon(SNAME("Vector4i"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Plane"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Quaternion"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("AABB"), SNAME("EditorIcons")),
