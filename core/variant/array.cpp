@@ -372,7 +372,7 @@ int Array::first_custom(const Callable& p_callable, int p_from = 0) const {
 
 		p_callable.callp(argptrs, 1, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(int(), "Error calling method from 'first_custom': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+			ERR_FAIL_V_MSG(-1, "Error calling method from 'first_custom': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
 		}
 		// Return as soon as possible
 		if (result.operator bool()) {
@@ -432,7 +432,7 @@ int Array::last_custom(const Callable& p_callable, int p_from = -1) const {
 
 		p_callable.callp(argptrs, 1, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(int(), "Error calling method from 'last_custom': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+			ERR_FAIL_V_MSG(-1, "Error calling method from 'last_custom': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
 		}
 		// Return as soon as possible
 		if (result.operator bool()) {
@@ -472,7 +472,7 @@ int Array::count_custom(const Callable& p_callable) const {
 
 		p_callable.callp(argptrs, 1, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(int(), "Error calling method from 'count_custom': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+			ERR_FAIL_V_MSG(-1, "Error calling method from 'count_custom': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
 		}
 		// Increase count if passes
 		if (result.operator bool()) {
