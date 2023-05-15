@@ -2350,12 +2350,13 @@ bool EditorFileSystem::_should_skip_directory(const String &p_path) {
 	}
 
 	if (FileAccess::exists(p_path.path_join("project.godot"))) {
-		// skip if another project inside this
+		// Skip if another project inside this.
+		WARN_PRINT_ONCE(vformat("Detected another project.godot at %s. The folder will be ignored.", p_path));
 		return true;
 	}
 
 	if (FileAccess::exists(p_path.path_join(".gdignore"))) {
-		// skip if a `.gdignore` file is inside this
+		// Skip if a `.gdignore` file is inside this.
 		return true;
 	}
 
