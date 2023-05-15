@@ -2849,10 +2849,10 @@
 			An export preset property with this flag contains confidential information and is stored separately from the rest of the export preset configuration.
 		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT" value="6" enum="PropertyUsageFlags" is_bitfield="true">
-			Default usage (storage, editor and network).
+			Default usage (storage and editor).
 		</constant>
 		<constant name="PROPERTY_USAGE_NO_EDITOR" value="2" enum="PropertyUsageFlags" is_bitfield="true">
-			Default usage but without showing the property in the editor (storage, network).
+			Default usage but without showing the property in the editor (storage).
 		</constant>
 		<constant name="METHOD_FLAG_NORMAL" value="1" enum="MethodFlags" is_bitfield="true">
 			Flag for a normal method.
