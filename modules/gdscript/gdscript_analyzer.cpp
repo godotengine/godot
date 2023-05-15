@@ -4837,9 +4837,11 @@ void GDScriptAnalyzer::validate_call_arg(const List<GDScriptParser::DataType> &p
 		}
 		GDScriptParser::DataType arg_type = p_call->arguments[i]->get_datatype();
 
-		if ((arg_type.is_variant() || !arg_type.is_hard_type()) && !(par_type.is_hard_type() && par_type.is_variant())) {
-			// Argument can be anything, so this is unsafe.
-			mark_node_unsafe(p_call->arguments[i]);
+		if (arg_type.is_variant() || !arg_type.is_hard_type()) {
+			// Argument can be anything, so this is unsafe (unless the parameter is a hard variant).
+			if (!(par_type.is_hard_type() && par_type.is_variant())) {
+				mark_node_unsafe(p_call->arguments[i]);
+			}
 		} else if (par_type.is_hard_type() && !is_type_compatible(par_type, arg_type, true)) {
 			// Supertypes are acceptable for dynamic compliance, but it's unsafe.
 			mark_node_unsafe(p_call);
