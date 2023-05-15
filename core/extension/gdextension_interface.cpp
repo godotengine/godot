@@ -1028,7 +1028,12 @@ static GDExtensionScriptInstancePtr gdextension_script_instance_create(const GDE
 static GDExtensionMethodBindPtr gdextension_classdb_get_method_bind(GDExtensionConstStringNamePtr p_classname, GDExtensionConstStringNamePtr p_methodname, GDExtensionInt p_hash) {
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
 	const StringName methodname = *reinterpret_cast<const StringName *>(p_methodname);
-	MethodBind *mb = ClassDB::get_method(classname, methodname);
+	bool exists = false;
+	MethodBind *mb = ClassDB::get_method_with_compatibility(classname, methodname, p_hash, &exists);
+	if (!mb && exists) {
+		ERR_PRINT("Method '" + classname + "." + methodname + "' has changed and no compatibility fallback has been provided. Please open an issue.");
+		return nullptr;
+	}
 	ERR_FAIL_COND_V(!mb, nullptr);
 	if (mb->get_hash() != p_hash) {
 		ERR_PRINT("Hash mismatch for method '" + classname + "." + methodname + "'.");
