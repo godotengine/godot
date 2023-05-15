@@ -113,6 +113,9 @@ public:
 		Color success_color;
 		Color warning_color;
 		Color error_color;
+		Color blue_color;
+		Color magenta_color;
+		Color cyan_color;
 		Color extra_border_color_1;
 		Color extra_border_color_2;
 

@@ -132,6 +132,15 @@ void EditorLog::_update_theme() {
 	theme_cache.warning_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
 	theme_cache.warning_icon = get_editor_theme_icon(SNAME("Warning"));
 	theme_cache.message_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor)) * Color(1, 1, 1, 0.6);
+	theme_cache.mono_color = get_theme_color(SNAME("mono_color"), EditorStringName(Editor));
+
+	// Used for `print_rich()` coloring.
+	theme_cache.red_color = get_theme_color(SNAME("red_color"), EditorStringName(Editor));
+	theme_cache.green_color = get_theme_color(SNAME("green_color"), EditorStringName(Editor));
+	theme_cache.yellow_color = get_theme_color(SNAME("yellow_color"), EditorStringName(Editor));
+	theme_cache.blue_color = get_theme_color(SNAME("blue_color"), EditorStringName(Editor));
+	theme_cache.magenta_color = get_theme_color(SNAME("magenta_color"), EditorStringName(Editor));
+	theme_cache.cyan_color = get_theme_color(SNAME("cyan_color"), EditorStringName(Editor));
 }
 
 void EditorLog::_editor_settings_changed() {
@@ -280,7 +289,7 @@ void EditorLog::_process_message(const String &p_msg, MessageType p_type, bool p
 
 void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 	// Make text split by new lines their own message.
-	// See #41321 for reasoning. At time of writing, multiple print()'s in running projects
+	// See GH-41321 for reasoning. At time of writing, multiple print()'s in running projects
 	// get grouped together and sent to the editor log as one message. This can mess with the
 	// search functionality (see the comments on the PR above for more details). This behavior
 	// also matches that of other IDE's.
@@ -385,6 +394,66 @@ bool EditorLog::_check_display_message(LogMessage &p_message) {
 	return filter_active && search_match;
 }
 
+String EditorLog::_replace_color(const String &p_color) const {
+	// Replace colors with better-looking colors, which better match most terminal emulators out there.
+	if (p_color == "red") {
+		return theme_cache.red_color.to_html();
+	} else if (p_color == "green") {
+		return theme_cache.green_color.to_html();
+	} else if (p_color == "yellow") {
+		return theme_cache.yellow_color.to_html();
+	} else if (p_color == "blue") {
+		return theme_cache.blue_color.to_html();
+	} else if (p_color == "magenta") {
+		return theme_cache.magenta_color.to_html();
+	} else if (p_color == "cyan") {
+		return theme_cache.cyan_color.to_html();
+	} else if (p_color == "white") {
+		// Preserve semantics of "white" on a dark theme when using a light theme. The color generally stands out more than the standard message color.
+		return theme_cache.mono_color.to_html();
+	} else if (p_color == "black") {
+		// Preserve semantics of "black" on a dark theme when using a light theme. The color is generally nearly invisible against the background.
+		return theme_cache.mono_color.inverted().to_html();
+	} else if (p_color == "gray") {
+		return theme_cache.message_color.to_html();
+	}
+
+	// Return other colors as-is.
+	return p_color;
+}
+
+// Returns the string passed with BBCode colors replaced by better-looking color codes (according to the editor theme).
+String EditorLog::_replace_bbcode_colors(const String &p_string) const {
+	String result;
+	int buffer_start = 0;
+	int from = 0;
+
+	while (true) {
+		const int lb_pos = p_string.find_char('[', from);
+		if (lb_pos < 0) {
+			break;
+		}
+
+		const int rb_pos = p_string.find_char(']', lb_pos + 1);
+		if (rb_pos < 0) {
+			break;
+		}
+
+		const String tag = p_string.substr(lb_pos + 1, rb_pos - lb_pos - 1);
+		if (tag.begins_with("color=") || tag.begins_with("bgcolor=") || tag.begins_with("fgcolor=")) {
+			const int eq_pos = p_string.find_char('=', lb_pos + 1);
+			const String color = p_string.substr(eq_pos + 1, rb_pos - eq_pos - 1);
+			result += p_string.substr(buffer_start, eq_pos - buffer_start + 1) + _replace_color(color);
+			buffer_start = rb_pos;
+		}
+		from = rb_pos + 1;
+	}
+
+	result += p_string.substr(buffer_start);
+
+	return result;
+}
+
 void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	if (!is_inside_tree()) {
 		// The log will be built all at once when it enters the tree and has its theme items.
@@ -446,7 +515,10 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 
 	// Note that errors and warnings only support BBCode in the file part of the message.
 	if (p_message.type == MSG_TYPE_STD_RICH || p_message.type == MSG_TYPE_ERROR || p_message.type == MSG_TYPE_WARNING) {
-		log->append_text(p_message.text);
+		// Replace basic ANSI colors with more pleasant-looking colors, similar to what most terminals do out of the box.
+		// This also allows the printed colors to adapt to the current editor theme at the time of printing.
+		// Only replace the end of the color tag so that colors in `bgcolor` and `fgcolor` are replaced too.
+		log->append_text(_replace_bbcode_colors(p_message.text));
 	} else {
 		log->add_text(p_message.text);
 	}

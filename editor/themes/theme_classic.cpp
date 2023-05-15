@@ -69,6 +69,9 @@ void ThemeClassic::populate_shared_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_config.success_color = Color(0.45, 0.95, 0.5);
 		p_config.warning_color = Color(1, 0.87, 0.4);
 		p_config.error_color = Color(1, 0.47, 0.42);
+		p_config.blue_color = Color(0.44, 0.67, 0.98);
+		p_config.magenta_color = Color(0.98, 0.44, 0.98);
+		p_config.cyan_color = Color(0.37, 0.98, 0.98);
 
 		// Keep dark theme colors accessible for use in the frame time gradient in the 3D editor.
 		// This frame time gradient is used to colorize text for a dark background, so it should keep using bright colors
@@ -82,6 +85,9 @@ void ThemeClassic::populate_shared_styles(const Ref<EditorTheme> &p_theme, Edito
 			p_config.success_color = p_config.success_color.lerp(p_config.mono_color_font, 0.35);
 			p_config.warning_color = Color(0.82, 0.56, 0.1);
 			p_config.error_color = Color(0.8, 0.22, 0.22);
+			p_config.blue_color = p_config.blue_color.lerp(p_config.mono_color, 0.35);
+			p_config.magenta_color = p_config.magenta_color.lerp(p_config.mono_color, 0.3);
+			p_config.cyan_color = p_config.cyan_color.lerp(p_config.mono_color, 0.35);
 		}
 
 		p_theme->set_color("mono_color", EditorStringName(Editor), p_config.mono_color);
@@ -2106,6 +2112,16 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_theme->set_color("readonly_color", "EditorProperty", readonly_color);
 		p_theme->set_color("warning_color", "EditorProperty", p_config.warning_color);
 		p_theme->set_color("readonly_warning_color", "EditorProperty", readonly_warning_color);
+
+		// Used to color `print_rich()` usage with basic RichTextLabel colors in the editor log.
+		// NOTE: These color names are non-semantic. Only use these generic colors if no specific
+		// color suits your use case (such as `error_color`).
+		p_theme->set_color("red_color", "Editor", p_config.error_color);
+		p_theme->set_color("green_color", "Editor", p_config.success_color);
+		p_theme->set_color("yellow_color", "Editor", p_config.warning_color);
+		p_theme->set_color("blue_color", "Editor", p_config.blue_color);
+		p_theme->set_color("magenta_color", "Editor", p_config.magenta_color);
+		p_theme->set_color("cyan_color", "Editor", p_config.cyan_color);
 
 		Ref<StyleBoxFlat> style_property_group_note = p_config.base_style->duplicate();
 		Color property_group_note_color = p_config.accent_color;
