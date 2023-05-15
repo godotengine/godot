@@ -1,0 +1,3 @@
+J:/Programs/misc/godot array branch/godot/platform/android/java/nativeSrcsConfigs/out/build/x64-Debug/CMakeFiles/godot.dir
+J:/Programs/misc/godot array branch/godot/platform/android/java/nativeSrcsConfigs/out/build/x64-Debug/CMakeFiles/edit_cache.dir
+J:/Programs/misc/godot array branch/godot/platform/android/java/nativeSrcsConfigs/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir
