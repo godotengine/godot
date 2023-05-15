@@ -121,6 +121,7 @@ public:
 	virtual Error move_to_trash(const String &p_path) override;
 
 	virtual String get_system_ca_certificates() override;
+	virtual OS::PreferredTextureFormat get_preferred_texture_format() const override;
 
 	void run();
 

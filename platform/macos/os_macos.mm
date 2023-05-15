@@ -700,6 +700,12 @@ String OS_MacOS::get_system_ca_certificates() {
 	return certs;
 }
 
+OS::PreferredTextureFormat OS_MacOS::get_preferred_texture_format() const {
+	// macOS supports both formats on ARM. Prefer S3TC/BPTC
+	// for better compatibility with x86 platforms.
+	return PREFERRED_TEXTURE_FORMAT_S3TC_BPTC;
+}
+
 void OS_MacOS::run() {
 	if (!main_loop) {
 		return;
