@@ -29,39 +29,9 @@
 /*************************************************************************/
 
 #include "main/main.h"
+#include "main/tests/catch_testing.h"
 
 #include "os_osx.h"
-
-#if CATCH_TESTS
-#include <catch2/catch_session.hpp>
-int run_catch_tests(int argc, char **argv) {
-
-Catch::Session session; // There must be exactly one instance
-
-  bool test_external = false;
-
-  // Build a new parser on top of Catch2's
-  using namespace Catch::Clara;
-	// Register the command line option for running Catch2 tests, so that its
-	// command line parser won't halt because it's unrecognized.
-  auto cli
-    = session.cli()           // Get Catch2's command line parser
-    | Opt(test_external) // bind variable to a new option, with a hint string
-        ["--test-external"]    // the option names it will respond to
-        ("The option that tells Godot to run external tests.");
-
-  // Now pass the new composite back to Catch2 so it uses that
-  session.cli(cli);
-
-  // Let Catch2 (using Clara) parse the command line
-  int returnCode = session.applyCommandLine(argc, argv);
-	if (returnCode != 0) {
-		fprintf(stderr, "Error parsing command line arguments for Catch2.");
-		return returnCode;
-	}
-	return session.run();
-}
-#endif
 
 int main(int argc, char **argv) {
 	int first_arg = 1;
@@ -103,8 +73,10 @@ int main(int argc, char **argv) {
 	} else {
 		List<String> args = os.get_cmdline_args();
 		if (args.find("--test-external") != nullptr) {
-			#if CATCH_TESTS
+			#ifdef CATCH_TESTS
 			run_catch_tests(argc, argv);
+			#else
+			printf("Option --test_external is invalid because this program was built without Catch2.");
 			#endif
 		}
 	}
