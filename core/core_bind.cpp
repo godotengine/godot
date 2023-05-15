@@ -1178,14 +1178,30 @@ void Thread::_start_func(void *ud) {
 	String func_name = t->target_callable.is_custom() ? t->target_callable.get_custom()->get_as_text() : String(t->target_callable.get_method());
 	::Thread::set_name(func_name);
 
+	// To avoid a circular reference between the thread and the script which can possibly contain a reference
+	// to the thread, we will do the call (keeping a reference up to that point) and then break chains with it.
+	// When the call returns, we will reference the thread again if possible.
+	ObjectID th_instance_id = t->get_instance_id();
+	Callable target_callable = t->target_callable;
+	t = Ref<Thread>();
+
 	Callable::CallError ce;
-	t->target_callable.callp(nullptr, 0, t->ret, ce);
-	if (ce.error != Callable::CallError::CALL_OK) {
+	Variant ret;
+	target_callable.callp(nullptr, 0, ret, ce);
+	// If script properly kept a reference to the thread, we should be able to re-reference it now
+	// (well, or if the call failed, since we had to break chains anyway because the outcome isn't known upfront).
+	t = Ref<Thread>(ObjectDB::get_instance(th_instance_id));
+	if (t.is_valid()) {
+		t->ret = ret;
 		t->running.clear();
-		ERR_FAIL_MSG("Could not call function '" + func_name + "' to start thread " + t->get_id() + ": " + Variant::get_callable_error_text(t->target_callable, nullptr, 0, ce) + ".");
+	} else {
+		// We could print a warning here, but the Thread object will be eventually destroyed
+		// noticing wait_to_finish() hasn't been called on it, and it will print a warning itself.
 	}
 
-	t->running.clear();
+	if (ce.error != Callable::CallError::CALL_OK) {
+		ERR_FAIL_MSG("Could not call function '" + func_name + "' to start thread " + t->get_id() + ": " + Variant::get_callable_error_text(t->target_callable, nullptr, 0, ce) + ".");
+	}
 }
 
 Error Thread::start(const Callable &p_callable, Priority p_priority) {
