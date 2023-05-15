@@ -425,10 +425,10 @@ void GDExtension::_unregister_extension_class(GDExtensionClassLibraryPtr p_libra
 	self->extension_classes.erase(class_name);
 }
 
-void GDExtension::_get_library_path(GDExtensionClassLibraryPtr p_library, GDExtensionStringPtr r_path) {
+void GDExtension::_get_library_path(GDExtensionClassLibraryPtr p_library, GDExtensionUninitializedStringPtr r_path) {
 	GDExtension *self = reinterpret_cast<GDExtension *>(p_library);
 
-	*(String *)r_path = self->library_path;
+	memnew_placement(r_path, String(self->library_path));
 }
 
 Error GDExtension::open_library(const String &p_path, const String &p_entry_symbol) {

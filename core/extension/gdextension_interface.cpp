@@ -80,10 +80,10 @@ uint64_t gdextension_get_native_struct_size(GDExtensionConstStringNamePtr p_name
 
 // Variant functions
 
-static void gdextension_variant_new_copy(GDExtensionVariantPtr r_dest, GDExtensionConstVariantPtr p_src) {
+static void gdextension_variant_new_copy(GDExtensionUninitializedVariantPtr r_dest, GDExtensionConstVariantPtr p_src) {
 	memnew_placement(reinterpret_cast<Variant *>(r_dest), Variant(*reinterpret_cast<const Variant *>(p_src)));
 }
-static void gdextension_variant_new_nil(GDExtensionVariantPtr r_dest) {
+static void gdextension_variant_new_nil(GDExtensionUninitializedVariantPtr r_dest) {
 	memnew_placement(reinterpret_cast<Variant *>(r_dest), Variant);
 }
 static void gdextension_variant_destroy(GDExtensionVariantPtr p_self) {
@@ -92,14 +92,14 @@ static void gdextension_variant_destroy(GDExtensionVariantPtr p_self) {
 
 // variant type
 
-static void gdextension_variant_call(GDExtensionVariantPtr p_self, GDExtensionConstStringNamePtr p_method, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argcount, GDExtensionVariantPtr r_return, GDExtensionCallError *r_error) {
+static void gdextension_variant_call(GDExtensionVariantPtr p_self, GDExtensionConstStringNamePtr p_method, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argcount, GDExtensionUninitializedVariantPtr r_return, GDExtensionCallError *r_error) {
 	Variant *self = (Variant *)p_self;
 	const StringName method = *reinterpret_cast<const StringName *>(p_method);
 	const Variant **args = (const Variant **)p_args;
-	Variant ret;
 	Callable::CallError error;
-	self->callp(method, args, p_argcount, ret, error);
-	memnew_placement(r_return, Variant(ret));
+	memnew_placement(r_return, Variant);
+	Variant *ret = reinterpret_cast<Variant *>(r_return);
+	self->callp(method, args, p_argcount, *ret, error);
 
 	if (r_error) {
 		r_error->error = (GDExtensionCallErrorType)(error.error);
@@ -108,14 +108,14 @@ static void gdextension_variant_call(GDExtensionVariantPtr p_self, GDExtensionCo
 	}
 }
 
-static void gdextension_variant_call_static(GDExtensionVariantType p_type, GDExtensionConstStringNamePtr p_method, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argcount, GDExtensionVariantPtr r_return, GDExtensionCallError *r_error) {
+static void gdextension_variant_call_static(GDExtensionVariantType p_type, GDExtensionConstStringNamePtr p_method, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argcount, GDExtensionUninitializedVariantPtr r_return, GDExtensionCallError *r_error) {
 	Variant::Type type = (Variant::Type)p_type;
 	const StringName method = *reinterpret_cast<const StringName *>(p_method);
 	const Variant **args = (const Variant **)p_args;
-	Variant ret;
 	Callable::CallError error;
-	Variant::call_static(type, method, args, p_argcount, ret, error);
-	memnew_placement(r_return, Variant(ret));
+	memnew_placement(r_return, Variant);
+	Variant *ret = reinterpret_cast<Variant *>(r_return);
+	Variant::call_static(type, method, args, p_argcount, *ret, error);
 
 	if (r_error) {
 		r_error->error = (GDExtensionCallErrorType)error.error;
@@ -124,12 +124,13 @@ static void gdextension_variant_call_static(GDExtensionVariantType p_type, GDExt
 	}
 }
 
-static void gdextension_variant_evaluate(GDExtensionVariantOperator p_op, GDExtensionConstVariantPtr p_a, GDExtensionConstVariantPtr p_b, GDExtensionVariantPtr r_return, GDExtensionBool *r_valid) {
+static void gdextension_variant_evaluate(GDExtensionVariantOperator p_op, GDExtensionConstVariantPtr p_a, GDExtensionConstVariantPtr p_b, GDExtensionUninitializedVariantPtr r_return, GDExtensionBool *r_valid) {
 	Variant::Operator op = (Variant::Operator)p_op;
 	const Variant *a = (const Variant *)p_a;
 	const Variant *b = (const Variant *)p_b;
-	Variant *ret = (Variant *)r_return;
 	bool valid;
+	memnew_placement(r_return, Variant);
+	Variant *ret = reinterpret_cast<Variant *>(r_return);
 	Variant::evaluate(op, *a, *b, *ret, valid);
 	*r_valid = valid;
 }
@@ -175,7 +176,7 @@ static void gdextension_variant_set_indexed(GDExtensionVariantPtr p_self, GDExte
 	*r_oob = oob;
 }
 
-static void gdextension_variant_get(GDExtensionConstVariantPtr p_self, GDExtensionConstVariantPtr p_key, GDExtensionVariantPtr r_ret, GDExtensionBool *r_valid) {
+static void gdextension_variant_get(GDExtensionConstVariantPtr p_self, GDExtensionConstVariantPtr p_key, GDExtensionUninitializedVariantPtr r_ret, GDExtensionBool *r_valid) {
 	const Variant *self = (const Variant *)p_self;
 	const Variant *key = (const Variant *)p_key;
 
@@ -184,7 +185,7 @@ static void gdextension_variant_get(GDExtensionConstVariantPtr p_self, GDExtensi
 	*r_valid = valid;
 }
 
-static void gdextension_variant_get_named(GDExtensionConstVariantPtr p_self, GDExtensionConstStringNamePtr p_key, GDExtensionVariantPtr r_ret, GDExtensionBool *r_valid) {
+static void gdextension_variant_get_named(GDExtensionConstVariantPtr p_self, GDExtensionConstStringNamePtr p_key, GDExtensionUninitializedVariantPtr r_ret, GDExtensionBool *r_valid) {
 	const Variant *self = (const Variant *)p_self;
 	const StringName *key = (const StringName *)p_key;
 
@@ -193,7 +194,7 @@ static void gdextension_variant_get_named(GDExtensionConstVariantPtr p_self, GDE
 	*r_valid = valid;
 }
 
-static void gdextension_variant_get_keyed(GDExtensionConstVariantPtr p_self, GDExtensionConstVariantPtr p_key, GDExtensionVariantPtr r_ret, GDExtensionBool *r_valid) {
+static void gdextension_variant_get_keyed(GDExtensionConstVariantPtr p_self, GDExtensionConstVariantPtr p_key, GDExtensionUninitializedVariantPtr r_ret, GDExtensionBool *r_valid) {
 	const Variant *self = (const Variant *)p_self;
 	const Variant *key = (const Variant *)p_key;
 
@@ -202,7 +203,7 @@ static void gdextension_variant_get_keyed(GDExtensionConstVariantPtr p_self, GDE
 	*r_valid = valid;
 }
 
-static void gdextension_variant_get_indexed(GDExtensionConstVariantPtr p_self, GDExtensionInt p_index, GDExtensionVariantPtr r_ret, GDExtensionBool *r_valid, GDExtensionBool *r_oob) {
+static void gdextension_variant_get_indexed(GDExtensionConstVariantPtr p_self, GDExtensionInt p_index, GDExtensionUninitializedVariantPtr r_ret, GDExtensionBool *r_valid, GDExtensionBool *r_oob) {
 	const Variant *self = (const Variant *)p_self;
 
 	bool valid;
@@ -213,9 +214,10 @@ static void gdextension_variant_get_indexed(GDExtensionConstVariantPtr p_self, G
 }
 
 /// Iteration.
-static GDExtensionBool gdextension_variant_iter_init(GDExtensionConstVariantPtr p_self, GDExtensionVariantPtr r_iter, GDExtensionBool *r_valid) {
+static GDExtensionBool gdextension_variant_iter_init(GDExtensionConstVariantPtr p_self, GDExtensionUninitializedVariantPtr r_iter, GDExtensionBool *r_valid) {
 	const Variant *self = (const Variant *)p_self;
-	Variant *iter = (Variant *)r_iter;
+	memnew_placement(r_iter, Variant);
+	Variant *iter = reinterpret_cast<Variant *>(r_iter);
 
 	bool valid;
 	bool ret = self->iter_init(*iter, valid);
@@ -233,7 +235,7 @@ static GDExtensionBool gdextension_variant_iter_next(GDExtensionConstVariantPtr 
 	return ret;
 }
 
-static void gdextension_variant_iter_get(GDExtensionConstVariantPtr p_self, GDExtensionVariantPtr r_iter, GDExtensionVariantPtr r_ret, GDExtensionBool *r_valid) {
+static void gdextension_variant_iter_get(GDExtensionConstVariantPtr p_self, GDExtensionVariantPtr r_iter, GDExtensionUninitializedVariantPtr r_ret, GDExtensionBool *r_valid) {
 	const Variant *self = (const Variant *)p_self;
 	Variant *iter = (Variant *)r_iter;
 
@@ -264,12 +266,12 @@ static GDExtensionBool gdextension_variant_booleanize(GDExtensionConstVariantPtr
 	return self->booleanize();
 }
 
-static void gdextension_variant_duplicate(GDExtensionConstVariantPtr p_self, GDExtensionVariantPtr r_ret, GDExtensionBool p_deep) {
+static void gdextension_variant_duplicate(GDExtensionConstVariantPtr p_self, GDExtensionUninitializedVariantPtr r_ret, GDExtensionBool p_deep) {
 	const Variant *self = (const Variant *)p_self;
 	memnew_placement(r_ret, Variant(self->duplicate(p_deep)));
 }
 
-static void gdextension_variant_stringify(GDExtensionConstVariantPtr p_self, GDExtensionStringPtr r_ret) {
+static void gdextension_variant_stringify(GDExtensionConstVariantPtr p_self, GDExtensionUninitializedVariantPtr r_ret) {
 	const Variant *self = (const Variant *)p_self;
 	memnew_placement(r_ret, String(*self));
 }
@@ -298,7 +300,7 @@ static GDExtensionBool gdextension_variant_has_key(GDExtensionConstVariantPtr p_
 	return ret;
 }
 
-static void gdextension_variant_get_type_name(GDExtensionVariantType p_type, GDExtensionStringPtr r_ret) {
+static void gdextension_variant_get_type_name(GDExtensionVariantType p_type, GDExtensionUninitializedVariantPtr r_ret) {
 	String name = Variant::get_type_name((Variant::Type)p_type);
 	memnew_placement(r_ret, String(name));
 }
@@ -498,11 +500,12 @@ static GDExtensionPtrConstructor gdextension_variant_get_ptr_constructor(GDExten
 static GDExtensionPtrDestructor gdextension_variant_get_ptr_destructor(GDExtensionVariantType p_type) {
 	return (GDExtensionPtrDestructor)Variant::get_ptr_destructor(Variant::Type(p_type));
 }
-static void gdextension_variant_construct(GDExtensionVariantType p_type, GDExtensionVariantPtr p_base, const GDExtensionConstVariantPtr *p_args, int32_t p_argument_count, GDExtensionCallError *r_error) {
-	memnew_placement(p_base, Variant);
+static void gdextension_variant_construct(GDExtensionVariantType p_type, GDExtensionUninitializedVariantPtr r_base, const GDExtensionConstVariantPtr *p_args, int32_t p_argument_count, GDExtensionCallError *r_error) {
+	memnew_placement(r_base, Variant);
+	Variant *base = reinterpret_cast<Variant *>(r_base);
 
 	Callable::CallError error;
-	Variant::construct(Variant::Type(p_type), *(Variant *)p_base, (const Variant **)p_args, p_argument_count, error);
+	Variant::construct(Variant::Type(p_type), *base, (const Variant **)p_args, p_argument_count, error);
 
 	if (r_error) {
 		r_error->error = (GDExtensionCallErrorType)(error.error);
@@ -533,7 +536,7 @@ static GDExtensionPtrKeyedGetter gdextension_variant_get_ptr_keyed_getter(GDExte
 static GDExtensionPtrKeyedChecker gdextension_variant_get_ptr_keyed_checker(GDExtensionVariantType p_type) {
 	return (GDExtensionPtrKeyedChecker)Variant::get_member_ptr_keyed_checker(Variant::Type(p_type));
 }
-static void gdextension_variant_get_constant_value(GDExtensionVariantType p_type, GDExtensionConstStringNamePtr p_constant, GDExtensionVariantPtr r_ret) {
+static void gdextension_variant_get_constant_value(GDExtensionVariantType p_type, GDExtensionConstStringNamePtr p_constant, GDExtensionUninitializedVariantPtr r_ret) {
 	StringName constant = *reinterpret_cast<const StringName *>(p_constant);
 	memnew_placement(r_ret, Variant(Variant::get_constant_value(Variant::Type(p_type), constant)));
 }
@@ -549,77 +552,67 @@ static GDExtensionPtrUtilityFunction gdextension_variant_get_ptr_utility_functio
 
 //string helpers
 
-static void gdextension_string_new_with_latin1_chars(GDExtensionStringPtr r_dest, const char *p_contents) {
-	String *dest = (String *)r_dest;
-	memnew_placement(dest, String);
-	*dest = String(p_contents);
+static void gdextension_string_new_with_latin1_chars(GDExtensionUninitializedStringPtr r_dest, const char *p_contents) {
+	memnew_placement(r_dest, String(p_contents));
 }
 
-static void gdextension_string_new_with_utf8_chars(GDExtensionStringPtr r_dest, const char *p_contents) {
-	String *dest = (String *)r_dest;
-	memnew_placement(dest, String);
+static void gdextension_string_new_with_utf8_chars(GDExtensionUninitializedStringPtr r_dest, const char *p_contents) {
+	memnew_placement(r_dest, String);
+	String *dest = reinterpret_cast<String *>(r_dest);
 	dest->parse_utf8(p_contents);
 }
 
-static void gdextension_string_new_with_utf16_chars(GDExtensionStringPtr r_dest, const char16_t *p_contents) {
-	String *dest = (String *)r_dest;
-	memnew_placement(dest, String);
+static void gdextension_string_new_with_utf16_chars(GDExtensionUninitializedStringPtr r_dest, const char16_t *p_contents) {
+	memnew_placement(r_dest, String);
+	String *dest = reinterpret_cast<String *>(r_dest);
 	dest->parse_utf16(p_contents);
 }
 
-static void gdextension_string_new_with_utf32_chars(GDExtensionStringPtr r_dest, const char32_t *p_contents) {
-	String *dest = (String *)r_dest;
-	memnew_placement(dest, String);
-	*dest = String((const char32_t *)p_contents);
+static void gdextension_string_new_with_utf32_chars(GDExtensionUninitializedStringPtr r_dest, const char32_t *p_contents) {
+	memnew_placement(r_dest, String((const char32_t *)p_contents));
 }
 
-static void gdextension_string_new_with_wide_chars(GDExtensionStringPtr r_dest, const wchar_t *p_contents) {
-	String *dest = (String *)r_dest;
+static void gdextension_string_new_with_wide_chars(GDExtensionUninitializedStringPtr r_dest, const wchar_t *p_contents) {
 	if constexpr (sizeof(wchar_t) == 2) {
 		// wchar_t is 16 bit, parse.
-		memnew_placement(dest, String);
+		memnew_placement(r_dest, String);
+		String *dest = reinterpret_cast<String *>(r_dest);
 		dest->parse_utf16((const char16_t *)p_contents);
 	} else {
 		// wchar_t is 32 bit, copy.
-		memnew_placement(dest, String);
-		*dest = String((const char32_t *)p_contents);
+		memnew_placement(r_dest, String((const char32_t *)p_contents));
 	}
 }
 
-static void gdextension_string_new_with_latin1_chars_and_len(GDExtensionStringPtr r_dest, const char *p_contents, GDExtensionInt p_size) {
-	String *dest = (String *)r_dest;
-	memnew_placement(dest, String);
-	*dest = String(p_contents, p_size);
+static void gdextension_string_new_with_latin1_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char *p_contents, GDExtensionInt p_size) {
+	memnew_placement(r_dest, String(p_contents, p_size));
 }
 
-static void gdextension_string_new_with_utf8_chars_and_len(GDExtensionStringPtr r_dest, const char *p_contents, GDExtensionInt p_size) {
-	String *dest = (String *)r_dest;
-	memnew_placement(dest, String);
+static void gdextension_string_new_with_utf8_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char *p_contents, GDExtensionInt p_size) {
+	memnew_placement(r_dest, String);
+	String *dest = reinterpret_cast<String *>(r_dest);
 	dest->parse_utf8(p_contents, p_size);
 }
 
-static void gdextension_string_new_with_utf16_chars_and_len(GDExtensionStringPtr r_dest, const char16_t *p_contents, GDExtensionInt p_size) {
-	String *dest = (String *)r_dest;
-	memnew_placement(dest, String);
+static void gdextension_string_new_with_utf16_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char16_t *p_contents, GDExtensionInt p_size) {
+	memnew_placement(r_dest, String);
+	String *dest = reinterpret_cast<String *>(r_dest);
 	dest->parse_utf16(p_contents, p_size);
 }
 
-static void gdextension_string_new_with_utf32_chars_and_len(GDExtensionStringPtr r_dest, const char32_t *p_contents, GDExtensionInt p_size) {
-	String *dest = (String *)r_dest;
-	memnew_placement(dest, String);
-	*dest = String((const char32_t *)p_contents, p_size);
+static void gdextension_string_new_with_utf32_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char32_t *p_contents, GDExtensionInt p_size) {
+	memnew_placement(r_dest, String((const char32_t *)p_contents, p_size));
 }
 
-static void gdextension_string_new_with_wide_chars_and_len(GDExtensionStringPtr r_dest, const wchar_t *p_contents, GDExtensionInt p_size) {
-	String *dest = (String *)r_dest;
+static void gdextension_string_new_with_wide_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const wchar_t *p_contents, GDExtensionInt p_size) {
 	if constexpr (sizeof(wchar_t) == 2) {
 		// wchar_t is 16 bit, parse.
-		memnew_placement(dest, String);
+		memnew_placement(r_dest, String);
+		String *dest = reinterpret_cast<String *>(r_dest);
 		dest->parse_utf16((const char16_t *)p_contents, p_size);
 	} else {
 		// wchar_t is 32 bit, copy.
-		memnew_placement(dest, String);
-		*dest = String((const char32_t *)p_contents, p_size);
+		memnew_placement(r_dest, String((const char32_t *)p_contents, p_size));
 	}
 }
 
@@ -936,14 +929,13 @@ static GDExtensionVariantPtr gdextension_dictionary_operator_index_const(GDExten
 
 /* OBJECT API */
 
-static void gdextension_object_method_bind_call(GDExtensionMethodBindPtr p_method_bind, GDExtensionObjectPtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_arg_count, GDExtensionVariantPtr r_return, GDExtensionCallError *r_error) {
+static void gdextension_object_method_bind_call(GDExtensionMethodBindPtr p_method_bind, GDExtensionObjectPtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_arg_count, GDExtensionUninitializedVariantPtr r_return, GDExtensionCallError *r_error) {
 	const MethodBind *mb = reinterpret_cast<const MethodBind *>(p_method_bind);
 	Object *o = (Object *)p_instance;
 	const Variant **args = (const Variant **)p_args;
 	Callable::CallError error;
 
-	Variant ret = mb->call(o, args, p_arg_count, error);
-	memnew_placement(r_return, Variant(ret));
+	memnew_placement(r_return, Variant(mb->call(o, args, p_arg_count, error)));
 
 	if (r_error) {
 		r_error->error = (GDExtensionCallErrorType)(error.error);
