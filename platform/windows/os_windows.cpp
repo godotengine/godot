@@ -1680,10 +1680,20 @@ String OS_Windows::get_system_ca_certificates() {
 	HCERTSTORE cert_store = CertOpenSystemStoreA(0, "ROOT");
 	ERR_FAIL_COND_V_MSG(!cert_store, "", "Failed to read the root certificate store.");
 
+	FILETIME curr_time;
+	GetSystemTimeAsFileTime(&curr_time);
+
 	String certs;
 	PCCERT_CONTEXT curr = CertEnumCertificatesInStore(cert_store, nullptr);
 	while (curr) {
-		DWORD size = 0;
+		FILETIME ft;
+		DWORD size = sizeof(ft);
+		// Check if the certificate is disallowed.
+		if (CertGetCertificateContextProperty(curr, CERT_DISALLOWED_FILETIME_PROP_ID, &ft, &size) && CompareFileTime(&curr_time, &ft) != -1) {
+			curr = CertEnumCertificatesInStore(cert_store, curr);
+			continue;
+		}
+		// Encode and add to certificate list.
 		bool success = CryptBinaryToStringA(curr->pbCertEncoded, curr->cbCertEncoded, CRYPT_STRING_BASE64HEADER | CRYPT_STRING_NOCR, nullptr, &size);
 		ERR_CONTINUE(!success);
 		PackedByteArray pba;
