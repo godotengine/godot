@@ -1083,7 +1083,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		_disable_clear_request(p_render_data);
 	}
 
-	_render_buffers_debug_draw(rb, p_render_data->shadow_atlas, p_render_data->occluder_debug_tex);
+	_render_buffers_debug_draw(p_render_data);
 }
 
 /* these are being called from RendererSceneRenderRD::_pre_opaque_render */
