@@ -102,10 +102,6 @@ void Node3D::_update_rotation_and_scale() const {
 }
 
 void Node3D::_propagate_transform_changed(Node3D *p_origin) {
-	if (!is_inside_tree()) {
-		return;
-	}
-
 	data.children_lock++;
 
 	for (Node3D *&E : data.children) {
@@ -115,9 +111,9 @@ void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 		E->_propagate_transform_changed(p_origin);
 	}
 #ifdef TOOLS_ENABLED
-	if ((!data.gizmos.is_empty() || data.notify_transform) && !data.ignore_notification && !xform_change.in_list()) {
+	if (is_inside_tree() && (!data.gizmos.is_empty() || data.notify_transform) && !data.ignore_notification && !xform_change.in_list()) {
 #else
-	if (data.notify_transform && !data.ignore_notification && !xform_change.in_list()) {
+	if (is_inside_tree() && data.notify_transform && !data.ignore_notification && !xform_change.in_list()) {
 #endif
 		get_tree()->xform_change_list.add(&xform_change);
 	}
@@ -128,13 +124,22 @@ void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 
 void Node3D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			ERR_FAIL_COND(!get_tree());
-
+		case NOTIFICATION_PARENTED: {
 			Node *p = get_parent();
 			if (p) {
 				data.parent = Object::cast_to<Node3D>(p);
+			} else {
+				data.parent = nullptr;
 			}
+			data.dirty |= DIRTY_GLOBAL_TRANSFORM;
+
+		} break;
+		case NOTIFICATION_UNPARENTED: {
+			data.parent = nullptr;
+			data.dirty |= DIRTY_GLOBAL_TRANSFORM;
+		} break;
+		case NOTIFICATION_ENTER_TREE: {
+			ERR_FAIL_COND(!get_tree());
 
 			if (data.parent) {
 				data.C = data.parent->data.children.push_back(this);
@@ -163,11 +168,12 @@ void Node3D::_notification(int p_what) {
 				get_tree()->xform_change_list.remove(&xform_change);
 			}
 			if (data.C) {
+				DEV_ASSERT(data.parent);
 				data.parent->data.children.erase(data.C);
 			}
-			data.parent = nullptr;
 			data.C = nullptr;
 			data.top_level_active = false;
+			data.dirty |= DIRTY_GLOBAL_TRANSFORM; // In case users want to access the out-of-tree branch transform.
 			_update_visibility_parent(true);
 		} break;
 
@@ -297,6 +303,14 @@ void Node3D::set_global_transform(const Transform3D &p_transform) {
 	set_transform(xform);
 }
 
+void Node3D::set_branch_transform(const Transform3D &p_transform) {
+	Transform3D xform = (data.parent && !data.top_level_active)
+			? data.parent->get_branch_transform().affine_inverse() * p_transform
+			: p_transform;
+
+	set_transform(xform);
+}
+
 Transform3D Node3D::get_transform() const {
 	if (data.dirty & DIRTY_LOCAL_TRANSFORM) {
 		_update_local_transform();
@@ -304,16 +318,15 @@ Transform3D Node3D::get_transform() const {
 
 	return data.local_transform;
 }
-Transform3D Node3D::get_global_transform() const {
-	ERR_FAIL_COND_V(!is_inside_tree(), Transform3D());
 
+Transform3D Node3D::get_branch_transform() const {
 	if (data.dirty & DIRTY_GLOBAL_TRANSFORM) {
 		if (data.dirty & DIRTY_LOCAL_TRANSFORM) {
 			_update_local_transform();
 		}
 
 		if (data.parent && !data.top_level_active) {
-			data.global_transform = data.parent->get_global_transform() * data.local_transform;
+			data.global_transform = data.parent->get_branch_transform() * data.local_transform;
 		} else {
 			data.global_transform = data.local_transform;
 		}
@@ -326,6 +339,11 @@ Transform3D Node3D::get_global_transform() const {
 	}
 
 	return data.global_transform;
+}
+
+Transform3D Node3D::get_global_transform() const {
+	ERR_FAIL_COND_V(!is_inside_tree(), Transform3D());
+	return get_branch_transform();
 }
 
 #ifdef TOOLS_ENABLED
@@ -1003,6 +1021,8 @@ void Node3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_global_transform", "global"), &Node3D::set_global_transform);
 	ClassDB::bind_method(D_METHOD("get_global_transform"), &Node3D::get_global_transform);
+	ClassDB::bind_method(D_METHOD("set_branch_transform", "transform"), &Node3D::set_branch_transform);
+	ClassDB::bind_method(D_METHOD("get_branch_transform"), &Node3D::get_branch_transform);
 	ClassDB::bind_method(D_METHOD("set_global_position", "position"), &Node3D::set_global_position);
 	ClassDB::bind_method(D_METHOD("get_global_position"), &Node3D::get_global_position);
 	ClassDB::bind_method(D_METHOD("set_global_rotation", "euler_radians"), &Node3D::set_global_rotation);

@@ -194,11 +194,13 @@ public:
 	void set_basis(const Basis &p_basis);
 	void set_quaternion(const Quaternion &p_quaternion);
 	void set_global_transform(const Transform3D &p_transform);
+	void set_branch_transform(const Transform3D &p_transform);
 
 	Transform3D get_transform() const;
 	Basis get_basis() const;
 	Quaternion get_quaternion() const;
 	Transform3D get_global_transform() const;
+	Transform3D get_branch_transform() const;
 
 #ifdef TOOLS_ENABLED
 	virtual Transform3D get_global_gizmo_transform() const;
