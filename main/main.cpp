@@ -129,6 +129,9 @@ static int audio_driver_idx = -1;
 
 static bool editor = false;
 static bool project_manager = false;
+// When `test_external` is true, the program runs unit tests for external
+// game modules and then exits.
+static bool test_external = false;
 static String locale;
 static bool show_help = false;
 static bool auto_quit = false;
@@ -346,6 +349,7 @@ void Main::print_help(const char *p_binary) {
 #ifdef DEBUG_METHODS_ENABLED
 	OS::get_singleton()->print("  --gdnative-generate-json-api     Generate JSON dump of the Godot API for GDNative bindings.\n");
 #endif
+	OS::get_singleton()->print("  --test-external <test>           Run unit tests for external game modules.\n");
 	OS::get_singleton()->print("  --test <test>                    Run a unit test (");
 	const char **test_names = tests_get_names();
 	const char *comma = "";
@@ -1622,6 +1626,8 @@ bool Main::start() {
 			editor = true;
 		} else if (args[i] == "-p" || args[i] == "--project-manager") {
 			project_manager = true;
+		} else if (args[i] == "--test-external") {
+			test_external = true;
 #endif
 		} else if (args[i].length() && args[i][0] != '-' && positional_arg == "") {
 			positional_arg = args[i];
@@ -1759,6 +1765,10 @@ bool Main::start() {
 	}
 
 #endif
+	if (test_external) {
+		// Tell the platform main() to run tests and then stop.
+		return false;
+	}
 
 	if (script == "" && game_path == "" && String(GLOBAL_DEF("application/run/main_scene", "")) != "") {
 		game_path = GLOBAL_DEF("application/run/main_scene", "");
