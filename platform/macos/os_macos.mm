@@ -657,9 +657,44 @@ void OS_MacOS::run() {
 
 	main_loop->initialize();
 
+	uint64_t last_ticks = 0;
 	bool quit = false;
 	while (!quit) {
 		@try {
+
+			uint64_t dynamic_delay = OS::get_singleton()->get_low_processor_usage_mode_sleep_usec();
+			// if (!DisplayServer::get_singleton()->window_can_draw()) {
+				// dynamic_delay = OS::get_singleton()->get_low_processor_usage_mode_sleep_usec();
+			// }
+
+			const uint64_t ticks = OS::get_singleton()->get_ticks_usec();
+			const uint64_t ticks_elapsed = ticks - last_ticks;
+
+			if(ticks_elapsed < 100000)
+			{
+				while (true) {
+					NSEvent *event = [NSApp
+							nextEventMatchingMask:NSEventMaskAny
+										untilDate:[NSDate distantPast]
+										inMode:NSDefaultRunLoopMode
+										dequeue:YES];
+
+					if (event == nil) {
+						break;
+					}
+
+					[NSApp sendEvent:event];
+				}
+
+				delay_usec(800);
+
+				continue;
+			}
+
+			last_ticks = ticks;
+			//不让add_frame_delay生效
+			OS::get_singleton()->set_low_processor_usage_mode(false);
+
 			if (DisplayServer::get_singleton()) {
 				DisplayServer::get_singleton()->process_events(); // Get rid of pending events.
 			}
