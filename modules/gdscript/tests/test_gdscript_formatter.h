@@ -3056,6 +3056,25 @@ static func test():
 		const String pre_formatted = code;
 		CHECK_FORMAT(code, pre_formatted);
 	}
+
+	TEST_CASE("Comments should not count as expressions") {
+		SUBCASE("Function body") {
+			const String code = R"(func _run() -> void:
+	# This should not count as an expression
+)");
+			const String pre_formatted = code;
+			CHECK_FORMAT(code, pre_formatted);
+		}
+
+		SUBCASE("Condition body") {
+			const String code = R"(func _run() -> void:
+	if true:
+		# This should not count as an expression
+)";
+			const String pre_formatted = code;
+			CHECK_FORMAT(code, pre_formatted);
+		}
+	}
 } // TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Comments]")
 
 TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Syntax]") {
