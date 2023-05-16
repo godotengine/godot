@@ -1775,7 +1775,19 @@ class MyInnerClass:
 	func another_one() -> void:
 		pass
 )");
-		const String pre_formatted = code;
+		const String pre_formatted =
+				GDSCRIPT(R"(
+class MyInnerClass:
+	var hi
+
+
+	func my_inner_class_function() -> void:
+		pass
+
+
+	func another_one() -> void:
+		pass
+)");
 
 		CHECK_FORMAT(code, pre_formatted);
 	}
@@ -3845,6 +3857,7 @@ var my_array = [
 	# Comment
 ]
 )");
+
 		CHECK_FORMAT(code, pre_formatted);
 	}
 
@@ -3852,22 +3865,15 @@ var my_array = [
 		const String code =
 				GDSCRIPT(R"(
 func _ready():
-	var v := Vector2()
-	var a = v[0]  # A
+	var v = [0]
+	var a = v[0] # A
 
-	func another():
-	pass
-)");
-
-		const String pre_formatted =
-				GDSCRIPT(R"(
-func _ready():
-	var v := Vector2()
-	var a = v[0]  # A
 
 func another():
 	pass
 )");
+		const String pre_formatted = code;
+
 		CHECK_FORMAT(code, pre_formatted);
 	}
 
@@ -3879,6 +3885,7 @@ static func test():
 	pass
 )");
 		const String pre_formatted = code;
+
 		CHECK_FORMAT(code, pre_formatted);
 	}
 
@@ -3891,6 +3898,7 @@ func test_func() -> bool:
 	return false
 )");
 		const String pre_formatted = code;
+
 		CHECK_FORMAT(code, pre_formatted);
 	}
 
@@ -3901,6 +3909,7 @@ func test_func() -> bool:
 @onready var b_node = a_node.get_node(^"BNode") # Test
 )");
 		const String pre_formatted = code;
+
 		CHECK_FORMAT(code, pre_formatted);
 	}
 
@@ -3915,6 +3924,7 @@ func _ready():
 	}
 )");
 		const String pre_formatted = code;
+
 		CHECK_FORMAT(code, pre_formatted);
 	}
 
@@ -3925,8 +3935,11 @@ func _ready():
 func _run() -> void:
 	# This should not count as an expression
 )");
-			const String pre_formatted = code;
-			CHECK_FORMAT(code, pre_formatted);
+			GDScriptFormat formatter;
+			formatter.indent_in_multiline_block = 1;
+			String output;
+			Error err = formatter.format(code, output);
+			CHECK(err != OK);
 		}
 
 		SUBCASE("Condition body") {
@@ -3936,8 +3949,11 @@ func _run() -> void:
 	if true:
 		# This should not count as an expression
 )");
-			const String pre_formatted = code;
-			CHECK_FORMAT(code, pre_formatted);
+			GDScriptFormat formatter;
+			formatter.indent_in_multiline_block = 1;
+			String output;
+			Error err = formatter.format(code, output);
+			CHECK(err != OK);
 		}
 	}
 } // TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Comments]")
@@ -3951,6 +3967,7 @@ TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Syntax]") {
 @onready var child_node = $ChildNode
 )");
 			String pre_formatted = code;
+
 			CHECK_FORMAT(code, pre_formatted);
 
 			// Should remove useless quotes
@@ -3962,6 +3979,7 @@ TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Syntax]") {
 					GDSCRIPT(R"(
 @onready var child_node = $ChildNode
 )");
+
 			CHECK_FORMAT(code, pre_formatted);
 
 			// Should keep quotes
@@ -3970,6 +3988,7 @@ TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Syntax]") {
 @onready var sub_child_node = $"ChildNode/Node$/Path"
 )");
 			pre_formatted = code;
+
 			CHECK_FORMAT(code, pre_formatted);
 		}
 
@@ -3980,6 +3999,7 @@ TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Syntax]") {
 @onready var unique_node = %UniqueNode
 )");
 			String pre_formatted = code;
+
 			CHECK_FORMAT(code, pre_formatted);
 
 			// Should remove useless quotes
@@ -3988,6 +4008,7 @@ TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Syntax]") {
 @onready var unique_node = %UniqueNodeIndeed
 )");
 			pre_formatted = code;
+
 			CHECK_FORMAT(code, pre_formatted);
 
 			// Should keep quotes
@@ -3996,6 +4017,7 @@ TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Syntax]") {
 @onready var unique_node = %"UniqueNodeIndeedWith$"
 )");
 			pre_formatted = code;
+
 			CHECK_FORMAT(code, pre_formatted);
 		}
 	}
@@ -4009,6 +4031,7 @@ func _ready():
 	var string = "%1.1f k" % (number * 0.001)
 )");
 			const String pre_formatted = code;
+
 			CHECK_FORMAT(code, pre_formatted);
 		}
 	}
@@ -4021,6 +4044,7 @@ func _ready():
 	var number = 0.0000000000000000000000000000000000000000000000000000000000000001
 )");
 			const String pre_formatted = code;
+
 			CHECK_FORMAT(code, pre_formatted);
 		}
 	}
@@ -4032,6 +4056,7 @@ func _ready():
 @export_exp_easing var very_small_var: float = 0.0
 )");
 			const String pre_formatted = code;
+
 			CHECK_FORMAT(code, pre_formatted);
 		}
 
@@ -4045,6 +4070,7 @@ func _ready():
 @export_exp_easing
 var very_long_long_long_long_long_long_long_long_long_long_long_long_long_long_var: float = 0.0
 )");
+
 			CHECK_FORMAT(code, pre_formatted);
 		}
 	}
@@ -4054,8 +4080,10 @@ TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Misc]") {
 	TEST_CASE("The custom newlines should be remembered") {
 		// `vformat` because "misc/scripts/header_guards.sh"
 		// don't like two consecutive new lines.
-		const String code = vformat(R"(extends Node2D
-%s
+		const String code = GDSCRIPT(R"(
+extends Node2D
+<*noop*>
+<*noop*>
 class Light:
 	var energy
 
@@ -4071,17 +4099,20 @@ func _ready() -> void:
 		light.height = height_slider.value)
 
 	height_slider.value_changed.connect(func(value):
-		light.height = height_slider.value))",
-				"\n");
-		const String pre_formatted = vformat(R"(extends Node2D
-%s
+		light.height = height_slider.value)
+)");
+		const String pre_formatted = GDSCRIPT(R"(
+extends Node2D
+<*noop*>
+<*noop*>
 class Light:
 	var energy
 
 var energy_slider := Range.new()
 var height_slider := Range.new()
 var light := Light.new()
-%s
+<*noop*>
+<*noop*>
 func _ready() -> void:
 	energy_slider.value_changed.connect(func(value):
 		light.energy = energy_slider.value)
@@ -4091,8 +4122,8 @@ func _ready() -> void:
 
 	height_slider.value_changed.connect(func(value):
 		light.height = height_slider.value)
-)",
-				"\n", "\n");
+)");
+
 		CHECK_FORMAT(code, pre_formatted);
 	}
 

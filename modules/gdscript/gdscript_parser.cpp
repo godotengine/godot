@@ -506,6 +506,10 @@ bool GDScriptParser::is_at_end() const {
 	return check(GDScriptTokenizer::Token::TK_EOF);
 }
 
+bool GDScriptParser::is_dedenting() const {
+	return check(GDScriptTokenizer::Token::DEDENT);
+}
+
 void GDScriptParser::synchronize() {
 	panic_mode = false;
 	while (!is_at_end()) {
@@ -558,7 +562,7 @@ bool GDScriptParser::is_statement_end_token() const {
 }
 
 bool GDScriptParser::is_statement_end() const {
-	return lambda_ended || in_lambda || is_statement_end_token();
+	return lambda_ended || in_lambda || is_statement_end_token() || is_dedenting();
 }
 
 void GDScriptParser::end_statement(const String &p_context) {
@@ -1140,16 +1144,15 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, b
 		variable->assignments++;
 	}
 
-	if (p_allow_property && match(GDScriptTokenizer::Token::COLON)) {
-		variable->inline_comment = check_for_comment();
+	variable->inline_comment = check_for_comment();
 
+	// For setter and getters properties (hence the check for ":")
+	if (p_allow_property && match(GDScriptTokenizer::Token::COLON)) {
 		if (match(GDScriptTokenizer::Token::NEWLINE)) {
 			return parse_property(variable, true);
 		} else {
 			return parse_property(variable, false);
 		}
-	} else {
-		variable->inline_comment = check_for_comment();
 	}
 
 	complete_extents(variable);

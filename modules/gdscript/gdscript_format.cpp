@@ -433,6 +433,20 @@ String GDScriptFormat::parse_class(const GDP::ClassNode *p_node, const int p_ind
 		}
 		int indent_mod = p_node->outer != nullptr ? 1 : 0;
 		for (int i = 0; i < p_node->members.size(); ++i) {
+			// Section newlines
+			switch (p_node->members[i].type) {
+				case GDP::ClassNode::Member::Type::FUNCTION: {
+					if (i > 0 && p_node->members[i - 1].type != GDP::ClassNode::Member::Type::FUNCTION) {
+						while (!output.as_string().ends_with("\n\n\n")) {
+							output += "\n";
+						}
+					}
+				} break;
+				default: {
+					// do nothing
+				}
+			}
+
 			bool skip_newline = false;
 			if (p_node->outer != nullptr) {
 				output += indent(p_indent_level + 1, false);
@@ -458,11 +472,6 @@ String GDScriptFormat::parse_class(const GDP::ClassNode *p_node, const int p_ind
 					}
 				} break;
 				case GDP::ClassNode::Member::Type::FUNCTION:
-					if (i > 0 && p_node->members[i - 1].type != GDP::ClassNode::Member::Type::FUNCTION) {
-						while (!output.as_string().ends_with("\n\n\n")) {
-							output += "\n";
-						}
-					}
 					if (!p_node->members[i].function->annotations.is_empty()) {
 						output += parse_annotations(p_node->members[i].function->annotations, p_indent_level + indent_mod, SPLIT);
 					}
@@ -1570,7 +1579,7 @@ String GDScriptFormat::parse_get_node(const GDP::GetNodeNode *p_node, const int 
 		output += "\"";
 		append = "\"";
 	}
-	
+
 	output += full_path;
 	output += append;
 	return output;

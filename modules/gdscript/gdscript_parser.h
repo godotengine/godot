@@ -1454,6 +1454,7 @@ private:
 	bool check(GDScriptTokenizer::Token::Type p_token_type) const;
 	bool consume(GDScriptTokenizer::Token::Type p_token_type, const String &p_error_message);
 	bool is_at_end() const;
+	bool is_dedenting() const;
 	bool is_statement_end_token() const;
 	bool is_statement_end() const;
 	void end_statement(const String &p_context);
