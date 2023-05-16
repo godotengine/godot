@@ -159,6 +159,14 @@ bool CreateDialog::_should_hide_type(const String &p_type) const {
 				return true; // Plugin is not enabled.
 			}
 		}
+
+		if (script_path.begins_with(EditorPaths::get_singleton()->get_script_templates_dir())) {
+			return true;
+		}
+
+		if (script_path.begins_with(EditorPaths::get_singleton()->get_project_script_templates_dir())) {
+			return true;
+		}
 	}
 
 	return false;
@@ -227,7 +235,9 @@ void CreateDialog::_add_type(const String &p_type, const TypeCategory p_type_cat
 			scr->get_language()->get_global_class_name(scr->get_path(), &extends);
 
 			inherits = extends;
-			inherited_type = TypeCategory::CPP_TYPE;
+			if (ClassDB::class_exists(inherits)) {
+				inherited_type = TypeCategory::CPP_TYPE;
+			}
 		} else {
 			inherits = scr->get_language()->get_global_class_name(base->get_path());
 			if (inherits.is_empty()) {
@@ -246,7 +256,9 @@ void CreateDialog::_add_type(const String &p_type, const TypeCategory p_type_cat
 				scr->get_language()->get_global_class_name(scr->get_path(), &extends);
 
 				inherits = extends;
-				inherited_type = TypeCategory::CPP_TYPE;
+				if (ClassDB::class_exists(inherits)) {
+					inherited_type = TypeCategory::CPP_TYPE;
+				}
 			} else {
 				inherits = scr->get_language()->get_global_class_name(base->get_path());
 				if (inherits.is_empty()) {
