@@ -587,7 +587,7 @@ HorizontalAlignment Button::get_text_alignment() const {
 	return alignment;
 }
 
-void Button::set_icon_alignment(HorizontalAlignment p_alignment) {
+void Button::set_horizontal_icon_alignment(HorizontalAlignment p_alignment) {
 	horizontal_icon_alignment = p_alignment;
 	update_minimum_size();
 	queue_redraw();
@@ -599,7 +599,7 @@ void Button::set_vertical_icon_alignment(VerticalAlignment p_alignment) {
 	queue_redraw();
 }
 
-HorizontalAlignment Button::get_icon_alignment() const {
+HorizontalAlignment Button::get_horizontal_icon_alignment() const {
 	return horizontal_icon_alignment;
 }
 
@@ -624,8 +624,8 @@ void Button::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_clip_text"), &Button::get_clip_text);
 	ClassDB::bind_method(D_METHOD("set_text_alignment", "alignment"), &Button::set_text_alignment);
 	ClassDB::bind_method(D_METHOD("get_text_alignment"), &Button::get_text_alignment);
-	ClassDB::bind_method(D_METHOD("set_icon_alignment", "icon_alignment"), &Button::set_icon_alignment);
-	ClassDB::bind_method(D_METHOD("get_icon_alignment"), &Button::get_icon_alignment);
+	ClassDB::bind_method(D_METHOD("set_horizontal_icon_alignment", "horizontal_icon_alignment"), &Button::set_horizontal_icon_alignment);
+	ClassDB::bind_method(D_METHOD("get_horizontal_icon_alignment"), &Button::get_horizontal_icon_alignment);
 	ClassDB::bind_method(D_METHOD("set_vertical_icon_alignment", "vertical_icon_alignment"), &Button::set_vertical_icon_alignment);
 	ClassDB::bind_method(D_METHOD("get_vertical_icon_alignment"), &Button::get_vertical_icon_alignment);
 	ClassDB::bind_method(D_METHOD("set_expand_icon", "enabled"), &Button::set_expand_icon);
@@ -641,7 +641,7 @@ void Button::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "get_clip_text");
 
 	ADD_GROUP("Icon Behavior", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "icon_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_icon_alignment", "get_icon_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_icon_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_horizontal_icon_alignment", "get_horizontal_icon_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_icon_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom"), "set_vertical_icon_alignment", "get_vertical_icon_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand_icon"), "set_expand_icon", "is_expand_icon");
 

@@ -1878,7 +1878,7 @@ ColorPicker::ColorPicker() {
 	set_pick_color(Color(1, 1, 1));
 
 	btn_add_preset = memnew(Button);
-	btn_add_preset->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	btn_add_preset->set_horizontal_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	btn_add_preset->set_tooltip_text(RTR("Add current color as a preset."));
 	btn_add_preset->connect("pressed", callable_mp(this, &ColorPicker::_add_preset_pressed));
 	preset_container->add_child(btn_add_preset);

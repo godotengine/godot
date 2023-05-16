@@ -135,9 +135,9 @@ public:
 	void set_text_alignment(HorizontalAlignment p_alignment);
 	HorizontalAlignment get_text_alignment() const;
 
-	void set_icon_alignment(HorizontalAlignment p_alignment);
+	void set_horizontal_icon_alignment(HorizontalAlignment p_alignment);
 	void set_vertical_icon_alignment(VerticalAlignment p_alignment);
-	HorizontalAlignment get_icon_alignment() const;
+	HorizontalAlignment get_horizontal_icon_alignment() const;
 	VerticalAlignment get_vertical_icon_alignment() const;
 
 	Button(const String &p_text = String());

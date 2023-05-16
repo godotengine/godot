@@ -538,7 +538,7 @@ void ControlEditorPresetPicker::_add_row_button(HBoxContainer *p_row, const int 
 
 	Button *b = memnew(Button);
 	b->set_custom_minimum_size(Size2i(36, 36) * EDSCALE);
-	b->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	b->set_horizontal_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	b->set_tooltip_text(p_name);
 	b->set_flat(true);
 	p_row->add_child(b);

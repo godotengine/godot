@@ -57,7 +57,7 @@
 			Button's icon, if text is present the icon will be placed before the text.
 			To edit margin and spacing of the icon, use [theme_item h_separation] theme property and [code]content_margin_*[/code] properties of the used [StyleBox]es.
 		</member>
-		<member name="icon_alignment" type="int" setter="set_icon_alignment" getter="get_icon_alignment" enum="HorizontalAlignment" default="0">
+		<member name="horizontal_icon_alignment" type="int" setter="set_horizontal_icon_alignment" getter="get_horizontal_icon_alignment" enum="HorizontalAlignment" default="0">
 			Specifies if the icon should be aligned horizontally to the left, right, or center of a button. Uses the same [enum HorizontalAlignment] constants as the text alignment. If centered horizontally and vertically, text will draw on top of the icon.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">

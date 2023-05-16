@@ -322,7 +322,7 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "get_hand", "get_tracker_hand" }, // XRPositionalTracker
 	{ "get_handle_name", "_get_handle_name" }, // EditorNode3DGizmo
 	{ "get_handle_value", "_get_handle_value" }, // EditorNode3DGizmo
-	{ "get_icon_align", "get_icon_alignment" }, // Button
+	{ "get_icon_align", "get_horizontal_icon_alignment" }, // Button
 	{ "get_icon_types", "get_icon_type_list" }, // Theme
 	{ "get_idle_frames", "get_process_frames" }, // Engine
 	{ "get_import_options", "_get_import_options" }, // EditorImportPlugin
@@ -528,7 +528,7 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "set_gravity_distance_scale", "set_gravity_point_unit_distance" }, // Area2D, Area3D
 	{ "set_gravity_vector", "set_gravity_direction" }, // Area2D, Area3D
 	{ "set_h_drag_enabled", "set_drag_horizontal_enabled" }, // Camera2D
-	{ "set_icon_align", "set_icon_alignment" }, // Button
+	{ "set_icon_align", "set_horizontal_icon_alignment" }, // Button
 	{ "set_interior_ambient", "set_ambient_color" }, // ReflectionProbe
 	{ "set_interior_ambient_energy", "set_ambient_color_energy" }, // ReflectionProbe
 	{ "set_invert_faces", "set_flip_faces" }, // CSGPrimitive3D
@@ -1115,7 +1115,7 @@ const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
 	{ "gravity_vec", "gravity_direction" }, // Area(2D/3D)
 	{ "hint_tooltip", "tooltip_text" }, // Control
 	{ "hseparation", "h_separation" }, // Theme
-	{ "icon_align", "icon_alignment" }, // Button
+	{ "icon_align", "horizontal_icon_alignment" }, // Button
 	{ "iterations_per_second", "physics_ticks_per_second" }, // Engine
 	{ "invert_enable", "invert_enabled" }, // Polygon2D
 	{ "margin_bottom", "offset_bottom" }, // Control -- Breaks NinePatchRect, StyleBox.
