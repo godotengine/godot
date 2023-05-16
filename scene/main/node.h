@@ -522,8 +522,8 @@ public:
 	_FORCE_INLINE_ bool is_accessible_from_caller_thread() const {
 		if (current_process_thread_group == nullptr) {
 			// Not thread processing. Only accessible if node is outside the scene tree,
-			// or if accessing from the main thread.
-			return !data.inside_tree || Thread::is_main_thread();
+			// if accessing from the main thread or being loaded.
+			return !data.inside_tree || Thread::is_main_thread() || ResourceLoader::is_within_load();
 		} else {
 			// Thread processing
 			return current_process_thread_group == data.process_thread_group_owner;
@@ -532,7 +532,7 @@ public:
 
 	_FORCE_INLINE_ bool is_readable_from_caller_thread() const {
 		if (current_process_thread_group == nullptr) {
-			return Thread::is_main_thread();
+			return Thread::is_main_thread() || ResourceLoader::is_within_load();
 		} else {
 			return true;
 		}
