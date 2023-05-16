@@ -42,8 +42,24 @@ class SceneState;
 class Tween;
 class PropertyTweener;
 
+SAFE_FLAG_TYPE_PUN_GUARANTEES
+SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint32_t)
+
 class Node : public Object {
 	GDCLASS(Node, Object);
+
+protected:
+	// During group processing, these are thread-safe.
+	// Outside group processing, these avoid the cost of sync by working as plain primitive types.
+	union MTFlag {
+		SafeFlag mt{};
+		bool st;
+	};
+	template <class T>
+	union MTNumeric {
+		SafeNumeric<T> mt{};
+		T st;
+	};
 
 public:
 	enum ProcessMode {
@@ -537,6 +553,8 @@ public:
 			return true;
 		}
 	}
+
+	_FORCE_INLINE_ static bool is_group_processing() { return current_process_thread_group; }
 
 	void set_process_thread_messages(BitField<ProcessThreadMessages> p_flags);
 	BitField<ProcessThreadMessages> get_process_thread_messages() const;
