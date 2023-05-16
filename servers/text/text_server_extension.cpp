@@ -251,7 +251,7 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_shaped_text_substr, "shaped", "start", "length");
 	GDVIRTUAL_BIND(_shaped_text_get_parent, "shaped");
 
-	GDVIRTUAL_BIND(_shaped_text_fit_to_width, "shaped", "width", "jst_flags");
+	GDVIRTUAL_BIND(_shaped_text_fit_to_width, "shaped", "width", "justification_flags");
 	GDVIRTUAL_BIND(_shaped_text_tab_align, "shaped", "tab_stops");
 
 	GDVIRTUAL_BIND(_shaped_text_shape, "shaped");

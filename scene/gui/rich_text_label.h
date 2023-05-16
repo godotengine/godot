@@ -240,6 +240,7 @@ private:
 		String language;
 		Control::TextDirection direction = Control::TEXT_DIRECTION_AUTO;
 		TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
+		BitField<TextServer::JustificationFlag> jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE;
 		ItemParagraph() { type = ITEM_PARAGRAPH; }
 	};
 
@@ -405,6 +406,7 @@ private:
 	bool use_selected_font_color = false;
 
 	HorizontalAlignment default_alignment = HORIZONTAL_ALIGNMENT_LEFT;
+	BitField<TextServer::JustificationFlag> default_jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE;
 
 	ItemMeta *meta_hovering = nullptr;
 	Variant current_meta;
@@ -492,6 +494,7 @@ private:
 	int _find_list(Item *p_item, Vector<int> &r_index, Vector<ItemList *> &r_list);
 	int _find_margin(Item *p_item, const Ref<Font> &p_base_font, int p_base_font_size);
 	HorizontalAlignment _find_alignment(Item *p_item);
+	BitField<TextServer::JustificationFlag> _find_jst_flags(Item *p_item);
 	TextServer::Direction _find_direction(Item *p_item);
 	TextServer::StructuredTextParser _find_stt(Item *p_item);
 	String _find_language(Item *p_item);
@@ -593,7 +596,7 @@ public:
 	void push_outline_color(const Color &p_color);
 	void push_underline();
 	void push_strikethrough();
-	void push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", TextServer::StructuredTextParser p_st_parser = TextServer::STRUCTURED_TEXT_DEFAULT);
+	void push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", TextServer::StructuredTextParser p_st_parser = TextServer::STRUCTURED_TEXT_DEFAULT, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE);
 	void push_indent(int p_level);
 	void push_list(int p_level, ListType p_list, bool p_capitalize, const String &p_bullet = String::utf8("•"));
 	void push_meta(const Variant &p_meta);
