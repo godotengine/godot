@@ -41,6 +41,7 @@
 #include "scene/resources/immediate_mesh.h"
 
 class EditorInspectorPluginSkeleton;
+class EditorPropertyVector3;
 class Joint;
 class PhysicalBone3D;
 class Skeleton3DEditorPlugin;
