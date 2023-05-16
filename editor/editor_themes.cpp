@@ -194,7 +194,7 @@ void EditorColorMap::create() {
 	add_conversion_exception("Breakpoint");
 }
 
-static Ref<StyleBoxTexture> make_stylebox(Ref<Texture2D> p_texture, float p_left, float p_top, float p_right, float p_bottom, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1, bool p_draw_center = true) {
+static Ref<StyleBoxTexture> make_texture_stylebox(Ref<Texture2D> p_texture, float p_left, float p_top, float p_right, float p_bottom, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1, bool p_draw_center = true) {
 	Ref<StyleBoxTexture> style(memnew(StyleBoxTexture));
 	style->set_texture(p_texture);
 	style->set_texture_margin_individual(p_left * EDSCALE, p_top * EDSCALE, p_right * EDSCALE, p_bottom * EDSCALE);
@@ -1595,12 +1595,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	if (increase_scrollbar_touch_area) {
 		theme->set_stylebox("scroll", "HScrollBar", make_line_stylebox(separator_color, 50));
 	} else {
-		theme->set_stylebox("scroll", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
+		theme->set_stylebox("scroll", "HScrollBar", make_texture_stylebox(theme->get_icon(SNAME("GuiScrollBg"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
 	}
-	theme->set_stylebox("scroll_focus", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
-	theme->set_stylebox("grabber", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabber"), SNAME("EditorIcons")), 6, 6, 6, 6, 1, 1, 1, 1));
-	theme->set_stylebox("grabber_highlight", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabberHl"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
-	theme->set_stylebox("grabber_pressed", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabberPressed"), SNAME("EditorIcons")), 6, 6, 6, 6, 1, 1, 1, 1));
+	theme->set_stylebox("scroll_focus", "HScrollBar", make_texture_stylebox(theme->get_icon(SNAME("GuiScrollBg"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
+	theme->set_stylebox("grabber", "HScrollBar", make_texture_stylebox(theme->get_icon(SNAME("GuiScrollGrabber"), SNAME("EditorIcons")), 6, 6, 6, 6, 1, 1, 1, 1));
+	theme->set_stylebox("grabber_highlight", "HScrollBar", make_texture_stylebox(theme->get_icon(SNAME("GuiScrollGrabberHl"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
+	theme->set_stylebox("grabber_pressed", "HScrollBar", make_texture_stylebox(theme->get_icon(SNAME("GuiScrollGrabberPressed"), SNAME("EditorIcons")), 6, 6, 6, 6, 1, 1, 1, 1));
 
 	theme->set_icon("increment", "HScrollBar", empty_icon);
 	theme->set_icon("increment_highlight", "HScrollBar", empty_icon);
@@ -1613,12 +1613,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	if (increase_scrollbar_touch_area) {
 		theme->set_stylebox("scroll", "VScrollBar", make_line_stylebox(separator_color, 50, 1, 1, true));
 	} else {
-		theme->set_stylebox("scroll", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
+		theme->set_stylebox("scroll", "VScrollBar", make_texture_stylebox(theme->get_icon(SNAME("GuiScrollBg"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
 	}
-	theme->set_stylebox("scroll_focus", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
-	theme->set_stylebox("grabber", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabber"), SNAME("EditorIcons")), 6, 6, 6, 6, 1, 1, 1, 1));
-	theme->set_stylebox("grabber_highlight", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabberHl"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
-	theme->set_stylebox("grabber_pressed", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabberPressed"), SNAME("EditorIcons")), 6, 6, 6, 6, 1, 1, 1, 1));
+	theme->set_stylebox("scroll_focus", "VScrollBar", make_texture_stylebox(theme->get_icon(SNAME("GuiScrollBg"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
+	theme->set_stylebox("grabber", "VScrollBar", make_texture_stylebox(theme->get_icon(SNAME("GuiScrollGrabber"), SNAME("EditorIcons")), 6, 6, 6, 6, 1, 1, 1, 1));
+	theme->set_stylebox("grabber_highlight", "VScrollBar", make_texture_stylebox(theme->get_icon(SNAME("GuiScrollGrabberHl"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
+	theme->set_stylebox("grabber_pressed", "VScrollBar", make_texture_stylebox(theme->get_icon(SNAME("GuiScrollGrabberPressed"), SNAME("EditorIcons")), 6, 6, 6, 6, 1, 1, 1, 1));
 
 	theme->set_icon("increment", "VScrollBar", empty_icon);
 	theme->set_icon("increment_highlight", "VScrollBar", empty_icon);
@@ -1742,8 +1742,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("updown_disabled", "SpinBox", theme->get_icon(SNAME("GuiSpinboxUpdownDisabled"), SNAME("EditorIcons")));
 
 	// ProgressBar
-	theme->set_stylebox("background", "ProgressBar", make_stylebox(theme->get_icon(SNAME("GuiProgressBar"), SNAME("EditorIcons")), 4, 4, 4, 4, 0, 0, 0, 0));
-	theme->set_stylebox("fill", "ProgressBar", make_stylebox(theme->get_icon(SNAME("GuiProgressFill"), SNAME("EditorIcons")), 6, 6, 6, 6, 2, 1, 2, 1));
+	theme->set_stylebox("background", "ProgressBar", make_texture_stylebox(theme->get_icon(SNAME("GuiProgressBar"), SNAME("EditorIcons")), 4, 4, 4, 4, 0, 0, 0, 0));
+	theme->set_stylebox("fill", "ProgressBar", make_texture_stylebox(theme->get_icon(SNAME("GuiProgressFill"), SNAME("EditorIcons")), 6, 6, 6, 6, 2, 1, 2, 1));
 	theme->set_color("font_color", "ProgressBar", font_color);
 	theme->set_color("font_outline_color", "ProgressBar", font_outline_color);
 	theme->set_constant("outline_size", "ProgressBar", 0);
