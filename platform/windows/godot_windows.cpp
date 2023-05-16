@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "main/main.h"
+#include "main/tests/catch_testing.h"
 #include "os_windows.h"
 
 #include <locale.h>
@@ -171,9 +172,18 @@ __declspec(dllexport) int widechar_main(int argc, wchar_t **argv) {
 		return 255;
 	}
 
-	if (Main::start())
-		os.run();
-	Main::cleanup();
+	if (Main::start()) {
+		os.run(); // it is actually the OS that decides how to run
+	} else {
+		List<String> args = os.get_cmdline_args();
+		if (args.find("--test-external") != nullptr) {
+			#ifdef CATCH_TESTS
+			run_catch_tests(argc, &argv_utf8[0]);
+			#else
+			printf("Option --test_external is invalid because this program was built without Catch2.");
+			#endif
+		}
+	}
 
 	for (int i = 0; i < argc; ++i) {
 		delete[] argv_utf8[i];

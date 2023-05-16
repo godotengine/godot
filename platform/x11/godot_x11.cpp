@@ -34,6 +34,7 @@
 #include <unistd.h>
 
 #include "main/main.h"
+#include "main/tests/catch_testing.h"
 #include "os_x11.h"
 
 int main(int argc, char *argv[]) {
@@ -57,6 +58,15 @@ int main(int argc, char *argv[]) {
 
 	if (Main::start()) {
 		os.run(); // it is actually the OS that decides how to run
+	} else {
+		List<String> args = os.get_cmdline_args();
+		if (args.find("--test-external") != nullptr) {
+			#ifdef CATCH_TESTS
+			run_catch_tests(argc, argv);
+			#else
+			printf("Option --test_external is invalid because this program was built without Catch2.");
+			#endif
+		}
 	}
 	Main::cleanup();
 
