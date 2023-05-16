@@ -325,14 +325,6 @@ String GDScriptFormat::parse_class_variable(const GDP::ClassNode *p_node, const 
 	if (!p_node->members[p_member_index].variable->annotations.is_empty()) {
 		String annotation_string;
 		if (!did_break) {
-			for (GDScriptParser::AnnotationNode *&annotation : p_node->members[p_member_index].variable->annotations) {
-				if (String(annotation->name).find("_") > -1) {
-					did_break = true;
-					break;
-				}
-			}
-		}
-		if (!did_break) {
 			annotation_string = parse_annotations(p_node->members[p_member_index].variable->annotations, p_indent_level);
 			if (get_length_without_comments(annotation_string) + get_length_without_comments(variable_string) > line_length_maximum) {
 				annotation_string = parse_annotations(p_node->members[p_member_index].variable->annotations, p_indent_level, SPLIT);

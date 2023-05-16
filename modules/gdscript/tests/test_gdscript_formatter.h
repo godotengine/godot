@@ -3122,6 +3122,24 @@ TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Syntax]") {
 			CHECK_FORMAT(code, pre_formatted);
 		}
 	}
+
+	TEST_CASE("Annotations should not be split if the line is not too long") {
+		SUBCASE("Under the line limit") {
+			const String code = R"(@export_exp_easing var very_small_var: float = 0.0
+)";
+			const String pre_formatted = code;
+			CHECK_FORMAT(code, pre_formatted);
+		}
+
+		SUBCASE("Above the line limit") {
+			const String code = R"(@export_exp_easing var very_long_long_long_long_long_long_long_long_long_long_long_long_long_long_var: float = 0.0
+)";
+			const String pre_formatted = R"(@export_exp_easing
+var very_long_long_long_long_long_long_long_long_long_long_long_long_long_long_var: float = 0.0
+)";
+			CHECK_FORMAT(code, pre_formatted);
+		}
+	}
 } // TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Syntax]")
 
 TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Misc]") {
