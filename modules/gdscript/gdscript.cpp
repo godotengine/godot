@@ -878,44 +878,55 @@ Variant GDScript::callp(const StringName &p_method, const Variant **p_args, int 
 }
 
 bool GDScript::_get(const StringName &p_name, Variant &r_ret) const {
-	{
-		const GDScript *top = this;
-		while (top) {
-			{
-				HashMap<StringName, Variant>::ConstIterator E = top->constants.find(p_name);
-				if (E) {
-					r_ret = E->value;
-					return true;
-				}
-			}
+	if (p_name == GDScriptLanguage::get_singleton()->strings._script_source) {
+		r_ret = get_source_code();
+		return true;
+	}
 
-			{
-				HashMap<StringName, Ref<GDScript>>::ConstIterator E = subclasses.find(p_name);
-				if (E) {
-					r_ret = E->value;
-					return true;
-				}
+	const GDScript *top = this;
+	while (top) {
+		{
+			HashMap<StringName, Variant>::ConstIterator E = top->constants.find(p_name);
+			if (E) {
+				r_ret = E->value;
+				return true;
 			}
-
-			{
-				HashMap<StringName, MemberInfo>::ConstIterator E = static_variables_indices.find(p_name);
-				if (E) {
-					if (E->value.getter) {
-						Callable::CallError ce;
-						r_ret = const_cast<GDScript *>(this)->callp(E->value.getter, nullptr, 0, ce);
-						return true;
-					}
-					r_ret = static_variables[E->value.index];
-					return true;
-				}
-			}
-			top = top->_base;
 		}
 
-		if (p_name == GDScriptLanguage::get_singleton()->strings._script_source) {
-			r_ret = get_source_code();
-			return true;
+		{
+			HashMap<StringName, MemberInfo>::ConstIterator E = top->static_variables_indices.find(p_name);
+			if (E) {
+				if (E->value.getter) {
+					Callable::CallError ce;
+					r_ret = const_cast<GDScript *>(this)->callp(E->value.getter, nullptr, 0, ce);
+					return true;
+				}
+				r_ret = top->static_variables[E->value.index];
+				return true;
+			}
 		}
+
+		{
+			HashMap<StringName, GDScriptFunction *>::ConstIterator E = top->member_functions.find(p_name);
+			if (E && E->value->is_static()) {
+				if (top->rpc_config.has(p_name)) {
+					r_ret = Callable(memnew(GDScriptRPCCallable(const_cast<GDScript *>(top), E->key)));
+				} else {
+					r_ret = Callable(const_cast<GDScript *>(top), E->key);
+				}
+				return true;
+			}
+		}
+
+		{
+			HashMap<StringName, Ref<GDScript>>::ConstIterator E = top->subclasses.find(p_name);
+			if (E) {
+				r_ret = E->value;
+				return true;
+			}
+		}
+
+		top = top->_base;
 	}
 
 	return false;
@@ -925,40 +936,60 @@ bool GDScript::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == GDScriptLanguage::get_singleton()->strings._script_source) {
 		set_source_code(p_value);
 		reload();
-	} else {
-		const GDScript *top = this;
-		while (top) {
-			HashMap<StringName, MemberInfo>::ConstIterator E = static_variables_indices.find(p_name);
-			if (E) {
-				const GDScript::MemberInfo *member = &E->value;
-				Variant value = p_value;
-				if (member->data_type.has_type && !member->data_type.is_type(value)) {
-					const Variant *args = &p_value;
-					Callable::CallError err;
-					Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
-					if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(value)) {
-						return false;
-					}
-				}
-				if (member->setter) {
-					const Variant *args = &value;
-					Callable::CallError err;
-					callp(member->setter, &args, 1, err);
-					return err.error == Callable::CallError::CALL_OK;
-				} else {
-					static_variables.write[member->index] = value;
-					return true;
-				}
-			}
-			top = top->_base;
-		}
+		return true;
 	}
 
-	return true;
+	GDScript *top = this;
+	while (top) {
+		HashMap<StringName, MemberInfo>::ConstIterator E = top->static_variables_indices.find(p_name);
+		if (E) {
+			const MemberInfo *member = &E->value;
+			Variant value = p_value;
+			if (member->data_type.has_type && !member->data_type.is_type(value)) {
+				const Variant *args = &p_value;
+				Callable::CallError err;
+				Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
+				if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(value)) {
+					return false;
+				}
+			}
+			if (member->setter) {
+				const Variant *args = &value;
+				Callable::CallError err;
+				callp(member->setter, &args, 1, err);
+				return err.error == Callable::CallError::CALL_OK;
+			} else {
+				top->static_variables.write[member->index] = value;
+				return true;
+			}
+		}
+
+		top = top->_base;
+	}
+
+	return false;
 }
 
 void GDScript::_get_property_list(List<PropertyInfo> *p_properties) const {
 	p_properties->push_back(PropertyInfo(Variant::STRING, "script/source", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+
+	List<PropertyInfo> property_list;
+
+	const GDScript *top = this;
+	while (top) {
+		for (const KeyValue<StringName, MemberInfo> &E : top->static_variables_indices) {
+			PropertyInfo pi = PropertyInfo(E.value.data_type);
+			pi.name = E.key;
+			pi.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE; // For the script (as a class) it is a non-static property.
+			property_list.push_back(pi);
+		}
+
+		top = top->_base;
+	}
+
+	for (const List<PropertyInfo>::Element *E = property_list.back(); E; E = E->prev()) {
+		p_properties->push_back(E->get());
+	}
 }
 
 void GDScript::_bind_methods() {
@@ -1029,6 +1060,16 @@ const HashMap<StringName, GDScriptFunction *> &GDScript::debug_get_member_functi
 
 StringName GDScript::debug_get_member_by_index(int p_idx) const {
 	for (const KeyValue<StringName, MemberInfo> &E : member_indices) {
+		if (E.value.index == p_idx) {
+			return E.key;
+		}
+	}
+
+	return "<error>";
+}
+
+StringName GDScript::debug_get_static_var_by_index(int p_idx) const {
+	for (const KeyValue<StringName, MemberInfo> &E : static_variables_indices) {
 		if (E.value.index == p_idx) {
 			return E.key;
 		}
@@ -1376,8 +1417,8 @@ void GDScript::clear(GDScript::ClearData *p_clear_data) {
 	}
 	clearing = true;
 
-	GDScript::ClearData data;
-	GDScript::ClearData *clear_data = p_clear_data;
+	ClearData data;
+	ClearData *clear_data = p_clear_data;
 	bool is_root = false;
 
 	// If `clear_data` is `nullptr`, it means that it's the root.
@@ -1398,12 +1439,12 @@ void GDScript::clear(GDScript::ClearData *p_clear_data) {
 	}
 	member_functions.clear();
 
-	for (KeyValue<StringName, GDScript::MemberInfo> &E : member_indices) {
+	for (KeyValue<StringName, MemberInfo> &E : member_indices) {
 		clear_data->scripts.insert(E.value.data_type.script_type_ref);
 		E.value.data_type.script_type_ref = Ref<Script>();
 	}
 
-	for (KeyValue<StringName, GDScript::MemberInfo> &E : static_variables_indices) {
+	for (KeyValue<StringName, MemberInfo> &E : static_variables_indices) {
 		clear_data->scripts.insert(E.value.data_type.script_type_ref);
 		E.value.data_type.script_type_ref = Ref<Script>();
 	}
@@ -1486,7 +1527,6 @@ GDScript::~GDScript() {
 //////////////////////////////
 
 bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
-	//member
 	{
 		HashMap<StringName, GDScript::MemberInfo>::Iterator E = script->member_indices.find(p_name);
 		if (E) {
@@ -1514,17 +1554,45 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 
 	GDScript *sptr = script.ptr();
 	while (sptr) {
-		HashMap<StringName, GDScriptFunction *>::Iterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._set);
-		if (E) {
-			Variant name = p_name;
-			const Variant *args[2] = { &name, &p_value };
-
-			Callable::CallError err;
-			Variant ret = E->value->call(this, (const Variant **)args, 2, err);
-			if (err.error == Callable::CallError::CALL_OK && ret.get_type() == Variant::BOOL && ret.operator bool()) {
-				return true;
+		{
+			HashMap<StringName, GDScript::MemberInfo>::ConstIterator E = sptr->static_variables_indices.find(p_name);
+			if (E) {
+				const GDScript::MemberInfo *member = &E->value;
+				Variant value = p_value;
+				if (member->data_type.has_type && !member->data_type.is_type(value)) {
+					const Variant *args = &p_value;
+					Callable::CallError err;
+					Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
+					if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(value)) {
+						return false;
+					}
+				}
+				if (member->setter) {
+					const Variant *args = &value;
+					Callable::CallError err;
+					callp(member->setter, &args, 1, err);
+					return err.error == Callable::CallError::CALL_OK;
+				} else {
+					sptr->static_variables.write[member->index] = value;
+					return true;
+				}
 			}
 		}
+
+		{
+			HashMap<StringName, GDScriptFunction *>::Iterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._set);
+			if (E) {
+				Variant name = p_name;
+				const Variant *args[2] = { &name, &p_value };
+
+				Callable::CallError err;
+				Variant ret = E->value->call(this, (const Variant **)args, 2, err);
+				if (err.error == Callable::CallError::CALL_OK && ret.get_type() == Variant::BOOL && ret.operator bool()) {
+					return true;
+				}
+			}
+		}
+
 		sptr = sptr->_base;
 	}
 
@@ -1532,62 +1600,69 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
+	{
+		HashMap<StringName, GDScript::MemberInfo>::ConstIterator E = script->member_indices.find(p_name);
+		if (E) {
+			if (E->value.getter) {
+				Callable::CallError err;
+				r_ret = const_cast<GDScriptInstance *>(this)->callp(E->value.getter, nullptr, 0, err);
+				if (err.error == Callable::CallError::CALL_OK) {
+					return true;
+				}
+			}
+			r_ret = members[E->value.index];
+			return true;
+		}
+	}
+
 	const GDScript *sptr = script.ptr();
 	while (sptr) {
 		{
-			HashMap<StringName, GDScript::MemberInfo>::ConstIterator E = script->member_indices.find(p_name);
+			HashMap<StringName, Variant>::ConstIterator E = sptr->constants.find(p_name);
+			if (E) {
+				r_ret = E->value;
+				return true;
+			}
+		}
+
+		{
+			HashMap<StringName, GDScript::MemberInfo>::ConstIterator E = sptr->static_variables_indices.find(p_name);
 			if (E) {
 				if (E->value.getter) {
-					Callable::CallError err;
-					r_ret = const_cast<GDScriptInstance *>(this)->callp(E->value.getter, nullptr, 0, err);
-					if (err.error == Callable::CallError::CALL_OK) {
-						return true;
-					}
+					Callable::CallError ce;
+					r_ret = const_cast<GDScript *>(sptr)->callp(E->value.getter, nullptr, 0, ce);
+					return true;
 				}
-				r_ret = members[E->value.index];
-				return true; //index found
+				r_ret = sptr->static_variables[E->value.index];
+				return true;
 			}
 		}
 
 		{
-			const GDScript *sl = sptr;
-			while (sl) {
-				HashMap<StringName, Variant>::ConstIterator E = sl->constants.find(p_name);
-				if (E) {
-					r_ret = E->value;
-					return true; //index found
-				}
-				sl = sl->_base;
+			HashMap<StringName, Vector<StringName>>::ConstIterator E = sptr->_signals.find(p_name);
+			if (E) {
+				r_ret = Signal(this->owner, E->key);
+				return true;
 			}
 		}
 
 		{
-			// Signals.
-			const GDScript *sl = sptr;
-			while (sl) {
-				HashMap<StringName, Vector<StringName>>::ConstIterator E = sl->_signals.find(p_name);
-				if (E) {
-					r_ret = Signal(this->owner, E->key);
-					return true; //index found
+			HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(p_name);
+			if (E) {
+				if (sptr->rpc_config.has(p_name)) {
+					r_ret = Callable(memnew(GDScriptRPCCallable(this->owner, E->key)));
+				} else {
+					r_ret = Callable(this->owner, E->key);
 				}
-				sl = sl->_base;
+				return true;
 			}
 		}
 
 		{
-			// Methods.
-			const GDScript *sl = sptr;
-			while (sl) {
-				HashMap<StringName, GDScriptFunction *>::ConstIterator E = sl->member_functions.find(p_name);
-				if (E) {
-					if (sptr->rpc_config.has(p_name)) {
-						r_ret = Callable(memnew(GDScriptRPCCallable(this->owner, E->key)));
-					} else {
-						r_ret = Callable(this->owner, E->key);
-					}
-					return true; //index found
-				}
-				sl = sl->_base;
+			HashMap<StringName, Ref<GDScript>>::ConstIterator E = sptr->subclasses.find(p_name);
+			if (E) {
+				r_ret = E->value;
+				return true;
 			}
 		}
 

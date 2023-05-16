@@ -2469,9 +2469,15 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 
 	GDScriptParser::DataType assignee_type = p_assignment->assignee->get_datatype();
 
-	if (assignee_type.is_constant || (p_assignment->assignee->type == GDScriptParser::Node::SUBSCRIPT && static_cast<GDScriptParser::SubscriptNode *>(p_assignment->assignee)->base->is_constant)) {
+	if (assignee_type.is_constant) {
 		push_error("Cannot assign a new value to a constant.", p_assignment->assignee);
 		return;
+	} else if (p_assignment->assignee->type == GDScriptParser::Node::SUBSCRIPT && static_cast<GDScriptParser::SubscriptNode *>(p_assignment->assignee)->base->is_constant) {
+		const GDScriptParser::DataType &base_type = static_cast<GDScriptParser::SubscriptNode *>(p_assignment->assignee)->base->datatype;
+		if (base_type.kind != GDScriptParser::DataType::SCRIPT && base_type.kind != GDScriptParser::DataType::CLASS) { // Static variables.
+			push_error("Cannot assign a new value to a constant.", p_assignment->assignee);
+			return;
+		}
 	} else if (assignee_type.is_read_only) {
 		push_error("Cannot assign a new value to a read-only property.", p_assignment->assignee);
 		return;
@@ -3516,7 +3522,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				} break;
 
 				case GDScriptParser::ClassNode::Member::FUNCTION: {
-					if (is_base && !base.is_meta_type) {
+					if (is_base && (!base.is_meta_type || member.function->is_static)) {
 						p_identifier->set_datatype(make_callable_type(member.function->info));
 						return;
 					}

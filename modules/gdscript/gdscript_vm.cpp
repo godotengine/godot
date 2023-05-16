@@ -217,6 +217,8 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_GET_NAMED_VALIDATED,                \
 		&&OPCODE_SET_MEMBER,                         \
 		&&OPCODE_GET_MEMBER,                         \
+		&&OPCODE_SET_STATIC_VARIABLE,                \
+		&&OPCODE_GET_STATIC_VARIABLE,                \
 		&&OPCODE_ASSIGN,                             \
 		&&OPCODE_ASSIGN_TRUE,                        \
 		&&OPCODE_ASSIGN_FALSE,                       \
@@ -666,7 +668,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	Variant *m_v = instruction_args[m_idx]
 
 #ifdef DEBUG_ENABLED
-
 	uint64_t function_start_time = 0;
 	uint64_t function_call_time = 0;
 
@@ -679,11 +680,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	bool exit_ok = false;
 	bool awaited = false;
 #endif
+
 #ifdef DEBUG_ENABLED
-	int variant_address_limits[ADDR_TYPE_MAX] = { _stack_size, _constant_count, p_instance ? p_instance->members.size() : 0, script->static_variables.size() };
+	int variant_address_limits[ADDR_TYPE_MAX] = { _stack_size, _constant_count, p_instance ? p_instance->members.size() : 0 };
 #endif
 
-	Variant *variant_addresses[ADDR_TYPE_MAX] = { stack, _constants_ptr, p_instance ? p_instance->members.ptrw() : nullptr, script->static_variables.ptrw() };
+	Variant *variant_addresses[ADDR_TYPE_MAX] = { stack, _constants_ptr, p_instance ? p_instance->members.ptrw() : nullptr };
 
 #ifdef DEBUG_ENABLED
 	OPCODE_WHILE(ip < _code_size) {
@@ -1168,6 +1170,42 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 #endif
 				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_SET_STATIC_VARIABLE) {
+				CHECK_SPACE(4);
+
+				GET_VARIANT_PTR(value, 0);
+
+				GET_VARIANT_PTR(_class, 1);
+				GDScript *gdscript = Object::cast_to<GDScript>(_class->operator Object *());
+				GD_ERR_BREAK(!gdscript);
+
+				int index = _code_ptr[ip + 3];
+				GD_ERR_BREAK(index < 0 || index >= gdscript->static_variables.size());
+
+				gdscript->static_variables.write[index] = *value;
+
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_GET_STATIC_VARIABLE) {
+				CHECK_SPACE(4);
+
+				GET_VARIANT_PTR(target, 0);
+
+				GET_VARIANT_PTR(_class, 1);
+				GDScript *gdscript = Object::cast_to<GDScript>(_class->operator Object *());
+				GD_ERR_BREAK(!gdscript);
+
+				int index = _code_ptr[ip + 3];
+				GD_ERR_BREAK(index < 0 || index >= gdscript->static_variables.size());
+
+				*target = gdscript->static_variables[index];
+
+				ip += 4;
 			}
 			DISPATCH_OPCODE;
 
@@ -3620,7 +3658,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 
 		// Free stack, except reserved addresses.
-		for (int i = 3; i < _stack_size; i++) {
+		for (int i = FIXED_ADDRESSES_MAX; i < _stack_size; i++) {
 			stack[i].~Variant();
 		}
 #ifdef DEBUG_ENABLED
@@ -3628,7 +3666,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 
 	// Always free reserved addresses, since they are never copied.
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < FIXED_ADDRESSES_MAX; i++) {
 		stack[i].~Variant();
 	}
 

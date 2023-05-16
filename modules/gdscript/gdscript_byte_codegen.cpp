@@ -853,6 +853,20 @@ void GDScriptByteCodeGenerator::write_get_member(const Address &p_target, const 
 	append(p_name);
 }
 
+void GDScriptByteCodeGenerator::write_set_static_variable(const Address &p_value, const Address &p_class, int p_index) {
+	append_opcode(GDScriptFunction::OPCODE_SET_STATIC_VARIABLE);
+	append(p_value);
+	append(p_class);
+	append(p_index);
+}
+
+void GDScriptByteCodeGenerator::write_get_static_variable(const Address &p_target, const Address &p_class, int p_index) {
+	append_opcode(GDScriptFunction::OPCODE_GET_STATIC_VARIABLE);
+	append(p_target);
+	append(p_class);
+	append(p_index);
+}
+
 void GDScriptByteCodeGenerator::write_assign_with_conversion(const Address &p_target, const Address &p_source) {
 	switch (p_target.type.kind) {
 		case GDScriptDataType::BUILTIN: {

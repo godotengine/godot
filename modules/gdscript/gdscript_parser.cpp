@@ -3827,8 +3827,12 @@ bool GDScriptParser::onready_annotation(const AnnotationNode *p_annotation, Node
 	}
 
 	VariableNode *variable = static_cast<VariableNode *>(p_node);
+	if (variable->is_static) {
+		push_error(R"("@onready" annotation cannot be applied to a static variable.)", p_annotation);
+		return false;
+	}
 	if (variable->onready) {
-		push_error(R"("@onready" annotation can only be used once per variable.)");
+		push_error(R"("@onready" annotation can only be used once per variable.)", p_annotation);
 		return false;
 	}
 	variable->onready = true;
@@ -3841,6 +3845,10 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 	ERR_FAIL_COND_V_MSG(p_node->type != Node::VARIABLE, false, vformat(R"("%s" annotation can only be applied to variables.)", p_annotation->name));
 
 	VariableNode *variable = static_cast<VariableNode *>(p_node);
+	if (variable->is_static) {
+		push_error(vformat(R"(Annotation "%s" cannot be applied to a static variable.)", p_annotation->name), p_annotation);
+		return false;
+	}
 	if (variable->exported) {
 		push_error(vformat(R"(Annotation "%s" cannot be used with another "@export" annotation.)", p_annotation->name), p_annotation);
 		return false;
