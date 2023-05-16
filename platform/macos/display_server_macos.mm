@@ -2234,6 +2234,49 @@ Color DisplayServerMacOS::screen_get_pixel(const Point2i &p_position) const {
 	return Color();
 }
 
+Ref<Image> DisplayServerMacOS::screen_get_image(int p_screen) const {
+	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), Ref<Image>());
+
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
+	}
+
+	Ref<Image> img;
+	NSArray *screenArray = [NSScreen screens];
+	if ((NSUInteger)p_screen < [screenArray count]) {
+		NSRect nsrect = [[screenArray objectAtIndex:p_screen] frame];
+		NSDictionary *screenDescription = [[screenArray objectAtIndex:p_screen] deviceDescription];
+		CGDirectDisplayID display_id = [[screenDescription objectForKey:@"NSScreenNumber"] unsignedIntValue];
+		CGImageRef image = CGDisplayCreateImageForRect(display_id, CGRectMake(0, 0, nsrect.size.width, nsrect.size.height));
+		if (image) {
+			CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
+			if (color_space) {
+				NSUInteger width = CGImageGetWidth(image);
+				NSUInteger height = CGImageGetHeight(image);
+
+				Vector<uint8_t> img_data;
+				img_data.resize(height * width * 4);
+				CGContextRef context = CGBitmapContextCreate(img_data.ptrw(), width, height, 8, 4 * width, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+				if (context) {
+					CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
+					img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
+					CGContextRelease(context);
+				}
+				CGColorSpaceRelease(color_space);
+			}
+			CGImageRelease(image);
+		}
+	}
+	return img;
+}
+
 float DisplayServerMacOS::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 

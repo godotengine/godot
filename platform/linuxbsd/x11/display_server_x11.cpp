@@ -1206,6 +1206,105 @@ Color DisplayServerX11::screen_get_pixel(const Point2i &p_position) const {
 	return Color();
 }
 
+Ref<Image> DisplayServerX11::screen_get_image(int p_screen) const {
+	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), Ref<Image>());
+
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
+	}
+
+	ERR_FAIL_COND_V(p_screen < 0, Ref<Image>());
+
+	XImage *image = nullptr;
+
+	int event_base, error_base;
+	if (XineramaQueryExtension(x11_display, &event_base, &error_base)) {
+		int xin_count;
+		XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &xin_count);
+		if (p_screen < xin_count) {
+			int x_count = XScreenCount(x11_display);
+			for (int i = 0; i < x_count; i++) {
+				Window root = XRootWindow(x11_display, i);
+				XWindowAttributes root_attrs;
+				XGetWindowAttributes(x11_display, root, &root_attrs);
+				if ((xsi[p_screen].x_org >= root_attrs.x) && (xsi[p_screen].x_org <= root_attrs.x + root_attrs.width) && (xsi[p_screen].y_org >= root_attrs.y) && (xsi[p_screen].y_org <= root_attrs.y + root_attrs.height)) {
+					image = XGetImage(x11_display, root, xsi[p_screen].x_org, xsi[p_screen].y_org, xsi[p_screen].width, xsi[p_screen].height, AllPlanes, ZPixmap);
+					break;
+				}
+			}
+		} else {
+			ERR_FAIL_V_MSG(Ref<Image>(), "Invalid screen index: " + itos(p_screen) + "(count: " + itos(xin_count) + ").");
+		}
+	} else {
+		int x_count = XScreenCount(x11_display);
+		if (p_screen < x_count) {
+			Window root = XRootWindow(x11_display, p_screen);
+
+			XWindowAttributes root_attrs;
+			XGetWindowAttributes(x11_display, root, &root_attrs);
+
+			image = XGetImage(x11_display, root, root_attrs.x, root_attrs.y, root_attrs.width, root_attrs.height, AllPlanes, ZPixmap);
+		} else {
+			ERR_FAIL_V_MSG(Ref<Image>(), "Invalid screen index: " + itos(p_screen) + "(count: " + itos(x_count) + ").");
+		}
+	}
+
+	Ref<Image> img;
+	if (image) {
+		int width = image->width;
+		int height = image->height;
+
+		Vector<uint8_t> img_data;
+		img_data.resize(height * width * 4);
+
+		uint8_t *sr = (uint8_t *)image->data;
+		uint8_t *wr = (uint8_t *)img_data.ptrw();
+
+		if (image->bits_per_pixel == 24 && image->red_mask == 0xff0000 && image->green_mask == 0x00ff00 && image->blue_mask == 0x0000ff) {
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
+					wr[(y * width + x) * 4 + 0] = sr[(y * width + x) * 3 + 2];
+					wr[(y * width + x) * 4 + 1] = sr[(y * width + x) * 3 + 1];
+					wr[(y * width + x) * 4 + 2] = sr[(y * width + x) * 3 + 0];
+					wr[(y * width + x) * 4 + 3] = 255;
+				}
+			}
+		} else if (image->bits_per_pixel == 24 && image->red_mask == 0x0000ff && image->green_mask == 0x00ff00 && image->blue_mask == 0xff0000) {
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
+					wr[(y * width + x) * 4 + 0] = sr[(y * width + x) * 3 + 2];
+					wr[(y * width + x) * 4 + 1] = sr[(y * width + x) * 3 + 1];
+					wr[(y * width + x) * 4 + 2] = sr[(y * width + x) * 3 + 0];
+					wr[(y * width + x) * 4 + 3] = 255;
+				}
+			}
+		} else if (image->bits_per_pixel == 32 && image->red_mask == 0xff0000 && image->green_mask == 0x00ff00 && image->blue_mask == 0x0000ff) {
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
+					wr[(y * width + x) * 4 + 0] = sr[(y * width + x) * 4 + 2];
+					wr[(y * width + x) * 4 + 1] = sr[(y * width + x) * 4 + 1];
+					wr[(y * width + x) * 4 + 2] = sr[(y * width + x) * 4 + 0];
+					wr[(y * width + x) * 4 + 3] = 255;
+				}
+			}
+		} else {
+			XFree(image);
+			ERR_FAIL_V_MSG(Ref<Image>(), vformat("XImage with RGB mask %x %x %x and depth %d is not supported.", image->red_mask, image->green_mask, image->blue_mask, image->bits_per_pixel));
+		}
+		img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
+		XFree(image);
+	}
+
+	return img;
+}
+
 float DisplayServerX11::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
