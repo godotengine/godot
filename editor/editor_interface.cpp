@@ -42,6 +42,7 @@
 #include "main/main.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
+#include "scene/main/window.h"
 
 EditorInterface *EditorInterface::singleton = nullptr;
 
@@ -221,6 +222,22 @@ float EditorInterface::get_editor_scale() const {
 	return EDSCALE;
 }
 
+void EditorInterface::popup_dialog(Window *p_dialog, const Rect2i &p_screen_rect) {
+	p_dialog->popup_exclusive(EditorNode::get_singleton(), p_screen_rect);
+}
+
+void EditorInterface::popup_dialog_centered(Window *p_dialog, const Size2i &p_minsize) {
+	p_dialog->popup_exclusive_centered(EditorNode::get_singleton(), p_minsize);
+}
+
+void EditorInterface::popup_dialog_centered_ratio(Window *p_dialog, float p_ratio) {
+	p_dialog->popup_exclusive_centered_ratio(EditorNode::get_singleton(), p_ratio);
+}
+
+void EditorInterface::popup_dialog_centered_clamped(Window *p_dialog, const Size2i &p_size, float p_fallback_ratio) {
+	p_dialog->popup_exclusive_centered_clamped(EditorNode::get_singleton(), p_size, p_fallback_ratio);
+}
+
 // Editor docks.
 
 FileSystemDock *EditorInterface::get_file_system_dock() const {
@@ -379,6 +396,11 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_distraction_free_mode_enabled"), &EditorInterface::is_distraction_free_mode_enabled);
 
 	ClassDB::bind_method(D_METHOD("get_editor_scale"), &EditorInterface::get_editor_scale);
+
+	ClassDB::bind_method(D_METHOD("popup_dialog", "dialog", "rect"), &EditorInterface::popup_dialog, DEFVAL(Rect2i()));
+	ClassDB::bind_method(D_METHOD("popup_dialog_centered", "dialog", "minsize"), &EditorInterface::popup_dialog_centered, DEFVAL(Size2i()));
+	ClassDB::bind_method(D_METHOD("popup_dialog_centered_ratio", "dialog", "ratio"), &EditorInterface::popup_dialog_centered_ratio, DEFVAL(0.8));
+	ClassDB::bind_method(D_METHOD("popup_dialog_centered_clamped", "dialog", "minsize", "fallback_ratio"), &EditorInterface::popup_dialog_centered_clamped, DEFVAL(Size2i()), DEFVAL(0.75));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distraction_free_mode"), "set_distraction_free_mode", "is_distraction_free_mode_enabled");
 

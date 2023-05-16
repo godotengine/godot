@@ -160,51 +160,6 @@ static const String META_TEXT_TO_COPY = "text_to_copy";
 
 static const String EDITOR_NODE_CONFIG_SECTION = "EditorNode";
 
-class AcceptDialogAutoReparent : public AcceptDialog {
-	GDCLASS(AcceptDialogAutoReparent, AcceptDialog);
-
-protected:
-	void _notification(int p_what) {
-		if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-			if (!is_visible()) {
-				Node *p = get_parent();
-				if (p) {
-					p->remove_child(this);
-				}
-			}
-		}
-	}
-
-public:
-	void attach_and_popup_centered() {
-		EditorNode *ed = EditorNode::get_singleton();
-		if (ed && !is_inside_tree()) {
-			Window *w = ed->get_window();
-			while (w && w->get_exclusive_child()) {
-				w = w->get_exclusive_child();
-			}
-			if (w && w != this) {
-				w->add_child(this);
-				popup_centered();
-			}
-		}
-	}
-
-	void attach_and_popup_centered_ratio(float p_ratio = 0.8) {
-		EditorNode *ed = EditorNode::get_singleton();
-		if (ed && !is_inside_tree()) {
-			Window *w = ed->get_window();
-			while (w && w->get_exclusive_child()) {
-				w = w->get_exclusive_child();
-			}
-			if (w && w != this) {
-				w->add_child(this);
-				popup_centered_ratio(p_ratio);
-			}
-		}
-	}
-};
-
 void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vector<String> &r_filenames) {
 	ERR_FAIL_COND_MSG(p_full_paths.size() != r_filenames.size(), vformat("disambiguate_filenames requires two string vectors of same length (%d != %d).", p_full_paths.size(), r_filenames.size()));
 
@@ -4118,7 +4073,7 @@ void EditorNode::add_io_error(const String &p_error) {
 	DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
 	singleton->load_errors->add_image(singleton->gui_base->get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
 	singleton->load_errors->add_text(p_error + "\n");
-	singleton->load_error_dialog->attach_and_popup_centered_ratio(0.5);
+	EditorInterface::get_singleton()->popup_dialog_centered_ratio(singleton->load_error_dialog, 0.5);
 }
 
 bool EditorNode::_find_scene_in_use(Node *p_node, const String &p_path) const {
@@ -4459,7 +4414,7 @@ void EditorNode::show_accept(const String &p_text, const String &p_title) {
 	if (accept) {
 		accept->set_ok_button_text(p_title);
 		accept->set_text(p_text);
-		accept->attach_and_popup_centered();
+		EditorInterface::get_singleton()->popup_dialog_centered(accept);
 	}
 }
 
@@ -4468,7 +4423,7 @@ void EditorNode::show_save_accept(const String &p_text, const String &p_title) {
 	if (save_accept) {
 		save_accept->set_ok_button_text(p_title);
 		save_accept->set_text(p_text);
-		save_accept->attach_and_popup_centered();
+		EditorInterface::get_singleton()->popup_dialog_centered(save_accept);
 	}
 }
 
@@ -4476,7 +4431,7 @@ void EditorNode::show_warning(const String &p_text, const String &p_title) {
 	if (warning) {
 		warning->set_text(p_text);
 		warning->set_title(p_title);
-		warning->attach_and_popup_centered();
+		EditorInterface::get_singleton()->popup_dialog_centered(warning);
 	} else {
 		WARN_PRINT(p_title + " " + p_text);
 	}
@@ -6574,7 +6529,7 @@ int EditorNode::execute_and_show_output(const String &p_title, const String &p_p
 		execute_output_dialog->get_ok_button()->set_disabled(true);
 		execute_outputs->clear();
 		execute_outputs->set_scroll_follow(true);
-		execute_output_dialog->attach_and_popup_centered_ratio();
+		EditorInterface::get_singleton()->popup_dialog_centered_ratio(execute_output_dialog);
 	}
 
 	ExecuteThreadArgs eta;
@@ -7188,10 +7143,11 @@ EditorNode::EditorNode() {
 	prev_scene->set_position(Point2(3, 24));
 	prev_scene->hide();
 
-	accept = memnew(AcceptDialogAutoReparent);
-	accept->connect("confirmed", callable_mp(this, &EditorNode::_menu_confirm_current));
+	accept = memnew(AcceptDialog);
+	accept->set_unparent_when_invisible(true);
 
-	save_accept = memnew(AcceptDialogAutoReparent);
+	save_accept = memnew(AcceptDialog);
+	save_accept->set_unparent_when_invisible(true);
 	save_accept->connect("confirmed", callable_mp(this, &EditorNode::_menu_option).bind((int)MenuOptions::FILE_SAVE_AS_SCENE));
 
 	project_export = memnew(ProjectExportDialog);
@@ -7236,7 +7192,8 @@ EditorNode::EditorNode() {
 	gui_base->add_child(fbx_importer_manager);
 #endif
 
-	warning = memnew(AcceptDialogAutoReparent);
+	warning = memnew(AcceptDialog);
+	warning->set_unparent_when_invisible(true);
 	warning->add_button(TTR("Copy Text"), true, "copy");
 	warning->connect("custom_action", callable_mp(this, &EditorNode::_copy_warning));
 
@@ -7909,14 +7866,16 @@ EditorNode::EditorNode() {
 	set_process_shortcut_input(true);
 
 	load_errors = memnew(RichTextLabel);
-	load_error_dialog = memnew(AcceptDialogAutoReparent);
+	load_error_dialog = memnew(AcceptDialog);
+	load_error_dialog->set_unparent_when_invisible(true);
 	load_error_dialog->add_child(load_errors);
 	load_error_dialog->set_title(TTR("Load Errors"));
 
 	execute_outputs = memnew(RichTextLabel);
 	execute_outputs->set_selection_enabled(true);
 	execute_outputs->set_context_menu_enabled(true);
-	execute_output_dialog = memnew(AcceptDialogAutoReparent);
+	execute_output_dialog = memnew(AcceptDialog);
+	execute_output_dialog->set_unparent_when_invisible(true);
 	execute_output_dialog->add_child(execute_outputs);
 	execute_output_dialog->set_title("");
 
