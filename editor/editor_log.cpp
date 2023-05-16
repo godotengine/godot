@@ -43,9 +43,6 @@
 
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
 	EditorLog *self = static_cast<EditorLog *>(p_self);
-	if (self->current != Thread::get_caller_id()) {
-		return;
-	}
 
 	String err_str;
 	if (p_errorexp && p_errorexp[0]) {
@@ -58,10 +55,12 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 		err_str += " (User)";
 	}
 
-	if (p_type == ERR_HANDLER_WARNING) {
-		self->add_message(err_str, MSG_TYPE_WARNING);
+	MessageType message_type = p_type == ERR_HANDLER_WARNING ? MSG_TYPE_WARNING : MSG_TYPE_ERROR;
+
+	if (self->current != Thread::get_caller_id()) {
+		callable_mp(self, &EditorLog::add_message).bind(err_str, message_type).call_deferred();
 	} else {
-		self->add_message(err_str, MSG_TYPE_ERROR);
+		self->add_message(err_str, message_type);
 	}
 }
 
