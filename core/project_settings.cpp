@@ -330,6 +330,22 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
 			}
 		}
 	}
+	if (p_from_version <= 4) {
+		// Converts actions' JoypadMotion event's axis value to an axis range enum.
+		// This is required to separate the values form the event signature.
+		for (Map<StringName, ProjectSettings::VariantContainer>::Element *E = props.front(); E; E = E->next()) {
+			if (String(E->key()).begins_with("input/")) {
+				Array events = ((Dictionary)(E->get().variant))["events"];
+				for (int i = 0; i < events.size(); i++) {
+					Ref<InputEventJoypadMotion> jm = events[i];
+					if (jm.is_valid() && jm->get_axis_value() != 0) {
+						jm->set_axis_range((JoyAxisRange)jm->get_axis_value());
+						jm->set_axis_value(0);
+					}
+				}
+			}
+		}
+	}
 }
 
 /*

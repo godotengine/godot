@@ -44,8 +44,10 @@
 			<return type="bool" />
 			<argument index="0" name="action" type="String" />
 			<argument index="1" name="event" type="InputEvent" />
+			<argument index="2" name="exact_match" type="bool" default="true" />
 			<description>
 				Returns [code]true[/code] if the action has the given [InputEvent] associated with it.
+				If [code]exact_match[/code] is [code]false[/code], it ignores the input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 			</description>
 		</method>
 		<method name="action_set_deadzone">
