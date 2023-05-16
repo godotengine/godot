@@ -1184,6 +1184,10 @@ void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
 		RenderingServer::get_singleton()->viewport_remove_canvas(viewport, current_canvas);
 	}
 
+	if (world_2d.is_valid()) {
+		world_2d->remove_viewport(this);
+	}
+
 	if (p_world_2d.is_valid()) {
 		bool do_propagate = world_2d.is_valid() && is_inside_tree();
 		world_2d = p_world_2d;
@@ -1195,6 +1199,7 @@ void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
 		world_2d = Ref<World2D>(memnew(World2D));
 	}
 
+	world_2d->register_viewport(this);
 	_update_audio_listener_2d();
 
 	if (is_inside_tree()) {
@@ -4387,6 +4392,7 @@ void Viewport::_validate_property(PropertyInfo &p_property) const {
 
 Viewport::Viewport() {
 	world_2d = Ref<World2D>(memnew(World2D));
+	world_2d->register_viewport(this);
 
 	viewport = RenderingServer::get_singleton()->viewport_create();
 	texture_rid = RenderingServer::get_singleton()->viewport_get_texture(viewport);
