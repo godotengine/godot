@@ -178,7 +178,7 @@ __declspec(dllexport) int widechar_main(int argc, wchar_t **argv) {
 		List<String> args = os.get_cmdline_args();
 		if (args.find("--test-external") != nullptr) {
 			#ifdef CATCH_TESTS
-			run_catch_tests(argc, argv);
+			run_catch_tests(argc, &argv_utf8[0]);
 			#else
 			printf("Option --test_external is invalid because this program was built without Catch2.");
 			#endif
