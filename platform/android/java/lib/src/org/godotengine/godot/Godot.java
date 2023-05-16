@@ -274,7 +274,9 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		// ...add to FrameLayout
 		containerLayout.addView(editText);
 
-		if (!GodotLib.setup(command_line)) {
+		tts = new GodotTTS(activity);
+
+		if (!GodotLib.setup(command_line, tts)) {
 			Log.e(TAG, "Unable to setup the Godot engine! Aborting...");
 			alert(R.string.error_engine_setup_message, R.string.text_error_title, this::forceQuit);
 			return false;
@@ -574,7 +576,6 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		final Activity activity = getActivity();
 		io = new GodotIO(activity);
 		netUtils = new GodotNetUtils(activity);
-		tts = new GodotTTS(activity);
 		Context context = getContext();
 		directoryAccessHandler = new DirectoryAccessHandler(context);
 		FileAccessHandler fileAccessHandler = new FileAccessHandler(context);
@@ -591,8 +592,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 				netUtils,
 				directoryAccessHandler,
 				fileAccessHandler,
-				use_apk_expansion,
-				tts);
+				use_apk_expansion);
 
 		result_callback = null;
 	}
