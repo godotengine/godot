@@ -112,12 +112,24 @@ void Node2D::_edit_set_rect(const Rect2 &p_edit_rect) {
 }
 #endif
 
-void Node2D::_update_xform_values() {
+void Node2D::_set_xform_dirty(bool p_dirty) const {
+	if (is_group_processing()) {
+		if (p_dirty) {
+			xform_dirty.mt.set();
+		} else {
+			xform_dirty.mt.clear();
+		}
+	} else {
+		xform_dirty.st = p_dirty;
+	}
+}
+
+void Node2D::_update_xform_values() const {
 	rotation = transform.get_rotation();
 	skew = transform.get_skew();
 	position = transform.columns[2];
 	scale = transform.get_scale();
-	xform_dirty.clear();
+	_set_xform_dirty(false);
 }
 
 void Node2D::_update_transform() {
@@ -144,8 +156,8 @@ void Node2D::reparent(Node *p_parent, bool p_keep_global_transform) {
 
 void Node2D::set_position(const Point2 &p_pos) {
 	ERR_THREAD_GUARD;
-	if (xform_dirty.is_set()) {
-		const_cast<Node2D *>(this)->_update_xform_values();
+	if (_is_xform_dirty()) {
+		_update_xform_values();
 	}
 	position = p_pos;
 	_update_transform();
@@ -153,8 +165,8 @@ void Node2D::set_position(const Point2 &p_pos) {
 
 void Node2D::set_rotation(real_t p_radians) {
 	ERR_THREAD_GUARD;
-	if (xform_dirty.is_set()) {
-		const_cast<Node2D *>(this)->_update_xform_values();
+	if (_is_xform_dirty()) {
+		_update_xform_values();
 	}
 	rotation = p_radians;
 	_update_transform();
@@ -167,8 +179,8 @@ void Node2D::set_rotation_degrees(real_t p_degrees) {
 
 void Node2D::set_skew(real_t p_radians) {
 	ERR_THREAD_GUARD;
-	if (xform_dirty.is_set()) {
-		const_cast<Node2D *>(this)->_update_xform_values();
+	if (_is_xform_dirty()) {
+		_update_xform_values();
 	}
 	skew = p_radians;
 	_update_transform();
@@ -176,8 +188,8 @@ void Node2D::set_skew(real_t p_radians) {
 
 void Node2D::set_scale(const Size2 &p_scale) {
 	ERR_THREAD_GUARD;
-	if (xform_dirty.is_set()) {
-		const_cast<Node2D *>(this)->_update_xform_values();
+	if (_is_xform_dirty()) {
+		_update_xform_values();
 	}
 	scale = p_scale;
 	// Avoid having 0 scale values, can lead to errors in physics and rendering.
@@ -192,8 +204,8 @@ void Node2D::set_scale(const Size2 &p_scale) {
 
 Point2 Node2D::get_position() const {
 	ERR_READ_THREAD_GUARD_V(Point2());
-	if (xform_dirty.is_set()) {
-		const_cast<Node2D *>(this)->_update_xform_values();
+	if (_is_xform_dirty()) {
+		_update_xform_values();
 	}
 
 	return position;
@@ -201,8 +213,8 @@ Point2 Node2D::get_position() const {
 
 real_t Node2D::get_rotation() const {
 	ERR_READ_THREAD_GUARD_V(0);
-	if (xform_dirty.is_set()) {
-		const_cast<Node2D *>(this)->_update_xform_values();
+	if (_is_xform_dirty()) {
+		_update_xform_values();
 	}
 
 	return rotation;
@@ -215,8 +227,8 @@ real_t Node2D::get_rotation_degrees() const {
 
 real_t Node2D::get_skew() const {
 	ERR_READ_THREAD_GUARD_V(0);
-	if (xform_dirty.is_set()) {
-		const_cast<Node2D *>(this)->_update_xform_values();
+	if (_is_xform_dirty()) {
+		_update_xform_values();
 	}
 
 	return skew;
@@ -224,8 +236,8 @@ real_t Node2D::get_skew() const {
 
 Size2 Node2D::get_scale() const {
 	ERR_READ_THREAD_GUARD_V(Size2());
-	if (xform_dirty.is_set()) {
-		const_cast<Node2D *>(this)->_update_xform_values();
+	if (_is_xform_dirty()) {
+		_update_xform_values();
 	}
 
 	return scale;
@@ -362,7 +374,7 @@ void Node2D::set_global_scale(const Size2 &p_scale) {
 void Node2D::set_transform(const Transform2D &p_transform) {
 	ERR_THREAD_GUARD;
 	transform = p_transform;
-	xform_dirty.set();
+	_set_xform_dirty(true);
 
 	RenderingServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), transform);
 

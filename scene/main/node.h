@@ -42,8 +42,24 @@ class SceneState;
 class Tween;
 class PropertyTweener;
 
+SAFE_FLAG_TYPE_PUN_GUARANTEES
+SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint32_t)
+
 class Node : public Object {
 	GDCLASS(Node, Object);
+
+protected:
+	// During group processing, these are thread-safe.
+	// Outside group processing, these avoid the cost of sync by working as plain primitive types.
+	union MTFlag {
+		SafeFlag mt{};
+		bool st;
+	};
+	template <class T>
+	union MTNumeric {
+		SafeNumeric<T> mt{};
+		T st;
+	};
 
 public:
 	enum ProcessMode {
@@ -522,8 +538,8 @@ public:
 	_FORCE_INLINE_ bool is_accessible_from_caller_thread() const {
 		if (current_process_thread_group == nullptr) {
 			// Not thread processing. Only accessible if node is outside the scene tree,
-			// or if accessing from the main thread.
-			return !data.inside_tree || Thread::is_main_thread();
+			// if accessing from the main thread or being loaded.
+			return !data.inside_tree || Thread::is_main_thread() || ResourceLoader::is_within_load();
 		} else {
 			// Thread processing
 			return current_process_thread_group == data.process_thread_group_owner;
@@ -532,11 +548,13 @@ public:
 
 	_FORCE_INLINE_ bool is_readable_from_caller_thread() const {
 		if (current_process_thread_group == nullptr) {
-			return Thread::is_main_thread();
+			return Thread::is_main_thread() || ResourceLoader::is_within_load();
 		} else {
 			return true;
 		}
 	}
+
+	_FORCE_INLINE_ static bool is_group_processing() { return current_process_thread_group; }
 
 	void set_process_thread_messages(BitField<ProcessThreadMessages> p_flags);
 	BitField<ProcessThreadMessages> get_process_thread_messages() const;

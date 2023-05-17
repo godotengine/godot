@@ -148,7 +148,7 @@ void CanvasItem::_redraw_callback() {
 }
 
 void CanvasItem::_invalidate_global_transform() {
-	global_invalid.set();
+	_set_global_invalid(true);
 }
 
 Transform2D CanvasItem::get_global_transform_with_canvas() const {
@@ -171,7 +171,7 @@ Transform2D CanvasItem::get_screen_transform() const {
 Transform2D CanvasItem::get_global_transform() const {
 	ERR_READ_THREAD_GUARD_V(Transform2D());
 
-	if (global_invalid.is_set()) {
+	if (_is_global_invalid()) {
 		// This code can enter multiple times from threads if dirty, this is expected.
 		const CanvasItem *pi = get_parent_item();
 		Transform2D new_global;
@@ -182,10 +182,22 @@ Transform2D CanvasItem::get_global_transform() const {
 		}
 
 		global_transform = new_global;
-		global_invalid.clear();
+		_set_global_invalid(false);
 	}
 
 	return global_transform;
+}
+
+void CanvasItem::_set_global_invalid(bool p_invalid) const {
+	if (is_group_processing()) {
+		if (p_invalid) {
+			global_invalid.mt.set();
+		} else {
+			global_invalid.mt.clear();
+		}
+	} else {
+		global_invalid.st = p_invalid;
+	}
 }
 
 void CanvasItem::_top_level_raise_self() {
@@ -308,7 +320,7 @@ void CanvasItem::_notification(int p_what) {
 				}
 			}
 
-			global_invalid.set();
+			_set_global_invalid(true);
 			_enter_canvas();
 
 			RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, is_visible_in_tree()); // The visibility of the parent may change.
@@ -341,7 +353,7 @@ void CanvasItem::_notification(int p_what) {
 				window->disconnect(SceneStringNames::get_singleton()->visibility_changed, callable_mp(this, &CanvasItem::_window_visibility_changed));
 				window = nullptr;
 			}
-			global_invalid.set();
+			_set_global_invalid(true);
 			parent_visible_in_tree = false;
 
 			if (get_viewport()) {
@@ -869,11 +881,11 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 	 * notification anyway).
 	 */
 
-	if (/*p_node->xform_change.in_list() &&*/ p_node->global_invalid.is_set()) {
+	if (/*p_node->xform_change.in_list() &&*/ p_node->_is_global_invalid()) {
 		return; //nothing to do
 	}
 
-	p_node->global_invalid.set();
+	p_node->_set_global_invalid(true);
 
 	if (p_node->notify_transform && !p_node->xform_change.in_list()) {
 		if (!p_node->block_transform_notify) {
