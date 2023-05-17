@@ -137,6 +137,9 @@ void OptionButton::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
+			if (has_theme_constant(SNAME("icon_max_width"))) {
+				popup->add_theme_constant_override("icon_max_width", get_theme_constant("icon_max_width"));
+			}
 			if (has_theme_icon(SNAME("arrow"))) {
 				if (is_layout_rtl()) {
 					_set_internal_margin(SIDE_LEFT, theme_cache.arrow_icon->get_width());
