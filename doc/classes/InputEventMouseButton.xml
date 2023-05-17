@@ -13,6 +13,9 @@
 		<member name="button_index" type="int" setter="set_button_index" getter="get_button_index" enum="MouseButton" default="0">
 			The mouse button identifier, one of the [enum MouseButton] button or button wheel constants.
 		</member>
+		<member name="canceled" type="bool" setter="set_canceled" getter="is_canceled" default="false">
+			If [code]true[/code], the mouse button event has been canceled.
+		</member>
 		<member name="double_click" type="bool" setter="set_double_click" getter="is_double_click" default="false">
 			If [code]true[/code], the mouse button's state is a double-click.
 		</member>
