@@ -388,11 +388,12 @@ private:
 
 	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_WORD_SMART;
 
-	bool scroll_visible = false;
+	std::atomic<bool> scroll_visible;
 	bool scroll_follow = false;
 	bool scroll_following = false;
 	bool scroll_active = true;
-	int scroll_w = 0;
+	std::atomic<int> scroll_w;
+	std::atomic<float> scroll_max;
 	bool scroll_updated = false;
 	bool updating_scroll = false;
 	int current_idx = 1;
@@ -416,10 +417,12 @@ private:
 	void _invalidate_current_line(ItemFrame *p_frame);
 
 	void _thread_function(void *p_userdata);
-	void _thread_end();
+	void _thread_end(bool p_success);
+	void _toggle_scroll();
+	void _update_scroll();
 	void _stop_thread();
 	bool _validate_line_caches();
-	void _process_line_caches();
+	bool _process_line_caches();
 
 	void _add_item(Item *p_item, bool p_enter = false, bool p_ensure_newline = false);
 	void _remove_item(Item *p_item, const int p_line, const int p_subitem_line);
@@ -574,6 +577,12 @@ private:
 
 		float base_scale = 1.0;
 	} theme_cache;
+
+	struct UpdateCache {
+		Rect2 text_rect;
+		int ctrl_height = 0;
+		float scroll_w = 0;
+	} cache;
 
 public:
 	String get_parsed_text() const;

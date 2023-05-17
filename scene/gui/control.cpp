@@ -2961,7 +2961,7 @@ void Control::end_bulk_theme_override() {
 // Internationalization.
 
 TypedArray<Vector3i> Control::structured_text_parser(TextServer::StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
-	ERR_READ_THREAD_GUARD_V(TypedArray<Vector3i>());
+	//ERR_READ_THREAD_GUARD_V(TypedArray<Vector3i>());
 	if (p_parser_type == TextServer::STRUCTURED_TEXT_CUSTOM) {
 		TypedArray<Vector3i> ret;
 		GDVIRTUAL_CALL(_structured_text_parser, p_args, p_text, ret);
