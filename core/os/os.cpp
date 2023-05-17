@@ -151,6 +151,14 @@ int OS::get_low_processor_usage_mode_sleep_usec() const {
 	return low_processor_usage_mode_sleep_usec;
 }
 
+void OS::set_delta_smoothing(bool p_enabled) {
+	_delta_smoothing_enabled = p_enabled;
+}
+
+bool OS::is_delta_smoothing_enabled() const {
+	return _delta_smoothing_enabled;
+}
+
 String OS::get_executable_path() const {
 	return _execpath;
 }

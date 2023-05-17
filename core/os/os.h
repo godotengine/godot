@@ -52,6 +52,7 @@ class OS {
 	bool _keep_screen_on = true; // set default value to true, because this had been true before godot 2.0.
 	bool low_processor_usage_mode = false;
 	int low_processor_usage_mode_sleep_usec = 10000;
+	bool _delta_smoothing_enabled = false;
 	bool _verbose_stdout = false;
 	bool _debug_stdout = false;
 	String _local_clipboard;
@@ -153,6 +154,9 @@ public:
 	virtual bool is_in_low_processor_usage_mode() const;
 	virtual void set_low_processor_usage_mode_sleep_usec(int p_usec);
 	virtual int get_low_processor_usage_mode_sleep_usec() const;
+
+	void set_delta_smoothing(bool p_enabled);
+	bool is_delta_smoothing_enabled() const;
 
 	virtual Vector<String> get_system_fonts() const { return Vector<String>(); };
 	virtual String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const { return String(); };
