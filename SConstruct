@@ -55,6 +55,7 @@ _helper_module("modules.modules_builders", "modules/modules_builders.py")
 import methods
 import glsl_builders
 import gles3_builders
+import scu_builders
 from platform_methods import architectures, architecture_aliases
 
 if ARGUMENTS.get("target", "editor") == "editor":
@@ -223,6 +224,7 @@ opts.Add(
     "",
 )
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
+opts.Add(EnumVariable("scu_build", "Use single compilation unit build", "none", ("none", "dev", "all")))
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_certs", "Use the built-in SSL certificates bundles", True))
@@ -428,13 +430,19 @@ if env_base.debug_features:
     # to give *users* extra debugging information for their game development.
     env_base.Append(CPPDEFINES=["DEBUG_ENABLED"])
 
+
 if env_base.dev_build:
     # DEV_ENABLED enables *engine developer* code which should only be compiled for those
     # working on the engine itself.
     env_base.Append(CPPDEFINES=["DEV_ENABLED"])
+    env_base["use_scu"] = env_base["scu_build"] in ("dev", "all")
 else:
     # Disable assert() for production targets (only used in thirdparty code).
     env_base.Append(CPPDEFINES=["NDEBUG"])
+
+    # SCU builds currently use a lot of compiler memory
+    # in release builds, so disallow outside of DEV builds unless "all" is set.
+    env_base["use_scu"] = env_base["scu_build"] == "all"
 
 # SCons speed optimization controlled by the `fast_unsafe` option, which provide
 # more than 10 s speed up for incremental rebuilds.
@@ -549,6 +557,10 @@ if selected_platform in platform_list:
         env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", False)
         # LTO "auto" means we handle the preferred option in each platform detect.py.
         env["lto"] = ARGUMENTS.get("lto", "auto")
+
+    # Run SCU file generation script if in a SCU build.
+    if env["use_scu"]:
+        methods.set_scu_folders(scu_builders.generate_scu_files(env["verbose"], env_base.dev_build == False))
 
     # Must happen after the flags' definition, as configure is when most flags
     # are actually handled to change compile options, etc.

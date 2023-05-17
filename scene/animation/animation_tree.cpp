@@ -941,7 +941,7 @@ void AnimationTree::_clear_playing_caches() {
 	playing_caches.clear();
 }
 
-static void _call_object(Object *p_object, const StringName &p_method, const Vector<Variant> &p_params, bool p_deferred) {
+void AnimationTree::_call_object(Object *p_object, const StringName &p_method, const Vector<Variant> &p_params, bool p_deferred) {
 	// Separate function to use alloca() more efficiently
 	const Variant **argptrs = (const Variant **)alloca(sizeof(const Variant **) * p_params.size());
 	const Variant *args = p_params.ptr();

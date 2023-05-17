@@ -31,9 +31,14 @@
 #ifndef EDITOR_SCALE_H
 #define EDITOR_SCALE_H
 
-void editor_set_scale(float p_scale);
-float editor_get_scale();
+class EditorScale {
+	static float _scale;
 
-#define EDSCALE (editor_get_scale())
+public:
+	static void set_scale(float p_scale);
+	static float get_scale();
+};
+
+#define EDSCALE (EditorScale::get_scale())
 
 #endif // EDITOR_SCALE_H
