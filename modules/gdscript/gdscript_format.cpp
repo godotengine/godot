@@ -1678,8 +1678,23 @@ String GDScriptFormat::parse_binary_operator(const GDP::BinaryOpNode *p_node, co
 	StringBuilder output;
 
 	bool break_string = false;
+	bool split = false;
 	StringBuilder left_operand, right_operand;
+
+	// Check if the binary operands have comments (if we need to split the expression)
+	// In the binary tree, only the rightmost node can have a comment to not split
 	if (children_have_comments(p_node)) {
+		const GDP::BinaryOpNode *right_node = p_node;
+		while (right_node) {
+			if (node_has_comments(right_node->left_operand) || children_have_comments(right_node->left_operand)) {
+				split = true;
+				break;
+			}
+			right_node = dynamic_cast<const GDP::BinaryOpNode *>(right_node->right_operand);
+		}
+	}
+
+	if (split) {
 		break_string = true;
 
 		if (p_node->left_operand->type == GDP::Node::Type::BINARY_OPERATOR) {
@@ -1708,23 +1723,28 @@ String GDScriptFormat::parse_binary_operator(const GDP::BinaryOpNode *p_node, co
 		right_operand += parse_binary_operator_element(p_node->right_operand, p_indent_level);
 		if (p_break_type != NONE && get_length_without_comments(left_operand) + get_length_without_comments(right_operand) + get_length_without_comments(operator_string) + 1 > line_length_maximum) {
 			break_string = true;
+			left_operand = StringBuilder();
+			right_operand = StringBuilder();
 
 			if (p_node->left_operand->type == GDP::Node::Type::BINARY_OPERATOR) {
-				left_operand = StringBuilder();
 				left_operand += parse_expression(p_node->left_operand, p_indent_level + (p_indent_level == 0 ? indent_in_multiline_block : 0), FORCE_SPLIT);
 			} else {
-				left_operand = StringBuilder();
 				left_operand += parse_binary_operator_element(p_node->left_operand, p_indent_level, WRAP);
 			}
 			if (p_node->right_operand->type == GDP::Node::Type::BINARY_OPERATOR) {
-				right_operand = StringBuilder();
 				right_operand += parse_expression(p_node->right_operand, p_indent_level + (p_indent_level == 0 ? indent_in_multiline_block : 0), FORCE_SPLIT);
 			} else {
-				right_operand = StringBuilder();
 				right_operand += parse_binary_operator_element(p_node->right_operand, p_indent_level, WRAP);
 			}
-		} else if (p_break_type == FORCE_SPLIT) {
-			break_string = true;
+		} else {
+			String right_operand_string = right_operand.as_string();
+			right_operand = StringBuilder();
+			right_operand += right_operand_string;
+			right_operand += print_comment(p_node->right_operand, false);
+
+			if (p_break_type == FORCE_SPLIT) {
+				break_string = true;
+			}
 		}
 	}
 

@@ -4165,6 +4165,15 @@ func my_func(optional_param := ""):
 )");
 		CHECK_FORMAT(code, pre_formatted);
 	}
+
+	TEST_CASE("Comments after a bitshift should not create a multiline expression") {
+		const String code = GDSCRIPT(R"(
+var _MAX_FILE_SIZE = 1 << 20 # 1 MiB
+)");
+		const String pre_formatted = code;
+
+		CHECK_FORMAT(code, pre_formatted);
+	}
 } // TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Misc]")
 
 } //namespace GDScriptTests
