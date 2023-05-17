@@ -97,26 +97,15 @@ public:
 		return reference != p_r.reference;
 	}
 
-	_FORCE_INLINE_ T *operator->() {
+	_FORCE_INLINE_ T *operator*() const {
 		return reference;
 	}
 
-	_FORCE_INLINE_ T *operator*() {
+	_FORCE_INLINE_ T *operator->() const {
 		return reference;
 	}
 
-	_FORCE_INLINE_ const T *operator->() const {
-		return reference;
-	}
-
-	_FORCE_INLINE_ const T *ptr() const {
-		return reference;
-	}
-	_FORCE_INLINE_ T *ptr() {
-		return reference;
-	}
-
-	_FORCE_INLINE_ const T *operator*() const {
+	_FORCE_INLINE_ T *ptr() const {
 		return reference;
 	}
 
