@@ -35,7 +35,6 @@
 #include "scene/2d/navigation_obstacle_2d.h"
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"
-#include "servers/navigation_server_3d.h"
 
 void NavigationRegion2D::set_enabled(bool p_enabled) {
 	if (enabled == p_enabled) {
@@ -50,14 +49,12 @@ void NavigationRegion2D::set_enabled(bool p_enabled) {
 
 	if (!enabled) {
 		NavigationServer2D::get_singleton()->region_set_map(region, RID());
-		NavigationServer2D::get_singleton()->disconnect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 	} else {
 		NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
-		NavigationServer2D::get_singleton()->connect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 	}
 
 #ifdef DEBUG_ENABLED
-	if (Engine::get_singleton()->is_editor_hint() || NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
+	if (Engine::get_singleton()->is_editor_hint() || NavigationServer2D::get_singleton()->get_debug_navigation_enabled()) {
 		queue_redraw();
 	}
 #endif // DEBUG_ENABLED
@@ -166,7 +163,6 @@ void NavigationRegion2D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (enabled) {
 				NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
-				NavigationServer2D::get_singleton()->connect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 				for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
 					if (constrain_avoidance_obstacles[i].is_valid()) {
 						NavigationServer2D::get_singleton()->obstacle_set_map(constrain_avoidance_obstacles[i], get_world_2d()->get_navigation_map());
@@ -184,9 +180,6 @@ void NavigationRegion2D::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			NavigationServer2D::get_singleton()->region_set_map(region, RID());
-			if (enabled) {
-				NavigationServer2D::get_singleton()->disconnect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
-			}
 			for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
 				if (constrain_avoidance_obstacles[i].is_valid()) {
 					NavigationServer2D::get_singleton()->obstacle_set_map(constrain_avoidance_obstacles[i], RID());
@@ -215,78 +208,8 @@ void NavigationRegion2D::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 #ifdef DEBUG_ENABLED
 			if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || NavigationServer2D::get_singleton()->get_debug_enabled()) && navigation_polygon.is_valid()) {
-				Vector<Vector2> navigation_polygon_vertices = navigation_polygon->get_vertices();
-				if (navigation_polygon_vertices.size() < 3) {
-					return;
-				}
-
-				const NavigationServer2D *ns2d = NavigationServer2D::get_singleton();
-
-				bool enabled_geometry_face_random_color = ns2d->get_debug_navigation_enable_geometry_face_random_color();
-				bool enabled_edge_lines = ns2d->get_debug_navigation_enable_edge_lines();
-				bool enable_edge_connections = use_edge_connections && ns2d->get_debug_navigation_enable_edge_connections() && ns2d->map_get_use_edge_connections(get_world_2d()->get_navigation_map());
-
-				Color debug_face_color = ns2d->get_debug_navigation_geometry_face_color();
-				Color debug_edge_color = ns2d->get_debug_navigation_geometry_edge_color();
-				Color debug_edge_connection_color = ns2d->get_debug_navigation_edge_connection_color();
-
-				if (!enabled) {
-					debug_face_color = ns2d->get_debug_navigation_geometry_face_disabled_color();
-					debug_edge_color = ns2d->get_debug_navigation_geometry_edge_disabled_color();
-				}
-
-				RandomPCG rand;
-
-				for (int i = 0; i < navigation_polygon->get_polygon_count(); i++) {
-					// An array of vertices for this polygon.
-					Vector<int> polygon = navigation_polygon->get_polygon(i);
-					Vector<Vector2> debug_polygon_vertices;
-					debug_polygon_vertices.resize(polygon.size());
-					for (int j = 0; j < polygon.size(); j++) {
-						ERR_FAIL_INDEX(polygon[j], navigation_polygon_vertices.size());
-						debug_polygon_vertices.write[j] = navigation_polygon_vertices[polygon[j]];
-					}
-
-					// Generate the polygon color, slightly randomly modified from the settings one.
-					Color random_variation_color = debug_face_color;
-					if (enabled_geometry_face_random_color) {
-						random_variation_color.set_hsv(
-								debug_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1,
-								debug_face_color.get_s(),
-								debug_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
-					}
-					random_variation_color.a = debug_face_color.a;
-
-					Vector<Color> debug_face_colors;
-					debug_face_colors.push_back(random_variation_color);
-					RS::get_singleton()->canvas_item_add_polygon(get_canvas_item(), debug_polygon_vertices, debug_face_colors);
-
-					if (enabled_edge_lines) {
-						Vector<Color> debug_edge_colors;
-						debug_edge_colors.push_back(debug_edge_color);
-						debug_polygon_vertices.push_back(debug_polygon_vertices[0]); // Add first again for closing polyline.
-						RS::get_singleton()->canvas_item_add_polyline(get_canvas_item(), debug_polygon_vertices, debug_edge_colors);
-					}
-				}
-
-				if (enable_edge_connections) {
-					// Draw the region edge connections.
-					Transform2D xform = get_global_transform();
-					real_t radius = ns2d->map_get_edge_connection_margin(get_world_2d()->get_navigation_map()) / 2.0;
-					for (int i = 0; i < ns2d->region_get_connections_count(region); i++) {
-						// Two main points
-						Vector2 a = ns2d->region_get_connection_pathway_start(region, i);
-						a = xform.affine_inverse().xform(a);
-						Vector2 b = ns2d->region_get_connection_pathway_end(region, i);
-						b = xform.affine_inverse().xform(b);
-						draw_line(a, b, debug_edge_connection_color);
-
-						// Draw a circle to illustrate the margins.
-						real_t angle = a.angle_to_point(b);
-						draw_arc(a, radius, angle + Math_PI / 2.0, angle - Math_PI / 2.0 + Math_TAU, 10, debug_edge_connection_color);
-						draw_arc(b, radius, angle - Math_PI / 2.0, angle + Math_PI / 2.0, 10, debug_edge_connection_color);
-					}
-				}
+				_update_debug_mesh();
+				_update_debug_edge_connections_mesh();
 			}
 #endif // DEBUG_ENABLED
 		} break;
@@ -327,13 +250,13 @@ void NavigationRegion2D::_navigation_polygon_changed() {
 	_update_avoidance_constrain();
 }
 
-void NavigationRegion2D::_map_changed(RID p_map) {
 #ifdef DEBUG_ENABLED
+void NavigationRegion2D::_navigation_map_changed(RID p_map) {
 	if (is_inside_tree() && get_world_2d()->get_navigation_map() == p_map) {
 		queue_redraw();
 	}
-#endif // DEBUG_ENABLED
 }
+#endif // DEBUG_ENABLED
 
 PackedStringArray NavigationRegion2D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node2D::get_configuration_warnings();
@@ -419,8 +342,8 @@ NavigationRegion2D::NavigationRegion2D() {
 	NavigationServer2D::get_singleton()->region_set_travel_cost(region, get_travel_cost());
 
 #ifdef DEBUG_ENABLED
-	NavigationServer3D::get_singleton()->connect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
-	NavigationServer3D::get_singleton()->connect("navigation_debug_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
+	NavigationServer2D::get_singleton()->connect(SNAME("map_changed"), callable_mp(this, &NavigationRegion2D::_navigation_map_changed));
+	NavigationServer2D::get_singleton()->connect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationRegion2D::_navigation_map_changed));
 #endif // DEBUG_ENABLED
 }
 
@@ -436,8 +359,8 @@ NavigationRegion2D::~NavigationRegion2D() {
 	constrain_avoidance_obstacles.clear();
 
 #ifdef DEBUG_ENABLED
-	NavigationServer3D::get_singleton()->disconnect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
-	NavigationServer3D::get_singleton()->disconnect("navigation_debug_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
+	NavigationServer2D::get_singleton()->disconnect(SNAME("map_changed"), callable_mp(this, &NavigationRegion2D::_navigation_map_changed));
+	NavigationServer2D::get_singleton()->disconnect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationRegion2D::_navigation_map_changed));
 #endif // DEBUG_ENABLED
 }
 
@@ -548,3 +471,86 @@ bool NavigationRegion2D::get_avoidance_layer_value(int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Avoidance layer number must be between 1 and 32 inclusive.");
 	return get_avoidance_layers() & (1 << (p_layer_number - 1));
 }
+
+#ifdef DEBUG_ENABLED
+void NavigationRegion2D::_update_debug_mesh() {
+	Vector<Vector2> navigation_polygon_vertices = navigation_polygon->get_vertices();
+	if (navigation_polygon_vertices.size() < 3) {
+		return;
+	}
+
+	const NavigationServer2D *ns2d = NavigationServer2D::get_singleton();
+
+	bool enabled_geometry_face_random_color = ns2d->get_debug_navigation_enable_geometry_face_random_color();
+	bool enabled_edge_lines = ns2d->get_debug_navigation_enable_edge_lines();
+
+	Color debug_face_color = ns2d->get_debug_navigation_geometry_face_color();
+	Color debug_edge_color = ns2d->get_debug_navigation_geometry_edge_color();
+
+	if (!enabled) {
+		debug_face_color = ns2d->get_debug_navigation_geometry_face_disabled_color();
+		debug_edge_color = ns2d->get_debug_navigation_geometry_edge_disabled_color();
+	}
+
+	RandomPCG rand;
+
+	for (int i = 0; i < navigation_polygon->get_polygon_count(); i++) {
+		// An array of vertices for this polygon.
+		Vector<int> polygon = navigation_polygon->get_polygon(i);
+		Vector<Vector2> debug_polygon_vertices;
+		debug_polygon_vertices.resize(polygon.size());
+		for (int j = 0; j < polygon.size(); j++) {
+			ERR_FAIL_INDEX(polygon[j], navigation_polygon_vertices.size());
+			debug_polygon_vertices.write[j] = navigation_polygon_vertices[polygon[j]];
+		}
+
+		// Generate the polygon color, slightly randomly modified from the settings one.
+		Color random_variation_color = debug_face_color;
+		if (enabled_geometry_face_random_color) {
+			random_variation_color.set_hsv(
+					debug_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1,
+					debug_face_color.get_s(),
+					debug_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
+		}
+		random_variation_color.a = debug_face_color.a;
+
+		Vector<Color> debug_face_colors;
+		debug_face_colors.push_back(random_variation_color);
+		RS::get_singleton()->canvas_item_add_polygon(get_canvas_item(), debug_polygon_vertices, debug_face_colors);
+
+		if (enabled_edge_lines) {
+			Vector<Color> debug_edge_colors;
+			debug_edge_colors.push_back(debug_edge_color);
+			debug_polygon_vertices.push_back(debug_polygon_vertices[0]); // Add first again for closing polyline.
+			RS::get_singleton()->canvas_item_add_polyline(get_canvas_item(), debug_polygon_vertices, debug_edge_colors);
+		}
+	}
+}
+#endif // DEBUG_ENABLED
+
+#ifdef DEBUG_ENABLED
+void NavigationRegion2D::_update_debug_edge_connections_mesh() {
+	const NavigationServer2D *ns2d = NavigationServer2D::get_singleton();
+	bool enable_edge_connections = use_edge_connections && ns2d->get_debug_navigation_enable_edge_connections() && ns2d->map_get_use_edge_connections(get_world_2d()->get_navigation_map());
+
+	if (enable_edge_connections) {
+		Color debug_edge_connection_color = ns2d->get_debug_navigation_edge_connection_color();
+		// Draw the region edge connections.
+		Transform2D xform = get_global_transform();
+		real_t radius = ns2d->map_get_edge_connection_margin(get_world_2d()->get_navigation_map()) / 2.0;
+		for (int i = 0; i < ns2d->region_get_connections_count(region); i++) {
+			// Two main points
+			Vector2 a = ns2d->region_get_connection_pathway_start(region, i);
+			a = xform.affine_inverse().xform(a);
+			Vector2 b = ns2d->region_get_connection_pathway_end(region, i);
+			b = xform.affine_inverse().xform(b);
+			draw_line(a, b, debug_edge_connection_color);
+
+			// Draw a circle to illustrate the margins.
+			real_t angle = a.angle_to_point(b);
+			draw_arc(a, radius, angle + Math_PI / 2.0, angle - Math_PI / 2.0 + Math_TAU, 10, debug_edge_connection_color);
+			draw_arc(b, radius, angle - Math_PI / 2.0, angle + Math_PI / 2.0, 10, debug_edge_connection_color);
+		}
+	}
+}
+#endif // DEBUG_ENABLED
