@@ -72,8 +72,16 @@ float InputEvent::get_action_raw_strength(const StringName &p_action, bool p_exa
 	return valid ? raw_strength : 0.0f;
 }
 
+bool InputEvent::is_canceled() const {
+	return canceled;
+}
+
 bool InputEvent::is_pressed() const {
-	return false;
+	return pressed && !canceled;
+}
+
+bool InputEvent::is_released() const {
+	return !pressed && !canceled;
 }
 
 bool InputEvent::is_echo() const {
@@ -109,7 +117,9 @@ void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_action_released", "action", "exact_match"), &InputEvent::is_action_released, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_action_strength", "action", "exact_match"), &InputEvent::get_action_strength, DEFVAL(false));
 
+	ClassDB::bind_method(D_METHOD("is_canceled"), &InputEvent::is_canceled);
 	ClassDB::bind_method(D_METHOD("is_pressed"), &InputEvent::is_pressed);
+	ClassDB::bind_method(D_METHOD("is_released"), &InputEvent::is_released);
 	ClassDB::bind_method(D_METHOD("is_echo"), &InputEvent::is_echo);
 
 	ClassDB::bind_method(D_METHOD("as_text"), &InputEvent::as_text);
@@ -225,10 +235,6 @@ InputEventWithModifiers::InputEventWithModifiers() {
 
 void InputEventKey::set_pressed(bool p_pressed) {
 	pressed = p_pressed;
-}
-
-bool InputEventKey::is_pressed() const {
-	return pressed;
 }
 
 void InputEventKey::set_scancode(uint32_t p_scancode) {
@@ -371,7 +377,6 @@ void InputEventKey::_bind_methods() {
 }
 
 InputEventKey::InputEventKey() {
-	pressed = false;
 	scancode = 0;
 	physical_scancode = 0;
 	unicode = 0; ///unicode
@@ -440,8 +445,9 @@ int InputEventMouseButton::get_button_index() const {
 void InputEventMouseButton::set_pressed(bool p_pressed) {
 	pressed = p_pressed;
 }
-bool InputEventMouseButton::is_pressed() const {
-	return pressed;
+
+void InputEventMouseButton::set_canceled(bool p_canceled) {
+	canceled = p_canceled;
 }
 
 void InputEventMouseButton::set_doubleclick(bool p_doubleclick) {
@@ -467,6 +473,7 @@ Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, co
 
 	mb->set_button_mask(get_button_mask());
 	mb->set_pressed(pressed);
+	mb->set_canceled(canceled);
 	mb->set_doubleclick(doubleclick);
 	mb->set_factor(factor);
 	mb->set_button_index(button_index);
@@ -550,7 +557,7 @@ String InputEventMouseButton::as_text() const {
 			button_index_string = itos(get_button_index());
 			break;
 	}
-	return "InputEventMouseButton : button_index=" + button_index_string + ", pressed=" + (pressed ? "true" : "false") + ", position=(" + String(get_position()) + "), button_mask=" + itos(get_button_mask()) + ", doubleclick=" + (doubleclick ? "true" : "false");
+	return "InputEventMouseButton : button_index=" + button_index_string + ", pressed=" + (pressed ? "true" : "false") + ", canceled=" + (canceled ? "true" : "false") + ", position=(" + String(get_position()) + "), button_mask=" + itos(get_button_mask()) + ", doubleclick=" + (doubleclick ? "true" : "false");
 }
 
 void InputEventMouseButton::_bind_methods() {
@@ -561,13 +568,14 @@ void InputEventMouseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_button_index"), &InputEventMouseButton::get_button_index);
 
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventMouseButton::set_pressed);
-	//	ClassDB::bind_method(D_METHOD("is_pressed"), &InputEventMouseButton::is_pressed);
+	ClassDB::bind_method(D_METHOD("set_canceled", "canceled"), &InputEventMouseButton::set_canceled);
 
 	ClassDB::bind_method(D_METHOD("set_doubleclick", "doubleclick"), &InputEventMouseButton::set_doubleclick);
 	ClassDB::bind_method(D_METHOD("is_doubleclick"), &InputEventMouseButton::is_doubleclick);
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "factor"), "set_factor", "get_factor");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_index"), "set_button_index", "get_button_index");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "canceled"), "set_canceled", "is_canceled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "doubleclick"), "set_doubleclick", "is_doubleclick");
 }
@@ -575,7 +583,6 @@ void InputEventMouseButton::_bind_methods() {
 InputEventMouseButton::InputEventMouseButton() {
 	factor = 1;
 	button_index = 0;
-	pressed = false;
 	doubleclick = false;
 }
 
@@ -678,6 +685,10 @@ bool InputEventMouseMotion::accumulate(const Ref<InputEvent> &p_event) {
 		return false;
 	}
 
+	if (is_canceled() != motion->is_canceled()) {
+		return false;
+	}
+
 	if (is_pressed() != motion->is_pressed()) {
 		return false;
 	}
@@ -750,14 +761,11 @@ int InputEventJoypadMotion::get_axis() const {
 
 void InputEventJoypadMotion::set_axis_value(float p_value) {
 	axis_value = p_value;
+	pressed = Math::abs(axis_value) >= 0.5f;
 }
 
 float InputEventJoypadMotion::get_axis_value() const {
 	return axis_value;
-}
-
-bool InputEventJoypadMotion::is_pressed() const {
-	return Math::abs(axis_value) >= 0.5f;
 }
 
 bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool p_exact_match, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const {
@@ -842,9 +850,6 @@ int InputEventJoypadButton::get_button_index() const {
 void InputEventJoypadButton::set_pressed(bool p_pressed) {
 	pressed = p_pressed;
 }
-bool InputEventJoypadButton::is_pressed() const {
-	return pressed;
-}
 
 void InputEventJoypadButton::set_pressure(float p_pressure) {
 	pressure = p_pressure;
@@ -887,7 +892,7 @@ bool InputEventJoypadButton::shortcut_match(const Ref<InputEvent> &p_event, bool
 }
 
 String InputEventJoypadButton::as_text() const {
-	return "InputEventJoypadButton : button_index=" + itos(button_index) + ", pressed=" + (pressed ? "true" : "false") + ", pressure=" + String(Variant(pressure));
+	return "InputEventJoypadButton : button_index=" + itos(button_index) + ", pressed=" + (is_pressed() ? "true" : "false") + ", pressure=" + String(Variant(pressure));
 }
 
 void InputEventJoypadButton::_bind_methods() {
@@ -898,7 +903,6 @@ void InputEventJoypadButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pressure"), &InputEventJoypadButton::get_pressure);
 
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventJoypadButton::set_pressed);
-	//	ClassDB::bind_method(D_METHOD("is_pressed"), &InputEventJoypadButton::is_pressed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_index"), "set_button_index", "get_button_index");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pressure"), "set_pressure", "get_pressure");
@@ -908,7 +912,6 @@ void InputEventJoypadButton::_bind_methods() {
 InputEventJoypadButton::InputEventJoypadButton() {
 	button_index = 0;
 	pressure = 0;
-	pressed = false;
 }
 
 //////////////////////////////////////////////
@@ -930,8 +933,9 @@ Vector2 InputEventScreenTouch::get_position() const {
 void InputEventScreenTouch::set_pressed(bool p_pressed) {
 	pressed = p_pressed;
 }
-bool InputEventScreenTouch::is_pressed() const {
-	return pressed;
+
+void InputEventScreenTouch::set_canceled(bool p_canceled) {
+	canceled = p_canceled;
 }
 
 void InputEventScreenTouch::set_double_tap(bool p_double_tap) {
@@ -948,13 +952,14 @@ Ref<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &p_xform, co
 	st->set_index(index);
 	st->set_position(p_xform.xform(pos + p_local_ofs));
 	st->set_pressed(pressed);
+	st->set_canceled(canceled);
 	st->set_double_tap(double_tap);
 
 	return st;
 }
 
 String InputEventScreenTouch::as_text() const {
-	return "InputEventScreenTouch : index=" + itos(index) + ", pressed=" + (pressed ? "true" : "false") + ", position=(" + String(get_position()) + "), double_tap=" + (double_tap ? "true" : "false");
+	return "InputEventScreenTouch : index=" + itos(index) + ", pressed=" + (pressed ? "true" : "false") + ", canceled=" + (canceled ? "true" : "false") + ", position=(" + String(get_position()) + "), double_tap=" + (double_tap ? "true" : "false");
 }
 
 void InputEventScreenTouch::_bind_methods() {
@@ -965,20 +970,20 @@ void InputEventScreenTouch::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_position"), &InputEventScreenTouch::get_position);
 
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventScreenTouch::set_pressed);
-	//ClassDB::bind_method(D_METHOD("is_pressed"),&InputEventScreenTouch::is_pressed);
+	ClassDB::bind_method(D_METHOD("set_canceled", "canceled"), &InputEventScreenTouch::set_canceled);
 
 	ClassDB::bind_method(D_METHOD("set_double_tap", "double_tap"), &InputEventScreenTouch::set_double_tap);
 	ClassDB::bind_method(D_METHOD("is_double_tap"), &InputEventScreenTouch::is_double_tap);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "index"), "set_index", "get_index");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "canceled"), "set_canceled", "is_canceled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "double_tap"), "set_double_tap", "is_double_tap");
 }
 
 InputEventScreenTouch::InputEventScreenTouch() {
 	index = 0;
-	pressed = false;
 	double_tap = false;
 }
 
@@ -1082,9 +1087,6 @@ StringName InputEventAction::get_action() const {
 void InputEventAction::set_pressed(bool p_pressed) {
 	pressed = p_pressed;
 }
-bool InputEventAction::is_pressed() const {
-	return pressed;
-}
 
 void InputEventAction::set_strength(float p_strength) {
 	strength = CLAMP(p_strength, 0.0f, 1.0f);
@@ -1114,7 +1116,7 @@ bool InputEventAction::action_match(const Ref<InputEvent> &p_event, bool p_exact
 
 	bool match = action == act->action;
 	if (match) {
-		bool pressed = act->pressed;
+		bool pressed = act->is_pressed();
 		if (p_pressed != nullptr) {
 			*p_pressed = pressed;
 		}
@@ -1130,7 +1132,7 @@ bool InputEventAction::action_match(const Ref<InputEvent> &p_event, bool p_exact
 }
 
 String InputEventAction::as_text() const {
-	return "InputEventAction : action=" + action + ", pressed=(" + (pressed ? "true" : "false");
+	return "InputEventAction : action=" + action + ", pressed=(" + (is_pressed() ? "true" : "false");
 }
 
 void InputEventAction::_bind_methods() {
@@ -1138,12 +1140,9 @@ void InputEventAction::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_action"), &InputEventAction::get_action);
 
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventAction::set_pressed);
-	//ClassDB::bind_method(D_METHOD("is_pressed"), &InputEventAction::is_pressed);
 
 	ClassDB::bind_method(D_METHOD("set_strength", "strength"), &InputEventAction::set_strength);
 	ClassDB::bind_method(D_METHOD("get_strength"), &InputEventAction::get_strength);
-
-	//	ClassDB::bind_method(D_METHOD("is_action", "name"), &InputEventAction::is_action);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "action"), "set_action", "get_action");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
@@ -1151,7 +1150,6 @@ void InputEventAction::_bind_methods() {
 }
 
 InputEventAction::InputEventAction() {
-	pressed = false;
 	strength = 1.0f;
 }
 /////////////////////////////

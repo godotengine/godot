@@ -200,6 +200,9 @@ class InputEvent : public Resource {
 	int device;
 
 protected:
+	bool canceled = false;
+	bool pressed = false;
+
 	static void _bind_methods();
 
 public:
@@ -215,8 +218,9 @@ public:
 	float get_action_strength(const StringName &p_action, bool p_exact_match = false) const;
 	float get_action_raw_strength(const StringName &p_action, bool p_exact_match = false) const;
 
-	// To be removed someday, since they do not make sense for all events
-	virtual bool is_pressed() const;
+	bool is_canceled() const;
+	bool is_pressed() const;
+	bool is_released() const;
 	virtual bool is_echo() const;
 	// ...-.
 
@@ -282,8 +286,6 @@ public:
 class InputEventKey : public InputEventWithModifiers {
 	GDCLASS(InputEventKey, InputEventWithModifiers);
 
-	bool pressed; /// otherwise release
-
 	uint32_t scancode; ///< check keyboard.h , KeyCode enum, without modifier masks
 	uint32_t physical_scancode;
 	uint32_t unicode; ///unicode
@@ -295,7 +297,6 @@ protected:
 
 public:
 	void set_pressed(bool p_pressed);
-	virtual bool is_pressed() const;
 
 	void set_scancode(uint32_t p_scancode);
 	uint32_t get_scancode() const;
@@ -351,7 +352,6 @@ class InputEventMouseButton : public InputEventMouse {
 
 	float factor;
 	int button_index;
-	bool pressed; //otherwise released
 	bool doubleclick; //last even less than doubleclick time
 
 protected:
@@ -365,7 +365,7 @@ public:
 	int get_button_index() const;
 
 	void set_pressed(bool p_pressed);
-	virtual bool is_pressed() const;
+	void set_canceled(bool p_canceled);
 
 	void set_doubleclick(bool p_doubleclick);
 	bool is_doubleclick() const;
@@ -431,8 +431,6 @@ public:
 	void set_axis_value(float p_value);
 	float get_axis_value() const;
 
-	virtual bool is_pressed() const;
-
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 
@@ -446,7 +444,6 @@ class InputEventJoypadButton : public InputEvent {
 	GDCLASS(InputEventJoypadButton, InputEvent);
 
 	int button_index;
-	bool pressed;
 	float pressure; //0 to 1
 protected:
 	static void _bind_methods();
@@ -456,7 +453,6 @@ public:
 	int get_button_index() const;
 
 	void set_pressed(bool p_pressed);
-	virtual bool is_pressed() const;
 
 	void set_pressure(float p_pressure);
 	float get_pressure() const;
@@ -474,7 +470,6 @@ class InputEventScreenTouch : public InputEvent {
 	GDCLASS(InputEventScreenTouch, InputEvent);
 	int index;
 	Vector2 pos;
-	bool pressed;
 	bool double_tap;
 
 protected:
@@ -488,7 +483,7 @@ public:
 	Vector2 get_position() const;
 
 	void set_pressed(bool p_pressed);
-	virtual bool is_pressed() const;
+	void set_canceled(bool p_canceled);
 
 	void set_double_tap(bool p_double_tap);
 	bool is_double_tap() const;
@@ -534,7 +529,6 @@ class InputEventAction : public InputEvent {
 	GDCLASS(InputEventAction, InputEvent);
 
 	StringName action;
-	bool pressed;
 	float strength;
 
 protected:
@@ -545,7 +539,6 @@ public:
 	StringName get_action() const;
 
 	void set_pressed(bool p_pressed);
-	virtual bool is_pressed() const;
 
 	void set_strength(float p_strength);
 	float get_strength() const;

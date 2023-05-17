@@ -13,6 +13,9 @@
 	<methods>
 	</methods>
 	<members>
+		<member name="canceled" type="bool" setter="set_canceled" getter="is_canceled" default="false">
+			If [code]true[/code], the touch event has been canceled.
+		</member>
 		<member name="double_tap" type="bool" setter="set_double_tap" getter="is_double_tap" default="false">
 			If [code]true[/code], the touch's state is a double tap.
 		</member>

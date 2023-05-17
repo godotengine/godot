@@ -71,6 +71,12 @@
 				Returns [code]true[/code] if this input event's type is one that can be assigned to an input action.
 			</description>
 		</method>
+		<method name="is_canceled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this input event has been canceled.
+			</description>
+		</method>
 		<method name="is_echo" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -82,6 +88,12 @@
 			<description>
 				Returns [code]true[/code] if this input event is pressed. Not relevant for events of type [InputEventMouseMotion] or [InputEventScreenDrag].
 				[b]Note:[/b] Due to keyboard ghosting, [method is_action_pressed] may return [code]false[/code] even if one of the action's keys is pressed. See [url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input examples[/url] in the documentation for more information.
+			</description>
+		</method>
+		<method name="is_released" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this input event is released. Not relevant for events of type [InputEventMouseMotion] or [InputEventScreenDrag].
 			</description>
 		</method>
 		<method name="shortcut_match" qualifiers="const">
