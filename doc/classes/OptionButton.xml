@@ -88,6 +88,7 @@
 			<description>
 				Returns the [PopupMenu] contained in this button.
 				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member Window.visible] property.
+				[b]Note:[/b] By default, theme constant [theme_item PopupMenu.icon_max_width] for the returned [PopupMenu] is set to the [OptionButton] [theme_item Button.icon_max_width].
 			</description>
 		</method>
 		<method name="get_selectable_item" qualifiers="const">
