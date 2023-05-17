@@ -505,6 +505,7 @@ public:
 	virtual void texture_proxy_initialize(RID p_texture, RID p_base) override; //all slices, then all the mipmaps, must be coherent
 
 	RID texture_create_external(Texture::Type p_type, Image::Format p_format, unsigned int p_image, int p_width, int p_height, int p_depth, int p_layers, RS::TextureLayeredType p_layered_type = RS::TEXTURE_LAYERED_2D_ARRAY);
+	RID texture_create_render_texture(int p_width, int p_height, int p_layers) override;
 
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override;
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override{};
@@ -521,6 +522,7 @@ public:
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) override;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) override;
+	virtual void texture_copy(RID p_source_texture, int p_source_level, int p_source_layer, RID p_dest_texture, int p_dest_level, int p_dest_layer) override;
 
 	virtual void texture_set_path(RID p_texture, const String &p_path) override;
 	virtual String texture_get_path(RID p_texture) const override;
@@ -550,6 +552,7 @@ public:
 	uint32_t texture_get_depth(RID p_texture) const;
 	void texture_bind(RID p_texture, uint32_t p_texture_no);
 	RID texture_create_radiance_cubemap(RID p_source, int p_resolution = -1) const;
+
 
 	/* TEXTURE ATLAS API */
 

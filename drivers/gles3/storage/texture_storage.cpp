@@ -802,6 +802,76 @@ RID TextureStorage::texture_create_external(Texture::Type p_type, Image::Format 
 	return texture_owner.make_rid(texture);
 }
 
+
+RID TextureStorage::texture_create_render_texture(int p_width, int p_height, int p_layers) {
+	ERR_FAIL_COND_V(p_height <= 0, RID());
+	ERR_FAIL_COND_V(p_width <= 0, RID());
+	ERR_FAIL_COND_V(p_layers <= 0, RID());
+
+	Texture texture;
+	texture.active = true;
+	texture.is_external = false;
+	texture.compressed = false;
+
+	texture.width = p_width;
+	texture.height = p_height;
+	texture.layers = p_layers;
+	texture.alloc_width = texture.width;
+	texture.alloc_height = texture.height;
+	texture.mipmaps = 1;
+	texture.real_format = texture.format = Image::FORMAT_RGBA8;
+
+	if(p_layers > 1) {
+		texture.type = Texture::TYPE_LAYERED;
+		texture.target = GL_TEXTURE_2D_ARRAY;
+	} else {
+		texture.type = Texture::TYPE_2D;
+		texture.target = GL_TEXTURE_2D;
+	}
+	texture.gl_format_cache = GL_RGBA;
+	texture.gl_internal_format_cache = GL_RGBA8;
+	texture.gl_type_cache = GL_UNSIGNED_BYTE;
+
+	glDisable(GL_SCISSOR_TEST);
+	glColorMask(1, 1, 1, 1);
+	glDepthMask(GL_FALSE);
+
+	glGenTextures(1, &texture.tex_id);
+	glBindTexture(texture.target, texture.tex_id);
+
+	if (p_layers > 1) {
+		glTexImage3D(
+			texture.target, 
+			0, 
+			texture.gl_internal_format_cache, 
+			texture.alloc_width, 
+			texture.alloc_height, 
+			p_layers, 
+			0, 
+			texture.gl_format_cache, 
+			texture.gl_type_cache, 
+			nullptr);
+	} else {
+		glTexImage2D(
+			texture.target, 
+			0, 
+			texture.gl_internal_format_cache, 
+			texture.alloc_width, 
+			texture.alloc_height, 
+			0, 
+			texture.gl_format_cache, 
+			texture.gl_type_cache, 
+			nullptr);
+	}
+
+	glTexParameteri(texture.target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(texture.target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(texture.target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(texture.target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	return texture_owner.make_rid(texture);
+}
+
 void TextureStorage::texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer) {
 	texture_set_data(p_texture, p_image, p_layer);
 #ifdef TOOLS_ENABLED
@@ -1056,6 +1126,51 @@ void TextureStorage::texture_set_size_override(RID p_texture, int p_width, int p
 	texture->width = p_width;
 	texture->height = p_height;
 }
+
+void TextureStorage::texture_copy(RID p_source_texture, int p_source_level, int p_source_layer, RID p_dest_texture, int p_dest_level, int p_dest_layer) {
+	Texture *source_texture = texture_owner.get_or_null(p_source_texture);
+	Texture *dest_texture = texture_owner.get_or_null(p_dest_texture);
+
+	ERR_FAIL_COND(!source_texture);
+	ERR_FAIL_COND(!dest_texture);
+
+	ERR_FAIL_COND(p_source_level >= source_texture->mipmaps);
+	ERR_FAIL_COND(p_dest_level >= dest_texture->mipmaps);
+
+	ERR_FAIL_COND(p_source_layer >= source_texture->layers);
+	ERR_FAIL_COND(p_dest_layer >= dest_texture->layers);
+
+	GLuint source_framebuffer;
+	glGenFramebuffers(1, &source_framebuffer);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, source_framebuffer);
+	if(source_texture->layers > 1) {
+		glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, source_texture->tex_id, p_source_level, p_source_layer);
+	} else {
+		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, source_texture->tex_id, p_source_level);
+	}
+
+	GLuint dest_framebuffer;
+	glGenFramebuffers(1, &dest_framebuffer);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest_framebuffer);
+	if(dest_texture->layers > 1) {
+		glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, dest_texture->tex_id, p_dest_level, p_dest_layer);
+	} else {
+		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dest_texture->tex_id, p_dest_level);
+	}
+
+	glBlitFramebuffer(
+		0, 0, source_texture->width, source_texture->height, 
+		0, 0, dest_texture->width, dest_texture->height,
+		GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glDeleteFramebuffers(1, &dest_framebuffer);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+	glDeleteFramebuffers(1, &source_framebuffer);
+
+
+}
+
 
 void TextureStorage::texture_set_path(RID p_texture, const String &p_path) {
 	Texture *texture = texture_owner.get_or_null(p_texture);

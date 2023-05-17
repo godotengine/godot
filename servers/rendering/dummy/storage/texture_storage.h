@@ -98,6 +98,12 @@ public:
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override{};
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) override{};
 
+	virtual RID texture_create_render_texture(int p_width, int p_height, int p_layers) override {
+		DummyTexture *texture = memnew(DummyTexture);
+		ERR_FAIL_COND_V(!texture, RID());
+		return texture_owner.make_rid(texture);
+	};
+
 	//these two APIs can be used together or in combination with the others.
 	virtual void texture_2d_placeholder_initialize(RID p_texture) override{};
 	virtual void texture_2d_layered_placeholder_initialize(RID p_texture, RenderingServer::TextureLayeredType p_layered_type) override{};
@@ -113,6 +119,7 @@ public:
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) override { texture_free(p_by_texture); };
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) override{};
+	virtual void texture_copy(RID p_source_texture, int p_source_level, int p_source_layer, RID p_dest_texture, int p_dest_level, int p_dest_layer) override {};
 
 	virtual void texture_set_path(RID p_texture, const String &p_path) override{};
 	virtual String texture_get_path(RID p_texture) const override { return String(); };

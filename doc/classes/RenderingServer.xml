@@ -3281,6 +3281,25 @@
 				[b]Note:[/b] The [param texture] must have the same width, height, depth and format as the current texture data. Otherwise, an error will be printed and the original texture won't be modified. If you need to use different width, height, depth or format, use [method texture_replace] instead.
 			</description>
 		</method>
+		<method name="texture_copy">
+			<return type="void" />
+			<param index="0" name="source_texture" type="RID" />
+			<param index="1" name="source_level" type="int" />
+			<param index="2" name="source_layer" type="int" />
+			<param index="3" name="dest_texture" type="RID" />
+			<param index="4" name="dest_level" type="int" />
+			<param index="5" name="dest_layer" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="texture_create_render_texture">
+			<return type="RID" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<param index="2" name="layers" type="int" default="false" />
+			<description>
+			</description>
+		</method>
 		<method name="texture_get_native_handle" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="texture" type="RID" />

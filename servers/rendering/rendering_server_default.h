@@ -199,6 +199,7 @@ public:
 	FUNC2(texture_replace, RID, RID)
 
 	FUNC3(texture_set_size_override, RID, int, int)
+	FUNC6(texture_copy, RID, int, int, RID, int, int)
 // FIXME: Disabled during Vulkan refactoring, should be ported.
 #if 0
 	FUNC2(texture_bind, RID, uint32_t)
@@ -215,6 +216,7 @@ public:
 	FUNC2(texture_set_force_redraw_if_visible, RID, bool)
 	FUNC2RC(RID, texture_get_rd_texture, RID, bool)
 	FUNC2RC(uint64_t, texture_get_native_handle, RID, bool)
+	FUNC3R(RID, texture_create_render_texture, int, int, int )
 
 	/* SHADER API */
 

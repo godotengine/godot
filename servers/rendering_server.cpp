@@ -1693,6 +1693,7 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("texture_replace", "texture", "by_texture"), &RenderingServer::texture_replace);
 	ClassDB::bind_method(D_METHOD("texture_set_size_override", "texture", "width", "height"), &RenderingServer::texture_set_size_override);
+	ClassDB::bind_method(D_METHOD("texture_copy", "source_texture", "source_level", "source_layer", "dest_texture", "dest_level", "dest_layer"), &RenderingServer::texture_copy);
 
 	ClassDB::bind_method(D_METHOD("texture_set_path", "texture", "path"), &RenderingServer::texture_set_path);
 	ClassDB::bind_method(D_METHOD("texture_get_path", "texture"), &RenderingServer::texture_get_path);
@@ -1700,6 +1701,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_set_force_redraw_if_visible", "texture", "enable"), &RenderingServer::texture_set_force_redraw_if_visible);
 	ClassDB::bind_method(D_METHOD("texture_get_rd_texture", "texture", "srgb"), &RenderingServer::texture_get_rd_texture, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("texture_get_native_handle", "texture", "srgb"), &RenderingServer::texture_get_native_handle, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("texture_create_render_texture", "width", "height", "layers"), &RenderingServer::texture_create_render_texture, DEFVAL(false));
 
 	BIND_ENUM_CONSTANT(TEXTURE_LAYERED_2D_ARRAY);
 	BIND_ENUM_CONSTANT(TEXTURE_LAYERED_CUBEMAP);

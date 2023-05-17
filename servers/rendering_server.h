@@ -123,6 +123,7 @@ public:
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) = 0;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) = 0;
+	virtual void texture_copy(RID p_source_texture, int p_source_level, int p_source_layer, RID p_dest_texture, int p_dest_level, int p_dest_layer) = 0;
 
 	virtual void texture_set_path(RID p_texture, const String &p_path) = 0;
 	virtual String texture_get_path(RID p_texture) const = 0;
@@ -160,7 +161,7 @@ public:
 
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const = 0;
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const = 0;
-
+	virtual RID texture_create_render_texture(int p_width, int p_height, int p_layers) = 0;
 	/* SHADER API */
 
 	enum ShaderMode {

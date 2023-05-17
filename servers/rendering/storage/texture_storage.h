@@ -75,6 +75,8 @@ public:
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) = 0;
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) = 0;
 
+	virtual RID texture_create_render_texture(int p_width, int p_height, int p_layers) = 0;
+
 	//these two APIs can be used together or in combination with the others.
 	virtual void texture_2d_placeholder_initialize(RID p_texture) = 0;
 	virtual void texture_2d_layered_placeholder_initialize(RID p_texture, RenderingServer::TextureLayeredType p_layered_type) = 0;
@@ -86,6 +88,7 @@ public:
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) = 0;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) = 0;
+	virtual void texture_copy(RID p_source_texture, int p_source_level, int p_source_layer, RID p_dest_texture, int p_dest_level, int p_dest_layer) = 0;
 
 	virtual void texture_set_path(RID p_texture, const String &p_path) = 0;
 	virtual String texture_get_path(RID p_texture) const = 0;
