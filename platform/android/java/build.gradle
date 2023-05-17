@@ -9,7 +9,7 @@ buildscript {
     dependencies {
         classpath libraries.androidGradlePlugin
         classpath libraries.kotlinGradlePlugin
-        classpath 'io.github.gradle-nexus:publish-plugin:1.1.0'
+        classpath 'io.github.gradle-nexus:publish-plugin:1.3.0'
     }
 }
 
@@ -36,8 +36,11 @@ allprojects {
 
 ext {
     supportedAbis = ["armv7", "arm64v8", "x86", "x86_64"]
-    supportedTargetsMap = [release: "release", dev: "debug", debug: "release_debug"]
     supportedFlavors = ["editor", "template"]
+    supportedTargetsMapByFlavors = [
+        "editor": [release: "release_debug", dev: "debug", debug: "release_debug"],
+        "template": [release: "release", dev: "debug", debug: "release_debug"]
+    ]
 
     // Used by gradle to specify which architecture to build for by default when running
     // `./gradlew build` (this command is usually used by Android Studio).
@@ -49,6 +52,7 @@ ext {
 
 def rootDir = "../../.."
 def binDir = "$rootDir/bin/"
+def androidEditorBuildsDir = "$binDir/android_editor_builds/"
 
 def getSconsTaskName(String flavor, String buildType, String abi) {
     return "compileGodotNativeLibs" + flavor.capitalize() + buildType.capitalize() + abi.capitalize()
@@ -175,13 +179,7 @@ def templateExcludedBuildTask() {
     if (!isAndroidStudio()) {
         logger.lifecycle("Excluding Android studio build tasks")
         for (String flavor : supportedFlavors) {
-            for (String buildType : supportedTargetsMap.keySet()) {
-                if (buildType == "release" && flavor == "editor") {
-                    // The editor can't be used with target=release as debugging tools are then not
-                    // included, and it would crash on errors instead of reporting them.
-                    continue
-                }
-
+            for (String buildType : supportedTargetsMapByFlavors[flavor].keySet()) {
                 for (String abi : selectedAbis) {
                     excludedTasks += ":lib:" + getSconsTaskName(flavor, buildType, abi)
                 }
@@ -195,7 +193,7 @@ def templateBuildTasks() {
     def tasks = []
 
     // Only build the apks and aar files for which we have native shared libraries.
-    for (String target : supportedTargetsMap.keySet()) {
+    for (String target : supportedTargetsMapByFlavors["template"].keySet()) {
         File targetLibs = new File("lib/libs/" + target)
         if (targetLibs != null
             && targetLibs.isDirectory()
@@ -221,18 +219,46 @@ def isAndroidStudio() {
     return sysProps != null && sysProps['idea.platform.prefix'] != null
 }
 
-task copyEditorDebugBinaryToBin(type: Copy) {
-    dependsOn ':editor:assembleDebug'
-    from('editor/build/outputs/apk/debug')
-    into(binDir)
-    include('android_editor.apk')
+task copyEditorReleaseApkToBin(type: Copy) {
+    dependsOn ':editor:assembleRelease'
+    from('editor/build/outputs/apk/release')
+    into(androidEditorBuildsDir)
+    include('android_editor-release*.apk')
 }
 
-task copyEditorDevBinaryToBin(type: Copy) {
+task copyEditorReleaseAabToBin(type: Copy) {
+    dependsOn ':editor:bundleRelease'
+    from('editor/build/outputs/bundle/release')
+    into(androidEditorBuildsDir)
+    include('android_editor-release*.aab')
+}
+
+task copyEditorDebugApkToBin(type: Copy) {
+    dependsOn ':editor:assembleDebug'
+    from('editor/build/outputs/apk/debug')
+    into(androidEditorBuildsDir)
+    include('android_editor-debug.apk')
+}
+
+task copyEditorDebugAabToBin(type: Copy) {
+    dependsOn ':editor:bundleDebug'
+    from('editor/build/outputs/bundle/debug')
+    into(androidEditorBuildsDir)
+    include('android_editor-debug.aab')
+}
+
+task copyEditorDevApkToBin(type: Copy) {
     dependsOn ':editor:assembleDev'
     from('editor/build/outputs/apk/dev')
-    into(binDir)
-    include('android_editor_dev.apk')
+    into(androidEditorBuildsDir)
+    include('android_editor-dev.apk')
+}
+
+task copyEditorDevAabToBin(type: Copy) {
+    dependsOn ':editor:bundleDev'
+    from('editor/build/outputs/bundle/dev')
+    into(androidEditorBuildsDir)
+    include('android_editor-dev.aab')
 }
 
 /**
@@ -247,18 +273,14 @@ task generateGodotEditor {
 
     def tasks = []
 
-    for (String target : supportedTargetsMap.keySet()) {
-        if (target == "release") {
-            // The editor can't be used with target=release as debugging tools are then not
-            // included, and it would crash on errors instead of reporting them.
-            continue
-        }
+    for (String target : supportedTargetsMapByFlavors["editor"].keySet()) {
         File targetLibs = new File("lib/libs/tools/" + target)
         if (targetLibs != null
             && targetLibs.isDirectory()
             && targetLibs.listFiles() != null
             && targetLibs.listFiles().length > 0) {
-            tasks += "copyEditor${target.capitalize()}BinaryToBin"
+            tasks += "copyEditor${target.capitalize()}ApkToBin"
+            tasks += "copyEditor${target.capitalize()}AabToBin"
         }
     }
 
@@ -306,9 +328,11 @@ task cleanGodotEditor(type: Delete) {
     // Delete the generated binary apks
     delete("editor/build/outputs/apk")
 
-    // Delete the Godot editor apks in the Godot bin directory
-    delete("$binDir/android_editor.apk")
-    delete("$binDir/android_editor_dev.apk")
+    // Delete the generated aab binaries
+    delete("editor/build/outputs/bundle")
+
+    // Delete the Godot editor apks & aabs in the Godot bin directory
+    delete(androidEditorBuildsDir)
 }
 
 /**

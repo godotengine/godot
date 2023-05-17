@@ -80,17 +80,9 @@ android {
         release.jniLibs.srcDirs = ['libs/release']
 
         // Editor jni library
+        editorRelease.jniLibs.srcDirs = ['libs/tools/release']
         editorDebug.jniLibs.srcDirs = ['libs/tools/debug']
         editorDev.jniLibs.srcDirs = ['libs/tools/dev']
-    }
-
-    // Disable 'editorRelease'.
-    // The editor can't be used with target=release as debugging tools are then not
-    // included, and it would crash on errors instead of reporting them.
-    variantFilter { variant ->
-        if (variant.name == "editorRelease") {
-            setIgnore(true)
-        }
     }
 
     libraryVariants.all { variant ->
@@ -102,11 +94,14 @@ android {
         boolean toolsFlag = flavorName == "editor"
 
         def buildType = variant.buildType.name
-        if (buildType == null || buildType == "" || !supportedTargetsMap.containsKey(buildType)) {
+        if (buildType == null || buildType == "" || !supportedTargetsMapByFlavors[flavorName].containsKey(buildType)) {
             throw new GradleException("Invalid build type: $buildType")
         }
 
-        def sconsTarget = supportedTargetsMap[buildType]
+        boolean productionBuild = buildType != "dev"
+        boolean storeRelease = buildType == "release"
+
+        def sconsTarget = supportedTargetsMapByFlavors[flavorName][buildType]
         if (sconsTarget == null || sconsTarget == "") {
             throw new GradleException("Invalid scons target: $sconsTarget")
         }
@@ -126,10 +121,10 @@ android {
         def sconsExts = (org.gradle.internal.os.OperatingSystem.current().isWindows()
             ? [".bat", ".cmd", ".ps1", ".exe"]
             : [""])
-        logger.lifecycle("Looking for $sconsName executable path")
+        logger.debug("Looking for $sconsName executable path")
         for (ext in sconsExts) {
             String sconsNameExt = sconsName + ext
-            logger.lifecycle("Checking $sconsNameExt")
+            logger.debug("Checking $sconsNameExt")
 
             sconsExecutableFile = org.gradle.internal.os.OperatingSystem.current().findInPath(sconsNameExt)
             if (sconsExecutableFile != null) {
@@ -149,7 +144,7 @@ android {
         if (sconsExecutableFile == null) {
             throw new GradleException("Unable to find executable path for the '$sconsName' command.")
         } else {
-            logger.lifecycle("Found executable path for $sconsName: ${sconsExecutableFile.absolutePath}")
+            logger.debug("Found executable path for $sconsName: ${sconsExecutableFile.absolutePath}")
         }
 
         for (String selectedAbi : selectedAbis) {
@@ -161,7 +156,7 @@ android {
             def taskName = getSconsTaskName(flavorName, buildType, selectedAbi)
             tasks.create(name: taskName, type: Exec) {
                 executable sconsExecutableFile.absolutePath
-                args "--directory=${pathToRootDir}", "platform=android", "tools=${toolsFlag}", "target=${sconsTarget}", "android_arch=${selectedAbi}", "-j" + Runtime.runtime.availableProcessors()
+                args "--directory=${pathToRootDir}", "platform=android", "store_release=${storeRelease}", "production=${productionBuild}", "tools=${toolsFlag}", "target=${sconsTarget}", "android_arch=${selectedAbi}", "-j" + Runtime.runtime.availableProcessors()
             }
 
             // Schedule the tasks so the generated libs are present before the aar file is packaged.

@@ -13,22 +13,67 @@ dependencies {
 }
 
 ext {
-    // Build number added as a suffix to the version code, and incremented for each build/upload to
-    // the Google Play store.
-    // This should be reset on each stable release of Godot.
-    editorBuildNumber = 0
+    // Retrieve the build number from the environment variable; default to 0 if none is specified.
+    // The build number is added as a suffix to the version code for upload to the Google Play store.
+    getEditorBuildNumber = { ->
+        int buildNumber = 0
+        String versionStatus = System.getenv("GODOT_VERSION_STATUS")
+        if (versionStatus != null && !versionStatus.isEmpty()) {
+            try {
+                buildNumber = Integer.parseInt(versionStatus.replaceAll("[^0-9]", ""));
+            } catch (NumberFormatException ignored) {
+                buildNumber = 0
+            }
+        }
+
+        return buildNumber
+    }
     // Value by which the Godot version code should be offset by to make room for the build number
     editorBuildNumberOffset = 100
+
+    // Return the keystore file used for signing the release build.
+    getGodotKeystoreFile = { ->
+        def keyStore = System.getenv("GODOT_ANDROID_SIGN_KEYSTORE")
+        if (keyStore == null) {
+            return null
+        }
+        return file(keyStore)
+    }
+
+    // Return the key alias used for signing the release build.
+    getGodotKeyAlias = { ->
+        def kAlias = System.getenv("GODOT_ANDROID_KEYSTORE_ALIAS")
+        return kAlias
+    }
+
+    // Return the password for the key used for signing the release build.
+    getGodotSigningPassword = { ->
+        def signingPassword = System.getenv("GODOT_ANDROID_SIGN_PASSWORD")
+        return signingPassword
+    }
+
+    // Returns true if the environment variables contains the configuration for signing the release
+    // build.
+    hasReleaseSigningConfigs = { ->
+        def keystoreFile = getGodotKeystoreFile()
+        def keyAlias = getGodotKeyAlias()
+        def signingPassword = getGodotSigningPassword()
+
+        return keystoreFile != null && keystoreFile.isFile()
+            && keyAlias != null && !keyAlias.isEmpty()
+            && signingPassword != null && !signingPassword.isEmpty()
+    }
 }
 
 def generateVersionCode() {
     int libraryVersionCode = getGodotLibraryVersionCode()
-    return (libraryVersionCode * editorBuildNumberOffset) + editorBuildNumber
+    return (libraryVersionCode * editorBuildNumberOffset) + getEditorBuildNumber()
 }
 
 def generateVersionName() {
     String libraryVersionName = getGodotLibraryVersionName()
-    return libraryVersionName + ".$editorBuildNumber"
+    int buildNumber = getEditorBuildNumber()
+    return buildNumber == 0 ? libraryVersionName : libraryVersionName + ".$buildNumber"
 }
 
 android {
@@ -45,6 +90,7 @@ android {
         targetSdkVersion versions.targetSdk
 
         missingDimensionStrategy 'products', 'editor'
+        setProperty("archivesBaseName", "android_editor")
     }
 
     compileOptions {
@@ -56,6 +102,15 @@ android {
         jvmTarget = versions.javaVersion
     }
 
+    signingConfigs {
+        release {
+            storeFile getGodotKeystoreFile()
+            storePassword getGodotSigningPassword()
+            keyAlias getGodotKeyAlias()
+            keyPassword getGodotSigningPassword()
+        }
+    }
+
     buildTypes {
         dev {
             initWith debug
@@ -65,14 +120,14 @@ android {
         debug {
             initWith release
 
-            // Need to swap with the release signing config when this is ready for public release.
+            applicationIdSuffix ".debug"
             signingConfig signingConfigs.debug
         }
 
         release {
-            // This buildtype is disabled below.
-            // The editor can't be used with target=release only, as debugging tools are then not
-            // included, and it would crash on errors instead of reporting them.
+            if (hasReleaseSigningConfigs()) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 
@@ -80,22 +135,6 @@ android {
         // 'doNotStrip' is enabled for development within Android Studio
         if (shouldNotStrip()) {
             doNotStrip '**/*.so'
-        }
-    }
-
-    // Disable 'release' buildtype.
-    // The editor can't be used with target=release only, as debugging tools are then not
-    // included, and it would crash on errors instead of reporting them.
-    variantFilter { variant ->
-        if (variant.buildType.name == "release") {
-            setIgnore(true)
-        }
-    }
-
-    applicationVariants.all { variant ->
-        variant.outputs.all { output ->
-            def suffix = variant.name == "dev" ? "_dev" : ""
-            output.outputFileName = "android_editor${suffix}.apk"
         }
     }
 }

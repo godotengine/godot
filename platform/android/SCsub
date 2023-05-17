@@ -54,7 +54,10 @@ if lib_arch_dir != "":
     if env["target"] == "release":
         lib_type_dir = "release"
     elif env["target"] == "release_debug":
-        lib_type_dir = "debug"
+        if env["tools"] and env["store_release"]:
+            lib_type_dir = "release"
+        else:
+            lib_type_dir = "debug"
     else:  # debug
         lib_type_dir = "dev"
 
