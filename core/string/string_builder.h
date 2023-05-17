@@ -36,13 +36,10 @@
 
 class StringBuilder {
 	uint32_t string_length = 0;
+	uint32_t capacity = 16;
+	uint32_t strings = 0;
 
-	Vector<String> strings;
-	Vector<const char *> c_strings;
-
-	// -1 means it's a Godot String
-	// a natural number means C string.
-	Vector<int32_t> appended_strings;
+	char32_t *buffer;
 
 public:
 	StringBuilder &append(const String &p_string);
@@ -65,7 +62,7 @@ public:
 	}
 
 	_FORCE_INLINE_ int num_strings_appended() const {
-		return appended_strings.size();
+		return strings;
 	}
 
 	_FORCE_INLINE_ uint32_t get_string_length() const {
@@ -78,7 +75,13 @@ public:
 		return as_string();
 	}
 
-	StringBuilder() {}
+	StringBuilder() {
+		buffer = (char32_t *)memalloc(16 * sizeof(char32_t));
+	}
+
+	~StringBuilder() {
+		memfree(buffer);
+	}
 };
 
 #endif // STRING_BUILDER_H
