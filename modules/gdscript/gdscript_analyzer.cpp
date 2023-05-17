@@ -229,6 +229,9 @@ bool GDScriptAnalyzer::has_member_name_conflict_in_native_type(const StringName 
 	if (ClassDB::has_integer_constant(p_native_type_string, p_member_name)) {
 		return true;
 	}
+	if (ClassDB::has_variant_constant(p_native_type_string, p_member_name)) {
+		return true;
+	}
 	if (p_member_name == CoreStringNames::get_singleton()->_script) {
 		return true;
 	}
@@ -3572,6 +3575,14 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				p_identifier->set_datatype(type_from_variant(int_constant, p_identifier));
 			}
 		}
+
+		Variant var_constant = ClassDB::get_integer_constant(native, name, &valid);
+		if (valid) {
+			p_identifier->is_constant = true;
+			p_identifier->reduced_value = var_constant;
+			p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
+			p_identifier->set_datatype(type_from_variant(var_constant, p_identifier));
+		}
 	}
 }
 
@@ -4909,6 +4920,9 @@ void GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_local, con
 			parser->push_warning(p_local, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_local->name, "property", parent);
 			return;
 		} else if (ClassDB::has_integer_constant(parent, name, true)) {
+			parser->push_warning(p_local, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_local->name, "constant", parent);
+			return;
+		} else if (ClassDB::has_variant_constant(parent, name, true)) {
 			parser->push_warning(p_local, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_local->name, "constant", parent);
 			return;
 		} else if (ClassDB::has_enum(parent, name, true)) {

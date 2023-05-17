@@ -448,6 +448,10 @@ public:
 	PackedStringArray class_get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
 	StringName class_get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
 
+	PackedStringArray class_get_variant_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	bool class_has_variant_constant(const StringName &p_class, const StringName &p_name) const;
+	Variant class_get_variant_constant(const StringName &p_class, const StringName &p_name) const;
+
 	bool is_class_enabled(StringName p_class) const;
 
 	ClassDB() {}

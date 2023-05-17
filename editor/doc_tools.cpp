@@ -607,6 +607,17 @@ void DocTools::generate(bool p_basic_types) {
 				c.constants.push_back(constant);
 			}
 
+			List<String> variant_constant_list;
+			ClassDB::get_variant_constant_list(name, &variant_constant_list, true);
+
+			for (const String &E : variant_constant_list) {
+				DocData::ConstantDoc constant;
+				constant.name = E;
+				constant.value = ClassDB::get_variant_constant(name, E).stringify();
+				constant.is_value_valid = true;
+				c.constants.push_back(constant);
+			}
+
 			// Theme items.
 			{
 				List<StringName> l;

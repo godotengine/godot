@@ -107,6 +107,7 @@ public:
 		HashMap<StringName, MethodBind *> method_map;
 		HashMap<StringName, LocalVector<MethodBind *>> method_map_compatibility;
 		HashMap<StringName, int64_t> constant_map;
+		HashMap<StringName, Variant> variant_constant_map;
 		struct EnumInfo {
 			List<StringName> constants;
 			bool is_bitfield = false;
@@ -118,6 +119,7 @@ public:
 		HashMap<StringName, PropertyInfo> property_map;
 #ifdef DEBUG_METHODS_ENABLED
 		List<StringName> constant_order;
+		List<StringName> variant_constant_order;
 		List<StringName> method_order;
 		HashSet<StringName> methods_in_properties;
 		List<MethodInfo> virtual_methods;
@@ -400,6 +402,11 @@ public:
 	static bool has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 	static bool is_enum_bitfield(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 
+	static void bind_variant_constant(const StringName &p_class, const StringName &p_name, const Variant &p_constant);
+	static void get_variant_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance = false);
+	static Variant get_variant_constant(const StringName &p_class, const StringName &p_name, bool *p_success = nullptr);
+	static bool has_variant_constant(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
+
 	static void set_method_error_return_values(const StringName &p_class, const StringName &p_method, const Vector<Error> &p_values);
 	static Vector<Error> get_method_error_return_values(const StringName &p_class, const StringName &p_method);
 	static Variant class_get_default_property_value(const StringName &p_class, const StringName &p_property, bool *r_valid = nullptr);
@@ -436,6 +443,9 @@ public:
 
 #define BIND_CONSTANT(m_constant) \
 	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
+
+#define BIND_VARIANT_CONSTANT(m_constant) \
+	::ClassDB::bind_variant_constant(get_class_static(), #m_constant, m_constant);
 
 #ifdef DEBUG_METHODS_ENABLED
 

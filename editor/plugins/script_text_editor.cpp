@@ -841,9 +841,11 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 			case ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT: {
 				StringName cname = result.class_name;
 				bool success;
+				bool variant_success;
 				while (true) {
 					ClassDB::get_integer_constant(cname, result.class_member, &success);
-					if (success) {
+					ClassDB::get_variant_constant(cname, result.class_member, &variant_success);
+					if (success || variant_success) {
 						result.class_name = cname;
 						cname = ClassDB::get_parent_class(cname);
 					} else {
