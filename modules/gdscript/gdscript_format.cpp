@@ -310,8 +310,11 @@ String GDScriptFormat::parse_class_variable(const GDP::ClassNode *p_node, const 
 	bool did_break = false;
 
 	if (children_have_comments(p_node->members[p_member_index].variable) && is_nestable_statement(p_node->members[p_member_index].variable->initializer)) {
-		variable_string = parse_variable(p_node->members[p_member_index].variable, p_indent_level, WRAP);
-		did_break = get_length_without_comments(variable_string) > line_length_maximum || variable_string.contains("\n");
+		variable_string = parse_variable(p_node->members[p_member_index].variable, p_indent_level, NONE);
+		if (get_length_without_comments(variable_string) > line_length_maximum || variable_string.contains("\n")) {
+			variable_string = parse_variable(p_node->members[p_member_index].variable, p_indent_level, WRAP);
+			did_break = get_length_without_comments(variable_string) > line_length_maximum || variable_string.contains("\n");
+		}
 	} else {
 		variable_string = parse_variable(p_node->members[p_member_index].variable, p_indent_level, NONE);
 		if (get_length_without_comments(variable_string) > line_length_maximum) {
@@ -693,7 +696,11 @@ String GDScriptFormat::parse_var_value(const GDP::ExpressionNode *p_node, const 
 	StringBuilder output;
 	output += comment_headers;
 	output += value;
-	output += comment;
+
+	// Expressions can themselves write comments (eg. function calls comments)
+	if (!output.as_string().ends_with(comment)) {
+		output += comment;
+	}
 
 	return output;
 }
