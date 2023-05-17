@@ -2196,15 +2196,10 @@ func _ready() -> void:
 	match x:
 		0
 )");
-		const String pre_formatted =
-				GDSCRIPT(R"(
-func _ready() -> void:
-	var x = 0
-	match x:
-		0
-)");
-
-		CHECK_FORMAT(code, pre_formatted);
+		GDScriptFormat formatter;
+		String output;
+		Error err = formatter.format(code, output);
+		CHECK(err != OK);
 	}
 
 	TEST_CASE("Should not error out on a lambda wrapped in a multiline") {
