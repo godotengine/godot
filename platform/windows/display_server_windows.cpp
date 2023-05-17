@@ -667,7 +667,7 @@ Ref<Image> DisplayServerWindows::screen_get_image(int p_screen) const {
 				SelectObject(hdc, hbm);
 				BitBlt(hdc, 0, 0, width, height, dc, p1.x, p1.y, SRCCOPY);
 
-				BITMAPINFO bmp_info = { 0 };
+				BITMAPINFO bmp_info = {};
 				bmp_info.bmiHeader.biSize = sizeof(bmp_info.bmiHeader);
 				bmp_info.bmiHeader.biWidth = width;
 				bmp_info.bmiHeader.biHeight = -height;
