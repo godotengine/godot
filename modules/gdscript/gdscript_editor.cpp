@@ -520,18 +520,31 @@ static int _get_property_location(StringName p_class, StringName p_property) {
 }
 
 static int _get_constant_location(StringName p_class, StringName p_constant) {
-	if (!ClassDB::has_integer_constant(p_class, p_constant)) {
-		return ScriptLanguage::LOCATION_OTHER;
+	if (ClassDB::has_integer_constant(p_class, p_constant)) {
+		int depth = 0;
+		StringName class_test = p_class;
+
+		while (class_test && !ClassDB::has_integer_constant(class_test, p_constant, true)) {
+			class_test = ClassDB::get_parent_class(class_test);
+			depth++;
+		}
+
+		return depth | ScriptLanguage::LOCATION_PARENT_MASK;
 	}
 
-	int depth = 0;
-	StringName class_test = p_class;
-	while (class_test && !ClassDB::has_integer_constant(class_test, p_constant, true)) {
-		class_test = ClassDB::get_parent_class(class_test);
-		depth++;
+	if (ClassDB::has_variant_constant(p_class, p_constant)) {
+		int depth = 0;
+		StringName class_test = p_class;
+
+		while (class_test && !ClassDB::has_variant_constant(class_test, p_constant, true)) {
+			class_test = ClassDB::get_parent_class(class_test);
+			depth++;
+		}
+
+		return depth | ScriptLanguage::LOCATION_PARENT_MASK;
 	}
 
-	return depth | ScriptLanguage::LOCATION_PARENT_MASK;
+	return ScriptLanguage::LOCATION_OTHER;
 }
 
 static int _get_signal_location(StringName p_class, StringName p_signal) {
@@ -1096,6 +1109,14 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 					List<String> constants;
 					ClassDB::get_integer_constant_list(type, &constants);
 					for (const String &E : constants) {
+						int location = p_recursion_depth + _get_constant_location(type, StringName(E));
+						ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT, location);
+						r_result.insert(option.display, option);
+					}
+
+					List<String> variant_constants;
+					ClassDB::get_variant_constant_list(type, &variant_constants);
+					for (const String &E : variant_constants) {
 						int location = p_recursion_depth + _get_constant_location(type, StringName(E));
 						ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT, location);
 						r_result.insert(option.display, option);
@@ -3254,6 +3275,17 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 					}
 				}
 
+				List<String> variant_constants;
+				ClassDB::get_variant_constant_list(class_name, &variant_constants, true);
+				for (const String &E : variant_constants) {
+					if (E == p_symbol) {
+						r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
+						r_result.class_name = base_type.native_type;
+						r_result.class_member = p_symbol;
+						return OK;
+					}
+				}
+
 				if (ClassDB::has_property(class_name, p_symbol, true)) {
 					r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_PROPERTY;
 					r_result.class_name = base_type.native_type;
@@ -3364,6 +3396,9 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 	if (context.current_class && context.current_class->extends.size() > 0) {
 		bool success = false;
 		ClassDB::get_integer_constant(context.current_class->extends[0]->name, p_symbol, &success);
+		if (!success) {
+			ClassDB::get_variant_constant(context.current_class->extends[0]->name, p_symbol, &success);
+		}
 		if (success) {
 			r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
 			r_result.class_name = context.current_class->extends[0]->name;

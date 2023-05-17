@@ -304,7 +304,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 						Variant variant_constant = ClassDB::get_variant_constant(nc->get_name(), identifier, &success);
 						if (success) {
-							return codegen.add_constant(constant);
+							return codegen.add_constant(variant_constant);
 						}
 					}
 
