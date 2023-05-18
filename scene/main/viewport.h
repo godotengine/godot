@@ -60,6 +60,7 @@ class ViewportTexture : public Texture2D {
 	friend class Viewport;
 	Viewport *vp = nullptr;
 	bool vp_pending = false;
+	bool vp_changed = false;
 
 	void _setup_local_to_scene(const Node *p_loc_scene);
 
