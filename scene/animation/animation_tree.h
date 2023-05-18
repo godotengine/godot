@@ -68,7 +68,7 @@ public:
 		Ref<Animation> animation;
 		double time = 0.0;
 		double delta = 0.0;
-		const Vector<real_t> *track_blends = nullptr;
+		Vector<real_t> track_blends;
 		real_t blend = 0.0;
 		bool seeked = false;
 		bool is_external_seeking = false;
