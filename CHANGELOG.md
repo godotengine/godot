@@ -63,9 +63,12 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Rename internal root canvas group to start with underscore ([GH-76149](https://github.com/godotengine/godot/pull/76149)).
 - Make acos and asin safe ([GH-76906](https://github.com/godotengine/godot/pull/76906)).
 
+#### Documentation
+
+- Exclude overridden properties from Property Descriptions section ([GH-77027](https://github.com/godotengine/godot/pull/77027)).
+
 #### Editor
 
-- Make EditorToaster's handler thread-safe ([GH-71670](https://github.com/godotengine/godot/pull/71670)).
 - Prevent off-screen controls in editor ([GH-73646](https://github.com/godotengine/godot/pull/73646)).
 - Re-enable script editor File menu shortcuts when the menu is hidden ([GH-74319](https://github.com/godotengine/godot/pull/74319)).
 - Prevent color conversion of the big Godot logo ([GH-75653](https://github.com/godotengine/godot/pull/75653)).
@@ -73,7 +76,6 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Adjust size of some dialogs ([GH-75895](https://github.com/godotengine/godot/pull/75895)).
 - Change cursor consistently when panning in the 2D Editor ([GH-75997](https://github.com/godotengine/godot/pull/75997)).
 - Validate renderer selection in project manager and expose default renderer setting as an enum ([GH-76331](https://github.com/godotengine/godot/pull/76331)).
-- Improve the UX of ViewportTexture in the editor ([GH-64388](https://github.com/godotengine/godot/pull/64388)).
 - Close built-in shaders when closing scene ([GH-75864](https://github.com/godotengine/godot/pull/75864)).
 - Command Palette search now also uses original English command names ([GH-76523](https://github.com/godotengine/godot/pull/76523)).
 - Preserve scene unique names when saving branch as scene ([GH-76609](https://github.com/godotengine/godot/pull/76609)).
@@ -96,7 +98,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Use DXT1 when compressing PNGs with RGB format ([GH-76516](https://github.com/godotengine/godot/pull/76516)).
 - gltf: Permit sparse accessors without a bufferView ([GH-76875](https://github.com/godotengine/godot/pull/76875)).
 
-#### Network
+#### Networking
 
 - Poll LSP/DAP clients for connection status updates ([GH-75850](https://github.com/godotengine/godot/pull/75850)).
 
@@ -189,6 +191,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Fix Node arrays appear as Object arrays in the inspector ([GH-76530](https://github.com/godotengine/godot/pull/76530)).
 - Fix CollisionShape2D editor crashes ([GH-76546](https://github.com/godotengine/godot/pull/76546), [GH-76798](https://github.com/godotengine/godot/pull/76798)).
 - Fix 2D shader preview draws over uniform ([GH-76555](https://github.com/godotengine/godot/pull/76555)).
+- Fix crash when trying to create bones from Control ([GH-77160](https://github.com/godotengine/godot/pull/77160)).
 
 #### Export
 
@@ -240,6 +243,10 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 
 - Fix NavigationObstacles not being added to avoidance simulation ([GH-75756](https://github.com/godotengine/godot/pull/75756)).
 - Fix NavigationMesh baking for HeightMapShape ([GH-76212](https://github.com/godotengine/godot/pull/76212)).
+
+#### Networking
+
+- Fix crashes trying to use TLS when not available ([GH-77011](https://github.com/godotengine/godot/pull/77011)).
 
 #### Particles
 
