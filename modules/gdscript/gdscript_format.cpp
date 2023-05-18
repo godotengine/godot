@@ -884,64 +884,81 @@ String GDScriptFormat::parse_cast(const GDP::CastNode *p_node, const int p_inden
 }
 
 String GDScriptFormat::parse_expression(const GDP::ExpressionNode *p_node, const int p_indent_level, const BreakType p_break_type) {
-	String output = "";
+	String expression = "";
 	switch (p_node->type) {
 		case GDP::Node::Type::ASSIGNMENT:
-			output = parse_assignment(dynamic_cast<const GDP::AssignmentNode *>(p_node), p_indent_level, p_break_type);
+			expression = parse_assignment(dynamic_cast<const GDP::AssignmentNode *>(p_node), p_indent_level, p_break_type);
 			break;
 		case GDP::Node::Type::AWAIT:
-			output = parse_await(dynamic_cast<const GDP::AwaitNode *>(p_node), p_indent_level);
+			expression = parse_await(dynamic_cast<const GDP::AwaitNode *>(p_node), p_indent_level);
 			break;
 		case GDP::Node::Type::ARRAY:
-			output = parse_array(dynamic_cast<const GDP::ArrayNode *>(p_node), p_indent_level, p_break_type);
+			expression = parse_array(dynamic_cast<const GDP::ArrayNode *>(p_node), p_indent_level, p_break_type);
 			break;
 		case GDP::Node::Type::BINARY_OPERATOR:
-			output = parse_binary_operator(dynamic_cast<const GDP::BinaryOpNode *>(p_node), p_indent_level, p_break_type);
+			expression = parse_binary_operator(dynamic_cast<const GDP::BinaryOpNode *>(p_node), p_indent_level, p_break_type);
 			break;
 		case GDP::Node::Type::LITERAL:
-			output = parse_literal(dynamic_cast<const GDP::LiteralNode *>(p_node));
+			expression = parse_literal(dynamic_cast<const GDP::LiteralNode *>(p_node));
 			break;
 		case GDP::Node::Type::CAST:
-			output = parse_cast(dynamic_cast<const GDP::CastNode *>(p_node), p_indent_level);
+			expression = parse_cast(dynamic_cast<const GDP::CastNode *>(p_node), p_indent_level);
 			break;
 		case GDP::Node::Type::IDENTIFIER:
-			output = dynamic_cast<const GDP::IdentifierNode *>(p_node)->name;
+			expression = dynamic_cast<const GDP::IdentifierNode *>(p_node)->name;
 			break;
 		case GDP::Node::Type::CALL:
-			output = parse_call(dynamic_cast<const GDP::CallNode *>(p_node), p_indent_level, p_break_type);
+			expression = parse_call(dynamic_cast<const GDP::CallNode *>(p_node), p_indent_level, p_break_type);
 			break;
 		case GDP::Node::Type::DICTIONARY:
-			output = parse_dictionary(dynamic_cast<const GDP::DictionaryNode *>(p_node), p_indent_level, p_break_type);
+			expression = parse_dictionary(dynamic_cast<const GDP::DictionaryNode *>(p_node), p_indent_level, p_break_type);
 			break;
 		case GDP::Node::Type::GET_NODE:
-			output = parse_get_node(dynamic_cast<const GDP::GetNodeNode *>(p_node), p_indent_level);
+			expression = parse_get_node(dynamic_cast<const GDP::GetNodeNode *>(p_node), p_indent_level);
 			break;
 		case GDP::Node::Type::PRELOAD:
-			output = parse_preload(dynamic_cast<const GDP::PreloadNode *>(p_node), p_indent_level, p_break_type);
+			expression = parse_preload(dynamic_cast<const GDP::PreloadNode *>(p_node), p_indent_level, p_break_type);
 			break;
 		case GDP::Node::Type::SELF:
-			output = "self";
+			expression = "self";
 			break;
 		case GDP::Node::Type::SUBSCRIPT:
-			output = parse_subscript(dynamic_cast<const GDP::SubscriptNode *>(p_node), p_indent_level, p_break_type);
+			expression = parse_subscript(dynamic_cast<const GDP::SubscriptNode *>(p_node), p_indent_level, p_break_type);
 			break;
 		case GDP::Node::Type::TERNARY_OPERATOR:
-			output = parse_ternary_op(dynamic_cast<const GDP::TernaryOpNode *>(p_node), p_indent_level, p_break_type);
+			expression = parse_ternary_op(dynamic_cast<const GDP::TernaryOpNode *>(p_node), p_indent_level, p_break_type);
 			break;
 		case GDP::Node::Type::TYPE_TEST:
-			output = parse_type_test(dynamic_cast<const GDP::TypeTestNode *>(p_node), p_indent_level, p_break_type);
+			expression = parse_type_test(dynamic_cast<const GDP::TypeTestNode *>(p_node), p_indent_level, p_break_type);
 			break;
 		case GDP::Node::Type::UNARY_OPERATOR:
-			output = parse_unary_op(dynamic_cast<const GDP::UnaryOpNode *>(p_node), p_indent_level, p_break_type);
+			expression = parse_unary_op(dynamic_cast<const GDP::UnaryOpNode *>(p_node), p_indent_level, p_break_type);
 			break;
 		case GDP::Node::Type::LAMBDA:
-			output = parse_lambda(dynamic_cast<const GDP::LambdaNode *>(p_node), p_indent_level);
+			expression = parse_lambda(dynamic_cast<const GDP::LambdaNode *>(p_node), p_indent_level);
 			break;
 		default:
 			break;
 	}
 
-	return output;
+	if (p_node->is_grouped && !(expression.begins_with("(") || expression.ends_with(")"))) {
+		StringBuilder output;
+		if (p_break_type != NONE && get_length_without_comments(expression) > line_length_maximum) {
+			output += "(";
+			output += indent(p_indent_level + 1, true);
+			output += expression;
+			output += indent(p_indent_level, true);
+			output += ")";
+			return output;
+		}
+
+		output += "(";
+		output += expression;
+		output += ")";
+		return output;
+	}
+
+	return expression;
 }
 
 String GDScriptFormat::parse_parameter(const GDP::ParameterNode *p_node, const int p_indent_level, const BreakType p_break_type) {
@@ -1517,16 +1534,17 @@ String GDScriptFormat::parse_await(const GDP::AwaitNode *p_node, const int p_ind
 }
 
 String GDScriptFormat::parse_subscript(const GDP::SubscriptNode *p_node, const int p_indent_level, const BreakType p_break_type) {
+	String base = parse_expression(p_node->base, p_indent_level);
+
 	StringBuilder output;
-	if (p_node->base->type == GDP::Node::Type::CAST || p_node->base->type == GDP::Node::Type::BINARY_OPERATOR) {
+	if ((p_node->base->type == GDP::Node::Type::CAST || p_node->base->type == GDP::Node::Type::BINARY_OPERATOR) && !(base.begins_with("(") || base.ends_with(")"))) {
 		output += "(";
 	}
-	String base = parse_expression(p_node->base, p_indent_level);
 	if (p_break_type != NONE && get_length_without_comments(base) > line_length_maximum) {
 		base = parse_expression(p_node->base, p_indent_level, p_break_type);
 	}
 	output += base;
-	if (p_node->base->type == GDP::Node::Type::CAST || p_node->base->type == GDP::Node::Type::BINARY_OPERATOR) {
+	if ((p_node->base->type == GDP::Node::Type::CAST || p_node->base->type == GDP::Node::Type::BINARY_OPERATOR) && !(base.begins_with("(") || base.ends_with(")"))) {
 		output += ")";
 	}
 	if (p_node->is_attribute) {
@@ -1761,7 +1779,8 @@ String GDScriptFormat::parse_binary_operator(const GDP::BinaryOpNode *p_node, co
 		wrap_left = left_priority > right_priority;
 	}
 
-	if (wrap_left) {
+	String left_operand_string = left_operand;
+	if (wrap_left && !(left_operand_string.begins_with("(") || left_operand_string.ends_with(")"))) {
 		output += "(";
 		output += left_operand;
 		output += ")";
@@ -1783,7 +1802,8 @@ String GDScriptFormat::parse_binary_operator(const GDP::BinaryOpNode *p_node, co
 		wrap_right = p_node->operation == GDP::BinaryOpNode::OpType::OP_DIVISION || right_priority > left_priority;
 	}
 
-	if (wrap_right) {
+	String right_operand_string = right_operand;
+	if (wrap_right && !(right_operand_string.begins_with("(") || right_operand_string.ends_with(")"))) {
 		output += operator_string;
 		output += "(";
 		output += right_operand;

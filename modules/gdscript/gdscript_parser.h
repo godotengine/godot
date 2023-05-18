@@ -345,6 +345,7 @@ public:
 		// Base type for all expression kinds.
 		bool reduced = false;
 		bool is_constant = false;
+		bool is_grouped = false;
 		Variant reduced_value;
 
 		virtual bool is_expression() const override { return true; }

@@ -2617,9 +2617,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_pr
 	switch (current.type) {
 		case GDScriptTokenizer::Token::PARENTHESIS_OPEN:
 		case GDScriptTokenizer::Token::BRACE_OPEN:
-		case GDScriptTokenizer::Token::BRACKET_OPEN:
+		case GDScriptTokenizer::Token::BRACKET_OPEN: {
 			push_multiline(true);
-			break;
+		} break;
 		default:
 			break; // Nothing to do.
 	}
@@ -3324,6 +3324,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_grouping(ExpressionNode *p
 	if (grouped == nullptr) {
 		push_error(R"(Expected grouping expression.)");
 	} else {
+		grouped->is_grouped = true;
 		consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected closing ")" after grouping expression.)*");
 	}
 	return grouped;
