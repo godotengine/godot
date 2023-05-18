@@ -270,7 +270,7 @@ namespace GodotTools.Build
                 buildInfo.CustomProperties.Add($"GodotTargetPlatform={platform}");
 
             if (Internal.GodotIsRealTDouble())
-                buildInfo.CustomProperties.Add("GodotRealTIsDouble=true");
+                buildInfo.CustomProperties.Add("GodotFloat64=true");
 
             return buildInfo;
         }
@@ -288,7 +288,7 @@ namespace GodotTools.Build
             buildInfo.CustomProperties.Add($"GodotTargetPlatform={platform}");
 
             if (Internal.GodotIsRealTDouble())
-                buildInfo.CustomProperties.Add("GodotRealTIsDouble=true");
+                buildInfo.CustomProperties.Add("GodotFloat64=true");
 
             return buildInfo;
         }
