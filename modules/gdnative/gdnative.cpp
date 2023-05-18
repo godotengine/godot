@@ -511,7 +511,13 @@ Error GDNative::get_symbol(StringName p_procedure_name, void *&r_handle, bool p_
 		return ERR_CANT_OPEN;
 	}
 
-	Error result = OS::get_singleton()->get_dynamic_library_symbol_handle(
+	OS *os = OS::get_singleton();
+	if (os == nullptr) {
+		WARN_PRINT("No valid OS handle, can't get symbol from GDNative object");
+		return Error::ERR_CANT_OPEN;
+	}
+
+	Error result = os->get_dynamic_library_symbol_handle(
 			native_handle,
 			p_procedure_name,
 			r_handle,
