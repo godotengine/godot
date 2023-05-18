@@ -692,7 +692,7 @@ void fragment() {
 
 shader_type spatial;
 
-render_mode debug_shadow_splits.
+render_mode debug_shadow_splits;
 
 void fragment() {
 	ALBEDO = vec3(1.0, 1.0, 1.0);
