@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 
+import os
 import build_scripts.mono_configure as mono_configure
+import build_scripts.build_assemblies as build_assemblies
+from methods import glob_recursive
 
 Import("env")
 Import("env_modules")
 
+env_local = env.Clone()
 env_mono = env_modules.Clone()
 
 # Configure Mono
@@ -29,3 +33,41 @@ elif env["platform"] == "android":
 if env.editor_build:
     env_mono.add_source_files(env.modules_sources, "editor/*.cpp")
     SConscript("editor/script_templates/SCsub")
+
+    if env_local["build_csharp"]:
+       env_local["build_assemblies"] = True
+       env_local["generate_mono_glue"] = True
+
+    if env_local["build_assemblies"] or env_local["generate_mono_glue"]:
+        gd = os.path.join(env_local.Dir("#bin").abspath, "godot" + env_local["PROGSUFFIX"])
+
+        if env_local["generate_mono_glue"]:
+            env_local["BUILDERS"]["CSharpGlue"] = Builder(action=gd + " --headless --generate-mono-glue modules/mono/glue")
+
+            # the only generated files with fixed names are these
+            glue_targets = [
+                "glue/GodotSharp/GodotSharp/Generated/GD_constants.cs",
+                "glue/GodotSharp/GodotSharp/Generated/GD_extensions.cs",
+                "glue/GodotSharp/GodotSharp/Generated/GeneratedIncludes.props",
+                "glue/GodotSharp/GodotSharp/Generated/NativeCalls.cs",
+                "glue/GodotSharp/GodotSharpEditor/Generated/EditorNativeCalls.cs",
+                "glue/GodotSharp/GodotSharpEditor/Generated/GeneratedIncludes.props",
+            ]
+
+            glue_sources = [gd]
+            env_local.Alias("generate_mono_glue", [env_local.CSharpGlue(glue_targets, glue_sources)])
+
+        if env_local["build_assemblies"]:
+            env_local["BUILDERS"]["CSharpBuildAssemblies"] = Builder(
+                action=env_local.Run(build_assemblies.make_assemblies, "Building C# assemblies.")
+            )
+
+            assemblies_targets = []
+            for build_config in ["Debug", "Release"]:
+                editor_api_dir = os.path.join("#bin", "GodotSharp", "Api", build_config)
+                assemblies_targets += [
+                    os.path.join(editor_api_dir, filename) for filename in build_assemblies.target_filenames
+                ]
+
+            assemblies_sources = glob_recursive("**/*.cs", "glue")
+            env_local.Alias("build_assemblies", [env_local.CSharpBuildAssemblies(assemblies_targets, assemblies_sources)])
