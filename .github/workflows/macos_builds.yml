@@ -4,8 +4,8 @@ on:
 
 # Global Settings
 env:
-  # Only used for the cache key. Increment version to force clean build.
-  GODOT_BASE_BRANCH: master
+  # Used for the cache key. Add version suffix to force clean build.
+  GODOT_BASE_BRANCH: '4.0'
   SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes
 
 concurrency:
