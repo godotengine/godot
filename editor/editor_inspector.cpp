@@ -1516,6 +1516,11 @@ void EditorInspectorSection::fold() {
 	queue_redraw();
 }
 
+void EditorInspectorSection::set_bg_color(const Color &p_bg_color) {
+	bg_color = p_bg_color;
+	queue_redraw();
+}
+
 bool EditorInspectorSection::has_revertable_properties() const {
 	return !revertable_properties.is_empty();
 }
