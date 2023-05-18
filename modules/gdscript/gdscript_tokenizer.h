@@ -37,6 +37,26 @@
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
 
+#define CHAR_NULL '\0'
+#define CHAR_BELL '\a'
+#define CHAR_BACKSPACE '\b'
+#define CHAR_HORIZONTAL_TAB '\t'
+#define CHAR_NEWLINE '\n'
+#define CHAR_VERTICAL_TAB '\v'
+#define CHAR_FORM_FEED '\f'
+#define CHAR_CARRIAGE_RETURN '\r'
+#define CHAR_SPACE ' '
+#define CHAR_POUND '#'
+#define CHAR_BACKSLASH '\\'
+#define CHAR_SINGLE_QUOTE '\''
+#define CHAR_DOUBLE_QUOTE '\"'
+#define CHAR_LEFT_TO_RIGHT_MARK 0x200E
+#define CHAR_RIGHT_TO_LEFT_MARK 0x200F
+#define CHAR_LEFT_TO_RIGHT_EMBEDDING 0x202A
+#define CHAR_RIGHT_TO_LEFT_OVERRIDE 0x202E
+#define CHAR_LEFT_TO_RIGHT_ISOLATE 0x2066
+#define CHAR_RIGHT_TO_LEFT_ISOLATE 0x2069
+
 class GDScriptTokenizer {
 public:
 	enum CursorPlace {
@@ -221,7 +241,7 @@ private:
 	List<int> indent_stack;
 	List<List<int>> indent_stack_stack; // For lambdas, which require manipulating the indentation point.
 	List<char32_t> paren_stack;
-	char32_t indent_char = '\0';
+	char32_t indent_char = CHAR_NULL;
 	int position = 0;
 	int length = 0;
 #ifdef DEBUG_ENABLED
@@ -233,7 +253,7 @@ private:
 #endif // TOOLS_ENABLED
 
 	_FORCE_INLINE_ bool _is_at_end() { return position >= length; }
-	_FORCE_INLINE_ char32_t _peek(int p_offset = 0) { return position + p_offset >= 0 && position + p_offset < length ? _current[p_offset] : '\0'; }
+	_FORCE_INLINE_ char32_t _peek(int p_offset = 0) { return position + p_offset >= 0 && position + p_offset < length ? _current[p_offset] : CHAR_NULL; }
 	int indent_level() const { return indent_stack.size(); }
 	bool has_error() const { return !error_stack.is_empty(); }
 	Token pop_error();

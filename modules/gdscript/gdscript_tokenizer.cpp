@@ -290,7 +290,7 @@ bool GDScriptTokenizer::is_past_cursor() const {
 
 char32_t GDScriptTokenizer::_advance() {
 	if (unlikely(_is_at_end())) {
-		return '\0';
+		return CHAR_NULL;
 	}
 	_current++;
 	column++;
@@ -340,7 +340,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::make_token(Token::Type p_type) {
 	if (p_type != Token::ERROR && cursor_line > -1) {
 		// Also count whitespace after token.
 		int offset = 0;
-		while (_peek(offset) == ' ' || _peek(offset) == '\t') {
+		while (_peek(offset) == CHAR_SPACE || _peek(offset) == CHAR_HORIZONTAL_TAB) {
 			offset++;
 		}
 		int last_column = column + offset;
@@ -826,7 +826,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 
 		char32_t ch = _peek();
 
-		if (ch == 0x200E || ch == 0x200F || (ch >= 0x202A && ch <= 0x202E) || (ch >= 0x2066 && ch <= 0x2069)) {
+		if (ch == CHAR_LEFT_TO_RIGHT_MARK || ch == CHAR_RIGHT_TO_LEFT_MARK || (ch >= CHAR_LEFT_TO_RIGHT_EMBEDDING && ch <= CHAR_RIGHT_TO_LEFT_OVERRIDE) || (ch >= CHAR_LEFT_TO_RIGHT_ISOLATE && ch <= CHAR_RIGHT_TO_LEFT_ISOLATE)) {
 			Token error = make_error("Invisible text direction control character present in the string, escape it (\"\\u" + String::num_int64(ch, 16) + "\") to avoid confusion.");
 			error.start_column = column;
 			error.leftmost_column = error.start_column;
@@ -835,7 +835,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 			push_error(error);
 		}
 
-		if (ch == '\\') {
+		if (ch == CHAR_BACKSLASH) {
 			// Escape pattern.
 			_advance();
 			if (_is_at_end()) {
@@ -854,34 +854,34 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 
 			switch (code) {
 				case 'a':
-					escaped = '\a';
+					escaped = CHAR_BELL;
 					break;
 				case 'b':
-					escaped = '\b';
+					escaped = CHAR_BACKSPACE;
 					break;
 				case 'f':
-					escaped = '\f';
+					escaped = CHAR_FORM_FEED;
 					break;
 				case 'n':
-					escaped = '\n';
+					escaped = CHAR_NEWLINE;
 					break;
 				case 'r':
-					escaped = '\r';
+					escaped = CHAR_CARRIAGE_RETURN;
 					break;
 				case 't':
-					escaped = '\t';
+					escaped = CHAR_HORIZONTAL_TAB;
 					break;
 				case 'v':
-					escaped = '\v';
+					escaped = CHAR_VERTICAL_TAB;
 					break;
-				case '\'':
-					escaped = '\'';
+				case CHAR_SINGLE_QUOTE:
+					escaped = CHAR_SINGLE_QUOTE;
 					break;
-				case '\"':
-					escaped = '\"';
+				case CHAR_DOUBLE_QUOTE:
+					escaped = CHAR_DOUBLE_QUOTE;
 					break;
-				case '\\':
-					escaped = '\\';
+				case CHAR_BACKSLASH:
+					escaped = CHAR_BACKSLASH;
 					break;
 				case 'U':
 				case 'u': {
@@ -920,8 +920,8 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 						_advance();
 					}
 				} break;
-				case '\r':
-					if (_peek() != '\n') {
+				case CHAR_CARRIAGE_RETURN:
+					if (_peek() != CHAR_NEWLINE) {
 						// Carriage return without newline in string. (???)
 						// Just add it to the string and keep going.
 						result += ch;
@@ -929,7 +929,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 						break;
 					}
 					[[fallthrough]];
-				case '\n':
+				case CHAR_NEWLINE:
 					// Escaping newline.
 					newline(false);
 					valid_escape = false; // Don't add to the string.
@@ -1014,7 +1014,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 			}
 			result += ch;
 			_advance();
-			if (ch == '\n') {
+			if (ch == CHAR_NEWLINE) {
 				newline(false);
 			}
 		}
@@ -1058,7 +1058,7 @@ void GDScriptTokenizer::check_indent() {
 		char32_t current_indent_char = _peek();
 		int indent_count = 0;
 
-		if (current_indent_char != ' ' && current_indent_char != '\t' && current_indent_char != '\r' && current_indent_char != '\n' && current_indent_char != '#') {
+		if (current_indent_char != CHAR_SPACE && current_indent_char != CHAR_HORIZONTAL_TAB && current_indent_char != CHAR_CARRIAGE_RETURN && current_indent_char != CHAR_NEWLINE && current_indent_char != CHAR_POUND) {
 			// First character of the line is not whitespace, so we clear all indentation levels.
 			// Unless we are in a continuation or in multiline mode (inside expression).
 			if (line_continuation || multiline_mode) {
@@ -1069,13 +1069,13 @@ void GDScriptTokenizer::check_indent() {
 			return;
 		}
 
-		if (_peek() == '\r') {
+		if (_peek() == CHAR_CARRIAGE_RETURN) {
 			_advance();
-			if (_peek() != '\n') {
+			if (_peek() != CHAR_NEWLINE) {
 				push_error("Stray carriage return character in source code.");
 			}
 		}
-		if (_peek() == '\n') {
+		if (_peek() == CHAR_NEWLINE) {
 			// Empty line, keep going.
 			_advance();
 			newline(false);
@@ -1086,11 +1086,11 @@ void GDScriptTokenizer::check_indent() {
 		bool mixed = false;
 		while (!_is_at_end()) {
 			char32_t space = _peek();
-			if (space == '\t') {
+			if (space == CHAR_HORIZONTAL_TAB) {
 				// Consider individual tab columns.
 				column += tab_size - 1;
 				indent_count += tab_size;
-			} else if (space == ' ') {
+			} else if (space == CHAR_SPACE) {
 				indent_count += 1;
 			} else {
 				break;
@@ -1115,28 +1115,28 @@ void GDScriptTokenizer::check_indent() {
 			return;
 		}
 
-		if (_peek() == '\r') {
+		if (_peek() == CHAR_CARRIAGE_RETURN) {
 			_advance();
-			if (_peek() != '\n') {
+			if (_peek() != CHAR_NEWLINE) {
 				push_error("Stray carriage return character in source code.");
 			}
 		}
-		if (_peek() == '\n') {
+		if (_peek() == CHAR_NEWLINE) {
 			// Empty line, keep going.
 			_advance();
 			newline(false);
 			continue;
 		}
-		if (_peek() == '#') {
+		if (_peek() == CHAR_POUND) {
 			// Comment. Advance to the next line.
 #ifdef TOOLS_ENABLED
 			String comment;
-			while (_peek() != '\n' && !_is_at_end()) {
+			while (_peek() != CHAR_NEWLINE && !_is_at_end()) {
 				comment += _advance();
 			}
 			comments[line] = CommentData(comment, true);
 #else
-			while (_peek() != '\n' && !_is_at_end()) {
+			while (_peek() != CHAR_NEWLINE && !_is_at_end()) {
 				_advance();
 			}
 #endif // TOOLS_ENABLED
@@ -1146,7 +1146,7 @@ void GDScriptTokenizer::check_indent() {
 				indent_stack.clear();
 				return;
 			}
-			_advance(); // Consume '\n'.
+			_advance(); // Consume CHAR_NEWLINE.
 			newline(false);
 			continue;
 		}
@@ -1158,7 +1158,7 @@ void GDScriptTokenizer::check_indent() {
 		}
 
 		// Check if indentation character is consistent.
-		if (indent_char == '\0') {
+		if (indent_char == CHAR_NULL) {
 			// First time indenting, choose character now.
 			indent_char = current_indent_char;
 		} else if (current_indent_char != indent_char) {
@@ -1214,9 +1214,9 @@ void GDScriptTokenizer::check_indent() {
 }
 
 String GDScriptTokenizer::_get_indent_char_name(char32_t ch) {
-	ERR_FAIL_COND_V(ch != ' ' && ch != '\t', String(&ch, 1).c_escape());
+	ERR_FAIL_COND_V(ch != CHAR_SPACE && ch != CHAR_HORIZONTAL_TAB, String(&ch, 1).c_escape());
 
-	return ch == ' ' ? "space" : "tab";
+	return ch == CHAR_SPACE ? "space" : "tab";
 }
 
 void GDScriptTokenizer::_skip_whitespace() {
@@ -1235,43 +1235,43 @@ void GDScriptTokenizer::_skip_whitespace() {
 	for (;;) {
 		char32_t c = _peek();
 		switch (c) {
-			case ' ':
+			case CHAR_SPACE:
 				_advance();
 				break;
-			case '\t':
+			case CHAR_HORIZONTAL_TAB:
 				_advance();
 				// Consider individual tab columns.
 				column += tab_size - 1;
 				break;
-			case '\r':
+			case CHAR_CARRIAGE_RETURN:
 				_advance(); // Consume either way.
-				if (_peek() != '\n') {
+				if (_peek() != CHAR_NEWLINE) {
 					push_error("Stray carriage return character in source code.");
 					return;
 				}
 				break;
-			case '\n':
+			case CHAR_NEWLINE:
 				_advance();
 				newline(!is_bol); // Don't create new line token if line is empty.
 				check_indent();
 				break;
-			case '#': {
+			case CHAR_POUND: {
 				// Comment.
 #ifdef TOOLS_ENABLED
 				String comment;
-				while (_peek() != '\n' && !_is_at_end()) {
+				while (_peek() != CHAR_NEWLINE && !_is_at_end()) {
 					comment += _advance();
 				}
 				comments[line] = CommentData(comment, is_bol);
 #else
-				while (_peek() != '\n' && !_is_at_end()) {
+				while (_peek() != CHAR_NEWLINE && !_is_at_end()) {
 					_advance();
 				}
 #endif // TOOLS_ENABLED
 				if (_is_at_end()) {
 					return;
 				}
-				_advance(); // Consume '\n'
+				_advance(); // Consume CHAR_NEWLINE
 				newline(!is_bol);
 				check_indent();
 			} break;
@@ -1332,15 +1332,15 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 
 	const char32_t c = _advance();
 
-	if (c == '\\') {
+	if (c == CHAR_BACKSLASH) {
 		// Line continuation with backslash.
-		if (_peek() == '\r') {
-			if (_peek(1) != '\n') {
+		if (_peek() == CHAR_CARRIAGE_RETURN) {
+			if (_peek(1) != CHAR_NEWLINE) {
 				return make_error("Unexpected carriage return character.");
 			}
 			_advance();
 		}
-		if (_peek() != '\n') {
+		if (_peek() != CHAR_NEWLINE) {
 			return make_error("Expected new line after \"\\\".");
 		}
 		_advance();
@@ -1359,8 +1359,8 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 
 	switch (c) {
 		// String literals.
-		case '"':
-		case '\'':
+		case CHAR_DOUBLE_QUOTE:
+		case CHAR_SINGLE_QUOTE:
 			return string();
 
 		// Annotation.
@@ -1477,7 +1477,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 			if (_peek() == '=') {
 				_advance();
 				return make_token(Token::CARET_EQUAL);
-			} else if (_peek() == '"' || _peek() == '\'') {
+			} else if (_peek() == CHAR_DOUBLE_QUOTE || _peek() == CHAR_SINGLE_QUOTE) {
 				// Node path
 				return string();
 			} else {
@@ -1490,7 +1490,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 			} else if (_peek() == '=') {
 				_advance();
 				return make_token(Token::AMPERSAND_EQUAL);
-			} else if (_peek() == '"' || _peek() == '\'') {
+			} else if (_peek() == CHAR_DOUBLE_QUOTE || _peek() == CHAR_SINGLE_QUOTE) {
 				// String Name
 				return string();
 			} else {
