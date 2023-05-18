@@ -72,8 +72,9 @@ void ViewportTexture::setup_local_to_scene() {
 
 	if (vp) {
 		vp->viewport_textures.erase(this);
-		vp = nullptr;
 	}
+
+	vp = nullptr;
 
 	if (loc_scene->is_ready()) {
 		_setup_local_to_scene(loc_scene);
@@ -90,24 +91,8 @@ void ViewportTexture::set_viewport_path_in_scene(const NodePath &p_path) {
 
 	path = p_path;
 
-	if (vp) {
-		vp->viewport_textures.erase(this);
-		vp = nullptr;
-	}
-
-	if (proxy_ph.is_valid()) {
-		RS::get_singleton()->free(proxy_ph);
-	}
-	if (proxy.is_valid()) {
-		RS::get_singleton()->free(proxy);
-	}
-	proxy_ph = RID();
-	proxy = RID();
-
-	if (get_local_scene() && !path.is_empty()) {
+	if (get_local_scene()) {
 		setup_local_to_scene();
-	} else {
-		emit_changed();
 	}
 }
 
@@ -186,8 +171,6 @@ void ViewportTexture::_setup_local_to_scene(const Node *p_loc_scene) {
 		proxy = RS::get_singleton()->texture_proxy_create(vp->texture_rid);
 	}
 	vp_pending = false;
-
-	emit_changed();
 }
 
 void ViewportTexture::_bind_methods() {
@@ -425,28 +408,9 @@ int Viewport::_sub_window_find(Window *p_window) {
 	return -1;
 }
 
-void Viewport::_update_viewport_path() {
-	if (viewport_textures.is_empty()) {
-		return;
-	}
-
-	Node *scene_root = get_scene_file_path().is_empty() ? get_owner() : this;
-	if (!scene_root && is_inside_tree()) {
-		scene_root = get_tree()->get_edited_scene_root();
-	}
-	if (scene_root && (scene_root == this || scene_root->is_ancestor_of(this))) {
-		NodePath path_in_scene = scene_root->get_path_to(this);
-		for (ViewportTexture *E : viewport_textures) {
-			E->path = path_in_scene;
-		}
-	}
-}
-
 void Viewport::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			_update_viewport_path();
-
 			if (get_parent()) {
 				parent = get_parent()->get_viewport();
 				RenderingServer::get_singleton()->viewport_set_parent_viewport(viewport, parent->get_viewport_rid());
@@ -537,10 +501,6 @@ void Viewport::_notification(int p_what) {
 
 			RS::get_singleton()->viewport_set_active(viewport, false);
 			RenderingServer::get_singleton()->viewport_set_parent_viewport(viewport, RID());
-		} break;
-
-		case NOTIFICATION_PATH_RENAMED: {
-			_update_viewport_path();
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
