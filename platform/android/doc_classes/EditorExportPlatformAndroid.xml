@@ -423,7 +423,7 @@
 			Allows an application to record audio. See [url=https://developer.android.com/reference/android/Manifest.permission#RECORD_AUDIO]RECORD_AUDIO[/url].
 		</member>
 		<member name="permissions/reorder_tasks" type="bool" setter="" getter="">
-			Allows an application to change the Z-order of tasks. See [url= https://developer.android.com/reference/android/Manifest.permission#REORDER_TASKS]REORDER_TASKS[/url].
+			Allows an application to change the Z-order of tasks. See [url=https://developer.android.com/reference/android/Manifest.permission#REORDER_TASKS]REORDER_TASKS[/url].
 		</member>
 		<member name="permissions/restart_packages" type="bool" setter="" getter="">
 			Deprecated in API level 15.
