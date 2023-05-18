@@ -3951,6 +3951,18 @@ func _run() -> void:
 			CHECK(err != OK);
 		}
 	}
+
+	TEST_CASE("Long header comments should not make a small expression split") {
+		const String code = GDSCRIPT(R"(
+func _ready():
+	var some_node
+	# This bug only happens when the comment on the previous line exceeds 80 chars.
+	some_node.visible = 5 > 3
+)");
+		const String pre_formatted = code;
+
+		CHECK_FORMAT(code, pre_formatted);
+	}
 } // TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Comments]")
 
 TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Syntax]") {

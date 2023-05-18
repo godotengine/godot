@@ -2117,7 +2117,7 @@ String GDScriptFormat::parse_assignment(const GDP::AssignmentNode *p_node, const
 		output += print_comment(p_node->assigned_value, false);
 	}
 
-	if (p_break_type == NONE && output.as_string().length() > line_length_maximum) {
+	if (p_break_type == NONE && get_length_without_comments(output.as_string()) > line_length_maximum) {
 		output = StringBuilder();
 		output += parse_assignment(p_node, p_indent_level, WRAP);
 	}
