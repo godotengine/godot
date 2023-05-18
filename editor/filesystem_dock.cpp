@@ -2291,20 +2291,12 @@ Control *FileSystemDock::create_tooltip_for_path(const String &p_path) const {
 	}
 
 	const String type = ResourceLoader::get_resource_type(p_path);
-	Control *tooltip = nullptr;
+	Control *tooltip = EditorResourceTooltipPlugin::make_default_tooltip(p_path);
 
 	for (const Ref<EditorResourceTooltipPlugin> &plugin : tooltip_plugins) {
 		if (plugin->handles(type)) {
-			tooltip = plugin->make_tooltip_for_path(p_path, EditorResourcePreview::get_singleton()->get_preview_metadata(p_path));
+			tooltip = plugin->make_tooltip_for_path(p_path, EditorResourcePreview::get_singleton()->get_preview_metadata(p_path), tooltip);
 		}
-
-		if (tooltip) {
-			break;
-		}
-	}
-
-	if (!tooltip) {
-		tooltip = EditorResourceTooltipPlugin::make_default_tooltip(p_path);
 	}
 	return tooltip;
 }
