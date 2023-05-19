@@ -29,13 +29,14 @@
 # Yoni m <yoni.meirov08@gmail.com>, 2023.
 # Ronelo <Santatv9@gmail.com>, 2023.
 # BM Lapidus <boruchmendel.lapidus@gmail.com>, 2023.
+# Eyt Lev <ecraft452@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-14 01:22+0000\n"
-"Last-Translator: BM Lapidus <boruchmendel.lapidus@gmail.com>\n"
+"PO-Revision-Date: 2023-05-17 11:38+0000\n"
+"Last-Translator: Eyt Lev <ecraft452@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/"
 "godot/he/>\n"
 "Language: he\n"
@@ -44,7 +45,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && "
 "n % 10 == 0) ? 2 : 3));\n"
-"X-Generator: Weblate 4.16.2-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
 msgstr "ביטול הגדרה"
@@ -626,7 +627,7 @@ msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "האם אתה בטוח שאתה רוצה להסיר את כל החיבורים מהאות \"%s\"?"
 
 msgid "Signals"
-msgstr "אותות"
+msgstr "מסרים"
 
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr "האם אתה בטוח שאתה רוצה להסיר את כל החיבורים מהאות הזה?"
@@ -1488,6 +1489,9 @@ msgstr "יש מספר מייבאים לסוגים שונים המצביעים ל
 msgid "(Re)Importing Assets"
 msgstr "ייבוא משאבים (מחדש)"
 
+msgid "Experimental"
+msgstr "ניסיוני"
+
 msgid "Top"
 msgstr "עליון"
 
@@ -1511,6 +1515,9 @@ msgstr "מאפיינים"
 
 msgid "default:"
 msgstr "ברירת מחדל:"
+
+msgid "Constructors"
+msgstr "מגדירים"
 
 msgid "Theme Properties"
 msgstr "מאפייני ערכת עיצוב"
@@ -2405,6 +2412,9 @@ msgstr "מחיקת בררת מחדל עבור ‚%s’"
 msgid "Import As:"
 msgstr "ייבוא בתור:"
 
+msgid "Preset"
+msgstr "תבנית"
+
 msgid "Failed to load resource."
 msgstr "טעינת המשאב נכשלה."
 
@@ -2958,7 +2968,7 @@ msgid "Toggle Freelook"
 msgstr "החלפת מצב מבט חופשי"
 
 msgid "Transform"
-msgstr "התמרה"
+msgstr "שינוי צורה"
 
 msgid "Snap Settings"
 msgstr "הגדרות הצמדה"
@@ -3225,6 +3235,9 @@ msgstr "הוסף פריט:"
 msgid "Add StyleBox Item"
 msgstr "הוסף פריט StyleBox"
 
+msgid "Tiles"
+msgstr "אריחים"
+
 msgid "Yes"
 msgstr "כן"
 
@@ -3284,6 +3297,9 @@ msgstr "לא ניתן להריץ מיזם"
 
 msgid "Delete Item"
 msgstr "מחיקת פריט"
+
+msgid "Autoload"
+msgstr "טעינה אוטומטית"
 
 msgid "2D Scene"
 msgstr "סצנה דו ממדית"
@@ -3772,6 +3788,9 @@ msgstr "ניתוח גיאומטרי..."
 
 msgid "Done!"
 msgstr "בוצע!"
+
+msgid "Pose"
+msgstr "פוזה"
 
 msgid "Package name is missing."
 msgstr "שם החבילה חסר."

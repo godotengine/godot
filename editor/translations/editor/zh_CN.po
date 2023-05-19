@@ -96,8 +96,8 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2023-04-28 14:50+0000\n"
-"Last-Translator: GarliCat <phoenixkaze@live.com>\n"
+"PO-Revision-Date: 2023-05-12 16:04+0000\n"
+"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -2624,7 +2624,7 @@ msgid "property:"
 msgstr "属性："
 
 msgid "Constructors"
-msgstr "构造器"
+msgstr "构造函数"
 
 msgid "Operators"
 msgstr "运算符"
@@ -4379,6 +4379,9 @@ msgstr "为定义的每一个预设导出该项目。"
 
 msgid "All presets must have an export path defined for Export All to work."
 msgstr "所有预设必须都定义导出路径，才能进行“全部导出”。"
+
+msgid "Resources to exclude:"
+msgstr "排除的资源："
 
 msgid "Resources to export:"
 msgstr "导出的资源："
@@ -9867,6 +9870,9 @@ msgstr "包含无效场景的图块"
 msgid "Delete tiles"
 msgstr "删除图块"
 
+msgid "Drawing Rect:"
+msgstr "绘制矩形："
+
 msgid "Change selection"
 msgstr "修改选中项"
 
@@ -14871,6 +14877,12 @@ msgid ""
 "set to true."
 msgstr "ButtonGroup 的目的是只用于那些将 toggle_mode 设置为 true 的按钮。"
 
+msgid "Copy this constructor in a script."
+msgstr "复制这个脚本中的构造函数。"
+
+msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
+msgstr "输入十六进制码（\"#ff0000\"）或颜色名称（\"red\"）。"
+
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color\n"
@@ -14898,6 +14910,9 @@ msgstr "选择选取器模式。"
 
 msgid "Switch between hexadecimal and code values."
 msgstr "在十六进制值和代码值之间切换。"
+
+msgid "Hex code or named color"
+msgstr "十六进制码或颜色名称"
 
 msgid "Add current color as a preset."
 msgstr "将当前颜色添加为预设。"
