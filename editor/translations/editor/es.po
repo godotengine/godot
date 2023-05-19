@@ -109,7 +109,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-11 05:49+0000\n"
+"PO-Revision-Date: 2023-05-17 00:52+0000\n"
 "Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
@@ -3974,7 +3974,7 @@ msgid "No Named Layers"
 msgstr "Capas Sin Nombre"
 
 msgid "Edit Layer Names"
-msgstr "Editar Nombres de Capas"
+msgstr "Editar Nombres de Capa"
 
 msgid "<empty>"
 msgstr "<vacío>"
@@ -4560,6 +4560,9 @@ msgid "All presets must have an export path defined for Export All to work."
 msgstr ""
 "Todos los presets deben tener una ruta de exportación definida para que "
 "Exportar Todo funcione."
+
+msgid "Resources to exclude:"
+msgstr "Recursos a excluir:"
 
 msgid "Resources to export:"
 msgstr "Recursos a exportar:"
@@ -5948,7 +5951,7 @@ msgstr "Cambiar Filtro"
 
 msgid "No animation player set, so unable to retrieve track names."
 msgstr ""
-"No se asigno ningún reproductor de animación, así que no se pudieron obtener "
+"No se asignó ningún reproductor de animación, así que no se pudieron obtener "
 "los nombres de las pistas."
 
 msgid "Player path set is invalid, so unable to retrieve track names."
@@ -6072,7 +6075,7 @@ msgid "Invalid AnimationLibrary file."
 msgstr "Archivo AnimationLibrary inválido."
 
 msgid "This library is already added to the player."
-msgstr "Esta librería ya se ha agregado al reproductor."
+msgstr "Esta librería ya está agregada al reproductor."
 
 msgid "Invalid Animation file."
 msgstr "Archivo Animation inválido."
@@ -6239,7 +6242,7 @@ msgid "Edit Transitions..."
 msgstr "Editar Transiciones..."
 
 msgid "Display list of animations in player."
-msgstr "Mostrar la lista de animaciones en el reproductor."
+msgstr "Mostrar lista de animaciones en el reproductor."
 
 msgid "Autoplay on Load"
 msgstr "Reproducción Automática al Cargar"
@@ -7514,7 +7517,7 @@ msgid ""
 "extents."
 msgstr ""
 "No se han detectado caras durante el bakeado de GPUParticlesCollisionSDF3D.\n"
-"Comprueba si hay mallas visibles que coincidan con la máscara de bakeado "
+"Comprueba si hay mallas visibles que coincidan con la máscara de bakeo "
 "dentro de sus extensiones."
 
 msgid "Select path for SDF Texture"
@@ -8555,6 +8558,16 @@ msgid ""
 msgstr ""
 "No se puede determinar una ruta de guardado para el ocluder.\n"
 "Guarda tu escena y vuelve a intentarlo."
+
+msgid ""
+"No meshes to bake.\n"
+"Make sure there is at least one MeshInstance3D node in the scene whose "
+"visual layers are part of the OccluderInstance3D's Bake Mask property."
+msgstr ""
+"No hay mallas para bakear.\n"
+"Asegúrate de que haya al menos un nodo MeshInstance3D en la escena cuyas "
+"capas visuales formen parte de la propiedad Máscara de Bakeo de "
+"OccluderInstance3D."
 
 msgid "Could not save the new occluder at the specified path:"
 msgstr "No se ha podido guardar el nuevo oclusor en la ruta especificada:"
@@ -10077,6 +10090,9 @@ msgstr "Editar Polígonos"
 msgid "Add polygon tool"
 msgstr "Añadir herramienta de polígonos"
 
+msgid "Edit points tool"
+msgstr "Herramienta de edición de puntos"
+
 msgid "Delete points tool"
 msgstr "Herramienta de eliminación de puntos"
 
@@ -10193,14 +10209,42 @@ msgstr "Fuente seleccionada inválida."
 msgid "Patterns"
 msgstr "Patrones"
 
+msgid "Drag and drop or paste a TileMap selection here to store a pattern."
+msgstr ""
+"Arrastra y suelta o pega una selección de TileMap aquí para almacenar un "
+"patrón."
+
 msgid "Paint terrain"
 msgstr "Pintar terreno"
+
+msgid "Matches Corners and Sides"
+msgstr "Coincide con Esquinas y Lados"
 
 msgid "Matches Corners Only"
 msgstr "Coincide Solo con las Esquinas"
 
 msgid "Matches Sides Only"
 msgstr "Coincide Solo con los Lados"
+
+msgid "Terrain Set %d (%s)"
+msgstr "Conjunto de Terrenos %d (%s)"
+
+msgid ""
+"Connect mode: paints a terrain, then connects it with the surrounding tiles "
+"with the same terrain."
+msgstr ""
+"Modo conectar: pinta un terreno y luego lo conecta con los tiles "
+"circundantes con el mismo terreno."
+
+msgid ""
+"Path mode: paints a terrain, thens connects it to the previous tile painted "
+"within the same stroke."
+msgstr ""
+"Modo ruta: pinta un terreno, luego lo conecta con el tile anterior pintado "
+"dentro del mismo trazo."
+
+msgid "Terrains"
+msgstr "Terrenos"
 
 msgid "Replace Tiles with Proxies"
 msgstr "Reemplazar Tiles con Proxies"
@@ -10217,6 +10261,9 @@ msgstr "Seleccionar Anterior Capa del Mapa de Tiles"
 msgid "TileMap Layers"
 msgstr "Capas del TileMap"
 
+msgid "Highlight Selected TileMap Layer"
+msgstr "Resaltar la Capa Seleccionada del TileMap"
+
 msgid "Toggle grid visibility."
 msgstr "Cambiar visibilidad de la cuadrícula."
 
@@ -10229,8 +10276,35 @@ msgstr "El nodo TileMap editado no tiene un recurso TileSet."
 msgid "Remove Tile Proxies"
 msgstr "Eliminar Proxies de Tiles"
 
+msgid "Create Alternative-level Tile Proxy"
+msgstr "Crear Proxy de Nivel Alternativo para el TileMap"
+
+msgid "Create Coords-level Tile Proxy"
+msgstr "Crear Proxy de Nivel de Coordenadas para el TileMap"
+
+msgid "Create source-level Tile Proxy"
+msgstr "Crear Proxy de nivel de Origen para el TileMap"
+
+msgid "Delete All Invalid Tile Proxies"
+msgstr "Eliminar Todos los Proxies de Tiles Inválidos"
+
 msgid "Delete All Tile Proxies"
 msgstr "Eliminar Todos los Proxies de Tiles"
+
+msgid "Tile Proxies Management"
+msgstr "Gestión de Proxies de Tiles"
+
+msgid "Source-level proxies"
+msgstr "Proxies a nivel de origen"
+
+msgid "Coords-level proxies"
+msgstr "Proxies a nivel de coordenadas"
+
+msgid "Alternative-level proxies"
+msgstr "Proxies a nivel alternativo"
+
+msgid "Add a new tile proxy:"
+msgstr "Añadir nuevo proxy de tiles:"
 
 msgid "From Source"
 msgstr "Desde la Fuente"
@@ -10242,13 +10316,13 @@ msgid "From Alternative"
 msgstr "Desde Alternativo"
 
 msgid "To Source"
-msgstr "A la Fuente"
+msgstr "Al Origen"
 
 msgid "To Coords"
 msgstr "A las Coordenadas"
 
 msgid "To Alternative"
-msgstr "A Alternativa"
+msgstr "A Alternativo"
 
 msgid "Global actions:"
 msgstr "Acciones Globales:"
@@ -13402,8 +13476,29 @@ msgstr "Añadir acción"
 msgid "Delete action"
 msgstr "Eliminar acción"
 
+msgid "OpenXR Action Map"
+msgstr "Mapa de Acción OpenXR"
+
+msgid "Remove action from interaction profile"
+msgstr "Eliminar acción del perfil de interacción"
+
+msgid "Add binding"
+msgstr "Añadir enlace"
+
+msgid "Remove binding"
+msgstr "Eliminar enlace"
+
 msgid "Pose"
 msgstr "Pose"
+
+msgid "Haptic"
+msgstr "Háptico"
+
+msgid "Unknown"
+msgstr "Desconocido"
+
+msgid "Select an action"
+msgstr "Selecciona una acción"
 
 msgid "Package name is missing."
 msgstr "Falta el nombre del paquete."
@@ -14271,6 +14366,16 @@ msgstr ""
 "No hay nada visible porque no se han asignado mallas para los pases de "
 "dibujo."
 
+msgid ""
+"The Bake Mask has no bits enabled, which means baking will not produce any "
+"collision for this GPUParticlesCollisionSDF3D.\n"
+"To resolve this, enable at least one bit in the Bake Mask property."
+msgstr ""
+"La Máscara de Bakeo no tiene bits habilitados, lo que significa que el "
+"bakeado no producirá ninguna colisión para este GPUParticlesCollisionSDF3D.\n"
+"Para resolver esto, habilita al menos un bit en la propiedad Máscara de "
+"Bakeo."
+
 msgid "Finding meshes, lights and probes"
 msgstr "Encontrar mallas, luces y sondas"
 
@@ -14279,6 +14384,17 @@ msgstr "Crear sondas"
 
 msgid "Generating Probe Volumes"
 msgstr "Generando Volúmenes de Sonda"
+
+msgid ""
+"The Bake Mask has no bits enabled, which means baking will not produce any "
+"occluder meshes for this OccluderInstance3D.\n"
+"To resolve this, enable at least one bit in the Bake Mask property."
+msgstr ""
+"La Máscara de Bakeo no tiene bits habilitados, lo que significa que el "
+"bakeado no producirá ninguna malla de oclusión para este "
+"OccluderInstance3D.\n"
+"Para resolver esto, habilita al menos un bit en la propiedad Máscara de "
+"Bakeo."
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Este cuerpo será ignorado hasta que se establezca una malla."

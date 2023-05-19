@@ -25,13 +25,15 @@
 # Nhật Huy <nhat.huy.7996@gmail.com>, 2022.
 # Trần Trọng Hiếu <anhdaden50@gmail.com>, 2023.
 # Trần Văn Luyện <lightlyn203@gmail.com>, 2023.
+# Bế Trọng Nghĩa <benghia1st@gmail.com>, 2023.
+# Ky Bui Van <ky.buivan.dev@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-03 11:49+0000\n"
-"Last-Translator: Trần Văn Luyện <lightlyn203@gmail.com>\n"
+"PO-Revision-Date: 2023-05-19 06:49+0000\n"
+"Last-Translator: Ky Bui Van <ky.buivan.dev@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -45,7 +47,7 @@ msgid "Unset"
 msgstr "Hủy bỏ"
 
 msgid "Physical"
-msgstr "Vật Lí"
+msgstr "Vật lý"
 
 msgid "Left Mouse Button"
 msgstr "Nút Chuột Trái"
@@ -74,17 +76,38 @@ msgstr "Nháy Đúp"
 msgid "Mouse motion at position (%s) with velocity (%s)"
 msgstr "Chuyển động chuột tại vị trị (%s) với vận tốc (%s)"
 
+msgid "Accept"
+msgstr "Xác nhận"
+
 msgid "Select"
 msgstr "Chọn"
 
 msgid "Cancel"
 msgstr "Huỷ bỏ"
 
+msgid "Focus Next"
+msgstr "Tập trung vào tiếp theo"
+
+msgid "Focus Prev"
+msgstr "Tập trung vào trước đó"
+
+msgid "Left"
+msgstr "Trái"
+
+msgid "Right"
+msgstr "Phải"
+
 msgid "Up"
 msgstr "Lên"
 
 msgid "Down"
 msgstr "Xuống"
+
+msgid "Page Up"
+msgstr "Lên trang"
+
+msgid "Page Down"
+msgstr "Xuống trang"
 
 msgid "End"
 msgstr "Cuối"
@@ -103,6 +126,18 @@ msgstr "Hoàn tác"
 
 msgid "Redo"
 msgstr "Làm lại"
+
+msgid "Completion Query"
+msgstr "Truy vấn hoàn thành"
+
+msgid "New Line"
+msgstr "Dòng mới"
+
+msgid "New Blank Line"
+msgstr "Dòng trống mới"
+
+msgid "New Line Above"
+msgstr "Dòng mới ở trên"
 
 msgid "Indent"
 msgstr "Thụt lề"
@@ -1119,6 +1154,9 @@ msgstr "Biến toàn cục"
 
 msgid "Navigation"
 msgstr "Điều hướng"
+
+msgid "Vulkan"
+msgstr "Vulkan"
 
 msgid "Nodes and Classes:"
 msgstr "Các nút và lớp:"
@@ -2729,6 +2767,9 @@ msgstr "Lỗi khi chạy tập lệnh sau nhập:"
 
 msgid "Saving..."
 msgstr "Đang lưu ..."
+
+msgid "2D"
+msgstr "2D"
 
 msgid "3D"
 msgstr "3D"

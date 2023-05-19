@@ -136,13 +136,14 @@
 # Pyotr <pitmysterio@mail.ru>, 2023.
 # Aleksey Shilovskiy <alekseyshilovskiy@yandex.ru>, 2023.
 # Eugene One <elevencupoftea@gmail.com>, 2023.
+# Lost Net <pc.mirkn@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-11 05:49+0000\n"
-"Last-Translator: Eugene One <elevencupoftea@gmail.com>\n"
+"PO-Revision-Date: 2023-05-19 06:49+0000\n"
+"Last-Translator: Lost Net <pc.mirkn@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ru/>\n"
 "Language: ru\n"
@@ -2479,7 +2480,7 @@ msgid "Wide 310 X 150 Logo"
 msgstr "Широкий логотип 310 X 150"
 
 msgid "Tiles"
-msgstr "Tiles"
+msgstr "Тайлы"
 
 msgid "Web"
 msgstr "Web"

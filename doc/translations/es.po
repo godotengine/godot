@@ -1203,16 +1203,6 @@ msgstr ""
 "La propiedad es un script variable que debe ser serializado y guardado en el "
 "archivo de la escena."
 
-msgid "Default usage (storage, editor and network)."
-msgstr "Uso por defecto (almacenamiento, editor y red)."
-
-msgid ""
-"Default usage but without showing the property in the editor (storage, "
-"network)."
-msgstr ""
-"Uso por defecto pero sin mostrar la propiedad en el editor (almacenamiento, "
-"red)."
-
 msgid "Flag for a normal method."
 msgstr "Flag para un método normal."
 

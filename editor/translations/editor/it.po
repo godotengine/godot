@@ -84,13 +84,14 @@
 # "Matteo A." <psyduck.boh@gmail.com>, 2023.
 # Davide Mora <mora.davide07@gmail.com>, 2023.
 # Francesco Falcone <francesco01.falcone@gmail.com>, 2023.
+# GumaD3v <matteo.gugliuzza08@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-03 11:49+0000\n"
-"Last-Translator: Francesco Falcone <francesco01.falcone@gmail.com>\n"
+"PO-Revision-Date: 2023-05-17 00:52+0000\n"
+"Last-Translator: GumaD3v <matteo.gugliuzza08@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -2343,6 +2344,12 @@ msgstr "Apri"
 msgid "Select Current Folder"
 msgstr "Seleziona la cartella attuale"
 
+msgid "Cannot save file with an empty filename."
+msgstr "Impossibile salvare un file con il nome vuoto"
+
+msgid "Cannot save file with a name starting with a dot."
+msgstr "Impossibile salvare un file il cui nome inizia con un punto"
+
 msgid "Select This Folder"
 msgstr "Seleziona questa cartella"
 
@@ -3992,7 +3999,7 @@ msgid "Left Stick Left, Joystick 0 Left"
 msgstr "Levetta sinistra verso sinistra, joystick 0 verso sinistra"
 
 msgid "Left Stick Right, Joystick 0 Right"
-msgstr "Levetta sinistra verso detra, joystick 0 verso destra"
+msgstr "Levetta sinistra verso destra, joystick 0 verso destra"
 
 msgid "Left Stick Up, Joystick 0 Up"
 msgstr "Levetta sinistra verso su, joystick 0 verso su"
@@ -14326,5 +14333,17 @@ msgstr "Previsto un identificatore o una \"[\"."
 msgid "Empty structs are not allowed."
 msgstr "Gli struct vuoti sono vietati."
 
+msgid "The const '%s' is declared but never used."
+msgstr "La costante '%s' è dichiarata ma mai utilizzata."
+
 msgid "The function '%s' is declared but never used."
 msgstr "La funzione '%s' è dichiarata ma mai utilizzata."
+
+msgid "The struct '%s' is declared but never used."
+msgstr "Lo struct '%s' viene dichiarata ma mai utilizzata."
+
+msgid "The uniform '%s' is declared but never used."
+msgstr "Lo uniform '%s' è dichiarato ma mai usato."
+
+msgid "The local variable '%s' is declared but never used."
+msgstr "La variabile locale '%s' è dichiarata ma mai usata."

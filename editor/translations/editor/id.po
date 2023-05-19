@@ -53,7 +53,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-12 02:51+0000\n"
+"PO-Revision-Date: 2023-05-14 11:52+0000\n"
 "Last-Translator: EngageIndo <engageindo@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
@@ -2641,7 +2641,7 @@ msgid "Colors"
 msgstr "Warna"
 
 msgid "Constants"
-msgstr "konstan"
+msgstr "Konstanta"
 
 msgid "Fonts"
 msgstr "Font"
@@ -4449,6 +4449,9 @@ msgid "All presets must have an export path defined for Export All to work."
 msgstr ""
 "Semua preset harus memiliki path ekspor yang ditentukan agar Ekspor Semua "
 "dapat berfungsi."
+
+msgid "Resources to exclude:"
+msgstr "Sumber daya yang harus dikecualikan:"
 
 msgid "Resources to export:"
 msgstr "Resource yang akan diekspor:"
@@ -7293,6 +7296,9 @@ msgstr "Bidang geometri tidak mengandung area apapun."
 msgid "The geometry doesn't contain any faces."
 msgstr "Geometri tidak mengandung bidang apapun."
 
+msgid "\"%s\" doesn't inherit from Node3D."
+msgstr "\"%s\" tidak diwariskan dari Node3D."
+
 msgid "\"%s\" doesn't contain geometry."
 msgstr "\"%s\" tidak mengandung geometri."
 
@@ -7314,11 +7320,77 @@ msgstr "Titik+Normal Permukaan (Diarahkan)"
 msgid "Volume"
 msgstr "Volume"
 
+msgid "Emission Source:"
+msgstr "Sumber Emisi:"
+
+msgid "A processor material of type 'ParticleProcessMaterial' is required."
+msgstr "Pemroses material atau jenis 'ParticleProcessMaterial' dibutuhkan."
+
+msgid "Convert to CPUParticles3D"
+msgstr "Konversikan menjadi CPUParticles3D"
+
+msgid "Generating Visibility AABB (Waiting for Particle Simulation)"
+msgstr "Menghasilkan Visibilitas AABB (Menunggu Simulasi Partikel)"
+
 msgid "Generate Visibility AABB"
 msgstr "Buat Penampakan AABB"
 
+msgid "GPUParticles3D"
+msgstr "GPUParticles3D"
+
+msgid "Generate AABB"
+msgstr "Buat AABB"
+
+msgid "Low"
+msgstr "Rendah"
+
+msgid "Moderate"
+msgstr "Sedang"
+
+msgid "High"
+msgstr "Tinggi"
+
+msgid "Subdivisions: %s"
+msgstr "Subdivisi: %s"
+
+msgid "Cell size: %s"
+msgstr "Ukuran sel: %s"
+
+msgid "Video RAM size: %s MB (%s)"
+msgstr "Ukuran RAM video: %s MB (%s)"
+
+msgid "Bake SDF"
+msgstr "Bake SDF"
+
+msgid ""
+"No faces detected during GPUParticlesCollisionSDF3D bake.\n"
+"Check whether there are visible meshes matching the bake mask within its "
+"extents."
+msgstr ""
+"Tidak ada wajah yang terdeteksi selama bake GPUParticlesCollisionSDF3D.\n"
+"Periksa apakah ada mesh yang terlihat cocok dengan mask bake dalam "
+"jangkauannya."
+
+msgid "Select path for SDF Texture"
+msgstr "Pilih path untuk Tekstur SDF"
+
 msgid "Gradient Edited"
 msgstr "Gradasi Disunting"
+
+msgid "Reverse/mirror gradient."
+msgstr "Gradien terbalik/mirror."
+
+msgid "Swap GradientTexture2D Fill Points"
+msgstr "Tukar Titik Isi GradientTexture2D"
+
+msgid "Swap Gradient Fill Points"
+msgstr "Tukar Titik Isi Gradien"
+
+msgid "Toggle Grid Snap"
+msgstr "Alihkan Snap Kisi"
+
+msgid "Configure"
+msgstr "Konfigurasi"
 
 msgid "Create Occluder Polygon"
 msgstr "Buat Poligon Occluder"
@@ -7330,11 +7402,27 @@ msgstr ""
 "Tidak dapat menentukan lokasi penyimpanan untuk gambar lightmap.\n"
 "Simpan skena Anda dan coba lagi."
 
+msgid ""
+"No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
+"Light' flag is on."
+msgstr ""
+"Tidak ada mesh untuk bake. Pastikan mereka memiliki saluran UV2 dan bendera "
+"'Cahaya Bake' menyala."
+
 msgid "Failed creating lightmap images, make sure path is writable."
 msgstr "Gagal membuat gambar lightmap, pastikan path dapat ditulis."
 
+msgid "No editor scene root found."
+msgstr "Tidak ditemukan root adegan editor."
+
+msgid "Lightmap data is not local to the scene."
+msgstr "Data Lightmap tidak bersifat lokal pada lokasi adegan."
+
 msgid "Bake Lightmaps"
 msgstr "Panggang Lightmaps"
+
+msgid "LightMap Bake"
+msgstr "Bake LightMap"
 
 msgid "Select lightmap bake file:"
 msgstr "Pilih berkas lightmap bake:"
@@ -7378,17 +7466,56 @@ msgstr "Buat Beberapa Bentuk Cembung"
 msgid "Create Navigation Mesh"
 msgstr "Buat Mesh Navigasi"
 
+msgid "Create Debug Tangents"
+msgstr "Membuat Garis Singgung Debug"
+
 msgid "Contained Mesh is not of type ArrayMesh."
 msgstr "Mesh yang terkandung bukan bertipe ArrayMesh."
 
+msgid ""
+"Mesh cannot unwrap UVs because it does not belong to the edited scene. Make "
+"it unique first."
+msgstr ""
+"Mesh tidak dapat membuka UV karena bukan bagian dari adegan yang diedit. "
+"Buatlah unik terlebih dahulu."
+
+msgid ""
+"Mesh cannot unwrap UVs because it belongs to another resource which was "
+"imported from another file type. Make it unique first."
+msgstr ""
+"Mesh tidak dapat membuka UV karena itu milik sumber daya lain yang diimpor "
+"dari jenis file lain. Buatlah unik terlebih dahulu."
+
+msgid ""
+"Mesh cannot unwrap UVs because it was imported from another file type. Make "
+"it unique first."
+msgstr ""
+"Mesh tidak dapat membuka UV karena diimpor dari jenis file lain. Buatlah "
+"unik terlebih dahulu."
+
 msgid "UV Unwrap failed, mesh may not be manifold?"
 msgstr "UV Unwrap gagal, mesh mungkin tidak bermacam-macam?"
+
+msgid "Unwrap UV2"
+msgstr "Buka UV2"
 
 msgid "No mesh to debug."
 msgstr "Tidak ada mesh untuk diawakutu."
 
 msgid "Mesh has no UV in layer %d."
 msgstr "Mesh tidak memiliki UV di layer %d."
+
+msgid "MeshInstance3D lacks a Mesh."
+msgstr "MeshInstance3D tidak memiliki Mesh!"
+
+msgid "Mesh has no surface to create outlines from."
+msgstr "Mesh tidak memiliki permukaan untuk membuat garis luar."
+
+msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES."
+msgstr "Jenis Mesh primitif bukan PRIMITIVE_TRIANGLES."
+
+msgid "Could not create outline."
+msgstr "Tidak dapat membuat garis besar."
 
 msgid "Create Outline"
 msgstr "Buat Garis Tepi"
@@ -7398,6 +7525,16 @@ msgstr "Jala"
 
 msgid "Create Trimesh Static Body"
 msgstr "Buat Tubuh Statis Trimesh"
+
+msgid ""
+"Creates a StaticBody3D and assigns a polygon-based collision shape to it "
+"automatically.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+"Membuat StaticBody3D dan menetapkan bentuk tumbukan berbasis poligon secara "
+"otomatis.\n"
+"Ini adalah opsi yang paling akurat (tetapi paling lambat) untuk pendeteksian "
+"tumbukan."
 
 msgid "Create Trimesh Collision Sibling"
 msgstr "Buat Trimesh Collision Sibling"
@@ -7448,6 +7585,17 @@ msgstr ""
 msgid "Create Outline Mesh..."
 msgstr "Buat Garis Mesh..."
 
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the StandardMaterial Grow property when using "
+"that property isn't possible."
+msgstr ""
+"Membuat mesh outline statis. Outline mesh akan memiliki normal yang dibalik "
+"secara otomatis.\n"
+"Ini dapat digunakan sebagai pengganti properti StandardMaterial Grow ketika "
+"menggunakan properti tersebut tidak memungkinkan."
+
 msgid "View UV1"
 msgstr "Tampilkan UV1"
 
@@ -7476,6 +7624,9 @@ msgstr ""
 "Perbarui dari skena yang ada?:\n"
 "%s"
 
+msgid "MeshLibrary"
+msgstr "MeshLibrary"
+
 msgid "Add Item"
 msgstr "Tambah Item"
 
@@ -7491,6 +7642,12 @@ msgstr "Impor dari Skenario (Aplikasikan Transforms)"
 msgid "Update from Scene"
 msgstr "Perbarui dari Skena"
 
+msgid "Apply without Transforms"
+msgstr "Terapkan tanpa Transformasi"
+
+msgid "Apply with Transforms"
+msgstr "Terapkan dengan Transformasi"
+
 msgid "No mesh source specified (and no MultiMesh set in node)."
 msgstr ""
 "Tidak ada sumber mesh yang ditentukan (dan tidak ada MultiMesh yang diatur "
@@ -7502,6 +7659,9 @@ msgstr ""
 
 msgid "Mesh source is invalid (invalid path)."
 msgstr "Sumber mesh tidak valid (salah lokasi)."
+
+msgid "Mesh source is invalid (not a MeshInstance3D)."
+msgstr "Sumber mesh tidak valid (bukan MeshInstance3D)."
 
 msgid "Mesh source is invalid (contains no Mesh resource)."
 msgstr "Sumber mesh tidak valid (tidak mengandung resource Mesh)."
@@ -7563,8 +7723,17 @@ msgstr "Jumlah:"
 msgid "Populate"
 msgstr "Isi"
 
+msgid "Set start_position"
+msgstr "Atur start_position"
+
+msgid "Set end_position"
+msgstr "Atur end_position"
+
 msgid "Create Navigation Polygon"
 msgstr "Buat Poligon Navigasi"
+
+msgid "Unnamed Gizmo"
+msgstr "Gizmo Tanpa Nama"
 
 msgid "Change Light Radius"
 msgstr "Ganti Radius Lampu"
@@ -7581,11 +7750,23 @@ msgstr "Ubah Ukuran Kamera"
 msgid "Change Sphere Shape Radius"
 msgstr "Ganti Radius Bentuk Bola"
 
+msgid "Change Box Shape Size"
+msgstr "Ubah Ukuran Bentuk Kotak"
+
 msgid "Change Notifier AABB"
 msgstr "Ubah AABB Notifier"
 
 msgid "Change Particles AABB"
 msgstr "Ubah Partikel AABB"
+
+msgid "Change Radius"
+msgstr "Ubah Radius"
+
+msgid "Change Probe Size"
+msgstr "Ubah Ukuran Probe"
+
+msgid "Change Decal Size"
+msgstr "Perubahan Ukuran Decal"
 
 msgid "Change Capsule Shape Radius"
 msgstr "Ubah Radius Shape Kapsul"
@@ -7598,6 +7779,24 @@ msgstr "Ubah Radius Bentuk Silinder"
 
 msgid "Change Cylinder Shape Height"
 msgstr "Ubah Tinggi Bentuk Silinder"
+
+msgid "Change Separation Ray Shape Length"
+msgstr "Ubah Panjang Bentuk Sinar Pemisahan"
+
+msgid "Start Location"
+msgstr "Lokasi Mulai"
+
+msgid "End Location"
+msgstr "Lokasi Akhir"
+
+msgid "Change Start Position"
+msgstr "Ubah Posisi Awal"
+
+msgid "Change End Position"
+msgstr "Ubah Posisi Akhir"
+
+msgid "Change Fog Volume Size"
+msgstr "Ubah Ukuran Volume Kabut"
 
 msgid "Transform Aborted."
 msgstr "Transformasi Dibatalkan."
@@ -7659,11 +7858,50 @@ msgstr "Transformasi Sumbu Z."
 msgid "View Plane Transform."
 msgstr "Tampilkan Transformasi Planar."
 
+msgid "YZ-Plane Transform."
+msgstr "Transformasi Pesawat YZ."
+
+msgid "XZ-Plane Transform."
+msgstr "Transformasi Pesawat XZ."
+
+msgid "XY-Plane Transform."
+msgstr "Transformasi Pesawat XY."
+
 msgid "Keying is disabled (no key inserted)."
 msgstr "Penguncian dinonaktifkan (tidak ada kunci yang dimasukkan)."
 
 msgid "Animation Key Inserted."
 msgstr "Kunci Animasi Dimasukkan."
+
+msgid "X: %s\n"
+msgstr "X: %s\n"
+
+msgid "Y: %s\n"
+msgstr "Y: %s\n"
+
+msgid "Z: %s\n"
+msgstr "Z: %s\n"
+
+msgid "Size: %s (%.1fMP)\n"
+msgstr "Ukuran: %s (%.1fMP)\n"
+
+msgid "Objects: %d\n"
+msgstr "Objek: %d\n"
+
+msgid "Primitive Indices: %d\n"
+msgstr "Indeks Primitif: %d\n"
+
+msgid "Draw Calls: %d"
+msgstr "Menarik Panggilan: %d"
+
+msgid "CPU Time: %s ms"
+msgstr "Waktu CPU: %s ms"
+
+msgid "GPU Time: %s ms"
+msgstr "Waktu GPU: %s mdtk"
+
+msgid "FPS: %d"
+msgstr "FPS: %d"
 
 msgid "Top View."
 msgstr "Tampilan Atas."
@@ -7689,6 +7927,15 @@ msgstr "Sejajarkan Transformasi dengan Tampilan"
 msgid "Align Rotation with View"
 msgstr "Sejajarkan Rotasi dengan Tampilan"
 
+msgid "Set Surface %d Override Material"
+msgstr "Atur Permukaan %d Timpa Material"
+
+msgid "Set Material Override"
+msgstr "Atur Penggantian Material"
+
+msgid "Cannot drag and drop into multiple selected nodes."
+msgstr "Tidak dapat menyeret dan melepas ke beberapa node yang dipilih."
+
 msgid "None"
 msgstr "Tidak ada"
 
@@ -7697,6 +7944,9 @@ msgstr "Putar"
 
 msgid "Translate"
 msgstr "Translasi"
+
+msgid "Translating:"
+msgstr "Menerjemahkan:"
 
 msgid "Rotating %s degrees."
 msgstr "Memutar %s derajat."
@@ -7716,8 +7966,77 @@ msgstr "Tampilkan Jaring-jaring"
 msgid "Display Overdraw"
 msgstr "Tampilkan Overdraw"
 
+msgid "Display Lighting"
+msgstr "Tampilan Pencahayaan"
+
 msgid "Display Unshaded"
 msgstr "Tampilan Tak Berbayang"
+
+msgid "Directional Shadow Splits"
+msgstr "Pembagian Bayangan Terarah"
+
+msgid "Normal Buffer"
+msgstr "Buffer Normal"
+
+msgid "Shadow Atlas"
+msgstr "Atlas Bayangan"
+
+msgid "Directional Shadow Map"
+msgstr "Peta Bayangan Arah"
+
+msgid "Decal Atlas"
+msgstr "Stiker Atlas"
+
+msgid "VoxelGI Lighting"
+msgstr "Pencahayaan VoxelGI"
+
+msgid "VoxelGI Albedo"
+msgstr "VoxelGI Albedo"
+
+msgid "VoxelGI Emission"
+msgstr "Emisi VoxelGI"
+
+msgid "SDFGI Cascades"
+msgstr "Kaskade SDFGI"
+
+msgid "SDFGI Probes"
+msgstr "Probe SDFGI"
+
+msgid "Scene Luminance"
+msgstr "Pencahayaan Adegan"
+
+msgid "SSAO"
+msgstr "SSAO"
+
+msgid "SSIL"
+msgstr "SSIL"
+
+msgid "VoxelGI/SDFGI Buffer"
+msgstr "Buffer VoxelGI / SDFGI"
+
+msgid "Disable Mesh LOD"
+msgstr "Nonaktifkan Mesh LOD"
+
+msgid "OmniLight3D Cluster"
+msgstr "Klaster OmniLight3D"
+
+msgid "SpotLight3D Cluster"
+msgstr "Kluster SpotLight3D"
+
+msgid "Decal Cluster"
+msgstr "Kluster Decal"
+
+msgid "ReflectionProbe Cluster"
+msgstr "Kluster ReflectionProbe"
+
+msgid "Occlusion Culling Buffer"
+msgstr "Buffer Pemusnahan Oklusi"
+
+msgid "Motion Vectors"
+msgstr "Vektor Gerak"
+
+msgid "Display Advanced..."
+msgstr "Tampilan Lanjutan..."
 
 msgid "View Environment"
 msgstr "Tampilkan Lingkungan"
@@ -7727,6 +8046,9 @@ msgstr "Tampilkan Gizmo"
 
 msgid "View Information"
 msgstr "Tampilkan Informasi"
+
+msgid "View Frame Time"
+msgstr "Lihat Waktu Frame"
 
 msgid "Half Resolution"
 msgstr "Setengah Resolusi"
@@ -7739,6 +8061,9 @@ msgstr "Aktifkan Efek Doppler"
 
 msgid "Cinematic Preview"
 msgstr "Pratinjau Sinematik"
+
+msgid "Not available when using the OpenGL renderer."
+msgstr "Tidak tersedia saat menggunakan perender OpenGL."
 
 msgid "Freelook Left"
 msgstr "Tampilan Bebas Kiri"
@@ -7764,6 +8089,36 @@ msgstr "Pengubah Kecepatan Tampilan Bebas"
 msgid "Freelook Slow Modifier"
 msgstr "Pengubah Lambat Tampilan Bebas"
 
+msgid "Lock Transformation to X axis"
+msgstr "Kunci Transformasi ke sumbu X"
+
+msgid "Lock Transformation to Y axis"
+msgstr "Kunci Transformasi ke sumbu Y"
+
+msgid "Lock Transformation to Z axis"
+msgstr "Kunci Transformasi ke sumbu Z"
+
+msgid "Lock Transformation to YZ plane"
+msgstr "Kunci Transformasi ke bidang YZ"
+
+msgid "Lock Transformation to XZ plane"
+msgstr "Kunci Transformasi ke bidang XZ"
+
+msgid "Lock Transformation to XY plane"
+msgstr "Kunci Transformasi ke bidang XY"
+
+msgid "Cancel Transformation"
+msgstr "Batalkan Transformasi"
+
+msgid "Begin Translate Transformation"
+msgstr "Mulai Terjemahkan Transformasi"
+
+msgid "Begin Rotate Transformation"
+msgstr "Mulai Rotasi Transformasi"
+
+msgid "Begin Scale Transformation"
+msgstr "Mulai Skalakan Transformasi"
+
 msgid "Toggle Camera Preview"
 msgstr "Alihkan Pratinjau Kamera"
 
@@ -7775,6 +8130,16 @@ msgid ""
 msgstr ""
 "Untuk memperbesar lebih lanjut, ubah bidang kliping kamera (View -> "
 "Setting...)"
+
+msgid "Overriding material..."
+msgstr "Penggantian material..."
+
+msgid ""
+"Drag and drop to override the material of any geometry node.\n"
+"Hold Ctrl when dropping to override a specific surface."
+msgstr ""
+"Seret dan lepas untuk menimpa material node geometri apa pun.\n"
+"Tahan Ctrl saat menjatuhkan untuk menimpa permukaan tertentu."
 
 msgid "XForm Dialog"
 msgstr "Dialog XForm"
@@ -7793,15 +8158,54 @@ msgstr ""
 "Mata setengah terbuka: Gizmo juga tampak melalui permukaan tidak tembus "
 "pandang (\"sinar-x\")."
 
+msgid "Snap Nodes to Floor"
+msgstr "Kancingkan Node ke Lantai"
+
 msgid "Couldn't find a solid floor to snap the selection to."
 msgstr ""
 "Tidak dapat menemukan floor yang solid untuk mengancingkan seleksi ke sana."
+
+msgid "Add Preview Sun to Scene"
+msgstr "Menambahkan Pratinjau Matahari ke Adegan"
+
+msgid "Add Preview Environment to Scene"
+msgstr "Menambahkan Lingkungan Pratinjau ke Adegan"
+
+msgid ""
+"Scene contains\n"
+"DirectionalLight3D.\n"
+"Preview disabled."
+msgstr ""
+"Adegan berisi\n"
+"DirectionalLight3D.\n"
+"Pratinjau dinonaktifkan."
+
+msgid "Preview disabled."
+msgstr "Pratinjau dinonaktifkan."
+
+msgid ""
+"Scene contains\n"
+"WorldEnvironment.\n"
+"Preview disabled."
+msgstr ""
+"Adegan berisi\n"
+"WorldEnvironment.\n"
+"Pratinjau dinonaktifkan."
 
 msgid "Use Local Space"
 msgstr "Gunakan Ruang Lokal"
 
 msgid "Use Snap"
 msgstr "Gunakan Snap"
+
+msgid ""
+"Toggle preview sunlight.\n"
+"If a DirectionalLight3D node is added to the scene, preview sunlight is "
+"disabled."
+msgstr ""
+"Mengalihkan pratinjau sinar matahari.\n"
+"Jika node DirectionalLight3D ditambahkan ke adegan, pratinjau cahaya "
+"matahari dinonaktifkan."
 
 msgid "Bottom View"
 msgstr "Tampilan Bawah"
@@ -8421,6 +8825,9 @@ msgstr "Simbol Pencarian"
 
 msgid "Pick Color"
 msgstr "Pilih Warna"
+
+msgid "Indentation"
+msgstr "Indentasi"
 
 msgid "Uppercase"
 msgstr "Huruf Besar"

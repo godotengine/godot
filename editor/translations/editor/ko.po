@@ -49,13 +49,14 @@
 # Rocream <kbg4660@gmail.com>, 2023.
 # Seania Twix <admin@ez.is>, 2023.
 # coolkid <newtype20050831@gmail.com>, 2023.
+# asdfer-1234 <sh__lv@naver.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-11 05:49+0000\n"
-"Last-Translator: coolkid <newtype20050831@gmail.com>\n"
+"PO-Revision-Date: 2023-05-17 00:52+0000\n"
+"Last-Translator: asdfer-1234 <sh__lv@naver.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
