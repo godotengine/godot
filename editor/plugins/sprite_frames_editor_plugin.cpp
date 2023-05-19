@@ -1198,7 +1198,13 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 		List<StringName> anim_names;
 		frames->get_animation_list(&anim_names);
 		anim_names.sort_custom<StringName::AlphCompare>();
-
+		if (!anim_names.size()) {
+			missing_anim_label->show();
+			anim_frames_vb->hide();
+			return;
+		}
+		missing_anim_label->hide();
+		anim_frames_vb->show();
 		bool searching = anim_search_box->get_text().size();
 		String searched_string = searching ? anim_search_box->get_text().to_lower() : String();
 
@@ -1705,12 +1711,22 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	delete_anim->set_shortcut_context(animations);
 	delete_anim->set_shortcut(ED_SHORTCUT("sprite_frames/delete_animation", TTR("Delete Animation"), Key::KEY_DELETE));
 
-	VBoxContainer *vbc = memnew(VBoxContainer);
-	add_child(vbc);
-	vbc->set_h_size_flags(SIZE_EXPAND_FILL);
+	missing_anim_label = memnew(Label);
+	missing_anim_label->set_text(TTR("This resource does not have any animations."));
+	missing_anim_label->set_h_size_flags(SIZE_EXPAND_FILL);
+	missing_anim_label->set_v_size_flags(SIZE_EXPAND_FILL);
+	missing_anim_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	missing_anim_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	missing_anim_label->hide();
+	add_child(missing_anim_label);
+
+	anim_frames_vb = memnew(VBoxContainer);
+	add_child(anim_frames_vb);
+	anim_frames_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+	anim_frames_vb->hide();
 
 	sub_vb = memnew(VBoxContainer);
-	vbc->add_margin_child(TTR("Animation Frames:"), sub_vb, true);
+	anim_frames_vb->add_margin_child(TTR("Animation Frames:"), sub_vb, true);
 
 	HFlowContainer *hfc = memnew(HFlowContainer);
 	sub_vb->add_child(hfc);
