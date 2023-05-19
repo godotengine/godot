@@ -138,7 +138,7 @@
 		<method name="normalized" qualifiers="const">
 			<return type="Plane" />
 			<description>
-				Returns a copy of the plane, normalized.
+				Returns a copy of the plane, with normalized [member normal] (so it's a unit vector). Returns [code]Plane(0, 0, 0, 0)[/code] if [member normal] can't be normalized (it has zero length).
 			</description>
 		</method>
 		<method name="project" qualifiers="const">
@@ -151,11 +151,11 @@
 	</methods>
 	<members>
 		<member name="d" type="float" setter="" getter="" default="0.0">
-			The distance from the origin to the plane, in the direction of [member normal]. This value is typically non-negative.
+			The distance from the origin to the plane, expressed in terms of [member normal] (according to its direction and magnitude). Actual absolute distance from the origin to the plane can be calculated as [code]abs(d) / normal.length()[/code] (if [member normal] has zero length then this [Plane] does not represent a valid plane).
 			In the scalar equation of the plane [code]ax + by + cz = d[/code], this is [code]d[/code], while the [code](a, b, c)[/code] coordinates are represented by the [member normal] property.
 		</member>
 		<member name="normal" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
-			The normal of the plane, which must be a unit vector.
+			The normal of the plane, typically a unit vector. Shouldn't be a zero vector as [Plane] with such [member normal] does not represent a valid plane.
 			In the scalar equation of the plane [code]ax + by + cz = d[/code], this is the vector [code](a, b, c)[/code], where [code]d[/code] is the [member d] property.
 		</member>
 		<member name="x" type="float" setter="" getter="" default="0.0">
